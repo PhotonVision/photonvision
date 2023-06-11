@@ -28,7 +28,6 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import frc.robot.Constants.DriveTrainConstants;
 
 public class Robot extends TimedRobot {

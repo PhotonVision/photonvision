@@ -145,6 +145,7 @@ public class VideoSimUtil {
     public static Point[] get16h5MarkerPts() {
         return get16h5MarkerPts(1);
     }
+
     /**
      * Gets the points representing the marker(black square) corners.
      *

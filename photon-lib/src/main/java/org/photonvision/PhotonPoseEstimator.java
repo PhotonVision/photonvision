@@ -362,7 +362,6 @@ public class PhotonPoseEstimator {
             PhotonPipelineResult result,
             Optional<Matrix<N3, N3>> cameraMatrixOpt,
             Optional<Matrix<N5, N1>> distCoeffsOpt) {
-
         if (result.getTargets().size() < 2) {
             // Run fallback strategy instead
             return update(result, cameraMatrixOpt, distCoeffsOpt, this.multiTagFallbackStrategy);
@@ -375,7 +374,8 @@ public class PhotonPoseEstimator {
             var cameraMatrix = cameraMatrixOpt.get();
             var distCoeffs = distCoeffsOpt.get();
             var pnpResults =
-                    VisionEstimation.estimateCamPosePNP(cameraMatrix, distCoeffs, result.getTargets(), fieldTags);
+                    VisionEstimation.estimateCamPosePNP(
+                            cameraMatrix, distCoeffs, result.getTargets(), fieldTags);
             var best =
                     new Pose3d()
                             .plus(pnpResults.best) // field-to-camera

@@ -35,27 +35,23 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
 
 public class VisionEstimation {
-
-    /**
-     * Get the visible {@link AprilTag}s according the tag layout using the visible tag IDs.
-     */
+    /** Get the visible {@link AprilTag}s according the tag layout using the visible tag IDs. */
     public static List<AprilTag> getVisibleLayoutTags(
             List<PhotonTrackedTarget> visTags, AprilTagFieldLayout tagLayout) {
-        return visTags
-            .stream()
-            .map(t -> {
-                int id = t.getFiducialId();
-                var maybePose = tagLayout.getTagPose(id);
-                if(maybePose.isEmpty()) return null;
-                else return new AprilTag(id, maybePose.get());
-            })
-            .filter(t -> t != null)
-            .collect(Collectors.toList());
+        return visTags.stream()
+                .map(
+                        t -> {
+                            int id = t.getFiducialId();
+                            var maybePose = tagLayout.getTagPose(id);
+                            if (maybePose.isEmpty()) return null;
+                            else return new AprilTag(id, maybePose.get());
+                        })
+                .filter(t -> t != null)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -73,16 +69,19 @@ public class VisionEstimation {
     public static PNPResults estimateCamPosePNP(
             Matrix<N3, N3> cameraMatrix,
             Matrix<N5, N1> distCoeffs,
-            List<PhotonTrackedTarget> visTags, AprilTagFieldLayout tagLayout) {
-        if(tagLayout == null || visTags == null ||
-                 tagLayout.getTags().size() == 0 || visTags.size() == 0) {
+            List<PhotonTrackedTarget> visTags,
+            AprilTagFieldLayout tagLayout) {
+        if (tagLayout == null
+                || visTags == null
+                || tagLayout.getTags().size() == 0
+                || visTags.size() == 0) {
             return new PNPResults();
         }
 
         var corners = new ArrayList<TargetCorner>();
-        for(var tag : visTags) corners.addAll(tag.getDetectedCorners());
+        for (var tag : visTags) corners.addAll(tag.getDetectedCorners());
         var knownTags = getVisibleLayoutTags(visTags, tagLayout);
-        if(knownTags.size() == 0 || corners.size() == 0 || corners.size() % 4 != 0) {
+        if (knownTags.size() == 0 || corners.size() == 0 || corners.size() % 4 != 0) {
             return new PNPResults();
         }
 

@@ -331,7 +331,9 @@ public class PhotonCameraSim implements AutoCloseable {
             var fieldCorners = tgt.getFieldVertices();
 
             // project 3d target points into 2d image points
-            var targetCorners = OpenCVHelp.projectPoints(prop.getIntrinsics(), prop.getDistCoeffs(), cameraPose, fieldCorners);
+            var targetCorners =
+                    OpenCVHelp.projectPoints(
+                            prop.getIntrinsics(), prop.getDistCoeffs(), cameraPose, fieldCorners);
             // save visible tags for stream simulation
             if (tgt.fiducialID >= 0) {
                 visibleTags.add(new Pair<Integer, List<TargetCorner>>(tgt.fiducialID, targetCorners));
@@ -349,10 +351,19 @@ public class PhotonCameraSim implements AutoCloseable {
 
             var pnpSim = new PNPResults();
             if (tgt.fiducialID >= 0 && tgt.getFieldVertices().size() == 4) { // single AprilTag solvePNP
-                pnpSim = OpenCVHelp.solvePNP_SQUARE(prop.getIntrinsics(), prop.getDistCoeffs(), tgt.getModel().vertices, noisyTargetCorners);
+                pnpSim =
+                        OpenCVHelp.solvePNP_SQUARE(
+                                prop.getIntrinsics(),
+                                prop.getDistCoeffs(),
+                                tgt.getModel().vertices,
+                                noisyTargetCorners);
                 centerRot =
                         prop.getPixelRot(
-                                OpenCVHelp.projectPoints(prop.getIntrinsics(), prop.getDistCoeffs(), new Pose3d(), List.of(pnpSim.best.getTranslation()))
+                                OpenCVHelp.projectPoints(
+                                                prop.getIntrinsics(),
+                                                prop.getDistCoeffs(),
+                                                new Pose3d(),
+                                                List.of(pnpSim.best.getTranslation()))
                                         .get(0));
             }
 

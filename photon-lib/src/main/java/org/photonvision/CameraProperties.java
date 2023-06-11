@@ -38,7 +38,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
-
 import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.targeting.TargetCorner;
 
@@ -227,7 +226,9 @@ public class CameraProperties {
         this.avgLatencyMs = avgLatencyMs;
     }
 
-    /** @param latencyStdDevMs The standard deviation in milliseconds of the latency */
+    /**
+     * @param latencyStdDevMs The standard deviation in milliseconds of the latency
+     */
     public void setLatencyStdDevMs(double latencyStdDevMs) {
         this.latencyStdDevMs = latencyStdDevMs;
     }
@@ -392,6 +393,7 @@ public class CameraProperties {
     public double getAspectRatio() {
         return (double) resWidth / resHeight;
     }
+
     /**
      * Returns these pixel points as fractions of a 1x1 square image. This means the camera's aspect
      * ratio and resolution will be used, and the points' x and y may not reach all portions(e.g. a
@@ -430,12 +432,16 @@ public class CameraProperties {
                 .collect(Collectors.toList());
     }
 
-    /** @return Noisy estimation of a frame's processing latency in milliseconds */
+    /**
+     * @return Noisy estimation of a frame's processing latency in milliseconds
+     */
     public double estLatencyMs() {
         return Math.max(avgLatencyMs + rand.nextGaussian() * latencyStdDevMs, 0);
     }
 
-    /** @return Estimate how long until the next frame should be processed in milliseconds */
+    /**
+     * @return Estimate how long until the next frame should be processed in milliseconds
+     */
     public double estMsUntilNextFrame() {
         // exceptional processing latency blocks the next frame
         return frameSpeedMs + Math.max(0, estLatencyMs() - frameSpeedMs);

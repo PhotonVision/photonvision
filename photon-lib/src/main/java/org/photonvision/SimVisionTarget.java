@@ -26,7 +26,9 @@ package org.photonvision;
 
 import edu.wpi.first.math.geometry.Pose3d;
 
-/** @deprecated Use {@link VisionTargetSim} instead */
+/**
+ * @deprecated Use {@link VisionTargetSim} instead
+ */
 @Deprecated
 public class SimVisionTarget {
     Pose3d targetPose;
