@@ -379,7 +379,6 @@ public class PhotonPoseEstimator {
         Matrix<N3, N3> cameraMatrix = cameraMatrixOpt.get();
         Matrix<N5, N1> distCoeffs = distCoeffsOpt.get();
 
-
         ArrayList<TargetCorner> visCorners = new ArrayList<>();
         ArrayList<AprilTag> knownVisTags = new ArrayList<>();
 
