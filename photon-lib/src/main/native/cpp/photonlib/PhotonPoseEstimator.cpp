@@ -365,12 +365,9 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagPnpStrategy(
                   this->multiTagFallbackStrategy);
   }
 
-  // Check calibration data preconditions
-  auto const camMat = camera.GetCameraMatrix();
-  auto const distCoeffs = camera.GetDistCoeffs();
-  if (!camMat || !distCoeffs) {
-    return std::nullopt;
-  }
+if (!camMat || !distCoeffs) {
+  return std::nullopt;
+}
 
   auto const targets = result.GetTargets();
 
