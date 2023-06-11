@@ -47,7 +47,6 @@
 #include "photonlib/PhotonPipelineResult.h"
 #include "photonlib/PhotonTrackedTarget.h"
 
-
 namespace photonlib {
 
 namespace detail {
@@ -410,8 +409,8 @@ cv::Point3d detail::ToPoint3d(const frc::Translation3d& translation) {
 }
 
 cv::Point3d detail::TagCornerToObjectPoint(units::meter_t cornerX,
-                                                        units::meter_t cornerY,
-                                                        frc::Pose3d tagPose) {
+                                           units::meter_t cornerY,
+                                           frc::Pose3d tagPose) {
   frc::Translation3d cornerTrans =
       tagPose.Translation() +
       frc::Translation3d(0.0_m, cornerX, cornerY).RotateBy(tagPose.Rotation());
@@ -463,7 +462,8 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagPnpStrategy(
   // Add all target corners to main list of corners
   for (auto target : targets) {
     int id = target.GetFiducialId();
-    if (auto const tagCorners = detail::CalcTagCorners(id, aprilTags); tagCorners.has_value()) {
+    if (auto const tagCorners = detail::CalcTagCorners(id, aprilTags);
+        tagCorners.has_value()) {
       auto const targetCorners = target.GetDetectedCorners();
       for (size_t cornerIdx = 0; cornerIdx < 4; ++cornerIdx) {
         imagePoints.emplace_back(targetCorners[cornerIdx].first,

@@ -18,10 +18,8 @@
 package org.photonvision.common.configuration;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -189,7 +187,8 @@ public class ConfigManager {
 
             if (apriltagFieldLayoutFile.exists()) {
                 try {
-                    atfl = JacksonUtils.deserialize(apriltagFieldLayoutFile.toPath(), AprilTagFieldLayout.class);
+                    atfl =
+                            JacksonUtils.deserialize(apriltagFieldLayoutFile.toPath(), AprilTagFieldLayout.class);
                     if (atfl == null) {
                         logger.error("Could not deserialize apriltag field layout!");
                     }

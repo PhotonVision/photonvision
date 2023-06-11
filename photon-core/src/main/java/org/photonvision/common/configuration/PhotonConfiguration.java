@@ -17,6 +17,7 @@
 
 package org.photonvision.common.configuration;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -29,8 +30,6 @@ import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.processes.VisionSource;
-
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
 
 // TODO rename this class
 public class PhotonConfiguration {
@@ -150,5 +149,4 @@ public class PhotonConfiguration {
         public List<HashMap<String, Object>> calibrations;
         public boolean isFovConfigurable = true;
     }
-
 }

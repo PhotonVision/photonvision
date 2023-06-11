@@ -25,7 +25,6 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.estimation.PNPResults;
@@ -42,7 +41,8 @@ import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 @SuppressWarnings("DuplicatedCode")
 public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipelineSettings> {
     private final AprilTagDetectionPipe aprilTagDetectionPipe = new AprilTagDetectionPipe();
-    private final AprilTagPoseEstimatorPipe singleTagPoseEstimatorPipe = new AprilTagPoseEstimatorPipe();
+    private final AprilTagPoseEstimatorPipe singleTagPoseEstimatorPipe =
+            new AprilTagPoseEstimatorPipe();
     private final MultiTargetPNPPipe multiTagPNPPipe = new MultiTargetPNPPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
@@ -108,7 +108,9 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
                 // TODO global state ew
                 var atfl = ConfigManager.getInstance().getConfig().getApriltagFieldLayout();
-                multiTagPNPPipe.setParams(new MultiTargetPNPPipeParams(frameStaticProperties.cameraCalibration, settings.targetModel, atfl));
+                multiTagPNPPipe.setParams(
+                        new MultiTargetPNPPipeParams(
+                                frameStaticProperties.cameraCalibration, settings.targetModel, atfl));
             }
         }
     }
