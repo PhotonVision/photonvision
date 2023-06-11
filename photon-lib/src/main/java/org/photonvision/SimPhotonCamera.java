@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.networktables.NTTopicSet;
+import org.photonvision.targeting.PNPResults;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
@@ -134,7 +135,7 @@ public class SimPhotonCamera {
             targetList.sort(sortMode.getComparator());
         }
 
-        PhotonPipelineResult newResult = new PhotonPipelineResult(latencyMillis, targetList);
+        PhotonPipelineResult newResult = new PhotonPipelineResult(latencyMillis, targetList, new PNPResults());
         var newPacket = new Packet(newResult.getPacketSize());
         newResult.populatePacket(newPacket);
         ts.rawBytesEntry.set(newPacket.getData());

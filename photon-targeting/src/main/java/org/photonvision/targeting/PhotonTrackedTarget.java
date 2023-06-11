@@ -24,6 +24,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.common.dataflow.structures.Packet;
+import org.photonvision.utils.PacketUtils;
 
 public class PhotonTrackedTarget {
     private static final int MAX_CORNERS = 8;
@@ -198,29 +199,6 @@ public class PhotonTrackedTarget {
         return true;
     }
 
-    private static Transform3d decodeTransform(Packet packet) {
-        double x = packet.decodeDouble();
-        double y = packet.decodeDouble();
-        double z = packet.decodeDouble();
-        var translation = new Translation3d(x, y, z);
-        double w = packet.decodeDouble();
-        x = packet.decodeDouble();
-        y = packet.decodeDouble();
-        z = packet.decodeDouble();
-        var rotation = new Rotation3d(new Quaternion(w, x, y, z));
-        return new Transform3d(translation, rotation);
-    }
-
-    private static void encodeTransform(Packet packet, Transform3d transform) {
-        packet.encode(transform.getTranslation().getX());
-        packet.encode(transform.getTranslation().getY());
-        packet.encode(transform.getTranslation().getZ());
-        packet.encode(transform.getRotation().getQuaternion().getW());
-        packet.encode(transform.getRotation().getQuaternion().getX());
-        packet.encode(transform.getRotation().getQuaternion().getY());
-        packet.encode(transform.getRotation().getQuaternion().getZ());
-    }
-
     private static void encodeList(Packet packet, List<TargetCorner> list) {
         packet.encode((byte) Math.min(list.size(), Byte.MAX_VALUE));
         for (int i = 0; i < list.size(); i++) {
@@ -253,8 +231,8 @@ public class PhotonTrackedTarget {
         this.skew = packet.decodeDouble();
         this.fiducialId = packet.decodeInt();
 
-        this.bestCameraToTarget = decodeTransform(packet);
-        this.altCameraToTarget = decodeTransform(packet);
+        this.bestCameraToTarget = PacketUtils.decodeTransform(packet);
+        this.altCameraToTarget = PacketUtils.decodeTransform(packet);
 
         this.poseAmbiguity = packet.decodeDouble();
 
@@ -282,8 +260,8 @@ public class PhotonTrackedTarget {
         packet.encode(area);
         packet.encode(skew);
         packet.encode(fiducialId);
-        encodeTransform(packet, bestCameraToTarget);
-        encodeTransform(packet, altCameraToTarget);
+        PacketUtils.encodeTransform(packet, bestCameraToTarget);
+        PacketUtils.encodeTransform(packet, altCameraToTarget);
         packet.encode(poseAmbiguity);
 
         for (int i = 0; i < 4; i++) {

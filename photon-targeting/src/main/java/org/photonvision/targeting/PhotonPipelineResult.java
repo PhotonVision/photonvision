@@ -34,6 +34,9 @@ public class PhotonPipelineResult {
     // Timestamp in milliseconds.
     private double timestampSeconds = -1;
 
+    // Multi-tag result
+    PNPResults multiTagResult = new PNPResults();
+
     /** Constructs an empty pipeline result. */
     public PhotonPipelineResult() {}
 
@@ -49,12 +52,25 @@ public class PhotonPipelineResult {
     }
 
     /**
+     * Constructs a pipeline result.
+     *
+     * @param latencyMillis The latency in the pipeline.
+     * @param targets The list of targets identified by the pipeline.
+     * @param multiTagResult Result from multi-target PNP.
+     */
+    public PhotonPipelineResult(double latencyMillis, List<PhotonTrackedTarget> targets, PNPResults results) {
+        this.latencyMillis = latencyMillis;
+        this.targets.addAll(targets);
+        this.multiTagResult = results;
+    }
+
+    /**
      * Returns the size of the packet needed to store this pipeline result.
      *
      * @return The size of the packet needed to store this pipeline result.
      */
     public int getPacketSize() {
-        return targets.size() * PhotonTrackedTarget.PACK_SIZE_BYTES + 8 + 2;
+        return targets.size() * PhotonTrackedTarget.PACK_SIZE_BYTES + 8 + 2 + PNPResults.PACK_SIZE_BYTES;
     }
 
     /**
@@ -131,6 +147,7 @@ public class PhotonPipelineResult {
     public Packet createFromPacket(Packet packet) {
         // Decode latency, existence of targets, and number of targets.
         latencyMillis = packet.decodeDouble();
+        this.multiTagResult = PNPResults.createFromPacket(packet);
         byte targetCount = packet.decodeByte();
 
         targets.clear();
@@ -154,6 +171,7 @@ public class PhotonPipelineResult {
     public Packet populatePacket(Packet packet) {
         // Encode latency, existence of targets, and number of targets.
         packet.encode(latencyMillis);
+        multiTagResult.populatePacket(packet);
         packet.encode((byte) targets.size());
 
         // Encode the information of each target.
@@ -161,34 +179,5 @@ public class PhotonPipelineResult {
 
         // Return the packet.
         return packet;
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((targets == null) ? 0 : targets.hashCode());
-        long temp;
-        temp = Double.doubleToLongBits(latencyMillis);
-        result = prime * result + (int) (temp ^ (temp >>> 32));
-        temp = Double.doubleToLongBits(timestampSeconds);
-        result = prime * result + (int) (temp ^ (temp >>> 32));
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
-        PhotonPipelineResult other = (PhotonPipelineResult) obj;
-        if (targets == null) {
-            if (other.targets != null) return false;
-        } else if (!targets.equals(other.targets)) return false;
-        if (Double.doubleToLongBits(latencyMillis) != Double.doubleToLongBits(other.latencyMillis))
-            return false;
-        if (Double.doubleToLongBits(timestampSeconds)
-                != Double.doubleToLongBits(other.timestampSeconds)) return false;
-        return true;
     }
 }

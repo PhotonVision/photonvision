@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.math.MathUtils;
-import org.photonvision.estimation.PNPResults;
+import org.photonvision.targeting.PNPResults;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
@@ -94,7 +94,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
         if (frameStaticProperties.cameraCalibration != null) {
             var cameraMatrix = frameStaticProperties.cameraCalibration.getCameraIntrinsicsMat();
-            if (cameraMatrix != null) {
+            if (cameraMatrix != null && cameraMatrix.rows() > 0) {
                 var cx = cameraMatrix.get(0, 2)[0];
                 var cy = cameraMatrix.get(1, 2)[0];
                 var fx = cameraMatrix.get(0, 0)[0];
@@ -125,8 +125,9 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         aprilTagDetectionPipe.setNativePoseEstimationEnabled(settings.solvePNPEnabled);
 
         if (frame.type != FrameThresholdType.GREYSCALE) {
-            // TODO so all cameras should give us ADAPTIVE_THRESH -- how should we handle if not?
-            return new CVPipelineResult(0, 0, List.of());
+            // TODO so all cameras should give us GREYSCALE -- how should we handle if not?
+            // Right now, we just return nothing
+            return new CVPipelineResult(0, 0, List.of(), new PNPResults(), frame);
         }
 
         CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult;
@@ -176,6 +177,6 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
-        return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, frame);
+        return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, multiTagResult, frame);
     }
 }

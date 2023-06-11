@@ -53,6 +53,7 @@ import org.opencv.core.Point3;
 import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 import org.opencv.imgproc.Imgproc;
+import org.photonvision.targeting.PNPResults;
 import org.photonvision.targeting.TargetCorner;
 
 public final class OpenCVHelp {

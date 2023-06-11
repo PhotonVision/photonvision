@@ -26,19 +26,20 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint2f;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.estimation.PNPResults;
 import org.photonvision.estimation.VisionEstimation;
+import org.photonvision.targeting.PNPResults;
 import org.photonvision.targeting.TargetCorner;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
 
+/**
+ * Estimate the camera pose given multiple Apriltag observations
+ */
 public class MultiTargetPNPPipe
         extends CVPipe<List<TrackedTarget>, PNPResults, MultiTargetPNPPipe.MultiTargetPNPPipeParams> {
     private static final Logger logger = new Logger(MultiTargetPNPPipe.class, LogGroup.VisionModule);
-
-    private final MatOfPoint2f imagePoints = new MatOfPoint2f();
 
     private boolean hasWarned = false;
 

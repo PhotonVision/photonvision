@@ -18,6 +18,8 @@
 package org.photonvision.vision.pipeline;
 
 import java.util.List;
+
+import org.photonvision.targeting.PNPResults;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.Contour;
@@ -193,6 +195,6 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
 
         PipelineProfiler.printReflectiveProfile(pipeProfileNanos);
 
-        return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, frame);
+        return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, new PNPResults(), frame);
     }
 }

@@ -136,7 +136,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     public void accept(CVPipelineResult result) {
         var simplified =
                 new PhotonPipelineResult(
-                        result.getLatencyMillis(), simpleFromTrackedTargets(result.targets));
+                        result.getLatencyMillis(), simpleFromTrackedTargets(result.targets), result.multiTagResult);
         Packet packet = new Packet(simplified.getPacketSize());
         simplified.populatePacket(packet);
 
