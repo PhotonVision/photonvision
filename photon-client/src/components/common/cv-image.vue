@@ -7,7 +7,7 @@
     :alt="alt"
     @click="clickHandler"
     @error="loadErrHandler"
-  />
+  >
 </template>
 
 <script>
@@ -34,7 +34,7 @@
                       "margin-right": "auto",
                       "max-height": this.maxHeight,
                       height: `${this.scale}%`,
-                      cursor: (this.colorPicking ? `url(${require("../../assets/eyedropper.svg")}),` : "pointer") + "default",
+                      cursor: (this.colorPicking ? `url(${require("../../assets/icons/eyedropper.svg")}),` : "pointer") + "default",
                     };
 
                     if (this.$vuetify.breakpoint.xl) {
@@ -50,10 +50,10 @@
             },
             src: {
               get() {
-                var port = this.getCurPort();
+                const port = this.getCurPort();
                 if(port <= 0){
-                  //Invalid port, keep it spinny
-                  return require("../../assets/loading.gif");
+                  //Invalid port, keep it spiny
+                  return require("../../../public/loading.svg");
                 } else {
                   //Valid port, connect
                   return this.getSrcURLFromPort(port);
@@ -66,13 +66,13 @@
         },
         methods: {
             getCurPort(){
-              var port = -1;
+              let port = -1;
               if(this.disconnected){
                 //Disconnected, port is unknown.
                 port = -1;
               } else {
                 //Connected - get the port
-                if(this.id == 'raw-stream'){
+                if(this.id === 'raw-stream'){
                   port = this.$store.state.cameraSettings[this.$store.state.currentCameraIndex].inputStreamPort
                 } else {
                   port = this.$store.state.cameraSettings[this.$store.state.currentCameraIndex].outputStreamPort
@@ -92,7 +92,7 @@
               if(this.colorPicking){
                 this.$emit('click', event);
               } else {
-                var port = this.getCurPort();
+                const port = this.getCurPort();
                 if(port <= 0){
                   console.log("No valid port, ignoring click.");
                 } else {

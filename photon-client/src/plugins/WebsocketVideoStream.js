@@ -10,30 +10,30 @@ class StatsHistoryBuffer{
         this.frameCount = 0;
         this.bitAvgAccum = 0;
 
-        //calculated vals
+        //calculated values
         this.bitRate_Mbps = 0;
         this.framerate_fps = 0;
     }
 
     putAndPop(v){
         this.headPtr++;
-        var idx = (this.headPtr)%this._array.length;
-        var poppedVal = this._array[idx];
+        const idx = (this.headPtr) % this._array.length;
+        const poppedVal = this._array[idx];
         this._array[idx] = v;
         return poppedVal;
     }
 
     addSample(time, frameSize_bits, dispFrame_count) {
-        var oldVal = this.putAndPop([time, frameSize_bits, dispFrame_count]);
+        const oldVal = this.putAndPop([time, frameSize_bits, dispFrame_count]);
 
         this.bitAvgAccum += frameSize_bits;
 
         if(oldVal !=null){
-            var oldTime = oldVal[0];
-            var oldFrameSize = oldVal[1];
-            var oldFrameCount = oldVal[2];
+            const oldTime = oldVal[0];
+            const oldFrameSize = oldVal[1];
+            const oldFrameCount = oldVal[2];
 
-            var deltaTime_s = (time - oldTime);
+            const deltaTime_s = (time - oldTime);
 
             this.bitAvgAccum -= oldFrameSize;
 
@@ -125,10 +125,10 @@ export class WebsocketVideoStream{
     }
 
     dispImageData(){
-        if(this.prevImgDataTime != this.imgDataTime){
+        if(this.prevImgDataTime !== this.imgDataTime){
             //From https://stackoverflow.com/questions/67507616/set-image-src-from-image-blob/67507685#67507685
             //Ensure uniqueness by making the new one before revoking the old one.
-            var oldURL = this.imgObjURL
+            const oldURL = this.imgObjURL;
             this.imgObjURL = URL.createObjectURL(this.imgData);
             if(oldURL != null){
                 URL.revokeObjectURL(oldURL)
@@ -143,19 +143,19 @@ export class WebsocketVideoStream{
     }
 
     dispNoStream() {
-        this.image.src = require("../assets/loading.gif");
+        this.image.src = require("../../public/loading.svg");
     }
 
     animationLoop(){
         // Update time metrics
-        var curTime_s = window.performance.now() / 1000.0;
-        var timeInState  = curTime_s - this.dsm_restart_start_time;
+        const curTime_s = window.performance.now() / 1000.0;
+        const timeInState = curTime_s - this.dsm_restart_start_time;
 
         // Save previous state
         this.dsm_prev_state = this.dsm_cur_state;
 
         // Evaluate state transitions
-        if(this.serverConnectionActive == false){
+        if(!this.serverConnectionActive){
             //Any state - if the server connection goes false, always transition to disconnected
             this.dsm_cur_state = this.DSM_DISCONNECTED;
         } else {
@@ -221,12 +221,12 @@ export class WebsocketVideoStream{
 
         //take current-state or state-transition actions
 
-        if(this.dsm_cur_state != this.dsm_prev_state){
+        if(this.dsm_cur_state !== this.dsm_prev_state){
             //Any state transition
             console.log("State Change: " + this.dsm_prev_state + " -> " + this.dsm_cur_state);
         }
 
-        if(this.dsm_cur_state == this.DSM_SHOWING){
+        if(this.dsm_cur_state === this.DSM_SHOWING){
             // Currently in SHOWING
             // Show image and update status text
             this.dispImageData();
@@ -236,24 +236,24 @@ export class WebsocketVideoStream{
             this.statsTextDiv.innerHTML = this.dsm_cur_state;
         }
 
-        if(this.dsm_cur_state != this.DSM_SHOWING && this.dsm_prev_state == this.DSM_SHOWING ){
+        if(this.dsm_cur_state !== this.DSM_SHOWING && this.dsm_prev_state === this.DSM_SHOWING ){
             //Any transition out of showing - no stream
             this.dispNoStream();
         }
 
-        if(this.dsm_cur_state == this.DSM_RESTART_UNSUBSCRIBE){
+        if(this.dsm_cur_state === this.DSM_RESTART_UNSUBSCRIBE){
             // Currently in UNSUBSCRIBE, do the unsubscribe actions
             this.stopStream();
             this.dsm_restart_start_time = curTime_s;
         }
 
-        if(this.dsm_cur_state == this.DSM_SUBSCRIBE){
+        if(this.dsm_cur_state === this.DSM_SUBSCRIBE){
             // Currently in SUBSCRIBE, do the subscribe actions
             this.startStream();
             this.dsm_restart_start_time = curTime_s;
         }
 
-        if(this.dsm_cur_state == this.DSM_WAIT_FOR_VALID_PORT){
+        if(this.dsm_cur_state === this.DSM_WAIT_FOR_VALID_PORT){
             // Currently waiting for a vaild port to be requested
             if(this.newStreamPortReq != null){
                 this.streamPort = this.newStreamPortReq;
@@ -315,7 +315,7 @@ export class WebsocketVideoStream{
 
     ws_onMessage(e){
         //console.log("Got message from " + this.serverAddr)
-        var msgTime_s = window.performance.now() / 1000.0;
+        const msgTime_s = window.performance.now() / 1000.0;
         if(typeof e.data === 'string'){
             //string data from host
             //TODO - anything to receive info here? Maybe "available streams?"

@@ -16,6 +16,7 @@ modifiableFileExclude {
   \.gif$
   \.so$
   \.dll$
+  \.webp$
 }
 
 includeProject {

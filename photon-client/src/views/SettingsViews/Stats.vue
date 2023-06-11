@@ -3,16 +3,16 @@
     <v-row class="pa-4">
       <table class="infoTable">
         <tr>
-          <th class="infoElem">
+          <th class="infoElem infoElemTitle">
             Version
           </th>
-          <th class="infoElem">
+          <th class="infoElem infoElemTitle">
             Hardware Model
           </th>
-          <th class="infoElem">
+          <th class="infoElem infoElemTitle">
             Platform
           </th>
-          <th class="infoElem">
+          <th class="infoElem infoElemTitle">
             GPU Acceleration
           </th>
         </tr>
@@ -34,19 +34,19 @@
 
       <table class="infoTable">
         <tr>
-          <th class="infoElem">
+          <th class="infoElem infoElemTitle">
             CPU Usage
           </th>
-          <th class="infoElem">
+          <th class="infoElem infoElemTitle">
             CPU Temp
           </th>
-          <th class="infoElem">
+          <th class="infoElem infoElemTitle">
             CPU Memory Usage
           </th>
-          <th class="infoElem">
+          <th class="infoElem infoElemTitle">
             GPU Memory Usage
           </th>
-          <th class="infoElem">
+          <th class="infoElem infoElemTitle">
             Disk Usage
           </th>
           <th class="infoElem">
@@ -54,17 +54,18 @@
               <template v-slot:activator="{ on, attrs }">
                 <span
                   v-bind="attrs"
+                  class="infoElemTitle"
                   v-on="on"
                 >
-                ⓘ CPU Throttling
+                  CPU Throttling
                 </span>
               </template>
               <span>
-                    Current or Previous Reason for the cpu being held back from maximum performance.
+                Current or Previous Reason for the cpu being held back from maximum performance.
               </span>
             </v-tooltip>
           </th>
-          <th class="infoElem">
+          <th class="infoElem infoElemTitle">
             CPU Uptime
           </th>
         </tr>
@@ -125,32 +126,6 @@
     >
       <span>{{ snackbar.text }}</span>
     </v-snackbar>
-
-    <!-- Special hidden upload input that gets 'clicked' when the user imports settings -->
-    <input
-      ref="importSettings"
-      type="file"
-      accept=".zip, .json"
-      style="display: none;"
-
-      @change="readImportedSettings"
-    >
-    <!-- Special hidden link that gets 'clicked' when the user exports settings -->
-    <a
-      ref="exportSettings"
-      style="color: black; text-decoration: none; display: none"
-      :href="'http://' + this.$address + '/api/settings/photonvision_config.zip'"
-      download="photonvision-settings.zip"
-    />
-
-    <!-- Special hidden new jar upload input that gets 'clicked' when the user posts a new .jar -->
-    <input
-      ref="offlineUpdate"
-      type="file"
-      accept=".jar"
-      style="display: none;"
-      @change="doOfflineUpdate"
-    >
   </div>
 </template>
 
@@ -192,94 +167,6 @@ export default {
           return this.$store.state.metrics;
         }
     },
-    methods: {
-        restartProgram() {
-            this.axios.post('http://' + this.$address + '/api/restartProgram', {});
-        },
-        restartDevice() {
-            this.axios.post('http://' + this.$address + '/api/restartDevice', {});
-        },
-        readImportedSettings(event) {
-            let formData = new FormData();
-            formData.append("zipData", event.target.files[0]);
-            this.axios.post("http://" + this.$address + "/api/settings/import", formData,
-                {headers: {"Content-Type": "multipart/form-data"}}).then(() => {
-                this.snackbar = {
-                    color: "success",
-                    text: "Settings imported successfully! PhotonVision will restart in the background...",
-                };
-                this.snack = true;
-            }).catch(err => {
-                if (err.response) {
-                  this.snackbar = {
-                      color: "error",
-                      text: "Error while uploading settings file! Could not process provided file.",
-                  };
-                } else if (err.request) {
-                  this.snackbar = {
-                      color: "error",
-                      text: "Error while uploading settings file! No respond to upload attempt.",
-                  };
-                } else {
-                  this.snackbar = {
-                      color: "error",
-                      text: "Error while uploading settings file!",
-                  };
-                }
-                this.snack = true;
-            });
-        },
-        doOfflineUpdate(event) {
-          this.snackbar = {
-                color: "secondary",
-                text: "New Software Upload in Process..."
-            };
-            this.snack = true;
-
-            let formData = new FormData();
-            formData.append("jarData", event.target.files[0]);
-            this.axios.post("http://" + this.$address + "/api/settings/offlineUpdate", formData,
-                {headers: {"Content-Type": "multipart/form-data"},
-                 onUploadProgress: function( progressEvent ) {
-                    this.uploadPercentage = parseInt( Math.round( ( progressEvent.loaded / progressEvent.total ) * 100 ) );
-                    if(this.uploadPercentage < 99.5){
-                      this.snackbar.text = "New Software Upload in Process, " + this.uploadPercentage + "% complete";
-                    } else {
-                      this.snackbar.text = "Installing uploaded software...";
-                    }
-
-                 }.bind(this)
-                }).then(() => {
-                this.snackbar = {
-                    color: "success",
-                    text: "New .jar copied successfully! PhotonVision will restart in the background...",
-                };
-                this.snack = true;
-            }).catch(err => {
-                if (err.response) {
-                  this.snackbar = {
-                      color: "error",
-                      text: "Error while uploading new .jar file! Could not process provided file.",
-                  };
-                } else if (err.request) {
-                  this.snackbar = {
-                      color: "error",
-                      text: "Error while uploading new .jar file! No respond to upload attempt.",
-                  };
-                } else {
-                  this.snackbar = {
-                      color: "error",
-                      text: "Error while uploading new .jar file!",
-                  };
-                }
-                this.snack = true;
-            });
-        },
-        showLogs(event) {
-          event;
-          this.$store.state.logsOverlay = true;
-        }
-    }
 }
 </script>
 
@@ -291,7 +178,7 @@ export default {
 .infoTable{
   border: 1px solid;
   border-collapse: separate;
-  border-spacing: 0px;
+  border-spacing: 0;
   border-radius: 5px;
   text-align: left;
   margin-bottom: 10px;
@@ -301,11 +188,15 @@ export default {
 }
 
 .infoElem {
-  padding-right: 15px;
-  padding-bottom: 1px;
-  padding-top: 1px;
-  padding-left: 10px;
+  padding: 1px 15px 1px 10px;
   border-right: 1px solid;
+  font-weight: normal;
+}
+
+.infoElemTitle {
+  font-size: 18px;
+  text-decoration: underline;
+  text-decoration-color: #ffd843;
 }
 
 </style>

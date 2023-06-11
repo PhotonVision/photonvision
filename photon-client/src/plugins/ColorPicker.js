@@ -1,5 +1,5 @@
-var canvas = undefined;
-var image = undefined;
+let canvas = undefined;
+let image = undefined;
 
 function initColorPicker() {
     if (!canvas)
@@ -33,8 +33,8 @@ function colorPickerClick(event, currentFunction, currentRange) {
 
 function eyeDrop(pixel) {
     let hsv = RGBtoHSV(pixel);
-    let range = widenRange([hsv, hsv.slice(0)]);//sends hsv and a copy of hsv
-    return range
+    //sends hsv and a copy of hsv
+    return widenRange([hsv, hsv.slice(0)])
 }
 
 function expand(pixel, currentRange) {
@@ -46,8 +46,8 @@ function expand(pixel, currentRange) {
 function shrink(pixel, currentRange) {
     let hsv = RGBtoHSV(pixel);
     let widenHSV = widenRange([[].concat(hsv), hsv]);
-    if (!shrinkRange(currentRange, widenHSV[0]))//Tries to shrink the lower part of the widen HSV
-        shrinkRange(currentRange, widenHSV[1]);//If the prev attempt failed, try to shrink the higher part of the widen HSV
+    if (!shrinkRange(currentRange, widenHSV[0])) //Tries to shrink the lower part of to widened HSV
+        shrinkRange(currentRange, widenHSV[1]); //If the prev attempt failed, try to shrink the higher part of to widened HSV
     return currentRange
 }
 
@@ -78,10 +78,10 @@ function RGBtoHSV(numbers) {
 //Loops though the colors array, finds the smallest and biggest value for H,S and V. Returns the range containing every color
 function createRange(HSVColors) {
     let range = [[], []];
-    for (var i = 0; i < 3; i++) {
+    for (let i = 0; i < 3; i++) {
         range[0][i] = HSVColors[0][i];
         range[1][i] = HSVColors[0][i];
-        for (var j = HSVColors.length - 1; j >= 0; j--) {
+        for (let j = HSVColors.length - 1; j >= 0; j--) {
             range[0][i] = Math.min(HSVColors[j][i], range[0][i]);
             range[1][i] = Math.max(HSVColors[j][i], range[1][i]);
         }
@@ -89,7 +89,7 @@ function createRange(HSVColors) {
     return range;//[[Hmin,Smin,Vmin],[Hmax,Smax,Vmax]]
 }
 
-//This function adds 10 extra units to each side of the sliders, not to be confued with the expand selection button
+//This function adds 10 extra units to each side of the sliders, not to be confused with the expand selection button
 function widenRange(range) {
     let expanded = [[], []];
     for (let i = 0; i < 3; i++) {
