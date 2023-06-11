@@ -299,8 +299,9 @@ public class SqlConfigProvider extends ConfigProvider {
                                 .filter(Objects::nonNull)
                                 .collect(Collectors.toList());
                 statement.setString(4, JacksonUtils.serializeToString(settings));
-            }
 
+                statement.executeUpdate();
+            }
         } catch (SQLException | IOException e) {
             logger.error("Err saving cameras", e);
             try {
