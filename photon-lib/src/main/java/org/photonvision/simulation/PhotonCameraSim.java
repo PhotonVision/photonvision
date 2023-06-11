@@ -94,7 +94,7 @@ public class PhotonCameraSim implements AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         videoSimRaw.close();
         videoSimFrameRaw.release();
         videoSimProcessed.close();
@@ -201,7 +201,7 @@ public class PhotonCameraSim implements AutoCloseable {
      */
     public boolean canSeeTargetPose(Pose3d camPose, VisionTargetSim target) {
         var rel = new CameraTargetRelation(camPose, target.getPose());
-        boolean canSee = (
+        return (
                 // target translation is outside of camera's FOV
                 (Math.abs(rel.camToTargYaw.getDegrees()) < prop.getHorizFOV().getDegrees() / 2)
                         && (Math.abs(rel.camToTargPitch.getDegrees()) < prop.getVertFOV().getDegrees() / 2)
@@ -211,7 +211,6 @@ public class PhotonCameraSim implements AutoCloseable {
                         &&
                         // target is too far
                         (rel.camToTarg.getTranslation().getNorm() <= maxSightRangeMeters));
-        return canSee;
     }
 
     /**
@@ -338,7 +337,10 @@ public class PhotonCameraSim implements AutoCloseable {
                             prop.getIntrinsics(), prop.getDistCoeffs(), cameraPose, fieldCorners);
             // save visible tags for stream simulation
             if (tgt.fiducialID >= 0) {
-                visibleTags.add(new Pair<Integer, List<TargetCorner>>(tgt.fiducialID, targetCorners));
+                visibleTags.add(new Pair<>(
+                        tgt.fiducialID,
+                        targetCorners
+                ));
             }
             // estimate pixel noise
             var noisyTargetCorners = prop.estPixelNoise(targetCorners);

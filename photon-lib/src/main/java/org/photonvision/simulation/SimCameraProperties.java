@@ -151,14 +151,10 @@ public class SimCameraProperties {
     }
 
     public void setCalibration(int resWidth, int resHeight, Rotation2d fovDiag) {
-        var fovWidth =
-                new Rotation2d(
-                        fovDiag.getRadians()
-                                * (resWidth / Math.sqrt(resWidth * resWidth + resHeight * resHeight)));
-        var fovHeight =
-                new Rotation2d(
-                        fovDiag.getRadians()
-                                * (resHeight / Math.sqrt(resWidth * resWidth + resHeight * resHeight)));
+        double s = Math.sqrt(resWidth * resWidth + resHeight * resHeight);
+        var fovWidth = new Rotation2d(fovDiag.getRadians() * (resWidth / s));
+        var fovHeight = new Rotation2d(fovDiag.getRadians() * (resHeight / s));
+
         double maxFovDeg = Math.max(fovWidth.getDegrees(), fovHeight.getDegrees());
         if (maxFovDeg > 179) {
             double scale = 179.0 / maxFovDeg;
@@ -167,14 +163,18 @@ public class SimCameraProperties {
             DriverStation.reportError(
                     "Requested FOV width/height too large! Scaling below 180 degrees...", false);
         }
+
         // assume no distortion
         var distCoeff = VecBuilder.fill(0, 0, 0, 0, 0);
+
         // assume centered principal point (pixels)
         double cx = resWidth / 2.0;
         double cy = resHeight / 2.0;
+
         // use given fov to determine focal point (pixels)
         double fx = cx / Math.tan(fovWidth.getRadians() / 2.0);
         double fy = cy / Math.tan(fovHeight.getRadians() / 2.0);
+
         // create camera intrinsics matrix
         var camIntrinsics = Matrix.mat(Nat.N3(), Nat.N3()).fill(fx, 0, cx, 0, fy, cy, 0, 0, 1);
         setCalibration(resWidth, resHeight, camIntrinsics, distCoeff);

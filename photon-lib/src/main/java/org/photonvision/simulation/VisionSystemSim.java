@@ -53,8 +53,6 @@ import org.photonvision.estimation.TargetModel;
  * camera target info.
  */
 public class VisionSystemSim {
-    private final String tableName;
-
     private final Map<String, PhotonCameraSim> camSimMap = new HashMap<>();
     private static final double kBufferLengthSeconds = 1.5;
     // save robot-to-camera for each camera over time (Pose3d is easily interpolatable)
@@ -64,7 +62,7 @@ public class VisionSystemSim {
     private final TimeInterpolatableBuffer<Pose3d> robotPoseBuffer =
             TimeInterpolatableBuffer.createBuffer(kBufferLengthSeconds);
 
-    private Map<String, Set<VisionTargetSim>> targetSets = new HashMap<>();
+    private final Map<String, Set<VisionTargetSim>> targetSets = new HashMap<>();
 
     private final Field2d dbgField;
 
@@ -79,7 +77,7 @@ public class VisionSystemSim {
      */
     public VisionSystemSim(String visionSystemName) {
         dbgField = new Field2d();
-        tableName = "VisionSystemSim-" + visionSystemName;
+        String tableName = "VisionSystemSim-" + visionSystemName;
         SmartDashboard.putData(tableName + "/Sim Field", dbgField);
     }
 
@@ -88,7 +86,7 @@ public class VisionSystemSim {
         return Optional.ofNullable(camSimMap.get(name));
     }
 
-    /** Get all of the simulated cameras. */
+    /** Get all the simulated cameras. */
     public Collection<PhotonCameraSim> getCameraSims() {
         return camSimMap.values();
     }
@@ -244,7 +242,10 @@ public class VisionSystemSim {
      * @param targets Targets to add to the simulated field
      */
     public void addVisionTargets(String type, VisionTargetSim... targets) {
-        if (targetSets.get(type) == null) targetSets.put(type, new HashSet<>());
+        targetSets.computeIfAbsent(
+                type,
+                k -> new HashSet<>()
+        );
         for (var tgt : targets) {
             targetSets.get(type).add(tgt);
         }
@@ -372,7 +373,7 @@ public class VisionSystemSim {
         if (visibleTargets.size() != 0) {
             dbgField
                     .getObject("visibleTargetPoses")
-                    .setPoses(visibleTargets.stream().map(p -> p.toPose2d()).collect(Collectors.toList()));
+                    .setPoses(visibleTargets.stream().map(Pose3d::toPose2d).collect(Collectors.toList()));
         }
         if (cameraPose2ds.size() != 0) dbgField.getObject("cameras").setPoses(cameraPose2ds);
     }

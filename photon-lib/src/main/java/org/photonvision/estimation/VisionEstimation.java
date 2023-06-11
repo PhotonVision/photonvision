@@ -34,6 +34,7 @@ import edu.wpi.first.math.numbers.*;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
@@ -47,10 +48,12 @@ public class VisionEstimation {
                         t -> {
                             int id = t.getFiducialId();
                             var maybePose = tagLayout.getTagPose(id);
-                            if (maybePose.isEmpty()) return null;
-                            else return new AprilTag(id, maybePose.get());
+                            return maybePose.map(pose3d -> new AprilTag(
+                                    id,
+                                    pose3d
+                            )).orElse(null);
                         })
-                .filter(t -> t != null)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 

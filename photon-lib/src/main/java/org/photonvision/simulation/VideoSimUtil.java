@@ -89,7 +89,7 @@ public class VideoSimUtil {
      *
      * @param size Size of image
      */
-    public static final Point[] getImageCorners(Size size) {
+    public static Point[] getImageCorners(Size size) {
         return new Point[] {
             new Point(-0.5, -0.5),
             new Point(size.width - 0.5, -0.5),
