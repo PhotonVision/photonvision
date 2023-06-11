@@ -152,10 +152,7 @@ public class PhotonCamera implements AutoCloseable {
 
         m_topicNameSubscriber =
                 new MultiSubscriber(
-                        instance,
-                        new String[] {"/photonvision/"},
-                        PubSubOption.topicsOnly(true)
-                );
+                        instance, new String[] {"/photonvision/"}, PubSubOption.topicsOnly(true));
     }
 
     /**

@@ -242,10 +242,7 @@ public class VisionSystemSim {
      * @param targets Targets to add to the simulated field
      */
     public void addVisionTargets(String type, VisionTargetSim... targets) {
-        targetSets.computeIfAbsent(
-                type,
-                k -> new HashSet<>()
-        );
+        targetSets.computeIfAbsent(type, k -> new HashSet<>());
         for (var tgt : targets) {
             targetSets.get(type).add(tgt);
         }

@@ -48,10 +48,7 @@ public class VisionEstimation {
                         t -> {
                             int id = t.getFiducialId();
                             var maybePose = tagLayout.getTagPose(id);
-                            return maybePose.map(pose3d -> new AprilTag(
-                                    id,
-                                    pose3d
-                            )).orElse(null);
+                            return maybePose.map(pose3d -> new AprilTag(id, pose3d)).orElse(null);
                         })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());

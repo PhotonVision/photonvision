@@ -202,15 +202,13 @@ public class PhotonCameraSim implements AutoCloseable {
     public boolean canSeeTargetPose(Pose3d camPose, VisionTargetSim target) {
         var rel = new CameraTargetRelation(camPose, target.getPose());
         return (
-                // target translation is outside of camera's FOV
-                (Math.abs(rel.camToTargYaw.getDegrees()) < prop.getHorizFOV().getDegrees() / 2)
-                        && (Math.abs(rel.camToTargPitch.getDegrees()) < prop.getVertFOV().getDegrees() / 2)
-                        &&
-                        // camera is behind planar target and it should be occluded
-                        (!target.getModel().isPlanar || Math.abs(rel.targToCamAngle.getDegrees()) < 90)
-                        &&
-                        // target is too far
-                        (rel.camToTarg.getTranslation().getNorm() <= maxSightRangeMeters));
+        // target translation is outside of camera's FOV
+        (Math.abs(rel.camToTargYaw.getDegrees()) < prop.getHorizFOV().getDegrees() / 2)
+                && (Math.abs(rel.camToTargPitch.getDegrees()) < prop.getVertFOV().getDegrees() / 2)
+                && (!target.getModel().isPlanar
+                        || Math.abs(rel.targToCamAngle.getDegrees())
+                                < 90) // camera is behind planar target and it should be occluded
+                && (rel.camToTarg.getTranslation().getNorm() <= maxSightRangeMeters)); // target is too far
     }
 
     /**
@@ -337,10 +335,7 @@ public class PhotonCameraSim implements AutoCloseable {
                             prop.getIntrinsics(), prop.getDistCoeffs(), cameraPose, fieldCorners);
             // save visible tags for stream simulation
             if (tgt.fiducialID >= 0) {
-                visibleTags.add(new Pair<>(
-                        tgt.fiducialID,
-                        targetCorners
-                ));
+                visibleTags.add(new Pair<>(tgt.fiducialID, targetCorners));
             }
             // estimate pixel noise
             var noisyTargetCorners = prop.estPixelNoise(targetCorners);
