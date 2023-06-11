@@ -374,7 +374,7 @@ public class PhotonPoseEstimator {
 
         boolean hasCalibData = cameraMatrixOpt.isPresent() && distCoeffsOpt.isPresent();
 
-        if(!hasCalibData) {
+        if (!hasCalibData) {
             return Optional.empty();
         }
 
@@ -394,7 +394,8 @@ public class PhotonPoseEstimator {
         }
 
         var pnpResults =
-                VisionEstimation.estimateCamPosePNP(cameraMatrixOpt.get(), distCoeffsOpt.get(), visCorners, knownVisTags);
+                VisionEstimation.estimateCamPosePNP(
+                        cameraMatrixOpt.get(), distCoeffsOpt.get(), visCorners, knownVisTags);
         var best =
                 new Pose3d()
                         .plus(pnpResults.best) // field-to-camera
@@ -480,16 +481,16 @@ public class PhotonPoseEstimator {
                     Math.abs(
                             robotToCamera.getZ()
                                     - targetPosition
-                                    .get()
-                                    .transformBy(target.getAlternateCameraToTarget().inverse())
-                                    .getZ());
+                                            .get()
+                                            .transformBy(target.getAlternateCameraToTarget().inverse())
+                                            .getZ());
             double bestTransformDelta =
                     Math.abs(
                             robotToCamera.getZ()
                                     - targetPosition
-                                    .get()
-                                    .transformBy(target.getBestCameraToTarget().inverse())
-                                    .getZ());
+                                            .get()
+                                            .transformBy(target.getBestCameraToTarget().inverse())
+                                            .getZ());
 
             if (alternateTransformDelta < smallestHeightDifference) {
                 smallestHeightDifference = alternateTransformDelta;
