@@ -98,11 +98,24 @@ public class ConfigManager {
             if (!maybeCams.canWrite()) {
                 maybeCams.setWritable(true);
             }
+
             try {
                 Files.move(maybeCams.toPath(), maybeCamsBak.toPath(), StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                logger.error("Exception moving cameras to cameras_bak!", e);
+
+                // Try to just copy from cams to cams-bak instead of moving? Windows sometimes needs us to do that
+                try {
+                    org.apache.commons.io.FileUtils.copyDirectory(maybeCams, maybeCamsBak);
+                } catch (IOException e1) {
+                    // So we can't move to cams_bak, and we can't copy and delete either? We just have to give up here on preserving the old folder
+                    logger.error("Exception while backup-copying cameras to cameras_bak!", e);
+                    e1.printStackTrace();
+                }
+
+                // So we can't save the old config, and we couldn't copy the folder
+                // But we've loaded the config. So just try to delete the directory so we don't try to load form it next time. That does mean we have no backup recourse, tho
+                if (maybeCams.exists()) FileUtils.deleteDirectory(maybeCams.toPath());
             }
 
             // Save the same config out using SQL loader
