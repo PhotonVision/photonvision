@@ -323,7 +323,7 @@
       >
         <template>
           <CVimage
-            :id="cameras-cal"
+            :id="'cameras-cal'"
             :idx="1"
             :disconnected="!$store.state.backendConnected"
             scale="100"
