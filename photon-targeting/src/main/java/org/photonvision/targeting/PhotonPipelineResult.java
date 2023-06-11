@@ -35,7 +35,7 @@ public class PhotonPipelineResult {
     private double timestampSeconds = -1;
 
     // Multi-tag result
-    PNPResults multiTagResult = new PNPResults();
+    private PNPResults multiTagResult = new PNPResults();
 
     /** Constructs an empty pipeline result. */
     public PhotonPipelineResult() {}
@@ -58,7 +58,8 @@ public class PhotonPipelineResult {
      * @param targets The list of targets identified by the pipeline.
      * @param multiTagResult Result from multi-target PNP.
      */
-    public PhotonPipelineResult(double latencyMillis, List<PhotonTrackedTarget> targets, PNPResults results) {
+    public PhotonPipelineResult(
+            double latencyMillis, List<PhotonTrackedTarget> targets, PNPResults results) {
         this.latencyMillis = latencyMillis;
         this.targets.addAll(targets);
         this.multiTagResult = results;
@@ -70,7 +71,10 @@ public class PhotonPipelineResult {
      * @return The size of the packet needed to store this pipeline result.
      */
     public int getPacketSize() {
-        return targets.size() * PhotonTrackedTarget.PACK_SIZE_BYTES + 8 + 2 + PNPResults.PACK_SIZE_BYTES;
+        return targets.size() * PhotonTrackedTarget.PACK_SIZE_BYTES
+                + 8
+                + 2
+                + PNPResults.PACK_SIZE_BYTES;
     }
 
     /**
@@ -136,6 +140,14 @@ public class PhotonPipelineResult {
      */
     public List<PhotonTrackedTarget> getTargets() {
         return new ArrayList<>(targets);
+    }
+
+    /**
+     * Return the latest mulit-target result. Be sure to check PNPResults::isPresent before using the
+     * pose estimate!
+     */
+    public PNPResults getMultiTagPnpResults() {
+        return multiTagResult;
     }
 
     /**

@@ -17,37 +17,30 @@
 
 package org.photonvision.targeting;
 
+import edu.wpi.first.math.geometry.Transform3d;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.utils.PacketUtils;
 
-import edu.wpi.first.math.geometry.Transform3d;
-
 /**
- * The best estimated transformation from solvePnP, and possibly an alternate
- * transformation
- * depending on the solvePNP method. If an alternate solution is present, the
- * ambiguity value
- * represents the ratio of reprojection error in the best solution to the
- * alternate (best /
+ * The best estimated transformation from solvePnP, and possibly an alternate transformation
+ * depending on the solvePNP method. If an alternate solution is present, the ambiguity value
+ * represents the ratio of reprojection error in the best solution to the alternate (best /
  * alternate).
  *
- * <p>
- * Note that the coordinate frame of these transforms depends on the
- * implementing solvePnP
+ * <p>Note that the coordinate frame of these transforms depends on the implementing solvePnP
  * method.
  */
 public class PNPResults {
     // Imitate optional by having a valid check
     public final boolean isPresent;
-    
+
     // Best transform. Coordinate frame depends on where this result comes from
     public final Transform3d best;
     // Reprojection error of this solution, in pixels
     public final double bestReprojErr;
 
     /**
-     * Alternate, ambiguous solution from solvepnp. If no alternate solution is
-     * found, this is equal
+     * Alternate, ambiguous solution from solvepnp. If no alternate solution is found, this is equal
      * to the best solution.
      */
     public final Transform3d alt;

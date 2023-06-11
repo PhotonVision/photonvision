@@ -1,11 +1,27 @@
-package org.photonvision.utils;
+/*
+ * Copyright (C) Photon Vision.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
-import org.photonvision.common.dataflow.structures.Packet;
+package org.photonvision.utils;
 
 import edu.wpi.first.math.geometry.Quaternion;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import org.photonvision.common.dataflow.structures.Packet;
 
 public class PacketUtils {
     public static Transform3d decodeTransform(Packet packet) {
@@ -30,5 +46,4 @@ public class PacketUtils {
         packet.encode(transform.getRotation().getQuaternion().getY());
         packet.encode(transform.getRotation().getQuaternion().getZ());
     }
-
 }

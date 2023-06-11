@@ -34,7 +34,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.photonvision.targeting.PNPResults;
 import org.photonvision.targeting.TargetCorner;
 

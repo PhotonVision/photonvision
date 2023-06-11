@@ -18,7 +18,6 @@
 package org.photonvision.vision.pipeline;
 
 import java.util.List;
-
 import org.photonvision.targeting.PNPResults;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;

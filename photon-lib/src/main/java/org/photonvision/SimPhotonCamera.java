@@ -135,7 +135,8 @@ public class SimPhotonCamera {
             targetList.sort(sortMode.getComparator());
         }
 
-        PhotonPipelineResult newResult = new PhotonPipelineResult(latencyMillis, targetList, new PNPResults());
+        PhotonPipelineResult newResult =
+                new PhotonPipelineResult(latencyMillis, targetList, new PNPResults());
         var newPacket = new Packet(newResult.getPacketSize());
         newResult.populatePacket(newPacket);
         ts.rawBytesEntry.set(newPacket.getData());

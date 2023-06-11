@@ -225,7 +225,7 @@ public class OutputStreamPipeline {
                 sumPipeNanosElapsed,
                 fps, // Unused but here just in case
                 targetsToDraw,
-                new PNPResults(), 
+                new PNPResults(),
                 inputAndOutputFrame);
     }
 }

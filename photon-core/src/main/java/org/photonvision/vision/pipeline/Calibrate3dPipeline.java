@@ -147,7 +147,7 @@ public class Calibrate3dPipeline
                 sumPipeNanosElapsed,
                 fps, // Unused but here in case
                 Collections.emptyList(),
-                new PNPResults(), 
+                new PNPResults(),
                 new Frame(
                         new CVMat(), outputColorCVMat, FrameThresholdType.NONE, frame.frameStaticProperties));
     }

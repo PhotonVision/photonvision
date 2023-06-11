@@ -453,8 +453,10 @@ public final class OpenCVHelp {
      * <p>This method is intended for use with multiple targets and has no alternate solutions. There
      * must be at least 3 points.
      *
-     * @param cameraMatrix the camera intrinsics matrix in standard opencv form. Caller has to release this mat!
-     * @param distCoeffs the camera distortion matrix in standard opencv form. Caller has to release this mat!
+     * @param cameraMatrix the camera intrinsics matrix in standard opencv form. Caller has to release
+     *     this mat!
+     * @param distCoeffs the camera distortion matrix in standard opencv form. Caller has to release
+     *     this mat!
      * @param objectTrls The translations of the object corners, relative to the field.
      * @param imageCorners The projection of these 3d object points into the 2d camera image. The
      *     order should match the given object point translations.
