@@ -24,14 +24,12 @@
 
 package frc.robot;
 
-import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import frc.robot.Constants.FieldConstants;
+import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.Constants.VisionConstants;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -39,50 +37,39 @@ import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 public class PhotonCameraWrapper {
-    public PhotonCamera photonCamera;
-    public PhotonPoseEstimator photonPoseEstimator;
+    private PhotonCamera photonCamera;
+    private PhotonPoseEstimator photonPoseEstimator;
 
     public PhotonCameraWrapper() {
-        // Set up a test arena of two apriltags at the center of each driver station set
-        final AprilTag tag18 =
-                new AprilTag(
-                        18,
-                        new Pose3d(
-                                new Pose2d(
-                                        FieldConstants.length,
-                                        FieldConstants.width / 2.0,
-                                        Rotation2d.fromDegrees(180))));
-        final AprilTag tag01 =
-                new AprilTag(
-                        01,
-                        new Pose3d(new Pose2d(0.0, FieldConstants.width / 2.0, Rotation2d.fromDegrees(0.0))));
-        ArrayList<AprilTag> atList = new ArrayList<AprilTag>();
-        atList.add(tag18);
-        atList.add(tag01);
+        // Change the name of your camera here to whatever it is in the PhotonVision UI.
+        photonCamera = new PhotonCamera(VisionConstants.cameraName);
 
-        // TODO - once 2023 happens, replace this with just loading the 2023 field arrangement
-        AprilTagFieldLayout atfl =
-                new AprilTagFieldLayout(atList, FieldConstants.length, FieldConstants.width);
-
-        // Forward Camera
-        photonCamera =
-                new PhotonCamera(
-                        VisionConstants
-                                .cameraName); // Change the name of your camera here to whatever it is in the
-        // PhotonVision UI.
-
-        // Create pose estimator
-        photonPoseEstimator =
-                new PhotonPoseEstimator(
-                        atfl, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, photonCamera, VisionConstants.robotToCam);
+        try {
+            // Attempt to load the AprilTagFieldLayout that will tell us where the tags are on the field.
+            AprilTagFieldLayout fieldLayout = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
+            // Create pose estimator
+            photonPoseEstimator =
+                    new PhotonPoseEstimator(
+                            fieldLayout, PoseStrategy.MULTI_TAG_PNP, photonCamera, VisionConstants.robotToCam);
+            photonPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+        } catch (IOException e) {
+            // The AprilTagFieldLayout failed to load. We won't be able to estimate poses if we don't know
+            // where the tags are.
+            DriverStation.reportError("Failed to load AprilTagFieldLayout", e.getStackTrace());
+            photonPoseEstimator = null;
+        }
     }
 
     /**
      * @param estimatedRobotPose The current best guess at robot pose
-     * @return A pair of the fused camera observations to a single Pose2d on the field, and the time
-     *     of the observation. Assumes a planar field and the robot is always firmly on the ground
+     * @return an EstimatedRobotPose with an estimated pose, the timestamp, and targets used to create
+     *     the estimate
      */
     public Optional<EstimatedRobotPose> getEstimatedGlobalPose(Pose2d prevEstimatedRobotPose) {
+        if (photonPoseEstimator == null) {
+            // The field layout failed to load, so we cannot estimate poses.
+            return Optional.empty();
+        }
         photonPoseEstimator.setReferencePose(prevEstimatedRobotPose);
         return photonPoseEstimator.update();
     }

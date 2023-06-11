@@ -64,6 +64,8 @@ public class ConfigManager {
     private long saveRequestTimestamp = -1;
     private Thread settingsSaveThread;
 
+    private static final Object m_settingsMutex = new Object();
+
     public static ConfigManager getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new ConfigManager(getRootFolder());
@@ -110,185 +112,188 @@ public class ConfigManager {
     }
 
     public void load() {
-        logger.info("Loading settings...");
-        if (!configDirectoryFile.exists()) {
-            if (configDirectoryFile.mkdirs()) {
-                logger.debug("Root config folder did not exist. Created!");
-            } else {
-                logger.error("Failed to create root config folder!");
+        synchronized (m_settingsMutex) {
+            logger.info("Loading settings...");
+            if (!configDirectoryFile.exists()) {
+                if (configDirectoryFile.mkdirs()) {
+                    logger.debug("Root config folder did not exist. Created!");
+                } else {
+                    logger.error("Failed to create root config folder!");
+                }
             }
-        }
-        if (!configDirectoryFile.canWrite()) {
-            logger.debug("Making root dir writeable...");
-            try {
-                var success = configDirectoryFile.setWritable(true);
-                if (success) logger.debug("Set root dir writeable!");
-                else logger.error("Could not make root dir writeable!");
-            } catch (SecurityException e) {
-                logger.error("Could not make root dir writeable!", e);
+            if (!configDirectoryFile.canWrite()) {
+                logger.debug("Making root dir writeable...");
+                try {
+                    var success = configDirectoryFile.setWritable(true);
+                    if (success) logger.debug("Set root dir writeable!");
+                    else logger.error("Could not make root dir writeable!");
+                } catch (SecurityException e) {
+                    logger.error("Could not make root dir writeable!", e);
+                }
             }
-        }
 
-        HardwareConfig hardwareConfig;
-        HardwareSettings hardwareSettings;
-        NetworkConfig networkConfig;
-        AprilTagFieldLayout atfl = null;
+            HardwareConfig hardwareConfig;
+            HardwareSettings hardwareSettings;
+            NetworkConfig networkConfig;
+            AprilTagFieldLayout atfl = null;
 
-        if (hardwareConfigFile.exists()) {
-            try {
-                hardwareConfig =
-                        JacksonUtils.deserialize(hardwareConfigFile.toPath(), HardwareConfig.class);
-                if (hardwareConfig == null) {
+            if (hardwareConfigFile.exists()) {
+                try {
+                    hardwareConfig =
+                            JacksonUtils.deserialize(hardwareConfigFile.toPath(), HardwareConfig.class);
+                    if (hardwareConfig == null) {
+                        logger.error("Could not deserialize hardware config! Loading defaults");
+                        hardwareConfig = new HardwareConfig();
+                    }
+                } catch (IOException e) {
                     logger.error("Could not deserialize hardware config! Loading defaults");
                     hardwareConfig = new HardwareConfig();
                 }
-            } catch (IOException e) {
-                logger.error("Could not deserialize hardware config! Loading defaults");
+            } else {
+                logger.info("Hardware config does not exist! Loading defaults");
                 hardwareConfig = new HardwareConfig();
             }
-        } else {
-            logger.info("Hardware config does not exist! Loading defaults");
-            hardwareConfig = new HardwareConfig();
-        }
 
-        if (hardwareSettingsFile.exists()) {
-            try {
-                hardwareSettings =
-                        JacksonUtils.deserialize(hardwareSettingsFile.toPath(), HardwareSettings.class);
-                if (hardwareSettings == null) {
+            if (hardwareSettingsFile.exists()) {
+                try {
+                    hardwareSettings =
+                            JacksonUtils.deserialize(hardwareSettingsFile.toPath(), HardwareSettings.class);
+                    if (hardwareSettings == null) {
+                        logger.error("Could not deserialize hardware settings! Loading defaults");
+                        hardwareSettings = new HardwareSettings();
+                    }
+                } catch (IOException e) {
                     logger.error("Could not deserialize hardware settings! Loading defaults");
                     hardwareSettings = new HardwareSettings();
                 }
-            } catch (IOException e) {
-                logger.error("Could not deserialize hardware settings! Loading defaults");
+            } else {
+                logger.info("Hardware settings does not exist! Loading defaults");
                 hardwareSettings = new HardwareSettings();
             }
-        } else {
-            logger.info("Hardware settings does not exist! Loading defaults");
-            hardwareSettings = new HardwareSettings();
-        }
 
-        if (networkConfigFile.exists()) {
-            try {
-                networkConfig = JacksonUtils.deserialize(networkConfigFile.toPath(), NetworkConfig.class);
-                if (networkConfig == null) {
+            if (networkConfigFile.exists()) {
+                try {
+                    networkConfig = JacksonUtils.deserialize(networkConfigFile.toPath(), NetworkConfig.class);
+                    if (networkConfig == null) {
+                        logger.error("Could not deserialize network config! Loading defaults");
+                        networkConfig = new NetworkConfig();
+                    }
+                } catch (IOException e) {
                     logger.error("Could not deserialize network config! Loading defaults");
                     networkConfig = new NetworkConfig();
                 }
-            } catch (IOException e) {
-                logger.error("Could not deserialize network config! Loading defaults");
+            } else {
+                logger.info("Network config file does not exist! Loading defaults");
                 networkConfig = new NetworkConfig();
             }
-        } else {
-            logger.info("Network config file does not exist! Loading defaults");
-            networkConfig = new NetworkConfig();
-        }
 
-        if (apriltagFieldLayoutFile.exists()) {
-            try {
-                atfl = JacksonUtils.deserialize(apriltagFieldLayoutFile.toPath(), AprilTagFieldLayout.class);
-                if (atfl == null) {
+            if (apriltagFieldLayoutFile.exists()) {
+                try {
+                    atfl = JacksonUtils.deserialize(apriltagFieldLayoutFile.toPath(), AprilTagFieldLayout.class);
+                    if (atfl == null) {
+                        logger.error("Could not deserialize apriltag field layout!");
+                    }
+                } catch (IOException e) {
                     logger.error("Could not deserialize apriltag field layout!");
+                    atfl = null; // not required, nice to be explicit
                 }
-            } catch (IOException e) {
-                logger.error("Could not deserialize apriltag field layout!");
+            } else {
+                logger.info("Apriltag layout file not saved!");
                 atfl = null; // not required, nice to be explicit
             }
-        } else {
-            logger.info("Apriltag layout file not saved!");
-            atfl = null; // not required, nice to be explicit
-        }
-        if (atfl == null) {
-            logger.info("Loading default for 2023 field...");
-            try {
-                atfl = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
-            } catch (IOException e) {
-                logger.error("Error loading WPILib field", e);
-                atfl = null;
-            }
             if (atfl == null) {
-                // what do we even do here lmao -- wpilib should always work
-                logger.error("Field layout is *still* null??????");
+                logger.info("Loading default for 2023 field...");
+                try {
+                    atfl = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
+                } catch (IOException e) {
+                    logger.error("Error loading WPILib field", e);
+                    atfl = null;
+                }
+                if (atfl == null) {
+                    // what do we even do here lmao -- wpilib should always work
+                    logger.error("Field layout is *still* null??????");
+                }
             }
-        }
 
-        if (!camerasFolder.exists()) {
-            if (camerasFolder.mkdirs()) {
-                logger.debug("Cameras config folder did not exist. Created!");
-            } else {
-                logger.error("Failed to create cameras config folder!");
+            if (!camerasFolder.exists()) {
+                if (camerasFolder.mkdirs()) {
+                    logger.debug("Cameras config folder did not exist. Created!");
+                } else {
+                    logger.error("Failed to create cameras config folder!");
+                }
             }
+
+            HashMap<String, CameraConfiguration> cameraConfigurations = loadCameraConfigs();
+
+            this.config =
+                    new PhotonConfiguration(
+                            hardwareConfig, hardwareSettings, networkConfig, atfl, cameraConfigurations);
         }
-
-        HashMap<String, CameraConfiguration> cameraConfigurations = loadCameraConfigs();
-
-        this.config =
-                new PhotonConfiguration(
-                        hardwareConfig, hardwareSettings, networkConfig, atfl, cameraConfigurations);
     }
 
     public void saveToDisk() {
-        // Delete old configs
-        FileUtils.deleteDirectory(camerasFolder.toPath());
+        synchronized (m_settingsMutex) {
+            // Delete old configs
+            FileUtils.deleteDirectory(camerasFolder.toPath());
 
-        try {
-            JacksonUtils.serialize(networkConfigFile.toPath(), config.getNetworkConfig());
-        } catch (IOException e) {
-            logger.error("Could not save network config!", e);
-        }
-
-        try {
-            JacksonUtils.serialize(hardwareSettingsFile.toPath(), config.getHardwareSettings());
-        } catch (IOException e) {
-            logger.error("Could not save hardware config!", e);
-        }
-
-        try {
-            JacksonUtils.serialize(apriltagFieldLayoutFile.toPath(), config.getApriltagFieldLayout());
-        } catch (IOException e) {
-            logger.error("Could not save AprilTag Field Layout!", e);
-        }
-
-        // save all of our cameras
-        var cameraConfigMap = config.getCameraConfigurations();
-        for (var subdirName : cameraConfigMap.keySet()) {
-            var camConfig = cameraConfigMap.get(subdirName);
-            var subdir = Path.of(camerasFolder.toPath().toString(), subdirName);
-
-            if (!subdir.toFile().exists()) {
-                // TODO: check for error
-                subdir.toFile().mkdirs();
+            try {
+                JacksonUtils.serialize(networkConfigFile.toPath(), config.getNetworkConfig());
+            } catch (IOException e) {
+                logger.error("Could not save network config!", e);
+            }
+            try {
+                JacksonUtils.serialize(hardwareSettingsFile.toPath(), config.getHardwareSettings());
+            } catch (IOException e) {
+                logger.error("Could not save hardware config!", e);
             }
 
             try {
-                JacksonUtils.serialize(Path.of(subdir.toString(), "config.json"), camConfig);
+                JacksonUtils.serialize(apriltagFieldLayoutFile.toPath(), config.getApriltagFieldLayout());
             } catch (IOException e) {
-                logger.error("Could not save config.json for " + subdir, e);
+                logger.error("Could not save AprilTag Field Layout!", e);
             }
 
-            try {
-                JacksonUtils.serialize(
-                        Path.of(subdir.toString(), "drivermode.json"), camConfig.driveModeSettings);
-            } catch (IOException e) {
-                logger.error("Could not save drivermode.json for " + subdir, e);
-            }
+            // save all of our cameras
+            var cameraConfigMap = config.getCameraConfigurations();
+            for (var subdirName : cameraConfigMap.keySet()) {
+                var camConfig = cameraConfigMap.get(subdirName);
+                var subdir = Path.of(camerasFolder.toPath().toString(), subdirName);
 
-            for (var pipe : camConfig.pipelineSettings) {
-                var pipePath = Path.of(subdir.toString(), "pipelines", pipe.pipelineNickname + ".json");
-
-                if (!pipePath.getParent().toFile().exists()) {
+                if (!subdir.toFile().exists()) {
                     // TODO: check for error
-                    pipePath.getParent().toFile().mkdirs();
+                    subdir.toFile().mkdirs();
                 }
 
                 try {
-                    JacksonUtils.serialize(pipePath, pipe);
+                    JacksonUtils.serialize(Path.of(subdir.toString(), "config.json"), camConfig);
                 } catch (IOException e) {
-                    logger.error("Could not save " + pipe.pipelineNickname + ".json!", e);
+                    logger.error("Could not save config.json for " + subdir, e);
+                }
+
+                try {
+                    JacksonUtils.serialize(
+                            Path.of(subdir.toString(), "drivermode.json"), camConfig.driveModeSettings);
+                } catch (IOException e) {
+                    logger.error("Could not save drivermode.json for " + subdir, e);
+                }
+
+                for (var pipe : camConfig.pipelineSettings) {
+                    var pipePath = Path.of(subdir.toString(), "pipelines", pipe.pipelineNickname + ".json");
+
+                    if (!pipePath.getParent().toFile().exists()) {
+                        // TODO: check for error
+                        pipePath.getParent().toFile().mkdirs();
+                    }
+
+                    try {
+                        JacksonUtils.serialize(pipePath, pipe);
+                    } catch (IOException e) {
+                        logger.error("Could not save " + pipe.pipelineNickname + ".json!", e);
+                    }
                 }
             }
+            logger.info("Settings saved!");
         }
-        logger.info("Settings saved!");
     }
 
     private HashMap<String, CameraConfiguration> loadCameraConfigs() {

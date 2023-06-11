@@ -74,7 +74,10 @@ PhotonCamera::PhotonCamera(const std::string_view cameraName)
     : PhotonCamera(nt::NetworkTableInstance::GetDefault(), cameraName) {}
 
 PhotonPipelineResult PhotonCamera::GetLatestResult() {
-  if (test) return testResult;
+  if (test) {
+    return testResult;
+  }
+
   // Prints warning if not connected
   VerifyVersion();
 

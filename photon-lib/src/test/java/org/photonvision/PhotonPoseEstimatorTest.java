@@ -25,6 +25,8 @@
 package org.photonvision;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -384,6 +386,7 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
+        cameraOne.result.setTimestampSeconds(1);
 
         PhotonPoseEstimator estimator =
                 new PhotonPoseEstimator(
@@ -467,6 +470,71 @@ class PhotonPoseEstimatorTest {
         assertEquals(.9, pose.getX(), .01);
         assertEquals(1.1, pose.getY(), .01);
         assertEquals(1, pose.getZ(), .01);
+    }
+
+    @Test
+    void cacheIsInvalidated() {
+        PhotonCameraInjector cameraOne = new PhotonCameraInjector();
+        var result =
+                new PhotonPipelineResult(
+                        2,
+                        List.of(
+                                new PhotonTrackedTarget(
+                                        3.0,
+                                        -4.0,
+                                        9.0,
+                                        4.0,
+                                        0,
+                                        new Transform3d(new Translation3d(2, 2, 2), new Rotation3d()),
+                                        new Transform3d(new Translation3d(1, 1, 1), new Rotation3d()),
+                                        0.7,
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)))));
+        result.setTimestampSeconds(20);
+
+        PhotonPoseEstimator estimator =
+                new PhotonPoseEstimator(
+                        aprilTags,
+                        PoseStrategy.AVERAGE_BEST_TARGETS,
+                        cameraOne,
+                        new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
+
+        // Empty result, expect empty result
+        cameraOne.result = new PhotonPipelineResult();
+        cameraOne.result.setTimestampSeconds(1);
+        Optional<EstimatedRobotPose> estimatedPose = estimator.update();
+        assertFalse(estimatedPose.isPresent());
+
+        // Set actual result
+        cameraOne.result = result;
+        estimatedPose = estimator.update();
+        assertTrue(estimatedPose.isPresent());
+        assertEquals(20, estimatedPose.get().timestampSeconds, .01);
+        assertEquals(20, estimator.poseCacheTimestampSeconds);
+
+        // And again -- pose cache should mean this is empty
+        cameraOne.result = result;
+        estimatedPose = estimator.update();
+        assertFalse(estimatedPose.isPresent());
+        // Expect the old timestamp to still be here
+        assertEquals(20, estimator.poseCacheTimestampSeconds);
+
+        // Set new field layout -- right after, the pose cache timestamp should be -1
+        estimator.setFieldTags(new AprilTagFieldLayout(List.of(new AprilTag(0, new Pose3d())), 0, 0));
+        assertEquals(-1, estimator.poseCacheTimestampSeconds);
+        // Update should cache the current timestamp (20) again
+        cameraOne.result = result;
+        estimatedPose = estimator.update();
+        assertEquals(20, estimatedPose.get().timestampSeconds, .01);
+        assertEquals(20, estimator.poseCacheTimestampSeconds);
     }
 
     @Test

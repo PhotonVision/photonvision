@@ -34,8 +34,8 @@
 #include "photonlib/PhotonPipelineResult.h"
 
 namespace cv {
-  class Mat;
-}
+class Mat;
+}  // namespace cv
 
 namespace photonlib {
 enum PoseStrategy {
@@ -54,8 +54,14 @@ struct EstimatedRobotPose {
    * the same timebase as the RoboRIO FPGA Timestamp */
   units::second_t timestamp;
 
-  EstimatedRobotPose(frc::Pose3d pose_, units::second_t time_)
-      : estimatedPose(pose_), timestamp(time_) {}
+  /** A list of the targets used to compute this pose */
+  wpi::SmallVector<PhotonTrackedTarget, 10> targetsUsed;
+
+  EstimatedRobotPose(frc::Pose3d pose_, units::second_t time_,
+                     std::span<const PhotonTrackedTarget> targets)
+      : estimatedPose(pose_),
+        timestamp(time_),
+        targetsUsed(targets.data(), targets.data() + targets.size()) {}
 };
 
 /**
@@ -103,7 +109,20 @@ class PhotonPoseEstimator {
    *
    * @param strategy the strategy to set
    */
-  inline void SetPoseStrategy(PoseStrategy strat) { strategy = strat; }
+  inline void SetPoseStrategy(PoseStrategy strat) {
+    if (strategy != strat) {
+      InvalidatePoseCache();
+    }
+    strategy = strat;
+  }
+
+  /**
+   * Set the Position Estimation Strategy used in multi-tag mode when
+   * only one tag can be seen. Must NOT be MULTI_TAG_PNP
+   *
+   * @param strategy the strategy to set
+   */
+  void SetMultiTagFallbackStrategy(PoseStrategy strategy);
 
   /**
    * Set the Position Estimation Strategy used in multi-tag mode when
@@ -127,6 +146,9 @@ class PhotonPoseEstimator {
    * @param referencePose the referencePose to set
    */
   inline void SetReferencePose(frc::Pose3d referencePose) {
+    if (this->referencePose != referencePose) {
+      InvalidatePoseCache();
+    }
     this->referencePose = referencePose;
   }
 
@@ -179,6 +201,10 @@ class PhotonPoseEstimator {
 
   frc::Pose3d lastPose;
   frc::Pose3d referencePose;
+
+  units::second_t poseCacheTimestamp;
+
+  inline void InvalidatePoseCache() { poseCacheTimestamp = -1_s; }
 
   std::optional<EstimatedRobotPose> Update(PhotonPipelineResult result,
                                            PoseStrategy strategy);

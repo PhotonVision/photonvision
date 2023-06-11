@@ -31,8 +31,9 @@ void Robot::RobotInit() {
   if constexpr (frc::RobotBase::IsSimulation()) {
     auto inst = nt::NetworkTableInstance::GetDefault();
     inst.StopServer();
-    // Change the IP address in the below function to the IP address you use to
-    // connect to the PhotonVision UI.
+    // set the NT server if simulating this code.
+    // "localhost" for photon on desktop, or "photonvision.local" or
+    // "[ip-address]" for coprocessor
     inst.SetServer("localhost");
     inst.StartClient4("Robot Simulation");
   }

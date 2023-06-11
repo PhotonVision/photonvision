@@ -38,6 +38,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.photonvision.estimation.VisionEstimation;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
@@ -62,17 +63,22 @@ public class PhotonPoseEstimator {
         /** Choose the Pose which is closest to the last pose calculated */
         CLOSEST_TO_LAST_POSE,
 
-        /** Choose the Pose with the lowest ambiguity. */
+        /** Return the average of the best target poses using ambiguity as weight. */
         AVERAGE_BEST_TARGETS,
+
+        /** Use all visible tags to compute a single pose estimate.. */
+        MULTI_TAG_PNP
     }
 
     private AprilTagFieldLayout fieldTags;
     private PoseStrategy primaryStrategy;
+    private PoseStrategy multiTagFallbackStrategy = PoseStrategy.LOWEST_AMBIGUITY;
     private final PhotonCamera camera;
     private Transform3d robotToCamera;
 
     private Pose3d lastPose;
     private Pose3d referencePose;
+    protected double poseCacheTimestampSeconds = -1;
     private final Set<Integer> reportedErrors = new HashSet<>();
 
     /**
@@ -83,9 +89,9 @@ public class PhotonPoseEstimator {
      *     href="https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#field-coordinate-system">Field
      *     Coordinate System</a>.
      * @param strategy The strategy it should use to determine the best pose.
-     * @param camera PhotonCameras and
-     * @param robotToCamera Transform3d from the center of the robot to the camera mount positions
-     *     (ie, robot ➔ camera) in the <a
+     * @param camera PhotonCamera
+     * @param robotToCamera Transform3d from the center of the robot to the camera mount position (ie,
+     *     robot ➔ camera) in the <a
      *     href="https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#robot-coordinate-system">Robot
      *     Coordinate System</a>.
      */
@@ -98,6 +104,17 @@ public class PhotonPoseEstimator {
         this.primaryStrategy = strategy;
         this.camera = camera;
         this.robotToCamera = robotToCamera;
+    }
+
+    /** Invalidates the pose cache. */
+    private void invalidatePoseCache() {
+        poseCacheTimestampSeconds = -1;
+    }
+
+    private void checkUpdate(Object oldObj, Object newObj) {
+        if (oldObj != newObj && oldObj != null && !oldObj.equals(newObj)) {
+            invalidatePoseCache();
+        }
     }
 
     /**
@@ -115,6 +132,7 @@ public class PhotonPoseEstimator {
      * @param fieldTags the AprilTagFieldLayout
      */
     public void setFieldTags(AprilTagFieldLayout fieldTags) {
+        checkUpdate(this.fieldTags, fieldTags);
         this.fieldTags = fieldTags;
     }
 
@@ -133,7 +151,24 @@ public class PhotonPoseEstimator {
      * @param strategy the strategy to set
      */
     public void setPrimaryStrategy(PoseStrategy strategy) {
+        checkUpdate(this.primaryStrategy, strategy);
         this.primaryStrategy = strategy;
+    }
+
+    /**
+     * Set the Position Estimation Strategy used in multi-tag mode when only one tag can be seen. Must
+     * NOT be MULTI_TAG_PNP
+     *
+     * @param strategy the strategy to set
+     */
+    public void setMultiTagFallbackStrategy(PoseStrategy strategy) {
+        checkUpdate(this.multiTagFallbackStrategy, strategy);
+        if (strategy == PoseStrategy.MULTI_TAG_PNP) {
+            DriverStation.reportWarning(
+                    "Fallback cannot be set to MULTI_TAG_PNP! Setting to lowest ambiguity", null);
+            strategy = PoseStrategy.LOWEST_AMBIGUITY;
+        }
+        this.multiTagFallbackStrategy = strategy;
     }
 
     /**
@@ -152,6 +187,7 @@ public class PhotonPoseEstimator {
      * @param referencePose the referencePose to set
      */
     public void setReferencePose(Pose3d referencePose) {
+        checkUpdate(this.referencePose, referencePose);
         this.referencePose = referencePose;
     }
 
@@ -162,7 +198,7 @@ public class PhotonPoseEstimator {
      * @param referencePose the referencePose to set
      */
     public void setReferencePose(Pose2d referencePose) {
-        this.referencePose = new Pose3d(referencePose);
+        setReferencePose(new Pose3d(referencePose));
     }
 
     /**
@@ -204,8 +240,8 @@ public class PhotonPoseEstimator {
      * Poll data from the configured cameras and update the estimated position of the robot. Returns
      * empty if there are no cameras set or no targets were found from the cameras.
      *
-     * @return an EstimatedRobotPose with an estimated pose, and information about the camera(s) and
-     *     pipeline results used to create the estimate
+     * @return an EstimatedRobotPose with an estimated pose, the timestamp, and targets used to create
+     *     the estimate
      */
     public Optional<EstimatedRobotPose> update() {
         if (camera == null) {
@@ -227,6 +263,22 @@ public class PhotonPoseEstimator {
      *     pipeline results used to create the estimate
      */
     public Optional<EstimatedRobotPose> update(PhotonPipelineResult cameraResult) {
+        // Time in the past -- give up, since the following if expects times > 0
+        if (cameraResult.getTimestampSeconds() < 0) {
+            return Optional.empty();
+        }
+
+        // If the pose cache timestamp was set, and the result is from the same timestamp, return an
+        // empty result
+        if (poseCacheTimestampSeconds > 0
+                && Math.abs(poseCacheTimestampSeconds - cameraResult.getTimestampSeconds()) < 1e-6) {
+            return Optional.empty();
+        }
+
+        // Remember the timestamp of the current result used
+        poseCacheTimestampSeconds = cameraResult.getTimestampSeconds();
+
+        // If no targets seen, trivial case -- return empty result
         if (!cameraResult.hasTargets()) {
             return Optional.empty();
         }
@@ -244,13 +296,18 @@ public class PhotonPoseEstimator {
             case CLOSEST_TO_CAMERA_HEIGHT:
                 estimatedPose = closestToCameraHeightStrategy(cameraResult);
                 break;
+            case CLOSEST_TO_REFERENCE_POSE:
+                estimatedPose = closestToReferencePoseStrategy(cameraResult, referencePose);
+                break;
             case CLOSEST_TO_LAST_POSE:
                 setReferencePose(lastPose);
-            case CLOSEST_TO_REFERENCE_POSE:
                 estimatedPose = closestToReferencePoseStrategy(cameraResult, referencePose);
                 break;
             case AVERAGE_BEST_TARGETS:
                 estimatedPose = averageBestTargetsStrategy(cameraResult);
+                break;
+            case MULTI_TAG_PNP:
+                estimatedPose = multiTagPNPStrategy(cameraResult);
                 break;
             default:
                 DriverStation.reportError(
@@ -263,6 +320,62 @@ public class PhotonPoseEstimator {
         }
 
         return estimatedPose;
+    }
+
+    private Optional<EstimatedRobotPose> multiTagPNPStrategy(PhotonPipelineResult result) {
+        // Arrays we need declared up front
+        var visCorners = new ArrayList<TargetCorner>();
+        var knownVisTags = new ArrayList<AprilTag>();
+        var fieldToCams = new ArrayList<Pose3d>();
+        var fieldToCamsAlt = new ArrayList<Pose3d>();
+
+        if (result.getTargets().size() < 2) {
+            // Run fallback strategy instead
+            return update(result, this.multiTagFallbackStrategy);
+        }
+
+        for (var target : result.getTargets()) {
+            visCorners.addAll(target.getDetectedCorners());
+
+            var tagPoseOpt = fieldTags.getTagPose(target.getFiducialId());
+            if (tagPoseOpt.isEmpty()) {
+                reportFiducialPoseError(target.getFiducialId());
+                continue;
+            }
+
+            var tagPose = tagPoseOpt.get();
+
+            // actual layout poses of visible tags -- not exposed, so have to recreate
+            knownVisTags.add(new AprilTag(target.getFiducialId(), tagPose));
+
+            fieldToCams.add(tagPose.transformBy(target.getBestCameraToTarget().inverse()));
+            fieldToCamsAlt.add(tagPose.transformBy(target.getAlternateCameraToTarget().inverse()));
+        }
+
+        var cameraMatrixOpt = camera.getCameraMatrix();
+        var distCoeffsOpt = camera.getDistCoeffs();
+        boolean hasCalibData = cameraMatrixOpt.isPresent() && distCoeffsOpt.isPresent();
+
+        // multi-target solvePNP
+        if (hasCalibData) {
+            var cameraMatrix = cameraMatrixOpt.get();
+            var distCoeffs = distCoeffsOpt.get();
+            var pnpResults =
+                    VisionEstimation.estimateCamPosePNP(cameraMatrix, distCoeffs, visCorners, knownVisTags);
+            var best =
+                    new Pose3d()
+                            .plus(pnpResults.best) // field-to-camera
+                            .plus(robotToCamera.inverse()); // field-to-robot
+            // var alt = new Pose3d()
+            // .plus(pnpResults.alt) // field-to-camera
+            // .plus(robotToCamera.inverse()); // field-to-robot
+
+            return Optional.of(
+                    new EstimatedRobotPose(best, result.getTimestampSeconds(), result.getTargets()));
+        } else {
+            // TODO fallback strategy? Should we just always do solvePNP?
+            return Optional.empty();
+        }
     }
 
     /**
