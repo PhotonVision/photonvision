@@ -8,7 +8,7 @@
         align="center"
         cols="12"
       >
-        <span class="white--text">Target Location</span>
+        <span class="white--text">Target Visualization</span>
       </v-col>
     </v-row>
     <v-row>
@@ -22,19 +22,17 @@
           style="width:100%;height:100%"
         />
       </v-col>
-      <v-row>
-        <v-col>
+      <v-row style="margin-bottom: 24px">
+        <v-col style="display: flex; justify-content: center">
           <v-btn
-            class="ml-10"
             color="secondary"
             @click="resetCamFirstPerson"
           >
             First Person
           </v-btn>
         </v-col>
-        <v-col>
+        <v-col style="display: flex; justify-content: center">
           <v-btn
-            class="ml-10"
             color="secondary"
             @click="resetCamThirdPerson"
           >
@@ -57,11 +55,13 @@ import {
   PerspectiveCamera,
   Quaternion,
   Scene,
-  TrackballControls,
   Vector3,
     Color,
   WebGLRenderer
-} from "three-full";
+} from "three";
+
+// This import conflicts with Three.js docs but is required for the build to succeed
+import { TrackballControls } from "three/examples/jsm/controls/TrackballControls"
 
 export default {
   name: "MiniMap",
@@ -138,7 +138,7 @@ export default {
     this.refFrameCues.push(camBody)
     this.refFrameCues.push(camLens)
 
-    var controls = new TrackballControls(
+    const controls = new TrackballControls(
         camera,
         renderer.domElement
     );
@@ -231,7 +231,7 @@ export default {
     },
 
     onWindowResize() {
-      var container = document.getElementById("MapContainer")
+      const container = document.getElementById("MapContainer");
       if(container){
         this.canvas.width = container.clientWidth * 0.95;
         this.canvas.height = container.clientWidth * 0.85;

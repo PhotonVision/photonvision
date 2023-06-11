@@ -1,75 +1,81 @@
 <template>
   <div>
     <v-container
-        class="pa-3"
-        fluid
+      class="pa-3"
+      fluid
     >
       <v-row
-          no-gutters
-          align="center"
-          justify="center"
+        no-gutters
+        align="center"
+        justify="center"
       >
         <v-col
-            cols="12"
-            :class="['pb-3 ', 'pr-lg-3']"
-            lg="8"
-            align-self="stretch"
+          cols="12"
+          :class="['pb-3 ', 'pr-lg-3']"
+          lg="8"
+          align-self="stretch"
         >
           <v-card
-              color="primary"
-              height="100%"
-              style="display: flex; flex-direction: column"
-              dark
+            color="primary"
+            height="100%"
+            style="display: flex; flex-direction: column"
+            dark
           >
             <v-card-title
-                class="pb-0 mb-0 pl-4 pt-1"
-                style="height: 15%; min-height: 50px;"
+              class="pb-0 mb-0 pl-4 pt-1"
+              style="min-height: 50px; justify-content: space-between; align-content: center"
             >
-              Cameras
-              <v-chip
-                  :class="fpsTooLow ? 'ml-2 mt-1' : 'mt-2'"
-                  x-small
+              <div class="pt-2">
+                <span class="mr-4">Cameras</span>
+                <v-chip
                   label
                   :color="fpsTooLow ? 'error' : 'transparent'"
-                  :text-color="fpsTooLow ? 'white' : 'grey'"
-              >
-                <span class="pr-1">Processing @ {{ Math.round($store.state.pipelineResults.fps) }}&nbsp;FPS &ndash;</span>
-                <span v-if="fpsTooLow && !$store.getters.currentPipelineSettings.inputShouldShow && $store.getters.pipelineType == 2">HSV thresholds are too broad; narrow them for better performance</span>
-                <span v-else-if="fpsTooLow && getters.currentCameraSettings.inputShouldShow">stop viewing the raw stream for better performance</span>
-                <span v-else>{{ Math.min(Math.round($store.state.pipelineResults.latency), 9999) }} ms latency</span>
-              </v-chip>
-              <v-switch
+                  :text-color="fpsTooLow ? '#C7EA46' : '#ff4d00'"
+                  style="font-size: 1rem; padding: 0; margin: 0"
+                >
+                  <span class="pr-1">Processing @ {{ Math.round($store.state.pipelineResults.fps) }}&nbsp;FPS &ndash;</span>
+                  <span v-if="fpsTooLow && !$store.getters.currentPipelineSettings.inputShouldShow && $store.getters.pipelineType === 2">HSV thresholds are too broad; narrow them for better performance</span>
+                  <span v-else-if="fpsTooLow && $store.getters.currentCameraSettings.inputShouldShow">stop viewing the raw stream for better performance</span>
+                  <span v-else>{{ Math.min(Math.round($store.state.pipelineResults.latency), 9999) }} ms latency</span>
+                </v-chip>
+              </div>
+              <div>
+                <v-switch
                   v-model="driverMode"
                   label="Driver Mode"
                   style="margin-left: auto;"
                   color="accent"
-              />
+                  class="pt-2"
+                />
+              </div>
             </v-card-title>
+            <v-divider />
             <v-row
-                align="center"
+              align="center"
+              class="pl-3 pr-3"
             >
               <v-col
-                  v-for="idx in (selectedOutputs instanceof Array ? selectedOutputs : [selectedOutputs])"
-                  :key="idx"
-                  cols="12"
-                  :md="selectedOutputs.length === 1 ? 12 : Math.floor(12 / selectedOutputs.length)"
-                  class="pb-0 pt-0"
-                  style="height: 100%;"
+                v-for="idx in (selectedOutputs instanceof Array ? selectedOutputs : [selectedOutputs])"
+                :key="idx"
+                cols="12"
+                :md="selectedOutputs.length === 1 ? 12 : Math.floor(12 / selectedOutputs.length)"
+                style="height: 100%;"
               >
                 <div style="position: relative; width: 100%; height: 100%;">
                   <cv-image
-                      :id="idx === 0 ? 'raw-stream' : 'processed-stream'"
-                      ref="streams"
-                      :idx=idx
-                      :disconnected="!$store.state.backendConnected"
-                      scale="100"
-                      :max-height="$store.getters.isDriverMode ? '40vh' : '300px'"
-                      :max-height-md="$store.getters.isDriverMode ? '50vh' : '380px'"
-                      :max-height-lg="$store.getters.isDriverMode ? '55vh' : '390px'"
-                      :max-height-xl="$store.getters.isDriverMode ? '60vh' : '450px'"
-                      :alt="idx === 0 ? 'Raw stream' : 'Processed stream'"
-                      :color-picking="$store.state.colorPicking && idx === 0"
-                      @click="onImageClick"
+                    :id="idx === 0 ? 'raw-stream' : 'processed-stream'"
+                    ref="streams"
+                    :idx="idx"
+                    :disconnected="!$store.state.backendConnected"
+                    scale="95"
+                    :max-height="$store.getters.isDriverMode ? '40vh' : '300px'"
+                    :max-height-md="$store.getters.isDriverMode ? '50vh' : '380px'"
+                    :max-height-lg="$store.getters.isDriverMode ? '55vh' : '390px'"
+                    :max-height-xl="$store.getters.isDriverMode ? '60vh' : '450px'"
+                    :alt="idx === 0 ? 'Raw stream' : 'Processed stream'"
+                    :color-picking="$store.state.colorPicking && idx === 0"
+                    style="padding-top: 22px;"
+                    @click="onImageClick"
                   />
                 </div>
               </v-col>
@@ -77,44 +83,44 @@
           </v-card>
         </v-col>
         <v-col
-            cols="12"
-            class="pb-3"
-            lg="4"
-            align-self="stretch"
+          cols="12"
+          class="pb-3"
+          lg="4"
+          style="display: flex; flex-direction: column"
         >
           <v-card
-              color="primary"
+            color="primary"
           >
             <camera-and-pipeline-select />
           </v-card>
           <v-card
-              :disabled="$store.getters.isDriverMode || $store.state.colorPicking"
-              class="mt-3"
-              color="primary"
+            :disabled="$store.getters.isDriverMode || $store.state.colorPicking"
+            class="mt-3"
+            color="primary"
           >
             <v-row
-                align="center"
-                class="pl-3 pr-3"
+              align="center"
+              class="pa-sm-3"
             >
               <v-col lg="12">
                 <p style="color: white;">
-                  Processing mode:
+                  Processing Mode
                 </p>
                 <v-btn-toggle
-                    v-model="processingMode"
-                    mandatory
-                    dark
-                    class="fill"
+                  v-model="processingMode"
+                  mandatory
+                  dark
+                  class="fill"
                 >
                   <v-btn
-                      color="secondary"
+                    color="secondary"
                   >
-                    <v-icon>mdi-crop-square</v-icon>
+                    <v-icon>mdi-square-outline</v-icon>
                     <span>2D</span>
                   </v-btn>
                   <v-btn
-                      color="secondary"
-                      @click="on3DClick"
+                    color="secondary"
+                    @click="on3DClick"
                   >
                     <v-icon>mdi-cube-outline</v-icon>
                     <span>3D</span>
@@ -123,25 +129,25 @@
               </v-col>
               <v-col lg="12">
                 <p style="color: white;">
-                  Stream display:
+                  Stream Display
                 </p>
                 <v-btn-toggle
-                    v-model="selectedOutputs"
-                    :multiple="$vuetify.breakpoint.mdAndUp"
-                    mandatory
-                    dark
-                    class="fill"
+                  v-model="selectedOutputs"
+                  :multiple="$vuetify.breakpoint.mdAndUp"
+                  mandatory
+                  dark
+                  class="fill"
                 >
                   <v-btn
-                      color="secondary"
-                      class="fill"
+                    color="secondary"
+                    class="fill"
                   >
                     <v-icon>mdi-import</v-icon>
                     <span>Raw</span>
                   </v-btn>
                   <v-btn
-                      color="secondary"
-                      class="fill"
+                    color="secondary"
+                    class="fill"
                   >
                     <v-icon>mdi-export</v-icon>
                     <span>Processed</span>
@@ -154,40 +160,40 @@
       </v-row>
       <v-row no-gutters>
         <v-col
-            v-for="(tabs, idx) in tabGroups"
-            :key="idx"
-            :cols="Math.floor(12 / tabGroups.length)"
-            :class="idx !== tabGroups.length - 1 ? 'pr-3' : ''"
-            align-self="stretch"
+          v-for="(tabs, idx) in tabGroups"
+          :key="idx"
+          :cols="Math.floor(12 / tabGroups.length)"
+          :class="idx !== tabGroups.length - 1 ? 'pr-3' : ''"
+          align-self="stretch"
         >
           <v-card
-              color="primary"
-              height="100%"
-              class="pr-4 pl-4"
+            color="primary"
+            height="100%"
+            class="pr-4 pl-4"
           >
             <v-tabs
-                v-if="!$store.getters.isDriverMode"
-                v-model="selectedTabs[idx]"
-                grow
-                background-color="primary"
-                dark
-                height="48"
-                slider-color="accent"
+              v-if="!$store.getters.isDriverMode"
+              v-model="selectedTabs[idx]"
+              grow
+              background-color="primary"
+              dark
+              height="48"
+              slider-color="accent"
             >
               <v-tab
-                  v-for="(tab, i) in tabs"
-                  :key="i"
+                v-for="(tab, i) in tabs"
+                :key="i"
               >
                 {{ tab.name }}
               </v-tab>
             </v-tabs>
-            <div class="pl-4 pr-4 pt-2">
+            <div class="pl-4 pr-4 pt-4 pb-2">
               <keep-alive>
                 <component
-                    :is="(tabs[selectedTabs[idx]] || tabs[0]).component"
-                    :ref="(tabs[selectedTabs[idx]] || tabs[0]).name"
-                    v-model="$store.getters.pipeline"
-                    @update="$emit('save')"
+                  :is="(tabs[selectedTabs[idx]] || tabs[0]).component"
+                  :ref="(tabs[selectedTabs[idx]] || tabs[0]).name"
+                  v-model="$store.getters.pipeline"
+                  @update="$emit('save')"
                 />
               </keep-alive>
             </div>
@@ -197,18 +203,18 @@
     </v-container>
 
     <v-snackbar
-        v-model="showNTWarning"
-        color="error"
-        timeout="-1"
-        top
+      v-model="showNTWarning"
+      color="error"
+      timeout="-1"
+      top
     >
       {{ $store.state.settings.networkSettings.runNTServer ?
         "NetworkTables server enabled! PhotonLib may not work." :
         "NetworkTables not connected! Are you on a network with a robot?" }}
       <template v-slot:action>
         <v-btn
-            text
-            @click="hideNTWarning = true"
+          text
+          @click="hideNTWarning = true"
         >
           Hide
         </v-btn>
@@ -216,12 +222,12 @@
     </v-snackbar>
 
     <v-dialog
-        v-model="dialog"
-        width="500"
+      v-model="dialog"
+      width="500"
     >
       <v-card
-          color="primary"
-          dark
+        color="primary"
+        dark
       >
         <v-card-title>
           Current resolution not calibrated
@@ -230,9 +236,9 @@
         <v-card-text>
           Because the current resolution {{ this.$store.getters.currentVideoFormat.width }} x {{ this.$store.getters.currentVideoFormat.height }} is not yet calibrated, 3D mode cannot be enabled. Please
           <a
-              href="/#/cameras"
-              class="white--text"
-              @click="$emit('switch-to-cameras')"
+            href="/#/cameras"
+            class="white--text"
+            @click="$emit('switch-to-cameras')"
           > visit the Cameras tab</a> to calibrate this resolution. For now, SolvePNP will do nothing.
         </v-card-text>
 
@@ -241,9 +247,9 @@
         <v-card-actions>
           <v-spacer />
           <v-btn
-              color="white"
-              text
-              @click="closeUncalibratedDialog"
+            color="white"
+            text
+            @click="closeUncalibratedDialog"
           >
             OK
           </v-btn>
@@ -372,15 +378,14 @@ export default {
           const group = ret[i];
 
           // All the tabs we allow
-          const filteredGroup = group.filter(it =>
+          ret[i] = group.filter(it =>
               !(!allow3d && it.name === "3D") //Filter out 3D tab any time 3D isn't calibrated
               && !((!allow3d || isAprilTag || isAruco) && it.name === "PnP") //Filter out the PnP config tab if 3D isn't available, or we're doing Apriltags
               && !((isAprilTag || isAruco) && (it.name === "Threshold")) //Filter out threshold tab if we're doing apriltags
-              && !((isAprilTag || isAruco)&& (it.name === "Contours")) //Filter out contours if we're doing Apriltag
+              && !((isAprilTag || isAruco) && (it.name === "Contours")) //Filter out contours if we're doing Apriltag
               && !(!isAprilTag && it.name === "AprilTag") //Filter out apriltag unless we actually are doing Apriltags
               && !(!isAruco && it.name === "Aruco")
           );
-          ret[i] = filteredGroup;
         }
 
         // One last filter to remove empty lists
@@ -408,7 +413,7 @@ export default {
       }
     },
     selectedOutputs: {
-      // All this logic exists to deal with the reality that the output select buttons sometimes need an array and sometimes need a number (depending on whether or not they're exclusive)
+      // All this logic exists to deal with the reality that the output select buttons sometimes need an array and sometimes need a number (depending on whether they're exclusive)
       get() {
         // We switch the selector to single-select only on sm-and-down size devices, so we have to return a Number instead of an Array in that state
         let ret = [];
@@ -445,11 +450,11 @@ export default {
     },
     fpsTooLow: {
       get() {
-        // For now we only show the FPS is too low warning when GPU acceleration is enabled, because we don't really trust the presented video modes otherwise
+        // For now, we only show the FPS is too low warning when GPU acceleration is enabled, because we don't really trust the presented video modes otherwise
         const currFPS = this.$store.state.pipelineResults.fps;
         const targetFPS = this.$store.getters.currentVideoFormat.fps;
         const driverMode = this.$store.getters.isDriverMode;
-        const gpuAccel = this.$store.state.settings.general.gpuAcceleration === true;
+        const gpuAccel = this.$store.state.settings.general.gpuAcceleration;
         const isReflective = this.$store.getters.pipelineType === 2;
 
         return (currFPS - targetFPS) < -5 && this.$store.state.pipelineResults.fps !== 0 && !driverMode && gpuAccel && isReflective;

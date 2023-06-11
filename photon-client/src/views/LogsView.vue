@@ -26,7 +26,6 @@
           :href="'http://' + this.$address + '/api/settings/photonvision-journalctl.txt'"
           download="photonvision-journalctl.txt"
         />
-
       </v-btn>
     </v-card-title>
     <div class="pr-6 pl-6">

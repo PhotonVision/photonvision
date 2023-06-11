@@ -4,7 +4,7 @@
       dense
       align="center"
     >
-      <v-col :cols="12 - (inputCols || 8)">
+      <v-col :cols="labelCols || (12 - (inputCols || 8))">
         <tooltipped-label
           :tooltip="tooltip"
           :text="name"
@@ -36,7 +36,7 @@
           TooltippedLabel
         },
         // eslint-disable-next-line vue/require-prop-types
-        props: ['name', 'value', 'disabled', 'errorMessage', 'inputCols', 'rules', 'tooltip'],
+        props: ['name', 'value', 'disabled', 'errorMessage', 'inputCols', 'labelCols', 'rules', 'tooltip'],
         data() {
             return {}
         },
