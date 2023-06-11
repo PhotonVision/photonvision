@@ -37,8 +37,8 @@ import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 public class PhotonCameraWrapper {
-    private PhotonCamera photonCamera;
-    private PhotonPoseEstimator photonPoseEstimator;
+    PhotonCamera photonCamera;
+    PhotonPoseEstimator photonPoseEstimator;
 
     public PhotonCameraWrapper() {
         // Change the name of your camera here to whatever it is in the PhotonVision UI.

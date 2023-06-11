@@ -141,7 +141,7 @@ public class Drivetrain {
             m_visionSystemSim = new VisionSystemSim(Constants.VisionConstants.cameraName);
             var cameraSim = new PhotonCameraSim(pcw.photonCamera, CameraProperties.PI4_LIFECAM_640_480());
             m_visionSystemSim.addCamera(cameraSim, Constants.VisionConstants.robotToCam);
-            m_visionSystemSim.addVisionTargets(pcw.atfl);
+            m_visionSystemSim.addVisionTargets(pcw.photonPoseEstimator.getFieldTags());
         }
     }
 
