@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022 PhotonVision
+ * Copyright (c) PhotonVision
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -154,6 +154,7 @@ public class VisionEstimation {
      */
     public static class SVDResults {
         public final RotTrlTransform3d trf;
+
         /** If the result is invalid, this value is -1 */
         public final double rmse;
 

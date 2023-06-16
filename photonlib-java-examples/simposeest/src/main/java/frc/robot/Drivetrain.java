@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022 PhotonVision
+ * Copyright (c) PhotonVision
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -130,7 +130,9 @@ public class Drivetrain {
         poseEst.resetToPose(pose, leftEncoder.getDistance(), rightEncoder.getDistance());
     }
 
-    /** @return The current best-guess at drivetrain Pose on the field. */
+    /**
+     * @return The current best-guess at drivetrain Pose on the field.
+     */
     public Pose2d getCtrlsPoseEstimate() {
         return poseEst.getPoseEst();
     }

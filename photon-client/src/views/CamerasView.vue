@@ -26,7 +26,7 @@
             <CVnumberinput
               v-model="cameraSettings.fov"
               :tooltip="cameraSettings.isFovConfigurable ? 'Field of view (in degrees) of the camera measured across the diagonal of the frame, in a video mode which covers the whole sensor area.' : 'This setting is managed by a vendor'"
-              name="Maximum diagonal FOV"
+              name="Maximum Diagonal FOV"
               :disabled="!cameraSettings.isFovConfigurable"
               :label-cols="$vuetify.breakpoint.mdAndUp ? undefined : 7"
             />
@@ -98,7 +98,7 @@
                   />
                   <CVnumberinput
                     v-model="boardWidth"
-                    name="Board width"
+                    name="Board Width"
                     tooltip="Width of the board in dots or chessboard squares"
                     :disabled="isCalibrating"
                     :rules="[v => (v >= 4) || 'Width must be at least 4']"
@@ -106,7 +106,7 @@
                   />
                   <CVnumberinput
                     v-model="boardHeight"
-                    name="Board height"
+                    name="Board Height"
                     tooltip="Height of the board in dots or chessboard squares"
                     :disabled="isCalibrating"
                     :rules="[v => (v >= 4) || 'Height must be at least 4']"
@@ -296,7 +296,7 @@
                   <v-icon left>
                     mdi-download
                   </v-icon>
-                  Download Target
+                  Download Calibration Target
                 </v-btn>
               </v-col>
               <v-col>
@@ -324,7 +324,7 @@
         <template>
           <CVimage
             :id="cameras-cal"
-            :idx=1
+            :idx="1"
             :disconnected="!$store.state.backendConnected"
             scale="100"
             style="border-radius: 5px;"
@@ -389,19 +389,23 @@
       </v-col>
     </v-row>
 
-    <!-- Special hidden upload input that gets 'clicked' when the user imports settings -->
+    <!-- Special hidden upload input that gets 'clicked' when the user imports calibdb data -->
     <input
       ref="importCalibrationFromCalibdb"
       type="file"
       accept=".json"
       style="display: none;"
       @change="readImportedCalibration"
-    />
+    >
 
-    <v-snackbar v-model="uploadSnack" top :color="uploadSnackData.color" timeout="-1">
+    <v-snackbar
+      v-model="uploadSnack"
+      top
+      :color="uploadSnackData.color"
+      timeout="-1"
+    >
       <span>{{ uploadSnackData.text }}</span>
     </v-snackbar>
-
   </div>
 </template>
 
@@ -474,7 +478,7 @@ export default {
         calibrationDivisors: {
           get() {
             return this.unfilteredStreamDivisors.filter(item => {
-              var res = this.stringResolutionList[this.selectedFilteredResIndex].split(" X ").map(it => parseInt(it));
+              const res = this.stringResolutionList[this.selectedFilteredResIndex].split(" X ").map(it => parseInt(it));
               console.log(res);
               console.log(item);
               // Realistically, we need more than 320x240, but lower than this is
@@ -603,57 +607,54 @@ export default {
         },
     },
     methods: {
+        readImportedCalibration(event) {
+            // let formData = new FormData();
+            // formData.append("zipData", event.target.files[0]);
+            const filename = event.target.files[0].name;
 
-    readImportedCalibration(event) {
-      // let formData = new FormData();
-      // formData.append("zipData", event.target.files[0]);
-      const filename = event.target.files[0].name;
-
-      event.target.files[0].text().then(fileText => {
-        const data = {
-          "cameraIndex": this.$store.getters.currentCameraIndex,
-          "payload": fileText,
-          "filename": filename,
-        };
-
-        this.axios
-          .post("http://" + this.$address + "/api/calibration/import", data, {
-            headers: { "Content-Type": "text/plain" },
-          })
-          .then(() => {
-            this.uploadSnackData = {
-              color: "success",
-              text:
-                "Calibration imported successfully!",
-            };
-            this.uploadSnack = true;
-          })
-          .catch((err) => {
-            if (err.response) {
-              this.uploadSnackData = {
-                color: "error",
-                text:
-                  "Error while uploading calibration file! Could not process provided file.",
+            event.target.files[0].text().then(fileText => {
+              const data = {
+                "cameraIndex": this.$store.getters.currentCameraIndex,
+                "payload": fileText,
+                "filename": filename,
               };
-            } else if (err.request) {
-              this.uploadSnackData = {
-                color: "error",
-                text:
-                  "Error while uploading calibration file! No respond to upload attempt.",
-              };
-            } else {
-              this.uploadSnackData = {
-                color: "error",
-                text: "Error while uploading calibration file!",
-              };
-            }
-            this.uploadSnack = true;
-          });
 
-        })
+              this.axios
+                .post("http://" + this.$address + "/api/calibration/import", data, {
+                  headers: { "Content-Type": "text/plain" },
+                })
+                .then(() => {
+                  this.uploadSnackData = {
+                    color: "success",
+                    text:
+                      "Calibration imported successfully!",
+                  };
+                  this.uploadSnack = true;
+                })
+                .catch((err) => {
+                  if (err.response) {
+                    this.uploadSnackData = {
+                      color: "error",
+                      text:
+                        "Error while uploading calibration file! Could not process provided file.",
+                    };
+                  } else if (err.request) {
+                    this.uploadSnackData = {
+                      color: "error",
+                      text:
+                        "Error while uploading calibration file! No respond to upload attempt.",
+                    };
+                  } else {
+                    this.uploadSnackData = {
+                      color: "error",
+                      text: "Error while uploading calibration file!",
+                    };
+                  }
+                  this.uploadSnack = true;
+                });
 
+              })
     },
-
         closeDialog() {
             this.snack = false;
             this.calibrationInProgress = false;
@@ -670,97 +671,83 @@ export default {
             return ret;
         },
         downloadBoard() {
-            // Generates a .pdf of a board for calibration and downloads it
+          const config = {
+            type: this.boardType === 0 ? "chessboard" : "dotgrid",
+            boardWidthIn: this.boardWidth,
+            boardHeightIn: this.boardHeight,
+            patternSpacingIn: this.squareSizeIn
+          }
 
-            //Murica paper.
-            var doc = new jsPDF({unit: 'in', format:'letter'});
-            var paper_x = 8.5;
-            var paper_y = 11.0;
+          const doc = new jsPDF({ unit: "in", format: "letter" })
 
-            //Load in custom fonts
-            console.log(doc.getFontList());
-            doc.setFont('Prompt-Regular');
-            doc.setFontSize(12);
+          doc.setFont("Prompt-Regular")
+          doc.setFontSize(12)
 
-            // Common Parameters
-            var num_x = this.boardWidth;
-            var num_y = this.boardHeight;
-            var patternSize = this.squareSizeIn;
-            var isCheckerboard = (this.boardType==0);
+          const paperWidth = 8.5
+          const paperHeight = 11.0
 
-            var x_coord = 0.0;
-            var y_coord = 0.0;
-            var x_idx = 0;
-            var y_idx = 0;
-            var start_x = 0;
-            var start_y = 0;
+          // Draw the selected pattern to the document
+          switch (config.type) {
+            case "chessboard":
+              // eslint-disable-next-line no-case-declarations
+              const chessboardStartX = (paperWidth - config.boardWidthIn * config.patternSpacingIn) / 2
+              // eslint-disable-next-line no-case-declarations
+              const chessboardStartY = (paperHeight - config.boardWidthIn * config.patternSpacingIn) / 2
 
-            var annotation = num_x + " x " + num_y + " | " + patternSize + "in "
+              for (let squareY = 0; squareY < config.boardHeightIn; squareY++) {
+                for (let squareX = 0; squareX < config.boardWidthIn; squareX++) {
+                  const xPos = chessboardStartX + squareX * config.patternSpacingIn
+                  const yPos = chessboardStartY + squareY * config.patternSpacingIn
 
-            if(isCheckerboard){
-              ///////////////////////////////////////////
-              // Checkerboard Pattern
-
-              start_x = paper_x/2.0 - (num_x * patternSize)/2.0;
-              start_y = paper_y/2.0 - (num_y * patternSize)/2.0;
-
-              for(y_idx = 0; y_idx < num_y; y_idx++){
-                for(x_idx = 0; x_idx < num_x; x_idx++){
-
-                  x_coord = start_x + x_idx * patternSize;
-                  y_coord = start_y + y_idx * patternSize;
-                  if((x_idx + y_idx) % 2 == 0){
-                    doc.rect(x_coord, y_coord, patternSize, patternSize, "F");
+                  // Only draw the odd squares to create the chessboard pattern
+                  if ((xPos + yPos + 0.25) % 2 === 0) {
+                    doc.rect(xPos, yPos, config.patternSpacingIn, config.patternSpacingIn, "F")
                   }
                 }
               }
+              break
+            case "dotgrid":
+              // eslint-disable-next-line no-case-declarations
+              const dotgridStartX = (paperWidth - (2 * (config.boardWidthIn - 1) + ((config.boardHeightIn - 1) % 2)) * config.patternSpacingIn) / 2.0
+              // eslint-disable-next-line no-case-declarations
+              const dotgridStartY = (paperHeight - (config.boardHeightIn - config.patternSpacingIn)) / 2
 
-            } else {
-              ///////////////////////////////////////////
-              // Assymetric Dot-Grid Pattern
-              // see https://github.com/opencv/opencv/blob/b450dd7a87bc69997a8417d94bdfb87427a9fe62/modules/calib3d/src/circlesgrid.cpp#L437
-              // as well as FindBoardCornersPipe.java's Dotboard implementation
+              for (let squareY = 0; squareY < config.boardHeightIn; squareY++) {
+                for (let squareX = 0; squareX < config.boardWidthIn; squareX++) {
+                  const xPos = dotgridStartX + (2 * squareX + (squareY % 2)) * config.patternSpacingIn
+                  const yPos = dotgridStartY + squareY * config.patternSpacingIn
 
-              start_x = paper_x/2.0 - ((2*(num_x-1) + (num_y-1) % 2) * patternSize)/2.0;
-              start_y = paper_y/2.0 - (num_y-1 * patternSize)/2.0;
-
-              // Dot Grid Pattern
-              for(y_idx = 0; y_idx < num_y; y_idx++){
-                for(x_idx = 0; x_idx < num_x; x_idx++){
-                  x_coord = start_x + (2*x_idx + y_idx % 2) * patternSize;
-                  y_coord = start_y + y_idx * patternSize;
-                  doc.circle(x_coord, y_coord, patternSize/4.0, "F");
+                  doc.circle(xPos, yPos, config.patternSpacingIn / 4, "F")
                 }
               }
-            }
+              break
+          }
 
-            ///////////////////////////////////////////
-            // Draw a fixed size inch ruler pattern to
-            // help users debug their printers
-            var lineStartX = 1.0;
-            var lineEndX = paper_x - lineStartX;
-            var lineY = paper_y - 1.0;
-            doc.setFont('Prompt-Regular');
-            doc.setLineWidth(0.01);
-            doc.line(lineStartX, lineY, lineEndX, lineY);
-            var segIdx = 0;
-            for(var tickX = lineStartX; tickX <= lineEndX; tickX += 1.0){
-              doc.line(tickX, lineY, tickX, lineY + 0.25);
-              doc.text(String(segIdx) + (segIdx == 0 ? " in" : ""), tickX + 0.1, lineY + 0.25);
-              segIdx++;
-            }
+          // Draw ruler pattern
+          const lineStartX = 1.0
+          const lineEndX = paperWidth - lineStartX
+          const lineY = paperHeight - 1.0
 
+          doc.setLineWidth(0.01)
+          doc.line(lineStartX, lineY, lineEndX, lineY)
 
-            ///////////////////////////////////////////
-            // Annotate what was drawn + branding
-            var img = new Image();
-            img.src = require('@/assets/logoMono.png');
-            doc.addImage(img, 'PNG', 1.0, 0.75, 1.4, 0.5 );
-            doc.setFont('Prompt-Regular');
-            doc.text(annotation, paper_x-1.0, 1.0, {maxWidth:(paper_x - 2.0)/2, align:"right"});
+          for (let tickX = lineStartX; tickX <= lineEndX; tickX++) {
+            doc.line(tickX, lineY, tickX, lineY + 0.25)
+            doc.text(`${tickX - 1}${tickX - 1 === 0 ? " in" : ""}`, tickX + 0.1, lineY + 0.25)
+          }
 
-            doc.save("calibrationTarget.pdf");
+          // Add branding
+          const logoImage = new Image();
+          logoImage.src = require('@/assets/logos/logoMono.png');
+          doc.addImage(logoImage, 'PNG', 1.0, 0.75, 1.4, 0.5);
 
+          doc.text(`${config.boardWidthIn} x ${config.boardHeightIn} | ${config.patternSpacingIn}in`, paperWidth - 1, 1.0,
+              {
+                maxWidth: (paperWidth - 2.0) / 2,
+                align: "right",
+              }
+          )
+          doc.save(`calibrationTarget-${config.type}.pdf`)
         },
         sendCameraSettings() {
             this.axios.post("http://" + this.$address + "/api/settings/camera", {
@@ -773,18 +760,16 @@ export default {
                 }
             )
         },
-
         isCalibrated(resolution) {
             return this.$store.getters.currentCameraSettings.calibrations
                 .some(e => e.width === resolution.width && e.height === resolution.height);
         },
-
         sendCalibrationMode() {
             let data = {
                 ['cameraIndex']: this.$store.state.currentCameraIndex
             };
 
-            if (this.isCalibrating === true) {
+            if (this.isCalibrating) {
                 data['takeCalibrationSnapshot'] = true
             } else {
                 // This store prevents an edge case of a user not selecting a different resolution, which causes the set logic to not be called
@@ -803,7 +788,7 @@ export default {
             this.snack = true;
             this.calibrationInProgress = true;
 
-            this.axios.post("http://" + this.$address + "/api/settings/endCalibration", this.$store.getters.currentCameraIndex)
+            this.axios.post("http://" + this.$address + "/api/settings/endCalibration", {idx: this.$store.getters.currentCameraIndex})
                 .then((response) => {
                         if (response.status === 200) {
                             this.calibrationInProgress = false;
@@ -818,6 +803,12 @@ export default {
     }
 }
 </script>
+
+<style>
+::-webkit-scrollbar{
+  height: 0.55em;
+}
+</style>
 
 <style scoped>
 .v-data-table {

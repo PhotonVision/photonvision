@@ -75,6 +75,11 @@ public class Main {
                 "Run in test mode with 2019 and 2020 WPI field images in place of cameras");
 
         options.addOption("p", "path", true, "Point test mode to a specific folder");
+        options.addOption(
+                "i",
+                "ignore-cameras",
+                true,
+                "Ignore cameras that match a regex. Uses camera name as provided by cscore.");
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
@@ -98,6 +103,11 @@ public class Main {
                     logger.info("Loading from Path " + p.toAbsolutePath().toString());
                     testModeFolder = p;
                 }
+            }
+
+            if (cmd.hasOption("ignore-cameras")) {
+                VisionSourceManager.getInstance()
+                        .setIgnoredCamerasRegex(cmd.getOptionValue("ignore-cameras"));
             }
         }
         return true;

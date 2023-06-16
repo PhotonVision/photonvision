@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022 PhotonVision
+ * Copyright (c) PhotonVision
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,12 +36,14 @@ public class CameraTargetRelation {
     public final double camToTargDistXY;
     public final Rotation2d camToTargYaw;
     public final Rotation2d camToTargPitch;
+
     /** Angle from the camera's relative x-axis */
     public final Rotation2d camToTargAngle;
 
     public final Transform3d targToCam;
     public final Rotation2d targToCamYaw;
     public final Rotation2d targToCamPitch;
+
     /** Angle from the target's relative x-axis */
     public final Rotation2d targToCamAngle;
 

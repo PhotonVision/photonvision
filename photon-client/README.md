@@ -5,7 +5,7 @@
 Follow [this](https://nodejs.org/en/) link.
 
 ## Project setup
-Run this one time, this command downloades the packages the UI uses and it might take a short while
+Run this one time, this command downloads the packages the UI uses, and it might take a short while
 
 ```
 npm install

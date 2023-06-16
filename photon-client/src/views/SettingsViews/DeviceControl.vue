@@ -1,56 +1,95 @@
 <template>
   <div>
     <v-row>
-      <v-col cols="12" lg="4" md="6">
-        <v-btn color="red" @click="restartProgram()">
+      <v-col
+        cols="12"
+        lg="4"
+        md="6"
+      >
+        <v-btn
+          color="red"
+          @click="restartProgram()"
+        >
           <v-icon left>
             mdi-restart
           </v-icon>
           Restart PhotonVision
         </v-btn>
       </v-col>
-      <v-col cols="12" lg="4" md="6">
-        <v-btn color="red" @click="restartDevice()">
+      <v-col
+        cols="12"
+        lg="4"
+        md="6"
+      >
+        <v-btn
+          color="red"
+          @click="restartDevice()"
+        >
           <v-icon left>
             mdi-restart-alert
           </v-icon>
           Restart Device
         </v-btn>
       </v-col>
-      <v-col cols="12" lg="4">
-        <v-btn color="secondary" @click="$refs.offlineUpdate.click()">
+      <v-col
+        cols="12"
+        lg="4"
+      >
+        <v-btn
+          color="secondary"
+          @click="$refs.offlineUpdate.click()"
+        >
           <v-icon left>
-            mdi-update
+            mdi-upload
           </v-icon>
           Offline Update
         </v-btn>
       </v-col>
     </v-row>
-    <v-divider />
+    <v-divider style="margin: 12px 0;" />
     <v-row>
-      <v-col cols="12" sm="6">
-        <v-btn color="secondary" @click="$refs.exportSettings.click()">
+      <v-col
+        cols="12"
+        sm="6"
+      >
+        <v-btn
+          color="secondary"
+          @click="$refs.importSettings.click()"
+        >
           <v-icon left>
-            mdi-download
-          </v-icon>
-          Export Settings
-        </v-btn>
-      </v-col>
-      <v-col cols="12" sm="6">
-        <v-btn color="secondary" @click="$refs.importSettings.click()">
-          <v-icon left>
-            mdi-upload
+            mdi-import
           </v-icon>
           Import Settings
         </v-btn>
       </v-col>
 
-      <v-col cols="12" sm="6">
-        <v-btn color="secondary" @click="$refs.exportLogFile.click()">
+      <v-col
+        cols="12"
+        sm="6"
+      >
+        <v-btn
+          color="secondary"
+          @click="$refs.exportSettings.click()"
+        >
           <v-icon left>
-            mdi-file
+            mdi-export
           </v-icon>
-          Export current log
+          Export Settings
+        </v-btn>
+      </v-col>
+
+      <v-col
+        cols="12"
+        sm="6"
+      >
+        <v-btn
+          color="secondary"
+          @click="$refs.exportLogFile.click()"
+        >
+          <v-icon left>
+            mdi-download
+          </v-icon>
+          Download Current Log
 
           <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
           <a
@@ -66,16 +105,27 @@
         </v-btn>
       </v-col>
 
-      <v-col cols="12" sm="6">
-        <v-btn color="secondary" @click="showLogs()">
+      <v-col
+        cols="12"
+        sm="6"
+      >
+        <v-btn
+          color="secondary"
+          @click="showLogs()"
+        >
           <v-icon left>
-            mdi-bug
+            mdi-eye
           </v-icon>
           Show log viewer
         </v-btn>
       </v-col>
     </v-row>
-    <v-snackbar v-model="snack" top :color="snackbar.color" timeout="-1">
+    <v-snackbar
+      v-model="snack"
+      top
+      :color="snackbar.color"
+      timeout="-1"
+    >
       <span>{{ snackbar.text }}</span>
     </v-snackbar>
 
@@ -86,14 +136,12 @@
       accept=".zip, .json"
       style="display: none;"
       @change="readImportedSettings"
-    />
+    >
     <!-- Special hidden link that gets 'clicked' when the user exports settings -->
     <a
       ref="exportSettings"
       style="color: black; text-decoration: none; display: none"
-      :href="
-        'http://' + this.$address + '/api/settings/photonvision_config.zip'
-      "
+      :href="'http://' + this.$address + '/api/settings/photonvision_config.zip'"
       download="photonvision-settings.zip"
     />
 
@@ -104,12 +152,13 @@
       accept=".jar"
       style="display: none;"
       @change="doOfflineUpdate"
-    />
+    >
   </div>
 </template>
 
 <script>
 export default {
+  // eslint-disable-next-line
   name: "Device Control",
   data() {
     return {
@@ -270,7 +319,7 @@ export default {
 .infoTable {
   border: 1px solid;
   border-collapse: separate;
-  border-spacing: 0px;
+  border-spacing: 0;
   border-radius: 5px;
   text-align: left;
   margin-bottom: 10px;
@@ -278,12 +327,9 @@ export default {
   display: block;
   overflow-x: auto;
 }
-
+w
 .infoElem {
-  padding-right: 15px;
-  padding-bottom: 1px;
-  padding-top: 1px;
-  padding-left: 10px;
-  border-right: 1px solid;
+    padding: 1px 15px 1px 10px;
+    border-right: 1px solid;
 }
 </style>

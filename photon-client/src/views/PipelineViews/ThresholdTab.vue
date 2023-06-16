@@ -41,23 +41,6 @@
       @input="handlePipelineData('hueInverted')"
       @rollback="e => rollback('hueInverted',e)"
     />
-    <template v-if="currentPipelineType() === 3">
-      <CVSwitch
-        v-model="erode"
-        name="Erode"
-        tooltip="Removes pixels around the edges of white areas in the thresholded image"
-        @input="handlePipelineData('erode')"
-        @rollback="e => rollback('erode',e)"
-      />
-      <CVSwitch
-        v-model="dilate"
-        class="mb-0"
-        name="Dilate"
-        tooltip="Adds pixels around the edges of white areas in the thresholded image"
-        @input="handlePipelineData('dilate')"
-        @rollback="e => rollback('dilate',e)"
-      />
-    </template>
     <div class="pt-3 white--text">
       Color Picker
     </div>
@@ -149,9 +132,9 @@ export default {
     },
     averageHue: {
       get() {
-        var isInverted = this.$store.getters.currentPipelineSettings.hueInverted;
+        const isInverted = this.$store.getters.currentPipelineSettings.hueInverted;
         const arr = this.$store.getters.currentPipelineSettings.hsvHue;
-        var retVal = 0;
+        let retVal = 0;
 
         if (Array.isArray(arr)) {
           retVal = (arr[0] + arr[1]);
@@ -193,22 +176,6 @@ export default {
       },
       set(val) {
         this.$store.commit("mutatePipeline", {"hsvValue": val});
-      }
-    },
-    erode: {
-      get() {
-        return this.$store.getters.currentPipelineSettings.erode;
-      },
-      set(val) {
-        this.$store.commit("mutatePipeline", {"erode": val});
-      }
-    },
-    dilate: {
-      get() {
-        return this.$store.getters.currentPipelineSettings.dilate;
-      },
-      set(val) {
-        this.$store.commit("mutatePipeline", {"dilate": val});
       }
     },
   },
@@ -284,17 +251,17 @@ export default {
 #hue-slider >>> .v-slider {
   background: linear-gradient( to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100% );
   border-radius: 10px;
-  box-shadow: 0px 0px 5px #333, inset 0px 0px 3px #333;
+  box-shadow: 0 0 5px #333, inset 0 0 3px #333;
 }
 #sat-slider >>> .v-slider {
   background: linear-gradient( to right, #fff 0%, hsl(var(--averageHue), 100%, 50%) 100% );
   border-radius: 10px;
-  box-shadow: 0px 0px 5px #333, inset 0px 0px 3px #333;
+  box-shadow: 0 0 5px #333, inset 0 0 3px #333;
 }
 #value-slider >>> .v-slider {
   background: linear-gradient( to right, #000 0%, hsl(var(--averageHue), 100%, 50%) 100% );
   border-radius: 10px;
-  box-shadow: 0px 0px 5px #333, inset 0px 0px 3px #333;
+  box-shadow: 0 0 5px #333, inset 0 0 3px #333;
 }
 >>> .v-slider__thumb {
   outline: black solid thin;

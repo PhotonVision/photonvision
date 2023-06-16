@@ -9,15 +9,9 @@
             margin: 0;
             padding: 0;
         }
-        .imgbox {
-            display: grid;
+        .img-container {
             height: 100%;
-            width: 100%;
-        }
-        .center-fit {
-
-            width: 90vw;
-            margin: auto;
+            width: 40vw;
         }
     </style>
 
@@ -25,18 +19,15 @@
 
 <body>
     <hr>
-        <div class="imgbox">
-            <img id="streamImg" class="center-fit" src=''>
+        <div class="img-container">
+            <img id="streamImg" src='' alt="">
         </div>
     <hr>
-
     <form id="frm1">
         Host <input type="text" id="host" value="photonvision.local"><br>
         Port <input type="text" id="port" value="1181"><br>
     </form>
-
     <button>Start Stream</button>
-
     <script type="module">
         class WebsocketVideoStream{
 
@@ -82,19 +73,19 @@
             }
 
             dispNoStream() {
-                this.image.src = "loading.gif";
+                this.image.src = "loading.svg";
             }
 
             animationLoop(){
                 // Update time metrics
-                var now = window.performance.now();
-                var timeInState  = now - this.dsm_restart_start_time;
+                const now = window.performance.now();
+                const timeInState = now - this.dsm_restart_start_time;
 
                 // Save previous state
                 this.dsm_prev_state = this.dsm_cur_state;
 
                 // Evaluate state transitions
-                if(this.serverConnectionActive == false){
+                if(!this.serverConnectionActive){
                     //Any state - if the server connection goes false, always transition to disconnected
                     this.dsm_cur_state = this.DSM_DISCONNECTED;
                 } else {
@@ -160,35 +151,35 @@
 
                 //take current-state or state-transition actions
 
-                if(this.dsm_cur_state != this.dsm_prev_state){
+                if(this.dsm_cur_state !== this.dsm_prev_state){
                     //Any state transition
                     console.log("State Change: " + this.dsm_prev_state + " -> " + this.dsm_cur_state);
                 }
 
-                if(this.dsm_cur_state == this.DSM_SHOWING){
+                if(this.dsm_cur_state === this.DSM_SHOWING){
                     // Currently in SHOWING
                     this.dispImageData();
                 }
 
-                if(this.dsm_cur_state != this.DSM_SHOWING && this.dsm_prev_state == this.DSM_SHOWING ){
+                if(this.dsm_cur_state !== this.DSM_SHOWING && this.dsm_prev_state === this.DSM_SHOWING ){
                     //Any transition out of showing - no stream
                     this.dispNoStream();
                 }
 
-                if(this.dsm_cur_state == this.DSM_RESTART_UNSUBSCRIBE){
+                if(this.dsm_cur_state === this.DSM_RESTART_UNSUBSCRIBE){
                     // Currently in UNSUBSCRIBE, do the unsubscribe actions
                     this.stopStream();
                     this.dsm_restart_start_time = now;
                 }
 
-                if(this.dsm_cur_state == this.DSM_SUBSCRIBE){
+                if(this.dsm_cur_state === this.DSM_SUBSCRIBE){
                     // Currently in SUBSCRIBE, do the subscribe actions
                     this.startStream();
                     this.dsm_restart_start_time = now;
                 }
 
-                if(this.dsm_cur_state == this.DSM_WAIT_FOR_VALID_PORT){
-                    // Currently waiting for a vaild port to be requested
+                if(this.dsm_cur_state === this.DSM_WAIT_FOR_VALID_PORT){
+                    // Currently waiting for a valid port to be requested
                     if(this.newStreamPortReq != null){
                         this.streamPort = this.newStreamPortReq;
                         this.newStreamPortReq = null;
@@ -243,7 +234,7 @@
             ws_onMessage(e){
                 if(typeof e.data === 'string'){
                     //string data from host
-                    //TODO - anything to recieve info here? Maybe "avaialble streams?"
+                    //TODO - anything to receive info here? Maybe "available streams?"
                 } else {
                     if(e.data.size > 0){
                         //binary data - a frame
@@ -275,11 +266,11 @@
 
         }
 
-        var stream = null;
+        let stream = null;
 
         function streamStartRequest() {
-            var host = document.getElementById("host").value + ":5800";
-            var port = document.getElementById("port").value;
+            const host = document.getElementById("host").value + ":5800";
+            const port = document.getElementById("port").value;
             if(stream == null){
                 stream = new WebsocketVideoStream("streamImg",port,host);
             } else {
@@ -296,15 +287,15 @@
         const urlParams = new URLSearchParams(queryString);
         const port_in = urlParams.get('port')
         const host_in = urlParams.get('host')
-        if(port_in != ""){
+        if(port_in !== ""){
             document.getElementById("port").value = port_in;
         }
 
-        if(host_in != ""){
+        if(host_in !== ""){
             document.getElementById("host").value = host_in;
         }
 
-        if(port_in != "" && host_in != ""){
+        if(port_in !== "" && host_in !== ""){
             streamStartRequest(); //we got valid inputs, auto-start the stream
         }
 
@@ -312,6 +303,4 @@
     </script>
 
 </body>
-
-
 </html>

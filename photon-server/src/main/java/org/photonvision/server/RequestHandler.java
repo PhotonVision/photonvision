@@ -244,7 +244,16 @@ public class RequestHandler {
 
     public static void onCalibrationEnd(Context ctx) {
         logger.info("Calibrating camera! This will take a long time...");
-        var index = Integer.parseInt(ctx.body());
+
+        int index;
+        try {
+            index = (int) kObjectMapper.readValue(ctx.body(), HashMap.class).get("idx");
+        } catch (Exception e) {
+            logger.error("Cannot parse calibration idx", e);
+            ctx.status(500);
+            return;
+        }
+
         var calData = VisionModuleManager.getInstance().getModule(index).endCalibration();
         if (calData == null) {
             ctx.status(500);

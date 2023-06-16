@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022 PhotonVision
+ * Copyright (c) PhotonVision
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -100,7 +100,9 @@ public class DrivetrainPoseEstimator {
         m_poseEstimator.resetPosition(gyro.getRotation2d(), leftDist, rightDist, pose);
     }
 
-    /** @return The current best-guess at drivetrain position on the field. */
+    /**
+     * @return The current best-guess at drivetrain position on the field.
+     */
     public Pose2d getPoseEst() {
         return m_poseEstimator.getEstimatedPosition();
     }

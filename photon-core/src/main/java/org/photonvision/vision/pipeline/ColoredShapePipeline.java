@@ -35,7 +35,6 @@ import org.photonvision.vision.target.TrackedTarget;
 @SuppressWarnings({"DuplicatedCode"})
 public class ColoredShapePipeline
         extends CVPipeline<CVPipelineResult, ColoredShapePipelineSettings> {
-    private final ErodeDilatePipe erodeDilatePipe = new ErodeDilatePipe();
     private final SpeckleRejectPipe speckleRejectPipe = new SpeckleRejectPipe();
     private final FindContoursPipe findContoursPipe = new FindContoursPipe();
     private final FindPolygonPipe findPolygonPipe = new FindPolygonPipe();
@@ -72,11 +71,6 @@ public class ColoredShapePipeline
                         settings.offsetDualPointAArea,
                         settings.offsetDualPointB,
                         settings.offsetDualPointBArea);
-
-        ErodeDilatePipe.ErodeDilateParams erodeDilateParams =
-                new ErodeDilatePipe.ErodeDilateParams(settings.erode, settings.dilate, 5);
-        // TODO: add kernel size to pipeline settings
-        erodeDilatePipe.setParams(erodeDilateParams);
 
         SpeckleRejectPipe.SpeckleRejectParams speckleRejectParams =
                 new SpeckleRejectPipe.SpeckleRejectParams(settings.contourSpecklePercentage);
@@ -175,12 +169,6 @@ public class ColoredShapePipeline
     @Override
     protected CVPipelineResult process(Frame frame, ColoredShapePipelineSettings settings) {
         long sumPipeNanosElapsed = 0L;
-
-        //        var erodeDilateResult = erodeDilatePipe.run(rawInputMat);
-        //        sumPipeNanosElapsed += erodeDilateResult.nanosElapsed;
-        //
-        //        CVPipeResult<Mat> hsvPipeResult = hsvPipe.run(rawInputMat);
-        //        sumPipeNanosElapsed += hsvPipeResult.nanosElapsed;
 
         CVPipeResult<List<Contour>> findContoursResult =
                 findContoursPipe.run(frame.processedImage.getMat());
