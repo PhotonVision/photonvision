@@ -366,7 +366,7 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagPnpStrategy(
   }
 
   if (!camMat || !distCoeffs) {
-    return std::nullopt;
+    return Update(result, std::nullopt, std::nullopt, this->multiTagFallbackStrategy);
   }
 
   auto const targets = result.GetTargets();

@@ -375,7 +375,7 @@ public class PhotonPoseEstimator {
         boolean hasCalibData = cameraMatrixOpt.isPresent() && distCoeffsOpt.isPresent();
 
         if (!hasCalibData) {
-            return Optional.empty();
+            return update(result, cameraMatrixOpt, distCoeffsOpt, this.multiTagFallbackStrategy);
         }
 
         for (var target : result.getTargets()) {
