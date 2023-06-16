@@ -93,6 +93,7 @@ public final class OpenCVHelp {
         }
         return new MatOfPoint3f(points);
     }
+
     /**
      * Returns a new 3d translation from this {@link Mat}. The opencv tvec is a vector with three
      * elements representing {x, y, z} in the EDN coordinate system.
@@ -122,6 +123,7 @@ public final class OpenCVHelp {
         rotation = rotationNWUtoEDN(rotation);
         return new MatOfPoint3f(new Point3(rotation.getQuaternion().toRotationVector().getData()));
     }
+
     /**
      * Returns a 3d rotation from this {@link Mat}. The opencv rvec Mat is a vector with three
      * elements representing the axis scaled by the angle in the EDN coordinate system. (angle = norm,
@@ -222,6 +224,7 @@ public final class OpenCVHelp {
                         new Rotation3d(), CoordinateSystem.NWU(), CoordinateSystem.EDN())
                 .plus(CoordinateSystem.convert(rot, CoordinateSystem.EDN(), CoordinateSystem.NWU()));
     }
+
     /**
      * Convert a rotation from EDN to NWU. For example, if you have a rotation X,Y,Z {1, 0, 0} in EDN,
      * this would be XYZ {0, -1, 0} in NWU.
@@ -318,6 +321,7 @@ public final class OpenCVHelp {
         corn.release();
         return rect;
     }
+
     /**
      * Gets the rotated rectangle with minimum area which bounds this contour.
      *
@@ -332,6 +336,7 @@ public final class OpenCVHelp {
         corn.release();
         return rect;
     }
+
     /**
      * Get the area in pixels of this target's contour. It's important to note that this may be
      * different from the area of the bounding rectangle around the contour.
@@ -445,6 +450,7 @@ public final class OpenCVHelp {
         if (alt != null) return new PNPResults(best, alt, errors[0] / errors[1], errors[0], errors[1]);
         else return new PNPResults(best, errors[0]);
     }
+
     /**
      * Finds the transformation that maps the camera's pose to the target pose. The camera's pose
      * relative to the target is determined by the supplied 3d points of the target's model and their

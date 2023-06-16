@@ -34,6 +34,7 @@ public class RotTrlTransform3d {
     public RotTrlTransform3d() {
         this(new Rotation3d(), new Translation3d());
     }
+
     /**
      * Creates a rotation-translation transformation from a Transform3d.
      *
@@ -45,6 +46,7 @@ public class RotTrlTransform3d {
     public RotTrlTransform3d(Transform3d trf) {
         this(trf.getRotation(), trf.getTranslation());
     }
+
     /**
      * A rotation-translation transformation.
      *
@@ -58,6 +60,7 @@ public class RotTrlTransform3d {
         this.rot = rot;
         this.trl = trl;
     }
+
     /**
      * The rotation-translation transformation that makes poses in the world consider this pose as the
      * new origin, or change the basis to this pose.
@@ -79,10 +82,12 @@ public class RotTrlTransform3d {
     public Transform3d getTransform() {
         return new Transform3d(trl, rot);
     }
+
     /** The translation component of this transformation */
     public Translation3d getTranslation() {
         return trl;
     }
+
     /** The rotation component of this transformation */
     public Rotation3d getRotation() {
         return rot;

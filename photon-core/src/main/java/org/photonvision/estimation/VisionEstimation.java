@@ -144,6 +144,7 @@ public class VisionEstimation {
      */
     public static class SVDResults {
         public final RotTrlTransform3d trf;
+
         /** If the result is invalid, this value is -1 */
         public final double rmse;
 

@@ -44,8 +44,10 @@ public class PNPResults {
      * to the best solution.
      */
     public final Transform3d alt;
+
     /** If no alternate solution is found, this is bestReprojErr */
     public final double altReprojErr;
+
     /** If no alternate solution is found, this is 0 */
     public final double ambiguity;
 
