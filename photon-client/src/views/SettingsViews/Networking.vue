@@ -6,19 +6,22 @@
     >
       <CVinput
         v-model="ntServerAddress"
-        :input-cols="inputCols"
+        :input-cols="inputCols - 1"
+        :label-cols="3"
         :disabled="settings.runNTServer"
-        name="Team Number"
-        tooltip="enter the team number or the IP address of the robot NetworkTables server"
-        :rules="[v => isValidTeamNumber(v) || 'Team Number must be non blank and a team number, IP address, or hostname']"
+        name="Team Number/NetworkTables Server Address"
+        tooltip="Enter the Team Number or the IP address of the NetworkTables Server"
+        :rules="[v => isValidTeamNumber(v) || 'The NetworkTables Server Address must be a non blank team number, IP address, or hostname']"
       />
       <v-banner
         v-show="!isValidTeamNumber(ntServerAddress) && !runNTServer"
         rounded
         color="red"
         text-color="white"
+        style="margin: 8px 0"
+        icon="mdi-alert-circle-outline"
       >
-        Team Number unset or invalid. NetworkTables will not be able to connect.
+        NetworkTables Server Address is unset or invalid. NetworkTables is unable to connect
       </v-banner>
       <CVradio
         v-show="$store.state.settings.networkSettings.shouldManage"
@@ -54,8 +57,9 @@
         rounded
         color="red"
         text-color="white"
+        icon="mdi-information-outline"
       >
-        This switch is intended for testing; it should be off on a robot. PhotonLib will NOT work!
+        This mode is intended for debugging; it should be off for proper usage. PhotonLib will NOT work!
       </v-banner>
     </v-form>
     <v-btn
@@ -77,12 +81,9 @@
     </v-snackbar>
 
     <template v-if="$store.state.settings.networkSettings.shouldManage && false">
-
       <!-- Advanced controls for changing DHCP settings and stuff -->
       <v-divider class="mt-4 mb-4" />
-
-      <v-title> Advanced </v-title>
-
+      <v-card-title> Advanced </v-card-title>
       <CVinput
         :input-cols="inputCols"
         name="Set DHCP command"
@@ -99,69 +100,7 @@
         :input-cols="inputCols"
         name="Physical interface"
       />
-
     </template>
-
-    <!-- TEMP - RIO finder is not currently enabled
-    <v-row>
-      <v-col
-        cols="12"
-        sm="6"
-      >
-        <v-simple-table
-          fixed-header
-          height="100%"
-          dense
-        >
-          <template v-slot:default>
-            <thead style="font-size: 1.25rem;">
-              <tr>
-                <th>
-                  Device IPs
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(value, index) in $store.state.networkInfo.deviceips"
-                :key="index"
-              >
-                <td>{{ value }}</td>
-              </tr>
-            </tbody>
-          </template>
-        </v-simple-table>
-      </v-col>
-      <v-col
-        cols="12"
-        sm="6"
-      >
-        <v-simple-table
-          fixed-header
-          height="100%"
-          dense
-        >
-          <template v-slot:default>
-            <thead style="font-size: 1.25rem;">
-              <tr>
-                <th>
-                  Possible RoboRIOs
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(value, index) in $store.state.networkInfo.possibleRios"
-                :key="index"
-              >
-                <td>{{ value }}</td>
-              </tr>
-            </tbody>
-          </template>
-        </v-simple-table>
-      </v-col>
-    </v-row>
-    -->
   </div>
 </template>
 
@@ -274,7 +213,7 @@ export default {
             let restAreOnes = false;
             for (let i = 3; i >= 0; i--) {
                 for (let j = 0; j < 8; j++) {
-                    let bitValue = (octets[i] >>> j & 1) == 1;
+                    let bitValue = (octets[i] >>> j & 1) === 1;
                     if (restAreOnes && !bitValue)
                         return false;
                     restAreOnes = bitValue;
@@ -342,4 +281,9 @@ export default {
     .v-data-table td {
       font-family: monospace !important;
     }
+</style>
+<style>
+.v-banner__wrapper {
+  padding: 6px !important;
+}
 </style>

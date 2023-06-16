@@ -233,7 +233,9 @@ public class PhotonPoseEstimator {
         setLastPose(new Pose3d(lastPose));
     }
 
-    /** @return The current transform from the center of the robot to the camera mount position */
+    /**
+     * @return The current transform from the center of the robot to the camera mount position
+     */
     public Transform3d getRobotToCameraTransform() {
         return robotToCamera;
     }
