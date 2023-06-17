@@ -65,7 +65,7 @@ public class ConfigManager {
         return INSTANCE;
     }
 
-    public static void saveUploadedSettingsZip(File uploadPath) {
+    public static boolean saveUploadedSettingsZip(File uploadPath) {
         var folderPath = Path.of(System.getProperty("java.io.tmpdir"), "photonvision").toFile();
         folderPath.mkdirs();
         ZipUtil.unpack(uploadPath, folderPath);
@@ -73,9 +73,10 @@ public class ConfigManager {
         try {
             org.apache.commons.io.FileUtils.copyDirectory(folderPath, getRootFolder().toFile());
             logger.info("Copied settings successfully!");
+            return true;
         } catch (IOException e) {
             logger.error("Exception copying uploaded settings!", e);
-            return;
+            return false;
         }
     }
 
@@ -406,19 +407,23 @@ public class ConfigManager {
         return this.networkConfigFile.toPath();
     }
 
-    public void saveUploadedHardwareConfig(Path uploadPath) {
-        FileUtils.deleteFile(this.getHardwareConfigFile());
-        FileUtils.copyFile(uploadPath, this.getHardwareConfigFile());
+    public boolean saveUploadedHardwareConfig(Path uploadPath) {
+        boolean fileDeleted = FileUtils.deleteFile(this.getHardwareConfigFile());
+        boolean fileCopied = FileUtils.copyFile(uploadPath, this.getHardwareConfigFile());
+        return fileDeleted && fileCopied;
     }
 
-    public void saveUploadedHardwareSettings(Path uploadPath) {
-        FileUtils.deleteFile(this.getHardwareSettingsFile());
-        FileUtils.copyFile(uploadPath, this.getHardwareSettingsFile());
+    public boolean saveUploadedHardwareSettings(Path uploadPath) {
+        boolean fileDeleted = FileUtils.deleteFile(this.getHardwareSettingsFile());
+        boolean fileCopied = FileUtils.copyFile(uploadPath, this.getHardwareSettingsFile());
+        return fileDeleted && fileCopied;
+
     }
 
-    public void saveUploadedNetworkConfig(Path uploadPath) {
-        FileUtils.deleteFile(this.getNetworkConfigFile());
-        FileUtils.copyFile(uploadPath, this.getNetworkConfigFile());
+    public boolean saveUploadedNetworkConfig(Path uploadPath) {
+        boolean fileDeleted = FileUtils.deleteFile(this.getNetworkConfigFile());
+        boolean fileCopied = FileUtils.copyFile(uploadPath, this.getNetworkConfigFile());
+        return fileDeleted && fileCopied;
     }
 
     public void requestSave() {

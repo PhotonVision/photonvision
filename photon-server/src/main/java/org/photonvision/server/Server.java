@@ -81,19 +81,26 @@ public class Server {
                     ws.onMessage(camDsHandler::onMessage);
                 });
         /*API Events*/
-        app.post("/api/settings/import", RequestHandler::onSettingUpload);
-        app.post("/api/settings/offlineUpdate", RequestHandler::onOfflineUpdate);
-        app.get("/api/settings/photonvision_config.zip", RequestHandler::onSettingsDownload);
-        app.get("/api/settings/photonvision-journalctl.txt", RequestHandler::onExportCurrentLogs);
-        app.post("/api/settings/camera", RequestHandler::onCameraSettingsSave);
-        app.post("/api/settings/general", RequestHandler::onGeneralSettings);
-        app.post("/api/settings/endCalibration", RequestHandler::onCalibrationEnd);
-        app.post("/api/restartDevice", RequestHandler::restartDevice);
-        app.post("api/restartProgram", RequestHandler::restartProgram);
-        app.post("api/vision/pnpModel", RequestHandler::uploadPnpModel);
-        app.post("api/sendMetrics", RequestHandler::sendMetrics);
-        app.post("api/setCameraNickname", RequestHandler::setCameraNickname);
-        app.post("api/calibration/import", RequestHandler::importCalibrationFromCalibdb);
+        // Settings
+        app.post("/api/settings", RequestHandler::onSettingsImportRequest);
+        app.get("/api/settings/photonvision_config.zip", RequestHandler::onSettingsExportRequest);
+        app.post("/api/settings/hardwareConfig", RequestHandler::onHardwareConfigRequest);
+        app.post("/api/settings/hardwareSettings", RequestHandler::onHardwareSettingsRequest);
+        app.post("/api/settings/networkConfig", RequestHandler::onNetworkConfigRequest);
+        app.post("/api/settings/general", RequestHandler::onGeneralSettingsRequest);
+        app.post("/api/settings/camera", RequestHandler::onCameraSettingsRequest);
+        app.post("/api/settings/camera/nickname", RequestHandler::onCameraNicknameChangeRequest);
+
+        // Utilities
+        app.post("/api/utils/offlineUpdate", RequestHandler::onOfflineUpdateRequest);
+        app.get("/api/utils/logs/photonvision-journalctl.txt", RequestHandler::onLogExportRequest);
+        app.post("/api/utils/restartProgram", RequestHandler::onProgramRestartRequest);
+        app.post("/api/utils/restartDevice", RequestHandler::onDeviceRestartRequest);
+        app.post("/api/utils/publishMetrics", RequestHandler::onMetricsPublishRequest);
+
+        // Calibration
+        app.post("/api/calib/end", RequestHandler::onCalibrationEndRequest);
+        app.post("/api/calib/importFromCalibDB", RequestHandler::onCalibrationImportRequest);
 
         app.start(port);
     }

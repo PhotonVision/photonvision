@@ -26,6 +26,8 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.networking.NetworkMode;
 import org.photonvision.common.util.file.JacksonUtils;
@@ -78,12 +80,12 @@ public class NetworkConfig {
         setShouldManage(shouldManage);
     }
 
-    public static NetworkConfig fromHashMap(Map<String, Object> map) {
+    public static Optional<NetworkConfig> fromHashMap(Map<String, Object> map) {
         try {
-            return new ObjectMapper().convertValue(map, NetworkConfig.class);
+            return Optional.of(new ObjectMapper().convertValue(map, NetworkConfig.class));
         } catch (Exception e) {
-            e.printStackTrace();
-            return new NetworkConfig();
+            e.printStackTrace(); // TODO, need print
+            return Optional.of(new NetworkConfig());
         }
     }
 

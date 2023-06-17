@@ -59,21 +59,26 @@ public class FileUtils {
         }
     }
 
-    public static void deleteFile(Path path) {
+    public static boolean deleteFile(Path path) {
         try {
             Files.delete(path);
+            return true;
         } catch (FileNotFoundException | NoSuchFileException fe) {
             logger.warn("Tried to delete file \"" + path + "\" but it did not exist");
+            return false;
         } catch (IOException e) {
             logger.error("Exception deleting file \"" + path + "\"!", e);
+            return false;
         }
     }
 
-    public static void copyFile(Path src, Path dst) {
+    public static boolean copyFile(Path src, Path dst) {
         try {
             Files.copy(src, dst);
+            return true;
         } catch (IOException e) {
             logger.error("Exception copying file " + src + " to " + dst + "!", e);
+            return false;
         }
     }
 
