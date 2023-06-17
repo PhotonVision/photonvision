@@ -283,7 +283,6 @@ public class RequestHandler {
 
     public static void onCameraSettingsRequest(Context ctx) {
         try {
-
             var data = kObjectMapper.readTree(ctx.body());
 
             int index = data.get("index").asInt();
