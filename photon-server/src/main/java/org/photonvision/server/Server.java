@@ -19,6 +19,7 @@ package org.photonvision.server;
 
 import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
+import java.util.StringJoiner;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
@@ -34,15 +35,21 @@ public class Server {
                             config.enableCorsForAllOrigins();
 
                             config.requestLogger(
-                                    (ctx, ms) ->
-                                            logger.debug(
-                                                    "Handled HTTP "
-                                                            + ctx.req.getMethod()
-                                                            + " request from "
-                                                            + ctx.req.getRemoteHost()
-                                                            + " in "
-                                                            + ms.toString()
-                                                            + "ms"));
+                                    (ctx, ms) -> {
+                                        StringJoiner joiner =
+                                                new StringJoiner(" ")
+                                                        .add("Handled HTTP request of type")
+                                                        .add(ctx.req.getMethod())
+                                                        .add("from endpoint")
+                                                        .add(ctx.path())
+                                                        .add("for host")
+                                                        .add(ctx.req.getRemoteHost())
+                                                        .add("in")
+                                                        .add(ms.toString())
+                                                        .add("ms");
+
+                                        logger.debug(joiner.toString());
+                                    });
 
                             config.wsLogger(
                                     ws ->
