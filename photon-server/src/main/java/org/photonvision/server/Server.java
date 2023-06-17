@@ -61,7 +61,7 @@ public class Server {
                                                                     })));
                         });
 
-        /*Web Socket Events for Data Exchage */
+        /*Web Socket Events for Data Exchange */
         var dsHandler = DataSocketHandler.getInstance();
         app.ws(
                 "/websocket_data",
@@ -70,6 +70,7 @@ public class Server {
                     ws.onClose(dsHandler::onClose);
                     ws.onBinaryMessage(dsHandler::onBinaryMessage);
                 });
+
         /*Web Socket Events for Camera Streaming */
         var camDsHandler = CameraSocketHandler.getInstance();
         app.ws(
@@ -80,19 +81,14 @@ public class Server {
                     ws.onBinaryMessage(camDsHandler::onBinaryMessage);
                     ws.onMessage(camDsHandler::onMessage);
                 });
+
         /*API Events*/
         // Settings
-        app.post("/api/settings", RequestHandler::onSettingsImportRequest); // TODO, change frontend
+        app.post("/api/settings", RequestHandler::onSettingsImportRequest);
         app.get("/api/settings/photonvision_config.zip", RequestHandler::onSettingsExportRequest);
-        app.post(
-                "/api/settings/hardwareConfig",
-                RequestHandler::onHardwareConfigRequest); // TODO, change frontend
-        app.post(
-                "/api/settings/hardwareSettings",
-                RequestHandler::onHardwareSettingsRequest); // TODO, change frontend
-        app.post(
-                "/api/settings/networkConfig",
-                RequestHandler::onNetworkConfigRequest); // TODO, change frontend
+        app.post("/api/settings/hardwareConfig", RequestHandler::onHardwareConfigRequest);
+        app.post("/api/settings/hardwareSettings", RequestHandler::onHardwareSettingsRequest);
+        app.post("/api/settings/networkConfig", RequestHandler::onNetworkConfigRequest);
         app.post("/api/settings/general", RequestHandler::onGeneralSettingsRequest);
         app.post("/api/settings/camera", RequestHandler::onCameraSettingsRequest);
         app.post("/api/settings/camera/setNickname", RequestHandler::onCameraNicknameChangeRequest);
