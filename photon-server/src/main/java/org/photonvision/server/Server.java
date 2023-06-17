@@ -95,7 +95,7 @@ public class Server {
                 RequestHandler::onNetworkConfigRequest); // TODO, change frontend
         app.post("/api/settings/general", RequestHandler::onGeneralSettingsRequest);
         app.post("/api/settings/camera", RequestHandler::onCameraSettingsRequest);
-        app.post("/api/settings/camera/nickname", RequestHandler::onCameraNicknameChangeRequest);
+        app.post("/api/settings/camera/setNickname", RequestHandler::onCameraNicknameChangeRequest);
 
         // Utilities
         app.post("/api/utils/offlineUpdate", RequestHandler::onOfflineUpdateRequest);

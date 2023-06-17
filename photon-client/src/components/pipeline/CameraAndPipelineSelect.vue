@@ -348,7 +348,7 @@ export default {
         saveCameraNameChange() {
             if (this.checkCameraName === "") {
                 // this.handleInputWithIndex("changeCameraName", this.newCameraName);
-                this.axios.post('http://' + this.$address + '/api/settings/camera/nickname',
+                this.axios.post('http://' + this.$address + '/api/settings/camera/setNickname',
                     {name: this.newCameraName, cameraIndex: this.$store.getters.currentCameraIndex})
                     // eslint-disable-next-line
                     .then(r => {
