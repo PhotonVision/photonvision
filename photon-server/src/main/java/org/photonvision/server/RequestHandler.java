@@ -55,8 +55,6 @@ public class RequestHandler {
 
     private static final ObjectMapper kObjectMapper = new ObjectMapper();
 
-    private static final ShellExec shell = new ShellExec();
-
     public static void onSettingsImportRequest(Context ctx) {
         var file = ctx.uploadedFile("data");
 
@@ -285,16 +283,15 @@ public class RequestHandler {
 
     public static void onCameraSettingsRequest(Context ctx) {
         try {
-            var settingsAndIndex = kObjectMapper.readValue(ctx.body(), Map.class);
 
-            var settings = (HashMap<String, Object>) settingsAndIndex.get("settings");
-            int index = (Integer) settingsAndIndex.get("index");
+            var data = kObjectMapper.readTree(ctx.body());
 
-            // The only settings we actually care about are FOV
-            var fov = Double.parseDouble(settings.get("fov").toString());
+            int index = data.get("index").asInt();
+            double fov = kObjectMapper.readTree(data.get("settings").asText()).get("fov").asDouble();
 
             var module = VisionModuleManager.getInstance().getModule(index);
             module.setFov(fov);
+
             module.saveModule();
 
             ctx.status(200);
@@ -313,6 +310,7 @@ public class RequestHandler {
         }
 
         try {
+            ShellExec shell = new ShellExec();
             var tempPath = Files.createTempFile("photonvision-journalctl", ".txt");
             shell.executeBashCommand("journalctl -u photonvision.service > " + tempPath.toAbsolutePath());
 
@@ -373,12 +371,10 @@ public class RequestHandler {
         var data = ctx.body();
 
         try {
-            ObjectMapper mapper = new ObjectMapper();
-
-            var actualObj = mapper.readTree(data);
+            var actualObj = kObjectMapper.readTree(data);
 
             int cameraIndex = actualObj.get("cameraIndex").asInt();
-            var payload = mapper.readTree(actualObj.get("payload").asText());
+            var payload = kObjectMapper.readTree(actualObj.get("payload").asText());
             var coeffs = CameraCalibrationCoefficients.parseFromCalibdbJson(payload);
 
             var uploadCalibrationEvent =
