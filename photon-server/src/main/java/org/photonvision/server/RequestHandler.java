@@ -261,7 +261,6 @@ public class RequestHandler {
         try {
             map = (Map<String, Object>) kObjectMapper.readValue(ctx.body(), Map.class);
         } catch (JsonProcessingException e) {
-
             throw new RuntimeException(e);
         }
 
