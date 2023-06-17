@@ -105,8 +105,8 @@ public class Server {
         app.post("/api/utils/publishMetrics", RequestHandler::onMetricsPublishRequest);
 
         // Calibration
-        app.post("/api/calib/end", RequestHandler::onCalibrationEndRequest);
-        app.post("/api/calib/importFromCalibDB", RequestHandler::onCalibrationImportRequest);
+        app.post("/api/calibration/end", RequestHandler::onCalibrationEndRequest);
+        app.post("/api/calibration/importFromCalibDB", RequestHandler::onCalibrationImportRequest);
 
         app.start(port);
     }

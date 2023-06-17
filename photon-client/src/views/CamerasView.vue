@@ -620,7 +620,7 @@ export default {
               };
 
               this.axios
-                .post("http://" + this.$address + "/api/calib/importFromCalibDB", data, {
+                .post("http://" + this.$address + "/api/calibration/importFromCalibDB", data, {
                   headers: { "Content-Type": "text/plain" },
                 })
                 .then(() => {
@@ -788,7 +788,7 @@ export default {
             this.snack = true;
             this.calibrationInProgress = true;
 
-            this.axios.post("http://" + this.$address + "/api/calib/end", {idx: this.$store.getters.currentCameraIndex})
+            this.axios.post("http://" + this.$address + "/api/calibration/end", {idx: this.$store.getters.currentCameraIndex})
                 .then((response) => {
                         if (response.status === 200) {
                             this.calibrationInProgress = false;
