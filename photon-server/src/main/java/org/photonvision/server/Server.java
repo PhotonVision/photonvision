@@ -82,11 +82,17 @@ public class Server {
                 });
         /*API Events*/
         // Settings
-        app.post("/api/settings", RequestHandler::onSettingsImportRequest);
+        app.post("/api/settings", RequestHandler::onSettingsImportRequest); // TODO, change frontend
         app.get("/api/settings/photonvision_config.zip", RequestHandler::onSettingsExportRequest);
-        app.post("/api/settings/hardwareConfig", RequestHandler::onHardwareConfigRequest);
-        app.post("/api/settings/hardwareSettings", RequestHandler::onHardwareSettingsRequest);
-        app.post("/api/settings/networkConfig", RequestHandler::onNetworkConfigRequest);
+        app.post(
+                "/api/settings/hardwareConfig",
+                RequestHandler::onHardwareConfigRequest); // TODO, change frontend
+        app.post(
+                "/api/settings/hardwareSettings",
+                RequestHandler::onHardwareSettingsRequest); // TODO, change frontend
+        app.post(
+                "/api/settings/networkConfig",
+                RequestHandler::onNetworkConfigRequest); // TODO, change frontend
         app.post("/api/settings/general", RequestHandler::onGeneralSettingsRequest);
         app.post("/api/settings/camera", RequestHandler::onCameraSettingsRequest);
         app.post("/api/settings/camera/nickname", RequestHandler::onCameraNicknameChangeRequest);

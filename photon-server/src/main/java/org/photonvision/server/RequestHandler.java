@@ -18,9 +18,9 @@
 package org.photonvision.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.http.Context;
+import io.javalin.http.UploadedFile;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -32,7 +32,6 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import io.javalin.http.UploadedFile;
 import org.apache.commons.io.FileUtils;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
@@ -50,7 +49,6 @@ import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.ProgramDirectoryUtilities;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.processes.VisionModuleManager;
-import org.photonvision.vision.target.TargetModel;
 
 public class RequestHandler {
     private static final Logger logger = new Logger(RequestHandler.class, LogGroup.WebServer);
@@ -59,39 +57,39 @@ public class RequestHandler {
 
     private static final ShellExec shell = new ShellExec();
 
-
     public static void onSettingsImportRequest(Context ctx) {
         var file = ctx.uploadedFile("data");
 
-        if(file == null) {
+        if (file == null) {
             ctx.status(400);
-            ctx.result("No File was sent with the request. Make sure that the settings zip is sent at the key 'data'");
+            ctx.result(
+                    "No File was sent with the request. Make sure that the settings zip is sent at the key 'data'");
             return;
         }
 
-        if(!file.getExtension().contains("zip")) {
+        if (!file.getExtension().contains("zip")) {
             ctx.status(400);
-            ctx.result("The uploaded file was not of type 'zip'. The uploaded file should be a .zip file.");
+            ctx.result(
+                    "The uploaded file was not of type 'zip'. The uploaded file should be a .zip file.");
             return;
         }
 
         // Create a temp file
         var tempFilePath = handleTempFileCreation(file);
 
-        if(tempFilePath.isEmpty()) {
+        if (tempFilePath.isEmpty()) {
             ctx.status(500);
             ctx.result("There was an error while creating a temporary copy of the file");
             return;
         }
 
-        if(ConfigManager.saveUploadedSettingsZip(tempFilePath.get())) {
+        if (ConfigManager.saveUploadedSettingsZip(tempFilePath.get())) {
             ctx.status(200);
             ctx.result("Successfully saved the uploaded settings zip");
         } else {
             ctx.status(500);
             ctx.result("There was an error while saving the uploaded zip file");
         }
-
     }
 
     public static void onSettingsExportRequest(Context ctx) {
@@ -104,7 +102,8 @@ public class RequestHandler {
 
             ctx.result(stream);
             ctx.contentType("application/zip");
-            ctx.header("Content-Disposition", "attachment; filename=\"photonvision-settings-export.zip\"");
+            ctx.header(
+                    "Content-Disposition", "attachment; filename=\"photonvision-settings-export.zip\"");
 
             ctx.status(200);
         } catch (IOException e) {
@@ -117,28 +116,30 @@ public class RequestHandler {
     public static void onHardwareConfigRequest(Context ctx) {
         var file = ctx.uploadedFile("data");
 
-        if(file == null) {
+        if (file == null) {
             ctx.status(400);
-            ctx.result("No File was sent with the request. Make sure that the settings zip is sent at the key 'data'");
+            ctx.result(
+                    "No File was sent with the request. Make sure that the settings zip is sent at the key 'data'");
             return;
         }
 
-        if(!file.getExtension().contains("json")) {
+        if (!file.getExtension().contains("json")) {
             ctx.status(400);
-            ctx.result("The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
+            ctx.result(
+                    "The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
             return;
         }
 
         // Create a temp file
         var tempFilePath = handleTempFileCreation(file);
 
-        if(tempFilePath.isEmpty()) {
+        if (tempFilePath.isEmpty()) {
             ctx.status(500);
             ctx.result("There was an error while creating a temporary copy of the file");
             return;
         }
 
-        if(ConfigManager.getInstance().saveUploadedHardwareConfig(tempFilePath.get().toPath())) {
+        if (ConfigManager.getInstance().saveUploadedHardwareConfig(tempFilePath.get().toPath())) {
             ctx.status(200);
             ctx.result("Successfully saved the uploaded hardware config");
         } else {
@@ -150,28 +151,30 @@ public class RequestHandler {
     public static void onHardwareSettingsRequest(Context ctx) {
         var file = ctx.uploadedFile("data");
 
-        if(file == null) {
+        if (file == null) {
             ctx.status(400);
-            ctx.result("No File was sent with the request. Make sure that the settings zip is sent at the key 'data'");
+            ctx.result(
+                    "No File was sent with the request. Make sure that the settings zip is sent at the key 'data'");
             return;
         }
 
-        if(!file.getExtension().contains("json")) {
+        if (!file.getExtension().contains("json")) {
             ctx.status(400);
-            ctx.result("The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
+            ctx.result(
+                    "The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
             return;
         }
 
         // Create a temp file
         var tempFilePath = handleTempFileCreation(file);
 
-        if(tempFilePath.isEmpty()) {
+        if (tempFilePath.isEmpty()) {
             ctx.status(500);
             ctx.result("There was an error while creating a temporary copy of the file");
             return;
         }
 
-        if(ConfigManager.getInstance().saveUploadedHardwareSettings(tempFilePath.get().toPath())) {
+        if (ConfigManager.getInstance().saveUploadedHardwareSettings(tempFilePath.get().toPath())) {
             ctx.status(200);
             ctx.result("Successfully saved the uploaded hardware config");
         } else {
@@ -183,28 +186,30 @@ public class RequestHandler {
     public static void onNetworkConfigRequest(Context ctx) {
         var file = ctx.uploadedFile("data");
 
-        if(file == null) {
+        if (file == null) {
             ctx.status(400);
-            ctx.result("No File was sent with the request. Make sure that the settings zip is sent at the key 'data'");
+            ctx.result(
+                    "No File was sent with the request. Make sure that the settings zip is sent at the key 'data'");
             return;
         }
 
-        if(!file.getExtension().contains("json")) {
+        if (!file.getExtension().contains("json")) {
             ctx.status(400);
-            ctx.result("The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
+            ctx.result(
+                    "The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
             return;
         }
 
         // Create a temp file
         var tempFilePath = handleTempFileCreation(file);
 
-        if(tempFilePath.isEmpty()) {
+        if (tempFilePath.isEmpty()) {
             ctx.status(500);
             ctx.result("There was an error while creating a temporary copy of the file");
             return;
         }
 
-        if(ConfigManager.getInstance().saveUploadedNetworkConfig(tempFilePath.get().toPath())) {
+        if (ConfigManager.getInstance().saveUploadedNetworkConfig(tempFilePath.get().toPath())) {
             ctx.status(200);
             ctx.result("Successfully saved the uploaded hardware config");
         } else {
@@ -216,20 +221,23 @@ public class RequestHandler {
     public static void onOfflineUpdateRequest(Context ctx) {
         var file = ctx.uploadedFile("jarData");
 
-        if(file == null) {
+        if (file == null) {
             ctx.status(400);
-            ctx.result("No File was sent with the request. Make sure that the new jar is sent at the key 'jarData'");
+            ctx.result(
+                    "No File was sent with the request. Make sure that the new jar is sent at the key 'jarData'");
             return;
         }
 
-        if(!file.getExtension().contains("jar")) {
+        if (!file.getExtension().contains("jar")) {
             ctx.status(400);
-            ctx.result("The uploaded file was not of type 'jar'. The uploaded file should be a .jar file.");
+            ctx.result(
+                    "The uploaded file was not of type 'jar'. The uploaded file should be a .jar file.");
             return;
         }
 
         try {
-            Path filePath = Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), "photonvision.jar");
+            Path filePath =
+                    Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), "photonvision.jar");
             File targetFile = new File(filePath.toString());
             var stream = new FileOutputStream(targetFile);
 
@@ -259,7 +267,7 @@ public class RequestHandler {
 
         var networkConfig = NetworkConfig.fromHashMap(map);
 
-        if(networkConfig.isEmpty()) {
+        if (networkConfig.isEmpty()) {
             ctx.status(400);
             ctx.result("The provided general settings were malformed");
             return;
@@ -354,7 +362,8 @@ public class RequestHandler {
             logger.info("Camera calibrated!");
         } catch (JsonProcessingException e) {
             ctx.status(400);
-            ctx.result("The 'idx' field was not found in the request. Please make sure the index of the vision module is specified with the 'idx' key.");
+            ctx.result(
+                    "The 'idx' field was not found in the request. Please make sure the index of the vision module is specified with the 'idx' key.");
         } catch (Exception e) {
             ctx.status(500);
             ctx.result("There was an error while ending calibration");
@@ -375,7 +384,11 @@ public class RequestHandler {
 
             var uploadCalibrationEvent =
                     new IncomingWebSocketEvent<>(
-                            DataChangeDestination.DCD_ACTIVEMODULE, "calibrationUploaded", coeffs, cameraIndex, null);
+                            DataChangeDestination.DCD_ACTIVEMODULE,
+                            "calibrationUploaded",
+                            coeffs,
+                            cameraIndex,
+                            null);
             DataChangeService.getInstance().publishEvent(uploadCalibrationEvent);
 
             ctx.status(200);
@@ -404,7 +417,7 @@ public class RequestHandler {
 
             VisionModuleManager.getInstance().getModule(idx).setCameraNickname(name);
             ctx.status(200);
-            ctx.result("Successfully changed the camera name to: "+name);
+            ctx.result("Successfully changed the camera name to: " + name);
         } catch (JsonProcessingException e) {
             ctx.status(400);
             ctx.result("The provided nickname data was malformed");
@@ -426,16 +439,18 @@ public class RequestHandler {
      * @return if the temporary file was successfully created.
      */
     private static Optional<File> handleTempFileCreation(UploadedFile file) {
-        var tempFilePath = new File(Path.of(System.getProperty("java.io.tmpdir"), file.getFilename()).toString());
+        var tempFilePath =
+                new File(Path.of(System.getProperty("java.io.tmpdir"), file.getFilename()).toString());
 
         boolean createFile = tempFilePath.getParentFile().mkdirs();
 
-        if(!createFile) return Optional.empty();
+        if (!createFile) return Optional.empty();
 
         try {
             FileUtils.copyInputStreamToFile(file.getContent(), tempFilePath);
         } catch (IOException e) {
-            logger.error("There was an error while uploading " + file.getFilename() + " to the temp folder!");
+            logger.error(
+                    "There was an error while uploading " + file.getFilename() + " to the temp folder!");
             return Optional.empty();
         }
 
@@ -443,20 +458,24 @@ public class RequestHandler {
     }
 
     /**
-     * Restart the running program. Note that this doesn't actually restart the program itself, instead, it relies on systemd or an equivalent.
+     * Restart the running program. Note that this doesn't actually restart the program itself,
+     * instead, it relies on systemd or an equivalent.
      */
     private static void restartProgram() {
-        TimedTaskManager.getInstance().addOneShotTask(() -> {
-            if (Platform.isLinux()) {
-                try {
-                    new ShellExec().executeBashCommand("systemctl restart photonvision.service");
-                } catch (IOException e) {
-                    logger.error("Could not restart device!", e);
-                    System.exit(0);
-                }
-            } else {
-                System.exit(0);
-            }
-        }, 0);
+        TimedTaskManager.getInstance()
+                .addOneShotTask(
+                        () -> {
+                            if (Platform.isLinux()) {
+                                try {
+                                    new ShellExec().executeBashCommand("systemctl restart photonvision.service");
+                                } catch (IOException e) {
+                                    logger.error("Could not restart device!", e);
+                                    System.exit(0);
+                                }
+                            } else {
+                                System.exit(0);
+                            }
+                        },
+                        0);
     }
 }

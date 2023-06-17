@@ -417,7 +417,6 @@ public class ConfigManager {
         boolean fileDeleted = FileUtils.deleteFile(this.getHardwareSettingsFile());
         boolean fileCopied = FileUtils.copyFile(uploadPath, this.getHardwareSettingsFile());
         return fileDeleted && fileCopied;
-
     }
 
     public boolean saveUploadedNetworkConfig(Path uploadPath) {

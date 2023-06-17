@@ -27,7 +27,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.networking.NetworkMode;
 import org.photonvision.common.util.file.JacksonUtils;

@@ -52,17 +52,14 @@
         cols="12"
         sm="6"
       >
-        <v-btn
-          color="secondary"
-          @click="$refs.importSettings.click()"
-        >
-          <v-icon left>
-            mdi-import
-          </v-icon>
-          Import Settings
-        </v-btn>
+        <v-select
+          ref="importSelect"
+          label="Import"
+          :items="['Settings', 'Hardware Config', 'Hardware Settings', 'Network Config']"
+          :dense="true"
+          @input="handleImport"
+        />
       </v-col>
-
       <v-col
         cols="12"
         sm="6"
@@ -77,7 +74,6 @@
           Export Settings
         </v-btn>
       </v-col>
-
       <v-col
         cols="12"
         sm="6"
@@ -95,16 +91,11 @@
           <a
             ref="exportLogFile"
             style="color: black; text-decoration: none; display: none"
-            :href="
-              'http://' +
-                this.$address +
-                '/api/settings/photonvision-journalctl.txt'
-            "
+            :href="'http://' + this.$address + '/api/utils/logs/photonvision-journalctl.txt'"
             download="photonvision-journalctl.txt"
           />
         </v-btn>
       </v-col>
-
       <v-col
         cols="12"
         sm="6"
@@ -133,10 +124,32 @@
     <input
       ref="importSettings"
       type="file"
-      accept=".zip, .json"
+      accept=".zip"
       style="display: none;"
-      @change="readImportedSettings"
+      @change="uploadSettings"
     >
+    <input
+      ref="importHardwareConfig"
+      type="file"
+      accept=".json"
+      style="display: none;"
+      @change="uploadSettings"
+    >
+    <input
+      ref="importHardwareSettings"
+      type="file"
+      accept=".json"
+      style="display: none;"
+      @change="uploadSettings"
+    >
+    <input
+      ref="importNetworkConfig"
+      type="file"
+      accept=".json"
+      style="display: none;"
+      @change="uploadSettings"
+    >
+
     <!-- Special hidden link that gets 'clicked' when the user exports settings -->
     <a
       ref="exportSettings"
@@ -167,7 +180,7 @@ export default {
       snackbar: {
         color: "success",
         text: "",
-      },
+      }
     };
   },
   computed: {
@@ -197,51 +210,67 @@ export default {
     metrics() {
       // console.log(this.$store.state.metrics);
       return this.$store.state.metrics;
-    },
+    }
   },
   methods: {
+    handleImport(selected) {
+      switch (selected) {
+        case 'Settings':
+          this.$refs.importSettings.click()
+          break;
+        case 'Hardware Config':
+          this.$refs.importHardwareConfig.click()
+          break;
+        case 'Hardware Settings':
+          this.$refs.importHardwareSettings.click()
+          break;
+        case 'Network Config':
+          this.$refs.importNetworkConfig.click()
+          break;
+      }
+    },
     restartProgram() {
-      this.axios.post("http://" + this.$address + "/api/restartProgram", {});
+      this.axios.post("http://" + this.$address + "/api/utils/restartProgram", {});
     },
     restartDevice() {
-      this.axios.post("http://" + this.$address + "/api/restartDevice", {});
+      this.axios.post("http://" + this.$address + "/api/utils/restartDevice", {});
     },
-    readImportedSettings(event) {
+    uploadSettings(event) {
       let formData = new FormData();
-      formData.append("zipData", event.target.files[0]);
-      this.axios
-        .post("http://" + this.$address + "/api/settings/import", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        })
-        .then(() => {
-          this.snackbar = {
-            color: "success",
-            text:
-              "Settings imported successfully! PhotonVision will restart in the background...",
-          };
-          this.snack = true;
-        })
-        .catch((err) => {
-          if (err.response) {
+      formData.append("data", event.target.files[0]);
+
+      console.log(event)
+
+      // TODO, get this
+      const settingsType = ""
+
+      const requestUrl = `http://${this.$address}/api/settings/${settingsType}`;
+      this.axios.post(requestUrl, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+          .then(response => {
             this.snackbar = {
-              color: "error",
-              text:
-                "Error while uploading settings file! Could not process provided file.",
-            };
-          } else if (err.request) {
-            this.snackbar = {
-              color: "error",
-              text:
-                "Error while uploading settings file! No respond to upload attempt.",
-            };
-          } else {
-            this.snackbar = {
-              color: "error",
-              text: "Error while uploading settings file!",
-            };
-          }
-          this.snack = true;
-        });
+              color: response.status === 200 ? "success" : "error",
+              text: response.data.text
+            }
+            this.snack = true
+          })
+          .catch((err) => {
+            if (err.request) {
+              this.snackbar = {
+                color: "error",
+                text:
+                    "Error while uploading settings file! The backend didn't respond to the upload attempt.",
+              };
+            } else {
+              this.snackbar = {
+                color: "error",
+                text: "Error while uploading settings file!",
+              };
+            }
+            this.snack = true;
+          })
+
     },
     doOfflineUpdate(event) {
       this.snackbar = {
@@ -254,7 +283,7 @@ export default {
       formData.append("jarData", event.target.files[0]);
       this.axios
         .post(
-          "http://" + this.$address + "/api/settings/offlineUpdate",
+          "http://" + this.$address + "/api/utils/offlineUpdate",
           formData,
           {
             headers: { "Content-Type": "multipart/form-data" },
@@ -303,8 +332,7 @@ export default {
           this.snack = true;
         });
     },
-    showLogs(event) {
-      event;
+    showLogs() {
       this.$store.state.logsOverlay = true;
     },
   },
