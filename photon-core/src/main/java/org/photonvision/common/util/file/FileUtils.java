@@ -59,6 +59,12 @@ public class FileUtils {
         }
     }
 
+    /**
+     * Delete the file at the path.
+     *
+     * @param path file path to delete.
+     * @return whether the operation was successful.
+     */
     public static boolean deleteFile(Path path) {
         try {
             Files.delete(path);
@@ -72,6 +78,13 @@ public class FileUtils {
         }
     }
 
+    /**
+     * Copy a file from a source to a new destination.
+     *
+     * @param src the file path to copy.
+     * @param dst the file path to replace.
+     * @return whether the operation was successful.
+     */
     public static boolean copyFile(Path src, Path dst) {
         try {
             Files.copy(src, dst);
@@ -80,6 +93,19 @@ public class FileUtils {
             logger.error("Exception copying file " + src + " to " + dst + "!", e);
             return false;
         }
+    }
+
+    /**
+     * Replace the destination file with a new source.
+     *
+     * @param src the file path to replace with.
+     * @param dst the file path to replace.
+     * @return whether the operation was successful.
+     */
+    public static boolean replaceFile(Path src, Path dst) {
+        boolean fileDeleted = deleteFile(dst);
+        boolean fileCopied = copyFile(src, dst);
+        return fileDeleted && fileCopied;
     }
 
     public static void setFilePerms(Path path) throws IOException {

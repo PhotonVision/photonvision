@@ -408,21 +408,15 @@ public class ConfigManager {
     }
 
     public boolean saveUploadedHardwareConfig(Path uploadPath) {
-        boolean fileDeleted = FileUtils.deleteFile(this.getHardwareConfigFile());
-        boolean fileCopied = FileUtils.copyFile(uploadPath, this.getHardwareConfigFile());
-        return fileDeleted && fileCopied;
+        return FileUtils.replaceFile(uploadPath, this.getHardwareConfigFile());
     }
 
     public boolean saveUploadedHardwareSettings(Path uploadPath) {
-        boolean fileDeleted = FileUtils.deleteFile(this.getHardwareSettingsFile());
-        boolean fileCopied = FileUtils.copyFile(uploadPath, this.getHardwareSettingsFile());
-        return fileDeleted && fileCopied;
+        return FileUtils.replaceFile(uploadPath, this.getHardwareSettingsFile());
     }
 
     public boolean saveUploadedNetworkConfig(Path uploadPath) {
-        boolean fileDeleted = FileUtils.deleteFile(this.getNetworkConfigFile());
-        boolean fileCopied = FileUtils.copyFile(uploadPath, this.getNetworkConfigFile());
-        return fileDeleted && fileCopied;
+        return FileUtils.replaceFile(uploadPath, this.getNetworkConfigFile());
     }
 
     public void requestSave() {
