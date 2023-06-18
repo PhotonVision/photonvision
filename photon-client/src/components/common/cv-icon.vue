@@ -9,6 +9,7 @@
         <v-icon
           :class="hoverClass"
           :color="color"
+          :disabled="disabled"
           @click="handleClick"
           v-on="on"
         >
@@ -24,7 +25,7 @@
     export default {
         name: 'Icon',
       // eslint-disable-next-line vue/require-prop-types
-        props: ['color', 'tooltip', 'text', 'right', 'hover'],
+        props: ['color', 'tooltip', 'text', 'right', 'hover', 'disabled'],
         data() {
             return {}
         },

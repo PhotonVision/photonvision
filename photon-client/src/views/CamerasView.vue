@@ -16,25 +16,70 @@
         >
           <v-card-title>Camera Settings</v-card-title>
           <div class="ml-5">
-            <CVselect
-              v-model="currentCameraIndex"
-              name="Camera"
-              :list="$store.getters.cameraList"
-              :select-cols="$vuetify.breakpoint.mdAndUp ? 10 : 7"
-              @input="handleInput('currentCamera',currentCameraIndex)"
-            />
+            <v-row>
+              <v-col cols="10">
+                <CVselect
+                  v-if="!cameraNicknameEditInProgress"
+                  v-model="currentCameraIndex"
+                  name="Camera"
+                  :list="$store.getters.cameraList"
+                  :select-cols="$vuetify.breakpoint.mdAndUp ? 9 : 7"
+                  @input="handleInput('currentCamera', currentCameraIndex)"
+                />
+                <CVinput
+                  v-else
+                  v-model="cameraTempNameValue"
+                  name="Camera"
+                  :error-message="checkCameraName"
+                  :input-cols="$vuetify.breakpoint.mdAndUp ? 9 : 7"
+                />
+              </v-col>
+              <v-col
+                v-if="!cameraNicknameEditInProgress"
+                cols="2"
+                style="display: flex; align-items: center"
+              >
+                <CVicon
+                  color="#c5c5c5"
+                  :hover="true"
+                  text="mdi-pencil"
+                  tooltip="Edit camera name"
+                  @click="changeCameraName"
+                />
+              </v-col>
+              <v-col
+                v-else
+                style="display: flex; align-items: center; justify-content: space-around"
+              >
+                <CVicon
+                  :hover="true"
+                  :disabled="cameraNicknameChangeDisabled"
+                  text="mdi-content-save"
+                  tooltip="Save Changes"
+                  @click="saveCameraNicknameChange"
+                />
+                <CVicon
+                  color="error"
+                  :hover="true"
+                  text="mdi-close"
+                  tooltip="Discard Changes"
+                  @click="() => cameraNicknameEditInProgress = false"
+                />
+              </v-col>
+            </v-row>
             <CVnumberinput
               v-model="cameraSettings.fov"
               :tooltip="cameraSettings.isFovConfigurable ? 'Field of view (in degrees) of the camera measured across the diagonal of the frame, in a video mode which covers the whole sensor area.' : 'This setting is managed by a vendor'"
               name="Maximum Diagonal FOV"
               :disabled="!cameraSettings.isFovConfigurable"
-              :label-cols="$vuetify.breakpoint.mdAndUp ? undefined : 7"
+              :label-cols="$vuetify.breakpoint.mdAndUp ? 4 : 7"
             />
             <br>
             <v-btn
               style="margin-top:10px"
               small
               color="secondary"
+              :disabled="cameraNicknameEditInProgress"
               @click="sendCameraSettings"
             >
               <v-icon left>
@@ -418,10 +463,14 @@ import CVimage from "../components/common/cv-image";
 import TooltippedLabel from "../components/common/cv-tooltipped-label";
 import jsPDF from "jspdf";
 import "../jsPDFFonts/Prompt-Regular-normal.js";
+import CVicon from "@/components/common/cv-icon.vue";
+import CVinput from "@/components/common/cv-input.vue";
 
 export default {
     name: 'Cameras',
     components: {
+      CVinput,
+      CVicon,
         TooltippedLabel,
         CVselect,
         CVnumberinput,
@@ -431,6 +480,8 @@ export default {
     },
     data() {
         return {
+            cameraNicknameEditInProgress : false,
+            cameraTempNameValue: "",
             snack: false,
             calibrationInProgress: false,
             calibrationFailed: false,
@@ -602,8 +653,50 @@ export default {
                 this.$store.commit('mutateCalibrationState', {['videoModeIndex']: this.filteredResolutionList[i].index});
             }
         },
+        cameraNicknameChangeDisabled() {
+          if(this.checkCameraName !== '') return true;
+          if(this.cameraTempNameValue === this.$store.getters.cameraList[this.currentCameraIndex]) return true;
+          return false;
+        },
+        checkCameraName() {
+          if (this.cameraTempNameValue !== this.$store.getters.cameraList[this.currentCameraIndex]) {
+            const cameraNameRegex = RegExp("^[A-Za-z0-9_ \\-)(]*[A-Za-z0-9][A-Za-z0-9_ \\-)(.]*$")
+            if (cameraNameRegex.test(this.cameraTempNameValue)) {
+              for (let cam in this.cameraList) {
+                if (this.cameraList.hasOwnProperty(cam)) {
+                  if (this.cameraTempNameValue === this.cameraList[cam]) {
+                    return "A camera by that name already exists"
+                  }
+                }
+              }
+            } else {
+              return "Please enter a valid camera name. It should only contain letters, numbers, underscores, hyphens, parentheses, and periods."
+            }
+          }
+          return "";
+        }
     },
     methods: {
+        changeCameraName() {
+          this.cameraTempNameValue = this.$store.getters.cameraList[this.currentCameraIndex];
+          this.cameraNicknameEditInProgress = true
+        },
+        saveCameraNicknameChange() {
+          // This should already be handled but just to be safe
+          if(this.checkCameraName !== "") return;
+
+          this.axios.post('http://' + this.$address + '/api/setCameraNickname',
+              {name: this.cameraTempNameValue, cameraIndex: this.$store.getters.currentCameraIndex})
+              .then(() => {
+                this.$emit('camera-name-changed')
+              })
+              .catch(e => {
+                console.log("HTTP error while changing camera name " + e);
+                this.$emit('camera-name-changed')
+              })
+
+          this.cameraNicknameEditInProgress = false;
+        },
         readImportedCalibration(event) {
             // let formData = new FormData();
             // formData.append("zipData", event.target.files[0]);
