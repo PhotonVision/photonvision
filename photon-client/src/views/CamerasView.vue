@@ -42,6 +42,7 @@
                 <CVicon
                   color="#c5c5c5"
                   :hover="true"
+                  style="padding-left: 8px"
                   text="mdi-pencil"
                   tooltip="Edit camera name"
                   @click="changeCameraName"
