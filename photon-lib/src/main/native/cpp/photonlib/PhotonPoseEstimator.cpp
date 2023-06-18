@@ -359,7 +359,13 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagPnpStrategy(
     std::optional<cv::Mat> distCoeffs) {
   using namespace frc;
 
+  // Need at least 2 targets
   if (!result.HasTargets() || result.GetTargets().size() < 2) {
+    return Update(result, std::nullopt, std::nullopt,
+                  this->multiTagFallbackStrategy);
+  }
+
+  if (!camMat || !distCoeffs) {
     return Update(result, std::nullopt, std::nullopt,
                   this->multiTagFallbackStrategy);
   }
@@ -386,17 +392,13 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagPnpStrategy(
   }
 
   // We should only do multi-tag if at least 2 tags (* 4 corners/tag)
-  if (imagePoints.empty() || imagePoints.size() < 8) {
+  if (imagePoints.size() < 8) {
     return Update(result, camMat, distCoeffs, this->multiTagFallbackStrategy);
   }
 
   // Use OpenCV ITERATIVE solver
   cv::Mat const rvec(3, 1, cv::DataType<double>::type);
   cv::Mat const tvec(3, 1, cv::DataType<double>::type);
-
-  if (!camMat || !distCoeffs) {
-    return Update(result, camMat, distCoeffs, this->multiTagFallbackStrategy);
-  }
 
   cv::solvePnP(objectPoints, imagePoints, camMat.value(), distCoeffs.value(),
                rvec, tvec, false, cv::SOLVEPNP_SQPNP);
