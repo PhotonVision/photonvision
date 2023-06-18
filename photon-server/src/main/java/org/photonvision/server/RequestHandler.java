@@ -49,6 +49,10 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.processes.VisionModuleManager;
 
 public class RequestHandler {
+    // Treat all 2XX calls as "INFO"
+    // Treat all 4XX calls as "ERROR"
+    // Treat all 5XX calls as "ERROR"
+
     private static final Logger logger = new Logger(RequestHandler.class, LogGroup.WebServer);
 
     private static final ObjectMapper kObjectMapper = new ObjectMapper();
@@ -60,6 +64,7 @@ public class RequestHandler {
             ctx.status(400);
             ctx.result(
                     "No File was sent with the request. Make sure that the settings zip is sent at the key 'data'");
+            logger.error("No File was sent with the request. Make sure that the settings zip is sent at the key 'data'");
             return;
         }
 
@@ -67,6 +72,7 @@ public class RequestHandler {
             ctx.status(400);
             ctx.result(
                     "The uploaded file was not of type 'zip'. The uploaded file should be a .zip file.");
+            logger.error("The uploaded file was not of type 'zip'. The uploaded file should be a .zip file.");
             return;
         }
 
@@ -76,15 +82,18 @@ public class RequestHandler {
         if (tempFilePath.isEmpty()) {
             ctx.status(500);
             ctx.result("There was an error while creating a temporary copy of the file");
+            logger.error("There was an error while creating a temporary copy of the file");
             return;
         }
 
         if (ConfigManager.saveUploadedSettingsZip(tempFilePath.get())) {
             ctx.status(200);
             ctx.result("Successfully saved the uploaded settings zip");
+            logger.info("Successfully saved the uploaded settings zip");
         } else {
             ctx.status(500);
             ctx.result("There was an error while saving the uploaded zip file");
+            logger.error("There was an error while saving the uploaded zip file");
         }
     }
 
@@ -115,7 +124,8 @@ public class RequestHandler {
         if (file == null) {
             ctx.status(400);
             ctx.result(
-                    "No File was sent with the request. Make sure that the settings zip is sent at the key 'data'");
+                    "No File was sent with the request. Make sure that the hardware config json is sent at the key 'data'");
+            logger.error("No File was sent with the request. Make sure that the hardware config json is sent at the key 'data'");
             return;
         }
 
@@ -123,6 +133,7 @@ public class RequestHandler {
             ctx.status(400);
             ctx.result(
                     "The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
+            logger.error("The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
             return;
         }
 
@@ -132,15 +143,18 @@ public class RequestHandler {
         if (tempFilePath.isEmpty()) {
             ctx.status(500);
             ctx.result("There was an error while creating a temporary copy of the file");
+            logger.error("There was an error while creating a temporary copy of the file");
             return;
         }
 
         if (ConfigManager.getInstance().saveUploadedHardwareConfig(tempFilePath.get().toPath())) {
             ctx.status(200);
             ctx.result("Successfully saved the uploaded hardware config");
+            logger.info("Successfully saved the uploaded hardware config");
         } else {
             ctx.status(500);
             ctx.result("There was an error while saving the uploaded hardware config");
+            logger.error("There was an error while saving the uploaded hardware config");
         }
     }
 
@@ -150,7 +164,8 @@ public class RequestHandler {
         if (file == null) {
             ctx.status(400);
             ctx.result(
-                    "No File was sent with the request. Make sure that the settings zip is sent at the key 'data'");
+                    "No File was sent with the request. Make sure that the hardware settings json is sent at the key 'data'");
+            logger.error("No File was sent with the request. Make sure that the hardware settings json is sent at the key 'data'");
             return;
         }
 
@@ -158,6 +173,7 @@ public class RequestHandler {
             ctx.status(400);
             ctx.result(
                     "The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
+            logger.error("The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
             return;
         }
 
@@ -167,15 +183,18 @@ public class RequestHandler {
         if (tempFilePath.isEmpty()) {
             ctx.status(500);
             ctx.result("There was an error while creating a temporary copy of the file");
+            logger.error("There was an error while creating a temporary copy of the file");
             return;
         }
 
         if (ConfigManager.getInstance().saveUploadedHardwareSettings(tempFilePath.get().toPath())) {
             ctx.status(200);
-            ctx.result("Successfully saved the uploaded hardware config");
+            ctx.result("Successfully saved the uploaded hardware settings");
+            logger.info("Successfully saved the uploaded hardware settings");
         } else {
             ctx.status(500);
             ctx.result("There was an error while saving the uploaded hardware settings");
+            logger.error("There was an error while saving the uploaded hardware settings");
         }
     }
 
@@ -185,7 +204,8 @@ public class RequestHandler {
         if (file == null) {
             ctx.status(400);
             ctx.result(
-                    "No File was sent with the request. Make sure that the settings zip is sent at the key 'data'");
+                    "No File was sent with the request. Make sure that the network config json is sent at the key 'data'");
+            logger.error("No File was sent with the request. Make sure that the network config json is sent at the key 'data'");
             return;
         }
 
@@ -193,6 +213,7 @@ public class RequestHandler {
             ctx.status(400);
             ctx.result(
                     "The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
+            logger.error("The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
             return;
         }
 
@@ -202,15 +223,18 @@ public class RequestHandler {
         if (tempFilePath.isEmpty()) {
             ctx.status(500);
             ctx.result("There was an error while creating a temporary copy of the file");
+            logger.error("There was an error while creating a temporary copy of the file");
             return;
         }
 
         if (ConfigManager.getInstance().saveUploadedNetworkConfig(tempFilePath.get().toPath())) {
             ctx.status(200);
-            ctx.result("Successfully saved the uploaded hardware config");
+            ctx.result("Successfully saved the uploaded network config");
+            logger.info("Successfully saved the uploaded network config");
         } else {
             ctx.status(500);
             ctx.result("There was an error while saving the uploaded network config");
+            logger.error("There was an error while saving the uploaded network config");
         }
     }
 
@@ -221,6 +245,7 @@ public class RequestHandler {
             ctx.status(400);
             ctx.result(
                     "No File was sent with the request. Make sure that the new jar is sent at the key 'jarData'");
+            logger.error("No File was sent with the request. Make sure that the new jar is sent at the key 'jarData'");
             return;
         }
 
@@ -228,6 +253,7 @@ public class RequestHandler {
             ctx.status(400);
             ctx.result(
                     "The uploaded file was not of type 'jar'. The uploaded file should be a .jar file.");
+            logger.error("The uploaded file was not of type 'jar'. The uploaded file should be a .jar file.");
             return;
         }
 
@@ -243,13 +269,16 @@ public class RequestHandler {
             ctx.status(200);
             ctx.result(
                     "Offline update successfully complete. PhotonVision will restart in the background.");
+            logger.info("Offline update successfully complete. PhotonVision will restart in the background.");
             restartProgram();
         } catch (FileNotFoundException e) {
             ctx.result("The current program jar file couldn't be found.");
             ctx.status(500);
+            logger.error("The current program jar file couldn't be found.", e);
         } catch (IOException e) {
             ctx.result("Unable to overwrite the existing program with the new program.");
             ctx.status(500);
+            logger.error("Unable to overwrite the existing program with the new program.", e);
         }
     }
 
@@ -260,12 +289,14 @@ public class RequestHandler {
 
             ctx.status(200);
             ctx.result("Successfully saved general settings");
+            logger.info("Successfully saved general settings");
         } catch (JsonProcessingException e) {
             // If the settings can't be parsed, use the default network settings
             config = new NetworkConfig();
 
             ctx.status(400);
             ctx.result("The provided general settings were malformed");
+            logger.error("The provided general settings were malformed", e);
         }
 
         ConfigManager.getInstance().setNetworkSettings(config);
@@ -290,9 +321,11 @@ public class RequestHandler {
 
             ctx.status(200);
             ctx.result("Successfully saved camera settings");
+            logger.info("Successfully saved camera settings");
         } catch (JsonProcessingException e) {
             ctx.status(400);
             ctx.result("The provided camera settings were malformed");
+            logger.error("The provided camera settings were malformed", e);
         }
     }
 
@@ -300,6 +333,8 @@ public class RequestHandler {
         if (!Platform.isLinux()) {
             ctx.status(405);
             ctx.result("Logs can only be exported on a Linux platform");
+            // INFO only log because this isn't ERROR worthy
+            logger.info("Logs can only be exported on a Linux platform");
             return;
         }
 
@@ -315,20 +350,20 @@ public class RequestHandler {
             if (shell.getExitCode() == 0) {
                 // Wrote to the temp file! Add it to the ctx
                 var stream = new FileInputStream(tempPath.toFile());
-                logger.info("Uploading settings with size " + stream.available());
-                ctx.result(stream);
                 ctx.contentType("text/plain");
                 ctx.header("Content-Disposition", "attachment; filename=\"photonvision-journalctl.txt\"");
-
                 ctx.status(200);
+                ctx.result(stream);
+                logger.info("Uploading settings with size " + stream.available());
             } else {
                 ctx.status(500);
                 ctx.result("The journalctl service was unable to export logs");
+                logger.error("The journalctl service was unable to export logs");
             }
         } catch (IOException e) {
-            logger.error("Could not export journactl logs!", e);
             ctx.status(500);
             ctx.result("There was an error while exporting journactl logs");
+            logger.error("There was an error while exporting journactl logs", e);
         }
     }
 
@@ -344,20 +379,22 @@ public class RequestHandler {
             if (calData == null) {
                 ctx.result("The calibration process failed");
                 ctx.status(500);
+                logger.error("The calibration process failed. Calibration data for module at index (" + index + ") was null");
                 return;
             }
 
             ctx.result("Camera calibration successfully completed!");
             ctx.status(200);
-
-            logger.info("Camera calibrated!");
+            logger.info("Camera calibration successfully completed!");
         } catch (JsonProcessingException e) {
             ctx.status(400);
             ctx.result(
                     "The 'index' field was not found in the request. Please make sure the index of the vision module is specified with the 'index' key.");
+            logger.error("The 'index' field was not found in the request. Please make sure the index of the vision module is specified with the 'index' key.", e);
         } catch (Exception e) {
             ctx.status(500);
             ctx.result("There was an error while ending calibration");
+            logger.error("There was an error while ending calibration", e);
         }
     }
 
@@ -382,11 +419,12 @@ public class RequestHandler {
 
             ctx.status(200);
             ctx.result("Calibration imported successfully from CalibDB data!");
-            logger.info("Calibration added!");
+            logger.info("Calibration imported successfully from CalibDB data!");
         } catch (JsonProcessingException e) {
             ctx.status(400);
             ctx.result(
                     "The Provided CalibDB data is malformed and cannot be parsed for the required fields.");
+            logger.error("The Provided CalibDB data is malformed and cannot be parsed for the required fields.", e);
         }
     }
 
@@ -410,12 +448,16 @@ public class RequestHandler {
             VisionModuleManager.getInstance().getModule(idx).setCameraNickname(name);
             ctx.status(200);
             ctx.result("Successfully changed the camera name to: " + name);
+            logger.info("Successfully changed the camera name to: " + name);
         } catch (JsonProcessingException e) {
             ctx.status(400);
             ctx.result("The provided nickname data was malformed");
+            logger.error("The provided nickname data was malformed", e);
+
         } catch (Exception e) {
             ctx.status(500);
             ctx.result("An error occurred while changing the camera's nickname");
+            logger.error("An error occurred while changing the camera's nickname", e);
         }
     }
 
