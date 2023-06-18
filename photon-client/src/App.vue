@@ -32,7 +32,7 @@
 
         <v-list-item
           link
-          to="dashboard"
+          to="/dashboard"
           @click="rollbackPipelineIndex()"
         >
           <v-list-item-icon>
@@ -45,7 +45,7 @@
         <v-list-item
           ref="camerasTabOpener"
           link
-          to="cameras"
+          to="/cameras"
           @click="switchToDriverMode()"
         >
           <v-list-item-icon>
@@ -57,7 +57,7 @@
         </v-list-item>
         <v-list-item
           link
-          to="settings"
+          to="/settings"
           @click="switchToSettingsTab()"
         >
           <v-list-item-icon>
@@ -69,7 +69,7 @@
         </v-list-item>
         <v-list-item
           link
-          to="docs"
+          to="/docs"
         >
           <v-list-item-icon>
             <v-icon>mdi-bookshelf</v-icon>
@@ -197,7 +197,7 @@
         <v-card-text>
           PhotonVision cannot connect to the NetworkTables Server. Please visit the
           <router-link
-            to="settings"
+            to="/settings"
             class="accent--text"
             @click="switchToSettingsTab"
           >
