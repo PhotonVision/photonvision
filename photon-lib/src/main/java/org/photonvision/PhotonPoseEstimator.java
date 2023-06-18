@@ -177,7 +177,7 @@ public class PhotonPoseEstimator {
         checkUpdate(this.multiTagFallbackStrategy, strategy);
         if (strategy == PoseStrategy.MULTI_TAG_PNP) {
             DriverStation.reportWarning(
-                    "Fallback cannot be set to MULTI_TAG_PNP! Setting to lowest ambiguity", null);
+                    "Fallback cannot be set to MULTI_TAG_PNP! Setting to lowest ambiguity", false);
             strategy = PoseStrategy.LOWEST_AMBIGUITY;
         }
         this.multiTagFallbackStrategy = strategy;
