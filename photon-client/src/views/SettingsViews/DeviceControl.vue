@@ -52,13 +52,15 @@
         cols="12"
         sm="6"
       >
-        <v-select
-          ref="importSelect"
-          label="Import"
-          :items="['Settings', 'Hardware Config', 'Hardware Settings', 'Network Config']"
-          :dense="true"
-          @input="handleImport"
-        />
+        <v-btn
+          color="secondary"
+          @click="() => showImportDialog = true"
+        >
+          <v-icon left>
+            mdi-import
+          </v-icon>
+          Import Settings
+        </v-btn>
       </v-col>
       <v-col
         cols="12"
@@ -119,36 +121,53 @@
     >
       <span>{{ snackbar.text }}</span>
     </v-snackbar>
-
-    <!-- Special hidden upload input that gets 'clicked' when the user imports settings -->
-    <input
-      ref="importSettings"
-      type="file"
-      accept=".zip"
-      style="display: none;"
-      @change="uploadSettings"
+    <v-dialog
+      v-model="showImportDialog"
+      width="600"
     >
-    <input
-      ref="importHardwareConfig"
-      type="file"
-      accept=".json"
-      style="display: none;"
-      @change="uploadSettings"
-    >
-    <input
-      ref="importHardwareSettings"
-      type="file"
-      accept=".json"
-      style="display: none;"
-      @change="uploadSettings"
-    >
-    <input
-      ref="importNetworkConfig"
-      type="file"
-      accept=".json"
-      style="display: none;"
-      @change="uploadSettings"
-    >
+      <v-card
+        color="primary"
+        dark
+      >
+        <v-card-title>Import Settings</v-card-title>
+        <v-card-text>
+          Upload and apply previously saved or exported PhotonVision settings to this device
+          <v-row
+            class="mt-6"
+            style="display: flex; align-items: center; justify-content: center"
+            align="center"
+          >
+            <v-col>
+              <CVselect
+                name="Type"
+                tooltip="Select the type of settings file you are trying to upload"
+                :list="['All Settings', 'Hardware Config', 'Hardware Settings', 'Network Config']"
+                @input="(v) => importType = v"
+              />
+            </v-col>
+            <v-col>
+              <v-btn
+                color="secondary"
+                :disabled="importType === undefined"
+                @click="() => this.$refs.importSettings.click()"
+              >
+                <v-icon left>
+                  mdi-upload
+                </v-icon>
+                Upload File
+              </v-btn>
+            </v-col>
+            <input
+              ref="importSettings"
+              type="file"
+              :accept="importType === 0 ? '.zip' : '.json'"
+              style="display: none;"
+              @change="uploadSettings"
+            >
+          </v-row>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
 
     <!-- Special hidden link that gets 'clicked' when the user exports settings -->
     <a
@@ -169,14 +188,22 @@
   </div>
 </template>
 
+
 <script>
+import CVselect from "../../components/common/cv-select";
+
 export default {
   // eslint-disable-next-line
   name: "DeviceControl",
+  components: {
+    CVselect
+  },
   data() {
     return {
       snack: false,
       uploadPercentage: 0.0,
+      showImportDialog: false,
+      importType: undefined,
       snackbar: {
         color: "success",
         text: "",
@@ -213,22 +240,6 @@ export default {
     }
   },
   methods: {
-    handleImport(selected) {
-      switch (selected) {
-        case 'Settings':
-          this.$refs.importSettings.click()
-          break;
-        case 'Hardware Config':
-          this.$refs.importHardwareConfig.click()
-          break;
-        case 'Hardware Settings':
-          this.$refs.importHardwareSettings.click()
-          break;
-        case 'Network Config':
-          this.$refs.importNetworkConfig.click()
-          break;
-      }
-    },
     restartProgram() {
       this.axios.post("http://" + this.$address + "/api/utils/restartProgram", {});
     },
@@ -239,12 +250,23 @@ export default {
       let formData = new FormData();
       formData.append("data", event.target.files[0]);
 
-      console.log(event)
+      let settingsType
+      switch (this.importType) {
+        case 0:
+          settingsType = ""
+          break;
+        case 1:
+          settingsType = "/hardwareConfig"
+          break;
+        case 2:
+          settingsType = "/hardwareSettings"
+          break;
+        case 3:
+          settingsType = "/networkConfig"
+          break;
+      }
 
-      // TODO, get this
-      const settingsType = ""
-
-      const requestUrl = `http://${this.$address}/api/settings/${settingsType}`;
+      const requestUrl = `http://${this.$address}/api/settings${settingsType}`;
       this.axios.post(requestUrl, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       })
@@ -270,7 +292,6 @@ export default {
             }
             this.snack = true;
           })
-
     },
     doOfflineUpdate(event) {
       this.snackbar = {
