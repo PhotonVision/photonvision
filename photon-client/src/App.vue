@@ -345,7 +345,7 @@ export default {
       this.previouslySelectedIndices = null;
     },
     switchToSettingsTab() {
-      this.axios.post('http://' + this.$address + '/api/utils/publishMetrics', {})
+      this.axios.post('http://' + this.$address + '/api/utils/publishMetrics')
     }
   }
 };
