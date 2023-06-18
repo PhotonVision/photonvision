@@ -241,10 +241,10 @@ export default {
   },
   methods: {
     restartProgram() {
-      this.axios.post("http://" + this.$address + "/api/utils/restartProgram", {});
+      this.axios.post("http://" + this.$address + "/api/utils/restartProgram");
     },
     restartDevice() {
-      this.axios.post("http://" + this.$address + "/api/utils/restartDevice", {});
+      this.axios.post("http://" + this.$address + "/api/utils/restartDevice");
     },
     uploadSettings(event) {
       let formData = new FormData();
