@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.Optional;
 import org.apache.commons.io.FileUtils;
 import org.photonvision.common.configuration.ConfigManager;
@@ -337,7 +336,7 @@ public class RequestHandler {
         int index;
 
         try {
-            index = (int) kObjectMapper.readValue(ctx.body(), HashMap.class).get("idx");
+            index = kObjectMapper.readTree(ctx.body()).get("index").asInt();
 
             var calData = VisionModuleManager.getInstance().getModule(index).endCalibration();
             if (calData == null) {
@@ -398,10 +397,10 @@ public class RequestHandler {
 
     public static void onCameraNicknameChangeRequest(Context ctx) {
         try {
-            var data = kObjectMapper.readValue(ctx.body(), HashMap.class);
+            var data = kObjectMapper.readTree(ctx.body());
 
-            String name = String.valueOf(data.get("name"));
-            int idx = Integer.parseInt(String.valueOf(data.get("cameraIndex")));
+            String name = data.get("name").asText();
+            int idx = data.get("cameraIndex").asInt();
 
             VisionModuleManager.getInstance().getModule(idx).setCameraNickname(name);
             ctx.status(200);

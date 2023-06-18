@@ -785,7 +785,7 @@ export default {
             this.snack = true;
             this.calibrationInProgress = true;
 
-            this.axios.post("http://" + this.$address + "/api/calibration/end", {idx: this.$store.getters.currentCameraIndex})
+            this.axios.post("http://" + this.$address + "/api/calibration/end", {index: this.$store.getters.currentCameraIndex})
                 .then((response) => {
                         if (response.status === 200) {
                             this.calibrationInProgress = false;
