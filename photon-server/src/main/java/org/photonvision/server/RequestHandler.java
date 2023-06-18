@@ -30,7 +30,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import org.apache.commons.io.FileUtils;
 import org.photonvision.common.configuration.ConfigManager;
@@ -254,31 +253,25 @@ public class RequestHandler {
     }
 
     public static void onGeneralSettingsRequest(Context ctx) {
-        Map<String, Object> map = null;
-
+        NetworkConfig config;
         try {
-            map = (Map<String, Object>) kObjectMapper.readValue(ctx.body(), Map.class);
+            config = kObjectMapper.readValue(ctx.body(), NetworkConfig.class);
+
+            ctx.status(200);
+            ctx.result("Successfully saved general settings");
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+            config = new NetworkConfig();
 
-        var networkConfig = NetworkConfig.fromHashMap(map);
-
-        if (networkConfig.isEmpty()) {
             ctx.status(400);
             ctx.result("The provided general settings were malformed");
-            return;
         }
 
-        ConfigManager.getInstance().setNetworkSettings(networkConfig.get());
+        ConfigManager.getInstance().setNetworkSettings(config);
         ConfigManager.getInstance().requestSave();
 
         NetworkManager.getInstance().reinitialize();
 
-        NetworkTablesManager.getInstance().setConfig(networkConfig.get());
-
-        ctx.status(200);
-        ctx.result("Successfully saved general settings");
+        NetworkTablesManager.getInstance().setConfig(config);
     }
 
     public static void onCameraSettingsRequest(Context ctx) {
