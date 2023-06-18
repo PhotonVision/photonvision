@@ -424,7 +424,7 @@ public class RequestHandler {
      * Create a temporary file using the UploadedFile from Javalin.
      *
      * @param file the uploaded file.
-     * @return if the temporary file was successfully created.
+     * @return Temporary file. Empty if the temporary file was unable to be created.
      */
     private static Optional<File> handleTempFileCreation(UploadedFile file) {
         var tempFilePath =
