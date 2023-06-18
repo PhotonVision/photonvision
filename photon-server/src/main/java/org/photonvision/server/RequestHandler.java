@@ -64,7 +64,8 @@ public class RequestHandler {
             ctx.status(400);
             ctx.result(
                     "No File was sent with the request. Make sure that the settings zip is sent at the key 'data'");
-            logger.error("No File was sent with the request. Make sure that the settings zip is sent at the key 'data'");
+            logger.error(
+                    "No File was sent with the request. Make sure that the settings zip is sent at the key 'data'");
             return;
         }
 
@@ -72,7 +73,8 @@ public class RequestHandler {
             ctx.status(400);
             ctx.result(
                     "The uploaded file was not of type 'zip'. The uploaded file should be a .zip file.");
-            logger.error("The uploaded file was not of type 'zip'. The uploaded file should be a .zip file.");
+            logger.error(
+                    "The uploaded file was not of type 'zip'. The uploaded file should be a .zip file.");
             return;
         }
 
@@ -125,7 +127,8 @@ public class RequestHandler {
             ctx.status(400);
             ctx.result(
                     "No File was sent with the request. Make sure that the hardware config json is sent at the key 'data'");
-            logger.error("No File was sent with the request. Make sure that the hardware config json is sent at the key 'data'");
+            logger.error(
+                    "No File was sent with the request. Make sure that the hardware config json is sent at the key 'data'");
             return;
         }
 
@@ -133,7 +136,8 @@ public class RequestHandler {
             ctx.status(400);
             ctx.result(
                     "The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
-            logger.error("The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
+            logger.error(
+                    "The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
             return;
         }
 
@@ -165,7 +169,8 @@ public class RequestHandler {
             ctx.status(400);
             ctx.result(
                     "No File was sent with the request. Make sure that the hardware settings json is sent at the key 'data'");
-            logger.error("No File was sent with the request. Make sure that the hardware settings json is sent at the key 'data'");
+            logger.error(
+                    "No File was sent with the request. Make sure that the hardware settings json is sent at the key 'data'");
             return;
         }
 
@@ -173,7 +178,8 @@ public class RequestHandler {
             ctx.status(400);
             ctx.result(
                     "The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
-            logger.error("The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
+            logger.error(
+                    "The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
             return;
         }
 
@@ -205,7 +211,8 @@ public class RequestHandler {
             ctx.status(400);
             ctx.result(
                     "No File was sent with the request. Make sure that the network config json is sent at the key 'data'");
-            logger.error("No File was sent with the request. Make sure that the network config json is sent at the key 'data'");
+            logger.error(
+                    "No File was sent with the request. Make sure that the network config json is sent at the key 'data'");
             return;
         }
 
@@ -213,7 +220,8 @@ public class RequestHandler {
             ctx.status(400);
             ctx.result(
                     "The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
-            logger.error("The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
+            logger.error(
+                    "The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
             return;
         }
 
@@ -245,7 +253,8 @@ public class RequestHandler {
             ctx.status(400);
             ctx.result(
                     "No File was sent with the request. Make sure that the new jar is sent at the key 'jarData'");
-            logger.error("No File was sent with the request. Make sure that the new jar is sent at the key 'jarData'");
+            logger.error(
+                    "No File was sent with the request. Make sure that the new jar is sent at the key 'jarData'");
             return;
         }
 
@@ -253,7 +262,8 @@ public class RequestHandler {
             ctx.status(400);
             ctx.result(
                     "The uploaded file was not of type 'jar'. The uploaded file should be a .jar file.");
-            logger.error("The uploaded file was not of type 'jar'. The uploaded file should be a .jar file.");
+            logger.error(
+                    "The uploaded file was not of type 'jar'. The uploaded file should be a .jar file.");
             return;
         }
 
@@ -269,7 +279,8 @@ public class RequestHandler {
             ctx.status(200);
             ctx.result(
                     "Offline update successfully complete. PhotonVision will restart in the background.");
-            logger.info("Offline update successfully complete. PhotonVision will restart in the background.");
+            logger.info(
+                    "Offline update successfully complete. PhotonVision will restart in the background.");
             restartProgram();
         } catch (FileNotFoundException e) {
             ctx.result("The current program jar file couldn't be found.");
@@ -379,7 +390,10 @@ public class RequestHandler {
             if (calData == null) {
                 ctx.result("The calibration process failed");
                 ctx.status(500);
-                logger.error("The calibration process failed. Calibration data for module at index (" + index + ") was null");
+                logger.error(
+                        "The calibration process failed. Calibration data for module at index ("
+                                + index
+                                + ") was null");
                 return;
             }
 
@@ -390,7 +404,9 @@ public class RequestHandler {
             ctx.status(400);
             ctx.result(
                     "The 'index' field was not found in the request. Please make sure the index of the vision module is specified with the 'index' key.");
-            logger.error("The 'index' field was not found in the request. Please make sure the index of the vision module is specified with the 'index' key.", e);
+            logger.error(
+                    "The 'index' field was not found in the request. Please make sure the index of the vision module is specified with the 'index' key.",
+                    e);
         } catch (Exception e) {
             ctx.status(500);
             ctx.result("There was an error while ending calibration");
@@ -424,7 +440,9 @@ public class RequestHandler {
             ctx.status(400);
             ctx.result(
                     "The Provided CalibDB data is malformed and cannot be parsed for the required fields.");
-            logger.error("The Provided CalibDB data is malformed and cannot be parsed for the required fields.", e);
+            logger.error(
+                    "The Provided CalibDB data is malformed and cannot be parsed for the required fields.",
+                    e);
         }
     }
 
