@@ -24,15 +24,15 @@ public abstract class ConfigProvider {
 
     abstract void load();
 
-    abstract void saveToDisk();
+    abstract boolean saveToDisk();
 
     PhotonConfiguration getConfig() {
         return config;
     }
 
-    public abstract void saveUploadedHardwareConfig(Path uploadPath);
+    public abstract boolean saveUploadedHardwareConfig(Path uploadPath);
 
-    public abstract void saveUploadedHardwareSettings(Path uploadPath);
+    public abstract boolean saveUploadedHardwareSettings(Path uploadPath);
 
-    public abstract void saveUploadedNetworkConfig(Path uploadPath);
+    public abstract boolean saveUploadedNetworkConfig(Path uploadPath);
 }

@@ -168,14 +168,15 @@ public class SqlConfigProvider extends ConfigProvider {
     }
 
     @Override
-    public void saveToDisk() {
+    public boolean saveToDisk() {
         logger.debug("Saving to disk");
         var conn = createConn();
-        if (conn == null) return;
+        if (conn == null) return false;
+
         synchronized (m_mutex) {
             if (config == null) {
                 logger.error("Config null! Cannot save");
-                return;
+                return false;
             }
 
             saveCameras(conn);
@@ -185,11 +186,13 @@ public class SqlConfigProvider extends ConfigProvider {
             try {
                 conn.close();
             } catch (SQLException e) {
+                // TODO, does the file still save if the SQL connection isn't closed correctly? If so, return false here.
                 logger.error("SQL Err closing connection while saving to disk: ", e);
             }
         }
 
         logger.info("Settings saved!");
+        return true;
     }
 
     @Override
@@ -366,14 +369,16 @@ public class SqlConfigProvider extends ConfigProvider {
         }
     }
 
-    private <T> void saveOneFile(String fname, Path path) {
+    private boolean saveOneFile(String fname, Path path) {
         Connection conn = null;
         PreparedStatement statement1 = null;
+
         try {
             conn = createConn();
             if (conn == null) {
-                return;
+                return false;
             }
+
             // Replace this camera's row with the new settings
             var sqlString = "REPLACE INTO global (filename, contents) VALUES " + "(?,?);";
 
@@ -382,36 +387,38 @@ public class SqlConfigProvider extends ConfigProvider {
             statement1.executeUpdate();
 
             conn.commit();
+            return true;
         } catch (SQLException | IOException e) {
-            logger.error("Err saving global", e);
+            logger.error("Error while saving file to global: ", e);
             try {
                 conn.rollback();
             } catch (SQLException e1) {
-                logger.error("Err rolling back changes: ", e);
+                logger.error("Error rolling back changes: ", e);
             }
+            return false;
         } finally {
             try {
                 if (statement1 != null) statement1.close();
                 conn.close();
             } catch (SQLException e) {
-                logger.error("SQL Err saving file " + fname, e);
+                logger.error("SQL Error saving file " + fname, e);
             }
         }
     }
 
     @Override
-    public void saveUploadedHardwareConfig(Path uploadPath) {
-        saveOneFile(TableKeys.HARDWARE_CONFIG, uploadPath);
+    public boolean saveUploadedHardwareConfig(Path uploadPath) {
+        return saveOneFile(TableKeys.HARDWARE_CONFIG, uploadPath);
     }
 
     @Override
-    public void saveUploadedHardwareSettings(Path uploadPath) {
-        saveOneFile(TableKeys.HARDWARE_SETTINGS, uploadPath);
+    public boolean saveUploadedHardwareSettings(Path uploadPath) {
+        return saveOneFile(TableKeys.HARDWARE_SETTINGS, uploadPath);
     }
 
     @Override
-    public void saveUploadedNetworkConfig(Path uploadPath) {
-        saveOneFile(TableKeys.NETWORK_CONFIG, uploadPath);
+    public boolean saveUploadedNetworkConfig(Path uploadPath) {
+        return saveOneFile(TableKeys.NETWORK_CONFIG, uploadPath);
     }
 
     private HashMap<String, CameraConfiguration> loadCameraConfigs(Connection conn) {
