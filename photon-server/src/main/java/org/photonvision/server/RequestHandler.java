@@ -260,6 +260,7 @@ public class RequestHandler {
             ctx.status(200);
             ctx.result("Successfully saved general settings");
         } catch (JsonProcessingException e) {
+            // If the settings can't be parsed, use the default network settings
             config = new NetworkConfig();
 
             ctx.status(400);
