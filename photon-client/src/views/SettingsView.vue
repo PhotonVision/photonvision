@@ -15,7 +15,7 @@
           class="mb-3 pr-6 pb-3"
           style="background-color: #006492;"
         >
-          <v-card-title>{{ item.name }}</v-card-title>
+          <v-card-title>{{ item.name.replaceAll("_", " ") }}</v-card-title>
           <component
             :is="item"
             class="ml-5"

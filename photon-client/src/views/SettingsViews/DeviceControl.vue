@@ -159,7 +159,7 @@
 <script>
 export default {
   // eslint-disable-next-line
-  name: "DeviceControl",
+  name: "Device_Control",
   data() {
     return {
       snack: false,
