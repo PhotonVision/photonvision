@@ -367,11 +367,14 @@ public class PhotonPoseEstimator {
         // Arrays we need declared up front
         var visCorners = new ArrayList<TargetCorner>();
         var knownVisTags = new ArrayList<AprilTag>();
-        var fieldToCams = new ArrayList<Pose3d>();
-        var fieldToCamsAlt = new ArrayList<Pose3d>();
 
         if (result.getTargets().size() < 2) {
-            // Run fallback strategy instead
+            return update(result, cameraMatrixOpt, distCoeffsOpt, this.multiTagFallbackStrategy);
+        }
+
+        boolean hasCalibData = cameraMatrixOpt.isPresent() && distCoeffsOpt.isPresent();
+
+        if (!hasCalibData) {
             return update(result, cameraMatrixOpt, distCoeffsOpt, this.multiTagFallbackStrategy);
         }
 
@@ -388,33 +391,18 @@ public class PhotonPoseEstimator {
 
             // actual layout poses of visible tags -- not exposed, so have to recreate
             knownVisTags.add(new AprilTag(target.getFiducialId(), tagPose));
-
-            fieldToCams.add(tagPose.transformBy(target.getBestCameraToTarget().inverse()));
-            fieldToCamsAlt.add(tagPose.transformBy(target.getAlternateCameraToTarget().inverse()));
         }
 
-        boolean hasCalibData = cameraMatrixOpt.isPresent() && distCoeffsOpt.isPresent();
+        var pnpResults =
+                VisionEstimation.estimateCamPosePNP(
+                        cameraMatrixOpt.get(), distCoeffsOpt.get(), visCorners, knownVisTags);
+        var best =
+                new Pose3d()
+                        .plus(pnpResults.best) // field-to-camera
+                        .plus(robotToCamera.inverse()); // field-to-robot
 
-        // multi-target solvePNP
-        if (hasCalibData) {
-            var cameraMatrix = cameraMatrixOpt.get();
-            var distCoeffs = distCoeffsOpt.get();
-            var pnpResults =
-                    VisionEstimation.estimateCamPosePNP(cameraMatrix, distCoeffs, visCorners, knownVisTags);
-            var best =
-                    new Pose3d()
-                            .plus(pnpResults.best) // field-to-camera
-                            .plus(robotToCamera.inverse()); // field-to-robot
-            // var alt = new Pose3d()
-            // .plus(pnpResults.alt) // field-to-camera
-            // .plus(robotToCamera.inverse()); // field-to-robot
-
-            return Optional.of(
-                    new EstimatedRobotPose(best, result.getTimestampSeconds(), result.getTargets()));
-        } else {
-            // TODO fallback strategy? Should we just always do solvePNP?
-            return Optional.empty();
-        }
+        return Optional.of(
+                new EstimatedRobotPose(best, result.getTimestampSeconds(), result.getTargets()));
     }
 
     /**
