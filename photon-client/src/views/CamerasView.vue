@@ -400,12 +400,12 @@
     >
 
     <v-snackbar
-      v-model="uploadSnack"
+      v-model="snack"
       top
-      :color="uploadSnackData.color"
+      :color="snackbar.color"
       timeout="2000"
     >
-      <span>{{ uploadSnackData.text }}</span>
+      <span>{{ snackbar.text }}</span>
     </v-snackbar>
   </div>
 </template>
@@ -438,11 +438,11 @@ export default {
             filteredVideomodeIndex: 0,
             settingsValid: true,
             unfilteredStreamDivisors: [1, 2, 4],
-            uploadSnackData: {
+            snackbar: {
               color: "success",
               text: "",
             },
-            uploadSnack: false,
+            snack: false,
         }
     },
     computed: {
@@ -622,25 +622,25 @@ export default {
                   headers: { "Content-Type": "text/plain" },
                 })
                 .then((response) => {
-                    this.uploadSnackData = {
+                    this.snackbar = {
                       color: response.status === 200 ? "success" : "error",
                       text: response.data.text
                     }
-                    this.uploadSnack = true;
+                    this.snack = true;
                 })
                 .catch((err) => {
                   if (err.request) {
-                    this.uploadSnackData = {
+                    this.snackbar = {
                       color: "error",
                       text: "Error while uploading calibration file! The backend didn't respond to the upload attempt.",
                     };
                   } else {
-                    this.uploadSnackData = {
+                    this.snackbar = {
                       color: "error",
                       text: "Error while uploading calibration file!",
                     };
                   }
-                  this.uploadSnack = true;
+                  this.snack = true;
                 });
               })
     },
@@ -741,30 +741,30 @@ export default {
         sendCameraSettings() {
             this.axios.post("http://" + this.$address + "/api/settings/camera", {"settings": this.cameraSettings, "index": this.$store.state.currentCameraIndex})
                 .then(response => {
-                  this.uploadSnackData = {
+                  this.snackbar = {
                     color: "success",
                     text: response.data.text
                   }
-                  this.uploadSnack = true;
+                  this.snack = true;
                 })
                 .catch(error => {
                   if(error.response) {
-                    this.uploadSnackData = {
+                    this.snackbar = {
                       color: "error",
                       text: error.response.data.text
                     }
                   } else if(error.request) {
-                    this.uploadSnackData = {
+                    this.snackbar = {
                       color: "error",
                       text: "Error while trying to process the request! The backend didn't respond.",
                     };
                   } else {
-                    this.uploadSnackData = {
+                    this.snackbar = {
                       color: "error",
                       text: "An error occurred while trying to process the request.",
                     };
                   }
-                  this.uploadSnack = true;
+                  this.snack = true;
                 })
         },
         isCalibrated(resolution) {
