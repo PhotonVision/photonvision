@@ -37,14 +37,14 @@ public class NetworkConfigTest {
     @Test
     public void testDeserializeTeamNumberOrNtServerAddress() {
         {
-            ConfigManager configMgr =
-                    new ConfigManager(Path.of("test-resources/network-old-team-number"));
+            var folder = Path.of("test-resources/network-old-team-number");
+            var configMgr = new ConfigManager(folder, new LegacyConfigProvider(folder));
             configMgr.load();
             Assertions.assertEquals("9999", configMgr.getConfig().getNetworkConfig().ntServerAddress);
         }
         {
-            ConfigManager configMgr =
-                    new ConfigManager(Path.of("test-resources/network-new-team-number"));
+            var folder = Path.of("test-resources/network-new-team-number");
+            var configMgr = new ConfigManager(folder, new LegacyConfigProvider(folder));
             configMgr.load();
             Assertions.assertEquals("9999", configMgr.getConfig().getNetworkConfig().ntServerAddress);
         }

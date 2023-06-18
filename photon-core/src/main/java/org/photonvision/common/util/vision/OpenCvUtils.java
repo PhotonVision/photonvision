@@ -15,13 +15,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.common.configuration;
+package org.photonvision.common.util.vision;
 
-public class HardwareSettings {
-    public int ledBrightnessPercentage = 100;
+import edu.wpi.first.cscore.VideoMode;
 
-    @Override
-    public String toString() {
-        return "HardwareSettings [ledBrightnessPercentage=" + ledBrightnessPercentage + "]";
+public class OpenCvUtils {
+    private OpenCvUtils() {}
+
+    public static boolean videoModeEquals(VideoMode a, VideoMode b) {
+        // WPILib doesn't provide an equals(), so implement our own here
+        if (a.pixelFormat != b.pixelFormat) return false;
+        if (a.width != b.width) return false;
+        if (a.height != b.height) return false;
+        if (a.fps != b.fps) return false;
+        return true;
     }
 }

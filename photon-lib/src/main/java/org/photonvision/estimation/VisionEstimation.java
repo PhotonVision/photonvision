@@ -59,6 +59,7 @@ public class VisionEstimation {
      * transformation. If only one tag is visible, the result may have an alternate solution.
      *
      * <p><b>Note:</b> The returned transformation is from the field origin to the camera pose!
+     * (Unless you only feed this one tag??)
      *
      * @param cameraMatrix The camera intrinsics matrix in standard opencv form
      * @param distCoeffs The camera distortion matrix in standard opencv form
@@ -66,6 +67,7 @@ public class VisionEstimation {
      * @param tagLayout The known tag layout on the field
      * @return The transformation that maps the field origin to the camera pose
      */
+    @Deprecated
     public static PNPResults estimateCamPosePNP(
             Matrix<N3, N3> cameraMatrix,
             Matrix<N5, N1> distCoeffs,
@@ -127,6 +129,61 @@ public class VisionEstimation {
                     camToOrigin.ambiguity,
                     camToOrigin.bestReprojErr,
                     camToOrigin.altReprojErr);
+        }
+    }
+
+    /**
+     * Performs solvePNP using 3d-2d point correspondences to estimate the field-to-camera
+     * transformation. If only one tag is visible, the result may have an alternate solution.
+     *
+     * <p><b>Note:</b> The returned transformation is from the field origin to the camera pose!
+     *
+     * @param cameraMatrix the camera intrinsics matrix in standard opencv form
+     * @param distCoeffs the camera distortion matrix in standard opencv form
+     * @param corners The visible tag corners in the 2d image
+     * @param knownTags The known tag field poses corresponding to the visible tag IDs
+     * @return The transformation that maps the field origin to the camera pose
+     */
+    public static PNPResults estimateCamPoseSqpnp(
+            Matrix<N3, N3> cameraMatrix,
+            Matrix<N5, N1> distCoeffs,
+            List<TargetCorner> corners,
+            List<AprilTag> knownTags) {
+        if (knownTags == null
+                || corners == null
+                || corners.size() != knownTags.size() * 4
+                || knownTags.size() == 0) {
+            return new PNPResults();
+        }
+        var objectTrls = new ArrayList<Translation3d>();
+        for (var tag : knownTags) objectTrls.addAll(TargetModel.kTag16h5.vertices);
+        var camToOrigin = OpenCVHelp.solvePNP_SQPNP(cameraMatrix, distCoeffs, objectTrls, corners);
+        // var camToOrigin = OpenCVHelp.solveTagsPNPRansac(prop, objectTrls, corners);
+        return new PNPResults(
+                camToOrigin.best.inverse(),
+                camToOrigin.alt.inverse(),
+                camToOrigin.ambiguity,
+                camToOrigin.bestReprojErr,
+                camToOrigin.altReprojErr);
+    }
+
+    /**
+     * The best estimated transformation (Rotation-translation composition) that maps a set of
+     * translations onto another with point correspondences, and its RMSE.
+     */
+    public static class SVDResults {
+        public final RotTrlTransform3d trf;
+
+        /** If the result is invalid, this value is -1 */
+        public final double rmse;
+
+        public SVDResults() {
+            this(new RotTrlTransform3d(), -1);
+        }
+
+        public SVDResults(RotTrlTransform3d trf, double rmse) {
+            this.trf = trf;
+            this.rmse = rmse;
         }
     }
 }
