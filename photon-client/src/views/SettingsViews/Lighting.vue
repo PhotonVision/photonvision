@@ -17,7 +17,7 @@
 
     export default {
         // eslint-disable-next-line
-        name: 'LED Control',
+        name: 'LEDControl',
         components: {
             CVslider,
         },
