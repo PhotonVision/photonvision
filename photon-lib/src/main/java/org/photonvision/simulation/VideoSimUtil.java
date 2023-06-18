@@ -114,7 +114,9 @@ public class VideoSimUtil {
         // gradle tests
         if (resource != null) {
             path = resource.getPath();
-            if (path.startsWith("/")) path = path.substring(1);
+            
+            // TODO why did we have this previously?
+            // if (path.startsWith("/")) path = path.substring(1);
         }
         Mat result = new Mat();
         if (!path.startsWith("file")) result = Imgcodecs.imread(path, Imgcodecs.IMREAD_GRAYSCALE);

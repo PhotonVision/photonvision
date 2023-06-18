@@ -54,6 +54,10 @@ public class Robot extends TimedRobot {
 
         m_controller = new XboxController(0);
         m_drive = new Drivetrain();
+
+        // Flush NetworkTables every loop. This ensures that robot pose and other values
+        // are sent during every iteration. This only applies to local NT connections!
+        setNetworkTablesFlushEnabled(true);
     }
 
     @Override
