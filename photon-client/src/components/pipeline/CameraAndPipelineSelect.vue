@@ -12,53 +12,11 @@
         class="pa-0"
       >
         <CVselect
-          v-if="isCameraNameEdit === false"
           v-model="currentCameraIndex"
           name="Camera"
           :list="$store.getters.cameraList"
-          @input="handleInput('currentCamera',currentCameraIndex)"
+          @input="handleInput('currentCamera', currentCameraIndex)"
         />
-        <CVinput
-          v-else
-          v-model="newCameraName"
-          name="Camera"
-          input-cols="9"
-          :error-message="checkCameraName"
-          @Enter="saveCameraNameChange"
-        />
-      </v-col>
-      <v-col
-        cols="2"
-        md="1"
-        lg="2"
-        class="pl-5"
-      >
-        <CVicon
-          v-if="isCameraNameEdit === false"
-          color="#c5c5c5"
-          :hover="true"
-          text="mdi-pencil"
-          tooltip="Edit camera name"
-          @click="changeCameraName"
-        />
-        <div v-else>
-          <CVicon
-            color="#c5c5c5"
-            style="display: inline-block;"
-            :hover="true"
-            text="mdi-content-save"
-            tooltip="Save Camera Name"
-            @click="saveCameraNameChange"
-          />
-          <CVicon
-            color="error"
-            style="display: inline-block;"
-            :hover="true"
-            text="mdi-close"
-            tooltip="Discard Changes"
-            @click="discardCameraNameChange"
-          />
-        </div>
       </v-col>
       <v-col
         cols="10"
@@ -259,10 +217,6 @@ export default {
     },
     data: () => {
         return {
-            re: RegExp("^[A-Za-z0-9_ \\-)(]*[A-Za-z0-9][A-Za-z0-9_ \\-)(.]*$"),
-            isCameraNameEdit: false,
-            newCameraName: "",
-            cameraNameError: "",
             isPipelineNameEdit: false,
             namingDialog: false,
             newPipelineName: "",
@@ -273,25 +227,10 @@ export default {
         }
     },
     computed: {
-        checkCameraName() {
-            if (this.newCameraName !== this.$store.getters.cameraList[this.currentCameraIndex]) {
-                if (this.re.test(this.newCameraName)) {
-                    for (let cam in this.cameraList) {
-                        if (this.cameraList.hasOwnProperty(cam)) {
-                            if (this.newCameraName === this.cameraList[cam]) {
-                                return "A camera by that name already exists"
-                            }
-                        }
-                    }
-                } else {
-                    return "A camera name can only contain letters, numbers, and spaces"
-                }
-            }
-            return "";
-        },
         checkPipelineName() {
             if (this.newPipelineName !== this.$store.getters.pipelineList[this.currentPipelineIndex - 1] || !this.isPipelineNameEdit) {
-                if (this.re.test(this.newPipelineName)) {
+                const pipelineNameChangeRegex = RegExp("^[A-Za-z0-9_ \\-)(]*[A-Za-z0-9][A-Za-z0-9_ \\-)(.]*$")
+                if (pipelineNameChangeRegex.test(this.newPipelineName)) {
                     for (let pipe in this.$store.getters.pipelineList) {
                         if (this.$store.getters.pipelineList.hasOwnProperty(pipe)) {
                             if (this.newPipelineName === this.$store.getters.pipelineList[pipe]) {
@@ -340,30 +279,6 @@ export default {
             const newIdx = actuallyChange ? this.proposedPipelineType : this._currentPipelineType
             this.handleInputWithIndex('pipelineType', newIdx);
             this.showPipeTypeDialog = false;
-        },
-        changeCameraName() {
-            this.newCameraName = this.$store.getters.cameraList[this.currentCameraIndex];
-            this.isCameraNameEdit = true;
-        },
-        saveCameraNameChange() {
-            if (this.checkCameraName === "") {
-                // this.handleInputWithIndex("changeCameraName", this.newCameraName);
-                this.axios.post('http://' + this.$address + '/api/setCameraNickname',
-                    {name: this.newCameraName, cameraIndex: this.$store.getters.currentCameraIndex})
-                    // eslint-disable-next-line
-                    .then(r => {
-                        this.$emit('camera-name-changed')
-                    })
-                    .catch(e => {
-                        console.log("HTTP error while changing camera name " + e);
-                        this.$emit('camera-name-changed')
-                    })
-                this.discardCameraNameChange();
-            }
-        },
-        discardCameraNameChange() {
-            this.isCameraNameEdit = false;
-            this.newCameraName = "";
         },
         toPipelineNameChange() {
             this.newPipelineName = this.$store.getters.pipelineList[this.currentPipelineIndex - 1];
