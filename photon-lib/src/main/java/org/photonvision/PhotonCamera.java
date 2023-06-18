@@ -51,10 +51,10 @@ import org.photonvision.common.hardware.VisionLEDMode;
 import org.photonvision.targeting.PhotonPipelineResult;
 
 /** Represents a camera that is connected to PhotonVision. */
-public class PhotonCamera {
-    static final String kTableName = "photonvision";
+public class PhotonCamera implements AutoCloseable {
+    public static final String kTableName = "photonvision";
 
-    protected final NetworkTable cameraTable;
+    private final NetworkTable cameraTable;
     RawSubscriber rawBytesEntry;
     BooleanPublisher driverModePublisher;
     BooleanSubscriber driverModeSubscriber;
@@ -73,6 +73,7 @@ public class PhotonCamera {
     private DoubleArraySubscriber cameraIntrinsicsSubscriber;
     private DoubleArraySubscriber cameraDistortionSubscriber;
 
+    @Override
     public void close() {
         rawBytesEntry.close();
         driverModePublisher.close();
@@ -151,9 +152,7 @@ public class PhotonCamera {
 
         m_topicNameSubscriber =
                 new MultiSubscriber(
-                        instance,
-                        new String[] {"/photonvision/"},
-                        new PubSubOption[] {PubSubOption.topicsOnly(true)});
+                        instance, new String[] {"/photonvision/"}, PubSubOption.topicsOnly(true));
     }
 
     /**
@@ -186,7 +185,7 @@ public class PhotonCamera {
         ret.createFromPacket(packet);
 
         // Set the timestamp of the result.
-        // getLatestChange returns in microseconds so we divide by 1e6 to convert to seconds.
+        // getLatestChange returns in microseconds, so we divide by 1e6 to convert to seconds.
         ret.setTimestampSeconds((rawBytesEntry.getLastChange() / 1e6) - ret.getLatencyMillis() / 1e3);
 
         // Return result.
@@ -332,6 +331,14 @@ public class PhotonCamera {
         if (distCoeffs != null && distCoeffs.length == 5) {
             return Optional.of(new MatBuilder<>(Nat.N5(), Nat.N1()).fill(distCoeffs));
         } else return Optional.empty();
+    }
+
+    /**
+     * Gets the NetworkTable representing this camera's subtable. You probably don't ever need to call
+     * this.
+     */
+    public final NetworkTable getCameraTable() {
+        return cameraTable;
     }
 
     private void verifyVersion() {

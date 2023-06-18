@@ -22,10 +22,14 @@
  * SOFTWARE.
  */
 
-package org.photonvision;
+package org.photonvision.simulation;
 
 import edu.wpi.first.math.geometry.Pose3d;
 
+/**
+ * @deprecated Use {@link VisionTargetSim} instead
+ */
+@Deprecated
 public class SimVisionTarget {
     Pose3d targetPose;
     double targetWidthMeters;
