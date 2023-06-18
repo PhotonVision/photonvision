@@ -323,7 +323,7 @@
       >
         <template>
           <CVimage
-            :id="cameras-cal"
+            :id="'cameras-cal'"
             :idx="1"
             :disconnected="!$store.state.backendConnected"
             scale="100"
@@ -479,13 +479,10 @@ export default {
           get() {
             return this.unfilteredStreamDivisors.filter(item => {
               const res = this.stringResolutionList[this.selectedFilteredResIndex].split(" X ").map(it => parseInt(it));
-              console.log(res);
-              console.log(item);
               // Realistically, we need more than 320x240, but lower than this is
               // basically unusable. For now, don't allow decimations that take us
               // below that
               const ret = ((res[0] / item) >= 300 && (res[1] / item) >= 220) || (item === 1);
-              console.log(ret);
               return ret;
             })
           }
