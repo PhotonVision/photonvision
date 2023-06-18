@@ -285,7 +285,7 @@ public final class OpenCVHelp {
     /**
      * Undistort 2d image points using a given camera's intrinsics and distortion.
      *
-     * <p>2d image points from projectPoints(CameraProperties, Pose3d, List) projectPoints} will
+     * <p>2d image points from projectPoints(CameraProperties, Pose3d, List) projectPoints will
      * naturally be distorted, so this operation is important if the image points need to be directly
      * used (e.g. 2d yaw/pitch).
      *

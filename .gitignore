@@ -145,6 +145,7 @@ build/spotlessJava
 build/*
 build
 photon-lib/src/main/java/org/photonvision/PhotonVersion.java
+photon-lib/bin/main/images/*
 /photonlib-java-examples/bin/
 photon-lib/src/generate/native/include/PhotonVersion.h
 .gitattributes

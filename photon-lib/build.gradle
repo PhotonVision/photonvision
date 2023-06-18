@@ -34,7 +34,10 @@ nativeUtils.platformConfigs.linuxathena.cppCompiler.args.add("-Wno-deprecated-an
 dependencies {
     implementation project(":photon-targeting")
 
+    // WPILib deps
     implementation wpilibTools.deps.wpilibJava("wpiutil")
+    implementation wpilibTools.deps.wpilibJava("cameraserver")
+    implementation wpilibTools.deps.wpilibJava("cscore")
     implementation wpilibTools.deps.wpilibJava("wpimath")
     implementation wpilibTools.deps.wpilibJava("wpinet")
     implementation wpilibTools.deps.wpilibJava("hal")
@@ -42,12 +45,18 @@ dependencies {
     implementation wpilibTools.deps.wpilibJava("wpilibj")
     implementation wpilibTools.deps.wpilibJava("apriltag")
 
-    testImplementation wpilibTools.deps.wpilibJava("cscore")
+    // Jackson
+    implementation "com.fasterxml.jackson.core:jackson-annotations:2.12.4"
+    implementation "com.fasterxml.jackson.core:jackson-core:2.12.4"
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.12.4"
+
     implementation "edu.wpi.first.thirdparty.frc2023.opencv:opencv-java:$opencvVersion"
     implementation "edu.wpi.first.thirdparty.frc2023.opencv:opencv-jni:$opencvVersion:$jniPlatform"
+
     implementation "org.ejml:ejml-simple:0.41"
 
     // Junit
+    testImplementation wpilibTools.deps.wpilibJava("cscore")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
@@ -157,6 +166,7 @@ def testNativeTasks = wpilibTools.createExtractionTasks {
 
 testNativeTasks.addToSourceSetResources(sourceSets.test)
 
+testNativeConfig.dependencies.add wpilibTools.deps.cscore()
 testNativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
 testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
 testNativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
