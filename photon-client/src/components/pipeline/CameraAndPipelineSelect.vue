@@ -1,5 +1,13 @@
 <template>
   <div>
+    <v-snackbar
+      v-model="snack"
+      top
+      :color="snackbar.color"
+      :timeout="2000"
+    >
+      <span>{{ snackbar.text }}</span>
+    </v-snackbar>
     <v-row
       align="center"
       style="padding: 12px 12px 12px 24px"
@@ -269,7 +277,12 @@ export default {
             duplicateDialog: false,
             showPipeTypeDialog: false,
             proposedPipelineType : 0,
-            pipeIndexToDuplicate: undefined
+            pipeIndexToDuplicate: undefined,
+            snack: false,
+            snackbar: {
+              color: "success",
+              text: "",
+            }
         }
     },
     computed: {
@@ -347,16 +360,37 @@ export default {
         },
         saveCameraNameChange() {
             if (this.checkCameraName === "") {
-                // this.handleInputWithIndex("changeCameraName", this.newCameraName);
                 this.axios.post('http://' + this.$address + '/api/settings/camera/setNickname',
                     {name: this.newCameraName, cameraIndex: this.$store.getters.currentCameraIndex})
-                    // eslint-disable-next-line
-                    .then(r => {
-                        this.$emit('camera-name-changed')
+                    .then(response => {
+                      this.$emit('camera-name-changed')
+
+                      this.snackbar = {
+                        color: "success",
+                        text: response.data.text
+                      }
+                      this.snack = true;
                     })
-                    .catch(e => {
-                        console.log("HTTP error while changing camera name " + e);
-                        this.$emit('camera-name-changed')
+                    .catch(error => {
+                      this.$emit('camera-name-changed')
+
+                      if(error.response) {
+                        this.snackbar = {
+                          color: "error",
+                          text: error.response.data.text
+                        }
+                      } else if(error.request) {
+                        this.snackbar = {
+                          color: "error",
+                          text: "Error while trying to process the request! The backend didn't respond.",
+                        };
+                      } else {
+                        this.snackbar = {
+                          color: "error",
+                          text: "An error occurred while trying to process the request.",
+                        };
+                      }
+                      this.snack = true;
                     })
                 this.discardCameraNameChange();
             }
@@ -404,7 +438,3 @@ export default {
 
 }
 </script>
-
-<style scoped>
-
-</style>

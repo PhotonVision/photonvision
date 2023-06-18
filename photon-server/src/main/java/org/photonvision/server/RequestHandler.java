@@ -96,11 +96,11 @@ public class RequestHandler {
             var stream = new FileInputStream(zip);
             logger.info("Uploading settings with size " + stream.available());
 
-            ctx.result(stream);
             ctx.contentType("application/zip");
             ctx.header(
                     "Content-Disposition", "attachment; filename=\"photonvision-settings-export.zip\"");
 
+            ctx.result(stream);
             ctx.status(200);
         } catch (IOException e) {
             logger.error("Unable to export settings archive, bad recode from zip to byte");
@@ -241,6 +241,8 @@ public class RequestHandler {
             stream.close();
 
             ctx.status(200);
+            ctx.result(
+                    "Offline update successfully complete. PhotonVision will restart in the background.");
             restartProgram();
         } catch (FileNotFoundException e) {
             ctx.result("The current program jar file couldn't be found.");
@@ -345,14 +347,14 @@ public class RequestHandler {
                 return;
             }
 
-            ctx.result(String.valueOf(calData.standardDeviation));
+            ctx.result("Camera calibration successfully completed!");
             ctx.status(200);
 
             logger.info("Camera calibrated!");
         } catch (JsonProcessingException e) {
             ctx.status(400);
             ctx.result(
-                    "The 'idx' field was not found in the request. Please make sure the index of the vision module is specified with the 'idx' key.");
+                    "The 'index' field was not found in the request. Please make sure the index of the vision module is specified with the 'index' key.");
         } catch (Exception e) {
             ctx.status(500);
             ctx.result("There was an error while ending calibration");
@@ -379,15 +381,18 @@ public class RequestHandler {
             DataChangeService.getInstance().publishEvent(uploadCalibrationEvent);
 
             ctx.status(200);
+            ctx.result("Calibration imported successfully from CalibDB data!");
             logger.info("Calibration added!");
         } catch (JsonProcessingException e) {
             ctx.status(400);
-            ctx.result("The provided nickname data was malformed");
+            ctx.result(
+                    "The Provided CalibDB data is malformed and cannot be parsed for the required fields.");
         }
     }
 
     public static void onProgramRestartRequest(Context ctx) {
         // TODO, check if this was successful or not
+        ctx.status(204);
         restartProgram();
     }
 

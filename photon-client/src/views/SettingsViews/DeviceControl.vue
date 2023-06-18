@@ -117,7 +117,7 @@
       v-model="snack"
       top
       :color="snackbar.color"
-      timeout="-1"
+      :timeout="snackbarTimeout"
     >
       <span>{{ snackbar.text }}</span>
     </v-snackbar>
@@ -201,6 +201,7 @@ export default {
   data() {
     return {
       snack: false,
+      snackbarTimeout: 2000,
       uploadPercentage: 0.0,
       showImportDialog: false,
       importType: undefined,
@@ -241,10 +242,58 @@ export default {
   },
   methods: {
     restartProgram() {
-      this.axios.post("http://" + this.$address + "/api/utils/restartProgram");
+      this.axios.post("http://" + this.$address + "/api/utils/restartProgram")
+          .then(() => {
+            this.snackbar = {
+              color: "success",
+              text: "Successfully sent program restart request"
+            }
+            this.snack = true;
+          })
+          .catch(error => {
+            // This endpoint always return 204 regardless of outcome
+            if(error.request) {
+              this.snackbar = {
+                color: "error",
+                text: "Error while trying to process the request! The backend didn't respond.",
+              };
+            } else {
+              this.snackbar = {
+                color: "error",
+                text: "An error occurred while trying to process the request.",
+              };
+            }
+            this.snack = true;
+          })
     },
     restartDevice() {
-      this.axios.post("http://" + this.$address + "/api/utils/restartDevice");
+      this.axios.post("http://" + this.$address + "/api/utils/restartDevice")
+          .then(() => {
+            this.snackbar = {
+              color: "success",
+              text: "Successfully restarted the device"
+            }
+            this.snack = true;
+          })
+          .catch(error => {
+            if(error.response) {
+              this.snackbar = {
+                color: "error",
+                text: "The backend is unable to fulfil the request to restart the device."
+              }
+            } else if(error.request) {
+              this.snackbar = {
+                color: "error",
+                text: "Error while trying to process the request! The backend didn't respond.",
+              };
+            } else {
+              this.snackbar = {
+                color: "error",
+                text: "An error occurred while trying to process the request.",
+              };
+            }
+            this.snack = true;
+          })
     },
     uploadSettings(event) {
       let formData = new FormData();
@@ -272,22 +321,26 @@ export default {
       })
           .then(response => {
             this.snackbar = {
-              color: response.status === 200 ? "success" : "error",
+              color: "success",
               text: response.data.text
             }
-            this.snack = true
+            this.snack = true;
           })
-          .catch((err) => {
-            if (err.request) {
+          .catch(error => {
+            if(error.response) {
               this.snackbar = {
                 color: "error",
-                text:
-                    "Error while uploading settings file! The backend didn't respond to the upload attempt.",
+                text: error.response.data.text
+              }
+            } else if(error.request) {
+              this.snackbar = {
+                color: "error",
+                text: "Error while trying to process the request! The backend didn't respond.",
               };
             } else {
               this.snackbar = {
                 color: "error",
-                text: "Error while uploading settings file!",
+                text: "An error occurred while trying to process the request.",
               };
             }
             this.snack = true;
@@ -299,6 +352,7 @@ export default {
         text: "New Software Upload in Process...",
       };
       this.snack = true;
+      this.snackbarTimeout = -1
 
       let formData = new FormData();
       formData.append("jarData", event.target.files[0]);
@@ -323,35 +377,35 @@ export default {
             }.bind(this),
           }
         )
-        .then(() => {
-          this.snackbar = {
-            color: "success",
-            text:
-              "New .jar copied successfully! PhotonVision will restart in the background...",
-          };
-          this.snack = true;
-        })
-        .catch((err) => {
-          if (err.response) {
+          .then(response => {
             this.snackbar = {
-              color: "error",
-              text:
-                "Error while uploading new .jar file! Could not process provided file.",
-            };
-          } else if (err.request) {
-            this.snackbar = {
-              color: "error",
-              text:
-                "Error while uploading new .jar file! No respond to upload attempt.",
-            };
-          } else {
-            this.snackbar = {
-              color: "error",
-              text: "Error while uploading new .jar file!",
-            };
-          }
-          this.snack = true;
-        });
+              color: "success",
+              text: response.data.text
+            }
+            this.snack = true;
+          })
+          .catch(error => {
+            if(error.response) {
+              this.snackbar = {
+                color: "error",
+                text: error.response.data.text
+              };
+            } else if(error.request) {
+              this.snackbar = {
+                color: "error",
+                text: "Error while trying to process the request! The backend didn't respond.",
+              };
+            } else {
+              this.snackbar = {
+                color: "error",
+                text: "An error occurred while trying to process the request.",
+              };
+            }
+            this.snack = true;
+          })
+
+      // Reset the timeout after the loading bar
+      this.snackbarTimeout = 2000
     },
     showLogs() {
       this.$store.state.logsOverlay = true;
