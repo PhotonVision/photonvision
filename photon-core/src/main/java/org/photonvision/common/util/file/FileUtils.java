@@ -42,14 +42,13 @@ public class FileUtils {
 
     public static void deleteDirectory(Path path) {
         try {
-            // create a stream
             var files = Files.walk(path);
 
             // delete directory including files and sub-folders
             files
                     .sorted(Comparator.reverseOrder())
                     .map(Path::toFile)
-                    .filter(File::isFile)
+                    // .filter(File::isFile) // we want to delete directories and sub-dirs, too
                     .forEach((var file) -> deleteFile(file.toPath()));
 
             // close the stream

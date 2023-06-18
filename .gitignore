@@ -157,3 +157,4 @@ photonlib-java-examples/*/vendordeps/*
 photonlib-cpp-examples/*/vendordeps/*
 
 */networktables.json
+*.sqlite

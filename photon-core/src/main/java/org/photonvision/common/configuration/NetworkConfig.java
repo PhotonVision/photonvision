@@ -31,6 +31,7 @@ import org.photonvision.common.networking.NetworkMode;
 import org.photonvision.common.util.file.JacksonUtils;
 
 public class NetworkConfig {
+    // Can be a integer team number, or a IP address
     public String ntServerAddress = "0";
     public NetworkMode connectionType = NetworkMode.DHCP;
     public String staticIp = "";
@@ -95,5 +96,30 @@ public class NetworkConfig {
     @JsonSetter("shouldManage")
     public void setShouldManage(boolean shouldManage) {
         this.shouldManage = shouldManage || Platform.isLinux();
+    }
+
+    @Override
+    public String toString() {
+        return "NetworkConfig [serverAddr="
+                + ntServerAddress
+                + ", connectionType="
+                + connectionType
+                + ", staticIp="
+                + staticIp
+                + ", hostname="
+                + hostname
+                + ", runNTServer="
+                + runNTServer
+                + ", networkManagerIface="
+                + networkManagerIface
+                + ", physicalInterface="
+                + physicalInterface
+                + ", setStaticCommand="
+                + setStaticCommand
+                + ", setDHCPcommand="
+                + setDHCPcommand
+                + ", shouldManage="
+                + shouldManage
+                + "]";
     }
 }

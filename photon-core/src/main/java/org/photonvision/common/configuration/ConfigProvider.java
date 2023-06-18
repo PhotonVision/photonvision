@@ -17,11 +17,22 @@
 
 package org.photonvision.common.configuration;
 
-public class HardwareSettings {
-    public int ledBrightnessPercentage = 100;
+import java.nio.file.Path;
 
-    @Override
-    public String toString() {
-        return "HardwareSettings [ledBrightnessPercentage=" + ledBrightnessPercentage + "]";
+public abstract class ConfigProvider {
+    private PhotonConfiguration config;
+
+    abstract void load();
+
+    abstract void saveToDisk();
+
+    PhotonConfiguration getConfig() {
+        return config;
     }
+
+    public abstract void saveUploadedHardwareConfig(Path uploadPath);
+
+    public abstract void saveUploadedHardwareSettings(Path uploadPath);
+
+    public abstract void saveUploadedNetworkConfig(Path uploadPath);
 }
