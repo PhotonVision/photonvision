@@ -186,7 +186,8 @@ public class SqlConfigProvider extends ConfigProvider {
             try {
                 conn.close();
             } catch (SQLException e) {
-                // TODO, does the file still save if the SQL connection isn't closed correctly? If so, return false here.
+                // TODO, does the file still save if the SQL connection isn't closed correctly? If so,
+                // return false here.
                 logger.error("SQL Err closing connection while saving to disk: ", e);
             }
         }
