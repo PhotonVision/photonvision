@@ -114,7 +114,7 @@ public class VideoSimUtil {
         // gradle tests
         if (resource != null) {
             path = resource.getPath();
-            
+
             // TODO why did we have this previously?
             // if (path.startsWith("/")) path = path.substring(1);
         }
