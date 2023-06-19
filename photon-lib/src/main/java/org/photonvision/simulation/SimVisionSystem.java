@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package org.photonvision;
+package org.photonvision.simulation;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -41,6 +41,10 @@ import java.util.List;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
 
+/**
+ * @deprecated Use {@link VisionSystemSim} instead
+ */
+@Deprecated
 public class SimVisionSystem {
     SimPhotonCamera cam;
 

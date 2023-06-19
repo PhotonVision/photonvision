@@ -106,7 +106,7 @@ public class RotTrlTransform3d {
     ;
 
     public List<Translation3d> applyTrls(List<Translation3d> trls) {
-        return trls.stream().map(t -> apply(t)).collect(Collectors.toList());
+        return trls.stream().map(this::apply).collect(Collectors.toList());
     }
 
     public Pose3d apply(Pose3d pose) {
@@ -114,6 +114,6 @@ public class RotTrlTransform3d {
     }
 
     public List<Pose3d> applyPoses(List<Pose3d> poses) {
-        return poses.stream().map(p -> apply(p)).collect(Collectors.toList());
+        return poses.stream().map(this::apply).collect(Collectors.toList());
     }
 }

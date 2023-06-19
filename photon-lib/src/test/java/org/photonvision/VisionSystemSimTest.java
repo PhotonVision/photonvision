@@ -28,6 +28,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import edu.wpi.first.apriltag.jni.AprilTagJNI;
+import edu.wpi.first.cscore.CameraServerCvJNI;
+import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.hal.JNIWrapper;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -41,6 +44,7 @@ import edu.wpi.first.net.WPINetJNI;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
+import edu.wpi.first.util.RuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
 import java.util.List;
 import java.util.stream.Stream;
@@ -52,18 +56,26 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.opencv.core.Core;
+import org.photonvision.estimation.TargetModel;
+import org.photonvision.simulation.PhotonCameraSim;
+import org.photonvision.simulation.VisionSystemSim;
+import org.photonvision.simulation.VisionTargetSim;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-class SimVisionSystemTest {
+class VisionSystemSimTest {
+    private static final double kTrlDelta = 0.005;
+    private static final double kRotDeltaDeg = 0.25;
+
     @Test
     public void testEmpty() {
         Assertions.assertDoesNotThrow(
                 () -> {
-                    var sysUnderTest =
-                            new SimVisionSystem("Test", 80.0, new Transform3d(), 99999, 320, 240, 0);
-                    sysUnderTest.addSimVisionTarget(new SimVisionTarget(new Pose3d(), 1.0, 1.0, 42));
+                    var sysUnderTest = new VisionSystemSim("Test");
+                    sysUnderTest.addVisionTargets(
+                            new VisionTargetSim(new Pose3d(), new TargetModel(1.0, 1.0)));
                     for (int loopIdx = 0; loopIdx < 100; loopIdx++) {
-                        sysUnderTest.processFrame(new Pose2d());
+                        sysUnderTest.update(new Pose2d());
                     }
                 });
     }
@@ -74,12 +86,25 @@ class SimVisionSystemTest {
         WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
         NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
         WPINetJNI.Helper.setExtractOnStaticLoad(false);
+        CameraServerJNI.Helper.setExtractOnStaticLoad(false);
+        CameraServerCvJNI.Helper.setExtractOnStaticLoad(false);
+        AprilTagJNI.Helper.setExtractOnStaticLoad(false);
 
         try {
             CombinedRuntimeLoader.loadLibraries(
-                    SimVisionSystem.class, "wpiutiljni", "ntcorejni", "wpinetjni", "wpiHaljni");
+                    VisionSystemSim.class,
+                    "wpiutiljni",
+                    "ntcorejni",
+                    "wpinetjni",
+                    "wpiHaljni",
+                    "cscorejni",
+                    "cscorejnicvstatic");
+
+            var loader =
+                    new RuntimeLoader<>(
+                            Core.NATIVE_LIBRARY_NAME, RuntimeLoader.getDefaultExtractionRoot(), Core.class);
+            loader.loadLibrary();
         } catch (Exception e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -114,66 +139,74 @@ class SimVisionSystemTest {
     public void testVisibilityCupidShuffle() {
         final var targetPose =
                 new Pose3d(new Translation3d(15.98, 0, 2), new Rotation3d(0, 0, Math.PI));
-        var sysUnderTest = new SimVisionSystem("Test", 80.0, new Transform3d(), 99999, 640, 480, 0);
-        sysUnderTest.addSimVisionTarget(new SimVisionTarget(targetPose, 1.0, 3.0, 3));
+        var visionSysSim = new VisionSystemSim("Test");
+        var camera = new PhotonCamera("camera");
+        var cameraSim = new PhotonCameraSim(camera);
+        visionSysSim.addCamera(cameraSim, new Transform3d());
+        cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(80));
+        visionSysSim.addVisionTargets(new VisionTargetSim(targetPose, new TargetModel(1.0, 3.0), 3));
 
         // To the right, to the right
         var robotPose = new Pose2d(new Translation2d(5, 0), Rotation2d.fromDegrees(-70));
-        sysUnderTest.processFrame(robotPose);
-        assertFalse(sysUnderTest.cam.getLatestResult().hasTargets());
+        visionSysSim.update(robotPose);
+        assertFalse(camera.getLatestResult().hasTargets());
 
         // To the right, to the right
         robotPose = new Pose2d(new Translation2d(5, 0), Rotation2d.fromDegrees(-95));
-        sysUnderTest.processFrame(robotPose);
-        assertFalse(sysUnderTest.cam.getLatestResult().hasTargets());
+        visionSysSim.update(robotPose);
+        assertFalse(camera.getLatestResult().hasTargets());
 
         // To the left, to the left
         robotPose = new Pose2d(new Translation2d(5, 0), Rotation2d.fromDegrees(90));
-        sysUnderTest.processFrame(robotPose);
-        assertFalse(sysUnderTest.cam.getLatestResult().hasTargets());
+        visionSysSim.update(robotPose);
+        assertFalse(camera.getLatestResult().hasTargets());
 
         // To the left, to the left
         robotPose = new Pose2d(new Translation2d(5, 0), Rotation2d.fromDegrees(65));
-        sysUnderTest.processFrame(robotPose);
-        assertFalse(sysUnderTest.cam.getLatestResult().hasTargets());
+        visionSysSim.update(robotPose);
+        assertFalse(camera.getLatestResult().hasTargets());
 
         // now kick, now kick
         robotPose = new Pose2d(new Translation2d(2, 0), Rotation2d.fromDegrees(5));
-        sysUnderTest.processFrame(robotPose);
-        assertTrue(sysUnderTest.cam.getLatestResult().hasTargets());
+        visionSysSim.update(robotPose);
+        assertTrue(camera.getLatestResult().hasTargets());
 
         // now kick, now kick
         robotPose = new Pose2d(new Translation2d(2, 0), Rotation2d.fromDegrees(-5));
-        sysUnderTest.processFrame(robotPose);
-        assertTrue(sysUnderTest.cam.getLatestResult().hasTargets());
+        visionSysSim.update(robotPose);
+        assertTrue(camera.getLatestResult().hasTargets());
 
         // now walk it by yourself
         robotPose = new Pose2d(new Translation2d(2, 0), Rotation2d.fromDegrees(-179));
-        sysUnderTest.processFrame(robotPose);
-        assertFalse(sysUnderTest.cam.getLatestResult().hasTargets());
+        visionSysSim.update(robotPose);
+        assertFalse(camera.getLatestResult().hasTargets());
 
         // now walk it by yourself
-        sysUnderTest.moveCamera(new Transform3d(new Translation3d(), new Rotation3d(0, 0, Math.PI)));
-        sysUnderTest.processFrame(robotPose);
-        assertTrue(sysUnderTest.cam.getLatestResult().hasTargets());
+        visionSysSim.adjustCamera(
+                cameraSim, new Transform3d(new Translation3d(), new Rotation3d(0, 0, Math.PI)));
+        visionSysSim.update(robotPose);
+        assertTrue(camera.getLatestResult().hasTargets());
     }
 
     @Test
     public void testNotVisibleVert1() {
         final var targetPose =
                 new Pose3d(new Translation3d(15.98, 0, 1), new Rotation3d(0, 0, Math.PI));
-        var sysUnderTest = new SimVisionSystem("Test", 80.0, new Transform3d(), 99999, 640, 480, 0);
-        sysUnderTest.addSimVisionTarget(new SimVisionTarget(targetPose, 1.0, 3.0, 3));
+        var visionSysSim = new VisionSystemSim("Test");
+        var camera = new PhotonCamera("camera");
+        var cameraSim = new PhotonCameraSim(camera);
+        visionSysSim.addCamera(cameraSim, new Transform3d());
+        cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(80));
+        visionSysSim.addVisionTargets(new VisionTargetSim(targetPose, new TargetModel(1.0, 3.0), 3));
 
         var robotPose = new Pose2d(new Translation2d(5, 0), Rotation2d.fromDegrees(5));
-        sysUnderTest.processFrame(robotPose);
-        assertTrue(sysUnderTest.cam.getLatestResult().hasTargets());
+        visionSysSim.update(robotPose);
+        assertTrue(camera.getLatestResult().hasTargets());
 
-        sysUnderTest.moveCamera(
-                new Transform3d(
-                        new Translation3d(0, 0, 5000), new Rotation3d(0, 0, Math.PI))); // vooop selfie stick
-        sysUnderTest.processFrame(robotPose);
-        assertFalse(sysUnderTest.cam.getLatestResult().hasTargets());
+        visionSysSim.adjustCamera( // vooop selfie stick
+                cameraSim, new Transform3d(new Translation3d(0, 0, 5000), new Rotation3d(0, 0, Math.PI)));
+        visionSysSim.update(robotPose);
+        assertFalse(camera.getLatestResult().hasTargets());
     }
 
     @Test
@@ -181,50 +214,65 @@ class SimVisionSystemTest {
         final var targetPose =
                 new Pose3d(new Translation3d(15.98, 0, 2), new Rotation3d(0, 0, Math.PI));
         var robotToCamera =
-                new Transform3d(new Translation3d(0, 0, 1), new Rotation3d(0, Math.PI / 4, 0));
-        var sysUnderTest = new SimVisionSystem("Test", 80.0, robotToCamera, 99999, 1234, 1234, 0);
-        sysUnderTest.addSimVisionTarget(new SimVisionTarget(targetPose, 3.0, 0.5, 1736));
+                new Transform3d(new Translation3d(0, 0, 1), new Rotation3d(0, -Math.PI / 4, 0));
+        var visionSysSim = new VisionSystemSim("Test");
+        var camera = new PhotonCamera("camera");
+        var cameraSim = new PhotonCameraSim(camera);
+        visionSysSim.addCamera(cameraSim, robotToCamera);
+        cameraSim.prop.setCalibration(1234, 1234, Rotation2d.fromDegrees(80));
+        visionSysSim.addVisionTargets(new VisionTargetSim(targetPose, new TargetModel(1.0, 0.5), 1736));
 
-        var robotPose = new Pose2d(new Translation2d(14.98, 0), Rotation2d.fromDegrees(5));
-        sysUnderTest.processFrame(robotPose);
-        assertTrue(sysUnderTest.cam.getLatestResult().hasTargets());
+        var robotPose = new Pose2d(new Translation2d(13.98, 0), Rotation2d.fromDegrees(5));
+        visionSysSim.update(robotPose);
+        assertTrue(camera.getLatestResult().hasTargets());
 
         // Pitched back camera should mean target goes out of view below the robot as distance increases
         robotPose = new Pose2d(new Translation2d(0, 0), Rotation2d.fromDegrees(5));
-        sysUnderTest.processFrame(robotPose);
-        assertFalse(sysUnderTest.cam.getLatestResult().hasTargets());
+        visionSysSim.update(robotPose);
+        assertFalse(camera.getLatestResult().hasTargets());
     }
 
     @Test
     public void testNotVisibleTgtSize() {
         final var targetPose =
                 new Pose3d(new Translation3d(15.98, 0, 1), new Rotation3d(0, 0, Math.PI));
-        var sysUnderTest = new SimVisionSystem("Test", 80.0, new Transform3d(), 99999, 640, 480, 20.0);
-        sysUnderTest.addSimVisionTarget(new SimVisionTarget(targetPose, 0.1, 0.025, 24));
+        var visionSysSim = new VisionSystemSim("Test");
+        var camera = new PhotonCamera("camera");
+        var cameraSim = new PhotonCameraSim(camera);
+        visionSysSim.addCamera(cameraSim, new Transform3d());
+        cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(80));
+        cameraSim.setMinTargetAreaPixels(20.0);
+        visionSysSim.addVisionTargets(new VisionTargetSim(targetPose, new TargetModel(0.1, 0.025), 24));
 
         var robotPose = new Pose2d(new Translation2d(12, 0), Rotation2d.fromDegrees(5));
-        sysUnderTest.processFrame(robotPose);
-        assertTrue(sysUnderTest.cam.getLatestResult().hasTargets());
+        visionSysSim.update(robotPose);
+        assertTrue(camera.getLatestResult().hasTargets());
 
         robotPose = new Pose2d(new Translation2d(0, 0), Rotation2d.fromDegrees(5));
-        sysUnderTest.processFrame(robotPose);
-        assertFalse(sysUnderTest.cam.getLatestResult().hasTargets());
+        visionSysSim.update(robotPose);
+        assertFalse(camera.getLatestResult().hasTargets());
     }
 
     @Test
     public void testNotVisibleTooFarForLEDs() {
         final var targetPose =
                 new Pose3d(new Translation3d(15.98, 0, 1), new Rotation3d(0, 0, Math.PI));
-        var sysUnderTest = new SimVisionSystem("Test", 80.0, new Transform3d(), 10, 640, 480, 1.0);
-        sysUnderTest.addSimVisionTarget(new SimVisionTarget(targetPose, 1.0, 0.25, 78));
+        var visionSysSim = new VisionSystemSim("Test");
+        var camera = new PhotonCamera("camera");
+        var cameraSim = new PhotonCameraSim(camera);
+        visionSysSim.addCamera(cameraSim, new Transform3d());
+        cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(80));
+        cameraSim.setMaxSightRange(10);
+        cameraSim.setMinTargetAreaPixels(1.0);
+        visionSysSim.addVisionTargets(new VisionTargetSim(targetPose, new TargetModel(1.0, 0.25), 78));
 
         var robotPose = new Pose2d(new Translation2d(10, 0), Rotation2d.fromDegrees(5));
-        sysUnderTest.processFrame(robotPose);
-        assertTrue(sysUnderTest.cam.getLatestResult().hasTargets());
+        visionSysSim.update(robotPose);
+        assertTrue(camera.getLatestResult().hasTargets());
 
         robotPose = new Pose2d(new Translation2d(0, 0), Rotation2d.fromDegrees(5));
-        sysUnderTest.processFrame(robotPose);
-        assertFalse(sysUnderTest.cam.getLatestResult().hasTargets());
+        visionSysSim.update(robotPose);
+        assertFalse(camera.getLatestResult().hasTargets());
     }
 
     @ParameterizedTest
@@ -232,34 +280,43 @@ class SimVisionSystemTest {
     public void testYawAngles(double testYaw) {
         final var targetPose =
                 new Pose3d(new Translation3d(15.98, 0, 1), new Rotation3d(0, 0, 3 * Math.PI / 4));
-        var sysUnderTest = new SimVisionSystem("Test", 80.0, new Transform3d(), 99999, 640, 480, 0);
-        sysUnderTest.addSimVisionTarget(new SimVisionTarget(targetPose, 0.5, 0.5, 3));
+        var visionSysSim = new VisionSystemSim("Test");
+        var camera = new PhotonCamera("camera");
+        var cameraSim = new PhotonCameraSim(camera);
+        visionSysSim.addCamera(cameraSim, new Transform3d());
+        cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(80));
+        cameraSim.setMinTargetAreaPixels(0.0);
+        visionSysSim.addVisionTargets(new VisionTargetSim(targetPose, new TargetModel(0.5, 0.5), 3));
 
         var robotPose = new Pose2d(new Translation2d(10, 0), Rotation2d.fromDegrees(-1.0 * testYaw));
-        sysUnderTest.processFrame(robotPose);
-        var res = sysUnderTest.cam.getLatestResult();
+        visionSysSim.update(robotPose);
+        var res = camera.getLatestResult();
         assertTrue(res.hasTargets());
         var tgt = res.getBestTarget();
-        assertEquals(tgt.getYaw(), testYaw, 0.0001);
+        assertEquals(tgt.getYaw(), testYaw, kRotDeltaDeg);
     }
 
     @ParameterizedTest
     @ValueSource(doubles = {-10, -5, -0, -1, -2, 5, 7, 10.23, 20.21, -19.999})
     public void testCameraPitch(double testPitch) {
-        testPitch = testPitch * -1;
-
         final var targetPose =
                 new Pose3d(new Translation3d(15.98, 0, 0), new Rotation3d(0, 0, 3 * Math.PI / 4));
         final var robotPose = new Pose2d(new Translation2d(10, 0), new Rotation2d(0));
-        var sysUnderTest = new SimVisionSystem("Test", 120.0, new Transform3d(), 99999, 640, 480, 0);
-        sysUnderTest.addSimVisionTarget(new SimVisionTarget(targetPose, 0.5, 0.5, 23));
+        var visionSysSim = new VisionSystemSim("Test");
+        var camera = new PhotonCamera("camera");
+        var cameraSim = new PhotonCameraSim(camera);
+        visionSysSim.addCamera(cameraSim, new Transform3d());
+        cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(120));
+        cameraSim.setMinTargetAreaPixels(0.0);
+        visionSysSim.addVisionTargets(new VisionTargetSim(targetPose, new TargetModel(0.5, 0.5), 23));
 
         // Transform is now robot -> camera
-        sysUnderTest.moveCamera(
+        visionSysSim.adjustCamera(
+                cameraSim,
                 new Transform3d(
                         new Translation3d(), new Rotation3d(0, Units.degreesToRadians(testPitch), 0)));
-        sysUnderTest.processFrame(robotPose);
-        var res = sysUnderTest.cam.getLatestResult();
+        visionSysSim.update(robotPose);
+        var res = camera.getLatestResult();
         assertTrue(res.hasTargets());
         var tgt = res.getBestTarget();
 
@@ -267,29 +324,29 @@ class SimVisionSystemTest {
         // the
         // lower half of the image
         // which should produce negative pitch.
-        assertEquals(testPitch * -1, tgt.getPitch(), 0.0001);
+        assertEquals(testPitch, tgt.getPitch(), kRotDeltaDeg);
     }
 
     private static Stream<Arguments> distCalCParamProvider() {
         // Arbitrary and fairly random assortment of distances, camera pitches, and heights
         return Stream.of(
-                Arguments.of(5, 15.98, 0),
-                Arguments.of(6, 15.98, 1),
-                Arguments.of(10, 15.98, 0),
-                Arguments.of(15, 15.98, 2),
-                Arguments.of(19.95, 15.98, 0),
-                Arguments.of(20, 15.98, 0),
-                Arguments.of(5, 42, 1),
-                Arguments.of(6, 42, 0),
-                Arguments.of(10, 42, 2),
-                Arguments.of(15, 42, 0.5),
-                Arguments.of(19.42, 15.98, 0),
-                Arguments.of(20, 42, 0),
-                Arguments.of(5, 55, 2),
-                Arguments.of(6, 55, 0),
-                Arguments.of(10, 54, 2.2),
-                Arguments.of(15, 53, 0),
-                Arguments.of(19.52, 15.98, 1.1));
+                Arguments.of(5, -15.98, 0),
+                Arguments.of(6, -15.98, 1),
+                Arguments.of(10, -15.98, 0),
+                Arguments.of(15, -15.98, 2),
+                Arguments.of(19.95, -15.98, 0),
+                Arguments.of(20, -15.98, 0),
+                Arguments.of(5, -42, 1),
+                Arguments.of(6, -42, 0),
+                Arguments.of(10, -42, 2),
+                Arguments.of(15, -42, 0.5),
+                Arguments.of(19.42, -15.98, 0),
+                Arguments.of(20, -42, 0),
+                Arguments.of(5, -35, 2),
+                Arguments.of(6, -35, 0),
+                Arguments.of(10, -34, 3.2),
+                Arguments.of(15, -33, 0),
+                Arguments.of(19.52, -15.98, 1.1));
     }
 
     @ParameterizedTest
@@ -306,29 +363,32 @@ class SimVisionSystemTest {
                         new Translation3d(0, 0, Units.feetToMeters(testHeight)),
                         new Rotation3d(0, Units.degreesToRadians(testPitch), 0));
 
-        var sysUnderTest =
-                new SimVisionSystem(
-                        "absurdlylongnamewhichshouldneveractuallyhappenbuteehwelltestitanywaysohowsyourdaygoingihopegoodhaveagreatrestofyourlife!",
-                        160.0,
-                        robotToCamera,
-                        99999,
-                        640,
-                        480,
-                        0);
-        sysUnderTest.addSimVisionTarget(new SimVisionTarget(targetPose, 0.5, 0.5, 0));
+        var visionSysSim =
+                new VisionSystemSim(
+                        "absurdlylongnamewhichshouldneveractuallyhappenbuteehwelltestitanywaysohowsyourdaygoingihopegoodhaveagreatrestofyourlife!");
+        var camera = new PhotonCamera("camera");
+        var cameraSim = new PhotonCameraSim(camera);
+        visionSysSim.addCamera(cameraSim, new Transform3d());
+        cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(160));
+        cameraSim.setMinTargetAreaPixels(0.0);
+        visionSysSim.adjustCamera(cameraSim, robotToCamera);
+        // note that non-fiducial targets have different center point calculation and will
+        // return slightly inaccurate yaw/pitch values
+        visionSysSim.addVisionTargets(new VisionTargetSim(targetPose, new TargetModel(0.5, 0.5), 0));
 
-        sysUnderTest.processFrame(robotPose);
-        var res = sysUnderTest.cam.getLatestResult();
+        visionSysSim.update(robotPose);
+        var res = camera.getLatestResult();
         assertTrue(res.hasTargets());
         var tgt = res.getBestTarget();
-        assertEquals(tgt.getYaw(), 0.0, 0.0001);
+        assertEquals(0.0, tgt.getYaw(), kRotDeltaDeg);
+
         double distMeas =
                 PhotonUtils.calculateDistanceToTargetMeters(
                         robotToCamera.getZ(),
                         targetPose.getZ(),
-                        Units.degreesToRadians(testPitch),
+                        Units.degreesToRadians(-testPitch),
                         Units.degreesToRadians(tgt.getPitch()));
-        assertEquals(Units.feetToMeters(testDist), distMeas, 0.001);
+        assertEquals(Units.feetToMeters(testDist), distMeas, kTrlDelta);
     }
 
     @Test
@@ -339,92 +399,87 @@ class SimVisionSystemTest {
                 new Pose3d(new Translation3d(15.98, 0, 0), new Rotation3d(0, 0, Math.PI));
         final var targetPoseR =
                 new Pose3d(new Translation3d(15.98, -2, 0), new Rotation3d(0, 0, Math.PI));
-        var sysUnderTest = new SimVisionSystem("Test", 160.0, new Transform3d(), 99999, 640, 480, 20.0);
 
-        sysUnderTest.addSimVisionTarget(
-                new SimVisionTarget(
+        var visionSysSim = new VisionSystemSim("Test");
+        var camera = new PhotonCamera("camera");
+        var cameraSim = new PhotonCameraSim(camera);
+        visionSysSim.addCamera(cameraSim, new Transform3d());
+        cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(80));
+        cameraSim.setMinTargetAreaPixels(20.0);
+
+        visionSysSim.addVisionTargets(
+                new VisionTargetSim(
                         targetPoseL.transformBy(
                                 new Transform3d(new Translation3d(0, 0, 0.00), new Rotation3d())),
-                        0.25,
-                        0.25,
+                        TargetModel.kTag16h5,
                         1));
-        sysUnderTest.addSimVisionTarget(
-                new SimVisionTarget(
+        visionSysSim.addVisionTargets(
+                new VisionTargetSim(
                         targetPoseC.transformBy(
                                 new Transform3d(new Translation3d(0, 0, 0.00), new Rotation3d())),
-                        0.25,
-                        0.25,
+                        TargetModel.kTag16h5,
                         2));
-        sysUnderTest.addSimVisionTarget(
-                new SimVisionTarget(
+        visionSysSim.addVisionTargets(
+                new VisionTargetSim(
                         targetPoseR.transformBy(
                                 new Transform3d(new Translation3d(0, 0, 0.00), new Rotation3d())),
-                        0.25,
-                        0.25,
+                        TargetModel.kTag16h5,
                         3));
-        sysUnderTest.addSimVisionTarget(
-                new SimVisionTarget(
+        visionSysSim.addVisionTargets(
+                new VisionTargetSim(
                         targetPoseL.transformBy(
                                 new Transform3d(new Translation3d(0, 0, 1.00), new Rotation3d())),
-                        0.25,
-                        0.25,
+                        TargetModel.kTag16h5,
                         4));
-        sysUnderTest.addSimVisionTarget(
-                new SimVisionTarget(
+        visionSysSim.addVisionTargets(
+                new VisionTargetSim(
                         targetPoseC.transformBy(
                                 new Transform3d(new Translation3d(0, 0, 1.00), new Rotation3d())),
-                        0.25,
-                        0.25,
+                        TargetModel.kTag16h5,
                         5));
-        sysUnderTest.addSimVisionTarget(
-                new SimVisionTarget(
-                        targetPoseR.transformBy(
+        visionSysSim.addVisionTargets(
+                new VisionTargetSim(
+                        targetPoseL.transformBy(
                                 new Transform3d(new Translation3d(0, 0, 1.00), new Rotation3d())),
-                        0.25,
-                        0.25,
+                        TargetModel.kTag16h5,
                         6));
-        sysUnderTest.addSimVisionTarget(
-                new SimVisionTarget(
+        visionSysSim.addVisionTargets(
+                new VisionTargetSim(
                         targetPoseL.transformBy(
                                 new Transform3d(new Translation3d(0, 0, 0.50), new Rotation3d())),
-                        0.25,
-                        0.25,
+                        TargetModel.kTag16h5,
                         7));
-        sysUnderTest.addSimVisionTarget(
-                new SimVisionTarget(
+        visionSysSim.addVisionTargets(
+                new VisionTargetSim(
                         targetPoseC.transformBy(
                                 new Transform3d(new Translation3d(0, 0, 0.50), new Rotation3d())),
-                        0.25,
-                        0.25,
+                        TargetModel.kTag16h5,
                         8));
-        sysUnderTest.addSimVisionTarget(
-                new SimVisionTarget(
+        visionSysSim.addVisionTargets(
+                new VisionTargetSim(
                         targetPoseL.transformBy(
                                 new Transform3d(new Translation3d(0, 0, 0.75), new Rotation3d())),
-                        0.25,
-                        0.25,
+                        TargetModel.kTag16h5,
                         9));
-        sysUnderTest.addSimVisionTarget(
-                new SimVisionTarget(
+        visionSysSim.addVisionTargets(
+                new VisionTargetSim(
                         targetPoseR.transformBy(
                                 new Transform3d(new Translation3d(0, 0, 0.75), new Rotation3d())),
-                        0.25,
-                        0.25,
+                        TargetModel.kTag16h5,
                         10));
-        sysUnderTest.addSimVisionTarget(
-                new SimVisionTarget(
+        visionSysSim.addVisionTargets(
+                new VisionTargetSim(
                         targetPoseL.transformBy(
                                 new Transform3d(new Translation3d(0, 0, 0.25), new Rotation3d())),
-                        0.25,
-                        0.25,
+                        TargetModel.kTag16h5,
                         11));
 
         var robotPose = new Pose2d(new Translation2d(6.0, 0), Rotation2d.fromDegrees(0.25));
-        sysUnderTest.processFrame(robotPose);
-        var res = sysUnderTest.cam.getLatestResult();
+        visionSysSim.update(robotPose);
+        var res = camera.getLatestResult();
         assertTrue(res.hasTargets());
         List<PhotonTrackedTarget> tgtList;
         tgtList = res.getTargets();
-        assertEquals(tgtList.size(), 11);
+        assertEquals(11, tgtList.size());
     }
 }

@@ -42,6 +42,9 @@ public class Robot extends TimedRobot {
     public void robotInit() {
         if (Robot.isSimulation()) {
             NetworkTableInstance instance = NetworkTableInstance.getDefault();
+
+            // We have to have Photon running and set to NT server mode for it to connect
+            // to our computer instead of to a roboRIO.
             instance.stopServer();
             // set the NT server if simulating this code.
             // "localhost" for photon on desktop, or "photonvision.local" / "[ip-address]" for coprocessor
@@ -51,6 +54,10 @@ public class Robot extends TimedRobot {
 
         m_controller = new XboxController(0);
         m_drive = new Drivetrain();
+
+        // Flush NetworkTables every loop. This ensures that robot pose and other values
+        // are sent during every iteration. This only applies to local NT connections!
+        setNetworkTablesFlushEnabled(true);
     }
 
     @Override
