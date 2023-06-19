@@ -271,7 +271,7 @@ export default {
           .then(() => {
             this.snackbar = {
               color: "success",
-              text: "Successfully restarted the device"
+              text: "Successfully dispatched the restart command. It isn't confirmed if a device restart will occur."
             }
             this.snack = true;
           })
