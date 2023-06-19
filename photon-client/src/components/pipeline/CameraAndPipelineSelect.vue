@@ -98,6 +98,26 @@
                 />
               </v-list-item-title>
             </v-list-item>
+            <v-list-item @click="() => showPipeImportDialog = true">
+              <v-list-item-title>
+                <CVicon
+                  color="#c5c5c5"
+                  :right="true"
+                  text="mdi-import"
+                  tooltip="Import Pipeline Settings from File"
+                />
+              </v-list-item-title>
+            </v-list-item>
+            <v-list-item @click="exportPipelineToJson">
+              <v-list-item-title>
+                <CVicon
+                  color="#c5c5c5"
+                  :right="true"
+                  text="mdi-export"
+                  tooltip="Export Pipeline Settings to File"
+                />
+              </v-list-item-title>
+            </v-list-item>
           </v-list>
         </v-menu>
       </v-col>
@@ -200,6 +220,85 @@
         </v-card-text>
       </v-card>
     </v-dialog>
+    <v-dialog
+      v-model="showPipeImportDialog"
+      width="600"
+    >
+      <v-card
+        color="primary"
+        dark
+      >
+        <v-card-title>Import Pipeline Settings</v-card-title>
+        <v-card-text>
+          Import a previously exported PhotonVision pipeline to this device.
+          <v-row>
+            <v-col cols="10">
+              <v-file-input
+                color="secondary"
+                accept=".json"
+                :error-messages="checkImportedPipelineFile"
+                @change="handlePipelineImportFile"
+              >
+                Select File
+              </v-file-input>
+            </v-col>
+            <v-col>
+              <v-icon
+                v-if="pipelineImportData === undefined"
+                color="red"
+                size="70"
+              >
+                mdi-close
+              </v-icon>
+              <v-icon
+                v-else
+                color="green"
+                size="70"
+              >
+                mdi-check-bold
+              </v-icon>
+            </v-col>
+          </v-row>
+          <div
+            v-if="pipelineImportData !== undefined && pipelineImportData !== null"
+          >
+            <hr>
+            <v-row class="ma-6">
+              <CVinput
+                v-model="importedPipelineName"
+                name="Pipeline Name"
+                :label-cols="4"
+                :input-cols="8"
+                :error-message="_checkPipelineName(importedPipelineName)"
+              />
+            </v-row>
+            <v-row
+              class="mt-6"
+              style="display: flex; align-items: center; justify-content: center"
+              align="center"
+            >
+              <v-btn
+                class="mr-3"
+                color="red"
+                width="250"
+                :disabled="_checkPipelineName(importedPipelineName) !== ''"
+                @click="createPipelineFromImportedFile"
+              >
+                Import Pipeline
+              </v-btn>
+              <v-btn
+                class="ml-10"
+                color="secondary"
+                width="250"
+                @click="cancelPipelineImport"
+              >
+                No, take me back
+              </v-btn>
+            </v-row>
+          </div>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -223,7 +322,11 @@ export default {
             duplicateDialog: false,
             showPipeTypeDialog: false,
             proposedPipelineType : 0,
-            pipeIndexToDuplicate: undefined
+            pipeIndexToDuplicate: undefined,
+
+            showPipeImportDialog: false,
+            pipelineImportData: undefined,
+            importedPipelineName: ""
         }
     },
     computed: {
@@ -267,6 +370,15 @@ export default {
             set(value) {
                 value; // nop, since we have the dialog for this
             }
+        },
+        checkImportedPipelineFile() {
+          if(this.pipelineImportData === undefined) {
+            return "No File Uploaded"
+          } else if(this.pipelineImportData === null) {
+            return "Corrupt or Malformed JSON File"
+          } else {
+            return ""
+          }
         }
     },
     methods: {
@@ -307,6 +419,26 @@ export default {
                 this.discardPipelineNameChange();
             }
         },
+        handlePipelineImportFile(event) {
+          // TODO, parse required info. null if malformed, else data
+          event;
+          this.pipelineImportData = {}
+        },
+        _checkPipelineName(name) {
+            const pipelineNameChangeRegex = RegExp("^[A-Za-z0-9_ \\-)(]*[A-Za-z0-9][A-Za-z0-9_ \\-)(.]*$")
+            if (pipelineNameChangeRegex.test(name)) {
+              for (let pipe in this.$store.getters.pipelineList) {
+                if (this.$store.getters.pipelineList.hasOwnProperty(pipe)) {
+                  if (name === this.$store.getters.pipelineList[pipe]) {
+                    return "A pipeline with this name already exists"
+                  }
+                }
+              }
+            } else {
+              return "A pipeline name can only contain letters, numbers, and spaces"
+            }
+          return ""
+        },
         duplicatePipeline() {
             this.handleInputWithIndex("duplicatePipeline", this.currentPipelineIndex);
         },
@@ -315,6 +447,19 @@ export default {
             this.isPipelineNameEdit = false;
             this.newPipelineName = "";
         },
+        exportPipelineToJson() {
+          // TODO determine what data needs to be exported, and export it to JSON
+        },
+        createPipelineFromImportedFile() {
+          // this.pipelineImportData
+          // this.importedPipelineName
+          // TODO, create a new pipeline using the data, rename it using the name, then select it or whatever order the backend wants
+        },
+        cancelPipelineImport() {
+          this.showPipeImportDialog = false;
+          this.pipelineImportData = undefined;
+          this.importedPipelineName = ""
+        }
     }
 
 }
