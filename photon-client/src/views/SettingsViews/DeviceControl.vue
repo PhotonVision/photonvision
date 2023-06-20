@@ -331,7 +331,7 @@ export default {
           .then(response => {
             this.snackbar = {
               color: "success",
-              text: response.data.text
+              text: response.data.text || response.data
             }
             this.snack = true;
           })
@@ -339,7 +339,7 @@ export default {
             if(error.response) {
               this.snackbar = {
                 color: "error",
-                text: error.response.data.text
+                text: error.response.data.text || error.response.data
               }
             } else if(error.request) {
               this.snackbar = {
@@ -393,7 +393,7 @@ export default {
           .then(response => {
             this.snackbar = {
               color: "success",
-              text: response.data.text
+              text: response.data.text || response.data
             }
             this.snack = true;
           })
@@ -401,7 +401,7 @@ export default {
             if(error.response) {
               this.snackbar = {
                 color: "error",
-                text: error.response.data.text
+                text:  error.response.data.text || error.response.data
               };
             } else if(error.request) {
               this.snackbar = {
