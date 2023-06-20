@@ -493,10 +493,7 @@ public class RequestHandler {
     private static Optional<File> handleTempFileCreation(UploadedFile file) {
         var tempFilePath =
                 new File(Path.of(System.getProperty("java.io.tmpdir"), file.getFilename()).toString());
-
-        boolean createFile = tempFilePath.getParentFile().mkdirs();
-
-        if (!createFile) return Optional.empty();
+        tempFilePath.getParentFile().mkdirs();
 
         try {
             FileUtils.copyInputStreamToFile(file.getContent(), tempFilePath);
