@@ -35,12 +35,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
 
 public class VisionEstimation {
-    /** Get the visible {@link AprilTag}s according the tag layout using the visible tag IDs. */
+    /** Get the visible {@link AprilTag}s which are in the tag layout using the visible tag IDs. */
     public static List<AprilTag> getVisibleLayoutTags(
             List<PhotonTrackedTarget> visTags, AprilTagFieldLayout tagLayout) {
         return visTags.stream()
@@ -55,20 +56,22 @@ public class VisionEstimation {
     }
 
     /**
-     * Performs solvePNP using 3d-2d point correspondences to estimate the field-to-camera
+     * Performs solvePNP using 3d-2d point correspondences of visible AprilTags to estimate the field-to-camera
      * transformation. If only one tag is visible, the result may have an alternate solution.
      *
      * <p><b>Note:</b> The returned transformation is from the field origin to the camera pose!
-     * (Unless you only feed this one tag??)
+     * 
+     * <p>With only one tag: {@link OpenCVHelp#solvePNP_SQUARE}</p>
+     * <p>With multiple tags: {@link OpenCVHelp#solvePNP_SQPNP}</p>
      *
      * @param cameraMatrix The camera intrinsics matrix in standard opencv form
      * @param distCoeffs The camera distortion matrix in standard opencv form
      * @param visTags The visible tags reported by PV
      * @param tagLayout The known tag layout on the field
-     * @return The transformation that maps the field origin to the camera pose
+     * @return The transformation that maps the field origin to the camera pose, or an empty
+     *  Optional if estimation fails.
      */
-    @Deprecated
-    public static PNPResults estimateCamPosePNP(
+    public static Optional<PNPResults> estimateCamPosePNP(
             Matrix<N3, N3> cameraMatrix,
             Matrix<N5, N1> distCoeffs,
             List<PhotonTrackedTarget> visTags,
@@ -77,113 +80,47 @@ public class VisionEstimation {
                 || visTags == null
                 || tagLayout.getTags().size() == 0
                 || visTags.size() == 0) {
-            return new PNPResults();
+            return Optional.empty();
         }
 
         var corners = new ArrayList<TargetCorner>();
         for (var tag : visTags) corners.addAll(tag.getDetectedCorners());
         var knownTags = getVisibleLayoutTags(visTags, tagLayout);
         if (knownTags.size() == 0 || corners.size() == 0 || corners.size() % 4 != 0) {
-            return new PNPResults();
+            return Optional.empty();
         }
 
         // single-tag pnp
         if (visTags.size() == 1) {
             var camToTag =
                     OpenCVHelp.solvePNP_SQUARE(
-                            cameraMatrix, distCoeffs, TargetModel.kTag16h5.vertices, corners);
+                            cameraMatrix, distCoeffs, TargetModel.kTag16h5.vertices, corners).orElse(null);
+            if(camToTag == null) return Optional.empty();
             var bestPose = knownTags.get(0).pose.transformBy(camToTag.best.inverse());
             var altPose = new Pose3d();
             if (camToTag.ambiguity != 0)
                 altPose = knownTags.get(0).pose.transformBy(camToTag.alt.inverse());
 
-            var bestTagToCam = camToTag.best.inverse();
-            SmartDashboard.putNumberArray(
-                    "multiTagBest_internal",
-                    new double[] {
-                        bestTagToCam.getX(),
-                        bestTagToCam.getY(),
-                        bestTagToCam.getZ(),
-                        bestTagToCam.getRotation().getQuaternion().getW(),
-                        bestTagToCam.getRotation().getQuaternion().getX(),
-                        bestTagToCam.getRotation().getQuaternion().getY(),
-                        bestTagToCam.getRotation().getQuaternion().getZ()
-                    });
-
             var o = new Pose3d();
-            return new PNPResults(
+            return Optional.of(new PNPResults(
                     new Transform3d(o, bestPose),
                     new Transform3d(o, altPose),
                     camToTag.ambiguity,
                     camToTag.bestReprojErr,
-                    camToTag.altReprojErr);
+                    camToTag.altReprojErr));
         }
         // multi-tag pnp
         else {
             var objectTrls = new ArrayList<Translation3d>();
             for (var tag : knownTags) objectTrls.addAll(TargetModel.kTag16h5.getFieldVertices(tag.pose));
-            var camToOrigin = OpenCVHelp.solvePNP_SQPNP(cameraMatrix, distCoeffs, objectTrls, corners);
-            return new PNPResults(
+            var camToOrigin = OpenCVHelp.solvePNP_SQPNP(cameraMatrix, distCoeffs, objectTrls, corners).orElse(null);
+            if(camToOrigin == null) return Optional.empty();
+            return Optional.of(new PNPResults(
                     camToOrigin.best.inverse(),
                     camToOrigin.alt.inverse(),
                     camToOrigin.ambiguity,
                     camToOrigin.bestReprojErr,
-                    camToOrigin.altReprojErr);
-        }
-    }
-
-    /**
-     * Performs solvePNP using 3d-2d point correspondences to estimate the field-to-camera
-     * transformation. If only one tag is visible, the result may have an alternate solution.
-     *
-     * <p><b>Note:</b> The returned transformation is from the field origin to the camera pose!
-     *
-     * @param cameraMatrix the camera intrinsics matrix in standard opencv form
-     * @param distCoeffs the camera distortion matrix in standard opencv form
-     * @param corners The visible tag corners in the 2d image
-     * @param knownTags The known tag field poses corresponding to the visible tag IDs
-     * @return The transformation that maps the field origin to the camera pose
-     */
-    public static PNPResults estimateCamPoseSqpnp(
-            Matrix<N3, N3> cameraMatrix,
-            Matrix<N5, N1> distCoeffs,
-            List<TargetCorner> corners,
-            List<AprilTag> knownTags) {
-        if (knownTags == null
-                || corners == null
-                || corners.size() != knownTags.size() * 4
-                || knownTags.size() == 0) {
-            return new PNPResults();
-        }
-        var objectTrls = new ArrayList<Translation3d>();
-        for (var tag : knownTags) objectTrls.addAll(TargetModel.kTag16h5.vertices);
-        var camToOrigin = OpenCVHelp.solvePNP_SQPNP(cameraMatrix, distCoeffs, objectTrls, corners);
-        // var camToOrigin = OpenCVHelp.solveTagsPNPRansac(prop, objectTrls, corners);
-        return new PNPResults(
-                camToOrigin.best.inverse(),
-                camToOrigin.alt.inverse(),
-                camToOrigin.ambiguity,
-                camToOrigin.bestReprojErr,
-                camToOrigin.altReprojErr);
-    }
-
-    /**
-     * The best estimated transformation (Rotation-translation composition) that maps a set of
-     * translations onto another with point correspondences, and its RMSE.
-     */
-    public static class SVDResults {
-        public final RotTrlTransform3d trf;
-
-        /** If the result is invalid, this value is -1 */
-        public final double rmse;
-
-        public SVDResults() {
-            this(new RotTrlTransform3d(), -1);
-        }
-
-        public SVDResults(RotTrlTransform3d trf, double rmse) {
-            this.trf = trf;
-            this.rmse = rmse;
+                    camToOrigin.altReprojErr));
         }
     }
 }
