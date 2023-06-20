@@ -124,6 +124,10 @@
     <v-dialog
       v-model="showImportDialog"
       width="600"
+      @input="() => {
+        importType = undefined;
+        importFile = null;
+      }"
     >
       <v-card
         color="primary"
@@ -133,37 +137,41 @@
         <v-card-text>
           Upload and apply previously saved or exported PhotonVision settings to this device
           <v-row
-            class="mt-6"
+            class="mt-6 ml-8"
+          >
+            <CVselect
+              v-model="importType"
+              name="Type"
+              tooltip="Select the type of settings file you are trying to upload"
+              :list="['All Settings', 'Hardware Config', 'Hardware Settings', 'Network Config']"
+              :select-cols="10"
+            />
+          </v-row>
+          <v-row
+            class="mt-6 ml-8 mr-8"
+          >
+            <v-file-input
+              :disabled="importType === undefined"
+              :error-messages="importType === undefined ? 'Settings type not selected' : ''"
+              :accept="importType === 0 ? '.zip' : '.json'"
+              @change="(file) => importFile = file"
+            />
+          </v-row>
+          <v-row
+            class="mt-12 ml-8 mr-8 mb-1"
             style="display: flex; align-items: center; justify-content: center"
             align="center"
           >
-            <v-col>
-              <CVselect
-                name="Type"
-                tooltip="Select the type of settings file you are trying to upload"
-                :list="['All Settings', 'Hardware Config', 'Hardware Settings', 'Network Config']"
-                @input="(v) => importType = v"
-              />
-            </v-col>
-            <v-col>
-              <v-btn
-                color="secondary"
-                :disabled="importType === undefined"
-                @click="() => this.$refs.importSettings.click()"
-              >
-                <v-icon left>
-                  mdi-upload
-                </v-icon>
-                Upload File
-              </v-btn>
-            </v-col>
-            <input
-              ref="importSettings"
-              type="file"
-              :accept="importType === 0 ? '.zip' : '.json'"
-              style="display: none;"
-              @change="uploadSettings"
+            <v-btn
+              color="secondary"
+              :disabled="importFile === null"
+              @click="uploadSettings"
             >
+              <v-icon left>
+                mdi-import
+              </v-icon>
+              Import Settings
+            </v-btn>
           </v-row>
         </v-card-text>
       </v-card>
@@ -173,7 +181,7 @@
     <a
       ref="exportSettings"
       style="color: black; text-decoration: none; display: none"
-      :href="'http://' + this.$address + '/api/settings/photonvision_config.zip'"
+      :href="`http://${this.$address}/api/settings/photonvision_config.zip`"
       download="photonvision-settings.zip"
     />
 
@@ -205,6 +213,7 @@ export default {
       uploadPercentage: 0.0,
       showImportDialog: false,
       importType: undefined,
+      importFile: null,
       snackbar: {
         color: "success",
         text: "",
@@ -295,9 +304,9 @@ export default {
             this.snack = true;
           })
     },
-    uploadSettings(event) {
+    uploadSettings() {
       let formData = new FormData();
-      formData.append("data", event.target.files[0]);
+      formData.append("data", this.importFile);
 
       let settingsType
       switch (this.importType) {
@@ -345,6 +354,10 @@ export default {
             }
             this.snack = true;
           })
+
+      this.showImportDialog = false
+      this.importType = undefined;
+      this.importFile = null;
     },
     doOfflineUpdate(event) {
       this.snackbar = {
