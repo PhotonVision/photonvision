@@ -375,9 +375,10 @@ public final class OpenCVHelp {
     }
 
     /**
-     * Finds the transformation(s) that map the camera's pose to the target pose. The camera's pose
+     * Finds the transformation(s) that map the camera's pose to the target's pose. The camera's pose
      * relative to the target is determined by the supplied 3d points of the target's model and their
-     * associated 2d points imaged by the camera.
+     * associated 2d points imaged by the camera. The supplied model translations must be relative to
+     * the target's pose.
      *
      * <p>For planar targets, there may be an alternate solution which is plausible given the 2d image
      * points. This has an associated "ambiguity" which describes the ratio of reprojection error
@@ -386,8 +387,8 @@ public final class OpenCVHelp {
      * <p>This method is intended for use with individual AprilTags, and will not work unless 4 points
      * are provided.
      *
-     * @param cameraMatrix the camera intrinsics matrix in standard opencv form
-     * @param distCoeffs the camera distortion matrix in standard opencv form
+     * @param cameraMatrix The camera intrinsics matrix in standard opencv form
+     * @param distCoeffs The camera distortion matrix in standard opencv form
      * @param modelTrls The translations of the object corners. These should have the object pose as
      *     their origin. These must come in a specific, pose-relative order (in NWU):
      *     <ul>
@@ -471,15 +472,17 @@ public final class OpenCVHelp {
     }
 
     /**
-     * Finds the transformation that maps the camera's pose to the target pose. The camera's pose
-     * relative to the target is determined by the supplied 3d points of the target's model and their
-     * associated 2d points imaged by the camera.
+     * Finds the transformation that maps the camera's pose to the origin of the supplied object.
+     * An "object" is simply a set of known 3d translations that correspond to the given 2d points.
+     * If, for example, the object translations are given relative to close-right corner of the blue
+     * alliance(the default origin), a camera-to-origin transformation is returned. If the translations
+     * are relative to a target's pose, a camera-to-target transformation is returned.
      *
-     * <p>This method is intended for use with multiple targets and has no alternate solutions. There
-     * must be at least 3 points.
+     * <p>There must be at least 3 points to use this method. This does not return an alternate solution--
+     * if you are intending to use solvePNP on a single AprilTag, see {@link #solvePNP_SQUARE} instead.
      *
-     * @param cameraMatrix the camera intrinsics matrix in standard opencv form
-     * @param distCoeffs the camera distortion matrix in standard opencv form
+     * @param cameraMatrix The camera intrinsics matrix in standard opencv form
+     * @param distCoeffs The camera distortion matrix in standard opencv form
      * @param objectTrls The translations of the object corners, relative to the field.
      * @param imageCorners The projection of these 3d object points into the 2d camera image. The
      *     order should match the given object point translations.
