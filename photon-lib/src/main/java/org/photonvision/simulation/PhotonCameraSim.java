@@ -352,11 +352,12 @@ public class PhotonCameraSim implements AutoCloseable {
             if (tgt.fiducialID >= 0 && tgt.getFieldVertices().size() == 4) { // single AprilTag solvePNP
                 pnpSim =
                         OpenCVHelp.solvePNP_SQUARE(
-                                prop.getIntrinsics(),
-                                prop.getDistCoeffs(),
-                                tgt.getModel().vertices,
-                                noisyTargetCorners).orElse(null);
-                if(pnpSim == null) continue;
+                                        prop.getIntrinsics(),
+                                        prop.getDistCoeffs(),
+                                        tgt.getModel().vertices,
+                                        noisyTargetCorners)
+                                .orElse(null);
+                if (pnpSim == null) continue;
                 centerRot =
                         prop.getPixelRot(
                                 OpenCVHelp.projectPoints(

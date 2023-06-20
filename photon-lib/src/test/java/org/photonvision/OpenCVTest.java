@@ -194,7 +194,11 @@ public class OpenCVTest {
                         prop.getIntrinsics(), prop.getDistCoeffs(), cameraPose, target.getFieldVertices());
         var pnpSim =
                 OpenCVHelp.solvePNP_SQUARE(
-                        prop.getIntrinsics(), prop.getDistCoeffs(), target.getModel().vertices, targetCorners).orElseThrow();
+                                prop.getIntrinsics(),
+                                prop.getDistCoeffs(),
+                                target.getModel().vertices,
+                                targetCorners)
+                        .orElseThrow();
         var estRelation = new CameraTargetRelation(cameraPose, cameraPose.plus(pnpSim.best));
         assertSame(actualRelation.camToTarg, estRelation.camToTarg);
     }
@@ -222,7 +226,11 @@ public class OpenCVTest {
                         prop.getIntrinsics(), prop.getDistCoeffs(), cameraPose, target.getFieldVertices());
         var pnpSim =
                 OpenCVHelp.solvePNP_SQPNP(
-                        prop.getIntrinsics(), prop.getDistCoeffs(), target.getModel().vertices, targetCorners).orElseThrow();
+                                prop.getIntrinsics(),
+                                prop.getDistCoeffs(),
+                                target.getModel().vertices,
+                                targetCorners)
+                        .orElseThrow();
         var estRelation = new CameraTargetRelation(cameraPose, cameraPose.plus(pnpSim.best));
         assertSame(actualRelation.camToTarg, estRelation.camToTarg);
     }

@@ -370,9 +370,11 @@ public class PhotonPoseEstimator {
 
         var pnpResults =
                 VisionEstimation.estimateCamPosePNP(
-                        cameraMatrixOpt.get(), distCoeffsOpt.get(), result.getTargets(), fieldTags).orElse(null);
+                                cameraMatrixOpt.get(), distCoeffsOpt.get(), result.getTargets(), fieldTags)
+                        .orElse(null);
         // try fallback strategy if solvePNP fails for some reason
-        if(pnpResults == null) return update(result, cameraMatrixOpt, distCoeffsOpt, this.multiTagFallbackStrategy);
+        if (pnpResults == null)
+            return update(result, cameraMatrixOpt, distCoeffsOpt, this.multiTagFallbackStrategy);
         var best =
                 new Pose3d()
                         .plus(pnpResults.best) // field-to-camera

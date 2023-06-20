@@ -39,7 +39,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-
 import org.ejml.simple.SimpleMatrix;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
@@ -458,13 +457,14 @@ public final class OpenCVHelp {
             reprojectionError.release();
 
             // check if solvePnP failed with NaN results
-            if(Double.isNaN(errors[0])) throw new Exception("SolvePNP_SQUARE NaN result");
+            if (Double.isNaN(errors[0])) throw new Exception("SolvePNP_SQUARE NaN result");
 
-            if (alt != null) return Optional.of(new PNPResults(best, alt, errors[0] / errors[1], errors[0], errors[1]));
+            if (alt != null)
+                return Optional.of(new PNPResults(best, alt, errors[0] / errors[1], errors[0], errors[1]));
             else return Optional.of(new PNPResults(best, errors[0]));
         }
         // solvePnP failed
-        catch(Exception e) {
+        catch (Exception e) {
             System.err.println("SolvePNP_SQUARE failed!");
             e.printStackTrace();
             return Optional.empty();
@@ -472,14 +472,15 @@ public final class OpenCVHelp {
     }
 
     /**
-     * Finds the transformation that maps the camera's pose to the origin of the supplied object.
-     * An "object" is simply a set of known 3d translations that correspond to the given 2d points.
-     * If, for example, the object translations are given relative to close-right corner of the blue
-     * alliance(the default origin), a camera-to-origin transformation is returned. If the translations
-     * are relative to a target's pose, a camera-to-target transformation is returned.
+     * Finds the transformation that maps the camera's pose to the origin of the supplied object. An
+     * "object" is simply a set of known 3d translations that correspond to the given 2d points. If,
+     * for example, the object translations are given relative to close-right corner of the blue
+     * alliance(the default origin), a camera-to-origin transformation is returned. If the
+     * translations are relative to a target's pose, a camera-to-target transformation is returned.
      *
-     * <p>There must be at least 3 points to use this method. This does not return an alternate solution--
-     * if you are intending to use solvePNP on a single AprilTag, see {@link #solvePNP_SQUARE} instead.
+     * <p>There must be at least 3 points to use this method. This does not return an alternate
+     * solution-- if you are intending to use solvePNP on a single AprilTag, see {@link
+     * #solvePNP_SQUARE} instead.
      *
      * @param cameraMatrix The camera intrinsics matrix in standard opencv form
      * @param distCoeffs The camera distortion matrix in standard opencv form
@@ -537,11 +538,10 @@ public final class OpenCVHelp {
             reprojectionError.release();
 
             // check if solvePnP failed with NaN results
-            if(Double.isNaN(error[0])) throw new Exception("SolvePNP_SQPNP NaN result");
+            if (Double.isNaN(error[0])) throw new Exception("SolvePNP_SQPNP NaN result");
 
             return Optional.of(new PNPResults(best, error[0]));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.err.println("SolvePNP_SQPNP failed!");
             e.printStackTrace();
             return Optional.empty();
