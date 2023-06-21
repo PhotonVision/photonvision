@@ -14,6 +14,7 @@
 # Ensure Spotless does not try to use CRLF line endings on Windows in the local repo.
 *.gradle text eol=lf
 *.java text eol=lf
+*.json text eol=lf
 *.md text eol=lf
 *.xml text eol=lf
 *.h text eol=lf
