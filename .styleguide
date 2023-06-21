@@ -17,6 +17,7 @@ modifiableFileExclude {
   \.so$
   \.dll$
   \.webp$
+  gradlew
 }
 
 includeProject {
