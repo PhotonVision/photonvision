@@ -197,14 +197,14 @@ jobs:
   #  Building photonlib
   photonlib-build-host:
     env:
-      MACOSX_DEPLOYMENT_TARGET: 10.14
+      MACOSX_DEPLOYMENT_TARGET: 11
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: windows-2022
             artifact-name: Win64
-          - os: macos-11
+          - os: macOS-12
             artifact-name: macOS
           - os: ubuntu-22.04
             artifact-name: Linux
