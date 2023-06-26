@@ -117,31 +117,12 @@
         </tr>
       </table>
     </v-row>
-
-    <v-snackbar
-      v-model="snack"
-      top
-      :color="snackbar.color"
-      timeout="-1"
-    >
-      <span>{{ snackbar.text }}</span>
-    </v-snackbar>
   </div>
 </template>
 
 <script>
 export default {
     name: 'Stats',
-    data() {
-        return {
-            snack: false,
-            uploadPercentage: 0.0,
-            snackbar: {
-                color: "success",
-                text: ""
-            },
-        }
-    },
     computed: {
         settings() {
             return this.$store.state.settings.general;

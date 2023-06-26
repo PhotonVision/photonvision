@@ -79,15 +79,6 @@ public class NetworkConfig {
         setShouldManage(shouldManage);
     }
 
-    public static NetworkConfig fromHashMap(Map<String, Object> map) {
-        try {
-            return new ObjectMapper().convertValue(map, NetworkConfig.class);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new NetworkConfig();
-        }
-    }
-
     public Map<String, Object> toHashMap() {
         try {
             return new ObjectMapper().convertValue(this, JacksonUtils.UIMap.class);

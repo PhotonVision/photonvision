@@ -370,6 +370,6 @@ public class Main {
             }
         }
 
-        Server.main(DEFAULT_WEBPORT);
+        Server.start(DEFAULT_WEBPORT);
     }
 }

@@ -1,5 +1,13 @@
 <template>
   <div>
+    <v-snackbar
+      v-model="snack"
+      top
+      :color="snackbar.color"
+      :timeout="2000"
+    >
+      <span>{{ snackbar.text }}</span>
+    </v-snackbar>
     <v-row
       align="center"
       style="padding: 12px 12px 12px 24px"
@@ -323,10 +331,14 @@ export default {
             showPipeTypeDialog: false,
             proposedPipelineType : 0,
             pipeIndexToDuplicate: undefined,
-
             showPipeImportDialog: false,
             pipelineImportData: undefined,
-            importedPipelineName: ""
+            importedPipelineName: "",
+            snack: false,
+            snackbar: {
+              color: "success",
+              text: "",
+            }
         }
     },
     computed: {
@@ -391,6 +403,51 @@ export default {
             const newIdx = actuallyChange ? this.proposedPipelineType : this._currentPipelineType
             this.handleInputWithIndex('pipelineType', newIdx);
             this.showPipeTypeDialog = false;
+        },
+        changeCameraName() {
+            this.newCameraName = this.$store.getters.cameraList[this.currentCameraIndex];
+            this.isCameraNameEdit = true;
+        },
+        saveCameraNameChange() {
+            if (this.checkCameraName === "") {
+                this.axios.post('http://' + this.$address + '/api/settings/camera/setNickname',
+                    {name: this.newCameraName, cameraIndex: this.$store.getters.currentCameraIndex})
+                    .then(response => {
+                      this.$emit('camera-name-changed')
+
+                      this.snackbar = {
+                        color: "success",
+                        text: response.data.text || response.data
+                      }
+                      this.snack = true;
+                    })
+                    .catch(error => {
+                      this.$emit('camera-name-changed')
+
+                      if(error.response) {
+                        this.snackbar = {
+                          color: "error",
+                          text:  error.response.data.text || error.response.data
+                        }
+                      } else if(error.request) {
+                        this.snackbar = {
+                          color: "error",
+                          text: "Error while trying to process the request! The backend didn't respond.",
+                        };
+                      } else {
+                        this.snackbar = {
+                          color: "error",
+                          text: "An error occurred while trying to process the request.",
+                        };
+                      }
+                      this.snack = true;
+                    })
+                this.discardCameraNameChange();
+            }
+        },
+        discardCameraNameChange() {
+            this.isCameraNameEdit = false;
+            this.newCameraName = "";
         },
         toPipelineNameChange() {
             this.newPipelineName = this.$store.getters.pipelineList[this.currentPipelineIndex - 1];
@@ -461,10 +518,5 @@ export default {
           this.importedPipelineName = ""
         }
     }
-
 }
 </script>
-
-<style scoped>
-
-</style>

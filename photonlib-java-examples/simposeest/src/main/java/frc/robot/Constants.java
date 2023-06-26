@@ -30,7 +30,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.util.Units;
-import org.photonvision.SimVisionTarget;
+import org.photonvision.simulation.SimVisionTarget;
 
 /**
  * Holding class for all physical constants that must be used throughout the codebase. These values
