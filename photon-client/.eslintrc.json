@@ -1,0 +1,13 @@
+{
+  "root": true,
+  "extends": [
+    "eslint:recommended",
+    "plugin:vue/essential",
+    "@vue/eslint-config-typescript/recommended"
+  ],
+  "rules": {
+    "quotes": ["error", "double"],
+    "comma-dangle": ["error", "never"],
+    "semi": ["error", "always"]
+  }
+}
