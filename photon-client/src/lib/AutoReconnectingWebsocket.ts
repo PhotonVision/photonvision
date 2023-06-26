@@ -49,20 +49,19 @@ export class AutoReconnectingWebsocket {
       console.debug("[WebSocket] Websocket Open");
       this.onConnect();
     }
-    this.websocket.onmessage = this.onData
+    this.websocket.onmessage = this.onData.bind(this)
     this.websocket.onclose = (event: CloseEvent) => {
       this.onDisconnect()
 
       this.websocket = null
 
-      console.info("[WebSocket] The WebSocket was closed. Reconnect attempt will be attempted in 500 millisecond.", event.reason);
-      setTimeout(this.initializeWebsocket, 500);
+      console.info("[WebSocket] The WebSocket was closed. Will reattempt in 500 milliseconds.", event.reason);
+      setTimeout(this.initializeWebsocket.bind(this), 500);
     }
-    this.websocket.onerror = (event: Event) => {
-      console.error("[WebSocket] Websocket Error Occurred", event.toString())
+    this.websocket.onerror = () => {
       this.websocket?.close()
     }
 
-    console.debug("[WebSocket] Initializing Websocket")
+    console.debug("[WebSocket] Attempting to initialize Websocket")
   }
 }
