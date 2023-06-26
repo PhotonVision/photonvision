@@ -484,7 +484,6 @@ export default {
         return {
             cameraNicknameEditInProgress : false,
             cameraTempNameValue: "",
-            snack: false,
             calibrationInProgress: false,
             calibrationFailed: false,
             filteredVideomodeIndex: 0,
