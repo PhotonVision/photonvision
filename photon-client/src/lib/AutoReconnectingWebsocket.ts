@@ -27,6 +27,12 @@ export class AutoReconnectingWebsocket {
     this.initializeWebsocket();
   }
 
+  /**
+   * Send data over the websocket. This is a no-op if the websocket is not in the OPEN state.
+   *
+   * @param message message to send.
+   * @see isConnected
+   */
   send(message: string | ArrayBufferLike | Blob | ArrayBufferView) {
     // Only send data if the websocket is open
     if(this.isConnected()) {
@@ -69,6 +75,6 @@ export class AutoReconnectingWebsocket {
       this.websocket?.close();
     };
 
-    console.debug("[WebSocket] Attempting to initialize Websocket");
+    console.debug(`[WebSocket] Attempting to initialize Websocket connection to ${this.serverAddress}`);
   }
 }
