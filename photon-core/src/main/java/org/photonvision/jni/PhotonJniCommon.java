@@ -50,9 +50,15 @@ public abstract class PhotonJniCommon {
 
             // We always extract the shared object (we could hash each so, but that's a lot of work)
             var arch_name = Platform.getNativeLibraryFolderName();
-            var in = clazz.getResourceAsStream("/nativelibraries/" + arch_name + "/libmrgingham_" + arch_name + System.mapLibraryName(""));
+            var nativeLibName = System.mapLibraryName("mrgingham");
+            var in = clazz.getResourceAsStream("/nativelibraries/" + arch_name + "/" + nativeLibName);
             
-            File temp = File.createTempFile("libmrgingham", "." + System.mapLibraryName(""));
+            if (in == null) {
+                libraryLoaded = false;
+                return;
+            }
+
+            File temp = File.createTempFile(nativeLibName, "");
             FileOutputStream fos = new FileOutputStream(temp);
 
             int read = -1;

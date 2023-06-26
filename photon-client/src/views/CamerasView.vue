@@ -140,12 +140,12 @@
                             text="Mean Error"
                           />
                         </th>
-                        <th class="text-center">
+                        <!-- <th class="text-center">
                           <tooltipped-label
                             tooltip="Standard deviation of the mean error, in pixels"
                             text="Standard Deviation"
                           />
-                        </th>
+                        </th> -->
                         <th class="text-center">
                           <tooltipped-label
                             tooltip="Estimated Horizontal FOV, in degrees"
@@ -175,7 +175,7 @@
                         <td>
                           {{ isCalibrated(value) ? value.mean.toFixed(2) + "px" : "—" }}
                         </td>
-                        <td> {{ isCalibrated(value) ? value.standardDeviation.toFixed(2) + "px" : "—" }} </td>
+                        <!-- <td> {{ isCalibrated(value) ? value.standardDeviation.toFixed(2) + "px" : "—" }} </td> -->
                         <td> {{ isCalibrated(value) ? value.horizontalFOV.toFixed(2) + "°" : "—" }} </td>
                         <td> {{ isCalibrated(value) ? value.verticalFOV.toFixed(2) + "°" : "—" }} </td>
                         <td> {{ isCalibrated(value) ? value.diagonalFOV.toFixed(2) + "°" : "—" }} </td>
@@ -313,6 +313,14 @@
                 </v-btn>
               </v-col>
             </v-row>
+
+        <LineChart
+          :chartData="reprojectionErrorSeries"
+          min="0"
+          max="3500"
+          ref="loadCell"
+        />
+    
           </div>
         </v-card>
       </v-col>
@@ -414,6 +422,7 @@ import CVselect from '../components/common/cv-select';
 import CVnumberinput from '../components/common/cv-number-input';
 import CVslider from '../components/common/cv-slider';
 import CVswitch from '../components/common/cv-switch';
+import LineChart from "@/components/common/LineChart";
 import CVimage from "../components/common/cv-image";
 import TooltippedLabel from "../components/common/cv-tooltipped-label";
 import jsPDF from "jspdf";
@@ -427,7 +436,8 @@ export default {
         CVnumberinput,
         CVslider,
         CVswitch,
-        CVimage
+        CVimage,
+        LineChart
     },
     data() {
         return {
@@ -499,7 +509,11 @@ export default {
                         const calib = this.getCalibrationCoeffs(it);
                         if (calib != null) {
                             it['standardDeviation'] = calib.standardDeviation;
-                            it['mean'] = calib.perViewErrors.reduce((a, b) => a + b) / calib.perViewErrors.length;
+                            
+                            // reprojection error norm for every point, 
+                            const errorNorms = calib.observations.map(it2 => it2.reprojectionErrors).map(it2 => it2.map(it3 => Math.sqrt(it3.x * it3.x + it3.y * it3.y)));
+
+                            it['mean'] = errorNorms.map(it2 => it2.reduce((a, b) => a+b)).reduce((a, b) => a + b) / errorNorms.length / errorNorms[0].length;
                             it['horizontalFOV'] = 2 * Math.atan2(it.width/2,calib.intrinsics[0]) * (180/Math.PI);
                             it['verticalFOV'] = 2 * Math.atan2(it.height/2,calib.intrinsics[4]) * (180/Math.PI);
                             it['diagonalFOV'] = 2 * Math.atan2(Math.sqrt(it.width**2 + (it.height/(calib.intrinsics[4]/calib.intrinsics[0]))**2)/2,calib.intrinsics[0]) * (180/Math.PI);
@@ -602,6 +616,36 @@ export default {
                 this.$store.commit('mutateCalibrationState', {['videoModeIndex']: this.filteredResolutionList[i].index});
             }
         },
+
+        reprojectionErrorSeries: {
+          get() {
+            
+            const calib = this.$store.getters.calibrationList[0];
+            const errorNorms = calib.observations.map(it2 => it2.reprojectionErrors).map(it2 => it2.map(it3 => Math.sqrt(it3.x * it3.x + it3.y * it3.y))).flat(1);
+            const xLocs = calib.observations.map(it => it.locationInImageSpace.map(it => it.x)).flat(1);
+            const yLocs = calib.observations.map(it => it.locationInImageSpace.map(it => it.y)).flat(1);
+            console.log(errorNorms);
+            console.log(xLocs);
+            console.log(yLocs);
+
+            function rgb(r, g, b){
+              return "rgb("+r+","+g+","+b+")";
+            }
+
+            const colors = errorNorms.map(it => rgb(it * 200, 0, 0))
+            
+            return {
+              datasets: [
+                this.createSeries(
+                  `Reprojection error`,
+                  xLocs, yLocs, colors,
+                  false
+                ),
+              ],
+            };
+          },
+        },
+
     },
     methods: {
         readImportedCalibration(event) {
@@ -796,7 +840,44 @@ export default {
                 ).catch(() => {
                     this.calibrationFailed = true;
             });
+        },
+
+            // Creates the JSON encoding expected by charts.js given a label, xData, and yData array
+    createSeries(
+      label,
+      xData,
+      yData,
+      color,
+      showLine = true,
+      fill = false,
+    ) {
+      if (xData.length !== yData.length) {
+        return null;
+      }
+
+      if (xData == null || yData == null) {
+        console.log("Data was null. Skipping.");
+        return null;
+      }
+
+      // Convert data to list of x/y pairs
+      let data = [];
+      yData.forEach((y, idx) => {
+        if (!isNaN(y) || y != null) {
+          data.push({ x: xData[idx], y: y });
         }
+      });
+      return {
+        backgroundColor: color,
+        borderColor: color,
+        label: label,
+        showLine: showLine,
+        fill: fill,
+        data: data,
+        lineTension: 0,
+      };
+    },
+
     }
 }
 </script>

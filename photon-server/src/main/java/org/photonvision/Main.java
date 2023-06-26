@@ -321,7 +321,7 @@ public class Main {
 
         try {
             MrginghamJNI.forceLoad();
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error("Failed to load mrgingham! Falling back on opencv", e);
         }
 

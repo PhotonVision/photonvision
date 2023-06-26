@@ -39,6 +39,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.common.util.file.FileUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients.BoardObservation;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
@@ -136,6 +137,7 @@ public class Calibrate3dPipeline
 
             if (findBoardResult != null) {
                 foundCornersList.add(findBoardResult);
+                imageDir.toFile().mkdirs();
                 Imgcodecs.imwrite(
                         Path.of(imageDir.toString(), "img" + foundCornersList.size() + ".jpg").toString(),
                         inputColorMat);
@@ -197,8 +199,8 @@ public class Calibrate3dPipeline
         takeSnapshot = true;
     }
 
-    public double[] perViewErrors() {
-        return calibrationOutput.output.perViewErrors;
+    public List<BoardObservation> perViewErrors() {
+        return calibrationOutput.output.observations;
     }
 
     public void finishCalibration() {

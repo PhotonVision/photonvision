@@ -22,12 +22,41 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+
+import java.util.Arrays;
+import java.util.List;
+
+import org.opencv.aruco.Board;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
+import org.opencv.core.Point;
+import org.opencv.core.Point3;
 import org.opencv.core.Size;
 import org.photonvision.vision.opencv.Releasable;
 
 public class CameraCalibrationCoefficients implements Releasable {
+    public static final class BoardObservation {
+        @JsonProperty("locationInObjectSpace")
+        public List<Point3> locationInObjectSpace; // Expected location in image space units
+        @JsonProperty("locationInImageSpace")
+        public List<Point> locationInImageSpace; // Observed location in pixel space
+        @JsonProperty("reprojectionErrors")
+        public List<Point> reprojectionErrors;
+
+        @JsonCreator
+        public BoardObservation(
+            @JsonProperty("locationInObjectSpace")
+            List<Point3> locationInObjectSpace, 
+            @JsonProperty("locationInImageSpace")
+            List<Point> locationInImageSpace,
+            @JsonProperty("reprojectionErrors")
+            List<Point> reprojectionErrors) {
+            this.locationInObjectSpace = locationInObjectSpace;
+            this.locationInImageSpace = locationInImageSpace;
+            this.reprojectionErrors = reprojectionErrors;
+        }
+    }
+
     @JsonProperty("resolution")
     public final Size resolution;
 
@@ -38,8 +67,8 @@ public class CameraCalibrationCoefficients implements Releasable {
     @JsonAlias({"cameraExtrinsics", "distCoeffs"})
     public final JsonMat distCoeffs;
 
-    @JsonProperty("perViewErrors")
-    public final double[] perViewErrors;
+    @JsonProperty("observations")
+    public final List<BoardObservation> observations;
 
     @JsonProperty("standardDeviation")
     public final double standardDeviation;
@@ -53,13 +82,14 @@ public class CameraCalibrationCoefficients implements Releasable {
             @JsonProperty("resolution") Size resolution,
             @JsonProperty("cameraIntrinsics") JsonMat cameraIntrinsics,
             @JsonProperty("cameraExtrinsics") JsonMat distCoeffs,
-            @JsonProperty("perViewErrors") double[] perViewErrors,
+            @JsonProperty("observations") List<BoardObservation> observations,
             @JsonProperty("standardDeviation") double standardDeviation) {
         this.resolution = resolution;
         this.cameraIntrinsics = cameraIntrinsics;
         this.distCoeffs = distCoeffs;
-        this.perViewErrors = perViewErrors;
         this.standardDeviation = standardDeviation;
+
+        this.observations = observations;
 
         // do this once so gets are quick
         getCameraIntrinsicsMat().get(0, 0, intrinsicsArr);
@@ -87,8 +117,8 @@ public class CameraCalibrationCoefficients implements Releasable {
     }
 
     @JsonIgnore
-    public double[] getPerViewErrors() {
-        return perViewErrors;
+    public List<BoardObservation> getPerViewErrors() {
+        return observations;
     }
 
     @JsonIgnore
@@ -138,6 +168,6 @@ public class CameraCalibrationCoefficients implements Releasable {
         var height = json.get("img_size").get(1).doubleValue();
 
         return new CameraCalibrationCoefficients(
-                new Size(width, height), cam_jsonmat, distortion_jsonmat, new double[] {error}, 0);
+                new Size(width, height), cam_jsonmat, distortion_jsonmat, List.of(), 0);
     }
 }
