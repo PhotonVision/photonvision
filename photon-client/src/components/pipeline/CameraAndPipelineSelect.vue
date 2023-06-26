@@ -379,3 +379,9 @@ export default {
     }
 }
 </script>
+
+<style>
+.v-application .headline {
+  font-family: 'Prompt', sans-serif !important;
+}
+</style>
