@@ -16,7 +16,6 @@ on:
 jobs:
   # This job builds the client (web view).
   photonclient-build:
-
     # Let all steps run within the photon-client dir.
     defaults:
       run:
@@ -33,19 +32,20 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: 16
+        node-version: 17
 
     # Run npm
-    - run: npm update -g npm
-    - run: npm ci
-    - run: npm run build --if-present
+    - name: Install Dependencies
+      run: npm ci
+
+    - name: Build Production Client
+      run: npm run build
 
     # Upload client artifact.
     - uses: actions/upload-artifact@master
       with:
         name: built-client
         path: photon-client/dist/
-
   photon-build-examples:
     runs-on: ubuntu-22.04
     name: "Build Examples"
@@ -135,7 +135,6 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           file: ./photon-core/build/reports/jacoco/test/jacocoTestReport.xml
-
   photonserver-build-offline-docs:
     runs-on: ubuntu-22.04
 
@@ -172,7 +171,6 @@ jobs:
         with:
           name: built-docs
           path: build/html
-
   photonserver-check-lint:
     # The type of runner that the job will run on.
     runs-on: ubuntu-22.04
@@ -228,7 +226,6 @@ jobs:
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
         if: github.event_name == 'push'
-
   photonlib-build-docker:
     strategy:
       fail-fast: false
@@ -262,7 +259,6 @@ jobs:
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
         if: github.event_name == 'push'
-
   photonlib-wpiformat:
     name: "wpiformat"
     runs-on: ubuntu-22.04
@@ -291,7 +287,6 @@ jobs:
           name: wpiformat fixes
           path: wpiformat-fixes.patch
         if: ${{ failure() }}
-
   photon-build-package:
     needs: [photonclient-build, photon-build-all, photonserver-build-offline-docs]
 
@@ -377,8 +372,6 @@ jobs:
         with:
           name: jar-${{ matrix.artifact-name }}
           path: photon-server/build/libs
-
-
   photon-image-generator:
     needs: [photon-build-package]
     if: ${{ github.event_name != 'pull_request' }}
@@ -419,8 +412,6 @@ jobs:
         with:
           name: image-${{ matrix.image_suffix }}
           path: photonvision*.xz
-
-
   photon-release:
     needs: [photon-build-package, photon-image-generator]
     runs-on: ubuntu-22.04
