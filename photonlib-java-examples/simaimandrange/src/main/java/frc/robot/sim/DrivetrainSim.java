@@ -41,8 +41,8 @@ import edu.wpi.first.wpilibj.simulation.PWMSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
-import org.photonvision.SimVisionSystem;
-import org.photonvision.SimVisionTarget;
+import org.photonvision.simulation.SimVisionSystem;
+import org.photonvision.simulation.SimVisionTarget;
 
 /**
  * Implementation of a simulation of robot physics, sensors, motor controllers Includes a Simulated
