@@ -10,11 +10,8 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
   "dependencies": {
-    "axios": "^1.4.0",
-    "jspdf": "^2.5.1",
-    "msgpack5": "^6.0.2",
-    "three": "^0.153.0",
-    "vue": "^2.7.14",
+    "pinia": "^2.0.16",
+    "vue": "^2.7.7",
     "vue-router": "^3.5.4"
   },
   "devDependencies": {
