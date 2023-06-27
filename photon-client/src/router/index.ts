@@ -9,13 +9,13 @@ import NotFoundView from "@/views/NotFoundView.vue";
 
 Vue.use(VueRouter);
 
-const router: VueRouter = new VueRouter({
+const router = new VueRouter({
   mode: "history",
   base: import.meta.env.BASE_URL,
   routes: [
     {
       path: "/",
-      redirect: "/dashboard",
+      redirect: "/dashboard"
     },
     {
       path: "/dashboard",
@@ -41,8 +41,8 @@ const router: VueRouter = new VueRouter({
       path: "*",
       name: "NotFound",
       component: NotFoundView
-    },
-  ],
+    }
+  ]
 });
 
 export default router;
