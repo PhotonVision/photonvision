@@ -109,19 +109,10 @@ public class VideoSimUtil {
         name = name.substring(0, name.length() - idString.length()) + idString;
 
         var resource = VideoSimUtil.class.getResource(kResourceTagImagesPath + name + ".png");
-        // local IDE tests
-        String path = kLocalTagImagesPath + name + ".png";
-        // gradle tests
-        if (resource != null) {
-            path = resource.getPath();
-
-            // TODO why did we have this previously?
-            // if (path.startsWith("/")) path = path.substring(1);
-        }
-        Mat result = new Mat();
-        if (!path.startsWith("file")) result = Imgcodecs.imread(path, Imgcodecs.IMREAD_GRAYSCALE);
+        
+        Mat result = new Mat();        
         // reading jar file
-        if (result.empty()) {
+        if (resource != null && resource.getPath().startsWith("file")) {
             BufferedImage buf;
             try {
                 buf = ImageIO.read(resource);
@@ -140,6 +131,8 @@ public class VideoSimUtil {
                 }
             }
         }
+        // local IDE tests
+        else result = Imgcodecs.imread(kLocalTagImagesPath + name + ".png", Imgcodecs.IMREAD_GRAYSCALE);
         return result;
     }
 
