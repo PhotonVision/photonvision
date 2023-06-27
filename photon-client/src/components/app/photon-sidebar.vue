@@ -1,7 +1,7 @@
 <script lang="ts">
   import { computed } from "vue";
   import {useSettingsStore} from "@/stores/settings";
-  import {useStateStore} from "@/stores/state";
+  import {useStateStore, type NTConnectionStatus} from "@/stores/state";
 
   export default {
     setup() {
@@ -10,13 +10,16 @@
         set: (val) => { useStateStore().setSidebarFolded(val); }
       });
 
+      const backendConnected = computed<boolean>(() => useStateStore().backendConnected);
+      const runNTServer = computed<boolean>(() => useSettingsStore().network.runNTServer);
+      const ntConnectionStatus = computed<NTConnectionStatus>(() => useStateStore().ntConnectionStatus);
+
       return {
-        compact
+        compact,
+        backendConnected,
+        runNTServer,
+        ntConnectionStatus
       };
-    },
-    methods: {
-      useStateStore,
-      useSettingsStore
     }
   };
 </script>
@@ -117,10 +120,10 @@
       <div style="position: absolute; bottom: 0; left: 0;">
         <v-list-item>
           <v-list-item-icon>
-            <v-icon v-if="useSettingsStore().network.runNTServer">
+            <v-icon v-if="runNTServer">
               mdi-server
             </v-icon>
-            <v-icon v-else-if="useStateStore().ntConnectionStatus.connected">
+            <v-icon v-else-if="ntConnectionStatus.connected">
               mdi-robot
             </v-icon>
             <v-icon
@@ -132,13 +135,13 @@
           </v-list-item-icon>
           <v-list-item-content>
             <v-list-item-title
-                v-if="useSettingsStore().network.runNTServer"
+                v-if="runNTServer"
                 class="text-wrap"
             >
-              NetworkTables server running for <span class="accent--text">{{ useStateStore().ntConnectionStatus.clients }}</span> clients
+              NetworkTables server running for <span class="accent--text">{{ ntConnectionStatus.clients }}</span> clients
             </v-list-item-title>
             <v-list-item-title
-                v-else-if="useStateStore().ntConnectionStatus.connected && useStateStore().backendConnected"
+                v-else-if="ntConnectionStatus.connected && backendConnected"
                 class="text-wrap"
                 style="flex-direction: column; display: flex"
             >
@@ -146,7 +149,7 @@
               <span
                   class="accent--text"
               >
-                  {{ useStateStore().ntConnectionStatus.address }}
+                  {{ ntConnectionStatus.address }}
                 </span>
             </v-list-item-title>
             <v-list-item-title
@@ -161,7 +164,7 @@
 
         <v-list-item>
           <v-list-item-icon>
-            <v-icon v-if="useStateStore().backendConnected">
+            <v-icon v-if="backendConnected">
               mdi-server-network
             </v-icon>
             <v-icon
@@ -173,7 +176,7 @@
           </v-list-item-icon>
           <v-list-item-content>
             <v-list-item-title class="text-wrap">
-              {{ useStateStore().backendConnected ? "Backend Connected" : "Trying to connect to Backend" }}
+              {{ backendConnected ? "Backend Connected" : "Trying to connect to Backend" }}
             </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
