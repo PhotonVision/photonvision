@@ -1,0 +1,57 @@
+<script lang="ts">
+import {computed, inject} from "vue";
+import {useSettingsStore} from "@/stores/settings";
+import {useStateStore} from "@/stores/state";
+import loadingImage from "@/assets/images/loading.svg";
+
+export default {
+  props: ["streamType"],
+  setup(props: {streamType: "Raw" | "Processed"}) {
+    const src = computed<string>(() => {
+      const currentCameraSettings = useSettingsStore().currentCameraSettings;
+
+      if(!useStateStore().backendConnected || currentCameraSettings === null) {
+        return loadingImage;
+      }
+
+      const port = currentCameraSettings.stream[props.streamType === "Raw" ? "inputPort" : "outputPort"];
+
+      return `http://${inject("backendAddress")}:${port}/stream.mjpg`;
+    });
+    const alt = computed<string>(() => `${props.streamType} Stream View`);
+
+    const style = computed<object>(() => {
+      if(src.value !== loadingImage) {
+        return {
+          cursor: "pointer"
+        };
+      }
+
+      return {};
+    });
+
+    const handleClick = () => {
+      if(src.value !== loadingImage) {
+        window.open(src.value);
+      }
+    };
+
+    return {
+      src,
+      alt,
+      style,
+      handleClick
+    };
+  }
+};
+</script>
+
+<template>
+  <img
+      crossorigin="anonymous"
+      :src="src"
+      :alt="alt"
+      :style="style"
+      @click="handleClick"
+  />
+</template>
