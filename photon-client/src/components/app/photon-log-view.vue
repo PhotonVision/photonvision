@@ -1,13 +1,14 @@
 <script lang="ts">
 import {useStateStore} from "@/stores/state";
-import {inject, reactive, computed} from "vue";
+import {inject, computed, ref} from "vue";
 import {LogLevel, type LogMessage} from "@/lib/types/SettingTypes";
 
 export default {
     setup() {
-      const selectedLogLevels = reactive<LogLevel[]>([LogLevel.ERROR, LogLevel.WARN, LogLevel.INFO]);
+      // TODO: Replace with reactive with Vue3
+      const selectedLogLevels = ref<LogLevel[]>([LogLevel.ERROR, LogLevel.WARN, LogLevel.INFO]);
 
-      const logs = computed<LogMessage[]>(() => useStateStore().logMessages.filter(message => selectedLogLevels.includes(message.level)));
+      const logs = computed<LogMessage[]>(() => useStateStore().logMessages.filter(message => selectedLogLevels.value.includes(message.level)));
       const showLogModal = computed<boolean>({
         get: () => useStateStore().showLogModal,
         set: v => useStateStore().$patch({showLogModal: v})
