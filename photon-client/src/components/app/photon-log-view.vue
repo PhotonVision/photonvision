@@ -1,0 +1,145 @@
+<script lang="ts">
+import {useStateStore} from "@/stores/state";
+import {inject, reactive, computed} from "vue";
+import {LogLevel, type LogMessage} from "@/lib/types/SettingTypes";
+
+export default {
+    setup() {
+      const selectedLogLevels = reactive<LogLevel[]>([LogLevel.ERROR, LogLevel.WARN, LogLevel.INFO]);
+
+      const logs = computed<LogMessage[]>(() => useStateStore().logMessages.filter(message => selectedLogLevels.includes(message.level)));
+      const showLogModal = computed<boolean>({
+        get: () => useStateStore().showLogModal,
+        set: v => useStateStore().$patch({showLogModal: v})
+      });
+
+      const getLogColor = (level: LogLevel): string => {
+        switch (level) {
+          case LogLevel.ERROR:
+            return "red";
+          case LogLevel.WARN:
+            return "yellow";
+          case LogLevel.INFO:
+            return "green";
+          case LogLevel.DEBUG:
+            return "white";
+        }
+      };
+
+      const getLogLevelFromIndex = (index: number): string => {
+        return LogLevel[index];
+      };
+
+      document.addEventListener("keydown", e => {
+        switch (e.key) {
+          case "`":
+            useStateStore().$patch(state => state.showLogModal = !state.showLogModal);
+            break;
+        }
+      });
+
+      return {
+        backendAddress: inject("backendAddress") as string,
+        showLogModal,
+        selectedLogLevels,
+        logs,
+        getLogColor,
+        getLogLevelFromIndex
+      };
+    }
+  };
+</script>
+
+<template>
+  <v-dialog
+    v-model="showLogModal"
+    width="1500"
+    dark
+  >
+    <v-card
+        dark
+        class="pt-3"
+        color="primary"
+        flat
+    >
+      <v-card-title>
+        View Program Logs
+
+        <v-btn
+            color="secondary"
+            style="margin-left: auto;"
+            depressed
+            @click="$refs.exportLogFile.click()"
+        >
+          <v-icon left>
+            mdi-download
+          </v-icon>
+          Download Log
+
+          <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
+          <a
+              ref="exportLogFile"
+              style="color: black; text-decoration: none; display: none"
+              :href="`http://${backendAddress}/api/utils/photonvision-journalctl.txt`"
+              download="photonvision-journalctl.txt"
+          />
+        </v-btn>
+      </v-card-title>
+      <div class="pr-6 pl-6">
+        <v-btn-toggle
+            v-model="selectedLogLevels"
+            dark
+            multiple
+            class="fill mb-4"
+        >
+          <v-btn
+              v-for="(level) in [0, 1, 2, 3]"
+              :key="level"
+              color="secondary"
+              class="fill"
+          >
+            {{ getLogLevelFromIndex(level) }}
+          </v-btn>
+        </v-btn-toggle>
+        <!-- Logs -->
+
+        <v-virtual-scroll
+            :items="logs"
+            item-height="50"
+            height="600"
+        >
+          <template v-slot="{item}">
+            <div :class="[getLogColor(item.level) + '--text', 'log-item']">
+              {{ item.message }}
+            </div>
+          </template>
+        </v-virtual-scroll>
+      </div>
+
+      <v-divider />
+
+      <v-card-actions>
+        <v-spacer />
+        <v-btn
+            color="white"
+            text
+            @click="() => showLogModal = false"
+        >
+          Close
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+</template>
+
+<style scoped>
+.v-btn-toggle.fill {
+  width: 100%;
+  height: 100%;
+}
+
+.v-btn-toggle.fill > .v-btn {
+  width: 25%;
+  height: 100%;
+}
+</style>
