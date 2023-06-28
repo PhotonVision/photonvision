@@ -21,6 +21,7 @@ const localValue = computed({
   set: v => emit("input", v)
 });
 
+// Computed in case items changes
 const indexList = computed(() => props.items.map((v: string, i: number) => ({name: v, index: i})));
 </script>
 

@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import {computed} from "vue";
-
-const devMode = computed<boolean>(() => process.env.NODE_ENV === "development");
+const devMode = process.env.NODE_ENV === "development";
 </script>
 
 <template>
