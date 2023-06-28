@@ -4,15 +4,15 @@
       dense
       align="center"
     >
-      <v-col :cols="12 - (sliderCols || 8)">
+      <v-col :cols="12 - sliderCols">
         <tooltipped-label
           :tooltip="tooltip"
-          :text="name"
+          :label="label"
         />
       </v-col>
-      <v-col :cols="sliderCols || 8">
+      <v-col :cols="sliderCols">
         <v-slider
-          :value="localValue"
+          v-model="localValue"
           dark
           class="align-center"
           :max="max"
@@ -21,29 +21,21 @@
           color="accent"
           :disabled="disabled"
           :step="step"
-          @start="isClicked = true"
-          @end="isClicked = false"
-          @change="handleClick"
-          @input="handleInput"
-          @mousedown="$emit('rollback', localValue)"
         >
           <template v-slot:append>
             <v-text-field
+              v-model="localValue"
               dark
               color="accent"
               :max="max"
               :min="min"
               :disabled="disabled"
-              :value="localValue"
               class="mt-0 pt-0"
               hide-details
               single-line
               type="number"
               style="width: 50px"
               :step="step"
-              @input="handleChange"
-              @focus="isFocused = true"
-              @blur="isFocused = false"
             />
           </template>
         </v-slider>
@@ -52,57 +44,33 @@
   </div>
 </template>
 
-<script>
-import TooltippedLabel from "./cv-tooltipped-label";
+<script lang="ts">
 
-export default {
-  name: "Slider",
-  components: {
-    TooltippedLabel,
+import {computed, defineComponent} from "vue";
+import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
+
+export default defineComponent({
+  emits: ["input"],
+  components: {TooltippedLabel},
+  props: {
+    value: {type: Number, required: true},
+    tooltip: {type: String, required: false},
+    label: {type: String, required: false},
+    min: {type: Number, required: true},
+    max: {type: Number, required: true},
+    step: {type: Number, required: false, default: 1},
+    sliderCols: {type: Number, required: false, default: 8},
+    disabled: {type: Boolean, required: false}
   },
-  // eslint-disable-next-line vue/require-prop-types
-  props: ["min", "max", "name", "value", "step", "sliderCols", "disabled", "tooltip"],
-  data() {
+  setup(props: {value: number}, { emit }) {
+    const localValue = computed({
+      get: () => props.value,
+      set: v => emit("input", v)
+    });
+
     return {
-      isFocused: false,
-      isClicked: false,
-      currentBoxVal: null
+      localValue
     };
-  },
-  computed: {
-    localValue: {
-      get() {
-        return this.value;
-      },
-      set(value) {
-        this.$emit("input", value);
-      }
-    },
-  },
-  methods: {
-    handleChange(val) {
-      this.currentBoxVal = val;
-      setTimeout(() => {
-        if (this.currentBoxVal !== val) return;
-        // if (this.isFocused) {
-        this.localValue = parseFloat(val);
-        this.$emit("rollback", this.localValue);
-        // }
-      }, 200);
-    },
-    handleInput(val) {
-      if (!this.isFocused && this.isClicked) {
-        this.localValue = val;
-      }
-    },
-    handleClick(val) {
-      if (!this.isFocused) {
-        this.localValue = val;
-      }
-    }
   }
-};
+});
 </script>
-
-<style lang="" scoped>
-</style>

@@ -4,10 +4,10 @@
       dense
       align="center"
     >
-      <v-col :cols="labelCols || 2">
+      <v-col :cols="labelCols">
         <tooltipped-label
           :tooltip="tooltip"
-          :text="name"
+          :label="label"
         />
       </v-col>
       <v-col>
@@ -29,29 +29,32 @@
   </div>
 </template>
 
-<script>
-    import TooltippedLabel from "./cv-tooltipped-label";
 
-    export default {
-        name: 'NumberInput',
-        components: {
-            TooltippedLabel,
-        },
-      // eslint-disable-next-line vue/require-prop-types
-        props: ['name', 'value', 'step', 'labelCols', 'rules', 'tooltip', 'disabled'],
-        computed: {
-            localValue: {
-                get() {
-                    return this.value;
-                },
-                set(value) {
-                    this.$emit('input', parseFloat(value));
-                }
-            }
-        }
+<script lang="ts">
+  import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
+  import { computed } from "vue";
+
+  export default {
+    emits: ["input"],
+    components: {TooltippedLabel},
+    props: {
+      label: {type: String, required: false},
+      tooltip: {type: String, required: false},
+      value: {type: Number, required: true},
+      labelCols: {type: Number, required: false, default: 2},
+      disabled: {type: Boolean, required: false},
+      rules: {type: Array, required: false},
+      step: {type: Number, required: false, default: 1}
+    },
+    setup(props: {value: number}, {emit}) {
+      const localValue = computed({
+        get: () => props.value,
+        set: v => emit("input", v)
+      });
+
+      return {
+        localValue
+      };
     }
+  };
 </script>
-
-<style lang="" scoped>
-
-</style>

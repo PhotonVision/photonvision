@@ -4,13 +4,13 @@
       dense
       align="center"
     >
-      <v-col :cols="12 - (selectCols || 9)">
+      <v-col :cols="12 - selectCols">
         <tooltipped-label
           :tooltip="tooltip"
-          :text="name"
+          :label="label"
         />
       </v-col>
-      <v-col :cols="selectCols || 9">
+      <v-col :cols="selectCols">
         <v-select
           v-model="localValue"
           :items="indexList"
@@ -21,46 +21,41 @@
           item-color="secondary"
           :disabled="disabled"
           :rules="rules"
-          @change="$emit('rollback', localValue)"
         />
       </v-col>
     </v-row>
   </div>
 </template>
 
-<script>
-import TooltippedLabel from "./cv-tooltipped-label";
+<script lang="ts">
+import {computed} from "vue";
+import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
 
-    export default {
-        name: 'Select',
-        components: {
-            TooltippedLabel,
-        },
-      // eslint-disable-next-line vue/require-prop-types
-        props: ['list', 'name', 'value', 'disabled', 'filteredIndices', 'selectCols', 'rules', 'tooltip'],
-        computed: {
-            localValue: {
-                get() {
-                    return this.value;
-                },
-                set(value) {
-                    this.$emit('input', value)
-                }
-            },
-            indexList() {
-                let list = [];
-                for (let i = 0; i < this.list.length; i++) {
-                    if (this.filteredIndices instanceof Set && this.filteredIndices.has(i)) continue;
-                    list.push({
-                        name: this.list[i],
-                        index: i
-                    });
-                }
-                return list;
-            }
-        }
-    }
+export default {
+  emits: ["input"],
+  components: {TooltippedLabel},
+  props: {
+    label: {type: String, required: false},
+    tooltip: {type: String, required: false},
+    selectCols: {type: Number, required: false, default: 9},
+    items: {type: Array, required: true},
+    disabled: {type: Boolean, required: false},
+    rules: {type: Array, required: false},
+    value: {type: Number, required: true}
+  },
+  setup(props: {value: number, items: string[]}, {emit}) {
+
+    const localValue = computed({
+      get: () => props.value,
+      set: v => emit("input", v)
+    });
+
+    const indexList = computed(() => props.items.map((v: string, i: number) => ({name: v, index: i})));
+
+    return {
+      localValue,
+      indexList
+    };
+  }
+};
 </script>
-
-<style>
-</style>

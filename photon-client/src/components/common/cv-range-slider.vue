@@ -7,12 +7,12 @@
       <v-col cols="2">
         <tooltipped-label
           :tooltip="tooltip"
-          :text="name"
+          :label="label"
         />
       </v-col>
       <v-col cols="10">
         <v-range-slider
-          :value="localValue"
+          v-model="localValue"
           :max="max"
           :min="min"
           :disabled="disabled"
@@ -23,14 +23,12 @@
           :track-color="inverted ? 'accent' : undefined"
           thumb-color="accent"
           :step="step"
-          @input="handleInput"
-          @mousedown="$emit('rollback', localValue)"
         >
           <template v-slot:prepend>
             <v-text-field
               dark
               color="accent"
-              :value="localValue[0]"
+              v-model="localValue[0]"
               :max="max"
               :min="min"
               class="mt-0 pt-0"
@@ -39,17 +37,14 @@
               type="number"
               style="width: 60px"
               :step="step"
-              @input="handleChange"
-              @focus="prependFocused = true"
-              @blur="prependFocused = false"
             />
           </template>
 
           <template v-slot:append>
             <v-text-field
+              v-model="localValue[1]"
               dark
               color="accent"
-              :value="localValue[1]"
               :max="max"
               :min="min"
               class="mt-0 pt-0"
@@ -58,9 +53,6 @@
               type="number"
               style="width: 60px"
               :step="step"
-              @input="handleChange"
-              @focus="appendFocused = true"
-              @blur="appendFocused = false"
             />
           </template>
         </v-range-slider>
@@ -69,66 +61,34 @@
   </div>
 </template>
 
-<script>
-import TooltippedLabel from "./cv-tooltipped-label";
+
+<script lang="ts">
+import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
+import {computed} from "vue";
 
 export default {
-  name: "RangeSlider",
-  components: {
-    TooltippedLabel,
+  emits: ["input"],
+  components: {TooltippedLabel},
+  props: {
+    label: {type: String, required: false},
+    tooltip: {type: String, required: false},
+    min: {type: Number, required: true},
+    max: {type: Number, required: true},
+    step: {type: Number, required: false, default: 1},
+    disabled: {type: Boolean, required: false},
+    inverted: {type: Boolean, required: false},
+    value: {type: Array, required: true, validator: (v: number[]) => v.length === 2}
   },
-  // eslint-disable-next-line vue/require-prop-types
-  props: ["name", "min", "max", "value", "step", "tooltip", "disabled", "inverted"],
-  data() {
+  setup(props: {value: [number, number]}, {emit}) {
+
+    const localValue = computed({
+      get: () => props.value,
+      set: v => emit("input", v)
+    });
+
     return {
-      prependFocused: false,
-      appendFocused: false,
-      currentTempVal: null,
+      localValue
     };
-  },
-  computed: {
-    localValue: {
-      get() {
-        return Object.values(this.value || [0, 0]);
-      },
-      set(value) {
-        this.$emit("input", value);
-      },
-    },
-  },
-  methods: {
-    delay(ms) {
-      return new Promise((resolve) => setTimeout(resolve, ms));
-    },
-
-    async handleChange(val) {
-      this.currentTempVal = val;
-
-      await this.delay(200).then(() => {
-        let i = 0;
-        if (!this.prependFocused && this.appendFocused) {
-          i = 1;
-        }
-
-        // will get empty string if entry is not a number
-        if (this.currentTempVal !== val || val === "") return;
-
-        let parsed = parseFloat(val);
-        let tmp = this.localValue;
-        tmp[i] = Math.max(this.min, Math.min(parsed, this.max));
-        this.localValue = tmp;
-
-        this.$emit("rollback", this.localValue);
-      });
-    },
-    handleInput(val) {
-      if (!this.prependFocused || !this.appendFocused) {
-        this.localValue = val;
-      }
-    },
-  },
+  }
 };
 </script>
-
-<style lang="" scoped>
-</style>

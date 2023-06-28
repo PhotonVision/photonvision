@@ -4,13 +4,14 @@
       dense
       align="center"
     >
-      <v-col :cols="labelCols || (12 - (inputCols || 8))">
+      <v-col :cols="labelCols || (12 - inputCols)">
         <tooltipped-label
           :tooltip="tooltip"
-          :text="name"
+          :label="label"
         />
       </v-col>
-      <v-col :cols="inputCols || 8">
+
+      <v-col :cols="inputCols">
         <v-text-field
           v-model="localValue"
           dark
@@ -20,45 +21,38 @@
           :error-messages="errorMessage"
           :rules="rules"
           class="mt-1 pt-2"
-          @keydown="handleKeyboard"
+          @keydown="e => e.key === 'Enter' && $emit('onEnter')"
         />
       </v-col>
     </v-row>
   </div>
 </template>
 
-<script>
-    import TooltippedLabel from "./cv-tooltipped-label";
+<script lang="ts">
+import {computed} from "vue";
+import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
+  export default {
+    components: {TooltippedLabel},
+    emits: ["input", "onEnter"],
+    props: {
+      label: {type: String, required: false},
+      tooltip: {type: String, required: false, default: undefined},
+      value: {type: String, required: true},
+      disabled: {type: Boolean, required: false, default: false},
+      errorMessage: {type: String, required: false, default: undefined},
+      labelCols: {type: Number, required: false},
+      inputCols: {type: Number, required: false, default: 8},
+      rules: {type: Array, required: false}
+    },
+    setup(props: {value: never}, { emit }) {
+      const localValue = computed({
+        get: () => props.value,
+        set: v => emit("input", v)
+      });
 
-    export default {
-        name: 'Input',
-        components: {
-          TooltippedLabel
-        },
-        // eslint-disable-next-line vue/require-prop-types
-        props: ['name', 'value', 'disabled', 'errorMessage', 'inputCols', 'labelCols', 'rules', 'tooltip'],
-        data() {
-            return {}
-        },
-        computed: {
-            localValue: {
-                get() {
-                    return this.value;
-                },
-                set(value) {
-                    this.$emit('input', value);
-                }
-            }
-        },
-        methods: {
-            handleKeyboard(event) {
-                if (event.key === "Enter") {
-                    this.$emit("Enter");
-                }
-            }
-        }
+      return {
+        localValue
+      };
     }
+  };
 </script>
-
-<style lang="css" scoped>
-</style>

@@ -5,14 +5,15 @@
       :bottom="!right"
       nudge-right="10"
     >
-      <template v-slot:activator="{ on }">
+      <template v-slot:activator="{ on, attrs }">
         <v-icon
           :class="hoverClass"
           :color="color"
-          @click="handleClick"
           v-on="on"
+          v-bind="attrs"
+          @click="$emit('click')"
         >
-          {{ text }}
+          {{ iconName }}
         </v-icon>
       </template>
       <span>{{ tooltip }}</span>
@@ -20,31 +21,26 @@
   </div>
 </template>
 
-<script>
-    export default {
-        name: 'Icon',
-      // eslint-disable-next-line vue/require-prop-types
-        props: ['color', 'tooltip', 'text', 'right', 'hover'],
-        data() {
-            return {}
-        },
-        computed: {
-            hoverClass: {
-                get() {
-                    if (this.hover !== undefined) {
-                        return "hover";
-                    }
-                    return "";
-                }
-            }
-        },
-        methods: {
-            handleClick() {
-                this.$emit('click');
-            }
-        },
+<script lang="ts">
+    import {computed} from "vue";
 
-    }
+    export default {
+        emits: ["click"],
+        props: {
+            iconName: {type: String, required: true},
+            color: {type: String, required: false, default: undefined},
+            tooltip: {type: String, required: true},
+            right: {type: Boolean, required: false, default: false},
+            hover: {type: Boolean, required: false, default: false}
+        },
+        setup(props: {color?: string, tooltip?: string, iconName: string, right: boolean, hover: boolean}) {
+          const hoverClass = computed<string>(() => props.hover || false ? "hover" : "");
+
+          return {
+            hoverClass
+          };
+        }
+    };
 </script>
 
 <style scoped>

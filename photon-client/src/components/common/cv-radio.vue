@@ -4,13 +4,13 @@
       dense
       align="center"
     >
-      <v-col :cols="12 - (inputCols || 8)">
+      <v-col :cols="12 - inputCols">
         <tooltipped-label
           :tooltip="tooltip"
-          :text="name"
+          :label="label"
         />
       </v-col>
-      <v-col :cols="inputCols || 8">
+      <v-col :cols="inputCols">
         <v-radio-group
           v-model="localValue"
           row
@@ -18,7 +18,7 @@
           :mandatory="true"
         >
           <v-radio
-            v-for="(radioName,index) in list"
+            v-for="(radioName, index) in list"
             :key="index"
             color="#ffd843"
             :label="radioName"
@@ -31,32 +31,32 @@
   </div>
 </template>
 
-<script>
-    import TooltippedLabel from "./cv-tooltipped-label";
+<script lang="ts">
 
-    export default {
-        name: 'Radio',
-        components: {
-          TooltippedLabel
-        },
-      // eslint-disable-next-line vue/require-prop-types
-        props: ['name', 'value', 'list', 'disabled', 'inputCols', 'tooltip'],
-        data() {
-            return {}
-        },
-        computed: {
-            localValue: {
-                get() {
-                    return this.value;
-                },
-                set(value) {
-                    this.$emit('input', value);
-                }
-            }
-        }
-    }
+import {computed, defineComponent} from "vue";
+import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
+
+export default defineComponent({
+  emits: ["input"],
+  components: {TooltippedLabel},
+  props: {
+    inputCols: {type: Number, required: false, default: 8},
+    tooltip: {type: String, required: false},
+    label: {type: String, required: false},
+    disabled: {type: Boolean, required: false},
+    list: {type: Array, required: true},
+    value: {type: Number, required: true}
+  },
+  setup(props: {value: number}, {emit}) {
+
+    const localValue = computed({
+      get: () => props.value,
+      set: v => emit("input", v)
+    });
+
+    return {
+      localValue
+    };
+  }
+});
 </script>
-
-<style lang="" scoped>
-
-</style>

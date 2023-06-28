@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-tooltip
-      :disabled="tooltip === undefined"
+      :disabled="tooltip"
       right
       open-delay="300"
     >
@@ -11,17 +11,19 @@
           class="white--text"
           v-bind="attrs"
           v-on="on"
-        >{{ text }}</span>
+        >{{ label }}</span>
       </template>
       <span>{{ tooltip }}</span>
     </v-tooltip>
   </div>
 </template>
 
-<script>
+<script lang="ts">
     export default {
-        name: 'TooltippedLabel',
-        // eslint-disable-next-line vue/require-prop-types
-        props: ['text', 'tooltip'],
-    }
+        name: "TooltippedLabel",
+        props: {
+          label: {type: String, required: false},
+          tooltip: {type: String, required: false}
+        }
+    };
 </script>
