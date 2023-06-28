@@ -4,6 +4,7 @@
       :right="right"
       :bottom="!right"
       nudge-right="10"
+      :disabled="tooltip === undefined"
     >
       <template v-slot:activator="{ on, attrs }">
         <v-icon
@@ -29,7 +30,7 @@
         props: {
             iconName: {type: String, required: true},
             color: {type: String, required: false, default: undefined},
-            tooltip: {type: String, required: true},
+            tooltip: {type: String, required: false},
             right: {type: Boolean, required: false, default: false},
             hover: {type: Boolean, required: false, default: false}
         },

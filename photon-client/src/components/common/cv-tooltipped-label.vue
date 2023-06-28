@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-tooltip
-      :disabled="tooltip"
+      :disabled="tooltip === undefined"
       right
       open-delay="300"
     >
