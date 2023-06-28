@@ -1,3 +1,20 @@
+<script setup lang="ts">
+import {defineProps} from "vue";
+
+const props = withDefaults(defineProps<{
+  iconName: string,
+  color?: string,
+  tooltip?: string,
+  right?: boolean,
+  hover?: boolean
+}>(), {
+  right: false,
+  hover: false
+});
+
+const hoverClass = props.hover ? "hover" : "";
+</script>
+
 <template>
   <div>
     <v-tooltip
@@ -21,28 +38,6 @@
     </v-tooltip>
   </div>
 </template>
-
-<script lang="ts">
-    import {computed} from "vue";
-
-    export default {
-        emits: ["click"],
-        props: {
-            iconName: {type: String, required: true},
-            color: {type: String, required: false, default: undefined},
-            tooltip: {type: String, required: false},
-            right: {type: Boolean, required: false, default: false},
-            hover: {type: Boolean, required: false, default: false}
-        },
-        setup(props: {color?: string, tooltip?: string, iconName: string, right: boolean, hover: boolean}) {
-          const hoverClass = computed<string>(() => props.hover || false ? "hover" : "");
-
-          return {
-            hoverClass
-          };
-        }
-    };
-</script>
 
 <style scoped>
     .hover:hover {

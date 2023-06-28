@@ -1,16 +1,9 @@
-<script lang="ts">
+<script setup lang="ts">
 import {computed} from "vue";
 
-export default {
-  setup() {
-    const devMode = computed<boolean>(() => process.env.NODE_ENV === "development");
-
-    return {
-      devMode
-    };
-  }
-};
+const devMode = computed<boolean>(() => process.env.NODE_ENV === "development");
 </script>
+
 <template>
   <div
       style="overflow:hidden; height:100%; width:100%"
@@ -19,7 +12,10 @@ export default {
         v-if="devMode"
         style="width: 100%; height: 100%; padding: 16px"
     >
-      <span style="color: white; font-weight: bold">PhotonClient is in development mode so the documentation page will not load. Please recompile in production mode with the documentation copied over after a full build.</span>
+      <span style="color: white; font-weight: bold">
+        PhotonClient is in development mode so the documentation page will not load.
+        Please recompile in production mode with the documentation copied over after a full build.
+      </span>
     </div>
     <div
         v-else

@@ -1,3 +1,29 @@
+<script setup lang="ts">
+import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
+import { computed, defineEmits, defineProps } from "vue";
+
+const props = withDefaults(defineProps<{
+  label?: string,
+  tooltip?: string,
+  value: number,
+  disabled?: boolean,
+  labelCols?: number,
+  rules?: ((v: number) => boolean | string)[],
+  step?: number
+}>(), {
+  disabled: false,
+  labelCols: 2,
+  step: 1
+});
+
+const emit = defineEmits(["input"]);
+
+const localValue = computed({
+  get: () => props.value,
+  set: v => emit("input", v)
+});
+</script>
+
 <template>
   <div>
     <v-row
@@ -29,32 +55,3 @@
   </div>
 </template>
 
-
-<script lang="ts">
-  import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
-  import { computed } from "vue";
-
-  export default {
-    emits: ["input"],
-    components: {TooltippedLabel},
-    props: {
-      label: {type: String, required: false},
-      tooltip: {type: String, required: false},
-      value: {type: Number, required: true},
-      labelCols: {type: Number, required: false, default: 2},
-      disabled: {type: Boolean, required: false},
-      rules: {type: Array, required: false},
-      step: {type: Number, required: false, default: 1}
-    },
-    setup(props: {value: number}, {emit}) {
-      const localValue = computed({
-        get: () => props.value,
-        set: v => emit("input", v)
-      });
-
-      return {
-        localValue
-      };
-    }
-  };
-</script>

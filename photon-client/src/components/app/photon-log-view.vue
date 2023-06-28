@@ -1,54 +1,42 @@
-<script lang="ts">
-import {useStateStore} from "@/stores/state";
-import {inject, computed, ref} from "vue";
+<script setup lang="ts">
+import {computed, ref, inject} from "vue";
 import {LogLevel, type LogMessage} from "@/lib/types/SettingTypes";
+import {useStateStore} from "@/stores/state";
 
-export default {
-    setup() {
-      // TODO: Replace with reactive with Vue3
-      const selectedLogLevels = ref<LogLevel[]>([LogLevel.ERROR, LogLevel.WARN, LogLevel.INFO]);
+const selectedLogLevels = ref<LogLevel[]>([LogLevel.ERROR, LogLevel.WARN, LogLevel.INFO]);
 
-      const logs = computed<LogMessage[]>(() => useStateStore().logMessages.filter(message => selectedLogLevels.value.includes(message.level)));
-      const showLogModal = computed<boolean>({
-        get: () => useStateStore().showLogModal,
-        set: v => useStateStore().$patch({showLogModal: v})
-      });
+const logs = computed<LogMessage[]>(() => useStateStore().logMessages.filter(message => selectedLogLevels.value.includes(message.level)));
+const showLogModal = computed<boolean>({
+  get: () => useStateStore().showLogModal,
+  set: v => useStateStore().$patch({showLogModal: v})
+});
 
-      const getLogColor = (level: LogLevel): string => {
-        switch (level) {
-          case LogLevel.ERROR:
-            return "red";
-          case LogLevel.WARN:
-            return "yellow";
-          case LogLevel.INFO:
-            return "green";
-          case LogLevel.DEBUG:
-            return "white";
-        }
-      };
+const backendAddress = inject("backendAddress");
 
-      const getLogLevelFromIndex = (index: number): string => {
-        return LogLevel[index];
-      };
+const getLogColor = (level: LogLevel): string => {
+  switch (level) {
+    case LogLevel.ERROR:
+      return "red";
+    case LogLevel.WARN:
+      return "yellow";
+    case LogLevel.INFO:
+      return "green";
+    case LogLevel.DEBUG:
+      return "white";
+  }
+};
 
-      document.addEventListener("keydown", e => {
-        switch (e.key) {
-          case "`":
-            useStateStore().$patch(state => state.showLogModal = !state.showLogModal);
-            break;
-        }
-      });
+const getLogLevelFromIndex = (index: number): string => {
+  return LogLevel[index];
+};
 
-      return {
-        backendAddress: inject("backendAddress") as string,
-        showLogModal,
-        selectedLogLevels,
-        logs,
-        getLogColor,
-        getLogLevelFromIndex
-      };
-    }
-  };
+document.addEventListener("keydown", e => {
+  switch (e.key) {
+    case "`":
+      useStateStore().$patch(state => state.showLogModal = !state.showLogModal);
+      break;
+  }
+});
 </script>
 
 <template>

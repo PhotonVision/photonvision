@@ -1,3 +1,11 @@
+<script setup lang="ts">
+import { defineProps } from "vue";
+defineProps<{
+  label?: string,
+  tooltip?: string
+}>();
+</script>
+
 <template>
   <div>
     <v-tooltip
@@ -17,13 +25,3 @@
     </v-tooltip>
   </div>
 </template>
-
-<script lang="ts">
-    export default {
-        name: "TooltippedLabel",
-        props: {
-          label: {type: String, required: false},
-          tooltip: {type: String, required: false}
-        }
-    };
-</script>

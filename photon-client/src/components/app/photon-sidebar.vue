@@ -1,27 +1,16 @@
-<script lang="ts">
-  import { computed } from "vue";
-  import {useSettingsStore} from "@/stores/settings";
-  import {useStateStore, type NTConnectionStatus} from "@/stores/state";
+<script setup lang="ts">
+import { computed } from "vue";
+import {useSettingsStore} from "@/stores/settings";
+import {useStateStore, type NTConnectionStatus} from "@/stores/state";
 
-  export default {
-    setup() {
-      const compact = computed<boolean>({
-        get: () => { return useStateStore().sidebarFolded; },
-        set: (val) => { useStateStore().setSidebarFolded(val); }
-      });
+const compact = computed<boolean>({
+  get: () => { return useStateStore().sidebarFolded; },
+  set: (val) => { useStateStore().setSidebarFolded(val); }
+});
 
-      const backendConnected = computed<boolean>(() => useStateStore().backendConnected);
-      const runNTServer = computed<boolean>(() => useSettingsStore().network.runNTServer);
-      const ntConnectionStatus = computed<NTConnectionStatus>(() => useStateStore().ntConnectionStatus);
-
-      return {
-        compact,
-        backendConnected,
-        runNTServer,
-        ntConnectionStatus
-      };
-    }
-  };
+const backendConnected = computed<boolean>(() => useStateStore().backendConnected);
+const runNTServer = computed<boolean>(() => useSettingsStore().network.runNTServer);
+const ntConnectionStatus = computed<NTConnectionStatus>(() => useStateStore().ntConnectionStatus);
 </script>
 
 <template>

@@ -1,50 +1,45 @@
-<script lang="ts">
-import {computed, inject} from "vue";
+<script setup lang="ts">
+import {computed, defineProps, inject} from "vue";
 import {useSettingsStore} from "@/stores/settings";
 import {useStateStore} from "@/stores/state";
 import loadingImage from "@/assets/images/loading.svg";
 
-export default {
-  props: ["streamType"],
-  setup(props: {streamType: "Raw" | "Processed"}) {
-    const src = computed<string>(() => {
-      const currentCameraSettings = useSettingsStore().currentCameraSettings;
+const props = defineProps<{
+  streamType: "Raw" | "Processed"
+}>();
 
-      if(!useStateStore().backendConnected || currentCameraSettings === null) {
-        return loadingImage;
-      }
+const src = computed<string>(() => {
+  const currentCameraSettings = useSettingsStore().currentCameraSettings;
 
-      const port = currentCameraSettings.stream[props.streamType === "Raw" ? "inputPort" : "outputPort"];
+  if(!useStateStore().backendConnected || currentCameraSettings === null) {
+    return loadingImage;
+  }
 
-      return `http://${inject("backendAddress")}:${port}/stream.mjpg`;
-    });
-    const alt = computed<string>(() => `${props.streamType} Stream View`);
+  const port = currentCameraSettings.stream[props.streamType === "Raw" ? "inputPort" : "outputPort"];
 
-    const style = computed<object>(() => {
-      if(src.value !== loadingImage) {
-        return {
-          cursor: "pointer"
-        };
-      }
+  return `http://${inject("backendAddress")}:${port}/stream.mjpg`;
+});
+const alt = computed<string>(() => `${props.streamType} Stream View`);
 
-      return {};
-    });
-
-    const handleClick = () => {
-      if(src.value !== loadingImage) {
-        window.open(src.value);
-      }
-    };
-
+const style = computed<object>(() => {
+  if(src.value !== loadingImage) {
     return {
-      src,
-      alt,
-      style,
-      handleClick
+      cursor: "pointer"
     };
   }
+
+  return {};
+});
+
+const handleClick = () => {
+  if(src.value !== loadingImage) {
+    window.open(src.value);
+  }
 };
+
+
 </script>
+
 
 <template>
   <img

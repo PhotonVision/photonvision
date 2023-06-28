@@ -1,3 +1,30 @@
+<script setup lang="ts">
+import {computed, defineEmits, defineProps} from "vue";
+import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
+
+const props = withDefaults(defineProps<{
+  label?: string,
+  tooltip?: string,
+  value: number,
+  min: number,
+  max: number,
+  step?: number
+  disabled?: boolean,
+  sliderCols?: number,
+}>(), {
+  step: 1,
+  disabled: false,
+  sliderCols: 8
+});
+
+const emit = defineEmits(["input"]);
+
+const localValue = computed({
+  get: () => props.value,
+  set: v => emit("input", v)
+});
+</script>
+
 <template>
   <div>
     <v-row
@@ -43,34 +70,3 @@
     </v-row>
   </div>
 </template>
-
-<script lang="ts">
-
-import {computed, defineComponent} from "vue";
-import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
-
-export default defineComponent({
-  emits: ["input"],
-  components: {TooltippedLabel},
-  props: {
-    value: {type: Number, required: true},
-    tooltip: {type: String, required: false},
-    label: {type: String, required: false},
-    min: {type: Number, required: true},
-    max: {type: Number, required: true},
-    step: {type: Number, required: false, default: 1},
-    sliderCols: {type: Number, required: false, default: 8},
-    disabled: {type: Boolean, required: false}
-  },
-  setup(props: {value: number}, { emit }) {
-    const localValue = computed({
-      get: () => props.value,
-      set: v => emit("input", v)
-    });
-
-    return {
-      localValue
-    };
-  }
-});
-</script>
