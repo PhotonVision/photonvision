@@ -30,6 +30,12 @@ const getLogLevelFromIndex = (index: number): string => {
   return LogLevel[index];
 };
 
+const exportLogFile = ref();
+
+const handleLogExport = () => {
+  exportLogFile.value.click();
+};
+
 document.addEventListener("keydown", e => {
   switch (e.key) {
     case "`":
@@ -53,12 +59,11 @@ document.addEventListener("keydown", e => {
     >
       <v-card-title>
         View Program Logs
-
         <v-btn
             color="secondary"
             style="margin-left: auto;"
             depressed
-            @click="$refs.exportLogFile.click()"
+            @click="handleLogExport"
         >
           <v-icon left>
             mdi-download
@@ -90,7 +95,6 @@ document.addEventListener("keydown", e => {
             {{ getLogLevelFromIndex(level) }}
           </v-btn>
         </v-btn-toggle>
-        <!-- Logs -->
 
         <v-virtual-scroll
             :items="logs"
