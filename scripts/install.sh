@@ -53,11 +53,11 @@ else
     echo 'GOVERNOR=performance' > /etc/default/cpufrequtils
 fi
 
-echo "Installing the JDK..."
-if ! package_is_installed openjdk-11-jdk-headless
+echo "Installing the JRE..."
+if ! package_is_installed openjre-11-jre-headless
 then
    apt-get update
-   apt-get install --yes openjdk-11-jdk-headless
+   apt-get install --yes openjre-11-jre-headless
 fi
 echo "JDK installation complete."
 
