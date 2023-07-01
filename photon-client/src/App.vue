@@ -6,6 +6,7 @@ import {AutoReconnectingWebsocket} from "@/lib/AutoReconnectingWebsocket";
 import {inject, onMounted} from "vue";
 import PhotonSidebar from "@/components/app/photon-sidebar.vue";
 import PhotonLogView from "@/components/app/photon-log-view.vue";
+import PhotonErrorSnackbar from "@/components/app/photon-error-snackbar.vue";
 
 onMounted(() => {
   const stateStore = useStateStore();
@@ -66,6 +67,7 @@ onMounted(() => {
     </v-main>
 
     <photon-log-view/>
+    <photon-error-snackbar/>
   </v-app>
 </template>
 

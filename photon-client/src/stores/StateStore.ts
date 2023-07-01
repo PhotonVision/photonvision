@@ -31,6 +31,13 @@ interface StateStore {
         videoFormatIndex: number,
         minimumImageCount: number,
         hasEnoughImages: boolean
+    },
+
+    snackbarData: {
+        show: boolean,
+        message: string,
+        color: string,
+        timeout: number
     }
 }
 
@@ -50,6 +57,13 @@ export const useStateStore = defineStore("state", {
                 videoFormatIndex: 0,
                 minimumImageCount: 12,
                 hasEnoughImages: false
+            },
+
+            snackbarData: {
+                show: false,
+                message: "No Message",
+                color: "info",
+                timeout: 2000
             }
         };
     },
@@ -89,6 +103,21 @@ export const useStateStore = defineStore("state", {
                     hasEnoughImages: data.hasEnough
                 }
             });
+        },
+        showSnackbarMessage(data: {
+            show: boolean,
+            message: string,
+            color: string,
+            timeout: number
+        }) {
+            this.$patch({snackbarData: data});
+
+            if(data.timeout != -1) {
+                setTimeout(this.hideSnackbarMessage, data.timeout);
+            }
+        },
+        hideSnackbarMessage() {
+            this.$patch({snackbarData: {show: false, timeout: 0}});
         }
     }
 });
