@@ -20,7 +20,6 @@
     "vuetify": "^2.6.15"
   },
   "devDependencies": {
-    "@rushstack/eslint-patch": "^1.1.0",
     "@types/node": "^16.11.45",
     "@vitejs/plugin-vue2": "^2.2.0",
     "@vue/eslint-config-typescript": "^11.0.0",
