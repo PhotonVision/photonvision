@@ -431,7 +431,7 @@ public final class OpenCVHelp {
             Transform3d best = null;
             Transform3d alt = null;
 
-            for(int tries = 0; tries < 2; tries++) {
+            for (int tries = 0; tries < 2; tries++) {
                 // calc rvecs/tvecs and associated reprojection error from image points
                 Calib3d.solvePnPGeneric(
                         objectPoints,
@@ -455,11 +455,11 @@ public final class OpenCVHelp {
                 }
 
                 // check if we got a NaN result
-                if(!Double.isNaN(errors[0])) break;
+                if (!Double.isNaN(errors[0])) break;
                 else { // add noise and retry
                     double[] br = imagePoints.get(0, 0);
-                    br[0]-=0.001;
-                    br[1]-=0.001;
+                    br[0] -= 0.001;
+                    br[1] -= 0.001;
                     imagePoints.put(0, 0, br);
                 }
             }
@@ -476,8 +476,7 @@ public final class OpenCVHelp {
             System.err.println("SolvePNP_SQUARE failed!");
             e.printStackTrace();
             return Optional.empty();
-        }
-        finally {
+        } finally {
             // release our Mats from native memory
             objectPoints.release();
             imagePoints.release();

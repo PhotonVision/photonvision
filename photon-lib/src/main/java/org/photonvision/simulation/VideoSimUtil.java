@@ -109,8 +109,8 @@ public class VideoSimUtil {
         name = name.substring(0, name.length() - idString.length()) + idString;
 
         var resource = VideoSimUtil.class.getResource(kResourceTagImagesPath + name + ".png");
-        
-        Mat result = new Mat();        
+
+        Mat result = new Mat();
         // reading jar file
         if (resource != null && resource.getPath().startsWith("file")) {
             BufferedImage buf;
