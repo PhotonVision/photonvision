@@ -32,7 +32,6 @@ export const useSettingsStore = defineStore("settings", {
         },
         metrics: {}
     }),
-
     actions: {
         requestMetricsUpdate() {
             return axios.post("/utils/publishMetrics");

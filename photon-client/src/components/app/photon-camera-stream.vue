@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import {computed, defineProps, inject} from "vue";
-import {useSettingsStore} from "@/stores/settings/GeneralSettingsStore";
+import {useCameraSettingsStore} from "@/stores/settings/CameraSettingsStore";
 import {useStateStore} from "@/stores/StateStore";
 import loadingImage from "@/assets/images/loading.svg";
+import type {StyleValue} from "vue/types/jsx";
 
 const props = defineProps<{
   streamType: "Raw" | "Processed"
 }>();
 
 const src = computed<string>(() => {
-  const currentCameraSettings = useSettingsStore().currentCameraSettings;
+  const currentCameraSettings = useCameraSettingsStore().currentCameraSettings;
 
   if(!useStateStore().backendConnected || currentCameraSettings === null) {
     return loadingImage;
@@ -21,7 +22,7 @@ const src = computed<string>(() => {
 });
 const alt = computed<string>(() => `${props.streamType} Stream View`);
 
-const style = computed<object>(() => {
+const style = computed<StyleValue>(() => {
   if(src.value !== loadingImage) {
     return {
       cursor: "pointer"

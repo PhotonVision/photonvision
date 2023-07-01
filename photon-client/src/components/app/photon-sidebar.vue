@@ -11,6 +11,9 @@ const compact = computed<boolean>({
 const backendConnected = computed<boolean>(() => useStateStore().backendConnected);
 const runNTServer = computed<boolean>(() => useSettingsStore().network.runNTServer);
 const ntConnectionStatus = computed<NTConnectionStatus>(() => useStateStore().ntConnectionStatus);
+
+// @ts-ignore Vuetify's Vue2 library doesn't support the useDisplay API so this will be broken till then
+const mdAndUp = computed<boolean>(() => this.$vuetify.breakpoint.mdAndUp);
 </script>
 
 <template>
@@ -89,7 +92,7 @@ const ntConnectionStatus = computed<NTConnectionStatus>(() => useStateStore().nt
         </v-list-item-content>
       </v-list-item>
       <v-list-item
-          v-if="this.$vuetify.breakpoint.mdAndUp"
+          v-if="mdAndUp"
           link
           @click="() => compact = !compact"
       >
