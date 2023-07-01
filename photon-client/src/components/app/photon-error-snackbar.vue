@@ -1,24 +1,17 @@
 <script setup lang="ts">
 import {useStateStore} from "@/stores/StateStore";
-import {computed} from "vue";
-
-const showSnackbar = computed<boolean>(() => useStateStore().snackbarData.show);
-const snackbarMessage = computed<string>(() => useStateStore().snackbarData.message);
-const snackbarColor = computed<string>(() => useStateStore().snackbarData.color);
-const snackbarTimeout = computed<number>(() => useStateStore().snackbarData.timeout);
+const stateStore = useStateStore();
 </script>
 
 <template>
   <v-snackbar
-      v-model="showSnackbar"
+      v-model="stateStore.snackbarData.show"
       top
-      :color="snackbarColor"
-      :timeout="snackbarTimeout"
+      :color="stateStore.snackbarData.color"
+      :timeout="stateStore.snackbarData.timeout"
   >
-    <span>{{ snackbarMessage }}</span>
+    <p style="padding: 0; margin: 0; text-align: center">
+      {{ stateStore.snackbarData.message }}
+    </p>
   </v-snackbar>
 </template>
-
-<style scoped>
-
-</style>
