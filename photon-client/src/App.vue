@@ -1,5 +1,50 @@
 <script setup lang="ts">
-import HelloWorld from "./components/HelloWorld.vue";
+import {useStateStore} from "@/stores/StateStore";
+import {useSettingsStore} from "@/stores/SettingsStore";
+import {AutoReconnectingWebsocket} from "@/lib/AutoReconnectingWebsocket";
+import {inject, onMounted} from "vue";
+import PhotonSidebar from "@/components/app/photon-sidebar.vue";
+import PhotonLogView from "@/components/app/photon-log-view.vue";
+
+onMounted(() => {
+  const stateStore = useStateStore();
+  const settingsStore = useSettingsStore();
+
+  const websocket = new AutoReconnectingWebsocket(
+      `ws://${inject("backendAddress")}/websocket_data`,
+      () => {
+        stateStore.$patch({ backendConnected: true });
+      },
+      (data) => {
+        if(data.log !== undefined) {
+          stateStore.addLogFromWebsocket(data.log);
+        }
+        if(data.settings !== undefined) {
+          settingsStore.updateGeneralSettingsFromWebsocket(data.settings);
+        }
+        if(data.cameraSettings !== undefined) {
+          settingsStore.updateCameraSettingsFromWebsocket(data.cameraSettings);
+        }
+        if(data.ntConnectionInfo !== undefined) {
+          stateStore.updateNTConnectionStatusFromWebsocket(data.ntConnectionInfo);
+        }
+        if(data.metrics !== undefined) {
+          settingsStore.updateMetricsFromWebsocket(data.metrics);
+        }
+        if(data.updatePipelineResult !== undefined) {
+          stateStore.updatePipelineResultsFromWebsocket(data.updatePipelineResult);
+        }
+        if(data.calibrationData !== undefined) {
+          stateStore.updateCalibrationStateValuesFromWebsocket(data.calibrationData);
+        }
+      },
+      () => {
+        stateStore.$patch({ backendConnected: false });
+      }
+  );
+
+  stateStore.$patch({ websocket: websocket });
+});
 </script>
 
 <template>
@@ -23,37 +68,20 @@ import HelloWorld from "./components/HelloWorld.vue";
 </template>
 
 <style lang="scss">
-  ::-webkit-scrollbar {
-    width: 0.5em;
-    border-radius: 5px;
-  }
-
-  ::-webkit-scrollbar-track {
-    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-    border-radius: 10px;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background-color: #ffd843;
-    border-radius: 10px;
-  }
-
-  .container {
-    background-color: #232c37;
-    padding: 0 !important;
-  }
-
-  #title {
-    color: #ffd843;
-  }
-</style>
-
-<style lang="scss">
 @import 'vuetify/src/styles/settings/_variables';
 
 @media #{map-get($display-breakpoints, 'md-and-down')} {
   html {
     font-size: 14px !important;
   }
+}
+
+.container {
+  background-color: #232c37;
+  padding: 0 !important;
+}
+
+#title {
+  color: #ffd843;
 }
 </style>
