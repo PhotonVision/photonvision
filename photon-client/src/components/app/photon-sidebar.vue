@@ -12,7 +12,7 @@ const backendConnected = computed<boolean>(() => useStateStore().backendConnecte
 const runNTServer = computed<boolean>(() => useSettingsStore().network.runNTServer);
 const ntConnectionStatus = computed<NTConnectionStatus>(() => useStateStore().ntConnectionStatus);
 
-// Vuetify2 doesn't yet support the useDisplay API so this is required to access the prop
+// Vuetify2 doesn't yet support the useDisplay API so this is required to access the prop when using the Composition API
 const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndUp || false);
 </script>
 
