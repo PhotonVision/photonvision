@@ -21,11 +21,11 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         cameras: []
     }),
     getters: {
-        currentCameraSettings(): CameraSettings | null {
+        currentCameraSettings(): CameraSettings | undefined {
             const currentCameraIndex = useStateStore().currentCameraIndex;
 
             if(this.cameras.length === 0 || currentCameraIndex === undefined) {
-                return null;
+                return undefined;
             }
 
             return this.cameras[currentCameraIndex];

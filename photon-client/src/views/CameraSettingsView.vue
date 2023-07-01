@@ -1,5 +1,9 @@
+<script setup lang="ts">
+import SettingsCard from "@/components/CameraSettings/SettingsCard.vue";
+</script>
+
 <template>
   <div>
-    Hello From the Camera View
+    <SettingsCard/>
   </div>
 </template>

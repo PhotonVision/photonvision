@@ -12,7 +12,7 @@ const props = defineProps<{
 const src = computed<string>(() => {
   const currentCameraSettings = useCameraSettingsStore().currentCameraSettings;
 
-  if(!useStateStore().backendConnected || currentCameraSettings === null) {
+  if(!useStateStore().backendConnected || currentCameraSettings === undefined) {
     return loadingImage;
   }
 
