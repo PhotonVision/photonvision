@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, getCurrentInstance } from "vue";
 import {useSettingsStore} from "@/stores/settings/GeneralSettingsStore";
 import {useStateStore, type NTConnectionStatus} from "@/stores/StateStore";
 
@@ -12,8 +12,8 @@ const backendConnected = computed<boolean>(() => useStateStore().backendConnecte
 const runNTServer = computed<boolean>(() => useSettingsStore().network.runNTServer);
 const ntConnectionStatus = computed<NTConnectionStatus>(() => useStateStore().ntConnectionStatus);
 
-// @ts-ignore Vuetify's Vue2 library doesn't support the useDisplay API so this will be broken till then
-const mdAndUp = computed<boolean>(() => this.$vuetify.breakpoint.mdAndUp);
+// Vuetify2 doesn't yet support the useDisplay API so this is required to access the prop
+const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndUp || false);
 </script>
 
 <template>
