@@ -1,16 +1,15 @@
 <script setup lang="ts">
 import { computed, getCurrentInstance } from "vue";
 import {useSettingsStore} from "@/stores/settings/GeneralSettingsStore";
-import {useStateStore, type NTConnectionStatus} from "@/stores/StateStore";
+import {useStateStore} from "@/stores/StateStore";
 
 const compact = computed<boolean>({
   get: () => { return useStateStore().sidebarFolded; },
   set: (val) => { useStateStore().setSidebarFolded(val); }
 });
 
-const backendConnected = computed<boolean>(() => useStateStore().backendConnected);
-const runNTServer = computed<boolean>(() => useSettingsStore().network.runNTServer);
-const ntConnectionStatus = computed<NTConnectionStatus>(() => useStateStore().ntConnectionStatus);
+const stateStore = useStateStore();
+const settingsStore = useSettingsStore();
 
 // Vuetify2 doesn't yet support the useDisplay API so this is required to access the prop when using the Composition API
 const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndUp || false);
@@ -112,10 +111,10 @@ const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.bre
       <div style="position: absolute; bottom: 0; left: 0;">
         <v-list-item>
           <v-list-item-icon>
-            <v-icon v-if="runNTServer">
+            <v-icon v-if="settingsStore.network.runNTServer">
               mdi-server
             </v-icon>
-            <v-icon v-else-if="ntConnectionStatus.connected">
+            <v-icon v-else-if="stateStore.ntConnectionStatus.connected">
               mdi-robot
             </v-icon>
             <v-icon
@@ -127,13 +126,13 @@ const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.bre
           </v-list-item-icon>
           <v-list-item-content>
             <v-list-item-title
-                v-if="runNTServer"
+                v-if="settingsStore.network.runNTServer"
                 class="text-wrap"
             >
-              NetworkTables server running for <span class="accent--text">{{ ntConnectionStatus.clients }}</span> clients
+              NetworkTables server running for <span class="accent--text">{{ stateStore.ntConnectionStatus.clients }}</span> clients
             </v-list-item-title>
             <v-list-item-title
-                v-else-if="ntConnectionStatus.connected && backendConnected"
+                v-else-if="stateStore.ntConnectionStatus.connected && stateStore.backendConnected"
                 class="text-wrap"
                 style="flex-direction: column; display: flex"
             >
@@ -141,7 +140,7 @@ const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.bre
               <span
                   class="accent--text"
               >
-                  {{ ntConnectionStatus.address }}
+                  {{ stateStore.ntConnectionStatus.address }}
                 </span>
             </v-list-item-title>
             <v-list-item-title
@@ -156,7 +155,7 @@ const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.bre
 
         <v-list-item>
           <v-list-item-icon>
-            <v-icon v-if="backendConnected">
+            <v-icon v-if="stateStore.backendConnected">
               mdi-server-network
             </v-icon>
             <v-icon
@@ -168,7 +167,7 @@ const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.bre
           </v-list-item-icon>
           <v-list-item-content>
             <v-list-item-title class="text-wrap">
-              {{ backendConnected ? "Backend Connected" : "Trying to connect to Backend" }}
+              {{ stateStore.backendConnected ? "Backend Connected" : "Trying to connect to Backend" }}
             </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
