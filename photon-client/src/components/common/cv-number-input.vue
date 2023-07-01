@@ -54,4 +54,3 @@ const localValue = computed({
     </v-row>
   </div>
 </template>
-
