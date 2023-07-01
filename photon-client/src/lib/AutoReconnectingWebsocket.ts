@@ -1,3 +1,6 @@
+import {decode, encode} from "@msgpack/msgpack";
+import type {IncomingWebsocketData} from "@/types/WebsocketDataTypes";
+
 /**
  * WebSocket class that automatically reconnects to the provided host address if the connection was closed.
  */
@@ -6,7 +9,7 @@ export class AutoReconnectingWebsocket {
   private websocket: WebSocket | null | undefined;
 
   private readonly onConnect: () => void;
-  private readonly onData: (data: MessageEvent) => void;
+  private readonly onData: (data: IncomingWebsocketData) => void;
   private readonly onDisconnect: () => void;
 
   private connectionCallbacks: (() => any)[] = [];
@@ -16,10 +19,10 @@ export class AutoReconnectingWebsocket {
    *
    * @param serverAddress address of the websocket
    * @param onConnect action to run on websocket connection (when the websocket changes to the OPEN state)
-   * @param onData websocket message consumer
+   * @param onData decoded websocket message data consumer. The data is automatically decoded by msgpack.
    * @param onDisconnect action to run on websocket disconnection (when the websocket changes to the CLOSED state)
    */
-  constructor(serverAddress: string | URL, onConnect: () => void, onData: (data: MessageEvent) => void, onDisconnect: () => void) {
+  constructor(serverAddress: string | URL, onConnect: () => void, onData: (data: IncomingWebsocketData) => void, onDisconnect: () => void) {
     this.serverAddress = serverAddress;
 
     this.onConnect = onConnect;
@@ -41,13 +44,19 @@ export class AutoReconnectingWebsocket {
   /**
    * Send data over the websocket. This is a no-op if the websocket is not in the OPEN state.
    *
-   * @param message message to send.
+   * @param data data to send
+   * @param encodeData whether or not to encode the data using msgpack (defaults to true)
    * @see isConnected
+   *
    */
-  send(message: string | ArrayBufferLike | Blob | ArrayBufferView) {
+  send(data: any, encodeData = true) {
     // Only send data if the websocket is open
     if(this.isConnected()) {
-      this.websocket?.send(message);
+      if(encodeData) {
+        this.websocket?.send(encode(data));
+      } else {
+        this.websocket?.send(data);
+      }
     }
   }
 
@@ -74,7 +83,9 @@ export class AutoReconnectingWebsocket {
       this.connectionCallbacks.forEach(f => f());
       this.onConnect();
     };
-    this.websocket.onmessage = this.onData.bind(this);
+    this.websocket.onmessage = (event: MessageEvent) => {
+      this.onData(decode(event.data) as IncomingWebsocketData);
+    };
     this.websocket.onclose = (event: CloseEvent) => {
       this.onDisconnect();
 
