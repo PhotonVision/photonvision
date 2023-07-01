@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {useStateStore} from "@/stores/StateStore";
-import {useSettingsStore} from "@/stores/SettingsStore";
+import {useSettingsStore} from "@/stores/settings/GeneralSettingsStore";
+import {useCameraSettingsStore} from "@/stores/settings/CameraSettingsStore";
 import {AutoReconnectingWebsocket} from "@/lib/AutoReconnectingWebsocket";
 import {inject, onMounted} from "vue";
 import PhotonSidebar from "@/components/app/photon-sidebar.vue";
@@ -8,6 +9,7 @@ import PhotonLogView from "@/components/app/photon-log-view.vue";
 
 onMounted(() => {
   const stateStore = useStateStore();
+  const cameraSettingsStore = useCameraSettingsStore();
   const settingsStore = useSettingsStore();
 
   const websocket = new AutoReconnectingWebsocket(
@@ -23,7 +25,7 @@ onMounted(() => {
           settingsStore.updateGeneralSettingsFromWebsocket(data.settings);
         }
         if(data.cameraSettings !== undefined) {
-          settingsStore.updateCameraSettingsFromWebsocket(data.cameraSettings);
+          cameraSettingsStore.updateCameraSettingsFromWebsocket(data.cameraSettings);
         }
         if(data.ntConnectionInfo !== undefined) {
           stateStore.updateNTConnectionStatusFromWebsocket(data.ntConnectionInfo);
