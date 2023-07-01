@@ -98,3 +98,15 @@ export interface CameraSettings {
     currentPipelineIndex: number
     pipelineSettings: ReflectivePipelineSettings | ColoredShapePipelineSettings | AprilTagPipelineSettings
 }
+
+export enum CalibrationBoardTypes {
+    Chessboard=0,
+    DotBoard=1
+}
+
+export enum RobotOffsetType {
+    Clear=0,
+    Single=1,
+    DualFirst=2,
+    DualSecond=3
+}

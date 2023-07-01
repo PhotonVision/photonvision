@@ -68,5 +68,16 @@ export const useSettingsStore = defineStore("settings", {
                 }
             });
         },
+        /**
+         * Modify the brightness of the LEDs.
+         *
+         * @param brightness brightness to set [0, 100]
+         */
+        changeLEDBrightness(brightness: number) {
+            const payload = {
+                enabledLEDPercentage: brightness
+            };
+            useStateStore().websocket?.send(payload, true);
+        }
     }
 });
