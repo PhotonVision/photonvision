@@ -144,7 +144,7 @@ class VisionSystemSimTest {
         var cameraSim = new PhotonCameraSim(camera);
         visionSysSim.addCamera(cameraSim, new Transform3d());
         cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(80));
-        visionSysSim.addVisionTargets(new VisionTargetSim(targetPose, new TargetModel(1.0, 3.0), 3));
+        visionSysSim.addVisionTargets(new VisionTargetSim(targetPose, new TargetModel(1.0, 1.0), 3));
 
         // To the right, to the right
         var robotPose = new Pose2d(new Translation2d(5, 0), Rotation2d.fromDegrees(-70));
@@ -439,7 +439,7 @@ class VisionSystemSimTest {
                         5));
         visionSysSim.addVisionTargets(
                 new VisionTargetSim(
-                        targetPoseL.transformBy(
+                        targetPoseR.transformBy(
                                 new Transform3d(new Translation3d(0, 0, 1.00), new Rotation3d())),
                         TargetModel.kTag16h5,
                         6));

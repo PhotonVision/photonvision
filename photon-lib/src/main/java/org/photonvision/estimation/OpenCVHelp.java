@@ -407,56 +407,64 @@ public final class OpenCVHelp {
             Matrix<N5, N1> distCoeffs,
             List<Translation3d> modelTrls,
             List<TargetCorner> imageCorners) {
+        // solvepnp inputs
+        MatOfPoint3f objectPoints = new MatOfPoint3f();
+        MatOfPoint2f imagePoints = new MatOfPoint2f();
+        MatOfDouble cameraMatrixMat = new MatOfDouble();
+        MatOfDouble distCoeffsMat = new MatOfDouble();
+        var rvecs = new ArrayList<Mat>();
+        var tvecs = new ArrayList<Mat>();
+        Mat rvec = Mat.zeros(3, 1, CvType.CV_32F);
+        Mat tvec = Mat.zeros(3, 1, CvType.CV_32F);
+        Mat reprojectionError = Mat.zeros(2, 1, CvType.CV_32F);
         try {
             // IPPE_SQUARE expects our corners in a specific order
             modelTrls = reorderCircular(modelTrls, true, -1);
             imageCorners = reorderCircular(imageCorners, true, -1);
             // translate to opencv classes
-            var objectPoints = translationToTvec(modelTrls.toArray(new Translation3d[0]));
-            var imagePoints = targetCornersToMat(imageCorners);
-            var cameraMatrixMat = matrixToMat(cameraMatrix.getStorage());
-            var distCoeffsMat = matrixToMat(distCoeffs.getStorage());
-            var rvecs = new ArrayList<Mat>();
-            var tvecs = new ArrayList<Mat>();
-            var rvec = Mat.zeros(3, 1, CvType.CV_32F);
-            var tvec = Mat.zeros(3, 1, CvType.CV_32F);
-            var reprojectionError = new Mat();
-            // calc rvecs/tvecs and associated reprojection error from image points
-            Calib3d.solvePnPGeneric(
-                    objectPoints,
-                    imagePoints,
-                    cameraMatrixMat,
-                    distCoeffsMat,
-                    rvecs,
-                    tvecs,
-                    false,
-                    Calib3d.SOLVEPNP_IPPE_SQUARE,
-                    rvec,
-                    tvec,
-                    reprojectionError);
+            translationToTvec(modelTrls.toArray(new Translation3d[0])).assignTo(objectPoints);
+            targetCornersToMat(imageCorners).assignTo(imagePoints);
+            matrixToMat(cameraMatrix.getStorage()).assignTo(cameraMatrixMat);
+            matrixToMat(distCoeffs.getStorage()).assignTo(distCoeffsMat);
 
             float[] errors = new float[2];
-            reprojectionError.get(0, 0, errors);
-            // convert to wpilib coordinates
-            var best = new Transform3d(tvecToTranslation(tvecs.get(0)), rvecToRotation(rvecs.get(0)));
-
+            Transform3d best = null;
             Transform3d alt = null;
-            if (tvecs.size() > 1) {
-                alt = new Transform3d(tvecToTranslation(tvecs.get(1)), rvecToRotation(rvecs.get(1)));
+
+            for(int tries = 0; tries < 2; tries++) {
+                // calc rvecs/tvecs and associated reprojection error from image points
+                Calib3d.solvePnPGeneric(
+                        objectPoints,
+                        imagePoints,
+                        cameraMatrixMat,
+                        distCoeffsMat,
+                        rvecs,
+                        tvecs,
+                        false,
+                        Calib3d.SOLVEPNP_IPPE_SQUARE,
+                        rvec,
+                        tvec,
+                        reprojectionError);
+
+                reprojectionError.get(0, 0, errors);
+                // convert to wpilib coordinates
+                best = new Transform3d(tvecToTranslation(tvecs.get(0)), rvecToRotation(rvecs.get(0)));
+
+                if (tvecs.size() > 1) {
+                    alt = new Transform3d(tvecToTranslation(tvecs.get(1)), rvecToRotation(rvecs.get(1)));
+                }
+
+                // check if we got a NaN result
+                if(!Double.isNaN(errors[0])) break;
+                else { // add noise and retry
+                    double[] br = imagePoints.get(0, 0);
+                    br[0]-=0.001;
+                    br[1]-=0.001;
+                    imagePoints.put(0, 0, br);
+                }
             }
 
-            // release our Mats from native memory
-            objectPoints.release();
-            imagePoints.release();
-            cameraMatrixMat.release();
-            distCoeffsMat.release();
-            for (var v : rvecs) v.release();
-            for (var v : tvecs) v.release();
-            rvec.release();
-            tvec.release();
-            reprojectionError.release();
-
-            // check if solvePnP failed with NaN results
+            // check if solvePnP failed with NaN results and retrying failed
             if (Double.isNaN(errors[0])) throw new Exception("SolvePNP_SQUARE NaN result");
 
             if (alt != null)
@@ -468,6 +476,18 @@ public final class OpenCVHelp {
             System.err.println("SolvePNP_SQUARE failed!");
             e.printStackTrace();
             return Optional.empty();
+        }
+        finally {
+            // release our Mats from native memory
+            objectPoints.release();
+            imagePoints.release();
+            cameraMatrixMat.release();
+            distCoeffsMat.release();
+            for (var v : rvecs) v.release();
+            for (var v : tvecs) v.release();
+            rvec.release();
+            tvec.release();
+            reprojectionError.release();
         }
     }
 
@@ -498,15 +518,15 @@ public final class OpenCVHelp {
             List<TargetCorner> imageCorners) {
         try {
             // translate to opencv classes
-            var objectPoints = translationToTvec(objectTrls.toArray(new Translation3d[0]));
-            var imagePoints = targetCornersToMat(imageCorners);
-            var cameraMatrixMat = matrixToMat(cameraMatrix.getStorage());
-            var distCoeffsMat = matrixToMat(distCoeffs.getStorage());
+            MatOfPoint3f objectPoints = translationToTvec(objectTrls.toArray(new Translation3d[0]));
+            MatOfPoint2f imagePoints = targetCornersToMat(imageCorners);
+            MatOfDouble cameraMatrixMat = matrixToMat(cameraMatrix.getStorage());
+            MatOfDouble distCoeffsMat = matrixToMat(distCoeffs.getStorage());
             var rvecs = new ArrayList<Mat>();
             var tvecs = new ArrayList<Mat>();
-            var rvec = Mat.zeros(3, 1, CvType.CV_32F);
-            var tvec = Mat.zeros(3, 1, CvType.CV_32F);
-            var reprojectionError = new Mat();
+            Mat rvec = Mat.zeros(3, 1, CvType.CV_32F);
+            Mat tvec = Mat.zeros(3, 1, CvType.CV_32F);
+            Mat reprojectionError = new Mat();
             // calc rvec/tvec from image points
             Calib3d.solvePnPGeneric(
                     objectPoints,
