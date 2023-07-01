@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {computed, ref, inject} from "vue";
 import {LogLevel, type LogMessage} from "@/types/SettingTypes";
-import {useStateStore} from "@/stores/state";
+import {useStateStore} from "@/stores/StateStore";
 
 const selectedLogLevels = ref<LogLevel[]>([LogLevel.ERROR, LogLevel.WARN, LogLevel.INFO]);
 

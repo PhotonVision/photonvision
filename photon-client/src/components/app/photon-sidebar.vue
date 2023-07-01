@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import {useSettingsStore} from "@/stores/settings";
-import {useStateStore, type NTConnectionStatus} from "@/stores/state";
+import {useSettingsStore} from "@/stores/SettingsStore";
+import {useStateStore, type NTConnectionStatus} from "@/stores/StateStore";
 
 const compact = computed<boolean>({
   get: () => { return useStateStore().sidebarFolded; },

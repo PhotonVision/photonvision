@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {computed, defineProps, inject} from "vue";
-import {useSettingsStore} from "@/stores/settings";
-import {useStateStore} from "@/stores/state";
+import {useSettingsStore} from "@/stores/SettingsStore";
+import {useStateStore} from "@/stores/StateStore";
 import loadingImage from "@/assets/images/loading.svg";
 
 const props = defineProps<{
