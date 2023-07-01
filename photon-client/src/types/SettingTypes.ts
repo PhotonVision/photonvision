@@ -1,9 +1,11 @@
-import type {AprilTagPipeline, ColoredShapePipeline, ReflectivePipeline} from "@/types/PipelineTypes";
-
-export type PhotonVersion = string
+import type {
+    AprilTagPipelineSettings,
+    ColoredShapePipelineSettings,
+    ReflectivePipelineSettings
+} from "@/types/PipelineTypes";
 
 export interface GeneralSettings {
-    version?: PhotonVersion
+    version?: string
     gpuAcceleration?: string
     hardwareModel?: string
     hardwarePlatform?: string
@@ -14,8 +16,11 @@ export interface MetricData {
     cpuUtil?: string,
     cpuMem?: string,
     gpuMem?: string,
-    ramUtil?: string,
+    ramUtil?: string
     gpuMemUtil?: string,
+    cpuThr?: string,
+    cpuUptime?: string,
+    diskUtilPct?: string,
 }
 
 export enum NetworkConnectionType {
@@ -26,18 +31,17 @@ export enum NetworkConnectionType {
 export interface NetworkSettings {
     ntServerAddress?: string
     supported: boolean,
-
     connectionType: NetworkConnectionType,
     staticIp?: string,
     hostname: string,
     runNTServer: boolean
+    shouldMange?: boolean
 }
 
 export interface LightingSettings {
     supported: boolean,
     brightness: number
 }
-
 
 export enum LogLevel {
     ERROR,
@@ -56,24 +60,32 @@ interface Resolution {
     height: number
 }
 
-interface VideoFormat {
+export interface VideoFormat {
     resolution: Resolution
     fps: number,
-    pixelFormat: "BGR" | "RGB" | "MJPEG" | "YUYV"
+    pixelFormat: string,
+    index?: number,
+    diagonalFOV?: number,
+    horizontalFOV?: number,
+    verticalFOV?: number,
+    standardDeviation?: number,
+    mean?: number
 }
 
-interface CameraCalibrationResult {
+export interface CameraCalibrationResult {
     resolution: Resolution
+    distCoeffs: number[],
     standardDeviation: number,
     perViewErrors: number[],
-    intrinsics: number[]
+    intrinsics: number[],
 }
 
 export interface CameraSettings {
-    nickname: string,
+    nickname: string
+
     fov: {
         value: number,
-        locked: boolean
+        managedByVendor: boolean
     }
     stream: {
         inputPort: number,
@@ -81,16 +93,8 @@ export interface CameraSettings {
     }
 
     validVideoFormats: VideoFormat[]
-    completeCalibration: CameraCalibrationResult[]
-
-    // Calibration data from the backend
-    calibrationData: {
-        imageCount: number,
-        videoFormatIndex: number,
-        minimumImageCount: number,
-        hasEnoughImages: boolean
-    }
+    completeCalibrations: CameraCalibrationResult[]
 
     currentPipelineIndex: number
-    pipelines: (ReflectivePipeline | ColoredShapePipeline | AprilTagPipeline)[]
+    pipelineSettings: ReflectivePipelineSettings | ColoredShapePipelineSettings | AprilTagPipelineSettings
 }
