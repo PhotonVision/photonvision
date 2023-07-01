@@ -12,7 +12,7 @@ export class AutoReconnectingWebsocket {
   private readonly onData: (data: IncomingWebsocketData) => void;
   private readonly onDisconnect: () => void;
 
-  private connectionCallbacks: (() => any)[] = [];
+  private connectionCallbacks: (() => void)[] = [];
 
   /**
    * Create an AutoReconnectingWebsocket
@@ -37,7 +37,7 @@ export class AutoReconnectingWebsocket {
    *
    * @param callback callback to add.
    */
-  addConnectionCallback(callback: () => any) {
+  addConnectionCallback(callback: () => void) {
     this.connectionCallbacks.push(callback);
   }
 
@@ -49,7 +49,7 @@ export class AutoReconnectingWebsocket {
    * @see isConnected
    *
    */
-  send(data: any, encodeData = true) {
+  send(data, encodeData = true) {
     // Only send data if the websocket is open
     if(this.isConnected()) {
       if(encodeData) {

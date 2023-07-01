@@ -1,16 +1,14 @@
 import {defineStore} from "pinia";
 import type {
-    CameraCalibrationResult,
-    CameraSettings,
     GeneralSettings,
     LightingSettings,
     MetricData,
-    NetworkSettings, VideoFormat
+    NetworkSettings
 } from "@/types/SettingTypes";
 import {NetworkConnectionType} from "@/types/SettingTypes";
 import {useStateStore} from "@/stores/StateStore";
 import axios from "axios";
-import type {WebsocketCameraSettingsUpdate, WebsocketSettingsUpdate} from "@/types/WebsocketDataTypes";
+import type {WebsocketSettingsUpdate} from "@/types/WebsocketDataTypes";
 
 interface GeneralSettingsStore {
     general: GeneralSettings,
