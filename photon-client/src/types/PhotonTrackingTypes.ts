@@ -9,10 +9,12 @@ export interface Pose {
 }
 
 export interface PhotonTarget {
-    pitch: number,
     yaw: number,
+    pitch: number,
     skew: number,
     area: number,
+    ambiguity?: number,
+    fiducialId?: number,
     pose?: Pose
 }
 
