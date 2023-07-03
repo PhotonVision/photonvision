@@ -128,7 +128,7 @@ public class ConfigManager {
         }
     }
 
-    public static void saveUploadedSettingsZip(File uploadPath) {
+    public static boolean saveUploadedSettingsZip(File uploadPath) {
         // Unpack to /tmp/something/photonvision
         var folderPath = Path.of(System.getProperty("java.io.tmpdir"), "photonvision").toFile();
         folderPath.mkdirs();
@@ -147,14 +147,16 @@ public class ConfigManager {
 
             var sql = new SqlConfigProvider(getRootFolder());
             sql.setConfig(loadedConfig);
-            sql.saveToDisk();
+            return sql.saveToDisk();
         } else {
             // new structure -- just copy and save like we used to
             try {
                 org.apache.commons.io.FileUtils.copyDirectory(folderPath, getRootFolder().toFile());
                 logger.info("Copied settings successfully!");
+                return true;
             } catch (IOException e) {
                 logger.error("Exception copying uploaded settings!", e);
+                return false;
             }
         }
     }
@@ -241,16 +243,16 @@ public class ConfigManager {
         return imgFilePath.toPath();
     }
 
-    public void saveUploadedHardwareConfig(Path uploadPath) {
-        m_provider.saveUploadedHardwareConfig(uploadPath);
+    public boolean saveUploadedHardwareConfig(Path uploadPath) {
+        return m_provider.saveUploadedHardwareConfig(uploadPath);
     }
 
-    public void saveUploadedHardwareSettings(Path uploadPath) {
-        m_provider.saveUploadedHardwareSettings(uploadPath);
+    public boolean saveUploadedHardwareSettings(Path uploadPath) {
+        return m_provider.saveUploadedHardwareSettings(uploadPath);
     }
 
-    public void saveUploadedNetworkConfig(Path uploadPath) {
-        m_provider.saveUploadedNetworkConfig(uploadPath);
+    public boolean saveUploadedNetworkConfig(Path uploadPath) {
+        return m_provider.saveUploadedNetworkConfig(uploadPath);
     }
 
     public void requestSave() {

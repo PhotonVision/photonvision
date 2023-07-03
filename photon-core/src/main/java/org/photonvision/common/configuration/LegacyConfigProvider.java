@@ -184,7 +184,7 @@ class LegacyConfigProvider extends ConfigProvider {
     }
 
     @Override
-    public void saveToDisk() {
+    public boolean saveToDisk() {
         // Delete old configs
         FileUtils.deleteDirectory(camerasFolder.toPath());
 
@@ -239,6 +239,7 @@ class LegacyConfigProvider extends ConfigProvider {
             }
         }
         logger.info("Settings saved!");
+        return false; // TODO, deal with this. Do I need to?
     }
 
     private HashMap<String, CameraConfiguration> loadCameraConfigs() {
@@ -400,19 +401,19 @@ class LegacyConfigProvider extends ConfigProvider {
         return this.networkConfigFile.toPath();
     }
 
-    public void saveUploadedHardwareConfig(Path uploadPath) {
-        FileUtils.deleteFile(this.getHardwareConfigFile());
-        FileUtils.copyFile(uploadPath, this.getHardwareConfigFile());
+    @Override
+    public boolean saveUploadedHardwareConfig(Path uploadPath) {
+        return FileUtils.replaceFile(uploadPath, this.getHardwareConfigFile());
     }
 
-    public void saveUploadedHardwareSettings(Path uploadPath) {
-        FileUtils.deleteFile(this.getHardwareSettingsFile());
-        FileUtils.copyFile(uploadPath, this.getHardwareSettingsFile());
+    @Override
+    public boolean saveUploadedHardwareSettings(Path uploadPath) {
+        return FileUtils.replaceFile(uploadPath, this.getHardwareSettingsFile());
     }
 
-    public void saveUploadedNetworkConfig(Path uploadPath) {
-        FileUtils.deleteFile(this.getNetworkConfigFile());
-        FileUtils.copyFile(uploadPath, this.getNetworkConfigFile());
+    @Override
+    public boolean saveUploadedNetworkConfig(Path uploadPath) {
+        return FileUtils.replaceFile(uploadPath, this.getNetworkConfigFile());
     }
 
     public void requestSave() {
