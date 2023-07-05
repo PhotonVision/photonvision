@@ -19,7 +19,12 @@ interface GeneralSettingsStore {
 
 export const useSettingsStore = defineStore("settings", {
     state: (): GeneralSettingsStore => ({
-        general: {},
+        general: {
+            version: undefined,
+            gpuAcceleration: undefined,
+            hardwareModel: undefined,
+            hardwarePlatform: undefined
+        },
         network: {
             supported: true,
             connectionType: NetworkConnectionType.DHCP,
@@ -30,16 +35,25 @@ export const useSettingsStore = defineStore("settings", {
             supported: true,
             brightness: 0
         },
-        metrics: {}
+        metrics: {
+            cpuTemp: undefined,
+            cpuUtil: undefined,
+            cpuMem: undefined,
+            gpuMem: undefined,
+            ramUtil: undefined,
+            gpuMemUtil: undefined,
+            cpuThr: undefined,
+            cpuUptime: undefined,
+            diskUtilPct: undefined
+        }
     }),
     actions: {
         requestMetricsUpdate() {
             return axios.post("/utils/publishMetrics");
         },
         updateMetricsFromWebsocket(data: Required<MetricData>) {
-            // Websocket returns empty strings instead of undefined so that needs to be fixed
             // TODO, do this... better
-            this.$patch({metrics: {
+            this.metrics = {
                 cpuTemp: data.cpuTemp === "" ? undefined : data.cpuTemp,
                 cpuUtil: data.cpuUtil === "" ? undefined : data.cpuUtil,
                 cpuMem: data.cpuMem === "" ? undefined : data.cpuMem,
@@ -49,21 +63,26 @@ export const useSettingsStore = defineStore("settings", {
                 cpuThr: data.cpuThr === "" ? undefined : data.cpuThr,
                 cpuUptime: data.cpuUptime === "" ? undefined : data.cpuUptime,
                 diskUtilPct: data.diskUtilPct === "" ? undefined : data.diskUtilPct
-            }});
+            };
         },
         updateGeneralSettingsFromWebsocket(data: WebsocketSettingsUpdate) {
-            this.$patch({
-                general: data.general,
-                lighting: data.lighting,
-                network: {
+                this.general = {
+                    // TODO, do this... better
+                    version: data.general.version === "" ? undefined : data.general.version,
+                    hardwareModel: data.general.hardwareModel === "" ? undefined : data.general.hardwareModel,
+                    hardwarePlatform: data.general.hardwarePlatform === "" ? undefined : data.general.hardwarePlatform,
+                    gpuAcceleration: data.general.gpuAcceleration === "" ? undefined : data.general.gpuAcceleration
+                };
+                this.lighting = data.lighting;
+                this.network = {
                     ntServerAddress: data.networkSettings.ntServerAddress,
                     connectionType: data.networkSettings.connectionType,
                     staticIp: data.networkSettings.staticIp,
                     hostname: data.networkSettings.hostname,
                     runNTServer: data.networkSettings.runNTServer,
-                    shouldMange: data.networkSettings.shouldManage
-                }
-            });
+                    shouldMange: data.networkSettings.shouldManage,
+                    supported: true
+                };
         },
         /**
          * Modify the brightness of the LEDs.

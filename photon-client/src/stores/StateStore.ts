@@ -45,12 +45,16 @@ export const useStateStore = defineStore("state", {
     state: (): StateStore => {
         return {
             backendConnected: false,
+            websocket: undefined,
             ntConnectionStatus: {
                 connected: false
             },
             showLogModal: false,
             sidebarFolded: localStorage.getItem("sidebarFolded") === null ? false : localStorage.getItem("sidebarFolded") === "true",
             logMessages: [],
+            currentCameraIndex: undefined,
+
+            pipelineResults: undefined,
 
             calibrationData: {
                 imageCount: 0,
@@ -69,40 +73,36 @@ export const useStateStore = defineStore("state", {
     },
     actions: {
         setSidebarFolded(value: boolean) {
-            this.$patch({sidebarFolded: value});
+            this.sidebarFolded = value;
             localStorage.setItem("sidebarFolded", Boolean(value).toString());
         },
         addLogFromWebsocket(data: WebsocketLogMessage) {
-            this.$patch(state => state.logMessages.push({
+            this.logMessages.push({
                 level: data.logMessage.logLevel,
                 message: data.logMessage.logMessage
-            }));
+            });
         },
         updateNTConnectionStatusFromWebsocket(data: WebsocketNTUpdate) {
-            this.$patch({
-                ntConnectionStatus: {
+            this.ntConnectionStatus = {
                     connected: data.connected,
                     address: data.address,
                     clients: data.clients
-                }
-            });
+                };
         },
         updatePipelineResultsFromWebsocket(data: WebsocketPipelineResultUpdate) {
             if(this.currentCameraIndex === undefined) return;
 
             const pipelineResultData = data[this.currentCameraIndex];
 
-            this.$patch({pipelineResults: pipelineResultData});
+            this.pipelineResults = pipelineResultData;
         },
         updateCalibrationStateValuesFromWebsocket(data: WebsocketCalibrationData) {
-            this.$patch({
-                calibrationData: {
-                    imageCount: data.count,
-                    videoFormatIndex: data.videoModeIndex,
-                    minimumImageCount: data.minCount,
-                    hasEnoughImages: data.hasEnough
-                }
-            });
+            this.calibrationData = {
+                imageCount: data.count,
+                videoFormatIndex: data.videoModeIndex,
+                minimumImageCount: data.minCount,
+                hasEnoughImages: data.hasEnough
+            };
         },
         showSnackbarMessage(data: {
             show: boolean,
@@ -110,14 +110,14 @@ export const useStateStore = defineStore("state", {
             color: string,
             timeout: number
         }) {
-            this.$patch({snackbarData: data});
+            this.snackbarData = data;
 
             if(data.timeout != -1) {
                 setTimeout(this.hideSnackbarMessage, data.timeout);
             }
         },
         hideSnackbarMessage() {
-            this.$patch({snackbarData: {show: false, timeout: 0}});
+            this.snackbarData = {show: false, timeout: 0, color: "error", message: ""};
         }
     }
 });
