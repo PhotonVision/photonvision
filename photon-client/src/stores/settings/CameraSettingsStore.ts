@@ -79,47 +79,12 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
                 pipelineSettings: d.currentPipelineSettings
             }));
         },
-        sendCameraSettings(cameraIndex: number = useStateStore().currentCameraIndex) {
-            const revertSomeDumbShit = (values: VideoFormat[]): WebsocketVideoFormat => {
-              const temp: WebsocketVideoFormat = {};
-              for(let i = 0; i < values.length; i++) {
-                  temp[i] = {
-                      fps: values[i].fps,
-                      height: values[i].resolution.height,
-                      width: values[i].resolution.width,
-                      pixelFormat: values[i].pixelFormat,
-                      index: values[i].index,
-                      diagonalFOV: values[i].diagonalFOV,
-                      horizontalFOV: values[i].horizontalFOV,
-                      verticalFOV: values[i].verticalFOV,
-                      standardDeviation: values[i].standardDeviation,
-                      mean: values[i].mean
-                  };
-              }
-              return temp;
-            };
-
-            const payload: {settings: WebsocketCameraSettingsUpdate, cameraIndex: number} = {
-                cameraIndex: cameraIndex,
+        updateCameraSettings(data: {fov: number}, cameraIndex: number = useStateStore().currentCameraIndex) {
+            const payload = {
                 settings: {
-                    calibrations: this.currentCameraSettings.completeCalibrations.map<WebsocketCompleteCalib>(v => ({
-                        distCoeffs: v.distCoeffs,
-                        height: v.resolution.height,
-                        width: v.resolution.width,
-                        standardDeviation: v.standardDeviation,
-                        perViewErrors: v.perViewErrors,
-                        intrinsics: v.intrinsics
-                    })),
-                    currentPipelineIndex: this.currentCameraSettings.currentPipelineIndex,
-                    currentPipelineSettings: this.currentPipelineSettings,
-                    fov: this.currentCameraSettings.fov.value,
-                    inputStreamPort: this.currentCameraSettings.stream.inputPort,
-                    isFovConfigurable: !this.currentCameraSettings.fov.managedByVendor,
-                    nickname: this.currentCameraSettings.nickname,
-                    outputStreamPort: this.currentCameraSettings.stream.outputPort,
-                    pipelineNicknames: this.pipelineNames,
-                    videoFormatList: revertSomeDumbShit(this.currentCameraSettings.validVideoFormats)
-                }
+                    ...data
+                },
+                index: cameraIndex
             };
             return axios.post("/api/settings/camera", payload);
         },

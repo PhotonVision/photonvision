@@ -3,9 +3,17 @@ import CvSelect from "@/components/common/cv-select.vue";
 import CvNumberInput from "@/components/common/cv-number-input.vue";
 import {useCameraSettingsStore} from "@/stores/settings/CameraSettingsStore";
 import {useStateStore} from "@/stores/StateStore";
+import {ref} from "vue";
+
+const fov = ref(useCameraSettingsStore().cameras[useStateStore().currentCameraIndex].fov.value);
 
 const saveCameraSettings = () => {
-  useCameraSettingsStore().sendCameraSettings()
+  if(fov.value === useCameraSettingsStore().cameras[useStateStore().currentCameraIndex].fov.value) {
+    useStateStore().showSnackbarMessage({message: "No changes to save", color: "info"});
+    return;
+  }
+  
+  useCameraSettingsStore().updateCameraSettings({fov: fov.value})
       .then((response) => {
         useStateStore().showSnackbarMessage({
           color: "success",
@@ -29,6 +37,10 @@ const saveCameraSettings = () => {
             message: "An error occurred while trying to process the request."
           });
         }
+      })
+      .finally(() => {
+        // TODO, does this conflict with WS data exchange
+        useCameraSettingsStore().cameras[useStateStore().currentCameraIndex].fov.value = fov.value;
       });
 };
 </script>
@@ -49,7 +61,7 @@ const saveCameraSettings = () => {
           @input="args => useCameraSettingsStore().setCurrentCameraIndex(args)"
       />
       <cv-number-input
-          v-model="useCameraSettingsStore().cameras[useStateStore().currentCameraIndex].fov.value"
+          v-model="fov"
           :tooltip="!useCameraSettingsStore().cameras[useStateStore().currentCameraIndex].fov.managedByVendor ? 'Field of view (in degrees) of the camera measured across the diagonal of the frame, in a video mode which covers the whole sensor area.' : 'This setting is managed by a vendor'"
           label="Maximum Diagonal FOV"
           :disabled="useCameraSettingsStore().cameras[useStateStore().currentCameraIndex].fov.managedByVendor"
