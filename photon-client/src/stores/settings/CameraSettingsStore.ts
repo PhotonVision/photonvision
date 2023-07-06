@@ -11,6 +11,7 @@ import type {
 } from "@/types/PipelineTypes";
 import type {CalibrationBoardTypes} from "@/types/SettingTypes";
 import type {RobotOffsetType} from "@/types/SettingTypes";
+import axios from "axios";
 import {PlaceholderCameraSettings} from "@/types/SettingTypes";
 import type {PipelineType} from "@/types/PipelineTypes";
 
@@ -135,6 +136,19 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
             useStateStore().websocket?.send(payload, true);
         },
         /**
+         * Change the index of the pipeline of the currently selected camera.
+         *
+         * @param index pipeline index to set.
+         * @param cameraIndex the index of the camera.
+         */
+        changeCurrentPipelineIndex(index: number, cameraIndex: number = useStateStore().currentCameraIndex) {
+            const payload = {
+                currentPipeline: index,
+                cameraIndex: cameraIndex
+            };
+            useStateStore().websocket?.send(payload, true);
+        },
+        /**
          * Change the currently selected pipeline of the provided camera.
          *
          * @param cameraIndex the index of the camera's pipeline to change.
@@ -195,6 +209,28 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
                 cameraIndex: cameraIndex
             };
             useStateStore().websocket?.send(payload, true);
+        },
+        /**
+         * End the 3D calibration process for the provided camera.
+         *
+         * @param cameraIndex the index of the camera
+         * @return HTTP request promise to the backend
+         */
+        endPnPCalibration(cameraIndex: number = useStateStore().currentCameraIndex) {
+           return axios.post("/api/calibration/end", {index: cameraIndex});
+        },
+        /**
+         * Import calibration data that was computed using CalibDB.
+         *
+         * @param data Data from the uploaded CalibDB config
+         * @param cameraIndex the index of the camera
+         */
+        importCalibDB(data: { payload: string, filename: string }, cameraIndex: number = useStateStore().currentCameraIndex) {
+            const payload = {
+                ...data,
+                cameraIndex: cameraIndex
+            };
+            return axios.post("/api/calibration/importFromCalibDB", payload, { headers: { "Content-Type": "text/plain" }});
         },
         /**
          * Take a snapshot for the calibration processes
