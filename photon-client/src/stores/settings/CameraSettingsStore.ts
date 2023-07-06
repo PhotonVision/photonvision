@@ -178,7 +178,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
          *
          * @param cameraIndex the index of the camera to set as the current camera.
          */
-        setCurrentCameraIndex(cameraIndex: number = useStateStore().currentCameraIndex) {
+        setCurrentCameraIndex(cameraIndex: number) {
             const payload = {
                 currentCamera: cameraIndex
             };
