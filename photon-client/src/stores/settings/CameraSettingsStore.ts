@@ -86,7 +86,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
                 },
                 index: cameraIndex
             };
-            return axios.post("/api/settings/camera", payload);
+            return axios.post("/settings/camera", payload);
         },
         /**
          * Create a new Pipeline for the provided camera.
@@ -230,7 +230,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
          * @return HTTP request promise to the backend
          */
         endPnPCalibration(cameraIndex: number = useStateStore().currentCameraIndex) {
-           return axios.post("/api/calibration/end", {index: cameraIndex});
+           return axios.post("/calibration/end", {index: cameraIndex});
         },
         /**
          * Import calibration data that was computed using CalibDB.
@@ -243,7 +243,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
                 ...data,
                 cameraIndex: cameraIndex
             };
-            return axios.post("/api/calibration/importFromCalibDB", payload, { headers: { "Content-Type": "text/plain" }});
+            return axios.post("/calibration/importFromCalibDB", payload, { headers: { "Content-Type": "text/plain" }});
         },
         /**
          * Take a snapshot for the calibration processes
