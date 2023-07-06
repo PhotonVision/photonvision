@@ -1,11 +1,7 @@
 import {defineStore} from "pinia";
 import type {ActivePipelineSettings, CameraSettings} from "@/types/SettingTypes";
 import {useStateStore} from "@/stores/StateStore";
-import type {
-    WebsocketCameraSettingsUpdate,
-    WebsocketCompleteCalib,
-    WebsocketVideoFormat
-} from "@/types/WebsocketDataTypes";
+import type { WebsocketCameraSettingsUpdate } from "@/types/WebsocketDataTypes";
 import type {CameraCalibrationResult, VideoFormat} from "@/types/SettingTypes";
 import type {WebsocketPipelineType} from "@/types/WebsocketDataTypes";
 import type {
