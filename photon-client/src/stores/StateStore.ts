@@ -20,7 +20,6 @@ interface StateStore {
     websocket?: AutoReconnectingWebsocket,
     ntConnectionStatus: NTConnectionStatus,
     showLogModal: boolean,
-    sidebarFolded: boolean,
     logMessages: LogMessage[]
     currentCameraIndex: number,
 
@@ -50,7 +49,6 @@ export const useStateStore = defineStore("state", {
                 connected: false
             },
             showLogModal: false,
-            sidebarFolded: localStorage.getItem("sidebarFolded") === null ? false : localStorage.getItem("sidebarFolded") === "true",
             logMessages: [],
             currentCameraIndex: 0,
 
@@ -72,10 +70,6 @@ export const useStateStore = defineStore("state", {
         };
     },
     actions: {
-        setSidebarFolded(value: boolean) {
-            this.sidebarFolded = value;
-            localStorage.setItem("sidebarFolded", Boolean(value).toString());
-        },
         addLogFromWebsocket(data: WebsocketLogMessage) {
             this.logMessages.push({
                 level: data.logMessage.logLevel,
