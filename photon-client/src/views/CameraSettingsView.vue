@@ -1,9 +1,33 @@
 <script setup lang="ts">
-import SettingsCard from "@/components/CameraSettings/SettingsCard.vue";
+import CamerasCard from "@/components/CameraSettings/CameraSettingsCard.vue";
+import CalibrationCard from "@/components/CameraSettings/CalibrationCard.vue";
+import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 </script>
 
 <template>
   <div>
-    <SettingsCard/>
+    <v-row
+        no-gutters
+        class="pa-3"
+    >
+      <v-col
+          cols="12"
+          md="7"
+      >
+        <CamerasCard/>
+        <CalibrationCard/>
+      </v-col>
+      <v-col
+          class="pl-md-3 pt-3 pt-md-0"
+          cols="12"
+          style="display: flex; align-items: center"
+          md="5"
+      >
+        <photon-camera-stream
+            stream-type="Processed"
+            style="width: 100%"
+        />
+      </v-col>
+    </v-row>
   </div>
 </template>
