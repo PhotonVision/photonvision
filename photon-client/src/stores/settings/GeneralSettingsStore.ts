@@ -26,8 +26,10 @@ export const useSettingsStore = defineStore("settings", {
             hardwarePlatform: undefined
         },
         network: {
-            supported: true,
+            ntServerAddress: "",
+            shouldMange: true, // TODO, is this overwritten by the backend before it matters?
             connectionType: NetworkConnectionType.DHCP,
+            staticIp: "",
             hostname: "photonvision",
             runNTServer: false
         },
@@ -66,23 +68,30 @@ export const useSettingsStore = defineStore("settings", {
             };
         },
         updateGeneralSettingsFromWebsocket(data: WebsocketSettingsUpdate) {
-                this.general = {
-                    // TODO, do this... better
-                    version: data.general.version === "" ? undefined : data.general.version,
-                    hardwareModel: data.general.hardwareModel === "" ? undefined : data.general.hardwareModel,
-                    hardwarePlatform: data.general.hardwarePlatform === "" ? undefined : data.general.hardwarePlatform,
-                    gpuAcceleration: data.general.gpuAcceleration === "" ? undefined : data.general.gpuAcceleration
-                };
+            this.general = {
+                // TODO, do this... better
+                version: data.general.version === "" ? undefined : data.general.version,
+                hardwareModel: data.general.hardwareModel === "" ? undefined : data.general.hardwareModel,
+                hardwarePlatform: data.general.hardwarePlatform === "" ? undefined : data.general.hardwarePlatform,
+                gpuAcceleration: data.general.gpuAcceleration === "" ? undefined : data.general.gpuAcceleration
+            };
                 this.lighting = data.lighting;
-                this.network = {
-                    ntServerAddress: data.networkSettings.ntServerAddress,
-                    connectionType: data.networkSettings.connectionType,
-                    staticIp: data.networkSettings.staticIp,
-                    hostname: data.networkSettings.hostname,
-                    runNTServer: data.networkSettings.runNTServer,
-                    shouldMange: data.networkSettings.shouldManage,
-                    supported: true
-                };
+                this.network = data.networkSettings;
+        },
+        saveGeneralSettings() {
+            const payload: Required<NetworkSettings> = {
+                connectionType: this.network.connectionType,
+                hostname: this.network.hostname,
+                networkManagerIface: this.network.networkManagerIface || "",
+                ntServerAddress: this.network.ntServerAddress,
+                physicalInterface: this.network.physicalInterface || "",
+                runNTServer: this.network.runNTServer,
+                setDHCPcommand: this.network.setDHCPcommand || "",
+                setStaticCommand: this.network.setStaticCommand || "",
+                shouldMange: this.network.shouldMange,
+                staticIp: this.network.staticIp
+            };
+            return axios.post("/settings/general", payload);
         },
         /**
          * Modify the brightness of the LEDs.

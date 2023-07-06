@@ -30,13 +30,16 @@ export enum NetworkConnectionType {
 }
 
 export interface NetworkSettings {
-    ntServerAddress?: string
-    supported: boolean,
+    ntServerAddress: string
     connectionType: NetworkConnectionType,
-    staticIp?: string,
+    staticIp: string,
     hostname: string,
     runNTServer: boolean
-    shouldMange?: boolean
+    shouldMange: boolean,
+    networkManagerIface?: string,
+    physicalInterface?: string,
+    setStaticCommand?: string,
+    setDHCPcommand?: string
 }
 
 export interface LightingSettings {

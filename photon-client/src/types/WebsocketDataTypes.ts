@@ -1,4 +1,4 @@
-import type {GeneralSettings, LightingSettings, MetricData} from "@/types/SettingTypes";
+import type {GeneralSettings, LightingSettings, MetricData, NetworkSettings} from "@/types/SettingTypes";
 import type {
     AprilTagPipelineSettings,
     ColoredShapePipelineSettings,
@@ -14,18 +14,7 @@ export interface WebsocketLogMessage {
 export interface WebsocketSettingsUpdate {
     general: Required<GeneralSettings>,
     lighting: Required<LightingSettings>,
-    networkSettings: {
-        connectionType: number,
-        hostname: string,
-        networkMangerIface?: string,
-        ntServerAddress: string,
-        physicalInterface?: string,
-        runNTServer: boolean,
-        setDHCPcommand?: string,
-        setStaticCommand?: string,
-        shouldManage: boolean,
-        staticIp: string
-    }
+    networkSettings: NetworkSettings
 }
 
 export interface WebsocketCompleteCalib {
