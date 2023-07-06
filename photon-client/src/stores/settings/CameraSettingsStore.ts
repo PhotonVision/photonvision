@@ -12,6 +12,7 @@ import type {
 import type {CalibrationBoardTypes} from "@/types/SettingTypes";
 import type {RobotOffsetType} from "@/types/SettingTypes";
 import {PlaceholderCameraSettings} from "@/types/SettingTypes";
+import type {PipelineType} from "@/types/PipelineTypes";
 
 interface CameraSettingsStore {
     cameras: CameraSettings[]
@@ -24,14 +25,23 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         ]
     }),
     getters: {
-        currentCameraSettings(): CameraSettings | undefined {
-            const currentCameraIndex = useStateStore().currentCameraIndex;
-
-            if(this.cameras.length === 0 || currentCameraIndex === undefined) {
-                return undefined;
-            }
-
-            return this.cameras[currentCameraIndex];
+        currentCameraSettings(): Readonly<CameraSettings> {
+            return this.cameras[useStateStore().currentCameraIndex];
+        },
+        currentPipelineSettings(): Readonly<ActivePipelineSettings> {
+          return this.currentCameraSettings.pipelineSettings;
+        },
+        currentPipelineType(): PipelineType {
+            return this.currentPipelineSettings.pipelineType;
+        },
+        currentVideoFormat(): VideoFormat {
+            return this.currentCameraSettings.validVideoFormats[this.currentPipelineSettings.cameraVideoModeIndex];
+        },
+        cameraNames(): string[] {
+            return this.cameras.map(c => c.nickname);
+        },
+        pipelineNames(): string[] {
+            return this.currentCameraSettings.pipelineNicknames;
         }
     },
     actions: {

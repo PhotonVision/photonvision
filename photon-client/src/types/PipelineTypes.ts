@@ -1,4 +1,4 @@
-enum PipelineType {
+export enum PipelineType {
     Unknown=-1,
     Reflective=2,
     Colored=3,
