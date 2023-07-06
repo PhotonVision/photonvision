@@ -118,7 +118,7 @@ export const useStateStore = defineStore("state", {
             };
 
             if(data.timeout != -1) {
-                setTimeout(this.hideSnackbarMessage, data.timeout);
+                setTimeout(this.hideSnackbarMessage, data.timeout || 2000);
             }
         },
         hideSnackbarMessage() {
