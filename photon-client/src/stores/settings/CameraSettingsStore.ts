@@ -104,7 +104,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
             this.cameras[cameraIndex].pipelineSettings = {
                 ...this.cameras[cameraIndex].pipelineSettings,
                 ...settings
-            });
+            };
             useStateStore().websocket?.send(payload, true);
         },
         /**
@@ -172,12 +172,12 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
             useStateStore().websocket?.send(payload, true);
         },
         /**
-         * Start the 3D calibration process for the provided camera. This method should be called along with an update to the store with the current pipeline index set to {@link WebsocketPipelineType.Calib3d}. Note that the backend already handles updating the pipeline index prop.
+         * Start the 3D calibration process for the provided camera.
          *
          * @param calibrationInitData initialization calibration data.
          * @param cameraIndex the index of the camera.
          */
-        startPnpCalibration(calibrationInitData: {
+        startPnPCalibration(calibrationInitData: {
             squareSizeIn: number,
             patternWidth: number,
             patternHeight: number,
