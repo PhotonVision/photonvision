@@ -101,8 +101,8 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
                     cameraIndex: cameraIndex
                 }
             };
-            this.$patch(store => store.cameras[cameraIndex].pipelineSettings = {
-                ...store.cameras[cameraIndex].pipelineSettings,
+            this.cameras[cameraIndex].pipelineSettings = {
+                ...this.cameras[cameraIndex].pipelineSettings,
                 ...settings
             });
             useStateStore().websocket?.send(payload, true);
@@ -118,7 +118,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
                 changePipelineName: newName,
                 cameraIndex: cameraIndex
             };
-            this.$patch(store => store.cameras[cameraIndex].pipelineSettings.pipelineNickname = newName);
+            this.cameras[cameraIndex].pipelineSettings.pipelineNickname = newName;
             useStateStore().websocket?.send(payload, true);
         },
         /**
@@ -168,7 +168,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
             const payload = {
                 currentCamera: cameraIndex
             };
-            useStateStore().$patch({currentCameraIndex: cameraIndex});
+            useStateStore().currentCameraIndex = cameraIndex;
             useStateStore().websocket?.send(payload, true);
         },
         /**
