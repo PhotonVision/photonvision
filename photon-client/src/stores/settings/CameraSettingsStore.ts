@@ -1,5 +1,5 @@
 import {defineStore} from "pinia";
-import type {CameraSettings} from "@/types/SettingTypes";
+import type {ActivePipelineSettings, CameraSettings} from "@/types/SettingTypes";
 import {useStateStore} from "@/stores/StateStore";
 import type {WebsocketCameraSettingsUpdate} from "@/types/WebsocketDataTypes";
 import type {CameraCalibrationResult, VideoFormat} from "@/types/SettingTypes";
@@ -11,6 +11,7 @@ import type {
 } from "@/types/PipelineTypes";
 import type {CalibrationBoardTypes} from "@/types/SettingTypes";
 import type {RobotOffsetType} from "@/types/SettingTypes";
+import {PlaceholderCameraSettings} from "@/types/SettingTypes";
 
 interface CameraSettingsStore {
     cameras: CameraSettings[]
@@ -18,7 +19,9 @@ interface CameraSettingsStore {
 
 export const useCameraSettingsStore = defineStore("cameraSettings", {
     state: (): CameraSettingsStore => ({
-        cameras: []
+        cameras: [
+            PlaceholderCameraSettings
+        ]
     }),
     getters: {
         currentCameraSettings(): CameraSettings | undefined {

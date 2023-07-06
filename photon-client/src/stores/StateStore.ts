@@ -22,7 +22,7 @@ interface StateStore {
     showLogModal: boolean,
     sidebarFolded: boolean,
     logMessages: LogMessage[]
-    currentCameraIndex?: number,
+    currentCameraIndex: number,
 
     pipelineResults?: PipelineResult,
 
@@ -52,7 +52,7 @@ export const useStateStore = defineStore("state", {
             showLogModal: false,
             sidebarFolded: localStorage.getItem("sidebarFolded") === null ? false : localStorage.getItem("sidebarFolded") === "true",
             logMessages: [],
-            currentCameraIndex: undefined,
+            currentCameraIndex: 0,
 
             pipelineResults: undefined,
 

@@ -3,6 +3,7 @@ import type {
     ColoredShapePipelineSettings,
     ReflectivePipelineSettings
 } from "@/types/PipelineTypes";
+import {DefaultAprilTagPipelineSettings} from "@/types/PipelineTypes";
 
 export interface GeneralSettings {
     version?: string
@@ -80,6 +81,8 @@ export interface CameraCalibrationResult {
     intrinsics: number[],
 }
 
+export type ActivePipelineSettings = ReflectivePipelineSettings | ColoredShapePipelineSettings | AprilTagPipelineSettings
+
 export interface CameraSettings {
     nickname: string
 
@@ -96,8 +99,40 @@ export interface CameraSettings {
     completeCalibrations: CameraCalibrationResult[]
 
     currentPipelineIndex: number
-    pipelineSettings: ReflectivePipelineSettings | ColoredShapePipelineSettings | AprilTagPipelineSettings
+    pipelineSettings: ActivePipelineSettings
 }
+
+export const PlaceholderCameraSettings: CameraSettings = {
+    nickname: "Placeholder Camera",
+    fov: {
+        value: 70,
+        managedByVendor: true
+    },
+    stream: {
+        inputPort: 0,
+        outputPort: 0
+    },
+    validVideoFormats: [
+        {
+            resolution: {height: 1920, width: 1080},
+            fps: 60,
+            pixelFormat: "RGB"
+        },
+        {
+            resolution: {height: 1280, width: 720},
+            fps: 60,
+            pixelFormat: "RGB"
+        },
+        {
+            resolution: {height: 640, width: 480},
+            fps: 30,
+            pixelFormat: "RGB"
+        }
+    ],
+    completeCalibrations: [],
+    currentPipelineIndex: 0,
+    pipelineSettings: DefaultAprilTagPipelineSettings
+};
 
 export enum CalibrationBoardTypes {
     Chessboard=0,
