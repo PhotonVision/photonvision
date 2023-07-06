@@ -8,7 +8,7 @@ const props = withDefaults(defineProps<{
   selectCols?: number,
   value: number,
   disabled?: boolean,
-  items: string[]
+  items: string[] | number[]
 }>(), {
   selectCols: 9,
   disabled: false
