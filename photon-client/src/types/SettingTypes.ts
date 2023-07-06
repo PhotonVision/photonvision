@@ -114,17 +114,17 @@ export const PlaceholderCameraSettings: CameraSettings = {
     },
     validVideoFormats: [
         {
-            resolution: {height: 1920, width: 1080},
+            resolution: {width: 1920, height: 1080},
             fps: 60,
             pixelFormat: "RGB"
         },
         {
-            resolution: {height: 1280, width: 720},
+            resolution: {width: 1280, height: 720},
             fps: 60,
             pixelFormat: "RGB"
         },
         {
-            resolution: {height: 640, width: 480},
+            resolution: {width: 640, height: 480},
             fps: 30,
             pixelFormat: "RGB"
         }
