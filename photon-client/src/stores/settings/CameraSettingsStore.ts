@@ -72,7 +72,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
          * @param pipelineType the type of the new pipeline. Cannot be {@link WebsocketPipelineType.Calib3d} or {@link WebsocketPipelineType.DriverMode}.
          * @param cameraIndex the index of the camera
          */
-        createNewPipeline(newPipelineName: string, pipelineType: Exclude<WebsocketPipelineType, WebsocketPipelineType.Calib3d | WebsocketPipelineType.DriverMode>, cameraIndex: number) {
+        createNewPipeline(newPipelineName: string, pipelineType: Exclude<WebsocketPipelineType, WebsocketPipelineType.Calib3d | WebsocketPipelineType.DriverMode>, cameraIndex: number = useStateStore().currentCameraIndex) {
             const payload = {
                 addNewPipeline: [newPipelineName, pipelineType],
                 cameraIndex: cameraIndex
@@ -85,7 +85,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
          * @param settings settings to modify. The type of the settings should match the currently selected pipeline type.
          * @param cameraIndex the index of the camera
          */
-        changeCurrentPipelineSetting(settings: ConfigurableReflectivePipelineSettings | ConfigurableColoredShapePipelineSettings | ConfigurableAprilTagPipelineSettings, cameraIndex: number) {
+        changeCurrentPipelineSetting(settings: ConfigurableReflectivePipelineSettings | ConfigurableColoredShapePipelineSettings | ConfigurableAprilTagPipelineSettings, cameraIndex: number = useStateStore().currentCameraIndex) {
             const payload = {
                 changePipelineSetting: {
                     ...settings,
@@ -104,7 +104,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
          * @param newName the new nickname for the camera.
          * @param cameraIndex the index of the camera
          */
-        changeCurrentPipelineNickname(newName: string, cameraIndex: number) {
+        changeCurrentPipelineNickname(newName: string, cameraIndex: number = useStateStore().currentCameraIndex) {
             const payload = {
                 changePipelineName: newName,
                 cameraIndex: cameraIndex
@@ -118,7 +118,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
          * @param type the pipeline type to set.  Cannot be {@link WebsocketPipelineType.Calib3d} or {@link WebsocketPipelineType.DriverMode}.
          * @param cameraIndex the index of the camera.
          */
-        changeCurrentPipelineType(type: Exclude<WebsocketPipelineType, WebsocketPipelineType.Calib3d | WebsocketPipelineType.DriverMode>, cameraIndex: number) {
+        changeCurrentPipelineType(type: Exclude<WebsocketPipelineType, WebsocketPipelineType.Calib3d | WebsocketPipelineType.DriverMode>, cameraIndex: number = useStateStore().currentCameraIndex) {
             const payload = {
                 pipelineType: type,
                 cameraIndex: cameraIndex
@@ -130,7 +130,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
          *
          * @param cameraIndex the index of the camera's pipeline to change.
          */
-        deleteCurrentPipeline(cameraIndex: number) {
+        deleteCurrentPipeline(cameraIndex: number = useStateStore().currentCameraIndex) {
             const payload = {
                 deleteCurrentPipeline: {},
                 cameraIndex: cameraIndex
@@ -143,7 +143,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
          * @param pipelineIndex index of the pipeline to duplicate.
          * @param cameraIndex the index of the camera.
          */
-        duplicatePipeline(pipelineIndex: number, cameraIndex: number) {
+        duplicatePipeline(pipelineIndex: number, cameraIndex: number = useStateStore().currentCameraIndex) {
             const payload = {
                 duplicatePipeline: pipelineIndex,
                 cameraIndex: cameraIndex
@@ -155,7 +155,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
          *
          * @param cameraIndex the index of the camera to set as the current camera.
          */
-        setCurrentCameraIndex(cameraIndex: number) {
+        setCurrentCameraIndex(cameraIndex: number = useStateStore().currentCameraIndex) {
             const payload = {
                 currentCamera: cameraIndex
             };
@@ -173,7 +173,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
             patternWidth: number,
             patternHeight: number,
             boardType: CalibrationBoardTypes
-        }, cameraIndex: number) {
+        }, cameraIndex: number = useStateStore().currentCameraIndex) {
             const stateCalibData = useStateStore().calibrationData;
             const payload = {
                 startPnpCalibration: {
@@ -193,7 +193,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
          * @param takeSnapshot whether or not to take a snapshot. Defaults to true
          * @param cameraIndex the index of the camera that is currently in the calibration process
          */
-        takeCalibrationSnapshot(takeSnapshot = true, cameraIndex: number) {
+        takeCalibrationSnapshot(takeSnapshot = true, cameraIndex: number = useStateStore().currentCameraIndex) {
             const payload = {
                 takeCalibrationSnapshot: takeSnapshot,
                 cameraIndex: cameraIndex
@@ -206,7 +206,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
          * @param type Offset type to take.
          * @param cameraIndex the index of the camera.
          */
-        takeRobotOffsetPoint(type: RobotOffsetType, cameraIndex: number) {
+        takeRobotOffsetPoint(type: RobotOffsetType, cameraIndex: number = useStateStore().currentCameraIndex) {
             const payload = {
                 robotOffsetPoint: type,
                 cameraIndex: cameraIndex
