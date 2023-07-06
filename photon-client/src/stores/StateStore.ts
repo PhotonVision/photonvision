@@ -105,12 +105,17 @@ export const useStateStore = defineStore("state", {
             };
         },
         showSnackbarMessage(data: {
-            show: boolean,
+            show?: boolean,
             message: string,
             color: string,
-            timeout: number
+            timeout?: number
         }) {
-            this.snackbarData = data;
+            this.snackbarData = {
+                show: data.show || true,
+                message: data.message,
+                color: data.color,
+                timeout: data.timeout || 2000
+            };
 
             if(data.timeout != -1) {
                 setTimeout(this.hideSnackbarMessage, data.timeout);
