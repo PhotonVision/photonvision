@@ -27,15 +27,33 @@ export interface WebsocketSettingsUpdate {
         staticIp: string
     }
 }
-export interface WebsocketCameraSettingsUpdate {
-    calibrations: {
-        distCoeffs: number[],
+
+export interface WebsocketCompleteCalib {
+    distCoeffs: number[],
+    height: number,
+    width: number,
+    standardDeviation: number,
+    perViewErrors: number[],
+    intrinsics: number[]
+}
+
+export interface WebsocketVideoFormat {
+    [key: number]: {
+        fps: number,
         height: number,
         width: number,
-        standardDeviation: number,
-        perViewErrors: number[],
-        intrinsics: number[],
-    }[],
+        pixelFormat: string,
+        index?: number,
+        diagonalFOV?: number,
+        horizontalFOV?: number,
+        verticalFOV?: number,
+        standardDeviation?: number,
+        mean?: number
+    }
+}
+
+export interface WebsocketCameraSettingsUpdate {
+    calibrations: WebsocketCompleteCalib[],
     currentPipelineIndex: number,
     currentPipelineSettings: ReflectivePipelineSettings | ColoredShapePipelineSettings | AprilTagPipelineSettings,
     fov: number,
@@ -44,20 +62,7 @@ export interface WebsocketCameraSettingsUpdate {
     nickname: string,
     outputStreamPort: number,
     pipelineNicknames: string[],
-    videoFormatList: {
-        [key: number]: {
-            fps: number,
-            height: number,
-            width: number,
-            pixelFormat: string,
-            index?: number,
-            diagonalFOV?: number,
-            horizontalFOV?: number,
-            verticalFOV?: number,
-            standardDeviation?: number,
-            mean?: number
-        }
-    }
+    videoFormatList: WebsocketVideoFormat
 }
 export interface WebsocketNTUpdate {
     connected: boolean,

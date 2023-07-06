@@ -1,7 +1,11 @@
 import {defineStore} from "pinia";
 import type {ActivePipelineSettings, CameraSettings} from "@/types/SettingTypes";
 import {useStateStore} from "@/stores/StateStore";
-import type {WebsocketCameraSettingsUpdate} from "@/types/WebsocketDataTypes";
+import type {
+    WebsocketCameraSettingsUpdate,
+    WebsocketCompleteCalib,
+    WebsocketVideoFormat
+} from "@/types/WebsocketDataTypes";
 import type {CameraCalibrationResult, VideoFormat} from "@/types/SettingTypes";
 import type {WebsocketPipelineType} from "@/types/WebsocketDataTypes";
 import type {
@@ -74,6 +78,50 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
                 currentPipelineIndex: d.currentPipelineIndex,
                 pipelineSettings: d.currentPipelineSettings
             }));
+        },
+        sendCameraSettings(cameraIndex: number = useStateStore().currentCameraIndex) {
+            const revertSomeDumbShit = (values: VideoFormat[]): WebsocketVideoFormat => {
+              const temp: WebsocketVideoFormat = {};
+              for(let i = 0; i < values.length; i++) {
+                  temp[i] = {
+                      fps: values[i].fps,
+                      height: values[i].resolution.height,
+                      width: values[i].resolution.width,
+                      pixelFormat: values[i].pixelFormat,
+                      index: values[i].index,
+                      diagonalFOV: values[i].diagonalFOV,
+                      horizontalFOV: values[i].horizontalFOV,
+                      verticalFOV: values[i].verticalFOV,
+                      standardDeviation: values[i].standardDeviation,
+                      mean: values[i].mean
+                  };
+              }
+              return temp;
+            };
+
+            const payload: {settings: WebsocketCameraSettingsUpdate, cameraIndex: number} = {
+                cameraIndex: cameraIndex,
+                settings: {
+                    calibrations: this.currentCameraSettings.completeCalibrations.map<WebsocketCompleteCalib>(v => ({
+                        distCoeffs: v.distCoeffs,
+                        height: v.resolution.height,
+                        width: v.resolution.width,
+                        standardDeviation: v.standardDeviation,
+                        perViewErrors: v.perViewErrors,
+                        intrinsics: v.intrinsics
+                    })),
+                    currentPipelineIndex: this.currentCameraSettings.currentPipelineIndex,
+                    currentPipelineSettings: this.currentPipelineSettings,
+                    fov: this.currentCameraSettings.fov.value,
+                    inputStreamPort: this.currentCameraSettings.stream.inputPort,
+                    isFovConfigurable: !this.currentCameraSettings.fov.managedByVendor,
+                    nickname: this.currentCameraSettings.nickname,
+                    outputStreamPort: this.currentCameraSettings.stream.outputPort,
+                    pipelineNicknames: this.pipelineNames,
+                    videoFormatList: revertSomeDumbShit(this.currentCameraSettings.validVideoFormats)
+                }
+            };
+            return axios.post("/api/settings/camera", payload);
         },
         /**
          * Create a new Pipeline for the provided camera.
