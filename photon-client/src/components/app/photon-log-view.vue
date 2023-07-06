@@ -76,6 +76,7 @@ document.addEventListener("keydown", e => {
               style="color: black; text-decoration: none; display: none"
               :href="`http://${backendAddress}/api/utils/photonvision-journalctl.txt`"
               download="photonvision-journalctl.txt"
+              target="_blank"
           />
         </v-btn>
       </v-card-title>
