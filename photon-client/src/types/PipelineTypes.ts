@@ -74,7 +74,7 @@ export const DefaultPipelineSettings: PipelineSettings = {
     cornerDetectionSideCount: 4,
     contourRatio: {"first": 0, "second": 20},
     contourTargetOffsetPointEdge: 0,
-    pipelineNickname: "New Pipeline",
+    pipelineNickname: "Placeholder Pipeline",
     inputImageRotationMode: 0,
     contourArea: {"first": 0, "second": 100},
     solvePNPEnabled: false,

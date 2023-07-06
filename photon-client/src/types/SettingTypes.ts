@@ -98,7 +98,8 @@ export interface CameraSettings {
     validVideoFormats: VideoFormat[]
     completeCalibrations: CameraCalibrationResult[]
 
-    currentPipelineIndex: number
+    currentPipelineIndex: number,
+    pipelineNicknames: string[],
     pipelineSettings: ActivePipelineSettings
 }
 
@@ -130,6 +131,7 @@ export const PlaceholderCameraSettings: CameraSettings = {
         }
     ],
     completeCalibrations: [],
+    pipelineNicknames: ["Placeholder Pipeline"],
     currentPipelineIndex: 0,
     pipelineSettings: DefaultAprilTagPipelineSettings
 };

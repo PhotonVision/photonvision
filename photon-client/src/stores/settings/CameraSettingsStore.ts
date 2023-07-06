@@ -36,34 +36,33 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     },
     actions: {
         updateCameraSettingsFromWebsocket(data: WebsocketCameraSettingsUpdate[]) {
-            this.$patch({
-                cameras: data.map<CameraSettings>((d) => ({
-                    nickname: d.nickname,
-                    fov: {
-                        value: d.fov,
-                        managedByVendor: !d.isFovConfigurable
+            this.cameras = data.map<CameraSettings>((d) => ({
+                nickname: d.nickname,
+                fov: {
+                    value: d.fov,
+                    managedByVendor: !d.isFovConfigurable
+                },
+                stream: {
+                    inputPort: d.inputStreamPort,
+                    outputPort: d.outputStreamPort
+                },
+                validVideoFormats: Object.keys(d.videoFormatList)
+                    .sort((a, b) => parseInt(a) - parseInt(b)) // TODO, does the backend already return this sorted
+                    .map<VideoFormat>((k, i) => ({...d.videoFormatList[k], index: i})),
+                completeCalibrations: d.calibrations.map<CameraCalibrationResult>(calib => ({
+                    resolution: {
+                        height: calib.height,
+                        width: calib.width
                     },
-                    stream: {
-                        inputPort: d.inputStreamPort,
-                        outputPort: d.outputStreamPort
-                    },
-                    validVideoFormats: Object.keys(d.videoFormatList)
-                        .sort((a, b) => parseInt(a) - parseInt(b)) // TODO, does the backend already return this sorted
-                        .map<VideoFormat>((k, i) => ({...d.videoFormatList[k], index: i})),
-                    completeCalibrations: d.calibrations.map<CameraCalibrationResult>(calib => ({
-                        resolution: {
-                            height: calib.height,
-                            width: calib.width
-                        },
-                        distCoeffs: calib.distCoeffs,
-                        standardDeviation: calib.standardDeviation,
-                        perViewErrors: calib.perViewErrors,
-                        intrinsics: calib.intrinsics
-                    })),
-                    currentPipelineIndex: d.currentPipelineIndex,
-                    pipelineSettings: d.currentPipelineSettings
-                }))
-            });
+                    distCoeffs: calib.distCoeffs,
+                    standardDeviation: calib.standardDeviation,
+                    perViewErrors: calib.perViewErrors,
+                    intrinsics: calib.intrinsics
+                })),
+                pipelineNicknames: d.pipelineNicknames,
+                currentPipelineIndex: d.currentPipelineIndex,
+                pipelineSettings: d.currentPipelineSettings
+            }));
         },
         /**
          * Create a new Pipeline for the provided camera.
