@@ -80,6 +80,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
             }));
         },
         updateCameraSettings(data: {fov: number}, cameraIndex: number = useStateStore().currentCameraIndex) {
+            // The camera settings endpoint doesn't actually require all data, instead, it needs key data such as the FOV
             const payload = {
                 settings: {
                     ...data
