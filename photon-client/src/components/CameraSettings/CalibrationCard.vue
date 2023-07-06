@@ -173,7 +173,7 @@ const endCalibration = () => {
         color="primary"
         dark
     >
-      <v-card-title>Calibration</v-card-title>
+      <v-card-title>Camera Calibration</v-card-title>
       <div class="ml-5">
         <v-row>
           <v-col
