@@ -8,11 +8,6 @@ import {ref} from "vue";
 const fov = ref(useCameraSettingsStore().cameras[useStateStore().currentCameraIndex].fov.value);
 
 const saveCameraSettings = () => {
-  if(fov.value === useCameraSettingsStore().cameras[useStateStore().currentCameraIndex].fov.value) {
-    useStateStore().showSnackbarMessage({message: "No changes to save", color: "info"});
-    return;
-  }
-  
   useCameraSettingsStore().updateCameraSettings({fov: fov.value})
       .then((response) => {
         useStateStore().showSnackbarMessage({
@@ -73,11 +68,12 @@ const saveCameraSettings = () => {
           small
           color="secondary"
           @click="saveCameraSettings"
+          :disabled="fov === useCameraSettingsStore().cameras[useStateStore().currentCameraIndex].fov.value"
       >
         <v-icon left>
           mdi-content-save
         </v-icon>
-        Save Camera Settings
+        Save Changes
       </v-btn>
     </div>
   </v-card>
