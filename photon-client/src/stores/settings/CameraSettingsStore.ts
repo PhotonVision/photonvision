@@ -38,11 +38,17 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         currentVideoFormat(): VideoFormat {
             return this.currentCameraSettings.validVideoFormats[this.currentPipelineSettings.cameraVideoModeIndex];
         },
+        isCurrentVideoFormatCalibrated(): boolean {
+            return this.currentCameraSettings.completeCalibrations.some(v => v.resolution == this.currentVideoFormat.resolution);
+        },
         cameraNames(): string[] {
             return this.cameras.map(c => c.nickname);
         },
         pipelineNames(): string[] {
             return this.currentCameraSettings.pipelineNicknames;
+        },
+        isDriverMode(): boolean {
+            return this.currentCameraSettings.currentPipelineIndex === -1;
         }
     },
     actions: {
