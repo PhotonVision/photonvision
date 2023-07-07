@@ -156,6 +156,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
                 currentPipeline: index,
                 cameraIndex: cameraIndex
             };
+            this.cameras[cameraIndex].currentPipelineIndex = index;
             useStateStore().websocket?.send(payload, true);
         },
         /**
