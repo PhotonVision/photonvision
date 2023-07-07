@@ -22,7 +22,7 @@ const localValue = computed({
 });
 
 // Computed in case items changes
-const indexList = computed(() => props.items.map((v: string, i: number) => ({name: v, index: i})));
+const indexList = computed(() => props.items.map((v, i) => ({name: v, index: i})));
 </script>
 
 <template>
