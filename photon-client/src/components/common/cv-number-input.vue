@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
-import { computed, defineEmits, defineProps } from "vue";
+import { computed } from "vue";
 
 const props = withDefaults(defineProps<{
   label?: string,

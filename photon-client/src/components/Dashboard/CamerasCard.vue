@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, defineProps} from "vue";
+import {computed} from "vue";
 import {useCameraSettingsStore} from "@/stores/settings/CameraSettingsStore";
 import {useStateStore} from "@/stores/StateStore";
 import {useSettingsStore} from "@/stores/settings/GeneralSettingsStore";

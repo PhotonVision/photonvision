@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, defineEmits, defineProps} from "vue";
+import {computed} from "vue";
 import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
 
 interface SelectItem {

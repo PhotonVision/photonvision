@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, defineProps, inject} from "vue";
+import {computed, inject} from "vue";
 import {useCameraSettingsStore} from "@/stores/settings/CameraSettingsStore";
 import {useStateStore} from "@/stores/StateStore";
 import loadingImage from "@/assets/images/loading.svg";
