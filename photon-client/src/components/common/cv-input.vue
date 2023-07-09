@@ -8,6 +8,7 @@ const props = withDefaults(defineProps<{
   value: string,
   disabled?: boolean,
   errorMessage?: string,
+  placeholder?: string,
   labelCols?: number,
   inputCols?: number,
   rules?: ((v: string) => boolean | string)[]
@@ -58,6 +59,7 @@ const handleKeydown = ({key}) => {
           dark
           dense
           color="accent"
+          :placeholder="placeholder"
           :disabled="disabled"
           :error-messages="errorMessage"
           :rules="rules"
