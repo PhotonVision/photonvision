@@ -220,6 +220,13 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
             useStateStore().currentCameraIndex = cameraIndex;
             useStateStore().websocket?.send(payload, true);
         },
+        changeCameraNickname(newName: string, cameraIndex: number = useStateStore().currentCameraIndex) {
+            const payload = {
+                name: newName,
+                cameraIndex: cameraIndex
+            };
+            return axios.post("/settings/camera/setNickname", payload);
+        },
         /**
          * Start the 3D calibration process for the provided camera.
          *
