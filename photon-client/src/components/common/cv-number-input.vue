@@ -6,7 +6,7 @@ const props = withDefaults(defineProps<{
   label?: string,
   tooltip?: string,
   // TODO fully update v-model usage in custom components on Vue3 update
-  modelValue: number,
+  value: number,
   disabled?: boolean,
   labelCols?: number,
   rules?: ((v: number) => boolean | string)[],
@@ -20,7 +20,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits(["input"]);
 
 const localValue = computed({
-  get: () => props.modelValue,
+  get: () => props.value,
   set: v => emit("input", v)
 });
 </script>

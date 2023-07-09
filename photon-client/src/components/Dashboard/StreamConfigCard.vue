@@ -4,14 +4,14 @@ import {useCameraSettingsStore} from "@/stores/settings/CameraSettingsStore";
 
 const props = defineProps<{
   // TODO fully update v-model usage in custom components on Vue3 update
-  modelValue: number[]
+  value: number[]
 }>();
 
 const emit = defineEmits(["input"]);
 
 
 const localValue = computed({
-  get: () => props.modelValue,
+  get: () => props.value,
   set: v => emit("input", v)
 });
 

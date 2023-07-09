@@ -8,7 +8,7 @@ import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 
 defineProps<{
   // TODO fully update v-model usage in custom components on Vue3 update
-  modelValue: number[]
+  value: number[]
 }>();
 
 const driverMode = computed<boolean>({
@@ -76,7 +76,7 @@ const fpsTooLow = computed<boolean>(() => {
     <v-row class="pl-3 pr-3 pt-3 pb-3" style="flex-wrap: nowrap; justify-content: center">
       <v-col
         v-for="(viewIndex, index) in [0, 1]"
-        v-show="modelValue.includes(viewIndex)"
+        v-show="value.includes(viewIndex)"
         :key="index"
         style="max-width: 500px; display: flex; align-items: center"
       >
