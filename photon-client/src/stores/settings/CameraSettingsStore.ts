@@ -43,11 +43,11 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         currentWebsocketPipelineType(): WebsocketPipelineType {
             switch (this.currentPipelineType) {
                 case PipelineType.Reflective:
-                    return WebsocketPipelineType.Reflective
+                    return WebsocketPipelineType.Reflective;
                 case PipelineType.Colored:
-                    return WebsocketPipelineType.Colored
+                    return WebsocketPipelineType.Colored;
                 case PipelineType.AprilTag:
-                    return WebsocketPipelineType.AprilTag
+                    return WebsocketPipelineType.AprilTag;
             }
         },
         currentVideoFormat(): VideoFormat {
