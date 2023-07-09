@@ -5,7 +5,7 @@ import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
 const props = withDefaults(defineProps<{
   label?: string,
   tooltip?: string,
-  value: string,
+  modelValue: string,
   disabled?: boolean,
   errorMessage?: string,
   placeholder?: string,
@@ -20,7 +20,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits(["input", "onEnter", "onEscape"]);
 
 const localValue = computed({
-  get: () => props.value,
+  get: () => props.modelValue,
   set: v => emit("input", v)
 });
 

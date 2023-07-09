@@ -5,7 +5,7 @@ import { computed, defineEmits, defineProps } from "vue";
 const props = withDefaults(defineProps<{
   label?: string,
   tooltip?: string,
-  value: boolean,
+  modelValue: boolean,
   disabled?: boolean,
   labelCols?: number,
 }>(), {
@@ -16,7 +16,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits(["input"]);
 
 const localValue = computed({
-  get: () => props.value,
+  get: () => props.modelValue,
   set: v => emit("input", v)
 });
 </script>

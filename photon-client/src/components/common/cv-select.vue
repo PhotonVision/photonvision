@@ -11,7 +11,7 @@ const props = withDefaults(defineProps<{
   label?: string,
   tooltip?: string,
   selectCols?: number,
-  value: number,
+  modelValue: number,
   disabled?: boolean,
   items: string[] | number[] | SelectItem[]
 }>(), {
@@ -22,7 +22,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits(["input"]);
 
 const localValue = computed({
-  get: () => props.value,
+  get: () => props.modelValue,
   set: v => emit("input", v)
 });
 

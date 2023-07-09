@@ -3,14 +3,14 @@ import {computed, defineEmits, defineProps} from "vue";
 import {useCameraSettingsStore} from "@/stores/settings/CameraSettingsStore";
 
 const props = defineProps<{
-  value: number[]
+  modelValue: number[]
 }>();
 
 const emit = defineEmits(["input"]);
 
 
 const localValue = computed({
-  get: () => props.value,
+  get: () => props.modelValue,
   set: v => emit("input", v)
 });
 

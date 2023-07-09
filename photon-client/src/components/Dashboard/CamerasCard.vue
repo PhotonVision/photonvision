@@ -7,7 +7,7 @@ import {PipelineType} from "@/types/PipelineTypes";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 
 defineProps<{
-  value: number[]
+  modelValue: number[]
 }>();
 
 const driverMode = computed<boolean>({
@@ -75,7 +75,7 @@ const fpsTooLow = computed<boolean>(() => {
     <v-row class="pl-3 pr-3 pt-3 pb-3" style="flex-wrap: nowrap; justify-content: center">
       <v-col
         v-for="(viewIndex, index) in [0, 1]"
-        v-show="value.includes(viewIndex)"
+        v-show="modelValue.includes(viewIndex)"
         :key="index"
         style="max-width: 500px; display: flex; align-items: center"
       >
