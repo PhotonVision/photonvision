@@ -16,12 +16,27 @@ const props = withDefaults(defineProps<{
   inputCols: 8
 });
 
-const emit = defineEmits(["input", "onEnter"]);
+const emit = defineEmits(["input", "onEnter", "onEscape"]);
 
 const localValue = computed({
   get: () => props.value,
   set: v => emit("input", v)
 });
+
+
+const handleKeydown = ({key}) => {
+  switch (key) {
+    case "Enter":
+      if(!(props.rules || []).some(v => v(localValue.value) === false || typeof v(localValue.value) === "string")) {
+        emit("onEnter", localValue.value);
+      }
+      break;
+    case "Escape":
+      emit("onEscape");
+      break;
+  }
+};
+
 </script>
 
 <template>
@@ -47,10 +62,7 @@ const localValue = computed({
           :error-messages="errorMessage"
           :rules="rules"
           class="mt-1 pt-2"
-          @keydown="e => e.key === 'Enter'
-            && !(rules || []).some(v => v(localValue) === false
-               || typeof v(localValue) === 'string')
-            && $emit('onEnter', localValue)"
+          @keydown="handleKeydown"
         />
       </v-col>
     </v-row>
