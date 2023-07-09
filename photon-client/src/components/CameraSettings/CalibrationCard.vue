@@ -511,20 +511,22 @@ const endCalibration = () => {
 }
 </style>
 
-<style lang="css">
-::-webkit-scrollbar {
-  width: 0;
-  height: 0.55em;
-  border-radius: 5px;
-}
+<style scoped lang="scss">
+.v-data-table {
+  ::-webkit-scrollbar {
+    width: 0;
+    height: 0.55em;
+    border-radius: 5px;
+  }
 
-::-webkit-scrollbar-track {
-  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-  border-radius: 10px;
-}
+  ::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+  }
 
-::-webkit-scrollbar-thumb {
-  background-color: #ffd843;
-  border-radius: 10px;
+  ::-webkit-scrollbar-thumb {
+    background-color: #ffd843;
+    border-radius: 10px;
+  }
 }
 </style>
