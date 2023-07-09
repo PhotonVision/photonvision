@@ -3,7 +3,7 @@ import type {ActivePipelineSettings, CameraSettings} from "@/types/SettingTypes"
 import {useStateStore} from "@/stores/StateStore";
 import type { WebsocketCameraSettingsUpdate } from "@/types/WebsocketDataTypes";
 import type {CameraCalibrationResult, VideoFormat} from "@/types/SettingTypes";
-import type {WebsocketPipelineType} from "@/types/WebsocketDataTypes";
+import {WebsocketPipelineType} from "@/types/WebsocketDataTypes";
 import type {
     ConfigurableAprilTagPipelineSettings,
     ConfigurableColoredShapePipelineSettings,
@@ -48,7 +48,10 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
             return this.currentCameraSettings.pipelineNicknames;
         },
         isDriverMode(): boolean {
-            return this.currentCameraSettings.currentPipelineIndex === -1;
+            return this.currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.DriverMode;
+        },
+        isCalibrationMode(): boolean {
+            return this.currentCameraSettings.currentPipelineIndex == WebsocketPipelineType.Calib3d;
         }
     },
     actions: {
