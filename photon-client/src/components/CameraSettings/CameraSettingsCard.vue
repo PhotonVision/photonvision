@@ -52,6 +52,7 @@ const saveCameraSettings = () => {
           v-model="useStateStore().currentCameraIndex"
           label="Camera"
           :items="useCameraSettingsStore().cameraNames"
+          :disabled="useCameraSettingsStore().cameraNames.length <= 1"
           :select-cols="8"
           @input="args => useCameraSettingsStore().setCurrentCameraIndex(args)"
       />
