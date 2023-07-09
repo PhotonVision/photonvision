@@ -4,6 +4,7 @@
   "compilerOptions": {
     "moduleResolution": "node",
     "noImplicitAny": false,
+    "strict": true,
     "removeComments": true,
     "sourceMap": true,
     "types": ["node"],
