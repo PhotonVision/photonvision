@@ -1,5 +1,4 @@
 export enum PipelineType {
-    Unknown=-1,
     Reflective=2,
     Colored=3,
     AprilTag=4
@@ -108,7 +107,7 @@ export const DefaultPipelineSettings: PipelineSettings = {
     ledMode: false,
     outputShowMultipleTargets: false,
     cameraExposure: -1,
-    pipelineType: PipelineType.Unknown
+    pipelineType: -1
 };
 
 export interface ReflectivePipelineSettings extends PipelineSettings {
