@@ -5,6 +5,7 @@ import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
 const props = withDefaults(defineProps<{
   label?: string,
   tooltip?: string,
+  // TODO fully update v-model usage in custom components on Vue3 update
   modelValue: string,
   disabled?: boolean,
   errorMessage?: string,

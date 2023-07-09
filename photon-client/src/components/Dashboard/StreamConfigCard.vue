@@ -3,6 +3,7 @@ import {computed, defineEmits, defineProps} from "vue";
 import {useCameraSettingsStore} from "@/stores/settings/CameraSettingsStore";
 
 const props = defineProps<{
+  // TODO fully update v-model usage in custom components on Vue3 update
   modelValue: number[]
 }>();
 

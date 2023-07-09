@@ -7,6 +7,7 @@ import {PipelineType} from "@/types/PipelineTypes";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 
 defineProps<{
+  // TODO fully update v-model usage in custom components on Vue3 update
   modelValue: number[]
 }>();
 

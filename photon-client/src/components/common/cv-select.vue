@@ -11,6 +11,7 @@ const props = withDefaults(defineProps<{
   label?: string,
   tooltip?: string,
   selectCols?: number,
+  // TODO fully update v-model usage in custom components on Vue3 update
   modelValue: number,
   disabled?: boolean,
   items: string[] | number[] | SelectItem[]
