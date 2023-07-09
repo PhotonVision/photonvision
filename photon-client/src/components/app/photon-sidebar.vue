@@ -27,18 +27,18 @@ const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.bre
       dark
       app
       permanent
-      :mini-variant="sidebarFolded"
+      :mini-variant="!mdAndUp || sidebarFolded"
       color="primary"
   >
     <v-list>
       <!-- List item for the heading; note that there are some tricks in setting padding and image width make things look right -->
       <v-list-item
-          :class="sidebarFolded ? 'pr-0 pl-0' : ''"
+          :class="!mdAndUp || sidebarFolded ? 'pr-0 pl-0' : ''"
           style="display: flex; justify-content: center"
       >
         <v-list-item-icon class="mr-0">
           <img
-              v-if="!sidebarFolded"
+              v-if="mdAndUp && !sidebarFolded"
               class="logo"
               src="@/assets/images/logoLarge.svg"
               alt="large logo"
