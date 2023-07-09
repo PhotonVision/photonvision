@@ -40,7 +40,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
             return this.currentPipelineSettings.pipelineType;
         },
         // This method only exists due to just how lazy I am and my dislike of consolidating the pipeline type enums (which mind you, suck as is)
-        currentWebsocketPipelineType(): WebsocketPipelineType {
+        currentWebsocketPipelineType(): Exclude<WebsocketPipelineType, WebsocketPipelineType.Calib3d | WebsocketPipelineType.DriverMode> {
             switch (this.currentPipelineType) {
                 case PipelineType.Reflective:
                     return WebsocketPipelineType.Reflective;
