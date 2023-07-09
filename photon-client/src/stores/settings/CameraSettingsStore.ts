@@ -1,19 +1,23 @@
 import {defineStore} from "pinia";
-import type {ActivePipelineSettings, CameraSettings} from "@/types/SettingTypes";
+import type {
+    ActivePipelineSettings,
+    CalibrationBoardTypes,
+    CameraCalibrationResult,
+    CameraSettings,
+    RobotOffsetType,
+    VideoFormat
+} from "@/types/SettingTypes";
+import {PlaceholderCameraSettings} from "@/types/SettingTypes";
 import {useStateStore} from "@/stores/StateStore";
-import type { WebsocketCameraSettingsUpdate } from "@/types/WebsocketDataTypes";
-import type {CameraCalibrationResult, VideoFormat} from "@/types/SettingTypes";
+import type {WebsocketCameraSettingsUpdate} from "@/types/WebsocketDataTypes";
 import {WebsocketPipelineType} from "@/types/WebsocketDataTypes";
 import type {
     ConfigurableAprilTagPipelineSettings,
     ConfigurableColoredShapePipelineSettings,
     ConfigurableReflectivePipelineSettings
 } from "@/types/PipelineTypes";
-import type {CalibrationBoardTypes} from "@/types/SettingTypes";
-import type {RobotOffsetType} from "@/types/SettingTypes";
+import {PipelineType} from "@/types/PipelineTypes";
 import axios from "axios";
-import {PlaceholderCameraSettings} from "@/types/SettingTypes";
-import type {PipelineType} from "@/types/PipelineTypes";
 
 interface CameraSettingsStore {
     cameras: CameraSettings[]
@@ -34,6 +38,17 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         },
         currentPipelineType(): PipelineType {
             return this.currentPipelineSettings.pipelineType;
+        },
+        // This method only exists due to just how lazy I am and my dislike of consolidating the pipeline type enums (which mind you, suck as is)
+        currentWebsocketPipelineType(): WebsocketPipelineType {
+            switch (this.currentPipelineType) {
+                case PipelineType.Reflective:
+                    return WebsocketPipelineType.Reflective
+                case PipelineType.Colored:
+                    return WebsocketPipelineType.Colored
+                case PipelineType.AprilTag:
+                    return WebsocketPipelineType.AprilTag
+            }
         },
         currentVideoFormat(): VideoFormat {
             return this.currentCameraSettings.validVideoFormats[this.currentPipelineSettings.cameraVideoModeIndex];
