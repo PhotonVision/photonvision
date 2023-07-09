@@ -206,7 +206,7 @@ const endCalibration = () => {
                   label="Board Type"
                   tooltip="Calibration board pattern to use"
                   :select-cols="7"
-                  :items="Object.values(CalibrationBoardTypes).filter(v => isNaN(Number(v)))"
+                  :items="['Chessboard', 'Dotboard']"
                   :disabled="isCalibrating"
               />
               <cv-number-input

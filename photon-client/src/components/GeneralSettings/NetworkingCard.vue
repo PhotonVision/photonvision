@@ -115,7 +115,7 @@ const saveGeneralSettings = () => {
             label="IP Assignment Mode"
             tooltip="DHCP will make the radio (router) automatically assign an IP address; this may result in an IP address that changes across reboots. Static IP assignment means that you pick the IP address and it won't change."
             :input-cols="12-3"
-            :list="Object.values(NetworkConnectionType).filter(v => isNaN(Number(v)))"
+            :list="['DHCP','Static']"
         />
         <cv-input
             v-if="useSettingsStore().network.connectionType === NetworkConnectionType.Static"
