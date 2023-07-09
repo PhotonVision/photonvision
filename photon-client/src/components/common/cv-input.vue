@@ -47,7 +47,10 @@ const localValue = computed({
           :error-messages="errorMessage"
           :rules="rules"
           class="mt-1 pt-2"
-          @keydown="e => e.key === 'Enter' && $emit('onEnter', localValue)"
+          @keydown="e => e.key === 'Enter'
+            && !(rules || []).some(v => v(localValue) === false
+               || typeof v(localValue) === 'string')
+            && $emit('onEnter', localValue)"
         />
       </v-col>
     </v-row>
