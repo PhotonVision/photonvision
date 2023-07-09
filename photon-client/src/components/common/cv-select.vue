@@ -2,13 +2,18 @@
 import {computed, defineEmits, defineProps} from "vue";
 import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
 
+interface SelectItem {
+  name: string | number,
+  value: string | number
+}
+
 const props = withDefaults(defineProps<{
   label?: string,
   tooltip?: string,
   selectCols?: number,
   value: number,
   disabled?: boolean,
-  items: string[] | number[]
+  items: string[] | number[] | SelectItem[]
 }>(), {
   selectCols: 9,
   disabled: false
@@ -22,7 +27,13 @@ const localValue = computed({
 });
 
 // Computed in case items changes
-const indexList = computed(() => props.items.map((v, i) => ({name: v, index: i})));
+const items = computed<SelectItem[]>(() => {
+  // Check if the prop exists on the object to infer object type
+  if((props.items[0] as SelectItem).name) {
+    return props.items as SelectItem[];
+  }
+  return props.items.map((v, i) => ({name: v, value: i}));
+});
 </script>
 
 <template>
@@ -40,9 +51,9 @@ const indexList = computed(() => props.items.map((v, i) => ({name: v, index: i})
       <v-col :cols="selectCols">
         <v-select
           v-model="localValue"
-          :items="indexList"
+          :items="items"
           item-text="name"
-          item-value="index"
+          item-value="value"
           dark
           color="accent"
           item-color="secondary"
