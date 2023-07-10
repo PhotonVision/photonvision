@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import MetricsCard from "@/components/GeneralSettings/MetricsCard.vue";
-import DeviceControlCard from "@/components/GeneralSettings/DeviceControlCard.vue";
-import NetworkingCard from "@/components/GeneralSettings/NetworkingCard.vue";
-import LightingControlCard from "@/components/GeneralSettings/LightingControlCard.vue";
+import MetricsCard from "@/components/settings/MetricsCard.vue";
+import DeviceControlCard from "@/components/settings/DeviceControlCard.vue";
+import NetworkingCard from "@/components/settings/NetworkingCard.vue";
+import LightingControlCard from "@/components/settings/LightingControlCard.vue";
 import {useSettingsStore} from "@/stores/settings/GeneralSettingsStore";
 </script>
 

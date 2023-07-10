@@ -3,15 +3,15 @@ import type {Component} from "vue";
 import {computed, ref} from "vue";
 import {useCameraSettingsStore} from "@/stores/settings/CameraSettingsStore";
 
-import InputTab from "@/components/Dashboard/PipelineConfigTabs/InputTab.vue";
-import ThresholdTab from "@/components/Dashboard/PipelineConfigTabs/ThresholdTab.vue";
-import ContoursTab from "@/components/Dashboard/PipelineConfigTabs/ContoursTab.vue";
-import AprilTagTab from "@/components/Dashboard/PipelineConfigTabs/AprilTagTab.vue";
-import ArucoTab from "@/components/Dashboard/PipelineConfigTabs/ArucoTab.vue";
-import OutputTab from "@/components/Dashboard/PipelineConfigTabs/OutputTab.vue";
-import TargetsTab from "@/components/Dashboard/PipelineConfigTabs/TargetsTab.vue";
-import PnPTab from "@/components/Dashboard/PipelineConfigTabs/PnPTab.vue";
-import Map3DTab from "@/components/Dashboard/PipelineConfigTabs/Map3DTab.vue";
+import InputTab from "@/components/dashboard/PipelineConfigTabs/InputTab.vue";
+import ThresholdTab from "@/components/dashboard/PipelineConfigTabs/ThresholdTab.vue";
+import ContoursTab from "@/components/dashboard/PipelineConfigTabs/ContoursTab.vue";
+import AprilTagTab from "@/components/dashboard/PipelineConfigTabs/AprilTagTab.vue";
+import ArucoTab from "@/components/dashboard/PipelineConfigTabs/ArucoTab.vue";
+import OutputTab from "@/components/dashboard/PipelineConfigTabs/OutputTab.vue";
+import TargetsTab from "@/components/dashboard/PipelineConfigTabs/TargetsTab.vue";
+import PnPTab from "@/components/dashboard/PipelineConfigTabs/PnPTab.vue";
+import Map3DTab from "@/components/dashboard/PipelineConfigTabs/Map3DTab.vue";
 import {WebsocketPipelineType} from "@/types/WebsocketDataTypes";
 
 interface ConfigOption {

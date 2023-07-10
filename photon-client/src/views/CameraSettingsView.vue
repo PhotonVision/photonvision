@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import CamerasCard from "@/components/CameraSettings/CameraSettingsCard.vue";
-import CalibrationCard from "@/components/CameraSettings/CalibrationCard.vue";
+import CamerasCard from "@/components/cameras/CameraSettingsCard.vue";
+import CalibrationCard from "@/components/cameras/CalibrationCard.vue";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 </script>
 
