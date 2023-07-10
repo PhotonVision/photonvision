@@ -30,10 +30,10 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         ]
     }),
     getters: {
-        currentCameraSettings(): Readonly<CameraSettings> {
+        currentCameraSettings(): CameraSettings {
             return this.cameras[useStateStore().currentCameraIndex];
         },
-        currentPipelineSettings(): Readonly<ActivePipelineSettings> {
+        currentPipelineSettings(): ActivePipelineSettings {
           return this.currentCameraSettings.pipelineSettings;
         },
         currentPipelineType(): PipelineType {

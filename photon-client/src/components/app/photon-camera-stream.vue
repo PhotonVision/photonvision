@@ -10,13 +10,11 @@ const props = defineProps<{
 }>();
 
 const src = computed<string>(() => {
-  const currentCameraSettings = useCameraSettingsStore().currentCameraSettings;
-
-  if(!useStateStore().backendConnected || currentCameraSettings === undefined) {
+  if(!useStateStore().backendConnected) {
     return loadingImage;
   }
 
-  const port = currentCameraSettings.stream[props.streamType === "Raw" ? "inputPort" : "outputPort"];
+  const port =  useCameraSettingsStore().currentCameraSettings.stream[props.streamType === "Raw" ? "inputPort" : "outputPort"];
 
   return `http://${inject("backendAddress")}:${port}/stream.mjpg`;
 });

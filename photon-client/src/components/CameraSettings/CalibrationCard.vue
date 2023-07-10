@@ -11,6 +11,7 @@ import {useStateStore} from "@/stores/StateStore";
 import CvSwitch from "@/components/common/cv-switch.vue";
 import CvSelect from "@/components/common/cv-select.vue";
 import CvNumberInput from "@/components/common/cv-number-input.vue";
+import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 
 const settingsValid = ref(true);
 
@@ -138,7 +139,8 @@ const startCalibration = () => {
     patternWidth: patternWidth.value,
     boardType: boardType.value
   });
-  useCameraSettingsStore().cameras[useStateStore().currentCameraIndex].currentPipelineIndex = -2;
+  // The Start PnP method already handles updating the backend so only a store update is required
+  useCameraSettingsStore().currentCameraSettings.currentPipelineIndex = WebsocketPipelineType.Calib3d;
   isCalibrating.value = true;
   calibCanceled.value = false;
 };
@@ -185,7 +187,7 @@ const endCalibration = () => {
                 v-model="settingsValid"
             >
               <cv-select
-                  v-model="useCameraSettingsStore().cameras[useStateStore().currentCameraIndex].pipelineSettings.cameraVideoModeIndex"
+                  v-model="useCameraSettingsStore().currentPipelineSettings.cameraVideoModeIndex"
                   label="Resolution"
                   :select-cols="7"
                   :disabled="isCalibrating"
@@ -194,7 +196,7 @@ const endCalibration = () => {
                   @input="v => useCameraSettingsStore().changeCurrentPipelineSetting({cameraVideoModeIndex: v})"
               />
               <cv-select
-                  v-model="useCameraSettingsStore().cameras[useStateStore().currentCameraIndex].pipelineSettings.streamingFrameDivisor"
+                  v-model="useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor"
                   label="Decimation"
                   tooltip="Resolution to which camera frames are downscaled for detection. Calibration still uses full-res"
                   :items="calibrationDivisors"
@@ -302,8 +304,8 @@ const endCalibration = () => {
               class="pt-0"
           >
             <cv-slider
-                v-model="useCameraSettingsStore().cameras[useStateStore().currentCameraIndex].pipelineSettings.cameraExposure"
-                :disabled="useCameraSettingsStore().currentCameraSettings?.pipelineSettings.cameraAutoExposure"
+                v-model="useCameraSettingsStore().currentPipelineSettings.cameraExposure"
+                :disabled="useCameraSettingsStore().currentCameraSettings.pipelineSettings.cameraAutoExposure"
                 label="Exposure"
                 tooltip="Directly controls how much light is allowed to fall onto the sensor, which affects apparent brightness"
                 :min="0"
@@ -313,7 +315,7 @@ const endCalibration = () => {
                 @input="args => useCameraSettingsStore().changeCurrentPipelineSetting({cameraExposure: args})"
             />
             <cv-slider
-                v-model="useCameraSettingsStore().cameras[useStateStore().currentCameraIndex].pipelineSettings.cameraBrightness"
+                v-model="useCameraSettingsStore().currentPipelineSettings.cameraBrightness"
                 label="Brightness"
                 :min="0"
                 :max="100"
@@ -321,7 +323,7 @@ const endCalibration = () => {
                 @input="args => useCameraSettingsStore().changeCurrentPipelineSetting({cameraBrightness: args})"
             />
             <cv-switch
-                v-model="useCameraSettingsStore().cameras[useStateStore().currentCameraIndex].pipelineSettings.cameraAutoExposure"
+                v-model="useCameraSettingsStore().currentPipelineSettings.cameraAutoExposure"
                 class="pt-2"
                 label="Auto Exposure"
                 :label-cols="4"
@@ -329,8 +331,8 @@ const endCalibration = () => {
                 @input="args => useCameraSettingsStore().changeCurrentPipelineSetting({cameraAutoExposure: args})"
             />
             <cv-slider
-                v-if="useCameraSettingsStore().currentPipelineSettings?.cameraGain >= 0"
-                v-model="useCameraSettingsStore().cameras[useStateStore().currentCameraIndex].pipelineSettings.cameraGain"
+                v-if="useCameraSettingsStore().currentPipelineSettings.cameraGain >= 0"
+                v-model="useCameraSettingsStore().currentPipelineSettings.cameraGain"
                 label="Camera Gain"
                 tooltip="Controls camera gain, similar to brightness"
                 :min="0"
@@ -338,8 +340,8 @@ const endCalibration = () => {
                 @input="args => useCameraSettingsStore().changeCurrentPipelineSetting({cameraGain: args})"
             />
             <cv-slider
-                v-if="useCameraSettingsStore().currentPipelineSettings?.cameraRedGain !== -1"
-                v-model="useCameraSettingsStore().cameras[useStateStore().currentCameraIndex].pipelineSettings.cameraRedGain"
+                v-if="useCameraSettingsStore().currentPipelineSettings.cameraRedGain !== -1"
+                v-model="useCameraSettingsStore().currentPipelineSettings.cameraRedGain"
                 label="Red AWB Gain"
                 :min="0"
                 :max="100"
@@ -347,8 +349,8 @@ const endCalibration = () => {
                 @input="args => useCameraSettingsStore().changeCurrentPipelineSetting({cameraRedGain: args})"
             />
             <cv-slider
-                v-if="useCameraSettingsStore().currentPipelineSettings?.cameraBlueGain !== -1"
-                v-model="useCameraSettingsStore().cameras[useStateStore().currentCameraIndex].pipelineSettings.cameraBlueGain"
+                v-if="useCameraSettingsStore().currentPipelineSettings.cameraBlueGain !== -1"
+                v-model="useCameraSettingsStore().currentPipelineSettings.cameraBlueGain"
                 label="Blue AWB Gain"
                 :min="0"
                 :max="100"

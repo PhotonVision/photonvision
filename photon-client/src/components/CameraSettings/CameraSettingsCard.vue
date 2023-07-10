@@ -5,7 +5,7 @@ import {useCameraSettingsStore} from "@/stores/settings/CameraSettingsStore";
 import {useStateStore} from "@/stores/StateStore";
 import {ref} from "vue";
 
-const fov = ref(useCameraSettingsStore().cameras[useStateStore().currentCameraIndex].fov.value);
+const fov = ref(useCameraSettingsStore().currentCameraSettings.fov.value);
 
 const saveCameraSettings = () => {
   useCameraSettingsStore().updateCameraSettings({fov: fov.value})
@@ -35,7 +35,7 @@ const saveCameraSettings = () => {
       })
       .finally(() => {
         // TODO, does this conflict with WS data exchange
-        useCameraSettingsStore().cameras[useStateStore().currentCameraIndex].fov.value = fov.value;
+        useCameraSettingsStore().currentCameraSettings.fov.value = fov.value;
       });
 };
 </script>
@@ -58,9 +58,9 @@ const saveCameraSettings = () => {
       />
       <cv-number-input
           v-model="fov"
-          :tooltip="!useCameraSettingsStore().cameras[useStateStore().currentCameraIndex].fov.managedByVendor ? 'Field of view (in degrees) of the camera measured across the diagonal of the frame, in a video mode which covers the whole sensor area.' : 'This setting is managed by a vendor'"
+          :tooltip="!useCameraSettingsStore().currentCameraSettings.fov.managedByVendor ? 'Field of view (in degrees) of the camera measured across the diagonal of the frame, in a video mode which covers the whole sensor area.' : 'This setting is managed by a vendor'"
           label="Maximum Diagonal FOV"
-          :disabled="useCameraSettingsStore().cameras[useStateStore().currentCameraIndex].fov.managedByVendor"
+          :disabled="useCameraSettingsStore().currentCameraSettings.fov.managedByVendor"
           :label-cols="4"
       />
       <br>
@@ -69,7 +69,7 @@ const saveCameraSettings = () => {
           small
           color="secondary"
           @click="saveCameraSettings"
-          :disabled="fov === useCameraSettingsStore().cameras[useStateStore().currentCameraIndex].fov.value"
+          :disabled="fov === useCameraSettingsStore().currentCameraSettings.fov.value"
       >
         <v-icon left>
           mdi-content-save
