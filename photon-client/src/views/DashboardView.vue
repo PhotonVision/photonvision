@@ -24,7 +24,7 @@ const cameraViewType = computed<number[]>({
   set: v => useCameraSettingsStore().changeCurrentPipelineSetting({
     inputShouldShow: v.includes(0),
     outputShouldShow: v.includes(1)
-  })
+  }, true)
 });
 </script>
 

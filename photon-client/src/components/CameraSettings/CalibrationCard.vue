@@ -193,7 +193,7 @@ const endCalibration = () => {
                   :disabled="isCalibrating"
                   tooltip="Resolution to calibrate at (you will have to calibrate every resolution you use 3D mode on)"
                   :items="useCameraSettingsStore().currentCameraSettings.validVideoFormats.map(f => `${f.resolution.width} X ${f.resolution.height}`)"
-                  @input="v => useCameraSettingsStore().changeCurrentPipelineSetting({cameraVideoModeIndex: v})"
+                  @input="v => useCameraSettingsStore().changeCurrentPipelineSetting({cameraVideoModeIndex: v}, false)"
               />
               <cv-select
                   v-model="useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor"
@@ -201,7 +201,7 @@ const endCalibration = () => {
                   tooltip="Resolution to which camera frames are downscaled for detection. Calibration still uses full-res"
                   :items="calibrationDivisors"
                   :select-cols="7"
-                  @input="v => useCameraSettingsStore().changeCurrentPipelineSetting({streamingFrameDivisor: v})"
+                  @input="v => useCameraSettingsStore().changeCurrentPipelineSetting({streamingFrameDivisor: v}, false)"
               />
               <cv-select
                   v-model="boardType"
@@ -312,7 +312,7 @@ const endCalibration = () => {
                 :max="100"
                 :slider-cols="8"
                 :step="0.1"
-                @input="args => useCameraSettingsStore().changeCurrentPipelineSetting({cameraExposure: args})"
+                @input="args => useCameraSettingsStore().changeCurrentPipelineSetting({cameraExposure: args}, false)"
             />
             <cv-slider
                 v-model="useCameraSettingsStore().currentPipelineSettings.cameraBrightness"
@@ -320,7 +320,7 @@ const endCalibration = () => {
                 :min="0"
                 :max="100"
                 :slider-cols="8"
-                @input="args => useCameraSettingsStore().changeCurrentPipelineSetting({cameraBrightness: args})"
+                @input="args => useCameraSettingsStore().changeCurrentPipelineSetting({cameraBrightness: args}, false)"
             />
             <cv-switch
                 v-model="useCameraSettingsStore().currentPipelineSettings.cameraAutoExposure"
@@ -328,7 +328,7 @@ const endCalibration = () => {
                 label="Auto Exposure"
                 :label-cols="4"
                 tooltip="Enables or Disables camera automatic adjustment for current lighting conditions"
-                @input="args => useCameraSettingsStore().changeCurrentPipelineSetting({cameraAutoExposure: args})"
+                @input="args => useCameraSettingsStore().changeCurrentPipelineSetting({cameraAutoExposure: args}, false)"
             />
             <cv-slider
                 v-if="useCameraSettingsStore().currentPipelineSettings.cameraGain >= 0"
@@ -337,7 +337,7 @@ const endCalibration = () => {
                 tooltip="Controls camera gain, similar to brightness"
                 :min="0"
                 :max="100"
-                @input="args => useCameraSettingsStore().changeCurrentPipelineSetting({cameraGain: args})"
+                @input="args => useCameraSettingsStore().changeCurrentPipelineSetting({cameraGain: args}, false)"
             />
             <cv-slider
                 v-if="useCameraSettingsStore().currentPipelineSettings.cameraRedGain !== -1"
@@ -346,7 +346,7 @@ const endCalibration = () => {
                 :min="0"
                 :max="100"
                 tooltip="Controls red automatic white balance gain, which affects how the camera captures colors in different conditions"
-                @input="args => useCameraSettingsStore().changeCurrentPipelineSetting({cameraRedGain: args})"
+                @input="args => useCameraSettingsStore().changeCurrentPipelineSetting({cameraRedGain: args}, false)"
             />
             <cv-slider
                 v-if="useCameraSettingsStore().currentPipelineSettings.cameraBlueGain !== -1"
@@ -355,7 +355,7 @@ const endCalibration = () => {
                 :min="0"
                 :max="100"
                 tooltip="Controls blue automatic white balance gain, which affects how the camera captures colors in different conditions"
-                @input="args => useCameraSettingsStore().changeCurrentPipelineSetting({cameraBlueGain: args})"
+                @input="args => useCameraSettingsStore().changeCurrentPipelineSetting({cameraBlueGain: args}, false)"
             />
           </v-col>
         </v-row>

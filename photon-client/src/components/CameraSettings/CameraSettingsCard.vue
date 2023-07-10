@@ -5,10 +5,10 @@ import {useCameraSettingsStore} from "@/stores/settings/CameraSettingsStore";
 import {useStateStore} from "@/stores/StateStore";
 import {ref} from "vue";
 
-const fov = ref(useCameraSettingsStore().currentCameraSettings.fov.value);
+const currentFov = ref(useCameraSettingsStore().currentCameraSettings.fov.value);
 
 const saveCameraSettings = () => {
-  useCameraSettingsStore().updateCameraSettings({fov: fov.value})
+  useCameraSettingsStore().updateCameraSettings({fov: currentFov.value}, true)
       .then((response) => {
         useStateStore().showSnackbarMessage({
           color: "success",
@@ -35,7 +35,7 @@ const saveCameraSettings = () => {
       })
       .finally(() => {
         // TODO, does this conflict with WS data exchange
-        useCameraSettingsStore().currentCameraSettings.fov.value = fov.value;
+        useCameraSettingsStore().currentCameraSettings.fov.value = currentFov.value;
       });
 };
 </script>
@@ -57,7 +57,7 @@ const saveCameraSettings = () => {
           @input="args => useCameraSettingsStore().setCurrentCameraIndex(args)"
       />
       <cv-number-input
-          v-model="fov"
+          v-model="currentFov"
           :tooltip="!useCameraSettingsStore().currentCameraSettings.fov.managedByVendor ? 'Field of view (in degrees) of the camera measured across the diagonal of the frame, in a video mode which covers the whole sensor area.' : 'This setting is managed by a vendor'"
           label="Maximum Diagonal FOV"
           :disabled="useCameraSettingsStore().currentCameraSettings.fov.managedByVendor"
@@ -69,7 +69,7 @@ const saveCameraSettings = () => {
           small
           color="secondary"
           @click="saveCameraSettings"
-          :disabled="fov === useCameraSettingsStore().currentCameraSettings.fov.value"
+          :disabled="currentFov === useCameraSettingsStore().currentCameraSettings.fov.value"
       >
         <v-icon left>
           mdi-content-save

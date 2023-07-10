@@ -99,7 +99,14 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
                 pipelineSettings: d.currentPipelineSettings
             }));
         },
-        updateCameraSettings(data: ConfigurableCameraSettings, cameraIndex: number = useStateStore().currentCameraIndex) {
+        /**
+         * Update the configurable camera settings.
+         *
+         * @param data camera settings to save.
+         * @param updateStore whether or not to update the store. This is useful if the input field already models the store reference.
+         * @param cameraIndex the index of the camera.
+         */
+        updateCameraSettings(data: ConfigurableCameraSettings, updateStore = true, cameraIndex: number = useStateStore().currentCameraIndex) {
             // The camera settings endpoint doesn't actually require all data, instead, it needs key data such as the FOV
             const payload = {
                 settings: {
@@ -107,6 +114,9 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
                 },
                 index: cameraIndex
             };
+            if(updateStore) {
+                this.currentCameraSettings.fov.value = data.fov;
+            }
             return axios.post("/settings/camera", payload);
         },
         /**
@@ -127,37 +137,43 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
          * Modify the settings of the currently selected pipeline of the provided camera.
          *
          * @param settings settings to modify. The type of the settings should match the currently selected pipeline type.
+         * @param updateStore whether or not to update the store. This is useful if the input field already models the store reference.
          * @param cameraIndex the index of the camera
          */
-        changeCurrentPipelineSetting(settings: ConfigurableReflectivePipelineSettings | ConfigurableColoredShapePipelineSettings | ConfigurableAprilTagPipelineSettings, cameraIndex: number = useStateStore().currentCameraIndex) {
+        changeCurrentPipelineSetting(settings: ConfigurableReflectivePipelineSettings | ConfigurableColoredShapePipelineSettings | ConfigurableAprilTagPipelineSettings, updateStore = true, cameraIndex: number = useStateStore().currentCameraIndex) {
             const payload = {
                 changePipelineSetting: {
                     ...settings,
                     cameraIndex: cameraIndex
                 }
             };
-            this.cameras[cameraIndex].pipelineSettings = {
-                ...this.cameras[cameraIndex].pipelineSettings,
-                ...settings
-            };
+            if(updateStore) {
+                this.cameras[cameraIndex].pipelineSettings = {
+                    ...this.cameras[cameraIndex].pipelineSettings,
+                    ...settings
+                };
+            }
             useStateStore().websocket?.send(payload, true);
         },
         /**
          * Change the nickname of the currently selected pipeline of the provided camera.
          *
          * @param newName the new nickname for the camera.
+         * @param updateStore whether or not to update the store. This is useful if the input field already models the store reference.
          * @param cameraIndex the index of the camera
          */
-        changeCurrentPipelineNickname(newName: string, cameraIndex: number = useStateStore().currentCameraIndex) {
+        changeCurrentPipelineNickname(newName: string, updateStore = true, cameraIndex: number = useStateStore().currentCameraIndex) {
             const payload = {
                 changePipelineName: newName,
                 cameraIndex: cameraIndex
             };
-            this.cameras[cameraIndex].pipelineSettings.pipelineNickname = newName;
+            if(updateStore) {
+                this.cameras[cameraIndex].pipelineSettings.pipelineNickname = newName;
+            }
             useStateStore().websocket?.send(payload, true);
         },
         /**
-         * Modify the Pipeline type of the currently selected pipeline of the provided camera. This overwrites the current pipeline's settings.
+         * Modify the Pipeline type of the currently selected pipeline of the provided camera. This overwrites the current pipeline's settings when the backend resets the current pipeline settings.
          *
          * @param type the pipeline type to set.  Cannot be {@link WebsocketPipelineType.Calib3d} or {@link WebsocketPipelineType.DriverMode}.
          * @param cameraIndex the index of the camera.
@@ -173,14 +189,17 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
          * Change the index of the pipeline of the currently selected camera.
          *
          * @param index pipeline index to set.
+         * @param updateStore whether or not to update the store. This is useful if the input field already models the store reference.
          * @param cameraIndex the index of the camera.
          */
-        changeCurrentPipelineIndex(index: number, cameraIndex: number = useStateStore().currentCameraIndex) {
+        changeCurrentPipelineIndex(index: number, updateStore = true, cameraIndex: number = useStateStore().currentCameraIndex) {
             const payload = {
                 currentPipeline: index,
                 cameraIndex: cameraIndex
             };
-            this.cameras[cameraIndex].currentPipelineIndex = index;
+            if(updateStore) {
+                this.cameras[cameraIndex].currentPipelineIndex = index;
+            }
             useStateStore().websocket?.send(payload, true);
         },
         /**
@@ -212,19 +231,33 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
          * Change the currently set camera
          *
          * @param cameraIndex the index of the camera to set as the current camera.
+         * @param updateStore whether or not to update the store. This is useful if the input field already models the store reference.
          */
-        setCurrentCameraIndex(cameraIndex: number) {
+        setCurrentCameraIndex(cameraIndex: number, updateStore = true) {
             const payload = {
                 currentCamera: cameraIndex
             };
-            useStateStore().currentCameraIndex = cameraIndex;
+            if(updateStore) {
+                useStateStore().currentCameraIndex = cameraIndex;
+            }
             useStateStore().websocket?.send(payload, true);
         },
-        changeCameraNickname(newName: string, cameraIndex: number = useStateStore().currentCameraIndex) {
+        /**
+         * Change the nickname of the provided camera.
+         *
+         * @param newName the new nickname of the camera.
+         * @param updateStore whether or not to update the store. This is useful if the input field already models the store reference.
+         * @param cameraIndex the index of the camera.
+         * @return HTTP request promise to the backend
+         */
+        changeCameraNickname(newName: string,  updateStore = true, cameraIndex: number = useStateStore().currentCameraIndex) {
             const payload = {
                 name: newName,
                 cameraIndex: cameraIndex
             };
+            if(updateStore) {
+                this.currentCameraSettings.nickname = newName;
+            }
             return axios.post("/settings/camera/setNickname", payload);
         },
         /**

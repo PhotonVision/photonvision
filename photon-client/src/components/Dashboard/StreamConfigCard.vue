@@ -19,7 +19,7 @@ const processingMode = computed<number>({
   get: () => useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled ? 1: 0,
   set: v => {
     if(useCameraSettingsStore().isCurrentVideoFormatCalibrated) {
-      useCameraSettingsStore().changeCurrentPipelineSetting({solvePNPEnabled: v === 1});
+      useCameraSettingsStore().changeCurrentPipelineSetting({solvePNPEnabled: v === 1}, true);
     }
   }
 });
