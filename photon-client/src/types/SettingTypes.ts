@@ -86,6 +86,10 @@ export interface CameraCalibrationResult {
 
 export type ActivePipelineSettings = ReflectivePipelineSettings | ColoredShapePipelineSettings | AprilTagPipelineSettings
 
+export interface ConfigurableCameraSettings {
+    fov: number
+}
+
 export interface CameraSettings {
     nickname: string
 

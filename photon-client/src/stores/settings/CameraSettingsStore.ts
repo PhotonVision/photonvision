@@ -3,7 +3,7 @@ import type {
     ActivePipelineSettings,
     CalibrationBoardTypes,
     CameraCalibrationResult,
-    CameraSettings,
+    CameraSettings, ConfigurableCameraSettings,
     RobotOffsetType,
     VideoFormat
 } from "@/types/SettingTypes";
@@ -99,7 +99,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
                 pipelineSettings: d.currentPipelineSettings
             }));
         },
-        updateCameraSettings(data: {fov: number}, cameraIndex: number = useStateStore().currentCameraIndex) {
+        updateCameraSettings(data: ConfigurableCameraSettings, cameraIndex: number = useStateStore().currentCameraIndex) {
             // The camera settings endpoint doesn't actually require all data, instead, it needs key data such as the FOV
             const payload = {
                 settings: {
