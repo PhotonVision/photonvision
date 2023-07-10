@@ -76,7 +76,7 @@ onMounted(() => {
             GPU Memory
           </th>
           <th class="infoElem infoElemTitle">
-            Ram Usage
+            Memory Usage
           </th>
           <th class="infoElem infoElemTitle">
             GPU Mem Usage
