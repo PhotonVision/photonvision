@@ -11,7 +11,7 @@ const showLogModal = computed<boolean>({
   set: v => useStateStore().$patch({showLogModal: v})
 });
 
-const backendAddress = inject("backendAddress");
+const backendAddress = inject<string>("backendAddress");
 
 const getLogColor = (level: LogLevel): string => {
   switch (level) {

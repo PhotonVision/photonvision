@@ -4,8 +4,6 @@ import DeviceControlCard from "@/components/GeneralSettings/DeviceControlCard.vu
 import NetworkingCard from "@/components/GeneralSettings/NetworkingCard.vue";
 import LightingControlCard from "@/components/GeneralSettings/LightingControlCard.vue";
 import {useSettingsStore} from "@/stores/settings/GeneralSettingsStore";
-
-const settingsStore = useSettingsStore();
 </script>
 
 <template>
@@ -20,7 +18,7 @@ const settingsStore = useSettingsStore();
       <MetricsCard/>
       <DeviceControlCard/>
       <NetworkingCard/>
-      <LightingControlCard v-if="settingsStore.lighting.supported"/>
+      <LightingControlCard v-if="useSettingsStore().lighting.supported"/>
     </v-col>
   </v-row>
 </template>

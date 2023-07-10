@@ -9,44 +9,40 @@ import PhotonLogView from "@/components/app/photon-log-view.vue";
 import PhotonErrorSnackbar from "@/components/app/photon-error-snackbar.vue";
 
 onMounted(() => {
-  const stateStore = useStateStore();
-  const cameraSettingsStore = useCameraSettingsStore();
-  const settingsStore = useSettingsStore();
-
   const websocket = new AutoReconnectingWebsocket(
       `ws://${inject("backendAddress")}/websocket_data`,
       () => {
-        stateStore.$patch({ backendConnected: true });
+        useStateStore().$patch({ backendConnected: true });
       },
       (data) => {
         if(data.log !== undefined) {
-          stateStore.addLogFromWebsocket(data.log);
+          useStateStore().addLogFromWebsocket(data.log);
         }
         if(data.settings !== undefined) {
-          settingsStore.updateGeneralSettingsFromWebsocket(data.settings);
+          useSettingsStore().updateGeneralSettingsFromWebsocket(data.settings);
         }
         if(data.cameraSettings !== undefined) {
-          cameraSettingsStore.updateCameraSettingsFromWebsocket(data.cameraSettings);
+          useCameraSettingsStore().updateCameraSettingsFromWebsocket(data.cameraSettings);
         }
         if(data.ntConnectionInfo !== undefined) {
-          stateStore.updateNTConnectionStatusFromWebsocket(data.ntConnectionInfo);
+          useStateStore().updateNTConnectionStatusFromWebsocket(data.ntConnectionInfo);
         }
         if(data.metrics !== undefined) {
-          settingsStore.updateMetricsFromWebsocket(data.metrics);
+          useSettingsStore().updateMetricsFromWebsocket(data.metrics);
         }
         if(data.updatePipelineResult !== undefined) {
-          stateStore.updatePipelineResultsFromWebsocket(data.updatePipelineResult);
+          useStateStore().updatePipelineResultsFromWebsocket(data.updatePipelineResult);
         }
         if(data.calibrationData !== undefined) {
-          stateStore.updateCalibrationStateValuesFromWebsocket(data.calibrationData);
+          useStateStore().updateCalibrationStateValuesFromWebsocket(data.calibrationData);
         }
       },
       () => {
-        stateStore.$patch({ backendConnected: false });
+        useStateStore().$patch({ backendConnected: false });
       }
   );
 
-  stateStore.$patch({ websocket: websocket });
+  useStateStore().$patch({ websocket: websocket });
 });
 </script>
 

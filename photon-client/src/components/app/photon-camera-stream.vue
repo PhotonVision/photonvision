@@ -37,8 +37,6 @@ const handleClick = () => {
     window.open(src.value);
   }
 };
-
-
 </script>
 
 

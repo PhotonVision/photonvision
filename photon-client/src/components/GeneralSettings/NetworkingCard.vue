@@ -21,8 +21,7 @@ const isValidNetworkTablesIP = (v: string | undefined): boolean => {
   // need to check these before the hostname. "0" and "99999" are valid hostnames, but we don't want to allow then
   if (v === "0") return false;
   if (badTeamNumberRegex.test(v)) return false;
-  if (isValidHostname(v)) return true;
-  return false;
+  return isValidHostname(v);
 };
 const isValidIPv4 = (v: string | undefined) => {
   // https://stackoverflow.com/a/17871737
@@ -75,8 +74,6 @@ const saveGeneralSettings = () => {
         }
       });
 };
-
-
 </script>
 
 <template>

@@ -24,7 +24,7 @@ const patternWidth = ref(8);
 const patternHeight = ref(8);
 const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.Chessboard);
 
-const importCalibrationFromCalibdb = ref();
+const importCalibrationFromCalibDB = ref();
 
 const downloadCalibBoard = () => {
   const doc = new JsPDF({unit: "in", format: "letter"});
@@ -102,7 +102,7 @@ const downloadCalibBoard = () => {
 };
 
 const openCalibUploadPrompt = () => {
-  importCalibrationFromCalibdb.value.click();
+  importCalibrationFromCalibDB.value.click();
 };
 const readImportedCalibration = (event) => {
   event.target.files[0].text().then(text => {
@@ -413,7 +413,7 @@ const endCalibration = () => {
               Import From CalibDB
             </v-btn>
             <input
-                ref="importCalibrationFromCalibdb"
+                ref="importCalibrationFromCalibDB"
                 type="file"
                 accept=".json"
                 style="display: none;"

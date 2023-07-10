@@ -3,8 +3,6 @@ import {useSettingsStore} from "@/stores/settings/GeneralSettingsStore";
 import { onMounted } from "vue";
 import {useStateStore} from "@/stores/StateStore";
 
-const settingsStore = useSettingsStore();
-
 onMounted(() => {
   // TODO should this be silent?
   useSettingsStore()
@@ -50,16 +48,16 @@ onMounted(() => {
         </tr>
         <tr>
           <td class="infoElem">
-            {{settingsStore.general.version || "Unknown"}}
+            {{useSettingsStore().general.version || "Unknown"}}
           </td>
           <td class="infoElem">
-            {{settingsStore.general.hardwareModel || "Unknown"}}
+            {{useSettingsStore().general.hardwareModel || "Unknown"}}
           </td>
           <td class="infoElem">
-            {{settingsStore.general.hardwarePlatform || "Unknown"}}
+            {{useSettingsStore().general.hardwarePlatform || "Unknown"}}
           </td>
           <td class="infoElem">
-            {{settingsStore.general.gpuAcceleration || "Unknown"}}
+            {{useSettingsStore().general.gpuAcceleration || "Unknown"}}
           </td>
         </tr>
       </table>
@@ -95,31 +93,31 @@ onMounted(() => {
         </tr>
         <tr>
           <td class="infoElem">
-            {{settingsStore.metrics.cpuTemp || "Unknown"}}
+            {{useSettingsStore().metrics.cpuTemp || "Unknown"}}
           </td>
           <td class="infoElem">
-            {{settingsStore.metrics.cpuUtil || "Unknown"}}
+            {{useSettingsStore().metrics.cpuUtil || "Unknown"}}
           </td>
           <td class="infoElem">
-            {{settingsStore.metrics.cpuMem || "Unknown"}}
+            {{useSettingsStore().metrics.cpuMem || "Unknown"}}
           </td>
           <td class="infoElem">
-            {{settingsStore.metrics.gpuMem || "Unknown"}}
+            {{useSettingsStore().metrics.gpuMem || "Unknown"}}
           </td>
           <td class="infoElem">
-            {{settingsStore.metrics.ramUtil || "Unknown"}}
+            {{useSettingsStore().metrics.ramUtil || "Unknown"}}
           </td>
           <td class="infoElem">
-            {{settingsStore.metrics.gpuMemUtil || "Unknown"}}
+            {{useSettingsStore().metrics.gpuMemUtil || "Unknown"}}
           </td>
           <td class="infoElem">
-            {{settingsStore.metrics.cpuThr || "Unknown"}}
+            {{useSettingsStore().metrics.cpuThr || "Unknown"}}
           </td>
           <td class="infoElem">
-            {{settingsStore.metrics.cpuUptime || "Unknown"}}
+            {{useSettingsStore().metrics.cpuUptime || "Unknown"}}
           </td>
           <td class="infoElem">
-            {{settingsStore.metrics.diskUtilPct || "Unknown"}}
+            {{useSettingsStore().metrics.diskUtilPct || "Unknown"}}
           </td>
         </tr>
       </table>
