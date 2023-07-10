@@ -18,7 +18,11 @@ const props = withDefaults(defineProps<{
   inputCols: 8
 });
 
-const emit = defineEmits(["input", "onEnter", "onEscape"]);
+const emit = defineEmits<{
+  (e: "input", value: string): void
+  (e: "onEnter", value: string): void
+  (e: "onEscape"): void
+}>();
 
 const localValue = computed({
   get: () => props.value,

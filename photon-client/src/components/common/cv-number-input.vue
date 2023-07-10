@@ -17,7 +17,9 @@ const props = withDefaults(defineProps<{
   step: 1
 });
 
-const emit = defineEmits(["input"]);
+const emit = defineEmits<{
+  (e: "input", value: number): void
+}>();
 
 const localValue = computed({
   get: () => props.value,

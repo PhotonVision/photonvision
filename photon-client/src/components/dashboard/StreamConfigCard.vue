@@ -7,7 +7,9 @@ const props = defineProps<{
   value: number[]
 }>();
 
-const emit = defineEmits(["input"]);
+const emit = defineEmits<{
+  (e: "input", value: number[]): void
+}>();
 
 
 const localValue = computed({

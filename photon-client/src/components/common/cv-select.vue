@@ -12,7 +12,7 @@ const props = withDefaults(defineProps<{
   tooltip?: string,
   selectCols?: number,
   // TODO fully update v-model usage in custom components on Vue3 update
-  value: number,
+  value: number | string,
   disabled?: boolean,
   items: string[] | number[] | SelectItem[]
 }>(), {
@@ -20,7 +20,9 @@ const props = withDefaults(defineProps<{
   disabled: false
 });
 
-const emit = defineEmits(["input"]);
+const emit = defineEmits<{
+  (e: "input", value: number | string): void
+}>();
 
 const localValue = computed({
   get: () => props.value,

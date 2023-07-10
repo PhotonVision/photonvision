@@ -14,7 +14,9 @@ const props = withDefaults(defineProps<{
   labelCols: 2
 });
 
-const emit = defineEmits(["input"]);
+const emit = defineEmits<{
+  (e: "input", value: boolean): void
+}>();
 
 const localValue = computed({
   get: () => props.value,
