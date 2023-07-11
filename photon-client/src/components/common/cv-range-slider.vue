@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
+import type {WebsocketNumberPair} from "@/types/WebsocketDataTypes";
 
 const props = withDefaults(defineProps<{
   label?: string,
   tooltip?: string,
   // TODO fully update v-model usage in custom components on Vue3 update
-  value: [number, number],
+  value: [number, number] | WebsocketNumberPair,
   min: number,
   max: number,
   step?: number
@@ -22,8 +23,15 @@ const emit = defineEmits<{
   (e: "input", value: [number, number]): void
 }>();
 
-const localValue = computed({
-  get: () => props.value,
+const localValue = computed<[number, number]>({
+  get: ():[number, number] => {
+    const pair = props.value as WebsocketNumberPair;
+    if(pair.first !== undefined) {
+      return [pair.first, pair.second];
+    }
+
+    return props.value as [number, number];
+  },
   set: v => emit("input", v)
 });
 </script>

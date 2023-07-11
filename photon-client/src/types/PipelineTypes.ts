@@ -1,3 +1,5 @@
+import type {WebsocketNumberPair} from "@/types/WebsocketDataTypes";
+
 export enum PipelineType {
     Reflective=2,
     ColoredShape=3,
@@ -16,18 +18,18 @@ export interface PipelineSettings {
     streamingFrameDivisor: number
     offsetDualPointBArea: number
     contourGroupingMode: number
-    hsvValue: {first: number, second: number} | [number, number]
+    hsvValue: WebsocketNumberPair | [number, number]
     cameraGain: number
     cameraBlueGain: number
     cameraRedGain: number
     cornerDetectionSideCount: number
-    contourRatio: {first: number, second: number} | [number, number]
+    contourRatio: WebsocketNumberPair | [number, number]
     contourTargetOffsetPointEdge: number
     pipelineNickname: string
     inputImageRotationMode: number
-    contourArea: {first: number, second: number} | [number, number]
+    contourArea: WebsocketNumberPair | [number, number]
     solvePNPEnabled: boolean
-    contourFullness: {first: number, second: number} | [number, number]
+    contourFullness: WebsocketNumberPair | [number, number]
     pipelineIndex: number
     inputShouldShow: boolean
     cameraAutoExposure: boolean
@@ -39,7 +41,7 @@ export interface PipelineSettings {
     outputShouldDraw: boolean
     offsetDualPointA: {x: number, y: number} | [number, number]
     offsetDualPointB: {x: number, y: number} | [number, number]
-    hsvHue: {first: number, second: number}
+    hsvHue: WebsocketNumberPair
     ledMode: boolean
     hueInverted: boolean
     outputShowMultipleTargets: boolean
@@ -52,7 +54,7 @@ export interface PipelineSettings {
     cameraVideoModeIndex: number
     cornerDetectionStrategy: number
     cornerDetectionAccuracyPercentage: number
-    hsvSaturation: {first: number, second: number} | [number, number]
+    hsvSaturation: WebsocketNumberPair | [number, number]
     pipelineType: PipelineType
     contourIntersection: number
 }
@@ -130,11 +132,11 @@ export interface ColoredShapePipelineSettings extends PipelineSettings {
     cameraCalibration: null
     dilate: boolean
     circleAccuracy: number
-    contourRadius: {first: number, second: number} | [number, number]
+    contourRadius: WebsocketNumberPair | [number, number]
     circleDetectThreshold: number
     accuracyPercentage: number
     contourShape: number
-    contourPerimeter: {first: number, second: number} | [number, number]
+    contourPerimeter: WebsocketNumberPair | [number, number]
     minDist: number
     maxCannyThresh: number
 }

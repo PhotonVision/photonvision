@@ -13,6 +13,11 @@ export interface WebsocketSettingsUpdate {
     networkSettings: NetworkSettings
 }
 
+export interface WebsocketNumberPair {
+    first: number,
+    second: number
+}
+
 export interface WebsocketCompleteCalib {
     distCoeffs: number[],
     height: number,
