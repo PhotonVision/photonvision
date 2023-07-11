@@ -116,7 +116,7 @@ const handleStreamResolutionChange = (value: number) => {
         tooltip="Resolution and FPS the camera should directly capture at"
         :items="cameraResolutions"
         :select-cols="10"
-        @input="handleResolutionChange"
+        @input="args => handleResolutionChange(args)"
     />
     <cv-select
         v-model="useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor"
@@ -124,7 +124,7 @@ const handleStreamResolutionChange = (value: number) => {
         tooltip="Resolution to which camera frames are downscaled for streaming to the dashboard"
         :items="streamResolutions"
         :select-cols="10"
-        @input="handleStreamResolutionChange"
+        @input="args => handleStreamResolutionChange(args)"
     />
   </div>
 </template>
