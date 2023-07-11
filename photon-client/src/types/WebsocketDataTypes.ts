@@ -26,20 +26,18 @@ export interface WebsocketCompleteCalib {
     intrinsics: number[]
 }
 
-export interface WebsocketVideoFormat {
-    [key: number]: {
-        fps: number,
-        height: number,
-        width: number,
-        pixelFormat: string,
-        index?: number,
-        diagonalFOV?: number,
-        horizontalFOV?: number,
-        verticalFOV?: number,
-        standardDeviation?: number,
-        mean?: number
-    }
-}
+export type WebsocketVideoFormat = Record<number, {
+    fps: number,
+    height: number,
+    width: number,
+    pixelFormat: string,
+    index?: number,
+    diagonalFOV?: number,
+    horizontalFOV?: number,
+    verticalFOV?: number,
+    standardDeviation?: number,
+    mean?: number
+}>
 
 export interface WebsocketCameraSettingsUpdate {
     calibrations: WebsocketCompleteCalib[],
@@ -58,30 +56,29 @@ export interface WebsocketNTUpdate {
     address?: string,
     clients?: number
 }
-export interface WebsocketPipelineResultUpdate {
-    [key: number]: {
-        fps: number,
-        latency: number,
-        targets: {
-            yaw: number,
-            pitch: number,
-            skew: number,
-            area: number,
-            ambiguity: number,
-            fiducialId: number,
-            pose: {
-                "angle_z": number,
-                "qw": number,
-                "qx": number,
-                "x": number,
-                "qy": number,
-                "y": number,
-                "qz": number,
-                "z": number
-            },
-        }[]
-    }
-}
+export type WebsocketPipelineResultUpdate = Record<number, {
+    fps: number,
+    latency: number,
+    targets: {
+        yaw: number,
+        pitch: number,
+        skew: number,
+        area: number,
+        ambiguity: number,
+        fiducialId: number,
+        pose: {
+            "angle_z": number,
+            "qw": number,
+            "qx": number,
+            "x": number,
+            "qy": number,
+            "y": number,
+            "qz": number,
+            "z": number
+        },
+    }[]
+}>
+
 export interface WebsocketCalibrationData {
     "patternWidth": number,
     "boardType": number,
