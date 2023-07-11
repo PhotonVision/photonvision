@@ -1,7 +1,8 @@
 export enum PipelineType {
     Reflective=2,
     ColoredShape=3,
-    AprilTag=4
+    AprilTag=4,
+    Aruco=5
 }
 
 enum AprilTagFamily {
@@ -193,4 +194,30 @@ export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
     tagFamily: AprilTagFamily.Family16h5
 };
 
-export type ActivePipelineSettings = ReflectivePipelineSettings | ColoredShapePipelineSettings | AprilTagPipelineSettings
+export interface ArucoPipelineSettings extends PipelineSettings {
+    pipelineType: PipelineType.Aruco
+    decimate: number
+    threads: number
+    numIterations: number
+    cornerAccuracy: number
+    useAruco3: boolean
+}
+export type ConfigurableArucoPipelineSettings = Partial<Omit<ArucoPipelineSettings, "pipelineType">> & ConfigurablePipelineSettings
+export const DefaultArucoPipelineSettings: ArucoPipelineSettings = {
+    ...DefaultPipelineSettings,
+    outputShowMultipleTargets: true,
+    targetModel: 7,
+    cameraExposure: -1,
+    cameraAutoExposure: true,
+    ledMode: false,
+    pipelineType: PipelineType.Aruco,
+
+    decimate: 1,
+    threads: 2,
+    numIterations: 100,
+    cornerAccuracy: 25,
+    useAruco3: true
+};
+
+export type ActivePipelineSettings = ReflectivePipelineSettings | ColoredShapePipelineSettings | AprilTagPipelineSettings | ArucoPipelineSettings
+export type ActiveConfigurablePipelineSettings = ConfigurableReflectivePipelineSettings | ConfigurableColoredShapePipelineSettings | ConfigurableAprilTagPipelineSettings | ConfigurableArucoPipelineSettings

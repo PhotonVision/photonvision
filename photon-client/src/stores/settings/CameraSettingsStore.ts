@@ -1,20 +1,19 @@
-import { defineStore } from "pinia";
+import {defineStore} from "pinia";
 import type {
     CalibrationBoardTypes,
     CameraCalibrationResult,
-    CameraSettings, ConfigurableCameraSettings,
+    CameraSettings,
+    ConfigurableCameraSettings,
     RobotOffsetType,
     VideoFormat
 } from "@/types/SettingTypes";
-import { PlaceholderCameraSettings } from "@/types/SettingTypes";
-import { useStateStore } from "@/stores/StateStore";
-import type { WebsocketCameraSettingsUpdate } from "@/types/WebsocketDataTypes";
-import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
+import {PlaceholderCameraSettings} from "@/types/SettingTypes";
+import {useStateStore} from "@/stores/StateStore";
+import type {WebsocketCameraSettingsUpdate} from "@/types/WebsocketDataTypes";
+import {WebsocketPipelineType} from "@/types/WebsocketDataTypes";
 import type {
-    ActivePipelineSettings,
-    ConfigurableAprilTagPipelineSettings,
-    ConfigurableColoredShapePipelineSettings,
-    ConfigurableReflectivePipelineSettings
+    ActiveConfigurablePipelineSettings,
+    ActivePipelineSettings
 } from "@/types/PipelineTypes";
 import { PipelineType } from "@/types/PipelineTypes";
 import axios from "axios";
@@ -48,6 +47,8 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
                     return WebsocketPipelineType.ColoredShape;
                 case PipelineType.AprilTag:
                     return WebsocketPipelineType.AprilTag;
+                case PipelineType.Aruco:
+                    return WebsocketPipelineType.Aruco;
             }
         },
         currentVideoFormat(): VideoFormat {
@@ -140,7 +141,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
          * @param updateStore whether or not to update the store. This is useful if the input field already models the store reference.
          * @param cameraIndex the index of the camera
          */
-        changeCurrentPipelineSetting(settings: ConfigurableReflectivePipelineSettings | ConfigurableColoredShapePipelineSettings | ConfigurableAprilTagPipelineSettings, updateStore = true, cameraIndex: number = useStateStore().currentCameraIndex) {
+        changeCurrentPipelineSetting(settings: ActiveConfigurablePipelineSettings, updateStore = true, cameraIndex: number = useStateStore().currentCameraIndex) {
             const payload = {
                 changePipelineSetting: {
                     ...settings,
