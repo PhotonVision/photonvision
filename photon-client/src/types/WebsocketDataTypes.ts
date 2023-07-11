@@ -1,9 +1,5 @@
 import type {GeneralSettings, LightingSettings, MetricData, NetworkSettings} from "@/types/SettingTypes";
-import type {
-    AprilTagPipelineSettings,
-    ColoredShapePipelineSettings,
-    ReflectivePipelineSettings
-} from "@/types/PipelineTypes";
+import type {ActivePipelineSettings} from "@/types/PipelineTypes";
 
 export interface WebsocketLogMessage {
     logMessage: {
@@ -42,7 +38,7 @@ export type WebsocketVideoFormat = Record<number, {
 export interface WebsocketCameraSettingsUpdate {
     calibrations: WebsocketCompleteCalib[],
     currentPipelineIndex: number,
-    currentPipelineSettings: ReflectivePipelineSettings | ColoredShapePipelineSettings | AprilTagPipelineSettings,
+    currentPipelineSettings: ActivePipelineSettings,
     fov: number,
     inputStreamPort: number,
     isFovConfigurable: boolean,
