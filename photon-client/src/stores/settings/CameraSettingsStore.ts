@@ -44,8 +44,8 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
             switch (this.currentPipelineType) {
                 case PipelineType.Reflective:
                     return WebsocketPipelineType.Reflective;
-                case PipelineType.Colored:
-                    return WebsocketPipelineType.Colored;
+                case PipelineType.ColoredShape:
+                    return WebsocketPipelineType.ColoredShape;
                 case PipelineType.AprilTag:
                     return WebsocketPipelineType.AprilTag;
             }

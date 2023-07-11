@@ -1,6 +1,6 @@
 export enum PipelineType {
     Reflective=2,
-    Colored=3,
+    ColoredShape=3,
     AprilTag=4
 }
 
@@ -144,7 +144,7 @@ export const DefaultColoredShapePipelineSettings: ColoredShapePipelineSettings =
     ledMode: true,
     outputShowMultipleTargets: false,
     cameraExposure: 20,
-    pipelineType: PipelineType.Colored,
+    pipelineType: PipelineType.ColoredShape,
 
     erode: false,
     cameraCalibration: null,

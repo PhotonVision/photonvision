@@ -104,7 +104,7 @@ export enum WebsocketPipelineType {
     Calib3d=-2,
     DriverMode=-1,
     Reflective=0,
-    Colored=1,
+    ColoredShape=1,
     AprilTag=2,
     Aruco=3
 }

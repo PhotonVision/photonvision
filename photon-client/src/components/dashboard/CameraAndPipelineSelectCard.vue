@@ -241,7 +241,7 @@ const cancelChangePipelineType = () => {
             tooltip="Changes the pipeline type, which changes the type of processing that will happen on input frames"
             :items="[
                 {name: 'Reflective', value: WebsocketPipelineType.Reflective},
-                {name: 'Colored Shape', value: WebsocketPipelineType.Colored},
+                {name: 'Colored Shape', value: WebsocketPipelineType.ColoredShape},
                 {name: 'AprilTag', value: WebsocketPipelineType.AprilTag}]"
             @input="showPipelineTypeChangeDialog = true"
         />
@@ -280,7 +280,7 @@ const cancelChangePipelineType = () => {
               tooltip="Pipeline type, which changes the type of processing that will happen on input frames"
               :items="[
                     {name: 'Reflective', value: WebsocketPipelineType.Reflective},
-                    {name: 'Colored Shape', value: WebsocketPipelineType.Colored},
+                    {name: 'Colored Shape', value: WebsocketPipelineType.ColoredShape},
                     {name: 'AprilTag', value: WebsocketPipelineType.AprilTag}]"
           />
         </v-card-text>
