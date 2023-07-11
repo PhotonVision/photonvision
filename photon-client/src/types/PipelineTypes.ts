@@ -10,7 +10,6 @@ enum AprilTagFamily {
     Family16h5=2
 }
 
-
 export interface PipelineSettings {
     offsetRobotOffsetMode: number
     streamingFrameDivisor: number
@@ -56,7 +55,7 @@ export interface PipelineSettings {
     pipelineType: PipelineType
     contourIntersection: number
 }
-export type ConfigurablePipelineSettings = Partial<Omit<PipelineSettings, "offsetDualPointAArea" | "cornerDetectionSideCount" | "pipelineNickname" | "pipelineIndex" | "cornerDetectionUseConvexHulls" | "offsetDualPointA" | "offsetDualPointB" | "ledMode" | "offsetSinglePoint" | "offsetDualPointBArea" | "cornerDetectionExactSideCount" | "cornerDetectionStrategy">>
+export type ConfigurablePipelineSettings = Partial<Omit<PipelineSettings, "offsetDualPointAArea" | "cornerDetectionSideCount" | "pipelineNickname" | "pipelineIndex" | "pipelineType" | "cornerDetectionUseConvexHulls" | "offsetDualPointA" | "offsetDualPointB" | "ledMode" | "offsetSinglePoint" | "offsetDualPointBArea" | "cornerDetectionExactSideCount" | "cornerDetectionStrategy">>
 export const DefaultPipelineSettings: PipelineSettings = {
     offsetRobotOffsetMode: 0,
     streamingFrameDivisor: 0,
@@ -106,10 +105,11 @@ export const DefaultPipelineSettings: PipelineSettings = {
 };
 
 export interface ReflectivePipelineSettings extends PipelineSettings {
+    pipelineType: PipelineType.Reflective
     contourFilterRangeY: number
     contourFilterRangeX: number
 }
-export type ConfigurableReflectivePipelineSettings = Partial<ReflectivePipelineSettings> & ConfigurablePipelineSettings
+export type ConfigurableReflectivePipelineSettings = Partial<Omit<ReflectivePipelineSettings, "pipelineType">> & ConfigurablePipelineSettings
 export const DefaultReflectivePipelineSettings: ReflectivePipelineSettings = {
     ...DefaultPipelineSettings,
     cameraGain: 20,
@@ -124,6 +124,7 @@ export const DefaultReflectivePipelineSettings: ReflectivePipelineSettings = {
 };
 
 export interface ColoredShapePipelineSettings extends PipelineSettings {
+    pipelineType: PipelineType.ColoredShape
     erode: boolean
     cameraCalibration: null
     dilate: boolean
@@ -136,7 +137,7 @@ export interface ColoredShapePipelineSettings extends PipelineSettings {
     minDist: number
     maxCannyThresh: number
 }
-export type ConfigurableColoredShapePipelineSettings = Partial<Omit<ColoredShapePipelineSettings, "erode" | "cameraCalibration" | "dilate" | "circleAccuracy" | "minDist" >> & ConfigurablePipelineSettings
+export type ConfigurableColoredShapePipelineSettings = Partial<Omit<ColoredShapePipelineSettings, "pipelineType" | "erode" | "cameraCalibration" | "dilate" | "circleAccuracy" | "minDist" >> & ConfigurablePipelineSettings
 export const DefaultColoredShapePipelineSettings: ColoredShapePipelineSettings = {
     ...DefaultPipelineSettings,
     cameraGain: 75,
@@ -160,6 +161,7 @@ export const DefaultColoredShapePipelineSettings: ColoredShapePipelineSettings =
 };
 
 export interface AprilTagPipelineSettings extends PipelineSettings {
+    pipelineType: PipelineType.AprilTag
     hammingDist: number
     numIterations: number
     decimate: number
@@ -170,7 +172,7 @@ export interface AprilTagPipelineSettings extends PipelineSettings {
     threads: number
     tagFamily: AprilTagFamily
 }
-export type ConfigurableAprilTagPipelineSettings = Partial<Omit<AprilTagPipelineSettings, "hammingDist" | "debug">> & ConfigurablePipelineSettings
+export type ConfigurableAprilTagPipelineSettings = Partial<Omit<AprilTagPipelineSettings, "pipelineType" | "hammingDist" | "debug">> & ConfigurablePipelineSettings
 export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
     ...DefaultPipelineSettings,
     cameraGain: 75,
