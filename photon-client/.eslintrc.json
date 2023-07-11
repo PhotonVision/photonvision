@@ -9,6 +9,7 @@
     "quotes": ["error", "double"],
     "comma-dangle": ["error", "never"],
     "semi": ["error", "always"],
-    "eol-last": "error"
+    "eol-last": "error",
+    "object-curly-spacing": ["error", "always"]
   }
 }

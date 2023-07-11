@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type {Component} from "vue";
-import {computed, ref} from "vue";
-import {useCameraSettingsStore} from "@/stores/settings/CameraSettingsStore";
+import type { Component } from "vue";
+import { computed, ref } from "vue";
+import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 
 import InputTab from "@/components/dashboard/PipelineConfigTabs/InputTab.vue";
 import ThresholdTab from "@/components/dashboard/PipelineConfigTabs/ThresholdTab.vue";
@@ -12,7 +12,7 @@ import OutputTab from "@/components/dashboard/PipelineConfigTabs/OutputTab.vue";
 import TargetsTab from "@/components/dashboard/PipelineConfigTabs/TargetsTab.vue";
 import PnPTab from "@/components/dashboard/PipelineConfigTabs/PnPTab.vue";
 import Map3DTab from "@/components/dashboard/PipelineConfigTabs/Map3DTab.vue";
-import {WebsocketPipelineType} from "@/types/WebsocketDataTypes";
+import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 
 interface ConfigOption {
   tabName: string,

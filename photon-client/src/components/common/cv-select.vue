@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed} from "vue";
+import { computed } from "vue";
 import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
 
 interface SelectItem {
@@ -36,7 +36,7 @@ const items = computed<SelectItem[]>(() => {
   if((props.items[0] as SelectItem).name) {
     return props.items as SelectItem[];
   }
-  return props.items.map((v, i) => ({name: v, value: i}));
+  return props.items.map((v, i) => ({ name: v, value: i }));
 });
 </script>
 

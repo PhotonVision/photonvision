@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import {computed, getCurrentInstance, ref} from "vue";
-import {useSettingsStore} from "@/stores/settings/GeneralSettingsStore";
-import {useStateStore} from "@/stores/StateStore";
+import { computed, getCurrentInstance, ref } from "vue";
+import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
+import { useStateStore } from "@/stores/StateStore";
 
 const getSidebarFoldedFromLocalStorage = () => {
   const localValue = localStorage.getItem("sidebarFolded");

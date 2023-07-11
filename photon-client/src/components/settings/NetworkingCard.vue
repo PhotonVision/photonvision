@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import {useSettingsStore} from "@/stores/settings/GeneralSettingsStore";
-import {ref} from "vue";
+import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
+import { ref } from "vue";
 import CvInput from "@/components/common/cv-input.vue";
 import CvRadio from "@/components/common/cv-radio.vue";
 import CvSwitch from "@/components/common/cv-switch.vue";
-import {NetworkConnectionType} from "@/types/SettingTypes";
-import {useStateStore} from "@/stores/StateStore";
+import { NetworkConnectionType } from "@/types/SettingTypes";
+import { useStateStore } from "@/stores/StateStore";
 
 const settingsValid = ref(true);
 const isValidNetworkTablesIP = (v: string | undefined): boolean => {

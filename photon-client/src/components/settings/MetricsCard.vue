@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import {useSettingsStore} from "@/stores/settings/GeneralSettingsStore";
+import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { onMounted } from "vue";
-import {useStateStore} from "@/stores/StateStore";
+import { useStateStore } from "@/stores/StateStore";
 
 onMounted(() => {
   // TODO should this be silent?

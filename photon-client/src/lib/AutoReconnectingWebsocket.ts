@@ -1,5 +1,5 @@
-import {decode, encode} from "@msgpack/msgpack";
-import type {IncomingWebsocketData} from "@/types/WebsocketDataTypes";
+import { decode, encode } from "@msgpack/msgpack";
+import type { IncomingWebsocketData } from "@/types/WebsocketDataTypes";
 
 /**
  * {@link WebSocket} wrapper class that automatically reconnects to the provided host address if the connection was closed by the remote host or a connection failure.

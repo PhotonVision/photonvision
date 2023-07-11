@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import {computed} from "vue";
-import {useCameraSettingsStore} from "@/stores/settings/CameraSettingsStore";
-import {useStateStore} from "@/stores/StateStore";
-import {useSettingsStore} from "@/stores/settings/GeneralSettingsStore";
-import {PipelineType} from "@/types/PipelineTypes";
+import { computed } from "vue";
+import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import { useStateStore } from "@/stores/StateStore";
+import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
+import { PipelineType } from "@/types/PipelineTypes";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 
 defineProps<{

@@ -1,5 +1,5 @@
-import type {GeneralSettings, LightingSettings, MetricData, NetworkSettings} from "@/types/SettingTypes";
-import type {ActivePipelineSettings} from "@/types/PipelineTypes";
+import type { GeneralSettings, LightingSettings, MetricData, NetworkSettings } from "@/types/SettingTypes";
+import type { ActivePipelineSettings } from "@/types/PipelineTypes";
 
 export interface WebsocketLogMessage {
     logMessage: {

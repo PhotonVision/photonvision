@@ -3,7 +3,7 @@ import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vite";
 import Vue2 from "@vitejs/plugin-vue2";
 import Components from "unplugin-vue-components/vite";
-import {VuetifyResolver} from "unplugin-vue-components/resolvers";
+import { VuetifyResolver } from "unplugin-vue-components/resolvers";
 
 export default defineConfig({
   base: "./",

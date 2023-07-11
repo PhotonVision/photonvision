@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {useStateStore} from "@/stores/StateStore";
+import { useStateStore } from "@/stores/StateStore";
 </script>
 
 <template>

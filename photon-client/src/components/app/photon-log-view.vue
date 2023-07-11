@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import {computed, ref, inject} from "vue";
-import {LogLevel, type LogMessage} from "@/types/SettingTypes";
-import {useStateStore} from "@/stores/StateStore";
+import { computed, ref, inject } from "vue";
+import { LogLevel, type LogMessage } from "@/types/SettingTypes";
+import { useStateStore } from "@/stores/StateStore";
 
 const selectedLogLevels = ref<LogLevel[]>([LogLevel.ERROR, LogLevel.WARN, LogLevel.INFO]);
 
 const logs = computed<LogMessage[]>(() => useStateStore().logMessages.filter(message => selectedLogLevels.value.includes(message.level)));
 const showLogModal = computed<boolean>({
   get: () => useStateStore().showLogModal,
-  set: v => useStateStore().$patch({showLogModal: v})
+  set: v => useStateStore().$patch({ showLogModal: v })
 });
 
 const backendAddress = inject<string>("backendAddress");

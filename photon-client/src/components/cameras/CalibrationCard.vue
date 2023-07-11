@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import {computed, ref} from "vue";
-import {useCameraSettingsStore} from "@/stores/settings/CameraSettingsStore";
-import {CalibrationBoardTypes} from "@/types/SettingTypes";
+import { computed, ref } from "vue";
+import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import { CalibrationBoardTypes } from "@/types/SettingTypes";
 import JsPDF from "jspdf";
-import {font as PromptRegular} from "@/assets/fonts/PromptRegular";
+import { font as PromptRegular } from "@/assets/fonts/PromptRegular";
 import MonoLogo from "@/assets/images/logoMono.png";
 import CvSlider from "@/components/common/cv-slider.vue";
-import {useStateStore} from "@/stores/StateStore";
+import { useStateStore } from "@/stores/StateStore";
 import CvSwitch from "@/components/common/cv-switch.vue";
 import CvSelect from "@/components/common/cv-select.vue";
 import CvNumberInput from "@/components/common/cv-number-input.vue";
@@ -27,7 +27,7 @@ const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.Chessboard);
 const importCalibrationFromCalibDB = ref();
 
 const downloadCalibBoard = () => {
-  const doc = new JsPDF({unit: "in", format: "letter"});
+  const doc = new JsPDF({ unit: "in", format: "letter" });
 
   doc.addFileToVFS("Prompt-Regular.tff", PromptRegular);
   doc.addFont("Prompt-Regular.tff", "Prompt-Regular", "normal");
@@ -106,7 +106,7 @@ const openCalibUploadPrompt = () => {
 };
 const readImportedCalibration = (event) => {
   event.target.files[0].text().then(text => {
-    useCameraSettingsStore().importCalibDB({payload: text, filename: event.target.files[0].name})
+    useCameraSettingsStore().importCalibDB({ payload: text, filename: event.target.files[0].name })
         .then((response) => {
           useStateStore().showSnackbarMessage({
             message:  response.data.text || response.data,

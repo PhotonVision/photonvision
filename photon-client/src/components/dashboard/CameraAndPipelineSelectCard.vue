@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import CvSelect from "@/components/common/cv-select.vue";
-import {useStateStore} from "@/stores/StateStore";
-import {useCameraSettingsStore} from "@/stores/settings/CameraSettingsStore";
-import {WebsocketPipelineType} from "@/types/WebsocketDataTypes";
-import {computed, ref} from "vue";
+import { useStateStore } from "@/stores/StateStore";
+import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
+import { computed, ref } from "vue";
 import CvIcon from "@/components/common/cv-icon.vue";
 import CvInput from "@/components/common/cv-input.vue";
 
@@ -54,13 +54,13 @@ const cancelCameraNameEdit = () => {
 };
 
 const pipelineNamesWrapper = computed<{name: string, value: number}[]>(() => {
-  const pipelineNames = useCameraSettingsStore().pipelineNames.map((name, index) => ({name: name, value: index}));
+  const pipelineNames = useCameraSettingsStore().pipelineNames.map((name, index) => ({ name: name, value: index }));
 
   if(useCameraSettingsStore().isDriverMode) {
-    pipelineNames.push({name: "Driver Mode", value: WebsocketPipelineType.DriverMode});
+    pipelineNames.push({ name: "Driver Mode", value: WebsocketPipelineType.DriverMode });
   }
   if(useCameraSettingsStore().isCalibrationMode) {
-    pipelineNames.push({name: "3D Calibration Mode", value: WebsocketPipelineType.Calib3d});
+    pipelineNames.push({ name: "3D Calibration Mode", value: WebsocketPipelineType.Calib3d });
   }
 
   return pipelineNames;

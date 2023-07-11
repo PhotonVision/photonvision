@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import CvSelect from "@/components/common/cv-select.vue";
 import CvNumberInput from "@/components/common/cv-number-input.vue";
-import {useCameraSettingsStore} from "@/stores/settings/CameraSettingsStore";
-import {useStateStore} from "@/stores/StateStore";
-import {ref} from "vue";
+import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import { useStateStore } from "@/stores/StateStore";
+import { ref } from "vue";
 
 const currentFov = ref(useCameraSettingsStore().currentCameraSettings.fov.value);
 
 const saveCameraSettings = () => {
-  useCameraSettingsStore().updateCameraSettings({fov: currentFov.value}, true)
+  useCameraSettingsStore().updateCameraSettings({ fov: currentFov.value }, true)
       .then((response) => {
         useStateStore().showSnackbarMessage({
           color: "success",

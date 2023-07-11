@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {inject, ref} from "vue";
-import {useStateStore} from "@/stores/StateStore";
+import { inject, ref } from "vue";
+import { useStateStore } from "@/stores/StateStore";
 import CvSelect from "@/components/common/cv-select.vue";
 import axios from "axios";
 
@@ -62,14 +62,14 @@ const openOfflineUpdatePrompt = () => {
   offlineUpdate.value.click();
 };
 const handleOfflineUpdate = (event) => {
-  useStateStore().showSnackbarMessage({message: "New Software Upload in Progress...", color: "secondary", timeout: -1});
+  useStateStore().showSnackbarMessage({ message: "New Software Upload in Progress...", color: "secondary", timeout: -1 });
 
   const formData = new FormData();
   formData.append("jarData", event.target.files[0]);
 
   axios.post("/utils/offlineUpdate", formData, {
     headers: { "Content-Type": "multipart/form-data" },
-    onUploadProgress: function({progress})  {
+    onUploadProgress: function({ progress })  {
       const uploadPercentage = ((progress || 0) * 100.0);
       if (uploadPercentage < 99.5) {
         useStateStore().showSnackbarMessage({

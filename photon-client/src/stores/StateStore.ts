@@ -1,7 +1,7 @@
-import {defineStore} from "pinia";
-import type {LogMessage} from "@/types/SettingTypes";
-import type {AutoReconnectingWebsocket} from "@/lib/AutoReconnectingWebsocket";
-import type {PipelineResult} from "@/types/PhotonTrackingTypes";
+import { defineStore } from "pinia";
+import type { LogMessage } from "@/types/SettingTypes";
+import type { AutoReconnectingWebsocket } from "@/lib/AutoReconnectingWebsocket";
+import type { PipelineResult } from "@/types/PhotonTrackingTypes";
 import type {
     WebsocketCalibrationData,
     WebsocketLogMessage,
@@ -112,7 +112,7 @@ export const useStateStore = defineStore("state", {
             }
         },
         hideSnackbarMessage() {
-            this.snackbarData = {show: false, timeout: 0, color: "error", message: ""};
+            this.snackbarData = { show: false, timeout: 0, color: "error", message: "" };
         }
     }
 });

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import {computed, inject} from "vue";
-import {useCameraSettingsStore} from "@/stores/settings/CameraSettingsStore";
-import {useStateStore} from "@/stores/StateStore";
+import { computed, inject } from "vue";
+import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import { useStateStore } from "@/stores/StateStore";
 import loadingImage from "@/assets/images/loading.svg";
-import type {StyleValue} from "vue/types/jsx";
+import type { StyleValue } from "vue/types/jsx";
 
 const props = defineProps<{
   streamType: "Raw" | "Processed"

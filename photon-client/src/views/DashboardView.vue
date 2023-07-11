@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import {computed} from "vue";
+import { computed } from "vue";
 import CamerasCard from "@/components/dashboard/CamerasCard.vue";
 import PipelineConfigCard from "@/components/dashboard/CameraAndPipelineSelectCard.vue";
 import StreamConfigCard from "@/components/dashboard/StreamConfigCard.vue";
 import OperationConfigCard from "@/components/dashboard/PipelineConfigCard.vue";
-import {useCameraSettingsStore} from "@/stores/settings/CameraSettingsStore";
+import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 
 const cameraViewType = computed<number[]>({
   get: (): number[] => {

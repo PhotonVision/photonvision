@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {computed} from "vue";
-import {useCameraSettingsStore} from "@/stores/settings/CameraSettingsStore";
+import { computed } from "vue";
+import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 
 const props = defineProps<{
   // TODO fully update v-model usage in custom components on Vue3 update
@@ -21,7 +21,7 @@ const processingMode = computed<number>({
   get: () => useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled ? 1: 0,
   set: v => {
     if(useCameraSettingsStore().isCurrentVideoFormatCalibrated) {
-      useCameraSettingsStore().changeCurrentPipelineSetting({solvePNPEnabled: v === 1}, true);
+      useCameraSettingsStore().changeCurrentPipelineSetting({ solvePNPEnabled: v === 1 }, true);
     }
   }
 });

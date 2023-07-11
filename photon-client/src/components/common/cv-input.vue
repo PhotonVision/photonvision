@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed} from "vue";
+import { computed } from "vue";
 import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
 
 const props = withDefaults(defineProps<{
@@ -30,7 +30,7 @@ const localValue = computed({
 });
 
 
-const handleKeydown = ({key}) => {
+const handleKeydown = ({ key }) => {
   switch (key) {
     case "Enter":
       if(!(props.rules || []).some(v => v(localValue.value) === false || typeof v(localValue.value) === "string")) {

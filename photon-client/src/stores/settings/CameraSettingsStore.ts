@@ -1,4 +1,4 @@
-import {defineStore} from "pinia";
+import { defineStore } from "pinia";
 import type {
     CalibrationBoardTypes,
     CameraCalibrationResult,
@@ -6,17 +6,17 @@ import type {
     RobotOffsetType,
     VideoFormat
 } from "@/types/SettingTypes";
-import {PlaceholderCameraSettings} from "@/types/SettingTypes";
-import {useStateStore} from "@/stores/StateStore";
-import type {WebsocketCameraSettingsUpdate} from "@/types/WebsocketDataTypes";
-import {WebsocketPipelineType} from "@/types/WebsocketDataTypes";
+import { PlaceholderCameraSettings } from "@/types/SettingTypes";
+import { useStateStore } from "@/stores/StateStore";
+import type { WebsocketCameraSettingsUpdate } from "@/types/WebsocketDataTypes";
+import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import type {
     ActivePipelineSettings,
     ConfigurableAprilTagPipelineSettings,
     ConfigurableColoredShapePipelineSettings,
     ConfigurableReflectivePipelineSettings
 } from "@/types/PipelineTypes";
-import {PipelineType} from "@/types/PipelineTypes";
+import { PipelineType } from "@/types/PipelineTypes";
 import axios from "axios";
 
 interface CameraSettingsStore {
@@ -83,7 +83,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
                 },
                 validVideoFormats: Object.keys(d.videoFormatList)
                     .sort((a, b) => parseInt(a) - parseInt(b)) // TODO, does the backend already return this sorted
-                    .map<VideoFormat>((k, i) => ({...d.videoFormatList[k], index: i})),
+                    .map<VideoFormat>((k, i) => ({ ...d.videoFormatList[k], index: i })),
                 completeCalibrations: d.calibrations.map<CameraCalibrationResult>(calib => ({
                     resolution: {
                         height: calib.height,
@@ -292,7 +292,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
          * @return HTTP request promise to the backend
          */
         endPnPCalibration(cameraIndex: number = useStateStore().currentCameraIndex) {
-           return axios.post("/calibration/end", {index: cameraIndex});
+           return axios.post("/calibration/end", { index: cameraIndex });
         },
         /**
          * Import calibration data that was computed using CalibDB.
@@ -305,7 +305,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
                 ...data,
                 cameraIndex: cameraIndex
             };
-            return axios.post("/calibration/importFromCalibDB", payload, { headers: { "Content-Type": "text/plain" }});
+            return axios.post("/calibration/importFromCalibDB", payload, { headers: { "Content-Type": "text/plain" } });
         },
         /**
          * Take a snapshot for the calibration processes

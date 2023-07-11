@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import CvSlider from "@/components/common/cv-slider.vue";
-import {useCameraSettingsStore} from "@/stores/settings/CameraSettingsStore";
+import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import CvSwitch from "@/components/common/cv-switch.vue";
 import CvSelect from "@/components/common/cv-select.vue";
-import {computed} from "vue";
-import {useSettingsStore} from "@/stores/settings/GeneralSettingsStore";
+import { computed } from "vue";
+import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
 // Due to something with libcamera or something else IDK much about, the 90° rotations need to be disabled if the libcamera drivers are being used.
-const cameraRotations = computed(() => ["Normal","90° CW","180°","90° CCW"].map((v, i) => ({name: v, value: i, disabled: useSettingsStore().gpuAccelerationEnabled ?  [1, 3].includes(i) : false})));
+const cameraRotations = computed(() => ["Normal","90° CW","180°","90° CCW"].map((v, i) => ({ name: v, value: i, disabled: useSettingsStore().gpuAccelerationEnabled ?  [1, 3].includes(i) : false })));
 
 const streamDivisors = [1, 2, 4, 6];
 const getFilteredStreamDivisors = (): number[] => {
@@ -22,13 +22,13 @@ const getNumberOfSkippedDivisors = () => streamDivisors.length - getFilteredStre
 
 const cameraResolutions = computed(() => useCameraSettingsStore().currentCameraSettings.validVideoFormats.map(f => `${f.resolution.width} X ${f.resolution.height} at ${f.fps} FPS, ${f.pixelFormat}`));
 const handleResolutionChange = (value: number) => {
-  useCameraSettingsStore().changeCurrentPipelineSetting({cameraVideoModeIndex: value}, false);
+  useCameraSettingsStore().changeCurrentPipelineSetting({ cameraVideoModeIndex: value }, false);
 
-  useCameraSettingsStore().changeCurrentPipelineSetting({streamingFrameDivisor: getNumberOfSkippedDivisors()}, false);
+  useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: getNumberOfSkippedDivisors() }, false);
   useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor = 0;
 
   if(!useCameraSettingsStore().isCurrentVideoFormatCalibrated) {
-    useCameraSettingsStore().changeCurrentPipelineSetting({solvePNPEnabled: false}, true);
+    useCameraSettingsStore().changeCurrentPipelineSetting({ solvePNPEnabled: false }, true);
   }
 };
 
@@ -39,7 +39,7 @@ const streamResolutions = computed(() => {
       .map(x => `${Math.floor(currentResolution.width / x)} X ${Math.floor(currentResolution.height / x)}`);
 });
 const handleStreamResolutionChange = (value: number) => {
-  useCameraSettingsStore().changeCurrentPipelineSetting({streamingFrameDivisor: value + getNumberOfSkippedDivisors()}, false);
+  useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: value + getNumberOfSkippedDivisors() }, false);
 };
 </script>
 

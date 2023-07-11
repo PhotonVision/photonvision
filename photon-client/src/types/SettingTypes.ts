@@ -1,4 +1,4 @@
-import {type ActivePipelineSettings, DefaultAprilTagPipelineSettings} from "@/types/PipelineTypes";
+import { type ActivePipelineSettings, DefaultAprilTagPipelineSettings } from "@/types/PipelineTypes";
 
 export interface GeneralSettings {
     version?: string
@@ -115,17 +115,17 @@ export const PlaceholderCameraSettings: CameraSettings = {
     },
     validVideoFormats: [
         {
-            resolution: {width: 1920, height: 1080},
+            resolution: { width: 1920, height: 1080 },
             fps: 60,
             pixelFormat: "RGB"
         },
         {
-            resolution: {width: 1280, height: 720},
+            resolution: { width: 1280, height: 720 },
             fps: 60,
             pixelFormat: "RGB"
         },
         {
-            resolution: {width: 640, height: 480},
+            resolution: { width: 640, height: 480 },
             fps: 30,
             pixelFormat: "RGB"
         }

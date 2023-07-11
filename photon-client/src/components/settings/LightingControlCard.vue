@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import CvSlider from "@/components/common/cv-slider.vue";
-import {useSettingsStore} from "@/stores/settings/GeneralSettingsStore";
+import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 </script>
 
 <template>

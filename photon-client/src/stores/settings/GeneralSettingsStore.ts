@@ -1,14 +1,14 @@
-import {defineStore} from "pinia";
+import { defineStore } from "pinia";
 import type {
     GeneralSettings,
     LightingSettings,
     MetricData,
     NetworkSettings
 } from "@/types/SettingTypes";
-import {NetworkConnectionType} from "@/types/SettingTypes";
-import {useStateStore} from "@/stores/StateStore";
+import { NetworkConnectionType } from "@/types/SettingTypes";
+import { useStateStore } from "@/stores/StateStore";
 import axios from "axios";
-import type {WebsocketSettingsUpdate} from "@/types/WebsocketDataTypes";
+import type { WebsocketSettingsUpdate } from "@/types/WebsocketDataTypes";
 
 interface GeneralSettingsStore {
     general: GeneralSettings,

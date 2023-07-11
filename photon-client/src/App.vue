@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import {useStateStore} from "@/stores/StateStore";
-import {useSettingsStore} from "@/stores/settings/GeneralSettingsStore";
-import {useCameraSettingsStore} from "@/stores/settings/CameraSettingsStore";
-import {AutoReconnectingWebsocket} from "@/lib/AutoReconnectingWebsocket";
-import {inject, onMounted} from "vue";
+import { useStateStore } from "@/stores/StateStore";
+import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
+import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import { AutoReconnectingWebsocket } from "@/lib/AutoReconnectingWebsocket";
+import { inject, onMounted } from "vue";
 import PhotonSidebar from "@/components/app/photon-sidebar.vue";
 import PhotonLogView from "@/components/app/photon-log-view.vue";
 import PhotonErrorSnackbar from "@/components/app/photon-error-snackbar.vue";
