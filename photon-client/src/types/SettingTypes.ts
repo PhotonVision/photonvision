@@ -1,9 +1,4 @@
-import type {
-    AprilTagPipelineSettings,
-    ColoredShapePipelineSettings,
-    ReflectivePipelineSettings
-} from "@/types/PipelineTypes";
-import {DefaultAprilTagPipelineSettings} from "@/types/PipelineTypes";
+import {type ActivePipelineSettings, DefaultAprilTagPipelineSettings} from "@/types/PipelineTypes";
 
 export interface GeneralSettings {
     version?: string
@@ -83,8 +78,6 @@ export interface CameraCalibrationResult {
     perViewErrors: number[],
     intrinsics: number[],
 }
-
-export type ActivePipelineSettings = ReflectivePipelineSettings | ColoredShapePipelineSettings | AprilTagPipelineSettings
 
 export interface ConfigurableCameraSettings {
     fov: number

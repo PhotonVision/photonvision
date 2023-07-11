@@ -1,6 +1,5 @@
 import {defineStore} from "pinia";
 import type {
-    ActivePipelineSettings,
     CalibrationBoardTypes,
     CameraCalibrationResult,
     CameraSettings, ConfigurableCameraSettings,
@@ -12,6 +11,7 @@ import {useStateStore} from "@/stores/StateStore";
 import type {WebsocketCameraSettingsUpdate} from "@/types/WebsocketDataTypes";
 import {WebsocketPipelineType} from "@/types/WebsocketDataTypes";
 import type {
+    ActivePipelineSettings,
     ConfigurableAprilTagPipelineSettings,
     ConfigurableColoredShapePipelineSettings,
     ConfigurableReflectivePipelineSettings

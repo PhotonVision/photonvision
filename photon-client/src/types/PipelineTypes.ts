@@ -10,10 +10,6 @@ enum AprilTagFamily {
     Family16h5=2
 }
 
-// driver mode index -1
-// calibration mode index -2
-
-// TODO, determine Readonly values
 
 export interface PipelineSettings {
     offsetRobotOffsetMode: number
@@ -60,7 +56,6 @@ export interface PipelineSettings {
     pipelineType: PipelineType
     contourIntersection: number
 }
-// Omitted things are based on previous usage and I have no clue whether they should or shouldn't be
 export type ConfigurablePipelineSettings = Partial<Omit<PipelineSettings, "offsetDualPointAArea" | "cornerDetectionSideCount" | "pipelineNickname" | "pipelineIndex" | "cornerDetectionUseConvexHulls" | "offsetDualPointA" | "offsetDualPointB" | "ledMode" | "offsetSinglePoint" | "offsetDualPointBArea" | "cornerDetectionExactSideCount" | "cornerDetectionStrategy">>
 export const DefaultPipelineSettings: PipelineSettings = {
     offsetRobotOffsetMode: 0,
@@ -141,7 +136,6 @@ export interface ColoredShapePipelineSettings extends PipelineSettings {
     minDist: number
     maxCannyThresh: number
 }
-// Omitted things are based on previous usage and I have no clue whether they should or shouldn't be
 export type ConfigurableColoredShapePipelineSettings = Partial<Omit<ColoredShapePipelineSettings, "erode" | "cameraCalibration" | "dilate" | "circleAccuracy" | "minDist" >> & ConfigurablePipelineSettings
 export const DefaultColoredShapePipelineSettings: ColoredShapePipelineSettings = {
     ...DefaultPipelineSettings,
@@ -176,7 +170,6 @@ export interface AprilTagPipelineSettings extends PipelineSettings {
     threads: number
     tagFamily: AprilTagFamily
 }
-// Omitted things are based on previous usage and I have no clue whether they should or shouldn't be
 export type ConfigurableAprilTagPipelineSettings = Partial<Omit<AprilTagPipelineSettings, "hammingDist" | "debug">> & ConfigurablePipelineSettings
 export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
     ...DefaultPipelineSettings,
@@ -197,3 +190,5 @@ export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
     threads: 4,
     tagFamily: AprilTagFamily.Family16h5
 };
+
+export type ActivePipelineSettings = ReflectivePipelineSettings | ColoredShapePipelineSettings | AprilTagPipelineSettings
