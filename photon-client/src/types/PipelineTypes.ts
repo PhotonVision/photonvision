@@ -140,7 +140,7 @@ export interface ColoredShapePipelineSettings extends PipelineSettings {
     minDist: number
     maxCannyThresh: number
 }
-export type ConfigurableColoredShapePipelineSettings = Partial<Omit<ColoredShapePipelineSettings, "pipelineType" | "erode" | "cameraCalibration" | "dilate" | "circleAccuracy" | "minDist" >> & ConfigurablePipelineSettings
+export type ConfigurableColoredShapePipelineSettings = Partial<Omit<ColoredShapePipelineSettings, "pipelineType" | "erode" | "cameraCalibration" | "dilate" | "minDist" >> & ConfigurablePipelineSettings
 export const DefaultColoredShapePipelineSettings: ColoredShapePipelineSettings = {
     ...DefaultPipelineSettings,
     cameraGain: 75,
