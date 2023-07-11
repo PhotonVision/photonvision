@@ -49,6 +49,11 @@ export const useSettingsStore = defineStore("settings", {
             diskUtilPct: undefined
         }
     }),
+    getters: {
+        gpuAccelerationEnabled(): boolean {
+            return this.general.gpuAcceleration !== undefined;
+        }
+    },
     actions: {
         requestMetricsUpdate() {
             return axios.post("/utils/publishMetrics");
