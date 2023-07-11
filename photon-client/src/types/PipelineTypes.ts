@@ -1,4 +1,4 @@
-import type {WebsocketNumberPair} from "@/types/WebsocketDataTypes";
+import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
 
 export enum PipelineType {
     Reflective=2,

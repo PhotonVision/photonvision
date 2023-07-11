@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {useCameraSettingsStore} from "@/stores/settings/CameraSettingsStore";
-import {PipelineType} from "@/types/PipelineTypes";
+import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import { PipelineType } from "@/types/PipelineTypes";
 import CvRangeSlider from "@/components/common/cv-range-slider.vue";
 import CvSelect from "@/components/common/cv-select.vue";
 import CvSlider from "@/components/common/cv-slider.vue";

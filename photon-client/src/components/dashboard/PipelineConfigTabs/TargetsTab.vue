@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import {useCameraSettingsStore} from "@/stores/settings/CameraSettingsStore";
-import {PipelineType} from "@/types/PipelineTypes";
-import {useStateStore} from "@/stores/StateStore";
+import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import { PipelineType } from "@/types/PipelineTypes";
+import { useStateStore } from "@/stores/StateStore";
 </script>
 
 <template>

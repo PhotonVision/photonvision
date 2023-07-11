@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
-import type {WebsocketNumberPair} from "@/types/WebsocketDataTypes";
+import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
 
 const props = withDefaults(defineProps<{
   label?: string,

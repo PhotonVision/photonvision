@@ -1,4 +1,4 @@
-import {defineStore} from "pinia";
+import { defineStore } from "pinia";
 import type {
     CalibrationBoardTypes,
     CameraCalibrationResult,
@@ -7,10 +7,10 @@ import type {
     RobotOffsetType,
     VideoFormat
 } from "@/types/SettingTypes";
-import {PlaceholderCameraSettings} from "@/types/SettingTypes";
-import {useStateStore} from "@/stores/StateStore";
-import type {WebsocketCameraSettingsUpdate} from "@/types/WebsocketDataTypes";
-import {WebsocketPipelineType} from "@/types/WebsocketDataTypes";
+import { PlaceholderCameraSettings } from "@/types/SettingTypes";
+import { useStateStore } from "@/stores/StateStore";
+import type { WebsocketCameraSettingsUpdate } from "@/types/WebsocketDataTypes";
+import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import type {
     ActiveConfigurablePipelineSettings,
     ActivePipelineSettings
