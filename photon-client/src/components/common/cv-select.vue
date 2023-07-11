@@ -4,7 +4,8 @@ import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
 
 interface SelectItem {
   name: string | number,
-  value: string | number
+  value: string | number,
+  disabled?: boolean
 }
 
 const props = withDefaults(defineProps<{
@@ -57,6 +58,7 @@ const items = computed<SelectItem[]>(() => {
           :items="items"
           item-text="name"
           item-value="value"
+          item-disabled="disabled"
           dark
           color="accent"
           item-color="secondary"
