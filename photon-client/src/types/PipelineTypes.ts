@@ -7,10 +7,16 @@ export enum PipelineType {
     Aruco=5
 }
 
-enum AprilTagFamily {
+export enum AprilTagFamily {
     Family36h11=0,
     Family25h9=1,
     Family16h5=2
+}
+
+export enum RobotOffsetPointMode {
+    None=0,
+    Single=1,
+    Dual=2
 }
 
 export enum TargetModel {
@@ -26,7 +32,7 @@ export enum TargetModel {
 }
 
 export interface PipelineSettings {
-    offsetRobotOffsetMode: number
+    offsetRobotOffsetMode: RobotOffsetPointMode
     streamingFrameDivisor: number
     offsetDualPointBArea: number
     contourGroupingMode: number
@@ -72,7 +78,7 @@ export interface PipelineSettings {
 }
 export type ConfigurablePipelineSettings = Partial<Omit<PipelineSettings, "offsetDualPointAArea" | "cornerDetectionSideCount" | "pipelineNickname" | "pipelineIndex" | "pipelineType" | "cornerDetectionUseConvexHulls" | "offsetDualPointA" | "offsetDualPointB" | "ledMode" | "offsetSinglePoint" | "offsetDualPointBArea" | "cornerDetectionExactSideCount" | "cornerDetectionStrategy">>
 export const DefaultPipelineSettings: PipelineSettings = {
-    offsetRobotOffsetMode: 0,
+    offsetRobotOffsetMode: RobotOffsetPointMode.None,
     streamingFrameDivisor: 0,
     offsetDualPointBArea: 0,
     contourGroupingMode: 0,
