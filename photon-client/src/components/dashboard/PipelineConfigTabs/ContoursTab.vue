@@ -173,6 +173,3 @@ const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings
   </div>
 </template>
 
-<style scoped>
-
-</style>
