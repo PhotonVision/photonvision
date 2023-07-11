@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Component } from "vue";
-import { computed, ref } from "vue";
+import { computed, onUpdated, ref } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 
 import InputTab from "@/components/dashboard/PipelineConfigTabs/InputTab.vue";
@@ -74,6 +74,13 @@ const filteredTabs = computed<ConfigOption[]>(() => {
       && !(!isAprilTag && tabConfig.tabName === "AprilTag") //Filter out apriltag unless we actually are doing AprilTags
       && !(!isAruco && tabConfig.tabName === "Aruco")
   );
+});
+
+onUpdated(() => {
+  // Force the current tab to the input tab on driver mode change
+  if(useCameraSettingsStore().isDriverMode) {
+    selectedTab.value = 0;
+  }
 });
 </script>
 
