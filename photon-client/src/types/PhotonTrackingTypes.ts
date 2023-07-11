@@ -2,6 +2,7 @@ export interface Pose {
     x: number,
     y: number,
     z: number,
+    angle_z: number,
     qw: number,
     qx: number,
     qy: number,
