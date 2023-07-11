@@ -15,7 +15,7 @@ const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings
     <cv-select
         v-model="currentPipelineSettings.tagFamily"
         label="Target family"
-        :items="['AprilTag family 36h11', 'AprilTag family 25h9', 'AprilTag family 16h5']"
+        :items="['AprilTag Family 36h11', 'AprilTag Family 25h9', 'AprilTag Family 16h5']"
         :select-cols="10"
         @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({tagFamily: value}, false)"
     />
