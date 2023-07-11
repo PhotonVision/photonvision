@@ -68,7 +68,7 @@ document.addEventListener("keydown", e => {
           <v-icon left>
             mdi-download
           </v-icon>
-          Download Log
+          Download Current Log
 
           <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
           <a
