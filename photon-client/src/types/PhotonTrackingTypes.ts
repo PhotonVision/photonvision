@@ -14,8 +14,11 @@ export interface PhotonTarget {
     pitch: number,
     skew: number,
     area: number,
-    ambiguity?: number,
-    fiducialId?: number,
+    // -1 if not set
+    ambiguity: number,
+    // -1 if not set
+    fiducialId: number,
+    // undefined if 3d isn't enabled
     pose?: Pose
 }
 
