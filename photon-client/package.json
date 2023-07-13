@@ -15,12 +15,14 @@
     "axios": "^1.4.0",
     "jspdf": "^2.5.1",
     "pinia": "^2.0.16",
+    "three": "^0.154.0",
     "vue": "^2.7.14",
     "vue-router": "^3.5.4",
     "vuetify": "^2.6.15"
   },
   "devDependencies": {
     "@types/node": "^16.11.45",
+    "@types/three": "^0.154.0",
     "@vitejs/plugin-vue2": "^2.2.0",
     "@vue/eslint-config-typescript": "^11.0.0",
     "@vue/tsconfig": "^0.1.3",
