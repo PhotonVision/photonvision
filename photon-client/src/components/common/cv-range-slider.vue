@@ -29,6 +29,9 @@ const localValue = computed<[number, number]>({
   },
   set: v => emit("input", v)
 });
+
+// TODO do this better
+const changeFromSlot = (v, i) => localValue.value = localValue.value.map((value, index) => index === i ? v : value) as [number, number];
 </script>
 
 <template>
@@ -59,33 +62,34 @@ const localValue = computed<[number, number]>({
         >
           <template v-slot:prepend>
             <v-text-field
+              :value="localValue[0]"
+              @input="v => changeFromSlot(v, 0)"
               dark
               color="accent"
-              v-model="localValue[0]"
-              :max="max"
-              :min="min"
               class="mt-0 pt-0"
               hide-details
               single-line
+              :max="max"
+              :min="min"
+              :step="step"
               type="number"
               style="width: 60px"
-              :step="step"
             />
           </template>
-
           <template v-slot:append>
             <v-text-field
-              v-model="localValue[1]"
+              :value="localValue[1]"
+              @input="v => changeFromSlot(v, 1)"
               dark
               color="accent"
-              :max="max"
-              :min="min"
               class="mt-0 pt-0"
               hide-details
               single-line
+              :max="max"
+              :min="min"
+              :step="step"
               type="number"
               style="width: 60px"
-              :step="step"
             />
           </template>
         </v-range-slider>
