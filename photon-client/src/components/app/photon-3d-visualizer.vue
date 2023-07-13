@@ -29,7 +29,7 @@ let controls: TrackballControls;
 
 let previousTargets: Object3D[] = [];
 const drawTargets = (targets: PhotonTarget[]) => {
-  scene.remove(previousTargets);
+  scene.remove(...previousTargets);
   previousTargets = [];
 
   targets.forEach(target => {
