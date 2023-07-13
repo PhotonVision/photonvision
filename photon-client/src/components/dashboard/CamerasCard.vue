@@ -82,6 +82,7 @@ const fpsTooLow = computed<boolean>(() => {
       >
         <photon-camera-stream
             :stream-type="index === 0 ? 'Raw' : 'Processed'"
+            :id="index === 0 ? 'input-camera-stream' : 'output-camera-stream'"
             style="width: 100%; height: auto"
         />
       </v-col>

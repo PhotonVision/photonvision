@@ -6,7 +6,8 @@ import loadingImage from "@/assets/images/loading.svg";
 import type { StyleValue } from "vue/types/jsx";
 
 const props = defineProps<{
-  streamType: "Raw" | "Processed"
+  streamType: "Raw" | "Processed",
+  id?: string
 }>();
 
 const src = computed<string>(() => {
@@ -40,6 +41,7 @@ const handleClick = () => {
 
 <template>
   <img
+      :id="id"
       crossorigin="anonymous"
       :src="src"
       :alt="alt"
