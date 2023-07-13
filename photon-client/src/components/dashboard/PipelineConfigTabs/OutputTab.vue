@@ -100,4 +100,3 @@ const isTagPipeline = computed(() => useCameraSettingsStore().currentPipelineTyp
     </v-row>
   </div>
 </template>
-
