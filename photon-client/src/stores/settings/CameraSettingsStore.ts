@@ -149,6 +149,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
                 }
             };
             if(updateStore) {
+                // TODO simplify this. The overwrite of pipelineSettings is required in order to cause a reactive update do to shallow partials. Bad API usage?
                 this.cameras[cameraIndex].pipelineSettings = {
                     ...this.cameras[cameraIndex].pipelineSettings,
                     ...settings
