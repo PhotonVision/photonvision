@@ -18,7 +18,7 @@ const isTagPipeline = computed(() => useCameraSettingsStore().currentPipelineTyp
         tooltip="Changes where the 'center' of the target is (used for calculating e.g. pitch and yaw)"
         :items="['Center','Top','Bottom','Left','Right']"
         :select-cols="10"
-        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({contourTargetOffsetPointEdge: value})"
+        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({contourTargetOffsetPointEdge: value}, false)"
     />
     <cv-select
         v-if="!isTagPipeline"
@@ -27,7 +27,7 @@ const isTagPipeline = computed(() => useCameraSettingsStore().currentPipelineTyp
         tooltip="Used to determine how to calculate target landmarks (e.g. the top, left, or bottom of the target)"
         :items="['Portrait', 'Landscape']"
         :select-cols="10"
-        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({contourTargetOrientation: value})"
+        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({contourTargetOrientation: value}, false)"
     />
     <cv-switch
         v-model="useCameraSettingsStore().currentPipelineSettings.outputShowMultipleTargets"
@@ -35,7 +35,7 @@ const isTagPipeline = computed(() => useCameraSettingsStore().currentPipelineTyp
         tooltip="If enabled, up to five targets will be displayed and sent to user code, instead of just one"
         :disabled="isTagPipeline"
         :label-cols="2"
-        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({outputShowMultipleTargets: value})"
+        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({outputShowMultipleTargets: value}, false)"
     />
     <cv-select
         v-model="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode"
@@ -43,7 +43,7 @@ const isTagPipeline = computed(() => useCameraSettingsStore().currentPipelineTyp
         tooltip="Used to add an arbitrary offset to the location of the targeting crosshair"
         :items="['None','Single Point','Dual Point']"
         :select-cols="10"
-        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({offsetRobotOffsetMode: value})"
+        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({offsetRobotOffsetMode: value}, false)"
     />
     <v-row
         v-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode !== RobotOffsetPointMode.None"

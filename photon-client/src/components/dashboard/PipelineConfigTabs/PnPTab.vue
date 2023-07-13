@@ -22,7 +22,7 @@ import CvSlider from "@/components/common/cv-slider.vue";
             {name: '6in (16h5) AprilTag', value: TargetModel.k6in_16h5}
         ]"
         :select-cols="10"
-        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({targetModel: value})"
+        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({targetModel: value}, false)"
     />
     <cv-slider
         v-model="useCameraSettingsStore().currentPipelineSettings.cornerDetectionAccuracyPercentage"
@@ -31,7 +31,7 @@ import CvSlider from "@/components/common/cv-slider.vue";
         label="Contour simplification Percentage"
         :min="0"
         :max="100"
-        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({cornerDetectionAccuracyPercentage: value})"
+        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({cornerDetectionAccuracyPercentage: value}, false)"
     />
   </div>
 </template>
