@@ -4,16 +4,47 @@ import { PipelineType } from "@/types/PipelineTypes";
 import CvRangeSlider from "@/components/common/cv-range-slider.vue";
 import CvSelect from "@/components/common/cv-select.vue";
 import CvSlider from "@/components/common/cv-slider.vue";
+import { computed } from "vue";
 
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
 // Defer reference to store access method
 const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings;
+
+// TODO fix cv-range-slider so that store access doesn't need to be deferred
+const contourArea = computed<[number, number]>({
+  get: () => Object.values(useCameraSettingsStore().currentPipelineSettings.contourArea) as [number, number],
+  set: v => useCameraSettingsStore().currentPipelineSettings.contourArea = v
+});
+const contourRatio = computed<[number, number]>({
+  get: () => Object.values(useCameraSettingsStore().currentPipelineSettings.contourRatio) as [number, number],
+  set: v => useCameraSettingsStore().currentPipelineSettings.contourRatio = v
+});
+const contourFullness = computed<[number, number]>({
+  get: () => Object.values(useCameraSettingsStore().currentPipelineSettings.contourFullness) as [number, number],
+  set: v => useCameraSettingsStore().currentPipelineSettings.contourFullness = v
+});
+const contourPerimeter = computed<[number, number]>({
+  get: () => currentPipelineSettings.pipelineType === PipelineType.ColoredShape ? Object.values(currentPipelineSettings.contourPerimeter) as [number, number] : [0, 0] as [number, number],
+  set: v => {
+    if(currentPipelineSettings.pipelineType === PipelineType.ColoredShape) {
+      currentPipelineSettings.contourPerimeter = v;
+    }
+  }
+});
+const contourRadius = computed<[number, number]>({
+  get: () => currentPipelineSettings.pipelineType === PipelineType.ColoredShape ? Object.values(currentPipelineSettings.contourRadius) as [number, number] : [0, 0] as [number, number],
+  set: v => {
+    if(currentPipelineSettings.pipelineType === PipelineType.ColoredShape) {
+      currentPipelineSettings.contourRadius = v;
+    }
+  }
+});
 </script>
 
 <template>
   <div>
     <cv-range-slider
-        v-model="useCameraSettingsStore().currentPipelineSettings.contourArea"
+        v-model="contourArea"
         label="Area"
         :min="0"
         :max="100"
@@ -22,7 +53,7 @@ const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings
     />
     <cv-range-slider
         v-if="useCameraSettingsStore().currentPipelineType !== PipelineType.ColoredShape"
-        v-model="useCameraSettingsStore().currentPipelineSettings.contourRatio"
+        v-model="contourRatio"
         label="Ratio (W/H)"
         tooltip="Min and max ratio between the width and height of a contour's bounding rectangle"
         :min="0"
@@ -40,7 +71,7 @@ const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings
     />
     <cv-range-slider
         v-if="useCameraSettingsStore().currentPipelineType === PipelineType.ColoredShape"
-        v-model="useCameraSettingsStore().currentPipelineSettings.contourFullness"
+        v-model="contourFullness"
         label="Fullness"
         tooltip="Min and max ratio between a contour's area and its bounding rectangle"
         :min="0"
@@ -49,7 +80,7 @@ const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings
     />
     <cv-range-slider
         v-if="currentPipelineSettings.pipelineType === PipelineType.ColoredShape"
-        v-model="currentPipelineSettings.contourPerimeter"
+        v-model="contourPerimeter"
         label="Perimeter"
         tooltip="Min and max perimeter of the shape, in pixels"
         min="0"
@@ -135,7 +166,7 @@ const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings
           @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({circleDetectThreshold: value}, false)"
       />
       <cv-range-slider
-          v-model="currentPipelineSettings.contourRadius"
+          v-model="contourRadius"
           :disabled="currentPipelineSettings.contourShape !== 0"
           label="Radius"
           :min="0"

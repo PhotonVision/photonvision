@@ -13,13 +13,27 @@ const averageHue = computed<number>(() => {
   
   return val;
 });
+
+// TODO fix cv-range-slider so that store access doesn't need to be deferred
+const hsvHue = computed<[number, number]>({
+  get: () => Object.values(useCameraSettingsStore().currentPipelineSettings.hsvHue) as [number, number],
+  set: v => useCameraSettingsStore().currentPipelineSettings.hsvHue = v
+});
+const hsvSaturation = computed<[number, number]>({
+  get: () => Object.values(useCameraSettingsStore().currentPipelineSettings.hsvSaturation) as [number, number],
+  set: v => useCameraSettingsStore().currentPipelineSettings.hsvSaturation = v
+});
+const hsvValue = computed<[number, number]>({
+  get: () => Object.values(useCameraSettingsStore().currentPipelineSettings.hsvValue) as [number, number],
+  set: v => useCameraSettingsStore().currentPipelineSettings.hsvValue = v
+});
 </script>
 
 <template>
   <div class="threshold-modifiers" :style="{'--averageHue': averageHue}">
     <cv-range-slider
       id="hue-slider"
-      v-model="useCameraSettingsStore().currentPipelineSettings.hsvHue"
+      v-model="hsvHue"
       :class="useCameraSettingsStore().currentPipelineSettings.hueInverted ? 'inverted-slider' : 'normal-slider'"
       label="Hue"
       tooltip="Describes color"
@@ -30,7 +44,7 @@ const averageHue = computed<number>(() => {
     />
     <cv-range-slider
         id="sat-slider"
-        v-model="useCameraSettingsStore().currentPipelineSettings.hsvSaturation"
+        v-model="hsvSaturation"
         class="normal-slider"
         label="Saturation"
         tooltip="Describes colorfulness; the smaller this value the 'whiter' the color becomes"
@@ -40,7 +54,7 @@ const averageHue = computed<number>(() => {
     />
     <cv-range-slider
         id="value-slider"
-        v-model="useCameraSettingsStore().currentPipelineSettings.hsvValue"
+        v-model="hsvValue"
         class="normal-slider"
         label="Value"
         tooltip="Describes lightness; the smaller this value the 'blacker' the color becomes"

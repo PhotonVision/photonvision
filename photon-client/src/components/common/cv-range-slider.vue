@@ -7,7 +7,7 @@ const props = withDefaults(defineProps<{
   tooltip?: string,
   // TODO fully update v-model usage in custom components on Vue3 update
   // value: [number, number] | WebsocketNumberPair, // Vue doesnt like Union types for the value prop for some reason.
-  value: object,
+  value: [number, number],
   min: number,
   max: number,
   step?: number
