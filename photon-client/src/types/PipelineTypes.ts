@@ -59,7 +59,7 @@ export interface PipelineSettings {
     outputShouldDraw: boolean
     offsetDualPointA: {x: number, y: number} | [number, number]
     offsetDualPointB: {x: number, y: number} | [number, number]
-    hsvHue: WebsocketNumberPair
+    hsvHue: WebsocketNumberPair | [number, number]
     ledMode: boolean
     hueInverted: boolean
     outputShowMultipleTargets: boolean
