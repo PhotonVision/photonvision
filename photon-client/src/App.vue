@@ -56,7 +56,7 @@ onMounted(() => {
       >
         <v-layout>
           <v-flex>
-            <router-view @switch-to-cameras="() => {}" />
+            <router-view/>
           </v-flex>
         </v-layout>
       </v-container>

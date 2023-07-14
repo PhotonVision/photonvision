@@ -6,10 +6,6 @@ import { useStateStore } from "@/stores/StateStore";
 const selectedLogLevels = ref<LogLevel[]>([LogLevel.ERROR, LogLevel.WARN, LogLevel.INFO]);
 
 const logs = computed<LogMessage[]>(() => useStateStore().logMessages.filter(message => selectedLogLevels.value.includes(message.level)));
-const showLogModal = computed<boolean>({
-  get: () => useStateStore().showLogModal,
-  set: v => useStateStore().$patch({ showLogModal: v })
-});
 
 const backendAddress = inject<string>("backendAddress");
 
@@ -47,7 +43,7 @@ document.addEventListener("keydown", e => {
 
 <template>
   <v-dialog
-    v-model="showLogModal"
+    v-model="useStateStore().showLogModal"
     width="1500"
     dark
   >
@@ -121,7 +117,7 @@ document.addEventListener("keydown", e => {
         <v-btn
             color="white"
             text
-            @click="() => showLogModal = false"
+            @click="() => useStateStore().showLogModal = false"
         >
           Close
         </v-btn>
