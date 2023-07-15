@@ -19,7 +19,7 @@ interface ConfigOption {
   component: Component
 }
 
-const allTabs = {
+const allTabs = Object.freeze({
   inputTab: {
     tabName: "Input",
     component: InputTab
@@ -56,7 +56,7 @@ const allTabs = {
     tabName: "3D",
     component: Map3DTab
   }
-};
+});
 
 const selectedTabs = ref([0, 0, 0, 0]);
 const getTabGroups = (): ConfigOption[][] => {
