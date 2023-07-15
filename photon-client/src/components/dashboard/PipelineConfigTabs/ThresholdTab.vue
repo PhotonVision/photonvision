@@ -7,10 +7,10 @@ import CvSwitch from "@/components/common/cv-switch.vue";
 const averageHue = computed<number>(() => {
   const isHueInverted = useCameraSettingsStore().currentPipelineSettings.hueInverted;
   let val = Object.values(useCameraSettingsStore().currentPipelineSettings.hsvHue).reduce((a, b) => a + b, 0);
-  
+
   if(isHueInverted) val += 180;
   if (val > 360) val -= 360;
-  
+
   return val;
 });
 
@@ -64,7 +64,7 @@ const hsvValue = computed<[number, number]>({
     />
     <cv-switch
         v-model="useCameraSettingsStore().currentPipelineSettings.hueInverted"
-        label="Invert hue"
+        label="Invert Hue"
         tooltip="Selects the hue range outside of the hue slider bounds instead of inside"
         @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({hueInverted: value}, false)"
     />
