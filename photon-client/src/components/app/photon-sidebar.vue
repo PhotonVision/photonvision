@@ -1,19 +1,12 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, ref } from "vue";
+import { computed, getCurrentInstance } from "vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 
-const getSidebarFoldedFromLocalStorage = () => {
-  const localValue = localStorage.getItem("sidebarFolded");
-  return localValue === null ? false : localValue === "true";
-};
-
-const sidebarFolded = ref<boolean>(getSidebarFoldedFromLocalStorage());
-
-const setSidebarFolded = (folded: boolean) => {
-  sidebarFolded.value = folded;
-  localStorage.setItem("sidebarFolded", Boolean(folded).toString());
-};
+const compact = computed<boolean>({
+  get: () => { return useStateStore().sidebarFolded; },
+  set: (val) => { useStateStore().setSidebarFolded(val); }
+});
 
 // Vuetify2 doesn't yet support the useDisplay API so this is required to access the prop when using the Composition API
 const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndUp || false);
@@ -24,18 +17,18 @@ const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.bre
       dark
       app
       permanent
-      :mini-variant="!mdAndUp || sidebarFolded"
+      :mini-variant="compact"
       color="primary"
   >
     <v-list>
       <!-- List item for the heading; note that there are some tricks in setting padding and image width make things look right -->
       <v-list-item
-          :class="!mdAndUp || sidebarFolded ? 'pr-0 pl-0' : ''"
+          :class="compact ? 'pr-0 pl-0' : ''"
           style="display: flex; justify-content: center"
       >
         <v-list-item-icon class="mr-0">
           <img
-              v-if="mdAndUp && !sidebarFolded"
+              v-if="!compact"
               class="logo"
               src="@/assets/images/logoLarge.svg"
               alt="large logo"
@@ -97,10 +90,10 @@ const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.bre
       <v-list-item
           v-if="mdAndUp"
           link
-          @click="setSidebarFolded(!sidebarFolded)"
+          @click="() => compact = !compact"
       >
         <v-list-item-icon>
-          <v-icon v-if="sidebarFolded">
+          <v-icon v-if="compact">
             mdi-chevron-right
           </v-icon>
           <v-icon v-else>
