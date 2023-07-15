@@ -151,3 +151,9 @@ onBeforeUpdate(() => {
     </v-col>
   </v-row>
 </template>
+
+<style>
+.v-slide-group__next--disabled, .v-slide-group__prev--disabled {
+  display: none !important;
+}
+</style>
