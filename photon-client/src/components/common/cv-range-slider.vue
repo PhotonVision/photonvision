@@ -10,13 +10,15 @@ const props = withDefaults(defineProps<{
   value: [number, number],
   min: number,
   max: number,
-  step?: number
+  step?: number,
+  sliderCols?: number,
   disabled?: boolean,
   inverted?: boolean,
 }>(), {
   step: 1,
   disabled: false,
-  inverted: false
+  inverted: false,
+  sliderCols: 10
 });
 
 const emit = defineEmits<{
@@ -40,13 +42,13 @@ const changeFromSlot = (v, i) => localValue.value = localValue.value.map((value,
       dense
       align="center"
     >
-      <v-col cols="2">
+      <v-col :cols="12 - sliderCols">
         <tooltipped-label
           :tooltip="tooltip"
           :label="label"
         />
       </v-col>
-      <v-col cols="10">
+      <v-col :cols="sliderCols">
         <v-range-slider
           v-model="localValue"
           :max="max"
