@@ -4,9 +4,9 @@ import CvSelect from "@/components/common/cv-select.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { PipelineType, RobotOffsetPointMode } from "@/types/PipelineTypes";
 import CvSwitch from "@/components/common/cv-switch.vue";
-import {computed, getCurrentInstance} from "vue";
+import { computed, getCurrentInstance } from "vue";
 import { RobotOffsetType } from "@/types/SettingTypes";
-import {useStateStore} from "@/stores/StateStore";
+import { useStateStore } from "@/stores/StateStore";
 
 const isTagPipeline = computed(() => useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag || useCameraSettingsStore().currentPipelineType === PipelineType.Aruco);
 

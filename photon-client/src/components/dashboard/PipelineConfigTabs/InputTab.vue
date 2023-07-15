@@ -3,7 +3,7 @@ import CvSlider from "@/components/common/cv-slider.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import CvSwitch from "@/components/common/cv-switch.vue";
 import CvSelect from "@/components/common/cv-select.vue";
-import { computed, getCurrentInstance} from "vue";
+import { computed, getCurrentInstance } from "vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 

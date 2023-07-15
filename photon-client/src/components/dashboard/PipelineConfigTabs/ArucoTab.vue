@@ -2,8 +2,8 @@
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { PipelineType } from "@/types/PipelineTypes";
 import CvSlider from "@/components/common/cv-slider.vue";
-import {computed, getCurrentInstance} from "vue";
-import {useStateStore} from "@/stores/StateStore";
+import { computed, getCurrentInstance } from "vue";
+import { useStateStore } from "@/stores/StateStore";
 
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
 // Defer reference to store access method

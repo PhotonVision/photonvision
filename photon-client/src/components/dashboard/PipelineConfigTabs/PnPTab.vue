@@ -3,8 +3,8 @@ import CvSelect from "@/components/common/cv-select.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { TargetModel } from "@/types/PipelineTypes";
 import CvSlider from "@/components/common/cv-slider.vue";
-import {computed, getCurrentInstance} from "vue";
-import {useStateStore} from "@/stores/StateStore";
+import { computed, getCurrentInstance } from "vue";
+import { useStateStore } from "@/stores/StateStore";
 
 const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)) ? 9 : 8;
 </script>

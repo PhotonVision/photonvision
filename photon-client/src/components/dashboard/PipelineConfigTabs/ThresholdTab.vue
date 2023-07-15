@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import {computed, getCurrentInstance} from "vue";
+import { computed, getCurrentInstance } from "vue";
 import CvRangeSlider from "@/components/common/cv-range-slider.vue";
 import CvSwitch from "@/components/common/cv-switch.vue";
 import { useStateStore } from "@/stores/StateStore";
