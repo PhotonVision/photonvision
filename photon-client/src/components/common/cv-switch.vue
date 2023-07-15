@@ -9,6 +9,7 @@ const props = withDefaults(defineProps<{
   value: boolean,
   disabled?: boolean,
   labelCols?: number,
+  switchCols?: number
 }>(), {
   disabled: false,
   labelCols: 2
@@ -30,13 +31,13 @@ const localValue = computed({
       dense
       align="center"
     >
-      <v-col :cols="labelCols">
+      <v-col :cols="(12 - switchCols) || labelCols">
         <tooltipped-label
           :tooltip="tooltip"
           :label="label"
         />
       </v-col>
-      <v-col :cols="12 - labelCols">
+      <v-col :cols="switchCols || (12 - labelCols)">
         <v-switch
           v-model="localValue"
           dark
