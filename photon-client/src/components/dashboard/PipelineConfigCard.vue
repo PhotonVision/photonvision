@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { Component } from "vue";
-import { computed, onUpdated, ref } from "vue";
+import { computed, getCurrentInstance, onBeforeUpdate, ref } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-
+import { useStateStore } from "@/stores/StateStore";
 import InputTab from "@/components/dashboard/PipelineConfigTabs/InputTab.vue";
 import ThresholdTab from "@/components/dashboard/PipelineConfigTabs/ThresholdTab.vue";
 import ContoursTab from "@/components/dashboard/PipelineConfigTabs/ContoursTab.vue";
@@ -58,42 +58,77 @@ const allTabs = {
   }
 };
 
-const selectedTab = ref(0);
-const filteredTabs = computed<ConfigOption[]>(() => {
-  if(useCameraSettingsStore().isDriverMode) return [allTabs.inputTab];
+const selectedTabs = ref([0, 0, 0, 0]);
+const getTabGroups = (): ConfigOption[][] => {
+  const smAndDown = getCurrentInstance()?.proxy.$vuetify.breakpoint.smAndDown || false;
+  const mdAndDown = getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false;
+  const lgAndDown = getCurrentInstance()?.proxy.$vuetify.breakpoint.lgAndDown || false;
+  const xl = getCurrentInstance()?.proxy.$vuetify.breakpoint.xl || false;
+
+  if(smAndDown || useCameraSettingsStore().isDriverMode || (mdAndDown && !useStateStore().sidebarFolded)) {
+    return [Object.values(allTabs)];
+  } else if(mdAndDown || !useStateStore().sidebarFolded) {
+    return [
+        [allTabs.inputTab, allTabs.thresholdTab, allTabs.contoursTab, allTabs.apriltagTab, allTabs.arucoTab, allTabs.outputTab],
+        [allTabs.targetsTab, allTabs.pnpTab, allTabs.map3dTab]
+    ];
+  } else if(lgAndDown) {
+    return [
+        [allTabs.inputTab],
+        [allTabs.thresholdTab, allTabs.contoursTab, allTabs.apriltagTab, allTabs.arucoTab, allTabs.outputTab],
+        [allTabs.targetsTab, allTabs.pnpTab, allTabs.map3dTab]
+    ];
+  } else if(xl) {
+    return [
+      [allTabs.inputTab],
+      [allTabs.thresholdTab],
+      [allTabs.contoursTab, allTabs.apriltagTab, allTabs.arucoTab, allTabs.outputTab],
+      [allTabs.targetsTab, allTabs.pnpTab, allTabs.map3dTab]
+    ];
+  }
+
+  return [];
+};
+const tabGroups = computed<ConfigOption[][]>(() => {
+  // Just return the input tab because we know that is always the case in driver mode
+  if(useCameraSettingsStore().isDriverMode) return [[allTabs.inputTab]];
 
   const allow3d = useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled;
   const isAprilTag = useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.AprilTag;
   const isAruco = useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.Aruco;
 
-  return Object.values(allTabs).filter((tabConfig: ConfigOption) =>
+  return getTabGroups().map(tabGroup => tabGroup.filter(tabConfig =>
       !(!allow3d && tabConfig.tabName === "3D") //Filter out 3D tab any time 3D isn't calibrated
       && !((!allow3d || isAprilTag || isAruco) && tabConfig.tabName === "PnP") //Filter out the PnP config tab if 3D isn't available, or we're doing AprilTags
       && !((isAprilTag || isAruco) && (tabConfig.tabName === "Threshold")) //Filter out threshold tab if we're doing AprilTags
       && !((isAprilTag || isAruco) && (tabConfig.tabName === "Contours")) //Filter out contours if we're doing AprilTags
       && !(!isAprilTag && tabConfig.tabName === "AprilTag") //Filter out apriltag unless we actually are doing AprilTags
       && !(!isAruco && tabConfig.tabName === "Aruco")
-  );
+  ));
 });
 
-onUpdated(() => {
+onBeforeUpdate(() => {
   // Force the current tab to the input tab on driver mode change
   if(useCameraSettingsStore().isDriverMode) {
-    selectedTab.value = 0;
+    selectedTabs.value[0] = 0;
   }
 });
 </script>
 
 <template>
-  <v-row no-gutters>
-    <v-col :cols="12" align-self="stretch">
+  <v-row no-gutters class="tabGroups">
+    <v-col
+      v-for="(tabGroupData, tabGroupIndex) in tabGroups"
+      :class="tabGroupIndex !== tabGroups.length - 1 && 'pr-3'"
+      :key="tabGroupIndex"
+    >
       <v-card
           color="primary"
           height="100%"
           class="pr-4 pl-4"
       >
         <v-tabs
-            v-model="selectedTab"
+            v-model="selectedTabs[tabGroupIndex]"
             grow
             background-color="primary"
             dark
@@ -101,15 +136,15 @@ onUpdated(() => {
             slider-color="accent"
         >
           <v-tab
-            v-for="(tabConfig, index) in filteredTabs"
-            :key="index"
+              v-for="(tabConfig, index) in tabGroupData"
+              :key="index"
           >
             {{tabConfig.tabName}}
           </v-tab>
         </v-tabs>
         <div class="pl-4 pr-4 pt-4 pb-2">
           <KeepAlive>
-            <Component :is="filteredTabs[selectedTab].component"/>
+            <Component :is="tabGroupData[selectedTabs[tabGroupIndex]].component"/>
           </KeepAlive>
         </div>
       </v-card>
