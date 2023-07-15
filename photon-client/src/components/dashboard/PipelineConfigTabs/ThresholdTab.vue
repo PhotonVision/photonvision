@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { computed } from "vue";
+import {computed, getCurrentInstance} from "vue";
 import CvRangeSlider from "@/components/common/cv-range-slider.vue";
 import CvSwitch from "@/components/common/cv-switch.vue";
+import { useStateStore } from "@/stores/StateStore";
 
 const averageHue = computed<number>(() => {
   const isHueInverted = useCameraSettingsStore().currentPipelineSettings.hueInverted;
@@ -27,6 +28,8 @@ const hsvValue = computed<[number, number]>({
   get: () => Object.values(useCameraSettingsStore().currentPipelineSettings.hsvValue) as [number, number],
   set: v => useCameraSettingsStore().currentPipelineSettings.hsvValue = v
 });
+
+const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)) ? 9 : 8;
 </script>
 
 <template>
@@ -39,6 +42,7 @@ const hsvValue = computed<[number, number]>({
       tooltip="Describes color"
       :min="0"
       :max="180"
+      :slider-cols="interactiveCols"
       :inverted="useCameraSettingsStore().currentPipelineSettings.hueInverted"
       @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({hsvHue: value}, false)"
     />
@@ -50,6 +54,7 @@ const hsvValue = computed<[number, number]>({
         tooltip="Describes colorfulness; the smaller this value the 'whiter' the color becomes"
         :min="0"
         :max="255"
+        :slider-cols="interactiveCols"
         @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({hsvSaturation: value}, false)"
     />
     <cv-range-slider
@@ -60,11 +65,13 @@ const hsvValue = computed<[number, number]>({
         tooltip="Describes lightness; the smaller this value the 'blacker' the color becomes"
         :min="0"
         :max="255"
+        :slider-cols="interactiveCols"
         @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({hsvValue: value}, false)"
     />
     <cv-switch
         v-model="useCameraSettingsStore().currentPipelineSettings.hueInverted"
         label="Invert Hue"
+        :switch-cols="interactiveCols"
         tooltip="Selects the hue range outside of the hue slider bounds instead of inside"
         @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({hueInverted: value}, false)"
     />

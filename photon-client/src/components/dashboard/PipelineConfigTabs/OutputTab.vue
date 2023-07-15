@@ -4,10 +4,13 @@ import CvSelect from "@/components/common/cv-select.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { PipelineType, RobotOffsetPointMode } from "@/types/PipelineTypes";
 import CvSwitch from "@/components/common/cv-switch.vue";
-import { computed } from "vue";
+import {computed, getCurrentInstance} from "vue";
 import { RobotOffsetType } from "@/types/SettingTypes";
+import {useStateStore} from "@/stores/StateStore";
 
 const isTagPipeline = computed(() => useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag || useCameraSettingsStore().currentPipelineType === PipelineType.Aruco);
+
+const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)) ? 9 : 8;
 </script>
 
 <template>
@@ -17,7 +20,7 @@ const isTagPipeline = computed(() => useCameraSettingsStore().currentPipelineTyp
         label="Target Offset Point"
         tooltip="Changes where the 'center' of the target is (used for calculating e.g. pitch and yaw)"
         :items="['Center','Top','Bottom','Left','Right']"
-        :select-cols="10"
+        :select-cols="interactiveCols"
         @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({contourTargetOffsetPointEdge: value}, false)"
     />
     <cv-select
@@ -26,7 +29,7 @@ const isTagPipeline = computed(() => useCameraSettingsStore().currentPipelineTyp
         label="Target Orientation"
         tooltip="Used to determine how to calculate target landmarks (e.g. the top, left, or bottom of the target)"
         :items="['Portrait', 'Landscape']"
-        :select-cols="10"
+        :select-cols="interactiveCols"
         @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({contourTargetOrientation: value}, false)"
     />
     <cv-switch
@@ -34,7 +37,7 @@ const isTagPipeline = computed(() => useCameraSettingsStore().currentPipelineTyp
         label="Show Multiple Targets"
         tooltip="If enabled, up to five targets will be displayed and sent to user code, instead of just one"
         :disabled="isTagPipeline"
-        :label-cols="2"
+        :switch-cols="interactiveCols"
         @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({outputShowMultipleTargets: value}, false)"
     />
     <cv-select
@@ -42,7 +45,7 @@ const isTagPipeline = computed(() => useCameraSettingsStore().currentPipelineTyp
         label="Robot Offset Mode"
         tooltip="Used to add an arbitrary offset to the location of the targeting crosshair"
         :items="['None','Single Point','Dual Point']"
-        :select-cols="10"
+        :select-cols="interactiveCols"
         @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({offsetRobotOffsetMode: value}, false)"
     />
     <v-row

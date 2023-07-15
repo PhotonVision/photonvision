@@ -3,6 +3,10 @@ import CvSelect from "@/components/common/cv-select.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { TargetModel } from "@/types/PipelineTypes";
 import CvSlider from "@/components/common/cv-slider.vue";
+import {computed, getCurrentInstance} from "vue";
+import {useStateStore} from "@/stores/StateStore";
+
+const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)) ? 9 : 8;
 </script>
 
 <template>
@@ -21,13 +25,13 @@ import CvSlider from "@/components/common/cv-slider.vue";
             {name: '6in (16h5) Aruco', value: TargetModel.kAruco6in_16h5},
             {name: '6in (16h5) AprilTag', value: TargetModel.k6in_16h5}
         ]"
-        :select-cols="10"
+        :select-cols="interactiveCols"
         @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({targetModel: value}, false)"
     />
     <cv-slider
         v-model="useCameraSettingsStore().currentPipelineSettings.cornerDetectionAccuracyPercentage"
         class="pt-2"
-        :slider-cols="10"
+        :slider-cols="interactiveCols"
         label="Contour simplification Percentage"
         :min="0"
         :max="100"
