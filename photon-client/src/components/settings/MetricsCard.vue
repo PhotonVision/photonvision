@@ -1,7 +1,68 @@
 <script setup lang="ts">
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
-import { onMounted } from "vue";
+import { onMounted, computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
+
+interface MetricItem {
+  header: string,
+  value?: string
+}
+
+const generalMetrics = computed<MetricItem[]>(() => [
+    {
+      header: "Version",
+      value: useSettingsStore().general.version || "Unknown"
+    },
+    {
+      header: "Hardware Model",
+      value: useSettingsStore().general.hardwareModel || "Unknown"
+    },
+    {
+      header: "Platform",
+      value: useSettingsStore().general.hardwarePlatform || "Unknown"
+    },
+    {
+      header: "GPU Acceleration",
+      value: useSettingsStore().general.gpuAcceleration || "Unknown"
+    }]);
+const platformMetrics = computed<MetricItem[]>(() => [
+  {
+    header: "CPU Temp",
+    value: useSettingsStore().metrics.cpuTemp
+  },
+  {
+    header: "CPU Usage",
+    value: useSettingsStore().metrics.cpuUtil
+  },
+  {
+    header: "CPU Memory",
+    value: useSettingsStore().metrics.cpuMem
+  },
+  {
+    header: "GPU Memory",
+    value: useSettingsStore().metrics.gpuMem
+  },
+  {
+    header: "Memory Usage",
+    value: useSettingsStore().metrics.ramUtil
+  },
+  {
+    header: "GPU Mem Usage",
+    value: useSettingsStore().metrics.gpuMemUtil
+  },
+  {
+    header: "CPU Throttling",
+    value: useSettingsStore().metrics.cpuThr
+  },
+  {
+    header: "CPU Uptime",
+    value: useSettingsStore().metrics.cpuUptime
+  },
+  {
+    header: "Disk Usage",
+    value: useSettingsStore().metrics.diskUtilPct
+  }
+]);
 
 onMounted(() => {
   // TODO should this be silent?
@@ -31,93 +92,27 @@ onMounted(() => {
   >
     <v-card-title>Stats</v-card-title>
     <v-row class="pa-4 ml-5">
-      <table id="general-metrics" class="infoTable">
+      <table id="general-metrics" class="metrics-table">
         <tr>
-          <th class="infoElem infoElemTitle">
-            Version
-          </th>
-          <th class="infoElem infoElemTitle">
-            Hardware Model
-          </th>
-          <th class="infoElem infoElemTitle">
-            Platform
-          </th>
-          <th class="infoElem infoElemTitle">
-            GPU Acceleration
+          <th v-for="(item, itemIndex) in generalMetrics" :key="itemIndex" class="metric-item metric-item-title">
+            {{item.header}}
           </th>
         </tr>
         <tr>
-          <td class="infoElem">
-            {{useSettingsStore().general.version || "Unknown"}}
-          </td>
-          <td class="infoElem">
-            {{useSettingsStore().general.hardwareModel || "Unknown"}}
-          </td>
-          <td class="infoElem">
-            {{useSettingsStore().general.hardwarePlatform || "Unknown"}}
-          </td>
-          <td class="infoElem">
-            {{useSettingsStore().general.gpuAcceleration || "Unknown"}}
+          <td v-for="(item, itemIndex) in generalMetrics" :key="itemIndex" class="metric-item">
+            {{item.value || "Unknown"}}
           </td>
         </tr>
       </table>
-      <table id="device-metrics" class="infoTable">
+      <table id="device-metrics" class="metrics-table">
         <tr>
-          <th class="infoElem infoElemTitle">
-            CPU Temp
-          </th>
-          <th class="infoElem infoElemTitle">
-            CPU Usage
-          </th>
-          <th class="infoElem infoElemTitle">
-            CPU Memory
-          </th>
-          <th class="infoElem infoElemTitle">
-            GPU Memory
-          </th>
-          <th class="infoElem infoElemTitle">
-            Memory Usage
-          </th>
-          <th class="infoElem infoElemTitle">
-            GPU Mem Usage
-          </th>
-          <th class="infoElem infoElemTitle">
-            CPU Throttling
-          </th>
-          <th class="infoElem infoElemTitle">
-            CPU Uptime
-          </th>
-          <th class="infoElem infoElemTitle">
-            Disk Usage
+          <th v-for="(item, itemIndex) in platformMetrics" :key="itemIndex" class="metric-item metric-item-title">
+            {{item.header}}
           </th>
         </tr>
         <tr>
-          <td class="infoElem">
-            {{useSettingsStore().metrics.cpuTemp || "Unknown"}}
-          </td>
-          <td class="infoElem">
-            {{useSettingsStore().metrics.cpuUtil || "Unknown"}}
-          </td>
-          <td class="infoElem">
-            {{useSettingsStore().metrics.cpuMem || "Unknown"}}
-          </td>
-          <td class="infoElem">
-            {{useSettingsStore().metrics.gpuMem || "Unknown"}}
-          </td>
-          <td class="infoElem">
-            {{useSettingsStore().metrics.ramUtil || "Unknown"}}
-          </td>
-          <td class="infoElem">
-            {{useSettingsStore().metrics.gpuMemUtil || "Unknown"}}
-          </td>
-          <td class="infoElem">
-            {{useSettingsStore().metrics.cpuThr || "Unknown"}}
-          </td>
-          <td class="infoElem">
-            {{useSettingsStore().metrics.cpuUptime || "Unknown"}}
-          </td>
-          <td class="infoElem">
-            {{useSettingsStore().metrics.diskUtilPct || "Unknown"}}
+          <td v-for="(item, itemIndex) in platformMetrics" :key="itemIndex" class="metric-item">
+            {{item.value || "Unknown"}}
           </td>
         </tr>
       </table>
@@ -126,7 +121,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.infoTable{
+.metrics-table{
   border: 1px solid;
   border-collapse: separate;
   border-spacing: 0;
@@ -138,13 +133,13 @@ onMounted(() => {
   overflow-x: auto;
 }
 
-.infoElem {
+.metric-item {
   padding: 1px 15px 1px 10px;
   border-right: 1px solid;
   font-weight: normal;
 }
 
-.infoElemTitle {
+.metric-item-title {
   font-size: 18px;
   text-decoration: underline;
   text-decoration-color: #ffd843;
