@@ -98,31 +98,37 @@ onMounted(() => {
       />
     </v-card-title>
     <v-row class="pa-4 ml-5">
-      <table id="general-metrics" class="metrics-table">
-        <tr>
-          <th v-for="(item, itemIndex) in generalMetrics" :key="itemIndex" class="metric-item metric-item-title">
-            {{item.header}}
-          </th>
-        </tr>
-        <tr>
-          <td v-for="(item, itemIndex) in generalMetrics" :key="itemIndex" class="metric-item">
-            {{item.value}}
-          </td>
-        </tr>
-      </table>
-      <table id="device-metrics" class="metrics-table">
-        <tr>
-          <th v-for="(item, itemIndex) in platformMetrics" :key="itemIndex" class="metric-item metric-item-title">
-            {{item.header}}
-          </th>
-        </tr>
-        <tr>
-          <td v-for="(item, itemIndex) in platformMetrics" :key="itemIndex" class="metric-item">
-            <span v-if="useSettingsStore().metrics.cpuUtil !== undefined">{{item.value}}</span>
-            <span v-else>---</span>
-          </td>
-        </tr>
-      </table>
+      <div>
+        <v-card-subtitle class="metrics-table-subtitle">PhotonVision General Metrics</v-card-subtitle>
+        <table id="general-metrics" class="metrics-table">
+          <tr>
+            <th v-for="(item, itemIndex) in generalMetrics" :key="itemIndex" class="metric-item metric-item-title">
+              {{item.header}}
+            </th>
+          </tr>
+          <tr>
+            <td v-for="(item, itemIndex) in generalMetrics" :key="itemIndex" class="metric-item">
+              {{item.value}}
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div>
+        <v-card-subtitle class="metrics-table-subtitle">PhotonVision Hardware Metrics</v-card-subtitle>
+        <table id="device-metrics" class="metrics-table">
+          <tr>
+            <th v-for="(item, itemIndex) in platformMetrics" :key="itemIndex" class="metric-item metric-item-title">
+              {{item.header}}
+            </th>
+          </tr>
+          <tr>
+            <td v-for="(item, itemIndex) in platformMetrics" :key="itemIndex" class="metric-item">
+              <span v-if="useSettingsStore().metrics.cpuUtil !== undefined">{{item.value}}</span>
+              <span v-else>---</span>
+            </td>
+          </tr>
+        </table>
+      </div>
     </v-row>
   </v-card>
 </template>
@@ -135,9 +141,13 @@ onMounted(() => {
   border-radius: 5px;
   text-align: left;
   margin-bottom: 10px;
-  width: 100%;
   display: block;
   overflow-x: auto;
+}
+
+.metrics-table-subtitle {
+  padding: 0 0 8px 0;
+  margin: 0;
 }
 
 .metric-item {
