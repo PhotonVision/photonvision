@@ -2,6 +2,7 @@
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { onMounted, computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
+import CvIcon from "@/components/common/cv-icon.vue";
 
 interface MetricItem {
   header: string,
@@ -56,7 +57,7 @@ const platformMetrics = computed<MetricItem[]>(() => [
   }
 ]);
 
-onMounted(() => {
+const fetchMetrics = () => {
   // TODO should this be silent?
   useSettingsStore()
       .requestMetricsUpdate()
@@ -73,6 +74,10 @@ onMounted(() => {
           });
         }
       });
+};
+
+onMounted(() => {
+  fetchMetrics();
 });
 </script>
 
@@ -82,7 +87,16 @@ onMounted(() => {
       class="mb-3 pr-6 pb-3"
       style="background-color: #006492;"
   >
-    <v-card-title>Stats</v-card-title>
+    <v-card-title style="display: flex; justify-content: space-between">
+      <span>Stats</span>
+      <cv-icon
+          icon-name="mdi-reload"
+          color="white"
+          tooltip="Reload Metrics"
+          hover
+          @click="fetchMetrics"
+      />
+    </v-card-title>
     <v-row class="pa-4 ml-5">
       <table id="general-metrics" class="metrics-table">
         <tr>
