@@ -84,7 +84,20 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
                 },
                 validVideoFormats: Object.keys(d.videoFormatList)
                     .sort((a, b) => parseInt(a) - parseInt(b)) // TODO, does the backend already return this sorted
-                    .map<VideoFormat>((k, i) => ({ ...d.videoFormatList[k], index: i })),
+                    .map<VideoFormat>((k, i) => ({
+                        resolution: {
+                            width: d.videoFormatList[k].width,
+                            height: d.videoFormatList[k].height
+                        },
+                        fps: d.videoFormatList[k].fps,
+                        pixelFormat: d.videoFormatList[k].pixelFormat,
+                        index: d.videoFormatList[k].index || i,
+                        diagonalFOV: d.videoFormatList[k].diagonalFOV,
+                        horizontalFOV: d.videoFormatList[k].horizontalFOV,
+                        verticalFOV: d.videoFormatList[k].verticalFOV,
+                        standardDeviation: d.videoFormatList[k].standardDeviation,
+                        mean: d.videoFormatList[k].mean
+                    })),
                 completeCalibrations: d.calibrations.map<CameraCalibrationResult>(calib => ({
                     resolution: {
                         height: calib.height,
