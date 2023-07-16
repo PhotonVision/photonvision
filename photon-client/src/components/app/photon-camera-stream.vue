@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject } from "vue";
+import { computed } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import loadingImage from "@/assets/images/loading.svg";
@@ -17,7 +17,7 @@ const src = computed<string>(() => {
 
   const port =  useCameraSettingsStore().currentCameraSettings.stream[props.streamType === "Raw" ? "inputPort" : "outputPort"];
 
-  return `http://${inject("backendAddress")}:${port}/stream.mjpg`;
+  return `http://${location.hostname}:${port}/stream.mjpg`;
 });
 const alt = computed<string>(() => `${props.streamType} Stream View`);
 
