@@ -28,27 +28,19 @@ const generalMetrics = computed<MetricItem[]>(() => [
 const platformMetrics = computed<MetricItem[]>(() => [
   {
     header: "CPU Temp",
-    value: useSettingsStore().metrics.cpuTemp
+    value: `${useSettingsStore().metrics.cpuTemp}°C`
   },
   {
     header: "CPU Usage",
-    value: useSettingsStore().metrics.cpuUtil
+    value: `${useSettingsStore().metrics.cpuUtil}%`
   },
   {
-    header: "CPU Memory",
-    value: useSettingsStore().metrics.cpuMem
+    header: "CPU Memory Usage",
+    value: `${useSettingsStore().metrics.ramUtil}MB of ${useSettingsStore().metrics.cpuMem}MB`
   },
   {
-    header: "GPU Memory",
-    value: useSettingsStore().metrics.gpuMem
-  },
-  {
-    header: "Memory Usage",
-    value: useSettingsStore().metrics.ramUtil
-  },
-  {
-    header: "GPU Mem Usage",
-    value: useSettingsStore().metrics.gpuMemUtil
+    header: "GPU Memory Usage",
+    value: `${useSettingsStore().metrics.gpuMemUtil}MB of ${useSettingsStore().metrics.gpuMem}MB`
   },
   {
     header: "CPU Throttling",
@@ -100,7 +92,7 @@ onMounted(() => {
         </tr>
         <tr>
           <td v-for="(item, itemIndex) in generalMetrics" :key="itemIndex" class="metric-item">
-            {{item.value || "Unknown"}}
+            {{item.value}}
           </td>
         </tr>
       </table>
@@ -112,7 +104,8 @@ onMounted(() => {
         </tr>
         <tr>
           <td v-for="(item, itemIndex) in platformMetrics" :key="itemIndex" class="metric-item">
-            {{item.value || "Unknown"}}
+            <span v-if="useSettingsStore().metrics.cpuUtil !== undefined">{{item.value}}</span>
+            <span v-else>---</span>
           </td>
         </tr>
       </table>
