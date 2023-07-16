@@ -13,8 +13,6 @@ export class AutoReconnectingWebsocket {
   private readonly onData: (data: IncomingWebsocketData) => void;
   private readonly onDisconnect: () => void;
 
-  private connectionCallbacks: (() => void)[] = [];
-
   /**
    * Create an AutoReconnectingWebsocket
    *
@@ -31,15 +29,6 @@ export class AutoReconnectingWebsocket {
     this.onDisconnect = onDisconnect;
 
     this.initializeWebsocket();
-  }
-
-  /**
-   * Add a callback to run after establishing a connection to the server address. This runs before the {@link onConnect} method.
-   *
-   * @param callback callback to add.
-   */
-  addConnectionCallback(callback: () => void) {
-    this.connectionCallbacks.push(callback);
   }
 
   /**
@@ -81,7 +70,6 @@ export class AutoReconnectingWebsocket {
 
     this.websocket.onopen = () => {
       console.debug("[WebSocket] Websocket Open");
-      this.connectionCallbacks.forEach(f => f());
       this.onConnect();
     };
     this.websocket.onmessage = (event: MessageEvent) => {
