@@ -99,7 +99,7 @@ onMounted(() => {
     </v-card-title>
     <v-row class="pa-4 ml-5">
       <div>
-        <v-card-subtitle class="metrics-table-subtitle">PhotonVision General Metrics</v-card-subtitle>
+        <v-card-subtitle class="ma-0 pa-0 pb-2">PhotonVision General Metrics</v-card-subtitle>
         <table id="general-metrics" class="metrics-table">
           <tr>
             <th v-for="(item, itemIndex) in generalMetrics" :key="itemIndex" class="metric-item metric-item-title">
@@ -114,7 +114,7 @@ onMounted(() => {
         </table>
       </div>
       <div>
-        <v-card-subtitle class="metrics-table-subtitle">PhotonVision Hardware Metrics</v-card-subtitle>
+        <v-card-subtitle class="ma-0 pa-0 pb-2">PhotonVision Hardware Metrics</v-card-subtitle>
         <table id="device-metrics" class="metrics-table">
           <tr>
             <th v-for="(item, itemIndex) in platformMetrics" :key="itemIndex" class="metric-item metric-item-title">
@@ -143,11 +143,6 @@ onMounted(() => {
   margin-bottom: 10px;
   display: block;
   overflow-x: auto;
-}
-
-.metrics-table-subtitle {
-  padding: 0 0 8px 0;
-  margin: 0;
 }
 
 .metric-item {
