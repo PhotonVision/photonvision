@@ -76,12 +76,8 @@ document.addEventListener("keydown", e => {
           />
         </v-btn>
       </v-card-title>
-      <div class="pr-6 pl-6" v-if="logs.length === 0">
-        <v-card-text style="font-size: 18px; font-weight: 600">
-          There are no Logs to show
-        </v-card-text>
-      </div>
-      <div class="pr-6 pl-6" v-else>
+
+      <div class="pr-6 pl-6">
         <v-btn-toggle
             v-model="selectedLogLevels"
             dark
@@ -97,7 +93,11 @@ document.addEventListener("keydown", e => {
             {{ getLogLevelFromIndex(level) }}
           </v-btn>
         </v-btn-toggle>
+        <v-card-text style="font-size: 18px; font-weight: 600" v-if="logs.length === 0">
+          There are no Logs to show
+        </v-card-text>
         <v-virtual-scroll
+            v-else
             :items="logs"
             item-height="50"
             height="600"
