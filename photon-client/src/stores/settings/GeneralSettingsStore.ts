@@ -59,29 +59,27 @@ export const useSettingsStore = defineStore("settings", {
             return axios.post("/utils/publishMetrics");
         },
         updateMetricsFromWebsocket(data: Required<MetricData>) {
-            // TODO, do this... better
             this.metrics = {
-                cpuTemp: data.cpuTemp === "" ? undefined : data.cpuTemp,
-                cpuUtil: data.cpuUtil === "" ? undefined : data.cpuUtil,
-                cpuMem: data.cpuMem === "" ? undefined : data.cpuMem,
-                gpuMem: data.gpuMem === "" ? undefined : data.gpuMem,
-                ramUtil: data.ramUtil === "" ? undefined : data.ramUtil,
-                gpuMemUtil: data.gpuMemUtil === "" ? undefined : data.gpuMemUtil,
-                cpuThr: data.cpuThr === "" ? undefined : data.cpuThr,
-                cpuUptime: data.cpuUptime === "" ? undefined : data.cpuUptime,
-                diskUtilPct: data.diskUtilPct === "" ? undefined : data.diskUtilPct
+                cpuTemp: data.cpuTemp || undefined,
+                cpuUtil: data.cpuUtil || undefined,
+                cpuMem: data.cpuMem || undefined,
+                gpuMem: data.gpuMem || undefined,
+                ramUtil: data.ramUtil || undefined,
+                gpuMemUtil: data.gpuMemUtil || undefined,
+                cpuThr: data.cpuThr || undefined,
+                cpuUptime: data.cpuUptime || undefined,
+                diskUtilPct: data.diskUtilPct || undefined
             };
         },
         updateGeneralSettingsFromWebsocket(data: WebsocketSettingsUpdate) {
             this.general = {
-                // TODO, do this... better
-                version: data.general.version === "" ? undefined : data.general.version,
-                hardwareModel: data.general.hardwareModel === "" ? undefined : data.general.hardwareModel,
-                hardwarePlatform: data.general.hardwarePlatform === "" ? undefined : data.general.hardwarePlatform,
-                gpuAcceleration: data.general.gpuAcceleration === "" ? undefined : data.general.gpuAcceleration
+                version: data.general.version || undefined,
+                hardwareModel: data.general.hardwareModel || undefined,
+                hardwarePlatform: data.general.hardwarePlatform || undefined,
+                gpuAcceleration: data.general.gpuAcceleration || undefined
             };
-                this.lighting = data.lighting;
-                this.network = data.networkSettings;
+            this.lighting = data.lighting;
+            this.network = data.networkSettings;
         },
         saveGeneralSettings() {
             const payload: Required<NetworkSettings> = {
