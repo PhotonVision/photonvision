@@ -167,11 +167,9 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
             useStateStore().websocket?.send(payload, true);
         },
         changePipelineSettingsInStore(settings: Partial<ActivePipelineSettings>, cameraIndex: number = useStateStore().currentCameraIndex) {
-            // TODO simplify this. The overwrite of pipelineSettings is required in order to cause a reactive update do to shallow partials. Bad API usage?
-            this.cameras[cameraIndex].pipelineSettings = {
-                ...this.cameras[cameraIndex].pipelineSettings,
-                ...settings
-            } as ActivePipelineSettings;
+            Object.entries(settings).forEach(([k, v]) => {
+                this.cameras[cameraIndex].pipelineSettings[k] = v;
+            });
         },
         /**
          * Change the nickname of the currently selected pipeline of the provided camera.
