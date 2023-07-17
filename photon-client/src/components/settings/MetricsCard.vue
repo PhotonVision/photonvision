@@ -98,7 +98,7 @@ onMounted(() => {
       />
     </v-card-title>
     <v-row class="pa-4 ml-5">
-      <div>
+      <div style="width: 100%">
         <v-card-subtitle class="ma-0 pa-0 pb-2">PhotonVision General Metrics</v-card-subtitle>
         <table id="general-metrics" class="metrics-table">
           <tr>
@@ -113,7 +113,7 @@ onMounted(() => {
           </tr>
         </table>
       </div>
-      <div>
+      <div style="width: 100%">
         <v-card-subtitle class="ma-0 pa-0 pb-2">PhotonVision Hardware Metrics</v-card-subtitle>
         <table id="device-metrics" class="metrics-table">
           <tr>
@@ -135,20 +135,20 @@ onMounted(() => {
 
 <style scoped>
 .metrics-table{
-  border: 1px solid;
   border-collapse: separate;
   border-spacing: 0;
   border-radius: 5px;
-  text-align: left;
   margin-bottom: 10px;
-  display: block;
-  overflow-x: auto;
+  border: 1px solid white;
+  width: 100%;
+  text-align: center;
 }
 
 .metric-item {
   padding: 1px 15px 1px 10px;
   border-right: 1px solid;
   font-weight: normal;
+  color: white;
 }
 
 .metric-item-title {
