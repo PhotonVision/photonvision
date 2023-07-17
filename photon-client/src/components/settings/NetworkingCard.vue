@@ -14,7 +14,6 @@ const isValidNetworkTablesIP = (v: string | undefined): boolean => {
   // Check if it is a team number longer than 5 digits
   const badTeamNumberRegex = /^[0-9]{5,}$/;
 
-  // TODO simplify this
   if(v === undefined) return false;
   if (teamNumberRegex.test(v)) return true;
   if (isValidIPv4(v)) return true;

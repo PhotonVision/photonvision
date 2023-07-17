@@ -34,7 +34,6 @@ const saveCameraSettings = () => {
         }
       })
       .finally(() => {
-        // TODO, does this conflict with WS data exchange
         useCameraSettingsStore().currentCameraSettings.fov.value = currentFov.value;
       });
 };

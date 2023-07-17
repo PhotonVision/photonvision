@@ -33,7 +33,9 @@ const localValue = computed<[number, number]>({
 });
 
 // TODO do this better
-const changeFromSlot = (v, i) => localValue.value = localValue.value.map((value, index) => index === i ? v : value) as [number, number];
+const changeFromSlot = (v, i) => {
+  localValue.value = localValue.value.map((value, index) => index === i ? v : value) as [number, number];
+};
 </script>
 
 <template>

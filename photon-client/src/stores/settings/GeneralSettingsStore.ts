@@ -27,7 +27,7 @@ export const useSettingsStore = defineStore("settings", {
         },
         network: {
             ntServerAddress: "",
-            shouldMange: true, // TODO, is this overwritten by the backend before it matters?
+            shouldMange: true,
             connectionType: NetworkConnectionType.DHCP,
             staticIp: "",
             hostname: "photonvision",
