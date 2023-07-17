@@ -2,6 +2,13 @@
 import CamerasCard from "@/components/cameras/CameraSettingsCard.vue";
 import CalibrationCard from "@/components/cameras/CalibrationCard.vue";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
+import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import { onMounted } from "vue";
+
+onMounted(() => {
+  // Camera View uses Driver Mode
+  useCameraSettingsStore().changeCurrentPipelineIndex(-1, true);
+});
 </script>
 
 <template>
