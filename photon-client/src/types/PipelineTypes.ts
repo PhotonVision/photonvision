@@ -57,8 +57,8 @@ export interface PipelineSettings {
     cornerDetectionUseConvexHulls: boolean
     outputShouldShow: boolean
     outputShouldDraw: boolean
-    offsetDualPointA: {x: number, y: number} | [number, number]
-    offsetDualPointB: {x: number, y: number} | [number, number]
+    offsetDualPointA: {x: number, y: number}
+    offsetDualPointB: {x: number, y: number}
     hsvHue: WebsocketNumberPair | [number, number]
     ledMode: boolean
     hueInverted: boolean

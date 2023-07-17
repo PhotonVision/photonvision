@@ -11,6 +11,7 @@
     "semi": ["error", "always"],
     "eol-last": "error",
     "object-curly-spacing": ["error", "always"],
-    "quote-props": ["error", "as-needed"]
+    "quote-props": ["error", "as-needed"],
+    "no-case-declarations": "off"
   }
 }
