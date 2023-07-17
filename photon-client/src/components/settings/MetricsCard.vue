@@ -58,7 +58,6 @@ const platformMetrics = computed<MetricItem[]>(() => [
 ]);
 
 const fetchMetrics = () => {
-  // TODO should this be silent?
   useSettingsStore()
       .requestMetricsUpdate()
       .catch(error => {
