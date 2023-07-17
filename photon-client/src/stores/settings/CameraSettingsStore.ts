@@ -162,13 +162,16 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
                 }
             };
             if(updateStore) {
-                // TODO simplify this. The overwrite of pipelineSettings is required in order to cause a reactive update do to shallow partials. Bad API usage?
-                this.cameras[cameraIndex].pipelineSettings = {
-                    ...this.cameras[cameraIndex].pipelineSettings,
-                    ...settings
-                };
+                this.changePipelineSettingsInStore(settings, cameraIndex);
             }
             useStateStore().websocket?.send(payload, true);
+        },
+        changePipelineSettingsInStore(settings: Partial<ActivePipelineSettings>, cameraIndex: number = useStateStore().currentCameraIndex) {
+            // TODO simplify this. The overwrite of pipelineSettings is required in order to cause a reactive update do to shallow partials. Bad API usage?
+            this.cameras[cameraIndex].pipelineSettings = {
+                ...this.cameras[cameraIndex].pipelineSettings,
+                ...settings
+            } as ActivePipelineSettings;
         },
         /**
          * Change the nickname of the currently selected pipeline of the provided camera.

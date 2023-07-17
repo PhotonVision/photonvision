@@ -99,6 +99,11 @@ export interface IncomingWebsocketData {
     ntConnectionInfo?: WebsocketNTUpdate,
     metrics?: Required<MetricData>,
     updatePipelineResult?: WebsocketPipelineResultUpdate,
+    networkInfo?: {
+        possibleRios: string[],
+        deviceips: string[]
+    }
+    mutatePipeline?: Partial<ActivePipelineSettings>,
     calibrationData?: WebsocketCalibrationData
 }
 

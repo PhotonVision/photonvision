@@ -33,6 +33,9 @@ onMounted(() => {
         if(data.updatePipelineResult !== undefined) {
           useStateStore().updatePipelineResultsFromWebsocket(data.updatePipelineResult);
         }
+        if(data.mutatePipeline !== undefined) {
+          useCameraSettingsStore().changePipelineSettingsInStore(data.mutatePipeline);
+        }
         if(data.calibrationData !== undefined) {
           useStateStore().updateCalibrationStateValuesFromWebsocket(data.calibrationData);
         }
