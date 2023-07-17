@@ -82,21 +82,22 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
                     inputPort: d.inputStreamPort,
                     outputPort: d.outputStreamPort
                 },
-                validVideoFormats: Object.keys(d.videoFormatList)
-                    .sort((a, b) => parseInt(a) - parseInt(b)) // TODO, does the backend already return this sorted
-                    .map<VideoFormat>((k, i) => ({
+                validVideoFormats: Object.entries(d.videoFormatList)
+                    .sort(([firstKey], [secondKey]) => parseInt(firstKey) - parseInt(secondKey))
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    .map<VideoFormat>(([k , v], i) => ({
                         resolution: {
-                            width: d.videoFormatList[k].width,
-                            height: d.videoFormatList[k].height
+                            width: v.width,
+                            height: v.height
                         },
-                        fps: d.videoFormatList[k].fps,
-                        pixelFormat: d.videoFormatList[k].pixelFormat,
-                        index: d.videoFormatList[k].index || i,
-                        diagonalFOV: d.videoFormatList[k].diagonalFOV,
-                        horizontalFOV: d.videoFormatList[k].horizontalFOV,
-                        verticalFOV: d.videoFormatList[k].verticalFOV,
-                        standardDeviation: d.videoFormatList[k].standardDeviation,
-                        mean: d.videoFormatList[k].mean
+                        fps: v.fps,
+                        pixelFormat: v.pixelFormat,
+                        index: v.index || i,
+                        diagonalFOV: v.diagonalFOV,
+                        horizontalFOV: v.horizontalFOV,
+                        verticalFOV: v.verticalFOV,
+                        standardDeviation: v.standardDeviation,
+                        mean: v.mean
                     })),
                 completeCalibrations: d.calibrations.map<CameraCalibrationResult>(calib => ({
                     resolution: {
