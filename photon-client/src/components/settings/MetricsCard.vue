@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
-import { onMounted, computed } from "vue";
+import { computed, onBeforeMount} from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import CvIcon from "@/components/common/cv-icon.vue";
 
@@ -75,7 +75,7 @@ const fetchMetrics = () => {
       });
 };
 
-onMounted(() => {
+onBeforeMount(() => {
   fetchMetrics();
 });
 </script>
