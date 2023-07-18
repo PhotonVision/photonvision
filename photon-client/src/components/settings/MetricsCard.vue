@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
-import { onMounted, computed } from "vue";
+import {onMounted, computed, onBeforeMount} from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import CvIcon from "@/components/common/cv-icon.vue";
+import {onBeforeRouteLeave} from "vue-router/composables";
 
 interface MetricItem {
   header: string,
@@ -75,7 +76,7 @@ const fetchMetrics = () => {
       });
 };
 
-onMounted(() => {
+onBeforeMount(() => {
   fetchMetrics();
 });
 </script>

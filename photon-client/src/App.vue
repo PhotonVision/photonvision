@@ -3,50 +3,48 @@ import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { AutoReconnectingWebsocket } from "@/lib/AutoReconnectingWebsocket";
-import { inject, onMounted } from "vue";
+import { inject } from "vue";
 import PhotonSidebar from "@/components/app/photon-sidebar.vue";
 import PhotonLogView from "@/components/app/photon-log-view.vue";
 import PhotonErrorSnackbar from "@/components/app/photon-error-snackbar.vue";
 
-onMounted(() => {
-  const websocket = new AutoReconnectingWebsocket(
-      `ws://${inject("backendAddress")}/websocket_data`,
-      () => {
-        useStateStore().$patch({ backendConnected: true });
-      },
-      (data) => {
-        if(data.log !== undefined) {
-          useStateStore().addLogFromWebsocket(data.log);
-        }
-        if(data.settings !== undefined) {
-          useSettingsStore().updateGeneralSettingsFromWebsocket(data.settings);
-        }
-        if(data.cameraSettings !== undefined) {
-          useCameraSettingsStore().updateCameraSettingsFromWebsocket(data.cameraSettings);
-        }
-        if(data.ntConnectionInfo !== undefined) {
-          useStateStore().updateNTConnectionStatusFromWebsocket(data.ntConnectionInfo);
-        }
-        if(data.metrics !== undefined) {
-          useSettingsStore().updateMetricsFromWebsocket(data.metrics);
-        }
-        if(data.updatePipelineResult !== undefined) {
-          useStateStore().updatePipelineResultsFromWebsocket(data.updatePipelineResult);
-        }
-        if(data.mutatePipeline !== undefined) {
-          useCameraSettingsStore().changePipelineSettingsInStore(data.mutatePipeline);
-        }
-        if(data.calibrationData !== undefined) {
-          useStateStore().updateCalibrationStateValuesFromWebsocket(data.calibrationData);
-        }
-      },
-      () => {
-        useStateStore().$patch({ backendConnected: false });
+const websocket = new AutoReconnectingWebsocket(
+    `ws://${inject("backendAddress")}/websocket_data`,
+    () => {
+      useStateStore().$patch({ backendConnected: true });
+    },
+    (data) => {
+      if(data.log !== undefined) {
+        useStateStore().addLogFromWebsocket(data.log);
       }
-  );
+      if(data.settings !== undefined) {
+        useSettingsStore().updateGeneralSettingsFromWebsocket(data.settings);
+      }
+      if(data.cameraSettings !== undefined) {
+        useCameraSettingsStore().updateCameraSettingsFromWebsocket(data.cameraSettings);
+      }
+      if(data.ntConnectionInfo !== undefined) {
+        useStateStore().updateNTConnectionStatusFromWebsocket(data.ntConnectionInfo);
+      }
+      if(data.metrics !== undefined) {
+        useSettingsStore().updateMetricsFromWebsocket(data.metrics);
+      }
+      if(data.updatePipelineResult !== undefined) {
+        useStateStore().updatePipelineResultsFromWebsocket(data.updatePipelineResult);
+      }
+      if(data.mutatePipeline !== undefined) {
+        useCameraSettingsStore().changePipelineSettingsInStore(data.mutatePipeline);
+      }
+      if(data.calibrationData !== undefined) {
+        useStateStore().updateCalibrationStateValuesFromWebsocket(data.calibrationData);
+      }
+    },
+    () => {
+      useStateStore().$patch({ backendConnected: false });
+    }
+);
 
-  useStateStore().$patch({ websocket: websocket });
-});
+useStateStore().$patch({ websocket: websocket });
 </script>
 
 <template>
