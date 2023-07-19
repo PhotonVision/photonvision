@@ -151,12 +151,14 @@ const cancelChangePipelineType = () => {
       <v-col cols="10" class="pa-0">
           <cv-select
               v-if="!isPipelineNameEdit"
-              v-model="useCameraSettingsStore().currentCameraSettings.currentPipelineIndex"
+              v-bind:value="useCameraSettingsStore().currentCameraSettings.currentPipelineIndex"
               label="Pipeline"
               tooltip="Each pipeline runs on a camera output and stores a unique set of processing settings"
-              :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().pipelineNames.length <= 1"
+              :disabled="useCameraSettingsStore().isDriverMode
+                          || useCameraSettingsStore().isCalibrationMode
+                          || useCameraSettingsStore().pipelineNames.length <= 1"
               :items="pipelineNamesWrapper"
-              @input="args => useCameraSettingsStore().changeCurrentPipelineIndex(args)"
+              @input="args => useCameraSettingsStore().changeCurrentPipelineIndex(args, true)"
           />
         <cv-input
             v-else

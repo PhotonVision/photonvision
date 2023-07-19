@@ -215,6 +215,10 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
                 cameraIndex: cameraIndex
             };
             if(updateStore) {
+                if(this.cameras[cameraIndex].currentPipelineIndex !== -1
+                    && this.cameras[cameraIndex].currentPipelineIndex !== -2) {
+                    this.cameras[cameraIndex].lastPipelineIndex = this.cameras[cameraIndex].currentPipelineIndex;
+                }
                 this.cameras[cameraIndex].currentPipelineIndex = index;
             }
             useStateStore().websocket?.send(payload, true);
