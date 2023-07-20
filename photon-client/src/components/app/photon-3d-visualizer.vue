@@ -78,6 +78,7 @@ onMounted(() => {
   camera = new PerspectiveCamera(75, 800 / 800, 0.1, 1000);
 
   const canvas = document.getElementById("view");
+  if(canvas === null) return;
   renderer = new WebGLRenderer({ canvas: canvas });
 
   scene.background = new Color(0xa9a9a9);
