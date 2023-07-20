@@ -5,9 +5,13 @@ import PipelineConfigCard from "@/components/dashboard/CameraAndPipelineSelectCa
 import StreamConfigCard from "@/components/dashboard/StreamConfigCard.vue";
 import OperationConfigCard from "@/components/dashboard/PipelineConfigCard.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import { useStateStore } from "@/stores/StateStore";
 
 const cameraViewType = computed<number[]>({
   get: (): number[] => {
+    // Only show the input stream in Color Picking Mode
+    if(useStateStore().colorPickingMode) return [0];
+
     // Only show the output stream in Driver Mode
     if(useCameraSettingsStore().isDriverMode) return [1];
 

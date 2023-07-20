@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import { useStateStore } from "@/stores/StateStore";
 
 const props = defineProps<{
   // TODO fully update v-model usage in custom components on Vue3 update
@@ -29,7 +30,7 @@ const processingMode = computed<number>({
 
 <template>
   <v-card
-    :disabled="useCameraSettingsStore().isDriverMode"
+    :disabled="useCameraSettingsStore().isDriverMode || useStateStore().colorPickingMode"
     class="mt-3"
     color="primary"
   >

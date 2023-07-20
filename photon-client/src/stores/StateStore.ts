@@ -26,6 +26,8 @@ interface StateStore {
 
     pipelineResults?: PipelineResult,
 
+    colorPickingMode: boolean,
+
     calibrationData: {
         imageCount: number,
         videoFormatIndex: number,
@@ -55,6 +57,8 @@ export const useStateStore = defineStore("state", {
             currentCameraIndex: 0,
 
             pipelineResults: undefined,
+
+            colorPickingMode: false,
 
             calibrationData: {
                 imageCount: 0,
