@@ -69,7 +69,7 @@ const handleOfflineUpdate = (event) => {
 
   axios.post("/utils/offlineUpdate", formData, {
     headers: { "Content-Type": "multipart/form-data" },
-    onUploadProgress: function({ progress })  {
+    onUploadProgress: ({ progress }) => {
       const uploadPercentage = ((progress || 0) * 100.0);
       if (uploadPercentage < 99.5) {
         useStateStore().showSnackbarMessage({
