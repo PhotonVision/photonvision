@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import CamerasCard from "@/components/dashboard/CamerasCard.vue";
-import PipelineConfigCard from "@/components/dashboard/CameraAndPipelineSelectCard.vue";
+import CameraAndPipelineSelectCard from "@/components/dashboard/CameraAndPipelineSelectCard.vue";
 import StreamConfigCard from "@/components/dashboard/StreamConfigCard.vue";
-import OperationConfigCard from "@/components/dashboard/PipelineConfigCard.vue";
+import PipelineConfigCard from "@/components/dashboard/PipelineConfigCard.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 
@@ -60,13 +60,13 @@ const cameraViewType = computed<number[]>({
         style="display: flex; flex-direction: column"
         align-self="stretch"
       >
-        <PipelineConfigCard style="height: 50%; display: flex; flex-direction: column" />
+        <CameraAndPipelineSelectCard style="height: 50%; display: flex; flex-direction: column" />
         <StreamConfigCard
           v-model="cameraViewType"
           style="height: 50%; display: flex; flex-direction: column"
         />
       </v-col>
     </v-row>
-    <OperationConfigCard />
+    <PipelineConfigCard />
   </v-container>
 </template>
