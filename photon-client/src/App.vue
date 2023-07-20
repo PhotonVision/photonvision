@@ -49,22 +49,22 @@ useStateStore().$patch({ websocket: websocket });
 
 <template>
   <v-app>
-    <photon-sidebar/>
+    <photon-sidebar />
     <v-main>
       <v-container
-          fluid
-          fill-height
+        fluid
+        fill-height
       >
         <v-layout>
           <v-flex>
-            <router-view/>
+            <router-view />
           </v-flex>
         </v-layout>
       </v-container>
     </v-main>
 
-    <photon-log-view/>
-    <photon-error-snackbar/>
+    <photon-log-view />
+    <photon-error-snackbar />
   </v-app>
 </template>
 

@@ -9,9 +9,9 @@
       </v-card-subtitle>
     </div>
     <img
-        src="@/assets/images/notfound.webp"
-        alt="missing-page"
-        style="margin-top: 64px"
+      src="@/assets/images/notfound.webp"
+      alt="missing-page"
+      style="margin-top: 64px"
     >
   </div>
 </template>

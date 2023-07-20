@@ -4,10 +4,10 @@ import { useStateStore } from "@/stores/StateStore";
 
 <template>
   <v-snackbar
-      v-model="useStateStore().snackbarData.show"
-      top
-      :color="useStateStore().snackbarData.color"
-      :timeout="useStateStore().snackbarData.timeout"
+    v-model="useStateStore().snackbarData.show"
+    top
+    :color="useStateStore().snackbarData.color"
+    :timeout="useStateStore().snackbarData.timeout"
   >
     <p style="padding: 0; margin: 0; text-align: center">
       {{ useStateStore().snackbarData.message }}

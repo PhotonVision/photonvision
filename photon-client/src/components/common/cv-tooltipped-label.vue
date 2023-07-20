@@ -12,7 +12,7 @@ defineProps<{
       right
       open-delay="300"
     >
-      <template v-slot:activator="{ on, attrs }">
+      <template #activator="{ on, attrs }">
         <span
           style="cursor: text !important;"
           class="white--text"

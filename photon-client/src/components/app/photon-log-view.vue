@@ -48,18 +48,18 @@ document.addEventListener("keydown", e => {
     dark
   >
     <v-card
-        dark
-        class="pt-3"
-        color="primary"
-        flat
+      dark
+      class="pt-3"
+      color="primary"
+      flat
     >
       <v-card-title>
         View Program Logs
         <v-btn
-            color="secondary"
-            style="margin-left: auto;"
-            depressed
-            @click="handleLogExport"
+          color="secondary"
+          style="margin-left: auto;"
+          depressed
+          @click="handleLogExport"
         >
           <v-icon left>
             mdi-download
@@ -68,41 +68,44 @@ document.addEventListener("keydown", e => {
 
           <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
           <a
-              ref="exportLogFile"
-              style="color: black; text-decoration: none; display: none"
-              :href="`http://${backendAddress}/api/utils/photonvision-journalctl.txt`"
-              download="photonvision-journalctl.txt"
-              target="_blank"
+            ref="exportLogFile"
+            style="color: black; text-decoration: none; display: none"
+            :href="`http://${backendAddress}/api/utils/photonvision-journalctl.txt`"
+            download="photonvision-journalctl.txt"
+            target="_blank"
           />
         </v-btn>
       </v-card-title>
 
       <div class="pr-6 pl-6">
         <v-btn-toggle
-            v-model="selectedLogLevels"
-            dark
-            multiple
-            class="fill mb-4"
+          v-model="selectedLogLevels"
+          dark
+          multiple
+          class="fill mb-4"
         >
           <v-btn
-              v-for="(level) in [0, 1, 2, 3]"
-              :key="level"
-              color="secondary"
-              class="fill"
+            v-for="(level) in [0, 1, 2, 3]"
+            :key="level"
+            color="secondary"
+            class="fill"
           >
             {{ getLogLevelFromIndex(level) }}
           </v-btn>
         </v-btn-toggle>
-        <v-card-text style="font-size: 18px; font-weight: 600" v-if="logs.length === 0">
+        <v-card-text
+          v-if="logs.length === 0"
+          style="font-size: 18px; font-weight: 600"
+        >
           There are no Logs to show
         </v-card-text>
         <v-virtual-scroll
-            v-else
-            :items="logs"
-            item-height="50"
-            height="600"
+          v-else
+          :items="logs"
+          item-height="50"
+          height="600"
         >
-          <template v-slot="{item}">
+          <template #default="{item}">
             <div :class="[getLogColor(item.level) + '--text', 'log-item']">
               {{ item.message }}
             </div>
@@ -115,9 +118,9 @@ document.addEventListener("keydown", e => {
       <v-card-actions>
         <v-spacer />
         <v-btn
-            color="white"
-            text
-            @click="() => useStateStore().showLogModal = false"
+          color="white"
+          text
+          @click="() => useStateStore().showLogModal = false"
         >
           Close
         </v-btn>

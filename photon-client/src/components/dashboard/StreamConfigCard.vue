@@ -35,28 +35,28 @@ const processingMode = computed<number>({
     color="primary"
   >
     <v-row
-        align="center"
-        class="pa-sm-3"
+      align="center"
+      class="pa-sm-3"
     >
       <v-col lg="12">
         <p style="color: white;">
           Processing Mode
         </p>
         <v-btn-toggle
-            v-model="processingMode"
-            mandatory
-            dark
-            class="fill"
+          v-model="processingMode"
+          mandatory
+          dark
+          class="fill"
         >
           <v-btn
-              color="secondary"
+            color="secondary"
           >
             <v-icon>mdi-square-outline</v-icon>
             <span>2D</span>
           </v-btn>
           <v-btn
-              color="secondary"
-              :disabled="!useCameraSettingsStore().isCurrentVideoFormatCalibrated"
+            color="secondary"
+            :disabled="!useCameraSettingsStore().isCurrentVideoFormatCalibrated"
           >
             <v-icon>mdi-cube-outline</v-icon>
             <span>3D</span>
@@ -68,22 +68,22 @@ const processingMode = computed<number>({
           Stream Display
         </p>
         <v-btn-toggle
-            v-model="localValue"
-            :multiple="true"
-            mandatory
-            dark
-            class="fill"
+          v-model="localValue"
+          :multiple="true"
+          mandatory
+          dark
+          class="fill"
         >
           <v-btn
-              color="secondary"
-              class="fill"
+            color="secondary"
+            class="fill"
           >
             <v-icon>mdi-import</v-icon>
             <span>Raw</span>
           </v-btn>
           <v-btn
-              color="secondary"
-              class="fill"
+            color="secondary"
+            class="fill"
           >
             <v-icon>mdi-export</v-icon>
             <span>Processed</span>

@@ -41,11 +41,11 @@ const handleClick = () => {
 
 <template>
   <img
-      :id="id"
-      crossorigin="anonymous"
-      :src="src"
-      :alt="alt"
-      :style="style"
-      @click="handleClick"
-  />
+    :id="id"
+    crossorigin="anonymous"
+    :src="src"
+    :alt="alt"
+    :style="style"
+    @click="handleClick"
+  >
 </template>

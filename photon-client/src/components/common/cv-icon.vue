@@ -21,12 +21,12 @@ const hoverClass = props.hover ? "hover" : "";
       nudge-right="10"
       :disabled="tooltip === undefined"
     >
-      <template v-slot:activator="{ on, attrs }">
+      <template #activator="{ on, attrs }">
         <v-icon
           :class="hoverClass"
           :color="color"
-          v-on="on"
           v-bind="attrs"
+          v-on="on"
           @click="$emit('click')"
         >
           {{ iconName }}

@@ -41,64 +41,75 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
 <template>
   <div>
     <cv-select
-        v-model="useCameraSettingsStore().currentPipelineSettings.contourTargetOffsetPointEdge"
-        label="Target Offset Point"
-        tooltip="Changes where the 'center' of the target is (used for calculating e.g. pitch and yaw)"
-        :items="['Center','Top','Bottom','Left','Right']"
-        :select-cols="interactiveCols"
-        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({contourTargetOffsetPointEdge: value}, false)"
+      v-model="useCameraSettingsStore().currentPipelineSettings.contourTargetOffsetPointEdge"
+      label="Target Offset Point"
+      tooltip="Changes where the 'center' of the target is (used for calculating e.g. pitch and yaw)"
+      :items="['Center','Top','Bottom','Left','Right']"
+      :select-cols="interactiveCols"
+      @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({contourTargetOffsetPointEdge: value}, false)"
     />
     <cv-select
-        v-if="!isTagPipeline"
-        v-model="useCameraSettingsStore().currentPipelineSettings.contourTargetOrientation"
-        label="Target Orientation"
-        tooltip="Used to determine how to calculate target landmarks (e.g. the top, left, or bottom of the target)"
-        :items="['Portrait', 'Landscape']"
-        :select-cols="interactiveCols"
-        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({contourTargetOrientation: value}, false)"
+      v-if="!isTagPipeline"
+      v-model="useCameraSettingsStore().currentPipelineSettings.contourTargetOrientation"
+      label="Target Orientation"
+      tooltip="Used to determine how to calculate target landmarks (e.g. the top, left, or bottom of the target)"
+      :items="['Portrait', 'Landscape']"
+      :select-cols="interactiveCols"
+      @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({contourTargetOrientation: value}, false)"
     />
     <cv-switch
-        v-model="useCameraSettingsStore().currentPipelineSettings.outputShowMultipleTargets"
-        label="Show Multiple Targets"
-        tooltip="If enabled, up to five targets will be displayed and sent to user code, instead of just one"
-        :disabled="isTagPipeline"
-        :switch-cols="interactiveCols"
-        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({outputShowMultipleTargets: value}, false)"
+      v-model="useCameraSettingsStore().currentPipelineSettings.outputShowMultipleTargets"
+      label="Show Multiple Targets"
+      tooltip="If enabled, up to five targets will be displayed and sent to user code, instead of just one"
+      :disabled="isTagPipeline"
+      :switch-cols="interactiveCols"
+      @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({outputShowMultipleTargets: value}, false)"
     />
-    <v-divider/>
-    <table class="metrics-table mt-3 mb-3" v-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode !== RobotOffsetPointMode.None">
+    <v-divider />
+    <table
+      v-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode !== RobotOffsetPointMode.None"
+      class="metrics-table mt-3 mb-3"
+    >
       <tr>
-        <th v-for="(item, itemIndex) in offsetPoints" :key="itemIndex" class="metric-item metric-item-title">
-          {{item.header}}
+        <th
+          v-for="(item, itemIndex) in offsetPoints"
+          :key="itemIndex"
+          class="metric-item metric-item-title"
+        >
+          {{ item.header }}
         </th>
       </tr>
       <tr>
-        <td v-for="(item, itemIndex) in offsetPoints" :key="itemIndex" class="metric-item">
-          {{item.value}}
+        <td
+          v-for="(item, itemIndex) in offsetPoints"
+          :key="itemIndex"
+          class="metric-item"
+        >
+          {{ item.value }}
         </td>
       </tr>
     </table>
     <cv-select
-        v-model="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode"
-        label="Robot Offset Mode"
-        tooltip="Used to add an arbitrary offset to the location of the targeting crosshair"
-        :items="['None','Single Point','Dual Point']"
-        :select-cols="interactiveCols"
-        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({offsetRobotOffsetMode: value}, false)"
+      v-model="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode"
+      label="Robot Offset Mode"
+      tooltip="Used to add an arbitrary offset to the location of the targeting crosshair"
+      :items="['None','Single Point','Dual Point']"
+      :select-cols="interactiveCols"
+      @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({offsetRobotOffsetMode: value}, false)"
     />
     <v-row
-        v-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode !== RobotOffsetPointMode.None"
-        align="center"
-        justify="start"
+      v-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode !== RobotOffsetPointMode.None"
+      align="center"
+      justify="start"
     >
       <v-row v-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode === RobotOffsetPointMode.Single">
         <v-col>
           <v-btn
-              small
-              color="accent"
-              style="width: 100%;"
-              class="black--text"
-              @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Single)"
+            small
+            color="accent"
+            style="width: 100%;"
+            class="black--text"
+            @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Single)"
           >
             Take Point
           </v-btn>
@@ -107,22 +118,22 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
       <v-row v-else-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode === RobotOffsetPointMode.Dual">
         <v-col>
           <v-btn
-              small
-              color="accent"
-              style="width: 100%;"
-              class="black--text"
-              @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.DualFirst)"
+            small
+            color="accent"
+            style="width: 100%;"
+            class="black--text"
+            @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.DualFirst)"
           >
             Take First Point
           </v-btn>
         </v-col>
         <v-col>
           <v-btn
-              small
-              color="accent"
-              style="width: 100%;"
-              class="black--text"
-              @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.DualSecond)"
+            small
+            color="accent"
+            style="width: 100%;"
+            class="black--text"
+            @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.DualSecond)"
           >
             Take Second Point
           </v-btn>
@@ -130,10 +141,10 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
       </v-row>
       <v-col>
         <v-btn
-            small
-            color="yellow darken-3"
-            style="width: 100%;"
-            @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Clear)"
+          small
+          color="yellow darken-3"
+          style="width: 100%;"
+          @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Clear)"
         >
           Clear All Points
         </v-btn>

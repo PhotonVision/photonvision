@@ -106,7 +106,10 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
 </script>
 
 <template>
-  <div class="threshold-modifiers" :style="{'--averageHue': averageHue}">
+  <div
+    class="threshold-modifiers"
+    :style="{'--averageHue': averageHue}"
+  >
     <cv-range-slider
       id="hue-slider"
       v-model="hsvHue"
@@ -120,51 +123,51 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
       @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({hsvHue: value}, false)"
     />
     <cv-range-slider
-        id="sat-slider"
-        v-model="hsvSaturation"
-        class="normal-slider"
-        label="Saturation"
-        tooltip="Describes colorfulness; the smaller this value the 'whiter' the color becomes"
-        :min="0"
-        :max="255"
-        :slider-cols="interactiveCols"
-        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({hsvSaturation: value}, false)"
+      id="sat-slider"
+      v-model="hsvSaturation"
+      class="normal-slider"
+      label="Saturation"
+      tooltip="Describes colorfulness; the smaller this value the 'whiter' the color becomes"
+      :min="0"
+      :max="255"
+      :slider-cols="interactiveCols"
+      @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({hsvSaturation: value}, false)"
     />
     <cv-range-slider
-        id="value-slider"
-        v-model="hsvValue"
-        class="normal-slider"
-        label="Value"
-        tooltip="Describes lightness; the smaller this value the 'blacker' the color becomes"
-        :min="0"
-        :max="255"
-        :slider-cols="interactiveCols"
-        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({hsvValue: value}, false)"
+      id="value-slider"
+      v-model="hsvValue"
+      class="normal-slider"
+      label="Value"
+      tooltip="Describes lightness; the smaller this value the 'blacker' the color becomes"
+      :min="0"
+      :max="255"
+      :slider-cols="interactiveCols"
+      @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({hsvValue: value}, false)"
     />
     <cv-switch
-        v-model="useCameraSettingsStore().currentPipelineSettings.hueInverted"
-        label="Invert Hue"
-        :switch-cols="interactiveCols"
-        tooltip="Selects the hue range outside of the hue slider bounds instead of inside"
-        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({hueInverted: value}, false)"
+      v-model="useCameraSettingsStore().currentPipelineSettings.hueInverted"
+      label="Invert Hue"
+      :switch-cols="interactiveCols"
+      tooltip="Selects the hue range outside of the hue slider bounds instead of inside"
+      @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({hueInverted: value}, false)"
     />
     <v-divider
-        class="mt-3"
+      class="mt-3"
     />
     <div>
       <div class="pt-3 white--text">
         Color Picker
       </div>
       <v-row
-          justify="center"
-          class="mt-3 mb-3"
+        justify="center"
+        class="mt-3 mb-3"
       >
         <template v-if="!useStateStore().colorPickingMode">
           <v-btn
-              color="accent"
-              class="ma-2 black--text"
-              small
-              @click="enableColorPicking(useCameraSettingsStore().currentPipelineSettings.hueInverted ? 2 : 3)"
+            color="accent"
+            class="ma-2 black--text"
+            small
+            @click="enableColorPicking(useCameraSettingsStore().currentPipelineSettings.hueInverted ? 2 : 3)"
           >
             <v-icon left>
               mdi-minus
@@ -172,10 +175,10 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
             Shrink Range
           </v-btn>
           <v-btn
-              color="accent"
-              class="ma-2 black--text"
-              small
-              @click="enableColorPicking(1)"
+            color="accent"
+            class="ma-2 black--text"
+            small
+            @click="enableColorPicking(1)"
           >
             <v-icon left>
               mdi-plus-minus
@@ -183,10 +186,10 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
             {{ useCameraSettingsStore().currentPipelineSettings.hueInverted ? "Exclude" : "Set to" }} Average
           </v-btn>
           <v-btn
-              color="accent"
-              class="ma-2 black--text"
-              small
-              @click="enableColorPicking(useCameraSettingsStore().currentPipelineSettings.hueInverted ? 3: 2)"
+            color="accent"
+            class="ma-2 black--text"
+            small
+            @click="enableColorPicking(useCameraSettingsStore().currentPipelineSettings.hueInverted ? 3: 2)"
           >
             <v-icon left>
               mdi-plus
@@ -196,11 +199,11 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
         </template>
         <template v-else>
           <v-btn
-              color="accent"
-              class="ma-2 black--text"
-              style="width: 30%;"
-              small
-              @click="disableColorPicking"
+            color="accent"
+            class="ma-2 black--text"
+            style="width: 30%;"
+            small
+            @click="disableColorPicking"
           >
             Cancel
           </v-btn>

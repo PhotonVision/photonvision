@@ -22,14 +22,16 @@ const trackedTargets = computed<PhotonTarget[]>(() => useStateStore().pipelineRe
 <template>
   <div>
     <v-row style="width: 100%">
-      <v-col
-      >
+      <v-col>
         <span class="white--text">Target Visualization</span>
       </v-col>
     </v-row>
     <v-row style="width: 100%">
       <v-col style="display: flex; align-items: center; justify-content: center">
-        <photon3d-visualizer :horizontal-f-o-v="horizontalFOV" :targets="trackedTargets"/>
+        <photon3d-visualizer
+          :horizontal-f-o-v="horizontalFOV"
+          :targets="trackedTargets"
+        />
       </v-col>
     </v-row>
   </div>

@@ -41,34 +41,34 @@ const saveCameraSettings = () => {
 
 <template>
   <v-card
-      class="mb-3 pr-6 pb-3"
-      color="primary"
-      dark
+    class="mb-3 pr-6 pb-3"
+    color="primary"
+    dark
   >
     <v-card-title>Camera Settings</v-card-title>
     <div class="ml-5">
       <cv-select
-          v-model="useStateStore().currentCameraIndex"
-          label="Camera"
-          :items="useCameraSettingsStore().cameraNames"
-          :disabled="useCameraSettingsStore().cameraNames.length <= 1"
-          :select-cols="8"
-          @input="args => useCameraSettingsStore().setCurrentCameraIndex(args)"
+        v-model="useStateStore().currentCameraIndex"
+        label="Camera"
+        :items="useCameraSettingsStore().cameraNames"
+        :disabled="useCameraSettingsStore().cameraNames.length <= 1"
+        :select-cols="8"
+        @input="args => useCameraSettingsStore().setCurrentCameraIndex(args)"
       />
       <cv-number-input
-          v-model="currentFov"
-          :tooltip="!useCameraSettingsStore().currentCameraSettings.fov.managedByVendor ? 'Field of view (in degrees) of the camera measured across the diagonal of the frame, in a video mode which covers the whole sensor area.' : 'This setting is managed by a vendor'"
-          label="Maximum Diagonal FOV"
-          :disabled="useCameraSettingsStore().currentCameraSettings.fov.managedByVendor"
-          :label-cols="4"
+        v-model="currentFov"
+        :tooltip="!useCameraSettingsStore().currentCameraSettings.fov.managedByVendor ? 'Field of view (in degrees) of the camera measured across the diagonal of the frame, in a video mode which covers the whole sensor area.' : 'This setting is managed by a vendor'"
+        label="Maximum Diagonal FOV"
+        :disabled="useCameraSettingsStore().currentCameraSettings.fov.managedByVendor"
+        :label-cols="4"
       />
       <br>
       <v-btn
-          style="margin-top:10px"
-          small
-          color="secondary"
-          @click="saveCameraSettings"
-          :disabled="currentFov === useCameraSettingsStore().currentCameraSettings.fov.value"
+        style="margin-top:10px"
+        small
+        color="secondary"
+        :disabled="currentFov === useCameraSettingsStore().currentCameraSettings.fov.value"
+        @click="saveCameraSettings"
       >
         <v-icon left>
           mdi-content-save

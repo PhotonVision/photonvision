@@ -14,25 +14,25 @@ onMounted(() => {
 <template>
   <div>
     <v-row
-        no-gutters
-        class="pa-3"
+      no-gutters
+      class="pa-3"
     >
       <v-col
-          cols="12"
-          md="7"
+        cols="12"
+        md="7"
       >
-        <CamerasCard/>
-        <CalibrationCard/>
+        <CamerasCard />
+        <CalibrationCard />
       </v-col>
       <v-col
-          class="pl-md-3 pt-3 pt-md-0"
-          cols="12"
-          style="display: flex; align-items: center"
-          md="5"
+        class="pl-md-3 pt-3 pt-md-0"
+        cols="12"
+        style="display: flex; align-items: center"
+        md="5"
       >
         <photon-camera-stream
-            stream-type="Processed"
-            style="width: 100%"
+          stream-type="Processed"
+          style="width: 100%"
         />
       </v-col>
     </v-row>

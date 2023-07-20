@@ -14,37 +14,37 @@ const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.bre
 
 <template>
   <v-navigation-drawer
-      dark
-      app
-      permanent
-      :mini-variant="compact"
-      color="primary"
+    dark
+    app
+    permanent
+    :mini-variant="compact"
+    color="primary"
   >
     <v-list>
       <!-- List item for the heading; note that there are some tricks in setting padding and image width make things look right -->
       <v-list-item
-          :class="compact ? 'pr-0 pl-0' : ''"
-          style="display: flex; justify-content: center"
+        :class="compact ? 'pr-0 pl-0' : ''"
+        style="display: flex; justify-content: center"
       >
         <v-list-item-icon class="mr-0">
           <img
-              v-if="!compact"
-              class="logo"
-              src="@/assets/images/logoLarge.svg"
-              alt="large logo"
+            v-if="!compact"
+            class="logo"
+            src="@/assets/images/logoLarge.svg"
+            alt="large logo"
           >
           <img
-              v-else
-              class="logo"
-              src="@/assets/images/logoSmall.svg"
-              alt="small logo"
+            v-else
+            class="logo"
+            src="@/assets/images/logoSmall.svg"
+            alt="small logo"
           >
         </v-list-item-icon>
       </v-list-item>
 
       <v-list-item
-          link
-          to="/dashboard"
+        link
+        to="/dashboard"
       >
         <v-list-item-icon>
           <v-icon>mdi-view-dashboard</v-icon>
@@ -54,9 +54,9 @@ const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.bre
         </v-list-item-content>
       </v-list-item>
       <v-list-item
-          ref="camerasTabOpener"
-          link
-          to="/cameras"
+        ref="camerasTabOpener"
+        link
+        to="/cameras"
       >
         <v-list-item-icon>
           <v-icon>mdi-camera</v-icon>
@@ -66,8 +66,8 @@ const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.bre
         </v-list-item-content>
       </v-list-item>
       <v-list-item
-          link
-          to="/settings"
+        link
+        to="/settings"
       >
         <v-list-item-icon>
           <v-icon>mdi-cog</v-icon>
@@ -77,8 +77,8 @@ const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.bre
         </v-list-item-content>
       </v-list-item>
       <v-list-item
-          link
-          to="/docs"
+        link
+        to="/docs"
       >
         <v-list-item-icon>
           <v-icon>mdi-bookshelf</v-icon>
@@ -88,9 +88,9 @@ const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.bre
         </v-list-item-content>
       </v-list-item>
       <v-list-item
-          v-if="mdAndUp"
-          link
-          @click="() => compact = !compact"
+        v-if="mdAndUp"
+        link
+        @click="() => compact = !compact"
       >
         <v-list-item-icon>
           <v-icon v-if="compact">
@@ -115,35 +115,35 @@ const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.bre
               mdi-robot
             </v-icon>
             <v-icon
-                v-else
-                style="border-radius: 100%"
+              v-else
+              style="border-radius: 100%"
             >
               mdi-robot-off
             </v-icon>
           </v-list-item-icon>
           <v-list-item-content>
             <v-list-item-title
-                v-if="useSettingsStore().network.runNTServer"
-                class="text-wrap"
+              v-if="useSettingsStore().network.runNTServer"
+              class="text-wrap"
             >
               NetworkTables server running for <span class="accent--text">{{ useStateStore().ntConnectionStatus.clients }}</span> clients
             </v-list-item-title>
             <v-list-item-title
-                v-else-if="useStateStore().ntConnectionStatus.connected && useStateStore().backendConnected"
-                class="text-wrap"
-                style="flex-direction: column; display: flex"
+              v-else-if="useStateStore().ntConnectionStatus.connected && useStateStore().backendConnected"
+              class="text-wrap"
+              style="flex-direction: column; display: flex"
             >
               NetworkTables Server Connected!
               <span
-                  class="accent--text"
+                class="accent--text"
               >
-                  {{ useStateStore().ntConnectionStatus.address }}
-                </span>
+                {{ useStateStore().ntConnectionStatus.address }}
+              </span>
             </v-list-item-title>
             <v-list-item-title
-                v-else
-                class="text-wrap"
-                style="flex-direction: column; display: flex"
+              v-else
+              class="text-wrap"
+              style="flex-direction: column; display: flex"
             >
               Not connected to NetworkTables Server!
             </v-list-item-title>
@@ -156,8 +156,8 @@ const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.bre
               mdi-server-network
             </v-icon>
             <v-icon
-                v-else
-                style="border-radius: 100%;"
+              v-else
+              style="border-radius: 100%;"
             >
               mdi-server-network-off
             </v-icon>

@@ -52,7 +52,7 @@ const localValue = computed({
           :disabled="disabled"
           :step="step"
         >
-          <template v-slot:append>
+          <template #append>
             <v-text-field
               v-model="localValue"
               dark

@@ -30,22 +30,22 @@ const fpsTooLow = computed<boolean>(() => {
 
 <template>
   <v-card
-      color="primary"
-      height="100%"
-      style="display: flex; flex-direction: column"
-      dark
+    color="primary"
+    height="100%"
+    style="display: flex; flex-direction: column"
+    dark
   >
     <v-card-title
-        class="pb-0 mb-0 pl-4 pt-1"
-        style="min-height: 50px; justify-content: space-between; align-content: center"
+      class="pb-0 mb-0 pl-4 pt-1"
+      style="min-height: 50px; justify-content: space-between; align-content: center"
     >
       <div class="pt-2">
         <span class="mr-4">Cameras</span>
         <v-chip
-            label
-            :color="fpsTooLow ? 'error' : 'transparent'"
-            :text-color="fpsTooLow ? '#C7EA46' : '#ff4d00'"
-            style="font-size: 1rem; padding: 0; margin: 0"
+          label
+          :color="fpsTooLow ? 'error' : 'transparent'"
+          :text-color="fpsTooLow ? '#C7EA46' : '#ff4d00'"
+          style="font-size: 1rem; padding: 0; margin: 0"
         >
           <span class="pr-1">
             Processing @ {{ Math.round(useStateStore().pipelineResults?.fps || 0) }}&nbsp;FPS &ndash;
@@ -63,17 +63,20 @@ const fpsTooLow = computed<boolean>(() => {
       </div>
       <div>
         <v-switch
-            v-model="driverMode"
-            label="Driver Mode"
-            style="margin-left: auto;"
-            color="accent"
-            class="pt-2"
+          v-model="driverMode"
+          label="Driver Mode"
+          style="margin-left: auto;"
+          color="accent"
+          class="pt-2"
         />
       </div>
     </v-card-title>
-    <v-divider style="border-color: white"/>
+    <v-divider style="border-color: white" />
     <!-- TODO do this better -->
-    <v-row class="pl-3 pr-3 pt-3 pb-3" style="flex-wrap: nowrap; justify-content: center">
+    <v-row
+      class="pl-3 pr-3 pt-3 pb-3"
+      style="flex-wrap: nowrap; justify-content: center"
+    >
       <v-col
         v-for="(viewIndex, index) in [0, 1]"
         v-show="value.includes(viewIndex)"
@@ -81,9 +84,9 @@ const fpsTooLow = computed<boolean>(() => {
         style="max-width: 500px; display: flex; align-items: center"
       >
         <photon-camera-stream
-            :stream-type="index === 0 ? 'Raw' : 'Processed'"
-            :id="index === 0 ? 'input-camera-stream' : 'output-camera-stream'"
-            style="width: 100%; height: auto"
+          :id="index === 0 ? 'input-camera-stream' : 'output-camera-stream'"
+          :stream-type="index === 0 ? 'Raw' : 'Processed'"
+          style="width: 100%; height: auto"
         />
       </v-col>
     </v-row>

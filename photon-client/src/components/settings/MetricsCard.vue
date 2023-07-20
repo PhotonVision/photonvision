@@ -82,47 +82,73 @@ onBeforeMount(() => {
 
 <template>
   <v-card
-      dark
-      class="mb-3 pr-6 pb-3"
-      style="background-color: #006492;"
+    dark
+    class="mb-3 pr-6 pb-3"
+    style="background-color: #006492;"
   >
     <v-card-title style="display: flex; justify-content: space-between">
       <span>Stats</span>
       <cv-icon
-          icon-name="mdi-reload"
-          color="white"
-          tooltip="Reload Metrics"
-          hover
-          @click="fetchMetrics"
+        icon-name="mdi-reload"
+        color="white"
+        tooltip="Reload Metrics"
+        hover
+        @click="fetchMetrics"
       />
     </v-card-title>
     <v-row class="pa-4 ml-5">
       <div style="width: 100%">
-        <v-card-subtitle class="ma-0 pa-0 pb-2">PhotonVision General Metrics</v-card-subtitle>
-        <table id="general-metrics" class="metrics-table">
+        <v-card-subtitle class="ma-0 pa-0 pb-2">
+          PhotonVision General Metrics
+        </v-card-subtitle>
+        <table
+          id="general-metrics"
+          class="metrics-table"
+        >
           <tr>
-            <th v-for="(item, itemIndex) in generalMetrics" :key="itemIndex" class="metric-item metric-item-title">
-              {{item.header}}
+            <th
+              v-for="(item, itemIndex) in generalMetrics"
+              :key="itemIndex"
+              class="metric-item metric-item-title"
+            >
+              {{ item.header }}
             </th>
           </tr>
           <tr>
-            <td v-for="(item, itemIndex) in generalMetrics" :key="itemIndex" class="metric-item">
-              {{item.value}}
+            <td
+              v-for="(item, itemIndex) in generalMetrics"
+              :key="itemIndex"
+              class="metric-item"
+            >
+              {{ item.value }}
             </td>
           </tr>
         </table>
       </div>
       <div style="width: 100%">
-        <v-card-subtitle class="ma-0 pa-0 pb-2">PhotonVision Hardware Metrics</v-card-subtitle>
-        <table id="device-metrics" class="metrics-table">
+        <v-card-subtitle class="ma-0 pa-0 pb-2">
+          PhotonVision Hardware Metrics
+        </v-card-subtitle>
+        <table
+          id="device-metrics"
+          class="metrics-table"
+        >
           <tr>
-            <th v-for="(item, itemIndex) in platformMetrics" :key="itemIndex" class="metric-item metric-item-title">
-              {{item.header}}
+            <th
+              v-for="(item, itemIndex) in platformMetrics"
+              :key="itemIndex"
+              class="metric-item metric-item-title"
+            >
+              {{ item.header }}
             </th>
           </tr>
           <tr>
-            <td v-for="(item, itemIndex) in platformMetrics" :key="itemIndex" class="metric-item">
-              <span v-if="useSettingsStore().metrics.cpuUtil !== undefined">{{item.value}}</span>
+            <td
+              v-for="(item, itemIndex) in platformMetrics"
+              :key="itemIndex"
+              class="metric-item"
+            >
+              <span v-if="useSettingsStore().metrics.cpuUtil !== undefined">{{ item.value }}</span>
               <span v-else>---</span>
             </td>
           </tr>

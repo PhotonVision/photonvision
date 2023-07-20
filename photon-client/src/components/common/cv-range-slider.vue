@@ -64,10 +64,9 @@ const changeFromSlot = (v, i) => {
           thumb-color="accent"
           :step="step"
         >
-          <template v-slot:prepend>
+          <template #prepend>
             <v-text-field
               :value="localValue[0]"
-              @input="v => changeFromSlot(v, 0)"
               dark
               color="accent"
               class="mt-0 pt-0"
@@ -78,12 +77,12 @@ const changeFromSlot = (v, i) => {
               :step="step"
               type="number"
               style="width: 60px"
+              @input="v => changeFromSlot(v, 0)"
             />
           </template>
-          <template v-slot:append>
+          <template #append>
             <v-text-field
               :value="localValue[1]"
-              @input="v => changeFromSlot(v, 1)"
               dark
               color="accent"
               class="mt-0 pt-0"
@@ -94,6 +93,7 @@ const changeFromSlot = (v, i) => {
               :step="step"
               type="number"
               style="width: 60px"
+              @input="v => changeFromSlot(v, 1)"
             />
           </template>
         </v-range-slider>

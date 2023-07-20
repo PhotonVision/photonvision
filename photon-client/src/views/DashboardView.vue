@@ -37,32 +37,32 @@ const cameraViewType = computed<number[]>({
 
 <template>
   <v-container
-      class="pa-3"
-      fluid
+    class="pa-3"
+    fluid
   >
     <v-row
-        no-gutters
-        align="center"
-        justify="center"
+      no-gutters
+      align="center"
+      justify="center"
     >
       <v-col
-          cols="12"
-          :class="['pb-3 ', 'pr-lg-3']"
-          lg="8"
-          align-self="stretch"
+        cols="12"
+        :class="['pb-3 ', 'pr-lg-3']"
+        lg="8"
+        align-self="stretch"
       >
-        <CamerasCard v-model="cameraViewType"/>
+        <CamerasCard v-model="cameraViewType" />
       </v-col>
       <v-col
-          cols="12"
-          class="pb-3"
-          lg="4"
-          style="display: flex; flex-direction: column"
+        cols="12"
+        class="pb-3"
+        lg="4"
+        style="display: flex; flex-direction: column"
       >
-        <PipelineConfigCard/>
-        <StreamConfigCard v-model="cameraViewType"/>
+        <PipelineConfigCard />
+        <StreamConfigCard v-model="cameraViewType" />
       </v-col>
     </v-row>
-    <OperationConfigCard/>
+    <OperationConfigCard />
   </v-container>
 </template>

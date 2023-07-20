@@ -175,9 +175,15 @@ const resetCamThirdPerson = () => {
 </script>
 
 <template>
-  <div style="width: 100%" id="container">
+  <div
+    id="container"
+    style="width: 100%"
+  >
     <v-row>
-      <v-col align-self="stretch" style="display: flex; justify-content: center">
+      <v-col
+        align-self="stretch"
+        style="display: flex; justify-content: center"
+      >
         <canvas
           id="view"
         />
@@ -186,16 +192,16 @@ const resetCamThirdPerson = () => {
     <v-row style="margin-bottom: 24px">
       <v-col style="display: flex; justify-content: center">
         <v-btn
-            color="secondary"
-            @click="resetCamFirstPerson"
+          color="secondary"
+          @click="resetCamFirstPerson"
         >
           First Person
         </v-btn>
       </v-col>
       <v-col style="display: flex; justify-content: center">
         <v-btn
-            color="secondary"
-            @click="resetCamThirdPerson"
+          color="secondary"
+          @click="resetCamThirdPerson"
         >
           Third Person
         </v-btn>
