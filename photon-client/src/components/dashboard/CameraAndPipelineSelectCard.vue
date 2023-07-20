@@ -7,10 +7,11 @@ import { computed, ref } from "vue";
 import CvIcon from "@/components/common/cv-icon.vue";
 import CvInput from "@/components/common/cv-input.vue";
 
+// Common RegEx used for naming both pipelines and cameras
 const nameChangeRegex = /^[A-Za-z0-9_ \-)(]*[A-Za-z0-9][A-Za-z0-9_ \-)(.]*$/;
 
+// Camera Name Edit
 const isCameraNameEdit = ref(false);
-// Use a reactive reference to obfuscate the main store
 const currentCameraName = ref(useCameraSettingsStore().currentCameraSettings.nickname);
 const checkCameraName = (name: string): string | boolean => {
   if(!nameChangeRegex.test(name)) return "A camera name can only contain letters, numbers, spaces, underscores, hyphens, parenthesis, and periods";
@@ -53,6 +54,7 @@ const cancelCameraNameEdit = () => {
   currentCameraName.value = useCameraSettingsStore().currentCameraSettings.nickname;
 };
 
+// Pipeline Name Edit
 const pipelineNamesWrapper = computed<{name: string, value: number}[]>(() => {
   const pipelineNames = useCameraSettingsStore().pipelineNames.map((name, index) => ({ name: name, value: index }));
 
@@ -66,11 +68,7 @@ const pipelineNamesWrapper = computed<{name: string, value: number}[]>(() => {
   return pipelineNames;
 });
 const isPipelineNameEdit = ref(false);
-const showPipelineCreationDialog = ref(false);
-const showPipelineTypeChangeDialog = ref(false);
-const showPipelineDeletionConfirmationDialog = ref(false);
 const currentPipelineName = ref(useCameraSettingsStore().currentPipelineSettings.pipelineNickname);
-const currentPipelineType = ref(useCameraSettingsStore().currentWebsocketPipelineType);
 const checkPipelineName = (name: string): string | boolean => {
   if(!nameChangeRegex.test(name)) return "A pipeline name can only contain letters, numbers, spaces, underscores, hyphens, parenthesis, and periods";
   if(useCameraSettingsStore().pipelineNames.some(pipelineName => pipelineName === name)) return "This pipeline name has already been used";
@@ -86,6 +84,8 @@ const cancelPipelineNameEdit = () => {
   currentPipelineName.value = useCameraSettingsStore().currentPipelineSettings.pipelineNickname;
 };
 
+// Pipeline Creation
+const showPipelineCreationDialog = ref(false);
 const newPipelineName = ref("");
 const newPipelineType = ref<Exclude<WebsocketPipelineType, WebsocketPipelineType.Calib3d | WebsocketPipelineType.DriverMode>>(useCameraSettingsStore().currentWebsocketPipelineType);
 const createNewPipeline = () => {
@@ -98,11 +98,16 @@ const cancelPipelineCreation = () => {
   newPipelineType.value = useCameraSettingsStore().currentWebsocketPipelineType;
 };
 
+// Pipeline Creation
+const showPipelineDeletionConfirmationDialog = ref(false);
 const confirmDeleteCurrentPipeline = () => {
   useCameraSettingsStore().deleteCurrentPipeline();
   showPipelineDeletionConfirmationDialog.value = false;
 };
 
+// Pipeline Type Change
+const showPipelineTypeChangeDialog = ref(false);
+const currentPipelineType = ref(useCameraSettingsStore().currentWebsocketPipelineType);
 const confirmChangePipelineType = () => {
   useCameraSettingsStore().changeCurrentPipelineType(currentPipelineType.value);
   showPipelineTypeChangeDialog.value = false;

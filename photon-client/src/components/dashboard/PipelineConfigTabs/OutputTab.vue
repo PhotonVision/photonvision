@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 import CvSelect from "@/components/common/cv-select.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { PipelineType, RobotOffsetPointMode } from "@/types/PipelineTypes";

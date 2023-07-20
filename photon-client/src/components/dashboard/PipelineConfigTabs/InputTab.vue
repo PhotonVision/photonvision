@@ -20,7 +20,6 @@ const getFilteredStreamDivisors = (): number[] => {
 };
 const getNumberOfSkippedDivisors = () => streamDivisors.length - getFilteredStreamDivisors().length;
 
-
 const cameraResolutions = computed(() => useCameraSettingsStore().currentCameraSettings.validVideoFormats.map(f => `${f.resolution.width} X ${f.resolution.height} at ${f.fps} FPS, ${f.pixelFormat}`));
 const handleResolutionChange = (value: number) => {
   useCameraSettingsStore().changeCurrentPipelineSetting({ cameraVideoModeIndex: value }, false);
