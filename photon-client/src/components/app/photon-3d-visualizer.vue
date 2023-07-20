@@ -18,8 +18,7 @@ import { TrackballControls } from "three/examples/jsm/controls/TrackballControls
 import { type Object3D } from "three";
 
 const props = defineProps<{
-  targets: PhotonTarget[],
-  horizontalFOV: number // TODO this is unused, can it be removed?
+  targets: PhotonTarget[]
 }>();
 
 let scene: Scene;
@@ -68,6 +67,38 @@ const drawTargets = (targets: PhotonTarget[]) => {
     previousTargets.push(arrow);
   });
 
+  if(previousTargets.length > 0) {
+    scene.add(...previousTargets);
+  }
+};
+const onWindowResize = () => {
+  const container = document.getElementById("container");
+  const canvas = document.getElementById("view");
+
+  if(container !== null && canvas !== null && camera !== undefined && renderer !== undefined) {
+    canvas.style.width = container.clientWidth * 0.75 + "px";
+    canvas.style.height = container.clientWidth * 0.35 + "px";
+    camera.aspect = canvas.clientWidth / canvas.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+  }
+};
+const resetCamFirstPerson = () => {
+  controls.reset();
+  camera.position.set(0.2,0,0);
+  camera.up.set(0,0,1);
+  controls.target.set(4.0,0.0,0.0);
+  controls.update();
+  if(previousTargets.length > 0) {
+    scene.add(...previousTargets);
+  }
+};
+const resetCamThirdPerson = () => {
+  controls.reset();
+  camera.position.set(-1.39,-1.09,1.17);
+  camera.up.set(0,0,1);
+  controls.target.set(4.0,0.0,0.0);
+  controls.update();
   if(previousTargets.length > 0) {
     scene.add(...previousTargets);
   }
@@ -139,39 +170,6 @@ watchEffect(() => {
     drawTargets(props.targets);
   }
 });
-
-const onWindowResize = () => {
-  const container = document.getElementById("container");
-  const canvas = document.getElementById("view");
-
-  if(container !== null && canvas !== null && camera !== undefined && renderer !== undefined) {
-    canvas.style.width = container.clientWidth * 0.75 + "px";
-    canvas.style.height = container.clientWidth * 0.35 + "px";
-    camera.aspect = canvas.clientWidth / canvas.clientHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-  }
-};
-const resetCamFirstPerson = () => {
-  controls.reset();
-  camera.position.set(0.2,0,0);
-  camera.up.set(0,0,1);
-  controls.target.set(4.0,0.0,0.0);
-  controls.update();
-  if(previousTargets.length > 0) {
-    scene.add(...previousTargets);
-  }
-};
-const resetCamThirdPerson = () => {
-  controls.reset();
-  camera.position.set(-1.39,-1.09,1.17);
-  camera.up.set(0,0,1);
-  controls.target.set(4.0,0.0,0.0);
-  controls.update();
-  if(previousTargets.length > 0) {
-    scene.add(...previousTargets);
-  }
-};
 </script>
 
 <template>
