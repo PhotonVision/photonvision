@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { computed, getCurrentInstance, onMounted } from "vue";
+import { computed, getCurrentInstance, onBeforeUnmount, onMounted } from "vue";
 import CvRangeSlider from "@/components/common/cv-range-slider.vue";
 import CvSwitch from "@/components/common/cv-switch.vue";
 import { useStateStore } from "@/stores/StateStore";
@@ -100,6 +100,12 @@ onMounted(() => {
   if(cameraStream === null) return;
 
   cameraStream.addEventListener("click", handleStreamClick);
+});
+onBeforeUnmount(() => {
+  const cameraStream = document.getElementById("input-camera-stream");
+  if(cameraStream === null) return;
+
+  cameraStream.removeEventListener("click", handleStreamClick);
 });
 
 const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)) ? 9 : 8;
