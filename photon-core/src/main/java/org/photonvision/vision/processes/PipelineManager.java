@@ -261,7 +261,7 @@ public class PipelineManager {
     /**
      * Sorts the pipeline list by index, and reassigns their indexes to match the new order. <br>
      * <br>
-     * I don't like this but I have no other ideas, and it works so ¯\_(ツ)_/¯
+     * I don't like this but I have no other ideas, and it works so
      */
     private void reassignIndexes() {
         userPipelineSettings.sort(PipelineSettingsIndexComparator);
