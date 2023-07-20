@@ -20,15 +20,15 @@ export enum RobotOffsetPointMode {
 }
 
 export enum TargetModel {
-    k2020HighGoalOuter=0,
-    k2020HighGoalInner=1,
-    k2019DualTarget=2,
-    kCircularPowerCell7in=3,
-    k2022CircularCargoBall=4,
-    k2016HighGoal=5,
-    k200mmAprilTag=6,
-    kAruco6in_16h5=7,
-    k6in_16h5=8
+    InfiniteRechargeHighGoalOuter=0,
+    InfiniteRechargeHighGoalInner=1,
+    DeepSpaceDualTarget=2,
+    CircularPowerCell7in=3,
+    RapidReactCircularCargoBall=4,
+    StrongholdHighGoal=5,
+    Apriltag_200mm=6,
+    Aruco6in_16h5=7,
+    Apriltag6in_16h5=8
 }
 
 export interface PipelineSettings {
@@ -134,7 +134,7 @@ export type ConfigurableReflectivePipelineSettings = Partial<Omit<ReflectivePipe
 export const DefaultReflectivePipelineSettings: ReflectivePipelineSettings = {
     ...DefaultPipelineSettings,
     cameraGain: 20,
-    targetModel: TargetModel.k2020HighGoalOuter,
+    targetModel: TargetModel.InfiniteRechargeHighGoalOuter,
     ledMode: true,
     outputShowMultipleTargets: false,
     cameraExposure: 6,
@@ -162,7 +162,7 @@ export type ConfigurableColoredShapePipelineSettings = Partial<Omit<ColoredShape
 export const DefaultColoredShapePipelineSettings: ColoredShapePipelineSettings = {
     ...DefaultPipelineSettings,
     cameraGain: 75,
-    targetModel: TargetModel.k2020HighGoalOuter,
+    targetModel: TargetModel.InfiniteRechargeHighGoalOuter,
     ledMode: true,
     outputShowMultipleTargets: false,
     cameraExposure: 20,
@@ -197,7 +197,7 @@ export type ConfigurableAprilTagPipelineSettings = Partial<Omit<AprilTagPipeline
 export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
     ...DefaultPipelineSettings,
     cameraGain: 75,
-    targetModel: TargetModel.k6in_16h5,
+    targetModel: TargetModel.Apriltag6in_16h5,
     ledMode: false,
     outputShowMultipleTargets: true,
     cameraExposure: 20,
@@ -226,7 +226,7 @@ export type ConfigurableArucoPipelineSettings = Partial<Omit<ArucoPipelineSettin
 export const DefaultArucoPipelineSettings: ArucoPipelineSettings = {
     ...DefaultPipelineSettings,
     outputShowMultipleTargets: true,
-    targetModel: TargetModel.kAruco6in_16h5,
+    targetModel: TargetModel.Aruco6in_16h5,
     cameraExposure: -1,
     cameraAutoExposure: true,
     ledMode: false,
