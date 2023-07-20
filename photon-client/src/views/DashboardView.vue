@@ -47,7 +47,7 @@ const cameraViewType = computed<number[]>({
     >
       <v-col
         cols="12"
-        :class="['pb-3 ', 'pr-lg-3']"
+        class="pb-3 pr-lg-3"
         lg="8"
         align-self="stretch"
       >
@@ -58,9 +58,13 @@ const cameraViewType = computed<number[]>({
         class="pb-3"
         lg="4"
         style="display: flex; flex-direction: column"
+        align-self="stretch"
       >
-        <PipelineConfigCard />
-        <StreamConfigCard v-model="cameraViewType" />
+        <PipelineConfigCard style="height: 50%; display: flex; flex-direction: column" />
+        <StreamConfigCard
+          v-model="cameraViewType"
+          style="height: 50%; display: flex; flex-direction: column"
+        />
       </v-col>
     </v-row>
     <OperationConfigCard />
