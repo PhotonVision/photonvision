@@ -289,7 +289,7 @@ const cancelChangePipelineType = () => {
       >
         <cv-select
           v-model="currentPipelineType"
-          label="Tracking Type"
+          label="Type"
           tooltip="Changes the pipeline type, which changes the type of processing that will happen on input frames"
           :items="[
             {name: 'Reflective', value: WebsocketPipelineType.Reflective},
