@@ -49,7 +49,7 @@ const checkCameraName = (name: string): string | boolean => {
   return true;
 };
 const saveCameraNameEdit = (newName: string) => {
-  useCameraSettingsStore().changeCameraNickname(newName)
+  useCameraSettingsStore().changeCameraNickname(newName, false)
       .then(response => {
         useStateStore().showSnackbarMessage({
           color: "success",
