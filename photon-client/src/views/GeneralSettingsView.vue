@@ -7,18 +7,10 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 </script>
 
 <template>
-  <v-row
-    class="pa-3"
-    no-gutters
-  >
-    <v-col
-      cols="12"
-      style="max-width: 1400px"
-    >
-      <MetricsCard />
-      <DeviceControlCard />
-      <NetworkingCard />
-      <LightingControlCard v-if="useSettingsStore().lighting.supported" />
-    </v-col>
-  </v-row>
+  <div class="pa-3">
+    <MetricsCard />
+    <DeviceControlCard />
+    <NetworkingCard />
+    <LightingControlCard v-if="useSettingsStore().lighting.supported" />
+  </div>
 </template>
