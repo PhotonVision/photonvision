@@ -94,7 +94,11 @@ export const useStateStore = defineStore("state", {
                 };
         },
         updatePipelineResultsFromWebsocket(data: WebsocketPipelineResultUpdate) {
-            this.pipelineResults = data[this.currentCameraIndex];
+            for(const cameraIndex in data) {
+                if(parseInt(cameraIndex) === this.currentCameraIndex) {
+                    this.pipelineResults = data[cameraIndex];
+                }
+            }
         },
         updateCalibrationStateValuesFromWebsocket(data: WebsocketCalibrationData) {
             this.calibrationData = {
