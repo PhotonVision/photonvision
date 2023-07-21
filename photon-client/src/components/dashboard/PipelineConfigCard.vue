@@ -103,7 +103,7 @@ const tabGroups = computed<ConfigOption[][]>(() => {
       && !((isAprilTag || isAruco) && (tabConfig.tabName === "Threshold")) //Filter out threshold tab if we're doing AprilTags
       && !((isAprilTag || isAruco) && (tabConfig.tabName === "Contours")) //Filter out contours if we're doing AprilTags
       && !(!isAprilTag && tabConfig.tabName === "AprilTag") //Filter out apriltag unless we actually are doing AprilTags
-      && !(!isAruco && tabConfig.tabName === "Aruco")
+      && !(!isAruco && tabConfig.tabName === "Aruco") //Filter out aruco unless we actually are doing Aruco
   ));
 });
 
