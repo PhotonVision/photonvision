@@ -6,6 +6,35 @@ import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import { computed, ref } from "vue";
 import CvIcon from "@/components/common/cv-icon.vue";
 import CvInput from "@/components/common/cv-input.vue";
+import { PipelineType } from "@/types/PipelineTypes";
+
+const changeCurrentCameraIndex = (index: number) => {
+  useCameraSettingsStore().setCurrentCameraIndex(index, true);
+
+  isCameraNameEdit.value = false;
+  currentCameraName.value = useCameraSettingsStore().cameras[index].nickname;
+  isPipelineNameEdit.value = false;
+  currentPipelineName.value = useCameraSettingsStore().cameras[index].pipelineSettings.pipelineNickname;
+  newPipelineName.value = "";
+  switch (useCameraSettingsStore().cameras[index].pipelineSettings.pipelineType) {
+    case PipelineType.Reflective:
+      newPipelineType.value = WebsocketPipelineType.Reflective;
+      currentPipelineType.value = WebsocketPipelineType.Reflective;
+      break;
+    case PipelineType.ColoredShape:
+      newPipelineType.value = WebsocketPipelineType.ColoredShape;
+      currentPipelineType.value = WebsocketPipelineType.ColoredShape;
+      break;
+    case PipelineType.AprilTag:
+      newPipelineType.value = WebsocketPipelineType.AprilTag;
+      currentPipelineType.value = WebsocketPipelineType.AprilTag;
+      break;
+    case PipelineType.Aruco:
+      newPipelineType.value = WebsocketPipelineType.Aruco;
+      currentPipelineType.value = WebsocketPipelineType.Aruco;
+      break;
+  }
+};
 
 // Common RegEx used for naming both pipelines and cameras
 const nameChangeRegex = /^[A-Za-z0-9_ \-)(]*[A-Za-z0-9][A-Za-z0-9_ \-)(.]*$/;
@@ -107,7 +136,7 @@ const confirmDeleteCurrentPipeline = () => {
 
 // Pipeline Type Change
 const showPipelineTypeChangeDialog = ref(false);
-const currentPipelineType = ref(useCameraSettingsStore().currentWebsocketPipelineType);
+const currentPipelineType = ref<Exclude<WebsocketPipelineType, WebsocketPipelineType.Calib3d | WebsocketPipelineType.DriverMode>>(useCameraSettingsStore().currentWebsocketPipelineType);
 const confirmChangePipelineType = () => {
   useCameraSettingsStore().changeCurrentPipelineType(currentPipelineType.value);
   showPipelineTypeChangeDialog.value = false;
@@ -133,7 +162,7 @@ const cancelChangePipelineType = () => {
           label="Camera"
           :items="useCameraSettingsStore().cameraNames"
           :disabled="useCameraSettingsStore().cameraNames.length <= 1"
-          @input="args => useCameraSettingsStore().setCurrentCameraIndex(args)"
+          @input="changeCurrentCameraIndex"
         />
         <cv-input
           v-else
