@@ -78,14 +78,22 @@ const fpsTooLow = computed<boolean>(() => {
       style="flex-wrap: nowrap; justify-content: center"
     >
       <v-col
-        v-for="(viewIndex, index) in [0, 1]"
-        v-show="value.includes(viewIndex)"
-        :key="index"
+        v-show="value.includes(0)"
         style="max-width: 500px; display: flex; align-items: center"
       >
         <photon-camera-stream
-          :id="index === 0 ? 'input-camera-stream' : 'output-camera-stream'"
-          :stream-type="index === 0 ? 'Raw' : 'Processed'"
+          id="input-camera-stream"
+          stream-type="Raw"
+          style="width: 100%; height: auto"
+        />
+      </v-col>
+      <v-col
+        v-show="value.includes(1)"
+        style="max-width: 500px; display: flex; align-items: center"
+      >
+        <photon-camera-stream
+          id="output-camera-stream"
+          stream-type="Processed"
           style="width: 100%; height: auto"
         />
       </v-col>
