@@ -161,7 +161,6 @@ const cancelChangePipelineType = () => {
           v-model="useStateStore().currentCameraIndex"
           label="Camera"
           :items="useCameraSettingsStore().cameraNames"
-          :disabled="useCameraSettingsStore().cameraNames.length <= 1"
           @input="changeCurrentCameraIndex"
         />
         <cv-input
@@ -198,8 +197,7 @@ const cancelChangePipelineType = () => {
           label="Pipeline"
           tooltip="Each pipeline runs on a camera output and stores a unique set of processing settings"
           :disabled="useCameraSettingsStore().isDriverMode
-            || useCameraSettingsStore().isCalibrationMode
-            || useCameraSettingsStore().pipelineNames.length <= 1"
+            || useCameraSettingsStore().isCalibrationMode"
           :items="pipelineNamesWrapper"
           @input="args => useCameraSettingsStore().changeCurrentPipelineIndex(args, true)"
         />
