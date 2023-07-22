@@ -3,6 +3,7 @@ import { computed } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import loadingImage from "@/assets/images/loading.svg";
+import eyedropperCursor from "@/assets/images/eyedropper.svg";
 import type { StyleValue } from "vue/types/jsx";
 
 const props = defineProps<{
@@ -22,17 +23,17 @@ const src = computed<string>(() => {
 const alt = computed<string>(() => `${props.streamType} Stream View`);
 
 const style = computed<StyleValue>(() => {
-  if(src.value !== loadingImage) {
-    return {
-      cursor: "pointer"
-    };
+  if(useStateStore().colorPickingMode) {
+    return { cursor: "crosshair" };
+  } else if(src.value !== loadingImage) {
+    return { cursor: "pointer" };
   }
 
   return {};
 });
 
 const handleClick = () => {
-  if(src.value !== loadingImage) {
+  if(!useStateStore().colorPickingMode && src.value !== loadingImage) {
     window.open(src.value);
   }
 };
