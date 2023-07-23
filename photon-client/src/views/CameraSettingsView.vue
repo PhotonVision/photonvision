@@ -3,11 +3,17 @@ import CamerasCard from "@/components/cameras/CameraSettingsCard.vue";
 import CalibrationCard from "@/components/cameras/CalibrationCard.vue";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { onMounted } from "vue";
+import { onBeforeMount } from "vue";
+import { onBeforeRouteLeave } from "vue-router/composables";
 
-onMounted(() => {
+// TOOD update to onBeforeRouteEnter when updating Vue router
+onBeforeMount(() => {
   // Camera View uses Driver Mode
   useCameraSettingsStore().changeCurrentPipelineIndex(-1, true);
+});
+onBeforeRouteLeave((to, from, next) => {
+  useCameraSettingsStore().changeCurrentPipelineIndex(useCameraSettingsStore().currentCameraSettings.lastPipelineIndex || 0, true);
+  next();
 });
 </script>
 
