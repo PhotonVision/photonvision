@@ -3,7 +3,6 @@ import { computed } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import loadingImage from "@/assets/images/loading.svg";
-import eyedropperCursor from "@/assets/images/eyedropper.svg";
 import type { StyleValue } from "vue/types/jsx";
 
 const props = defineProps<{
