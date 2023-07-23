@@ -36,10 +36,18 @@ import edu.wpi.first.math.geometry.Transform3d;
  * method.
  */
 public class PNPResults {
-    /** If this result is valid. A false value indicates there was an error in estimation, and this result should not be used. */
+    /**
+     * If this result is valid. A false value indicates there was an error in estimation, and this
+     * result should not be used.
+     */
     public final boolean isPresent;
-    /** The best-fit transform. The coordinate frame of this transform depends on the method which gave this result. */
+
+    /**
+     * The best-fit transform. The coordinate frame of this transform depends on the method which gave
+     * this result.
+     */
     public final Transform3d best;
+
     /** Reprojection error of the best solution, in pixels */
     public final double bestReprojErr;
 

@@ -68,7 +68,8 @@ public class VisionEstimation {
      * @param distCoeffs The camera distortion matrix in standard opencv form
      * @param visTags The visible tags reported by PV
      * @param tagLayout The known tag layout on the field
-     * @return The transformation that maps the field origin to the camera pose. Ensure the {@link PNPResults} are present before utilizing them.
+     * @return The transformation that maps the field origin to the camera pose. Ensure the {@link
+     *     PNPResults} are present before utilizing them.
      */
     public static PNPResults estimateCamPosePNP(
             Matrix<N3, N3> cameraMatrix,
@@ -91,7 +92,9 @@ public class VisionEstimation {
 
         // single-tag pnp
         if (visTags.size() == 1) {
-            var camToTag = OpenCVHelp.solvePNP_SQUARE(cameraMatrix, distCoeffs, TargetModel.kTag16h5.vertices, corners);
+            var camToTag =
+                    OpenCVHelp.solvePNP_SQUARE(
+                            cameraMatrix, distCoeffs, TargetModel.kTag16h5.vertices, corners);
             if (!camToTag.isPresent) return new PNPResults();
             var bestPose = knownTags.get(0).pose.transformBy(camToTag.best.inverse());
             var altPose = new Pose3d();
@@ -100,12 +103,11 @@ public class VisionEstimation {
 
             var o = new Pose3d();
             return new PNPResults(
-                new Transform3d(o, bestPose),
-                new Transform3d(o, altPose),
-                camToTag.ambiguity,
-                camToTag.bestReprojErr,
-                camToTag.altReprojErr
-            );
+                    new Transform3d(o, bestPose),
+                    new Transform3d(o, altPose),
+                    camToTag.ambiguity,
+                    camToTag.bestReprojErr,
+                    camToTag.altReprojErr);
         }
         // multi-tag pnp
         else {
@@ -114,12 +116,11 @@ public class VisionEstimation {
             var camToOrigin = OpenCVHelp.solvePNP_SQPNP(cameraMatrix, distCoeffs, objectTrls, corners);
             if (!camToOrigin.isPresent) return new PNPResults();
             return new PNPResults(
-                camToOrigin.best.inverse(),
-                camToOrigin.alt.inverse(),
-                camToOrigin.ambiguity,
-                camToOrigin.bestReprojErr,
-                camToOrigin.altReprojErr
-            );
+                    camToOrigin.best.inverse(),
+                    camToOrigin.alt.inverse(),
+                    camToOrigin.ambiguity,
+                    camToOrigin.bestReprojErr,
+                    camToOrigin.altReprojErr);
         }
     }
 }

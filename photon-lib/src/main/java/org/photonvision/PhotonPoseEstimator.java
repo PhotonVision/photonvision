@@ -370,7 +370,7 @@ public class PhotonPoseEstimator {
 
         var pnpResults =
                 VisionEstimation.estimateCamPosePNP(
-                                cameraMatrixOpt.get(), distCoeffsOpt.get(), result.getTargets(), fieldTags);
+                        cameraMatrixOpt.get(), distCoeffsOpt.get(), result.getTargets(), fieldTags);
         // try fallback strategy if solvePNP fails for some reason
         if (!pnpResults.isPresent)
             return update(result, cameraMatrixOpt, distCoeffsOpt, this.multiTagFallbackStrategy);
