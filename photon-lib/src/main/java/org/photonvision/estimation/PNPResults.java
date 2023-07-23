@@ -36,7 +36,11 @@ import edu.wpi.first.math.geometry.Transform3d;
  * method.
  */
 public class PNPResults {
+    /** If this result is valid. A false value indicates there was an error in estimation, and this result should not be used. */
+    public final boolean isPresent;
+    /** The best-fit transform. The coordinate frame of this transform depends on the method which gave this result. */
     public final Transform3d best;
+    /** Reprojection error of the best solution, in pixels */
     public final double bestReprojErr;
 
     /**
@@ -51,8 +55,14 @@ public class PNPResults {
     /** If no alternate solution is found, this is 0 */
     public final double ambiguity;
 
+    /** An empty (invalid) result. */
     public PNPResults() {
-        this(new Transform3d(), new Transform3d(), 0, 0, 0);
+        this.isPresent = false;
+        this.best = new Transform3d();
+        this.alt = new Transform3d();
+        this.ambiguity = 0;
+        this.bestReprojErr = 0;
+        this.altReprojErr = 0;
     }
 
     public PNPResults(Transform3d best, double bestReprojErr) {
@@ -65,6 +75,7 @@ public class PNPResults {
             double ambiguity,
             double bestReprojErr,
             double altReprojErr) {
+        this.isPresent = true;
         this.best = best;
         this.alt = alt;
         this.ambiguity = ambiguity;

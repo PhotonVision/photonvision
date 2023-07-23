@@ -34,7 +34,6 @@ import edu.wpi.first.math.numbers.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
@@ -69,10 +68,9 @@ public class VisionEstimation {
      * @param distCoeffs The camera distortion matrix in standard opencv form
      * @param visTags The visible tags reported by PV
      * @param tagLayout The known tag layout on the field
-     * @return The transformation that maps the field origin to the camera pose, or an empty Optional
-     *     if estimation fails.
+     * @return The transformation that maps the field origin to the camera pose. Ensure the {@link PNPResults} are present before utilizing them.
      */
-    public static Optional<PNPResults> estimateCamPosePNP(
+    public static PNPResults estimateCamPosePNP(
             Matrix<N3, N3> cameraMatrix,
             Matrix<N5, N1> distCoeffs,
             List<PhotonTrackedTarget> visTags,
@@ -81,51 +79,47 @@ public class VisionEstimation {
                 || visTags == null
                 || tagLayout.getTags().size() == 0
                 || visTags.size() == 0) {
-            return Optional.empty();
+            return new PNPResults();
         }
 
         var corners = new ArrayList<TargetCorner>();
         for (var tag : visTags) corners.addAll(tag.getDetectedCorners());
         var knownTags = getVisibleLayoutTags(visTags, tagLayout);
         if (knownTags.size() == 0 || corners.size() == 0 || corners.size() % 4 != 0) {
-            return Optional.empty();
+            return new PNPResults();
         }
 
         // single-tag pnp
         if (visTags.size() == 1) {
-            var camToTag =
-                    OpenCVHelp.solvePNP_SQUARE(
-                                    cameraMatrix, distCoeffs, TargetModel.kTag16h5.vertices, corners)
-                            .orElse(null);
-            if (camToTag == null) return Optional.empty();
+            var camToTag = OpenCVHelp.solvePNP_SQUARE(cameraMatrix, distCoeffs, TargetModel.kTag16h5.vertices, corners);
+            if (!camToTag.isPresent) return new PNPResults();
             var bestPose = knownTags.get(0).pose.transformBy(camToTag.best.inverse());
             var altPose = new Pose3d();
             if (camToTag.ambiguity != 0)
                 altPose = knownTags.get(0).pose.transformBy(camToTag.alt.inverse());
 
             var o = new Pose3d();
-            return Optional.of(
-                    new PNPResults(
-                            new Transform3d(o, bestPose),
-                            new Transform3d(o, altPose),
-                            camToTag.ambiguity,
-                            camToTag.bestReprojErr,
-                            camToTag.altReprojErr));
+            return new PNPResults(
+                new Transform3d(o, bestPose),
+                new Transform3d(o, altPose),
+                camToTag.ambiguity,
+                camToTag.bestReprojErr,
+                camToTag.altReprojErr
+            );
         }
         // multi-tag pnp
         else {
             var objectTrls = new ArrayList<Translation3d>();
             for (var tag : knownTags) objectTrls.addAll(TargetModel.kTag16h5.getFieldVertices(tag.pose));
-            var camToOrigin =
-                    OpenCVHelp.solvePNP_SQPNP(cameraMatrix, distCoeffs, objectTrls, corners).orElse(null);
-            if (camToOrigin == null) return Optional.empty();
-            return Optional.of(
-                    new PNPResults(
-                            camToOrigin.best.inverse(),
-                            camToOrigin.alt.inverse(),
-                            camToOrigin.ambiguity,
-                            camToOrigin.bestReprojErr,
-                            camToOrigin.altReprojErr));
+            var camToOrigin = OpenCVHelp.solvePNP_SQPNP(cameraMatrix, distCoeffs, objectTrls, corners);
+            if (!camToOrigin.isPresent) return new PNPResults();
+            return new PNPResults(
+                camToOrigin.best.inverse(),
+                camToOrigin.alt.inverse(),
+                camToOrigin.ambiguity,
+                camToOrigin.bestReprojErr,
+                camToOrigin.altReprojErr
+            );
         }
     }
 }

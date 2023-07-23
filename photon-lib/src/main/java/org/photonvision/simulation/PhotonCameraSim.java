@@ -355,9 +355,8 @@ public class PhotonCameraSim implements AutoCloseable {
                                         prop.getIntrinsics(),
                                         prop.getDistCoeffs(),
                                         tgt.getModel().vertices,
-                                        noisyTargetCorners)
-                                .orElse(null);
-                if (pnpSim == null) continue;
+                                        noisyTargetCorners);
+                if (!pnpSim.isPresent) continue;
                 centerRot =
                         prop.getPixelRot(
                                 OpenCVHelp.projectPoints(

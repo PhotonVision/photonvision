@@ -197,8 +197,7 @@ public class OpenCVTest {
                                 prop.getIntrinsics(),
                                 prop.getDistCoeffs(),
                                 target.getModel().vertices,
-                                targetCorners)
-                        .orElseThrow();
+                                targetCorners);
         var estRelation = new CameraTargetRelation(cameraPose, cameraPose.plus(pnpSim.best));
         assertSame(actualRelation.camToTarg, estRelation.camToTarg);
     }
@@ -229,8 +228,7 @@ public class OpenCVTest {
                                 prop.getIntrinsics(),
                                 prop.getDistCoeffs(),
                                 target.getModel().vertices,
-                                targetCorners)
-                        .orElseThrow();
+                                targetCorners);
         var estRelation = new CameraTargetRelation(cameraPose, cameraPose.plus(pnpSim.best));
         assertSame(actualRelation.camToTarg, estRelation.camToTarg);
     }
