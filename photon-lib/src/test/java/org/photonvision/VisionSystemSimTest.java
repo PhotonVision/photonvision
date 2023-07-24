@@ -28,6 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import edu.wpi.first.apriltag.AprilTag;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.jni.AprilTagJNI;
 import edu.wpi.first.cscore.CameraServerCvJNI;
 import edu.wpi.first.cscore.CameraServerJNI;
@@ -46,6 +48,8 @@ import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
 import edu.wpi.first.util.RuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
@@ -57,6 +61,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.opencv.core.Core;
+import org.opencv.highgui.HighGui;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.VisionSystemSim;
@@ -481,5 +487,59 @@ class VisionSystemSimTest {
         List<PhotonTrackedTarget> tgtList;
         tgtList = res.getTargets();
         assertEquals(11, tgtList.size());
+    }
+
+    @Test
+    public void testPoseEstimation() {
+        var visionSysSim = new VisionSystemSim("Test");
+        var camera = new PhotonCamera("camera");
+        var cameraSim = new PhotonCameraSim(camera);
+        visionSysSim.addCamera(cameraSim, new Transform3d());
+        cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(90));
+        cameraSim.setMinTargetAreaPixels(20.0);
+
+        List<AprilTag> tagList = new ArrayList<>();
+        tagList.add(new AprilTag(0, new Pose3d(12, 3, 1, new Rotation3d(0, 0, Math.PI))));
+        tagList.add(new AprilTag(1, new Pose3d(12, 1, -1, new Rotation3d(0, 0, Math.PI))));
+        tagList.add(new AprilTag(2, new Pose3d(11, 0, 2, new Rotation3d(0, 0, Math.PI))));
+        double fieldLength = Units.feetToMeters(54.0);
+        double fieldWidth = Units.feetToMeters(27.0);
+        AprilTagFieldLayout layout = new AprilTagFieldLayout(tagList, fieldLength, fieldWidth);
+        PhotonPoseEstimator estimator =
+                new PhotonPoseEstimator(
+                        layout,
+                        PoseStrategy.MULTI_TAG_PNP,
+                        camera,
+                        new Transform3d());
+        Pose2d robotPose = new Pose2d(5, 1, Rotation2d.fromDegrees(5));
+        
+        visionSysSim.addVisionTargets(
+                new VisionTargetSim(
+                        tagList.get(0).pose,
+                        TargetModel.kTag16h5,
+                        0));
+        
+        visionSysSim.update(robotPose);
+        Pose3d pose = estimator.update().get().estimatedPose;
+        assertEquals(5, pose.getX(), .01);
+        assertEquals(1, pose.getY(), .01);
+        assertEquals(0, pose.getZ(), .01);
+
+        visionSysSim.addVisionTargets(
+                new VisionTargetSim(
+                        tagList.get(1).pose,
+                        TargetModel.kTag16h5,
+                        1));
+        visionSysSim.addVisionTargets(
+                new VisionTargetSim(
+                        tagList.get(2).pose,
+                        TargetModel.kTag16h5,
+                        2));
+        
+        visionSysSim.update(robotPose);
+        pose = estimator.update().get().estimatedPose;
+        assertEquals(5, pose.getX(), .01);
+        assertEquals(1, pose.getY(), .01);
+        assertEquals(0, pose.getZ(), .01);
     }
 }
