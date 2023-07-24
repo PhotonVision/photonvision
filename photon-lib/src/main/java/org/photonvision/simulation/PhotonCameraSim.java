@@ -70,7 +70,7 @@ public class PhotonCameraSim implements AutoCloseable {
     private long nextNTEntryTime = WPIUtilJNI.now();
 
     private double maxSightRangeMeters = Double.MAX_VALUE;
-    private static final double kDefaultMinAreaPx = 90;
+    private static final double kDefaultMinAreaPx = 100;
     private double minTargetAreaPercent;
     private PhotonTargetSortMode sortMode = PhotonTargetSortMode.Largest;
 
@@ -356,6 +356,7 @@ public class PhotonCameraSim implements AutoCloseable {
                                 prop.getDistCoeffs(),
                                 tgt.getModel().vertices,
                                 noisyTargetCorners);
+                if (!pnpSim.isPresent) continue;
                 centerRot =
                         prop.getPixelRot(
                                 OpenCVHelp.projectPoints(
@@ -459,6 +460,8 @@ public class PhotonCameraSim implements AutoCloseable {
             ts.targetPoseEntry.set(poseData, receiveTimestamp);
         }
 
+        ts.cameraIntrinsicsPublisher.set(prop.getIntrinsics().getData(), receiveTimestamp);
+        ts.cameraDistortionPublisher.set(prop.getDistCoeffs().getData(), receiveTimestamp);
         ts.heartbeatPublisher.set(heartbeatCounter++, receiveTimestamp);
     }
 }
