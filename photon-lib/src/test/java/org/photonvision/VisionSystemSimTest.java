@@ -60,8 +60,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.opencv.core.Core;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.estimation.TargetModel;
+import org.photonvision.estimation.VisionEstimation;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
@@ -503,18 +503,18 @@ class VisionSystemSimTest {
         double fieldLength = Units.feetToMeters(54.0);
         double fieldWidth = Units.feetToMeters(27.0);
         AprilTagFieldLayout layout = new AprilTagFieldLayout(tagList, fieldLength, fieldWidth);
-        PhotonPoseEstimator estimator =
-                new PhotonPoseEstimator(layout, PoseStrategy.MULTI_TAG_PNP, camera, new Transform3d());
         Pose2d robotPose = new Pose2d(5, 1, Rotation2d.fromDegrees(5));
 
         visionSysSim.addVisionTargets(
                 new VisionTargetSim(tagList.get(0).pose, TargetModel.kTag16h5, 0));
 
         visionSysSim.update(robotPose);
-        Pose3d pose = estimator.update().get().estimatedPose;
+        var results = VisionEstimation.estimateCamPosePNP(camera.getCameraMatrix().get(), camera.getDistCoeffs().get(), camera.getLatestResult().getTargets(), layout);
+        Pose3d pose = new Pose3d().plus(results.best);
         assertEquals(5, pose.getX(), .01);
         assertEquals(1, pose.getY(), .01);
         assertEquals(0, pose.getZ(), .01);
+        assertEquals(Math.toRadians(5), pose.getRotation().getZ(), 0.01);
 
         visionSysSim.addVisionTargets(
                 new VisionTargetSim(tagList.get(1).pose, TargetModel.kTag16h5, 1));
@@ -522,9 +522,11 @@ class VisionSystemSimTest {
                 new VisionTargetSim(tagList.get(2).pose, TargetModel.kTag16h5, 2));
 
         visionSysSim.update(robotPose);
-        pose = estimator.update().get().estimatedPose;
+        results = VisionEstimation.estimateCamPosePNP(camera.getCameraMatrix().get(), camera.getDistCoeffs().get(), camera.getLatestResult().getTargets(), layout);
+        pose = new Pose3d().plus(results.best);
         assertEquals(5, pose.getX(), .01);
         assertEquals(1, pose.getY(), .01);
         assertEquals(0, pose.getZ(), .01);
+        assertEquals(Math.toRadians(5), pose.getRotation().getZ(), 0.01);
     }
 }
