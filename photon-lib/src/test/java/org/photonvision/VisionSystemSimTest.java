@@ -48,7 +48,6 @@ import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
 import edu.wpi.first.util.RuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -61,7 +60,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.opencv.core.Core;
-import org.opencv.highgui.HighGui;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.simulation.PhotonCameraSim;
@@ -506,19 +504,12 @@ class VisionSystemSimTest {
         double fieldWidth = Units.feetToMeters(27.0);
         AprilTagFieldLayout layout = new AprilTagFieldLayout(tagList, fieldLength, fieldWidth);
         PhotonPoseEstimator estimator =
-                new PhotonPoseEstimator(
-                        layout,
-                        PoseStrategy.MULTI_TAG_PNP,
-                        camera,
-                        new Transform3d());
+                new PhotonPoseEstimator(layout, PoseStrategy.MULTI_TAG_PNP, camera, new Transform3d());
         Pose2d robotPose = new Pose2d(5, 1, Rotation2d.fromDegrees(5));
-        
+
         visionSysSim.addVisionTargets(
-                new VisionTargetSim(
-                        tagList.get(0).pose,
-                        TargetModel.kTag16h5,
-                        0));
-        
+                new VisionTargetSim(tagList.get(0).pose, TargetModel.kTag16h5, 0));
+
         visionSysSim.update(robotPose);
         Pose3d pose = estimator.update().get().estimatedPose;
         assertEquals(5, pose.getX(), .01);
@@ -526,16 +517,10 @@ class VisionSystemSimTest {
         assertEquals(0, pose.getZ(), .01);
 
         visionSysSim.addVisionTargets(
-                new VisionTargetSim(
-                        tagList.get(1).pose,
-                        TargetModel.kTag16h5,
-                        1));
+                new VisionTargetSim(tagList.get(1).pose, TargetModel.kTag16h5, 1));
         visionSysSim.addVisionTargets(
-                new VisionTargetSim(
-                        tagList.get(2).pose,
-                        TargetModel.kTag16h5,
-                        2));
-        
+                new VisionTargetSim(tagList.get(2).pose, TargetModel.kTag16h5, 2));
+
         visionSysSim.update(robotPose);
         pose = estimator.update().get().estimatedPose;
         assertEquals(5, pose.getX(), .01);
