@@ -509,7 +509,12 @@ class VisionSystemSimTest {
                 new VisionTargetSim(tagList.get(0).pose, TargetModel.kTag16h5, 0));
 
         visionSysSim.update(robotPose);
-        var results = VisionEstimation.estimateCamPosePNP(camera.getCameraMatrix().get(), camera.getDistCoeffs().get(), camera.getLatestResult().getTargets(), layout);
+        var results =
+                VisionEstimation.estimateCamPosePNP(
+                        camera.getCameraMatrix().get(),
+                        camera.getDistCoeffs().get(),
+                        camera.getLatestResult().getTargets(),
+                        layout);
         Pose3d pose = new Pose3d().plus(results.best);
         assertEquals(5, pose.getX(), .01);
         assertEquals(1, pose.getY(), .01);
@@ -522,7 +527,12 @@ class VisionSystemSimTest {
                 new VisionTargetSim(tagList.get(2).pose, TargetModel.kTag16h5, 2));
 
         visionSysSim.update(robotPose);
-        results = VisionEstimation.estimateCamPosePNP(camera.getCameraMatrix().get(), camera.getDistCoeffs().get(), camera.getLatestResult().getTargets(), layout);
+        results =
+                VisionEstimation.estimateCamPosePNP(
+                        camera.getCameraMatrix().get(),
+                        camera.getDistCoeffs().get(),
+                        camera.getLatestResult().getTargets(),
+                        layout);
         pose = new Pose3d().plus(results.best);
         assertEquals(5, pose.getX(), .01);
         assertEquals(1, pose.getY(), .01);
