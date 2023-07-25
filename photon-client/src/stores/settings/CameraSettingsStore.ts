@@ -26,6 +26,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         ]
     }),
     getters: {
+        // TODO update types to update this value being undefined. This would be a decently large change.
         currentCameraSettings(): CameraSettings {
             return this.cameras[useStateStore().currentCameraIndex];
         },
