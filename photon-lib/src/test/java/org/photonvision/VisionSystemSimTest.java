@@ -28,6 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import edu.wpi.first.apriltag.AprilTag;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.jni.AprilTagJNI;
 import edu.wpi.first.cscore.CameraServerCvJNI;
 import edu.wpi.first.cscore.CameraServerJNI;
@@ -46,6 +48,7 @@ import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
 import edu.wpi.first.util.RuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
@@ -58,6 +61,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.opencv.core.Core;
 import org.photonvision.estimation.TargetModel;
+import org.photonvision.estimation.VisionEstimation;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
@@ -144,7 +148,7 @@ class VisionSystemSimTest {
         var cameraSim = new PhotonCameraSim(camera);
         visionSysSim.addCamera(cameraSim, new Transform3d());
         cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(80));
-        visionSysSim.addVisionTargets(new VisionTargetSim(targetPose, new TargetModel(1.0, 3.0), 3));
+        visionSysSim.addVisionTargets(new VisionTargetSim(targetPose, new TargetModel(1.0, 1.0), 3));
 
         // To the right, to the right
         var robotPose = new Pose2d(new Translation2d(5, 0), Rotation2d.fromDegrees(-70));
@@ -439,7 +443,7 @@ class VisionSystemSimTest {
                         5));
         visionSysSim.addVisionTargets(
                 new VisionTargetSim(
-                        targetPoseL.transformBy(
+                        targetPoseR.transformBy(
                                 new Transform3d(new Translation3d(0, 0, 1.00), new Rotation3d())),
                         TargetModel.kTag16h5,
                         6));
@@ -481,5 +485,58 @@ class VisionSystemSimTest {
         List<PhotonTrackedTarget> tgtList;
         tgtList = res.getTargets();
         assertEquals(11, tgtList.size());
+    }
+
+    @Test
+    public void testPoseEstimation() {
+        var visionSysSim = new VisionSystemSim("Test");
+        var camera = new PhotonCamera("camera");
+        var cameraSim = new PhotonCameraSim(camera);
+        visionSysSim.addCamera(cameraSim, new Transform3d());
+        cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(90));
+        cameraSim.setMinTargetAreaPixels(20.0);
+
+        List<AprilTag> tagList = new ArrayList<>();
+        tagList.add(new AprilTag(0, new Pose3d(12, 3, 1, new Rotation3d(0, 0, Math.PI))));
+        tagList.add(new AprilTag(1, new Pose3d(12, 1, -1, new Rotation3d(0, 0, Math.PI))));
+        tagList.add(new AprilTag(2, new Pose3d(11, 0, 2, new Rotation3d(0, 0, Math.PI))));
+        double fieldLength = Units.feetToMeters(54.0);
+        double fieldWidth = Units.feetToMeters(27.0);
+        AprilTagFieldLayout layout = new AprilTagFieldLayout(tagList, fieldLength, fieldWidth);
+        Pose2d robotPose = new Pose2d(5, 1, Rotation2d.fromDegrees(5));
+
+        visionSysSim.addVisionTargets(
+                new VisionTargetSim(tagList.get(0).pose, TargetModel.kTag16h5, 0));
+
+        visionSysSim.update(robotPose);
+        var results =
+                VisionEstimation.estimateCamPosePNP(
+                        camera.getCameraMatrix().get(),
+                        camera.getDistCoeffs().get(),
+                        camera.getLatestResult().getTargets(),
+                        layout);
+        Pose3d pose = new Pose3d().plus(results.best);
+        assertEquals(5, pose.getX(), .01);
+        assertEquals(1, pose.getY(), .01);
+        assertEquals(0, pose.getZ(), .01);
+        assertEquals(Math.toRadians(5), pose.getRotation().getZ(), 0.01);
+
+        visionSysSim.addVisionTargets(
+                new VisionTargetSim(tagList.get(1).pose, TargetModel.kTag16h5, 1));
+        visionSysSim.addVisionTargets(
+                new VisionTargetSim(tagList.get(2).pose, TargetModel.kTag16h5, 2));
+
+        visionSysSim.update(robotPose);
+        results =
+                VisionEstimation.estimateCamPosePNP(
+                        camera.getCameraMatrix().get(),
+                        camera.getDistCoeffs().get(),
+                        camera.getLatestResult().getTargets(),
+                        layout);
+        pose = new Pose3d().plus(results.best);
+        assertEquals(5, pose.getX(), .01);
+        assertEquals(1, pose.getY(), .01);
+        assertEquals(0, pose.getZ(), .01);
+        assertEquals(Math.toRadians(5), pose.getRotation().getZ(), 0.01);
     }
 }
