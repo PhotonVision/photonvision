@@ -20,6 +20,7 @@ const getLogColor = (level: LogLevel): string => {
     case LogLevel.DEBUG:
       return "white";
   }
+  return "";
 };
 
 const getLogLevelFromIndex = (index: number): string => {

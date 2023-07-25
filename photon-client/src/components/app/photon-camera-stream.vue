@@ -38,7 +38,6 @@ const handleClick = () => {
 };
 </script>
 
-
 <template>
   <img
     :id="id"
