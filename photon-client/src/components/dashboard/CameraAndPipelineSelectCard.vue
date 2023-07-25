@@ -19,19 +19,19 @@ const changeCurrentCameraIndex = (index: number) => {
   switch (useCameraSettingsStore().cameras[index].pipelineSettings.pipelineType) {
     case PipelineType.Reflective:
       newPipelineType.value = WebsocketPipelineType.Reflective;
-      currentPipelineType.value = WebsocketPipelineType.Reflective;
+      pipelineType.value = WebsocketPipelineType.Reflective;
       break;
     case PipelineType.ColoredShape:
       newPipelineType.value = WebsocketPipelineType.ColoredShape;
-      currentPipelineType.value = WebsocketPipelineType.ColoredShape;
+      pipelineType.value = WebsocketPipelineType.ColoredShape;
       break;
     case PipelineType.AprilTag:
       newPipelineType.value = WebsocketPipelineType.AprilTag;
-      currentPipelineType.value = WebsocketPipelineType.AprilTag;
+      pipelineType.value = WebsocketPipelineType.AprilTag;
       break;
     case PipelineType.Aruco:
       newPipelineType.value = WebsocketPipelineType.Aruco;
-      currentPipelineType.value = WebsocketPipelineType.Aruco;
+      pipelineType.value = WebsocketPipelineType.Aruco;
       break;
   }
 };
@@ -143,7 +143,34 @@ const confirmDeleteCurrentPipeline = () => {
 
 // Pipeline Type Change
 const showPipelineTypeChangeDialog = ref(false);
-const currentPipelineType = ref<WebsocketPipelineType>(useCameraSettingsStore().currentWebsocketPipelineType);
+const pipelineTypesWrapper = computed<{name: string, value: number}[]>(() => {
+  const pipelineTypes =[
+    { name: "Reflective", value: WebsocketPipelineType.Reflective },
+    { name: "Colored Shape", value: WebsocketPipelineType.ColoredShape },
+    { name: "AprilTag", value: WebsocketPipelineType.AprilTag },
+    { name: "Aruco", value: WebsocketPipelineType.Aruco }
+  ];
+
+  if(useCameraSettingsStore().isDriverMode) {
+    pipelineTypes.push({ name: "Driver Mode", value: WebsocketPipelineType.DriverMode });
+  }
+  if(useCameraSettingsStore().isCalibrationMode) {
+    pipelineTypes.push({ name: "3D Calibration Mode", value: WebsocketPipelineType.Calib3d });
+  }
+
+  return pipelineTypes;
+});
+const pipelineType = ref<WebsocketPipelineType>(useCameraSettingsStore().currentWebsocketPipelineType);
+const currentPipelineType = computed<WebsocketPipelineType>({
+  get: () => {
+    if(useCameraSettingsStore().isDriverMode) return WebsocketPipelineType.DriverMode;
+    if(useCameraSettingsStore().isCalibrationMode) return WebsocketPipelineType.Calib3d;
+    return pipelineType.value;
+  },
+  set: v => {
+    pipelineType.value = v;
+  }
+});
 const confirmChangePipelineType = () => {
   const type = currentPipelineType.value;
   if(type === WebsocketPipelineType.DriverMode || type === WebsocketPipelineType.Calib3d) return;
@@ -151,7 +178,7 @@ const confirmChangePipelineType = () => {
   showPipelineTypeChangeDialog.value = false;
 };
 const cancelChangePipelineType = () => {
-  currentPipelineType.value = useCameraSettingsStore().currentWebsocketPipelineType;
+  pipelineType.value = useCameraSettingsStore().currentWebsocketPipelineType;
   showPipelineTypeChangeDialog.value = false;
 };
 </script>
@@ -298,10 +325,9 @@ const cancelChangePipelineType = () => {
           v-model="currentPipelineType"
           label="Type"
           tooltip="Changes the pipeline type, which changes the type of processing that will happen on input frames"
-          :items="[
-            {name: 'Reflective', value: WebsocketPipelineType.Reflective},
-            {name: 'Colored Shape', value: WebsocketPipelineType.ColoredShape},
-            {name: 'AprilTag', value: WebsocketPipelineType.AprilTag}]"
+          :disabled="useCameraSettingsStore().isDriverMode
+            || useCameraSettingsStore().isCalibrationMode"
+          :items="pipelineTypesWrapper"
           @input="showPipelineTypeChangeDialog = true"
         />
       </v-col>
