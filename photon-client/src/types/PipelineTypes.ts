@@ -1,6 +1,7 @@
 import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
 
 export enum PipelineType {
+    DriverMode=1,
     Reflective=2,
     ColoredShape=3,
     AprilTag=4,
