@@ -116,14 +116,16 @@ const cancelPipelineNameEdit = () => {
 // Pipeline Creation
 const showPipelineCreationDialog = ref(false);
 const newPipelineName = ref("");
-const newPipelineType = ref<Exclude<WebsocketPipelineType, WebsocketPipelineType.Calib3d | WebsocketPipelineType.DriverMode>>(useCameraSettingsStore().currentWebsocketPipelineType);
+const newPipelineType = ref<WebsocketPipelineType>(useCameraSettingsStore().currentWebsocketPipelineType);
 const showCreatePipelineDialog = () => {
   newPipelineName.value = "";
   newPipelineType.value = useCameraSettingsStore().currentWebsocketPipelineType;
   showPipelineCreationDialog.value = true;
 };
 const createNewPipeline = () => {
-  useCameraSettingsStore().createNewPipeline(newPipelineName.value, newPipelineType.value);
+  const type = newPipelineType.value;
+  if(type === WebsocketPipelineType.DriverMode || type === WebsocketPipelineType.Calib3d) return;
+  useCameraSettingsStore().createNewPipeline(newPipelineName.value, type);
   showPipelineCreationDialog.value = false;
 };
 const cancelPipelineCreation = () => {
@@ -141,9 +143,11 @@ const confirmDeleteCurrentPipeline = () => {
 
 // Pipeline Type Change
 const showPipelineTypeChangeDialog = ref(false);
-const currentPipelineType = ref<Exclude<WebsocketPipelineType, WebsocketPipelineType.Calib3d | WebsocketPipelineType.DriverMode>>(useCameraSettingsStore().currentWebsocketPipelineType);
+const currentPipelineType = ref<WebsocketPipelineType>(useCameraSettingsStore().currentWebsocketPipelineType);
 const confirmChangePipelineType = () => {
-  useCameraSettingsStore().changeCurrentPipelineType(currentPipelineType.value);
+  const type = currentPipelineType.value;
+  if(type === WebsocketPipelineType.DriverMode || type === WebsocketPipelineType.Calib3d) return;
+  useCameraSettingsStore().changeCurrentPipelineType(type);
   showPipelineTypeChangeDialog.value = false;
 };
 const cancelChangePipelineType = () => {
