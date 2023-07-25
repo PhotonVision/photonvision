@@ -222,8 +222,9 @@ jobs:
         include:
           - os: windows-2022
             artifact-name: Win64
-          - os: macos-11
-            artifact-name: macOS
+          # Mac builds are broken due to opencv class loading issues -- disable for now
+          # - os: macos-11
+          #   artifact-name: macOS
           - os: ubuntu-22.04
             artifact-name: Linux
 
