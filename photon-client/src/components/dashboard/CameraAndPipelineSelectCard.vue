@@ -414,7 +414,7 @@ const cancelChangePipelineType = () => {
             color="error"
             @click="confirmDeleteCurrentPipeline"
           >
-            Yes, Im Sure
+            Yes, I'm sure
           </v-btn>
           <v-btn
             color="#ffd843"
