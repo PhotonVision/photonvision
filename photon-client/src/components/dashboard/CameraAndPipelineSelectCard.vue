@@ -117,6 +117,11 @@ const cancelPipelineNameEdit = () => {
 const showPipelineCreationDialog = ref(false);
 const newPipelineName = ref("");
 const newPipelineType = ref<Exclude<WebsocketPipelineType, WebsocketPipelineType.Calib3d | WebsocketPipelineType.DriverMode>>(useCameraSettingsStore().currentWebsocketPipelineType);
+const showCreatePipelineDialog = () => {
+  newPipelineName.value = "";
+  newPipelineType.value = useCameraSettingsStore().currentWebsocketPipelineType;
+  showPipelineCreationDialog.value = true;
+};
 const createNewPipeline = () => {
   useCameraSettingsStore().createNewPipeline(newPipelineName.value, newPipelineType.value);
   showPipelineCreationDialog.value = false;
@@ -246,7 +251,7 @@ const cancelChangePipelineType = () => {
                 />
               </v-list-item-title>
             </v-list-item>
-            <v-list-item @click="showPipelineCreationDialog = true">
+            <v-list-item @click="showCreatePipelineDialog">
               <v-list-item-title>
                 <cv-icon
                   color="#c5c5c5"
