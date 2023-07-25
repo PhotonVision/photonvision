@@ -451,7 +451,7 @@ const cancelChangePipelineType = () => {
             color="#ffd843"
             @click="cancelChangePipelineType"
           >
-            No, Take me Back
+            No, take me back
           </v-btn>
         </v-card-actions>
       </v-card>
