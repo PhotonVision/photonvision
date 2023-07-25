@@ -355,7 +355,7 @@ public class VisionSystemSim {
 
             // use camera pose from the image capture timestamp
             Pose3d lateRobotPose = getRobotPose(timestampCapture);
-            Pose3d lateCameraPose = lateRobotPose.plus(getRobotToCamera(camSim).get());
+            Pose3d lateCameraPose = lateRobotPose.plus(getRobotToCamera(camSim, timestampCapture).get());
             cameraPose2ds.add(lateCameraPose.toPose2d());
 
             // process a PhotonPipelineResult with visible targets

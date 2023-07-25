@@ -24,7 +24,6 @@
 
 package org.photonvision;
 
-import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Pair;
@@ -45,7 +44,6 @@ import java.util.Set;
 import org.photonvision.estimation.VisionEstimation;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
-import org.photonvision.targeting.TargetCorner;
 
 /**
  * The PhotonPoseEstimator class filters or combines readings from all the AprilTags visible at a
@@ -364,44 +362,18 @@ public class PhotonPoseEstimator {
             PhotonPipelineResult result,
             Optional<Matrix<N3, N3>> cameraMatrixOpt,
             Optional<Matrix<N5, N1>> distCoeffsOpt) {
-        // Arrays we need declared up front
-        var visCorners = new ArrayList<TargetCorner>();
-        var knownVisTags = new ArrayList<AprilTag>();
-
-        if (result.getTargets().size() < 2) {
-            return update(result, cameraMatrixOpt, distCoeffsOpt, this.multiTagFallbackStrategy);
-        }
-
         boolean hasCalibData = cameraMatrixOpt.isPresent() && distCoeffsOpt.isPresent();
-
-        if (!hasCalibData) {
-            return update(result, cameraMatrixOpt, distCoeffsOpt, this.multiTagFallbackStrategy);
-        }
-
-        for (var target : result.getTargets()) {
-            // Check if tag actually exists in the field layout
-            var tagPoseOpt = fieldTags.getTagPose(target.getFiducialId());
-            if (tagPoseOpt.isEmpty()) {
-                reportFiducialPoseError(target.getFiducialId());
-                continue;
-            }
-
-            // Now that we know tag is valid, add detected corners
-            visCorners.addAll(target.getDetectedCorners());
-
-            // actual layout poses of visible tags -- not exposed, so have to recreate
-            var tagPose = tagPoseOpt.get();
-            knownVisTags.add(new AprilTag(target.getFiducialId(), tagPose));
-        }
-
-        if (result.getTargets().size() < 2 || knownVisTags.size() < 2) {
-            // Run fallback strategy instead
+        // cannot run multitagPNP, use fallback strategy
+        if (!hasCalibData || result.getTargets().size() < 2) {
             return update(result, cameraMatrixOpt, distCoeffsOpt, this.multiTagFallbackStrategy);
         }
 
         var pnpResults =
-                VisionEstimation.estimateCamPoseSqpnp(
-                        cameraMatrixOpt.get(), distCoeffsOpt.get(), visCorners, knownVisTags);
+                VisionEstimation.estimateCamPosePNP(
+                        cameraMatrixOpt.get(), distCoeffsOpt.get(), result.getTargets(), fieldTags);
+        // try fallback strategy if solvePNP fails for some reason
+        if (!pnpResults.isPresent)
+            return update(result, cameraMatrixOpt, distCoeffsOpt, this.multiTagFallbackStrategy);
         var best =
                 new Pose3d()
                         .plus(pnpResults.best) // field-to-camera
