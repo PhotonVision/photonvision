@@ -25,7 +25,6 @@ const fpsTooLow = computed<boolean>(() => {
 
   return (currFPS - targetFPS) < -5 && currFPS !== 0 && !driverMode && gpuAccel && isReflective;
 });
-
 </script>
 
 <template>
