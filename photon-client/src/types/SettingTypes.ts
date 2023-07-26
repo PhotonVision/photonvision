@@ -55,7 +55,7 @@ export interface LogMessage {
     message: string
 }
 
-interface Resolution {
+export interface Resolution {
     width: number,
     height: number
 }

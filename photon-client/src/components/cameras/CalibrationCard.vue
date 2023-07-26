@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { CalibrationBoardTypes } from "@/types/SettingTypes";
+import { CalibrationBoardTypes, type VideoFormat, type Resolution } from "@/types/SettingTypes";
 import JsPDF from "jspdf";
 import { font as PromptRegular } from "@/assets/fonts/PromptRegular";
 import MonoLogo from "@/assets/images/logoMono.png";
@@ -12,8 +12,37 @@ import CvSelect from "@/components/common/cv-select.vue";
 import CvNumberInput from "@/components/common/cv-number-input.vue";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 
+
 const settingsValid = ref(true);
 
+const getCalibrationCoeffs = (resolution: Resolution) => {
+  return useCameraSettingsStore().currentCameraSettings.completeCalibrations.find(cal => cal.resolution.width === resolution.width && cal.resolution.height === resolution.height);
+};
+const getUniqueVideoResolutions = (): VideoFormat[] => {
+  const uniqueResolutions: VideoFormat[] = [];
+  useCameraSettingsStore().currentCameraSettings.validVideoFormats.forEach((format, index) => {
+    if(!uniqueResolutions.some(v => v.resolution.width === format.resolution.width && v.resolution.height === format.resolution.height)) {
+      format.index = index;
+
+      const calib = getCalibrationCoeffs(format.resolution);
+      if(calib !== undefined) {
+        format.standardDeviation = calib.standardDeviation;
+        format.mean = calib.perViewErrors.reduce((a, b) => a + b) / calib.perViewErrors.length;
+        format.horizontalFOV = 2 * Math.atan2(format.resolution.width/2,calib.intrinsics[0]) * (180/Math.PI);
+        format.verticalFOV = 2 * Math.atan2(format.resolution.height/2,calib.intrinsics[4]) * (180/Math.PI);
+        format.diagonalFOV = 2 * Math.atan2(Math.sqrt(format.resolution.width**2 + (format.resolution.height/(calib.intrinsics[4]/calib.intrinsics[0]))**2)/2, calib.intrinsics[0]) * (180/Math.PI);
+      }
+      uniqueResolutions.push(format);
+    }
+  });
+  uniqueResolutions.sort((a, b) => (b.resolution.width + b.resolution.height) - (a.resolution.width + a.resolution.height));
+  return uniqueResolutions;
+};
+const getUniqueVideoResolutionStrings = () => getUniqueVideoResolutions().map<{name: string, value: number}>(f => ({
+  name: `${f.resolution.width} X ${f.resolution.height}`,
+  // Index won't ever be undefined
+  value: f.index || 0
+}));
 const calibrationDivisors = computed(() => [1, 2, 4].filter(v => {
   const currentRes = useCameraSettingsStore().currentVideoFormat.resolution;
   return ((currentRes.width / v) >= 300 && (currentRes.height / v) >= 220) || (v === 1);
@@ -23,8 +52,6 @@ const squareSizeIn = ref(1);
 const patternWidth = ref(8);
 const patternHeight = ref(8);
 const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.Chessboard);
-
-const importCalibrationFromCalibDB = ref();
 
 const downloadCalibBoard = () => {
   const doc = new JsPDF({ unit: "in", format: "letter" });
@@ -101,6 +128,7 @@ const downloadCalibBoard = () => {
   doc.save(`calibrationTarget-${CalibrationBoardTypes[boardType.value]}.pdf`);
 };
 
+const importCalibrationFromCalibDB = ref();
 const openCalibUploadPrompt = () => {
   importCalibrationFromCalibDB.value.click();
 };
@@ -130,7 +158,6 @@ const readImportedCalibration = (event) => {
 };
 
 const isCalibrating = ref(false);
-
 const startCalibration = () => {
   useCameraSettingsStore().startPnPCalibration({
     squareSizeIn: squareSizeIn.value,
@@ -143,7 +170,6 @@ const startCalibration = () => {
   isCalibrating.value = true;
   calibCanceled.value = false;
 };
-
 const showCalibEndDialog = ref(false);
 const calibCanceled = ref(false);
 const calibSuccess = ref<boolean | undefined>(undefined);
@@ -186,13 +212,12 @@ const endCalibration = () => {
               v-model="settingsValid"
             >
               <cv-select
-                v-model="useCameraSettingsStore().currentPipelineSettings.cameraVideoModeIndex"
+                v-model="useStateStore().calibrationData.videoFormatIndex"
                 label="Resolution"
                 :select-cols="7"
                 :disabled="isCalibrating"
                 tooltip="Resolution to calibrate at (you will have to calibrate every resolution you use 3D mode on)"
-                :items="useCameraSettingsStore().currentCameraSettings.validVideoFormats.map(f => `${f.resolution.width} X ${f.resolution.height}`)"
-                @input="v => useCameraSettingsStore().changeCurrentPipelineSetting({cameraVideoModeIndex: v}, false)"
+                :items="getUniqueVideoResolutionStrings()"
               />
               <cv-select
                 v-model="useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor"
@@ -273,7 +298,7 @@ const endCalibration = () => {
                 </thead>
                 <tbody>
                   <tr
-                    v-for="(value, index) in useCameraSettingsStore().currentCameraSettings.validVideoFormats"
+                    v-for="(value, index) in getUniqueVideoResolutions()"
                     :key="index"
                   >
                     <td>{{ value.resolution.width }} X {{ value.resolution.height }}</td>
@@ -358,7 +383,6 @@ const endCalibration = () => {
             />
           </v-col>
         </v-row>
-
         <v-row>
           <v-col :cols="6">
             <v-btn
@@ -463,7 +487,9 @@ const endCalibration = () => {
               >
                 mdi-check-bold
               </v-icon>
-              <v-card-text>Camera has been successfully calibrated for {{ useCameraSettingsStore().currentVideoFormat.resolution }}!</v-card-text>
+              <v-card-text>
+                Camera has been successfully calibrated for {{ getUniqueVideoResolutionStrings().find(v => v.value === useStateStore().calibrationData.videoFormatIndex).name }}!
+              </v-card-text>
             </template>
             <template v-else>
               <v-icon
