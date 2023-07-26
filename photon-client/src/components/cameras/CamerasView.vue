@@ -1,0 +1,145 @@
+<script setup lang="ts">
+import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
+import {computed} from "vue";
+import {useCameraSettingsStore} from "@/stores/settings/CameraSettingsStore";
+import {PipelineType} from "@/types/PipelineTypes";
+import {useStateStore} from "@/stores/StateStore";
+import {useSettingsStore} from "@/stores/settings/GeneralSettingsStore";
+
+const props = defineProps<{
+  // TODO fully update v-model usage in custom components on Vue3 update
+  value: number[]
+}>();
+
+const emit = defineEmits<{
+  (e: "input", value: number[]): void
+}>();
+
+
+const localValue = computed({
+  get: () => props.value,
+  set: v => emit("input", v)
+});
+
+const driverMode = computed<boolean>({
+  get: () => useCameraSettingsStore().isDriverMode,
+  set: v => useCameraSettingsStore().changeCurrentPipelineIndex(v ? -1 : useCameraSettingsStore().currentCameraSettings.lastPipelineIndex || 0, true)
+});
+
+const fpsTooLow = computed<boolean>(() => {
+  const currFPS = useStateStore().pipelineResults?.fps || 0;
+  const targetFPS = useCameraSettingsStore().currentVideoFormat.fps;
+  const driverMode = useCameraSettingsStore().isDriverMode;
+  const gpuAccel = useSettingsStore().general.gpuAcceleration !== undefined;
+  const isReflective = useCameraSettingsStore().currentPipelineSettings.pipelineType === PipelineType.Reflective;
+
+  return (currFPS - targetFPS) < -5 && currFPS !== 0 && !driverMode && gpuAccel && isReflective;
+});
+</script>
+
+<template>
+  <v-card
+    class="mb-3 pr-6 pb-3 pa-4"
+    color="primary"
+    dark
+  >
+    <v-card-title
+      class="pb-0 mb-2 pl-4 pt-1"
+      style="min-height: 50px; justify-content: space-between; align-content: center"
+    >
+      <div class="pt-2">
+        <span class="mr-4">Cameras</span>
+        <v-chip
+          label
+          :color="fpsTooLow ? 'error' : 'transparent'"
+          :text-color="fpsTooLow ? '#C7EA46' : '#ff4d00'"
+          style="font-size: 1rem; padding: 0; margin: 0"
+        >
+          <span class="pr-1">
+            Processing @ {{ Math.round(useStateStore().pipelineResults?.fps || 0) }}&nbsp;FPS &ndash;
+          </span>
+          <span v-if="fpsTooLow && !useCameraSettingsStore().currentPipelineSettings.inputShouldShow && useCameraSettingsStore().currentPipelineSettings.pipelineType === PipelineType.Reflective">
+            HSV thresholds are too broad; narrow them for better performance
+          </span>
+          <span v-else-if="fpsTooLow && useCameraSettingsStore().currentPipelineSettings.inputShouldShow">
+            stop viewing the raw stream for better performance
+          </span>
+          <span v-else>
+            {{ Math.min(Math.round(useStateStore().pipelineResults?.latency || 0), 9999) }} ms latency
+          </span>
+        </v-chip>
+      </div>
+      <div>
+        <v-switch
+          v-model="driverMode"
+          :disabled="useCameraSettingsStore().isCalibrationMode"
+          label="Driver Mode"
+          style="margin-left: auto;"
+          color="accent"
+          class="pt-2"
+        />
+      </div>
+    </v-card-title>
+    <div
+      style="display: flex; flex-direction: column; gap: 12px; align-items: center"
+      class="pb-4"
+    >
+      <photon-camera-stream
+        v-show="value.includes(0)"
+        stream-type="Raw"
+        style="max-width: 100%"
+      />
+      <photon-camera-stream
+        v-show="value.includes(1)"
+        stream-type="Processed"
+        style="max-width: 100%"
+      />
+    </div>
+    <v-divider />
+    <div class="pt-2">
+      <p style="color: white;">
+        Stream Display
+      </p>
+      <v-btn-toggle
+        v-model="localValue"
+        :multiple="true"
+        mandatory
+        dark
+        class="fill"
+        style="width: 100%"
+      >
+        <v-btn
+          color="secondary"
+          class="fill"
+          :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode"
+        >
+          <v-icon>mdi-import</v-icon>
+          <span>Raw</span>
+        </v-btn>
+        <v-btn
+          color="secondary"
+          class="fill"
+          :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode"
+        >
+          <v-icon>mdi-export</v-icon>
+          <span>Processed</span>
+        </v-btn>
+      </v-btn-toggle>
+    </div>
+  </v-card>
+</template>
+
+<style scoped>
+.v-btn-toggle.fill {
+  width: 100%;
+  height: 100%;
+}
+.v-btn-toggle.fill > .v-btn {
+  width: 50%;
+  height: 100%;
+}
+th {
+  width: 80px;
+  text-align: center;
+}
+</style>

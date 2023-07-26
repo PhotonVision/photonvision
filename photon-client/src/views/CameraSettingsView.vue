@@ -1,19 +1,36 @@
 <script setup lang="ts">
 import CamerasCard from "@/components/cameras/CameraSettingsCard.vue";
 import CalibrationCard from "@/components/cameras/CalibrationCard.vue";
-import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { onBeforeMount } from "vue";
-import { onBeforeRouteLeave } from "vue-router/composables";
+import { computed } from "vue";
+import CamerasView from "@/components/cameras/CamerasView.vue";
+import { useStateStore } from "@/stores/StateStore";
 
-// TOOD update to onBeforeRouteEnter when updating Vue router
-onBeforeMount(() => {
-  // Camera View uses Driver Mode
-  useCameraSettingsStore().changeCurrentPipelineIndex(-1, true);
-});
-onBeforeRouteLeave((to, from, next) => {
-  useCameraSettingsStore().changeCurrentPipelineIndex(useCameraSettingsStore().currentCameraSettings.lastPipelineIndex || 0, true);
-  next();
+const cameraViewType = computed<number[]>({
+  get: (): number[] => {
+    // Only show the input stream in Color Picking Mode
+    if(useStateStore().colorPickingMode) return [0];
+
+    // Only show the output stream in Driver Mode or Calibration Mode
+    if(useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode) return [1];
+
+    const ret: number[] = [];
+    if(useCameraSettingsStore().currentPipelineSettings.inputShouldShow) {
+      ret.push(0);
+    }
+    if(useCameraSettingsStore().currentPipelineSettings.outputShouldShow) {
+      ret.push(1);
+    }
+
+    if(ret.length === 0) return [0];
+
+    return ret;
+  },
+  set: v => {
+    useCameraSettingsStore().currentPipelineSettings.inputShouldShow = v.includes(0);
+    useCameraSettingsStore().currentPipelineSettings.outputShouldShow = v.includes(1);
+    useCameraSettingsStore().changeCurrentPipelineSetting({ inputShouldShow: v.includes(0) }, false);
+  }
 });
 </script>
 
@@ -33,13 +50,9 @@ onBeforeRouteLeave((to, from, next) => {
       <v-col
         class="pl-md-3 pt-3 pt-md-0"
         cols="12"
-        style="display: flex; align-items: center"
         md="5"
       >
-        <photon-camera-stream
-          stream-type="Processed"
-          style="width: 100%"
-        />
+        <CamerasView v-model="cameraViewType" />
       </v-col>
     </v-row>
   </div>
