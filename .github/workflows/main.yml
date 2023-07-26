@@ -45,7 +45,7 @@ jobs:
       with:
         name: built-client
         path: photon-client/dist/
-  photonclient-link:
+  photonclient-check-lint:
     # Let all steps run within the photon-client dir.
     defaults:
       run:
