@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import CamerasCard from "@/components/cameras/CameraSettingsCard.vue";
-import CalibrationCard from "@/components/cameras/CalibrationCard.vue";
+import CalibrationCard from "@/components/cameras/CameraCalibrationCard.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { computed } from "vue";
 import CamerasView from "@/components/cameras/CamerasView.vue";
