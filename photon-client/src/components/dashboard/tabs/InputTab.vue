@@ -8,7 +8,7 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 
 // Due to something with libcamera or something else IDK much about, the 90° rotations need to be disabled if the libcamera drivers are being used.
-const cameraRotations = computed(() => ["Normal","90° CW","180°","90° CCW"].map((v, i) => ({ name: v, value: i, disabled: useSettingsStore().gpuAccelerationEnabled ?  [1, 3].includes(i) : false })));
+const cameraRotations = computed(() => ["Normal", "90° CW", "180°", "90° CCW"].map((v, i) => ({ name: v, value: i, disabled: useSettingsStore().gpuAccelerationEnabled ?  [1, 3].includes(i) : false })));
 
 const streamDivisors = [1, 2, 4, 6];
 const getFilteredStreamDivisors = (): number[] => {

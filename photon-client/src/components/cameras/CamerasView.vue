@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
-import {computed} from "vue";
-import {useCameraSettingsStore} from "@/stores/settings/CameraSettingsStore";
-import {PipelineType} from "@/types/PipelineTypes";
-import {useStateStore} from "@/stores/StateStore";
-import {useSettingsStore} from "@/stores/settings/GeneralSettingsStore";
+import { computed } from "vue";
+import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import { PipelineType } from "@/types/PipelineTypes";
+import { useStateStore } from "@/stores/StateStore";
+import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
 const props = defineProps<{
   // TODO fully update v-model usage in custom components on Vue3 update

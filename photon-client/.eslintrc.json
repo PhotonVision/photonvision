@@ -8,6 +8,7 @@
   "rules": {
     "quotes": ["error", "double"],
     "comma-dangle": ["error", "never"],
+    "comma-spacing": ["error", { "before": false, "after": true }],
     "semi": ["error", "always"],
     "eol-last": "error",
     "object-curly-spacing": ["error", "always"],

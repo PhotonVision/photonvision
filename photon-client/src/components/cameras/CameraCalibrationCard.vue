@@ -28,8 +28,8 @@ const getUniqueVideoResolutions = (): VideoFormat[] => {
       if(calib !== undefined) {
         format.standardDeviation = calib.standardDeviation;
         format.mean = calib.perViewErrors.reduce((a, b) => a + b) / calib.perViewErrors.length;
-        format.horizontalFOV = 2 * Math.atan2(format.resolution.width/2,calib.intrinsics[0]) * (180/Math.PI);
-        format.verticalFOV = 2 * Math.atan2(format.resolution.height/2,calib.intrinsics[4]) * (180/Math.PI);
+        format.horizontalFOV = 2 * Math.atan2(format.resolution.width/2, calib.intrinsics[0]) * (180/Math.PI);
+        format.verticalFOV = 2 * Math.atan2(format.resolution.height/2, calib.intrinsics[4]) * (180/Math.PI);
         format.diagonalFOV = 2 * Math.atan2(Math.sqrt(format.resolution.width**2 + (format.resolution.height/(calib.intrinsics[4]/calib.intrinsics[0]))**2)/2, calib.intrinsics[0]) * (180/Math.PI);
       }
       uniqueResolutions.push(format);

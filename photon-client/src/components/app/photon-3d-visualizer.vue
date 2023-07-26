@@ -49,18 +49,18 @@ const drawTargets = (targets: PhotonTarget[]) => {
     cube.rotation.setFromQuaternion(quaternion);
     previousTargets.push(cube);
 
-    let arrow = new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0),1,0xff0000, 0.1, 0.1);
+    let arrow = new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0), 1, 0xff0000, 0.1, 0.1);
     arrow.rotation.setFromQuaternion(quaternion);
     arrow.rotateZ(-Math.PI / 2);
     arrow.position.set(target.pose.x, target.pose.y, target.pose.z);
     previousTargets.push(arrow);
 
-    arrow = new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0), 1,0x00ff00, 0.1, 0.1);
+    arrow = new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0), 1, 0x00ff00, 0.1, 0.1);
     arrow.rotation.setFromQuaternion(quaternion);
     arrow.position.set(target.pose.x, target.pose.y, target.pose.z);
     previousTargets.push(arrow);
 
-    arrow = new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0),1,0x0000ff,0.1,0.1);
+    arrow = new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0), 1, 0x0000ff, 0.1, 0.1);
     arrow.setRotationFromQuaternion(quaternion);
     arrow.rotateX(Math.PI / 2);
     arrow.position.set(target.pose.x, target.pose.y, target.pose.z);
@@ -85,9 +85,9 @@ const onWindowResize = () => {
 };
 const resetCamFirstPerson = () => {
   controls.reset();
-  camera.position.set(0.2,0,0);
-  camera.up.set(0,0,1);
-  controls.target.set(4.0,0.0,0.0);
+  camera.position.set(0.2, 0, 0);
+  camera.up.set(0, 0, 1);
+  controls.target.set(4.0, 0.0, 0.0);
   controls.update();
   if(previousTargets.length > 0) {
     scene.add(...previousTargets);
@@ -95,9 +95,9 @@ const resetCamFirstPerson = () => {
 };
 const resetCamThirdPerson = () => {
   controls.reset();
-  camera.position.set(-1.39,-1.09,1.17);
-  camera.up.set(0,0,1);
-  controls.target.set(4.0,0.0,0.0);
+  camera.position.set(-1.39, -1.09, 1.17);
+  camera.up.set(0, 0, 1);
+  controls.target.set(4.0, 0.0, 0.0);
   controls.update();
   if(previousTargets.length > 0) {
     scene.add(...previousTargets);
@@ -118,9 +118,9 @@ onMounted(() => {
   window.addEventListener("resize", onWindowResize);
 
   const referenceFrameCues: Object3D[] = [];
-  referenceFrameCues.push(new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0), 1,0xff0000, 0.1,0.1));
-  referenceFrameCues.push(new ArrowHelper(new Vector3(0, 1, 0).normalize(), new Vector3(0, 0, 0), 1,0x00ff00, 0.1,0.1));
-  referenceFrameCues.push(new ArrowHelper(new Vector3(0, 0, 1).normalize(), new Vector3(0, 0, 0), 1,0x0000ff, 0.1,0.1));
+  referenceFrameCues.push(new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0), 1, 0xff0000, 0.1, 0.1));
+  referenceFrameCues.push(new ArrowHelper(new Vector3(0, 1, 0).normalize(), new Vector3(0, 0, 0), 1, 0x00ff00, 0.1, 0.1));
+  referenceFrameCues.push(new ArrowHelper(new Vector3(0, 0, 1).normalize(), new Vector3(0, 0, 0), 1, 0x0000ff, 0.1, 0.1));
 
   // Draw the Camera Body
   const camSize = 0.2;
@@ -129,9 +129,9 @@ onMounted(() => {
   const camMaterial = new MeshNormalMaterial();
   const camBody = new Mesh(camBodyGeometry, camMaterial);
   const camLens = new Mesh(camLensGeometry, camMaterial);
-  camBody.position.set(0,0,0);
+  camBody.position.set(0, 0, 0);
   camLens.rotateZ(Math.PI / 2);
-  camLens.position.set(camSize * 0.8,0,0);
+  camLens.position.set(camSize * 0.8, 0, 0);
   referenceFrameCues.push(camBody);
   referenceFrameCues.push(camLens);
 
