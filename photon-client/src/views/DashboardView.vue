@@ -60,11 +60,8 @@ const cameraViewType = computed<number[]>({
         style="display: flex; flex-direction: column"
         align-self="stretch"
       >
-        <CameraAndPipelineSelectCard style="height: 50%" />
-        <StreamConfigCard
-          v-model="cameraViewType"
-          style="height: 50%"
-        />
+        <CameraAndPipelineSelectCard />
+        <StreamConfigCard v-model="cameraViewType" />
       </v-col>
     </v-row>
     <PipelineConfigCard />
