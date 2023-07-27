@@ -52,6 +52,7 @@ useStateStore().$patch({ websocket: websocket });
     <photon-sidebar />
     <v-main>
       <v-container
+        class="main-container"
         fluid
         fill-height
       >
@@ -77,7 +78,7 @@ useStateStore().$patch({ websocket: websocket });
   }
 }
 
-.container {
+.main-container {
   background-color: #232c37;
   padding: 0 !important;
 }
