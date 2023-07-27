@@ -11,28 +11,17 @@ import { PipelineType } from "@/types/PipelineTypes";
 const changeCurrentCameraIndex = (index: number) => {
   useCameraSettingsStore().setCurrentCameraIndex(index, true);
 
-  isCameraNameEdit.value = false;
-  currentCameraName.value = useCameraSettingsStore().cameras[index].nickname;
-
-  isPipelineNameEdit.value = false;
-  currentPipelineName.value = useCameraSettingsStore().cameras[index].pipelineSettings.pipelineNickname;
-
-  newPipelineName.value = "";
   switch (useCameraSettingsStore().cameras[index].pipelineSettings.pipelineType) {
     case PipelineType.Reflective:
-      newPipelineType.value = WebsocketPipelineType.Reflective;
       pipelineType.value = WebsocketPipelineType.Reflective;
       break;
     case PipelineType.ColoredShape:
-      newPipelineType.value = WebsocketPipelineType.ColoredShape;
       pipelineType.value = WebsocketPipelineType.ColoredShape;
       break;
     case PipelineType.AprilTag:
-      newPipelineType.value = WebsocketPipelineType.AprilTag;
       pipelineType.value = WebsocketPipelineType.AprilTag;
       break;
     case PipelineType.Aruco:
-      newPipelineType.value = WebsocketPipelineType.Aruco;
       pipelineType.value = WebsocketPipelineType.Aruco;
       break;
   }
@@ -44,6 +33,10 @@ const nameChangeRegex = /^[A-Za-z0-9_ \-)(]*[A-Za-z0-9][A-Za-z0-9_ \-)(.]*$/;
 // Camera Name Edit
 const isCameraNameEdit = ref(false);
 const currentCameraName = ref(useCameraSettingsStore().currentCameraSettings.nickname);
+const startCameraNameEdit = () => {
+  currentCameraName.value = useCameraSettingsStore().currentCameraSettings.nickname;
+  isCameraNameEdit.value = true;
+};
 const checkCameraName = (name: string): string | boolean => {
   if(!nameChangeRegex.test(name)) return "A camera name can only contain letters, numbers, spaces, underscores, hyphens, parenthesis, and periods";
   if(useCameraSettingsStore().cameraNames.some(cameraName => cameraName === name)) return "This camera name has already been used";
@@ -100,6 +93,10 @@ const pipelineNamesWrapper = computed<{name: string, value: number}[]>(() => {
 });
 const isPipelineNameEdit = ref(false);
 const currentPipelineName = ref(useCameraSettingsStore().currentPipelineSettings.pipelineNickname);
+const startPipelineNameEdit = () => {
+  currentPipelineName.value = useCameraSettingsStore().currentPipelineSettings.pipelineNickname;
+  isPipelineNameEdit.value = true;
+};
 const checkPipelineName = (name: string): string | boolean => {
   if(!nameChangeRegex.test(name)) return "A pipeline name can only contain letters, numbers, spaces, underscores, hyphens, parenthesis, and periods";
   if(useCameraSettingsStore().pipelineNames.some(pipelineName => pipelineName === name)) return "This pipeline name has already been used";
@@ -220,7 +217,7 @@ const cancelChangePipelineType = () => {
           color="#c5c5c5"
           icon-name="mdi-pencil"
           tooltip="Edit Camera Name"
-          @click="isCameraNameEdit = true"
+          @click="startCameraNameEdit"
         />
       </v-col>
     </v-row>
@@ -274,7 +271,7 @@ const cancelChangePipelineType = () => {
             dense
             color="primary"
           >
-            <v-list-item @click="isPipelineNameEdit = true">
+            <v-list-item @click="startPipelineNameEdit">
               <v-list-item-title>
                 <cv-icon
                   color="#c5c5c5"
