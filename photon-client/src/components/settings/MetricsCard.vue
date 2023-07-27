@@ -96,15 +96,15 @@ onBeforeMount(() => {
         @click="fetchMetrics"
       />
     </v-card-title>
-    <v-row class="pa-4 ml-5">
-      <div style="width: 100%">
-        <v-card-subtitle class="ma-0 pa-0 pb-2">
-          General Metrics
-        </v-card-subtitle>
-        <table
-          id="general-metrics"
-          class="metrics-table"
-        >
+    <v-row class="row pa-4 ma-0 ml-5 pb-1">
+      <v-card-subtitle
+        class="ma-0 pa-0 pb-2"
+        style="font-size: 16px"
+      >
+        General Metrics
+      </v-card-subtitle>
+      <v-simple-table class="metrics-table">
+        <thead>
           <tr>
             <th
               v-for="(item, itemIndex) in generalMetrics"
@@ -114,6 +114,8 @@ onBeforeMount(() => {
               {{ item.header }}
             </th>
           </tr>
+        </thead>
+        <tbody>
           <tr>
             <td
               v-for="(item, itemIndex) in generalMetrics"
@@ -123,16 +125,18 @@ onBeforeMount(() => {
               {{ item.value }}
             </td>
           </tr>
-        </table>
-      </div>
-      <div style="width: 100%">
-        <v-card-subtitle class="ma-0 pa-0 pb-2">
-          Hardware Metrics
-        </v-card-subtitle>
-        <table
-          id="device-metrics"
-          class="metrics-table"
-        >
+        </tbody>
+      </v-simple-table>
+    </v-row>
+    <v-row class="pa-4 ma-0 ml-5">
+      <v-card-subtitle
+        class="ma-0 pa-0 pb-2"
+        style="font-size: 16px"
+      >
+        Hardware Metrics
+      </v-card-subtitle>
+      <v-simple-table class="metrics-table">
+        <thead>
           <tr>
             <th
               v-for="(item, itemIndex) in platformMetrics"
@@ -142,6 +146,8 @@ onBeforeMount(() => {
               {{ item.header }}
             </th>
           </tr>
+        </thead>
+        <tbody>
           <tr>
             <td
               v-for="(item, itemIndex) in platformMetrics"
@@ -152,13 +158,13 @@ onBeforeMount(() => {
               <span v-else>---</span>
             </td>
           </tr>
-        </table>
-      </div>
+        </tbody>
+      </v-simple-table>
     </v-row>
   </v-card>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .metrics-table{
   border-collapse: separate;
   border-spacing: 0;
@@ -170,15 +176,45 @@ onBeforeMount(() => {
 }
 
 .metric-item {
+  font-size: 16px !important;
   padding: 1px 15px 1px 10px;
   border-right: 1px solid;
   font-weight: normal;
-  color: white;
+  color: white !important;
+  text-align: center !important;
 }
 
 .metric-item-title {
-  font-size: 18px;
+  font-size: 18px !important;
   text-decoration: underline;
   text-decoration-color: #ffd843;
+}
+
+.v-data-table {
+  thead, tbody {
+    background-color: #006492;
+  }
+
+  :hover {
+    tbody > tr {
+      background-color: #005281 !important;
+    }
+  }
+
+  ::-webkit-scrollbar {
+    width: 0;
+    height: 0.55em;
+    border-radius: 5px;
+  }
+
+  ::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: #ffd843;
+    border-radius: 10px;
+  }
 }
 </style>
