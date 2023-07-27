@@ -52,6 +52,7 @@ export const useStateStore = defineStore("state", {
                 connected: false
             },
             showLogModal: false,
+            // Ignored if the display is too small
             sidebarFolded: localStorage.getItem("sidebarFolded") === null ? false : localStorage.getItem("sidebarFolded") === "true",
             logMessages: [],
             currentCameraIndex: 0,

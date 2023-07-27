@@ -17,18 +17,18 @@ const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.bre
     dark
     app
     permanent
-    :mini-variant="compact"
+    :mini-variant="compact || !mdAndUp"
     color="primary"
   >
     <v-list>
       <!-- List item for the heading; note that there are some tricks in setting padding and image width make things look right -->
       <v-list-item
-        :class="compact ? 'pr-0 pl-0' : ''"
+        :class="(compact || !mdAndUp) ? 'pr-0 pl-0' : ''"
         style="display: flex; justify-content: center"
       >
         <v-list-item-icon class="mr-0">
           <img
-            v-if="!compact"
+            v-if="!(compact || !mdAndUp)"
             class="logo"
             src="@/assets/images/logoLarge.svg"
             alt="large logo"
@@ -93,7 +93,7 @@ const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.bre
         @click="() => compact = !compact"
       >
         <v-list-item-icon>
-          <v-icon v-if="compact">
+          <v-icon v-if="compact || !mdAndUp">
             mdi-chevron-right
           </v-icon>
           <v-icon v-else>
