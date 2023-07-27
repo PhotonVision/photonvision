@@ -99,7 +99,7 @@ onBeforeMount(() => {
     <v-row class="pa-4 ml-5">
       <div style="width: 100%">
         <v-card-subtitle class="ma-0 pa-0 pb-2">
-          PhotonVision General Metrics
+          General Metrics
         </v-card-subtitle>
         <table
           id="general-metrics"
@@ -127,7 +127,7 @@ onBeforeMount(() => {
       </div>
       <div style="width: 100%">
         <v-card-subtitle class="ma-0 pa-0 pb-2">
-          PhotonVision Hardware Metrics
+          Hardware Metrics
         </v-card-subtitle>
         <table
           id="device-metrics"
