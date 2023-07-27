@@ -421,7 +421,7 @@ const endCalibration = () => {
               <v-icon left>
                 mdi-download
               </v-icon>
-              Generate Calibration Target
+              Generate Board
             </v-btn>
           </v-col>
           <v-col :cols="6">
