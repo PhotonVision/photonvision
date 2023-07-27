@@ -109,24 +109,16 @@ export const useStateStore = defineStore("state", {
             };
         },
         showSnackbarMessage(data: {
-            show?: boolean,
             message: string,
             color: string,
             timeout?: number
         }) {
             this.snackbarData = {
-                show: data.show || true,
+                show: true,
                 message: data.message,
                 color: data.color,
                 timeout: data.timeout || 2000
             };
-
-            if(data.timeout != -1) {
-                setTimeout(this.hideSnackbarMessage, data.timeout || 2000);
-            }
-        },
-        hideSnackbarMessage() {
-            this.snackbarData = { show: false, timeout: 0, color: "error", message: "" };
         }
     }
 });
