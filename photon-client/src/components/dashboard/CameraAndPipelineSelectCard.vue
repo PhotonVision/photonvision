@@ -13,8 +13,10 @@ const changeCurrentCameraIndex = (index: number) => {
 
   isCameraNameEdit.value = false;
   currentCameraName.value = useCameraSettingsStore().cameras[index].nickname;
+
   isPipelineNameEdit.value = false;
   currentPipelineName.value = useCameraSettingsStore().cameras[index].pipelineSettings.pipelineNickname;
+
   newPipelineName.value = "";
   switch (useCameraSettingsStore().cameras[index].pipelineSettings.pipelineType) {
     case PipelineType.Reflective:
