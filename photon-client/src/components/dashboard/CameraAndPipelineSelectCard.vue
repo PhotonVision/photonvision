@@ -180,6 +180,26 @@ const cancelChangePipelineType = () => {
   pipelineType.value = useCameraSettingsStore().currentWebsocketPipelineType;
   showPipelineTypeChangeDialog.value = false;
 };
+
+// Change Props whenever the pipeline settings are changed
+useCameraSettingsStore().$subscribe((mutation, state) => {
+  const currentCameraSettings = state.cameras[useStateStore().currentCameraIndex];
+
+  switch (currentCameraSettings.pipelineSettings.pipelineType) {
+    case PipelineType.Reflective:
+      pipelineType.value = WebsocketPipelineType.Reflective;
+      break;
+    case PipelineType.ColoredShape:
+      pipelineType.value = WebsocketPipelineType.ColoredShape;
+      break;
+    case PipelineType.AprilTag:
+      pipelineType.value = WebsocketPipelineType.AprilTag;
+      break;
+    case PipelineType.Aruco:
+      pipelineType.value = WebsocketPipelineType.Aruco;
+      break;
+  }
+});
 </script>
 
 <template>
