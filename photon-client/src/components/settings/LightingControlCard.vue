@@ -9,7 +9,7 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
     class="mb-3 pr-6 pb-3"
     style="background-color: #006492;"
   >
-    <v-card-title>Lighting Control</v-card-title>
+    <v-card-title>LED Control</v-card-title>
     <div class="ml-5">
       <cv-slider
         v-model="useSettingsStore().lighting.brightness"
