@@ -52,7 +52,10 @@ const saveCameraSettings = () => {
         label="Camera"
         :items="useCameraSettingsStore().cameraNames"
         :select-cols="8"
-        @input="args => useCameraSettingsStore().setCurrentCameraIndex(args)"
+        @input="args => {
+          currentFov = useCameraSettingsStore().cameras[args].fov.value;
+          useCameraSettingsStore().setCurrentCameraIndex(args);
+        }"
       />
       <cv-number-input
         v-model="currentFov"
