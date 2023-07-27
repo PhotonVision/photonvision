@@ -36,7 +36,7 @@ const processingMode = computed<number>({
   >
     <v-row
       align="center"
-      class="pa-sm-3"
+      class="pa-3"
     >
       <v-col lg="12">
         <p style="color: white;">
