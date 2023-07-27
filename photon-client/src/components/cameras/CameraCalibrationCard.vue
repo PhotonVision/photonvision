@@ -241,7 +241,7 @@ const endCalibration = () => {
                 tooltip="Spacing between pattern features in inches"
                 :disabled="isCalibrating"
                 :rules="[v => (v > 0) || 'Size must be positive']"
-                :label-cols="7"
+                :label-cols="5"
               />
               <cv-number-input
                 v-model="patternWidth"
@@ -249,7 +249,7 @@ const endCalibration = () => {
                 tooltip="Width of the board in dots or chessboard squares"
                 :disabled="isCalibrating"
                 :rules="[v => (v >= 4) || 'Width must be at least 4']"
-                :label-cols="7"
+                :label-cols="5"
               />
               <cv-number-input
                 v-model="patternHeight"
@@ -257,7 +257,7 @@ const endCalibration = () => {
                 tooltip="Height of the board in dots or chessboard squares"
                 :disabled="isCalibrating"
                 :rules="[v => (v >= 4) || 'Height must be at least 4']"
-                :label-cols="7"
+                :label-cols="5"
               />
             </v-form>
           </v-col>
@@ -267,7 +267,7 @@ const endCalibration = () => {
           >
             <v-row
               align="start"
-              class="pb-4"
+              class="pb-4 pt-2"
             >
               <v-simple-table
                 fixed-header
