@@ -2,7 +2,7 @@
 import MetricsCard from "@/components/settings/MetricsCard.vue";
 import DeviceControlCard from "@/components/settings/DeviceControlCard.vue";
 import NetworkingCard from "@/components/settings/NetworkingCard.vue";
-import LightingControlCard from "@/components/settings/LightingControlCard.vue";
+import LightingControlCard from "@/components/settings/LEDControlCard.vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 </script>
 
