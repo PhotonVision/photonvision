@@ -518,30 +518,22 @@ const endCalibration = () => {
   </div>
 </template>
 
-<style scoped>
-.v-data-table {
-  text-align: center;
-  background-color: transparent !important;
-  width: 100%;
-  height: 100%;
-  overflow-y: auto;
-}
-
-.theme--dark.v-data-table>.v-data-table__wrapper>table>tbody>tr:hover:not(.v-data-table__expanded__content):not(.v-data-table__empty-wrapper) {
-  background: #005281 !important;
-}
-
-.v-data-table th {
-  background-color: #006492 !important;
-}
-
-.v-data-table th, td {
-  font-size: 1rem !important;
-}
-</style>
-
 <style scoped lang="scss">
 .v-data-table {
+  text-align: center;
+
+  th, td {
+    background-color: #006492 !important;
+    font-size: 1rem !important;
+  }
+
+  :hover {
+    td {
+      background-color: #005281 !important;
+    }
+  }
+
+
   ::-webkit-scrollbar {
     width: 0;
     height: 0.55em;
