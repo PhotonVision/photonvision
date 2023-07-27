@@ -146,8 +146,8 @@ const pipelineTypesWrapper = computed<{name: string, value: number}[]>(() => {
   const pipelineTypes =[
     { name: "Reflective", value: WebsocketPipelineType.Reflective },
     { name: "Colored Shape", value: WebsocketPipelineType.ColoredShape },
-    { name: "AprilTag", value: WebsocketPipelineType.AprilTag },
-    { name: "Aruco", value: WebsocketPipelineType.Aruco }
+    { name: "AprilTag", value: WebsocketPipelineType.AprilTag }
+    // { name: "Aruco", value: WebsocketPipelineType.Aruco }
   ];
 
   if(useCameraSettingsStore().isDriverMode) {
@@ -383,9 +383,11 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
             label="Tracking Type"
             tooltip="Pipeline type, which changes the type of processing that will happen on input frames"
             :items="[
-              {name: 'Reflective', value: WebsocketPipelineType.Reflective},
-              {name: 'Colored Shape', value: WebsocketPipelineType.ColoredShape},
-              {name: 'AprilTag', value: WebsocketPipelineType.AprilTag}]"
+              { name: 'Reflective', value: WebsocketPipelineType.Reflective },
+              { name: 'Colored Shape', value: WebsocketPipelineType.ColoredShape },
+              { name: 'AprilTag', value: WebsocketPipelineType.AprilTag }
+              // { name: 'Aruco', value: WebsocketPipelineType.Aruco }
+            ]"
           />
         </v-card-text>
         <v-divider />
