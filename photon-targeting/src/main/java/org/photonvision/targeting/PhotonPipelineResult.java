@@ -192,4 +192,44 @@ public class PhotonPipelineResult {
         // Return the packet.
         return packet;
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((targets == null) ? 0 : targets.hashCode());
+        long temp;
+        temp = Double.doubleToLongBits(latencyMillis);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(timestampSeconds);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        result = prime * result + ((multiTagResult == null) ? 0 : multiTagResult.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        PhotonPipelineResult other = (PhotonPipelineResult) obj;
+        if (targets == null) {
+            if (other.targets != null)
+                return false;
+        } else if (!targets.equals(other.targets))
+            return false;
+        if (Double.doubleToLongBits(latencyMillis) != Double.doubleToLongBits(other.latencyMillis))
+            return false;
+        if (Double.doubleToLongBits(timestampSeconds) != Double.doubleToLongBits(other.timestampSeconds))
+            return false;
+        if (multiTagResult == null) {
+            if (other.multiTagResult != null)
+                return false;
+        } else if (!multiTagResult.equals(other.multiTagResult))
+            return false;
+        return true;
+    }
 }
