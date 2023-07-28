@@ -103,7 +103,7 @@ export interface IncomingWebsocketData {
         possibleRios: string[],
         deviceips: string[]
     }
-    mutatePipeline?: Partial<ActivePipelineSettings>,
+    mutatePipelineSettings?: Partial<ActivePipelineSettings>,
     calibrationData?: WebsocketCalibrationData
 }
 

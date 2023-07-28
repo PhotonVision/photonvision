@@ -32,8 +32,8 @@ const websocket = new AutoReconnectingWebsocket(
       if(data.updatePipelineResult !== undefined) {
         useStateStore().updatePipelineResultsFromWebsocket(data.updatePipelineResult);
       }
-      if(data.mutatePipeline !== undefined) {
-        useCameraSettingsStore().changePipelineSettingsInStore(data.mutatePipeline);
+      if(data.mutatePipelineSettings !== undefined) {
+        useCameraSettingsStore().changePipelineSettingsInStore(data.mutatePipelineSettings);
       }
       if(data.calibrationData !== undefined) {
         useStateStore().updateCalibrationStateValuesFromWebsocket(data.calibrationData);
