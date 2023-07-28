@@ -9,4 +9,5 @@ build
 build/*
 photonvision/*
 photonvision_config/*
-lib/
+lib/*
+photon-sever/lib/*
