@@ -33,12 +33,13 @@ const processingMode = computed<number>({
     :disabled="useCameraSettingsStore().isDriverMode || useStateStore().colorPickingMode"
     class="mt-3"
     color="primary"
+    style="height: 100%; display: flex; flex-direction: column"
   >
     <v-row
       align="center"
-      class="pa-3"
+      class="pa-3 pb-0"
     >
-      <v-col lg="12">
+      <v-col>
         <p style="color: white;">
           Processing Mode
         </p>
@@ -63,7 +64,12 @@ const processingMode = computed<number>({
           </v-btn>
         </v-btn-toggle>
       </v-col>
-      <v-col lg="12">
+    </v-row>
+    <v-row
+      align="center"
+      class="pa-3 pt-0"
+    >
+      <v-col>
         <p style="color: white;">
           Stream Display
         </p>
