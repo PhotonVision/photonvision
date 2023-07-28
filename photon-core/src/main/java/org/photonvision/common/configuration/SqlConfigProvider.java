@@ -17,6 +17,8 @@
 
 package org.photonvision.common.configuration;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -57,6 +59,7 @@ public class SqlConfigProvider extends ConfigProvider {
         static final String NETWORK_CONFIG = "networkConfig";
         static final String HARDWARE_CONFIG = "hardwareConfig";
         static final String HARDWARE_SETTINGS = "hardwareSettings";
+        static final String ATFL_CONFIG_FILE = "apriltagFieldLayout";
     }
 
     private static final String dbName = "photon.sqlite";
@@ -206,6 +209,7 @@ public class SqlConfigProvider extends ConfigProvider {
             HardwareConfig hardwareConfig;
             HardwareSettings hardwareSettings;
             NetworkConfig networkConfig;
+            AprilTagFieldLayout atfl;
 
             try {
                 hardwareConfig =
@@ -234,6 +238,25 @@ public class SqlConfigProvider extends ConfigProvider {
                 networkConfig = new NetworkConfig();
             }
 
+            try {
+                atfl =
+                        JacksonUtils.deserialize(
+                                getOneConfigFile(conn, TableKeys.ATFL_CONFIG_FILE), AprilTagFieldLayout.class);
+            } catch (IOException e) {
+                logger.error("Could not deserialize network config! Loading defaults");
+                try {
+                    atfl = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
+                } catch (IOException e2) {
+                    logger.error("Error loading WPILib field", e);
+                    atfl = null;
+                }
+                if (atfl == null) {
+                    // what do we even do here lmao -- wpilib should always work
+                    logger.error("Field layout is *still* null??????");
+                    atfl = new AprilTagFieldLayout(List.of(), 1, 1);
+                }
+            }
+
             var cams = loadCameraConfigs(conn);
 
             try {
@@ -242,7 +265,8 @@ public class SqlConfigProvider extends ConfigProvider {
                 logger.error("SQL Err closing connection while loading: ", e);
             }
 
-            this.config = new PhotonConfiguration(hardwareConfig, hardwareSettings, networkConfig, cams);
+            this.config =
+                    new PhotonConfiguration(hardwareConfig, hardwareSettings, networkConfig, atfl, cams);
         }
     }
 

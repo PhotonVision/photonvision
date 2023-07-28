@@ -1,30 +1,25 @@
 /*
- * MIT License
+ * Copyright (C) Photon Vision.
  *
- * Copyright (c) PhotonVision
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.estimation;
+package org.photonvision.targeting;
 
 import edu.wpi.first.math.geometry.Transform3d;
+import org.photonvision.common.dataflow.structures.Packet;
+import org.photonvision.utils.PacketUtils;
 
 /**
  * The best estimated transformation from solvePnP, and possibly an alternate transformation
@@ -89,5 +84,31 @@ public class PNPResults {
         this.ambiguity = ambiguity;
         this.bestReprojErr = bestReprojErr;
         this.altReprojErr = altReprojErr;
+    }
+
+    public static final int PACK_SIZE_BYTES = 1 + (Double.BYTES * 7 * 2) + (Double.BYTES * 3);
+
+    public static PNPResults createFromPacket(Packet packet) {
+        var present = packet.decodeBoolean();
+        var best = PacketUtils.decodeTransform(packet);
+        var alt = PacketUtils.decodeTransform(packet);
+        var bestEr = packet.decodeDouble();
+        var altEr = packet.decodeDouble();
+        var ambiguity = packet.decodeDouble();
+        if (present) {
+            return new PNPResults(best, alt, ambiguity, bestEr, altEr);
+        } else {
+            return new PNPResults();
+        }
+    }
+
+    public Packet populatePacket(Packet packet) {
+        packet.encode(isPresent);
+        PacketUtils.encodeTransform(packet, best);
+        PacketUtils.encodeTransform(packet, alt);
+        packet.encode(bestReprojErr);
+        packet.encode(altReprojErr);
+        packet.encode(ambiguity);
+        return packet;
     }
 }

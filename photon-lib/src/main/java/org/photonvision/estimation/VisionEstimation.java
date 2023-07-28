@@ -33,9 +33,9 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.*;
 import java.util.ArrayList;
 import java.util.List;
-import org.photonvision.targeting.PNPResults;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.photonvision.targeting.PNPResults;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
 

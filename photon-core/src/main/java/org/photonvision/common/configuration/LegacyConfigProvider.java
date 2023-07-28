@@ -18,6 +18,8 @@
 package org.photonvision.common.configuration;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -45,12 +47,14 @@ class LegacyConfigProvider extends ConfigProvider {
     public static final String HW_CFG_FNAME = "hardwareConfig.json";
     public static final String HW_SET_FNAME = "hardwareSettings.json";
     public static final String NET_SET_FNAME = "networkSettings.json";
+    public static final String ATFL_SET_FNAME = "apriltagFieldLayout.json";
 
     private PhotonConfiguration config;
     private final File hardwareConfigFile;
     private final File hardwareSettingsFile;
     private final File networkConfigFile;
     private final File camerasFolder;
+    private final File apriltagFieldLayoutFile;
 
     final File configDirectoryFile;
 
@@ -87,6 +91,8 @@ class LegacyConfigProvider extends ConfigProvider {
                 new File(Path.of(configDirectoryFile.toString(), HW_SET_FNAME).toUri());
         this.networkConfigFile =
                 new File(Path.of(configDirectoryFile.toString(), NET_SET_FNAME).toUri());
+        this.apriltagFieldLayoutFile =
+                new File(Path.of(configDirectoryFile.toString(), ATFL_SET_FNAME).toUri());
         this.camerasFolder = new File(Path.of(configDirectoryFile.toString(), "cameras").toUri());
 
         settingsSaveThread = new Thread(this::saveAndWriteTask);
@@ -117,6 +123,7 @@ class LegacyConfigProvider extends ConfigProvider {
         HardwareConfig hardwareConfig;
         HardwareSettings hardwareSettings;
         NetworkConfig networkConfig;
+        AprilTagFieldLayout atfl = null;
 
         if (hardwareConfigFile.exists()) {
             try {
@@ -176,11 +183,40 @@ class LegacyConfigProvider extends ConfigProvider {
             }
         }
 
+        if (apriltagFieldLayoutFile.exists()) {
+            try {
+                atfl =
+                        JacksonUtils.deserialize(apriltagFieldLayoutFile.toPath(), AprilTagFieldLayout.class);
+                if (atfl == null) {
+                    logger.error("Could not deserialize apriltag field layout!");
+                }
+            } catch (IOException e) {
+                logger.error("Could not deserialize apriltag field layout!");
+                atfl = null; // not required, nice to be explicit
+            }
+            logger.info("Apriltag layout file not saved!");
+            atfl = null; // not required, nice to be explicit
+        }
+        if (atfl == null) {
+            logger.info("Loading default apriltags for 2023 field...");
+            try {
+                atfl = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
+            } catch (IOException e) {
+                logger.error("Error loading WPILib field", e);
+                atfl = null;
+            }
+            if (atfl == null) {
+                // what do we even do here lmao -- wpilib should always work
+                logger.error("Field layout is *still* null??????");
+                atfl = new AprilTagFieldLayout(List.of(), 1, 1);
+            }
+        }
+
         HashMap<String, CameraConfiguration> cameraConfigurations = loadCameraConfigs();
 
         this.config =
                 new PhotonConfiguration(
-                        hardwareConfig, hardwareSettings, networkConfig, cameraConfigurations);
+                        hardwareConfig, hardwareSettings, networkConfig, atfl, cameraConfigurations);
     }
 
     @Override
