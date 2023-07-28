@@ -142,14 +142,6 @@ class PhotonPoseEstimator {
   void SetMultiTagFallbackStrategy(PoseStrategy strategy);
 
   /**
-   * Set the Position Estimation Strategy used in multi-tag mode when
-   * only one tag can be seen. Must NOT be MULTI_TAG_PNP
-   *
-   * @param strategy the strategy to set
-   */
-  void SetMultiTagFallbackStrategy(PoseStrategy strategy);
-
-  /**
    * Return the reference position that is being used by the estimator.
    *
    * @return the referencePose

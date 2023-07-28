@@ -94,17 +94,6 @@ void PhotonPoseEstimator::SetMultiTagFallbackStrategy(PoseStrategy strategy) {
   multiTagFallbackStrategy = strategy;
 }
 
-void PhotonPoseEstimator::SetMultiTagFallbackStrategy(PoseStrategy strategy) {
-  if (strategy == MULTI_TAG_PNP) {
-    FRC_ReportError(
-        frc::warn::Warning,
-        "Fallback cannot be set to MULTI_TAG_PNP! Setting to lowest ambiguity",
-        "");
-    strategy = LOWEST_AMBIGUITY;
-  }
-  multiTagFallbackStrategy = strategy;
-}
-
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update() {
   if (!camera) {
     FRC_ReportError(frc::warn::Warning, "[PhotonPoseEstimator] Missing camera!",
@@ -414,7 +403,8 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagPnpStrategy(
   Pose3d const pose = detail::ToPose3d(tvec, rvec);
 
   return photonlib::EstimatedRobotPose(
-      pose.TransformBy(m_robotToCamera.Inverse()), result.GetTimestamp());
+      pose.TransformBy(m_robotToCamera.Inverse()), result.GetTimestamp(),
+      result.GetTargets());
 }
 
 std::optional<EstimatedRobotPose>

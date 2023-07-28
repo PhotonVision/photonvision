@@ -294,10 +294,10 @@ public class Main {
         var fvs2023 = new FileVisionSource(camConf2023);
 
         collectedSources.add(fvs2023);
-        // collectedSources.add(fvs2022);
-        // collectedSources.add(fvsShape);
-        // collectedSources.add(fvs2020);
-        // collectedSources.add(fvs2019);
+        collectedSources.add(fvs2022);
+        collectedSources.add(fvsShape);
+        collectedSources.add(fvs2020);
+        collectedSources.add(fvs2019);
 
         ConfigManager.getInstance().unloadCameraConfigs();
         VisionModuleManager.getInstance().addSources(collectedSources).forEach(VisionModule::start);
@@ -305,8 +305,6 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        isTestMode = true;
-
         try {
             TestUtils.loadLibraries();
             logger.info("Native libraries loaded.");
