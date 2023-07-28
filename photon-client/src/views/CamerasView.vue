@@ -302,6 +302,7 @@
               <v-col>
                 <v-btn
                   color="secondary"
+                  :disabled="isCalibrating"
                   small
                   style="width: 100%;"
                   @click="$refs.importCalibrationFromCalibdb.click()"
@@ -323,14 +324,14 @@
       >
         <template>
           <CVimage
-            :id="cameras-cal"
+            :id="'cameras-cal'"
             :idx="1"
             :disconnected="!$store.state.backendConnected"
             scale="100"
             style="border-radius: 5px;"
           />
           <v-dialog
-            v-model="snack"
+            v-model="calibrationDialog"
             width="500px"
             :persistent="true"
           >
@@ -399,12 +400,12 @@
     >
 
     <v-snackbar
-      v-model="uploadSnack"
+      v-model="snack"
       top
-      :color="uploadSnackData.color"
-      timeout="-1"
+      :color="snackbar.color"
+      timeout="2000"
     >
-      <span>{{ uploadSnackData.text }}</span>
+      <span>{{ snackbar.text }}</span>
     </v-snackbar>
   </div>
 </template>
@@ -431,17 +432,17 @@ export default {
     },
     data() {
         return {
-            snack: false,
+            calibrationDialog: false,
             calibrationInProgress: false,
             calibrationFailed: false,
             filteredVideomodeIndex: 0,
             settingsValid: true,
             unfilteredStreamDivisors: [1, 2, 4],
-            uploadSnackData: {
+            snackbar: {
               color: "success",
               text: "",
             },
-            uploadSnack: false,
+            snack: false,
         }
     },
     computed: {
@@ -479,13 +480,10 @@ export default {
           get() {
             return this.unfilteredStreamDivisors.filter(item => {
               const res = this.stringResolutionList[this.selectedFilteredResIndex].split(" X ").map(it => parseInt(it));
-              console.log(res);
-              console.log(item);
               // Realistically, we need more than 320x240, but lower than this is
               // basically unusable. For now, don't allow decimations that take us
               // below that
               const ret = ((res[0] / item) >= 300 && (res[1] / item) >= 220) || (item === 1);
-              console.log(ret);
               return ret;
             })
           }
@@ -620,43 +618,34 @@ export default {
               };
 
               this.axios
-                .post("http://" + this.$address + "/api/calibration/import", data, {
+                .post("http://" + this.$address + "/api/calibration/importFromCalibDB", data, {
                   headers: { "Content-Type": "text/plain" },
                 })
-                .then(() => {
-                  this.uploadSnackData = {
-                    color: "success",
-                    text:
-                      "Calibration imported successfully!",
-                  };
-                  this.uploadSnack = true;
+                .then((response) => {
+                    this.snackbar = {
+                      color: response.status === 200 ? "success" : "error",
+                      text: response.data.text || response.data
+                    }
+                    this.snack = true;
                 })
                 .catch((err) => {
-                  if (err.response) {
-                    this.uploadSnackData = {
+                  if (err.request) {
+                    this.snackbar = {
                       color: "error",
-                      text:
-                        "Error while uploading calibration file! Could not process provided file.",
-                    };
-                  } else if (err.request) {
-                    this.uploadSnackData = {
-                      color: "error",
-                      text:
-                        "Error while uploading calibration file! No respond to upload attempt.",
+                      text: "Error while uploading calibration file! The backend didn't respond to the upload attempt.",
                     };
                   } else {
-                    this.uploadSnackData = {
+                    this.snackbar = {
                       color: "error",
                       text: "Error while uploading calibration file!",
                     };
                   }
-                  this.uploadSnack = true;
+                  this.snack = true;
                 });
-
               })
     },
         closeDialog() {
-            this.snack = false;
+            this.calibrationDialog = false;
             this.calibrationInProgress = false;
             this.calibrationFailed = false;
         },
@@ -750,15 +739,33 @@ export default {
           doc.save(`calibrationTarget-${config.type}.pdf`)
         },
         sendCameraSettings() {
-            this.axios.post("http://" + this.$address + "/api/settings/camera", {
-                "settings": this.cameraSettings,
-                "index": this.$store.state.currentCameraIndex
-            }).then(response => {
-                    if (response.status === 200) {
-                        this.$store.state.saveBar = true;
+            this.axios.post("http://" + this.$address + "/api/settings/camera", {"settings": this.cameraSettings, "index": this.$store.state.currentCameraIndex})
+                .then(response => {
+                  this.snackbar = {
+                    color: "success",
+                    text: response.data.text || response.data
+                  }
+                  this.snack = true;
+                })
+                .catch(error => {
+                  if(error.response) {
+                    this.snackbar = {
+                      color: "error",
+                      text: error.response.data.text || error.response.data
                     }
-                }
-            )
+                  } else if(error.request) {
+                    this.snackbar = {
+                      color: "error",
+                      text: "Error while trying to process the request! The backend didn't respond.",
+                    };
+                  } else {
+                    this.snackbar = {
+                      color: "error",
+                      text: "An error occurred while trying to process the request.",
+                    };
+                  }
+                  this.snack = true;
+                })
         },
         isCalibrated(resolution) {
             return this.$store.getters.currentCameraSettings.calibrations
@@ -785,16 +792,13 @@ export default {
         sendCalibrationFinish() {
             console.log("finishing calibration for index " + this.$store.getters.currentCameraIndex);
 
-            this.snack = true;
+            this.calibrationDialog = true;
             this.calibrationInProgress = true;
 
-            this.axios.post("http://" + this.$address + "/api/settings/endCalibration", {idx: this.$store.getters.currentCameraIndex})
-                .then((response) => {
-                        if (response.status === 200) {
-                            this.calibrationInProgress = false;
-                        } else {
-                            this.calibrationFailed = true;
-                        }
+            this.axios.post("http://" + this.$address + "/api/calibration/end", {index: this.$store.getters.currentCameraIndex})
+                .then(() => {
+                  // End calibration will always return a 200 code on success
+                        this.calibrationInProgress = false;
                     }
                 ).catch(() => {
                     this.calibrationFailed = true;

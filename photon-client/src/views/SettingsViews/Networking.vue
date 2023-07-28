@@ -75,7 +75,7 @@
       v-model="snack"
       top
       :color="snackbar.color"
-      timeout="5000"
+      timeout="2000"
     >
       <span>{{ snackbar.text }}</span>
     </v-snackbar>
@@ -230,31 +230,40 @@ export default {
             };
             this.snack = true;
 
-            this.axios.post("http://" + this.$address + "/api/settings/general", this.settings).then(
-                response => {
-                    if (response.status === 200) {
-                        this.snackbar = {
-                            color: "success",
-                            text: "Settings updated successfully"
-                        };
-                        this.snack = true;
-                    }
-                },
-                error => {
-                  if (error.status === 504 || changingStaticIp) {
-                    this.snackbar = {
+            this.axios.post("http://" + this.$address + "/api/settings/general", this.settings)
+                .then(response => {
+                  this.snackbar = {
+                    color: "success",
+                    text: response.data.text || response.data
+                  }
+                  this.snack = true;
+                })
+                .catch(error => {
+                  if(error.response) {
+                    if (error.status === 504 || changingStaticIp) {
+                      this.snackbar = {
                         color: "error",
-                        text: (error.response || {data: `Connection lost! Try the new static IP at ${this.staticIp}:5800 or ${this.hostname}:5800 ?`}).data
+                        text: `Connection lost! Try the new static IP at ${this.staticIp}:5800 or ${this.hostname}:5800?`
+                      };
+                    } else {
+                      this.snackbar = {
+                        color: "error",
+                        text: error.response.data.text || error.response.data
+                      }
+                    }
+                  } else if(error.request) {
+                    this.snackbar = {
+                      color: "error",
+                      text: "Error while trying to process the request! The backend didn't respond.",
                     };
                   } else {
                     this.snackbar = {
-                        color: "error",
-                        text: (error.response || {data: "Couldn't save settings"}).data
+                      color: "error",
+                      text: "An error occurred while trying to process the request.",
                     };
                   }
-                    this.snack = true;
-                }
-            )
+                  this.snack = true;
+                })
         },
 
     },

@@ -1,11 +1,37 @@
 {
+  "HALProvider": {
+    "Other Devices": {
+      "AnalogGyro[0]": {
+        "header": {
+          "open": true
+        }
+      }
+    }
+  },
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
-      "/SmartDashboard/Field": "Field2d"
+      "/LiveWindow/Ungrouped/AnalogGyro[0]": "Gyro",
+      "/LiveWindow/Ungrouped/MotorControllerGroup[1]": "Motor Controller",
+      "/LiveWindow/Ungrouped/MotorControllerGroup[2]": "Motor Controller",
+      "/LiveWindow/Ungrouped/PIDController[1]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[2]": "PIDController",
+      "/SmartDashboard/Field": "Field2d",
+      "/SmartDashboard/VisionSystemSim-Test/Sim Field": "Field2d",
+      "/SmartDashboard/VisionSystemSim-YOUR CAMERA NAME/Sim Field": "Field2d"
     },
     "windows": {
       "/SmartDashboard/Field": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/VisionSystemSim-Test/Sim Field": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/VisionSystemSim-YOUR CAMERA NAME/Sim Field": {
         "window": {
           "visible": true
         }
@@ -14,7 +40,7 @@
   },
   "NetworkTables": {
     "transitory": {
-      "Shuffleboard": {
+      "LiveWindow": {
         "open": true
       },
       "photonvision": {
@@ -22,6 +48,9 @@
           "open": true
         },
         "USB_Camera": {
+          "open": true
+        },
+        "YOUR CAMERA NAME": {
           "open": true
         },
         "open": true,

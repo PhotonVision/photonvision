@@ -102,6 +102,7 @@ public class Logger {
         levelMap.put(LogGroup.WebServer, LogLevel.INFO);
         levelMap.put(LogGroup.Data, LogLevel.INFO);
         levelMap.put(LogGroup.VisionModule, LogLevel.INFO);
+        levelMap.put(LogGroup.Config, LogLevel.INFO);
     }
 
     static {
@@ -240,7 +241,7 @@ public class Logger {
      * @param t
      */
     public void error(String message, Throwable t) {
-        log(message, LogLevel.ERROR);
+        log(message + ": " + t.getMessage(), LogLevel.ERROR);
         log(convertStackTraceToString(t), LogLevel.ERROR, LogLevel.DEBUG);
     }
 

@@ -22,5 +22,6 @@ public enum LogGroup {
     WebServer,
     VisionModule,
     Data,
-    General
+    General,
+    Config
 }

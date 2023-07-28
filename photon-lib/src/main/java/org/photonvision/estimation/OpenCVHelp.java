@@ -286,7 +286,7 @@ public final class OpenCVHelp {
     /**
      * Undistort 2d image points using a given camera's intrinsics and distortion.
      *
-     * <p>2d image points from projectPoints(CameraProperties, Pose3d, List) projectPoints} will
+     * <p>2d image points from projectPoints(CameraProperties, Pose3d, List) projectPoints will
      * naturally be distorted, so this operation is important if the image points need to be directly
      * used (e.g. 2d yaw/pitch).
      *
@@ -374,9 +374,10 @@ public final class OpenCVHelp {
     }
 
     /**
-     * Finds the transformation(s) that map the camera's pose to the target pose. The camera's pose
+     * Finds the transformation(s) that map the camera's pose to the target's pose. The camera's pose
      * relative to the target is determined by the supplied 3d points of the target's model and their
-     * associated 2d points imaged by the camera.
+     * associated 2d points imaged by the camera. The supplied model translations must be relative to
+     * the target's pose.
      *
      * <p>For planar targets, there may be an alternate solution which is plausible given the 2d image
      * points. This has an associated "ambiguity" which describes the ratio of reprojection error
@@ -385,8 +386,8 @@ public final class OpenCVHelp {
      * <p>This method is intended for use with individual AprilTags, and will not work unless 4 points
      * are provided.
      *
-     * @param cameraMatrix the camera intrinsics matrix in standard opencv form
-     * @param distCoeffs the camera distortion matrix in standard opencv form
+     * @param cameraMatrix The camera intrinsics matrix in standard opencv form
+     * @param distCoeffs The camera distortion matrix in standard opencv form
      * @param modelTrls The translations of the object corners. These should have the object pose as
      *     their origin. These must come in a specific, pose-relative order (in NWU):
      *     <ul>
@@ -406,68 +407,102 @@ public final class OpenCVHelp {
             Matrix<N5, N1> distCoeffs,
             List<Translation3d> modelTrls,
             List<TargetCorner> imageCorners) {
-        // IPPE_SQUARE expects our corners in a specific order
-        modelTrls = reorderCircular(modelTrls, true, -1);
-        imageCorners = reorderCircular(imageCorners, true, -1);
-        // translate to opencv classes
-        var objectPoints = translationToTvec(modelTrls.toArray(new Translation3d[0]));
-        var imagePoints = targetCornersToMat(imageCorners);
-        var cameraMatrixMat = matrixToMat(cameraMatrix.getStorage());
-        var distCoeffsMat = matrixToMat(distCoeffs.getStorage());
+        // solvepnp inputs
+        MatOfPoint3f objectPoints = new MatOfPoint3f();
+        MatOfPoint2f imagePoints = new MatOfPoint2f();
+        MatOfDouble cameraMatrixMat = new MatOfDouble();
+        MatOfDouble distCoeffsMat = new MatOfDouble();
         var rvecs = new ArrayList<Mat>();
         var tvecs = new ArrayList<Mat>();
-        var rvec = Mat.zeros(3, 1, CvType.CV_32F);
-        var tvec = Mat.zeros(3, 1, CvType.CV_32F);
-        var reprojectionError = new Mat();
-        // calc rvecs/tvecs and associated reprojection error from image points
-        Calib3d.solvePnPGeneric(
-                objectPoints,
-                imagePoints,
-                cameraMatrixMat,
-                distCoeffsMat,
-                rvecs,
-                tvecs,
-                false,
-                Calib3d.SOLVEPNP_IPPE_SQUARE,
-                rvec,
-                tvec,
-                reprojectionError);
+        Mat rvec = Mat.zeros(3, 1, CvType.CV_32F);
+        Mat tvec = Mat.zeros(3, 1, CvType.CV_32F);
+        Mat reprojectionError = Mat.zeros(2, 1, CvType.CV_32F);
+        try {
+            // IPPE_SQUARE expects our corners in a specific order
+            modelTrls = reorderCircular(modelTrls, true, -1);
+            imageCorners = reorderCircular(imageCorners, true, -1);
+            // translate to opencv classes
+            translationToTvec(modelTrls.toArray(new Translation3d[0])).assignTo(objectPoints);
+            targetCornersToMat(imageCorners).assignTo(imagePoints);
+            matrixToMat(cameraMatrix.getStorage()).assignTo(cameraMatrixMat);
+            matrixToMat(distCoeffs.getStorage()).assignTo(distCoeffsMat);
 
-        float[] errors = new float[2];
-        reprojectionError.get(0, 0, errors);
-        // convert to wpilib coordinates
-        var best = new Transform3d(tvecToTranslation(tvecs.get(0)), rvecToRotation(rvecs.get(0)));
+            float[] errors = new float[2];
+            Transform3d best = null;
+            Transform3d alt = null;
 
-        Transform3d alt = null;
-        if (tvecs.size() > 1) {
-            alt = new Transform3d(tvecToTranslation(tvecs.get(1)), rvecToRotation(rvecs.get(1)));
+            for (int tries = 0; tries < 2; tries++) {
+                // calc rvecs/tvecs and associated reprojection error from image points
+                Calib3d.solvePnPGeneric(
+                        objectPoints,
+                        imagePoints,
+                        cameraMatrixMat,
+                        distCoeffsMat,
+                        rvecs,
+                        tvecs,
+                        false,
+                        Calib3d.SOLVEPNP_IPPE_SQUARE,
+                        rvec,
+                        tvec,
+                        reprojectionError);
+
+                reprojectionError.get(0, 0, errors);
+                // convert to wpilib coordinates
+                best = new Transform3d(tvecToTranslation(tvecs.get(0)), rvecToRotation(rvecs.get(0)));
+
+                if (tvecs.size() > 1) {
+                    alt = new Transform3d(tvecToTranslation(tvecs.get(1)), rvecToRotation(rvecs.get(1)));
+                }
+
+                // check if we got a NaN result
+                if (!Double.isNaN(errors[0])) break;
+                else { // add noise and retry
+                    double[] br = imagePoints.get(0, 0);
+                    br[0] -= 0.001;
+                    br[1] -= 0.001;
+                    imagePoints.put(0, 0, br);
+                }
+            }
+
+            // check if solvePnP failed with NaN results and retrying failed
+            if (Double.isNaN(errors[0])) throw new Exception("SolvePNP_SQUARE NaN result");
+
+            if (alt != null)
+                return new PNPResults(best, alt, errors[0] / errors[1], errors[0], errors[1]);
+            else return new PNPResults(best, errors[0]);
         }
-
-        // release our Mats from native memory
-        objectPoints.release();
-        imagePoints.release();
-        cameraMatrixMat.release();
-        distCoeffsMat.release();
-        for (var v : rvecs) v.release();
-        for (var v : tvecs) v.release();
-        rvec.release();
-        tvec.release();
-        reprojectionError.release();
-
-        if (alt != null) return new PNPResults(best, alt, errors[0] / errors[1], errors[0], errors[1]);
-        else return new PNPResults(best, errors[0]);
+        // solvePnP failed
+        catch (Exception e) {
+            System.err.println("SolvePNP_SQUARE failed!");
+            e.printStackTrace();
+            return new PNPResults();
+        } finally {
+            // release our Mats from native memory
+            objectPoints.release();
+            imagePoints.release();
+            cameraMatrixMat.release();
+            distCoeffsMat.release();
+            for (var v : rvecs) v.release();
+            for (var v : tvecs) v.release();
+            rvec.release();
+            tvec.release();
+            reprojectionError.release();
+        }
     }
 
     /**
-     * Finds the transformation that maps the camera's pose to the target pose. The camera's pose
-     * relative to the target is determined by the supplied 3d points of the target's model and their
-     * associated 2d points imaged by the camera.
+     * Finds the transformation that maps the camera's pose to the origin of the supplied object. An
+     * "object" is simply a set of known 3d translations that correspond to the given 2d points. If,
+     * for example, the object translations are given relative to close-right corner of the blue
+     * alliance(the default origin), a camera-to-origin transformation is returned. If the
+     * translations are relative to a target's pose, a camera-to-target transformation is returned.
      *
-     * <p>This method is intended for use with multiple targets and has no alternate solutions. There
-     * must be at least 3 points.
+     * <p>There must be at least 3 points to use this method. This does not return an alternate
+     * solution-- if you are intending to use solvePNP on a single AprilTag, see {@link
+     * #solvePNP_SQUARE} instead.
      *
-     * @param cameraMatrix the camera intrinsics matrix in standard opencv form
-     * @param distCoeffs the camera distortion matrix in standard opencv form
+     * @param cameraMatrix The camera intrinsics matrix in standard opencv form
+     * @param distCoeffs The camera distortion matrix in standard opencv form
      * @param objectTrls The translations of the object corners, relative to the field.
      * @param imageCorners The projection of these 3d object points into the 2d camera image. The
      *     order should match the given object point translations.
@@ -480,46 +515,55 @@ public final class OpenCVHelp {
             Matrix<N5, N1> distCoeffs,
             List<Translation3d> objectTrls,
             List<TargetCorner> imageCorners) {
-        // translate to opencv classes
-        var objectPoints = translationToTvec(objectTrls.toArray(new Translation3d[0]));
-        var imagePoints = targetCornersToMat(imageCorners);
-        var cameraMatrixMat = matrixToMat(cameraMatrix.getStorage());
-        var distCoeffsMat = matrixToMat(distCoeffs.getStorage());
-        var rvecs = new ArrayList<Mat>();
-        var tvecs = new ArrayList<Mat>();
-        var rvec = Mat.zeros(3, 1, CvType.CV_32F);
-        var tvec = Mat.zeros(3, 1, CvType.CV_32F);
-        var reprojectionError = new Mat();
-        // calc rvec/tvec from image points
-        Calib3d.solvePnPGeneric(
-                objectPoints,
-                imagePoints,
-                cameraMatrixMat,
-                distCoeffsMat,
-                rvecs,
-                tvecs,
-                false,
-                Calib3d.SOLVEPNP_SQPNP,
-                rvec,
-                tvec,
-                reprojectionError);
+        try {
+            // translate to opencv classes
+            MatOfPoint3f objectPoints = translationToTvec(objectTrls.toArray(new Translation3d[0]));
+            MatOfPoint2f imagePoints = targetCornersToMat(imageCorners);
+            MatOfDouble cameraMatrixMat = matrixToMat(cameraMatrix.getStorage());
+            MatOfDouble distCoeffsMat = matrixToMat(distCoeffs.getStorage());
+            var rvecs = new ArrayList<Mat>();
+            var tvecs = new ArrayList<Mat>();
+            Mat rvec = Mat.zeros(3, 1, CvType.CV_32F);
+            Mat tvec = Mat.zeros(3, 1, CvType.CV_32F);
+            Mat reprojectionError = new Mat();
+            // calc rvec/tvec from image points
+            Calib3d.solvePnPGeneric(
+                    objectPoints,
+                    imagePoints,
+                    cameraMatrixMat,
+                    distCoeffsMat,
+                    rvecs,
+                    tvecs,
+                    false,
+                    Calib3d.SOLVEPNP_SQPNP,
+                    rvec,
+                    tvec,
+                    reprojectionError);
 
-        float[] error = new float[1];
-        reprojectionError.get(0, 0, error);
-        // convert to wpilib coordinates
-        var best = new Transform3d(tvecToTranslation(tvecs.get(0)), rvecToRotation(rvecs.get(0)));
+            float[] error = new float[1];
+            reprojectionError.get(0, 0, error);
+            // convert to wpilib coordinates
+            var best = new Transform3d(tvecToTranslation(tvecs.get(0)), rvecToRotation(rvecs.get(0)));
 
-        // release our Mats from native memory
-        objectPoints.release();
-        imagePoints.release();
-        cameraMatrixMat.release();
-        distCoeffsMat.release();
-        for (var v : rvecs) v.release();
-        for (var v : tvecs) v.release();
-        rvec.release();
-        tvec.release();
-        reprojectionError.release();
+            // release our Mats from native memory
+            objectPoints.release();
+            imagePoints.release();
+            cameraMatrixMat.release();
+            distCoeffsMat.release();
+            for (var v : rvecs) v.release();
+            for (var v : tvecs) v.release();
+            rvec.release();
+            tvec.release();
+            reprojectionError.release();
 
-        return new PNPResults(best, error[0]);
+            // check if solvePnP failed with NaN results
+            if (Double.isNaN(error[0])) throw new Exception("SolvePNP_SQPNP NaN result");
+
+            return new PNPResults(best, error[0]);
+        } catch (Exception e) {
+            System.err.println("SolvePNP_SQPNP failed!");
+            e.printStackTrace();
+            return new PNPResults();
+        }
     }
 }

@@ -43,7 +43,7 @@
     />
     <v-snackbar
       v-model="snackbar"
-      :timeout="3000"
+      :timeout="2000"
       top
       color="error"
     >

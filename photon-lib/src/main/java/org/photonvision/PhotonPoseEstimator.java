@@ -24,7 +24,6 @@
 
 package org.photonvision;
 
-import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Pair;
@@ -45,7 +44,6 @@ import java.util.Set;
 import org.photonvision.estimation.VisionEstimation;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
-import org.photonvision.targeting.TargetCorner;
 
 /**
  * The PhotonPoseEstimator class filters or combines readings from all the AprilTags visible at a
@@ -177,7 +175,7 @@ public class PhotonPoseEstimator {
         checkUpdate(this.multiTagFallbackStrategy, strategy);
         if (strategy == PoseStrategy.MULTI_TAG_PNP) {
             DriverStation.reportWarning(
-                    "Fallback cannot be set to MULTI_TAG_PNP! Setting to lowest ambiguity", null);
+                    "Fallback cannot be set to MULTI_TAG_PNP! Setting to lowest ambiguity", false);
             strategy = PoseStrategy.LOWEST_AMBIGUITY;
         }
         this.multiTagFallbackStrategy = strategy;
@@ -364,57 +362,25 @@ public class PhotonPoseEstimator {
             PhotonPipelineResult result,
             Optional<Matrix<N3, N3>> cameraMatrixOpt,
             Optional<Matrix<N5, N1>> distCoeffsOpt) {
-        // Arrays we need declared up front
-        var visCorners = new ArrayList<TargetCorner>();
-        var knownVisTags = new ArrayList<AprilTag>();
-        var fieldToCams = new ArrayList<Pose3d>();
-        var fieldToCamsAlt = new ArrayList<Pose3d>();
-
-        if (result.getTargets().size() < 2) {
-            // Run fallback strategy instead
+        boolean hasCalibData = cameraMatrixOpt.isPresent() && distCoeffsOpt.isPresent();
+        // cannot run multitagPNP, use fallback strategy
+        if (!hasCalibData || result.getTargets().size() < 2) {
             return update(result, cameraMatrixOpt, distCoeffsOpt, this.multiTagFallbackStrategy);
         }
 
-        for (var target : result.getTargets()) {
-            visCorners.addAll(target.getDetectedCorners());
+        var pnpResults =
+                VisionEstimation.estimateCamPosePNP(
+                        cameraMatrixOpt.get(), distCoeffsOpt.get(), result.getTargets(), fieldTags);
+        // try fallback strategy if solvePNP fails for some reason
+        if (!pnpResults.isPresent)
+            return update(result, cameraMatrixOpt, distCoeffsOpt, this.multiTagFallbackStrategy);
+        var best =
+                new Pose3d()
+                        .plus(pnpResults.best) // field-to-camera
+                        .plus(robotToCamera.inverse()); // field-to-robot
 
-            var tagPoseOpt = fieldTags.getTagPose(target.getFiducialId());
-            if (tagPoseOpt.isEmpty()) {
-                reportFiducialPoseError(target.getFiducialId());
-                continue;
-            }
-
-            var tagPose = tagPoseOpt.get();
-
-            // actual layout poses of visible tags -- not exposed, so have to recreate
-            knownVisTags.add(new AprilTag(target.getFiducialId(), tagPose));
-
-            fieldToCams.add(tagPose.transformBy(target.getBestCameraToTarget().inverse()));
-            fieldToCamsAlt.add(tagPose.transformBy(target.getAlternateCameraToTarget().inverse()));
-        }
-
-        boolean hasCalibData = cameraMatrixOpt.isPresent() && distCoeffsOpt.isPresent();
-
-        // multi-target solvePNP
-        if (hasCalibData) {
-            var cameraMatrix = cameraMatrixOpt.get();
-            var distCoeffs = distCoeffsOpt.get();
-            var pnpResults =
-                    VisionEstimation.estimateCamPosePNP(cameraMatrix, distCoeffs, visCorners, knownVisTags);
-            var best =
-                    new Pose3d()
-                            .plus(pnpResults.best) // field-to-camera
-                            .plus(robotToCamera.inverse()); // field-to-robot
-            // var alt = new Pose3d()
-            // .plus(pnpResults.alt) // field-to-camera
-            // .plus(robotToCamera.inverse()); // field-to-robot
-
-            return Optional.of(
-                    new EstimatedRobotPose(best, result.getTimestampSeconds(), result.getTargets()));
-        } else {
-            // TODO fallback strategy? Should we just always do solvePNP?
-            return Optional.empty();
-        }
+        return Optional.of(
+                new EstimatedRobotPose(best, result.getTimestampSeconds(), result.getTargets()));
     }
 
     /**

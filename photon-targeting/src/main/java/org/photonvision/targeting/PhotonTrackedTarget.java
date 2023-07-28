@@ -116,14 +116,14 @@ public class PhotonTrackedTarget {
      * Return a list of the n corners in image space (origin top left, x right, y down), in no
      * particular order, detected for this target.
      *
-     * <p>For fiducials, the order is known and is always counter-clock wise around the tag, like so
+     * <p>For fiducials, the order is known and is always counter-clock wise around the tag, like so:
      *
-     * <p>spotless:off
-     * -> +X  3 ----- 2
+     * <pre>​
+     * ⟶ +X  3 ----- 2
      * |      |       |
      * V      |       |
      * +Y     0 ----- 1
-     * spotless:on
+     * </pre>
      */
     public List<TargetCorner> getDetectedCorners() {
         return detectedCorners;

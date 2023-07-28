@@ -54,7 +54,7 @@
       >
         <v-btn
           color="secondary"
-          @click="$refs.importSettings.click()"
+          @click="() => showImportDialog = true"
         >
           <v-icon left>
             mdi-import
@@ -62,7 +62,6 @@
           Import Settings
         </v-btn>
       </v-col>
-
       <v-col
         cols="12"
         sm="6"
@@ -77,7 +76,6 @@
           Export Settings
         </v-btn>
       </v-col>
-
       <v-col
         cols="12"
         sm="6"
@@ -95,16 +93,11 @@
           <a
             ref="exportLogFile"
             style="color: black; text-decoration: none; display: none"
-            :href="
-              'http://' +
-                this.$address +
-                '/api/settings/photonvision-journalctl.txt'
-            "
+            :href="'http://' + this.$address + '/api/utils/logs/photonvision-journalctl.txt'"
             download="photonvision-journalctl.txt"
           />
         </v-btn>
       </v-col>
-
       <v-col
         cols="12"
         sm="6"
@@ -124,24 +117,71 @@
       v-model="snack"
       top
       :color="snackbar.color"
-      timeout="-1"
+      :timeout="snackbarTimeout"
     >
       <span>{{ snackbar.text }}</span>
     </v-snackbar>
-
-    <!-- Special hidden upload input that gets 'clicked' when the user imports settings -->
-    <input
-      ref="importSettings"
-      type="file"
-      accept=".zip, .json"
-      style="display: none;"
-      @change="readImportedSettings"
+    <v-dialog
+      v-model="showImportDialog"
+      width="600"
+      @input="() => {
+        importType = undefined;
+        importFile = null;
+      }"
     >
+      <v-card
+        color="primary"
+        dark
+      >
+        <v-card-title>Import Settings</v-card-title>
+        <v-card-text>
+          Upload and apply previously saved or exported PhotonVision settings to this device
+          <v-row
+            class="mt-6 ml-8"
+          >
+            <CVselect
+              v-model="importType"
+              name="Type"
+              tooltip="Select the type of settings file you are trying to upload"
+              :list="['All Settings', 'Hardware Config', 'Hardware Settings', 'Network Config']"
+              :select-cols="10"
+            />
+          </v-row>
+          <v-row
+            class="mt-6 ml-8 mr-8"
+          >
+            <v-file-input
+              :disabled="importType === undefined"
+              :error-messages="importType === undefined ? 'Settings type not selected' : ''"
+              :accept="importType === 0 ? '.zip' : '.json'"
+              @change="(file) => importFile = file"
+            />
+          </v-row>
+          <v-row
+            class="mt-12 ml-8 mr-8 mb-1"
+            style="display: flex; align-items: center; justify-content: center"
+            align="center"
+          >
+            <v-btn
+              color="secondary"
+              :disabled="importFile === null"
+              @click="uploadSettings"
+            >
+              <v-icon left>
+                mdi-import
+              </v-icon>
+              Import Settings
+            </v-btn>
+          </v-row>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+
     <!-- Special hidden link that gets 'clicked' when the user exports settings -->
     <a
       ref="exportSettings"
       style="color: black; text-decoration: none; display: none"
-      :href="'http://' + this.$address + '/api/settings/photonvision_config.zip'"
+      :href="`http://${this.$address}/api/settings/photonvision_config.zip`"
       download="photonvision-settings.zip"
     />
 
@@ -156,18 +196,28 @@
   </div>
 </template>
 
+
 <script>
+import CVselect from "../../components/common/cv-select";
+
 export default {
   // eslint-disable-next-line
-  name: "Device Control",
+  name: "DeviceControl",
+  components: {
+    CVselect
+  },
   data() {
     return {
       snack: false,
+      snackbarTimeout: 2000,
       uploadPercentage: 0.0,
+      showImportDialog: false,
+      importType: undefined,
+      importFile: null,
       snackbar: {
         color: "success",
         text: "",
-      },
+      }
     };
   },
   computed: {
@@ -197,51 +247,117 @@ export default {
     metrics() {
       // console.log(this.$store.state.metrics);
       return this.$store.state.metrics;
-    },
+    }
   },
   methods: {
     restartProgram() {
-      this.axios.post("http://" + this.$address + "/api/restartProgram", {});
+      this.axios.post("http://" + this.$address + "/api/utils/restartProgram")
+          .then(() => {
+            this.snackbar = {
+              color: "success",
+              text: "Successfully sent program restart request"
+            }
+            this.snack = true;
+          })
+          .catch(error => {
+            // This endpoint always return 204 regardless of outcome
+            if(error.request) {
+              this.snackbar = {
+                color: "error",
+                text: "Error while trying to process the request! The backend didn't respond.",
+              };
+            } else {
+              this.snackbar = {
+                color: "error",
+                text: "An error occurred while trying to process the request.",
+              };
+            }
+            this.snack = true;
+          })
     },
     restartDevice() {
-      this.axios.post("http://" + this.$address + "/api/restartDevice", {});
+      this.axios.post("http://" + this.$address + "/api/utils/restartDevice")
+          .then(() => {
+            this.snackbar = {
+              color: "success",
+              text: "Successfully dispatched the restart command. It isn't confirmed if a device restart will occur."
+            }
+            this.snack = true;
+          })
+          .catch(error => {
+            if(error.response) {
+              this.snackbar = {
+                color: "error",
+                text: "The backend is unable to fulfil the request to restart the device."
+              }
+            } else if(error.request) {
+              this.snackbar = {
+                color: "error",
+                text: "Error while trying to process the request! The backend didn't respond.",
+              };
+            } else {
+              this.snackbar = {
+                color: "error",
+                text: "An error occurred while trying to process the request.",
+              };
+            }
+            this.snack = true;
+          })
     },
-    readImportedSettings(event) {
+    uploadSettings() {
       let formData = new FormData();
-      formData.append("zipData", event.target.files[0]);
-      this.axios
-        .post("http://" + this.$address + "/api/settings/import", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        })
-        .then(() => {
-          this.snackbar = {
-            color: "success",
-            text:
-              "Settings imported successfully! PhotonVision will restart in the background...",
-          };
-          this.snack = true;
-        })
-        .catch((err) => {
-          if (err.response) {
+      formData.append("data", this.importFile);
+
+      let settingsType
+      switch (this.importType) {
+        case 0:
+          settingsType = ""
+          break;
+        case 1:
+          settingsType = "/hardwareConfig"
+          break;
+        case 2:
+          settingsType = "/hardwareSettings"
+          break;
+        case 3:
+          settingsType = "/networkConfig"
+          break;
+      }
+
+      const requestUrl = `http://${this.$address}/api/settings${settingsType}`;
+      this.axios.post(requestUrl, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+          .then(response => {
             this.snackbar = {
-              color: "error",
-              text:
-                "Error while uploading settings file! Could not process provided file.",
-            };
-          } else if (err.request) {
-            this.snackbar = {
-              color: "error",
-              text:
-                "Error while uploading settings file! No respond to upload attempt.",
-            };
-          } else {
-            this.snackbar = {
-              color: "error",
-              text: "Error while uploading settings file!",
-            };
-          }
-          this.snack = true;
-        });
+              color: "success",
+              text: response.data.text || response.data
+            }
+            this.snack = true;
+          })
+          .catch(error => {
+            if(error.response) {
+              this.snackbar = {
+                color: "error",
+                text: error.response.data.text || error.response.data
+              }
+            } else if(error.request) {
+              this.snackbar = {
+                color: "error",
+                text: "Error while trying to process the request! The backend didn't respond.",
+              };
+            } else {
+              this.snackbar = {
+                color: "error",
+                text: "An error occurred while trying to process the request.",
+              };
+            }
+            this.snack = true;
+          })
+
+      this.showImportDialog = false
+      this.importType = undefined;
+      this.importFile = null;
     },
     doOfflineUpdate(event) {
       this.snackbar = {
@@ -249,12 +365,13 @@ export default {
         text: "New Software Upload in Process...",
       };
       this.snack = true;
+      this.snackbarTimeout = -1
 
       let formData = new FormData();
       formData.append("jarData", event.target.files[0]);
       this.axios
         .post(
-          "http://" + this.$address + "/api/settings/offlineUpdate",
+          "http://" + this.$address + "/api/utils/offlineUpdate",
           formData,
           {
             headers: { "Content-Type": "multipart/form-data" },
@@ -273,38 +390,37 @@ export default {
             }.bind(this),
           }
         )
-        .then(() => {
-          this.snackbar = {
-            color: "success",
-            text:
-              "New .jar copied successfully! PhotonVision will restart in the background...",
-          };
-          this.snack = true;
-        })
-        .catch((err) => {
-          if (err.response) {
+          .then(response => {
             this.snackbar = {
-              color: "error",
-              text:
-                "Error while uploading new .jar file! Could not process provided file.",
-            };
-          } else if (err.request) {
-            this.snackbar = {
-              color: "error",
-              text:
-                "Error while uploading new .jar file! No respond to upload attempt.",
-            };
-          } else {
-            this.snackbar = {
-              color: "error",
-              text: "Error while uploading new .jar file!",
-            };
-          }
-          this.snack = true;
-        });
+              color: "success",
+              text: response.data.text || response.data
+            }
+            this.snack = true;
+          })
+          .catch(error => {
+            if(error.response) {
+              this.snackbar = {
+                color: "error",
+                text:  error.response.data.text || error.response.data
+              };
+            } else if(error.request) {
+              this.snackbar = {
+                color: "error",
+                text: "Error while trying to process the request! The backend didn't respond.",
+              };
+            } else {
+              this.snackbar = {
+                color: "error",
+                text: "An error occurred while trying to process the request.",
+              };
+            }
+            this.snack = true;
+          })
+
+      // Reset the timeout after the loading bar
+      this.snackbarTimeout = 2000
     },
-    showLogs(event) {
-      event;
+    showLogs() {
       this.$store.state.logsOverlay = true;
     },
   },

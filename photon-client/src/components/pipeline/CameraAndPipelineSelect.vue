@@ -1,5 +1,13 @@
 <template>
   <div>
+    <v-snackbar
+      v-model="snack"
+      top
+      :color="snackbar.color"
+      :timeout="2000"
+    >
+      <span>{{ snackbar.text }}</span>
+    </v-snackbar>
     <v-row
       align="center"
       style="padding: 12px 12px 12px 24px"
@@ -144,7 +152,7 @@
         </v-menu>
       </v-col>
       <v-col
-        v-if="currentPipelineType >= 0"
+        v-if="_currentPipelineType >= 0"
         cols="10"
         md="11"
         lg="10"
@@ -152,7 +160,7 @@
         class="pa-0"
       >
         <CVselect
-          v-model="currentPipelineType"
+          v-model="_currentPipelineType"
           name="Type"
           tooltip="Changes the pipeline type, which changes the type of processing that will happen on input frames"
           :list="['Reflective Tape', 'Colored Shape', 'AprilTag']"
@@ -269,7 +277,12 @@ export default {
             duplicateDialog: false,
             showPipeTypeDialog: false,
             proposedPipelineType : 0,
-            pipeIndexToDuplicate: undefined
+            pipeIndexToDuplicate: undefined,
+            snack: false,
+            snackbar: {
+              color: "success",
+              text: "",
+            }
         }
     },
     computed: {
@@ -321,7 +334,7 @@ export default {
                 this.$store.commit('currentPipelineIndex', value - (this.$store.getters.isDriverMode ? 1 : 0));
             }
         },
-        currentPipelineType: {
+        _currentPipelineType: {
             get() {
                 return this.$store.getters.currentPipelineSettings.pipelineType - 2;
             },
@@ -333,11 +346,11 @@ export default {
     methods: {
         showTypeDialog(idx) {
             // Only show the dialog if it's a new type
-            this.showPipeTypeDialog = idx !== this.currentPipelineType;
+            this.showPipeTypeDialog = idx !== this._currentPipelineType;
             this.proposedPipelineType = idx;
         },
         changePipeType(actuallyChange) {
-            const newIdx = actuallyChange ? this.proposedPipelineType : this.currentPipelineType
+            const newIdx = actuallyChange ? this.proposedPipelineType : this._currentPipelineType
             this.handleInputWithIndex('pipelineType', newIdx);
             this.showPipeTypeDialog = false;
         },
@@ -347,16 +360,37 @@ export default {
         },
         saveCameraNameChange() {
             if (this.checkCameraName === "") {
-                // this.handleInputWithIndex("changeCameraName", this.newCameraName);
-                this.axios.post('http://' + this.$address + '/api/setCameraNickname',
+                this.axios.post('http://' + this.$address + '/api/settings/camera/setNickname',
                     {name: this.newCameraName, cameraIndex: this.$store.getters.currentCameraIndex})
-                    // eslint-disable-next-line
-                    .then(r => {
-                        this.$emit('camera-name-changed')
+                    .then(response => {
+                      this.$emit('camera-name-changed')
+
+                      this.snackbar = {
+                        color: "success",
+                        text: response.data.text || response.data
+                      }
+                      this.snack = true;
                     })
-                    .catch(e => {
-                        console.log("HTTP error while changing camera name " + e);
-                        this.$emit('camera-name-changed')
+                    .catch(error => {
+                      this.$emit('camera-name-changed')
+
+                      if(error.response) {
+                        this.snackbar = {
+                          color: "error",
+                          text:  error.response.data.text || error.response.data
+                        }
+                      } else if(error.request) {
+                        this.snackbar = {
+                          color: "error",
+                          text: "Error while trying to process the request! The backend didn't respond.",
+                        };
+                      } else {
+                        this.snackbar = {
+                          color: "error",
+                          text: "An error occurred while trying to process the request.",
+                        };
+                      }
+                      this.snack = true;
                     })
                 this.discardCameraNameChange();
             }
@@ -387,7 +421,7 @@ export default {
                 if (this.isPipelineNameEdit) {
                     this.handleInputWithIndex("changePipelineName", this.newPipelineName);
                 } else {
-                    this.handleInputWithIndex("addNewPipeline", [this.newPipelineName, this.currentPipelineType]); // 0 for reflective, 1 for colored shape
+                    this.handleInputWithIndex("addNewPipeline", [this.newPipelineName, this._currentPipelineType]); // 0 for reflective, 1 for colored shape
                 }
                 this.discardPipelineNameChange();
             }
@@ -404,7 +438,3 @@ export default {
 
 }
 </script>
-
-<style scoped>
-
-</style>

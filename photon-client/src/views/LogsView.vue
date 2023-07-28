@@ -23,7 +23,7 @@
         <a
           ref="exportLogFile"
           style="color: black; text-decoration: none; display: none"
-          :href="'http://' + this.$address + '/api/settings/photonvision-journalctl.txt'"
+          :href="'http://' + this.$address + '/api/utils/logs/photonvision-journalctl.txt'"
           download="photonvision-journalctl.txt"
         />
       </v-btn>
