@@ -51,7 +51,7 @@ public class NetworkConfig {
     private boolean shouldManage;
 
     public NetworkConfig() {
-        setShouldManage(false);
+        setShouldManage(deviceCanManageNetwork());
     }
 
     @JsonCreator
@@ -90,12 +90,16 @@ public class NetworkConfig {
 
     @JsonGetter("shouldManage")
     public boolean shouldManage() {
-        return this.shouldManage || Platform.isLinux();
+        return this.shouldManage;
     }
 
     @JsonSetter("shouldManage")
     public void setShouldManage(boolean shouldManage) {
-        this.shouldManage = shouldManage || Platform.isLinux();
+        this.shouldManage = shouldManage && this.deviceCanManageNetwork();
+    }
+
+    private boolean deviceCanManageNetwork() {
+        return Platform.isLinux();
     }
 
     @Override

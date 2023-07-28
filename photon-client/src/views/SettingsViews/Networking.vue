@@ -23,9 +23,16 @@
       >
         NetworkTables Server Address is unset or invalid. NetworkTables is unable to connect
       </v-banner>
+      <CVSwitch
+        v-model="shouldManage"
+        name="Manage networking"
+        tooltip="If enabled, Photon will manage device hostname and network settings"
+        class="mt-3 mb-3"
+        :text-cols="$vuetify.breakpoint.mdAndUp ? undefined : 5"
+      />
       <CVradio
-        v-show="$store.state.settings.networkSettings.shouldManage"
         v-model="connectionType"
+        :disabled="!$store.state.settings.networkSettings.shouldManage"
         :input-cols="inputCols"
         name="IP Assignment Mode"
         tooltip="DHCP will make the radio (router) automatically assign an IP address; this may result in an IP address that changes across reboots. Static IP assignment means that you pick the IP address and it won't change."
@@ -39,8 +46,8 @@
         name="IP"
       />
       <CVinput
-        v-show="$store.state.settings.networkSettings.shouldManage"
         v-model="hostname"
+        :disabled="!$store.state.settings.networkSettings.shouldManage"
         :input-cols="inputCols"
         :rules="[v => isHostname(v) || 'Invalid hostname']"
         name="Hostname"
@@ -167,6 +174,14 @@ export default {
             },
             set(value) {
                 this.$store.commit('mutateNetworkSettings', {['connectionType']: value});
+            }
+        },
+        shouldManage: {
+            get() {
+                return this.settings.shouldManage
+            },
+            set(value) {
+                this.$store.commit('mutateNetworkSettings', {['shouldManage']: value});
             }
         },
         staticIp: {

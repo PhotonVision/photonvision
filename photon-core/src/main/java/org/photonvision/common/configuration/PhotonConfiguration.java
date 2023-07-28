@@ -55,6 +55,10 @@ public class PhotonConfiguration {
         this.cameraConfigurations = cameraConfigurations;
     }
 
+    public PhotonConfiguration() {
+        this(new HardwareConfig(), new HardwareSettings(), new NetworkConfig());
+    }
+
     public HardwareConfig getHardwareConfig() {
         return hardwareConfig;
     }
@@ -139,18 +143,5 @@ public class PhotonConfiguration {
         public int inputStreamPort;
         public List<HashMap<String, Object>> calibrations;
         public boolean isFovConfigurable = true;
-    }
-
-    @Override
-    public String toString() {
-        return "PhotonConfiguration [hardwareConfig="
-                + hardwareConfig
-                + ", hardwareSettings="
-                + hardwareSettings
-                + ", networkConfig="
-                + networkConfig
-                + ", cameraConfigurations="
-                + cameraConfigurations
-                + "]";
     }
 }
