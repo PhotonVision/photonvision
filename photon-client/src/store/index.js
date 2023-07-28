@@ -139,7 +139,6 @@ export default new Vuex.Store({
             networkSettings: {
                 ntServerAddress: "",
 
-                supported: true,
                 shouldManage: true,
                 // Below options are only configurable if supported is true
                 connectionType: 0, // 0 = DHCP, 1 = Static
