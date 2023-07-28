@@ -243,7 +243,7 @@ public class SqlConfigProvider extends ConfigProvider {
                         JacksonUtils.deserialize(
                                 getOneConfigFile(conn, TableKeys.ATFL_CONFIG_FILE), AprilTagFieldLayout.class);
             } catch (IOException e) {
-                logger.error("Could not deserialize network config! Loading defaults");
+                logger.error("Could not deserialize apriltag layout! Loading defaults");
                 try {
                     atfl = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
                 } catch (IOException e2) {
