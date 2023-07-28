@@ -111,4 +111,53 @@ public class PNPResults {
         packet.encode(ambiguity);
         return packet;
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (isPresent ? 1231 : 1237);
+        result = prime * result + ((best == null) ? 0 : best.hashCode());
+        long temp;
+        temp = Double.doubleToLongBits(bestReprojErr);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        result = prime * result + ((alt == null) ? 0 : alt.hashCode());
+        temp = Double.doubleToLongBits(altReprojErr);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(ambiguity);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        PNPResults other = (PNPResults) obj;
+        if (isPresent != other.isPresent)
+            return false;
+        if (best == null) {
+            if (other.best != null)
+                return false;
+        } else if (!best.equals(other.best))
+            return false;
+        if (Double.doubleToLongBits(bestReprojErr) != Double.doubleToLongBits(other.bestReprojErr))
+            return false;
+        if (alt == null) {
+            if (other.alt != null)
+                return false;
+        } else if (!alt.equals(other.alt))
+            return false;
+        if (Double.doubleToLongBits(altReprojErr) != Double.doubleToLongBits(other.altReprojErr))
+            return false;
+        if (Double.doubleToLongBits(ambiguity) != Double.doubleToLongBits(other.ambiguity))
+            return false;
+        return true;
+    }
+
+
 }
