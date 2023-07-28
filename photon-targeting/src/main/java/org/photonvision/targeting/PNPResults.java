@@ -131,33 +131,23 @@ public class PNPResults {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
         PNPResults other = (PNPResults) obj;
-        if (isPresent != other.isPresent)
-            return false;
+        if (isPresent != other.isPresent) return false;
         if (best == null) {
-            if (other.best != null)
-                return false;
-        } else if (!best.equals(other.best))
-            return false;
+            if (other.best != null) return false;
+        } else if (!best.equals(other.best)) return false;
         if (Double.doubleToLongBits(bestReprojErr) != Double.doubleToLongBits(other.bestReprojErr))
             return false;
         if (alt == null) {
-            if (other.alt != null)
-                return false;
-        } else if (!alt.equals(other.alt))
-            return false;
+            if (other.alt != null) return false;
+        } else if (!alt.equals(other.alt)) return false;
         if (Double.doubleToLongBits(altReprojErr) != Double.doubleToLongBits(other.altReprojErr))
             return false;
         if (Double.doubleToLongBits(ambiguity) != Double.doubleToLongBits(other.ambiguity))
             return false;
         return true;
     }
-
-
 }
