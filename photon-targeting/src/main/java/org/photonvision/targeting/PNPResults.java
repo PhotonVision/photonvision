@@ -1,25 +1,30 @@
 /*
- * Copyright (C) Photon Vision.
+ * MIT License
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (c) PhotonVision
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
-package org.photonvision.targeting;
+package org.photonvision.estimation;
 
 import edu.wpi.first.math.geometry.Transform3d;
-import org.photonvision.common.dataflow.structures.Packet;
-import org.photonvision.utils.PacketUtils;
 
 /**
  * The best estimated transformation from solvePnP, and possibly an alternate transformation
@@ -31,12 +36,19 @@ import org.photonvision.utils.PacketUtils;
  * method.
  */
 public class PNPResults {
-    // Imitate optional by having a valid check
+    /**
+     * If this result is valid. A false value indicates there was an error in estimation, and this
+     * result should not be used.
+     */
     public final boolean isPresent;
 
-    // Best transform. Coordinate frame depends on where this result comes from
+    /**
+     * The best-fit transform. The coordinate frame of this transform depends on the method which gave
+     * this result.
+     */
     public final Transform3d best;
-    // Reprojection error of this solution, in pixels
+
+    /** Reprojection error of the best solution, in pixels */
     public final double bestReprojErr;
 
     /**
@@ -51,8 +63,14 @@ public class PNPResults {
     /** If no alternate solution is found, this is 0 */
     public final double ambiguity;
 
+    /** An empty (invalid) result. */
     public PNPResults() {
-        this(false, new Transform3d(), new Transform3d(), -1, 0, 0);
+        this.isPresent = false;
+        this.best = new Transform3d();
+        this.alt = new Transform3d();
+        this.ambiguity = 0;
+        this.bestReprojErr = 0;
+        this.altReprojErr = 0;
     }
 
     public PNPResults(Transform3d best, double bestReprojErr) {
@@ -65,43 +83,11 @@ public class PNPResults {
             double ambiguity,
             double bestReprojErr,
             double altReprojErr) {
-        this(true, best, alt, ambiguity, bestReprojErr, altReprojErr);
-    }
-
-    public PNPResults(
-            boolean isPresent,
-            Transform3d best,
-            Transform3d alt,
-            double ambiguity,
-            double bestReprojErr,
-            double altReprojErr) {
-        this.isPresent = isPresent;
+        this.isPresent = true;
         this.best = best;
         this.alt = alt;
         this.ambiguity = ambiguity;
         this.bestReprojErr = bestReprojErr;
         this.altReprojErr = altReprojErr;
-    }
-
-    public static final int PACK_SIZE_BYTES = 1 + (Double.BYTES * 7 * 2) + (Double.BYTES * 3);
-
-    public static PNPResults createFromPacket(Packet packet) {
-        var present = packet.decodeBoolean();
-        var best = PacketUtils.decodeTransform(packet);
-        var alt = PacketUtils.decodeTransform(packet);
-        var bestEr = packet.decodeDouble();
-        var altEr = packet.decodeDouble();
-        var ambiguity = packet.decodeDouble();
-        return new PNPResults(present, best, alt, ambiguity, bestEr, altEr);
-    }
-
-    public Packet populatePacket(Packet packet) {
-        packet.encode(isPresent);
-        PacketUtils.encodeTransform(packet, best);
-        PacketUtils.encodeTransform(packet, alt);
-        packet.encode(bestReprojErr);
-        packet.encode(altReprojErr);
-        packet.encode(ambiguity);
-        return packet;
     }
 }
