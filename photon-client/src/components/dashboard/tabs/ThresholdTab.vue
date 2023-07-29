@@ -83,15 +83,19 @@ const handleStreamClick = (event: MouseEvent) => {
   disableColorPicking();
 };
 
+// Put some default values incase color picking was enabled before the enableColorPicking method is called
+let inputShowing = true;
+let outputShowing = false;
 const enableColorPicking = (mode: 1 | 2 | 3) => {
   useStateStore().colorPickingMode = true;
+  inputShowing = useCameraSettingsStore().currentPipelineSettings.inputShouldShow;
+  outputShowing = useCameraSettingsStore().currentPipelineSettings.outputShouldShow;
   useCameraSettingsStore().changeCurrentPipelineSetting({ outputShouldDraw: false, inputShouldShow: true, outputShouldShow: false }, true);
   selectedEventMode = mode;
 };
 const disableColorPicking = () => {
   useStateStore().colorPickingMode = false;
-  // TODO handle reverting showing input and output
-  useCameraSettingsStore().changeCurrentPipelineSetting({ outputShouldDraw: true }, true);
+  useCameraSettingsStore().changeCurrentPipelineSetting({ outputShouldDraw: true, inputShouldShow: inputShowing, outputShouldShow: outputShowing }, true);
   selectedEventMode = 0;
 };
 
