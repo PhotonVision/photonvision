@@ -32,9 +32,11 @@ const localValue = computed<[number, number]>({
   set: v => emit("input", v)
 });
 
-// TODO do this better
-const changeFromSlot = (v, i) => {
-  localValue.value = localValue.value.map((value, index) => index === i ? v : value) as [number, number];
+const changeFromSlot = (v: number, i: number) => {
+  // localValue.value must be replaced for a reactive change to take place
+  const temp = localValue.value;
+  temp[i] = v;
+  localValue.value = temp;
 };
 </script>
 

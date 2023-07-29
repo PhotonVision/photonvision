@@ -71,7 +71,6 @@ const fpsTooLow = computed<boolean>(() => {
       </div>
     </v-card-title>
     <v-divider style="border-color: white" />
-    <!-- TODO do this better -->
     <v-row
       class="pl-3 pr-3 pt-3 pb-3"
       style="flex-wrap: nowrap; justify-content: center"
