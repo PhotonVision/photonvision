@@ -25,10 +25,12 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
+import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.calibration.JsonMat;
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients.BoardObservation;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class Calibrate3dPipe
@@ -77,16 +79,18 @@ public class Calibrate3dPipe
                                                 && it.getMiddle() != null
                                                 && it.getRight() != null)
                         .collect(Collectors.toList());
+
+        List<Mat> objPoints = in.stream().map(Triple::getMiddle).collect(Collectors.toList());
+        List<Mat> imgPts = in.stream().map(Triple::getRight).collect(Collectors.toList());
+        if (objPoints.size() != imgPts.size()) {
+            logger.error("objpts.size != imgpts.size");
+            return null;
+        }
+
         try {
             // FindBoardCorners pipe outputs all the image points, object points, and frames to calculate
             // imageSize from, other parameters are output Mats
 
-            var objPoints = in.stream().map(Triple::getMiddle).collect(Collectors.toList());
-            var imgPts = in.stream().map(Triple::getRight).collect(Collectors.toList());
-            if (objPoints.size() != imgPts.size()) {
-                logger.error("objpts.size != imgpts.size");
-                return null;
-            }
             calibrationAccuracy =
                     Calib3d.calibrateCameraExtended(
                             objPoints,
@@ -104,15 +108,45 @@ public class Calibrate3dPipe
             e.printStackTrace();
             return null;
         }
+
         JsonMat cameraMatrixMat = JsonMat.fromMat(cameraMatrix);
         JsonMat distortionCoefficientsMat = JsonMat.fromMat(distortionCoefficients);
-        // Create a new CameraCalibrationCoefficients object to pass onto SolvePnP
-        double[] perViewErrorsArray =
-                new double[(int) perViewErrors.total() * perViewErrors.channels()];
-        perViewErrors.get(0, 0, perViewErrorsArray);
+        
+        
+        // For each observation, calc reprojection error
+        Mat jac_temp = new Mat();
+        List<BoardObservation> observations = new ArrayList<>();
+        for (int i = 0; i < objPoints.size(); i++) {
+            MatOfPoint3f i_objPtsNative = new MatOfPoint3f();
+            objPoints.get(i).copyTo(i_objPtsNative);
+            var i_objPts = i_objPtsNative.toList();
+            var i_imgPts = ((MatOfPoint2f)imgPts.get(i)).toList();
+            
+            var img_pts_reprojected = new MatOfPoint2f();
+            try {
+                Calib3d.projectPoints(i_objPtsNative, rvecs.get(i), tvecs.get(i), cameraMatrix, distortionCoefficients, img_pts_reprojected, jac_temp, 0.0);
+            } catch (Exception e) {
+                e.printStackTrace();
+                continue;
+            }
+            var img_pts_reprojected_list = img_pts_reprojected.toList();
+
+            var reprojectionError = new ArrayList<Point>();
+            for (int j = 0; j < img_pts_reprojected_list.size(); j++) {
+                // error = (measured - expected)
+                var measured = img_pts_reprojected_list.get(j);
+                var expected = i_imgPts.get(j);
+                var error = new Point(measured.x - expected.x, measured.y - expected.y);
+                reprojectionError.add(error);
+            }
+
+            observations.add(new BoardObservation(i_objPts, i_imgPts, reprojectionError));
+        }
+        jac_temp.release();
+         
 
         // Standard deviation of results
-        double stdDev = calculateSD(perViewErrorsArray);
+        double stdDev = 0; // calculateSD(perViewErrorsArray); // TODO!
         try {
             // Print calibration successful
             logger.info(
@@ -131,7 +165,7 @@ public class Calibrate3dPipe
             logger.error("Failed to parse calibration data to json!", e);
         }
         return new CameraCalibrationCoefficients(
-                params.resolution, cameraMatrixMat, distortionCoefficientsMat, perViewErrorsArray, stdDev);
+                params.resolution, cameraMatrixMat, distortionCoefficientsMat, observations, stdDev);
     }
 
     // Calculate standard deviation of the RMS error of the snapshots

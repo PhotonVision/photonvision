@@ -516,7 +516,7 @@ public class VisionModule {
         for (var c : visionSource.getSettables().getConfiguration().calibrations) {
             var internalMap = new HashMap<String, Object>();
 
-            internalMap.put("perViewErrors", c.perViewErrors);
+            internalMap.put("observations", c.observations);
             internalMap.put("standardDeviation", c.standardDeviation);
             internalMap.put("width", c.resolution.width);
             internalMap.put("height", c.resolution.height);
