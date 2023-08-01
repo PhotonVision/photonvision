@@ -61,11 +61,11 @@ const offlineUpdate = ref();
 const openOfflineUpdatePrompt = () => {
   offlineUpdate.value.click();
 };
-const handleOfflineUpdate = (event) => {
+const handleOfflineUpdate = ({ files } : { files: FileList}) => {
   useStateStore().showSnackbarMessage({ message: "New Software Upload in Progress...", color: "secondary", timeout: -1 });
 
   const formData = new FormData();
-  formData.append("jarData", event.target.files[0]);
+  formData.append("jarData", files[0]);
 
   axios.post("/utils/offlineUpdate", formData, {
     headers: { "Content-Type": "multipart/form-data" },

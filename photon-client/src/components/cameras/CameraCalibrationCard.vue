@@ -132,9 +132,9 @@ const importCalibrationFromCalibDB = ref();
 const openCalibUploadPrompt = () => {
   importCalibrationFromCalibDB.value.click();
 };
-const readImportedCalibration = (event) => {
-  event.target.files[0].text().then(text => {
-    useCameraSettingsStore().importCalibDB({ payload: text, filename: event.target.files[0].name })
+const readImportedCalibration = ({ files } : { files: FileList}) => {
+  files[0].text().then(text => {
+    useCameraSettingsStore().importCalibDB({ payload: text, filename: files[0].name })
         .then((response) => {
           useStateStore().showSnackbarMessage({
             message:  response.data.text || response.data,
