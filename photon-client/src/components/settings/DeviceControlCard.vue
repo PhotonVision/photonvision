@@ -14,7 +14,7 @@ const restartProgram = () => {
       })
       .catch(error => {
         // This endpoint always return 204 regardless of outcome
-        if(error.request) {
+        if (error.request) {
           useStateStore().showSnackbarMessage({
             message: "Error while trying to process the request! The backend didn't respond.",
             color: "error"
@@ -26,7 +26,7 @@ const restartProgram = () => {
           });
         }
       });
-  };
+};
 const restartDevice = () => {
   axios.post("/utils/restartDevice")
       .then(() => {
@@ -36,12 +36,12 @@ const restartDevice = () => {
         });
       })
       .catch(error => {
-        if(error.response) {
+        if (error.response) {
           useStateStore().showSnackbarMessage({
             message: "The backend is unable to fulfil the request to restart the device.",
             color: "error"
           });
-        } else if(error.request) {
+        } else if (error.request) {
           useStateStore().showSnackbarMessage({
             message: "Error while trying to process the request! The backend didn't respond.",
             color: "error"
@@ -55,7 +55,7 @@ const restartDevice = () => {
       });
 };
 
-const address = inject<string>("backendAddress");
+const address = inject<string>("backendHost");
 
 const offlineUpdate = ref();
 const openOfflineUpdatePrompt = () => {
@@ -88,17 +88,17 @@ const handleOfflineUpdate = (event) => {
   })
       .then(response => {
         useStateStore().showSnackbarMessage({
-          message:  response.data.text || response.data,
+          message: response.data.text || response.data,
           color: "success"
         });
       })
       .catch(error => {
-        if(error.response) {
+        if (error.response) {
           useStateStore().showSnackbarMessage({
             color: "error",
             message: error.response.data.text || error.response.data
           });
-        } else if(error.request) {
+        } else if (error.request) {
           useStateStore().showSnackbarMessage({
             color: "error",
             message: "Error while trying to process the request! The backend didn't respond."
@@ -128,11 +128,12 @@ enum ImportType {
   HardwareSettings,
   NetworkConfig
 }
+
 const showImportDialog = ref(false);
 const importType = ref<ImportType | number>(-1);
 const importFile = ref(null);
 const handleSettingsImport = () => {
-  if(importType.value === -1 || importFile.value === null) return;
+  if (importType.value === -1 || importFile.value === null) return;
 
   const formData = new FormData();
   formData.append("data", importFile.value);
@@ -158,17 +159,17 @@ const handleSettingsImport = () => {
   })
       .then(response => {
         useStateStore().showSnackbarMessage({
-          message:  response.data.text || response.data,
+          message: response.data.text || response.data,
           color: "success"
         });
       })
       .catch(error => {
-        if(error.response) {
+        if (error.response) {
           useStateStore().showSnackbarMessage({
             color: "error",
             message: error.response.data.text || error.response.data
           });
-        } else if(error.request) {
+        } else if (error.request) {
           useStateStore().showSnackbarMessage({
             color: "error",
             message: "Error while trying to process the request! The backend didn't respond."

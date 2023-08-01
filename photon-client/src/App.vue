@@ -9,7 +9,7 @@ import PhotonLogView from "@/components/app/photon-log-view.vue";
 import PhotonErrorSnackbar from "@/components/app/photon-error-snackbar.vue";
 
 const websocket = new AutoReconnectingWebsocket(
-    `ws://${inject("backendAddress")}/websocket_data`,
+    `ws://${inject("backendHost")}/websocket_data`,
     () => {
       useStateStore().$patch({ backendConnected: true });
     },

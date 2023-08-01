@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, inject } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import loadingImage from "@/assets/images/loading.svg";
@@ -17,7 +17,7 @@ const src = computed<string>(() => {
     return loadingImage;
   }
 
-  return `http://${location.hostname}:${port}/stream.mjpg`;
+  return `http://${inject("backendHostname")}:${port}/stream.mjpg`;
 });
 const alt = computed<string>(() => `${props.streamType} Stream View`);
 

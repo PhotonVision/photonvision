@@ -7,7 +7,7 @@ const selectedLogLevels = ref<LogLevel[]>([LogLevel.ERROR, LogLevel.WARN, LogLev
 
 const logs = computed<LogMessage[]>(() => useStateStore().logMessages.filter(message => selectedLogLevels.value.includes(message.level)));
 
-const backendAddress = inject<string>("backendAddress");
+const backendHost = inject<string>("backendHost");
 
 const getLogColor = (level: LogLevel): string => {
   switch (level) {
@@ -71,7 +71,7 @@ document.addEventListener("keydown", e => {
           <a
             ref="exportLogFile"
             style="color: black; text-decoration: none; display: none"
-            :href="`http://${backendAddress}/api/utils/photonvision-journalctl.txt`"
+            :href="`http://${backendHost}/api/utils/photonvision-journalctl.txt`"
             download="photonvision-journalctl.txt"
             target="_blank"
           />
