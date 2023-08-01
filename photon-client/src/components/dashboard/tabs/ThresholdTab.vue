@@ -83,7 +83,7 @@ const handleStreamClick = (event: MouseEvent) => {
   disableColorPicking();
 };
 
-// Put some default values incase color picking was enabled before the enableColorPicking method is called
+// Put some default values in case color picking was enabled before the enableColorPicking method is called
 let inputShowing = true;
 let outputShowing = false;
 const enableColorPicking = (mode: 1 | 2 | 3) => {
