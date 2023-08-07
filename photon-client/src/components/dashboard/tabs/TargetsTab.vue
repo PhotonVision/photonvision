@@ -93,24 +93,40 @@ import { useStateStore } from "@/stores/StateStore";
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .v-data-table {
-  text-align: center;
-  background-color: transparent !important;
   width: 100%;
   height: 100%;
-  overflow-y: auto;
-}
-
-.v-data-table th {
+  text-align: center;
   background-color: #006492 !important;
-}
 
-.v-data-table th,td {
-  font-size: 1rem !important;
-}
+  th, td {
+    background-color: #006492 !important;
+    font-size: 1rem !important;
+  }
 
-.v-data-table td {
-  font-family: monospace !important;
+  td {
+    font-family: monospace !important;
+  }
+
+  tbody :hover td {
+    background-color: #005281 !important;
+  }
+
+  ::-webkit-scrollbar {
+    width: 0;
+    height: 0.55em;
+    border-radius: 5px;
+  }
+
+  ::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: #ffd843;
+    border-radius: 10px;
+  }
 }
 </style>
