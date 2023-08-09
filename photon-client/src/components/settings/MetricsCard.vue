@@ -29,31 +29,31 @@ const generalMetrics = computed<MetricItem[]>(() => [
 const platformMetrics = computed<MetricItem[]>(() => [
   {
     header: "CPU Temp",
-    value: `${useSettingsStore().metrics.cpuTemp}°C`
+    value: useSettingsStore().metrics.cpuTemp === undefined ? "Unknown" : `${useSettingsStore().metrics.cpuTemp}°C`
   },
   {
     header: "CPU Usage",
-    value: `${useSettingsStore().metrics.cpuUtil}%`
+    value: useSettingsStore().metrics.cpuUtil === undefined ? "Unknown" :`${useSettingsStore().metrics.cpuUtil}%`
   },
   {
     header: "CPU Memory Usage",
-    value: `${useSettingsStore().metrics.ramUtil}MB of ${useSettingsStore().metrics.cpuMem}MB`
+    value: useSettingsStore().metrics.ramUtil === undefined || useSettingsStore().metrics.cpuMem === undefined ? "Unknown" : `${useSettingsStore().metrics.ramUtil || "Unknown"}MB of ${useSettingsStore().metrics.cpuMem}MB`
   },
   {
     header: "GPU Memory Usage",
-    value: `${useSettingsStore().metrics.gpuMemUtil}MB of ${useSettingsStore().metrics.gpuMem}MB`
+    value: useSettingsStore().metrics.gpuMemUtil === undefined || useSettingsStore().metrics.gpuMem === undefined ? "Unknown" : `${useSettingsStore().metrics.gpuMemUtil}MB of ${useSettingsStore().metrics.gpuMem}MB`
   },
   {
     header: "CPU Throttling",
-    value: useSettingsStore().metrics.cpuThr
+    value: useSettingsStore().metrics.cpuThr || "Unknown"
   },
   {
     header: "CPU Uptime",
-    value: useSettingsStore().metrics.cpuUptime
+    value: useSettingsStore().metrics.cpuUptime || "Unknown"
   },
   {
     header: "Disk Usage",
-    value: useSettingsStore().metrics.diskUtilPct
+    value: useSettingsStore().metrics.diskUtilPct || "Unknown"
   }
 ]);
 
