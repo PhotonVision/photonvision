@@ -82,19 +82,22 @@ const fpsTooLow = computed<boolean>(() => {
       </div>
     </v-card-title>
     <div
-      style="display: flex; flex-direction: column; gap: 12px; align-items: center"
-      class="pb-4"
+      class="stream-container pb-4"
     >
-      <photon-camera-stream
-        v-show="value.includes(0)"
-        stream-type="Raw"
-        style="max-width: 100%"
-      />
-      <photon-camera-stream
-        v-show="value.includes(1)"
-        stream-type="Processed"
-        style="max-width: 100%"
-      />
+      <div class="stream">
+        <photon-camera-stream
+          v-show="value.includes(0)"
+          stream-type="Raw"
+          style="max-width: 100%"
+        />
+      </div>
+      <div class="stream">
+        <photon-camera-stream
+          v-show="value.includes(1)"
+          stream-type="Processed"
+          style="max-width: 100%"
+        />
+      </div>
     </div>
     <v-divider />
     <div class="pt-4">
@@ -142,5 +145,28 @@ const fpsTooLow = computed<boolean>(() => {
 th {
   width: 80px;
   text-align: center;
+}
+
+.stream-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.stream {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+@media only screen and (min-width: 512px) and (max-width: 960px) {
+  .stream-container {
+    flex-wrap: nowrap;
+  }
+
+  .stream {
+    width: 50%;
+  }
 }
 </style>
