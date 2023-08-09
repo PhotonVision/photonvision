@@ -96,7 +96,7 @@ onBeforeMount(() => {
         @click="fetchMetrics"
       />
     </v-card-title>
-    <v-row class="row pa-4 ma-0 ml-5 pb-1">
+    <v-row class="pt-2 pa-4 ma-0 ml-5 pb-1">
       <v-card-subtitle
         class="ma-0 pa-0 pb-2"
         style="font-size: 16px"
