@@ -446,6 +446,11 @@ public class SqlConfigProvider extends ConfigProvider {
         return saveOneFile(TableKeys.NETWORK_CONFIG, uploadPath);
     }
 
+    @Override
+    public boolean saveUploadedAprilTagFieldLayout(Path uploadPath) {
+        return saveOneFile(TableKeys.ATFL_CONFIG_FILE, uploadPath);
+    }
+
     private HashMap<String, CameraConfiguration> loadCameraConfigs(Connection conn) {
         HashMap<String, CameraConfiguration> loadedConfigurations = new HashMap<>();
 

@@ -437,6 +437,10 @@ class LegacyConfigProvider extends ConfigProvider {
         return this.networkConfigFile.toPath();
     }
 
+    public Path getAprilTagFieldLayoutFile() {
+        return this.apriltagFieldLayoutFile.toPath();
+    }
+
     @Override
     public boolean saveUploadedHardwareConfig(Path uploadPath) {
         return FileUtils.replaceFile(uploadPath, this.getHardwareConfigFile());
@@ -450,6 +454,11 @@ class LegacyConfigProvider extends ConfigProvider {
     @Override
     public boolean saveUploadedNetworkConfig(Path uploadPath) {
         return FileUtils.replaceFile(uploadPath, this.getNetworkConfigFile());
+    }
+
+    @Override
+    public boolean saveUploadedAprilTagFieldLayout(Path uploadPath) {
+        return FileUtils.replaceFile(uploadPath, this.getAprilTagFieldLayoutFile());
     }
 
     public void requestSave() {
