@@ -47,28 +47,29 @@ const fpsTooLow = computed<boolean>(() => {
       class="pb-0 mb-2 pl-4 pt-1"
       style="min-height: 50px; justify-content: space-between; align-content: center"
     >
-      <div class="pt-2">
-        <span class="mr-4">Cameras</span>
-        <v-chip
-          label
-          :color="fpsTooLow ? 'error' : 'transparent'"
-          :text-color="fpsTooLow ? '#C7EA46' : '#ff4d00'"
-          style="font-size: 1rem; padding: 0; margin: 0"
-        >
-          <span class="pr-1">
-            Processing @ {{ Math.round(useStateStore().pipelineResults?.fps || 0) }}&nbsp;FPS &ndash;
+      <div style="display: flex; flex-wrap: wrap">
+        <div>
+          <span
+            class="mr-4"
+            style="white-space: nowrap"
+          >
+            Cameras
           </span>
-          <span v-if="fpsTooLow && !useCameraSettingsStore().currentPipelineSettings.inputShouldShow && useCameraSettingsStore().currentPipelineSettings.pipelineType === PipelineType.Reflective">
-            HSV thresholds are too broad; narrow them for better performance
-          </span>
-          <span v-else-if="fpsTooLow && useCameraSettingsStore().currentPipelineSettings.inputShouldShow">
-            stop viewing the raw stream for better performance
-          </span>
-          <span v-else>
-            {{ Math.min(Math.round(useStateStore().pipelineResults?.latency || 0), 9999) }} ms latency
-          </span>
-        </v-chip>
+        </div>
+        <div>
+          <v-chip
+            label
+            :color="fpsTooLow ? 'error' : 'transparent'"
+            :text-color="fpsTooLow ? '#C7EA46' : '#ff4d00'"
+            style="font-size: 1rem; padding: 0; margin: 0;"
+          >
+            <span class="pr-1">
+              {{ Math.round(useStateStore().pipelineResults?.fps || 0) }}&nbsp;FPS &ndash; {{ Math.min(Math.round(useStateStore().pipelineResults?.latency || 0), 9999) }} ms latency
+            </span>
+          </v-chip>
+        </div>
       </div>
+
       <div>
         <v-switch
           v-model="driverMode"
@@ -96,7 +97,7 @@ const fpsTooLow = computed<boolean>(() => {
       />
     </div>
     <v-divider />
-    <div class="pt-2">
+    <div class="pt-4">
       <p style="color: white;">
         Stream Display
       </p>
