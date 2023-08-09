@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
-import { computed, onBeforeMount } from "vue";
+import { computed, onBeforeMount, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import CvIcon from "@/components/common/cv-icon.vue";
 
@@ -57,6 +57,7 @@ const platformMetrics = computed<MetricItem[]>(() => [
   }
 ]);
 
+const metricsLastFetched = ref("Never");
 const fetchMetrics = () => {
   useSettingsStore()
       .requestMetricsUpdate()
@@ -72,6 +73,14 @@ const fetchMetrics = () => {
             message: "An error occurred while trying to fetch Metrics."
           });
         }
+      })
+      .finally(() => {
+        const pad = (num: number): string => {
+          return String(num).padStart(2, "0");
+        };
+
+        const date = new Date();
+        metricsLastFetched.value = `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
       });
 };
 
@@ -161,6 +170,9 @@ onBeforeMount(() => {
         </tbody>
       </v-simple-table>
     </v-row>
+    <div style="text-align: right">
+      <span>Last Fetched: {{ metricsLastFetched }}</span>
+    </div>
   </v-card>
 </template>
 
