@@ -75,20 +75,19 @@ public class AprilTagTest {
         // these numbers are not *accurate*, but they are known and expected
         var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
         Assertions.assertEquals(2, pose.getTranslation().getX(), 0.2);
-        Assertions.assertEquals(0.0, pose.getTranslation().getY(), 0.2);
+        Assertions.assertEquals(0.1, pose.getTranslation().getY(), 0.2);
         Assertions.assertEquals(0.0, pose.getTranslation().getZ(), 0.2);
 
-        var objX = new Translation3d(1, 0, 0).rotateBy(pose.getRotation()).getY();
-        var objY = new Translation3d(0, 1, 0).rotateBy(pose.getRotation()).getZ();
-        var objZ = new Translation3d(0, 0, 1).rotateBy(pose.getRotation()).getX();
+        // We expect the object axes to be in NWU, with the x-axis coming out of the tag
+        // This visible tag is facing the camera almost parallel, so in world space:
 
-        // We expect the object X to be forward, or -X in world space
+        // The object's X axis should be (-1, 0, 0)
         Assertions.assertEquals(
                 -1, new Translation3d(1, 0, 0).rotateBy(pose.getRotation()).getX(), 0.1);
-        // We expect the object Y axis to be right, or negative-Y in world space
+        // The object's Y axis should be (0, -1, 0)
         Assertions.assertEquals(
                 -1, new Translation3d(0, 1, 0).rotateBy(pose.getRotation()).getY(), 0.1);
-        // We expect the object Z axis to be up, or +Z in world space
+        // The object's Z axis should be (0, 0, 1)
         Assertions.assertEquals(1, new Translation3d(0, 0, 1).rotateBy(pose.getRotation()).getZ(), 0.1);
     }
 

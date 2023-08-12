@@ -18,7 +18,6 @@
 package org.photonvision.vision.pipe.impl;
 
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -27,7 +26,6 @@ import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint2f;
-import org.opencv.core.Scalar;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
@@ -99,31 +97,9 @@ public class SolvePNPPipe
                         VecBuilder.fill(rVec.get(0, 0)[0], rVec.get(1, 0)[0], rVec.get(2, 0)[0]),
                         Core.norm(rVec));
 
-        Pose3d targetPose = MathUtils.convertOpenCVtoPhotonPose(new Transform3d(translation, rotation));
-        target.setBestCameraToTarget3d(
-                new Transform3d(targetPose.getTranslation(), targetPose.getRotation()));
+        Transform3d camToTarget = MathUtils.convertOpenCVtoPhotonTransform(new Transform3d(translation, rotation));
+        target.setBestCameraToTarget3d(camToTarget);
         target.setAltCameraToTarget3d(new Transform3d());
-    }
-
-    Mat rotationMatrix = new Mat();
-    Mat inverseRotationMatrix = new Mat();
-    Mat pzeroWorld = new Mat();
-    Mat kMat = new Mat();
-    Mat scaledTvec;
-
-    /**
-     * Element-wise scale a matrix by a given factor
-     *
-     * @param src the source matrix
-     * @param factor by how much to scale each element
-     * @return the scaled matrix
-     */
-    @SuppressWarnings("SameParameterValue")
-    private static Mat matScale(Mat src, double factor) {
-        Mat dst = new Mat(src.rows(), src.cols(), src.type());
-        Scalar s = new Scalar(factor);
-        Core.multiply(src, s, dst);
-        return dst;
     }
 
     public static class SolvePNPPipeParams {
