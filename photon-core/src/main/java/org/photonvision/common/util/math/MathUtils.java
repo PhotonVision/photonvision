@@ -17,6 +17,7 @@
 
 package org.photonvision.common.util.math;
 
+import edu.wpi.first.apriltag.AprilTagPoseEstimate;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.CoordinateSystem;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -27,7 +28,6 @@ import edu.wpi.first.util.WPIUtilJNI;
 import java.util.Arrays;
 import java.util.List;
 import org.opencv.core.Mat;
-import edu.wpi.first.apriltag.AprilTagPoseEstimate;
 
 public class MathUtils {
     MathUtils() {}
@@ -142,22 +142,20 @@ public class MathUtils {
     /**
      * OpenCV uses the EDN coordinate system, but WPILib uses NWU. Converts a camera-to-target
      * transformation from EDN to NWU.
-     * 
-     * <p>Note: The detected target's rvec and tvec perform a rotation-translation transformation which 
-     * converts points in the target's coordinate system to the camera's. This means applying 
-     * the transformation to the target point (0,0,0) for example would give the target's center 
-     * relative to the camera. Conveniently, if we make a translation-rotation transformation out
-     * of these components instead, we get the transformation from the camera to the target.</p>
-     * 
+     *
+     * <p>Note: The detected target's rvec and tvec perform a rotation-translation transformation
+     * which converts points in the target's coordinate system to the camera's. This means applying
+     * the transformation to the target point (0,0,0) for example would give the target's center
+     * relative to the camera. Conveniently, if we make a translation-rotation transformation out of
+     * these components instead, we get the transformation from the camera to the target.
+     *
      * @param cameraToTarget3d A camera-to-target Transform3d in EDN.
      * @return A camera-to-target Transform3d in NWU.
      */
     public static Transform3d convertOpenCVtoPhotonTransform(Transform3d cameraToTarget3d) {
         // TODO: Refactor into new pipe?
         return CoordinateSystem.convert(
-                cameraToTarget3d,
-                CoordinateSystem.EDN(),
-                CoordinateSystem.NWU());
+                cameraToTarget3d, CoordinateSystem.EDN(), CoordinateSystem.NWU());
     }
 
     /*
@@ -166,7 +164,7 @@ public class MathUtils {
      * center out the camera lens. The x-axis is to the right in the image taken by the camera, and
      * y is down. The tag's coordinate frame is centered at the center of the tag, with x-axis to the
      * right, y-axis down, and z-axis into the tag."
-     * 
+     *
      * This means our detected transformation will be in EDN. Our subsequent uses of the transformation,
      * however, assume the tag's z-axis point away from the tag instead of into it. This means we
      * have to correct the transformation's rotation.
@@ -175,12 +173,12 @@ public class MathUtils {
             new Rotation3d(VecBuilder.fill(0, 1, 0), Units.degreesToRadians(180));
 
     /**
-     * AprilTag returns a camera-to-tag transform in EDN, but the tag's z-axis points into
-     * the tag instead of away from it and towards the camera. This means we have to correct
-     * the transformation's rotation.
-     * 
-     * @param pose The Transform3d with translation and rotation directly from the
-     *     {@link AprilTagPoseEstimate}.
+     * AprilTag returns a camera-to-tag transform in EDN, but the tag's z-axis points into the tag
+     * instead of away from it and towards the camera. This means we have to correct the
+     * transformation's rotation.
+     *
+     * @param pose The Transform3d with translation and rotation directly from the {@link
+     *     AprilTagPoseEstimate}.
      */
     public static Transform3d convertApriltagtoOpenCV(Transform3d pose) {
         var ocvRotation = APRILTAG_BASE_ROTATION.rotateBy(pose.getRotation());

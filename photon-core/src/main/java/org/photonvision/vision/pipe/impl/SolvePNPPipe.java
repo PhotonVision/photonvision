@@ -97,7 +97,8 @@ public class SolvePNPPipe
                         VecBuilder.fill(rVec.get(0, 0)[0], rVec.get(1, 0)[0], rVec.get(2, 0)[0]),
                         Core.norm(rVec));
 
-        Transform3d camToTarget = MathUtils.convertOpenCVtoPhotonTransform(new Transform3d(translation, rotation));
+        Transform3d camToTarget =
+                MathUtils.convertOpenCVtoPhotonTransform(new Transform3d(translation, rotation));
         target.setBestCameraToTarget3d(camToTarget);
         target.setAltCameraToTarget3d(new Transform3d());
     }

@@ -182,7 +182,7 @@ public class Draw3dTargetsPipe
                         axisPoints.get(1),
                         ColorHelper.colorToScalar(Color.RED),
                         3);
-                
+
                 // box edges perpendicular to tag
                 for (int i = 0; i < bottomPoints.size(); i++) {
                     Imgproc.line(
