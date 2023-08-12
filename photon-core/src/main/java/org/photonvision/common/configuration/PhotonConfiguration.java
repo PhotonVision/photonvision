@@ -31,7 +31,6 @@ import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.processes.VisionSource;
 
-// TODO rename this class
 public class PhotonConfiguration {
     private HardwareConfig hardwareConfig;
     private HardwareSettings hardwareSettings;
@@ -127,6 +126,9 @@ public class PhotonConfiguration {
         settingsSubmap.put("general", generalSubmap);
 
         map.put("settings", settingsSubmap);
+
+        map.put("atfl", this.atfl);
+
         return map;
     }
 
