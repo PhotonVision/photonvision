@@ -526,7 +526,7 @@ const endCalibration = () => {
     background-color: #006492 !important;
     font-size: 1rem !important;
   }
-  
+
   tbody :hover td {
     background-color: #005281 !important;
   }
