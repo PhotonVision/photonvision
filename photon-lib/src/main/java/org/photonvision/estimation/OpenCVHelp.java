@@ -69,16 +69,14 @@ public final class OpenCVHelp {
             throw new RuntimeException("Failed to load native libraries!", e);
         }
 
-        NWU_TO_EDN = new RotTrlTransform3d(new Rotation3d(Matrix.mat(Nat.N3(), Nat.N3()).fill(
-            0, -1, 0,
-            0, 0, -1,
-            1, 0, 0
-        )), new Translation3d());
-        EDN_TO_NWU = new RotTrlTransform3d(new Rotation3d(Matrix.mat(Nat.N3(), Nat.N3()).fill(
-            0, 0, 1,
-            -1, 0, 0,
-            0, -1, 0
-        )), new Translation3d());
+        NWU_TO_EDN =
+                new RotTrlTransform3d(
+                        new Rotation3d(Matrix.mat(Nat.N3(), Nat.N3()).fill(0, -1, 0, 0, 0, -1, 1, 0, 0)),
+                        new Translation3d());
+        EDN_TO_NWU =
+                new RotTrlTransform3d(
+                        new Rotation3d(Matrix.mat(Nat.N3(), Nat.N3()).fill(0, 0, 1, -1, 0, 0, 0, -1, 0)),
+                        new Translation3d());
     }
 
     public static MatOfDouble matrixToMat(SimpleMatrix matrix) {
@@ -107,8 +105,7 @@ public final class OpenCVHelp {
     public static MatOfPoint3f translationToTvec(Translation3d... translations) {
         Point3[] points = new Point3[translations.length];
         for (int i = 0; i < translations.length; i++) {
-            var trl =
-                    translationNWUtoEDN(translations[i]);
+            var trl = translationNWUtoEDN(translations[i]);
             points[i] = new Point3(trl.getX(), trl.getY(), trl.getZ());
         }
         return new MatOfPoint3f(points);
@@ -126,9 +123,7 @@ public final class OpenCVHelp {
         tvecInput.convertTo(wrapped, CvType.CV_32F);
         wrapped.get(0, 0, data);
         wrapped.release();
-        return translationEDNtoNWU(
-                new Translation3d(data[0], data[1], data[2])
-        );
+        return translationEDNtoNWU(new Translation3d(data[0], data[1], data[2]));
     }
 
     /**
@@ -234,34 +229,36 @@ public final class OpenCVHelp {
         return reordered;
     }
 
-    //TODO: RotTrlTransform3d removal awaiting Rotation3d performance improvements
+    // TODO: RotTrlTransform3d removal awaiting Rotation3d performance improvements
     /**
-     * Convert a rotation delta from EDN to NWU. For example, if you have a rotation X,Y,Z {1, 0, 0} in EDN,
-     * this would be {0, -1, 0} in NWU.
+     * Convert a rotation delta from EDN to NWU. For example, if you have a rotation X,Y,Z {1, 0, 0}
+     * in EDN, this would be {0, -1, 0} in NWU.
      */
     private static Rotation3d rotationEDNtoNWU(Rotation3d rot) {
-        return new RotTrlTransform3d(EDN_TO_NWU.apply(rot), new Translation3d()).apply(EDN_TO_NWU.inverse().getRotation());
+        return new RotTrlTransform3d(EDN_TO_NWU.apply(rot), new Translation3d())
+                .apply(EDN_TO_NWU.inverse().getRotation());
     }
 
     /**
-     * Convert a rotation delta from NWU to EDN. For example, if you have a rotation X,Y,Z {1, 0, 0} in NWU,
-     * this would be {0, 0, 1} in EDN.
+     * Convert a rotation delta from NWU to EDN. For example, if you have a rotation X,Y,Z {1, 0, 0}
+     * in NWU, this would be {0, 0, 1} in EDN.
      */
     private static Rotation3d rotationNWUtoEDN(Rotation3d rot) {
-        return new RotTrlTransform3d(NWU_TO_EDN.apply(rot), new Translation3d()).apply(NWU_TO_EDN.inverse().getRotation());
+        return new RotTrlTransform3d(NWU_TO_EDN.apply(rot), new Translation3d())
+                .apply(NWU_TO_EDN.inverse().getRotation());
     }
 
     /**
-     * Convert a translation from EDN to NWU. For example, if you have a translation X,Y,Z {1, 0, 0} in EDN,
-     * this would be {0, -1, 0} in NWU.
+     * Convert a translation from EDN to NWU. For example, if you have a translation X,Y,Z {1, 0, 0}
+     * in EDN, this would be {0, -1, 0} in NWU.
      */
     private static Translation3d translationEDNtoNWU(Translation3d trl) {
         return EDN_TO_NWU.apply(trl);
     }
 
     /**
-     * Convert a translation from NWU to EDN. For example, if you have a translation X,Y,Z {1, 0, 0} in NWU,
-     * this would be {0, 0, 1} in EDN.
+     * Convert a translation from NWU to EDN. For example, if you have a translation X,Y,Z {1, 0, 0}
+     * in NWU, this would be {0, 0, 1} in EDN.
      */
     private static Translation3d translationNWUtoEDN(Translation3d trl) {
         return NWU_TO_EDN.apply(trl);
@@ -273,8 +270,8 @@ public final class OpenCVHelp {
      *
      * @param cameraMatrix the camera intrinsics matrix in standard opencv form
      * @param distCoeffs the camera distortion matrix in standard opencv form
-     * @param camRt The change in basis from world coordinates to camera coordinates. See
-     *     {@link RotTrlTransform3d#makeRelativeTo(Pose3d)}.
+     * @param camRt The change in basis from world coordinates to camera coordinates. See {@link
+     *     RotTrlTransform3d#makeRelativeTo(Pose3d)}.
      * @param objectTranslations The 3d points to be projected
      * @return The 2d points in pixels which correspond to the image of the 3d points on the camera
      */
@@ -371,6 +368,7 @@ public final class OpenCVHelp {
 
     /**
      * Gets the convex hull contour (the outline) of a list of points.
+     *
      * @param corners
      * @return The subset of points defining the contour
      */

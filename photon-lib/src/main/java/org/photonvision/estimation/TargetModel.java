@@ -48,8 +48,9 @@ public class TargetModel {
             new TargetModel(Units.inchesToMeters(6), Units.inchesToMeters(6));
 
     /**
-     * Creates a rectangular, planar target model given the width and height.
-     * The model has four vertices:
+     * Creates a rectangular, planar target model given the width and height. The model has four
+     * vertices:
+     *
      * <ul>
      *   <li>Point 0: [0, -width/2, -height/2]
      *   <li>Point 1: [0, width/2, -height/2]
@@ -70,18 +71,19 @@ public class TargetModel {
     }
 
     /**
-     * Creates a spherical target model which has similar dimensions regardless of its rotation.
-     * This model has four vertices:
+     * Creates a spherical target model which has similar dimensions regardless of its rotation. This
+     * model has four vertices:
+     *
      * <ul>
      *   <li>Point 0: [0, -radius, -radius]
      *   <li>Point 1: [0, radius, -radius]
      *   <li>Point 2: [0, radius, radius]
      *   <li>Point 3: [0, -radius, radius]
      * </ul>
-     * 
-     * <i>Q: Why these vertices?</i> A: This target should be oriented to the camera every frame,
-     * much like a sprite/decal, and these vertices represent the corners of the rectangle in which
-     * the ellipse is inscribed.
+     *
+     * <i>Q: Why these vertices?</i> A: This target should be oriented to the camera every frame, much
+     * like a sprite/decal, and these vertices represent the corners of the rectangle in which the
+     * ellipse is inscribed.
      */
     public TargetModel(double diameterMeters) {
         double radius = diameterMeters / 2.0;
@@ -97,8 +99,8 @@ public class TargetModel {
 
     /**
      * Creates a target model from arbitrary 3d vertices. Automatically determines if the given
-     * vertices are planar(x == 0). More than 2 vertices must be given. If this is a planar
-     * model, the vertices should define a non-intersecting contour.
+     * vertices are planar(x == 0). More than 2 vertices must be given. If this is a planar model, the
+     * vertices should define a non-intersecting contour.
      *
      * @param vertices Translations representing the vertices of this target model relative to its
      *     pose.
@@ -121,32 +123,30 @@ public class TargetModel {
     /**
      * This target's vertices offset from its field pose.
      *
-     * <p>Note: If this target is spherical, use {@link #getOrientedPose(Translation3d, Translation3d)}
-     * with this method.
+     * <p>Note: If this target is spherical, use {@link #getOrientedPose(Translation3d,
+     * Translation3d)} with this method.
      */
     public List<Translation3d> getFieldVertices(Pose3d targetPose) {
         var basisChange = new RotTrlTransform3d(targetPose.getRotation(), targetPose.getTranslation());
-        return vertices.stream()
-                .map(t -> basisChange.apply(t))
-                .collect(Collectors.toList());
+        return vertices.stream().map(t -> basisChange.apply(t)).collect(Collectors.toList());
     }
 
     /**
      * Returns a Pose3d with the given target translation oriented (with its relative x-axis aligned)
-     * to the camera translation. This is used for spherical targets which should not have their projection
-     * change regardless of their own rotation.
-     * 
+     * to the camera translation. This is used for spherical targets which should not have their
+     * projection change regardless of their own rotation.
+     *
      * @param tgtTrl This target's translation
      * @param cameraTrl Camera's translation
      * @return This target's pose oriented to the camera
      */
     public Pose3d getOrientedPose(Translation3d tgtTrl, Translation3d cameraTrl) {
         var relCam = cameraTrl.minus(tgtTrl);
-        var orientToCam = new Rotation3d(
-            0,
-            new Rotation2d(Math.hypot(relCam.getX(), relCam.getY()), -relCam.getZ()).getRadians(),
-            new Rotation2d(relCam.getX(), relCam.getY()).getRadians()
-        );
+        var orientToCam =
+                new Rotation3d(
+                        0,
+                        new Rotation2d(Math.hypot(relCam.getX(), relCam.getY()), -relCam.getZ()).getRadians(),
+                        new Rotation2d(relCam.getX(), relCam.getY()).getRadians());
         return new Pose3d(tgtTrl, orientToCam);
     }
 

@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 public class RotTrlTransform3d {
     private final Translation3d trl;
     private final Rotation3d rot;
-    //TODO: removal awaiting wpilib Rotation3d performance improvements
+    // TODO: removal awaiting wpilib Rotation3d performance improvements
     private double m_w;
     private double m_x;
     private double m_y;
@@ -47,8 +47,8 @@ public class RotTrlTransform3d {
     /**
      * A rotation-translation transformation.
      *
-     * <p>Applying this RotTrlTransform3d to poses will preserve their current origin-to-pose transform
-     * as if the origin was transformed by these components instead.
+     * <p>Applying this RotTrlTransform3d to poses will preserve their current origin-to-pose
+     * transform as if the origin was transformed by these components instead.
      *
      * @param rot The rotation component
      * @param trl The translation component
@@ -79,8 +79,8 @@ public class RotTrlTransform3d {
     /**
      * Creates a rotation-translation transformation from a Transform3d.
      *
-     * <p>Applying this RotTrlTransform3d to poses will preserve their current origin-to-pose transform
-     * as if the origin was transformed by trf instead.
+     * <p>Applying this RotTrlTransform3d to poses will preserve their current origin-to-pose
+     * transform as if the origin was transformed by trf instead.
      *
      * @param trf The origin transformation
      */
@@ -177,7 +177,8 @@ public class RotTrlTransform3d {
     }
 
     public Pose3d apply(Pose3d pose) {
-        // return new Pose3d(pose.getTranslation().rotateBy(rot).plus(trl), pose.getRotation().plus(rot));
+        // return new Pose3d(pose.getTranslation().rotateBy(rot).plus(trl),
+        // pose.getRotation().plus(rot));
         return new Pose3d(apply(pose.getTranslation()), apply(pose.getRotation()));
     }
 
@@ -185,7 +186,7 @@ public class RotTrlTransform3d {
         return poses.stream().map(this::apply).collect(Collectors.toList());
     }
 
-    //TODO: removal awaiting wpilib Rotation3d performance improvements
+    // TODO: removal awaiting wpilib Rotation3d performance improvements
     private Quaternion times(Quaternion other) {
         final double o_w = other.getW();
         final double o_x = other.getX();
@@ -206,10 +207,17 @@ public class RotTrlTransform3d {
         return times(m_w, m_x, m_y, m_z, o_w, o_x, o_y, o_z);
     }
 
-    private static Quaternion times(double m_w, double m_x, double m_y, double m_z,
-            double o_w, double o_x, double o_y, double o_z) {
+    private static Quaternion times(
+            double m_w,
+            double m_x,
+            double m_y,
+            double m_z,
+            double o_w,
+            double o_x,
+            double o_y,
+            double o_z) {
         // https://en.wikipedia.org/wiki/Quaternion#Scalar_and_vector_parts
-    
+
         // v₁ x v₂
         final double cross_x = m_y * o_z - o_y * m_z;
         final double cross_y = o_x * m_z - m_x * o_z;
@@ -220,6 +228,6 @@ public class RotTrlTransform3d {
         final double new_y = o_y * m_w + (m_y * o_w) + cross_y;
         final double new_z = o_z * m_w + (m_z * o_w) + cross_z;
 
-        return new Quaternion(m_w * o_w - (m_x*o_x + m_y*o_y + m_z*o_z), new_x, new_y, new_z);
+        return new Quaternion(m_w * o_w - (m_x * o_x + m_y * o_y + m_z * o_z), new_x, new_y, new_z);
     }
 }

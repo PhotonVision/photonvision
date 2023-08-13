@@ -180,7 +180,8 @@ public class OpenCVTest {
         var actualRelation = new CameraTargetRelation(cameraPose, target.getPose());
         assertEquals(
                 actualRelation.camToTargPitch.getDegrees(),
-                pitchDiff.getDegrees() * Math.cos(yaw2d.getRadians()), // adjust for unaccounted perpsective distortion
+                pitchDiff.getDegrees()
+                        * Math.cos(yaw2d.getRadians()), // adjust for unaccounted perpsective distortion
                 kRotDeltaDeg,
                 "2d pitch doesn't match 3d");
         assertEquals(
@@ -208,7 +209,7 @@ public class OpenCVTest {
         var pnpSim =
                 OpenCVHelp.solvePNP_SQUARE(
                         prop.getIntrinsics(), prop.getDistCoeffs(), target.getModel().vertices, targetCorners);
-        
+
         // check solvePNP estimation accuracy
         assertSame(relTarget.getRotation(), pnpSim.best.getRotation());
         assertSame(relTarget.getTranslation(), pnpSim.best.getTranslation());

@@ -154,9 +154,9 @@ public class VisionSystemSim {
     }
 
     /**
-     * Get a simulated camera's position on the field. If the requested camera is invalid, an
-     * empty optional is returned.
-     * 
+     * Get a simulated camera's position on the field. If the requested camera is invalid, an empty
+     * optional is returned.
+     *
      * @param cameraSim The specific camera to get the field pose of
      * @return The pose of this camera, or an empty optional if it is invalid
      */
@@ -165,16 +165,16 @@ public class VisionSystemSim {
     }
 
     /**
-     * Get a simulated camera's position on the field. If the requested camera is invalid, an
-     * empty optional is returned.
-     * 
+     * Get a simulated camera's position on the field. If the requested camera is invalid, an empty
+     * optional is returned.
+     *
      * @param cameraSim The specific camera to get the field pose of
      * @param timeSeconds Timestamp in seconds of when the pose should be observed
      * @return The pose of this camera, or an empty optional if it is invalid
      */
     public Optional<Pose3d> getCameraPose(PhotonCameraSim cameraSim, double timeSeconds) {
         var robotToCamera = getRobotToCamera(cameraSim, timeSeconds);
-        if(robotToCamera.isEmpty()) return Optional.empty();
+        if (robotToCamera.isEmpty()) return Optional.empty();
         return Optional.of(getRobotPose(timeSeconds).plus(robotToCamera.get()));
     }
 
@@ -244,8 +244,8 @@ public class VisionSystemSim {
      * the subset of these targets which are visible from the given camera position.
      *
      * <p>The AprilTags from this layout will be added as vision targets under the type "apriltag".
-     * The poses added preserve the tag layout's current alliance origin. If the tag layout's
-     * alliance origin is changed, these added tags will have to be cleared and re-added.
+     * The poses added preserve the tag layout's current alliance origin. If the tag layout's alliance
+     * origin is changed, these added tags will have to be cleared and re-added.
      *
      * @param tagLayout The field tag layout to get Apriltag poses and IDs from
      */
