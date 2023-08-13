@@ -28,7 +28,6 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.Num;
 import edu.wpi.first.math.Vector;
-import edu.wpi.first.math.geometry.CoordinateSystem;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -56,6 +55,10 @@ import org.opencv.imgproc.Imgproc;
 import org.photonvision.targeting.TargetCorner;
 
 public final class OpenCVHelp {
+
+    private static RotTrlTransform3d NWU_TO_EDN;
+    private static RotTrlTransform3d EDN_TO_NWU;
+
     static {
         try {
             var loader =
@@ -65,6 +68,17 @@ public final class OpenCVHelp {
         } catch (Exception e) {
             throw new RuntimeException("Failed to load native libraries!", e);
         }
+
+        NWU_TO_EDN = new RotTrlTransform3d(new Rotation3d(Matrix.mat(Nat.N3(), Nat.N3()).fill(
+            0, -1, 0,
+            0, 0, -1,
+            1, 0, 0
+        )), new Translation3d());
+        EDN_TO_NWU = new RotTrlTransform3d(new Rotation3d(Matrix.mat(Nat.N3(), Nat.N3()).fill(
+            0, 0, 1,
+            -1, 0, 0,
+            0, -1, 0
+        )), new Translation3d());
     }
 
     public static MatOfDouble matrixToMat(SimpleMatrix matrix) {
@@ -94,7 +108,7 @@ public final class OpenCVHelp {
         Point3[] points = new Point3[translations.length];
         for (int i = 0; i < translations.length; i++) {
             var trl =
-                    CoordinateSystem.convert(translations[i], CoordinateSystem.NWU(), CoordinateSystem.EDN());
+                    translationNWUtoEDN(translations[i]);
             points[i] = new Point3(trl.getX(), trl.getY(), trl.getZ());
         }
         return new MatOfPoint3f(points);
@@ -112,10 +126,9 @@ public final class OpenCVHelp {
         tvecInput.convertTo(wrapped, CvType.CV_32F);
         wrapped.get(0, 0, data);
         wrapped.release();
-        return CoordinateSystem.convert(
-                new Translation3d(data[0], data[1], data[2]),
-                CoordinateSystem.EDN(),
-                CoordinateSystem.NWU());
+        return translationEDNtoNWU(
+                new Translation3d(data[0], data[1], data[2])
+        );
     }
 
     /**
@@ -221,24 +234,37 @@ public final class OpenCVHelp {
         return reordered;
     }
 
+    //TODO: RotTrlTransform3d removal awaiting Rotation3d performance improvements
     /**
-     * Convert a rotation from EDN to NWU. For example, if you have a rotation X,Y,Z {1, 0, 0} in EDN,
-     * this would be XYZ {0, -1, 0} in NWU.
+     * Convert a rotation delta from EDN to NWU. For example, if you have a rotation X,Y,Z {1, 0, 0} in EDN,
+     * this would be {0, -1, 0} in NWU.
      */
     private static Rotation3d rotationEDNtoNWU(Rotation3d rot) {
-        return CoordinateSystem.convert(
-                        new Rotation3d(), CoordinateSystem.NWU(), CoordinateSystem.EDN())
-                .plus(CoordinateSystem.convert(rot, CoordinateSystem.EDN(), CoordinateSystem.NWU()));
+        return new RotTrlTransform3d(EDN_TO_NWU.apply(rot), new Translation3d()).apply(EDN_TO_NWU.inverse().getRotation());
     }
 
     /**
-     * Convert a rotation from EDN to NWU. For example, if you have a rotation X,Y,Z {1, 0, 0} in EDN,
-     * this would be XYZ {0, -1, 0} in NWU.
+     * Convert a rotation delta from NWU to EDN. For example, if you have a rotation X,Y,Z {1, 0, 0} in NWU,
+     * this would be {0, 0, 1} in EDN.
      */
     private static Rotation3d rotationNWUtoEDN(Rotation3d rot) {
-        return CoordinateSystem.convert(
-                        new Rotation3d(), CoordinateSystem.EDN(), CoordinateSystem.NWU())
-                .plus(CoordinateSystem.convert(rot, CoordinateSystem.NWU(), CoordinateSystem.EDN()));
+        return new RotTrlTransform3d(NWU_TO_EDN.apply(rot), new Translation3d()).apply(NWU_TO_EDN.inverse().getRotation());
+    }
+
+    /**
+     * Convert a translation from EDN to NWU. For example, if you have a translation X,Y,Z {1, 0, 0} in EDN,
+     * this would be {0, -1, 0} in NWU.
+     */
+    private static Translation3d translationEDNtoNWU(Translation3d trl) {
+        return EDN_TO_NWU.apply(trl);
+    }
+
+    /**
+     * Convert a translation from NWU to EDN. For example, if you have a translation X,Y,Z {1, 0, 0} in NWU,
+     * this would be {0, 0, 1} in EDN.
+     */
+    private static Translation3d translationNWUtoEDN(Translation3d trl) {
+        return NWU_TO_EDN.apply(trl);
     }
 
     /**
@@ -247,21 +273,21 @@ public final class OpenCVHelp {
      *
      * @param cameraMatrix the camera intrinsics matrix in standard opencv form
      * @param distCoeffs the camera distortion matrix in standard opencv form
-     * @param camPose The current camera pose in the 3d world
+     * @param camRt The change in basis from world coordinates to camera coordinates. See
+     *     {@link RotTrlTransform3d#makeRelativeTo(Pose3d)}.
      * @param objectTranslations The 3d points to be projected
      * @return The 2d points in pixels which correspond to the image of the 3d points on the camera
      */
     public static List<TargetCorner> projectPoints(
             Matrix<N3, N3> cameraMatrix,
             Matrix<N5, N1> distCoeffs,
-            Pose3d camPose,
+            RotTrlTransform3d camRt,
             List<Translation3d> objectTranslations) {
         // translate to opencv classes
         var objectPoints = translationToTvec(objectTranslations.toArray(new Translation3d[0]));
         // opencv rvec/tvec describe a change in basis from world to camera
-        var basisChange = RotTrlTransform3d.makeRelativeTo(camPose);
-        var rvec = rotationToRvec(basisChange.getRotation());
-        var tvec = translationToTvec(basisChange.getTranslation());
+        var rvec = rotationToRvec(camRt.getRotation());
+        var tvec = translationToTvec(camRt.getTranslation());
         var cameraMatrixMat = matrixToMat(cameraMatrix.getStorage());
         var distCoeffsMat = matrixToMat(distCoeffs.getStorage());
         var imagePoints = new MatOfPoint2f();
@@ -344,13 +370,11 @@ public final class OpenCVHelp {
     }
 
     /**
-     * Get the area in pixels of this target's contour. It's important to note that this may be
-     * different from the area of the bounding rectangle around the contour.
-     *
-     * @param corners The corners defining this contour
-     * @return Area in pixels (units of corner x/y)
+     * Gets the convex hull contour (the outline) of a list of points.
+     * @param corners
+     * @return The subset of points defining the contour
      */
-    public static double getContourAreaPx(List<TargetCorner> corners) {
+    public static MatOfPoint getConvexHull(List<TargetCorner> corners) {
         var temp = targetCornersToMat(corners);
         var corn = new MatOfPoint(temp.toArray());
         temp.release();
@@ -366,10 +390,7 @@ public final class OpenCVHelp {
             points[i] = tempPoints[indices[i]];
         }
         corn.fromArray(points);
-        // calculate area of the (convex hull) contour
-        double area = Imgproc.contourArea(corn);
-        corn.release();
-        return area;
+        return corn;
     }
 
     /**

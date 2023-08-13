@@ -31,15 +31,23 @@ import edu.wpi.first.cscore.VideoSource.ConnectionStrategy;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.util.RuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
+import org.opencv.core.RotatedRect;
+import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.PhotonCamera;
@@ -49,6 +57,8 @@ import org.photonvision.common.networktables.NTTopicSet;
 import org.photonvision.estimation.CameraTargetRelation;
 import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.PNPResults;
+import org.photonvision.estimation.RotTrlTransform3d;
+import org.photonvision.estimation.TargetModel;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
@@ -78,6 +88,8 @@ public class PhotonCameraSim implements AutoCloseable {
     private final CvSource videoSimRaw;
     private final Mat videoSimFrameRaw = new Mat();
     private boolean videoSimRawEnabled = true;
+    private boolean videoSimWireframeEnabled = false;
+    private double videoSimWireframeResolution = 0.1;
     private final CvSource videoSimProcessed;
     private final Mat videoSimFrameProcessed = new Mat();
     private boolean videoSimProcEnabled = true;
@@ -200,15 +212,22 @@ public class PhotonCameraSim implements AutoCloseable {
      * @return If this vision target can be seen before image projection.
      */
     public boolean canSeeTargetPose(Pose3d camPose, VisionTargetSim target) {
-        var rel = new CameraTargetRelation(camPose, target.getPose());
+        // var rel = new CameraTargetRelation(camPose, target.getPose());
+        //TODO: removal awaiting wpilib Rotation3d performance improvements
+        var relTarget = RotTrlTransform3d.makeRelativeTo(camPose).apply(target.getPose());
+        var camToTargYaw = new Rotation2d(relTarget.getX(), relTarget.getY());
+        var camToTargPitch = new Rotation2d(Math.hypot(relTarget.getX(), relTarget.getY()), -relTarget.getZ());
+        var relCam = RotTrlTransform3d.makeRelativeTo(target.getPose()).apply(camPose);
+        var targToCamAngle = new Rotation2d(relCam.getX(), Math.hypot(relCam.getY(), relCam.getZ()));
+
         return (
         // target translation is outside of camera's FOV
-        (Math.abs(rel.camToTargYaw.getDegrees()) < prop.getHorizFOV().getDegrees() / 2)
-                && (Math.abs(rel.camToTargPitch.getDegrees()) < prop.getVertFOV().getDegrees() / 2)
+        (Math.abs(camToTargYaw.getDegrees()) < prop.getHorizFOV().getDegrees() / 2)
+                && (Math.abs(camToTargPitch.getDegrees()) < prop.getVertFOV().getDegrees() / 2)
                 && (!target.getModel().isPlanar
-                        || Math.abs(rel.targToCamAngle.getDegrees())
+                        || Math.abs(targToCamAngle.getDegrees())
                                 < 90) // camera is behind planar target and it should be occluded
-                && (rel.camToTarg.getTranslation().getNorm() <= maxSightRangeMeters)); // target is too far
+                && (relTarget.getTranslation().getNorm() <= maxSightRangeMeters)); // target is too far
     }
 
     /**
@@ -289,9 +308,30 @@ public class PhotonCameraSim implements AutoCloseable {
         if (sortMode != null) this.sortMode = sortMode;
     }
 
-    /** Sets whether the raw video stream simulation is enabled. */
+    /**
+     * Sets whether the raw video stream simulation is enabled.
+     * <p>Note: This may increase loop times.
+     */
     public void enableRawStream(boolean enabled) {
         videoSimRawEnabled = enabled;
+    }
+
+    /**
+     * Sets whether a wireframe of the field is drawn to the raw video stream.
+     * <p>Note: This will dramatically increase loop times.
+     */
+    public void enableDrawWireframe(boolean enabled) {
+        videoSimWireframeEnabled = enabled;
+    }
+
+    /**
+     * Sets the resolution of the drawn wireframe if enabled. Drawn line segments will be subdivided
+     * into smaller segments based on a threshold set by the resolution.
+     * 
+     * @param resolution Resolution as a fraction(0 - 1) of the video frame's diagonal length in pixels
+     */
+    public void setWireframeResolution(double resolution) {
+        videoSimWireframeResolution = resolution;
     }
 
     /** Sets whether the processed video stream simulation is enabled. */
@@ -310,10 +350,12 @@ public class PhotonCameraSim implements AutoCloseable {
                     if (dist1 == dist2) return 0;
                     return dist1 < dist2 ? 1 : -1;
                 });
-        // all targets visible (in FOV)
-        var visibleTags = new ArrayList<Pair<Integer, List<TargetCorner>>>();
-        // all targets actually detectable to the camera
+        // all targets visible before noise
+        var visibleTgts = new ArrayList<Pair<VisionTargetSim, List<TargetCorner>>>();
+        // all targets actually detected by camera (after noise)
         var detectableTgts = new ArrayList<PhotonTrackedTarget>();
+        // basis change from world coordinates to camera coordinates
+        var camRt = RotTrlTransform3d.makeRelativeTo(cameraPose);
 
         // reset our frame
         VideoSimUtil.updateVideoProp(videoSimRaw, prop);
@@ -326,17 +368,18 @@ public class PhotonCameraSim implements AutoCloseable {
             if (!canSeeTargetPose(cameraPose, tgt)) continue;
 
             // find target's 3d corner points
-            // TODO: Handle spherical targets
             var fieldCorners = tgt.getFieldVertices();
-
+            if(tgt.getModel().isSpherical) { // target is spherical
+                var model = tgt.getModel();
+                fieldCorners = model.getFieldVertices(
+                    model.getOrientedPose(tgt.getPose().getTranslation(), cameraPose.getTranslation()));
+            }
             // project 3d target points into 2d image points
             var targetCorners =
                     OpenCVHelp.projectPoints(
-                            prop.getIntrinsics(), prop.getDistCoeffs(), cameraPose, fieldCorners);
-            // save visible tags for stream simulation
-            if (tgt.fiducialID >= 0) {
-                visibleTags.add(new Pair<>(tgt.fiducialID, targetCorners));
-            }
+                            prop.getIntrinsics(), prop.getDistCoeffs(), camRt, fieldCorners);
+            // save visible targets for raw video stream simulation
+            visibleTgts.add(new Pair<>(tgt, targetCorners));
             // estimate pixel noise
             var noisyTargetCorners = prop.estPixelNoise(targetCorners);
             // find the (naive) 2d yaw/pitch
@@ -356,15 +399,6 @@ public class PhotonCameraSim implements AutoCloseable {
                                 prop.getDistCoeffs(),
                                 tgt.getModel().vertices,
                                 noisyTargetCorners);
-                if (!pnpSim.isPresent) continue;
-                centerRot =
-                        prop.getPixelRot(
-                                OpenCVHelp.projectPoints(
-                                                prop.getIntrinsics(),
-                                                prop.getDistCoeffs(),
-                                                new Pose3d(),
-                                                List.of(pnpSim.best.getTranslation()))
-                                        .get(0));
             }
 
             Point[] minAreaRectPts = new Point[noisyTargetCorners.size()];
@@ -385,21 +419,63 @@ public class PhotonCameraSim implements AutoCloseable {
         }
         // render visible tags to raw video frame
         if (videoSimRawEnabled) {
-            for (var tag : visibleTags) {
-                VideoSimUtil.warp16h5TagImage(
-                        tag.getFirst(), OpenCVHelp.targetCornersToMat(tag.getSecond()), videoSimFrameRaw, true);
+            // draw field wireframe
+            if(videoSimWireframeEnabled) {
+                VideoSimUtil.drawFieldWireframe(camRt, prop, videoSimWireframeResolution, 1.5, new Scalar(80), 4, 1, new Scalar(40), videoSimFrameRaw);
+            }
+            
+            // draw targets
+            for (var pair : visibleTgts) {
+                var tgt = pair.getFirst();
+                var corn = pair.getSecond();
+
+                if(tgt.fiducialID >= 0) { // apriltags
+                    VideoSimUtil.warp16h5TagImage(
+                        tgt.fiducialID, OpenCVHelp.targetCornersToMat(corn), true, videoSimFrameRaw);
+                }
+                else if(!tgt.getModel().isSpherical) { // non-spherical targets
+                    var contour = OpenCVHelp.targetCornersToMat(corn);
+                    if(!tgt.getModel().isPlanar) { // visualization cant handle non-convex projections of 3d models
+                        contour.fromArray(OpenCVHelp.getConvexHull(corn).toArray());
+                    }
+                    VideoSimUtil.drawPoly(
+                            contour, -1, new Scalar(255), true, videoSimFrameRaw);
+                }
+                else { // spherical targets
+                    VideoSimUtil.drawEllipse(corn, new Scalar(255), videoSimFrameRaw);
+                }
             }
             videoSimRaw.putFrame(videoSimFrameRaw);
         } else videoSimRaw.setConnectionStrategy(ConnectionStrategy.kForceClose);
-        // draw/annotate tag detection outline on processed view
+        // draw/annotate target detection outline on processed view
         if (videoSimProcEnabled) {
             Imgproc.cvtColor(videoSimFrameRaw, videoSimFrameProcessed, Imgproc.COLOR_GRAY2BGR);
+            Imgproc.drawMarker( // crosshair
+                videoSimFrameProcessed,
+                new Point(prop.getResWidth()/2.0, prop.getResHeight()/2.0),
+                new Scalar(0, 255, 0),
+                Imgproc.MARKER_CROSS,
+                (int)VideoSimUtil.getScaledThickness(15, videoSimFrameProcessed),
+                (int)VideoSimUtil.getScaledThickness(1, videoSimFrameProcessed),
+                Imgproc.LINE_AA
+            );
             for (var tgt : detectableTgts) {
-                if (tgt.getFiducialId() >= 0) {
+                if (tgt.getFiducialId() >= 0) { // apriltags
                     VideoSimUtil.drawTagDetection(
                             tgt.getFiducialId(),
                             OpenCVHelp.targetCornersToMat(tgt.getDetectedCorners()),
                             videoSimFrameProcessed);
+                }
+                else { // other targets
+                    Imgproc.rectangle(
+                        videoSimFrameProcessed, OpenCVHelp.getBoundingRect(tgt.getDetectedCorners()),
+                        new Scalar(0, 0, 255),
+                        (int)VideoSimUtil.getScaledThickness(1, videoSimFrameProcessed),
+                        Imgproc.LINE_AA);
+
+                    for(var pt : tgt.getDetectedCorners()) {
+                        Imgproc.circle(videoSimFrameProcessed, new Point(pt.x, pt.y), 3, new Scalar(255, 50, 0), 1, Imgproc.LINE_AA);
+                    }
                 }
             }
             videoSimProcessed.putFrame(videoSimFrameProcessed);

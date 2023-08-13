@@ -48,6 +48,7 @@ import org.junit.jupiter.api.Test;
 import org.opencv.core.Core;
 import org.photonvision.estimation.CameraTargetRelation;
 import org.photonvision.estimation.OpenCVHelp;
+import org.photonvision.estimation.RotTrlTransform3d;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
@@ -143,9 +144,11 @@ public class OpenCVTest {
                 new VisionTargetSim(
                         new Pose3d(1, 0, 0, new Rotation3d(0, 0, Math.PI)), TargetModel.kTag16h5, 0);
         var cameraPose = new Pose3d(0, 0, 0, new Rotation3d());
+        var camRt = RotTrlTransform3d.makeRelativeTo(cameraPose);
         var targetCorners =
                 OpenCVHelp.projectPoints(
-                        prop.getIntrinsics(), prop.getDistCoeffs(), cameraPose, target.getFieldVertices());
+                        prop.getIntrinsics(), prop.getDistCoeffs(), camRt, target.getFieldVertices());
+
         // find circulation (counter/clockwise-ness)
         double circulation = 0;
         for (int i = 0; i < targetCorners.size(); i++) {
@@ -154,25 +157,30 @@ public class OpenCVTest {
             circulation += xDiff * ySum;
         }
         assertTrue(circulation > 0, "2d fiducial points aren't counter-clockwise");
+
         // undo projection distortion
         targetCorners = prop.undistort(targetCorners);
+        // test projection results after moving camera
         var avgCenterRot1 = prop.getPixelRot(OpenCVHelp.averageCorner(targetCorners));
         cameraPose =
                 cameraPose.plus(new Transform3d(new Translation3d(), new Rotation3d(0, 0.25, 0.25)));
+        camRt = RotTrlTransform3d.makeRelativeTo(cameraPose);
         targetCorners =
                 OpenCVHelp.projectPoints(
-                        prop.getIntrinsics(), prop.getDistCoeffs(), cameraPose, target.getFieldVertices());
+                        prop.getIntrinsics(), prop.getDistCoeffs(), camRt, target.getFieldVertices());
         var avgCenterRot2 = prop.getPixelRot(OpenCVHelp.averageCorner(targetCorners));
+
         var yaw2d = new Rotation2d(avgCenterRot2.getZ());
         var pitch2d = new Rotation2d(avgCenterRot2.getY());
         var yawDiff = yaw2d.minus(new Rotation2d(avgCenterRot1.getZ()));
         var pitchDiff = pitch2d.minus(new Rotation2d(avgCenterRot1.getY()));
         assertTrue(yawDiff.getRadians() < 0, "2d points don't follow yaw");
         assertTrue(pitchDiff.getRadians() < 0, "2d points don't follow pitch");
+
         var actualRelation = new CameraTargetRelation(cameraPose, target.getPose());
         assertEquals(
                 actualRelation.camToTargPitch.getDegrees(),
-                pitchDiff.getDegrees() * Math.cos(yaw2d.getRadians()), // adjust for perpsective distortion
+                pitchDiff.getDegrees() * Math.cos(yaw2d.getRadians()), // adjust for unaccounted perpsective distortion
                 kRotDeltaDeg,
                 "2d pitch doesn't match 3d");
         assertEquals(
@@ -184,23 +192,31 @@ public class OpenCVTest {
 
     @Test
     public void testSolvePNP_SQUARE() {
+        // square AprilTag target
         var target =
                 new VisionTargetSim(
                         new Pose3d(5, 0.5, 1, new Rotation3d(0, 0, Math.PI)), TargetModel.kTag16h5, 0);
         var cameraPose = new Pose3d(0, 0, 0, new Rotation3d());
-        var actualRelation = new CameraTargetRelation(cameraPose, target.getPose());
+        var camRt = RotTrlTransform3d.makeRelativeTo(cameraPose);
+        // target relative to camera
+        var relTarget = camRt.apply(target.getPose());
+
+        // simulate solvePNP estimation
         var targetCorners =
                 OpenCVHelp.projectPoints(
-                        prop.getIntrinsics(), prop.getDistCoeffs(), cameraPose, target.getFieldVertices());
+                        prop.getIntrinsics(), prop.getDistCoeffs(), camRt, target.getFieldVertices());
         var pnpSim =
                 OpenCVHelp.solvePNP_SQUARE(
                         prop.getIntrinsics(), prop.getDistCoeffs(), target.getModel().vertices, targetCorners);
-        var estRelation = new CameraTargetRelation(cameraPose, cameraPose.plus(pnpSim.best));
-        assertSame(actualRelation.camToTarg, estRelation.camToTarg);
+        
+        // check solvePNP estimation accuracy
+        assertSame(relTarget.getRotation(), pnpSim.best.getRotation());
+        assertSame(relTarget.getTranslation(), pnpSim.best.getTranslation());
     }
 
     @Test
     public void testSolvePNP_SQPNP() {
+        // (for targets with arbitrary number of non-colinear points > 2)
         var target =
                 new VisionTargetSim(
                         new Pose3d(5, 0.5, 1, new Rotation3d(0, 0, Math.PI)),
@@ -216,14 +232,20 @@ public class OpenCVTest {
                                         new Translation3d(-1, 0, 0))),
                         0);
         var cameraPose = new Pose3d(0, 0, 0, new Rotation3d());
-        var actualRelation = new CameraTargetRelation(cameraPose, target.getPose());
+        var camRt = RotTrlTransform3d.makeRelativeTo(cameraPose);
+        // target relative to camera
+        var relTarget = camRt.apply(target.getPose());
+
+        // simulate solvePNP estimation
         var targetCorners =
                 OpenCVHelp.projectPoints(
-                        prop.getIntrinsics(), prop.getDistCoeffs(), cameraPose, target.getFieldVertices());
+                        prop.getIntrinsics(), prop.getDistCoeffs(), camRt, target.getFieldVertices());
         var pnpSim =
                 OpenCVHelp.solvePNP_SQPNP(
                         prop.getIntrinsics(), prop.getDistCoeffs(), target.getModel().vertices, targetCorners);
-        var estRelation = new CameraTargetRelation(cameraPose, cameraPose.plus(pnpSim.best));
-        assertSame(actualRelation.camToTarg, estRelation.camToTarg);
+
+        // check solvePNP estimation accuracy
+        assertSame(relTarget.getRotation(), pnpSim.best.getRotation());
+        assertSame(relTarget.getTranslation(), pnpSim.best.getTranslation());
     }
 }

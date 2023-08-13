@@ -25,20 +25,31 @@
 package org.photonvision.simulation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.*;
 import edu.wpi.first.wpilibj.DriverStation;
+
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
+
+import org.ejml.data.DMatrix3;
+import org.ejml.dense.fixed.CommonOps_DDF3;
+import org.opencv.imgproc.Imgproc;
 import org.photonvision.estimation.OpenCVHelp;
+import org.photonvision.estimation.RotTrlTransform3d;
 import org.photonvision.targeting.TargetCorner;
 
 /**
@@ -69,6 +80,8 @@ public class SimCameraProperties {
     private double exposureTimeMs = 0;
     private double avgLatencyMs = 0;
     private double latencyStdDevMs = 0;
+    // util
+    private List<DMatrix3> viewplanes = new ArrayList<>();
 
     /** Default constructor which is the same as {@link #PERFECT_90DEG} */
     public SimCameraProperties() {
@@ -186,14 +199,18 @@ public class SimCameraProperties {
         this.resHeight = resHeight;
         this.camIntrinsics = camIntrinsics;
         this.distCoeffs = distCoeffs;
-    }
 
-    public void setCameraIntrinsics(Matrix<N3, N3> camIntrinsics) {
-        this.camIntrinsics = camIntrinsics;
-    }
-
-    public void setDistortionCoeffs(Matrix<N5, N1> distCoeffs) {
-        this.distCoeffs = distCoeffs;
+        // left, right, up, and down view planes
+        var p = new Translation3d[]{
+            new Translation3d(1, new Rotation3d(0, 0, getPixelYaw(0).plus(new Rotation2d(-Math.PI/2)).getRadians())),
+            new Translation3d(1, new Rotation3d(0, 0, getPixelYaw(resWidth).plus(new Rotation2d(Math.PI/2)).getRadians())),
+            new Translation3d(1, new Rotation3d(0, getPixelPitch(0).plus(new Rotation2d(Math.PI/2)).getRadians(), 0)),
+            new Translation3d(1, new Rotation3d(0, getPixelPitch(resHeight).plus(new Rotation2d(-Math.PI/2)).getRadians(), 0))
+        };
+        viewplanes.clear();
+        for(int i = 0; i < p.length; i++) {
+            viewplanes.add(new DMatrix3(p[i].getX(), p[i].getY(), p[i].getZ()));
+        }
     }
 
     public void setCalibError(double avgErrorPx, double errorStdDevPx) {
@@ -243,6 +260,11 @@ public class SimCameraProperties {
 
     public int getResArea() {
         return resWidth * resHeight;
+    }
+
+    /** Width:height */
+    public double getAspectRatio() {
+        return (double) resWidth / resHeight;
     }
 
     public Matrix<N3, N3> getIntrinsics() {
@@ -295,7 +317,7 @@ public class SimCameraProperties {
      * @param corners Corners of the contour
      */
     public double getContourAreaPercent(List<TargetCorner> corners) {
-        return OpenCVHelp.getContourAreaPx(corners) / getResArea() * 100;
+        return Imgproc.contourArea(OpenCVHelp.getConvexHull(corners)) / getResArea() * 100;
     }
 
     /** The yaw from the principal point of this camera to the pixel x value. Positive values left. */
@@ -389,9 +411,148 @@ public class SimCameraProperties {
         return new Rotation2d(Math.hypot(getHorizFOV().getRadians(), getVertFOV().getRadians()));
     }
 
-    /** Width:height */
-    public double getAspectRatio() {
-        return (double) resWidth / resHeight;
+    /**
+     * Determines where the line segment defined by the two given translations intersects the camera's
+     * frustum/field-of-vision, if at all.
+     * 
+     * <p>The line is parametrized so any of its points <code>p = t * (b - a) + a</code>.
+     * This method returns these values of t, minimum first, defining the region of the line segment
+     * which is visible in the frustum. If both ends of the line segment are visible, this simply
+     * returns {0, 1}. If, for example, point b is visible while a is not, and half of the line segment
+     * is inside the camera frustum, {0.5, 1} would be returned. 
+     * 
+     * @param camRt The change in basis from world coordinates to camera coordinates. See
+     *     {@link RotTrlTransform3d#makeRelativeTo(Pose3d)}.
+     * @param a The initial translation of the line
+     * @param b The final translation of the line
+     * @return A Pair of Doubles. The values may be null:
+     *     <ul>
+     *       <li> {Double, Double} : Two parametrized values(t), minimum first, representing which segment
+     *       of the line is visible in the camera frustum.
+     *       <li> {Double, null} : One value(t) representing a single intersection point. For example, the
+     *       line only intersects the intersection of two adjacent viewplanes.
+     *       <li> {null, null} : No values. The line segment is not visible in the camera frustum.
+     *     </ul>
+     */
+    public Pair<Double, Double> getVisibleLine(RotTrlTransform3d camRt, Translation3d a, Translation3d b) {
+        // translations relative to the camera
+        var rela = camRt.apply(a);
+        var relb = camRt.apply(b);
+
+        // check if both ends are behind camera
+        if(rela.getX() <= 0 && relb.getX() <= 0) return new Pair<>(null, null);
+
+        var av = new DMatrix3(rela.getX(), rela.getY(), rela.getZ());
+        var bv = new DMatrix3(relb.getX(), relb.getY(), relb.getZ());
+        // a to b
+        var abv = new DMatrix3();
+        CommonOps_DDF3.subtract(bv, av, abv);
+
+        // check if the ends of the line segment are visible
+        boolean aVisible = true;
+        boolean bVisible = true;
+        for(int i = 0; i < viewplanes.size(); i++) {
+            var normal = viewplanes.get(i);
+            double aVisibility = CommonOps_DDF3.dot(av, normal);
+            if(aVisibility < 0) aVisible = false;
+            double bVisibility = CommonOps_DDF3.dot(bv, normal);
+            if(bVisibility < 0) bVisible = false;
+            // both ends are outside at least one of the same viewplane
+            if(aVisibility <= 0 && bVisibility <= 0) return new Pair<>(null, null);
+        }
+        // both ends are inside frustum
+        if(aVisible && bVisible) return new Pair<>(Double.valueOf(0), Double.valueOf(1));
+        
+        // parametrized (t=0 at a, t=1 at b) intersections with viewplanes
+        double[] intersections = {
+            Double.NaN,
+            Double.NaN,
+            Double.NaN,
+            Double.NaN
+        };
+        // intersection points
+        List<DMatrix3> ipts = new ArrayList<>();
+        for(double val : intersections) ipts.add(null);
+
+        // find intersections
+        for(int i = 0; i < viewplanes.size(); i++) {
+            var normal = viewplanes.get(i);
+
+            // we want to know the value of t when the line intercepts this plane
+            // parametrized: v = t * ab + a, where v lies on the plane
+            // we can find the projection of a onto the plane normal
+            // a_projn = normal.times(av.dot(normal) / normal.dot(normal));
+            var a_projn = new DMatrix3();
+            CommonOps_DDF3.scale(CommonOps_DDF3.dot(av, normal) / CommonOps_DDF3.dot(normal, normal), normal, a_projn);
+            // this projection lets us determine the scalar multiple t of ab where
+            // (t * ab + a) is a vector which lies on the plane
+            if(Math.abs(CommonOps_DDF3.dot(abv, a_projn)) < 1e-5) continue; // line is parallel to plane
+            intersections[i] = CommonOps_DDF3.dot(a_projn, a_projn) / -CommonOps_DDF3.dot(abv, a_projn);
+
+            // vector a to the viewplane
+            var apv = new DMatrix3();
+            CommonOps_DDF3.scale(intersections[i], abv, apv);
+            // av + apv = intersection point
+            var intersectpt = new DMatrix3();
+            CommonOps_DDF3.add(av, apv, intersectpt);
+            ipts.set(i, intersectpt);
+
+            // discard intersections outside the camera frustum
+            for(int j = 1; j < viewplanes.size(); j++) {
+                int oi = (i+j) % viewplanes.size();
+                var onormal = viewplanes.get(oi);
+                // if the dot of the intersection point with any plane normal is negative, it is outside
+                if(CommonOps_DDF3.dot(intersectpt, onormal) < 0) {
+                    intersections[i] = Double.NaN;
+                    ipts.set(i, null);
+                    break;
+                }
+            }
+
+            // discard duplicate intersections
+            if(ipts.get(i) == null) continue;
+            for(int j = i-1; j >= 0; j--) {
+                var oipt = ipts.get(j);
+                if(oipt == null) continue;
+                var diff = new DMatrix3();
+                CommonOps_DDF3.subtract(oipt, intersectpt, diff);
+                if(CommonOps_DDF3.elementMaxAbs(diff) < 1e-4) {
+                    intersections[i] = Double.NaN;
+                    ipts.set(i, null);
+                    break;
+                }
+            }
+        }
+
+        // determine visible segment (minimum and maximum t)
+        double inter1 = Double.NaN;
+        double inter2 = Double.NaN;
+        for(double inter : intersections) {
+            if(!Double.isNaN(inter)) {
+                if(Double.isNaN(inter1)) inter1 = inter;
+                else inter2 = inter;
+            }
+        }
+
+        // two viewplane intersections
+        if(!Double.isNaN(inter2)) {
+            double max = Math.max(inter1, inter2);
+            double min = Math.min(inter1, inter2);
+            if(aVisible) min = 0;
+            if(bVisible) max = 1;
+            return new Pair<>(
+                min,
+                max
+            );
+        }
+        // one viewplane intersection
+        else if(!Double.isNaN(inter1)) {
+            if(aVisible) return new Pair<>(Double.valueOf(0), inter1);
+            if(bVisible) return new Pair<>(inter1, Double.valueOf(1));
+            return new Pair<>(inter1, null);
+        }
+        // no intersections
+        else return new Pair<>(null, null);
     }
 
     /**
