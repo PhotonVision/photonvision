@@ -54,12 +54,12 @@ else
 fi
 
 echo "Installing the JRE..."
-if ! package_is_installed openjre-11-jre-headless
+if ! package_is_installed openjdk-11-jre-headless
 then
    apt-get update
-   apt-get install --yes openjre-11-jre-headless
+   apt-get install --yes openjdk-11-jre-headless
 fi
-echo "JDK installation complete."
+echo "JRE installation complete."
 
 if [ "$ARCH" == "aarch64" ]
 then
