@@ -66,7 +66,7 @@ public class VisionEstimation {
      *
      * @param cameraMatrix The camera intrinsics matrix in standard opencv form
      * @param distCoeffs The camera distortion matrix in standard opencv form
-     * @param visTags The visible tags reported by PV
+     * @param visTags The visible tags reported by PV. Non-tag targets are automatically excluded. 
      * @param tagLayout The known tag layout on the field
      * @return The transformation that maps the field origin to the camera pose. Ensure the {@link
      *     PNPResults} are present before utilizing them.
@@ -84,8 +84,15 @@ public class VisionEstimation {
         }
 
         var corners = new ArrayList<TargetCorner>();
-        for (var tag : visTags) corners.addAll(tag.getDetectedCorners());
-        var knownTags = getVisibleLayoutTags(visTags, tagLayout);
+        var knownTags = new ArrayList<AprilTag>();
+        // ensure these are AprilTags in our layout
+        for (var tgt : visTags) {
+            int id = tgt.getFiducialId();
+            tagLayout.getTagPose(id).ifPresent(pose -> {
+                knownTags.add(new AprilTag(id, pose));
+                corners.addAll(tgt.getDetectedCorners());
+            });
+        }
         if (knownTags.size() == 0 || corners.size() == 0 || corners.size() % 4 != 0) {
             return new PNPResults();
         }
