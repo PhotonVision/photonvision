@@ -75,24 +75,25 @@ public class TargetModel {
      * model has four vertices:
      *
      * <ul>
-     *   <li>Point 0: [0, -radius, -radius]
-     *   <li>Point 1: [0, radius, -radius]
-     *   <li>Point 2: [0, radius, radius]
-     *   <li>Point 3: [0, -radius, radius]
+     *   <li>Point 0: [0, -radius, 0]
+     *   <li>Point 1: [0, 0, -radius]
+     *   <li>Point 2: [0, radius, 0]
+     *   <li>Point 3: [0, 0, radius]
      * </ul>
      *
      * <i>Q: Why these vertices?</i> A: This target should be oriented to the camera every frame, much
-     * like a sprite/decal, and these vertices represent the corners of the rectangle in which the
-     * ellipse is inscribed.
+     * like a sprite/decal, and these vertices represent the ellipse vertices (maxima). These vertices
+     * are used for drawing the image of this sphere, but do not match the corners that will be published
+     * by photonvision.
      */
     public TargetModel(double diameterMeters) {
         double radius = diameterMeters / 2.0;
         this.vertices =
                 List.of(
-                        new Translation3d(0, -radius, -radius),
-                        new Translation3d(0, radius, -radius),
-                        new Translation3d(0, radius, radius),
-                        new Translation3d(0, -radius, radius));
+                        new Translation3d(0, -radius, 0),
+                        new Translation3d(0, 0, -radius),
+                        new Translation3d(0, radius, 0),
+                        new Translation3d(0, 0, radius));
         this.isPlanar = false;
         this.isSpherical = true;
     }
@@ -140,7 +141,7 @@ public class TargetModel {
      * @param cameraTrl Camera's translation
      * @return This target's pose oriented to the camera
      */
-    public Pose3d getOrientedPose(Translation3d tgtTrl, Translation3d cameraTrl) {
+    public static Pose3d getOrientedPose(Translation3d tgtTrl, Translation3d cameraTrl) {
         var relCam = cameraTrl.minus(tgtTrl);
         var orientToCam =
                 new Rotation3d(

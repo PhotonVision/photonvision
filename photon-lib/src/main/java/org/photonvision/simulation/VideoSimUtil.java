@@ -372,8 +372,8 @@ public class VideoSimUtil {
                 String.valueOf(id),
                 textPt,
                 Imgproc.FONT_HERSHEY_PLAIN,
-                thickness,
-                new Scalar(0, 255, 0),
+                1.5 * thickness,
+                new Scalar(0, 200, 0),
                 (int) thickness,
                 Imgproc.LINE_AA);
     }
@@ -474,7 +474,7 @@ public class VideoSimUtil {
     }
 
     /**
-     * Convert 3D lines represented by the given series of translations into a polygon in the camera's
+     * Convert 3D lines represented by the given series of translations into a polygon(s) in the camera's
      * image.
      *
      * @param camRt The change in basis from world coordinates to camera coordinates. See {@link
@@ -486,7 +486,7 @@ public class VideoSimUtil {
      * @param isClosed If the final translation should also draw a line to the first translation.
      * @param destination The destination image that is being drawn to.
      */
-    public static MatOfPoint2f polyFrom3dLines(
+    public static List<MatOfPoint2f> polyFrom3dLines(
             RotTrlTransform3d camRt,
             SimCameraProperties prop,
             List<Translation3d> trls,
@@ -496,7 +496,7 @@ public class VideoSimUtil {
         resolution = Math.hypot(destination.size().height, destination.size().width) * resolution;
         List<Translation3d> pts = new ArrayList<>(trls);
         if (isClosed) pts.add(pts.get(0));
-        var corners = new ArrayList<TargetCorner>();
+        List<List<TargetCorner>> polygonList = new ArrayList<>();
 
         for (int i = 0; i < pts.size() - 1; i++) {
             var pta = pts.get(i);
@@ -516,12 +516,12 @@ public class VideoSimUtil {
             baseDelta = ptb.minus(pta);
 
             // project points into 2d
-            var corn = new ArrayList<TargetCorner>();
-            corn.addAll(
+            var poly = new ArrayList<TargetCorner>();
+            poly.addAll(
                     OpenCVHelp.projectPoints(
                             prop.getIntrinsics(), prop.getDistCoeffs(), camRt, List.of(pta, ptb)));
-            var pxa = corn.get(0);
-            var pxb = corn.get(1);
+            var pxa = poly.get(0);
+            var pxb = poly.get(1);
 
             // subdivide projected line based on desired resolution
             double pxDist = Math.hypot(pxb.x - pxa.x, pxb.y - pxa.y);
@@ -532,14 +532,17 @@ public class VideoSimUtil {
                 subPts.add(pta.plus(subDelta.times(j + 1)));
             }
             if (subPts.size() > 0) {
-                corn.addAll(
+                poly.addAll(
                         1, OpenCVHelp.projectPoints(prop.getIntrinsics(), prop.getDistCoeffs(), camRt, subPts));
             }
 
-            corners.addAll(corn);
+            polygonList.add(poly);
         }
 
-        return OpenCVHelp.targetCornersToMat(corners);
+        List<MatOfPoint2f> matList = new ArrayList<>();
+        for(var polygon : polygonList) matList.add(OpenCVHelp.targetCornersToMat(polygon));
+
+        return matList;
     }
 
     /**
@@ -570,23 +573,27 @@ public class VideoSimUtil {
             double floorThickness,
             Scalar floorColor,
             Mat destination) {
-        for (var trls : getFieldWallLines()) {
-            var poly = VideoSimUtil.polyFrom3dLines(camRt, prop, trls, resolution, false, destination);
-            drawPoly(
-                    poly,
-                    (int) getScaledThickness(wallThickness, destination),
-                    wallColor,
-                    false,
-                    destination);
-        }
         for (var trls : getFieldFloorLines(floorSubdivisions)) {
-            var poly = VideoSimUtil.polyFrom3dLines(camRt, prop, trls, resolution, false, destination);
-            drawPoly(
+            var polys = VideoSimUtil.polyFrom3dLines(camRt, prop, trls, resolution, false, destination);
+            for(var poly : polys) {
+                drawPoly(
                     poly,
-                    (int) getScaledThickness(floorThickness, destination),
+                    (int) Math.round(getScaledThickness(floorThickness, destination)),
                     floorColor,
                     false,
                     destination);
+            }
+        }
+        for (var trls : getFieldWallLines()) {
+            var polys = VideoSimUtil.polyFrom3dLines(camRt, prop, trls, resolution, false, destination);
+            for(var poly : polys) {
+                drawPoly(
+                    poly,
+                    (int) Math.round(getScaledThickness(wallThickness, destination)),
+                    wallColor,
+                    false,
+                    destination);
+            }
         }
     }
 }

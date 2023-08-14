@@ -35,7 +35,6 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.*;
 import edu.wpi.first.util.RuntimeLoader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.ejml.simple.SimpleMatrix;
 import org.opencv.calib3d.Calib3d;
@@ -163,9 +162,9 @@ public final class OpenCVHelp {
 
         var pointMat = targetCornersToMat(corners);
         Core.reduce(pointMat, pointMat, 0, Core.REDUCE_AVG);
-        var avgPt = matToTargetCorners(pointMat)[0];
+        var avgPt = pointMat.toArray()[0];
         pointMat.release();
-        return avgPt;
+        return new TargetCorner(avgPt.x, avgPt.y);
     }
 
     public static MatOfPoint2f targetCornersToMat(List<TargetCorner> corners) {
@@ -180,20 +179,20 @@ public final class OpenCVHelp {
         return new MatOfPoint2f(points);
     }
 
-    public static TargetCorner[] pointsToTargetCorners(Point... points) {
-        var corners = new TargetCorner[points.length];
+    public static List<TargetCorner> pointsToTargetCorners(Point... points) {
+        var corners = new ArrayList<TargetCorner>(points.length);
         for (int i = 0; i < points.length; i++) {
-            corners[i] = new TargetCorner(points[i].x, points[i].y);
+            corners.add(new TargetCorner(points[i].x, points[i].y));
         }
         return corners;
     }
 
-    public static TargetCorner[] matToTargetCorners(MatOfPoint2f matInput) {
-        var corners = new TargetCorner[(int) matInput.total()];
+    public static List<TargetCorner> matToTargetCorners(MatOfPoint2f matInput) {
+        var corners = new ArrayList<TargetCorner>();
         float[] data = new float[(int) matInput.total() * matInput.channels()];
         matInput.get(0, 0, data);
-        for (int i = 0; i < corners.length; i++) {
-            corners[i] = new TargetCorner(data[0 + 2 * i], data[1 + 2 * i]);
+        for (int i = 0; i < (int)matInput.total(); i++) {
+            corners.add(new TargetCorner(data[0 + 2 * i], data[1 + 2 * i]));
         }
         return corners;
     }
@@ -302,7 +301,7 @@ public final class OpenCVHelp {
         distCoeffsMat.release();
         imagePoints.release();
 
-        return Arrays.asList(corners);
+        return corners;
     }
 
     /**
@@ -332,7 +331,7 @@ public final class OpenCVHelp {
         cameraMatrixMat.release();
         distCoeffsMat.release();
 
-        return Arrays.asList(corners_out);
+        return corners_out;
     }
 
     /**

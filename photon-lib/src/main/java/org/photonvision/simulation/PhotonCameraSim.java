@@ -40,7 +40,9 @@ import java.util.Optional;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
@@ -51,6 +53,7 @@ import org.photonvision.common.networktables.NTTopicSet;
 import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.PNPResults;
 import org.photonvision.estimation.RotTrlTransform3d;
+import org.photonvision.estimation.TargetModel;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
@@ -367,19 +370,58 @@ public class PhotonCameraSim implements AutoCloseable {
             var fieldCorners = tgt.getFieldVertices();
             if (tgt.getModel().isSpherical) { // target is spherical
                 var model = tgt.getModel();
+                // orient the model to the camera (like a sprite/decal) so it appears similar regardless of view
                 fieldCorners =
                         model.getFieldVertices(
-                                model.getOrientedPose(tgt.getPose().getTranslation(), cameraPose.getTranslation()));
+                                TargetModel.getOrientedPose(tgt.getPose().getTranslation(), cameraPose.getTranslation()));
             }
             // project 3d target points into 2d image points
             var targetCorners =
                     OpenCVHelp.projectPoints(prop.getIntrinsics(), prop.getDistCoeffs(), camRt, fieldCorners);
+            // spherical targets need some additional processing to match what PV publishes
+            if(tgt.getModel().isSpherical) {
+                var center = OpenCVHelp.averageCorner(targetCorners);
+                int l = 0, t, b, r = 0;
+                // reference point (left side midpoint)
+                for(int i = 1; i < 4; i++) {
+                    if(targetCorners.get(i).x < targetCorners.get(l).x) l = i;
+                }
+                var lc = targetCorners.get(l);
+                // determine top, right, bottom midpoints
+                double[] angles = new double[4];
+                t = (l+1) % 4;
+                b = (l+1) % 4;
+                for(int i = 0; i < 4; i++) {
+                    if(i == l) continue;
+                    var ic = targetCorners.get(i);
+                    angles[i] = Math.atan2(lc.y-ic.y, ic.x-lc.x);
+                    if(angles[i] >= angles[t]) t = i;
+                    if(angles[i] <= angles[b]) b = i;
+                }
+                for(int i = 0; i < 4; i++) {
+                    if(i != t && i != l && i != b) r = i;
+                }
+                // create RotatedRect from midpoints
+                var rect = new RotatedRect(
+                    new Point(center.x, center.y),
+                    new Size(targetCorners.get(r).x - lc.x, targetCorners.get(b).y - targetCorners.get(t).y),
+                    Math.toDegrees(-angles[r])
+                );
+                // set target corners to rect corners
+                Point[] points = new Point[4];
+                rect.points(points);
+                targetCorners = OpenCVHelp.pointsToTargetCorners(points);
+            }
             // save visible targets for raw video stream simulation
             visibleTgts.add(new Pair<>(tgt, targetCorners));
             // estimate pixel noise
             var noisyTargetCorners = prop.estPixelNoise(targetCorners);
+            // find the minimum area rectangle of target corners
+            var minAreaRect = OpenCVHelp.getMinAreaRect(noisyTargetCorners);
+            Point[] minAreaRectPts = new Point[noisyTargetCorners.size()];
+            minAreaRect.points(minAreaRectPts);
             // find the (naive) 2d yaw/pitch
-            var centerPt = OpenCVHelp.getMinAreaRect(noisyTargetCorners).center;
+            var centerPt = minAreaRect.center;
             var centerRot = prop.getPixelRot(new TargetCorner(centerPt.x, centerPt.y));
             // find contour area
             double areaPercent = prop.getContourAreaPercent(noisyTargetCorners);
@@ -397,9 +439,6 @@ public class PhotonCameraSim implements AutoCloseable {
                                 noisyTargetCorners);
             }
 
-            Point[] minAreaRectPts = new Point[noisyTargetCorners.size()];
-            OpenCVHelp.getMinAreaRect(noisyTargetCorners).points(minAreaRectPts);
-
             detectableTgts.add(
                     new PhotonTrackedTarget(
                             Math.toDegrees(centerRot.getZ()),
@@ -410,7 +449,7 @@ public class PhotonCameraSim implements AutoCloseable {
                             pnpSim.best,
                             pnpSim.alt,
                             pnpSim.ambiguity,
-                            List.of(OpenCVHelp.pointsToTargetCorners(minAreaRectPts)),
+                            OpenCVHelp.pointsToTargetCorners(minAreaRectPts),
                             noisyTargetCorners));
         }
         // render visible tags to raw video frame
@@ -423,9 +462,9 @@ public class PhotonCameraSim implements AutoCloseable {
                         videoSimWireframeResolution,
                         1.5,
                         new Scalar(80),
-                        4,
+                        6,
                         1,
-                        new Scalar(40),
+                        new Scalar(30),
                         videoSimFrameRaw);
             }
 
@@ -475,15 +514,13 @@ public class PhotonCameraSim implements AutoCloseable {
                             (int) VideoSimUtil.getScaledThickness(1, videoSimFrameProcessed),
                             Imgproc.LINE_AA);
 
-                    for (var pt : tgt.getDetectedCorners()) {
-                        Imgproc.circle(
-                                videoSimFrameProcessed,
-                                new Point(pt.x, pt.y),
-                                3,
-                                new Scalar(255, 50, 0),
-                                1,
-                                Imgproc.LINE_AA);
-                    }
+                    VideoSimUtil.drawPoly(
+                        OpenCVHelp.targetCornersToMat(tgt.getDetectedCorners()),
+                        (int) VideoSimUtil.getScaledThickness(1, videoSimFrameProcessed),
+                        new Scalar(255, 20, 20),
+                        true,
+                        videoSimFrameProcessed
+                    );
                 }
             }
             videoSimProcessed.putFrame(videoSimFrameProcessed);
