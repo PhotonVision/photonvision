@@ -418,7 +418,7 @@ public class PhotonCameraSim implements AutoCloseable {
             var noisyTargetCorners = prop.estPixelNoise(targetCorners);
             // find the minimum area rectangle of target corners
             var minAreaRect = OpenCVHelp.getMinAreaRect(noisyTargetCorners);
-            Point[] minAreaRectPts = new Point[noisyTargetCorners.size()];
+            Point[] minAreaRectPts = new Point[4];
             minAreaRect.points(minAreaRectPts);
             // find the (naive) 2d yaw/pitch
             var centerPt = minAreaRect.center;
