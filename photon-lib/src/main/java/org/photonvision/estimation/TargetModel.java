@@ -71,6 +71,34 @@ public class TargetModel {
     }
 
     /**
+     * Creates a cuboid target model given the length, width, height. The model has eight
+     * vertices:
+     *
+     * <ul>
+     *   <li>Point 0: [length/2, -width/2, -height/2]
+     *   <li>Point 1: [length/2, width/2, -height/2]
+     *   <li>Point 2: [length/2, width/2, height/2]
+     *   <li>Point 3: [length/2, -width/2, height/2]
+     *   <li>Point 4: [-length/2, -width/2, height/2]
+     *   <li>Point 5: [-length/2, width/2, height/2]
+     *   <li>Point 6: [-length/2, width/2, -height/2]
+     *   <li>Point 7: [-length/2, -width/2, -height/2]
+     * </ul>
+     */
+    public TargetModel(double lengthMeters, double widthMeters, double heightMeters) {
+        this(List.of(
+            new Translation3d(lengthMeters / 2.0, -widthMeters / 2.0, -heightMeters / 2.0),
+            new Translation3d(lengthMeters / 2.0, widthMeters / 2.0, -heightMeters / 2.0),
+            new Translation3d(lengthMeters / 2.0, widthMeters / 2.0, heightMeters / 2.0),
+            new Translation3d(lengthMeters / 2.0, -widthMeters / 2.0, heightMeters / 2.0),
+            new Translation3d(-lengthMeters / 2.0, -widthMeters / 2.0, heightMeters / 2.0),
+            new Translation3d(-lengthMeters / 2.0, widthMeters / 2.0, heightMeters / 2.0),
+            new Translation3d(-lengthMeters / 2.0, widthMeters / 2.0, -heightMeters / 2.0),
+            new Translation3d(-lengthMeters / 2.0, -widthMeters / 2.0, -heightMeters / 2.0)
+        ));
+    }
+
+    /**
      * Creates a spherical target model which has similar dimensions regardless of its rotation. This
      * model has four vertices:
      *
