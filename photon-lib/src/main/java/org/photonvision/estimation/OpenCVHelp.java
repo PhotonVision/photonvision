@@ -55,7 +55,6 @@ import org.opencv.imgproc.Imgproc;
 import org.photonvision.targeting.TargetCorner;
 
 public final class OpenCVHelp {
-
     private static RotTrlTransform3d NWU_TO_EDN;
     private static RotTrlTransform3d EDN_TO_NWU;
 
