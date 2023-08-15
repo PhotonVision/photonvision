@@ -323,7 +323,7 @@ public class VideoSimUtil {
      * @param destination The destination image to draw onto. The image should be in the BGR color
      *     space.
      */
-    public static void drawEllipse(Point[] dstPoints, Scalar color, Mat destination) {
+    public static void drawInscribedEllipse(Point[] dstPoints, Scalar color, Mat destination) {
         // create RotatedRect from points
         var rect = OpenCVHelp.getMinAreaRect(dstPoints);
         // inscribe ellipse inside rectangle

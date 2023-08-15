@@ -482,7 +482,7 @@ public class PhotonCameraSim implements AutoCloseable {
                     }
                     VideoSimUtil.drawPoly(contour, -1, new Scalar(255), true, videoSimFrameRaw);
                 } else { // spherical targets
-                    VideoSimUtil.drawEllipse(corn, new Scalar(255), videoSimFrameRaw);
+                    VideoSimUtil.drawInscribedEllipse(corn, new Scalar(255), videoSimFrameRaw);
                 }
             }
             videoSimRaw.putFrame(videoSimFrameRaw);
@@ -505,6 +505,7 @@ public class PhotonCameraSim implements AutoCloseable {
                             OpenCVHelp.cornersToPoints(tgt.getDetectedCorners()),
                             videoSimFrameProcessed);
                 } else { // other targets
+                    // bounding rectangle
                     Imgproc.rectangle(
                             videoSimFrameProcessed,
                             OpenCVHelp.getBoundingRect(OpenCVHelp.cornersToPoints(tgt.getDetectedCorners())),
@@ -513,9 +514,9 @@ public class PhotonCameraSim implements AutoCloseable {
                             Imgproc.LINE_AA);
 
                     VideoSimUtil.drawPoly(
-                            OpenCVHelp.cornersToPoints(tgt.getDetectedCorners()),
+                            OpenCVHelp.cornersToPoints(tgt.getMinAreaRectCorners()),
                             (int) VideoSimUtil.getScaledThickness(1, videoSimFrameProcessed),
-                            new Scalar(255, 20, 20),
+                            new Scalar(255, 30, 30),
                             true,
                             videoSimFrameProcessed);
                 }
