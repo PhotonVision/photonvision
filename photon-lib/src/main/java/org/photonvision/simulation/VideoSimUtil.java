@@ -49,7 +49,6 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.RotTrlTransform3d;
-import org.photonvision.targeting.TargetCorner;
 
 public class VideoSimUtil {
     public static final String kLocalTagImagesPath = "./src/main/resources/images/apriltags/";
@@ -179,19 +178,19 @@ public class VideoSimUtil {
      *     supersampling/interpolating the warped image. This should be used if better stream quality
      *     is desired or target detection is being done on the stream, but can hurt performance.
      * @param destination The destination image to place the warped tag image onto.
-     * @see OpenCVHelp#targetCornersToMat(org.photonvision.targeting.TargetCorner...)
      */
     public static void warp16h5TagImage(
-            int tagId, MatOfPoint2f dstPoints, boolean antialiasing, Mat destination) {
+            int tagId, Point[] dstPoints, boolean antialiasing, Mat destination) {
         Mat tagImage = kTag16h5Images.get(tagId);
         if (tagImage == null || tagImage.empty()) return;
         var tagPoints = new MatOfPoint2f(kTag16h5MarkerPts);
         // points of tag image corners
         var tagImageCorners = new MatOfPoint2f(getImageCorners(tagImage.size()));
+        var dstPointMat = new MatOfPoint2f(dstPoints);
         // the rectangle describing the rectangle-of-interest(ROI)
-        var boundingRect = Imgproc.boundingRect(dstPoints);
+        var boundingRect = Imgproc.boundingRect(dstPointMat);
         // find the perspective transform from the tag image to the warped destination points
-        Mat perspecTrf = Imgproc.getPerspectiveTransform(tagPoints, dstPoints);
+        Mat perspecTrf = Imgproc.getPerspectiveTransform(tagPoints, dstPointMat);
         // check extreme image corners after transform to check if we need to expand bounding rect
         var extremeCorners = new MatOfPoint2f();
         Core.perspectiveTransform(tagImageCorners, extremeCorners, perspecTrf);
@@ -247,12 +246,12 @@ public class VideoSimUtil {
         // upscale if supersampling
         Mat scaledDstPts = new Mat();
         if (supersampling > 1) {
-            Core.multiply(dstPoints, new Scalar(supersampling, supersampling), scaledDstPts);
+            Core.multiply(dstPointMat, new Scalar(supersampling, supersampling), scaledDstPts);
             boundingRect.x *= supersampling;
             boundingRect.y *= supersampling;
             boundingRect.width *= supersampling;
             boundingRect.height *= supersampling;
-        } else dstPoints.assignTo(scaledDstPts);
+        } else dstPointMat.assignTo(scaledDstPts);
 
         // update transform relative to expanded, scaled bounding rect
         Core.subtract(scaledDstPts, new Scalar(boundingRect.tl().x, boundingRect.tl().y), scaledDstPts);
@@ -318,14 +317,15 @@ public class VideoSimUtil {
     /**
      * Draw a filled ellipse in the destination image.
      *
-     * @param corners The corners of a rectangle in which the ellipse is inscribed
+     * @param dstPoints The points in the destination image representing the rectangle in which
+     *     the ellipse is inscribed.
      * @param color The color of the ellipse. This is a scalar with BGR values (0-255)
      * @param destination The destination image to draw onto. The image should be in the BGR color
      *     space.
      */
-    public static void drawEllipse(List<TargetCorner> corners, Scalar color, Mat destination) {
-        // create RotatedRect from corners
-        var rect = OpenCVHelp.getMinAreaRect(corners);
+    public static void drawEllipse(Point[] dstPoints, Scalar color, Mat destination) {
+        // create RotatedRect from points
+        var rect = OpenCVHelp.getMinAreaRect(dstPoints);
         // inscribe ellipse inside rectangle
         Imgproc.ellipse(destination, rect, color, -1, Imgproc.LINE_AA);
     }
@@ -341,8 +341,8 @@ public class VideoSimUtil {
      * @param destination The destination image to draw onto.
      */
     public static void drawPoly(
-            MatOfPoint2f dstPoints, int thickness, Scalar color, boolean isClosed, Mat destination) {
-        var dstPointsd = new MatOfPoint(dstPoints.toArray());
+            Point[] dstPoints, int thickness, Scalar color, boolean isClosed, Mat destination) {
+        var dstPointsd = new MatOfPoint(dstPoints);
         if (thickness > 0) {
             Imgproc.polylines(
                     destination, List.of(dstPointsd), isClosed, color, thickness, Imgproc.LINE_AA);
@@ -360,10 +360,10 @@ public class VideoSimUtil {
      * @param destination The destination image to draw onto. The image should be in the BGR color
      *     space.
      */
-    public static void drawTagDetection(int id, MatOfPoint2f dstPoints, Mat destination) {
+    public static void drawTagDetection(int id, Point[] dstPoints, Mat destination) {
         double thickness = getScaledThickness(1, destination);
         drawPoly(dstPoints, (int) thickness, new Scalar(0, 0, 255), true, destination);
-        var rect = Imgproc.boundingRect(dstPoints);
+        var rect = Imgproc.boundingRect(new MatOfPoint(dstPoints));
         var textPt = new Point(rect.x + rect.width, rect.y);
         textPt.x += thickness;
         textPt.y += thickness;
@@ -485,8 +485,9 @@ public class VideoSimUtil {
      *     pixels. Line segments will be subdivided if they exceed this resolution.
      * @param isClosed If the final translation should also draw a line to the first translation.
      * @param destination The destination image that is being drawn to.
+     * @return A list of polygons(which are an array of points)
      */
-    public static List<MatOfPoint2f> polyFrom3dLines(
+    public static List<Point[]> polyFrom3dLines(
             RotTrlTransform3d camRt,
             SimCameraProperties prop,
             List<Translation3d> trls,
@@ -496,7 +497,7 @@ public class VideoSimUtil {
         resolution = Math.hypot(destination.size().height, destination.size().width) * resolution;
         List<Translation3d> pts = new ArrayList<>(trls);
         if (isClosed) pts.add(pts.get(0));
-        List<List<TargetCorner>> polygonList = new ArrayList<>();
+        List<Point[]> polyPointList = new ArrayList<>();
 
         for (int i = 0; i < pts.size() - 1; i++) {
             var pta = pts.get(i);
@@ -516,10 +517,9 @@ public class VideoSimUtil {
             baseDelta = ptb.minus(pta);
 
             // project points into 2d
-            var poly = new ArrayList<TargetCorner>();
-            poly.addAll(
-                    OpenCVHelp.projectPoints(
-                            prop.getIntrinsics(), prop.getDistCoeffs(), camRt, List.of(pta, ptb)));
+            var poly = new ArrayList<Point>();
+            poly.addAll(Arrays.asList(OpenCVHelp.projectPoints(
+                            prop.getIntrinsics(), prop.getDistCoeffs(), camRt, List.of(pta, ptb))));
             var pxa = poly.get(0);
             var pxb = poly.get(1);
 
@@ -533,16 +533,13 @@ public class VideoSimUtil {
             }
             if (subPts.size() > 0) {
                 poly.addAll(
-                        1, OpenCVHelp.projectPoints(prop.getIntrinsics(), prop.getDistCoeffs(), camRt, subPts));
+                        1, Arrays.asList(OpenCVHelp.projectPoints(prop.getIntrinsics(), prop.getDistCoeffs(), camRt, subPts)));
             }
 
-            polygonList.add(poly);
+            polyPointList.add(poly.toArray(Point[]::new));
         }
 
-        List<MatOfPoint2f> matList = new ArrayList<>();
-        for(var polygon : polygonList) matList.add(OpenCVHelp.targetCornersToMat(polygon));
-
-        return matList;
+        return polyPointList;
     }
 
     /**

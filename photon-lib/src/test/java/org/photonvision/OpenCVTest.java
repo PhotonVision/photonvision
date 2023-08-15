@@ -145,30 +145,31 @@ public class OpenCVTest {
                         new Pose3d(1, 0, 0, new Rotation3d(0, 0, Math.PI)), TargetModel.kTag16h5, 0);
         var cameraPose = new Pose3d(0, 0, 0, new Rotation3d());
         var camRt = RotTrlTransform3d.makeRelativeTo(cameraPose);
-        var targetCorners =
+        var imagePoints =
                 OpenCVHelp.projectPoints(
                         prop.getIntrinsics(), prop.getDistCoeffs(), camRt, target.getFieldVertices());
 
         // find circulation (counter/clockwise-ness)
         double circulation = 0;
-        for (int i = 0; i < targetCorners.size(); i++) {
-            double xDiff = targetCorners.get((i + 1) % 4).x - targetCorners.get(i).x;
-            double ySum = targetCorners.get((i + 1) % 4).y + targetCorners.get(i).y;
+        for (int i = 0; i < imagePoints.length; i++) {
+            double xDiff = imagePoints[(i + 1) % 4].x - imagePoints[i].x;
+            double ySum = imagePoints[(i + 1) % 4].y + imagePoints[i].y;
             circulation += xDiff * ySum;
         }
         assertTrue(circulation > 0, "2d fiducial points aren't counter-clockwise");
 
         // undo projection distortion
-        targetCorners = prop.undistort(targetCorners);
+        imagePoints = OpenCVHelp.undistortPoints(prop.getIntrinsics(), prop.getDistCoeffs(), imagePoints);
+        
         // test projection results after moving camera
-        var avgCenterRot1 = prop.getPixelRot(OpenCVHelp.averageCorner(targetCorners));
+        var avgCenterRot1 = prop.getPixelRot(OpenCVHelp.avgPoint(imagePoints));
         cameraPose =
                 cameraPose.plus(new Transform3d(new Translation3d(), new Rotation3d(0, 0.25, 0.25)));
         camRt = RotTrlTransform3d.makeRelativeTo(cameraPose);
-        targetCorners =
+        imagePoints =
                 OpenCVHelp.projectPoints(
                         prop.getIntrinsics(), prop.getDistCoeffs(), camRt, target.getFieldVertices());
-        var avgCenterRot2 = prop.getPixelRot(OpenCVHelp.averageCorner(targetCorners));
+        var avgCenterRot2 = prop.getPixelRot(OpenCVHelp.avgPoint(imagePoints));
 
         var yaw2d = new Rotation2d(avgCenterRot2.getZ());
         var pitch2d = new Rotation2d(avgCenterRot2.getY());

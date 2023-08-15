@@ -41,13 +41,13 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 import org.ejml.data.DMatrix3;
 import org.ejml.dense.fixed.CommonOps_DDF3;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.RotTrlTransform3d;
-import org.photonvision.targeting.TargetCorner;
 
 /**
  * Calibration and performance values for this camera.
@@ -315,18 +315,14 @@ public class SimCameraProperties {
         return newProp;
     }
 
-    public List<TargetCorner> undistort(List<TargetCorner> points) {
-        return OpenCVHelp.undistortPoints(camIntrinsics, distCoeffs, points);
-    }
-
     /**
      * The percentage(0 - 100) of this camera's resolution the contour takes up in pixels of the
      * image.
      *
-     * @param corners Corners of the contour
+     * @param points Points of the contour
      */
-    public double getContourAreaPercent(List<TargetCorner> corners) {
-        return Imgproc.contourArea(OpenCVHelp.getConvexHull(corners)) / getResArea() * 100;
+    public double getContourAreaPercent(Point[] points) {
+        return Imgproc.contourArea(new MatOfPoint2f(OpenCVHelp.getConvexHull(points))) / getResArea() * 100;
     }
 
     /** The yaw from the principal point of this camera to the pixel x value. Positive values left. */
@@ -342,7 +338,7 @@ public class SimCameraProperties {
      * The pitch from the principal point of this camera to the pixel y value. Pitch is positive down.
      *
      * <p>Note that this angle is naively computed and may be incorrect. See {@link
-     * #getCorrectedPixelRot(TargetCorner)}.
+     * #getCorrectedPixelRot(Point)}.
      */
     public Rotation2d getPixelPitch(double pixelY) {
         double fy = camIntrinsics.get(1, 1);
@@ -357,9 +353,9 @@ public class SimCameraProperties {
      * down.
      *
      * <p>Note that pitch is naively computed and may be incorrect. See {@link
-     * #getCorrectedPixelRot(TargetCorner)}.
+     * #getCorrectedPixelRot(Point)}.
      */
-    public Rotation3d getPixelRot(TargetCorner point) {
+    public Rotation3d getPixelRot(Point point) {
         return new Rotation3d(
                 0, getPixelPitch(point.y).getRadians(), getPixelYaw(point.x).getRadians());
     }
@@ -389,7 +385,7 @@ public class SimCameraProperties {
      * @return Rotation3d with yaw and pitch of the line projected out of the camera from the given
      *     pixel (roll is zero).
      */
-    public Rotation3d getCorrectedPixelRot(TargetCorner point) {
+    public Rotation3d getCorrectedPixelRot(Point point) {
         double fx = camIntrinsics.get(0, 0);
         double cx = camIntrinsics.get(0, 2);
         double xOffset = cx - point.x;
@@ -562,42 +558,20 @@ public class SimCameraProperties {
         else return new Pair<>(null, null);
     }
 
-    /**
-     * Returns these pixel points as fractions of a 1x1 square image. This means the camera's aspect
-     * ratio and resolution will be used, and the points' x and y may not reach all portions(e.g. a
-     * wide aspect ratio means some of the top and bottom of the square image is unreachable).
-     *
-     * @param points Pixel points on this camera's image
-     * @return Points mapped to an image of 1x1 resolution
-     */
-    public List<TargetCorner> getPixelFraction(List<TargetCorner> points) {
-        double resLarge = getAspectRatio() > 1 ? resWidth : resHeight;
-
-        return points.stream()
-                .map(
-                        p -> {
-                            // offset to account for aspect ratio
-                            return new TargetCorner(
-                                    (p.x + (resLarge - resWidth) / 2.0) / resLarge,
-                                    (p.y + (resLarge - resHeight) / 2.0) / resLarge);
-                        })
-                .collect(Collectors.toList());
-    }
-
     /** Returns these points after applying this camera's estimated noise. */
-    public List<TargetCorner> estPixelNoise(List<TargetCorner> points) {
+    public Point[] estPixelNoise(Point[] points) {
         if (avgErrorPx == 0 && errorStdDevPx == 0) return points;
 
-        return points.stream()
-                .map(
-                        p -> {
-                            // error pixels in random direction
-                            double error = avgErrorPx + rand.nextGaussian() * errorStdDevPx;
-                            double errorAngle = rand.nextDouble() * 2 * Math.PI - Math.PI;
-                            return new TargetCorner(
-                                    p.x + error * Math.cos(errorAngle), p.y + error * Math.sin(errorAngle));
-                        })
-                .collect(Collectors.toList());
+        Point[] noisyPts = new Point[points.length];
+        for(int i = 0; i < points.length; i++) {
+            var p = points[i];
+            // error pixels in random direction
+            double error = avgErrorPx + rand.nextGaussian() * errorStdDevPx;
+            double errorAngle = rand.nextDouble() * 2 * Math.PI - Math.PI;
+            noisyPts[i] = new Point(
+                    p.x + error * Math.cos(errorAngle), p.y + error * Math.sin(errorAngle));
+        }
+        return noisyPts;
     }
 
     /**

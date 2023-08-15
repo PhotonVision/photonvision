@@ -35,6 +35,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import org.opencv.core.Point;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
 
@@ -96,12 +98,13 @@ public class VisionEstimation {
         if (knownTags.size() == 0 || corners.size() == 0 || corners.size() % 4 != 0) {
             return new PNPResults();
         }
+        Point[] points = OpenCVHelp.cornersToPoints(corners);
 
         // single-tag pnp
         if (visTags.size() == 1) {
             var camToTag =
                     OpenCVHelp.solvePNP_SQUARE(
-                            cameraMatrix, distCoeffs, TargetModel.kTag16h5.vertices, corners);
+                            cameraMatrix, distCoeffs, TargetModel.kTag16h5.vertices, points);
             if (!camToTag.isPresent) return new PNPResults();
             var bestPose = knownTags.get(0).pose.transformBy(camToTag.best.inverse());
             var altPose = new Pose3d();
@@ -120,7 +123,7 @@ public class VisionEstimation {
         else {
             var objectTrls = new ArrayList<Translation3d>();
             for (var tag : knownTags) objectTrls.addAll(TargetModel.kTag16h5.getFieldVertices(tag.pose));
-            var camToOrigin = OpenCVHelp.solvePNP_SQPNP(cameraMatrix, distCoeffs, objectTrls, corners);
+            var camToOrigin = OpenCVHelp.solvePNP_SQPNP(cameraMatrix, distCoeffs, objectTrls, points);
             if (!camToOrigin.isPresent) return new PNPResults();
             return new PNPResults(
                     camToOrigin.best.inverse(),

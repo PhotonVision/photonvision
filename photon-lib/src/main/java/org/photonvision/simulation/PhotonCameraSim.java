@@ -227,16 +227,15 @@ public class PhotonCameraSim implements AutoCloseable {
     }
 
     /**
-     * Determines if all target corners are inside the camera's image.
+     * Determines if all target points are inside the camera's image.
      *
-     * @param corners The corners of the target as image points(x,y)
+     * @param points The target's 2d image points
      */
-    public boolean canSeeCorners(List<TargetCorner> corners) {
-        // corner is outside of resolution
-        for (var corner : corners) {
-            if (MathUtil.clamp(corner.x, 0, prop.getResWidth()) != corner.x
-                    || MathUtil.clamp(corner.y, 0, prop.getResHeight()) != corner.y) {
-                return false;
+    public boolean canSeeCorners(Point[] points) {
+        for (var point : points) {
+            if (MathUtil.clamp(point.x, 0, prop.getResWidth()) != point.x
+                    || MathUtil.clamp(point.y, 0, prop.getResHeight()) != point.y) {
+                return false; // point is outside of resolution
             }
         }
         return true;
@@ -350,7 +349,7 @@ public class PhotonCameraSim implements AutoCloseable {
                     return dist1 < dist2 ? 1 : -1;
                 });
         // all targets visible before noise
-        var visibleTgts = new ArrayList<Pair<VisionTargetSim, List<TargetCorner>>>();
+        var visibleTgts = new ArrayList<Pair<VisionTargetSim, Point[]>>();
         // all targets actually detected by camera (after noise)
         var detectableTgts = new ArrayList<PhotonTrackedTarget>();
         // basis change from world coordinates to camera coordinates
@@ -376,24 +375,24 @@ public class PhotonCameraSim implements AutoCloseable {
                                 TargetModel.getOrientedPose(tgt.getPose().getTranslation(), cameraPose.getTranslation()));
             }
             // project 3d target points into 2d image points
-            var targetCorners =
+            var imagePoints =
                     OpenCVHelp.projectPoints(prop.getIntrinsics(), prop.getDistCoeffs(), camRt, fieldCorners);
-            // spherical targets need some additional processing to match what PV publishes
+            // spherical targets need a rotated rectangle of their midpoints for visualization
             if(tgt.getModel().isSpherical) {
-                var center = OpenCVHelp.averageCorner(targetCorners);
+                var center = OpenCVHelp.avgPoint(imagePoints);
                 int l = 0, t, b, r = 0;
                 // reference point (left side midpoint)
                 for(int i = 1; i < 4; i++) {
-                    if(targetCorners.get(i).x < targetCorners.get(l).x) l = i;
+                    if(imagePoints[i].x < imagePoints[l].x) l = i;
                 }
-                var lc = targetCorners.get(l);
+                var lc = imagePoints[l];
                 // determine top, right, bottom midpoints
                 double[] angles = new double[4];
                 t = (l+1) % 4;
                 b = (l+1) % 4;
                 for(int i = 0; i < 4; i++) {
                     if(i == l) continue;
-                    var ic = targetCorners.get(i);
+                    var ic = imagePoints[i];
                     angles[i] = Math.atan2(lc.y-ic.y, ic.x-lc.x);
                     if(angles[i] >= angles[t]) t = i;
                     if(angles[i] <= angles[b]) b = i;
@@ -404,25 +403,25 @@ public class PhotonCameraSim implements AutoCloseable {
                 // create RotatedRect from midpoints
                 var rect = new RotatedRect(
                     new Point(center.x, center.y),
-                    new Size(targetCorners.get(r).x - lc.x, targetCorners.get(b).y - targetCorners.get(t).y),
+                    new Size(imagePoints[r].x - lc.x, imagePoints[b].y - imagePoints[t].y),
                     Math.toDegrees(-angles[r])
                 );
                 // set target corners to rect corners
                 Point[] points = new Point[4];
                 rect.points(points);
-                targetCorners = OpenCVHelp.pointsToTargetCorners(points);
+                imagePoints = points;
             }
             // save visible targets for raw video stream simulation
-            visibleTgts.add(new Pair<>(tgt, targetCorners));
+            visibleTgts.add(new Pair<>(tgt, imagePoints));
             // estimate pixel noise
-            var noisyTargetCorners = prop.estPixelNoise(targetCorners);
+            var noisyTargetCorners = prop.estPixelNoise(imagePoints);
             // find the minimum area rectangle of target corners
             var minAreaRect = OpenCVHelp.getMinAreaRect(noisyTargetCorners);
             Point[] minAreaRectPts = new Point[4];
             minAreaRect.points(minAreaRectPts);
             // find the (naive) 2d yaw/pitch
             var centerPt = minAreaRect.center;
-            var centerRot = prop.getPixelRot(new TargetCorner(centerPt.x, centerPt.y));
+            var centerRot = prop.getPixelRot(centerPt);
             // find contour area
             double areaPercent = prop.getContourAreaPercent(noisyTargetCorners);
 
@@ -449,8 +448,8 @@ public class PhotonCameraSim implements AutoCloseable {
                             pnpSim.best,
                             pnpSim.alt,
                             pnpSim.ambiguity,
-                            OpenCVHelp.pointsToTargetCorners(minAreaRectPts),
-                            noisyTargetCorners));
+                            OpenCVHelp.pointsToCorners(minAreaRectPts),
+                            OpenCVHelp.pointsToCorners(noisyTargetCorners)));
         }
         // render visible tags to raw video frame
         if (videoSimRawEnabled) {
@@ -475,12 +474,12 @@ public class PhotonCameraSim implements AutoCloseable {
 
                 if (tgt.fiducialID >= 0) { // apriltags
                     VideoSimUtil.warp16h5TagImage(
-                            tgt.fiducialID, OpenCVHelp.targetCornersToMat(corn), true, videoSimFrameRaw);
+                            tgt.fiducialID, corn, true, videoSimFrameRaw);
                 } else if (!tgt.getModel().isSpherical) { // non-spherical targets
-                    var contour = OpenCVHelp.targetCornersToMat(corn);
+                    var contour = corn;
                     if (!tgt.getModel()
                             .isPlanar) { // visualization cant handle non-convex projections of 3d models
-                        contour.fromArray(OpenCVHelp.getConvexHull(corn).toArray());
+                        contour = OpenCVHelp.getConvexHull(contour);
                     }
                     VideoSimUtil.drawPoly(contour, -1, new Scalar(255), true, videoSimFrameRaw);
                 } else { // spherical targets
@@ -504,18 +503,18 @@ public class PhotonCameraSim implements AutoCloseable {
                 if (tgt.getFiducialId() >= 0) { // apriltags
                     VideoSimUtil.drawTagDetection(
                             tgt.getFiducialId(),
-                            OpenCVHelp.targetCornersToMat(tgt.getDetectedCorners()),
+                            OpenCVHelp.cornersToPoints(tgt.getDetectedCorners()),
                             videoSimFrameProcessed);
                 } else { // other targets
                     Imgproc.rectangle(
                             videoSimFrameProcessed,
-                            OpenCVHelp.getBoundingRect(tgt.getDetectedCorners()),
+                            OpenCVHelp.getBoundingRect(OpenCVHelp.cornersToPoints(tgt.getDetectedCorners())),
                             new Scalar(0, 0, 255),
                             (int) VideoSimUtil.getScaledThickness(1, videoSimFrameProcessed),
                             Imgproc.LINE_AA);
 
                     VideoSimUtil.drawPoly(
-                        OpenCVHelp.targetCornersToMat(tgt.getDetectedCorners()),
+                        OpenCVHelp.cornersToPoints(tgt.getDetectedCorners()),
                         (int) VideoSimUtil.getScaledThickness(1, videoSimFrameProcessed),
                         new Scalar(255, 20, 20),
                         true,
