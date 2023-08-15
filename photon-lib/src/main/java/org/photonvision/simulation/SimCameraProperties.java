@@ -25,6 +25,7 @@
 package org.photonvision.simulation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.Pair;
@@ -161,18 +162,15 @@ public class SimCameraProperties {
     }
 
     public void setCalibration(int resWidth, int resHeight, Rotation2d fovDiag) {
-        double s = Math.sqrt(resWidth * resWidth + resHeight * resHeight);
-        var fovWidth = new Rotation2d(fovDiag.getRadians() * (resWidth / s));
-        var fovHeight = new Rotation2d(fovDiag.getRadians() * (resHeight / s));
-
-        double maxFovDeg = Math.max(fovWidth.getDegrees(), fovHeight.getDegrees());
-        if (maxFovDeg > 179) {
-            double scale = 179.0 / maxFovDeg;
-            fovWidth = new Rotation2d(fovWidth.getRadians() * scale);
-            fovHeight = new Rotation2d(fovHeight.getRadians() * scale);
+        if (fovDiag.getDegrees() < 1 || fovDiag.getDegrees() > 179) {
+            fovDiag = Rotation2d.fromDegrees(MathUtil.clamp(fovDiag.getDegrees(), 1, 179));
             DriverStation.reportError(
-                    "Requested FOV width/height too large! Scaling below 180 degrees...", false);
+                    "Requested invalid FOV! Clamping between (1, 179) degrees...", false);
         }
+        double resDiag = Math.sqrt(resWidth * resWidth + resHeight * resHeight);
+        double diagRatio = Math.tan(fovDiag.getRadians() / 2);
+        var fovWidth = new Rotation2d(Math.atan(diagRatio * (resWidth / resDiag)) * 2);
+        var fovHeight = new Rotation2d(Math.atan(diagRatio * (resHeight / resDiag)) * 2);
 
         // assume no distortion
         var distCoeff = VecBuilder.fill(0, 0, 0, 0, 0);
