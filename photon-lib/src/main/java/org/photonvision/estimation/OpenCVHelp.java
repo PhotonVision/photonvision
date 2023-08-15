@@ -193,7 +193,7 @@ public final class OpenCVHelp {
         var corners = new ArrayList<TargetCorner>();
         float[] data = new float[(int) matInput.total() * matInput.channels()];
         matInput.get(0, 0, data);
-        for (int i = 0; i < (int)matInput.total(); i++) {
+        for (int i = 0; i < (int) matInput.total(); i++) {
             corners.add(new TargetCorner(data[0 + 2 * i], data[1 + 2 * i]));
         }
         return corners;
@@ -307,9 +307,9 @@ public final class OpenCVHelp {
     /**
      * Undistort 2d image points using a given camera's intrinsics and distortion.
      *
-     * <p>2d image points from {@link #projectPoints(Matrix, Matrix, RotTrlTransform3d, List) projectPoints()} will
-     * naturally be distorted, so this operation is important if the image points need to be directly
-     * used (e.g. 2d yaw/pitch).
+     * <p>2d image points from {@link #projectPoints(Matrix, Matrix, RotTrlTransform3d, List)
+     * projectPoints()} will naturally be distorted, so this operation is important if the image
+     * points need to be directly used (e.g. 2d yaw/pitch).
      *
      * @param cameraMatrix The camera intrinsics matrix in standard opencv form
      * @param distCoeffs The camera distortion matrix in standard opencv form
@@ -412,8 +412,8 @@ public final class OpenCVHelp {
      *       <li>Point 3: [0, -squareLength / 2, -squareLength / 2]
      *     </ul>
      *
-     * @param imagePoints The projection of these 3d object points into the 2d camera image. The
-     *     order should match the given object point translations.
+     * @param imagePoints The projection of these 3d object points into the 2d camera image. The order
+     *     should match the given object point translations.
      * @return The resulting transformation that maps the camera pose to the target pose and the
      *     ambiguity if an alternate solution is available.
      */
@@ -519,8 +519,8 @@ public final class OpenCVHelp {
      * @param cameraMatrix The camera intrinsics matrix in standard opencv form
      * @param distCoeffs The camera distortion matrix in standard opencv form
      * @param objectTrls The translations of the object corners, relative to the field.
-     * @param imagePoints The projection of these 3d object points into the 2d camera image. The
-     *     order should match the given object point translations.
+     * @param imagePoints The projection of these 3d object points into the 2d camera image. The order
+     *     should match the given object point translations.
      * @return The resulting transformation that maps the camera pose to the target pose. If the 3d
      *     model points are supplied relative to the origin, this transformation brings the camera to
      *     the origin.

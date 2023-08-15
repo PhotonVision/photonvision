@@ -317,8 +317,8 @@ public class VideoSimUtil {
     /**
      * Draw a filled ellipse in the destination image.
      *
-     * @param dstPoints The points in the destination image representing the rectangle in which
-     *     the ellipse is inscribed.
+     * @param dstPoints The points in the destination image representing the rectangle in which the
+     *     ellipse is inscribed.
      * @param color The color of the ellipse. This is a scalar with BGR values (0-255)
      * @param destination The destination image to draw onto. The image should be in the BGR color
      *     space.
@@ -474,8 +474,8 @@ public class VideoSimUtil {
     }
 
     /**
-     * Convert 3D lines represented by the given series of translations into a polygon(s) in the camera's
-     * image.
+     * Convert 3D lines represented by the given series of translations into a polygon(s) in the
+     * camera's image.
      *
      * @param camRt The change in basis from world coordinates to camera coordinates. See {@link
      *     RotTrlTransform3d#makeRelativeTo(Pose3d)}.
@@ -518,8 +518,10 @@ public class VideoSimUtil {
 
             // project points into 2d
             var poly = new ArrayList<Point>();
-            poly.addAll(Arrays.asList(OpenCVHelp.projectPoints(
-                            prop.getIntrinsics(), prop.getDistCoeffs(), camRt, List.of(pta, ptb))));
+            poly.addAll(
+                    Arrays.asList(
+                            OpenCVHelp.projectPoints(
+                                    prop.getIntrinsics(), prop.getDistCoeffs(), camRt, List.of(pta, ptb))));
             var pxa = poly.get(0);
             var pxb = poly.get(1);
 
@@ -533,7 +535,10 @@ public class VideoSimUtil {
             }
             if (subPts.size() > 0) {
                 poly.addAll(
-                        1, Arrays.asList(OpenCVHelp.projectPoints(prop.getIntrinsics(), prop.getDistCoeffs(), camRt, subPts)));
+                        1,
+                        Arrays.asList(
+                                OpenCVHelp.projectPoints(
+                                        prop.getIntrinsics(), prop.getDistCoeffs(), camRt, subPts)));
             }
 
             polyPointList.add(poly.toArray(Point[]::new));
@@ -572,24 +577,24 @@ public class VideoSimUtil {
             Mat destination) {
         for (var trls : getFieldFloorLines(floorSubdivisions)) {
             var polys = VideoSimUtil.polyFrom3dLines(camRt, prop, trls, resolution, false, destination);
-            for(var poly : polys) {
+            for (var poly : polys) {
                 drawPoly(
-                    poly,
-                    (int) Math.round(getScaledThickness(floorThickness, destination)),
-                    floorColor,
-                    false,
-                    destination);
+                        poly,
+                        (int) Math.round(getScaledThickness(floorThickness, destination)),
+                        floorColor,
+                        false,
+                        destination);
             }
         }
         for (var trls : getFieldWallLines()) {
             var polys = VideoSimUtil.polyFrom3dLines(camRt, prop, trls, resolution, false, destination);
-            for(var poly : polys) {
+            for (var poly : polys) {
                 drawPoly(
-                    poly,
-                    (int) Math.round(getScaledThickness(wallThickness, destination)),
-                    wallColor,
-                    false,
-                    destination);
+                        poly,
+                        (int) Math.round(getScaledThickness(wallThickness, destination)),
+                        wallColor,
+                        false,
+                        destination);
             }
         }
     }

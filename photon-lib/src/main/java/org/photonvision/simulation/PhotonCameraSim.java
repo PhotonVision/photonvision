@@ -40,7 +40,6 @@ import java.util.Optional;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
@@ -56,7 +55,6 @@ import org.photonvision.estimation.RotTrlTransform3d;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
-import org.photonvision.targeting.TargetCorner;
 
 /**
  * A handle for simulating {@link PhotonCamera} values. Processing simulated targets through this
@@ -369,43 +367,45 @@ public class PhotonCameraSim implements AutoCloseable {
             var fieldCorners = tgt.getFieldVertices();
             if (tgt.getModel().isSpherical) { // target is spherical
                 var model = tgt.getModel();
-                // orient the model to the camera (like a sprite/decal) so it appears similar regardless of view
+                // orient the model to the camera (like a sprite/decal) so it appears similar regardless of
+                // view
                 fieldCorners =
                         model.getFieldVertices(
-                                TargetModel.getOrientedPose(tgt.getPose().getTranslation(), cameraPose.getTranslation()));
+                                TargetModel.getOrientedPose(
+                                        tgt.getPose().getTranslation(), cameraPose.getTranslation()));
             }
             // project 3d target points into 2d image points
             var imagePoints =
                     OpenCVHelp.projectPoints(prop.getIntrinsics(), prop.getDistCoeffs(), camRt, fieldCorners);
             // spherical targets need a rotated rectangle of their midpoints for visualization
-            if(tgt.getModel().isSpherical) {
+            if (tgt.getModel().isSpherical) {
                 var center = OpenCVHelp.avgPoint(imagePoints);
                 int l = 0, t, b, r = 0;
                 // reference point (left side midpoint)
-                for(int i = 1; i < 4; i++) {
-                    if(imagePoints[i].x < imagePoints[l].x) l = i;
+                for (int i = 1; i < 4; i++) {
+                    if (imagePoints[i].x < imagePoints[l].x) l = i;
                 }
                 var lc = imagePoints[l];
                 // determine top, right, bottom midpoints
                 double[] angles = new double[4];
-                t = (l+1) % 4;
-                b = (l+1) % 4;
-                for(int i = 0; i < 4; i++) {
-                    if(i == l) continue;
+                t = (l + 1) % 4;
+                b = (l + 1) % 4;
+                for (int i = 0; i < 4; i++) {
+                    if (i == l) continue;
                     var ic = imagePoints[i];
-                    angles[i] = Math.atan2(lc.y-ic.y, ic.x-lc.x);
-                    if(angles[i] >= angles[t]) t = i;
-                    if(angles[i] <= angles[b]) b = i;
+                    angles[i] = Math.atan2(lc.y - ic.y, ic.x - lc.x);
+                    if (angles[i] >= angles[t]) t = i;
+                    if (angles[i] <= angles[b]) b = i;
                 }
-                for(int i = 0; i < 4; i++) {
-                    if(i != t && i != l && i != b) r = i;
+                for (int i = 0; i < 4; i++) {
+                    if (i != t && i != l && i != b) r = i;
                 }
                 // create RotatedRect from midpoints
-                var rect = new RotatedRect(
-                    new Point(center.x, center.y),
-                    new Size(imagePoints[r].x - lc.x, imagePoints[b].y - imagePoints[t].y),
-                    Math.toDegrees(-angles[r])
-                );
+                var rect =
+                        new RotatedRect(
+                                new Point(center.x, center.y),
+                                new Size(imagePoints[r].x - lc.x, imagePoints[b].y - imagePoints[t].y),
+                                Math.toDegrees(-angles[r]));
                 // set target corners to rect corners
                 Point[] points = new Point[4];
                 rect.points(points);
@@ -473,8 +473,7 @@ public class PhotonCameraSim implements AutoCloseable {
                 var corn = pair.getSecond();
 
                 if (tgt.fiducialID >= 0) { // apriltags
-                    VideoSimUtil.warp16h5TagImage(
-                            tgt.fiducialID, corn, true, videoSimFrameRaw);
+                    VideoSimUtil.warp16h5TagImage(tgt.fiducialID, corn, true, videoSimFrameRaw);
                 } else if (!tgt.getModel().isSpherical) { // non-spherical targets
                     var contour = corn;
                     if (!tgt.getModel()
@@ -514,12 +513,11 @@ public class PhotonCameraSim implements AutoCloseable {
                             Imgproc.LINE_AA);
 
                     VideoSimUtil.drawPoly(
-                        OpenCVHelp.cornersToPoints(tgt.getDetectedCorners()),
-                        (int) VideoSimUtil.getScaledThickness(1, videoSimFrameProcessed),
-                        new Scalar(255, 20, 20),
-                        true,
-                        videoSimFrameProcessed
-                    );
+                            OpenCVHelp.cornersToPoints(tgt.getDetectedCorners()),
+                            (int) VideoSimUtil.getScaledThickness(1, videoSimFrameProcessed),
+                            new Scalar(255, 20, 20),
+                            true,
+                            videoSimFrameProcessed);
                 }
             }
             videoSimProcessed.putFrame(videoSimFrameProcessed);

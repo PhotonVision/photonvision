@@ -71,8 +71,7 @@ public class TargetModel {
     }
 
     /**
-     * Creates a cuboid target model given the length, width, height. The model has eight
-     * vertices:
+     * Creates a cuboid target model given the length, width, height. The model has eight vertices:
      *
      * <ul>
      *   <li>Point 0: [length/2, -width/2, -height/2]
@@ -86,16 +85,16 @@ public class TargetModel {
      * </ul>
      */
     public TargetModel(double lengthMeters, double widthMeters, double heightMeters) {
-        this(List.of(
-            new Translation3d(lengthMeters / 2.0, -widthMeters / 2.0, -heightMeters / 2.0),
-            new Translation3d(lengthMeters / 2.0, widthMeters / 2.0, -heightMeters / 2.0),
-            new Translation3d(lengthMeters / 2.0, widthMeters / 2.0, heightMeters / 2.0),
-            new Translation3d(lengthMeters / 2.0, -widthMeters / 2.0, heightMeters / 2.0),
-            new Translation3d(-lengthMeters / 2.0, -widthMeters / 2.0, heightMeters / 2.0),
-            new Translation3d(-lengthMeters / 2.0, widthMeters / 2.0, heightMeters / 2.0),
-            new Translation3d(-lengthMeters / 2.0, widthMeters / 2.0, -heightMeters / 2.0),
-            new Translation3d(-lengthMeters / 2.0, -widthMeters / 2.0, -heightMeters / 2.0)
-        ));
+        this(
+                List.of(
+                        new Translation3d(lengthMeters / 2.0, -widthMeters / 2.0, -heightMeters / 2.0),
+                        new Translation3d(lengthMeters / 2.0, widthMeters / 2.0, -heightMeters / 2.0),
+                        new Translation3d(lengthMeters / 2.0, widthMeters / 2.0, heightMeters / 2.0),
+                        new Translation3d(lengthMeters / 2.0, -widthMeters / 2.0, heightMeters / 2.0),
+                        new Translation3d(-lengthMeters / 2.0, -widthMeters / 2.0, heightMeters / 2.0),
+                        new Translation3d(-lengthMeters / 2.0, widthMeters / 2.0, heightMeters / 2.0),
+                        new Translation3d(-lengthMeters / 2.0, widthMeters / 2.0, -heightMeters / 2.0),
+                        new Translation3d(-lengthMeters / 2.0, -widthMeters / 2.0, -heightMeters / 2.0)));
     }
 
     /**
@@ -111,8 +110,8 @@ public class TargetModel {
      *
      * <i>Q: Why these vertices?</i> A: This target should be oriented to the camera every frame, much
      * like a sprite/decal, and these vertices represent the ellipse vertices (maxima). These vertices
-     * are used for drawing the image of this sphere, but do not match the corners that will be published
-     * by photonvision.
+     * are used for drawing the image of this sphere, but do not match the corners that will be
+     * published by photonvision.
      */
     public TargetModel(double diameterMeters) {
         double radius = diameterMeters / 2.0;

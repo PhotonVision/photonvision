@@ -159,8 +159,9 @@ public class OpenCVTest {
         assertTrue(circulation > 0, "2d fiducial points aren't counter-clockwise");
 
         // undo projection distortion
-        imagePoints = OpenCVHelp.undistortPoints(prop.getIntrinsics(), prop.getDistCoeffs(), imagePoints);
-        
+        imagePoints =
+                OpenCVHelp.undistortPoints(prop.getIntrinsics(), prop.getDistCoeffs(), imagePoints);
+
         // test projection results after moving camera
         var avgCenterRot1 = prop.getPixelRot(OpenCVHelp.avgPoint(imagePoints));
         cameraPose =

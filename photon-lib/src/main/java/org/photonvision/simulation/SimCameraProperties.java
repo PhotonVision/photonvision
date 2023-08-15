@@ -322,7 +322,9 @@ public class SimCameraProperties {
      * @param points Points of the contour
      */
     public double getContourAreaPercent(Point[] points) {
-        return Imgproc.contourArea(new MatOfPoint2f(OpenCVHelp.getConvexHull(points))) / getResArea() * 100;
+        return Imgproc.contourArea(new MatOfPoint2f(OpenCVHelp.getConvexHull(points)))
+                / getResArea()
+                * 100;
     }
 
     /** The yaw from the principal point of this camera to the pixel x value. Positive values left. */
@@ -563,13 +565,13 @@ public class SimCameraProperties {
         if (avgErrorPx == 0 && errorStdDevPx == 0) return points;
 
         Point[] noisyPts = new Point[points.length];
-        for(int i = 0; i < points.length; i++) {
+        for (int i = 0; i < points.length; i++) {
             var p = points[i];
             // error pixels in random direction
             double error = avgErrorPx + rand.nextGaussian() * errorStdDevPx;
             double errorAngle = rand.nextDouble() * 2 * Math.PI - Math.PI;
-            noisyPts[i] = new Point(
-                    p.x + error * Math.cos(errorAngle), p.y + error * Math.sin(errorAngle));
+            noisyPts[i] =
+                    new Point(p.x + error * Math.cos(errorAngle), p.y + error * Math.sin(errorAngle));
         }
         return noisyPts;
     }
