@@ -176,8 +176,8 @@ public class SimCameraProperties {
         var distCoeff = VecBuilder.fill(0, 0, 0, 0, 0);
 
         // assume centered principal point (pixels)
-        double cx = resWidth / 2.0;
-        double cy = resHeight / 2.0;
+        double cx = resWidth / 2.0 - 0.5;
+        double cy = resHeight / 2.0 - 0.5;
 
         // use given fov to determine focal point (pixels)
         double fx = cx / Math.tan(fovWidth.getRadians() / 2.0);
