@@ -33,7 +33,8 @@ import org.photonvision.vision.opencv.DualOffsetValues;
 public class TargetCalculationsTest {
 
     private static Size imageSize = new Size(800, 600);
-    private static Point imageCenterPoint = new Point(imageSize.width / 2.0 - 0.5, imageSize.height / 2.0 - 0.5);
+    private static Point imageCenterPoint =
+            new Point(imageSize.width / 2.0 - 0.5, imageSize.height / 2.0 - 0.5);
     private static final double diagFOV = Math.toRadians(70.0);
 
     private static final FrameStaticProperties props =
@@ -59,23 +60,41 @@ public class TargetCalculationsTest {
     public void yawPitchTest() {
         double targetPixelOffsetX = 100;
         double targetPixelOffsetY = 100;
-        var targetCenterPoint = new Point(imageCenterPoint.x + targetPixelOffsetX, imageCenterPoint.y + targetPixelOffsetY);
+        var targetCenterPoint =
+                new Point(imageCenterPoint.x + targetPixelOffsetX, imageCenterPoint.y + targetPixelOffsetY);
 
-        var targetYawPitch = TargetCalculations.calculateYawPitch(
-            imageCenterPoint.x, targetCenterPoint.x, params.horizontalFocalLength,
-            imageCenterPoint.y, targetCenterPoint.y, params.verticalFocalLength);
+        var targetYawPitch =
+                TargetCalculations.calculateYawPitch(
+                        imageCenterPoint.x,
+                        targetCenterPoint.x,
+                        params.horizontalFocalLength,
+                        imageCenterPoint.y,
+                        targetCenterPoint.y,
+                        params.verticalFocalLength);
 
         assertTrue(targetYawPitch.getFirst() > 0, "Yaw is not positive right");
         assertTrue(targetYawPitch.getSecond() < 0, "Pitch is not positive up");
 
-        var fovs = FrameStaticProperties.calculateHorizontalVerticalFoV(diagFOV, (int)imageSize.width, (int)imageSize.height);
-        var maxYaw = TargetCalculations.calculateYawPitch(
-            imageCenterPoint.x, 2*imageCenterPoint.x, params.horizontalFocalLength,
-            imageCenterPoint.y, imageCenterPoint.y, params.verticalFocalLength);
+        var fovs =
+                FrameStaticProperties.calculateHorizontalVerticalFoV(
+                        diagFOV, (int) imageSize.width, (int) imageSize.height);
+        var maxYaw =
+                TargetCalculations.calculateYawPitch(
+                        imageCenterPoint.x,
+                        2 * imageCenterPoint.x,
+                        params.horizontalFocalLength,
+                        imageCenterPoint.y,
+                        imageCenterPoint.y,
+                        params.verticalFocalLength);
         assertEquals(fovs.getFirst() / 2.0, maxYaw.getFirst(), 0.025, "Horizontal FOV check failed");
-        var maxPitch = TargetCalculations.calculateYawPitch(
-            imageCenterPoint.x, imageCenterPoint.x, params.horizontalFocalLength,
-            imageCenterPoint.y, 0, params.verticalFocalLength);
+        var maxPitch =
+                TargetCalculations.calculateYawPitch(
+                        imageCenterPoint.x,
+                        imageCenterPoint.x,
+                        params.horizontalFocalLength,
+                        imageCenterPoint.y,
+                        0,
+                        params.verticalFocalLength);
         assertEquals(fovs.getSecond() / 2.0, maxPitch.getSecond(), 0.025, "Vertical FOV check failed");
     }
 

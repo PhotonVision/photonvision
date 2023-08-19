@@ -62,15 +62,14 @@ public class FrameStaticProperties {
         imageArea = this.imageWidth * this.imageHeight;
 
         // pinhole model calculations
-        if(cameraCalibration != null) { // Use calibration data
+        if (cameraCalibration != null) { // Use calibration data
             var camIntrinsics = cameraCalibration.getCameraIntrinsicsMat();
             centerX = camIntrinsics.get(0, 2)[0];
             centerY = camIntrinsics.get(1, 2)[0];
             centerPoint = new Point(centerX, centerY);
             horizontalFocalLength = camIntrinsics.get(0, 0)[0];
             verticalFocalLength = camIntrinsics.get(1, 1)[0];
-        }
-        else { // No calibration data. Calculate from user provided diagonal FOV
+        } else { // No calibration data. Calculate from user provided diagonal FOV
             centerX = (this.imageWidth / 2.0) - 0.5;
             centerY = (this.imageHeight / 2.0) - 0.5;
             centerPoint = new Point(centerX, centerY);
@@ -86,7 +85,7 @@ public class FrameStaticProperties {
 
     /**
      * Calculates the horizontal and vertical FOV components from a given diagonal FOV and image size.
-     * 
+     *
      * @param diagonalFoV Diagonal FOV in degrees
      * @param imageWidth Image width in pixels
      * @param imageHeight Image height in pixels
@@ -99,8 +98,7 @@ public class FrameStaticProperties {
 
         double horizontalView =
                 Math.atan(Math.tan(diagonalFoV / 2) * (imageWidth / diagonalAspect)) * 2;
-        double verticalView =
-                Math.atan(Math.tan(diagonalFoV / 2) * (imageHeight / diagonalAspect)) * 2;
+        double verticalView = Math.atan(Math.tan(diagonalFoV / 2) * (imageHeight / diagonalAspect)) * 2;
 
         return new DoubleCouple(Math.toDegrees(horizontalView), Math.toDegrees(verticalView));
     }

@@ -26,7 +26,7 @@ public class TargetCalculations {
     /**
      * Calculates the yaw and pitch of a point in the image. Yaw and pitch must be calculated together
      * to account for perspective distortion. Yaw is positive right, and pitch is positive up.
-     * 
+     *
      * @param offsetCenterX The X value of the offset principal point (cx) in pixels
      * @param targetCenterX The X value of the target's center point in pixels
      * @param horizontalFocalLength The horizontal focal length (fx) in pixels
@@ -36,10 +36,15 @@ public class TargetCalculations {
      * @return The yaw and pitch from the principal axis to the target center, in degrees.
      */
     public static DoubleCouple calculateYawPitch(
-            double offsetCenterX, double targetCenterX, double horizontalFocalLength,
-            double offsetCenterY, double targetCenterY, double verticalFocalLength) {
+            double offsetCenterX,
+            double targetCenterX,
+            double horizontalFocalLength,
+            double offsetCenterY,
+            double targetCenterY,
+            double verticalFocalLength) {
         double yaw = Math.atan((targetCenterX - offsetCenterX) / horizontalFocalLength);
-        double pitch = Math.atan((offsetCenterY - targetCenterY) / (verticalFocalLength / Math.cos(yaw)));
+        double pitch =
+                Math.atan((offsetCenterY - targetCenterY) / (verticalFocalLength / Math.cos(yaw)));
         return new DoubleCouple(Math.toDegrees(yaw), Math.toDegrees(pitch));
     }
 

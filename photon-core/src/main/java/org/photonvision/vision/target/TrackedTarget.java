@@ -73,9 +73,14 @@ public class TrackedTarget implements Releasable {
             AprilTagDetection tagDetection,
             AprilTagPoseEstimate tagPose,
             TargetCalculationParameters params) {
-        var yawPitch = TargetCalculations.calculateYawPitch(
-                params.cameraCenterPoint.x, tagDetection.getCenterX(), params.horizontalFocalLength,
-                params.cameraCenterPoint.y, tagDetection.getCenterY(), params.verticalFocalLength);
+        var yawPitch =
+                TargetCalculations.calculateYawPitch(
+                        params.cameraCenterPoint.x,
+                        tagDetection.getCenterX(),
+                        params.horizontalFocalLength,
+                        params.cameraCenterPoint.y,
+                        tagDetection.getCenterY(),
+                        params.verticalFocalLength);
         m_yaw = yawPitch.getFirst();
         m_pitch = yawPitch.getSecond();
         var bestPose = new Transform3d();
@@ -136,9 +141,14 @@ public class TrackedTarget implements Releasable {
     }
 
     public TrackedTarget(ArucoDetectionResult result, TargetCalculationParameters params) {
-        var yawPitch = TargetCalculations.calculateYawPitch(
-                params.cameraCenterPoint.x, result.getCenterX(), params.horizontalFocalLength,
-                params.cameraCenterPoint.y, result.getCenterY(), params.verticalFocalLength);
+        var yawPitch =
+                TargetCalculations.calculateYawPitch(
+                        params.cameraCenterPoint.x,
+                        result.getCenterX(),
+                        params.horizontalFocalLength,
+                        params.cameraCenterPoint.y,
+                        result.getCenterY(),
+                        params.verticalFocalLength);
         m_yaw = yawPitch.getFirst();
         m_pitch = yawPitch.getSecond();
 
@@ -255,9 +265,14 @@ public class TrackedTarget implements Releasable {
                         params.robotOffsetPointMode);
 
         // order of this stuff doesnt matter though
-        var yawPitch = TargetCalculations.calculateYawPitch(
-                m_robotOffsetPoint.x, m_targetOffsetPoint.x, params.horizontalFocalLength,
-                m_robotOffsetPoint.y, m_targetOffsetPoint.y, params.verticalFocalLength);
+        var yawPitch =
+                TargetCalculations.calculateYawPitch(
+                        m_robotOffsetPoint.x,
+                        m_targetOffsetPoint.x,
+                        params.horizontalFocalLength,
+                        m_robotOffsetPoint.y,
+                        m_targetOffsetPoint.y,
+                        params.verticalFocalLength);
         m_yaw = yawPitch.getFirst();
         m_pitch = yawPitch.getSecond();
 
