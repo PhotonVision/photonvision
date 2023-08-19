@@ -39,7 +39,7 @@ public class FrameStaticProperties {
      * Instantiates a new Frame static properties.
      *
      * @param mode The Video Mode of the camera.
-     * @param fov The fov of the image.
+     * @param fov The FOV (Field Of Vision) of the image in degrees.
      */
     public FrameStaticProperties(VideoMode mode, double fov, CameraCalibrationCoefficients cal) {
         this(mode != null ? mode.width : 1, mode != null ? mode.height : 1, fov, cal);
@@ -48,9 +48,9 @@ public class FrameStaticProperties {
     /**
      * Instantiates a new Frame static properties.
      *
-     * @param imageWidth The width of the image.
-     * @param imageHeight The width of the image.
-     * @param fov The fov of the image.
+     * @param imageWidth The width of the image in pixels.
+     * @param imageHeight The width of the image in pixels.
+     * @param fov The FOV (Field Of Vision) of the image in degrees.
      */
     public FrameStaticProperties(
             int imageWidth, int imageHeight, double fov, CameraCalibrationCoefficients cal) {
@@ -61,30 +61,47 @@ public class FrameStaticProperties {
 
         imageArea = this.imageWidth * this.imageHeight;
 
-        // Todo -- if we have calibration, use it's center point?
-        centerX = ((double) this.imageWidth / 2) - 0.5;
-        centerY = ((double) this.imageHeight / 2) - 0.5;
-        centerPoint = new Point(centerX, centerY);
-
-        // TODO if we have calibration use it here instead
         // pinhole model calculations
-        DoubleCouple horizVertViews =
-                calculateHorizontalVerticalFoV(this.fov, this.imageWidth, this.imageHeight);
+        if(cameraCalibration != null) { // Use calibration data
+            var camIntrinsics = cameraCalibration.getCameraIntrinsicsMat();
+            centerX = camIntrinsics.get(0, 2)[0];
+            centerY = camIntrinsics.get(1, 2)[0];
+            centerPoint = new Point(centerX, centerY);
+            horizontalFocalLength = camIntrinsics.get(0, 0)[0];
+            verticalFocalLength = camIntrinsics.get(1, 1)[0];
+        }
+        else { // No calibration data. Calculate from user provided diagonal FOV
+            centerX = (this.imageWidth / 2.0) - 0.5;
+            centerY = (this.imageHeight / 2.0) - 0.5;
+            centerPoint = new Point(centerX, centerY);
 
-        horizontalFocalLength = this.imageWidth / (2 * Math.tan(horizVertViews.getFirst() / 2));
-        verticalFocalLength = this.imageHeight / (2 * Math.tan(horizVertViews.getSecond() / 2));
+            DoubleCouple horizVertViews =
+                    calculateHorizontalVerticalFoV(this.fov, this.imageWidth, this.imageHeight);
+            double horizFOV = Math.toRadians(horizVertViews.getFirst());
+            double vertFOV = Math.toRadians(horizVertViews.getSecond());
+            horizontalFocalLength = (this.imageWidth / 2.0) / Math.tan(horizFOV / 2.0);
+            verticalFocalLength = (this.imageHeight / 2.0) / Math.tan(vertFOV / 2.0);
+        }
     }
 
+    /**
+     * Calculates the horizontal and vertical FOV components from a given diagonal FOV and image size.
+     * 
+     * @param diagonalFoV Diagonal FOV in degrees
+     * @param imageWidth Image width in pixels
+     * @param imageHeight Image height in pixels
+     * @return Horizontal and vertical FOV in degrees
+     */
     public static DoubleCouple calculateHorizontalVerticalFoV(
             double diagonalFoV, int imageWidth, int imageHeight) {
-        double diagonalView = Math.toRadians(diagonalFoV);
+        diagonalFoV = Math.toRadians(diagonalFoV);
         double diagonalAspect = Math.hypot(imageWidth, imageHeight);
 
         double horizontalView =
-                Math.atan(Math.tan(diagonalView / 2) * (imageWidth / diagonalAspect)) * 2;
+                Math.atan(Math.tan(diagonalFoV / 2) * (imageWidth / diagonalAspect)) * 2;
         double verticalView =
-                Math.atan(Math.tan(diagonalView / 2) * (imageHeight / diagonalAspect)) * 2;
+                Math.atan(Math.tan(diagonalFoV / 2) * (imageHeight / diagonalAspect)) * 2;
 
-        return new DoubleCouple(horizontalView, verticalView);
+        return new DoubleCouple(Math.toDegrees(horizontalView), Math.toDegrees(verticalView));
     }
 }

@@ -23,14 +23,24 @@ import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.opencv.DualOffsetValues;
 
 public class TargetCalculations {
-    public static double calculateYaw(
-            double offsetCenterX, double targetCenterX, double horizontalFocalLength) {
-        return Math.toDegrees(Math.atan((offsetCenterX - targetCenterX) / horizontalFocalLength));
-    }
-
-    public static double calculatePitch(
+    /**
+     * Calculates the yaw and pitch of a point in the image. Yaw and pitch must be calculated together
+     * to account for perspective distortion. Yaw is positive right, and pitch is positive up.
+     * 
+     * @param offsetCenterX The X value of the offset principal point (cx) in pixels
+     * @param targetCenterX The X value of the target's center point in pixels
+     * @param horizontalFocalLength The horizontal focal length (fx) in pixels
+     * @param offsetCenterY The Y value of the offset principal point (cy) in pixels
+     * @param targetCenterY The Y value of the target's center point in pixels
+     * @param verticalFocalLength The vertical focal length (fy) in pixels
+     * @return The yaw and pitch from the principal axis to the target center, in degrees.
+     */
+    public static DoubleCouple calculateYawPitch(
+            double offsetCenterX, double targetCenterX, double horizontalFocalLength,
             double offsetCenterY, double targetCenterY, double verticalFocalLength) {
-        return -Math.toDegrees(Math.atan((offsetCenterY - targetCenterY) / verticalFocalLength));
+        double yaw = Math.atan((targetCenterX - offsetCenterX) / horizontalFocalLength);
+        double pitch = Math.atan((offsetCenterY - targetCenterY) / (verticalFocalLength / Math.cos(yaw)));
+        return new DoubleCouple(Math.toDegrees(yaw), Math.toDegrees(pitch));
     }
 
     @SuppressWarnings("DuplicatedCode")

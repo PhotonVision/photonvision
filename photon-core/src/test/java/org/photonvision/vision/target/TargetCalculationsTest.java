@@ -17,6 +17,7 @@
 package org.photonvision.vision.target;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +33,7 @@ import org.photonvision.vision.opencv.DualOffsetValues;
 public class TargetCalculationsTest {
 
     private static Size imageSize = new Size(800, 600);
-    private static Point imageCenterPoint = new Point(imageSize.width / 2, imageSize.height / 2);
+    private static Point imageCenterPoint = new Point(imageSize.width / 2.0 - 0.5, imageSize.height / 2.0 - 0.5);
     private static final double diagFOV = Math.toRadians(70.0);
 
     private static final FrameStaticProperties props =
@@ -55,33 +56,27 @@ public class TargetCalculationsTest {
     }
 
     @Test
-    public void yawTest() {
-        var targetPixelOffsetX = 100;
-        var targetCenterPoint = new Point(imageCenterPoint.x + targetPixelOffsetX, imageCenterPoint.y);
+    public void yawPitchTest() {
+        double targetPixelOffsetX = 100;
+        double targetPixelOffsetY = 100;
+        var targetCenterPoint = new Point(imageCenterPoint.x + targetPixelOffsetX, imageCenterPoint.y + targetPixelOffsetY);
 
-        var trueYaw =
-                Math.atan((imageCenterPoint.x - targetCenterPoint.x) / params.horizontalFocalLength);
+        var targetYawPitch = TargetCalculations.calculateYawPitch(
+            imageCenterPoint.x, targetCenterPoint.x, params.horizontalFocalLength,
+            imageCenterPoint.y, targetCenterPoint.y, params.verticalFocalLength);
 
-        var yaw =
-                TargetCalculations.calculateYaw(
-                        imageCenterPoint.x, targetCenterPoint.x, params.horizontalFocalLength);
+        assertTrue(targetYawPitch.getFirst() > 0, "Yaw is not positive right");
+        assertTrue(targetYawPitch.getSecond() < 0, "Pitch is not positive up");
 
-        assertEquals(Math.toDegrees(trueYaw), yaw, 0.025, "Yaw not as expected");
-    }
-
-    @Test
-    public void pitchTest() {
-        var targetPixelOffsetY = 100;
-        var targetCenterPoint = new Point(imageCenterPoint.x, imageCenterPoint.y + targetPixelOffsetY);
-
-        var truePitch =
-                Math.atan((imageCenterPoint.y - targetCenterPoint.y) / params.verticalFocalLength);
-
-        var pitch =
-                TargetCalculations.calculatePitch(
-                        imageCenterPoint.y, targetCenterPoint.y, params.verticalFocalLength);
-
-        assertEquals(Math.toDegrees(truePitch) * -1, pitch, 0.025, "Pitch not as expected");
+        var fovs = FrameStaticProperties.calculateHorizontalVerticalFoV(diagFOV, (int)imageSize.width, (int)imageSize.height);
+        var maxYaw = TargetCalculations.calculateYawPitch(
+            imageCenterPoint.x, 2*imageCenterPoint.x, params.horizontalFocalLength,
+            imageCenterPoint.y, imageCenterPoint.y, params.verticalFocalLength);
+        assertEquals(fovs.getFirst() / 2.0, maxYaw.getFirst(), 0.025, "Horizontal FOV check failed");
+        var maxPitch = TargetCalculations.calculateYawPitch(
+            imageCenterPoint.x, imageCenterPoint.x, params.horizontalFocalLength,
+            imageCenterPoint.y, 0, params.verticalFocalLength);
+        assertEquals(fovs.getSecond() / 2.0, maxPitch.getSecond(), 0.025, "Vertical FOV check failed");
     }
 
     @Test
@@ -188,8 +183,8 @@ public class TargetCalculationsTest {
     public void testCameraFOVCalculation() {
         final DoubleCouple glowormHorizVert =
                 FrameStaticProperties.calculateHorizontalVerticalFoV(74.8, 640, 480);
-        var gwHorizDeg = Math.toDegrees(glowormHorizVert.getFirst());
-        var gwVertDeg = Math.toDegrees(glowormHorizVert.getSecond());
+        var gwHorizDeg = glowormHorizVert.getFirst();
+        var gwVertDeg = glowormHorizVert.getSecond();
         assertEquals(62.7, gwHorizDeg, .3);
         assertEquals(49, gwVertDeg, .3);
     }
