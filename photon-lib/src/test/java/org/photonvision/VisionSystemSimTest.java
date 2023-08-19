@@ -384,7 +384,6 @@ class VisionSystemSimTest {
         // 1. These are calculated with the average of the minimum area rectangle, which does not
         // actually find the target center because of perspective distortion.
         // 2. Yaw and pitch are calculated separately which gives incorrect pitch values.
-        // Specifically, the corrected pitch would be pitch * cos(yaw).
         var res = camera.getLatestResult();
         assertTrue(res.hasTargets());
         var tgt = res.getBestTarget();

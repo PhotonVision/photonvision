@@ -378,10 +378,6 @@ public class SimCameraProperties {
      *
      * <pre>focal length y ⟶ (focal length y / cos(arctan(pixel x offset / focal length x)))</pre>
      *
-     * More simply, the pitch angle has to be corrected by doing:
-     *
-     * <pre>pitch * cos(yaw)</pre>
-     *
      * @return Rotation3d with yaw and pitch of the line projected out of the camera from the given
      *     pixel (roll is zero).
      */
