@@ -25,25 +25,26 @@ import java.util.List;
 import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point3;
 import org.photonvision.vision.opencv.Releasable;
-import org.photonvision.vision.pipe.impl.SolvePNPPipe;
 import org.photonvision.vision.pipe.impl.CornerDetectionPipe;
+import org.photonvision.vision.pipe.impl.SolvePNPPipe;
 
 /**
  * A model representing the vertices of targets with known shapes. The vertices are in the EDN
- * coordinate system. When creating a TargetModel, the vertices must be supplied in a certain
- * order to ensure correct correspondence with corners detected in 2D for use with SolvePNP.
- * For planar targets, we expect the target's Z-axis to point towards the camera.
- * 
- * <p>{@link SolvePNPPipe} expects 3d object points to correspond to the {@link CornerDetectionPipe} implementation.
- * The 2d corner detection finds the 4 extreme corners (bottom-left, bottom-right, top-right, top-left).
- * To match our expectations, this means the model vertices would look like:
+ * coordinate system. When creating a TargetModel, the vertices must be supplied in a certain order
+ * to ensure correct correspondence with corners detected in 2D for use with SolvePNP. For planar
+ * targets, we expect the target's Z-axis to point towards the camera.
+ *
+ * <p>{@link SolvePNPPipe} expects 3d object points to correspond to the {@link CornerDetectionPipe}
+ * implementation. The 2d corner detection finds the 4 extreme corners (bottom-left, bottom-right,
+ * top-right, top-left). To match our expectations, this means the model vertices would look like:
+ *
  * <ul>
  *   <li>(+x, +y, 0)
  *   <li>(-x, +y, 0)
  *   <li>(-x, -y, 0)
  *   <li>(+x, -y, 0)
  * </ul>
- * 
+ *
  * <p>AprilTag models are currently only used for drawing on the output stream.
  */
 public enum TargetModel implements Releasable {

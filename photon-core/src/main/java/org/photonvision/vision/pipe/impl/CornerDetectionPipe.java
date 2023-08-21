@@ -28,8 +28,8 @@ import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.target.TrackedTarget;
 
 /**
- * Determines the target corners of the {@link TrackedTarget}. The {@link CornerDetectionPipeParameters}
- * affect how these corners are calculated.
+ * Determines the target corners of the {@link TrackedTarget}. The {@link
+ * CornerDetectionPipeParameters} affect how these corners are calculated.
  */
 public class CornerDetectionPipe
         extends CVPipe<
@@ -98,7 +98,7 @@ public class CornerDetectionPipe
     private static double distanceBetween(Point a, Point b) {
         double xDelta = a.x - b.x;
         double yDelta = a.y - b.y;
-        return Math.sqrt(xDelta*xDelta + yDelta*yDelta);
+        return Math.sqrt(xDelta * xDelta + yDelta * yDelta);
     }
 
     /**
@@ -111,8 +111,7 @@ public class CornerDetectionPipe
     private List<Point> detectExtremeCornersByApproxPolyDp(TrackedTarget target, boolean convexHull) {
         var centroid = target.getMinAreaRect().center;
         Comparator<Point> compareCenterDist =
-                Comparator.comparingDouble(
-                        (Point point) -> distanceBetween(centroid, point));
+                Comparator.comparingDouble((Point point) -> distanceBetween(centroid, point));
 
         MatOfPoint2f targetContour;
         if (convexHull) {

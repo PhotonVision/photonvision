@@ -25,7 +25,6 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.util.TestUtils;
@@ -131,7 +130,9 @@ public class SolvePNPTest {
         var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
         // these numbers are not *accurate*, but they are known and expected
         var expectedTrl = new Translation3d(1.1, -0.05, -0.05);
-        assertTrue(expectedTrl.getDistance(pose.getTranslation()) < 0.05, "SolvePNP translation estimation failed");
+        assertTrue(
+                expectedTrl.getDistance(pose.getTranslation()) < 0.05,
+                "SolvePNP translation estimation failed");
         // We expect the object axes to be in NWU, with the x-axis coming out of the tag
         // This target is facing the camera almost parallel, so in world space:
         // The object's X axis should be (-1, 0, 0)
@@ -183,14 +184,19 @@ public class SolvePNPTest {
 
         var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
         // these numbers are not *accurate*, but they are known and expected
-        var expectedTrl = new Translation3d(Units.inchesToMeters(236), Units.inchesToMeters(36), Units.inchesToMeters(-53));
-        assertTrue(expectedTrl.getDistance(pose.getTranslation()) < 0.05, "SolvePNP translation estimation failed");
+        var expectedTrl =
+                new Translation3d(
+                        Units.inchesToMeters(236), Units.inchesToMeters(36), Units.inchesToMeters(-53));
+        assertTrue(
+                expectedTrl.getDistance(pose.getTranslation()) < 0.05,
+                "SolvePNP translation estimation failed");
         // We expect the object axes to be in NWU, with the x-axis coming out of the tag
         // Rotation around Z axis (yaw) should be mostly facing us
         var xAxis = new Translation3d(1, 0, 0);
         var yAxis = new Translation3d(0, 1, 0);
         var zAxis = new Translation3d(0, 0, 1);
-        var expectedRot = new Rotation3d(Math.toRadians(-20), Math.toRadians(-20), Math.toRadians(-120));
+        var expectedRot =
+                new Rotation3d(Math.toRadians(-20), Math.toRadians(-20), Math.toRadians(-120));
         assertTrue(xAxis.rotateBy(expectedRot).getDistance(xAxis.rotateBy(pose.getRotation())) < 0.1);
         assertTrue(yAxis.rotateBy(expectedRot).getDistance(yAxis.rotateBy(pose.getRotation())) < 0.1);
         assertTrue(zAxis.rotateBy(expectedRot).getDistance(zAxis.rotateBy(pose.getRotation())) < 0.1);
