@@ -28,6 +28,11 @@ let controls: TrackballControls;
 
 let previousTargets: Object3D[] = [];
 const drawTargets = (targets: PhotonTarget[]) => {
+  // Check here, since if we check in watchEffect this never gets called
+  if(!(scene !== undefined && camera !== undefined && renderer !== undefined && controls !== undefined && props.targets)) {
+    return
+  }
+
   scene.remove(...previousTargets);
   previousTargets = [];
 
@@ -166,9 +171,7 @@ onBeforeUnmount(() => {
   window.removeEventListener("resize", onWindowResize);
 });
 watchEffect(() => {
-  if(scene !== undefined && camera !== undefined && renderer !== undefined && controls !== undefined) {
     drawTargets(props.targets);
-  }
 });
 </script>
 
