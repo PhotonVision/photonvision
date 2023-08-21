@@ -88,6 +88,7 @@ public class NetworkConfig {
         }
     }
 
+    @JsonIgnore
     public String getEscapedIfaceName() {
         return "\"" + networkManagerIface + "\"";
     }
