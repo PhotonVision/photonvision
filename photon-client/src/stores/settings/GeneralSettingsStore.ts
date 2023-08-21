@@ -3,7 +3,8 @@ import type {
     GeneralSettings,
     LightingSettings,
     MetricData,
-    NetworkSettings
+    NetworkSettings, 
+    NetworkSettingsRequest
 } from "@/types/SettingTypes";
 import { NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
@@ -27,11 +28,12 @@ export const useSettingsStore = defineStore("settings", {
         },
         network: {
             ntServerAddress: "",
-            shouldMange: true,
+            shouldManage: true,
             connectionType: NetworkConnectionType.DHCP,
             staticIp: "",
             hostname: "photonvision",
-            runNTServer: false
+            runNTServer: false,
+            networkInterfaceNames: [],
         },
         lighting: {
             supported: true,
@@ -82,17 +84,16 @@ export const useSettingsStore = defineStore("settings", {
             this.network = data.networkSettings;
         },
         saveGeneralSettings() {
-            const payload: Required<NetworkSettings> = {
+            const payload: Required<NetworkSettingsRequest> = {
                 connectionType: this.network.connectionType,
                 hostname: this.network.hostname,
                 networkManagerIface: this.network.networkManagerIface || "",
                 ntServerAddress: this.network.ntServerAddress,
-                physicalInterface: this.network.physicalInterface || "",
                 runNTServer: this.network.runNTServer,
                 setDHCPcommand: this.network.setDHCPcommand || "",
                 setStaticCommand: this.network.setStaticCommand || "",
-                shouldMange: this.network.shouldMange,
-                staticIp: this.network.staticIp
+                shouldManage: this.network.shouldManage,
+                staticIp: this.network.staticIp,
             };
             return axios.post("/settings/general", payload);
         },

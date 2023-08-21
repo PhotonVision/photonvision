@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.networking.NetworkMode;
+import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.file.JacksonUtils;
 
 public class NetworkConfig {
@@ -42,7 +43,6 @@ public class NetworkConfig {
     @JsonIgnore public static final String NM_IP_STRING = "${ipaddr}";
 
     public String networkManagerIface = "Wired connection 1";
-    public String physicalInterface = "eth0";
     public String setStaticCommand =
             "nmcli con mod ${interface} ipv4.addresses ${ipaddr}/8 ipv4.method \"manual\" ipv6.method \"disabled\"";
     public String setDHCPcommand =
@@ -64,7 +64,6 @@ public class NetworkConfig {
             @JsonProperty("runNTServer") boolean runNTServer,
             @JsonProperty("shouldManage") boolean shouldManage,
             @JsonProperty("networkManagerIface") String networkManagerIface,
-            @JsonProperty("physicalInterface") String physicalInterface,
             @JsonProperty("setStaticCommand") String setStaticCommand,
             @JsonProperty("setDHCPcommand") String setDHCPcommand) {
         this.ntServerAddress = ntServerAddress;
@@ -73,7 +72,6 @@ public class NetworkConfig {
         this.hostname = hostname;
         this.runNTServer = runNTServer;
         this.networkManagerIface = networkManagerIface;
-        this.physicalInterface = physicalInterface;
         this.setStaticCommand = setStaticCommand;
         this.setDHCPcommand = setDHCPcommand;
         setShouldManage(shouldManage);
@@ -89,7 +87,12 @@ public class NetworkConfig {
     }
 
     @JsonIgnore
-    public String getEscapedIfaceName() {
+    public String getPhysicalInterfaceName() {
+        return NetworkUtils.getNMinfoForConnName(this.networkManagerIface).devName;
+    }
+
+    @JsonIgnore
+    public String getEscapedInterfaceName() {
         return "\"" + networkManagerIface + "\"";
     }
 
@@ -117,8 +120,6 @@ public class NetworkConfig {
                 + runNTServer
                 + ", networkManagerIface="
                 + networkManagerIface
-                + ", physicalInterface="
-                + physicalInterface
                 + ", setStaticCommand="
                 + setStaticCommand
                 + ", setDHCPcommand="

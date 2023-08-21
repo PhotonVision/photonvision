@@ -1,4 +1,4 @@
-import type { GeneralSettings, LightingSettings, MetricData, NetworkSettings } from "@/types/SettingTypes";
+import type { GeneralSettings, LightingSettings, MetricData, NetworkSettings, NetworkInterfaceType } from "@/types/SettingTypes";
 import type { ActivePipelineSettings } from "@/types/PipelineTypes";
 import type { LogLevel } from "@/types/SettingTypes";
 

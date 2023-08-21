@@ -24,6 +24,22 @@ export enum NetworkConnectionType {
     Static = 1
 }
 
+export interface NetworkInterfaceType {
+    connName: string,
+    devName: string
+}
+
+export interface NetworkSettingsRequest {
+    ntServerAddress: string
+    connectionType: NetworkConnectionType,
+    staticIp: string,
+    hostname: string,
+    runNTServer: boolean
+    shouldManage: boolean,
+    networkManagerIface?: string,
+    setStaticCommand?: string,
+    setDHCPcommand?: string,
+}
 export interface NetworkSettings {
     ntServerAddress: string
     connectionType: NetworkConnectionType,
@@ -32,9 +48,9 @@ export interface NetworkSettings {
     runNTServer: boolean
     shouldManage: boolean,
     networkManagerIface?: string,
-    physicalInterface?: string,
     setStaticCommand?: string,
-    setDHCPcommand?: string
+    setDHCPcommand?: string,
+    networkInterfaceNames: Array<NetworkInterfaceType>,
 }
 
 export interface LightingSettings {
