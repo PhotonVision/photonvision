@@ -50,7 +50,7 @@ const saveGeneralSettings = () => {
     .then((response) => {
       useStateStore().showSnackbarMessage({
         message: response.data.text || response.data,
-        color: "success",
+        color: "success"
       });
     })
     .catch((error) => {
@@ -60,24 +60,24 @@ const saveGeneralSettings = () => {
             color: "error",
             message: `Connection lost! Try the new static IP at ${
               useSettingsStore().network.staticIp
-            }:5800 or ${useSettingsStore().network.hostname}:5800?`,
+            }:5800 or ${useSettingsStore().network.hostname}:5800?`
           });
         } else {
           useStateStore().showSnackbarMessage({
             color: "error",
-            message: error.response.data.text || error.response.data,
+            message: error.response.data.text || error.response.data
           });
         }
       } else if (error.request) {
         useStateStore().showSnackbarMessage({
           color: "error",
           message:
-            "Error while trying to process the request! The backend didn't respond.",
+            "Error while trying to process the request! The backend didn't respond."
         });
       } else {
         useStateStore().showSnackbarMessage({
           color: "error",
-          message: "An error occurred while trying to process the request.",
+          message: "An error occurred while trying to process the request."
         });
       }
     });
@@ -101,15 +101,22 @@ const netManagerIfaceIdx = computed<number>({
   },
   set: (v) => {
     console.log(v);
-  },
+  }
 });
 </script>
 
 <template>
-  <v-card dark class="mb-3 pr-6 pb-3" style="background-color: #006492">
+  <v-card
+    dark
+    class="mb-3 pr-6 pb-3"
+    style="background-color: #006492"
+  >
     <v-card-title>Networking</v-card-title>
     <div class="ml-5">
-      <v-form ref="form" v-model="settingsValid">
+      <v-form
+        ref="form"
+        v-model="settingsValid"
+      >
         <cv-input
           v-model="useSettingsStore().network.ntServerAddress"
           label="Team Number/NetworkTables Server Address"
@@ -155,7 +162,7 @@ const netManagerIfaceIdx = computed<number>({
         <cv-input
           v-if="
             useSettingsStore().network.connectionType ===
-            NetworkConnectionType.Static
+              NetworkConnectionType.Static
           "
           v-model="useSettingsStore().network.staticIp"
           :input-cols="12 - 4"

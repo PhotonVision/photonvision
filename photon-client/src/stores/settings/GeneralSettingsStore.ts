@@ -33,7 +33,7 @@ export const useSettingsStore = defineStore("settings", {
             staticIp: "",
             hostname: "photonvision",
             runNTServer: false,
-            networkInterfaceNames: [],
+            networkInterfaceNames: []
         },
         lighting: {
             supported: true,
@@ -93,7 +93,7 @@ export const useSettingsStore = defineStore("settings", {
                 setDHCPcommand: this.network.setDHCPcommand || "",
                 setStaticCommand: this.network.setStaticCommand || "",
                 shouldManage: this.network.shouldManage,
-                staticIp: this.network.staticIp,
+                staticIp: this.network.staticIp
             };
             return axios.post("/settings/general", payload);
         },
