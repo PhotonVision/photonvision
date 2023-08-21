@@ -106,7 +106,7 @@ const saveGeneralSettings = () => {
           The NetworkTables Server Address is not set or is invalid. NetworkTables is unable to connect.
         </v-banner>
         <cv-radio
-          v-show="useSettingsStore().network.shouldMange"
+          v-show="useSettingsStore().network.shouldManage"
           v-model="useSettingsStore().network.connectionType"
           label="IP Assignment Mode"
           tooltip="DHCP will make the radio (router) automatically assign an IP address; this may result in an IP address that changes across reboots. Static IP assignment means that you pick the IP address and it won't change."
@@ -121,7 +121,7 @@ const saveGeneralSettings = () => {
           :rules="[v => isValidIPv4(v) || 'Invalid IPv4 address']"
         />
         <cv-input
-          v-show="useSettingsStore().network.shouldMange"
+          v-show="useSettingsStore().network.shouldManage"
           v-model="useSettingsStore().network.hostname"
           label="Hostname"
           :input-cols="12-3"

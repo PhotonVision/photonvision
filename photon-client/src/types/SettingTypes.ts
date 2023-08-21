@@ -30,7 +30,7 @@ export interface NetworkSettings {
     staticIp: string,
     hostname: string,
     runNTServer: boolean
-    shouldMange: boolean,
+    shouldManage: boolean,
     networkManagerIface?: string,
     physicalInterface?: string,
     setStaticCommand?: string,
