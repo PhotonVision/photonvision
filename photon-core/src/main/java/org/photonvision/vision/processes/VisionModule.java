@@ -459,6 +459,7 @@ public class VisionModule {
         HashMap<String, Object> map = new HashMap<>();
         HashMap<String, Object> subMap = new HashMap<>();
         subMap.put(propertyName, value);
+        map.put("cameraIndex", this.moduleIndex);
         map.put("mutatePipelineSettings", subMap);
 
         DataChangeService.getInstance()

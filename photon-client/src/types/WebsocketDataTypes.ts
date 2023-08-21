@@ -104,7 +104,8 @@ export interface IncomingWebsocketData {
         deviceips: string[]
     }
     mutatePipelineSettings?: Partial<ActivePipelineSettings>,
-    calibrationData?: WebsocketCalibrationData
+    cameraIndex?: number // Sent when mutating pipeline settings to check against currently active
+    calibrationData?: WebsocketCalibrationData,
 }
 
 export enum WebsocketPipelineType {
