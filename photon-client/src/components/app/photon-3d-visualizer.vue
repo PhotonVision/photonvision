@@ -21,16 +21,16 @@ const props = defineProps<{
   targets: PhotonTarget[]
 }>();
 
-let scene: Scene;
-let camera: PerspectiveCamera;
-let renderer: WebGLRenderer;
-let controls: TrackballControls;
+let scene: Scene | undefined;
+let camera: PerspectiveCamera | undefined;
+let renderer: WebGLRenderer | undefined;
+let controls: TrackballControls | undefined;
 
 let previousTargets: Object3D[] = [];
 const drawTargets = (targets: PhotonTarget[]) => {
   // Check here, since if we check in watchEffect this never gets called
-  if(!(scene !== undefined && camera !== undefined && renderer !== undefined && controls !== undefined && props.targets)) {
-    return
+  if(scene === undefined || camera === undefined || renderer === undefined || controls === undefined) {
+    return;
   }
 
   scene.remove(...previousTargets);
@@ -80,15 +80,21 @@ const onWindowResize = () => {
   const container = document.getElementById("container");
   const canvas = document.getElementById("view");
 
-  if(container !== null && canvas !== null && camera !== undefined && renderer !== undefined) {
-    canvas.style.width = container.clientWidth * 0.75 + "px";
-    canvas.style.height = container.clientWidth * 0.35 + "px";
-    camera.aspect = canvas.clientWidth / canvas.clientHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+  if(container === null || canvas === null || camera === undefined || renderer === undefined) {
+    return;
   }
+
+  canvas.style.width = container.clientWidth * 0.75 + "px";
+  canvas.style.height = container.clientWidth * 0.35 + "px";
+  camera.aspect = canvas.clientWidth / canvas.clientHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 };
 const resetCamFirstPerson = () => {
+  if(scene === undefined || camera === undefined || controls === undefined) {
+    return;
+  }
+
   controls.reset();
   camera.position.set(0.2, 0, 0);
   camera.up.set(0, 0, 1);
@@ -99,6 +105,10 @@ const resetCamFirstPerson = () => {
   }
 };
 const resetCamThirdPerson = () => {
+  if(scene === undefined || camera === undefined || controls === undefined) {
+    return;
+  }
+
   controls.reset();
   camera.position.set(-1.39, -1.09, 1.17);
   camera.up.set(0, 0, 1);
@@ -158,6 +168,10 @@ onMounted(() => {
   controls.update();
 
   const animate = () => {
+    if(scene === undefined || camera === undefined || renderer === undefined || controls === undefined) {
+      return;
+    }
+
     requestAnimationFrame(animate);
 
     controls.update();
