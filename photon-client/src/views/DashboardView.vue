@@ -28,10 +28,10 @@ const cameraViewType = computed<number[]>({
     return ret;
   },
   set: v => {
-    // useCameraSettingsStore().currentPipelineSettings.inputShouldShow = v.includes(0);
-    // useCameraSettingsStore().currentPipelineSettings.outputShouldShow = v.includes(1);
-    console.log(v)
-    useCameraSettingsStore().changeCurrentPipelineSetting({ inputShouldShow: v.includes(0), outputShouldShow: v.includes(1) }, true);
+    useCameraSettingsStore().changeCurrentPipelineSetting({
+      inputShouldShow: v.includes(0),
+      outputShouldShow: v.includes(1)
+    }, true);
   }
 });
 </script>
