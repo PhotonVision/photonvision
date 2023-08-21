@@ -127,6 +127,20 @@ const saveGeneralSettings = () => {
           :input-cols="12-3"
           :rules="[v => isValidHostname(v) || 'Invalid hostname']"
         />
+        <v-divider/>
+        <cv-input
+          v-show="useSettingsStore().network.shouldManage"
+          v-model="useSettingsStore().network.networkManagerIface"
+          label="NetworkManager interface"
+          :input-cols="12-3"
+        />
+        <cv-input
+          v-show="useSettingsStore().network.shouldManage"
+          v-model="useSettingsStore().network.physicalInterface"
+          label="Physical Interface"
+          :input-cols="12-3"
+        />
+        <v-divider/>
         <cv-switch
           v-model="useSettingsStore().network.runNTServer"
           label="Run NetworkTables Server (Debugging Only)"
