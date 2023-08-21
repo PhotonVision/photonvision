@@ -50,7 +50,7 @@ export interface NetworkSettings {
     networkManagerIface?: string,
     setStaticCommand?: string,
     setDHCPcommand?: string,
-    networkInterfaceNames: Array<NetworkInterfaceType>,
+    networkInterfaceNames: NetworkInterfaceType[]
 }
 
 export interface LightingSettings {

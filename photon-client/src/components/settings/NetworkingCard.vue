@@ -26,16 +26,14 @@ const isValidNetworkTablesIP = (v: string | undefined): boolean => {
 };
 const isValidIPv4 = (v: string | undefined) => {
   // https://stackoverflow.com/a/17871737
-  const ipv4Regex =
-    /^((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])$/;
+  const ipv4Regex = /^((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])$/;
 
   if (v === undefined) return false;
   return ipv4Regex.test(v);
 };
 const isValidHostname = (v: string | undefined) => {
   // https://stackoverflow.com/a/18494710
-  const hostnameRegex =
-    /^([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*)+(\.([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*))*$/;
+  const hostnameRegex = /^([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*)+(\.([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*))*$/;
 
   if (v === undefined) return false;
   return hostnameRegex.test(v);
@@ -160,10 +158,7 @@ const netManagerIfaceIdx = computed<number>({
           :list="['DHCP', 'Static']"
         />
         <cv-input
-          v-if="
-            useSettingsStore().network.connectionType ===
-              NetworkConnectionType.Static
-          "
+          v-if="useSettingsStore().network.connectionType === NetworkConnectionType.Static"
           v-model="useSettingsStore().network.staticIp"
           :input-cols="12 - 4"
           label="Static IP"
