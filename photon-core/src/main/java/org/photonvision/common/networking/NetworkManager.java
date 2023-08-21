@@ -17,6 +17,12 @@
 
 package org.photonvision.common.networking;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.hardware.Platform;
@@ -142,6 +148,40 @@ public class NetworkManager {
         } else {
             logger.info("Not managing network on non-Linux platforms");
         }
+    }
+
+    public static class NMDevicePath {
+        public NMDevicePath(String c, String d) {
+            conn = c;
+            device = d;
+        }
+        public String conn;
+        public String device;
+    }
+
+    private static List<NMDevicePath> GetAllActiveInterfaces() {
+        var ret = new ArrayList<NMDevicePath>();
+        try {
+            var shell = new ShellExec();
+            shell.executeBashCommand("nmcli -t -f GENERAL.CONNECTION,GENERAL.DEVICE device show", true);
+            Pattern pattern = Pattern.compile("GENERAL.CONNECTION:(.*)\nGENERAL.DEVICE:(.*)");
+            Matcher matcher = pattern.matcher(shell.getOutput());
+            matcher.find();
+            for (int i = 0; i < matcher.groupCount(); i++) {
+                ret.add(new NMDevicePath(
+                  matcher.group(0),
+                  matcher.group(0)
+                ));
+            }
+        } catch (IOException e) {
+            logger.error("Could not get active NM ifaces!", e);
+        }
+
+        return ret;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(NetworkManager.GetAllActiveInterfaces());
     }
 
     public void reinitialize() {
