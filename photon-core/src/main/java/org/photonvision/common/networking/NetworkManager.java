@@ -99,7 +99,7 @@ public class NetworkManager {
                     // set nmcli back to DHCP, and re-run dhclient -- this ought to grab a new IP address
                     shell.executeBashCommand(
                             config.setDHCPcommand.replace(
-                                    NetworkConfig.NM_IFACE_STRING, config.networkManagerIface));
+                                    NetworkConfig.NM_IFACE_STRING, config.getEscapedIfaceName()));
                     shell.executeBashCommand("dhclient " + config.physicalInterface, false);
                 } catch (Exception e) {
                     logger.error("Exception while setting DHCP!");
@@ -111,7 +111,7 @@ public class NetworkManager {
                         shell.executeBashCommand(
                                 config
                                         .setStaticCommand
-                                        .replace(NetworkConfig.NM_IFACE_STRING, config.networkManagerIface)
+                                        .replace(NetworkConfig.NM_IFACE_STRING, config.getEscapedIfaceName())
                                         .replace(NetworkConfig.NM_IP_STRING, config.staticIp));
 
                         if (Platform.isRaspberryPi()) {
@@ -119,17 +119,17 @@ public class NetworkManager {
                             // integral in my testing (Matt)
                             shell.executeBashCommand(
                                     "sh -c 'nmcli con down "
-                                            + config.networkManagerIface
+                                            + config.getEscapedIfaceName()
                                             + "; nmcli con up "
-                                            + config.networkManagerIface
+                                            + config.getEscapedIfaceName()
                                             + "'");
                         } else {
                             // for now just bring down /up -- more testing needed on beelink et al
                             shell.executeBashCommand(
                                     "sh -c 'nmcli con down "
-                                            + config.networkManagerIface
+                                            + config.getEscapedIfaceName()
                                             + "; nmcli con up "
-                                            + config.networkManagerIface
+                                            + config.getEscapedIfaceName()
                                             + "'");
                         }
                     } catch (Exception e) {
