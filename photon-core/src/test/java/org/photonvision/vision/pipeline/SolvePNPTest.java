@@ -19,7 +19,9 @@ package org.photonvision.vision.pipeline;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import java.util.stream.Collectors;
@@ -115,28 +117,29 @@ public class SolvePNPTest {
                         pipeline.getSettings().hueInverted);
         frameProvider.requestHsvSettings(hsvParams);
 
-        CVPipelineResult pipelineResult;
-
-        pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
+        CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
         printTestResults(pipelineResult);
 
-        // these numbers are not *accurate*, but they are known and expected
-        var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
-        Assertions.assertEquals(1.1, pose.getTranslation().getX(), 0.05);
-        Assertions.assertEquals(0.0, pose.getTranslation().getY(), 0.05);
-
-        // We expect the object X to be forward, or -X in world space
-        Assertions.assertEquals(
-                -1, new Translation3d(1, 0, 0).rotateBy(pose.getRotation()).getX(), 0.05);
-        // We expect the object Y axis to be right, or negative-Y in world space
-        Assertions.assertEquals(
-                -1, new Translation3d(0, 1, 0).rotateBy(pose.getRotation()).getY(), 0.05);
-        // We expect the object Z axis to be up, or +Z in world space
-        Assertions.assertEquals(
-                1, new Translation3d(0, 0, 1).rotateBy(pose.getRotation()).getZ(), 0.05);
+        // Draw on input
+        var outputPipe = new OutputStreamPipeline();
+        outputPipe.process(
+                pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
 
         TestUtils.showImage(
-                pipelineResult.inputAndOutputFrame.colorImage.getMat(), "Pipeline output", 999999);
+                pipelineResult.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
+
+        var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
+        // these numbers are not *accurate*, but they are known and expected
+        var expectedTrl = new Translation3d(1.1, -0.05, -0.05);
+        assertTrue(expectedTrl.getDistance(pose.getTranslation()) < 0.05, "SolvePNP translation estimation failed");
+        // We expect the object axes to be in NWU, with the x-axis coming out of the tag
+        // This target is facing the camera almost parallel, so in world space:
+        // The object's X axis should be (-1, 0, 0)
+        assertEquals(-1, new Translation3d(1, 0, 0).rotateBy(pose.getRotation()).getX(), 0.05);
+        // The object's Y axis should be (0, -1, 0)
+        assertEquals(-1, new Translation3d(0, 1, 0).rotateBy(pose.getRotation()).getY(), 0.05);
+        // The object's Z axis should be (0, 0, 1)
+        assertEquals(1, new Translation3d(0, 0, 1).rotateBy(pose.getRotation()).getZ(), 0.05);
     }
 
     @Test
@@ -175,15 +178,22 @@ public class SolvePNPTest {
         outputPipe.process(
                 pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
 
-        // these numbers are not *accurate*, but they are known and expected
-        var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
-        Assertions.assertEquals(Units.inchesToMeters(240.26), pose.getTranslation().getX(), 0.05);
-        Assertions.assertEquals(Units.inchesToMeters(35), pose.getTranslation().getY(), 0.05);
-        // Z rotation should be mostly facing us
-        Assertions.assertEquals(Units.degreesToRadians(-140), pose.getRotation().getZ(), 1);
-
         TestUtils.showImage(
-                pipelineResult.inputAndOutputFrame.colorImage.getMat(), "Pipeline output", 999999);
+                pipelineResult.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
+
+        var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
+        // these numbers are not *accurate*, but they are known and expected
+        var expectedTrl = new Translation3d(Units.inchesToMeters(236), Units.inchesToMeters(36), Units.inchesToMeters(-53));
+        assertTrue(expectedTrl.getDistance(pose.getTranslation()) < 0.05, "SolvePNP translation estimation failed");
+        // We expect the object axes to be in NWU, with the x-axis coming out of the tag
+        // Rotation around Z axis (yaw) should be mostly facing us
+        var xAxis = new Translation3d(1, 0, 0);
+        var yAxis = new Translation3d(0, 1, 0);
+        var zAxis = new Translation3d(0, 0, 1);
+        var expectedRot = new Rotation3d(Math.toRadians(-20), Math.toRadians(-20), Math.toRadians(-120));
+        assertTrue(xAxis.rotateBy(expectedRot).getDistance(xAxis.rotateBy(pose.getRotation())) < 0.1);
+        assertTrue(yAxis.rotateBy(expectedRot).getDistance(yAxis.rotateBy(pose.getRotation())) < 0.1);
+        assertTrue(zAxis.rotateBy(expectedRot).getDistance(zAxis.rotateBy(pose.getRotation())) < 0.1);
     }
 
     private static void continuouslyRunPipeline(Frame frame, ReflectivePipelineSettings settings) {
