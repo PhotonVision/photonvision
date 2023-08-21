@@ -180,7 +180,7 @@ const endCalibration = () => {
 
   showCalibEndDialog.value = true;
   // Check if calibration finished cleanly or was canceled
-  useCameraSettingsStore().endPnPCalibration(0)
+  useCameraSettingsStore().endPnPCalibration()
     .then(() => {
       calibSuccess.value = true;
     })
