@@ -107,7 +107,7 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
       <cv-slider
         v-model="currentPipelineSettings.contourFilterRangeX"
         label="X Filter Tightness"
-        tooltip="Rejects contours whose center X is further than X standard deviations above/below the mean X location"
+        tooltip="Rejects contours whose center X is further than X standard deviations left/right of the mean X location"
         :min="0.1"
         :max="4"
         :step="0.1"
