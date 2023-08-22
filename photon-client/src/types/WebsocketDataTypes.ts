@@ -1,7 +1,7 @@
 import type { GeneralSettings, LightingSettings, MetricData, NetworkSettings } from "@/types/SettingTypes";
 import type { ActivePipelineSettings } from "@/types/PipelineTypes";
 import type { LogLevel } from "@/types/SettingTypes";
-import type { PipelineResult } from "@/types/PhotonTrackingTypes";
+import type { AprilTagFieldLayout, PipelineResult } from "@/types/PhotonTrackingTypes";
 
 export interface WebsocketLogMessage {
     logMessage: {
@@ -12,7 +12,8 @@ export interface WebsocketLogMessage {
 export interface WebsocketSettingsUpdate {
     general: Required<GeneralSettings>,
     lighting: Required<LightingSettings>,
-    networkSettings: NetworkSettings
+    networkSettings: NetworkSettings,
+    atfl: AprilTagFieldLayout
 }
 
 export interface WebsocketNumberPair {

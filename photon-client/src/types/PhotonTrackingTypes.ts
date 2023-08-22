@@ -9,6 +9,31 @@ export interface Pose {
     qz: number
 }
 
+export interface AprilTagFieldLayout {
+    field: {
+        length: number,
+        width: number
+    },
+    tags: {
+        ID: number,
+        pose: {
+            translation: {
+                x: number,
+                y: number,
+                z: number
+            },
+            rotation: {
+                quaternion: {
+                    X: number,
+                    Y: number,
+                    Z: number,
+                    W: number
+                }
+            }
+        }
+    }[]
+}
+
 export interface PhotonTarget {
     yaw: number,
     pitch: number,
