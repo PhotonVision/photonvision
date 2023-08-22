@@ -101,19 +101,14 @@ public class PhotonConfiguration {
         Map<String, Object> map = new HashMap<>();
         var settingsSubmap = new HashMap<String, Object>();
 
+        // Network Settings
         settingsSubmap.put("networkSettings", networkConfig.toHashMap());
-        map.put(
-                "cameraSettings",
-                VisionModuleManager.getInstance().getModules().stream()
-                        .map(VisionModule::toUICameraConfig)
-                        .map(SerializationUtils::objectToHashMap)
-                        .collect(Collectors.toList()));
-
+        // Lighting Settings
         var lightingConfig = new UILightingConfig();
         lightingConfig.brightness = hardwareSettings.ledBrightnessPercentage;
-        lightingConfig.supported = (hardwareConfig.ledPins.size() != 0);
+        lightingConfig.supported = !hardwareConfig.ledPins.isEmpty();
         settingsSubmap.put("lighting", SerializationUtils.objectToHashMap(lightingConfig));
-
+        // General Settings
         var generalSubmap = new HashMap<String, Object>();
         generalSubmap.put("version", PhotonVersion.versionString);
         generalSubmap.put(
@@ -124,10 +119,16 @@ public class PhotonConfiguration {
         generalSubmap.put("hardwareModel", hardwareConfig.deviceName);
         generalSubmap.put("hardwarePlatform", Platform.getPlatformName());
         settingsSubmap.put("general", generalSubmap);
+        // AprilTagFieldLayout
+        settingsSubmap.put("atfl", this.atfl);
 
+        map.put(
+                "cameraSettings",
+                VisionModuleManager.getInstance().getModules().stream()
+                        .map(VisionModule::toUICameraConfig)
+                        .map(SerializationUtils::objectToHashMap)
+                        .collect(Collectors.toList()));
         map.put("settings", settingsSubmap);
-
-        map.put("atfl", this.atfl);
 
         return map;
     }
