@@ -192,7 +192,8 @@ export interface AprilTagPipelineSettings extends PipelineSettings {
     refineEdges: boolean
     debug: boolean
     threads: number
-    tagFamily: AprilTagFamily
+    tagFamily: AprilTagFamily,
+    doMultiTarget: boolean
 }
 export type ConfigurableAprilTagPipelineSettings = Partial<Omit<AprilTagPipelineSettings, "pipelineType" | "hammingDist" | "debug">> & ConfigurablePipelineSettings
 export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
@@ -212,7 +213,8 @@ export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
     refineEdges: true,
     debug: false,
     threads: 4,
-    tagFamily: AprilTagFamily.Family16h5
+    tagFamily: AprilTagFamily.Family16h5,
+    doMultiTarget: false
 };
 
 export interface ArucoPipelineSettings extends PipelineSettings {
