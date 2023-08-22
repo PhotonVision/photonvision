@@ -27,6 +27,7 @@ package org.photonvision.simulation;
 import edu.wpi.first.cscore.CvSource;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.RuntimeLoader;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -396,9 +397,9 @@ public class VideoSimUtil {
     private static List<List<Translation3d>> getFieldWallLines() {
         var list = new ArrayList<List<Translation3d>>();
 
-        final double sideHt = 0.5;
-        final double driveHt = 1;
-        final double topHt = 2;
+        final double sideHt = Units.inchesToMeters(19.5);
+        final double driveHt = Units.inchesToMeters(35);
+        final double topHt = Units.inchesToMeters(78);
 
         // field floor
         list.add(
