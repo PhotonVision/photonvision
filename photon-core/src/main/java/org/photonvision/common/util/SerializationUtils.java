@@ -18,6 +18,7 @@
 package org.photonvision.common.util;
 
 import java.util.HashMap;
+import edu.wpi.first.math.geometry.Transform3d;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
@@ -41,6 +42,20 @@ public final class SerializationUtils {
                 logger.error("Could not serialize " + src.getClass().getSimpleName(), e);
             }
         }
+        return ret;
+    }
+
+    public static HashMap<String, Object> transformToHashMap(Transform3d transform) {
+        var ret = new HashMap<String, Object>();
+        ret.put("x", transform.getTranslation().getX());
+        ret.put("y", transform.getTranslation().getY());
+        ret.put("z", transform.getTranslation().getZ());
+        ret.put("qw", transform.getRotation().getQuaternion().getW());
+        ret.put("qx", transform.getRotation().getQuaternion().getX());
+        ret.put("qy", transform.getRotation().getQuaternion().getY());
+        ret.put("qz", transform.getRotation().getQuaternion().getZ());
+
+        ret.put("angle_z", transform.getRotation().getZ());
         return ret;
     }
 }

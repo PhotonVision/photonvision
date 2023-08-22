@@ -30,6 +30,7 @@ import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
+import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.frame.FrameStaticProperties;
@@ -350,24 +351,12 @@ public class TrackedTarget implements Releasable {
         ret.put("skew", getSkew());
         ret.put("area", getArea());
         ret.put("ambiguity", getPoseAmbiguity());
-        if (getBestCameraToTarget3d() != null) {
-            ret.put("pose", transformToMap(getBestCameraToTarget3d()));
+
+        var bestCameraToTarget3d = getBestCameraToTarget3d();
+        if (bestCameraToTarget3d != null) {
+            ret.put("pose", SerializationUtils.transformToHashMap(bestCameraToTarget3d));
         }
         ret.put("fiducialId", getFiducialId());
-        return ret;
-    }
-
-    private static HashMap<String, Object> transformToMap(Transform3d transform) {
-        var ret = new HashMap<String, Object>();
-        ret.put("x", transform.getTranslation().getX());
-        ret.put("y", transform.getTranslation().getY());
-        ret.put("z", transform.getTranslation().getZ());
-        ret.put("qw", transform.getRotation().getQuaternion().getW());
-        ret.put("qx", transform.getRotation().getQuaternion().getX());
-        ret.put("qy", transform.getRotation().getQuaternion().getY());
-        ret.put("qz", transform.getRotation().getQuaternion().getZ());
-
-        ret.put("angle_z", transform.getRotation().getZ());
         return ret;
     }
 
