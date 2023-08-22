@@ -35,6 +35,8 @@ const offsetPoints = computed<MetricItem[]>(() => {
   }
 });
 
+const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings;
+
 const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)) ? 9 : 8;
 </script>
 
@@ -64,6 +66,13 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
       :disabled="isTagPipeline"
       :switch-cols="interactiveCols"
       @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({outputShowMultipleTargets: value}, false)"
+    />
+    <cv-switch
+      v-if="currentPipelineSettings.pipelineType === PipelineType.AprilTag && useCameraSettingsStore().isCurrentVideoFormatCalibrated"
+      v-model="currentPipelineSettings.doMultiTarget"
+      label="Multitag"
+      :switch-cols="interactiveCols"
+      @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({doMultiTarget: value}, false)"
     />
     <v-divider />
     <table
