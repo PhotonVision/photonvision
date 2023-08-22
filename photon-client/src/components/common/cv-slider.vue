@@ -1,18 +1,48 @@
+<script setup lang="ts">
+import { computed } from "vue";
+import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
+
+const props = withDefaults(defineProps<{
+  label?: string,
+  tooltip?: string,
+  // TODO fully update v-model usage in custom components on Vue3 update
+  value: number,
+  min: number,
+  max: number,
+  step?: number
+  disabled?: boolean,
+  sliderCols?: number,
+}>(), {
+  step: 1,
+  disabled: false,
+  sliderCols: 8
+});
+
+const emit = defineEmits<{
+  (e: "input", value: number): void
+}>();
+
+const localValue = computed({
+  get: () => props.value,
+  set: v => emit("input", v)
+});
+</script>
+
 <template>
   <div>
     <v-row
       dense
       align="center"
     >
-      <v-col :cols="12 - (sliderCols || 8)">
+      <v-col :cols="12 - sliderCols">
         <tooltipped-label
           :tooltip="tooltip"
-          :text="name"
+          :label="label"
         />
       </v-col>
-      <v-col :cols="sliderCols || 8">
+      <v-col :cols="sliderCols">
         <v-slider
-          :value="localValue"
+          v-model="localValue"
           dark
           class="align-center"
           :max="max"
@@ -21,29 +51,21 @@
           color="accent"
           :disabled="disabled"
           :step="step"
-          @start="isClicked = true"
-          @end="isClicked = false"
-          @change="handleClick"
-          @input="handleInput"
-          @mousedown="$emit('rollback', localValue)"
         >
-          <template v-slot:append>
+          <template #append>
             <v-text-field
+              v-model="localValue"
               dark
               color="accent"
               :max="max"
               :min="min"
               :disabled="disabled"
-              :value="localValue"
               class="mt-0 pt-0"
               hide-details
               single-line
               type="number"
               style="width: 50px"
               :step="step"
-              @input="handleChange"
-              @focus="isFocused = true"
-              @blur="isFocused = false"
             />
           </template>
         </v-slider>
@@ -51,58 +73,3 @@
     </v-row>
   </div>
 </template>
-
-<script>
-import TooltippedLabel from "./cv-tooltipped-label";
-
-export default {
-  name: "Slider",
-  components: {
-    TooltippedLabel,
-  },
-  // eslint-disable-next-line vue/require-prop-types
-  props: ["min", "max", "name", "value", "step", "sliderCols", "disabled", "tooltip"],
-  data() {
-    return {
-      isFocused: false,
-      isClicked: false,
-      currentBoxVal: null
-    };
-  },
-  computed: {
-    localValue: {
-      get() {
-        return this.value;
-      },
-      set(value) {
-        this.$emit("input", value);
-      }
-    },
-  },
-  methods: {
-    handleChange(val) {
-      this.currentBoxVal = val;
-      setTimeout(() => {
-        if (this.currentBoxVal !== val) return;
-        // if (this.isFocused) {
-        this.localValue = parseFloat(val);
-        this.$emit("rollback", this.localValue);
-        // }
-      }, 200);
-    },
-    handleInput(val) {
-      if (!this.isFocused && this.isClicked) {
-        this.localValue = val;
-      }
-    },
-    handleClick(val) {
-      if (!this.isFocused) {
-        this.localValue = val;
-      }
-    }
-  }
-};
-</script>
-
-<style lang="" scoped>
-</style>
