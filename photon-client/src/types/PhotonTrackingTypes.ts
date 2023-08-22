@@ -1,12 +1,12 @@
-export interface Pose {
+export interface Transform3d {
     x: number,
     y: number,
     z: number,
-    angle_z: number,
     qw: number,
     qx: number,
     qy: number,
-    qz: number
+    qz: number,
+    angle_z: number
 }
 
 export interface AprilTagFieldLayout {
@@ -44,11 +44,18 @@ export interface PhotonTarget {
     // -1 if not set
     fiducialId: number,
     // undefined if 3d isn't enabled
-    pose?: Pose
+    pose?: Transform3d
+}
+
+export interface MultitagResult {
+    bestTransform: Transform3d,
+    bestReprojectionError: number
 }
 
 export interface PipelineResult {
     fps: number,
     latency: number,
-    targets: PhotonTarget[]
+    targets: PhotonTarget[],
+    // undefined if multitag failed or non-tag pipeline
+    multitagResult?: MultitagResult
 }

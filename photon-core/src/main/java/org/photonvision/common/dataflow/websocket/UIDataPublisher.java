@@ -24,7 +24,9 @@ import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.photonvision.vision.target.TrackedTarget;
 
 public class UIDataPublisher implements CVPipelineResultConsumer {
     private static final Logger logger = new Logger(UIDataPublisher.class, LogGroup.VisionModule);
@@ -40,23 +42,27 @@ public class UIDataPublisher implements CVPipelineResultConsumer {
     public void accept(CVPipelineResult result) {
         long now = System.currentTimeMillis();
 
-        var dataMap = new HashMap<String, Object>();
-        dataMap.put("latency", result.getLatencyMillis());
-
         // only update the UI at 15hz
         if (lastUIResultUpdateTime + 1000.0 / 10.0 > now) return;
 
-        var uiMap = new HashMap<Integer, HashMap<String, Object>>();
-
+        var dataMap = new HashMap<String, Object>();
         dataMap.put("fps", result.fps);
-
-        var targets = result.targets;
-
-        var uiTargets = new ArrayList<HashMap<String, Object>>();
-        for (var t : targets) {
+        dataMap.put("latency", result.getLatencyMillis());
+        var uiTargets = new ArrayList<HashMap<String, Object>>(result.targets.size());
+        for (var t : result.targets) {
             uiTargets.add(t.toHashMap());
         }
         dataMap.put("targets", uiTargets);
+
+        // Only send Multitag Results if they are present, similar to 3d pose
+        if(result.multiTagResult.isPresent) {
+            var multitagData = new HashMap<String, Object>();
+            multitagData.put("bestTransform", SerializationUtils.transformToHashMap(result.multiTagResult.best));
+            multitagData.put("bestReprojectionError", result.multiTagResult.bestReprojErr);
+            dataMap.put("multitagResult", multitagData);
+        }
+
+        var uiMap = new HashMap<Integer, HashMap<String, Object>>();
         uiMap.put(index, dataMap);
 
         DataChangeService.getInstance()
