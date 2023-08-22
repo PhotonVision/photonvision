@@ -1,6 +1,7 @@
 import type { GeneralSettings, LightingSettings, MetricData, NetworkSettings } from "@/types/SettingTypes";
 import type { ActivePipelineSettings } from "@/types/PipelineTypes";
 import type { LogLevel } from "@/types/SettingTypes";
+import type { PipelineResult } from "@/types/PhotonTrackingTypes";
 
 export interface WebsocketLogMessage {
     logMessage: {
@@ -58,38 +59,17 @@ export interface WebsocketNTUpdate {
     address?: string,
     clients?: number
 }
-export type WebsocketPipelineResultUpdate = Record<number, {
-    fps: number,
-    latency: number,
-    targets: {
-        yaw: number,
-        pitch: number,
-        skew: number,
-        area: number,
-        ambiguity: number,
-        fiducialId: number,
-        pose: {
-            "angle_z": number,
-            "qw": number,
-            "qx": number,
-            "x": number,
-            "qy": number,
-            "y": number,
-            "qz": number,
-            "z": number
-        },
-    }[]
-}>
+export type WebsocketPipelineResultUpdate = Record<number, PipelineResult>
 
 export interface WebsocketCalibrationData {
-    "patternWidth": number,
-    "boardType": number,
-    "hasEnough": boolean,
-    "count": number,
-    "minCount": number,
-    "videoModeIndex": number,
-    "patternHeight": number,
-    "squareSizeIn": number
+    patternWidth: number,
+    boardType: number,
+    hasEnough: boolean,
+    count: number,
+    minCount: number,
+    videoModeIndex: number,
+    patternHeight: number,
+    squareSizeIn: number
 }
 
 export interface IncomingWebsocketData {
@@ -101,7 +81,7 @@ export interface IncomingWebsocketData {
     updatePipelineResult?: WebsocketPipelineResultUpdate,
     networkInfo?: {
         possibleRios: string[],
-        deviceips: string[]
+        deviceIps: string[]
     }
     mutatePipelineSettings?: Partial<ActivePipelineSettings>,
     cameraIndex?: number // Sent when mutating pipeline settings to check against currently active
