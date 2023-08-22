@@ -26,7 +26,6 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
-import org.photonvision.vision.target.TrackedTarget;
 
 public class UIDataPublisher implements CVPipelineResultConsumer {
     private static final Logger logger = new Logger(UIDataPublisher.class, LogGroup.VisionModule);
@@ -55,9 +54,10 @@ public class UIDataPublisher implements CVPipelineResultConsumer {
         dataMap.put("targets", uiTargets);
 
         // Only send Multitag Results if they are present, similar to 3d pose
-        if(result.multiTagResult.isPresent) {
+        if (result.multiTagResult.isPresent) {
             var multitagData = new HashMap<String, Object>();
-            multitagData.put("bestTransform", SerializationUtils.transformToHashMap(result.multiTagResult.best));
+            multitagData.put(
+                    "bestTransform", SerializationUtils.transformToHashMap(result.multiTagResult.best));
             multitagData.put("bestReprojectionError", result.multiTagResult.bestReprojErr);
             dataMap.put("multitagResult", multitagData);
         }

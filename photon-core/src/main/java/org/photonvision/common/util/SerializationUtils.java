@@ -17,8 +17,8 @@
 
 package org.photonvision.common.util;
 
-import java.util.HashMap;
 import edu.wpi.first.math.geometry.Transform3d;
+import java.util.HashMap;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
