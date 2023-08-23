@@ -106,26 +106,35 @@ const saveGeneralSettings = () => {
           The NetworkTables Server Address is not set or is invalid. NetworkTables is unable to connect.
         </v-banner>
         <cv-radio
-          v-show="useSettingsStore().network.shouldManage"
           v-model="useSettingsStore().network.connectionType"
           label="IP Assignment Mode"
           tooltip="DHCP will make the radio (router) automatically assign an IP address; this may result in an IP address that changes across reboots. Static IP assignment means that you pick the IP address and it won't change."
+          :disabled="!useSettingsStore().network.shouldManage"
           :input-cols="12-3"
           :list="['DHCP','Static']"
         />
         <cv-input
-          v-if="useSettingsStore().network.connectionType === NetworkConnectionType.Static"
           v-model="useSettingsStore().network.staticIp"
-          :input-cols="12-3"
+          :disabled="useSettingsStore().network.connectionType !== NetworkConnectionType.Static || !useSettingsStore().network.shouldManage"
           label="Static IP"
-          :rules="[v => isValidIPv4(v) || 'Invalid IPv4 address']"
+          :input-cols="12-3"
+          :rules="[v => (isValidIPv4(v) || !useSettingsStore().network.shouldManage) || 'Invalid IPv4 address']"
         />
         <cv-input
-          v-show="useSettingsStore().network.shouldManage"
           v-model="useSettingsStore().network.hostname"
           label="Hostname"
+          :disabled="!useSettingsStore().network.shouldManage"
           :input-cols="12-3"
           :rules="[v => isValidHostname(v) || 'Invalid hostname']"
+        />
+        <v-divider/>
+        <span>Advanced Networking</span>
+        <cv-switch
+          v-model="useSettingsStore().network.shouldManage"
+          label="Manage Device Networking"
+          tooltip="If enabled, Photon will manage device hostname and network settings."
+          class="mt-3 mb-3"
+          :label-cols="3"
         />
         <cv-switch
           v-model="useSettingsStore().network.runNTServer"
