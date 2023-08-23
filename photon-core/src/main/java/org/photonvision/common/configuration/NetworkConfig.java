@@ -55,7 +55,7 @@ public class NetworkConfig {
         }
 
         // We can (usually) manage networking on Linux devices, and if we can we should try to. Command line inhibitions happen at a level above this class
-        setShouldManage(Platform.isLinux());
+        setShouldManage(deviceCanManageNetwork());
     }
 
     @JsonCreator
@@ -107,7 +107,11 @@ public class NetworkConfig {
 
     @JsonIgnore
     public void setShouldManage(boolean shouldManage) {
-        this.shouldManage = shouldManage;
+        this.shouldManage = shouldManage && this.deviceCanManageNetwork();
+    }
+
+    private boolean deviceCanManageNetwork() {
+        return Platform.isLinux();
     }
 
     @Override

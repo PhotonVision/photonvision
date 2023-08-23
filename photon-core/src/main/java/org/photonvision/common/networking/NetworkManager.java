@@ -38,9 +38,10 @@ public class NetworkManager {
     }
 
     private boolean isManaged = false;
+    public boolean networkingIsDisabled = false; // Passed in via CLI
 
     public void initialize(boolean shouldManage) {
-        isManaged = shouldManage;
+        isManaged = shouldManage && !networkingIsDisabled;
         if (!isManaged) {
             return;
         }

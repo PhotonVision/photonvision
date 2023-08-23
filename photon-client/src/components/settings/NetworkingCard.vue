@@ -150,26 +150,35 @@ const netManagerIfaceIdx = computed<number>({
           :items="ifaceNames()"
         />
         <cv-radio
-          v-show="useSettingsStore().network.shouldManage"
           v-model="useSettingsStore().network.connectionType"
           label="IP Assignment Mode"
           tooltip="DHCP will make the radio (router) automatically assign an IP address; this may result in an IP address that changes across reboots. Static IP assignment means that you pick the IP address and it won't change."
           :input-cols="12 - 4"
           :list="['DHCP', 'Static']"
+          :disabled="!useSettingsStore().network.shouldManage"
         />
         <cv-input
-          v-if="useSettingsStore().network.connectionType === NetworkConnectionType.Static"
           v-model="useSettingsStore().network.staticIp"
           :input-cols="12 - 4"
           label="Static IP"
           :rules="[(v) => isValidIPv4(v) || 'Invalid IPv4 address']"
+          :disabled="useSettingsStore().network.connectionType !== NetworkConnectionType.Static || !useSettingsStore().network.shouldManage"
         />
         <cv-input
-          v-show="useSettingsStore().network.shouldManage"
           v-model="useSettingsStore().network.hostname"
           label="Hostname"
           :input-cols="12-4"
           :rules="[(v) => isValidHostname(v) || 'Invalid hostname']"
+          :disabled="!useSettingsStore().network.shouldManage"
+        />
+        <v-divider/>
+        <span>Advanced Networking</span>
+        <cv-switch
+          v-model="useSettingsStore().network.shouldManage"
+          label="Manage Device Networking"
+          tooltip="If enabled, Photon will manage device hostname and network settings."
+          class="mt-3 mb-3"
+          :label-cols="3"
         />
         <cv-switch
           v-model="useSettingsStore().network.runNTServer"
