@@ -50,6 +50,7 @@ export interface PhotonTarget {
 export interface MultitagResult {
     bestTransform: Transform3d,
     bestReprojectionError: number
+    fiducialIDsUsed: number[]
 }
 
 export interface PipelineResult {
