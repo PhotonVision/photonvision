@@ -19,7 +19,6 @@ package org.photonvision.vision.pipeline;
 
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
-import org.photonvision.targeting.PNPResults;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.DualOffsetValues;
@@ -225,7 +224,6 @@ public class OutputStreamPipeline {
                 sumPipeNanosElapsed,
                 fps, // Unused but here just in case
                 targetsToDraw,
-                new PNPResults(),
                 inputAndOutputFrame);
     }
 }

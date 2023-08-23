@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.math.MathUtils;
-import org.photonvision.targeting.PNPResults;
+import org.photonvision.targeting.MultiTargetPNPResults;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
@@ -109,8 +109,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                 // TODO global state ew
                 var atfl = ConfigManager.getInstance().getConfig().getApriltagFieldLayout();
                 multiTagPNPPipe.setParams(
-                        new MultiTargetPNPPipeParams(
-                                frameStaticProperties.cameraCalibration, settings.targetModel, atfl));
+                        new MultiTargetPNPPipeParams(frameStaticProperties.cameraCalibration, atfl));
             }
         }
     }
@@ -127,7 +126,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         if (frame.type != FrameThresholdType.GREYSCALE) {
             // TODO so all cameras should give us GREYSCALE -- how should we handle if not?
             // Right now, we just return nothing
-            return new CVPipelineResult(0, 0, List.of(), new PNPResults(), frame);
+            return new CVPipelineResult(0, 0, List.of(), new MultiTargetPNPResults(), frame);
         }
 
         CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult;
@@ -167,7 +166,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
             targetList.add(target);
         }
 
-        PNPResults multiTagResult = new PNPResults();
+        MultiTargetPNPResults multiTagResult = new MultiTargetPNPResults();
         if (settings.solvePNPEnabled && settings.doMultiTarget) {
             var multiTagOutput = multiTagPNPPipe.run(targetList);
             sumPipeNanosElapsed += multiTagOutput.nanosElapsed;

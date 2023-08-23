@@ -34,7 +34,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.common.util.file.FileUtils;
-import org.photonvision.targeting.PNPResults;
+import org.photonvision.targeting.MultiTargetPNPResults;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
@@ -111,7 +111,7 @@ public class Calibrate3dPipeline
         Mat inputColorMat = frame.colorImage.getMat();
 
         if (this.calibrating || inputColorMat.empty()) {
-            return new CVPipelineResult(0, 0, null, new PNPResults(), frame);
+            return new CVPipelineResult(0, 0, null, new MultiTargetPNPResults(), frame);
         }
 
         long sumPipeNanosElapsed = 0L;
@@ -147,7 +147,7 @@ public class Calibrate3dPipeline
                 sumPipeNanosElapsed,
                 fps, // Unused but here in case
                 Collections.emptyList(),
-                new PNPResults(),
+                new MultiTargetPNPResults(),
                 new Frame(
                         new CVMat(), outputColorCVMat, FrameThresholdType.NONE, frame.frameStaticProperties));
     }

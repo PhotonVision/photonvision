@@ -26,22 +26,22 @@ import org.opencv.core.Mat;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.estimation.VisionEstimation;
-import org.photonvision.targeting.PNPResults;
+import org.photonvision.targeting.MultiTargetPNPResults;
 import org.photonvision.targeting.TargetCorner;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.pipe.CVPipe;
-import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
 
 /** Estimate the camera pose given multiple Apriltag observations */
 public class MultiTargetPNPPipe
-        extends CVPipe<List<TrackedTarget>, PNPResults, MultiTargetPNPPipe.MultiTargetPNPPipeParams> {
+        extends CVPipe<
+                List<TrackedTarget>, MultiTargetPNPResults, MultiTargetPNPPipe.MultiTargetPNPPipeParams> {
     private static final Logger logger = new Logger(MultiTargetPNPPipe.class, LogGroup.VisionModule);
 
     private boolean hasWarned = false;
 
     @Override
-    protected PNPResults process(List<TrackedTarget> targetList) {
+    protected MultiTargetPNPResults process(List<TrackedTarget> targetList) {
         if (params.cameraCoefficients == null
                 || params.cameraCoefficients.getCameraIntrinsicsMat() == null
                 || params.cameraCoefficients.getDistCoeffsMat() == null) {
@@ -50,21 +50,22 @@ public class MultiTargetPNPPipe
                         "Cannot perform solvePNP an uncalibrated camera! Please calibrate this resolution...");
                 hasWarned = true;
             }
-            return new PNPResults();
+            return new MultiTargetPNPResults();
         }
 
         return calculateTargetPose(targetList);
     }
 
-    private PNPResults calculateTargetPose(List<TrackedTarget> targetList) {
+    private MultiTargetPNPResults calculateTargetPose(List<TrackedTarget> targetList) {
         if (params.cameraCoefficients == null
                 || params.cameraCoefficients.getCameraIntrinsicsMat() == null
                 || params.cameraCoefficients.getDistCoeffsMat() == null) {
-            return new PNPResults();
+            return new MultiTargetPNPResults();
         }
 
         var visCorners = new ArrayList<TargetCorner>();
         var knownVisTags = new ArrayList<AprilTag>();
+        var tagIDsUsed = new ArrayList<Integer>();
         for (var target : targetList) {
             for (var corner : target.getTargetCorners()) {
                 visCorners.add(new TargetCorner(corner.x, corner.y));
@@ -73,15 +74,17 @@ public class MultiTargetPNPPipe
 
             // actual layout poses of visible tags -- not exposed, so have to recreate
             knownVisTags.add(new AprilTag(target.getFiducialId(), tagPose));
+            tagIDsUsed.add(target.getFiducialId());
         }
-        var pnpResults =
+        var ret = new MultiTargetPNPResults();
+        ret.estimatedPose =
                 VisionEstimation.estimateCamPosePNP(
                         params.cameraCoefficients.getCameraIntrinsicsMat(),
                         params.cameraCoefficients.getDistCoeffsMat(),
                         visCorners,
                         knownVisTags);
-
-        return pnpResults;
+        ret.fiducialIDsUsed = tagIDsUsed;
+        return ret;
     }
 
     Mat rotationMatrix = new Mat();
@@ -92,15 +95,11 @@ public class MultiTargetPNPPipe
 
     public static class MultiTargetPNPPipeParams {
         private final CameraCalibrationCoefficients cameraCoefficients;
-        private final TargetModel targetModel;
         private final AprilTagFieldLayout atfl;
 
         public MultiTargetPNPPipeParams(
-                CameraCalibrationCoefficients cameraCoefficients,
-                TargetModel targetModel,
-                AprilTagFieldLayout atfl) {
+                CameraCalibrationCoefficients cameraCoefficients, AprilTagFieldLayout atfl) {
             this.cameraCoefficients = cameraCoefficients;
-            this.targetModel = targetModel;
             this.atfl = atfl;
         }
     }

@@ -35,7 +35,7 @@ public class PhotonPipelineResult {
     private double timestampSeconds = -1;
 
     // Multi-tag result
-    private PNPResults multiTagResult = new PNPResults();
+    private MultiTargetPNPResults multiTagResult = new MultiTargetPNPResults();
 
     /** Constructs an empty pipeline result. */
     public PhotonPipelineResult() {}
@@ -59,7 +59,7 @@ public class PhotonPipelineResult {
      * @param result Result from multi-target PNP.
      */
     public PhotonPipelineResult(
-            double latencyMillis, List<PhotonTrackedTarget> targets, PNPResults results) {
+            double latencyMillis, List<PhotonTrackedTarget> targets, MultiTargetPNPResults results) {
         this.latencyMillis = latencyMillis;
         this.targets.addAll(targets);
         this.multiTagResult = results;
@@ -74,7 +74,7 @@ public class PhotonPipelineResult {
         return targets.size() * PhotonTrackedTarget.PACK_SIZE_BYTES
                 + 8
                 + 2
-                + PNPResults.PACK_SIZE_BYTES;
+                + MultiTargetPNPResults.PACK_SIZE_BYTES;
     }
 
     /**
@@ -143,10 +143,10 @@ public class PhotonPipelineResult {
     }
 
     /**
-     * Return the latest mulit-target result. Be sure to check PNPResults::isPresent before using the
-     * pose estimate!
+     * Return the latest mulit-target result. Be sure to check MultiTargetPNPResults::isPresent before
+     * using the pose estimate!
      */
-    public PNPResults getMultiTagPnpResults() {
+    public MultiTargetPNPResults getMultiTagMultiTargetPNPResults() {
         return multiTagResult;
     }
 
@@ -159,7 +159,7 @@ public class PhotonPipelineResult {
     public Packet createFromPacket(Packet packet) {
         // Decode latency, existence of targets, and number of targets.
         latencyMillis = packet.decodeDouble();
-        this.multiTagResult = PNPResults.createFromPacket(packet);
+        this.multiTagResult = MultiTargetPNPResults.createFromPacket(packet);
         byte targetCount = packet.decodeByte();
 
         targets.clear();

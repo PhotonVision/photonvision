@@ -18,11 +18,10 @@
 package org.photonvision.vision.pipeline.result;
 
 import java.util.List;
-import org.photonvision.targeting.PNPResults;
 import org.photonvision.vision.frame.Frame;
 
 public class DriverModePipelineResult extends CVPipelineResult {
     public DriverModePipelineResult(double latencyNanos, double fps, Frame outputFrame) {
-        super(latencyNanos, fps, List.of(), new PNPResults(), outputFrame);
+        super(latencyNanos, fps, List.of(), outputFrame);
     }
 }
