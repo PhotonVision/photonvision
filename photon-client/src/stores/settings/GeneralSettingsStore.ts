@@ -29,6 +29,7 @@ export const useSettingsStore = defineStore("settings", {
         network: {
             ntServerAddress: "",
             shouldManage: true,
+            canManage: true,
             connectionType: NetworkConnectionType.DHCP,
             staticIp: "",
             hostname: "photonvision",

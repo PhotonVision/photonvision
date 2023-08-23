@@ -47,6 +47,7 @@ export interface NetworkSettings {
     hostname: string,
     runNTServer: boolean
     shouldManage: boolean,
+    canManage: boolean,
     networkManagerIface?: string,
     setStaticCommand?: string,
     setDHCPcommand?: string,

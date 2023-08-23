@@ -83,7 +83,9 @@ public class NetworkConfig {
 
     public Map<String, Object> toHashMap() {
         try {
-            return new ObjectMapper().convertValue(this, JacksonUtils.UIMap.class);
+            var ret = new ObjectMapper().convertValue(this, JacksonUtils.UIMap.class);
+            ret.put("canManage", this.deviceCanManageNetwork());
+            return ret;
         } catch (Exception e) {
             e.printStackTrace();
             return new HashMap<>();
@@ -110,6 +112,7 @@ public class NetworkConfig {
         this.shouldManage = shouldManage && this.deviceCanManageNetwork();
     }
 
+    @JsonIgnore
     private boolean deviceCanManageNetwork() {
         return Platform.isLinux();
     }
