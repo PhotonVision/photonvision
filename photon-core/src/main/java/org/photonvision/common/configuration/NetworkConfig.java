@@ -41,7 +41,7 @@ public class NetworkConfig {
     @JsonIgnore public static final String NM_IFACE_STRING = "${interface}";
     @JsonIgnore public static final String NM_IP_STRING = "${ipaddr}";
 
-    public String networkManagerIface = "Wired\\ connection\\ 1";
+    public String networkManagerIface = "Wired connection 1";
     public String physicalInterface = "eth0";
     public String setStaticCommand =
             "nmcli con mod ${interface} ipv4.addresses ${ipaddr}/8 ipv4.method \"manual\" ipv6.method \"disabled\"";
@@ -86,6 +86,11 @@ public class NetworkConfig {
             e.printStackTrace();
             return new HashMap<>();
         }
+    }
+
+    @JsonIgnore
+    public String getEscapedIfaceName() {
+        return "\"" + networkManagerIface + "\"";
     }
 
     @JsonGetter("shouldManage")

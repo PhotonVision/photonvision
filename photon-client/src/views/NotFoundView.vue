@@ -9,19 +9,12 @@
       </v-card-subtitle>
     </div>
     <img
-      src="../assets/NotFound.webp"
+      src="@/assets/images/notfound.webp"
       alt="missing-page"
       style="margin-top: 64px"
     >
   </div>
 </template>
-
-
-<script>
-export default {
-    name: 'NotFound'
-}
-</script>
 
 <style>
 .not-found-container {

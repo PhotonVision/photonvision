@@ -1,18 +1,60 @@
+<script setup lang="ts">
+import { computed } from "vue";
+import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
+
+const props = withDefaults(defineProps<{
+  label?: string,
+  tooltip?: string,
+  // TODO fully update v-model usage in custom components on Vue3 update
+  // value: [number, number] | WebsocketNumberPair, // Vue doesnt like Union types for the value prop for some reason.
+  value: [number, number],
+  min: number,
+  max: number,
+  step?: number,
+  sliderCols?: number,
+  disabled?: boolean,
+  inverted?: boolean,
+}>(), {
+  step: 1,
+  disabled: false,
+  inverted: false,
+  sliderCols: 10
+});
+
+const emit = defineEmits<{
+  (e: "input", value: [number, number]): void
+}>();
+
+const localValue = computed<[number, number]>({
+  get: ():[number, number] => {
+    return Object.values(props.value) as [number, number];
+  },
+  set: v => emit("input", v)
+});
+
+const changeFromSlot = (v: number, i: number) => {
+  // localValue.value must be replaced for a reactive change to take place
+  const temp = localValue.value;
+  temp[i] = v;
+  localValue.value = temp;
+};
+</script>
+
 <template>
   <div>
     <v-row
       dense
       align="center"
     >
-      <v-col cols="2">
+      <v-col :cols="12 - sliderCols">
         <tooltipped-label
           :tooltip="tooltip"
-          :text="name"
+          :label="label"
         />
       </v-col>
-      <v-col cols="10">
+      <v-col :cols="sliderCols">
         <v-range-slider
-          :value="localValue"
+          v-model="localValue"
           :max="max"
           :min="min"
           :disabled="disabled"
@@ -23,44 +65,37 @@
           :track-color="inverted ? 'accent' : undefined"
           thumb-color="accent"
           :step="step"
-          @input="handleInput"
-          @mousedown="$emit('rollback', localValue)"
         >
-          <template v-slot:prepend>
+          <template #prepend>
             <v-text-field
+              :value="localValue[0]"
               dark
               color="accent"
-              :value="localValue[0]"
-              :max="max"
-              :min="min"
               class="mt-0 pt-0"
               hide-details
               single-line
+              :max="max"
+              :min="min"
+              :step="step"
               type="number"
               style="width: 60px"
-              :step="step"
-              @input="handleChange"
-              @focus="prependFocused = true"
-              @blur="prependFocused = false"
+              @input="v => changeFromSlot(v, 0)"
             />
           </template>
-
-          <template v-slot:append>
+          <template #append>
             <v-text-field
+              :value="localValue[1]"
               dark
               color="accent"
-              :value="localValue[1]"
-              :max="max"
-              :min="min"
               class="mt-0 pt-0"
               hide-details
               single-line
+              :max="max"
+              :min="min"
+              :step="step"
               type="number"
               style="width: 60px"
-              :step="step"
-              @input="handleChange"
-              @focus="appendFocused = true"
-              @blur="appendFocused = false"
+              @input="v => changeFromSlot(v, 1)"
             />
           </template>
         </v-range-slider>
@@ -68,67 +103,3 @@
     </v-row>
   </div>
 </template>
-
-<script>
-import TooltippedLabel from "./cv-tooltipped-label";
-
-export default {
-  name: "RangeSlider",
-  components: {
-    TooltippedLabel,
-  },
-  // eslint-disable-next-line vue/require-prop-types
-  props: ["name", "min", "max", "value", "step", "tooltip", "disabled", "inverted"],
-  data() {
-    return {
-      prependFocused: false,
-      appendFocused: false,
-      currentTempVal: null,
-    };
-  },
-  computed: {
-    localValue: {
-      get() {
-        return Object.values(this.value || [0, 0]);
-      },
-      set(value) {
-        this.$emit("input", value);
-      },
-    },
-  },
-  methods: {
-    delay(ms) {
-      return new Promise((resolve) => setTimeout(resolve, ms));
-    },
-
-    async handleChange(val) {
-      this.currentTempVal = val;
-
-      await this.delay(200).then(() => {
-        let i = 0;
-        if (!this.prependFocused && this.appendFocused) {
-          i = 1;
-        }
-
-        // will get empty string if entry is not a number
-        if (this.currentTempVal !== val || val === "") return;
-
-        let parsed = parseFloat(val);
-        let tmp = this.localValue;
-        tmp[i] = Math.max(this.min, Math.min(parsed, this.max));
-        this.localValue = tmp;
-
-        this.$emit("rollback", this.localValue);
-      });
-    },
-    handleInput(val) {
-      if (!this.prependFocused || !this.appendFocused) {
-        this.localValue = val;
-      }
-    },
-  },
-};
-</script>
-
-<style lang="" scoped>
-</style>
