@@ -80,6 +80,11 @@ public class Main {
                 "ignore-cameras",
                 true,
                 "Ignore cameras that match a regex. Uses camera name as provided by cscore.");
+        options.addOption(
+                "n",
+                "disable-networking",
+                false,
+                "");
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
@@ -117,46 +122,29 @@ public class Main {
         ConfigManager.getInstance().load();
 
         try {
-            var reflective = new ReflectivePipelineSettings();
-            var shape = new ColoredShapePipelineSettings();
-            var aprilTag = new AprilTagPipelineSettings();
             List<VisionSource> collectedSources =
                     Files.list(testModeFolder)
                             .filter(p -> p.toFile().isFile())
                             .map(
                                     p -> {
                                         try {
-                                            //                                            var camConf =
-                                            //
-                                            // ConfigManager.getInstance()
-                                            //                                                            .getConfig()
-                                            //
-                                            // .getCameraConfigurations()
-                                            //
-                                            // .get(p.getFileName().toString());
+                                            CameraConfiguration camConf =
+                                                    new CameraConfiguration(
+                                                            p.getFileName().toString(), p.toAbsolutePath().toString());
+                                            camConf.FOV = TestUtils.WPI2019Image.FOV; // Good guess?
+                                            camConf.addCalibration(TestUtils.get2020LifeCamCoeffs(false));
 
-                                            //                                            if (camConf == null && false) {
-                                            CameraConfiguration camConf;
-                                            if (true) {
-                                                camConf =
-                                                        new CameraConfiguration(
-                                                                p.getFileName().toString(), p.toAbsolutePath().toString());
-                                                camConf.FOV = TestUtils.WPI2019Image.FOV; // Good guess?
-                                                camConf.addCalibration(TestUtils.get2020LifeCamCoeffs(false));
+                                            var pipeSettings = new AprilTagPipelineSettings();
+                                            pipeSettings.pipelineNickname = p.getFileName().toString();
+                                            pipeSettings.outputShowMultipleTargets = true;
+                                            pipeSettings.inputShouldShow = true;
+                                            pipeSettings.outputShouldShow = false;
+                                            pipeSettings.solvePNPEnabled = true;
 
-                                                var pipeSettings = new AprilTagPipelineSettings();
-                                                pipeSettings.pipelineNickname = p.getFileName().toString();
-                                                pipeSettings.outputShowMultipleTargets = true;
-                                                pipeSettings.inputShouldShow = true;
-                                                pipeSettings.outputShouldShow = false;
-                                                pipeSettings.solvePNPEnabled = true;
-
-                                                var psList = new ArrayList<CVPipelineSettings>();
-                                                //                                                psList.add(reflective);
-                                                //                                                psList.add(shape);
-                                                psList.add(aprilTag);
-                                                camConf.pipelineSettings = psList;
-                                            }
+                                            var aprilTag = new AprilTagPipelineSettings();
+                                            var psList = new ArrayList<CVPipelineSettings>();
+                                            psList.add(aprilTag);
+                                            camConf.pipelineSettings = psList;
 
                                             return new FileVisionSource(camConf);
                                         } catch (Exception e) {

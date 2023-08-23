@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
@@ -76,6 +78,12 @@ public class NetworkUtils {
 
     public static ArrayList<NMDeviceInfo> getAllActiveInterfaces() {
         var ret = new ArrayList<NMDeviceInfo>();
+
+        if (!Platform.isLinux()) {
+            // Can't determine interface name on Linux, give up
+            return ret;
+        }
+
         try {
             var shell = new ShellExec(true, true);
             shell.executeBashCommand(
