@@ -44,8 +44,7 @@ function allowNetworkChanges() {
 };
 
 const saveGeneralSettings = () => {
-  const changingStaticIp =
-    useSettingsStore().network.connectionType === NetworkConnectionType.Static;
+  const changingStaticIp = useSettingsStore().network.connectionType === NetworkConnectionType.Static;
 
   useSettingsStore()
     .saveGeneralSettings()
@@ -168,6 +167,7 @@ const netManagerIfaceIdx = computed<number>({
           label="Manage Device Networking"
           tooltip="If enabled, Photon will manage device hostname and network settings."
           :label-cols="4"
+          class="pt-2"
         />
         <cv-select
           v-model="netManagerIfaceIdx"
@@ -181,6 +181,7 @@ const netManagerIfaceIdx = computed<number>({
           v-model="useSettingsStore().network.runNTServer"
           label="Run NetworkTables Server (Debugging Only)"
           tooltip="If enabled, this device will create a NT server. This is useful for home debugging, but should be disabled on-robot."
+          class="mt-3 mb-3"
           :label-cols="4"
         />
         <v-banner
