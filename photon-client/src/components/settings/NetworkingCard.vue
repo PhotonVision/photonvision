@@ -125,26 +125,17 @@ const netManagerIfaceIdx = computed<number>({
           tooltip="Enter the Team Number or the IP address of the NetworkTables Server"
           :label-cols="4"
           :disabled="useSettingsStore().network.runNTServer"
-          :rules="[
-            (v) =>
-              isValidNetworkTablesIP(v) ||
-              'The NetworkTables Server Address must be a valid Team Number, IP address, or Hostname',
-          ]"
+          :rules="[(v) => isValidNetworkTablesIP(v) || 'The NetworkTables Server Address must be a valid Team Number, IP address, or Hostname']"
         />
         <v-banner
-          v-show="
-            !isValidNetworkTablesIP(
-              useSettingsStore().network.ntServerAddress
-            ) && !useSettingsStore().network.runNTServer
-          "
+          v-show="!isValidNetworkTablesIP(useSettingsStore().network.ntServerAddress) && !useSettingsStore().network.runNTServer"
           rounded
           color="red"
           text-color="white"
           style="margin: 10px 0"
           icon="mdi-alert-circle-outline"
         >
-          The NetworkTables Server Address is not set or is invalid.
-          NetworkTables is unable to connect.
+          The NetworkTables Server Address is not set or is invalid. NetworkTables is unable to connect.
         </v-banner>
         <cv-radio
           v-model="useSettingsStore().network.connectionType"
@@ -155,6 +146,7 @@ const netManagerIfaceIdx = computed<number>({
           :disabled="!allowNetworkChanges()"
         />
         <cv-input
+          v-if="useSettingsStore().network.connectionType === NetworkConnectionType.Static"
           v-model="useSettingsStore().network.staticIp"
           :input-cols="12 - 4"
           label="Static IP"
@@ -168,14 +160,13 @@ const netManagerIfaceIdx = computed<number>({
           :rules="[(v) => isValidHostname(v) || 'Invalid hostname']"
           :disabled="!allowNetworkChanges()"
         />
-        <v-divider/>
-        <span>Advanced Networking</span>
+        <v-divider class="pb-3" />
+        <span style="font-weight: 700">Advanced Networking</span>
         <cv-switch
           v-model="useSettingsStore().network.shouldManage"
           :disabled="!useSettingsStore().network.canManage"
           label="Manage Device Networking"
           tooltip="If enabled, Photon will manage device hostname and network settings."
-          class="mt-3 mb-3"
           :label-cols="4"
         />
         <cv-select
@@ -190,7 +181,6 @@ const netManagerIfaceIdx = computed<number>({
           v-model="useSettingsStore().network.runNTServer"
           label="Run NetworkTables Server (Debugging Only)"
           tooltip="If enabled, this device will create a NT server. This is useful for home debugging, but should be disabled on-robot."
-          class="mt-3 mb-3"
           :label-cols="4"
         />
         <v-banner
