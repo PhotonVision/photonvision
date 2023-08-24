@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import CvInput from "@/components/common/cv-input.vue";
 import CvRadio from "@/components/common/cv-radio.vue";
 import CvSwitch from "@/components/common/cv-switch.vue";
 import CvSelect from "@/components/common/cv-select.vue";
 import { NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
-import { computed } from "vue";
 
 const settingsValid = ref(true);
 const isValidNetworkTablesIP = (v: string | undefined): boolean => {
@@ -37,10 +36,6 @@ const isValidHostname = (v: string | undefined) => {
 
   if (v === undefined) return false;
   return hostnameRegex.test(v);
-};
-
-function allowNetworkChanges() {
-  return useSettingsStore().network.shouldManage && useSettingsStore().network.canManage;
 };
 
 const saveGeneralSettings = () => {
@@ -84,25 +79,11 @@ const saveGeneralSettings = () => {
     });
 };
 
-function ifaceNames(): string[] {
-  const ret = useSettingsStore()
-    .network.networkInterfaceNames.map((it) => it.connName)
-    .filter((it) => it.length > 0);
-  if (ret.length === 0) {
-    return [" "];
-  } else return ret;
-}
-
-const netManagerIfaceIdx = computed<number>({
-  get: (): number => {
-    const idx = useSettingsStore()
-      .network.networkInterfaceNames?.map((it) => it.connName)
-      .indexOf(useSettingsStore().network.networkManagerIface || "");
-    return idx >= 0 ? idx : 0;
-  },
-  set: (v) => {
-    console.log(v);
-  }
+const currentNetworkInterfaceIndex = computed<number>({
+  get: () => useSettingsStore()
+      .networkInterfaceNames
+      .indexOf(useSettingsStore().network.networkManagerIface || ""),
+  set: v => useSettingsStore().network.networkManagerIface = useSettingsStore().networkInterfaceNames[v]
 });
 </script>
 
@@ -142,7 +123,7 @@ const netManagerIfaceIdx = computed<number>({
           tooltip="DHCP will make the radio (router) automatically assign an IP address; this may result in an IP address that changes across reboots. Static IP assignment means that you pick the IP address and it won't change."
           :input-cols="12 - 4"
           :list="['DHCP', 'Static']"
-          :disabled="!allowNetworkChanges()"
+          :disabled="!(useSettingsStore().network.shouldManage && useSettingsStore().network.canManage)"
         />
         <cv-input
           v-if="useSettingsStore().network.connectionType === NetworkConnectionType.Static"
@@ -150,14 +131,14 @@ const netManagerIfaceIdx = computed<number>({
           :input-cols="12 - 4"
           label="Static IP"
           :rules="[(v) => isValidIPv4(v) || 'Invalid IPv4 address']"
-          :disabled="!allowNetworkChanges()"
+          :disabled="!(useSettingsStore().network.shouldManage && useSettingsStore().network.canManage)"
         />
         <cv-input
           v-model="useSettingsStore().network.hostname"
           label="Hostname"
           :input-cols="12-4"
           :rules="[(v) => isValidHostname(v) || 'Invalid hostname']"
-          :disabled="!allowNetworkChanges()"
+          :disabled="!(useSettingsStore().network.shouldManage && useSettingsStore().network.canManage)"
         />
         <v-divider class="pb-3" />
         <span style="font-weight: 700">Advanced Networking</span>
@@ -170,12 +151,12 @@ const netManagerIfaceIdx = computed<number>({
           class="pt-2"
         />
         <cv-select
-          v-model="netManagerIfaceIdx"
+          v-model="currentNetworkInterfaceIndex"
           label="NetworkManager interface"
-          :disabled="!allowNetworkChanges()"
+          :disabled="!(useSettingsStore().network.shouldManage && useSettingsStore().network.canManage)"
           :select-cols="12-4"
           tooltip="hello"
-          :items="ifaceNames()"
+          :items="useSettingsStore().networkInterfaceNames.map((v, i) => ({name: v, value: i, disabled: false}))"
         />
         <cv-switch
           v-model="useSettingsStore().network.runNTServer"

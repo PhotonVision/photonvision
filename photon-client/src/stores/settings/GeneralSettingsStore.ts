@@ -55,6 +55,9 @@ export const useSettingsStore = defineStore("settings", {
     getters: {
         gpuAccelerationEnabled(): boolean {
             return this.general.gpuAcceleration !== undefined;
+        },
+        networkInterfaceNames(): string[] {
+            return this.network.networkInterfaceNames.map(i => i.connName);
         }
     },
     actions: {
