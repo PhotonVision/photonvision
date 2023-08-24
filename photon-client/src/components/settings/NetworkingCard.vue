@@ -155,7 +155,7 @@ const currentNetworkInterfaceIndex = computed<number>({
           label="NetworkManager interface"
           :disabled="!(useSettingsStore().network.shouldManage && useSettingsStore().network.canManage)"
           :select-cols="12-4"
-          tooltip="hello"
+          tooltip="Name of the interface PhotonVision should manage the IP address of"
           :items="useSettingsStore().networkInterfaceNames.map((v, i) => ({name: v, value: i, disabled: false}))"
         />
         <cv-switch

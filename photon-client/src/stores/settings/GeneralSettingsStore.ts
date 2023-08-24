@@ -4,7 +4,7 @@ import type {
     LightingSettings,
     MetricData,
     NetworkSettings, 
-    NetworkSettingsRequest
+    ConfigurableNetworkSettings
 } from "@/types/SettingTypes";
 import { NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
@@ -34,7 +34,10 @@ export const useSettingsStore = defineStore("settings", {
             staticIp: "",
             hostname: "photonvision",
             runNTServer: false,
-            networkInterfaceNames: []
+            networkInterfaceNames: [{
+                connName: "Example Wired Connection",
+                devName: "eth0"
+            }]
         },
         lighting: {
             supported: true,
@@ -88,7 +91,7 @@ export const useSettingsStore = defineStore("settings", {
             this.network = data.networkSettings;
         },
         saveGeneralSettings() {
-            const payload: Required<NetworkSettingsRequest> = {
+            const payload: Required<ConfigurableNetworkSettings> = {
                 connectionType: this.network.connectionType,
                 hostname: this.network.hostname,
                 networkManagerIface: this.network.networkManagerIface || "",

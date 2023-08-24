@@ -29,7 +29,7 @@ export interface NetworkInterfaceType {
     devName: string
 }
 
-export interface NetworkSettingsRequest {
+export interface ConfigurableNetworkSettings {
     ntServerAddress: string
     connectionType: NetworkConnectionType,
     staticIp: string,
