@@ -188,14 +188,12 @@ class LegacyConfigProvider extends ConfigProvider {
                 atfl =
                         JacksonUtils.deserialize(apriltagFieldLayoutFile.toPath(), AprilTagFieldLayout.class);
                 if (atfl == null) {
-                    logger.error("Could not deserialize apriltag field layout!");
+                    logger.error("Could not deserialize apriltag field layout! (still null)");
                 }
             } catch (IOException e) {
-                logger.error("Could not deserialize apriltag field layout!");
+                logger.error("Could not deserialize apriltag field layout!", e);
                 atfl = null; // not required, nice to be explicit
             }
-            logger.info("Apriltag layout file not saved!");
-            atfl = null; // not required, nice to be explicit
         }
         if (atfl == null) {
             logger.info("Loading default apriltags for 2023 field...");
@@ -206,7 +204,7 @@ class LegacyConfigProvider extends ConfigProvider {
                 atfl = null;
             }
             if (atfl == null) {
-                // what do we even do here lmao -- wpilib should always work
+                // what do we even do here lmao -- wpilib built-in should always work
                 logger.error("Field layout is *still* null??????");
                 atfl = new AprilTagFieldLayout(List.of(), 1, 1);
             }
