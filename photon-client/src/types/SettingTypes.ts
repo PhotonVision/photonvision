@@ -29,17 +29,6 @@ export interface NetworkInterfaceType {
     devName: string
 }
 
-export interface ConfigurableNetworkSettings {
-    ntServerAddress: string
-    connectionType: NetworkConnectionType,
-    staticIp: string,
-    hostname: string,
-    runNTServer: boolean
-    shouldManage: boolean,
-    networkManagerIface?: string,
-    setStaticCommand?: string,
-    setDHCPcommand?: string,
-}
 export interface NetworkSettings {
     ntServerAddress: string
     connectionType: NetworkConnectionType,
@@ -53,6 +42,8 @@ export interface NetworkSettings {
     setDHCPcommand?: string,
     networkInterfaceNames: NetworkInterfaceType[]
 }
+
+export type ConfigurableNetworkSettings = Omit<NetworkSettings, "canManage" | "networkInterfaceNames">
 
 export interface LightingSettings {
     supported: boolean,
