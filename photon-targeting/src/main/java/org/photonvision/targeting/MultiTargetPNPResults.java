@@ -40,7 +40,8 @@ public class MultiTargetPNPResults {
         var results = PNPResults.createFromPacket(packet);
         var ids = new ArrayList<Integer>(MAX_IDS);
         for (int i = 0; i < MAX_IDS; i++) {
-            ids.add((int) packet.decodeByte());
+            int targetId = (int) packet.decodeByte();
+            if (targetId > Byte.MIN_VALUE) ids.add(targetId);
         }
         return new MultiTargetPNPResults(results, ids);
     }
@@ -54,5 +55,38 @@ public class MultiTargetPNPResults {
                 packet.encode(Byte.MIN_VALUE);
             }
         }
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((estimatedPose == null) ? 0 : estimatedPose.hashCode());
+        result = prime * result + ((fiducialIDsUsed == null) ? 0 : fiducialIDsUsed.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        MultiTargetPNPResults other = (MultiTargetPNPResults) obj;
+        if (estimatedPose == null) {
+            if (other.estimatedPose != null) return false;
+        } else if (!estimatedPose.equals(other.estimatedPose)) return false;
+        if (fiducialIDsUsed == null) {
+            if (other.fiducialIDsUsed != null) return false;
+        } else if (!fiducialIDsUsed.equals(other.fiducialIDsUsed)) return false;
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "MultiTargetPNPResults [estimatedPose="
+                + estimatedPose
+                + ", fiducialIDsUsed="
+                + fiducialIDsUsed
+                + "]";
     }
 }

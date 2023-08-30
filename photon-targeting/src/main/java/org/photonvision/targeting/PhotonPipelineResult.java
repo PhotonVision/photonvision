@@ -225,4 +225,17 @@ public class PhotonPipelineResult {
         } else if (!multiTagResult.equals(other.multiTagResult)) return false;
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "PhotonPipelineResult [targets="
+                + targets
+                + ", latencyMillis="
+                + latencyMillis
+                + ", timestampSeconds="
+                + timestampSeconds
+                + ", multiTagResult="
+                + multiTagResult
+                + "]";
+    }
 }
