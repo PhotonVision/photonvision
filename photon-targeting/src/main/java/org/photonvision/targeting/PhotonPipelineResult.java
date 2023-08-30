@@ -59,10 +59,10 @@ public class PhotonPipelineResult {
      * @param result Result from multi-target PNP.
      */
     public PhotonPipelineResult(
-            double latencyMillis, List<PhotonTrackedTarget> targets, MultiTargetPNPResults results) {
+            double latencyMillis, List<PhotonTrackedTarget> targets, MultiTargetPNPResults result) {
         this.latencyMillis = latencyMillis;
         this.targets.addAll(targets);
-        this.multiTagResult = results;
+        this.multiTagResult = result;
     }
 
     /**
