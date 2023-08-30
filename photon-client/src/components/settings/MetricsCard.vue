@@ -65,12 +65,12 @@ const fetchMetrics = () => {
         if(error.request) {
           useStateStore().showSnackbarMessage({
             color: "error",
-            message: "Unable to fetch Metrics! The backend didn't respond."
+            message: "Unable to fetch metrics! The backend didn't respond."
           });
         } else {
           useStateStore().showSnackbarMessage({
             color: "error",
-            message: "An error occurred while trying to fetch Metrics."
+            message: "An error occurred while trying to fetch metrics."
           });
         }
       })

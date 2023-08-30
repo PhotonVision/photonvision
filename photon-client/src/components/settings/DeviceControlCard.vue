@@ -126,7 +126,8 @@ enum ImportType {
   AllSettings,
   HardwareConfig,
   HardwareSettings,
-  NetworkConfig
+  NetworkConfig,
+  ApriltagFieldLayout
 }
 
 const showImportDialog = ref(false);
@@ -151,6 +152,9 @@ const handleSettingsImport = () => {
       break;
     case ImportType.NetworkConfig:
       settingsEndpoint = "/networkConfig";
+      break;
+    case ImportType.ApriltagFieldLayout:
+      settingsEndpoint = "/aprilTagFieldLayout";
       break;
   }
 
@@ -286,7 +290,7 @@ const handleSettingsImport = () => {
                     v-model="importType"
                     label="Type"
                     tooltip="Select the type of settings file you are trying to upload"
-                    :items="['All Settings', 'Hardware Config', 'Hardware Settings', 'Network Config']"
+                    :items="['All Settings', 'Hardware Config', 'Hardware Settings', 'Network Config', 'Apriltag Layout']"
                     :select-cols="10"
                   />
                 </v-row>

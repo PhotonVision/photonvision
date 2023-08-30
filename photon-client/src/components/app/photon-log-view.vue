@@ -98,7 +98,7 @@ document.addEventListener("keydown", e => {
           v-if="logs.length === 0"
           style="font-size: 18px; font-weight: 600"
         >
-          There are no Logs to show
+          There are no logs to show
         </v-card-text>
         <v-virtual-scroll
           v-else
