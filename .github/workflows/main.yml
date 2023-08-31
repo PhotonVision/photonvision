@@ -71,7 +71,7 @@ jobs:
       run: npm run lint
 
     - name: Check Formatting
-      run: prettier --check \src
+      run: npm run check-format
   photon-build-examples:
     runs-on: ubuntu-22.04
     name: "Build Examples"

@@ -8,7 +8,8 @@
     "preview": "vite preview --port 4173",
     "build-only": "vite build",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/",
+    "check-format": "prettier --check src/"
   },
   "dependencies": {
     "@fontsource/prompt": "^5.0.5",
