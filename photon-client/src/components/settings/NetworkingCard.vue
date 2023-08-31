@@ -91,15 +91,8 @@ const currentNetworkInterfaceIndex = computed<number>({
   <v-card
     dark
     class="mb-3 pr-6 pb-3"
-    style="background-color: #006492"
   >
     <v-card-title>Networking</v-card-title>
-    <div class="ml-5">
-      <v-form
-        ref="form"
-        v-model="settingsValid"
-      >
-        <cv-input
           v-model="useSettingsStore().network.ntServerAddress"
           label="Team Number/NetworkTables Server Address"
           tooltip="Enter the Team Number or the IP address of the NetworkTables Server"
@@ -108,7 +101,10 @@ const currentNetworkInterfaceIndex = computed<number>({
           :rules="[(v) => isValidNetworkTablesIP(v) || 'The NetworkTables Server Address must be a valid Team Number, IP address, or Hostname']"
         />
         <v-banner
-          v-show="!isValidNetworkTablesIP(useSettingsStore().network.ntServerAddress) && !useSettingsStore().network.runNTServer"
+          v-show="
+            !isValidNetworkTablesIP(useSettingsStore().network.ntServerAddress) &&
+            !useSettingsStore().network.runNTServer
+          "
           rounded
           color="red"
           text-color="white"

@@ -8,22 +8,25 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
 const props = defineProps<{
   // TODO fully update v-model usage in custom components on Vue3 update
-  value: number[]
+  value: number[];
 }>();
 
 const emit = defineEmits<{
-  (e: "input", value: number[]): void
+  (e: "input", value: number[]): void;
 }>();
-
 
 const localValue = computed({
   get: () => props.value,
-  set: v => emit("input", v)
+  set: (v) => emit("input", v)
 });
 
 const driverMode = computed<boolean>({
   get: () => useCameraSettingsStore().isDriverMode,
-  set: v => useCameraSettingsStore().changeCurrentPipelineIndex(v ? -1 : useCameraSettingsStore().currentCameraSettings.lastPipelineIndex || 0, true)
+  set: (v) =>
+    useCameraSettingsStore().changeCurrentPipelineIndex(
+      v ? -1 : useCameraSettingsStore().currentCameraSettings.lastPipelineIndex || 0,
+      true
+    )
 });
 
 const fpsTooLow = computed<boolean>(() => {
@@ -33,38 +36,30 @@ const fpsTooLow = computed<boolean>(() => {
   const gpuAccel = useSettingsStore().general.gpuAcceleration !== undefined;
   const isReflective = useCameraSettingsStore().currentPipelineSettings.pipelineType === PipelineType.Reflective;
 
-  return (currFPS - targetFPS) < -5 && currFPS !== 0 && !driverMode && gpuAccel && isReflective;
+  return currFPS - targetFPS < -5 && currFPS !== 0 && !driverMode && gpuAccel && isReflective;
 });
 </script>
 
 <template>
-  <v-card
-    class="mb-3 pr-6 pb-3 pa-4"
-    color="primary"
-    dark
-  >
+  <v-card class="mb-3 pr-6 pb-3 pa-4" color="primary" dark>
     <v-card-title
       class="pb-0 mb-2 pl-4 pt-1"
       style="min-height: 50px; justify-content: space-between; align-content: center"
     >
       <div style="display: flex; flex-wrap: wrap">
         <div>
-          <span
-            class="mr-4"
-            style="white-space: nowrap"
-          >
-            Cameras
-          </span>
+          <span class="mr-4" style="white-space: nowrap"> Cameras </span>
         </div>
         <div>
           <v-chip
             label
             :color="fpsTooLow ? 'error' : 'transparent'"
             :text-color="fpsTooLow ? '#C7EA46' : '#ff4d00'"
-            style="font-size: 1rem; padding: 0; margin: 0;"
+            style="font-size: 1rem; padding: 0; margin: 0"
           >
             <span class="pr-1">
-              {{ Math.round(useStateStore().pipelineResults?.fps || 0) }}&nbsp;FPS &ndash; {{ Math.min(Math.round(useStateStore().pipelineResults?.latency || 0), 9999) }} ms latency
+              {{ Math.round(useStateStore().pipelineResults?.fps || 0) }}&nbsp;FPS &ndash;
+              {{ Math.min(Math.round(useStateStore().pipelineResults?.latency || 0), 9999) }} ms latency
             </span>
           </v-chip>
         </div>
@@ -75,43 +70,24 @@ const fpsTooLow = computed<boolean>(() => {
           v-model="driverMode"
           :disabled="useCameraSettingsStore().isCalibrationMode"
           label="Driver Mode"
-          style="margin-left: auto;"
+          style="margin-left: auto"
           color="accent"
           class="pt-2"
         />
       </div>
     </v-card-title>
-    <div
-      class="stream-container pb-4"
-    >
+    <div class="stream-container pb-4">
       <div class="stream">
-        <photon-camera-stream
-          v-show="value.includes(0)"
-          stream-type="Raw"
-          style="max-width: 100%"
-        />
+        <photon-camera-stream v-show="value.includes(0)" stream-type="Raw" style="max-width: 100%" />
       </div>
       <div class="stream">
-        <photon-camera-stream
-          v-show="value.includes(1)"
-          stream-type="Processed"
-          style="max-width: 100%"
-        />
+        <photon-camera-stream v-show="value.includes(1)" stream-type="Processed" style="max-width: 100%" />
       </div>
     </div>
     <v-divider />
     <div class="pt-4">
-      <p style="color: white;">
-        Stream Display
-      </p>
-      <v-btn-toggle
-        v-model="localValue"
-        :multiple="true"
-        mandatory
-        dark
-        class="fill"
-        style="width: 100%"
-      >
+      <p style="color: white">Stream Display</p>
+      <v-btn-toggle v-model="localValue" :multiple="true" mandatory dark class="fill" style="width: 100%">
         <v-btn
           color="secondary"
           class="fill"
