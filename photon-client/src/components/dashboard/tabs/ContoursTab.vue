@@ -14,34 +14,46 @@ const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings
 // TODO fix cv-range-slider so that store access doesn't need to be deferred
 const contourArea = computed<[number, number]>({
   get: () => Object.values(useCameraSettingsStore().currentPipelineSettings.contourArea) as [number, number],
-  set: v => useCameraSettingsStore().currentPipelineSettings.contourArea = v
+  set: (v) => (useCameraSettingsStore().currentPipelineSettings.contourArea = v)
 });
 const contourRatio = computed<[number, number]>({
   get: () => Object.values(useCameraSettingsStore().currentPipelineSettings.contourRatio) as [number, number],
-  set: v => useCameraSettingsStore().currentPipelineSettings.contourRatio = v
+  set: (v) => (useCameraSettingsStore().currentPipelineSettings.contourRatio = v)
 });
 const contourFullness = computed<[number, number]>({
   get: () => Object.values(useCameraSettingsStore().currentPipelineSettings.contourFullness) as [number, number],
-  set: v => useCameraSettingsStore().currentPipelineSettings.contourFullness = v
+  set: (v) => (useCameraSettingsStore().currentPipelineSettings.contourFullness = v)
 });
 const contourPerimeter = computed<[number, number]>({
-  get: () => currentPipelineSettings.pipelineType === PipelineType.ColoredShape ? Object.values(currentPipelineSettings.contourPerimeter) as [number, number] : [0, 0] as [number, number],
-  set: v => {
-    if(currentPipelineSettings.pipelineType === PipelineType.ColoredShape) {
+  get: () =>
+    currentPipelineSettings.pipelineType === PipelineType.ColoredShape
+      ? (Object.values(currentPipelineSettings.contourPerimeter) as [number, number])
+      : ([0, 0] as [number, number]),
+  set: (v) => {
+    if (currentPipelineSettings.pipelineType === PipelineType.ColoredShape) {
       currentPipelineSettings.contourPerimeter = v;
     }
   }
 });
 const contourRadius = computed<[number, number]>({
-  get: () => currentPipelineSettings.pipelineType === PipelineType.ColoredShape ? Object.values(currentPipelineSettings.contourRadius) as [number, number] : [0, 0] as [number, number],
-  set: v => {
-    if(currentPipelineSettings.pipelineType === PipelineType.ColoredShape) {
+  get: () =>
+    currentPipelineSettings.pipelineType === PipelineType.ColoredShape
+      ? (Object.values(currentPipelineSettings.contourRadius) as [number, number])
+      : ([0, 0] as [number, number]),
+  set: (v) => {
+    if (currentPipelineSettings.pipelineType === PipelineType.ColoredShape) {
       currentPipelineSettings.contourRadius = v;
     }
   }
 });
 
-const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)) ? 9 : 8;
+const interactiveCols = computed(
+  () =>
+    (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) &&
+    (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)
+)
+  ? 9
+  : 8;
 </script>
 
 <template>
@@ -53,7 +65,7 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
       :max="100"
       :slider-cols="interactiveCols"
       :step="0.01"
-      @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({contourArea: value}, false)"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourArea: value }, false)"
     />
     <cv-range-slider
       v-if="useCameraSettingsStore().currentPipelineType !== PipelineType.ColoredShape"
@@ -64,7 +76,7 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
       :max="100"
       :slider-cols="interactiveCols"
       :step="0.1"
-      @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({contourRatio: value}, false)"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourRatio: value }, false)"
     />
     <cv-select
       v-model="useCameraSettingsStore().currentPipelineSettings.contourTargetOrientation"
@@ -72,7 +84,9 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
       tooltip="Used to determine how to calculate target landmarks, as well as aspect ratio"
       :items="['Portrait', 'Landscape']"
       :select-cols="interactiveCols"
-      @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({contourTargetOrientation: value}, false)"
+      @input="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOrientation: value }, false)
+      "
     />
     <cv-range-slider
       v-if="useCameraSettingsStore().currentPipelineType === PipelineType.ColoredShape"
@@ -82,7 +96,7 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
       :min="0"
       :max="100"
       :slider-cols="interactiveCols"
-      @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({contourFullness: value}, false)"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourFullness: value }, false)"
     />
     <cv-range-slider
       v-if="currentPipelineSettings.pipelineType === PipelineType.ColoredShape"
@@ -92,7 +106,7 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
       min="0"
       max="4000"
       :slider-cols="interactiveCols"
-      @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({contourPerimeter: value}, false)"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourPerimeter: value }, false)"
     />
     <cv-slider
       v-model="useCameraSettingsStore().currentPipelineSettings.contourSpecklePercentage"
@@ -101,7 +115,9 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
       :min="0"
       :max="100"
       :slider-cols="interactiveCols"
-      @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({contourSpecklePercentage: value}, false)"
+      @input="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourSpecklePercentage: value }, false)
+      "
     />
     <template v-if="currentPipelineSettings.pipelineType === PipelineType.Reflective">
       <cv-slider
@@ -112,7 +128,7 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
         :max="4"
         :step="0.1"
         :slider-cols="interactiveCols"
-        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({contourFilterRangeX: value}, false)"
+        @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourFilterRangeX: value }, false)"
       />
       <cv-slider
         v-model="currentPipelineSettings.contourFilterRangeY"
@@ -122,24 +138,24 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
         :max="4"
         :step="0.1"
         :slider-cols="interactiveCols"
-        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({contourFilterRangeY: value}, false)"
+        @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourFilterRangeY: value }, false)"
       />
       <cv-select
         v-model="useCameraSettingsStore().currentPipelineSettings.contourGroupingMode"
         label="Target Grouping"
         tooltip="Whether or not every two targets are paired with each other (good for e.g. 2019 targets)"
         :select-cols="interactiveCols"
-        :items="['Single','Dual','Two or More']"
-        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({contourGroupingMode: value}, false)"
+        :items="['Single', 'Dual', 'Two or More']"
+        @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourGroupingMode: value }, false)"
       />
       <cv-select
         v-model="useCameraSettingsStore().currentPipelineSettings.contourIntersection"
         label="Target Intersection"
         tooltip="If target grouping is in dual mode it will use this dropdown to decide how targets are grouped with adjacent targets"
         :select-cols="interactiveCols"
-        :items="['None','Up','Down','Left','Right']"
+        :items="['None', 'Up', 'Down', 'Left', 'Right']"
         :disabled="useCameraSettingsStore().currentPipelineSettings.contourGroupingMode === 0"
-        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({contourIntersection: value}, false)"
+        @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourIntersection: value }, false)"
       />
     </template>
     <template v-else-if="currentPipelineSettings.pipelineType === PipelineType.ColoredShape">
@@ -150,7 +166,7 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
         tooltip="The shape of targets to look for"
         :select-cols="interactiveCols"
         :items="['Circle', 'Polygon', 'Triangle', 'Quadrilateral']"
-        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({contourShape: value}, false)"
+        @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourShape: value }, false)"
       />
       <cv-slider
         v-model="currentPipelineSettings.accuracyPercentage"
@@ -160,7 +176,7 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
         :min="0"
         :max="100"
         :slider-cols="interactiveCols"
-        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({accuracyPercentage: value}, false)"
+        @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ accuracyPercentage: value }, false)"
       />
       <cv-slider
         v-model="currentPipelineSettings.circleDetectThreshold"
@@ -170,7 +186,9 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
         :min="1"
         :max="100"
         :slider-cols="interactiveCols"
-        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({circleDetectThreshold: value}, false)"
+        @input="
+          (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ circleDetectThreshold: value }, false)
+        "
       />
       <cv-range-slider
         v-model="contourRadius"
@@ -179,7 +197,7 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
         :min="0"
         :max="100"
         :slider-cols="interactiveCols"
-        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({contourRadius: value}, false)"
+        @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourRadius: value }, false)"
       />
       <cv-slider
         v-model="currentPipelineSettings.maxCannyThresh"
@@ -188,7 +206,7 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
         :min="1"
         :max="100"
         :slider-cols="interactiveCols"
-        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({maxCannyThresh: value}, false)"
+        @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ maxCannyThresh: value }, false)"
       />
       <cv-slider
         v-model="currentPipelineSettings.circleAccuracy"
@@ -197,7 +215,7 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
         :min="1"
         :max="100"
         :slider-cols="interactiveCols"
-        @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({circleAccuracy: value}, false)"
+        @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ circleAccuracy: value }, false)"
       />
       <v-divider class="mt-3" />
     </template>
@@ -206,8 +224,8 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
       label="Target Sort"
       tooltip="Chooses the sorting mode used to determine the 'best' targets to provide to user code"
       :select-cols="interactiveCols"
-      :items="['Largest','Smallest','Highest','Lowest','Rightmost','Leftmost','Centermost']"
-      @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({contourSortMode: value}, false)"
+      :items="['Largest', 'Smallest', 'Highest', 'Lowest', 'Rightmost', 'Leftmost', 'Centermost']"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourSortMode: value }, false)"
     />
   </div>
 </template>

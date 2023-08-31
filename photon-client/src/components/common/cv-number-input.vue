@@ -2,42 +2,39 @@
 import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
 import { computed } from "vue";
 
-const props = withDefaults(defineProps<{
-  label?: string,
-  tooltip?: string,
-  // TODO fully update v-model usage in custom components on Vue3 update
-  value: number,
-  disabled?: boolean,
-  labelCols?: number,
-  rules?: ((v: number) => boolean | string)[],
-  step?: number
-}>(), {
-  disabled: false,
-  labelCols: 2,
-  step: 1
-});
+const props = withDefaults(
+  defineProps<{
+    label?: string;
+    tooltip?: string;
+    // TODO fully update v-model usage in custom components on Vue3 update
+    value: number;
+    disabled?: boolean;
+    labelCols?: number;
+    rules?: ((v: number) => boolean | string)[];
+    step?: number;
+  }>(),
+  {
+    disabled: false,
+    labelCols: 2,
+    step: 1
+  }
+);
 
 const emit = defineEmits<{
-  (e: "input", value: number): void
+  (e: "input", value: number): void;
 }>();
 
 const localValue = computed({
   get: () => props.value,
-  set: v => emit("input", parseFloat(v as unknown as string))
+  set: (v) => emit("input", parseFloat(v as unknown as string))
 });
 </script>
 
 <template>
   <div>
-    <v-row
-      dense
-      align="center"
-    >
+    <v-row dense align="center">
       <v-col :cols="labelCols">
-        <tooltipped-label
-          :tooltip="tooltip"
-          :label="label"
-        />
+        <tooltipped-label :tooltip="tooltip" :label="label" />
       </v-col>
       <v-col>
         <v-text-field

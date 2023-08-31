@@ -21,7 +21,12 @@ export class AutoReconnectingWebsocket {
    * @param onData decoded websocket message data consumer. The data is automatically decoded by msgpack.
    * @param onDisconnect action to run on websocket disconnection (when the websocket changes to the CLOSED state)
    */
-  constructor(serverAddress: string | URL, onConnect: () => void, onData: (data: IncomingWebsocketData) => void, onDisconnect: () => void) {
+  constructor(
+    serverAddress: string | URL,
+    onConnect: () => void,
+    onData: (data: IncomingWebsocketData) => void,
+    onDisconnect: () => void
+  ) {
     this.serverAddress = serverAddress;
 
     this.onConnect = onConnect;
@@ -41,8 +46,8 @@ export class AutoReconnectingWebsocket {
    */
   send(data, encodeData = true) {
     // Only send data if the websocket is open
-    if(this.isConnected()) {
-      if(encodeData) {
+    if (this.isConnected()) {
+      if (encodeData) {
         this.websocket?.send(encode(data));
       } else {
         this.websocket?.send(data);

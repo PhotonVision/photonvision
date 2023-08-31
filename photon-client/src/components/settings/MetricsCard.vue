@@ -5,27 +5,28 @@ import { useStateStore } from "@/stores/StateStore";
 import CvIcon from "@/components/common/cv-icon.vue";
 
 interface MetricItem {
-  header: string,
-  value?: string
+  header: string;
+  value?: string;
 }
 
 const generalMetrics = computed<MetricItem[]>(() => [
-    {
-      header: "Version",
-      value: useSettingsStore().general.version || "Unknown"
-    },
-    {
-      header: "Hardware Model",
-      value: useSettingsStore().general.hardwareModel || "Unknown"
-    },
-    {
-      header: "Platform",
-      value: useSettingsStore().general.hardwarePlatform || "Unknown"
-    },
-    {
-      header: "GPU Acceleration",
-      value: useSettingsStore().general.gpuAcceleration || "Unknown"
-    }]);
+  {
+    header: "Version",
+    value: useSettingsStore().general.version || "Unknown"
+  },
+  {
+    header: "Hardware Model",
+    value: useSettingsStore().general.hardwareModel || "Unknown"
+  },
+  {
+    header: "Platform",
+    value: useSettingsStore().general.hardwarePlatform || "Unknown"
+  },
+  {
+    header: "GPU Acceleration",
+    value: useSettingsStore().general.gpuAcceleration || "Unknown"
+  }
+]);
 const platformMetrics = computed<MetricItem[]>(() => [
   {
     header: "CPU Temp",
@@ -33,15 +34,21 @@ const platformMetrics = computed<MetricItem[]>(() => [
   },
   {
     header: "CPU Usage",
-    value: useSettingsStore().metrics.cpuUtil === undefined ? "Unknown" :`${useSettingsStore().metrics.cpuUtil}%`
+    value: useSettingsStore().metrics.cpuUtil === undefined ? "Unknown" : `${useSettingsStore().metrics.cpuUtil}%`
   },
   {
     header: "CPU Memory Usage",
-    value: useSettingsStore().metrics.ramUtil === undefined || useSettingsStore().metrics.cpuMem === undefined ? "Unknown" : `${useSettingsStore().metrics.ramUtil || "Unknown"}MB of ${useSettingsStore().metrics.cpuMem}MB`
+    value:
+      useSettingsStore().metrics.ramUtil === undefined || useSettingsStore().metrics.cpuMem === undefined
+        ? "Unknown"
+        : `${useSettingsStore().metrics.ramUtil || "Unknown"}MB of ${useSettingsStore().metrics.cpuMem}MB`
   },
   {
     header: "GPU Memory Usage",
-    value: useSettingsStore().metrics.gpuMemUtil === undefined || useSettingsStore().metrics.gpuMem === undefined ? "Unknown" : `${useSettingsStore().metrics.gpuMemUtil}MB of ${useSettingsStore().metrics.gpuMem}MB`
+    value:
+      useSettingsStore().metrics.gpuMemUtil === undefined || useSettingsStore().metrics.gpuMem === undefined
+        ? "Unknown"
+        : `${useSettingsStore().metrics.gpuMemUtil}MB of ${useSettingsStore().metrics.gpuMem}MB`
   },
   {
     header: "CPU Throttling",
@@ -60,28 +67,28 @@ const platformMetrics = computed<MetricItem[]>(() => [
 const metricsLastFetched = ref("Never");
 const fetchMetrics = () => {
   useSettingsStore()
-      .requestMetricsUpdate()
-      .catch(error => {
-        if(error.request) {
-          useStateStore().showSnackbarMessage({
-            color: "error",
-            message: "Unable to fetch Metrics! The backend didn't respond."
-          });
-        } else {
-          useStateStore().showSnackbarMessage({
-            color: "error",
-            message: "An error occurred while trying to fetch Metrics."
-          });
-        }
-      })
-      .finally(() => {
-        const pad = (num: number): string => {
-          return String(num).padStart(2, "0");
-        };
+    .requestMetricsUpdate()
+    .catch((error) => {
+      if (error.request) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "Unable to fetch Metrics! The backend didn't respond."
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "An error occurred while trying to fetch Metrics."
+        });
+      }
+    })
+    .finally(() => {
+      const pad = (num: number): string => {
+        return String(num).padStart(2, "0");
+      };
 
-        const date = new Date();
-        metricsLastFetched.value = `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-      });
+      const date = new Date();
+      metricsLastFetched.value = `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+    });
 };
 
 onBeforeMount(() => {
@@ -90,47 +97,24 @@ onBeforeMount(() => {
 </script>
 
 <template>
-  <v-card
-    dark
-    class="mb-3 pr-6 pb-3"
-    style="background-color: #006492;"
-  >
+  <v-card dark class="mb-3 pr-6 pb-3" style="background-color: #006492">
     <v-card-title style="display: flex; justify-content: space-between">
       <span>Stats</span>
-      <cv-icon
-        icon-name="mdi-reload"
-        color="white"
-        tooltip="Reload Metrics"
-        hover
-        @click="fetchMetrics"
-      />
+      <cv-icon icon-name="mdi-reload" color="white" tooltip="Reload Metrics" hover @click="fetchMetrics" />
     </v-card-title>
     <v-row class="pt-2 pa-4 ma-0 ml-5 pb-1">
-      <v-card-subtitle
-        class="ma-0 pa-0 pb-2"
-        style="font-size: 16px"
-      >
-        General Metrics
-      </v-card-subtitle>
+      <v-card-subtitle class="ma-0 pa-0 pb-2" style="font-size: 16px"> General Metrics </v-card-subtitle>
       <v-simple-table class="metrics-table">
         <thead>
           <tr>
-            <th
-              v-for="(item, itemIndex) in generalMetrics"
-              :key="itemIndex"
-              class="metric-item metric-item-title"
-            >
+            <th v-for="(item, itemIndex) in generalMetrics" :key="itemIndex" class="metric-item metric-item-title">
               {{ item.header }}
             </th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td
-              v-for="(item, itemIndex) in generalMetrics"
-              :key="itemIndex"
-              class="metric-item"
-            >
+            <td v-for="(item, itemIndex) in generalMetrics" :key="itemIndex" class="metric-item">
               {{ item.value }}
             </td>
           </tr>
@@ -138,31 +122,18 @@ onBeforeMount(() => {
       </v-simple-table>
     </v-row>
     <v-row class="pa-4 ma-0 ml-5">
-      <v-card-subtitle
-        class="ma-0 pa-0 pb-2"
-        style="font-size: 16px"
-      >
-        Hardware Metrics
-      </v-card-subtitle>
+      <v-card-subtitle class="ma-0 pa-0 pb-2" style="font-size: 16px"> Hardware Metrics </v-card-subtitle>
       <v-simple-table class="metrics-table">
         <thead>
           <tr>
-            <th
-              v-for="(item, itemIndex) in platformMetrics"
-              :key="itemIndex"
-              class="metric-item metric-item-title"
-            >
+            <th v-for="(item, itemIndex) in platformMetrics" :key="itemIndex" class="metric-item metric-item-title">
               {{ item.header }}
             </th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td
-              v-for="(item, itemIndex) in platformMetrics"
-              :key="itemIndex"
-              class="metric-item"
-            >
+            <td v-for="(item, itemIndex) in platformMetrics" :key="itemIndex" class="metric-item">
               <span v-if="useSettingsStore().metrics.cpuUtil !== undefined">{{ item.value }}</span>
               <span v-else>---</span>
             </td>
@@ -177,7 +148,7 @@ onBeforeMount(() => {
 </template>
 
 <style scoped lang="scss">
-.metrics-table{
+.metrics-table {
   border-collapse: separate;
   border-spacing: 0;
   border-radius: 5px;
@@ -203,7 +174,8 @@ onBeforeMount(() => {
 }
 
 .v-data-table {
-  thead, tbody {
+  thead,
+  tbody {
     background-color: #006492;
   }
 

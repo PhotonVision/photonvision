@@ -11,7 +11,13 @@ import { useStateStore } from "@/stores/StateStore";
 // Defer reference to store access method
 const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings;
 
-const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)) ? 9 : 8;
+const interactiveCols = computed(
+  () =>
+    (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) &&
+    (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)
+)
+  ? 9
+  : 8;
 </script>
 
 <template>
@@ -21,7 +27,7 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
       label="Target family"
       :items="['AprilTag Family 36h11', 'AprilTag Family 25h9', 'AprilTag Family 16h5']"
       :select-cols="interactiveCols"
-      @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({tagFamily: value}, false)"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ tagFamily: value }, false)"
     />
     <cv-slider
       v-model="currentPipelineSettings.decimate"
@@ -31,7 +37,7 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
       tooltip="Increases FPS at the expense of range by reducing image resolution initially"
       :min="1"
       :max="8"
-      @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({decimate: value}, false)"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ decimate: value }, false)"
     />
     <cv-slider
       v-model="currentPipelineSettings.blur"
@@ -42,7 +48,7 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
       :min="0"
       :max="5"
       :step="0.1"
-      @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({blur: value}, false)"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ blur: value }, false)"
     />
     <cv-slider
       v-model="currentPipelineSettings.threads"
@@ -52,14 +58,14 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
       tooltip="Number of threads spawned by the AprilTag detector"
       :min="1"
       :max="8"
-      @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({threads: value}, false)"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ threads: value }, false)"
     />
     <cv-switch
       v-model="currentPipelineSettings.refineEdges"
       class="pt-2"
       label="Refine Edges"
       tooltip="Further refines the AprilTag corner position initial estimate, suggested left on"
-      @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({refineEdges: value}, false)"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ refineEdges: value }, false)"
     />
     <cv-slider
       v-model="currentPipelineSettings.decisionMargin"
@@ -69,7 +75,7 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
       tooltip="Tags with a 'margin' (decoding quality score) less than this wil be rejected. Increase this to reduce the number of false positive detections"
       :min="0"
       :max="250"
-      @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({decisionMargin: value}, false)"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ decisionMargin: value }, false)"
     />
     <cv-slider
       v-model="currentPipelineSettings.numIterations"
@@ -79,7 +85,7 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
       tooltip="Number of iterations the pose estimation algorithm will run, 50-100 is a good starting point"
       :min="0"
       :max="500"
-      @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({numIterations: value}, false)"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ numIterations: value }, false)"
     />
   </div>
 </template>

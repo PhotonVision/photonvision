@@ -2,48 +2,40 @@
 import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
 import { computed } from "vue";
 
-const props = withDefaults(defineProps<{
-  label?: string,
-  tooltip?: string,
-  // TODO fully update v-model usage in custom components on Vue3 update
-  value: boolean,
-  disabled?: boolean,
-  labelCols?: number,
-  switchCols?: number
-}>(), {
-  disabled: false,
-  labelCols: 2
-});
+const props = withDefaults(
+  defineProps<{
+    label?: string;
+    tooltip?: string;
+    // TODO fully update v-model usage in custom components on Vue3 update
+    value: boolean;
+    disabled?: boolean;
+    labelCols?: number;
+    switchCols?: number;
+  }>(),
+  {
+    disabled: false,
+    labelCols: 2
+  }
+);
 
 const emit = defineEmits<{
-  (e: "input", value: boolean): void
+  (e: "input", value: boolean): void;
 }>();
 
 const localValue = computed({
   get: () => props.value,
-  set: v => emit("input", v)
+  set: (v) => emit("input", v)
 });
 </script>
 
 <template>
   <div>
-    <v-row
-      dense
-      align="center"
-    >
-      <v-col :cols="(12 - switchCols) || labelCols">
-        <tooltipped-label
-          :tooltip="tooltip"
-          :label="label"
-        />
+    <v-row dense align="center">
+      <v-col :cols="12 - switchCols || labelCols">
+        <tooltipped-label :tooltip="tooltip" :label="label" />
       </v-col>
-      <v-col :cols="switchCols || (12 - labelCols)">
-        <v-switch
-          v-model="localValue"
-          dark
-          :disabled="disabled"
-          color="#ffd843"
-        />
+      <v-col :cols="switchCols || 12 - labelCols">
+        <v-switch v-model="localValue" dark :disabled="disabled" color="#ffd843" />
       </v-col>
     </v-row>
   </div>
