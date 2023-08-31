@@ -126,7 +126,7 @@ const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.bre
               v-if="useSettingsStore().network.runNTServer"
               class="text-wrap"
             >
-              NetworkTables server running for <span class="accent--text">{{ useStateStore().ntConnectionStatus.clients }}</span> clients
+              NetworkTables server running for <span class="accent--text">{{ useStateStore().ntConnectionStatus.clients || 0 }}</span> clients
             </v-list-item-title>
             <v-list-item-title
               v-else-if="useStateStore().ntConnectionStatus.connected && useStateStore().backendConnected"
