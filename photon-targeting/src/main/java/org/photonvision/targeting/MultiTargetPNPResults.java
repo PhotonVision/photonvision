@@ -31,7 +31,7 @@ public class MultiTargetPNPResults {
 
     public MultiTargetPNPResults() {}
 
-    public MultiTargetPNPResults(PNPResults results, ArrayList<Integer> ids) {
+    public MultiTargetPNPResults(PNPResults results, List<Integer> ids) {
         estimatedPose = results;
         fiducialIDsUsed = ids;
     }

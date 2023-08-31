@@ -150,4 +150,21 @@ public class PNPResults {
             return false;
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "PNPResults [isPresent="
+                + isPresent
+                + ", best="
+                + best
+                + ", bestReprojErr="
+                + bestReprojErr
+                + ", alt="
+                + alt
+                + ", altReprojErr="
+                + altReprojErr
+                + ", ambiguity="
+                + ambiguity
+                + "]";
+    }
 }
