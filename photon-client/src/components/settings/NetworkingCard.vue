@@ -54,9 +54,9 @@ const saveGeneralSettings = () => {
         if (error.status === 504 || changingStaticIp) {
           useStateStore().showSnackbarMessage({
             color: "error",
-            message: `Connection lost! Try the new static IP at ${
-              useSettingsStore().network.staticIp
-            }:5800 or ${useSettingsStore().network.hostname}:5800?`
+            message: `Connection lost! Try the new static IP at ${useSettingsStore().network.staticIp}:5800 or ${
+              useSettingsStore().network.hostname
+            }:5800?`
           });
         } else {
           useStateStore().showSnackbarMessage({
@@ -67,8 +67,7 @@ const saveGeneralSettings = () => {
       } else if (error.request) {
         useStateStore().showSnackbarMessage({
           color: "error",
-          message:
-            "Error while trying to process the request! The backend didn't respond."
+          message: "Error while trying to process the request! The backend didn't respond."
         });
       } else {
         useStateStore().showSnackbarMessage({
@@ -80,25 +79,27 @@ const saveGeneralSettings = () => {
 };
 
 const currentNetworkInterfaceIndex = computed<number>({
-  get: () => useSettingsStore()
-      .networkInterfaceNames
-      .indexOf(useSettingsStore().network.networkManagerIface || ""),
-  set: v => useSettingsStore().network.networkManagerIface = useSettingsStore().networkInterfaceNames[v]
+  get: () => useSettingsStore().networkInterfaceNames.indexOf(useSettingsStore().network.networkManagerIface || ""),
+  set: (v) => (useSettingsStore().network.networkManagerIface = useSettingsStore().networkInterfaceNames[v])
 });
 </script>
 
 <template>
-  <v-card
-    dark
-    class="mb-3 pr-6 pb-3"
-  >
+  <v-card dark class="mb-3 pr-6 pb-3" style="background-color: #006492">
     <v-card-title>Networking</v-card-title>
+    <div class="ml-5">
+      <v-form ref="form" v-model="settingsValid">
+        <cv-input
           v-model="useSettingsStore().network.ntServerAddress"
           label="Team Number/NetworkTables Server Address"
           tooltip="Enter the Team Number or the IP address of the NetworkTables Server"
           :label-cols="4"
           :disabled="useSettingsStore().network.runNTServer"
-          :rules="[(v) => isValidNetworkTablesIP(v) || 'The NetworkTables Server Address must be a valid Team Number, IP address, or Hostname']"
+          :rules="[
+            (v) =>
+              isValidNetworkTablesIP(v) ||
+              'The NetworkTables Server Address must be a valid Team Number, IP address, or Hostname'
+          ]"
         />
         <v-banner
           v-show="
@@ -132,7 +133,7 @@ const currentNetworkInterfaceIndex = computed<number>({
         <cv-input
           v-model="useSettingsStore().network.hostname"
           label="Hostname"
-          :input-cols="12-4"
+          :input-cols="12 - 4"
           :rules="[(v) => isValidHostname(v) || 'Invalid hostname']"
           :disabled="!(useSettingsStore().network.shouldManage && useSettingsStore().network.canManage)"
         />
@@ -150,12 +151,16 @@ const currentNetworkInterfaceIndex = computed<number>({
           v-model="currentNetworkInterfaceIndex"
           label="NetworkManager interface"
           :disabled="!(useSettingsStore().network.shouldManage && useSettingsStore().network.canManage)"
-          :select-cols="12-4"
+          :select-cols="12 - 4"
           tooltip="Name of the interface PhotonVision should manage the IP address of"
           :items="useSettingsStore().networkInterfaceNames"
         />
         <v-banner
-          v-show="!useSettingsStore().networkInterfaceNames.length && useSettingsStore().network.shouldManage && useSettingsStore().network.canManage"
+          v-show="
+            !useSettingsStore().networkInterfaceNames.length &&
+            useSettingsStore().network.shouldManage &&
+            useSettingsStore().network.canManage
+          "
           rounded
           color="red"
           text-color="white"
@@ -177,8 +182,7 @@ const currentNetworkInterfaceIndex = computed<number>({
           text-color="white"
           icon="mdi-information-outline"
         >
-          This mode is intended for debugging; it should be off for proper
-          usage. PhotonLib will NOT work!
+          This mode is intended for debugging; it should be off for proper usage. PhotonLib will NOT work!
         </v-banner>
       </v-form>
       <v-btn

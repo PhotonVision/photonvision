@@ -25,25 +25,25 @@ export enum NetworkConnectionType {
 }
 
 export interface NetworkInterfaceType {
-    connName: string,
-    devName: string
+  connName: string;
+  devName: string;
 }
 
 export interface NetworkSettings {
-    ntServerAddress: string
-    connectionType: NetworkConnectionType,
-    staticIp: string,
-    hostname: string,
-    runNTServer: boolean
-    shouldManage: boolean,
-    canManage: boolean,
-    networkManagerIface?: string,
-    setStaticCommand?: string,
-    setDHCPcommand?: string,
-    networkInterfaceNames: NetworkInterfaceType[]
+  ntServerAddress: string;
+  connectionType: NetworkConnectionType;
+  staticIp: string;
+  hostname: string;
+  runNTServer: boolean;
+  shouldManage: boolean;
+  canManage: boolean;
+  networkManagerIface?: string;
+  setStaticCommand?: string;
+  setDHCPcommand?: string;
+  networkInterfaceNames: NetworkInterfaceType[];
 }
 
-export type ConfigurableNetworkSettings = Omit<NetworkSettings, "canManage" | "networkInterfaceNames">
+export type ConfigurableNetworkSettings = Omit<NetworkSettings, "canManage" | "networkInterfaceNames">;
 
 export interface LightingSettings {
   supported: boolean;
