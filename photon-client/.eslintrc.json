@@ -1,9 +1,10 @@
 {
   "root": true,
   "extends": [
+    "plugin:vue/vue3-recommended",
     "eslint:recommended",
-    "plugin:vue/recommended",
-    "@vue/eslint-config-typescript/recommended"
+    "@vue/eslint-config-typescript",
+    "@vue/eslint-config-prettier/skip-formatting"
   ],
   "rules": {
     "quotes": ["error", "double"],

@@ -9,39 +9,39 @@ import PhotonLogView from "@/components/app/photon-log-view.vue";
 import PhotonErrorSnackbar from "@/components/app/photon-error-snackbar.vue";
 
 const websocket = new AutoReconnectingWebsocket(
-    `ws://${inject("backendHost")}/websocket_data`,
-    () => {
-      useStateStore().$patch({ backendConnected: true });
-    },
-    (data) => {
-      if(data.log !== undefined) {
-        useStateStore().addLogFromWebsocket(data.log);
-      }
-      if(data.settings !== undefined) {
-        useSettingsStore().updateGeneralSettingsFromWebsocket(data.settings);
-      }
-      if(data.cameraSettings !== undefined) {
-        useCameraSettingsStore().updateCameraSettingsFromWebsocket(data.cameraSettings);
-      }
-      if(data.ntConnectionInfo !== undefined) {
-        useStateStore().updateNTConnectionStatusFromWebsocket(data.ntConnectionInfo);
-      }
-      if(data.metrics !== undefined) {
-        useSettingsStore().updateMetricsFromWebsocket(data.metrics);
-      }
-      if(data.updatePipelineResult !== undefined) {
-        useStateStore().updatePipelineResultsFromWebsocket(data.updatePipelineResult);
-      }
-      if(data.mutatePipelineSettings !== undefined && data.cameraIndex !== undefined) {
-        useCameraSettingsStore().changePipelineSettingsInStore(data.mutatePipelineSettings, data.cameraIndex);
-      }
-      if(data.calibrationData !== undefined) {
-        useStateStore().updateCalibrationStateValuesFromWebsocket(data.calibrationData);
-      }
-    },
-    () => {
-      useStateStore().$patch({ backendConnected: false });
+  `ws://${inject("backendHost")}/websocket_data`,
+  () => {
+    useStateStore().$patch({ backendConnected: true });
+  },
+  (data) => {
+    if (data.log !== undefined) {
+      useStateStore().addLogFromWebsocket(data.log);
     }
+    if (data.settings !== undefined) {
+      useSettingsStore().updateGeneralSettingsFromWebsocket(data.settings);
+    }
+    if (data.cameraSettings !== undefined) {
+      useCameraSettingsStore().updateCameraSettingsFromWebsocket(data.cameraSettings);
+    }
+    if (data.ntConnectionInfo !== undefined) {
+      useStateStore().updateNTConnectionStatusFromWebsocket(data.ntConnectionInfo);
+    }
+    if (data.metrics !== undefined) {
+      useSettingsStore().updateMetricsFromWebsocket(data.metrics);
+    }
+    if (data.updatePipelineResult !== undefined) {
+      useStateStore().updatePipelineResultsFromWebsocket(data.updatePipelineResult);
+    }
+    if (data.mutatePipelineSettings !== undefined && data.cameraIndex !== undefined) {
+      useCameraSettingsStore().changePipelineSettingsInStore(data.mutatePipelineSettings, data.cameraIndex);
+    }
+    if (data.calibrationData !== undefined) {
+      useStateStore().updateCalibrationStateValuesFromWebsocket(data.calibrationData);
+    }
+  },
+  () => {
+    useStateStore().$patch({ backendConnected: false });
+  }
 );
 
 useStateStore().$patch({ websocket: websocket });
@@ -51,11 +51,7 @@ useStateStore().$patch({ websocket: websocket });
   <v-app>
     <photon-sidebar />
     <v-main>
-      <v-container
-        class="main-container"
-        fluid
-        fill-height
-      >
+      <v-container class="main-container" fluid fill-height>
         <v-layout>
           <v-flex>
             <router-view />
@@ -70,7 +66,7 @@ useStateStore().$patch({ websocket: websocket });
 </template>
 
 <style lang="scss">
-@import 'vuetify/src/styles/settings/_variables';
+@import "vuetify/src/styles/settings/_variables";
 
 @media #{map-get($display-breakpoints, 'md-and-down')} {
   html {

@@ -9,7 +9,13 @@ import { useStateStore } from "@/stores/StateStore";
 // Defer reference to store access method
 const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings;
 
-const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)) ? 9 : 8;
+const interactiveCols = computed(
+  () =>
+    (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) &&
+    (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)
+)
+  ? 9
+  : 8;
 </script>
 
 <template>
@@ -22,7 +28,7 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
       tooltip="Increases FPS at the expense of range by reducing image resolution initially"
       :min="1"
       :max="8"
-      @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({decimate: value}, false)"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ decimate: value }, false)"
     />
     <cv-slider
       v-model="currentPipelineSettings.numIterations"
@@ -33,7 +39,7 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
       :min="30"
       :max="1000"
       :step="5"
-      @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({numIterations: value}, false)"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ numIterations: value }, false)"
     />
     <cv-slider
       v-model="currentPipelineSettings.cornerAccuracy"
@@ -44,7 +50,7 @@ const interactiveCols = computed(() => (getCurrentInstance()?.proxy.$vuetify.bre
       :min="0.01"
       :max="100"
       :step="0.01"
-      @input="value => useCameraSettingsStore().changeCurrentPipelineSetting({cornerAccuracy: value}, false)"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ cornerAccuracy: value }, false)"
     />
   </div>
 </template>

@@ -6,14 +6,15 @@ import loadingImage from "@/assets/images/loading.svg";
 import type { StyleValue } from "vue/types/jsx";
 
 const props = defineProps<{
-  streamType: "Raw" | "Processed",
-  id?: string
+  streamType: "Raw" | "Processed";
+  id?: string;
 }>();
 
 const src = computed<string>(() => {
-  const port =  useCameraSettingsStore().currentCameraSettings.stream[props.streamType === "Raw" ? "inputPort" : "outputPort"];
+  const port =
+    useCameraSettingsStore().currentCameraSettings.stream[props.streamType === "Raw" ? "inputPort" : "outputPort"];
 
-  if(!useStateStore().backendConnected || port === 0) {
+  if (!useStateStore().backendConnected || port === 0) {
     return loadingImage;
   }
 
@@ -22,9 +23,9 @@ const src = computed<string>(() => {
 const alt = computed<string>(() => `${props.streamType} Stream View`);
 
 const style = computed<StyleValue>(() => {
-  if(useStateStore().colorPickingMode) {
+  if (useStateStore().colorPickingMode) {
     return { cursor: "crosshair" };
-  } else if(src.value !== loadingImage) {
+  } else if (src.value !== loadingImage) {
     return { cursor: "pointer" };
   }
 
@@ -32,19 +33,12 @@ const style = computed<StyleValue>(() => {
 });
 
 const handleClick = () => {
-  if(!useStateStore().colorPickingMode && src.value !== loadingImage) {
+  if (!useStateStore().colorPickingMode && src.value !== loadingImage) {
     window.open(src.value);
   }
 };
 </script>
 
 <template>
-  <img
-    :id="id"
-    crossorigin="anonymous"
-    :src="src"
-    :alt="alt"
-    :style="style"
-    @click="handleClick"
-  >
+  <img :id="id" crossorigin="anonymous" :src="src" :alt="alt" :style="style" @click="handleClick" />
 </template>

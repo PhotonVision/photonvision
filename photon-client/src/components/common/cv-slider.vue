@@ -2,43 +2,40 @@
 import { computed } from "vue";
 import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
 
-const props = withDefaults(defineProps<{
-  label?: string,
-  tooltip?: string,
-  // TODO fully update v-model usage in custom components on Vue3 update
-  value: number,
-  min: number,
-  max: number,
-  step?: number
-  disabled?: boolean,
-  sliderCols?: number,
-}>(), {
-  step: 1,
-  disabled: false,
-  sliderCols: 8
-});
+const props = withDefaults(
+  defineProps<{
+    label?: string;
+    tooltip?: string;
+    // TODO fully update v-model usage in custom components on Vue3 update
+    value: number;
+    min: number;
+    max: number;
+    step?: number;
+    disabled?: boolean;
+    sliderCols?: number;
+  }>(),
+  {
+    step: 1,
+    disabled: false,
+    sliderCols: 8
+  }
+);
 
 const emit = defineEmits<{
-  (e: "input", value: number): void
+  (e: "input", value: number): void;
 }>();
 
 const localValue = computed({
   get: () => props.value,
-  set: v => emit("input", v)
+  set: (v) => emit("input", v)
 });
 </script>
 
 <template>
   <div>
-    <v-row
-      dense
-      align="center"
-    >
+    <v-row dense align="center">
       <v-col :cols="12 - sliderCols">
-        <tooltipped-label
-          :tooltip="tooltip"
-          :label="label"
-        />
+        <tooltipped-label :tooltip="tooltip" :label="label" />
       </v-col>
       <v-col :cols="sliderCols">
         <v-slider
