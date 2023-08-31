@@ -225,8 +225,8 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
           :input-cols="12-3"
           :rules="[v => checkCameraName(v)]"
           label="Camera"
-          @onEnter="saveCameraNameEdit"
-          @onEscape="cancelCameraNameEdit"
+          @on-enter="saveCameraNameEdit"
+          @on-escape="cancelCameraNameEdit"
         />
       </v-col>
       <v-col
@@ -262,8 +262,8 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
           :input-cols="12-3"
           :rules="[v => checkPipelineName(v)]"
           label="Pipeline"
-          @onEnter="v => savePipelineNameEdit(v)"
-          @onEscape="cancelPipelineNameEdit"
+          @on-enter="v => savePipelineNameEdit(v)"
+          @on-escape="cancelPipelineNameEdit"
         />
       </v-col>
       <v-col

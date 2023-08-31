@@ -10,6 +10,10 @@ const props = withDefaults(defineProps<{
   hover: false
 });
 
+defineEmits<{
+  (e: "click"): void
+}>();
+
 const hoverClass = props.hover ? "hover" : "";
 </script>
 
