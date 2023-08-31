@@ -67,8 +67,11 @@ jobs:
     - name: Install Dependencies
       run: npm ci
 
-    - name: Check Formatting
+    - name: Check Linting
       run: npm run lint
+
+    - name: Check Formatting
+      run: prettier --check \src
   photon-build-examples:
     runs-on: ubuntu-22.04
     name: "Build Examples"
