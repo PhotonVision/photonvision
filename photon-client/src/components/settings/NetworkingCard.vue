@@ -166,7 +166,7 @@ const currentNetworkInterfaceIndex = computed<number>({
           text-color="white"
           icon="mdi-information-outline"
         >
-          Photon cannot detect any wired connections! Please send program logs to the developers for help
+          Photon cannot detect any wired connections! Please send program logs to the developers for help.
         </v-banner>
         <cv-switch
           v-model="useSettingsStore().network.runNTServer"
