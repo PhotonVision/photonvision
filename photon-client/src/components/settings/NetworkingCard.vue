@@ -156,8 +156,17 @@ const currentNetworkInterfaceIndex = computed<number>({
           :disabled="!(useSettingsStore().network.shouldManage && useSettingsStore().network.canManage)"
           :select-cols="12-4"
           tooltip="Name of the interface PhotonVision should manage the IP address of"
-          :items="useSettingsStore().networkInterfaceNames.map((v, i) => ({name: v, value: i, disabled: false}))"
+          :items="useSettingsStore().networkInterfaceNames"
         />
+        <v-banner
+          v-show="!useSettingsStore().networkInterfaceNames.length && useSettingsStore().network.shouldManage && useSettingsStore().network.canManage"
+          rounded
+          color="red"
+          text-color="white"
+          icon="mdi-information-outline"
+        >
+          Photon cannot detect any wired connections! Please send program logs to the developers for help
+        </v-banner>
         <cv-switch
           v-model="useSettingsStore().network.runNTServer"
           label="Run NetworkTables Server (Debugging Only)"

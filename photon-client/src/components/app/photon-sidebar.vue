@@ -164,7 +164,7 @@ const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.bre
           </v-list-item-icon>
           <v-list-item-content>
             <v-list-item-title class="text-wrap">
-              {{ useStateStore().backendConnected ? "Backend Connected" : "Trying to connect to Backend" }}
+              {{ useStateStore().backendConnected ? "Backend connected" : "Trying to connect to backend" }}
             </v-list-item-title>
           </v-list-item-content>
         </v-list-item>

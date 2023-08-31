@@ -75,7 +75,7 @@ public class NetworkUtils {
         }
     }
 
-    public static ArrayList<NMDeviceInfo> getAllActiveInterfaces() {
+    public static ArrayList<NMDeviceInfo> getAllInterfaces() {
         var ret = new ArrayList<NMDeviceInfo>();
 
         if (!Platform.isLinux()) {
@@ -104,6 +104,14 @@ public class NetworkUtils {
         logger.debug("Found network interfaces:\n" + ret.toString());
 
         return ret;
+    }
+
+    public static List<NMDeviceInfo> getAllActiveInterfaces() {
+        // Seems like if a interface exists but isn't actually connected, the connection name will be an
+        // empty string. Check here and only return connections with non-empty names
+        return getAllInterfaces().stream()
+                .filter(it -> !it.connName.trim().isEmpty())
+                .collect(Collectors.toList());
     }
 
     public static List<NMDeviceInfo> getAllWiredInterfaces() {
