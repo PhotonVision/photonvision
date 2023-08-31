@@ -221,16 +221,19 @@ const interactiveCols = computed(
 #hue-slider >>> .v-slider {
   background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);
   border-radius: 10px;
+  // prettier-ignore
   box-shadow: 0 0 5px #333, inset 0 0 3px #333;
 }
 #sat-slider >>> .v-slider {
   background: linear-gradient(to right, #fff 0%, hsl(var(--averageHue), 100%, 50%) 100%);
   border-radius: 10px;
+  // prettier-ignore
   box-shadow: 0 0 5px #333, inset 0 0 3px #333;
 }
 #value-slider >>> .v-slider {
   background: linear-gradient(to right, #000 0%, hsl(var(--averageHue), 100%, 50%) 100%);
   border-radius: 10px;
+  // prettier-ignore
   box-shadow: 0 0 5px #333, inset 0 0 3px #333;
 }
 >>> .v-slider__thumb {

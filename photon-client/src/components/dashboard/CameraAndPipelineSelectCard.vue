@@ -304,9 +304,7 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
     </v-row>
     <v-dialog v-model="showPipelineCreationDialog" dark persistent width="500">
       <v-card dark color="primary">
-        <v-card-title class="headline" style="font-family: 'Prompt', sans-serif !important" primary-title>
-          Create New Pipeline
-        </v-card-title>
+        <v-card-title> Create New Pipeline </v-card-title>
         <v-card-text>
           <cv-input
             v-model="newPipelineName"
@@ -341,9 +339,7 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
     </v-dialog>
     <v-dialog v-model="showPipelineDeletionConfirmationDialog" dark width="500">
       <v-card dark color="primary">
-        <v-card-title class="headline" style="font-family: 'Prompt', sans-serif !important" primary-title>
-          Pipeline Deletion Confirmation
-        </v-card-title>
+        <v-card-title> Pipeline Deletion Confirmation </v-card-title>
         <v-card-text> Are you sure you want to delete this pipeline? This cannot be undone. </v-card-text>
         <v-divider />
         <v-card-actions>
