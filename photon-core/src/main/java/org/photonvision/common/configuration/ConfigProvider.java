@@ -20,7 +20,7 @@ package org.photonvision.common.configuration;
 import java.nio.file.Path;
 
 public abstract class ConfigProvider {
-    private PhotonConfiguration config;
+    protected PhotonConfiguration config;
 
     abstract void load();
 
@@ -28,6 +28,10 @@ public abstract class ConfigProvider {
 
     PhotonConfiguration getConfig() {
         return config;
+    }
+
+    public void clearConfig() {
+        config = new PhotonConfiguration();
     }
 
     public abstract boolean saveUploadedHardwareConfig(Path uploadPath);

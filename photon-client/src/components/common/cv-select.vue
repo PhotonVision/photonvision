@@ -35,6 +35,11 @@ const localValue = computed({
 
 // Computed in case items changes
 const items = computed<SelectItem[]>(() => {
+  // Trivial case for empty list; we have no data
+  if (!props.items.length) {
+    return [];
+  }
+
   // Check if the prop exists on the object to infer object type
   if ((props.items[0] as SelectItem).name) {
     return props.items as SelectItem[];

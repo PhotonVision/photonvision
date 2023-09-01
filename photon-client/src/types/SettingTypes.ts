@@ -24,6 +24,11 @@ export enum NetworkConnectionType {
   Static = 1
 }
 
+export interface NetworkInterfaceType {
+  connName: string;
+  devName: string;
+}
+
 export interface NetworkSettings {
   ntServerAddress: string;
   connectionType: NetworkConnectionType;
@@ -31,11 +36,14 @@ export interface NetworkSettings {
   hostname: string;
   runNTServer: boolean;
   shouldManage: boolean;
+  canManage: boolean;
   networkManagerIface?: string;
-  physicalInterface?: string;
   setStaticCommand?: string;
   setDHCPcommand?: string;
+  networkInterfaceNames: NetworkInterfaceType[];
 }
+
+export type ConfigurableNetworkSettings = Omit<NetworkSettings, "canManage" | "networkInterfaceNames">;
 
 export interface LightingSettings {
   supported: boolean;

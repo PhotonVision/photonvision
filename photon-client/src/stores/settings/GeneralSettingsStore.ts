@@ -1,5 +1,11 @@
 import { defineStore } from "pinia";
-import type { GeneralSettings, LightingSettings, MetricData, NetworkSettings } from "@/types/SettingTypes";
+import type {
+  GeneralSettings,
+  LightingSettings,
+  MetricData,
+  NetworkSettings,
+  ConfigurableNetworkSettings
+} from "@/types/SettingTypes";
 import { NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import axios from "axios";
@@ -23,10 +29,17 @@ export const useSettingsStore = defineStore("settings", {
     network: {
       ntServerAddress: "",
       shouldManage: true,
+      canManage: true,
       connectionType: NetworkConnectionType.DHCP,
       staticIp: "",
       hostname: "photonvision",
-      runNTServer: false
+      runNTServer: false,
+      networkInterfaceNames: [
+        {
+          connName: "Example Wired Connection",
+          devName: "eth0"
+        }
+      ]
     },
     lighting: {
       supported: true,
@@ -47,6 +60,9 @@ export const useSettingsStore = defineStore("settings", {
   getters: {
     gpuAccelerationEnabled(): boolean {
       return this.general.gpuAcceleration !== undefined;
+    },
+    networkInterfaceNames(): string[] {
+      return this.network.networkInterfaceNames.map((i) => i.connName);
     }
   },
   actions: {
@@ -77,12 +93,11 @@ export const useSettingsStore = defineStore("settings", {
       this.network = data.networkSettings;
     },
     saveGeneralSettings() {
-      const payload: Required<NetworkSettings> = {
+      const payload: Required<ConfigurableNetworkSettings> = {
         connectionType: this.network.connectionType,
         hostname: this.network.hostname,
         networkManagerIface: this.network.networkManagerIface || "",
         ntServerAddress: this.network.ntServerAddress,
-        physicalInterface: this.network.physicalInterface || "",
         runNTServer: this.network.runNTServer,
         setDHCPcommand: this.network.setDHCPcommand || "",
         setStaticCommand: this.network.setStaticCommand || "",
