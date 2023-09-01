@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.photonvision.PhotonVersion;
 import org.photonvision.common.hardware.Platform;
+import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.vision.processes.VisionModule;
@@ -57,6 +58,10 @@ public class PhotonConfiguration {
         this.networkConfig = networkConfig;
         this.cameraConfigurations = cameraConfigurations;
         this.atfl = atfl;
+    }
+
+    public PhotonConfiguration() {
+        this(new HardwareConfig(), new HardwareSettings(), new NetworkConfig());
     }
 
     public HardwareConfig getHardwareConfig() {
@@ -101,9 +106,19 @@ public class PhotonConfiguration {
         Map<String, Object> map = new HashMap<>();
         var settingsSubmap = new HashMap<String, Object>();
 
-        // Network Settings
-        settingsSubmap.put("networkSettings", networkConfig.toHashMap());
-        // Lighting Settings
+        // Hack active interfaces into networkSettings
+        var netConfigMap = networkConfig.toHashMap();
+        netConfigMap.put("networkInterfaceNames", NetworkUtils.getAllWiredInterfaces());
+
+        settingsSubmap.put("networkSettings", netConfigMap);
+
+        map.put(
+                "cameraSettings",
+                VisionModuleManager.getInstance().getModules().stream()
+                        .map(VisionModule::toUICameraConfig)
+                        .map(SerializationUtils::objectToHashMap)
+                        .collect(Collectors.toList()));
+
         var lightingConfig = new UILightingConfig();
         lightingConfig.brightness = hardwareSettings.ledBrightnessPercentage;
         lightingConfig.supported = !hardwareConfig.ledPins.isEmpty();
@@ -151,18 +166,5 @@ public class PhotonConfiguration {
         public int inputStreamPort;
         public List<HashMap<String, Object>> calibrations;
         public boolean isFovConfigurable = true;
-    }
-
-    @Override
-    public String toString() {
-        return "PhotonConfiguration [hardwareConfig="
-                + hardwareConfig
-                + ", hardwareSettings="
-                + hardwareSettings
-                + ", networkConfig="
-                + networkConfig
-                + ", cameraConfigurations="
-                + cameraConfigurations
-                + "]";
     }
 }

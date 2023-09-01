@@ -65,7 +65,6 @@ public class SqlConfigProvider extends ConfigProvider {
     private static final String dbName = "photon.sqlite";
     private final String dbPath;
 
-    private PhotonConfiguration config;
     private final Object m_mutex = new Object();
     private final File rootFolder;
 
