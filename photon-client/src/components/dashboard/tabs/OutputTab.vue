@@ -77,7 +77,7 @@ const interactiveCols = computed(
     <cv-switch
       v-model="useCameraSettingsStore().currentPipelineSettings.outputShowMultipleTargets"
       label="Show Multiple Targets"
-      tooltip="If enabled, up to five targets will be displayed and sent to user code, instead of just one"
+      tooltip="If enabled, up to five targets will be displayed and sent via PhotonLib, instead of just one"
       :disabled="isTagPipeline"
       :switch-cols="interactiveCols"
       @input="
@@ -90,8 +90,10 @@ const interactiveCols = computed(
         useCameraSettingsStore().isCurrentVideoFormatCalibrated
       "
       v-model="currentPipelineSettings.doMultiTarget"
-      label="Multitag"
+      label="Multi-Target Pose"
+      tooltip="If enabled, all visible fiducial targets will be combined to provide a single pose estimate from the combined model"
       :switch-cols="interactiveCols"
+      :disabled="!isTagPipeline"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ doMultiTarget: value }, false)"
     />
     <v-divider />

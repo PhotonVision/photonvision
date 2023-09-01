@@ -143,10 +143,10 @@ public class PhotonPipelineResult {
     }
 
     /**
-     * Return the latest mulit-target result. Be sure to check MultiTargetPNPResults::isPresent before
-     * using the pose estimate!
+     * Return the latest mulit-target result. Be sure to check
+     * getMultiTagResult().estimatedPose.isPresent before using the pose estimate!
      */
-    public MultiTargetPNPResults getMultiTagMultiTargetPNPResults() {
+    public MultiTargetPNPResults getMultiTagResult() {
         return multiTagResult;
     }
 
