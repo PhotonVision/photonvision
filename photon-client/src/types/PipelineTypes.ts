@@ -204,17 +204,17 @@ export const DefaultColoredShapePipelineSettings: ColoredShapePipelineSettings =
 };
 
 export interface AprilTagPipelineSettings extends PipelineSettings {
-    pipelineType: PipelineType.AprilTag
-    hammingDist: number
-    numIterations: number
-    decimate: number
-    blur: number
-    decisionMargin: number
-    refineEdges: boolean
-    debug: boolean
-    threads: number
-    tagFamily: AprilTagFamily,
-    doMultiTarget: boolean
+  pipelineType: PipelineType.AprilTag;
+  hammingDist: number;
+  numIterations: number;
+  decimate: number;
+  blur: number;
+  decisionMargin: number;
+  refineEdges: boolean;
+  debug: boolean;
+  threads: number;
+  tagFamily: AprilTagFamily;
+  doMultiTarget: boolean;
 }
 export type ConfigurableAprilTagPipelineSettings = Partial<
   Omit<AprilTagPipelineSettings, "pipelineType" | "hammingDist" | "debug">

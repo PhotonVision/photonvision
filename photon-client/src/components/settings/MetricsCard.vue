@@ -67,24 +67,24 @@ const platformMetrics = computed<MetricItem[]>(() => [
 const metricsLastFetched = ref("Never");
 const fetchMetrics = () => {
   useSettingsStore()
-      .requestMetricsUpdate()
-      .catch(error => {
-        if(error.request) {
-          useStateStore().showSnackbarMessage({
-            color: "error",
-            message: "Unable to fetch metrics! The backend didn't respond."
-          });
-        } else {
-          useStateStore().showSnackbarMessage({
-            color: "error",
-            message: "An error occurred while trying to fetch metrics."
-          });
-        }
-      })
-      .finally(() => {
-        const pad = (num: number): string => {
-          return String(num).padStart(2, "0");
-        };
+    .requestMetricsUpdate()
+    .catch((error) => {
+      if (error.request) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "Unable to fetch metrics! The backend didn't respond."
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "An error occurred while trying to fetch metrics."
+        });
+      }
+    })
+    .finally(() => {
+      const pad = (num: number): string => {
+        return String(num).padStart(2, "0");
+      };
 
       const date = new Date();
       metricsLastFetched.value = `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;

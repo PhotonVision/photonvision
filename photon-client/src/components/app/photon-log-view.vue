@@ -70,10 +70,7 @@ document.addEventListener("keydown", (e) => {
             {{ getLogLevelFromIndex(level) }}
           </v-btn>
         </v-btn-toggle>
-        <v-card-text
-          v-if="logs.length === 0"
-          style="font-size: 18px; font-weight: 600"
-        >
+        <v-card-text v-if="logs.length === 0" style="font-size: 18px; font-weight: 600">
           There are no logs to show
         </v-card-text>
         <v-virtual-scroll v-else :items="logs" item-height="50" height="600">

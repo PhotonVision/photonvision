@@ -61,7 +61,11 @@ public class PhotonConfiguration {
     }
 
     public PhotonConfiguration() {
-        this(new HardwareConfig(), new HardwareSettings(), new NetworkConfig());
+        this(
+                new HardwareConfig(),
+                new HardwareSettings(),
+                new NetworkConfig(),
+                new AprilTagFieldLayout(List.of(), 0, 0));
     }
 
     public HardwareConfig getHardwareConfig() {

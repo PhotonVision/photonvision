@@ -13,7 +13,7 @@ export interface WebsocketSettingsUpdate {
   general: Required<GeneralSettings>;
   lighting: Required<LightingSettings>;
   networkSettings: NetworkSettings;
-  atfl: AprilTagFieldLayout
+  atfl: AprilTagFieldLayout;
 }
 
 export interface WebsocketNumberPair {
@@ -64,33 +64,33 @@ export interface WebsocketNTUpdate {
   clients?: number;
 }
 
-export type WebsocketPipelineResultUpdate = Record<number, PipelineResult>
+export type WebsocketPipelineResultUpdate = Record<number, PipelineResult>;
 
 export interface WebsocketCalibrationData {
-    patternWidth: number,
-    boardType: number,
-    hasEnough: boolean,
-    count: number,
-    minCount: number,
-    videoModeIndex: number,
-    patternHeight: number,
-    squareSizeIn: number
+  patternWidth: number;
+  boardType: number;
+  hasEnough: boolean;
+  count: number;
+  minCount: number;
+  videoModeIndex: number;
+  patternHeight: number;
+  squareSizeIn: number;
 }
 
 export interface IncomingWebsocketData {
-    log?: WebsocketLogMessage,
-    settings?: WebsocketSettingsUpdate,
-    cameraSettings?: WebsocketCameraSettingsUpdate[],
-    ntConnectionInfo?: WebsocketNTUpdate,
-    metrics?: Required<MetricData>,
-    updatePipelineResult?: WebsocketPipelineResultUpdate,
-    networkInfo?: {
-        possibleRios: string[],
-        deviceIps: string[]
-    }
-    mutatePipelineSettings?: Partial<ActivePipelineSettings>,
-    cameraIndex?: number // Sent when mutating pipeline settings to check against currently active
-    calibrationData?: WebsocketCalibrationData,
+  log?: WebsocketLogMessage;
+  settings?: WebsocketSettingsUpdate;
+  cameraSettings?: WebsocketCameraSettingsUpdate[];
+  ntConnectionInfo?: WebsocketNTUpdate;
+  metrics?: Required<MetricData>;
+  updatePipelineResult?: WebsocketPipelineResultUpdate;
+  networkInfo?: {
+    possibleRios: string[];
+    deviceIps: string[];
+  };
+  mutatePipelineSettings?: Partial<ActivePipelineSettings>;
+  cameraIndex?: number; // Sent when mutating pipeline settings to check against currently active
+  calibrationData?: WebsocketCalibrationData;
 }
 
 export enum WebsocketPipelineType {

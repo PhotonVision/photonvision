@@ -251,7 +251,13 @@ const handleSettingsImport = () => {
                     v-model="importType"
                     label="Type"
                     tooltip="Select the type of settings file you are trying to upload"
-                    :items="['All Settings', 'Hardware Config', 'Hardware Settings', 'Network Config', 'Apriltag Layout']"
+                    :items="[
+                      'All Settings',
+                      'Hardware Config',
+                      'Hardware Settings',
+                      'Network Config',
+                      'Apriltag Layout'
+                    ]"
                     :select-cols="10"
                   />
                 </v-row>
