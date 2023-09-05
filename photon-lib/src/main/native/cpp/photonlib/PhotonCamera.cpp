@@ -116,7 +116,7 @@ void PhotonCamera::TakeOutputSnapshot() {
 bool PhotonCamera::GetDriverMode() const { return driverModeSubscriber.Get(); }
 
 void PhotonCamera::SetPipelineIndex(int index) {
-  pipelineIndexPub.Set(static_cast<double>(index));
+  pipelineIndexPub.Set(index);
 }
 
 int PhotonCamera::GetPipelineIndex() const {
@@ -137,7 +137,7 @@ std::optional<cv::Mat> PhotonCamera::GetCameraMatrix() {
 }
 
 void PhotonCamera::SetLEDMode(LEDMode mode) {
-  ledModePub.Set(static_cast<double>(static_cast<int>(mode)));
+  ledModePub.Set(static_cast<int>(mode));
 }
 
 const std::string_view PhotonCamera::GetCameraName() const {
