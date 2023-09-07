@@ -20,7 +20,7 @@ sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
 
 wpilibTools.deps.wpilibVersion = wpilibVersion
-println("Buidling for wpilib ${wpilibTools.deps.wpilibVersion}")
+println("Building for WPILib ${wpilibTools.deps.wpilibVersion}")
 
 // From wpilib shared/config.gradle:
 // NativeUtils adds the following OpenCV warning suppression for Linux, but not
