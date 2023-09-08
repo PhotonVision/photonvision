@@ -146,8 +146,13 @@ publishing {
                 username 'ghactions'
                 password System.getenv("ARTIFACTORY_API_KEY")
             }
-            println("Publishing to " + url)
         }
+    }
+}
+
+tasks.withType(PublishToMavenRepository) {
+    doFirst {
+        println("Publishing to " + repository.url);
     }
 }
 
