@@ -396,16 +396,14 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagPnpStrategy(
     return Update(result, camMat, distCoeffs, this->multiTagFallbackStrategy);
   }
 
-  printf("hello\n");
-
-  // Use OpenCV ITERATIVE solver
+  // Output mats for results
   cv::Mat const rvec(3, 1, cv::DataType<double>::type);
   cv::Mat const tvec(3, 1, cv::DataType<double>::type);
 
   cv::solvePnP(objectPoints, imagePoints, camMat.value(), distCoeffs.value(),
                rvec, tvec, false, cv::SOLVEPNP_SQPNP);
 
-  Pose3d const pose = detail::ToPose3d(tvec, rvec);
+  const Pose3d pose = detail::ToPose3d(tvec, rvec);
 
   return photonlib::EstimatedRobotPose(
       pose.TransformBy(m_robotToCamera.Inverse()), result.GetTimestamp(),
