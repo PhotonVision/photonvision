@@ -115,9 +115,7 @@ void PhotonCamera::TakeOutputSnapshot() {
 
 bool PhotonCamera::GetDriverMode() const { return driverModeSubscriber.Get(); }
 
-void PhotonCamera::SetPipelineIndex(int index) {
-  pipelineIndexPub.Set(index);
-}
+void PhotonCamera::SetPipelineIndex(int index) { pipelineIndexPub.Set(index); }
 
 int PhotonCamera::GetPipelineIndex() const {
   return static_cast<int>(pipelineIndexSub.Get());
