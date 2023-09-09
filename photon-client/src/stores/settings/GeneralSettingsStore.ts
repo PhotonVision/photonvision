@@ -17,7 +17,7 @@ interface GeneralSettingsStore {
   network: NetworkSettings;
   lighting: LightingSettings;
   metrics: MetricData;
-  currentFieldLayout?: AprilTagFieldLayout;
+  currentFieldLayout: AprilTagFieldLayout;
 }
 
 export const useSettingsStore = defineStore("settings", {
@@ -58,7 +58,13 @@ export const useSettingsStore = defineStore("settings", {
       cpuUptime: undefined,
       diskUtilPct: undefined
     },
-    currentFieldLayout: undefined
+    currentFieldLayout: {
+      field: {
+        length: 16.4592,
+        width: 8.2296
+      },
+      tags: []
+    }
   }),
   getters: {
     gpuAccelerationEnabled(): boolean {
