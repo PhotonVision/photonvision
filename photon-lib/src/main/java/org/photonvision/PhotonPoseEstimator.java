@@ -250,10 +250,16 @@ public class PhotonPoseEstimator {
 
     /**
      * Poll data from the configured cameras and update the estimated position of the robot. Returns
-     * empty if there are no cameras set or no targets were found from the cameras.
+     * empty if:
      *
-     * @return an EstimatedRobotPose with an estimated pose, the timestamp, and targets used to create
-     *     the estimate
+     * <ul>
+     *   <li>New data has not been received since the last call to {@code update()}.
+     *   <li>No targets were found from the camera
+     *   <li>There is no camera set
+     * </ul>
+     *
+     * @return an {@link EstimatedRobotPose} with an estimated pose, timestamp, and targets used to
+     *     create the estimate.
      */
     public Optional<EstimatedRobotPose> update() {
         if (camera == null) {
@@ -267,12 +273,17 @@ public class PhotonPoseEstimator {
     }
 
     /**
-     * Updates the estimated position of the robot. Returns empty if there are no cameras set or no
-     * targets were found from the cameras.
+     * Updates the estimated position of the robot. Returns empty if:
+     *
+     * <ul>
+     *   <li>The timestamp of the provided pipeline result is the same as in the previous call to
+     *       {@code update()}.
+     *   <li>No targets were found in the pipeline results.
+     * </ul>
      *
      * @param cameraResult The latest pipeline result from the camera
-     * @return an EstimatedRobotPose with an estimated pose, and information about the camera(s) and
-     *     pipeline results used to create the estimate
+     * @return an {@link EstimatedRobotPose} with an estimated pose, timestamp, and targets used to
+     *     create the estimate.
      */
     public Optional<EstimatedRobotPose> update(PhotonPipelineResult cameraResult) {
         if (camera == null) return update(cameraResult, Optional.empty(), Optional.empty());
@@ -280,21 +291,25 @@ public class PhotonPoseEstimator {
     }
 
     /**
-     * Updates the estimated position of the robot. Returns empty if there are no cameras set or no
-     * targets were found from the cameras.
+     * Updates the estimated position of the robot. Returns empty if:
      *
-     * @param cameraResult The latest pipeline result from the camera
-     * @param cameraMatrixData Camera calibration data that can be used in the case of no assigned
+     * <ul>
+     *   <li>The timestamp of the provided pipeline result is the same as in the previous call to
+     *       {@code update()}.
+     *   <li>No targets were found in the pipeline results.
+     * </ul>
+     *
+     * @param cameraMatrix Camera calibration data that can be used in the case of no assigned
      *     PhotonCamera.
-     * @param coeffsData Camera calibration data that can be used in the case of no assigned
+     * @param distCoeffs Camera calibration data that can be used in the case of no assigned
      *     PhotonCamera
-     * @return an EstimatedRobotPose with an estimated pose, and information about the camera(s) and
-     *     pipeline results used to create the estimate
+     * @return an {@link EstimatedRobotPose} with an estimated pose, timestamp, and targets used to
+     *     create the estimate.
      */
     public Optional<EstimatedRobotPose> update(
             PhotonPipelineResult cameraResult,
-            Optional<Matrix<N3, N3>> cameraMatrixData,
-            Optional<Matrix<N5, N1>> coeffsData) {
+            Optional<Matrix<N3, N3>> cameraMatrix,
+            Optional<Matrix<N5, N1>> distCoeffs) {
         // Time in the past -- give up, since the following if expects times > 0
         if (cameraResult.getTimestampSeconds() < 0) {
             return Optional.empty();
@@ -316,13 +331,13 @@ public class PhotonPoseEstimator {
             return Optional.empty();
         }
 
-        return update(cameraResult, cameraMatrixData, coeffsData, this.primaryStrategy);
+        return update(cameraResult, cameraMatrix, distCoeffs, this.primaryStrategy);
     }
 
     private Optional<EstimatedRobotPose> update(
             PhotonPipelineResult cameraResult,
-            Optional<Matrix<N3, N3>> cameraMatrixData,
-            Optional<Matrix<N5, N1>> coeffsData,
+            Optional<Matrix<N3, N3>> cameraMatrix,
+            Optional<Matrix<N5, N1>> distCoeffs,
             PoseStrategy strat) {
         Optional<EstimatedRobotPose> estimatedPose;
         switch (strat) {
@@ -343,7 +358,7 @@ public class PhotonPoseEstimator {
                 estimatedPose = averageBestTargetsStrategy(cameraResult);
                 break;
             case MULTI_TAG_PNP:
-                estimatedPose = multiTagPNPStrategy(cameraResult, cameraMatrixData, coeffsData);
+                estimatedPose = multiTagPNPStrategy(cameraResult, cameraMatrix, distCoeffs);
                 break;
             default:
                 DriverStation.reportError(

@@ -11,7 +11,6 @@ publishing {
                 username 'ghactions'
                 password System.getenv("ARTIFACTORY_API_KEY")
             }
-            println("Publishing PhotonTargeting to " + url)
         }
     }
 
@@ -23,5 +22,11 @@ publishing {
 
             from components.java
         }
+    }
+}
+
+tasks.withType(PublishToMavenRepository) {
+    doFirst {
+        println("Publishing PhotonTargeting to " + repository.url)
     }
 }

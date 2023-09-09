@@ -83,12 +83,12 @@ public class ConfigManager {
             // Cannot import into SQL if we aren't in SQL mode rn
             return;
         }
-        logger.info("Translating settings zip!");
 
         var maybeCams = Path.of(folderPath.toAbsolutePath().toString(), "cameras").toFile();
         var maybeCamsBak = Path.of(folderPath.toAbsolutePath().toString(), "cameras_backup").toFile();
 
         if (maybeCams.exists() && maybeCams.isDirectory()) {
+            logger.info("Translating settings zip!");
             var legacy = new LegacyConfigProvider(folderPath);
             legacy.load();
             var loadedConfig = legacy.getConfig();
@@ -262,6 +262,12 @@ public class ConfigManager {
 
     public void unloadCameraConfigs() {
         this.getConfig().getCameraConfigurations().clear();
+    }
+
+    public void clearConfig() {
+        logger.info("Clearing configuration!");
+        m_provider.clearConfig();
+        m_provider.saveToDisk();
     }
 
     public void saveToDisk() {
