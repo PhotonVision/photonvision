@@ -44,7 +44,7 @@ import { useStateStore } from "@/stores/StateStore";
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(target, index) in useStateStore().pipelineResults?.targets" :key="index">
+            <tr v-for="(target, index) in useStateStore().currentPipelineResults?.targets" :key="index">
               <td>{{ index }}</td>
               <td
                 v-if="
