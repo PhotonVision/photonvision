@@ -40,9 +40,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj.simulation.PWMSim;
 import frc.robot.Robot;
-
 import java.util.List;
-
 import org.photonvision.PhotonCamera;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.simulation.PhotonCameraSim;
@@ -94,12 +92,13 @@ public class DrivetrainSim {
     // See
     // https://firstfrc.blob.core.windows.net/frc2020/PlayingField/2020FieldDrawing-SeasonSpecific.pdf
     // page 208
-    TargetModel targetModel = new TargetModel(List.of(
-        new Translation3d(0, Units.inchesToMeters(-9.819867), Units.inchesToMeters(-8.5)),
-        new Translation3d(0, Units.inchesToMeters(9.819867), Units.inchesToMeters(-8.5)),
-        new Translation3d(0, Units.inchesToMeters(19.625), Units.inchesToMeters(8.5)),
-        new Translation3d(0, Units.inchesToMeters(-19.625), Units.inchesToMeters(8.5))
-    ));
+    TargetModel targetModel =
+            new TargetModel(
+                    List.of(
+                            new Translation3d(0, Units.inchesToMeters(-9.819867), Units.inchesToMeters(-8.5)),
+                            new Translation3d(0, Units.inchesToMeters(9.819867), Units.inchesToMeters(-8.5)),
+                            new Translation3d(0, Units.inchesToMeters(19.625), Units.inchesToMeters(8.5)),
+                            new Translation3d(0, Units.inchesToMeters(-19.625), Units.inchesToMeters(8.5))));
     // See https://firstfrc.blob.core.windows.net/frc2020/PlayingField/LayoutandMarkingDiagram.pdf
     // pages 4 and 5
     double tgtXPos = Units.feetToMeters(54);
@@ -120,17 +119,23 @@ public class DrivetrainSim {
 
         // Create simulated camera properties. These can be set to mimic your actual camera.
         var cameraProp = new SimCameraProperties();
-        cameraProp.setCalibration(camResolutionWidth, camResolutionHeight, Rotation2d.fromDegrees(camDiagFOV));
+        cameraProp.setCalibration(
+                camResolutionWidth, camResolutionHeight, Rotation2d.fromDegrees(camDiagFOV));
         cameraProp.setCalibError(0.2, 0.05);
         cameraProp.setFPS(25);
         cameraProp.setAvgLatencyMs(30);
         cameraProp.setLatencyStdDevMs(4);
-        // Create a PhotonCameraSim which will update the linked PhotonCamera's values with visible targets.
+        // Create a PhotonCameraSim which will update the linked PhotonCamera's values with visible
+        // targets.
         cameraSim = new PhotonCameraSim(camera, cameraProp, minTargetArea, maxLEDRange);
 
         // Add the simulated camera to view the targets on this simulated field.
-        visionSim.addCamera(cameraSim, new Transform3d(new Translation3d(0.25, 0, Robot.CAMERA_HEIGHT_METERS), new Rotation3d(0, -Robot.CAMERA_PITCH_RADIANS, 0)));
-    
+        visionSim.addCamera(
+                cameraSim,
+                new Transform3d(
+                        new Translation3d(0.25, 0, Robot.CAMERA_HEIGHT_METERS),
+                        new Rotation3d(0, -Robot.CAMERA_PITCH_RADIANS, 0)));
+
         cameraSim.enableDrawWireframe(true);
     }
 

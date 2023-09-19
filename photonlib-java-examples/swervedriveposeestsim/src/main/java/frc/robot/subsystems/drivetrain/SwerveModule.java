@@ -16,16 +16,16 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class SwerveModule {
 
-    //--- Module Constants
+    // --- Module Constants
     private final ModuleConstants moduleConstants;
 
-    //--- Hardware
+    // --- Hardware
     private final PWMSparkMax driveMotor;
     private final Encoder driveEncoder;
     private final PWMSparkMax steerMotor;
     private final Encoder steerEncoder;
 
-    //--- Control
+    // --- Control
     private SwerveModuleState desiredState = new SwerveModuleState();
     private boolean openLoop = false;
 
@@ -34,13 +34,13 @@ public class SwerveModule {
     // (A profiled steering PID controller may give better results by utilizing feedforward.)
     private PIDController steerPidController = new PIDController(kSteerKP, kSteerKI, kSteerKD);
 
-    //--- Simulation
+    // --- Simulation
     private final EncoderSim driveEncoderSim;
     private double driveCurrentSim = 0;
     private final EncoderSim steerEncoderSim;
     private double steerCurrentSim = 0;
 
-    public SwerveModule(ModuleConstants moduleConstants){
+    public SwerveModule(ModuleConstants moduleConstants) {
         this.moduleConstants = moduleConstants;
 
         driveMotor = new PWMSparkMax(moduleConstants.driveMotorID);
@@ -52,22 +52,25 @@ public class SwerveModule {
 
         steerPidController.enableContinuousInput(-Math.PI, Math.PI);
 
-        //--- Simulation
+        // --- Simulation
         driveEncoderSim = new EncoderSim(driveEncoder);
         steerEncoderSim = new EncoderSim(steerEncoder);
     }
 
-    public void periodic(){
+    public void periodic() {
         // Perform PID feedback control to steer the module to the target angle
-        double steerPid = steerPidController.calculate(getAbsoluteHeading().getRadians(), desiredState.angle.getRadians());
+        double steerPid =
+                steerPidController.calculate(
+                        getAbsoluteHeading().getRadians(), desiredState.angle.getRadians());
         steerMotor.setVoltage(steerPid);
 
         // Use feedforward model to translate target drive velocities into voltages
         double driveFF = kDriveFF.calculate(desiredState.speedMetersPerSecond);
         double drivePid = 0;
-        if(!openLoop){
+        if (!openLoop) {
             // Perform PID feedback control to compensate for disturbances
-            drivePid = drivePidController.calculate(driveEncoder.getRate(), desiredState.speedMetersPerSecond);
+            drivePid =
+                    drivePidController.calculate(driveEncoder.getRate(), desiredState.speedMetersPerSecond);
         }
 
         driveMotor.setVoltage(driveFF + drivePid);
@@ -75,9 +78,11 @@ public class SwerveModule {
 
     /**
      * Command this swerve module to the desired angle and velocity.
+     *
      * @param steerInPlace If modules should steer to target angle when target velocity is 0
      */
-    public void setDesiredState(SwerveModuleState desiredState, boolean openLoop, boolean steerInPlace){
+    public void setDesiredState(
+            SwerveModuleState desiredState, boolean openLoop, boolean steerInPlace) {
         Rotation2d currentRotation = getAbsoluteHeading();
         // Avoid turning more than 90 degrees by inverting speed on large angle changes
         desiredState = SwerveModuleState.optimize(desiredState, currentRotation);
@@ -86,28 +91,21 @@ public class SwerveModule {
     }
 
     /** Module heading reported by steering encoder. */
-    public Rotation2d getAbsoluteHeading(){
+    public Rotation2d getAbsoluteHeading() {
         return Rotation2d.fromRadians(steerEncoder.getDistance());
     }
 
     /**
-     * {@link SwerveModuleState} describing absolute module rotation and velocity in meters per second.
+     * {@link SwerveModuleState} describing absolute module rotation and velocity in meters per
+     * second.
      */
-    public SwerveModuleState getState(){
-        return new SwerveModuleState(
-            driveEncoder.getRate(),
-            getAbsoluteHeading()
-        );
+    public SwerveModuleState getState() {
+        return new SwerveModuleState(driveEncoder.getRate(), getAbsoluteHeading());
     }
 
-    /**
-     * {@link SwerveModulePosition} describing absolute module rotation and position in meters.
-     */
+    /** {@link SwerveModulePosition} describing absolute module rotation and position in meters. */
     public SwerveModulePosition getPosition() {
-        return new SwerveModulePosition(
-            driveEncoder.getDistance(),
-            getAbsoluteHeading()
-        );
+        return new SwerveModulePosition(driveEncoder.getDistance(), getAbsoluteHeading());
     }
 
     /** Voltage of the drive motor */
@@ -123,28 +121,36 @@ public class SwerveModule {
     /**
      * Constants about this module, like motor IDs, encoder angle offset, and translation from center.
      */
-    public ModuleConstants getModuleConstants(){
+    public ModuleConstants getModuleConstants() {
         return moduleConstants;
     }
 
-    public void log(){
+    public void log() {
         var state = getState();
 
-        String table = "Module "+moduleConstants.moduleNum+"/";
-        SmartDashboard.putNumber(table+"Steer Degrees", Math.toDegrees(MathUtil.angleModulus(state.angle.getRadians())));
-        SmartDashboard.putNumber(table+"Steer Target Degrees", Math.toDegrees(steerPidController.getSetpoint()));
-        SmartDashboard.putNumber(table+"Drive Velocity Feet", Units.metersToFeet(state.speedMetersPerSecond));
-        SmartDashboard.putNumber(table+"Drive Velocity Target Feet", Units.metersToFeet(desiredState.speedMetersPerSecond));
-        SmartDashboard.putNumber(table+"Drive Current", driveCurrentSim);
-        SmartDashboard.putNumber(table+"Steer Current", steerCurrentSim);
+        String table = "Module " + moduleConstants.moduleNum + "/";
+        SmartDashboard.putNumber(
+                table + "Steer Degrees", Math.toDegrees(MathUtil.angleModulus(state.angle.getRadians())));
+        SmartDashboard.putNumber(
+                table + "Steer Target Degrees", Math.toDegrees(steerPidController.getSetpoint()));
+        SmartDashboard.putNumber(
+                table + "Drive Velocity Feet", Units.metersToFeet(state.speedMetersPerSecond));
+        SmartDashboard.putNumber(
+                table + "Drive Velocity Target Feet",
+                Units.metersToFeet(desiredState.speedMetersPerSecond));
+        SmartDashboard.putNumber(table + "Drive Current", driveCurrentSim);
+        SmartDashboard.putNumber(table + "Steer Current", steerCurrentSim);
     }
 
-
-    //----- Simulation
+    // ----- Simulation
 
     public void simulationUpdate(
-            double driveEncoderDist, double driveEncoderRate, double driveCurrent,
-            double steerEncoderDist, double steerEncoderRate, double steerCurrent) {
+            double driveEncoderDist,
+            double driveEncoderRate,
+            double driveCurrent,
+            double steerEncoderDist,
+            double steerEncoderRate,
+            double steerCurrent) {
         driveEncoderSim.setDistance(driveEncoderDist);
         driveEncoderSim.setRate(driveEncoderRate);
         this.driveCurrentSim = driveCurrent;

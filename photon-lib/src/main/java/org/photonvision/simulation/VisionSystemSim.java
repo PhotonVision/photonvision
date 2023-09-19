@@ -400,7 +400,7 @@ public class VisionSystemSim {
             // display debug results
             for (var target : camResult.getTargets()) {
                 var trf = target.getBestCameraToTarget();
-                if(trf.equals(kEmptyTrf)) continue;
+                if (trf.equals(kEmptyTrf)) continue;
                 visTgtPoses2d.add(lateCameraPose.transformBy(trf).toPose2d());
             }
         }
