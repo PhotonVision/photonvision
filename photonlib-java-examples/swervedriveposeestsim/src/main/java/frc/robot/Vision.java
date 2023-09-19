@@ -24,6 +24,7 @@ import java.util.Optional;
 public class Vision {
     private final PhotonCamera camera;
     private final PhotonPoseEstimator photonEstimator;
+    private double lastEstTimestamp = 0;
 
     // Simulation
     private PhotonCameraSim cameraSim;
@@ -69,12 +70,15 @@ public class Vision {
      */
     public Optional<EstimatedRobotPose> getEstimatedGlobalPose() {
         var visionEst = photonEstimator.update();
+        double latestTimestamp = camera.getLatestResult().getTimestampSeconds();
+        boolean newResult = Math.abs(latestTimestamp - lastEstTimestamp) > 1e-5;
         if(Robot.isSimulation()) {
             visionEst.ifPresentOrElse(
                 est -> getSimDebugField().getObject("VisionEstimation").setPose(est.estimatedPose.toPose2d()),
-                () -> getSimDebugField().getObject("VisionEstimation").setPoses()
+                () -> {if(newResult) getSimDebugField().getObject("VisionEstimation").setPoses();}
             );
         }
+        if(newResult) lastEstTimestamp = latestTimestamp;
         return visionEst;
     }
 

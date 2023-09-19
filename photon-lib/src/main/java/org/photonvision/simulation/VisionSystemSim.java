@@ -337,7 +337,7 @@ public class VisionSystemSim {
      * Periodic update. Ensure this is called repeatedly-- camera performance is used to automatically
      * determine if a new frame should be submitted.
      *
-     * @param robotPoseMeters The current robot pose in meters
+     * @param robotPoseMeters The simulated robot pose in meters
      */
     public void update(Pose2d robotPoseMeters) {
         update(new Pose3d(robotPoseMeters));
@@ -347,7 +347,7 @@ public class VisionSystemSim {
      * Periodic update. Ensure this is called repeatedly-- camera performance is used to automatically
      * determine if a new frame should be submitted.
      *
-     * @param robotPoseMeters The current robot pose in meters
+     * @param robotPoseMeters The simulated robot pose in meters
      */
     public void update(Pose3d robotPoseMeters) {
         var targetTypes = targetSets.entrySet();
@@ -370,13 +370,15 @@ public class VisionSystemSim {
 
         var allTargets = new ArrayList<VisionTargetSim>();
         targetTypes.forEach((entry) -> allTargets.addAll(entry.getValue()));
-        var visibleTargets = new ArrayList<Pose3d>();
-        var cameraPose2ds = new ArrayList<Pose2d>();
+        var visTgtPoses2d = new ArrayList<Pose2d>();
+        var cameraPoses2d = new ArrayList<Pose2d>();
+        boolean processed = false;
         // process each camera
         for (var camSim : camSimMap.values()) {
             // check if this camera is ready to process and get latency
             var optTimestamp = camSim.consumeNextEntryTime();
             if (optTimestamp.isEmpty()) continue;
+            else processed = true;
             // when this result "was" read by NT
             long timestampNT = optTimestamp.get();
             // this result's processing latency in milliseconds
@@ -387,7 +389,7 @@ public class VisionSystemSim {
             // use camera pose from the image capture timestamp
             Pose3d lateRobotPose = getRobotPose(timestampCapture);
             Pose3d lateCameraPose = lateRobotPose.plus(getRobotToCamera(camSim, timestampCapture).get());
-            cameraPose2ds.add(lateCameraPose.toPose2d());
+            cameraPoses2d.add(lateCameraPose.toPose2d());
 
             // process a PhotonPipelineResult with visible targets
             var camResult = camSim.process(latencyMillis, lateCameraPose, allTargets);
@@ -395,14 +397,10 @@ public class VisionSystemSim {
             camSim.submitProcessedFrame(camResult, timestampNT);
             // display debug results
             for (var target : camResult.getTargets()) {
-                visibleTargets.add(lateCameraPose.transformBy(target.getBestCameraToTarget()));
+                visTgtPoses2d.add(lateCameraPose.transformBy(target.getBestCameraToTarget()).toPose2d());
             }
         }
-        if (visibleTargets.size() != 0) {
-            dbgField
-                    .getObject("visibleTargetPoses")
-                    .setPoses(visibleTargets.stream().map(Pose3d::toPose2d).collect(Collectors.toList()));
-        }
-        if (cameraPose2ds.size() != 0) dbgField.getObject("cameras").setPoses(cameraPose2ds);
+        if (processed) dbgField.getObject("visibleTargetPoses").setPoses(visTgtPoses2d);
+        if (cameraPoses2d.size() != 0) dbgField.getObject("cameras").setPoses(cameraPoses2d);
     }
 }
