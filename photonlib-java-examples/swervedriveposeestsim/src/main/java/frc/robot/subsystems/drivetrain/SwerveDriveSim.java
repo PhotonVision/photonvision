@@ -22,16 +22,27 @@ import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.RobotController;
 
+/**
+ * This class attempts to simulate the dynamics of a swerve drive. In simulationPeriodic, users should first set
+ * inputs from motors with {@link #setDriveInputs(double...)} and {@link #setSteerInputs(double...)},
+ * call {@link #update(double)} to update the simulation, and then set swerve module's encoder values and
+ * the drivetrain's gyro values with the results from this class.
+ * 
+ * <p>In this class, distances are expressed with meters, angles with radians, and inputs with voltages.
+ * 
+ * <p>Teams can use {@link edu.wpi.first.wpilibj.smartdashboard.Field2d} to visualize
+ * their robot on the Sim GUI's field.
+ */
 public class SwerveDriveSim {
     
-    private final SimpleMotorFeedforward driveFF;
     private final LinearSystem<N2, N1, N2> drivePlant;
-    private final DCMotor driveGearbox;
+    private final double driveKs;
+    private final DCMotor driveMotor;
     private final double driveGearing;
     private final double driveWheelRadius;
-    private final SimpleMotorFeedforward steerFF;
     private final LinearSystem<N2, N1, N2> steerPlant;
-    private final DCMotor steerGearbox;
+    private final double steerKs;
+    private final DCMotor steerMotor;
     private final double steerGearing;
     
     private final SwerveDriveKinematics kinematics;
@@ -49,36 +60,80 @@ public class SwerveDriveSim {
     private double omegaRadsPerSec = 0;
     
     /**
+     * Creates a swerve drive simulation.
      * 
      * @param driveFF The feedforward for the drive motors of this swerve drive. This should be in units of meters.
-     * @param driveGearbox
-     * @param driveGearing
-     * @param driveWheelRadius
+     * @param driveMotor The DCMotor model for the drive motor(s) of this swerve drive's modules.
+     *     This should not have any gearing applied.
+     * @param driveGearing The gear ratio of the drive system. Positive values indicate a reduction where one
+     *     rotation of the drive wheel equals driveGearing rotations of the drive motor.
+     * @param driveWheelRadius The radius of the module's driving wheel. 
      * @param steerFF The feedforward for the steer motors of this swerve drive. This should be in units of radians.
-     * @param steerGearbox
-     * @param steerGearing
-     * @param kinematics
+     * @param steerMotor The DCMotor model for the steer motor(s) of this swerve drive's modules.
+     *     This should not have any gearing applied.
+     * @param steerGearing The gear ratio of the steer system. Positive values indicate a reduction where one
+     *     rotation of the module heading/azimuth equals steerGearing rotations of the steer motor.
+     * @param kinematics The kinematics for this swerve drive. All swerve module information used in
+     *     this class should match the order of the modules this kinematics object was constructed with.
      */
     public SwerveDriveSim(
-            SimpleMotorFeedforward driveFF, DCMotor driveGearbox, double driveGearing, double driveWheelRadius,
-            SimpleMotorFeedforward steerFF, DCMotor steerGearbox, double steerGearing,
+            SimpleMotorFeedforward driveFF, DCMotor driveMotor, double driveGearing, double driveWheelRadius,
+            SimpleMotorFeedforward steerFF, DCMotor steerMotor, double steerGearing,
             SwerveDriveKinematics kinematics) {
-        this.driveFF = driveFF;
-        drivePlant = new LinearSystem<N2, N1, N2>(
-            Matrix.mat(Nat.N2(), Nat.N2()).fill(0.0, 1.0, 0.0, -driveFF.kv / driveFF.ka),
-            VecBuilder.fill(0.0, 1.0 / driveFF.ka),
-            Matrix.mat(Nat.N2(), Nat.N2()).fill(1.0, 0.0, 0.0, 1.0),
-            VecBuilder.fill(0.0, 0.0));
-        this.driveGearbox = driveGearbox;
+        this(
+            new LinearSystem<N2, N1, N2>(
+                Matrix.mat(Nat.N2(), Nat.N2()).fill(0.0, 1.0, 0.0, -driveFF.kv / driveFF.ka),
+                VecBuilder.fill(0.0, 1.0 / driveFF.ka),
+                Matrix.mat(Nat.N2(), Nat.N2()).fill(1.0, 0.0, 0.0, 1.0),
+                VecBuilder.fill(0.0, 0.0)
+            ),
+            driveFF.ks, driveMotor, driveGearing, driveWheelRadius,
+            new LinearSystem<N2, N1, N2>(
+                Matrix.mat(Nat.N2(), Nat.N2()).fill(0.0, 1.0, 0.0, -steerFF.kv / steerFF.ka),
+                VecBuilder.fill(0.0, 1.0 / steerFF.ka),
+                Matrix.mat(Nat.N2(), Nat.N2()).fill(1.0, 0.0, 0.0, 1.0),
+                VecBuilder.fill(0.0, 0.0)
+            ),
+            steerFF.ks, steerMotor, steerGearing,
+            kinematics
+        );        
+    }
+
+    /**
+     * Creates a swerve drive simulation.
+     * 
+     * @param drivePlant The {@link LinearSystem} representing a swerve module's drive system.
+     *     The state should be in units of meters and input in volts.
+     * @param driveKs The static gain in volts of the drive system's feedforward, or the minimum voltage
+     *     to cause motion. Set this to 0 to ignore static friction.
+     * @param driveMotor The DCMotor model for the drive motor(s) of this swerve drive's modules.
+     *     This should not have any gearing applied.
+     * @param driveGearing The gear ratio of the drive system. Positive values indicate a reduction where one
+     *     rotation of the drive wheel equals driveGearing rotations of the drive motor.
+     * @param driveWheelRadius The radius of the module's driving wheel. 
+     * @param steerPlant The {@link LinearSystem} representing a swerve module's steer system.
+     *     The state should be in units of radians and input in volts.
+     * @param steerKs The static gain in volts of the steer system's feedforward, or the minimum voltage
+     *     to cause motion. Set this to 0 to ignore static friction.
+     * @param steerMotor The DCMotor model for the steer motor(s) of this swerve drive's modules.
+     *     This should not have any gearing applied.
+     * @param steerGearing The gear ratio of the steer system. Positive values indicate a reduction where one
+     *     rotation of the module heading/azimuth equals steerGearing rotations of the steer motor.
+     * @param kinematics The kinematics for this swerve drive. All swerve module information used in
+     *     this class should match the order of the modules this kinematics object was constructed with.
+     */
+    public SwerveDriveSim(
+            LinearSystem<N2, N1, N2> drivePlant, double driveKs, DCMotor driveMotor, double driveGearing, double driveWheelRadius,
+            LinearSystem<N2, N1, N2> steerPlant, double steerKs, DCMotor steerMotor, double steerGearing,
+            SwerveDriveKinematics kinematics) {
+        this.drivePlant = drivePlant;
+        this.driveKs = driveKs;
+        this.driveMotor = driveMotor;
         this.driveGearing = driveGearing;
         this.driveWheelRadius = driveWheelRadius;
-        this.steerFF = steerFF;
-        steerPlant = new LinearSystem<N2, N1, N2>(
-            Matrix.mat(Nat.N2(), Nat.N2()).fill(0.0, 1.0, 0.0, -driveFF.kv / driveFF.ka),
-            VecBuilder.fill(0.0, 1.0 / driveFF.ka),
-            Matrix.mat(Nat.N2(), Nat.N2()).fill(1.0, 0.0, 0.0, 1.0),
-            VecBuilder.fill(0.0, 0.0));
-        this.steerGearbox = steerGearbox;
+        this.steerPlant = steerPlant;
+        this.steerKs = steerKs;
+        this.steerMotor = steerMotor;
         this.steerGearing = steerGearing;
 
         this.kinematics = kinematics;
@@ -88,8 +143,8 @@ public class SwerveDriveSim {
         steerInputs = new double[numModules];
         steerStates = new ArrayList<>(numModules);
         for(int i = 0; i < numModules; i++) {
-            driveStates.set(i, VecBuilder.fill(0, 0));
-            steerStates.set(i, VecBuilder.fill(0, 0));
+            driveStates.add(VecBuilder.fill(0, 0));
+            steerStates.add(VecBuilder.fill(0, 0));
         }
     }
 
@@ -170,9 +225,9 @@ public class SwerveDriveSim {
         var moduleDeltas = new SwerveModulePosition[numModules];
         for(int i = 0; i < numModules; i++) {
             double prevDriveStatePos = driveStates.get(i).get(0, 0);
-            driveStates.set(i, calculateX(driveDiscAB.getFirst(), driveDiscAB.getSecond(), driveStates.get(i), driveInputs[i], driveFF.ks));
+            driveStates.set(i, calculateX(driveDiscAB.getFirst(), driveDiscAB.getSecond(), driveStates.get(i), driveInputs[i], driveKs));
             double currDriveStatePos = driveStates.get(i).get(0, 0);
-            steerStates.set(i, calculateX(steerDiscAB.getFirst(), steerDiscAB.getSecond(), steerStates.get(i), steerInputs[i], steerFF.ks));
+            steerStates.set(i, calculateX(steerDiscAB.getFirst(), steerDiscAB.getSecond(), steerStates.get(i), steerInputs[i], steerKs));
             double currSteerStatePos = steerStates.get(i).get(0, 0);
             moduleDeltas[i] = new SwerveModulePosition(currDriveStatePos - prevDriveStatePos, new Rotation2d(currSteerStatePos));
         }
@@ -275,8 +330,32 @@ public class SwerveDriveSim {
     }
 
     /**
-     * Get the angular velocity of the robot, which can be useful for gyro simulation. This should be called
-     * after {@link #update(double)}.
+     * Get the state of each module's drive system in [meters, meters/sec]. The returned list order matches the kinematics module order.
+     * This should be called after {@link #update(double)}.
+     */
+    public List<Matrix<N2, N1>> getDriveStates() {
+        List<Matrix<N2, N1>> states = new ArrayList<>();
+        for(int i = 0; i < driveStates.size(); i++) {
+            states.add(driveStates.get(i).copy());
+        }
+        return states;
+    }
+
+    /**
+     * Get the state of each module's steer system in [radians, radians/sec]. The returned list order matches the kinematics module order.
+     * This should be called after {@link #update(double)}.
+     */
+    public List<Matrix<N2, N1>> getSteerStates() {
+        List<Matrix<N2, N1>> states = new ArrayList<>();
+        for(int i = 0; i < steerStates.size(); i++) {
+            states.add(steerStates.get(i).copy());
+        }
+        return states;
+    }
+
+    /**
+     * Get the angular velocity of the robot, which can be useful for gyro simulation. CCW positive.
+     * This should be called after {@link #update(double)}. 
      */
     public double getOmegaRadsPerSec() {
         return omegaRadsPerSec;
@@ -290,7 +369,7 @@ public class SwerveDriveSim {
      * @param inputVolts The voltage commanded by the motor controller (battery voltage * duty cycle).
      * @param battVolts The voltage of the battery.
      */
-    private static double getCurrentDraw(DCMotor motor, double radiansPerSec, double inputVolts, double battVolts) {
+    protected static double getCurrentDraw(DCMotor motor, double radiansPerSec, double inputVolts, double battVolts) {
         double effVolts = inputVolts - radiansPerSec / motor.KvRadPerSecPerVolt;
         // ignore regeneration
         if(inputVolts >= 0) effVolts = MathUtil.clamp(effVolts, 0, inputVolts);
@@ -307,7 +386,7 @@ public class SwerveDriveSim {
         double[] currents = new double[numModules];
         for(int i = 0; i < numModules; i++) {
             double radiansPerSec = driveStates.get(i).get(1, 0) * driveGearing / driveWheelRadius;
-            currents[i] = getCurrentDraw(driveGearbox, radiansPerSec, driveInputs[i], RobotController.getBatteryVoltage());
+            currents[i] = getCurrentDraw(driveMotor, radiansPerSec, driveInputs[i], RobotController.getBatteryVoltage());
         }
         return currents;
     }
@@ -320,7 +399,7 @@ public class SwerveDriveSim {
         double[] currents = new double[numModules];
         for(int i = 0; i < numModules; i++) {
             double radiansPerSec = steerStates.get(i).get(1, 0) * steerGearing;
-            currents[i] = getCurrentDraw(steerGearbox, radiansPerSec, steerInputs[i], RobotController.getBatteryVoltage());
+            currents[i] = getCurrentDraw(steerMotor, radiansPerSec, steerInputs[i], RobotController.getBatteryVoltage());
         }
         return currents;
     }
