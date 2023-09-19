@@ -57,7 +57,7 @@ public class Robot extends TimedRobot {
 
         // Apply a random offset to pose estimator to test vision correction
         if(controller.getBButtonPressed()) {
-            var trf = new Transform2d(new Translation2d(rand.nextDouble(4)-2, rand.nextDouble(4)-2), new Rotation2d(rand.nextDouble(2*Math.PI)));
+            var trf = new Transform2d(new Translation2d(rand.nextDouble() * 4 - 2, rand.nextDouble() * 4 - 2), new Rotation2d(rand.nextDouble() * 2 * Math.PI));
             drivetrain.resetPose(drivetrain.getPose().plus(trf), false);
         }
 

@@ -310,8 +310,8 @@ public class SwerveDriveSim {
         var positions = new SwerveModulePosition[numModules];
         for(int i = 0; i < numModules; i++) {
             positions[i] = new SwerveModulePosition(
-                rand.nextGaussian(driveStates.get(i).get(0, 0), driveStdDev),
-                new Rotation2d(rand.nextGaussian(steerStates.get(i).get(0, 0), steerStdDev))
+                driveStates.get(i).get(0, 0) + rand.nextGaussian() * driveStdDev,
+                new Rotation2d(steerStates.get(i).get(0, 0) + rand.nextGaussian() * steerStdDev)
             );
         }
         return positions;
