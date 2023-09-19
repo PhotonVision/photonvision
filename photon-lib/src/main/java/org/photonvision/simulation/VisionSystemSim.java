@@ -66,6 +66,8 @@ public class VisionSystemSim {
 
     private final Field2d dbgField;
 
+    private final Transform3d kEmptyTrf = new Transform3d();
+
     /**
      * A simulated vision system involving a camera(s) and coprocessor(s) mounted on a mobile robot
      * running PhotonVision, detecting targets placed on the field. {@link VisionTargetSim}s added to
@@ -397,7 +399,9 @@ public class VisionSystemSim {
             camSim.submitProcessedFrame(camResult, timestampNT);
             // display debug results
             for (var target : camResult.getTargets()) {
-                visTgtPoses2d.add(lateCameraPose.transformBy(target.getBestCameraToTarget()).toPose2d());
+                var trf = target.getBestCameraToTarget();
+                if(trf.equals(kEmptyTrf)) continue;
+                visTgtPoses2d.add(lateCameraPose.transformBy(trf).toPose2d());
             }
         }
         if (processed) dbgField.getObject("visibleTargetPoses").setPoses(visTgtPoses2d);
