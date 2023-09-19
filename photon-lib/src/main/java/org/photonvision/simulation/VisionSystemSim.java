@@ -130,7 +130,8 @@ public class VisionSystemSim {
      * Get a simulated camera's position relative to the robot. If the requested camera is invalid, an
      * empty optional is returned.
      *
-     * @return The transform of this cameraSim, or an empty optional if it is invalid
+     * @param cameraSim The specific camera to get the robot-to-camera transform of
+     * @return The transform of this camera, or an empty optional if it is invalid
      */
     public Optional<Transform3d> getRobotToCamera(PhotonCameraSim cameraSim) {
         return getRobotToCamera(cameraSim, Timer.getFPGATimestamp());
@@ -140,9 +141,9 @@ public class VisionSystemSim {
      * Get a simulated camera's position relative to the robot. If the requested camera is invalid, an
      * empty optional is returned.
      *
-     * @param cameraSim Specific camera to get the robot-to-camera transform of
+     * @param cameraSim The specific camera to get the robot-to-camera transform of
      * @param timeSeconds Timestamp in seconds of when the transform should be observed
-     * @return The transform of this cameraSim, or an empty optional if it is invalid
+     * @return The transform of this camera, or an empty optional if it is invalid
      */
     public Optional<Transform3d> getRobotToCamera(PhotonCameraSim cameraSim, double timeSeconds) {
         var trfBuffer = camTrfMap.get(cameraSim);
@@ -150,6 +151,31 @@ public class VisionSystemSim {
         var sample = trfBuffer.getSample(timeSeconds);
         if (sample.isEmpty()) return Optional.empty();
         return Optional.of(new Transform3d(new Pose3d(), sample.orElse(new Pose3d())));
+    }
+
+    /**
+     * Get a simulated camera's position on the field. If the requested camera is invalid, an empty
+     * optional is returned.
+     *
+     * @param cameraSim The specific camera to get the field pose of
+     * @return The pose of this camera, or an empty optional if it is invalid
+     */
+    public Optional<Pose3d> getCameraPose(PhotonCameraSim cameraSim) {
+        return getCameraPose(cameraSim, Timer.getFPGATimestamp());
+    }
+
+    /**
+     * Get a simulated camera's position on the field. If the requested camera is invalid, an empty
+     * optional is returned.
+     *
+     * @param cameraSim The specific camera to get the field pose of
+     * @param timeSeconds Timestamp in seconds of when the pose should be observed
+     * @return The pose of this camera, or an empty optional if it is invalid
+     */
+    public Optional<Pose3d> getCameraPose(PhotonCameraSim cameraSim, double timeSeconds) {
+        var robotToCamera = getRobotToCamera(cameraSim, timeSeconds);
+        if (robotToCamera.isEmpty()) return Optional.empty();
+        return Optional.of(getRobotPose(timeSeconds).plus(robotToCamera.get()));
     }
 
     /**
@@ -217,15 +243,16 @@ public class VisionSystemSim {
      * PhotonCamera}s simulated from this system will report the location of the camera relative to
      * the subset of these targets which are visible from the given camera position.
      *
-     * <p>The AprilTags from this layout will be added as vision targets under the type "apriltags".
-     * The poses added preserve the tag layout's current alliance origin.
+     * <p>The AprilTags from this layout will be added as vision targets under the type "apriltag".
+     * The poses added preserve the tag layout's current alliance origin. If the tag layout's alliance
+     * origin is changed, these added tags will have to be cleared and re-added.
      *
      * @param tagLayout The field tag layout to get Apriltag poses and IDs from
      */
-    public void addVisionTargets(AprilTagFieldLayout tagLayout) {
+    public void addAprilTags(AprilTagFieldLayout tagLayout) {
         for (AprilTag tag : tagLayout.getTags()) {
             addVisionTargets(
-                    "apriltags",
+                    "apriltag",
                     new VisionTargetSim(
                             tagLayout.getTagPose(tag.ID).get(), // preserve alliance rotation
                             TargetModel.kTag16h5,
@@ -250,6 +277,10 @@ public class VisionSystemSim {
 
     public void clearVisionTargets() {
         targetSets.clear();
+    }
+
+    public void clearAprilTags() {
+        removeVisionTargets("apriltag");
     }
 
     public Set<VisionTargetSim> removeVisionTargets(String type) {
