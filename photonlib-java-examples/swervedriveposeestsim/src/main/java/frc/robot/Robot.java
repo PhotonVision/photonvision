@@ -64,18 +64,12 @@ public class Robot extends TimedRobot {
         // Log values to the dashboard
         drivetrain.log();
     }
-    
-    @Override
-    public void disabledInit() {}
-    
+        
     @Override
     public void disabledPeriodic() {
         drivetrain.stop();
     }
-    
-    @Override
-    public void disabledExit() {}
-    
+        
     @Override
     public void autonomousInit() {
         autoTimer.restart();
@@ -96,9 +90,6 @@ public class Robot extends TimedRobot {
         }
     }
         
-    @Override
-    public void teleopInit() {}
-    
     @Override
     public void teleopPeriodic() {
         // We will use an "arcade drive" scheme to turn joystick values into target robot speeds
