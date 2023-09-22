@@ -37,7 +37,6 @@ package org.photonvision.vision.pipeline;
 import edu.wpi.first.math.geometry.Transform3d;
 import java.util.ArrayList;
 import java.util.List;
-import org.opencv.core.Mat;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.aruco.ArucoDetectorParams;
 import org.photonvision.vision.frame.Frame;
@@ -51,7 +50,6 @@ import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 @SuppressWarnings("DuplicatedCode")
 public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSettings> {
     private final RotateImagePipe rotateImagePipe = new RotateImagePipe();
-    private final GrayscalePipe grayscalePipe = new GrayscalePipe();
 
     private final ArucoDetectionPipe arucoDetectionPipe = new ArucoDetectionPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
@@ -89,17 +87,18 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
     @Override
     protected CVPipelineResult process(Frame frame, ArucoPipelineSettings settings) {
         long sumPipeNanosElapsed = 0L;
-        Mat rawInputMat;
-        rawInputMat = frame.colorImage.getMat();
 
         List<TrackedTarget> targetList;
-        CVPipeResult<List<ArucoDetectionResult>> tagDetectionPipeResult;
 
-        if (rawInputMat.empty()) {
-            return new CVPipelineResult(sumPipeNanosElapsed, 0, List.of(), frame);
+        if (frame.type != FrameThresholdType.GREYSCALE) {
+            // TODO so all cameras should give us ADAPTIVE_THRESH -- how should we handle if not?
+            return new CVPipelineResult(0, 0, List.of());
         }
 
-        tagDetectionPipeResult = arucoDetectionPipe.run(rawInputMat);
+        CVPipeResult<List<ArucoDetectionResult>> tagDetectionPipeResult;
+        tagDetectionPipeResult = arucoDetectionPipe.run(frame.processedImage);
+        sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
+
         targetList = new ArrayList<>();
         for (ArucoDetectionResult detection : tagDetectionPipeResult.output) {
             // TODO this should be in a pipe, not in the top level here (Matt)

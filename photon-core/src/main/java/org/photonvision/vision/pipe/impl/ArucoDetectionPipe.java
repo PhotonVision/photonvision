@@ -20,20 +20,20 @@ package org.photonvision.vision.pipe.impl;
 import edu.wpi.first.math.util.Units;
 import java.util.List;
 import org.opencv.aruco.DetectorParameters;
-import org.opencv.core.Mat;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.aruco.PhotonArucoDetector;
+import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class ArucoDetectionPipe
-        extends CVPipe<Mat, List<ArucoDetectionResult>, ArucoDetectionPipeParams> {
+        extends CVPipe<CVMat, List<ArucoDetectionResult>, ArucoDetectionPipeParams> {
     PhotonArucoDetector detector = new PhotonArucoDetector();
 
     @Override
-    protected List<ArucoDetectionResult> process(Mat in) {
+    protected List<ArucoDetectionResult> process(CVMat in) {
         return List.of(
                 detector.detect(
-                        in,
+                        in.getMat(),
                         (float) Units.inchesToMeters(6),
                         params.cameraCalibrationCoefficients,
                         params.detectorParams));
