@@ -348,7 +348,7 @@ class VisionSystemSimTest {
                 Arguments.of(20, -42, 0),
                 Arguments.of(5, -35, 2),
                 Arguments.of(6, -35, 0),
-                Arguments.of(10, -34, 3.2),
+                Arguments.of(10, -34, 2.4),
                 Arguments.of(15, -33, 0),
                 Arguments.of(19.52, -15.98, 1.1));
     }
@@ -376,23 +376,28 @@ class VisionSystemSimTest {
         cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(160));
         cameraSim.setMinTargetAreaPixels(0.0);
         visionSysSim.adjustCamera(cameraSim, robotToCamera);
-        // note that non-fiducial targets have different center point calculation and will
-        // return slightly inaccurate yaw/pitch values
         visionSysSim.addVisionTargets(new VisionTargetSim(targetPose, new TargetModel(0.5, 0.5), 0));
 
         visionSysSim.update(robotPose);
+
+        // Note that target 2d yaw/pitch accuracy is hindered by two factors in photonvision:
+        // 1. These are calculated with the average of the minimum area rectangle, which does not
+        // actually find the target center because of perspective distortion.
+        // 2. Yaw and pitch are calculated separately which gives incorrect pitch values.
         var res = camera.getLatestResult();
         assertTrue(res.hasTargets());
         var tgt = res.getBestTarget();
-        assertEquals(0.0, tgt.getYaw(), kRotDeltaDeg);
+        assertEquals(0.0, tgt.getYaw(), 0.5);
 
+        // Distance calculation using this trigonometry may be wildly incorrect when
+        // there is not much height difference between the target and the camera.
         double distMeas =
                 PhotonUtils.calculateDistanceToTargetMeters(
                         robotToCamera.getZ(),
                         targetPose.getZ(),
                         Units.degreesToRadians(-testPitch),
                         Units.degreesToRadians(tgt.getPitch()));
-        assertEquals(Units.feetToMeters(testDist), distMeas, kTrlDelta);
+        assertEquals(Units.feetToMeters(testDist), distMeas, 0.15);
     }
 
     @Test

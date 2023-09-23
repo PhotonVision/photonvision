@@ -115,7 +115,7 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
     const PhotonPipelineResult& result, std::optional<cv::Mat> cameraMatrixData,
-    std::optional<cv::Mat> coeffsData) {
+    std::optional<cv::Mat> cameraDistCoeffs) {
   // Time in the past -- give up, since the following if expects times > 0
   if (result.GetTimestamp() < 0_s) {
     return std::nullopt;
@@ -136,12 +136,12 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
     return std::nullopt;
   }
 
-  return Update(result, cameraMatrixData, coeffsData, this->strategy);
+  return Update(result, cameraMatrixData, cameraDistCoeffs, this->strategy);
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
     PhotonPipelineResult result, std::optional<cv::Mat> cameraMatrixData,
-    std::optional<cv::Mat> coeffsData, PoseStrategy strategy) {
+    std::optional<cv::Mat> cameraDistCoeffs, PoseStrategy strategy) {
   std::optional<EstimatedRobotPose> ret = std::nullopt;
 
   switch (strategy) {
@@ -162,7 +162,7 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
       ret = AverageBestTargetsStrategy(result);
       break;
     case ::photonlib::MULTI_TAG_PNP:
-      ret = MultiTagPnpStrategy(result, coeffsData, cameraMatrixData);
+      ret = MultiTagPnpStrategy(result, cameraMatrixData, cameraDistCoeffs);
       break;
     default:
       FRC_ReportError(frc::warn::Warning, "Invalid Pose Strategy selected!",
@@ -396,14 +396,14 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagPnpStrategy(
     return Update(result, camMat, distCoeffs, this->multiTagFallbackStrategy);
   }
 
-  // Use OpenCV ITERATIVE solver
+  // Output mats for results
   cv::Mat const rvec(3, 1, cv::DataType<double>::type);
   cv::Mat const tvec(3, 1, cv::DataType<double>::type);
 
   cv::solvePnP(objectPoints, imagePoints, camMat.value(), distCoeffs.value(),
                rvec, tvec, false, cv::SOLVEPNP_SQPNP);
 
-  Pose3d const pose = detail::ToPose3d(tvec, rvec);
+  const Pose3d pose = detail::ToPose3d(tvec, rvec);
 
   return photonlib::EstimatedRobotPose(
       pose.TransformBy(m_robotToCamera.Inverse()), result.GetTimestamp(),
