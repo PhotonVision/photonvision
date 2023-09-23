@@ -84,6 +84,10 @@ public class PhotonConfiguration {
         return atfl;
     }
 
+    public void setApriltagFieldLayout(AprilTagFieldLayout atfl) {
+        this.atfl = atfl;
+    }
+
     public void setNetworkConfig(NetworkConfig networkConfig) {
         this.networkConfig = networkConfig;
     }
