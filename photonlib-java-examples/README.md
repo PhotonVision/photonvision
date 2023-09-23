@@ -1,5 +1,20 @@
 ## PhotonLib Java Examples
 
+### Building
+
+Build photonvision and publish it locally with:
+
+```
+photonvision$ ./gradlew photon-lib:publishtomavenlocal
+```
+
+Now, cd into here, pull in the latest vendor json, and simulate the project of choice
+
+```
+photonvision/photonlib-java-exaples: ./gradlew copyPhotonlib
+photonvision/photonlib-java-exaples: ./gradlew aimandrange:simulateJava
+```
+
 ### [**`aimattarget`**](aimattarget)
 
 A simple demonstration of using PhotonVision's 2d target yaw to align a differential drivetrain with a target.
