@@ -32,7 +32,7 @@ public class LinuxCmds extends CmdBase {
         cpuUptimeCommand = "uptime -p | cut -c 4-";
 
         // RAM
-        ramUsageCommand = "awk '/MemFree:/ {print int($2 / 1000);}' /proc/meminfo";
+        ramUsageCommand = "awk '/MemAvailable:/ {print int($2 / 1000);}' /proc/meminfo";
 
         // Disk
         diskUsageCommand = "df ./ --output=pcent | tail -n +2";
