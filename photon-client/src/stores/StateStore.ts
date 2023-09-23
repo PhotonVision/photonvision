@@ -24,7 +24,7 @@ interface StateStore {
   logMessages: LogMessage[];
   currentCameraIndex: number;
 
-  backendResults: Record<string, PipelineResult>
+  backendResults: Record<string, PipelineResult>;
 
   colorPickingMode: boolean;
 
