@@ -1,19 +1,10 @@
 ## PhotonLib Java Examples
 
-### Building
+### Running examples
 
-Build photonvision and publish it locally with:
+For instructions on how to run these examples locally, see [Running Examples](https://docs.photonvision.org/en/latest/docs/contributing/photonvision/build-instructions.html#running-examples).
 
-```
-photonvision$ ./gradlew photon-lib:publishtomavenlocal
-```
-
-Now, cd into here, pull in the latest vendor json, and simulate the project of choice
-
-```
-photonvision/photonlib-java-exaples: ./gradlew copyPhotonlib
-photonvision/photonlib-java-exaples: ./gradlew aimandrange:simulateJava
-```
+---
 
 ### [**`aimattarget`**](aimattarget)
 
