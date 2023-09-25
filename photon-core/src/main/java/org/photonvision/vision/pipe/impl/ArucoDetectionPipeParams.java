@@ -18,16 +18,15 @@
 package org.photonvision.vision.pipe.impl;
 
 import java.util.Objects;
-
 import org.opencv.aruco.Aruco;
 
 public class ArucoDetectionPipeParams {
-
     /** Tag family. Default: {@link Aruco#DICT_APRILTAG_16h5}. */
     public int tagFamily = Aruco.DICT_APRILTAG_16h5;
 
     /** Maximum corner refinement iterations. */
     public int refinementMaxIterations = 30;
+
     /**
      * Minimum error (accuracy) for corner refinement in pixels. When a corner refinement iteration
      * moves the corner by less than this value, the refinement is considered finished.

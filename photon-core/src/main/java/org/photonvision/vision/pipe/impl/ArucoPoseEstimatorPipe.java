@@ -22,10 +22,8 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -41,7 +39,6 @@ public class ArucoPoseEstimatorPipe
                 ArucoDetectionResult,
                 AprilTagPoseEstimate,
                 ArucoPoseEstimatorPipe.ArucoPoseEstimatorPipeParams> {
-
     // image points of marker corners
     private final MatOfPoint2f imagePoints = new MatOfPoint2f(Mat.zeros(4, 1, CvType.CV_32FC2));
     // rvec/tvec estimations from solvepnp
@@ -60,24 +57,27 @@ public class ArucoPoseEstimatorPipe
         // We receive 2d corners as (BL, BR, TR, TL) but we want (BR, BL, TL, TR)
         double[] xCorn = in.getXCorners();
         double[] yCorn = in.getYCorners();
-        imagePoints.put(0, 0, new float[]{(float)xCorn[1], (float)yCorn[1]});
-        imagePoints.put(1, 0, new float[]{(float)xCorn[0], (float)yCorn[0]});
-        imagePoints.put(2, 0, new float[]{(float)xCorn[3], (float)yCorn[3]});
-        imagePoints.put(3, 0, new float[]{(float)xCorn[2], (float)yCorn[2]});
+        imagePoints.put(0, 0, new float[] {(float) xCorn[1], (float) yCorn[1]});
+        imagePoints.put(1, 0, new float[] {(float) xCorn[0], (float) yCorn[0]});
+        imagePoints.put(2, 0, new float[] {(float) xCorn[3], (float) yCorn[3]});
+        imagePoints.put(3, 0, new float[] {(float) xCorn[2], (float) yCorn[2]});
 
         float[] reprojErrors = new float[2];
         // very rarely the IPPE_SQUARE solver returns NaN results, so we retry with slight noise added
-        for(int i = 0; i < kNaNRetries + 1; i++) {
+        for (int i = 0; i < kNaNRetries + 1; i++) {
             // SolvePnP with SOLVEPNP_IPPE_SQUARE solver
             Calib3d.solvePnPGeneric(
-                params.objectPoints,
-                imagePoints,
-                params.calibration.getCameraIntrinsicsMat(),
-                params.calibration.getDistCoeffsMat(),
-                rvecs, tvecs,
-                false, Calib3d.SOLVEPNP_IPPE_SQUARE,
-                rvec, tvec,
-                reprojectionErrors);
+                    params.objectPoints,
+                    imagePoints,
+                    params.calibration.getCameraIntrinsicsMat(),
+                    params.calibration.getDistCoeffsMat(),
+                    rvecs,
+                    tvecs,
+                    false,
+                    Calib3d.SOLVEPNP_IPPE_SQUARE,
+                    rvec,
+                    tvec,
+                    reprojectionErrors);
 
             // check if we got a NaN result
             reprojectionErrors.get(0, 0, reprojErrors);
@@ -89,9 +89,10 @@ public class ArucoPoseEstimatorPipe
                 imagePoints.put(0, 0, br);
             }
         }
-        
+
         // create AprilTagPoseEstimate with results
-        if(tvecs.isEmpty()) return new AprilTagPoseEstimate(new Transform3d(), new Transform3d(), 0, 0);
+        if (tvecs.isEmpty())
+            return new AprilTagPoseEstimate(new Transform3d(), new Transform3d(), 0, 0);
         double[] tvec1 = new double[3];
         double[] tvec2 = new double[3];
         tvecs.get(0).get(0, 0, tvec1);
@@ -104,10 +105,9 @@ public class ArucoPoseEstimatorPipe
         rvecs.get(1).get(0, 0, rvec2);
         var rot1 = new Rotation3d(VecBuilder.fill(rvec1[0], rvec1[1], rvec1[2]));
         var rot2 = new Rotation3d(VecBuilder.fill(rvec2[0], rvec2[1], rvec2[2]));
-        
+
         return new AprilTagPoseEstimate(
-                new Transform3d(trl1, rot1), new Transform3d(trl2, rot2),
-                reprojErrors[0], reprojErrors[1]);
+                new Transform3d(trl1, rot1), new Transform3d(trl2, rot2), reprojErrors[0], reprojErrors[1]);
     }
 
     @Override
@@ -127,12 +127,12 @@ public class ArucoPoseEstimatorPipe
 
             // This order is relevant for SOLVEPNP_IPPE_SQUARE
             // The expected 2d correspondences with a tag facing the camera would be (BR, BL, TL, TR)
-            objectPoints = new MatOfPoint3f(
-                new Point3(-tagSize / 2, tagSize / 2, 0),
-                new Point3(tagSize / 2, tagSize / 2, 0),
-                new Point3(tagSize / 2, -tagSize / 2, 0),
-                new Point3(-tagSize / 2, -tagSize / 2, 0)
-            );
+            objectPoints =
+                    new MatOfPoint3f(
+                            new Point3(-tagSize / 2, tagSize / 2, 0),
+                            new Point3(tagSize / 2, tagSize / 2, 0),
+                            new Point3(tagSize / 2, -tagSize / 2, 0),
+                            new Point3(-tagSize / 2, -tagSize / 2, 0));
         }
     }
 }

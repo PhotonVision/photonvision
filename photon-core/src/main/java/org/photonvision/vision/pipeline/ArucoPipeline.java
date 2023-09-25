@@ -37,10 +37,8 @@ package org.photonvision.vision.pipeline;
 import edu.wpi.first.apriltag.AprilTagPoseEstimate;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.frame.Frame;
@@ -81,7 +79,9 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         if (frameStaticProperties.cameraCalibration != null) {
             var cameraMatrix = frameStaticProperties.cameraCalibration.getCameraIntrinsicsMat();
             if (cameraMatrix != null) {
-                poseEstimatorPipe.setParams(new ArucoPoseEstimatorPipeParams(frameStaticProperties.cameraCalibration, Units.inchesToMeters(6)));
+                poseEstimatorPipe.setParams(
+                        new ArucoPoseEstimatorPipeParams(
+                                frameStaticProperties.cameraCalibration, Units.inchesToMeters(6)));
             }
         }
     }

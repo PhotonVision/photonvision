@@ -18,10 +18,7 @@ package org.photonvision.vision.target;
 
 import edu.wpi.first.apriltag.AprilTagDetection;
 import edu.wpi.first.apriltag.AprilTagPoseEstimate;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import java.util.HashMap;
 import java.util.List;
 import org.opencv.core.CvType;
@@ -139,7 +136,10 @@ public class TrackedTarget implements Releasable {
         setCameraRelativeRvec(rvec);
     }
 
-    public TrackedTarget(ArucoDetectionResult result, AprilTagPoseEstimate tagPose, TargetCalculationParameters params) {
+    public TrackedTarget(
+            ArucoDetectionResult result,
+            AprilTagPoseEstimate tagPose,
+            TargetCalculationParameters params) {
         m_targetOffsetPoint = new Point(result.getCenterX(), result.getCenterY());
         m_robotOffsetPoint = new Point();
 
@@ -167,7 +167,7 @@ public class TrackedTarget implements Releasable {
         m_area = m_mainContour.getArea() / params.imageArea * 100;
         m_fiducialId = result.getId();
         m_shape = null;
-        
+
         // TODO implement skew? or just yeet
         m_skew = 0;
 

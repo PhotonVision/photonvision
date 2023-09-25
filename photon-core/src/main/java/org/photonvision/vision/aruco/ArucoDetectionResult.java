@@ -24,14 +24,13 @@ import org.photonvision.common.logging.Logger;
 public class ArucoDetectionResult {
     private static final Logger logger =
             new Logger(ArucoDetectionResult.class, LogGroup.VisionModule);
-    
+
     private final double[] xCorners;
     private final double[] yCorners;
 
     private final int id;
 
-    public ArucoDetectionResult(
-            double[] xCorners, double[] yCorners, int id) {
+    public ArucoDetectionResult(double[] xCorners, double[] yCorners, int id) {
         this.xCorners = xCorners;
         this.yCorners = yCorners;
         this.id = id;
