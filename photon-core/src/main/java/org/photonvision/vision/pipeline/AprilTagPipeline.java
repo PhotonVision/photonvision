@@ -114,7 +114,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         aprilTagDetectionPipe.setNativePoseEstimationEnabled(settings.solvePNPEnabled);
 
         if (frame.type != FrameThresholdType.GREYSCALE) {
-            // TODO so all cameras should give us ADAPTIVE_THRESH -- how should we handle if not?
+            // We asked for a GREYSCALE frame, but didn't get one -- best we can do is give up
             return new CVPipelineResult(0, 0, List.of());
         }
 
