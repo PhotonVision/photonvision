@@ -17,114 +17,83 @@
 
 package org.photonvision.vision.aruco;
 
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
+
 import org.opencv.aruco.Aruco;
 import org.opencv.aruco.ArucoDetector;
+import org.opencv.aruco.DetectorParameters;
+import org.opencv.aruco.Dictionary;
 import org.opencv.core.Mat;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 
+/**
+ * This class wraps an {@link ArucoDetector} for convenience.
+ */
 public class PhotonArucoDetector {
     private static final Logger logger = new Logger(PhotonArucoDetector.class, LogGroup.VisionModule);
 
-    private static final Rotation3d ARUCO_BASE_ROTATION =
-            new Rotation3d(VecBuilder.fill(0, 0, 1), Units.degreesToRadians(180));
+    // Detector parameters
+    private final DetectorParameters params = DetectorParameters.create();
+    
+    private final ArucoDetector detector = new ArucoDetector(Dictionary.get(Aruco.DICT_APRILTAG_16h5), params);
 
-    Mat ids;
-
-    Mat tvecs;
-    Mat rvecs;
-    ArrayList<Mat> corners;
-
-    Mat cornerMat;
-    Translation3d translation;
-    Rotation3d rotation;
-    double timeStartDetect;
-    double timeEndDetect;
-    Pose3d tagPose;
-    double timeStartProcess;
-    double timeEndProcess;
-    double[] xCorners = new double[4];
-    double[] yCorners = new double[4];
+    private Mat ids = new Mat();
+    private ArrayList<Mat> corners = new ArrayList<Mat>();
+    private Mat cornerMat;
 
     public PhotonArucoDetector() {
         logger.debug("New Aruco Detector");
-        ids = new Mat();
-        tvecs = new Mat();
-        rvecs = new Mat();
-        corners = new ArrayList<Mat>();
-        tagPose = new Pose3d();
-        translation = new Translation3d();
-        rotation = new Rotation3d();
+        params.set_cornerRefinementMethod(Aruco.CORNER_REFINE_SUBPIX);
     }
 
-    public ArucoDetectionResult[] detect(
-            Mat grayscaleImg,
-            float tagSize,
-            CameraCalibrationCoefficients coeffs,
-            ArucoDetector detector) {
+    public ArucoDetector getDetector() {
+        return detector;
+    }
+
+    public DetectorParameters getParams() {
+        return params;
+    }
+
+    /**
+     * Detect fiducial tags in the grayscaled image using the {@link ArucoDetector} in this class.
+     * Parameters for detection can be modified with {@link #setDetectorParams(DetectorParameters)}.
+     * 
+     * @param grayscaleImg A grayscaled image
+     * @return An array of ArucoDetectionResult, which contain tag corners and id.
+     */
+    public ArucoDetectionResult[] detect(Mat grayscaleImg) {
+        // detect tags
+        // var param = detector.get_params();
+        // logger.debug("Aruco3: "+param.get_useAruco3Detection()+", iter: "+param.get_cornerRefinementMaxIterations()+", acc: "+param.get_cornerRefinementMinAccuracy()+", method: "+param.get_cornerRefinementMethod());
         detector.detectMarkers(grayscaleImg, corners, ids);
-        if (coeffs != null) {
-            Aruco.estimatePoseSingleMarkers(
-                    corners,
-                    tagSize,
-                    coeffs.getCameraIntrinsicsMat(),
-                    coeffs.getDistCoeffsMat(),
-                    rvecs,
-                    tvecs);
-        }
 
         ArucoDetectionResult[] toReturn = new ArucoDetectionResult[corners.size()];
-        timeStartProcess = System.currentTimeMillis();
         for (int i = 0; i < corners.size(); i++) {
+            // each tag has a cornerMat
             cornerMat = corners.get(i);
             // logger.debug(cornerMat.dump());
-            xCorners =
-                    new double[] {
-                        cornerMat.get(0, 0)[0],
-                        cornerMat.get(0, 1)[0],
+
+            // Aruco detection returns corners (TL, TR, BR, BL).
+            // For parity with AprilTags and photonlib, we want (BL, BR, TR, TL).
+            double[] xCorners = {
+                        cornerMat.get(0, 3)[0],
                         cornerMat.get(0, 2)[0],
-                        cornerMat.get(0, 3)[0]
+                        cornerMat.get(0, 1)[0],
+                        cornerMat.get(0, 0)[0]
                     };
-            yCorners =
-                    new double[] {
-                        cornerMat.get(0, 0)[1],
-                        cornerMat.get(0, 1)[1],
+            double[] yCorners = {
+                        cornerMat.get(0, 3)[1],
                         cornerMat.get(0, 2)[1],
-                        cornerMat.get(0, 3)[1]
+                        cornerMat.get(0, 1)[1],
+                        cornerMat.get(0, 0)[1]
                     };
             cornerMat.release();
 
-            double[] tvec;
-            double[] rvec;
-            if (coeffs != null) {
-                // Need to apply a 180 rotation about Z
-                var origRvec = rvecs.get(i, 0);
-                var axisangle = VecBuilder.fill(origRvec[0], origRvec[1], origRvec[2]);
-                Rotation3d rotation = new Rotation3d(axisangle, axisangle.normF());
-                var ocvRotation = ARUCO_BASE_ROTATION.rotateBy(rotation);
-
-                var angle = ocvRotation.getAngle();
-                var finalAxisAngle = ocvRotation.getAxis().times(angle);
-
-                tvec = tvecs.get(i, 0);
-                rvec = finalAxisAngle.getData();
-            } else {
-                tvec = new double[] {0, 0, 0};
-                rvec = new double[] {0, 0, 0};
-            }
-
             toReturn[i] =
-                    new ArucoDetectionResult(xCorners, yCorners, (int) ids.get(i, 0)[0], tvec, rvec);
+                    new ArucoDetectionResult(xCorners, yCorners, (int) ids.get(i, 0)[0]);
         }
-        rvecs.release();
-        tvecs.release();
+        
         ids.release();
 
         return toReturn;

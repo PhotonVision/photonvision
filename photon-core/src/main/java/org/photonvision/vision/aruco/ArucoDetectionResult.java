@@ -24,36 +24,25 @@ import org.photonvision.common.logging.Logger;
 public class ArucoDetectionResult {
     private static final Logger logger =
             new Logger(ArucoDetectionResult.class, LogGroup.VisionModule);
-    double[] xCorners;
-    double[] yCorners;
+    
+    private final double[] xCorners;
+    private final double[] yCorners;
 
-    int id;
-
-    double[] tvec, rvec;
+    private final int id;
 
     public ArucoDetectionResult(
-            double[] xCorners, double[] yCorners, int id, double[] tvec, double[] rvec) {
+            double[] xCorners, double[] yCorners, int id) {
         this.xCorners = xCorners;
         this.yCorners = yCorners;
         this.id = id;
-        this.tvec = tvec;
-        this.rvec = rvec;
         // logger.debug("Creating a new detection result: " + this.toString());
     }
 
-    public double[] getTvec() {
-        return tvec;
-    }
-
-    public double[] getRvec() {
-        return rvec;
-    }
-
-    public double[] getxCorners() {
+    public double[] getXCorners() {
         return xCorners;
     }
 
-    public double[] getyCorners() {
+    public double[] getYCorners() {
         return yCorners;
     }
 
@@ -62,11 +51,11 @@ public class ArucoDetectionResult {
     }
 
     public double getCenterX() {
-        return (xCorners[0] + xCorners[1] + xCorners[2] + xCorners[3]) * .25;
+        return (xCorners[0] + xCorners[1] + xCorners[2] + xCorners[3]) / 4.0;
     }
 
     public double getCenterY() {
-        return (yCorners[0] + yCorners[1] + yCorners[2] + yCorners[3]) * .25;
+        return (yCorners[0] + yCorners[1] + yCorners[2] + yCorners[3]) / 4.0;
     }
 
     @Override

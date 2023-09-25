@@ -18,40 +18,34 @@
 package org.photonvision.vision.pipe.impl;
 
 import java.util.Objects;
-import org.opencv.aruco.ArucoDetector;
-import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+
+import org.opencv.aruco.Aruco;
 
 public class ArucoDetectionPipeParams {
-    public ArucoDetector detectorParams;
-    public final CameraCalibrationCoefficients cameraCalibrationCoefficients;
 
-    public ArucoDetectionPipeParams(
-            ArucoDetector detector, CameraCalibrationCoefficients cameraCalibrationCoefficients) {
-        this.detectorParams = detector;
-        this.cameraCalibrationCoefficients = cameraCalibrationCoefficients;
-    }
+    /** Tag family. Default: {@link Aruco#DICT_APRILTAG_16h5}. */
+    public int tagFamily = Aruco.DICT_APRILTAG_16h5;
+
+    /** Maximum corner refinement iterations. */
+    public int refinementMaxIterations = 30;
+    /**
+     * Minimum error (accuracy) for corner refinement in pixels. When a corner refinement iteration
+     * moves the corner by less than this value, the refinement is considered finished.
+     */
+    public double refinementMinErrorPx = 0.1;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ArucoDetectionPipeParams that = (ArucoDetectionPipeParams) o;
-        return Objects.equals(detectorParams, that.detectorParams)
-                && Objects.equals(cameraCalibrationCoefficients, that.cameraCalibrationCoefficients);
+        return tagFamily == that.tagFamily
+                && refinementMaxIterations == that.refinementMaxIterations
+                && refinementMinErrorPx == that.refinementMinErrorPx;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(detectorParams, cameraCalibrationCoefficients);
-    }
-
-    @Override
-    public String toString() {
-        return "ArucoDetectionPipeParams{"
-                + "detectorParams="
-                + detectorParams
-                + ", cameraCalibrationCoefficients="
-                + cameraCalibrationCoefficients
-                + '}';
+        return Objects.hash(tagFamily, refinementMaxIterations, refinementMinErrorPx);
     }
 }

@@ -17,9 +17,8 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import edu.wpi.first.math.util.Units;
 import java.util.List;
-import org.opencv.aruco.DetectorParameters;
+import org.opencv.aruco.Dictionary;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.aruco.PhotonArucoDetector;
 import org.photonvision.vision.opencv.CVMat;
@@ -27,24 +26,27 @@ import org.photonvision.vision.pipe.CVPipe;
 
 public class ArucoDetectionPipe
         extends CVPipe<CVMat, List<ArucoDetectionResult>, ArucoDetectionPipeParams> {
-    PhotonArucoDetector detector = new PhotonArucoDetector();
+    // ArucoDetector wrapper class
+    private final PhotonArucoDetector photonDetector = new PhotonArucoDetector();
 
     @Override
     protected List<ArucoDetectionResult> process(CVMat in) {
-        return List.of(
-                detector.detect(
-                        in.getMat(),
-                        (float) Units.inchesToMeters(6),
-                        params.cameraCalibrationCoefficients,
-                        params.detectorParams));
+        return List.of(photonDetector.detect(in.getMat()));
     }
 
     @Override
-    public void setParams(ArucoDetectionPipeParams params) {
-        super.setParams(params);
+    public void setParams(ArucoDetectionPipeParams newParams) {
+        if (this.params == null || !this.params.equals(newParams)) {
+            photonDetector.getDetector().set_dictionary(Dictionary.get(newParams.tagFamily));
+            var detectParams = photonDetector.getParams();
+            detectParams.set_cornerRefinementMaxIterations(newParams.refinementMaxIterations);
+            detectParams.set_cornerRefinementMinAccuracy(newParams.refinementMinErrorPx);
+        }
+
+        super.setParams(newParams);
     }
 
-    public DetectorParameters getParameters() {
-        return params == null ? null : params.detectorParams.get_params();
+    public PhotonArucoDetector getPhotonDetector() {
+        return photonDetector;
     }
 }

@@ -34,27 +34,29 @@
 
 package org.photonvision.vision.pipeline;
 
+import edu.wpi.first.apriltag.AprilTagPoseEstimate;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.util.Units;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
-import org.photonvision.vision.aruco.ArucoDetectorParams;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.*;
+import org.photonvision.vision.pipe.impl.ArucoPoseEstimatorPipe.ArucoPoseEstimatorPipeParams;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 
 @SuppressWarnings("DuplicatedCode")
 public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSettings> {
-    private final RotateImagePipe rotateImagePipe = new RotateImagePipe();
-
     private final ArucoDetectionPipe arucoDetectionPipe = new ArucoDetectionPipe();
+    private final ArucoPoseEstimatorPipe poseEstimatorPipe = new ArucoPoseEstimatorPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
-
-    ArucoDetectorParams m_arucoDetectorParams = new ArucoDetectorParams();
 
     public ArucoPipeline() {
         super(FrameThresholdType.GREYSCALE);
@@ -71,17 +73,17 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         // Sanitize thread count - not supported to have fewer than 1 threads
         settings.threads = Math.max(1, settings.threads);
 
-        RotateImagePipe.RotateImageParams rotateImageParams =
-                new RotateImagePipe.RotateImageParams(settings.inputImageRotationMode);
-        rotateImagePipe.setParams(rotateImageParams);
+        var params = new ArucoDetectionPipeParams();
+        params.refinementMaxIterations = settings.numIterations;
+        params.refinementMinErrorPx = settings.cornerAccuracy / 100.0;
+        arucoDetectionPipe.setParams(params);
 
-        m_arucoDetectorParams.setDecimation((float) settings.decimate);
-        m_arucoDetectorParams.setCornerRefinementMaxIterations(settings.numIterations);
-        m_arucoDetectorParams.setCornerAccuracy(settings.cornerAccuracy);
-
-        arucoDetectionPipe.setParams(
-                new ArucoDetectionPipeParams(
-                        m_arucoDetectorParams.getDetector(), frameStaticProperties.cameraCalibration));
+        if (frameStaticProperties.cameraCalibration != null) {
+            var cameraMatrix = frameStaticProperties.cameraCalibration.getCameraIntrinsicsMat();
+            if (cameraMatrix != null) {
+                poseEstimatorPipe.setParams(new ArucoPoseEstimatorPipeParams(frameStaticProperties.cameraCalibration, Units.inchesToMeters(6)));
+            }
+        }
     }
 
     @Override
@@ -103,18 +105,29 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         for (ArucoDetectionResult detection : tagDetectionPipeResult.output) {
             // TODO this should be in a pipe, not in the top level here (Matt)
 
+            AprilTagPoseEstimate tagPoseEstimate = null;
+            if (settings.solvePNPEnabled) {
+                var poseResult = poseEstimatorPipe.run(detection);
+                sumPipeNanosElapsed += poseResult.nanosElapsed;
+                tagPoseEstimate = poseResult.output;
+            }
+
             // populate the target list
             // Challenge here is that TrackedTarget functions with OpenCV Contour
             TrackedTarget target =
                     new TrackedTarget(
                             detection,
+                            tagPoseEstimate,
                             new TargetCalculationParameters(
                                     false, null, null, null, null, frameStaticProperties));
 
-            var correctedBestPose = target.getBestCameraToTarget3d();
+            var correctedBestPose = MathUtils.convertOpenCVtoPhotonPose(target.getBestCameraToTarget3d());
+            var correctedAltPose = MathUtils.convertOpenCVtoPhotonPose(target.getAltCameraToTarget3d());
 
             target.setBestCameraToTarget3d(
                     new Transform3d(correctedBestPose.getTranslation(), correctedBestPose.getRotation()));
+            target.setAltCameraToTarget3d(
+                    new Transform3d(correctedAltPose.getTranslation(), correctedAltPose.getRotation()));
 
             targetList.add(target);
         }

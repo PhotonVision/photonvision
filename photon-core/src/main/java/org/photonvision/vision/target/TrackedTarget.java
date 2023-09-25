@@ -139,7 +139,7 @@ public class TrackedTarget implements Releasable {
         setCameraRelativeRvec(rvec);
     }
 
-    public TrackedTarget(ArucoDetectionResult result, TargetCalculationParameters params) {
+    public TrackedTarget(ArucoDetectionResult result, AprilTagPoseEstimate tagPose, TargetCalculationParameters params) {
         m_targetOffsetPoint = new Point(result.getCenterX(), result.getCenterY());
         m_robotOffsetPoint = new Point();
 
@@ -150,8 +150,8 @@ public class TrackedTarget implements Releasable {
                 TargetCalculations.calculateYaw(
                         result.getCenterX(), params.cameraCenterPoint.x, params.horizontalFocalLength);
 
-        double[] xCorners = result.getxCorners();
-        double[] yCorners = result.getyCorners();
+        double[] xCorners = result.getXCorners();
+        double[] yCorners = result.getYCorners();
 
         Point[] cornerPoints =
                 new Point[] {
@@ -167,29 +167,41 @@ public class TrackedTarget implements Releasable {
         m_area = m_mainContour.getArea() / params.imageArea * 100;
         m_fiducialId = result.getId();
         m_shape = null;
-
+        
         // TODO implement skew? or just yeet
+        m_skew = 0;
+
+        var bestPose = new Transform3d();
+        var altPose = new Transform3d();
+        if (tagPose != null) {
+            if (tagPose.error1 <= tagPose.error2) {
+                bestPose = tagPose.pose1;
+                altPose = tagPose.pose2;
+            } else {
+                bestPose = tagPose.pose2;
+                altPose = tagPose.pose1;
+            }
+
+            m_bestCameraToTarget3d = bestPose;
+            m_altCameraToTarget3d = altPose;
+
+            m_poseAmbiguity = tagPose.getAmbiguity();
+        }
 
         var tvec = new Mat(3, 1, CvType.CV_64FC1);
-        tvec.put(0, 0, result.getTvec());
+        tvec.put(
+                0,
+                0,
+                new double[] {
+                    bestPose.getTranslation().getX(),
+                    bestPose.getTranslation().getY(),
+                    bestPose.getTranslation().getZ()
+                });
         setCameraRelativeTvec(tvec);
 
         var rvec = new Mat(3, 1, CvType.CV_64FC1);
-        rvec.put(0, 0, result.getRvec());
+        MathUtils.rotationToOpencvRvec(bestPose.getRotation(), rvec);
         setCameraRelativeRvec(rvec);
-
-        {
-            Translation3d translation =
-                    // new Translation3d(tVec.get(0, 0)[0], tVec.get(1, 0)[0], tVec.get(2, 0)[0]);
-                    new Translation3d(result.getTvec()[0], result.getTvec()[1], result.getTvec()[2]);
-            var axisangle =
-                    VecBuilder.fill(result.getRvec()[0], result.getRvec()[1], result.getRvec()[2]);
-            Rotation3d rotation = new Rotation3d(axisangle, axisangle.normF());
-            Transform3d targetPose =
-                    MathUtils.convertOpenCVtoPhotonTransform(new Transform3d(translation, rotation));
-
-            m_bestCameraToTarget3d = targetPose;
-        }
     }
 
     public void setFiducialId(int id) {

@@ -28,13 +28,11 @@ public class ArucoPipelineSettings extends AdvancedPipelineSettings {
     public double cornerAccuracy = 25.0;
     public boolean useAruco3 = true;
 
-    // 3d settings
-
     public ArucoPipelineSettings() {
         super();
         pipelineType = PipelineType.Aruco;
         outputShowMultipleTargets = true;
-        targetModel = TargetModel.kAruco6in_16h5;
+        targetModel = TargetModel.k6in_16h5;
         cameraExposure = -1;
         cameraAutoExposure = true;
         ledMode = false;
