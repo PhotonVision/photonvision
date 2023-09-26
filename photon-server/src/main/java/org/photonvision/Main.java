@@ -344,23 +344,23 @@ public class Main {
                         + Platform.getPlatformName()
                         + (Platform.isRaspberryPi() ? (" (Pi " + PiVersion.getPiVersion() + ")") : ""));
 
-        logger.info("Loading ConfigManager...");
+        logger.debug("Loading ConfigManager...");
         ConfigManager.getInstance().load(); // init config manager
         ConfigManager.getInstance().requestSave();
 
-        logger.info("Loading HardwareManager...");
+        logger.debug("Loading HardwareManager...");
         // Force load the hardware manager
         HardwareManager.getInstance();
 
-        logger.info("Loading NetworkManager...");
+        logger.debug("Loading NetworkManager...");
         NetworkManager.getInstance().reinitialize();
 
-        logger.info("Loading NetworkTablesManager...");
+        logger.debug("Loading NetworkTablesManager...");
         NetworkTablesManager.getInstance()
                 .setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
 
         if (!isTestMode) {
-            logger.info("Loading VisionSourceManager...");
+            logger.debug("Loading VisionSourceManager...");
             VisionSourceManager.getInstance()
                     .registerLoadedConfigs(
                             ConfigManager.getInstance().getConfig().getCameraConfigurations().values());
