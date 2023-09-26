@@ -36,7 +36,7 @@ const saveCameraSettings = () => {
         });
       }
     });
-  };
+};
 
 watchEffect(() => {
   currentFov.value = useCameraSettingsStore().currentCameraSettings.fov.value;

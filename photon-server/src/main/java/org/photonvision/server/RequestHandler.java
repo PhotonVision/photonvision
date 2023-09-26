@@ -333,7 +333,7 @@ public class RequestHandler {
             ctx.status(200);
             ctx.result("Successfully saved camera settings");
             logger.info("Successfully saved camera settings");
-        } catch (JsonProcessingException|NullPointerException e) {
+        } catch (JsonProcessingException | NullPointerException e) {
             ctx.status(400);
             ctx.result("The provided camera settings were malformed");
             logger.error("The provided camera settings were malformed", e);

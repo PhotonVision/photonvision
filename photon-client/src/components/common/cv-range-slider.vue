@@ -33,7 +33,7 @@ const localValue = computed<[number, number]>({
     return Object.values(props.value) as [number, number];
   },
   set: (v) => {
-    for(let i = 0; i < v.length; i++) {
+    for (let i = 0; i < v.length; i++) {
       v[i] = parseFloat(v[i] as unknown as string);
     }
     emit("input", v);
