@@ -26,7 +26,7 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.FrameStaticProperties;
 
 public abstract class VisionSourceSettables {
-    private static final Logger logger =
+    protected static final Logger logger =
             new Logger(VisionSourceSettables.class, LogGroup.VisionModule);
 
     private final CameraConfiguration configuration;
