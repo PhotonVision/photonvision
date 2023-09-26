@@ -75,16 +75,23 @@ public class NetworkUtils {
         }
     }
 
-    public static ArrayList<NMDeviceInfo> getAllInterfaces() {
+    private static List<NMDeviceInfo> allInterfaces = new ArrayList<>();
+    private static long lastReadTimestamp = 0;
+
+    public static List<NMDeviceInfo> getAllInterfaces() {
+        long now = System.currentTimeMillis();
+        if(now - lastReadTimestamp < 5000) return allInterfaces;
+        else lastReadTimestamp = now;
+
         var ret = new ArrayList<NMDeviceInfo>();
 
         if (!Platform.isLinux()) {
-            // Can't determine interface name on Linux, give up
+            // Can only determine interface name on Linux, give up
             return ret;
         }
 
         try {
-            var shell = new ShellExec(true, true);
+            var shell = new ShellExec(true, false);
             shell.executeBashCommand(
                     "nmcli -t -f GENERAL.CONNECTION,GENERAL.DEVICE,GENERAL.TYPE device show");
             String out = shell.getOutput();
@@ -103,6 +110,7 @@ public class NetworkUtils {
 
         logger.debug("Found network interfaces:\n" + ret.toString());
 
+        allInterfaces = ret;
         return ret;
     }
 
