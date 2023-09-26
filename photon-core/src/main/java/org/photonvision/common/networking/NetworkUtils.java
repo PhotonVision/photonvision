@@ -80,7 +80,7 @@ public class NetworkUtils {
 
     public static List<NMDeviceInfo> getAllInterfaces() {
         long now = System.currentTimeMillis();
-        if(now - lastReadTimestamp < 5000) return allInterfaces;
+        if (now - lastReadTimestamp < 5000) return allInterfaces;
         else lastReadTimestamp = now;
 
         var ret = new ArrayList<NMDeviceInfo>();

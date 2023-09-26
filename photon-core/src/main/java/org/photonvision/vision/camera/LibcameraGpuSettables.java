@@ -201,25 +201,25 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         synchronized (LibCameraJNI.CAMERA_LOCK) {
             if (m_initialized) {
                 logger.debug("Stopping libcamera");
-                if(!LibCameraJNI.stopCamera()) {
+                if (!LibCameraJNI.stopCamera()) {
                     logger.error("Couldn't stop a zero copy Pi Camera while switching video modes");
                 }
                 logger.debug("Destroying libcamera");
-                if(!LibCameraJNI.destroyCamera()) {
+                if (!LibCameraJNI.destroyCamera()) {
                     logger.error("Couldn't destroy a zero copy Pi Camera while switching video modes");
                 }
             }
 
             logger.debug("Creating libcamera");
-            if(!LibCameraJNI.createCamera(
-                            mode.width, mode.height, (m_rotationMode == ImageRotationMode.DEG_180 ? 180 : 0))) {
+            if (!LibCameraJNI.createCamera(
+                    mode.width, mode.height, (m_rotationMode == ImageRotationMode.DEG_180 ? 180 : 0))) {
                 logger.error("Couldn't create a zero copy Pi Camera while switching video modes");
             }
             logger.debug("Starting libcamera");
-            if(!LibCameraJNI.startCamera()) {
+            if (!LibCameraJNI.startCamera()) {
                 logger.error("Couldn't start a zero copy Pi Camera while switching video modes");
             }
-            
+
             m_initialized = true;
         }
 
