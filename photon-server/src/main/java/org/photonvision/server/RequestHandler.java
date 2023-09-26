@@ -323,7 +323,7 @@ public class RequestHandler {
             var data = kObjectMapper.readTree(ctx.body());
 
             int index = data.get("index").asInt();
-            double fov = kObjectMapper.readTree(data.get("settings").asText()).get("fov").asDouble();
+            double fov = data.get("settings").get("fov").asDouble();
 
             var module = VisionModuleManager.getInstance().getModule(index);
             module.setFov(fov);
