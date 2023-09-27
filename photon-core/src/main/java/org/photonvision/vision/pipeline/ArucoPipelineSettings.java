@@ -18,15 +18,25 @@
 package org.photonvision.vision.pipeline;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+
+import org.opencv.aruco.Aruco;
 import org.photonvision.vision.target.TargetModel;
 
 @JsonTypeName("ArucoPipelineSettings")
 public class ArucoPipelineSettings extends AdvancedPipelineSettings {
-    public double decimate = 1;
-    public int threads = 2;
-    public int numIterations = 100;
-    public double cornerAccuracy = 25.0;
-    public boolean useAruco3 = true;
+    public int threshMinSize = 3;
+    public int threshStepSize = 10;
+    public int threshMaxSize = 23;
+    public int threshConstant = 7;
+    public double errorCorrectionRate = 0.5;
+    public boolean useCornerRefinement = true;
+    public int refineNumIterations = 30;
+    public double refineMinErrorPx = 0.1;
+    public int refineWinSize = 5;
+    public int cornerRefinementStrategy = Aruco.CORNER_REFINE_SUBPIX;
+    public boolean useAruco3 = false;
+    public double aruco3MinMarkerSideRatio = 0.02;
+    public int aruco3MinCanonicalImgSide = 32;
 
     public ArucoPipelineSettings() {
         super();

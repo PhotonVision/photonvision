@@ -68,12 +68,20 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
 
     @Override
     protected void setPipeParamsImpl() {
-        // Sanitize thread count - not supported to have fewer than 1 threads
-        settings.threads = Math.max(1, settings.threads);
-
         var params = new ArucoDetectionPipeParams();
-        params.refinementMaxIterations = settings.numIterations;
-        params.refinementMinErrorPx = settings.cornerAccuracy / 100.0;
+        params.threshMinSize = settings.threshMinSize;
+        params.threshStepSize = settings.threshStepSize;
+        params.threshMaxSize = settings.threshMaxSize;
+        params.threshConstant = settings.threshConstant;
+        params.errorCorrectionRate = settings.errorCorrectionRate;
+        params.useCornerRefinement = settings.useCornerRefinement;
+        params.refinementMaxIterations = settings.refineNumIterations;
+        params.refinementMinErrorPx = settings.refineMinErrorPx;
+        params.refinementWindowSize = settings.refineWinSize;
+        params.cornerRefinementStrategy = settings.cornerRefinementStrategy;
+        params.useAruco3 = settings.useAruco3;
+        params.aruco3MinMarkerSideRatio = settings.aruco3MinMarkerSideRatio;
+        params.aruco3MinCanonicalImgSide = settings.aruco3MinCanonicalImgSide;
         arucoDetectionPipe.setParams(params);
 
         if (frameStaticProperties.cameraCalibration != null) {

@@ -18,6 +18,8 @@
 package org.photonvision.vision.pipe.impl;
 
 import java.util.List;
+
+import org.opencv.aruco.Aruco;
 import org.opencv.aruco.Dictionary;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.aruco.PhotonArucoDetector;
@@ -39,8 +41,23 @@ public class ArucoDetectionPipe
         if (this.params == null || !this.params.equals(newParams)) {
             photonDetector.getDetector().set_dictionary(Dictionary.get(newParams.tagFamily));
             var detectParams = photonDetector.getParams();
+            
+            detectParams.set_adaptiveThreshWinSizeMin(newParams.threshMinSize);
+            detectParams.set_adaptiveThreshWinSizeStep(newParams.threshStepSize);
+            detectParams.set_adaptiveThreshWinSizeMax(newParams.threshMaxSize);
+            detectParams.set_adaptiveThreshConstant(newParams.threshConstant);
+
+            detectParams.set_errorCorrectionRate(newParams.errorCorrectionRate);
+
+            // detectParams.set_cornerRefinementMethod(newParams.useCornerRefinement ? Aruco.CORNER_REFINE_SUBPIX : Aruco.CORNER_REFINE_NONE);
+            detectParams.set_cornerRefinementMethod(newParams.cornerRefinementStrategy);
             detectParams.set_cornerRefinementMaxIterations(newParams.refinementMaxIterations);
             detectParams.set_cornerRefinementMinAccuracy(newParams.refinementMinErrorPx);
+            detectParams.set_cornerRefinementWinSize(newParams.refinementWindowSize);
+
+            detectParams.set_useAruco3Detection(newParams.useAruco3);
+            detectParams.set_minSideLengthCanonicalImg(newParams.aruco3MinCanonicalImgSide);
+            detectParams.set_minMarkerLengthRatioOriginalImg((float)newParams.aruco3MinMarkerSideRatio);
         }
 
         super.setParams(newParams);

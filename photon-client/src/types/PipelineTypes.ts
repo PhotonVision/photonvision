@@ -241,11 +241,19 @@ export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
 
 export interface ArucoPipelineSettings extends PipelineSettings {
   pipelineType: PipelineType.Aruco;
-  decimate: number;
-  threads: number;
-  numIterations: number;
-  cornerAccuracy: number;
+  threshMinSize: number;
+  threshStepSize: number;
+  threshMaxSize: number;
+  threshConstant: number;
+  errorCorrectionRate: number;
+  useCornerRefinement: boolean;
+  refineNumIterations: number;
+  refineMinErrorPx: number;
+  refineWinSize: number;
+  cornerRefinementStrategy: number;
   useAruco3: boolean;
+  aruco3MinMarkerSideRatio: number;
+  aruco3MinCanonicalImgSide: number;
 }
 export type ConfigurableArucoPipelineSettings = Partial<Omit<ArucoPipelineSettings, "pipelineType">> &
   ConfigurablePipelineSettings;
@@ -258,11 +266,19 @@ export const DefaultArucoPipelineSettings: ArucoPipelineSettings = {
   ledMode: false,
   pipelineType: PipelineType.Aruco,
 
-  decimate: 1,
-  threads: 2,
-  numIterations: 100,
-  cornerAccuracy: 25,
-  useAruco3: true
+  threshMinSize: 3,
+  threshStepSize: 10,
+  threshMaxSize: 23,
+  threshConstant: 7,
+  errorCorrectionRate: 0.5,
+  useCornerRefinement: true,
+  refineNumIterations: 30,
+  refineMinErrorPx: 0.1,
+  refineWinSize: 5,
+  cornerRefinementStrategy: 1,
+  useAruco3: false,
+  aruco3MinMarkerSideRatio: 0.02,
+  aruco3MinCanonicalImgSide: 32
 };
 
 export type ActivePipelineSettings =
