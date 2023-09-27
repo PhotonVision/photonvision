@@ -365,7 +365,7 @@ public class RequestHandler {
             var data = kObjectMapper.readTree(ctx.body());
 
             int index = data.get("index").asInt();
-            double fov = kObjectMapper.readTree(data.get("settings").asText()).get("fov").asDouble();
+            double fov = data.get("settings").get("fov").asDouble();
 
             var module = VisionModuleManager.getInstance().getModule(index);
             module.setFov(fov);
@@ -375,7 +375,7 @@ public class RequestHandler {
             ctx.status(200);
             ctx.result("Successfully saved camera settings");
             logger.info("Successfully saved camera settings");
-        } catch (JsonProcessingException e) {
+        } catch (JsonProcessingException | NullPointerException e) {
             ctx.status(400);
             ctx.result("The provided camera settings were malformed");
             logger.error("The provided camera settings were malformed", e);

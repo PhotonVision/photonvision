@@ -3,20 +3,22 @@ import CvSelect from "@/components/common/cv-select.vue";
 import CvNumberInput from "@/components/common/cv-number-input.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
-import { ref } from "vue";
+import { ref, watchEffect } from "vue";
 
-const currentFov = ref(useCameraSettingsStore().currentCameraSettings.fov.value);
+const currentFov = ref();
 
 const saveCameraSettings = () => {
   useCameraSettingsStore()
-    .updateCameraSettings({ fov: currentFov.value }, true)
+    .updateCameraSettings({ fov: currentFov.value }, false)
     .then((response) => {
+      useCameraSettingsStore().currentCameraSettings.fov.value = currentFov.value;
       useStateStore().showSnackbarMessage({
         color: "success",
         message: response.data.text || response.data
       });
     })
     .catch((error) => {
+      currentFov.value = useCameraSettingsStore().currentCameraSettings.fov.value;
       if (error.response) {
         useStateStore().showSnackbarMessage({
           color: "error",
@@ -33,11 +35,12 @@ const saveCameraSettings = () => {
           message: "An error occurred while trying to process the request."
         });
       }
-    })
-    .finally(() => {
-      useCameraSettingsStore().currentCameraSettings.fov.value = currentFov.value;
     });
 };
+
+watchEffect(() => {
+  currentFov.value = useCameraSettingsStore().currentCameraSettings.fov.value;
+});
 </script>
 
 <template>

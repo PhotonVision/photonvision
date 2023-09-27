@@ -27,7 +27,7 @@ const emit = defineEmits<{
 
 const localValue = computed({
   get: () => props.value,
-  set: (v) => emit("input", v)
+  set: (v) => emit("input", parseFloat(v as unknown as string))
 });
 </script>
 
