@@ -10,7 +10,7 @@ import NotFoundView from "@/views/NotFoundView.vue";
 Vue.use(VueRouter);
 
 const router = new VueRouter({
-  mode: "history",
+  // mode: "history",
   base: import.meta.env.BASE_URL,
   routes: [
     {
