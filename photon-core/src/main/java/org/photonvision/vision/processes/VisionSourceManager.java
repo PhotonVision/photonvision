@@ -326,7 +326,7 @@ public class VisionSourceManager {
             List<CameraConfiguration> camConfigs) {
         var cameraSources = new ArrayList<VisionSource>();
         for (var configuration : camConfigs) {
-            System.out.println("Creating VisionSource for " + configuration);
+            logger.debug("Creating VisionSource for " + configuration);
 
             // Picams should have csi-video in the path
             boolean is_picam =

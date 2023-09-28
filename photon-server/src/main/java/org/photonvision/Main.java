@@ -344,18 +344,23 @@ public class Main {
                         + Platform.getPlatformName()
                         + (Platform.isRaspberryPi() ? (" (Pi " + PiVersion.getPiVersion() + ")") : ""));
 
+        logger.debug("Loading ConfigManager...");
         ConfigManager.getInstance().load(); // init config manager
         ConfigManager.getInstance().requestSave();
 
+        logger.debug("Loading HardwareManager...");
         // Force load the hardware manager
         HardwareManager.getInstance();
 
+        logger.debug("Loading NetworkManager...");
         NetworkManager.getInstance().reinitialize();
 
+        logger.debug("Loading NetworkTablesManager...");
         NetworkTablesManager.getInstance()
                 .setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
 
         if (!isTestMode) {
+            logger.debug("Loading VisionSourceManager...");
             VisionSourceManager.getInstance()
                     .registerLoadedConfigs(
                             ConfigManager.getInstance().getConfig().getCameraConfigurations().values());
@@ -369,6 +374,7 @@ public class Main {
             }
         }
 
+        logger.info("Starting server...");
         Server.start(DEFAULT_WEBPORT);
     }
 }
