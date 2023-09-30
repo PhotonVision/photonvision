@@ -31,6 +31,7 @@
 #include <units/time.h>
 #include <wpi/SmallVector.h>
 
+#include "photonlib/MultiTargetPNPResult.h"
 #include "photonlib/Packet.h"
 #include "photonlib/PhotonTrackedTarget.h"
 
@@ -87,6 +88,8 @@ class PhotonPipelineResult {
    */
   units::second_t GetTimestamp() const { return timestamp; }
 
+  const MultiTargetPnpResult& MultiTagResult() const { return m_pnpResults; }
+
   /**
    * Sets the timestamp in seconds
    * @param timestamp The timestamp in seconds
@@ -119,6 +122,7 @@ class PhotonPipelineResult {
   units::second_t latency = 0_s;
   units::second_t timestamp = -1_s;
   wpi::SmallVector<PhotonTrackedTarget, 10> targets;
+  MultiTargetPnpResult m_pnpResults;
   inline static bool HAS_WARNED = false;
 };
 }  // namespace photonlib

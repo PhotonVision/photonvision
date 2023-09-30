@@ -69,7 +69,10 @@ public class PhotonPoseEstimator {
         AVERAGE_BEST_TARGETS,
 
         /** Use all visible tags to compute a single pose estimate.. */
-        MULTI_TAG_PNP
+        MULTI_TAG_PNP_ON_COPROCESSOR,
+
+        /** Use all visible tags to compute a single pose estimate.. */
+        MULTI_TAG_PNP_ON_RIO
     }
 
     private AprilTagFieldLayout fieldTags;
@@ -173,7 +176,8 @@ public class PhotonPoseEstimator {
      */
     public void setMultiTagFallbackStrategy(PoseStrategy strategy) {
         checkUpdate(this.multiTagFallbackStrategy, strategy);
-        if (strategy == PoseStrategy.MULTI_TAG_PNP) {
+        if (strategy == PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR
+                || strategy == PoseStrategy.MULTI_TAG_PNP_ON_RIO) {
             DriverStation.reportWarning(
                     "Fallback cannot be set to MULTI_TAG_PNP! Setting to lowest ambiguity", false);
             strategy = PoseStrategy.LOWEST_AMBIGUITY;
@@ -357,8 +361,11 @@ public class PhotonPoseEstimator {
             case AVERAGE_BEST_TARGETS:
                 estimatedPose = averageBestTargetsStrategy(cameraResult);
                 break;
-            case MULTI_TAG_PNP:
-                estimatedPose = multiTagPNPStrategy(cameraResult, cameraMatrix, distCoeffs);
+            case MULTI_TAG_PNP_ON_RIO:
+                estimatedPose = multiTagOnRioStrategy(cameraResult, cameraMatrix, distCoeffs);
+                break;
+            case MULTI_TAG_PNP_ON_COPROCESSOR:
+                estimatedPose = multiTagOnCoprocStrategy(cameraResult, cameraMatrix, distCoeffs);
                 break;
             default:
                 DriverStation.reportError(
@@ -373,7 +380,28 @@ public class PhotonPoseEstimator {
         return estimatedPose;
     }
 
-    private Optional<EstimatedRobotPose> multiTagPNPStrategy(
+    private Optional<EstimatedRobotPose> multiTagOnCoprocStrategy(
+            PhotonPipelineResult result,
+            Optional<Matrix<N3, N3>> cameraMatrixOpt,
+            Optional<Matrix<N5, N1>> distCoeffsOpt) {
+        if (result.getMultiTagResult().estimatedPose.isPresent) {
+            var best_tf = result.getMultiTagResult().estimatedPose.best;
+            var best =
+                    new Pose3d()
+                            .plus(best_tf) // field-to-camera
+                            .plus(robotToCamera.inverse()); // field-to-robot
+            return Optional.of(
+                    new EstimatedRobotPose(
+                            best,
+                            result.getTimestampSeconds(),
+                            result.getTargets(),
+                            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR));
+        } else {
+            return update(result, cameraMatrixOpt, distCoeffsOpt, this.multiTagFallbackStrategy);
+        }
+    }
+
+    private Optional<EstimatedRobotPose> multiTagOnRioStrategy(
             PhotonPipelineResult result,
             Optional<Matrix<N3, N3>> cameraMatrixOpt,
             Optional<Matrix<N5, N1>> distCoeffsOpt) {
@@ -395,7 +423,11 @@ public class PhotonPoseEstimator {
                         .plus(robotToCamera.inverse()); // field-to-robot
 
         return Optional.of(
-                new EstimatedRobotPose(best, result.getTimestampSeconds(), result.getTargets()));
+                new EstimatedRobotPose(
+                        best,
+                        result.getTimestampSeconds(),
+                        result.getTargets(),
+                        PoseStrategy.MULTI_TAG_PNP_ON_RIO));
     }
 
     /**
@@ -440,7 +472,8 @@ public class PhotonPoseEstimator {
                                 .transformBy(lowestAmbiguityTarget.getBestCameraToTarget().inverse())
                                 .transformBy(robotToCamera.inverse()),
                         result.getTimestampSeconds(),
-                        result.getTargets()));
+                        result.getTargets(),
+                        PoseStrategy.LOWEST_AMBIGUITY));
     }
 
     /**
@@ -494,7 +527,8 @@ public class PhotonPoseEstimator {
                                         .transformBy(target.getAlternateCameraToTarget().inverse())
                                         .transformBy(robotToCamera.inverse()),
                                 result.getTimestampSeconds(),
-                                result.getTargets());
+                                result.getTargets(),
+                                PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT);
             }
 
             if (bestTransformDelta < smallestHeightDifference) {
@@ -506,7 +540,8 @@ public class PhotonPoseEstimator {
                                         .transformBy(target.getBestCameraToTarget().inverse())
                                         .transformBy(robotToCamera.inverse()),
                                 result.getTimestampSeconds(),
-                                result.getTargets());
+                                result.getTargets(),
+                                PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT);
             }
         }
 
@@ -568,13 +603,19 @@ public class PhotonPoseEstimator {
                 smallestPoseDelta = altDifference;
                 lowestDeltaPose =
                         new EstimatedRobotPose(
-                                altTransformPosition, result.getTimestampSeconds(), result.getTargets());
+                                altTransformPosition,
+                                result.getTimestampSeconds(),
+                                result.getTargets(),
+                                PoseStrategy.CLOSEST_TO_REFERENCE_POSE);
             }
             if (bestDifference < smallestPoseDelta) {
                 smallestPoseDelta = bestDifference;
                 lowestDeltaPose =
                         new EstimatedRobotPose(
-                                bestTransformPosition, result.getTimestampSeconds(), result.getTargets());
+                                bestTransformPosition,
+                                result.getTimestampSeconds(),
+                                result.getTargets(),
+                                PoseStrategy.CLOSEST_TO_REFERENCE_POSE);
             }
         }
         return Optional.ofNullable(lowestDeltaPose);
@@ -617,7 +658,8 @@ public class PhotonPoseEstimator {
                                         .transformBy(target.getBestCameraToTarget().inverse())
                                         .transformBy(robotToCamera.inverse()),
                                 result.getTimestampSeconds(),
-                                result.getTargets()));
+                                result.getTargets(),
+                                PoseStrategy.AVERAGE_BEST_TARGETS));
             }
 
             totalAmbiguity += 1.0 / target.getPoseAmbiguity();
@@ -649,7 +691,10 @@ public class PhotonPoseEstimator {
 
         return Optional.of(
                 new EstimatedRobotPose(
-                        new Pose3d(transform, rotation), result.getTimestampSeconds(), result.getTargets()));
+                        new Pose3d(transform, rotation),
+                        result.getTimestampSeconds(),
+                        result.getTargets(),
+                        PoseStrategy.AVERAGE_BEST_TARGETS));
     }
 
     /**
