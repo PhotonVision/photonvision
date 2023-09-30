@@ -88,6 +88,11 @@ class PhotonPipelineResult {
    */
   units::second_t GetTimestamp() const { return timestamp; }
 
+  /**
+   * Return the latest mulit-target result, as calculated on your coprocessor.
+   * Be sure to check getMultiTagResult().estimatedPose.isValid before using the
+   * pose estimate!
+   */
   const MultiTargetPnpResult& MultiTagResult() const { return m_pnpResults; }
 
   /**
