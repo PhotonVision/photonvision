@@ -45,7 +45,7 @@ Packet& operator>>(Packet& packet, MultiTargetPnpResult& target) {
 
   target.fiducialIdsUsed.clear();
   for (size_t i = 0; i < target.fiducialIdsUsed.capacity(); i++) {
-    int8_t id;
+    int8_t id = 0;
     packet >> id;
 
     if (id > -128) {
@@ -93,7 +93,7 @@ Packet& operator>>(Packet& packet, frc::Transform3d& transform) {
   return packet;
 }
 
-Packet& operator<<(Packet& packet, const PNPResults& result) {
+Packet& operator<<(Packet& packet, PNPResults const & result) {
   packet << result.isValid << result.best << result.alt
          << result.bestReprojectionErr << result.altReprojectionErr
          << result.ambiguity;
