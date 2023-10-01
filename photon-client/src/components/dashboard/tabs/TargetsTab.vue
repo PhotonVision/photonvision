@@ -8,7 +8,7 @@ import { useStateStore } from "@/stores/StateStore";
   <div>
     <v-row align="start" class="pb-4" style="height: 300px">
       <!-- Simple table height must be set here and in the CSS for the fixed-header to work -->
-      <v-simple-table fixed-header height="100%" dense dark>
+      <v-simple-table fixed-header dense dark>
         <template #default>
           <thead style="font-size: 1.25rem">
             <tr>
@@ -76,7 +76,23 @@ import { useStateStore } from "@/stores/StateStore";
         </template>
       </v-simple-table>
     </v-row>
-    <p class="white--text">Estimated multi-tag pose: {{ useStateStore().currentPipelineResults?.multitagResult }}</p>
+    <v-row align="start" class="pb-4 white--text">
+      <span>Multi-tag pose, field-to-robot</span>
+      <v-simple-table fixed-header height="100%" dense dark>
+        <thead style="font-size: 1.25rem">
+          <th class="text-center">X meters</th>
+          <th class="text-center">Y meters</th>
+          <th class="text-center">Z Angle &theta;&deg;</th>
+          <th class="text-center">Tags</th>
+        </thead>
+        <tbody>
+          <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.x.toFixed(2) }}</td>
+          <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.y.toFixed(2) }}</td>
+          <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_z.toFixed(2) }}</td>
+          <td>{{ useStateStore().currentPipelineResults?.multitagResult?.fiducialIDsUsed }}</td>
+        </tbody>
+      </v-simple-table>
+    </v-row>
   </div>
 </template>
 
