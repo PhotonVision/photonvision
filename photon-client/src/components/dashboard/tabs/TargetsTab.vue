@@ -12,7 +12,6 @@ import { useStateStore } from "@/stores/StateStore";
         <template #default>
           <thead style="font-size: 1.25rem">
             <tr>
-              <th class="text-center">Target Count</th>
               <th
                 v-if="
                   useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
@@ -45,7 +44,6 @@ import { useStateStore } from "@/stores/StateStore";
           </thead>
           <tbody>
             <tr v-for="(target, index) in useStateStore().currentPipelineResults?.targets" :key="index">
-              <td>{{ index }}</td>
               <td
                 v-if="
                   useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
@@ -63,7 +61,7 @@ import { useStateStore } from "@/stores/StateStore";
               <template v-else-if="useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled">
                 <td>{{ target.pose?.x.toFixed(2) }}&nbsp;m</td>
                 <td>{{ target.pose?.y.toFixed(2) }}&nbsp;m</td>
-                <td>{{ ((target.pose?.angle_z * 180.0) / Math.PI).toFixed(2) }}&deg;</td>
+                <td>{{ (((target.pose?.angle_z || 0) * 180.0) / Math.PI).toFixed(2) }}&deg;</td>
               </template>
               <template
                 v-if="
@@ -78,6 +76,9 @@ import { useStateStore } from "@/stores/StateStore";
         </template>
       </v-simple-table>
     </v-row>
+    <p class="white--text">
+      Estimated multi-tag pose: {{  useStateStore().currentPipelineResults?.multitagResult  }}
+    </p>
   </div>
 </template>
 

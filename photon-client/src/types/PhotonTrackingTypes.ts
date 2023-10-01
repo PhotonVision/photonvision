@@ -9,6 +9,13 @@ export interface Transform3d {
   angle_z: number;
 }
 
+export interface Quaternion {
+          X: number;
+          Y: number;
+          Z: number;
+          W: number;
+}
+
 export interface AprilTagFieldLayout {
   field: {
     length: number;
@@ -23,12 +30,7 @@ export interface AprilTagFieldLayout {
         z: number;
       };
       rotation: {
-        quaternion: {
-          X: number;
-          Y: number;
-          Z: number;
-          W: number;
-        };
+        quaternion: Quaternion;
       };
     };
   }[];
