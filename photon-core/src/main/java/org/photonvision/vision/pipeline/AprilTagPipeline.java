@@ -126,7 +126,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         if (frame.type != FrameThresholdType.GREYSCALE) {
             // TODO so all cameras should give us GREYSCALE -- how should we handle if not?
             // Right now, we just return nothing
-            return new CVPipelineResult(0, 0, List.of(), new MultiTargetPNPResults(), frame);
+            return new CVPipelineResult(0, 0, List.of(), frame);
         }
 
         CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult;

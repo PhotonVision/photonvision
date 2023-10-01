@@ -17,17 +17,13 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.math.geometry.Pose3d;
 import java.util.ArrayList;
 import java.util.List;
-import org.opencv.core.Mat;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.estimation.VisionEstimation;
 import org.photonvision.targeting.MultiTargetPNPResults;
-import org.photonvision.targeting.TargetCorner;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.target.TrackedTarget;
@@ -53,38 +49,29 @@ public class MultiTargetPNPPipe
             return new MultiTargetPNPResults();
         }
 
-        return calculateTargetPose(targetList);
+        return calculateCameraInField(targetList);
     }
 
-    private MultiTargetPNPResults calculateTargetPose(List<TrackedTarget> targetList) {
-        if (params.cameraCoefficients == null
-                || params.cameraCoefficients.getCameraIntrinsicsMat() == null
-                || params.cameraCoefficients.getDistCoeffsMat() == null) {
+    private MultiTargetPNPResults calculateCameraInField(List<TrackedTarget> targetList) {
+        // Only run with multiple targets
+        if (targetList.size() < 2) {
             return new MultiTargetPNPResults();
         }
 
-        var visCorners = new ArrayList<TargetCorner>();
-        var knownVisTags = new ArrayList<AprilTag>();
+        // IDs of tags used -- not exposed?, so have to recreate
         var tagIDsUsed = new ArrayList<Integer>();
         for (var target : targetList) {
-            for (var corner : target.getTargetCorners()) {
-                visCorners.add(new TargetCorner(corner.x, corner.y));
-            }
-            Pose3d tagPose = params.atfl.getTagPose(target.getFiducialId()).get();
-
-            // actual layout poses of visible tags -- not exposed, so have to recreate
-            knownVisTags.add(new AprilTag(target.getFiducialId(), tagPose));
             tagIDsUsed.add(target.getFiducialId());
         }
-        var ret = new MultiTargetPNPResults();
-        ret.estimatedPose =
+
+        var estimatedPose =
                 VisionEstimation.estimateCamPosePNP(
-                        params.cameraCoefficients.getCameraIntrinsicsMat(),
-                        params.cameraCoefficients.getDistCoeffsMat(),
-                        visCorners,
-                        knownVisTags);
-        ret.fiducialIDsUsed = tagIDsUsed;
-        return ret;
+                        params.cameraCoefficients.cameraIntrinsics.getAsWpilibMat(),
+                        params.cameraCoefficients.distCoeffs.getAsWpilibMat(),
+                        TrackedTarget.simpleFromTrackedTargets(targetList),
+                        params.atfl);
+
+        return new MultiTargetPNPResults(estimatedPose, tagIDsUsed);
     }
 
     public static class MultiTargetPNPPipeParams {

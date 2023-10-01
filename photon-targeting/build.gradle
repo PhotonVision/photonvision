@@ -4,6 +4,7 @@ apply from: "${rootDir}/shared/common.gradle"
 
 dependencies {
     implementation wpilibTools.deps.wpilibJava("wpimath")
+    implementation wpilibTools.deps.wpilibJava("apriltag")
     implementation "org.ejml:ejml-simple:0.41"
 
     // Junit

@@ -93,7 +93,7 @@ Packet& operator>>(Packet& packet, frc::Transform3d& transform) {
   return packet;
 }
 
-Packet& operator<<(Packet& packet, PNPResults const & result) {
+Packet& operator<<(Packet& packet, PNPResults const& result) {
   packet << result.isValid << result.best << result.alt
          << result.bestReprojectionErr << result.altReprojectionErr
          << result.ambiguity;

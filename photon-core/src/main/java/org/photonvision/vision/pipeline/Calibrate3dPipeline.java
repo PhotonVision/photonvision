@@ -111,7 +111,7 @@ public class Calibrate3dPipeline
         Mat inputColorMat = frame.colorImage.getMat();
 
         if (this.calibrating || inputColorMat.empty()) {
-            return new CVPipelineResult(0, 0, null, new MultiTargetPNPResults(), frame);
+            return new CVPipelineResult(0, 0, null, frame);
         }
 
         long sumPipeNanosElapsed = 0L;
