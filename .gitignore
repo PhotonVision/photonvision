@@ -114,7 +114,6 @@ fabric.properties
 **/.settings
 **/.classpath
 **/.project
-**/settings
 **/dependency-reduced-pom.xml
 # photon-server/photon-vision.iml
 

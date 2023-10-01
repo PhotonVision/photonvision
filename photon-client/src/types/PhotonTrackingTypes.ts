@@ -10,10 +10,10 @@ export interface Transform3d {
 }
 
 export interface Quaternion {
-          X: number;
-          Y: number;
-          Z: number;
-          W: number;
+  X: number;
+  Y: number;
+  Z: number;
+  W: number;
 }
 
 export interface AprilTagFieldLayout {

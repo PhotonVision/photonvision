@@ -76,9 +76,7 @@ import { useStateStore } from "@/stores/StateStore";
         </template>
       </v-simple-table>
     </v-row>
-    <p class="white--text">
-      Estimated multi-tag pose: {{  useStateStore().currentPipelineResults?.multitagResult  }}
-    </p>
+    <p class="white--text">Estimated multi-tag pose: {{ useStateStore().currentPipelineResults?.multitagResult }}</p>
   </div>
 </template>
 
