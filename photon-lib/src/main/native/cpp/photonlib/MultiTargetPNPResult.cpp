@@ -24,7 +24,7 @@
 
 #include "photonlib/MultiTargetPNPResult.h"
 
-using namespace photonlib;
+namespace photonlib {
 
 Packet& operator<<(Packet& packet, const MultiTargetPnpResult& target) {
   packet << target.result;
@@ -107,3 +107,5 @@ Packet& operator>>(Packet& packet, PNPResults& result) {
 
   return packet;
 }
+
+}  // namespace photonlib
