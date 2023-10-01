@@ -87,12 +87,6 @@ public class MultiTargetPNPPipe
         return ret;
     }
 
-    Mat rotationMatrix = new Mat();
-    Mat inverseRotationMatrix = new Mat();
-    Mat pzeroWorld = new Mat();
-    Mat kMat = new Mat();
-    Mat scaledTvec;
-
     public static class MultiTargetPNPPipeParams {
         private final CameraCalibrationCoefficients cameraCoefficients;
         private final AprilTagFieldLayout atfl;
