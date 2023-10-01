@@ -198,7 +198,7 @@ class LegacyConfigProvider extends ConfigProvider {
         if (atfl == null) {
             logger.info("Loading default apriltags for 2023 field...");
             try {
-                atfl = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
+                atfl = AprilTagFields.kDefaultField.loadAprilTagLayoutField();
             } catch (IOException e) {
                 logger.error("Error loading WPILib field", e);
                 atfl = null;
