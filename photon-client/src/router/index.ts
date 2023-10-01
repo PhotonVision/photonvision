@@ -10,7 +10,8 @@ import NotFoundView from "@/views/NotFoundView.vue";
 Vue.use(VueRouter);
 
 const router = new VueRouter({
-  mode: "history",
+  // Using HTML5 History Mode is problematic with Javalin because each route is treated as a server endpoint which causes Javalin to return a 404 error before being redirected to the UI.
+  // mode: "history",
   base: import.meta.env.BASE_URL,
   routes: [
     {
