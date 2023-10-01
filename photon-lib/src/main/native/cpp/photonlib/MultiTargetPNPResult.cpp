@@ -30,11 +30,12 @@ Packet& operator<<(Packet& packet, const MultiTargetPnpResult& target) {
   packet << target.result;
 
   size_t i;
-  for (i = 0; i < target.fiducialIdsUsed.size(); i++) {
-    packet << target.fiducialIdsUsed[i];
-  }
-  for (; i < target.fiducialIdsUsed.capacity(); i++) {
-    packet << -128;
+  for (i = 0; i < target.fiducialIdsUsed.capacity(); i++) {
+    if (i < target.fiducialIdsUsed.size()) {
+      packet << static_cast<int8_t>(target.fiducialIdsUsed[i]);
+    } else {
+      packet << static_cast<int8_t>(-128);
+    }
   }
 
   return packet;
@@ -100,6 +101,7 @@ Packet& operator<<(Packet& packet, PNPResults const& result) {
 
   return packet;
 }
+
 Packet& operator>>(Packet& packet, PNPResults& result) {
   packet >> result.isValid >> result.best >> result.alt >>
       result.bestReprojectionErr >> result.altReprojectionErr >>
