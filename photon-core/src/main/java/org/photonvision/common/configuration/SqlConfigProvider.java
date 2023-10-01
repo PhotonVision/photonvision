@@ -244,7 +244,7 @@ public class SqlConfigProvider extends ConfigProvider {
             } catch (IOException e) {
                 logger.error("Could not deserialize apriltag layout! Loading defaults");
                 try {
-                    atfl = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
+                    atfl = AprilTagFields.kDefaultField.loadAprilTagLayoutField();
                 } catch (IOException e2) {
                     logger.error("Error loading WPILib field", e);
                     atfl = null;
