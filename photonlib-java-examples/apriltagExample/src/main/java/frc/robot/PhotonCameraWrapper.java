@@ -50,7 +50,10 @@ public class PhotonCameraWrapper {
             // Create pose estimator
             photonPoseEstimator =
                     new PhotonPoseEstimator(
-                            fieldLayout, PoseStrategy.MULTI_TAG_PNP, photonCamera, VisionConstants.robotToCam);
+                            fieldLayout,
+                            PoseStrategy.MULTI_TAG_PNP_ON_RIO,
+                            photonCamera,
+                            VisionConstants.robotToCam);
             photonPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
         } catch (IOException e) {
             // The AprilTagFieldLayout failed to load. We won't be able to estimate poses if we don't know

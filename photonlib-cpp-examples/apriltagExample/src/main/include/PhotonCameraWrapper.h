@@ -36,8 +36,8 @@ class PhotonCameraWrapper {
  public:
   photonlib::PhotonPoseEstimator m_poseEstimator{
       frc::LoadAprilTagLayoutField(frc::AprilTagField::k2023ChargedUp),
-      photonlib::MULTI_TAG_PNP, std::move(photonlib::PhotonCamera{"WPI2023"}),
-      frc::Transform3d{}};
+      photonlib::MULTI_TAG_PNP_ON_RIO,
+      std::move(photonlib::PhotonCamera{"WPI2023"}), frc::Transform3d{}};
 
   inline std::optional<photonlib::EstimatedRobotPose> Update(
       frc::Pose2d estimatedPose) {
