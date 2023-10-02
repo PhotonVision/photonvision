@@ -68,10 +68,10 @@ jobs:
       run: npm ci
 
     - name: Check Linting
-      run: npm run lint
+      run: npm run lint-ci
 
     - name: Check Formatting
-      run: npm run check-format
+      run: npm run format-ci
   photon-build-examples:
     runs-on: ubuntu-22.04
     name: "Build Examples"
