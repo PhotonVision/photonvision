@@ -40,7 +40,10 @@ const degrees = (radians: number): number => (radians * 180) / Math.PI;
               <td v-for="(val, idx) in Object.values(tag.pose.translation).slice(0, 3).map(degrees)" :key="idx">
                 {{ val.toFixed(2) }}
               </td>
-              <td v-for="(val, idx) in Object.values(quatToEuler(tag.pose.rotation.quaternion)).slice(0, 3).map(degrees)" :key="idx">
+              <td
+                v-for="(val, idx) in Object.values(quatToEuler(tag.pose.rotation.quaternion)).slice(0, 3).map(degrees)"
+                :key="idx"
+              >
                 {{ val.toFixed(2) }}
               </td>
             </tr>
