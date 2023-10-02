@@ -9,7 +9,8 @@
     "build-only": "vite build",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "format": "prettier --write src/",
-    "check-format": "prettier --check src/"
+    "lint-ci": "eslint . --max-warnings 0 --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
+    "format-ci": "prettier --check src/"
   },
   "dependencies": {
     "@fontsource/prompt": "^5.0.5",
