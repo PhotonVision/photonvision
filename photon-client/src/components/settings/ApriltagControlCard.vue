@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import CvSlider from "@/components/common/cv-slider.vue";
-import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { Euler, Quaternion } from "three";
 
@@ -39,10 +36,10 @@ const degrees = (radians: number): number => (radians * 180) / Math.PI;
           <tbody>
             <tr v-for="(tag, index) in useSettingsStore().currentFieldLayout.tags" :key="index">
               <td>{{ tag.ID }}</td>
-              <td v-for="val in Object.values(tag.pose.translation).slice(0, 3).map(degrees)">
+              <td v-for="(val, idx) in Object.values(tag.pose.translation).slice(0, 3).map(degrees)" :key="idx">
                 {{ val.toFixed(2) }}
               </td>
-              <td v-for="val in Object.values(quatToEuler(tag.pose.rotation.quaternion)).slice(0, 3).map(degrees)">
+              <td v-for="(val, idx) in Object.values(quatToEuler(tag.pose.rotation.quaternion)).slice(0, 3).map(degrees)" :key="idx">
                 {{ val.toFixed(2) }}
               </td>
             </tr>
