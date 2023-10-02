@@ -272,6 +272,7 @@ export type ActivePipelineSettings =
   | ColoredShapePipelineSettings
   | AprilTagPipelineSettings
   | ArucoPipelineSettings;
+
 export type ActiveConfigurablePipelineSettings =
   | ConfigurableReflectivePipelineSettings
   | ConfigurableColoredShapePipelineSettings

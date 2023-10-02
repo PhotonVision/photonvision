@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { PipelineType } from "@/types/PipelineTypes";
+import { DefaultAprilTagPipelineSettings, PipelineType } from "@/types/PipelineTypes";
 import { useStateStore } from "@/stores/StateStore";
 </script>
 
@@ -76,8 +76,15 @@ import { useStateStore } from "@/stores/StateStore";
         </template>
       </v-simple-table>
     </v-row>
-    <v-row align="start" class="pb-4 white--text">
-      <span>Multi-tag pose, field-to-robot</span>
+    <v-row
+      align="start"
+      class="pb-4 white--text"
+      v-if="
+        useCameraSettingsStore().currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
+        useCameraSettingsStore().currentPipelineSettings.doMultiTarget
+      "
+    >
+      <v-card-subtitle>Multi-tag pose, field-to-robot</v-card-subtitle>
       <v-simple-table fixed-header height="100%" dense dark>
         <thead style="font-size: 1.25rem">
           <th class="text-center">X meters</th>

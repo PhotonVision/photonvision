@@ -5,16 +5,14 @@ import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { Euler, Quaternion } from "three";
 
-function quatToEuler(quat) {
+const quatToEuler = (quat: { X: number; Y: number; Z: number; W: number }): Euler => {
   console.log(quat);
-  quat = new Quaternion(quat.X, quat.Y, quat.Z, quat.W);
-  return new Euler().setFromQuaternion(quat, "ZYX");
-}
+  const three_quat = new Quaternion(quat.X, quat.Y, quat.Z, quat.W);
+  return new Euler().setFromQuaternion(three_quat, "ZYX");
+};
 
 // Convert from radians to degrees.
-const degrees = function (radians) {
-  return (radians * 180) / Math.PI;
-};
+const degrees = (radians: number): number => (radians * 180) / Math.PI;
 </script>
 
 <template>
@@ -30,23 +28,23 @@ const degrees = function (radians) {
           <thead style="font-size: 1.25rem">
             <tr>
               <th class="text-center">ID</th>
-              <th class="text-center">X, m</th>
-              <th class="text-center">Y, m</th>
-              <th class="text-center">Z, m</th>
-              <th class="text-center">θ<sub>x</sub>, &deg;</th>
-              <th class="text-center">θ<sub>y</sub>, &deg;</th>
-              <th class="text-center">θ<sub>z</sub>, &deg;</th>
+              <th class="text-center">X, meters</th>
+              <th class="text-center">Y, meters</th>
+              <th class="text-center">Z, meters</th>
+              <th class="text-center">θ<sub>x</sub> angle, &deg;</th>
+              <th class="text-center">θ<sub>y</sub> angle, &deg;</th>
+              <th class="text-center">θ<sub>z</sub> angle, &deg;</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(tag, index) in useSettingsStore().currentFieldLayout.tags" :key="index">
               <td>{{ tag.ID }}</td>
-              <td>{{ tag.pose.translation.x.toFixed(2) }}</td>
-              <td>{{ tag.pose.translation.y.toFixed(2) }}</td>
-              <td>{{ tag.pose.translation.z.toFixed(2) }}</td>
-              <td>{{ degrees(quatToEuler(tag.pose.rotation.quaternion).x).toFixed(2) }}&deg;</td>
-              <td>{{ degrees(quatToEuler(tag.pose.rotation.quaternion).y).toFixed(2) }}&deg;</td>
-              <td>{{ degrees(quatToEuler(tag.pose.rotation.quaternion).z).toFixed(2) }}&deg;</td>
+              <td v-for="val in Object.values(tag.pose.translation).slice(0, 3).map(degrees)">
+                {{ val.toFixed(2) }}
+              </td>
+              <td v-for="val in Object.values(quatToEuler(tag.pose.rotation.quaternion)).slice(0, 3).map(degrees)">
+                {{ val.toFixed(2) }}
+              </td>
             </tr>
           </tbody>
         </template>
