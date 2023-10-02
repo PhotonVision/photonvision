@@ -4,7 +4,6 @@ import { Euler, Quaternion as ThreeQuat } from "three";
 import type { Quaternion } from "@/types/PhotonTrackingTypes";
 
 const quatToEuler = (quat: Quaternion): Euler => {
-  console.log(quat);
   const three_quat = new ThreeQuat(quat.X, quat.Y, quat.Z, quat.W);
   return new Euler().setFromQuaternion(three_quat, "ZYX");
 };
