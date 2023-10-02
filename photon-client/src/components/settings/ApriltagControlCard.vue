@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
-import { Euler, Quaternion } from "three";
+import { Euler, Quaternion as ThreeQuat } from "three";
+import type { Quaternion } from "@/types/PhotonTrackingTypes";
 
-const quatToEuler = (quat: { X: number; Y: number; Z: number; W: number }): Euler => {
+const quatToEuler = (quat: Quaternion): Euler => {
   console.log(quat);
-  const three_quat = new Quaternion(quat.X, quat.Y, quat.Z, quat.W);
+  const three_quat = new ThreeQuat(quat.X, quat.Y, quat.Z, quat.W);
   return new Euler().setFromQuaternion(three_quat, "ZYX");
 };
 
@@ -39,10 +40,7 @@ const degrees = (radians: number): number => (radians * 180) / Math.PI;
               <td v-for="(val, idx) in Object.values(tag.pose.translation).slice(0, 3).map(degrees)" :key="idx">
                 {{ val.toFixed(2) }}
               </td>
-              <td
-                v-for="(val, idx) in Object.values(quatToEuler(tag.pose.rotation.quaternion)).slice(0, 3).map(degrees)"
-                :key="idx"
-              >
+              <td v-for="(val, idx) in Object.values(quatToEuler(tag.pose.rotation.quaternion)).slice(0, 3).map(degrees)" :key="idx">
                 {{ val.toFixed(2) }}
               </td>
             </tr>
