@@ -32,9 +32,9 @@ Packet& operator<<(Packet& packet, const MultiTargetPnpResult& target) {
   size_t i;
   for (i = 0; i < target.fiducialIdsUsed.capacity(); i++) {
     if (i < target.fiducialIdsUsed.size()) {
-      packet << static_cast<int8_t>(target.fiducialIdsUsed[i]);
+      packet << static_cast<int16_t>(target.fiducialIdsUsed[i]);
     } else {
-      packet << static_cast<int8_t>(-128);
+      packet << static_cast<int16_t>(-1);
     }
   }
 
@@ -46,10 +46,10 @@ Packet& operator>>(Packet& packet, MultiTargetPnpResult& target) {
 
   target.fiducialIdsUsed.clear();
   for (size_t i = 0; i < target.fiducialIdsUsed.capacity(); i++) {
-    int8_t id = 0;
+    int16_t id = 0;
     packet >> id;
 
-    if (id > -128) {
+    if (id > -1) {
       target.fiducialIdsUsed.push_back(id);
     }
   }

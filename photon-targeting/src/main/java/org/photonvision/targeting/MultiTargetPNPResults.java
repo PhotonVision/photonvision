@@ -22,9 +22,10 @@ import java.util.List;
 import org.photonvision.common.dataflow.structures.Packet;
 
 public class MultiTargetPNPResults {
-    // pnpresult + 32 possible targets (arbitrary upper limit that should never be hit, ideally)
+    // Seeing 32 apriltags at once seems like a sane limit
     private static final int MAX_IDS = 32;
-    public static final int PACK_SIZE_BYTES = PNPResults.PACK_SIZE_BYTES + Byte.BYTES * MAX_IDS;
+    // pnpresult + MAX_IDS possible targets (arbitrary upper limit that should never be hit, ideally)
+    public static final int PACK_SIZE_BYTES = PNPResults.PACK_SIZE_BYTES + Short.BYTES * MAX_IDS;
 
     public PNPResults estimatedPose = new PNPResults();
     public List<Integer> fiducialIDsUsed = List.of();
@@ -41,7 +42,7 @@ public class MultiTargetPNPResults {
         var ids = new ArrayList<Integer>(MAX_IDS);
         for (int i = 0; i < MAX_IDS; i++) {
             int targetId = (int) packet.decodeByte();
-            if (targetId > Byte.MIN_VALUE) ids.add(targetId);
+            if (targetId > -1) ids.add(targetId);
         }
         return new MultiTargetPNPResults(results, ids);
     }
@@ -52,7 +53,7 @@ public class MultiTargetPNPResults {
             if (i < fiducialIDsUsed.size()) {
                 packet.encode(fiducialIDsUsed.get(i).byteValue());
             } else {
-                packet.encode(Byte.MIN_VALUE);
+                packet.encode(-1);
             }
         }
     }
