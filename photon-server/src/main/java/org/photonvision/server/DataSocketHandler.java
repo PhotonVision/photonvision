@@ -25,7 +25,9 @@ import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsContext;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -68,9 +70,9 @@ public class DataSocketHandler {
     }
 
     public void onConnect(WsConnectContext context) {
-        context.session.setIdleTimeout(Long.MAX_VALUE); // TODO: determine better value
-        var insa = context.session.getRemote().getInetSocketAddress();
-        var host = insa.getAddress().toString() + ":" + insa.getPort();
+        context.session.setIdleTimeout(Duration.ofMillis(Long.MAX_VALUE)); // TODO: determine better value
+        var remote = (InetSocketAddress) context.session.getRemoteAddress();
+        var host = remote.getAddress().toString() + ":" + remote.getPort();
         logger.info("New websocket connection from " + host);
         users.add(context);
         dcService.publishEvent(
@@ -79,8 +81,8 @@ public class DataSocketHandler {
     }
 
     protected void onClose(WsCloseContext context) {
-        var insa = context.session.getRemote().getInetSocketAddress();
-        var host = insa.getAddress().toString() + ":" + insa.getPort();
+        var remote = (InetSocketAddress) context.session.getRemoteAddress();
+        var host = remote.getAddress().toString() + ":" + remote.getPort();
         var reason = context.reason() != null ? context.reason() : "Connection closed by client";
         logger.info("Closing websocket connection from " + host + " for reason: " + reason);
         users.remove(context);
@@ -332,9 +334,9 @@ public class DataSocketHandler {
                 sendMessage(message, user);
             }
         } else {
-            var skipUserPort = userToSkip.session.getRemote().getInetSocketAddress().getPort();
+            var skipUserPort = ((InetSocketAddress) userToSkip.session.getRemoteAddress()).getPort();
             for (WsContext user : users) {
-                var userPort = user.session.getRemote().getInetSocketAddress().getPort();
+                var userPort = ((InetSocketAddress) user.session.getRemoteAddress()).getPort();
                 if (userPort != skipUserPort) {
                     sendMessage(message, user);
                 }

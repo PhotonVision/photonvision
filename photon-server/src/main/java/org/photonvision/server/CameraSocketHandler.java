@@ -25,6 +25,9 @@ import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsContext;
 import io.javalin.websocket.WsMessageContext;
+
+import java.net.InetSocketAddress;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -56,16 +59,16 @@ public class CameraSocketHandler {
     }
 
     public void onConnect(WsConnectContext context) {
-        context.session.setIdleTimeout(Long.MAX_VALUE); // TODO: determine better value
-        var insa = context.session.getRemote().getInetSocketAddress();
-        var host = insa.getAddress().toString() + ":" + insa.getPort();
+        context.session.setIdleTimeout(Duration.ofMillis(Long.MAX_VALUE)); // TODO: determine better value
+        var remote = (InetSocketAddress) context.session.getRemoteAddress();
+        var host = remote.getAddress().toString() + ":" + remote.getPort();
         logger.info("New camera websocket connection from " + host);
         users.add(context);
     }
 
     protected void onClose(WsCloseContext context) {
-        var insa = context.session.getRemote().getInetSocketAddress();
-        var host = insa.getAddress().toString() + ":" + insa.getPort();
+        var remote = (InetSocketAddress) context.session.getRemoteAddress();
+        var host = remote.getAddress().toString() + ":" + remote.getPort();
         var reason = context.reason() != null ? context.reason() : "Connection closed by client";
         logger.info("Closing camera websocket connection from " + host + " for reason: " + reason);
         svsManager.removeSubscription(context);
