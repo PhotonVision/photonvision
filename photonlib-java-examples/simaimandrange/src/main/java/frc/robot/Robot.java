@@ -56,8 +56,8 @@ public class Robot extends TimedRobot {
     PhotonCamera camera = new PhotonCamera("photonvision");
 
     // PID constants should be tuned per robot
-    final double LINEAR_P = 2.0;
-    final double LINEAR_D = 0.0;
+    final double LINEAR_P = 0.5;
+    final double LINEAR_D = 0.1;
     PIDController forwardController = new PIDController(LINEAR_P, 0, LINEAR_D);
 
     final double ANGULAR_P = 0.03;
@@ -70,6 +70,12 @@ public class Robot extends TimedRobot {
     PWMVictorSPX leftMotor = new PWMVictorSPX(0);
     PWMVictorSPX rightMotor = new PWMVictorSPX(1);
     DifferentialDrive drive = new DifferentialDrive(leftMotor, rightMotor);
+
+    @Override
+    public void robotInit() {
+        leftMotor.setInverted(false);
+        rightMotor.setInverted(true);
+    }
 
     @Override
     public void teleopPeriodic() {
@@ -91,11 +97,11 @@ public class Robot extends TimedRobot {
                                 Units.degreesToRadians(result.getBestTarget().getPitch()));
 
                 // Use this range as the measurement we give to the PID controller.
-                // -1.0 required to ensure positive PID controller effort _increases_ range
+                // (This forwardSpeed must be positive to go forward.)
                 forwardSpeed = -forwardController.calculate(range, GOAL_RANGE_METERS);
 
                 // Also calculate angular power
-                // -1.0 required to ensure positive PID controller effort _increases_ yaw
+                // (This rotationSpeed must be positive to turn counter-clockwise.)
                 rotationSpeed = -turnController.calculate(result.getBestTarget().getYaw(), 0);
             } else {
                 // If we have no targets, stay still.
@@ -104,8 +110,8 @@ public class Robot extends TimedRobot {
             }
         } else {
             // Manual Driver Mode
-            forwardSpeed = -xboxController.getRightY();
-            rotationSpeed = xboxController.getLeftX();
+            forwardSpeed = -xboxController.getLeftY() * 0.75;
+            rotationSpeed = -xboxController.getRightX() * 0.75;
         }
 
         // Use our forward/turn speeds to control the drivetrain
@@ -119,7 +125,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void simulationInit() {
-        dtSim = new DrivetrainSim();
+        dtSim = new DrivetrainSim(leftMotor.getChannel(), rightMotor.getChannel(), camera);
     }
 
     @Override
