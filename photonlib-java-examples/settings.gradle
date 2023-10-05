@@ -1,6 +1,3 @@
-include 'photon-targeting'
-include 'photon-core'
-include 'photon-server'
-include 'photon-lib'
+apply from: "examples.gradle"
 
-new File('examples.txt').eachLine { line -> include line }
+exampleFolderNames.each { line -> include line }

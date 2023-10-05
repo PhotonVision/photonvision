@@ -1,0 +1,103 @@
+{
+  "NTProvider": {
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/SmartDashboard/VisionSystemSim-main/Sim Field": "Field2d"
+    },
+    "windows": {
+      "/SmartDashboard/VisionSystemSim-main/Sim Field": {
+        "EstimatedRobot": {
+          "arrowWeight": 3.0,
+          "length": 0.800000011920929,
+          "selectable": false,
+          "weight": 3.0,
+          "width": 0.800000011920929
+        },
+        "EstimatedRobotModules": {
+          "arrows": false,
+          "image": "swerve_module.png",
+          "length": 0.30000001192092896,
+          "selectable": false,
+          "width": 0.30000001192092896
+        },
+        "Robot": {
+          "arrowColor": [
+            1.0,
+            1.0,
+            1.0,
+            255.0
+          ],
+          "arrowWeight": 2.0,
+          "color": [
+            1.0,
+            1.0,
+            1.0,
+            255.0
+          ],
+          "length": 0.800000011920929,
+          "selectable": false,
+          "weight": 2.0,
+          "width": 0.800000011920929
+        },
+        "VisionEstimation": {
+          "arrowColor": [
+            0.0,
+            0.6075949668884277,
+            1.0,
+            255.0
+          ],
+          "arrowWeight": 2.0,
+          "color": [
+            0.0,
+            0.6075949668884277,
+            1.0,
+            255.0
+          ],
+          "selectable": false,
+          "weight": 2.0
+        },
+        "apriltag": {
+          "image": "tag-green.png",
+          "length": 0.5,
+          "width": 0.4000000059604645
+        },
+        "cameras": {
+          "arrowColor": [
+            0.29535865783691406,
+            1.0,
+            0.9910804033279419,
+            255.0
+          ],
+          "arrowSize": 19,
+          "arrowWeight": 3.0,
+          "length": 1.0,
+          "style": "Hidden",
+          "weight": 1.0,
+          "width": 1.0
+        },
+        "height": 8.013699531555176,
+        "visibleTargetPoses": {
+          "arrows": false,
+          "image": "tag-blue.png",
+          "length": 0.5,
+          "selectable": false,
+          "width": 0.4000000059604645
+        },
+        "width": 16.541749954223633,
+        "window": {
+          "visible": true
+        }
+      }
+    }
+  },
+  "NetworkTables": {
+    "transitory": {
+      "SmartDashboard": {
+        "VisionSystemSim-main": {
+          "open": true
+        },
+        "open": true
+      }
+    }
+  }
+}

@@ -1,4 +1,0 @@
-aimandrange
-getinrange
-aimattarget
-apriltagExample
