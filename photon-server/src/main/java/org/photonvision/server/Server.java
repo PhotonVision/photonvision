@@ -18,12 +18,9 @@
 package org.photonvision.server;
 
 import io.javalin.Javalin;
-import io.javalin.http.staticfiles.Location;
-
+import io.javalin.plugin.bundled.CorsPluginConfig;
 import java.net.InetSocketAddress;
 import java.util.StringJoiner;
-
-import io.javalin.plugin.bundled.CorsPluginConfig;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
@@ -31,37 +28,46 @@ public class Server {
     private static final Logger logger = new Logger(Server.class, LogGroup.WebServer);
 
     public static void start(int port) {
-        var app = Javalin.create(javalinConfig -> {
-            javalinConfig.showJavalinBanner = false;
-            javalinConfig.staticFiles.add("web");
-            javalinConfig.plugins.enableCors(corsContainer -> {
-                corsContainer.add(CorsPluginConfig::anyHost);
-            });
+        var app =
+                Javalin.create(
+                        javalinConfig -> {
+                            javalinConfig.showJavalinBanner = false;
+                            javalinConfig.staticFiles.add("web");
+                            javalinConfig.plugins.enableCors(
+                                    corsContainer -> {
+                                        corsContainer.add(CorsPluginConfig::anyHost);
+                                    });
 
-            javalinConfig.requestLogger.http((ctx, ms) -> {
-                StringJoiner joiner =
-                        new StringJoiner(" ")
-                                .add("Handled HTTP request of type")
-                                .add(ctx.req().getMethod())
-                                .add("from endpoint")
-                                .add(ctx.path())
-                                .add("for host")
-                                .add(ctx.req().getRemoteHost())
-                                .add("in")
-                                .add(ms.toString())
-                                .add("ms");
+                            javalinConfig.requestLogger.http(
+                                    (ctx, ms) -> {
+                                        StringJoiner joiner =
+                                                new StringJoiner(" ")
+                                                        .add("Handled HTTP request of type")
+                                                        .add(ctx.req().getMethod())
+                                                        .add("from endpoint")
+                                                        .add(ctx.path())
+                                                        .add("for host")
+                                                        .add(ctx.req().getRemoteHost())
+                                                        .add("in")
+                                                        .add(ms.toString())
+                                                        .add("ms");
 
-                logger.debug(joiner.toString());
-            });
-            javalinConfig.requestLogger.ws(ws -> {
-                ws.onMessage(ctx -> logger.debug("Got WebSockets message: " + ctx.message()));
-                ws.onBinaryMessage(ctx -> logger.trace(() -> {
-                    var remote = (InetSocketAddress) ctx.session.getRemoteAddress();
-                    var host = remote.getAddress().toString() + ":" + remote.getPort();
-                    return "Got WebSockets binary message from host: " + host;
-                }));
-            });
-        });
+                                        logger.debug(joiner.toString());
+                                    });
+                            javalinConfig.requestLogger.ws(
+                                    ws -> {
+                                        ws.onMessage(ctx -> logger.debug("Got WebSockets message: " + ctx.message()));
+                                        ws.onBinaryMessage(
+                                                ctx ->
+                                                        logger.trace(
+                                                                () -> {
+                                                                    var remote = (InetSocketAddress) ctx.session.getRemoteAddress();
+                                                                    var host =
+                                                                            remote.getAddress().toString() + ":" + remote.getPort();
+                                                                    return "Got WebSockets binary message from host: " + host;
+                                                                }));
+                                    });
+                        });
 
         /*Web Socket Events for Data Exchange */
         var dsHandler = DataSocketHandler.getInstance();

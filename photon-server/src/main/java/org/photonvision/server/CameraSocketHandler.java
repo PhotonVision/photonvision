@@ -25,7 +25,6 @@ import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsContext;
 import io.javalin.websocket.WsMessageContext;
-
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.HashMap;
@@ -59,7 +58,8 @@ public class CameraSocketHandler {
     }
 
     public void onConnect(WsConnectContext context) {
-        context.session.setIdleTimeout(Duration.ofMillis(Long.MAX_VALUE)); // TODO: determine better value
+        context.session.setIdleTimeout(
+                Duration.ofMillis(Long.MAX_VALUE)); // TODO: determine better value
         var remote = (InetSocketAddress) context.session.getRemoteAddress();
         var host = remote.getAddress().toString() + ":" + remote.getPort();
         logger.info("New camera websocket connection from " + host);

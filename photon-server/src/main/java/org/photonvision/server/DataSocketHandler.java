@@ -70,7 +70,8 @@ public class DataSocketHandler {
     }
 
     public void onConnect(WsConnectContext context) {
-        context.session.setIdleTimeout(Duration.ofMillis(Long.MAX_VALUE)); // TODO: determine better value
+        context.session.setIdleTimeout(
+                Duration.ofMillis(Long.MAX_VALUE)); // TODO: determine better value
         var remote = (InetSocketAddress) context.session.getRemoteAddress();
         var host = remote.getAddress().toString() + ":" + remote.getPort();
         logger.info("New websocket connection from " + host);

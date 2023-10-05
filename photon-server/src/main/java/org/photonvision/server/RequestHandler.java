@@ -69,7 +69,6 @@ public class RequestHandler {
             return;
         }
 
-
         if (!file.extension().contains("zip")) {
             ctx.status(400);
             ctx.result(
@@ -496,7 +495,7 @@ public class RequestHandler {
                 new File(Path.of(System.getProperty("java.io.tmpdir"), file.filename()).toString());
         boolean makeDirsRes = tempFilePath.getParentFile().mkdirs();
 
-        if(!makeDirsRes) {
+        if (!makeDirsRes) {
             logger.error(
                     "There was an error while uploading " + file.filename() + " to the temp folder!");
             return Optional.empty();
