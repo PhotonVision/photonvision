@@ -1,3 +1,3 @@
 ## **`aimattarget`**
 
-### See [PhotonLib Java Examples](./README.md#aimattarget)
+### See [PhotonLib Java Examples](../README.md#aimattarget)
