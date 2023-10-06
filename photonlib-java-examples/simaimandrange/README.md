@@ -1,3 +1,3 @@
 ## **`simaimandrange`**
 
-### See [PhotonLib Java Examples](./README.md#simaimandrange)
+### See [PhotonLib Java Examples](../README.md#simaimandrange)
