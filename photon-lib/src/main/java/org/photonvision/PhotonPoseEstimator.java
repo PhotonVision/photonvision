@@ -68,10 +68,16 @@ public class PhotonPoseEstimator {
         /** Return the average of the best target poses using ambiguity as weight. */
         AVERAGE_BEST_TARGETS,
 
-        /** Use all visible tags to compute a single pose estimate.. */
+        /**
+         * Use all visible tags to compute a single pose estimate on coprocessor. This option needs to
+         * be enabled on the PhotonVision web UI as well.
+         */
         MULTI_TAG_PNP_ON_COPROCESSOR,
 
-        /** Use all visible tags to compute a single pose estimate.. */
+        /**
+         * Use all visible tags to compute a single pose estimate. This runs on the RoboRIO, and can
+         * take a lot of time.
+         */
         MULTI_TAG_PNP_ON_RIO
     }
 
