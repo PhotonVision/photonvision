@@ -72,9 +72,9 @@ public class PhotonPipelineResult {
      */
     public int getPacketSize() {
         return targets.size() * PhotonTrackedTarget.PACK_SIZE_BYTES
-                + 8
-                + 2
-                + MultiTargetPNPResults.PACK_SIZE_BYTES;
+                + 8 // latency
+                + MultiTargetPNPResults.PACK_SIZE_BYTES
+                + 1; // target count
     }
 
     /**

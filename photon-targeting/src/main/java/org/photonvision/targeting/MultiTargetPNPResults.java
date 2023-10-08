@@ -25,7 +25,7 @@ public class MultiTargetPNPResults {
     // Seeing 32 apriltags at once seems like a sane limit
     private static final int MAX_IDS = 32;
     // pnpresult + MAX_IDS possible targets (arbitrary upper limit that should never be hit, ideally)
-    public static final int PACK_SIZE_BYTES = PNPResults.PACK_SIZE_BYTES + Short.BYTES * MAX_IDS;
+    public static final int PACK_SIZE_BYTES = PNPResults.PACK_SIZE_BYTES + (Short.BYTES * MAX_IDS);
 
     public PNPResults estimatedPose = new PNPResults();
     public List<Integer> fiducialIDsUsed = List.of();
