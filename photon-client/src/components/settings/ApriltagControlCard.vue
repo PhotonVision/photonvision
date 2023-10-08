@@ -16,8 +16,8 @@ const degrees = (radians: number): number => (radians * 180) / Math.PI;
   <v-card dark class="mb-3 pr-6 pb-3" style="background-color: #006492">
     <v-card-title>Apriltag Layout</v-card-title>
     <div class="ml-5">
-      <p>Field width: {{ (useSettingsStore().currentFieldLayout.field.width * 3.28084).toFixed(2) }} ft</p>
-      <p>Field length: {{ (useSettingsStore().currentFieldLayout.field.length * 3.28084).toFixed(2) }} ft</p>
+      <p>Field width: {{ useSettingsStore().currentFieldLayout.field.width.toFixed(2) }} meters</p>
+      <p>Field length: {{ useSettingsStore().currentFieldLayout.field.length.toFixed(2) }} meters</p>
 
       <!-- Simple table height must be set here and in the CSS for the fixed-header to work -->
       <v-simple-table fixed-header height="100%" dense dark>
