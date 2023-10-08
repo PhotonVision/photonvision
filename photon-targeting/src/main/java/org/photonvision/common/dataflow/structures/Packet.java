@@ -86,6 +86,16 @@ public class Packet {
     }
 
     /**
+     * Encodes the short into the packet.
+     *
+     * @param src The short to encode.
+     */
+    public void encode(short src) {
+        packetData[writePos++] = (byte) (src >>> 8);
+        packetData[writePos++] = (byte) src;
+    }
+
+    /**
      * Encodes the integer into the packet.
      *
      * @param src The integer to encode.
@@ -195,5 +205,12 @@ public class Packet {
             ret[i] = decodeDouble();
         }
         return ret;
+    }
+
+    public short decodeShort() {
+        if (packetData.length < readPos + 1) {
+            return 0;
+        }
+        return (short) ((0xff & packetData[readPos++]) << 8 | (0xff & packetData[readPos++]));
     }
 }

@@ -41,7 +41,7 @@ public class MultiTargetPNPResults {
         var results = PNPResults.createFromPacket(packet);
         var ids = new ArrayList<Integer>(MAX_IDS);
         for (int i = 0; i < MAX_IDS; i++) {
-            int targetId = (int) packet.decodeByte();
+            int targetId = (int) packet.decodeShort();
             if (targetId > -1) ids.add(targetId);
         }
         return new MultiTargetPNPResults(results, ids);
@@ -51,9 +51,9 @@ public class MultiTargetPNPResults {
         estimatedPose.populatePacket(packet);
         for (int i = 0; i < MAX_IDS; i++) {
             if (i < fiducialIDsUsed.size()) {
-                packet.encode(fiducialIDsUsed.get(i).byteValue());
+                packet.encode((short) fiducialIDsUsed.get(i).byteValue());
             } else {
-                packet.encode(-1);
+                packet.encode((short) -1);
             }
         }
     }
