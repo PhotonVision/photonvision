@@ -97,7 +97,7 @@ public class VisionEstimation {
         Point[] points = OpenCVHelp.cornersToPoints(corners);
 
         // single-tag pnp
-        if (visTags.size() == 1) {
+        if (knownTags.size() == 1) {
             var camToTag =
                     OpenCVHelp.solvePNP_SQUARE(
                             cameraMatrix, distCoeffs, TargetModel.kTag16h5.vertices, points);
