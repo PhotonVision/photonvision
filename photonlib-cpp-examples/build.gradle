@@ -27,9 +27,11 @@ spotless {
     }
 }
 
+apply from: "examples.gradle"
+
 // Task that depends on the build task for every example
 task buildAllExamples { task ->
-    new File('examples.txt').eachLine { line ->
+    exampleFolderNames.each { line ->
         task.dependsOn(line + ":build")
     }
 }

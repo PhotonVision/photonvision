@@ -2,16 +2,47 @@
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
-      "/SmartDashboard/Field": "Field2d",
-      "/SmartDashboard/photonvision Sim Field": "Field2d"
+      "/SmartDashboard/VisionSystemSim-main/Sim Field": "Field2d"
     },
     "windows": {
-      "/SmartDashboard/Field": {
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/photonvision Sim Field": {
+      "/SmartDashboard/VisionSystemSim-main/Sim Field": {
+        "Robot": {
+          "arrowColor": [
+            1.0,
+            1.0,
+            1.0,
+            255.0
+          ],
+          "arrowWeight": 3.0,
+          "color": [
+            1.0,
+            1.0,
+            1.0,
+            255.0
+          ],
+          "weight": 3.0
+        },
+        "cameras": {
+          "arrowColor": [
+            0.0,
+            0.683544397354126,
+            1.0,
+            255.0
+          ],
+          "arrowSize": 29,
+          "selectable": false,
+          "style": "Hidden"
+        },
+        "targets": {
+          "color": [
+            0.05063295364379883,
+            1.0,
+            0.0,
+            255.0
+          ],
+          "style": "Hidden",
+          "weight": 1.0
+        },
         "window": {
           "visible": true
         }
@@ -21,7 +52,7 @@
   "NetworkTables": {
     "transitory": {
       "SmartDashboard": {
-        "Field": {
+        "VisionSystemSim-main/Sim Field": {
           "open": true
         },
         "open": true
@@ -31,13 +62,6 @@
         "photonvision": {
           "open": true
         }
-      }
-    }
-  },
-  "Plot": {
-    "Plot <0>": {
-      "window": {
-        "visible": false
       }
     }
   }
