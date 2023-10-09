@@ -278,17 +278,17 @@ public class DataSocketHandler {
                                 break;
                             }
                         case SMT_SAVEOUTPUTSNAPSHOT:
-                        {
-                            var takeOutputSnapshotEvent =
-                                    new IncomingWebSocketEvent<>(
-                                            DataChangeDestination.DCD_ACTIVEMODULE,
-                                            "saveOutputSnapshot",
-                                            0,
-                                            cameraIndex,
-                                            context);
-                            dcService.publishEvent(takeOutputSnapshotEvent);
-                            break;
-                        }
+                            {
+                                var takeOutputSnapshotEvent =
+                                        new IncomingWebSocketEvent<>(
+                                                DataChangeDestination.DCD_ACTIVEMODULE,
+                                                "saveOutputSnapshot",
+                                                0,
+                                                cameraIndex,
+                                                context);
+                                dcService.publishEvent(takeOutputSnapshotEvent);
+                                break;
+                            }
                         case SMT_TAKECALIBRATIONSNAPSHOT:
                             {
                                 var takeCalSnapshotEvent =

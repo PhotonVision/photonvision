@@ -33,10 +33,7 @@ const fpsTooLow = computed<boolean>(() => {
 
 <template>
   <v-card color="primary" height="100%" style="display: flex; flex-direction: column" dark>
-    <v-card-title
-      class="pb-0 mb-0 pl-4 pt-1"
-      style="display: flex; flex-direction: column; width: 100%"
-    >
+    <v-card-title class="pb-0 mb-0 pl-4 pt-1" style="display: flex; flex-direction: column; width: 100%">
       <div style="min-height: 50px; justify-content: space-between; align-content: center; display: flex; width: 100%">
         <div class="pt-2">
           <span class="mr-4">Cameras</span>
@@ -70,9 +67,13 @@ const fpsTooLow = computed<boolean>(() => {
           <v-switch v-model="driverMode" label="Driver Mode" style="margin-left: auto" color="accent" class="pt-2" />
         </div>
       </div>
-      <div class="pb-2" style="display: flex; gap: 16px; flex-wrap: wrap;">
-        <v-btn color="secondary" class="snapshot-btn" @click="useCameraSettingsStore().saveInputSnapshot()">Save Input Snapshot</v-btn>
-        <v-btn color="secondary" class="snapshot-btn" @click="useCameraSettingsStore().saveOutputSnapshot()">Save Output Snapshot</v-btn>
+      <div class="pb-2" style="display: flex; gap: 16px; flex-wrap: wrap">
+        <v-btn color="secondary" class="snapshot-btn" @click="useCameraSettingsStore().saveInputSnapshot()"
+          >Save Input Snapshot</v-btn
+        >
+        <v-btn color="secondary" class="snapshot-btn" @click="useCameraSettingsStore().saveOutputSnapshot()"
+          >Save Output Snapshot</v-btn
+        >
       </div>
     </v-card-title>
     <v-divider style="border-color: white" />
