@@ -150,7 +150,10 @@ const importCalibrationFromCalibDB = ref();
 const openCalibUploadPrompt = () => {
   importCalibrationFromCalibDB.value.click();
 };
-const readImportedCalibration = ({ files }: { files: FileList }) => {
+const readImportedCalibration = (payload: Event) => {
+  if (payload.target == null || !payload.target?.files) return;
+  const files: FileList = payload.target.files as FileList;
+
   files[0].text().then((text) => {
     useCameraSettingsStore()
       .importCalibDB({ payload: text, filename: files[0].name })
