@@ -258,7 +258,7 @@ public class RequestHandler {
             return;
         }
 
-        if (!file.getExtension().contains("json")) {
+        if (!file.extension().contains("json")) {
             ctx.status(400);
             ctx.result(
                     "The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
