@@ -24,6 +24,8 @@
 
 package frc.robot;
 
+import static frc.robot.Constants.*;
+
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -31,6 +33,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.PWMVictorSPX;
 import frc.robot.sim.DrivetrainSim;
+import frc.robot.sim.VisionSim;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonUtils;
 
@@ -41,34 +44,18 @@ import org.photonvision.PhotonUtils;
  * project.
  */
 public class Robot extends TimedRobot {
-    // 2020 High goal target height above ground
-    public static final double TARGET_HEIGHT_METERS = Units.inchesToMeters(81.19);
-
-    // Constants about how your camera is mounted to the robot
-    public static final double CAMERA_PITCH_RADIANS =
-            Units.degreesToRadians(15); // Angle "up" from horizontal
-    public static final double CAMERA_HEIGHT_METERS = Units.inchesToMeters(24); // Height above floor
-
-    // How far from the target we want to be
-    final double GOAL_RANGE_METERS = Units.feetToMeters(10);
-
     // Change this to match the name of your camera
     PhotonCamera camera = new PhotonCamera("photonvision");
 
     // PID constants should be tuned per robot
-    final double LINEAR_P = 0.5;
-    final double LINEAR_D = 0.1;
     PIDController forwardController = new PIDController(LINEAR_P, 0, LINEAR_D);
-
-    final double ANGULAR_P = 0.03;
-    final double ANGULAR_D = 0.003;
     PIDController turnController = new PIDController(ANGULAR_P, 0, ANGULAR_D);
 
     XboxController xboxController = new XboxController(0);
 
     // Drive motors
-    PWMVictorSPX leftMotor = new PWMVictorSPX(0);
-    PWMVictorSPX rightMotor = new PWMVictorSPX(1);
+    PWMVictorSPX leftMotor = new PWMVictorSPX(LEFT_MOTOR_CHANNEL);
+    PWMVictorSPX rightMotor = new PWMVictorSPX(RIGHT_MOTOR_CHANNEL);
     DifferentialDrive drive = new DifferentialDrive(leftMotor, rightMotor);
 
     @Override
@@ -92,7 +79,7 @@ public class Robot extends TimedRobot {
                 double range =
                         PhotonUtils.calculateDistanceToTargetMeters(
                                 CAMERA_HEIGHT_METERS,
-                                TARGET_HEIGHT_METERS,
+                                TARGET_POSE.getZ(),
                                 CAMERA_PITCH_RADIANS,
                                 Units.degreesToRadians(result.getBestTarget().getPitch()));
 
@@ -110,8 +97,8 @@ public class Robot extends TimedRobot {
             }
         } else {
             // Manual Driver Mode
-            forwardSpeed = -xboxController.getLeftY() * 0.75;
-            rotationSpeed = -xboxController.getRightX() * 0.75;
+            forwardSpeed = -xboxController.getLeftY() * DRIVESPEED;
+            rotationSpeed = -xboxController.getRightX() * DRIVESPEED;
         }
 
         // Use our forward/turn speeds to control the drivetrain
@@ -122,14 +109,17 @@ public class Robot extends TimedRobot {
     // Simulation support
 
     DrivetrainSim dtSim;
+    VisionSim visionSim;
 
     @Override
     public void simulationInit() {
-        dtSim = new DrivetrainSim(leftMotor.getChannel(), rightMotor.getChannel(), camera);
+        dtSim = new DrivetrainSim(leftMotor, rightMotor);
+        visionSim = new VisionSim("main", camera);
     }
 
     @Override
     public void simulationPeriodic() {
         dtSim.update();
+        visionSim.update(dtSim.getPose());
     }
 }
