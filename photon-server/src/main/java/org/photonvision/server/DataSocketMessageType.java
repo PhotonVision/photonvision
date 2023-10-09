@@ -32,6 +32,8 @@ public enum DataSocketMessageType {
     SMT_PIPELINESETTINGCHANGE("changePipelineSetting"),
     SMT_CURRENTPIPELINE("currentPipeline"),
     SMT_STARTPNPCALIBRATION("startPnpCalibration"),
+    SMT_SAVEINPUTSNAPSHOT("saveInputSnapshot"),
+    SMT_SAVEOUTPUTSNAPSHOT("saveOutputSnapshot"),
     SMT_TAKECALIBRATIONSNAPSHOT("takeCalibrationSnapshot"),
     SMT_DUPLICATEPIPELINE("duplicatePipeline"),
     SMT_CHANGEBRIGHTNESS("enabledLEDPercentage"),
