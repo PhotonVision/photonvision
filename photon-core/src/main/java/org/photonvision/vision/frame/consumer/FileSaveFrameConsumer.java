@@ -102,4 +102,8 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
         this.subTable.getEntry(ntEntryName).setInteger(imgSaveCountInternal);
         this.entry = subTable.getIntegerTopic(ntEntryName).getEntry(-1); // Default negative
     }
+
+    public void overrideTakeSnapshot() {
+        entry.set(entry.get() + 1);
+    }
 }
