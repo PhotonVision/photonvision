@@ -27,7 +27,7 @@ package org.photonvision.estimation;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.Num;
-import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -142,16 +142,15 @@ public final class OpenCVHelp {
      * @param rvecInput The rvec to create a Rotation3d from
      */
     public static Rotation3d rvecToRotation(Mat rvecInput) {
+        // Get the 'rodriguez' (axis-angle, where the norm is the angle about the normalized direction
+        // of the vector)
         float[] data = new float[3];
         var wrapped = new Mat(rvecInput.rows(), rvecInput.cols(), CvType.CV_32F);
         rvecInput.convertTo(wrapped, CvType.CV_32F);
         wrapped.get(0, 0, data);
         wrapped.release();
-        Vector<N3> axis = new Vector<>(Nat.N3());
-        axis.set(0, 0, data[0]);
-        axis.set(1, 0, data[1]);
-        axis.set(2, 0, data[2]);
-        return rotationEDNtoNWU(new Rotation3d(axis.div(axis.norm()), axis.norm()));
+
+        return rotationEDNtoNWU(new Rotation3d(VecBuilder.fill(data[0], data[1], data[2])));
     }
 
     public static Point avgPoint(Point[] points) {
