@@ -128,7 +128,9 @@ const interactiveCols = computed(
       :min="0"
       :max="3"
       :step="1"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ cornerRefinementStrategy: value }, false)"
+      @input="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ cornerRefinementStrategy: value }, false)
+      "
     />
     <cv-switch
       v-model="currentPipelineSettings.useAruco3"
@@ -146,7 +148,9 @@ const interactiveCols = computed(
       :min="0"
       :max="0.1"
       :step="0.001"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ aruco3MinMarkerSideRatio: value }, false)"
+      @input="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ aruco3MinMarkerSideRatio: value }, false)
+      "
     />
     <cv-slider
       v-model="currentPipelineSettings.aruco3MinCanonicalImgSide"
@@ -157,7 +161,9 @@ const interactiveCols = computed(
       :min="16"
       :max="128"
       :step="1"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ aruco3MinCanonicalImgSide: value }, false)"
+      @input="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ aruco3MinCanonicalImgSide: value }, false)
+      "
     />
   </div>
 </template>

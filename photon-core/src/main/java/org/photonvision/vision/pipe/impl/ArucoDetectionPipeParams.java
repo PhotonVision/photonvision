@@ -32,12 +32,14 @@ public class ArucoDetectionPipeParams {
 
     /**
      * Bits allowed to be corrected, expressed as a ratio of the tag families theoretical maximum.
-     * 
+     *
      * <p>E.g. 36h11 -> 11 * errorCorrectionRate = Max error bits
      */
     public double errorCorrectionRate = 0.5;
 
-    /** If obtained corners should be iteratively refined. This should always be on for 3D estimation. */
+    /**
+     * If obtained corners should be iteratively refined. This should always be on for 3D estimation.
+     */
     public boolean useCornerRefinement = true;
 
     /** Maximum corner refinement iterations. */
@@ -51,19 +53,19 @@ public class ArucoDetectionPipeParams {
 
     /**
      * The corner refinement window size. This is actually half the window side length.
-     * 
-     * <p> Refinement window side length = (1 + refinementWindowSize * 2).
+     *
+     * <p>Refinement window side length = (1 + refinementWindowSize * 2).
      */
     public int refinementWindowSize = 5;
 
     public int cornerRefinementStrategy = Aruco.CORNER_REFINE_SUBPIX;
 
     /**
-     * If the 'Aruco3' speedup should be used. This is similar to AprilTag's 'decimate' value,
-     * but automatically determined with the given parameters.
-     * 
+     * If the 'Aruco3' speedup should be used. This is similar to AprilTag's 'decimate' value, but
+     * automatically determined with the given parameters.
+     *
      * <p>T_i = aruco3MinMarkerSideRatio, and T_c = aruco3MinCanonicalImgSide
-     * 
+     *
      * <p>Scale factor = T_c / (T_c + T_i * max(img_width, img_height))
      */
     public boolean useAruco3 = false;
@@ -98,8 +100,15 @@ public class ArucoDetectionPipeParams {
     @Override
     public int hashCode() {
         return Objects.hash(
-                tagFamily, errorCorrectionRate, useCornerRefinement, refinementMaxIterations,
-                refinementMinErrorPx, refinementWindowSize, cornerRefinementStrategy, useAruco3,
-                aruco3MinMarkerSideRatio, aruco3MinCanonicalImgSide);
+                tagFamily,
+                errorCorrectionRate,
+                useCornerRefinement,
+                refinementMaxIterations,
+                refinementMinErrorPx,
+                refinementWindowSize,
+                cornerRefinementStrategy,
+                useAruco3,
+                aruco3MinMarkerSideRatio,
+                aruco3MinCanonicalImgSide);
     }
 }
