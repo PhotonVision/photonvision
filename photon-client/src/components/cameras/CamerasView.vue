@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
-import { computed } from "vue";
+import {computed, getCurrentInstance} from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { PipelineType } from "@/types/PipelineTypes";
 import { useStateStore } from "@/stores/StateStore";
@@ -38,6 +38,7 @@ const fpsTooLow = computed<boolean>(() => {
 
   return currFPS - targetFPS < -5 && currFPS !== 0 && !driverMode && gpuAccel && isReflective;
 });
+
 </script>
 
 <template>
@@ -46,34 +47,39 @@ const fpsTooLow = computed<boolean>(() => {
       class="pb-0 mb-2 pl-4 pt-1"
       style="min-height: 50px; justify-content: space-between; align-content: center"
     >
-      <div style="display: flex; flex-wrap: wrap">
-        <div>
-          <span class="mr-4" style="white-space: nowrap"> Cameras </span>
-        </div>
-        <div>
-          <v-chip
-            label
-            :color="fpsTooLow ? 'error' : 'transparent'"
-            :text-color="fpsTooLow ? '#C7EA46' : '#ff4d00'"
-            style="font-size: 1rem; padding: 0; margin: 0"
-          >
+      <div style="display: flex; width: 100%; justify-content: space-between">
+        <div style="display: flex; flex-wrap: wrap">
+          <div>
+            <span class="mr-4" style="white-space: nowrap"> Cameras </span>
+          </div>
+          <div>
+            <v-chip
+                label
+                :color="fpsTooLow ? 'error' : 'transparent'"
+                :text-color="fpsTooLow ? '#C7EA46' : '#ff4d00'"
+                style="font-size: 1rem; padding: 0; margin: 0"
+            >
             <span class="pr-1">
               {{ Math.round(useStateStore().pipelineResults?.fps || 0) }}&nbsp;FPS &ndash;
               {{ Math.min(Math.round(useStateStore().pipelineResults?.latency || 0), 9999) }} ms latency
             </span>
-          </v-chip>
+            </v-chip>
+          </div>
+        </div>
+        <div>
+          <v-switch
+              v-model="driverMode"
+              :disabled="useCameraSettingsStore().isCalibrationMode"
+              label="Driver Mode"
+              style="margin-left: auto"
+              color="accent"
+              class="pt-2"
+          />
         </div>
       </div>
-
-      <div>
-        <v-switch
-          v-model="driverMode"
-          :disabled="useCameraSettingsStore().isCalibrationMode"
-          label="Driver Mode"
-          style="margin-left: auto"
-          color="accent"
-          class="pt-2"
-        />
+      <div class="pb-2" style="display: flex; gap: 16px; width: 100%; justify-content: center; flex-wrap: wrap">
+        <v-btn color="secondary" class="snapshot-btn" @click="useCameraSettingsStore().saveInputSnapshot()">Save Input Snapshot</v-btn>
+        <v-btn color="secondary" class="snapshot-btn" @click="useCameraSettingsStore().saveOutputSnapshot()">Save Output Snapshot</v-btn>
       </div>
     </v-card-title>
     <div class="stream-container pb-4">
@@ -136,13 +142,29 @@ th {
   width: 100%;
 }
 
-@media only screen and (min-width: 512px) and (max-width: 960px) {
+@media only screen and (min-width: 562px) and (max-width: 960px) {
   .stream-container {
     flex-wrap: nowrap;
   }
 
   .stream {
     width: 50%;
+  }
+
+  .snapshot-btn {
+    width: 45%;
+  }
+}
+
+@media only screen and (min-width: 960px) and (max-width: 1587px) {
+  .snapshot-btn {
+    width: 100%;
+  }
+}
+
+@media only screen and  (max-width: 562px) {
+  .snapshot-btn {
+    width: 100%;
   }
 }
 </style>
