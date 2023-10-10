@@ -70,7 +70,7 @@ public class FindCirclesPipe
                 Math.max(1.0, params.accuracy),
                 minRadius,
                 maxRadius);
-        // Great, we now found the center point of the circle and it's radius, but we have no idea what
+        // Great, we now found the center point of the circle, and it's radius, but we have no idea what
         // contour it corresponds to
         // Each contour can only match to one circle, so we keep a list of unmatched contours around and
         // only match against them

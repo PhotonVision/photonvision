@@ -24,7 +24,7 @@ import org.photonvision.vision.pipe.impl.HSVPipe;
 public interface FrameProvider extends Supplier<Frame> {
     String getName();
 
-    /** Ask the camera to produce a certain kind of processed image (eg HSV or greyscale) */
+    /** Ask the camera to produce a certain kind of processed image (e.g. HSV or greyscale) */
     void requestFrameThresholdType(FrameThresholdType type);
 
     /** Ask the camera to rotate frames it outputs */

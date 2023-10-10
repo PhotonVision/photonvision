@@ -281,7 +281,7 @@ public class SqlConfigProvider extends ConfigProvider {
                 statement.setString(2, JacksonUtils.serializeToString(config));
                 statement.setString(3, JacksonUtils.serializeToString(config.driveModeSettings));
 
-                // Serializing a list of abstract classes sucks. Instead, make it into a array
+                // Serializing a list of abstract classes sucks. Instead, make it into an array
                 // of strings, which we can later unpack back into individual settings
                 List<String> settings =
                         config.pipelineSettings.stream()

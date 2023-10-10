@@ -28,7 +28,7 @@ public enum AprilTagFamily {
     kTagCustom48h11;
 
     public String getNativeName() {
-        // We wanna strip the leading kT and replace with "t"
+        // We want to strip the leading kT and replace with "t"
         return this.name().replaceFirst("kT", "t");
     }
 }

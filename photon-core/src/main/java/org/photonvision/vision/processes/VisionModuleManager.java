@@ -73,7 +73,7 @@ public class VisionModuleManager {
 
     private void assignCameraIndex(List<VisionSource> config) {
         // We won't necessarily have already added all the cameras we need to at this point
-        // But by operating on the list, we have a fairly good idea of which we need to change
+        // But by operating on the list, we have a fairly good idea of which we need to change,
         // but it's not guaranteed that we change the correct one
         // The best we can do is try to avoid a case where the stream index runs away to infinity
         // since we can only stream 5 cameras at once

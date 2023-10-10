@@ -126,7 +126,7 @@ public class CornerDetectionPipe
         we want a number between 0 and 0.16 out of a percentage from 0 to 100
         so take accuracy and divide by 600
 
-        Furthermore, we know that the contour is open if we haven't done convex hulls
+        Furthermore, we know that the contour is open if we haven't done convex hulls,
         and it has subcontours.
         */
         var isOpen = !convexHull && target.hasSubContours();

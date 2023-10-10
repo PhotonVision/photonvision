@@ -297,7 +297,7 @@ public class VisionModule {
         var settables = visionSource.getSettables();
         logger.trace(() -> "Setting " + settables.getConfiguration().nickname + ") FOV (" + fov + ")");
 
-        // Only set FOV if we have no vendor JSON and we aren't using a PiCAM
+        // Only set FOV if we have no vendor JSON, and we aren't using a PiCAM
         if (isVendorCamera()) {
             logger.info("Cannot set FOV on a vendor device! Ignoring...");
         } else {

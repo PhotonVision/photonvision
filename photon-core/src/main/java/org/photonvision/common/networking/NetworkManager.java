@@ -116,7 +116,7 @@ public class NetworkManager {
                                         .replace(NetworkConfig.NM_IP_STRING, config.staticIp));
 
                         if (Platform.isRaspberryPi()) {
-                            // Pi's need to manually have their interface adjusted?? and the 5 second sleep is
+                            // Pi's need to manually have their interface adjusted?? and the 5-second sleep is
                             // integral in my testing (Matt)
                             shell.executeBashCommand(
                                     "sh -c 'nmcli con down "
@@ -125,7 +125,7 @@ public class NetworkManager {
                                             + config.getEscapedInterfaceName()
                                             + "'");
                         } else {
-                            // for now just bring down /up -- more testing needed on beelink et al
+                            // for now just bring down /up -- more testing needed on beelink et al.
                             shell.executeBashCommand(
                                     "sh -c 'nmcli con down "
                                             + config.getEscapedInterfaceName()

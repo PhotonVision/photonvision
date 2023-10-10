@@ -202,7 +202,7 @@ public class MathUtils {
             new Rotation3d(VecBuilder.fill(1, 0, 0), Units.degreesToRadians(180));
 
     /**
-     * Apply a 180 degree rotation about X to the rotation component of a given Apriltag pose. This
+     * Apply a 180-degree rotation about X to the rotation component of a given Apriltag pose. This
      * aligns it with the OpenCV poses we use in other places.
      */
     public static Transform3d convertApriltagtoOpenCV(Transform3d pose) {

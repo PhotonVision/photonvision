@@ -91,7 +91,7 @@ public class Draw3dTargetsPipe
                         jac);
 
                 if (params.redistortPoints) {
-                    // Distort the points so they match the image they're being overlaid on
+                    // Distort the points, so they match the image they're being overlaid on
                     distortPoints(tempMat, tempMat);
                 }
 
@@ -107,7 +107,7 @@ public class Draw3dTargetsPipe
                         jac);
 
                 if (params.redistortPoints) {
-                    // Distort the points so they match the image they're being overlaid on
+                    // Distort the points, so they match the image they're being overlaid on
                     distortPoints(tempMat, tempMat);
                 }
                 var topPoints = tempMat.toList();

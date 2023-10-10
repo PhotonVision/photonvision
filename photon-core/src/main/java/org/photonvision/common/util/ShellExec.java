@@ -56,7 +56,7 @@ public class ShellExec {
 
         boolean success = false;
         Runtime r = Runtime.getRuntime();
-        // Use bash -c so we can handle things like multi commands separated by ; and
+        // Use bash -c, so we can handle things like multi commands separated by ; and
         // things like quotes, $, |, and \. My tests show that command comes as
         // one argument to bash, so we do not need to quote it to make it one thing.
         // Also, exec may object if it does not have an executable file as the first thing,

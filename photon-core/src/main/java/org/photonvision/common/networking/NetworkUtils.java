@@ -59,7 +59,7 @@ public class NetworkUtils {
             nmType = NMType.typeForString(type);
         }
 
-        public final String connName; // Human readable name used by "nmcli con"
+        public final String connName; // Human-readable name used by "nmcli con"
         public final String devName; // underlying device, used by dhclient
         public final NMType nmType;
 
@@ -115,7 +115,7 @@ public class NetworkUtils {
     }
 
     public static List<NMDeviceInfo> getAllActiveInterfaces() {
-        // Seems like if a interface exists but isn't actually connected, the connection name will be an
+        // Seems like if an interface exists but isn't actually connected, the connection name will be an
         // empty string. Check here and only return connections with non-empty names
         return getAllInterfaces().stream()
                 .filter(it -> !it.connName.trim().isEmpty())

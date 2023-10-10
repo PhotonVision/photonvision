@@ -246,9 +246,9 @@ public class PipelineManager {
     }
 
     /**
-     * Returns whether or not driver mode is active.
+     * Returns whether driver mode is active.
      *
-     * @return Whether or not driver mode is active.
+     * @return Whether driver mode is active.
      */
     public boolean getDriverMode() {
         return currentPipelineIndex == DRIVERMODE_INDEX;
@@ -260,7 +260,7 @@ public class PipelineManager {
     /**
      * Sorts the pipeline list by index, and reassigns their indexes to match the new order. <br>
      * <br>
-     * I don't like this but I have no other ideas, and it works so
+     * I don't like this, but I have no other ideas, and it works so
      */
     private void reassignIndexes() {
         userPipelineSettings.sort(PipelineSettingsIndexComparator);

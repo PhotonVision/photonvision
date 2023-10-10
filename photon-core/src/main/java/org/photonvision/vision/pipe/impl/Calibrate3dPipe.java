@@ -56,7 +56,7 @@ public class Calibrate3dPipe
     private final Mat stdDeviationsExtrinsics = new Mat();
 
     // Contains the re projection error of each snapshot by re projecting the corners we found and
-    // finding the euclidean distance between the actual corners.
+    // finding the Euclidean distance between the actual corners.
     private final Mat perViewErrors = new Mat();
 
     // RMS of the calibration

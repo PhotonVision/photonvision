@@ -257,7 +257,7 @@ public class TrackedTarget implements Releasable {
                         params.dualOffsetValues,
                         params.robotOffsetPointMode);
 
-        // order of this stuff doesnt matter though
+        // order of this stuff doesn't matter though
         m_pitch =
                 TargetCalculations.calculatePitch(
                         m_targetOffsetPoint.y, m_robotOffsetPoint.y, params.verticalFocalLength);

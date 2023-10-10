@@ -76,7 +76,7 @@ public class GPUAcceleratedHSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
                     "",
                     "void main() {",
                     "  vec2 uv = gl_FragCoord.xy/resolution;",
-                    // Important! We do this .bgr swizzle because the image comes in as BGR but we pretend
+                    // Important! We do this .bgr swizzle because the image comes in as BGR, but we pretend
                     // it's RGB for convenience+speed
                     "  vec3 col = texture2D(texture0, uv).bgr;",
                     // Only the first value in the vec4 gets used for GL_RED, and only the last value gets
@@ -242,7 +242,7 @@ public class GPUAcceleratedHSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
         // index for the generic position input)
         gl.glBindAttribLocation(programId, 0, "position");
 
-        // Compile and setup our two shaders with our program
+        // Compile and set up our two shaders with our program
         final int vertexId = createShader(gl, programId, k_vertexShader, GL_VERTEX_SHADER);
         final int fragmentId = createShader(gl, programId, k_fragmentShader, GL_FRAGMENT_SHADER);
 
@@ -465,7 +465,7 @@ public class GPUAcceleratedHSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
                     GLES3.GL_PIXEL_UNPACK_BUFFER,
                     (long) in.width() * in.height() * 3, null, GLES3.GL_STREAM_DRAW);
 
-            // Map the a buffer of GPU memory into a place that's accessible by us
+            // Map the buffer of GPU memory into a place that's accessible by us
             var buf =
                     gl.glMapBufferRange(
                             GLES3.GL_PIXEL_UNPACK_BUFFER,
