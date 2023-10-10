@@ -18,7 +18,6 @@
 package org.photonvision.common.util.math;
 
 import edu.wpi.first.math.MatBuilder;
-import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.CoordinateSystem;
@@ -26,14 +25,10 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Quaternion;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.WPIUtilJNI;
 import java.util.Arrays;
 import java.util.List;
-import org.ejml.data.DMatrixRMaj;
-import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
-import org.ejml.simple.SimpleMatrix;
 import org.opencv.core.Mat;
 
 public class MathUtils {
