@@ -29,6 +29,7 @@ ext {
     wpilibVersion = "2023.4.2"
     opencvVersion = "4.6.0-4"
     joglVersion = "2.4.0-rc-20200307"
+    javalinVersion = "5.6.2"
     pubVersion = versionString
     isDev = pubVersion.startsWith("dev")
 
