@@ -35,7 +35,7 @@ public class SocketVideoStream implements Consumer<CVMat> {
 
     // Gets set to true when another class reads out valid jpeg bytes at least once
     // Set back to false when another frame is freshly converted
-    // Should eliminate synchronization issues of differeing rates of putting frames in
+    // Should eliminate synchronization issues of differing rates of putting frames in
     // and taking them back out
     boolean frameWasConsumed = false;
 
@@ -64,7 +64,7 @@ public class SocketVideoStream implements Consumer<CVMat> {
                     .tryLock()) { // we assume frames are coming in frequently. Just skip this frame if we're
                 // locked doing something else.
                 try {
-                    // Does a single-shot frame recieve and convert to JPEG for efficency
+                    // Does a single-shot frame receive and convert to JPEG for efficiency
                     // Will not capture/convert again until convertNextFrame() is called
                     if (image != null && !image.getMat().empty() && jpegBytes == null) {
                         frameWasConsumed = false;

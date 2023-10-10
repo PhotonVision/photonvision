@@ -128,7 +128,7 @@ public class Logger {
         HashMap<File, Date> logFileStartDateMap = new HashMap<>();
 
         // Remove any files from the list for which we can't parse a start date from their name.
-        // Simultaneously populate our HashMap with Date objects repeseting the file-name
+        // Simultaneously populate our HashMap with Date objects representing the file-name
         // indicated log start time.
         logFileList.removeIf(
                 (File arg0) -> {

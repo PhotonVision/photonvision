@@ -50,7 +50,7 @@ public class FindBoardCornersPipe
 
     private final MatOfPoint2f boardCorners = new MatOfPoint2f();
 
-    // Intermedeate result mat's
+    // Intermediate result mat's
     Mat smallerInFrame = new Mat();
     MatOfPoint2f smallerBoardCorners = new MatOfPoint2f();
 

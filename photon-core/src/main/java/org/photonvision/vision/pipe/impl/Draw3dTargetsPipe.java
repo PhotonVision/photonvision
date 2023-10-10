@@ -115,7 +115,7 @@ public class Draw3dTargetsPipe
                 dividePointList(bottomPoints);
                 dividePointList(topPoints);
 
-                // floor, then pillers, then top
+                // floor, then pillars, then top
                 for (int i = 0; i < bottomPoints.size(); i++) {
                     Imgproc.line(
                             in.getLeft(),
@@ -237,11 +237,11 @@ public class Draw3dTargetsPipe
 
             double r2 = x * x + y * y; // square of the radius from center
 
-            // Radial distorsion
+            // Radial distortion
             double xDistort = x * (1 + k1 * r2 + k2 * r2 * r2 + k3 * r2 * r2 * r2);
             double yDistort = y * (1 + k1 * r2 + k2 * r2 * r2 + k3 * r2 * r2 * r2);
 
-            // Tangential distorsion
+            // Tangential distortion
             xDistort = xDistort + (2 * p1 * x * y + p2 * (r2 + 2 * x * x));
             yDistort = yDistort + (p1 * (r2 + 2 * y * y) + 2 * p2 * x * y);
 

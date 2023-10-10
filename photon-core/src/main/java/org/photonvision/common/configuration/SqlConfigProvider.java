@@ -419,7 +419,7 @@ public class SqlConfigProvider extends ConfigProvider {
     private HashMap<String, CameraConfiguration> loadCameraConfigs(Connection conn) {
         HashMap<String, CameraConfiguration> loadedConfigurations = new HashMap<>();
 
-        // Querry every single row of the cameras db
+        // Query every single row of the cameras db
         PreparedStatement query = null;
         try {
             query =

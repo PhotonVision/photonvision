@@ -204,7 +204,7 @@ public class TrackedTarget implements Releasable {
     }
 
     /**
-     * Set the approximate bouding polygon.
+     * Set the approximate bounding polygon.
      *
      * @param boundingPolygon List of points to copy. Not modified.
      */

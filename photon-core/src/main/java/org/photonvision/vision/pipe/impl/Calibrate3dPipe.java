@@ -44,7 +44,7 @@ public class Calibrate3dPipe
     // Stores the radical and tangential distortion in a 5x1 matrix
     private final MatOfDouble distortionCoefficients = new MatOfDouble();
 
-    // For loggging
+    // For logging
     private static final Logger logger = new Logger(Calibrate3dPipe.class, LogGroup.General);
 
     // Translational and rotational matrices

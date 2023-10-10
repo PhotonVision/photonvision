@@ -370,7 +370,7 @@ class LegacyConfigProvider extends ConfigProvider {
     }
 
     public Date logFnameToDate(String fname) throws ParseException {
-        // Strip away known unneded portions of the log file name
+        // Strip away known unneeded portions of the log file name
         fname = fname.replace(LOG_PREFIX, "").replace(LOG_EXT, "");
         DateFormat format = new SimpleDateFormat(LOG_DATE_TIME_FORMAT);
         return format.parse(fname);

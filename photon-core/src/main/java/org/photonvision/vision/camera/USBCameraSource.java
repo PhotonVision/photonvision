@@ -123,8 +123,8 @@ public class USBCameraSource extends VisionSource {
                 if (!cameraAutoExposure) {
                     // Pick a bunch of reasonable setting defaults for vision processing retroreflective
                     camera.getProperty("auto_exposure_bias").set(0);
-                    camera.getProperty("iso_sensitivity_auto").set(0); // Disable auto ISO adjustement
-                    camera.getProperty("iso_sensitivity").set(0); // Manual ISO adjustement
+                    camera.getProperty("iso_sensitivity_auto").set(0); // Disable auto ISO adjustment
+                    camera.getProperty("iso_sensitivity").set(0); // Manual ISO adjustment
                     camera.getProperty("white_balance_auto_preset").set(2); // Auto white-balance disabled
                     camera.getProperty("auto_exposure").set(1); // auto exposure disabled
                 } else {
@@ -132,7 +132,7 @@ public class USBCameraSource extends VisionSource {
                     // nice-for-humans
                     camera.getProperty("auto_exposure_bias").set(12);
                     camera.getProperty("iso_sensitivity_auto").set(1);
-                    camera.getProperty("iso_sensitivity").set(1); // Manual ISO adjustement by default
+                    camera.getProperty("iso_sensitivity").set(1); // Manual ISO adjustment by default
                     camera.getProperty("white_balance_auto_preset").set(1); // Auto white-balance enabled
                     camera.getProperty("auto_exposure").set(0); // auto exposure enabled
                 }

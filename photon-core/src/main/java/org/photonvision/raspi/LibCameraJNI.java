@@ -120,7 +120,7 @@ public class LibCameraJNI {
 
     /**
      * Starts the camera thresholder and display threads running. Make sure that this function is
-     * called syncronously with stopCamera and returnFrame!
+     * called synchronously with stopCamera and returnFrame!
      */
     public static native boolean startCamera();
 
@@ -141,7 +141,7 @@ public class LibCameraJNI {
     // Exposure time, in microseconds
     public static native boolean setExposure(int exposureUs);
 
-    // Set brighness on [-1, 1]
+    // Set brightness on [-1, 1]
     public static native boolean setBrightness(double brightness);
 
     // Unknown ranges for red and blue AWB gain
@@ -164,18 +164,18 @@ public class LibCameraJNI {
     // Analog gain multiplier to apply to all color channels, on [1, Big Number]
     public static native boolean setAnalogGain(double analog);
 
-    /** Block until a new frame is avaliable from native code. */
+    /** Block until a new frame is available from native code. */
     public static native boolean awaitNewFrame();
 
     /**
-     * Get a pointer to the most recent color mat generated. Call this immediatly after awaitNewFrame,
-     * and call onlly once per new frame!
+     * Get a pointer to the most recent color mat generated. Call this immediately after awaitNewFrame,
+     * and call only once per new frame!
      */
     public static native long takeColorFrame();
 
     /**
-     * Get a pointer to the most recent processed mat generated. Call this immediatly after
-     * awaitNewFrame, and call onlly once per new frame!
+     * Get a pointer to the most recent processed mat generated. Call this immediately after
+     * awaitNewFrame, and call only once per new frame!
      */
     public static native long takeProcessedFrame();
 
@@ -186,6 +186,6 @@ public class LibCameraJNI {
 
     public static native int getGpuProcessType();
 
-    // /** Release a frame pointer back to the libcamera driver code to be filled again */
+    // Release a frame pointer back to the libcamera driver code to be filled again */
     // public static native long returnFrame(long frame);
 }

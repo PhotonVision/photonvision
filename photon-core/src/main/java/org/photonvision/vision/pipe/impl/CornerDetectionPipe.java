@@ -151,7 +151,7 @@ public class CornerDetectionPipe
         var distanceToTrComparator =
                 Comparator.comparingDouble((Point p) -> distanceBetween(p, boundingBoxCorners.get(3)));
 
-        // top left and top right are the poly corners closest to the bouding box tl and tr
+        // top left and top right are the poly corners closest to the bounding box tl and tr
         pointList.sort(distanceToTlComparator);
         var tl = pointList.get(0);
         pointList.remove(tl);
