@@ -17,7 +17,8 @@
 
 package org.photonvision.vision.pipeline;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.math.util.Units;
 import java.io.File;

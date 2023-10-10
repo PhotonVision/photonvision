@@ -18,7 +18,10 @@
 package org.photonvision.vision.camera;
 
 import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.cscore.*;
+import edu.wpi.first.cscore.CvSink;
+import edu.wpi.first.cscore.UsbCamera;
+import edu.wpi.first.cscore.VideoException;
+import edu.wpi.first.cscore.VideoMode;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration;

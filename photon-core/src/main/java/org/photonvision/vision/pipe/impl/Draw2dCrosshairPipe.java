@@ -17,7 +17,7 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import java.awt.Color;
+import java.awt.*;
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
