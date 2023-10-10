@@ -9,7 +9,7 @@ apply from: "${rootDir}/shared/common.gradle"
 dependencies {
     implementation project(':photon-targeting')
 
-    implementation 'io.javalin:javalin:4.2.0'
+    implementation "io.javalin:javalin:$javalinVersion"
 
     implementation 'org.msgpack:msgpack-core:0.9.0'
     implementation 'org.msgpack:jackson-dataformat-msgpack:0.9.0'
