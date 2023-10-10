@@ -29,8 +29,8 @@ public class SocketVideoStreamManager {
 
     private final Logger logger = new Logger(SocketVideoStreamManager.class, LogGroup.Camera);
 
-    private final Map<Integer, SocketVideoStream> streams = new Hashtable<Integer, SocketVideoStream>();
-    private final Map<WsContext, Integer> userSubscriptions = new Hashtable<WsContext, Integer>();
+    private final Map<Integer, SocketVideoStream> streams = new Hashtable<>();
+    private final Map<WsContext, Integer> userSubscriptions = new Hashtable<>();
 
     private static class ThreadSafeSingleton {
         private static final SocketVideoStreamManager INSTANCE = new SocketVideoStreamManager();

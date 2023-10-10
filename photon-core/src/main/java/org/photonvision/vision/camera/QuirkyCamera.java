@@ -105,7 +105,7 @@ public class QuirkyCamera {
 
     public static QuirkyCamera getQuirkyCamera(int usbVid, int usbPid, String baseName) {
         for (var qc : quirkyCameras) {
-            boolean hasBaseName = !qc.baseName.equals("");
+            boolean hasBaseName = !qc.baseName.isEmpty();
             boolean matchesBaseName = qc.baseName.equals(baseName) || !hasBaseName;
             if (qc.usbVid == usbVid && qc.usbPid == usbPid && matchesBaseName) {
                 return qc;

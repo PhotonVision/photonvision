@@ -155,7 +155,6 @@ public class Logger {
             if (logCounter < MAX_LOGS_TO_KEEP) {
                 // Skip over the first MAX_LOGS_TO_KEEP files
                 logCounter++;
-                continue;
             } else {
                 // Delete this file.
                 file.delete();

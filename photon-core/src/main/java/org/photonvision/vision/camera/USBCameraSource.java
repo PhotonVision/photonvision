@@ -266,12 +266,9 @@ public class USBCameraSource extends VisionSource {
                     } else {
                         modes = camera.enumerateVideoModes();
                     }
-                    for (int i = 0; i < modes.length; i++) {
-                        var videoMode = modes[i];
-
+                    for (VideoMode videoMode : modes) {
                         // Filter grey modes
-                        if (videoMode.pixelFormat == VideoMode.PixelFormat.kGray
-                                || videoMode.pixelFormat == VideoMode.PixelFormat.kUnknown) {
+                        if (videoMode.pixelFormat == VideoMode.PixelFormat.kGray || videoMode.pixelFormat == VideoMode.PixelFormat.kUnknown) {
                             continue;
                         }
 

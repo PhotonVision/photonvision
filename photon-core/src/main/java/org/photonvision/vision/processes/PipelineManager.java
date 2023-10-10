@@ -375,31 +375,34 @@ public class PipelineManager {
 
     private static String createUniqueName(
             String nickname, List<CVPipelineSettings> existingSettings) {
-        String uniqueName = nickname;
+        StringBuilder uniqueName = new StringBuilder(nickname);
         while (true) {
-            String finalUniqueName = uniqueName; // To get around lambda capture
+            String finalUniqueName = uniqueName.toString(); // To get around lambda capture
             var conflictingName =
                     existingSettings.stream().anyMatch(it -> it.pipelineNickname.equals(finalUniqueName));
 
             if (!conflictingName) {
                 // If no conflict, we're done
-                return uniqueName;
+                return uniqueName.toString();
             } else {
                 // Otherwise, we need to add a suffix to the name
                 // If the string doesn't already end in "([0-9]*)", we'll add it
                 // If it does, we'll increment the number in the suffix
 
-                if (uniqueName.matches(".*\\([0-9]*\\)")) {
+                if (uniqueName.toString().matches(".*\\([0-9]*\\)")) {
                     // Because java strings are immutable, we have to do this curstedness
                     // This is like doing "New pipeline (" + 2 + ")"
 
-                    var parenStart = uniqueName.lastIndexOf('(');
+                    var parenStart = uniqueName.toString().lastIndexOf('(');
                     var parenEnd = uniqueName.length() - 1;
                     var number = Integer.parseInt(uniqueName.substring(parenStart + 1, parenEnd)) + 1;
 
-                    uniqueName = uniqueName.substring(0, parenStart + 1) + number + ")";
+                    uniqueName = new StringBuilder(uniqueName.substring(
+                            0,
+                            parenStart + 1
+                    ) + number + ")");
                 } else {
-                    uniqueName += " (1)";
+                    uniqueName.append(" (1)");
                 }
             }
         }

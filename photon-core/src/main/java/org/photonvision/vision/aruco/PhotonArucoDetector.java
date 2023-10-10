@@ -58,7 +58,7 @@ public class PhotonArucoDetector {
         ids = new Mat();
         tvecs = new Mat();
         rvecs = new Mat();
-        corners = new ArrayList<Mat>();
+        corners = new ArrayList<>();
         tagPose = new Pose3d();
         translation = new Translation3d();
         rotation = new Rotation3d();

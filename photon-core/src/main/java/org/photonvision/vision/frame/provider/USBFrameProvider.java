@@ -48,7 +48,11 @@ public class USBFrameProvider extends CpuImageProcessor {
             time = MathUtils.wpiNanoTime();
         }
 
-        return new CapturedFrame(mat, settables.getFrameStaticProperties(), time);
+        return new CapturedFrame(
+                mat,
+                settables.getFrameStaticProperties(),
+                time
+        );
     }
 
     @Override

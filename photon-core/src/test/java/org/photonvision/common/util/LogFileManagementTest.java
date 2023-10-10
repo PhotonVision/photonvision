@@ -66,8 +66,9 @@ public class LogFileManagementTest {
         Logger.cleanLogs(Path.of(testDir));
 
         // Confirm we deleted log files
-        Assertions.assertTrue(
-                Logger.MAX_LOGS_TO_KEEP == countLogFiles(testDir),
+        Assertions.assertEquals(
+                Logger.MAX_LOGS_TO_KEEP,
+                countLogFiles(testDir),
                 "Not enough log files deleted"
         );
 
