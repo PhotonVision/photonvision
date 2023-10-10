@@ -41,8 +41,10 @@ public class Constants {
     public static final double GOAL_RANGE_METERS = Units.feetToMeters(10);
 
     // Where the 2020 High goal target is located on the field
-    // See https://firstfrc.blob.core.windows.net/frc2020/PlayingField/LayoutandMarkingDiagram.pdf
-    // pages 4 and 5
+    // See
+    // https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#field-coordinate-system
+    // and https://firstfrc.blob.core.windows.net/frc2020/PlayingField/LayoutandMarkingDiagram.pdf
+    // (pages 4 and 5)
     public static final Pose3d TARGET_POSE =
             new Pose3d(
                     new Translation3d(
