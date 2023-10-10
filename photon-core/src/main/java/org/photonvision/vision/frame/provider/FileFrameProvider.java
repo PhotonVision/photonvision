@@ -111,11 +111,7 @@ public class FileFrameProvider extends CpuImageProcessor {
         }
 
         lastGetMillis = System.currentTimeMillis();
-        return new CapturedFrame(
-                out,
-                properties,
-                MathUtils.wpiNanoTime()
-        );
+        return new CapturedFrame(out, properties, MathUtils.wpiNanoTime());
     }
 
     @Override

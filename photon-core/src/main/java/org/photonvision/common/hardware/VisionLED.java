@@ -179,11 +179,7 @@ public class VisionLED {
             }
             currentLedMode = newLedMode;
             logger.info(
-                    "Changing LED mode from \""
-                            + lastLedMode.toString()
-                            + "\" to \""
-                            + newLedMode
-                            + "\"");
+                    "Changing LED mode from \"" + lastLedMode.toString() + "\" to \"" + newLedMode + "\"");
         } else {
             if (currentLedMode == VisionLEDMode.kDefault) {
                 switch (newLedMode) {

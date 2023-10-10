@@ -168,7 +168,10 @@ public class VisionModuleManagerTest {
         var modules = vmm.addSources(List.of(testSource, testSource2, testSource3));
 
         System.out.println(
-                Arrays.toString(modules.stream().map(it -> it.visionSource.getCameraConfiguration().streamIndex).toArray()));
+                Arrays.toString(
+                        modules.stream()
+                                .map(it -> it.visionSource.getCameraConfiguration().streamIndex)
+                                .toArray()));
         var idxs =
                 modules.stream()
                         .map(it -> it.visionSource.getCameraConfiguration().streamIndex)

@@ -34,7 +34,8 @@ public class FileVisionSource extends VisionSource {
 
     public FileVisionSource(CameraConfiguration cameraConfiguration) {
         super(cameraConfiguration);
-        var calibration = !cameraConfiguration.calibrations.isEmpty()
+        var calibration =
+                !cameraConfiguration.calibrations.isEmpty()
                         ? cameraConfiguration.calibrations.get(0)
                         : null;
         frameProvider =

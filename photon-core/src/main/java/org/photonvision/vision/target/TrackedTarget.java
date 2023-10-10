@@ -126,8 +126,7 @@ public class TrackedTarget implements Releasable {
                 0,
                 bestPose.getTranslation().getX(),
                 bestPose.getTranslation().getY(),
-                bestPose.getTranslation().getZ()
-        );
+                bestPose.getTranslation().getZ());
         setCameraRelativeTvec(tvec);
 
         // Opencv expects a 3d vector with norm = angle and direction = axis
@@ -183,7 +182,8 @@ public class TrackedTarget implements Releasable {
                     VecBuilder.fill(result.getRvec()[0], result.getRvec()[1], result.getRvec()[2]);
             Rotation3d rotation = new Rotation3d(axisangle, axisangle.normF());
 
-            m_bestCameraToTarget3d = MathUtils.convertOpenCVtoPhotonTransform(new Transform3d(translation, rotation));
+            m_bestCameraToTarget3d =
+                    MathUtils.convertOpenCVtoPhotonTransform(new Transform3d(translation, rotation));
         }
     }
 

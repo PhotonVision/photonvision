@@ -168,8 +168,8 @@ public class LibCameraJNI {
     public static native boolean awaitNewFrame();
 
     /**
-     * Get a pointer to the most recent color mat generated. Call this immediately after awaitNewFrame,
-     * and call only once per new frame!
+     * Get a pointer to the most recent color mat generated. Call this immediately after
+     * awaitNewFrame, and call only once per new frame!
      */
     public static native long takeColorFrame();
 

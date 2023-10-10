@@ -61,8 +61,7 @@ public class SocketVideoStreamManager {
             userSubscriptions.put(user, streamPortID);
             stream.addUser();
         } else {
-            logger.error(
-                    "User attempted to subscribe to non-existent port " + streamPortID);
+            logger.error("User attempted to subscribe to non-existent port " + streamPortID);
         }
     }
 

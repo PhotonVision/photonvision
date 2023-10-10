@@ -268,7 +268,8 @@ public class USBCameraSource extends VisionSource {
                     }
                     for (VideoMode videoMode : modes) {
                         // Filter grey modes
-                        if (videoMode.pixelFormat == VideoMode.PixelFormat.kGray || videoMode.pixelFormat == VideoMode.PixelFormat.kUnknown) {
+                        if (videoMode.pixelFormat == VideoMode.PixelFormat.kGray
+                                || videoMode.pixelFormat == VideoMode.PixelFormat.kUnknown) {
                             continue;
                         }
 

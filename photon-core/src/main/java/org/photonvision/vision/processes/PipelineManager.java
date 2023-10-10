@@ -397,10 +397,7 @@ public class PipelineManager {
                     var parenEnd = uniqueName.length() - 1;
                     var number = Integer.parseInt(uniqueName.substring(parenStart + 1, parenEnd)) + 1;
 
-                    uniqueName = new StringBuilder(uniqueName.substring(
-                            0,
-                            parenStart + 1
-                    ) + number + ")");
+                    uniqueName = new StringBuilder(uniqueName.substring(0, parenStart + 1) + number + ")");
                 } else {
                     uniqueName.append(" (1)");
                 }

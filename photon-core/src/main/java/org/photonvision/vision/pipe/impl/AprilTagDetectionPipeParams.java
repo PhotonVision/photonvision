@@ -47,7 +47,6 @@ public class AprilTagDetectionPipeParams {
         if (family != other.family) return false;
         if (detectorParams == null) {
             return other.detectorParams == null;
-        } else
-            return detectorParams.equals(other.detectorParams);
+        } else return detectorParams.equals(other.detectorParams);
     }
 }

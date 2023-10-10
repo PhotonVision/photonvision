@@ -34,7 +34,8 @@ import org.photonvision.vision.opencv.DualOffsetValues;
 public class TargetCalculationsTest {
 
     private static final Size imageSize = new Size(800, 600);
-    private static final Point imageCenterPoint = new Point(imageSize.width / 2, imageSize.height / 2);
+    private static final Point imageCenterPoint =
+            new Point(imageSize.width / 2, imageSize.height / 2);
     private static final double diagFOV = Math.toRadians(70.0);
 
     private static final FrameStaticProperties props =
