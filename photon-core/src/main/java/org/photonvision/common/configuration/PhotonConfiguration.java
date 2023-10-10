@@ -33,10 +33,10 @@ import org.photonvision.vision.processes.VisionSource;
 
 // TODO rename this class
 public class PhotonConfiguration {
-    private HardwareConfig hardwareConfig;
-    private HardwareSettings hardwareSettings;
+    private final HardwareConfig hardwareConfig;
+    private final HardwareSettings hardwareSettings;
     private NetworkConfig networkConfig;
-    private HashMap<String, CameraConfiguration> cameraConfigurations;
+    private final HashMap<String, CameraConfiguration> cameraConfigurations;
 
     public PhotonConfiguration(
             HardwareConfig hardwareConfig,

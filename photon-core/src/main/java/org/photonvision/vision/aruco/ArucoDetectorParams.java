@@ -49,7 +49,7 @@ public class ArucoDetectorParams {
 
         // We only need to mutate the parameters -- the detector keeps a poitner to the parameters
         // object internally, so it should automatically update
-        parameters.set_aprilTagQuadDecimate((float) decimate);
+        parameters.set_aprilTagQuadDecimate(decimate);
         m_decimate = decimate;
     }
 

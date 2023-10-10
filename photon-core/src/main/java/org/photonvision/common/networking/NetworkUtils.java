@@ -31,12 +31,12 @@ import org.photonvision.common.util.ShellExec;
 public class NetworkUtils {
     private static final Logger logger = new Logger(NetworkUtils.class, LogGroup.General);
 
-    public static enum NMType {
+    public enum NMType {
         NMTYPE_ETHERNET("ethernet"),
         NMTYPE_WIFI("wifi"),
         NMTYPE_UNKNOWN("");
 
-        private NMType(String id) {
+        NMType(String id) {
             identifier = id;
         }
 
@@ -108,7 +108,7 @@ public class NetworkUtils {
             logger.error("Could not get active NM ifaces!", e);
         }
 
-        logger.debug("Found network interfaces:\n" + ret.toString());
+        logger.debug("Found network interfaces:\n" + ret);
 
         allInterfaces = ret;
         return ret;

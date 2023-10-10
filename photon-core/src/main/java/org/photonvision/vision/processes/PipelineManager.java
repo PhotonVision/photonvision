@@ -313,7 +313,7 @@ public class PipelineManager {
                 }
             default:
                 {
-                    logger.error("Got invalid pipeline type: " + type.toString());
+                    logger.error("Got invalid pipeline type: " + type);
                     return null;
                 }
         }
@@ -441,7 +441,7 @@ public class PipelineManager {
             return;
         }
 
-        logger.info("Adding new pipe of type " + type.toString() + " at idx " + idx);
+        logger.info("Adding new pipe of type " + type + " at idx " + idx);
         newSettings.pipelineIndex = idx;
         userPipelineSettings.set(idx, newSettings);
         setPipelineInternal(idx);

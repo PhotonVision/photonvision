@@ -124,11 +124,10 @@ public class TrackedTarget implements Releasable {
         tvec.put(
                 0,
                 0,
-                new double[] {
-                    bestPose.getTranslation().getX(),
-                    bestPose.getTranslation().getY(),
-                    bestPose.getTranslation().getZ()
-                });
+                bestPose.getTranslation().getX(),
+                bestPose.getTranslation().getY(),
+                bestPose.getTranslation().getZ()
+        );
         setCameraRelativeTvec(tvec);
 
         // Opencv expects a 3d vector with norm = angle and direction = axis

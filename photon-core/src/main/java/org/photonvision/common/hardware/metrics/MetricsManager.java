@@ -37,7 +37,7 @@ public class MetricsManager {
 
     CmdBase cmds;
 
-    private ShellExec runCommand = new ShellExec(true, true);
+    private final ShellExec runCommand = new ShellExec(true, true);
 
     public void setConfig(HardwareConfig config) {
         if (config.hasCommandsConfigured()) {
@@ -153,8 +153,8 @@ public class MetricsManager {
                             + "\nExit code: "
                             + runCommand.getExitCode()
                             + "\n Exception: "
-                            + e.toString()
-                            + sw.toString());
+                            + e
+                            + sw);
             return "";
         }
     }

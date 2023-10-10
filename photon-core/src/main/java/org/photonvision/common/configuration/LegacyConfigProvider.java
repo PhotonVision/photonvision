@@ -55,7 +55,7 @@ class LegacyConfigProvider extends ConfigProvider {
     final File configDirectoryFile;
 
     private long saveRequestTimestamp = -1;
-    private Thread settingsSaveThread;
+    private final Thread settingsSaveThread;
 
     public static void saveUploadedSettingsZip(File uploadPath) {
         var folderPath = Path.of(System.getProperty("java.io.tmpdir"), "photonvision").toFile();
@@ -67,7 +67,6 @@ class LegacyConfigProvider extends ConfigProvider {
             logger.info("Copied settings successfully!");
         } catch (IOException e) {
             logger.error("Exception copying uploaded settings!", e);
-            return;
         }
     }
 

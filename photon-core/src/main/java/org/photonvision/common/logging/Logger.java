@@ -49,7 +49,7 @@ public class Logger {
     private static final List<Pair<String, LogLevel>> uiBacklog = new ArrayList<>();
     private static boolean connected = false;
 
-    private static UILogAppender uiLogAppender = new UILogAppender();
+    private static final UILogAppender uiLogAppender = new UILogAppender();
 
     private final String className;
     private final LogGroup group;
@@ -327,7 +327,7 @@ public class Logger {
                                 3000L);
             } catch (FileNotFoundException e) {
                 out = null;
-                System.err.println("Unable to log to file " + logFilePath.toString());
+                System.err.println("Unable to log to file " + logFilePath);
             }
         }
 

@@ -46,7 +46,7 @@ public class VisionLED {
 
     private int mappedBrightnessPercentage;
 
-    private Consumer<Integer> modeConsumer;
+    private final Consumer<Integer> modeConsumer;
 
     public VisionLED(
             List<Integer> ledPins,
@@ -182,7 +182,7 @@ public class VisionLED {
                     "Changing LED mode from \""
                             + lastLedMode.toString()
                             + "\" to \""
-                            + newLedMode.toString()
+                            + newLedMode
                             + "\"");
         } else {
             if (currentLedMode == VisionLEDMode.kDefault) {

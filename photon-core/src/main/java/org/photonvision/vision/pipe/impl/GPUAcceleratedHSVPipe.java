@@ -230,7 +230,7 @@ public class GPUAcceleratedHSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
                         + "', version '"
                         + gl.glGetString(GL.GL_VERSION)
                         + "', and profile '"
-                        + profile.toString()
+                        + profile
                         + "'");
 
         var fmt = GLBuffers.newDirectIntBuffer(1);
@@ -298,7 +298,8 @@ public class GPUAcceleratedHSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
         FloatBuffer vertexBuffer = GLBuffers.newDirectFloatBuffer(k_vertexPositions);
         gl.glBindBuffer(GL_ARRAY_BUFFER, vertexVBOIds.get(0));
         gl.glBufferData(
-                GL_ARRAY_BUFFER, vertexBuffer.capacity() * Float.BYTES, vertexBuffer, GL_STATIC_DRAW);
+                GL_ARRAY_BUFFER,
+                (long) vertexBuffer.capacity() * Float.BYTES, vertexBuffer, GL_STATIC_DRAW);
 
         // Set up pixel unpack buffer (a PBO to transfer image data to the GPU)
         if (pboMode != PBOMode.NONE) {
@@ -389,12 +390,14 @@ public class GPUAcceleratedHSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
             if (pboMode != PBOMode.NONE) {
                 gl.glBindBuffer(GLES3.GL_PIXEL_PACK_BUFFER, packPBOIds.get(0));
                 gl.glBufferData(
-                        GLES3.GL_PIXEL_PACK_BUFFER, in.width() * in.height(), null, GLES3.GL_STREAM_READ);
+                        GLES3.GL_PIXEL_PACK_BUFFER,
+                        (long) in.width() * in.height(), null, GLES3.GL_STREAM_READ);
 
                 if (pboMode == PBOMode.DOUBLE_BUFFERED) {
                     gl.glBindBuffer(GLES3.GL_PIXEL_PACK_BUFFER, packPBOIds.get(1));
                     gl.glBufferData(
-                            GLES3.GL_PIXEL_PACK_BUFFER, in.width() * in.height(), null, GLES3.GL_STREAM_READ);
+                            GLES3.GL_PIXEL_PACK_BUFFER,
+                            (long) in.width() * in.height(), null, GLES3.GL_STREAM_READ);
                 }
             }
         }
@@ -459,14 +462,15 @@ public class GPUAcceleratedHSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
             // GPU
             // This causes the previous data in the PBO to be discarded
             gl.glBufferData(
-                    GLES3.GL_PIXEL_UNPACK_BUFFER, in.width() * in.height() * 3, null, GLES3.GL_STREAM_DRAW);
+                    GLES3.GL_PIXEL_UNPACK_BUFFER,
+                    (long) in.width() * in.height() * 3, null, GLES3.GL_STREAM_DRAW);
 
             // Map the a buffer of GPU memory into a place that's accessible by us
             var buf =
                     gl.glMapBufferRange(
                             GLES3.GL_PIXEL_UNPACK_BUFFER,
                             0,
-                            in.width() * in.height() * 3,
+                            (long) in.width() * in.height() * 3,
                             GLES3.GL_MAP_WRITE_BIT);
             buf.put(inputBytes);
 
@@ -527,7 +531,8 @@ public class GPUAcceleratedHSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
         // Map the PBO into the CPU's memory
         gl.glBindBuffer(GLES3.GL_PIXEL_PACK_BUFFER, packPBOIds.get(packNextIndex));
         var buf =
-                gl.glMapBufferRange(GLES3.GL_PIXEL_PACK_BUFFER, 0, width * height, GLES3.GL_MAP_READ_BIT);
+                gl.glMapBufferRange(GLES3.GL_PIXEL_PACK_BUFFER, 0,
+                        (long) width * height, GLES3.GL_MAP_READ_BIT);
         buf.get(outputBytes);
         outputMat.put(0, 0, outputBytes);
         gl.glUnmapBuffer(GLES3.GL_PIXEL_PACK_BUFFER);

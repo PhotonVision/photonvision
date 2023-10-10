@@ -41,7 +41,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
     private final NetworkTable rootTable = NetworkTablesManager.getInstance().kRootTable;
 
-    private NTTopicSet ts = new NTTopicSet();
+    private final NTTopicSet ts = new NTTopicSet();
 
     NTDataChangeListener pipelineIndexListener;
     private final Supplier<Integer> pipelineIndexSupplier;

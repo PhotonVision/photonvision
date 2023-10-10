@@ -53,7 +53,7 @@ public class SocketVideoStream implements Consumer<CVMat> {
         this.portID = portID;
         oldSchoolServer =
                 new MJPGFrameConsumer(
-                        CameraServerJNI.getHostname() + "_Port_" + Integer.toString(portID) + "_MJPEG_Server",
+                        CameraServerJNI.getHostname() + "_Port_" + portID + "_MJPEG_Server",
                         portID);
     }
 

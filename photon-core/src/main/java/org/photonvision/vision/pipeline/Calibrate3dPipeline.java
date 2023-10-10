@@ -63,7 +63,7 @@ public class Calibrate3dPipeline
     /// Output of the calibration, getter method is set for this.
     private CVPipeResult<CameraCalibrationCoefficients> calibrationOutput;
 
-    private int minSnapshots;
+    private final int minSnapshots;
 
     private boolean calibrating = false;
 

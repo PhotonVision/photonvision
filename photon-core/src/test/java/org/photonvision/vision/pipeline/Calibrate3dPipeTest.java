@@ -311,7 +311,7 @@ public class Calibrate3dPipeTest {
         assertTrue(centerYErrPct < 10.0);
 
         System.out.println("Per View Errors: " + Arrays.toString(cal.perViewErrors));
-        System.out.println("Camera Intrinsics: " + cal.cameraIntrinsics.toString());
+        System.out.println("Camera Intrinsics: " + cal.cameraIntrinsics);
         System.out.println("Dist Coeffs: " + cal.distCoeffs.toString());
         System.out.println("Standard Deviation: " + cal.standardDeviation);
         System.out.println(

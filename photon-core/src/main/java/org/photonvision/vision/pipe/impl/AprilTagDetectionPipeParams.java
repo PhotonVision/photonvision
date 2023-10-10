@@ -46,8 +46,8 @@ public class AprilTagDetectionPipeParams {
         AprilTagDetectionPipeParams other = (AprilTagDetectionPipeParams) obj;
         if (family != other.family) return false;
         if (detectorParams == null) {
-            if (other.detectorParams != null) return false;
-        } else if (!detectorParams.equals(other.detectorParams)) return false;
-        return true;
+            return other.detectorParams == null;
+        } else
+            return detectorParams.equals(other.detectorParams);
     }
 }

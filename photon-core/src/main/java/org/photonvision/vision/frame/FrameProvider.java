@@ -25,14 +25,14 @@ public interface FrameProvider extends Supplier<Frame> {
     String getName();
 
     /** Ask the camera to produce a certain kind of processed image (eg HSV or greyscale) */
-    public void requestFrameThresholdType(FrameThresholdType type);
+    void requestFrameThresholdType(FrameThresholdType type);
 
     /** Ask the camera to rotate frames it outputs */
-    public void requestFrameRotation(ImageRotationMode rotationMode);
+    void requestFrameRotation(ImageRotationMode rotationMode);
 
     /** Ask the camera to provide either the input, output, or both frames. */
-    public void requestFrameCopies(boolean copyInput, boolean copyOutput);
+    void requestFrameCopies(boolean copyInput, boolean copyOutput);
 
     /** Ask the camera to rotate frames it outputs */
-    public void requestHsvSettings(HSVPipe.HSVParams params);
+    void requestHsvSettings(HSVPipe.HSVParams params);
 }

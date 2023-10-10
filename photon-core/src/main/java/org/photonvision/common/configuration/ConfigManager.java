@@ -48,13 +48,13 @@ public class ConfigManager {
 
     private final ConfigProvider m_provider;
 
-    private Thread settingsSaveThread;
+    private final Thread settingsSaveThread;
     private long saveRequestTimestamp = -1;
 
     enum ConfigSaveStrategy {
         SQL,
         LEGACY,
-        ATOMIC_ZIP;
+        ATOMIC_ZIP
     }
 
     // This logic decides which kind of ConfigManager we load as the default. If we want

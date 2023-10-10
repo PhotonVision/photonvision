@@ -48,7 +48,7 @@ public class FindBoardCornersPipe
                     | Calib3d.CALIB_CB_FILTER_QUADS
                     | Calib3d.CALIB_CB_FAST_CHECK;
 
-    private MatOfPoint2f boardCorners = new MatOfPoint2f();
+    private final MatOfPoint2f boardCorners = new MatOfPoint2f();
 
     // Intermedeate result mat's
     Mat smallerInFrame = new Mat();
@@ -328,8 +328,7 @@ public class FindBoardCornersPipe
             if (type != other.type) return false;
             if (Double.doubleToLongBits(gridSize) != Double.doubleToLongBits(other.gridSize))
                 return false;
-            if (divisor != other.divisor) return false;
-            return true;
+            return divisor == other.divisor;
         }
     }
 }

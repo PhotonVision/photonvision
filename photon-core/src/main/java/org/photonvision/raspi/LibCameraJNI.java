@@ -28,7 +28,7 @@ import org.photonvision.common.logging.Logger;
 
 public class LibCameraJNI {
     private static boolean libraryLoaded = false;
-    private static Logger logger = new Logger(LibCameraJNI.class, LogGroup.Camera);
+    private static final Logger logger = new Logger(LibCameraJNI.class, LogGroup.Camera);
 
     public static final Object CAMERA_LOCK = new Object();
 

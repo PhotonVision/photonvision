@@ -27,7 +27,8 @@ public class ShellExec {
     private static final Logger logger = new Logger(ShellExec.class, LogGroup.General);
 
     private int exitCode;
-    private boolean readOutput, readError;
+    private final boolean readOutput;
+    private final boolean readError;
     private StreamGobbler errorGobbler, outputGobbler;
 
     public ShellExec() {
@@ -160,8 +161,8 @@ public class ShellExec {
      */
     @SuppressWarnings("WeakerAccess")
     private static class StreamGobbler extends Thread {
-        private InputStream is;
-        private StringBuilder output;
+        private final InputStream is;
+        private final StringBuilder output;
         private volatile boolean completed; // mark volatile to guarantee a thread safety
 
         public StreamGobbler(InputStream is, boolean readStream) {
