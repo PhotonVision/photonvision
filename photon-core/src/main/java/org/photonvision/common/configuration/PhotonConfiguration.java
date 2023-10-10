@@ -113,7 +113,7 @@ public class PhotonConfiguration {
 
         var lightingConfig = new UILightingConfig();
         lightingConfig.brightness = hardwareSettings.ledBrightnessPercentage;
-        lightingConfig.supported = (hardwareConfig.ledPins.size() != 0);
+        lightingConfig.supported = !hardwareConfig.ledPins.isEmpty();
         settingsSubmap.put("lighting", SerializationUtils.objectToHashMap(lightingConfig));
 
         var generalSubmap = new HashMap<String, Object>();

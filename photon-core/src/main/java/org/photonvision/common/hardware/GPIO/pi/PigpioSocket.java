@@ -148,7 +148,7 @@ public class PigpioSocket {
         // ## extension ##
         // III on/off/delay * pulses
 
-        if (pulses == null || pulses.size() == 0) return 0;
+        if (pulses == null || pulses.isEmpty()) return 0;
 
         try {
             ByteBuffer bb = ByteBuffer.allocate(pulses.size() * 12);

@@ -34,7 +34,6 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.PotentialTarget;
 import org.photonvision.vision.target.TrackedTarget;
 
-@SuppressWarnings({"DuplicatedCode"})
 public class ColoredShapePipeline
         extends CVPipeline<CVPipelineResult, ColoredShapePipelineSettings> {
     private final SpeckleRejectPipe speckleRejectPipe = new SpeckleRejectPipe();

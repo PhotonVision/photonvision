@@ -66,7 +66,7 @@ public class PipelineManager {
 
         this.driverModePipeline.setSettings(driverSettings);
 
-        if (userPipelines.size() < 1) addPipeline(PipelineType.Reflective);
+        if (userPipelines.isEmpty()) addPipeline(PipelineType.Reflective);
     }
 
     public PipelineManager(CameraConfiguration config) {

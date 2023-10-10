@@ -54,7 +54,7 @@ public class NetworkManager {
             }
 
             // always set hostname
-            if (config.hostname.length() > 0) {
+            if (!config.hostname.isEmpty()) {
                 try {
                     var shell = new ShellExec(true, false);
                     shell.executeBashCommand("cat /etc/hostname | tr -d \" \\t\\n\\r\"");
@@ -107,7 +107,7 @@ public class NetworkManager {
                 }
             } else if (config.connectionType == NetworkMode.STATIC) {
                 var shell = new ShellExec();
-                if (config.staticIp.length() > 0) {
+                if (!config.staticIp.isEmpty()) {
                     try {
                         shell.executeBashCommand(
                                 config

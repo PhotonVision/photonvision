@@ -18,10 +18,9 @@
 package org.photonvision.vision.pipe.impl;
 
 import edu.wpi.first.math.geometry.Translation2d;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+
+import java.util.*;
+
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
@@ -42,18 +41,12 @@ public class CornerDetectionPipe
         for (var target : targetList) {
             // detect corners. Might implement more algorithms later but
             // APPROX_POLY_DP_AND_EXTREME_CORNERS should be year agnostic
-            switch (params.cornerDetectionStrategy) {
-                case APPROX_POLY_DP_AND_EXTREME_CORNERS:
-                    {
-                        var targetCorners =
-                                detectExtremeCornersByApproxPolyDp(target, params.calculateConvexHulls);
-                        target.setTargetCorners(targetCorners);
-                        break;
-                    }
-                default:
-                    {
-                        break;
-                    }
+            if (Objects.requireNonNull(params.cornerDetectionStrategy) == DetectionStrategy.APPROX_POLY_DP_AND_EXTREME_CORNERS) {
+                var targetCorners = detectExtremeCornersByApproxPolyDp(
+                        target,
+                        params.calculateConvexHulls
+                );
+                target.setTargetCorners(targetCorners);
             }
         }
         return targetList;

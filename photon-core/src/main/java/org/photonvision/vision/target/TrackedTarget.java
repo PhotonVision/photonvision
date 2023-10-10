@@ -182,10 +182,8 @@ public class TrackedTarget implements Releasable {
             var axisangle =
                     VecBuilder.fill(result.getRvec()[0], result.getRvec()[1], result.getRvec()[2]);
             Rotation3d rotation = new Rotation3d(axisangle, axisangle.normF());
-            Transform3d targetPose =
-                    MathUtils.convertOpenCVtoPhotonTransform(new Transform3d(translation, rotation));
 
-            m_bestCameraToTarget3d = targetPose;
+            m_bestCameraToTarget3d = MathUtils.convertOpenCVtoPhotonTransform(new Transform3d(translation, rotation));
         }
     }
 

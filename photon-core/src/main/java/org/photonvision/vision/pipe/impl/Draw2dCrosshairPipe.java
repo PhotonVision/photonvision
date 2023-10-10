@@ -62,7 +62,7 @@ public class Draw2dCrosshairPipe
                     }
                     break;
                 case Dual:
-                    if (in.getRight().size() >= 1) {
+                    if (!in.getRight().isEmpty()) {
                         var target = in.getRight().get(0);
                         if (target != null) {
                             var area = target.getArea();

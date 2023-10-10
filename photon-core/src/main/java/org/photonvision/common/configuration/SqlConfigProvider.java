@@ -251,8 +251,7 @@ public class SqlConfigProvider extends ConfigProvider {
             var result = query.executeQuery();
 
             while (result.next()) {
-                var contents = result.getString("contents");
-                return contents;
+                return result.getString("contents");
             }
         } catch (SQLException e) {
             logger.error("SQL Err getting file " + filename, e);

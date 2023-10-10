@@ -22,7 +22,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 /** Execute external process and optionally read output buffer. */
-@SuppressWarnings({"unused", "ConstantConditions"})
+@SuppressWarnings({"unused" })
 public class ShellExec {
     private static final Logger logger = new Logger(ShellExec.class, LogGroup.General);
 
