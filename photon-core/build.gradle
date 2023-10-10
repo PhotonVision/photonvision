@@ -27,9 +27,6 @@ dependencies {
     implementation wpilibTools.deps.wpilibJava("apriltag")
 
     implementation "org.xerial:sqlite-jdbc:3.41.0.0"
-
-    // NetworkManager
-    implementation "com.github.hypfvieh:dbus-java:3.3.2"
 }
 
 task writeCurrentVersionJava {
