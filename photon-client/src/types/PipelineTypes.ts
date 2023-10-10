@@ -245,12 +245,11 @@ export interface ArucoPipelineSettings extends PipelineSettings {
   threshStepSize: number;
   threshMaxSize: number;
   threshConstant: number;
-  errorCorrectionRate: number;
-  useCornerRefinement: boolean;
-  refineNumIterations: number;
-  refineMinErrorPx: number;
-  refineWinSize: number;
-  cornerRefinementStrategy: number;
+  debugThreshold: boolean;
+
+  useCornerRefinement: boolean,
+  debugRefineWindow: boolean,
+
   useAruco3: boolean;
   aruco3MinMarkerSideRatio: number;
   aruco3MinCanonicalImgSide: number;
@@ -266,16 +265,13 @@ export const DefaultArucoPipelineSettings: ArucoPipelineSettings = {
   ledMode: false,
   pipelineType: PipelineType.Aruco,
 
-  threshMinSize: 3,
-  threshStepSize: 10,
-  threshMaxSize: 23,
-  threshConstant: 7,
-  errorCorrectionRate: 0.5,
+  threshMinSize: 11,
+  threshStepSize: 40,
+  threshMaxSize: 91,
+  threshConstant: 10,
+  debugThreshold: false,
   useCornerRefinement: true,
-  refineNumIterations: 30,
-  refineMinErrorPx: 0.1,
-  refineWinSize: 5,
-  cornerRefinementStrategy: 1,
+  debugRefineWindow: false,
   useAruco3: false,
   aruco3MinMarkerSideRatio: 0.02,
   aruco3MinCanonicalImgSide: 32

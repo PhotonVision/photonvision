@@ -52,6 +52,18 @@ public class ArucoPoseEstimatorPipe
 
     private final int kNaNRetries = 1;
 
+    private Translation3d tvecToTranslation3d(Mat mat) {
+        double[] tvec = new double[3];
+        mat.get(0, 0, tvec);
+        return new Translation3d(tvec[0], tvec[1], tvec[2]);
+    }
+
+    private Rotation3d rvecToRotation3d(Mat mat) {
+        double[] rvec = new double[3];
+        mat.get(0, 0, rvec);
+        return new Rotation3d(VecBuilder.fill(rvec[0], rvec[1], rvec[2]));
+    }
+
     @Override
     protected AprilTagPoseEstimate process(ArucoDetectionResult in) {
         // We receive 2d corners as (BL, BR, TR, TL) but we want (BR, BL, TL, TR)
@@ -63,7 +75,7 @@ public class ArucoPoseEstimatorPipe
         imagePoints.put(3, 0, new float[] {(float) xCorn[2], (float) yCorn[2]});
 
         float[] reprojErrors = new float[2];
-        // very rarely the IPPE_SQUARE solver returns NaN results, so we retry with slight noise added
+        // very rarely the solvepnp solver returns NaN results, so we retry with slight noise added
         for (int i = 0; i < kNaNRetries + 1; i++) {
             // SolvePnP with SOLVEPNP_IPPE_SQUARE solver
             Calib3d.solvePnPGeneric(
@@ -93,21 +105,11 @@ public class ArucoPoseEstimatorPipe
         // create AprilTagPoseEstimate with results
         if (tvecs.isEmpty())
             return new AprilTagPoseEstimate(new Transform3d(), new Transform3d(), 0, 0);
-        double[] tvec1 = new double[3];
-        double[] tvec2 = new double[3];
-        tvecs.get(0).get(0, 0, tvec1);
-        tvecs.get(1).get(0, 0, tvec2);
-        var trl1 = new Translation3d(tvec1[0], tvec1[1], tvec1[2]);
-        var trl2 = new Translation3d(tvec2[0], tvec2[1], tvec2[2]);
-        double[] rvec1 = new double[3];
-        double[] rvec2 = new double[3];
-        rvecs.get(0).get(0, 0, rvec1);
-        rvecs.get(1).get(0, 0, rvec2);
-        var rot1 = new Rotation3d(VecBuilder.fill(rvec1[0], rvec1[1], rvec1[2]));
-        var rot2 = new Rotation3d(VecBuilder.fill(rvec2[0], rvec2[1], rvec2[2]));
-
         return new AprilTagPoseEstimate(
-                new Transform3d(trl1, rot1), new Transform3d(trl2, rot2), reprojErrors[0], reprojErrors[1]);
+                new Transform3d(tvecToTranslation3d(tvecs.get(0)), rvecToRotation3d(rvecs.get(0))),
+                new Transform3d(tvecToTranslation3d(tvecs.get(1)), rvecToRotation3d(rvecs.get(1))),
+                reprojErrors[0],
+                reprojErrors[1]);
     }
 
     @Override

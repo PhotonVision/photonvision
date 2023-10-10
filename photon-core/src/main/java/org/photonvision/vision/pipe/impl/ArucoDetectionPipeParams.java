@@ -25,10 +25,10 @@ public class ArucoDetectionPipeParams {
     /** Tag family. Default: {@link Aruco#DICT_APRILTAG_16h5}. */
     public int tagFamily = Aruco.DICT_APRILTAG_16h5;
 
-    public int threshMinSize = 3;
-    public int threshStepSize = 10;
-    public int threshMaxSize = 23;
-    public int threshConstant = 7;
+    public int threshMinSize = 11;
+    public int threshStepSize = 40;
+    public int threshMaxSize = 91;
+    public double threshConstant = 10;
 
     /**
      * Bits allowed to be corrected, expressed as a ratio of the tag families theoretical maximum.
@@ -49,16 +49,9 @@ public class ArucoDetectionPipeParams {
      * Minimum error (accuracy) for corner refinement in pixels. When a corner refinement iteration
      * moves the corner by less than this value, the refinement is considered finished.
      */
-    public double refinementMinErrorPx = 0.1;
+    public double refinementMinErrorPx = 0.005;
 
-    /**
-     * The corner refinement window size. This is actually half the window side length.
-     *
-     * <p>Refinement window side length = (1 + refinementWindowSize * 2).
-     */
-    public int refinementWindowSize = 5;
-
-    public int cornerRefinementStrategy = Aruco.CORNER_REFINE_SUBPIX;
+    public boolean debugRefineWindow = false;
 
     /**
      * If the 'Aruco3' speedup should be used. This is similar to AprilTag's 'decimate' value, but
@@ -90,8 +83,6 @@ public class ArucoDetectionPipeParams {
                 && useCornerRefinement == that.useCornerRefinement
                 && refinementMaxIterations == that.refinementMaxIterations
                 && refinementMinErrorPx == that.refinementMinErrorPx
-                && refinementWindowSize == that.refinementWindowSize
-                && cornerRefinementStrategy == that.cornerRefinementStrategy
                 && useAruco3 == that.useAruco3
                 && aruco3MinMarkerSideRatio == that.aruco3MinMarkerSideRatio
                 && aruco3MinCanonicalImgSide == that.aruco3MinCanonicalImgSide;
@@ -101,12 +92,14 @@ public class ArucoDetectionPipeParams {
     public int hashCode() {
         return Objects.hash(
                 tagFamily,
+                threshMinSize,
+                threshStepSize,
+                threshMaxSize,
+                threshConstant,
                 errorCorrectionRate,
                 useCornerRefinement,
                 refinementMaxIterations,
                 refinementMinErrorPx,
-                refinementWindowSize,
-                cornerRefinementStrategy,
                 useAruco3,
                 aruco3MinMarkerSideRatio,
                 aruco3MinCanonicalImgSide);

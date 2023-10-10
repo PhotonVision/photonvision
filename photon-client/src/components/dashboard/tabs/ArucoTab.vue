@@ -28,8 +28,8 @@ const interactiveCols = computed(
       label="Thresh Min Size"
       tooltip=""
       :min="3"
-      :max="128"
-      :step="1"
+      :max="255"
+      :step="2"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ threshMinSize: value }, false)"
     />
     <cv-slider
@@ -38,7 +38,7 @@ const interactiveCols = computed(
       :slider-cols="interactiveCols"
       label="Thresh Step Size"
       tooltip=""
-      :min="1"
+      :min="2"
       :max="128"
       :step="1"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ threshStepSize: value }, false)"
@@ -49,9 +49,9 @@ const interactiveCols = computed(
       :slider-cols="interactiveCols"
       label="Thresh Max Size"
       tooltip=""
-      :min="3"
-      :max="256"
-      :step="1"
+      :min="currentPipelineSettings.threshMinSize"
+      :max="255"
+      :step="2"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ threshMaxSize: value }, false)"
     />
     <cv-slider
@@ -65,16 +65,12 @@ const interactiveCols = computed(
       :step="1"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ threshConstant: value }, false)"
     />
-    <cv-slider
-      v-model="currentPipelineSettings.errorCorrectionRate"
+    <cv-switch
+      v-model="currentPipelineSettings.debugThreshold"
       class="pt-2"
-      :slider-cols="interactiveCols"
-      label="Error Correction Ratio"
-      tooltip="Bits allowed to be corrected, expressed as a ratio of the tag families theoretical maximum."
-      :min="0"
-      :max="1.0"
-      :step="0.05"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ errorCorrectionRate: value }, false)"
+      label="Debug Threshold"
+      tooltip=""
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ debugThreshold: value }, false)"
     />
     <cv-switch
       v-model="currentPipelineSettings.useCornerRefinement"
@@ -83,54 +79,12 @@ const interactiveCols = computed(
       tooltip="Further refine the initial corners with subpixel accuracy. This should be considered mandatory for 3D estimation."
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ useCornerRefinement: value }, false)"
     />
-    <cv-slider
-      v-model="currentPipelineSettings.refineNumIterations"
+    <cv-switch
+      v-model="currentPipelineSettings.debugRefineWindow"
       class="pt-2"
-      :slider-cols="interactiveCols"
-      label="Refinement Iterations"
-      tooltip="Maximum corner refinement iterations before stopping. Higher values can increase accuracy at the cost of performance."
-      :disabled="!currentPipelineSettings.useCornerRefinement"
-      :min="30"
-      :max="1000"
-      :step="5"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ refineNumIterations: value }, false)"
-    />
-    <cv-slider
-      v-model="currentPipelineSettings.refineMinErrorPx"
-      class="pt-2"
-      :slider-cols="interactiveCols"
-      label="Refinement Minimum Error"
-      tooltip="Minimum corner refinement error in pixels before stopping. Lower values can increase accuracy at the cost of performance."
-      :disabled="!currentPipelineSettings.useCornerRefinement"
-      :min="0.01"
-      :max="1"
-      :step="0.005"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ refineMinErrorPx: value }, false)"
-    />
-    <cv-slider
-      v-model="currentPipelineSettings.refineWinSize"
-      class="pt-2"
-      :slider-cols="interactiveCols"
-      label="Refinement Window Size"
-      tooltip="Ref "
-      :disabled="!currentPipelineSettings.useCornerRefinement"
-      :min="2"
-      :max="20"
-      :step="1"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ refineWinSize: value }, false)"
-    />
-    <cv-slider
-      v-model="currentPipelineSettings.cornerRefinementStrategy"
-      class="pt-2"
-      :slider-cols="interactiveCols"
-      label="Corner refinement strategy"
+      label="Debug Refine Window"
       tooltip=""
-      :min="0"
-      :max="3"
-      :step="1"
-      @input="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ cornerRefinementStrategy: value }, false)
-      "
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ debugRefineWindow: value }, false)"
     />
     <cv-switch
       v-model="currentPipelineSettings.useAruco3"

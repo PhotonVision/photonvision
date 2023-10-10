@@ -39,6 +39,8 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import java.util.List;
+import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.frame.Frame;
@@ -69,16 +71,23 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
     @Override
     protected void setPipeParamsImpl() {
         var params = new ArucoDetectionPipeParams();
-        params.threshMinSize = settings.threshMinSize;
-        params.threshStepSize = settings.threshStepSize;
-        params.threshMaxSize = settings.threshMaxSize;
+        // sanitize and record settings
+
+        int threshMinSize = Math.max(3, settings.threshMinSize);
+        settings.threshMinSize = threshMinSize;
+        params.threshMinSize = threshMinSize;
+        int threshStepSize = Math.max(2, settings.threshStepSize);
+        settings.threshStepSize = threshStepSize;
+        params.threshStepSize = threshStepSize;
+        int threshMaxSize = Math.max(threshMinSize, settings.threshMaxSize);
+        settings.threshMaxSize = threshMaxSize;
+        params.threshMaxSize = threshMaxSize;
         params.threshConstant = settings.threshConstant;
-        params.errorCorrectionRate = settings.errorCorrectionRate;
+
         params.useCornerRefinement = settings.useCornerRefinement;
         params.refinementMaxIterations = settings.refineNumIterations;
         params.refinementMinErrorPx = settings.refineMinErrorPx;
-        params.refinementWindowSize = settings.refineWinSize;
-        params.cornerRefinementStrategy = settings.cornerRefinementStrategy;
+        params.debugRefineWindow = settings.debugRefineWindow;
         params.useAruco3 = settings.useAruco3;
         params.aruco3MinMarkerSideRatio = settings.aruco3MinMarkerSideRatio;
         params.aruco3MinCanonicalImgSide = settings.aruco3MinCanonicalImgSide;
@@ -87,9 +96,10 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         if (frameStaticProperties.cameraCalibration != null) {
             var cameraMatrix = frameStaticProperties.cameraCalibration.getCameraIntrinsicsMat();
             if (cameraMatrix != null) {
-                poseEstimatorPipe.setParams(
+                var estimatorParams =
                         new ArucoPoseEstimatorPipeParams(
-                                frameStaticProperties.cameraCalibration, Units.inchesToMeters(6)));
+                                frameStaticProperties.cameraCalibration, Units.inchesToMeters(6));
+                poseEstimatorPipe.setParams(estimatorParams);
             }
         }
     }
@@ -108,6 +118,15 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         CVPipeResult<List<ArucoDetectionResult>> tagDetectionPipeResult;
         tagDetectionPipeResult = arucoDetectionPipe.run(frame.processedImage);
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
+
+        // If we want to debug the thresholding steps, draw the first step to the color image
+        if (settings.debugThreshold) {
+            var thresh =
+                    drawThresholdFrame(
+                            frame.processedImage.getMat(), settings.threshMinSize, settings.threshConstant);
+            thresh.copyTo(frame.colorImage.getMat());
+            thresh.release();
+        }
 
         targetList = new ArrayList<>();
         for (ArucoDetectionResult detection : tagDetectionPipeResult.output) {
@@ -144,5 +163,19 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         var fps = fpsResult.output;
 
         return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, frame);
+    }
+
+    private Mat drawThresholdFrame(Mat greyMat, int windowSize, double constant) {
+        Mat thresh = new Mat();
+        if (windowSize % 2 == 0) windowSize++;
+        Imgproc.adaptiveThreshold(
+                greyMat,
+                thresh,
+                255,
+                Imgproc.ADAPTIVE_THRESH_MEAN_C,
+                Imgproc.THRESH_BINARY_INV,
+                windowSize,
+                constant);
+        return thresh;
     }
 }
