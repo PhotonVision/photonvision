@@ -232,38 +232,4 @@ public class MathUtils {
         var axis = rotation.getAxis().times(angle);
         rvecOutput.put(0, 0, axis.getData());
     }
-
-    /**
-     * Orthogonalize an input matrix using a QR decomposition. QR decompositions decompose a
-     * rectangular matrix 'A' such that 'A=QR', where Q is the closest orthogonal matrix to the input,
-     * and R is an upper triangular matrix.
-     *
-     * <p>The following function is released under the BSD license avaliable in
-     * LICENSE_MathUtils_orthogonalizeRotationMatrix.txt.
-     */
-    public static Matrix<N3, N3> orthogonalizeRotationMatrix(Matrix<N3, N3> input) {
-        var a = DecompositionFactory_DDRM.qr(3, 3);
-        if (!a.decompose(input.getStorage().getDDRM())) {
-            // best we can do is return the input
-            return input;
-        }
-
-        // Grab results (thanks for this _great_ api, EJML)
-        var Q = new DMatrixRMaj(3, 3);
-        var R = new DMatrixRMaj(3, 3);
-        a.getQ(Q, false);
-        a.getR(R, false);
-
-        // Fix signs in R if they're < 0 so it's close to an identity matrix
-        // (our QR decomposition implementation sometimes flips the signs of columns)
-        for (int colR = 0; colR < 3; ++colR) {
-            if (R.get(colR, colR) < 0) {
-                for (int rowQ = 0; rowQ < 3; ++rowQ) {
-                    Q.set(rowQ, colR, -Q.get(rowQ, colR));
-                }
-            }
-        }
-
-        return new Matrix<>(new SimpleMatrix(Q));
-    }
 }
