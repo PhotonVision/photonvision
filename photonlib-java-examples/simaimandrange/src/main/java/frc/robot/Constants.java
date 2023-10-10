@@ -40,17 +40,15 @@ public class Constants {
     // How far from the target we want to be
     public static final double GOAL_RANGE_METERS = Units.feetToMeters(10);
 
-    // Where the target is located on the field
+    // Where the 2020 High goal target is located on the field
     // See https://firstfrc.blob.core.windows.net/frc2020/PlayingField/LayoutandMarkingDiagram.pdf
     // pages 4 and 5
     public static final Pose3d TARGET_POSE =
             new Pose3d(
                     new Translation3d(
-                            Units.feetToMeters(54),
-                            Units.feetToMeters(27 / 2)
-                                    - Units.inchesToMeters(43.75)
-                                    - Units.inchesToMeters(48.0 / 2.0),
-                            Units.inchesToMeters(81.19)),
+                            Units.feetToMeters(52.46),
+                            Units.inchesToMeters(94.66),
+                            Units.inchesToMeters(89.69)), // (center of vision target)
                     new Rotation3d(0.0, 0.0, Math.PI));
     // ----------
 
