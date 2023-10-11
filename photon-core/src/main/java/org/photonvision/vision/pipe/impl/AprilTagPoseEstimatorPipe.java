@@ -35,8 +35,6 @@ public class AprilTagPoseEstimatorPipe
     private final AprilTagPoseEstimator m_poseEstimator =
             new AprilTagPoseEstimator(new AprilTagPoseEstimator.Config(0, 0, 0, 0, 0));
 
-    boolean useNativePoseEst;
-
     public AprilTagPoseEstimatorPipe() {
         super();
     }
@@ -92,10 +90,6 @@ public class AprilTagPoseEstimatorPipe
         }
 
         super.setParams(newParams);
-    }
-
-    public void setNativePoseEstimationEnabled(boolean enabled) {
-        this.useNativePoseEst = enabled;
     }
 
     public static class AprilTagPoseEstimatorPipeParams {

@@ -120,9 +120,6 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
         List<TrackedTarget> targetList;
 
-        // Use the solvePNP Enabled flag to enable native pose estimation
-        aprilTagDetectionPipe.setNativePoseEstimationEnabled(settings.solvePNPEnabled);
-
         if (frame.type != FrameThresholdType.GREYSCALE) {
             // TODO so all cameras should give us GREYSCALE -- how should we handle if not?
             // Right now, we just return nothing
