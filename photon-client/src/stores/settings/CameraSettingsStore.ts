@@ -11,8 +11,7 @@ import { PlaceholderCameraSettings } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import type { WebsocketCameraSettingsUpdate } from "@/types/WebsocketDataTypes";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
-import type { ActiveConfigurablePipelineSettings, ActivePipelineSettings } from "@/types/PipelineTypes";
-import type { PipelineType } from "@/types/PipelineTypes";
+import type { ActiveConfigurablePipelineSettings, ActivePipelineSettings, PipelineType } from "@/types/PipelineTypes";
 import axios from "axios";
 
 interface CameraSettingsStore {
