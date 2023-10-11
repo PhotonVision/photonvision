@@ -53,17 +53,16 @@ public class MultiTargetPNPPipe
     }
 
     private MultiTargetPNPResults calculateCameraInField(List<TrackedTarget> targetList) {
-        // Only run with multiple targets
-        if (targetList.size() < 2) {
-            return new MultiTargetPNPResults();
-        }
-
-        // IDs of tags used -- not exposed?, so have to recreate
+        // Find tag IDs that exist in the tag layout
         var tagIDsUsed = new ArrayList<Integer>();
         for (var target : targetList) {
             int id = target.getFiducialId();
-            // only tags in the layout will be used
             if(params.atfl.getTagPose(id).isPresent()) tagIDsUsed.add(id);
+        }
+
+        // Only run with multiple targets
+        if (tagIDsUsed.size() < 2) {
+            return new MultiTargetPNPResults();
         }
 
         var estimatedPose =
