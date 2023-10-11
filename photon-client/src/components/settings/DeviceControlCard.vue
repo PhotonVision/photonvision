@@ -63,7 +63,7 @@ const offlineUpdate = ref();
 const openOfflineUpdatePrompt = () => {
   offlineUpdate.value.click();
 };
-const handleOfflineUpdate = ({ files }: { files: FileList }) => {
+const handleOfflineUpdate = (payload: Event) => {
   useStateStore().showSnackbarMessage({
     message: "New Software Upload in Progress...",
     color: "secondary",
@@ -71,6 +71,9 @@ const handleOfflineUpdate = ({ files }: { files: FileList }) => {
   });
 
   const formData = new FormData();
+
+  if (payload.target == null || !payload.target?.files) return;
+  const files: FileList = payload.target.files as FileList;
   formData.append("jarData", files[0]);
 
   axios
