@@ -141,7 +141,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
             usedDetections.add(detection);
 
             // Populate target list for multitag
-            // (TODO: Address circular dependencies. Multitag only requires corners and IDs, this should not be necessary.)
+            // (TODO: Address circular dependencies. Multitag only requires corners and IDs, this should
+            // not be necessary.)
             TrackedTarget target =
                     new TrackedTarget(
                             detection,
@@ -161,14 +162,15 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         }
 
         // Do single-tag pose estimation
-        if(settings.solvePNPEnabled) {
+        if (settings.solvePNPEnabled) {
             // Clear target list that was used for multitag so we can add target transforms
             targetList.clear();
 
             for (AprilTagDetection detection : usedDetections) {
                 AprilTagPoseEstimate tagPoseEstimate = null;
                 // Do single-tag estimation when "always enabled" or if a tag was not used for multitag
-                if (settings.doSingleTargetAlways || !multiTagResult.fiducialIDsUsed.contains(Integer.valueOf(detection.getId()))) {
+                if (settings.doSingleTargetAlways
+                        || !multiTagResult.fiducialIDsUsed.contains(Integer.valueOf(detection.getId()))) {
                     var poseResult = singleTagPoseEstimatorPipe.run(detection);
                     sumPipeNanosElapsed += poseResult.nanosElapsed;
                     tagPoseEstimate = poseResult.output;
@@ -183,7 +185,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                                 new TargetCalculationParameters(
                                         false, null, null, null, null, frameStaticProperties));
 
-                var correctedBestPose = MathUtils.convertOpenCVtoPhotonPose(target.getBestCameraToTarget3d());
+                var correctedBestPose =
+                        MathUtils.convertOpenCVtoPhotonPose(target.getBestCameraToTarget3d());
                 var correctedAltPose = MathUtils.convertOpenCVtoPhotonPose(target.getAltCameraToTarget3d());
 
                 target.setBestCameraToTarget3d(

@@ -57,7 +57,7 @@ public class MultiTargetPNPPipe
         var tagIDsUsed = new ArrayList<Integer>();
         for (var target : targetList) {
             int id = target.getFiducialId();
-            if(params.atfl.getTagPose(id).isPresent()) tagIDsUsed.add(id);
+            if (params.atfl.getTagPose(id).isPresent()) tagIDsUsed.add(id);
         }
 
         // Only run with multiple targets
