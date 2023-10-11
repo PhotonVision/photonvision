@@ -116,9 +116,8 @@ public class ConfigManager {
                     e1.printStackTrace();
                 }
 
-                // So we can't save the old config, and we couldn't copy the folder
-                // But we've loaded the config. So just try to delete the directory, so we don't try to load
-                // form it next time. That does mean we have no backup recourse, tho
+                // Delete the directory because we were successfully able to load the config but were unable
+                // to save or copy the folder.
                 if (maybeCams.exists()) FileUtils.deleteDirectory(maybeCams.toPath());
             }
 
