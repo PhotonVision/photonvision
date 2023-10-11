@@ -61,7 +61,9 @@ public class MultiTargetPNPPipe
         // IDs of tags used -- not exposed?, so have to recreate
         var tagIDsUsed = new ArrayList<Integer>();
         for (var target : targetList) {
-            tagIDsUsed.add(target.getFiducialId());
+            int id = target.getFiducialId();
+            // only tags in the layout will be used
+            if(params.atfl.getTagPose(id).isPresent()) tagIDsUsed.add(id);
         }
 
         var estimatedPose =
