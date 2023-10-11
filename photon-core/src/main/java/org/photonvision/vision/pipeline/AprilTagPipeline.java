@@ -118,8 +118,6 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
     protected CVPipelineResult process(Frame frame, AprilTagPipelineSettings settings) {
         long sumPipeNanosElapsed = 0L;
 
-        List<TrackedTarget> targetList;
-
         if (frame.type != FrameThresholdType.GREYSCALE) {
             // TODO so all cameras should give us GREYSCALE -- how should we handle if not?
             // Right now, we just return nothing
@@ -130,44 +128,71 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         tagDetectionPipeResult = aprilTagDetectionPipe.run(frame.processedImage);
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
 
-        targetList = new ArrayList<>();
-        for (AprilTagDetection detection : tagDetectionPipeResult.output) {
+        List<AprilTagDetection> detections = tagDetectionPipeResult.output;
+        List<AprilTagDetection> usedDetections = new ArrayList<>();
+        List<TrackedTarget> targetList = new ArrayList<>();
+
+        // Filter out detections based on pipeline settings
+        for (AprilTagDetection detection : detections) {
             // TODO this should be in a pipe, not in the top level here (Matt)
             if (detection.getDecisionMargin() < settings.decisionMargin) continue;
             if (detection.getHamming() > settings.hammingDist) continue;
 
-            AprilTagPoseEstimate tagPoseEstimate = null;
-            if (settings.solvePNPEnabled) {
-                var poseResult = singleTagPoseEstimatorPipe.run(detection);
-                sumPipeNanosElapsed += poseResult.nanosElapsed;
-                tagPoseEstimate = poseResult.output;
-            }
+            usedDetections.add(detection);
 
-            // populate the target list
-            // Challenge here is that TrackedTarget functions with OpenCV Contour
+            // Populate target list for multitag
+            // (TODO: Address circular dependencies. Multitag only requires corners and IDs, this should not be necessary.)
             TrackedTarget target =
                     new TrackedTarget(
                             detection,
-                            tagPoseEstimate,
+                            null,
                             new TargetCalculationParameters(
                                     false, null, null, null, null, frameStaticProperties));
-
-            var correctedBestPose = MathUtils.convertOpenCVtoPhotonPose(target.getBestCameraToTarget3d());
-            var correctedAltPose = MathUtils.convertOpenCVtoPhotonPose(target.getAltCameraToTarget3d());
-
-            target.setBestCameraToTarget3d(
-                    new Transform3d(correctedBestPose.getTranslation(), correctedBestPose.getRotation()));
-            target.setAltCameraToTarget3d(
-                    new Transform3d(correctedAltPose.getTranslation(), correctedAltPose.getRotation()));
 
             targetList.add(target);
         }
 
+        // Do multi-tag pose estimation
         MultiTargetPNPResults multiTagResult = new MultiTargetPNPResults();
         if (settings.solvePNPEnabled && settings.doMultiTarget) {
             var multiTagOutput = multiTagPNPPipe.run(targetList);
             sumPipeNanosElapsed += multiTagOutput.nanosElapsed;
             multiTagResult = multiTagOutput.output;
+        }
+
+        // Do single-tag pose estimation
+        if(settings.solvePNPEnabled) {
+            // Clear target list that was used for multitag so we can add target transforms
+            targetList.clear();
+
+            for (AprilTagDetection detection : usedDetections) {
+                AprilTagPoseEstimate tagPoseEstimate = null;
+                // Do single-tag estimation when "always enabled" or if a tag was not used for multitag
+                if (settings.doSingleTargetAlways || !multiTagResult.fiducialIDsUsed.contains(Integer.valueOf(detection.getId()))) {
+                    var poseResult = singleTagPoseEstimatorPipe.run(detection);
+                    sumPipeNanosElapsed += poseResult.nanosElapsed;
+                    tagPoseEstimate = poseResult.output;
+                }
+
+                // populate the target list
+                // Challenge here is that TrackedTarget functions with OpenCV Contour
+                TrackedTarget target =
+                        new TrackedTarget(
+                                detection,
+                                tagPoseEstimate,
+                                new TargetCalculationParameters(
+                                        false, null, null, null, null, frameStaticProperties));
+
+                var correctedBestPose = MathUtils.convertOpenCVtoPhotonPose(target.getBestCameraToTarget3d());
+                var correctedAltPose = MathUtils.convertOpenCVtoPhotonPose(target.getAltCameraToTarget3d());
+
+                target.setBestCameraToTarget3d(
+                        new Transform3d(correctedBestPose.getTranslation(), correctedBestPose.getRotation()));
+                target.setAltCameraToTarget3d(
+                        new Transform3d(correctedAltPose.getTranslation(), correctedAltPose.getRotation()));
+
+                targetList.add(target);
+            }
         }
 
         var fpsResult = calculateFPSPipe.run(null);

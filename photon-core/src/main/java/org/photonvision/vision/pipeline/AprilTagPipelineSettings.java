@@ -33,6 +33,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public int hammingDist = 0;
     public int decisionMargin = 35;
     public boolean doMultiTarget = true;
+    public boolean doSingleTargetAlways = false;
 
     // 3d settings
 
@@ -62,6 +63,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         result = prime * result + hammingDist;
         result = prime * result + decisionMargin;
         result = prime * result + (doMultiTarget ? 1231 : 1237);
+        result = prime * result + (doSingleTargetAlways ? 1231 : 1237);
         return result;
     }
 
@@ -81,6 +83,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         if (hammingDist != other.hammingDist) return false;
         if (decisionMargin != other.decisionMargin) return false;
         if (doMultiTarget != other.doMultiTarget) return false;
+        if (doSingleTargetAlways != other.doSingleTargetAlways) return false;
         return true;
     }
 }
