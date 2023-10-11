@@ -90,11 +90,23 @@ const interactiveCols = computed(
         useCameraSettingsStore().isCurrentVideoFormatCalibrated
       "
       v-model="currentPipelineSettings.doMultiTarget"
-      label="Multi-Target Pose"
-      tooltip="If enabled, all visible fiducial targets will be combined to provide a single pose estimate from the combined model"
+      label="Do Multi-Target Estimation"
+      tooltip="If enabled, all visible fiducial targets will be used to provide a single pose estimate from their combined model."
       :switch-cols="interactiveCols"
       :disabled="!isTagPipeline"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ doMultiTarget: value }, false)"
+    />
+    <cv-switch
+      v-if="
+        currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
+        useCameraSettingsStore().isCurrentVideoFormatCalibrated
+      "
+      v-model="currentPipelineSettings.doSingleTargetAlways"
+      label="Always Do Single-Target Estimation"
+      tooltip="If disabled, visible fiducial targets used for multi-target estimation will not also be used for single-target estimation."
+      :switch-cols="interactiveCols"
+      :disabled="!isTagPipeline || !currentPipelineSettings.doMultiTarget"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ doSingleTargetAlways: value }, false)"
     />
     <v-divider />
     <table
