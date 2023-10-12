@@ -4,18 +4,18 @@ import { onBeforeUnmount, onMounted, watchEffect } from "vue";
 import {
   ArrowHelper,
   BoxGeometry,
+  Color,
   ConeGeometry,
   Mesh,
   MeshNormalMaterial,
+  type Object3D,
   PerspectiveCamera,
   Quaternion,
   Scene,
   Vector3,
-  Color,
   WebGLRenderer
 } from "three";
 import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
-import { type Object3D } from "three";
 
 const props = defineProps<{
   targets: PhotonTarget[];

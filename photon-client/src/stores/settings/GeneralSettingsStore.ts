@@ -1,10 +1,10 @@
 import { defineStore } from "pinia";
 import type {
+  ConfigurableNetworkSettings,
   GeneralSettings,
   LightingSettings,
   MetricData,
-  NetworkSettings,
-  ConfigurableNetworkSettings
+  NetworkSettings
 } from "@/types/SettingTypes";
 import { NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";

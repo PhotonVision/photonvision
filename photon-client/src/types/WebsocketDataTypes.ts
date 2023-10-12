@@ -1,6 +1,5 @@
-import type { GeneralSettings, LightingSettings, MetricData, NetworkSettings } from "@/types/SettingTypes";
+import type { GeneralSettings, LightingSettings, LogLevel, MetricData, NetworkSettings } from "@/types/SettingTypes";
 import type { ActivePipelineSettings } from "@/types/PipelineTypes";
-import type { LogLevel } from "@/types/SettingTypes";
 import type { AprilTagFieldLayout, PipelineResult } from "@/types/PhotonTrackingTypes";
 
 export interface WebsocketLogMessage {
