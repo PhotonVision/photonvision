@@ -11,8 +11,7 @@ import { PlaceholderCameraSettings } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import type { WebsocketCameraSettingsUpdate } from "@/types/WebsocketDataTypes";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
-import type { ActiveConfigurablePipelineSettings, ActivePipelineSettings } from "@/types/PipelineTypes";
-import type { PipelineType } from "@/types/PipelineTypes";
+import type { ActiveConfigurablePipelineSettings, ActivePipelineSettings, PipelineType } from "@/types/PipelineTypes";
 import axios from "axios";
 
 interface CameraSettingsStore {
@@ -174,9 +173,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       settings: Partial<ActivePipelineSettings>,
       cameraIndex: number = useStateStore().currentCameraIndex
     ) {
-      Object.entries(settings).forEach(([k, v]) => {
-        this.cameras[cameraIndex].pipelineSettings[k] = v;
-      });
+      Object.assign(this.cameras[cameraIndex].pipelineSettings, settings);
     },
     /**
      * Change the nickname of the currently selected pipeline of the provided camera.
