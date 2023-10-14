@@ -146,20 +146,20 @@ jobs:
       - name: Gradle Tests
         run: ./gradlew testHeadless -i --max-workers 1 --stacktrace
 
-      # Generate Coverage Report.
-      - name: Gradle Coverage
-        run: ./gradlew jacocoTestReport --max-workers 1
+      # # Generate Coverage Report.
+      # - name: Gradle Coverage
+      #   run: ./gradlew jacocoTestReport --max-workers 1
 
-      # Publish Coverage Report.
-      - name: Publish Server Coverage Report
-        uses: codecov/codecov-action@v3
-        with:
-          file: ./photon-server/build/reports/jacoco/test/jacocoTestReport.xml
+      # # Publish Coverage Report.
+      # - name: Publish Server Coverage Report
+      #   uses: codecov/codecov-action@v3
+      #   with:
+      #     file: ./photon-server/build/reports/jacoco/test/jacocoTestReport.xml
 
-      - name: Publish Core Coverage Report
-        uses: codecov/codecov-action@v3
-        with:
-          file: ./photon-core/build/reports/jacoco/test/jacocoTestReport.xml
+      # - name: Publish Core Coverage Report
+      #   uses: codecov/codecov-action@v3
+      #   with:
+      #     file: ./photon-core/build/reports/jacoco/test/jacocoTestReport.xml
   photonserver-build-offline-docs:
     runs-on: ubuntu-22.04
 
@@ -225,6 +225,7 @@ jobs:
         include:
           - os: windows-2022
             artifact-name: Win64
+            architecture: x64
           # Mac builds are broken due to opencv class loading issues -- disable for now
           # - os: macos-11
           #   artifact-name: macOS
