@@ -34,7 +34,7 @@ dependencies {
     implementation project(':photon-core')
     implementation project(':photon-targeting')
 
-    implementation "io.javalin:javalin:5.6.2"
+    implementation "io.javalin:javalin:$javalinVersion"
 
     implementation wpilibTools.deps.wpilibJava("wpiutil")
     implementation wpilibTools.deps.wpilibJava("wpimath")
