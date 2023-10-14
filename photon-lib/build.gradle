@@ -53,7 +53,7 @@ dependencies {
     implementation "edu.wpi.first.thirdparty.frc2024.opencv:opencv-java:$openCVversion"
     implementation "edu.wpi.first.thirdparty.frc2024.opencv:opencv-jni:$openCVversion:$jniPlatform"
 
-    implementation "org.ejml:ejml-simple:0.41"
+    implementation "org.ejml:ejml-simple:0.42"
 
     // Junit
     testImplementation wpilibTools.deps.wpilibJava("cscore")
