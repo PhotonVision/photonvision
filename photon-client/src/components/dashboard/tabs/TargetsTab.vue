@@ -84,7 +84,7 @@ import { useStateStore } from "@/stores/StateStore";
       align="start"
       class="pb-4 white--text"
     >
-      <v-card-subtitle>Multi-tag pose, field-to-robot</v-card-subtitle>
+      <v-card-subtitle>Multi-tag pose, field-to-camera</v-card-subtitle>
       <v-simple-table fixed-header height="100%" dense dark>
         <thead style="font-size: 1.25rem">
           <th class="text-center">X meters</th>
