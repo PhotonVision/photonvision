@@ -67,18 +67,29 @@ task generateJavaDocs(type: Javadoc) {
     destinationDir = file("${projectDir}/build/docs")
 }
 
-// jacocoTestReport {
-// //    dependsOn testHeadless // Tests are required to run before generating the report
 
-//     reports {
-//         xml.enabled false
-//     }
 
-//     // afterEvaluate {
-//     //     classDirectories.setFrom(files(classDirectories.files.collect {
-//     //         fileTree(dir: it,
-//     //                 exclude: "edu/wpi/**"
-//     //         )
-//     //     }))
-//     // }
-// }
+jacoco {
+    toolVersion = "0.8.9"
+    println(reportsDirectory.toString())
+    // reportsDirectory = layout.buildDirectory.dir('customJacocoReportDir')
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = false
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+    }
+
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it,
+                    exclude: "edu/wpi/**"
+            )
+        }))
+    }
+}
+
+
+
