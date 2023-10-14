@@ -17,8 +17,11 @@
 
 package org.photonvision.vision.aruco;
 
+import org.opencv.aruco.Aruco;
 import org.opencv.objdetect.ArucoDetector;
 import org.opencv.objdetect.DetectorParameters;
+import org.opencv.objdetect.Dictionary;
+import org.opencv.objdetect.Objdetect;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
@@ -37,8 +40,7 @@ public class ArucoDetectorParams {
         setCornerAccuracy(25);
         setCornerRefinementMaxIterations(100);
 
-        // TODO
-        // detector = new ArucoDetector(Dictionary.get(Aruco.DICT_APRILTAG_16h5), parameters);
+        detector = new ArucoDetector(Objdetect.getPredefinedDictionary(Objdetect.DICT_APRILTAG_16h5), parameters);
     }
 
     public void setDecimation(float decimate) {
@@ -55,8 +57,7 @@ public class ArucoDetectorParams {
     public void setCornerRefinementMaxIterations(int iters) {
         if (iters == m_iterations || iters <= 0) return;
 
-        // TODO
-        // parameters.set_cornerRefinementMethod(Aruco.CORNER_REFINE_SUBPIX);
+        parameters.set_cornerRefinementMethod(Objdetect.CORNER_REFINE_SUBPIX);
         parameters.set_cornerRefinementMaxIterations(iters); // 200
 
         m_iterations = iters;
