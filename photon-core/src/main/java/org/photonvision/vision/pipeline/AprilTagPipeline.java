@@ -21,6 +21,9 @@ import edu.wpi.first.apriltag.AprilTagDetection;
 import edu.wpi.first.apriltag.AprilTagDetector;
 import edu.wpi.first.apriltag.AprilTagPoseEstimate;
 import edu.wpi.first.apriltag.AprilTagPoseEstimator.Config;
+import edu.wpi.first.math.geometry.CoordinateSystem;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
@@ -165,6 +168,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         if (settings.solvePNPEnabled) {
             // Clear target list that was used for multitag so we can add target transforms
             targetList.clear();
+            // TODO global state again ew
+            var atfl = ConfigManager.getInstance().getConfig().getApriltagFieldLayout();
 
             for (AprilTagDetection detection : usedDetections) {
                 AprilTagPoseEstimate tagPoseEstimate = null;
@@ -174,6 +179,33 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                     var poseResult = singleTagPoseEstimatorPipe.run(detection);
                     sumPipeNanosElapsed += poseResult.nanosElapsed;
                     tagPoseEstimate = poseResult.output;
+                }
+
+                // If single-tag estimation was not done, this is a multi-target tag from the layout
+                if (tagPoseEstimate == null) {
+                    // compute this tag's camera-to-tag transform using the multitag result
+                    var tagPose = atfl.getTagPose(detection.getId());
+                    if (tagPose.isPresent()) {
+                        var camToTag =
+                                new Transform3d(
+                                        new Pose3d().plus(multiTagResult.estimatedPose.best), tagPose.get());
+                        // match expected AprilTag coordinate system
+                        // TODO cleanup coordinate systems in wpilib 2024
+                        var apriltagTrl =
+                                CoordinateSystem.convert(
+                                        camToTag.getTranslation(), CoordinateSystem.NWU(), CoordinateSystem.EDN());
+                        var apriltagRot =
+                                CoordinateSystem.convert(
+                                                new Rotation3d(), CoordinateSystem.EDN(), CoordinateSystem.NWU())
+                                        .plus(
+                                                CoordinateSystem.convert(
+                                                        camToTag.getRotation(),
+                                                        CoordinateSystem.NWU(),
+                                                        CoordinateSystem.EDN()));
+                        apriltagRot = new Rotation3d(0, Math.PI, 0).plus(apriltagRot);
+                        camToTag = new Transform3d(apriltagTrl, apriltagRot);
+                        tagPoseEstimate = new AprilTagPoseEstimate(camToTag, camToTag, 0, 0);
+                    }
                 }
 
                 // populate the target list
