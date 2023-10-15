@@ -293,3 +293,30 @@ jobs:
         with:
           name: image-${{ matrix.image_suffix }}
           path: photonvision*.xz
+  release:
+    needs: [build-package, build-image]
+    runs-on: ubuntu-22.04
+    steps:
+      # Download literally every single artifact. This also downloads client and docs,
+      # but the filtering below won't pick these up (I hope)
+      - uses: actions/download-artifact@v2
+      - run: find
+      # Push to dev release
+      - uses: pyTooling/Actions/releaser@r0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: 'Dev'
+          rm: true
+          files: |
+            **/*.xz
+            **/*.jar
+        if: github.event_name == 'push'
+      # Upload all jars and xz archives
+      - uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            **/*.xz
+            **/*.jar
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
