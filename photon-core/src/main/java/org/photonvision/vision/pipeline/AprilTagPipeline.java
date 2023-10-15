@@ -38,8 +38,9 @@ import org.photonvision.vision.pipe.impl.AprilTagDetectionPipe;
 import org.photonvision.vision.pipe.impl.AprilTagDetectionPipeParams;
 import org.photonvision.vision.pipe.impl.AprilTagPoseEstimatorPipe;
 import org.photonvision.vision.pipe.impl.AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams;
-import org.photonvision.vision.pipe.impl.MultiTargetPNPPipe.MultiTargetPNPPipeParams;
 import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
+import org.photonvision.vision.pipe.impl.MultiTargetPNPPipe;
+import org.photonvision.vision.pipe.impl.MultiTargetPNPPipe.MultiTargetPNPPipeParams;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
@@ -220,8 +221,9 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                                         false, null, null, null, null, frameStaticProperties));
 
                 var correctedBestPose =
-                        MathUtils.convertOpenCVtoPhotonPose(target.getBestCameraToTarget3d());
-                var correctedAltPose = MathUtils.convertOpenCVtoPhotonPose(target.getAltCameraToTarget3d());
+                        MathUtils.convertOpenCVtoPhotonTransform(target.getBestCameraToTarget3d());
+                var correctedAltPose =
+                        MathUtils.convertOpenCVtoPhotonTransform(target.getAltCameraToTarget3d());
 
                 target.setBestCameraToTarget3d(
                         new Transform3d(correctedBestPose.getTranslation(), correctedBestPose.getRotation()));

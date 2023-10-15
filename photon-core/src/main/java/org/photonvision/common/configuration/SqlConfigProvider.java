@@ -21,6 +21,7 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.*;
@@ -241,7 +242,7 @@ public class SqlConfigProvider extends ConfigProvider {
                 logger.error("Could not deserialize apriltag layout! Loading defaults");
                 try {
                     atfl = AprilTagFields.kDefaultField.loadAprilTagLayoutField();
-                } catch (IOException e2) {
+                } catch (UncheckedIOException e2) {
                     logger.error("Error loading WPILib field", e);
                     atfl = null;
                 }

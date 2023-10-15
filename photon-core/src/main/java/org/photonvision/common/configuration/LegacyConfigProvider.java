@@ -22,6 +22,7 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DateFormat;
@@ -198,7 +199,7 @@ class LegacyConfigProvider extends ConfigProvider {
             logger.info("Loading default apriltags for 2023 field...");
             try {
                 atfl = AprilTagFields.kDefaultField.loadAprilTagLayoutField();
-            } catch (IOException e) {
+            } catch (UncheckedIOException e) {
                 logger.error("Error loading WPILib field", e);
                 atfl = null;
             }
