@@ -25,7 +25,6 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.core.TermCriteria;
 import org.opencv.imgproc.Imgproc;
-import org.opencv.objdetect.DetectorParameters;
 import org.opencv.objdetect.Objdetect;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.aruco.PhotonArucoDetector;
@@ -93,7 +92,9 @@ public class ArucoDetectionPipe
     @Override
     public void setParams(ArucoDetectionPipeParams newParams) {
         if (this.params == null || !this.params.equals(newParams)) {
-            photonDetector.getDetector().setDictionary(Objdetect.getPredefinedDictionary(newParams.tagFamily));
+            photonDetector
+                    .getDetector()
+                    .setDictionary(Objdetect.getPredefinedDictionary(newParams.tagFamily));
             var detectParams = photonDetector.getParams();
 
             detectParams.set_adaptiveThreshWinSizeMin(newParams.threshMinSize);
