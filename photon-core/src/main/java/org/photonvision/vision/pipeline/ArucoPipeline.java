@@ -73,14 +73,14 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         var params = new ArucoDetectionPipeParams();
         // sanitize and record settings
 
-        int threshMinSize = Math.max(3, settings.threshMinSize);
-        settings.threshMinSize = threshMinSize;
+        int threshMinSize = Math.max(3, settings.threshWinSizes.getFirst());
+        settings.threshWinSizes.setFirst(threshMinSize);
         params.threshMinSize = threshMinSize;
         int threshStepSize = Math.max(2, settings.threshStepSize);
         settings.threshStepSize = threshStepSize;
         params.threshStepSize = threshStepSize;
-        int threshMaxSize = Math.max(threshMinSize, settings.threshMaxSize);
-        settings.threshMaxSize = threshMaxSize;
+        int threshMaxSize = Math.max(threshMinSize, settings.threshWinSizes.getSecond());
+        settings.threshWinSizes.setSecond(threshMaxSize);
         params.threshMaxSize = threshMaxSize;
         params.threshConstant = settings.threshConstant;
 
@@ -122,7 +122,7 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         if (settings.debugThreshold) {
             var thresh =
                     drawThresholdFrame(
-                            frame.processedImage.getMat(), settings.threshMinSize, settings.threshConstant);
+                            frame.processedImage.getMat(), settings.threshWinSizes.getFirst(), settings.threshConstant);
             thresh.copyTo(frame.colorImage.getMat());
             thresh.release();
         }

@@ -18,13 +18,14 @@
 package org.photonvision.vision.pipeline;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+
+import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.vision.target.TargetModel;
 
 @JsonTypeName("ArucoPipelineSettings")
 public class ArucoPipelineSettings extends AdvancedPipelineSettings {
-    public int threshMinSize = 11;
+    public IntegerCouple threshWinSizes = new IntegerCouple(11, 91);
     public int threshStepSize = 40;
-    public int threshMaxSize = 91;
     public double threshConstant = 10;
     public boolean debugThreshold = false;
 

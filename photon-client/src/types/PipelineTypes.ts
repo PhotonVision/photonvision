@@ -241,9 +241,9 @@ export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
 
 export interface ArucoPipelineSettings extends PipelineSettings {
   pipelineType: PipelineType.Aruco;
-  threshMinSize: number;
+
+  threshWinSizes: WebsocketNumberPair | [number, number];
   threshStepSize: number;
-  threshMaxSize: number;
   threshConstant: number;
   debugThreshold: boolean;
 
@@ -264,9 +264,8 @@ export const DefaultArucoPipelineSettings: ArucoPipelineSettings = {
   ledMode: false,
   pipelineType: PipelineType.Aruco,
 
-  threshMinSize: 11,
+  threshWinSizes: { first: 11, second: 91 },
   threshStepSize: 40,
-  threshMaxSize: 91,
   threshConstant: 10,
   debugThreshold: false,
   useCornerRefinement: true,
