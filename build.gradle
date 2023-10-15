@@ -30,6 +30,8 @@ ext {
     openCVversion = "4.8.0-1"
     joglVersion = "2.4.0-rc-20200307"
     javalinVersion = "5.6.2"
+    frcYear = "2024"
+
     pubVersion = versionString
     isDev = pubVersion.startsWith("dev")
 

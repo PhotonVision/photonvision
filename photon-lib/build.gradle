@@ -126,7 +126,9 @@ task generateVendorJson() {
         if (photonlibFileOutput.exists()) {
             photonlibFileOutput.delete()
         }
-        def read = photonlibFileInput.text.replace('${photon_version}', pubVersion)
+        def read = photonlibFileInput.text
+            .replace('${photon_version}', pubVersion)
+            .replace('${frc_year}', frcYear)
         photonlibFileOutput.write(read)
     }
 
