@@ -73,6 +73,8 @@ public class TrackedTarget implements Releasable {
             AprilTagDetection tagDetection,
             AprilTagPoseEstimate tagPose,
             TargetCalculationParameters params) {
+        m_targetOffsetPoint = new Point(tagDetection.getCenterX(), tagDetection.getCenterY());
+        m_robotOffsetPoint = new Point();
         var yawPitch =
                 TargetCalculations.calculateYawPitch(
                         params.cameraCenterPoint.x,
@@ -141,6 +143,8 @@ public class TrackedTarget implements Releasable {
     }
 
     public TrackedTarget(ArucoDetectionResult result, TargetCalculationParameters params) {
+        m_targetOffsetPoint = new Point(result.getCenterX(), result.getCenterY());
+        m_robotOffsetPoint = new Point();
         var yawPitch =
                 TargetCalculations.calculateYawPitch(
                         params.cameraCenterPoint.x,
