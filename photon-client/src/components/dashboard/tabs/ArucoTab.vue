@@ -85,7 +85,7 @@ const interactiveCols = computed(
       tooltip="Display the first threshold step to the color stream."
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ debugThreshold: value }, false)"
     />
-    <cv-switch
+    <!-- <cv-switch
       v-model="currentPipelineSettings.useAruco3"
       class="pt-2"
       label="Use ArUco3 Speedup"
@@ -117,6 +117,6 @@ const interactiveCols = computed(
       @input="
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ aruco3MinCanonicalImgSide: value }, false)
       "
-    />
+    /> -->
   </div>
 </template>
