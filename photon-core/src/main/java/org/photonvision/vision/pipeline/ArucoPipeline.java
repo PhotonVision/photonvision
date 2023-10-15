@@ -119,13 +119,11 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
 
         // If we want to debug the thresholding steps, draw the first step to the color image
         if (settings.debugThreshold) {
-            var thresh =
-                    drawThresholdFrame(
+             drawThresholdFrame(
                             frame.processedImage.getMat(),
+                            frame.colorImage.getMat(),
                             settings.threshWinSizes.getFirst(),
                             settings.threshConstant);
-            thresh.copyTo(frame.colorImage.getMat());
-            thresh.release();
         }
 
         targetList = new ArrayList<>();
@@ -165,17 +163,15 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, frame);
     }
 
-    private Mat drawThresholdFrame(Mat greyMat, int windowSize, double constant) {
-        Mat thresh = new Mat();
+    private void drawThresholdFrame(Mat greyMat, Mat outputMat, int windowSize, double constant) {
         if (windowSize % 2 == 0) windowSize++;
         Imgproc.adaptiveThreshold(
                 greyMat,
-                thresh,
+                outputMat,
                 255,
                 Imgproc.ADAPTIVE_THRESH_MEAN_C,
                 Imgproc.THRESH_BINARY_INV,
                 windowSize,
                 constant);
-        return thresh;
     }
 }
