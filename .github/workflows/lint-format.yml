@@ -77,5 +77,10 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
+      - name: Fetch all history and metadata
+        run: |
+          git fetch --prune --unshallow
+          git checkout -b pr
+          git branch -f master origin/master
       - name: Check index.html not changed
         run: git --no-pager diff --exit-code origin/master photon-server/src/main/resources/web/index.html
