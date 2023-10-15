@@ -104,19 +104,19 @@ const tabGroups = computed<ConfigOption[][]>(() => {
   const isAprilTag = useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.AprilTag;
   const isAruco = useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.Aruco;
 
-  var ret = getTabGroups().map((tabGroup) =>
-    tabGroup.filter(
-      (tabConfig) =>
-        !(!allow3d && tabConfig.tabName === "3D") && //Filter out 3D tab any time 3D isn't calibrated
-        !((!allow3d || isAprilTag || isAruco) && tabConfig.tabName === "PnP") && //Filter out the PnP config tab if 3D isn't available, or we're doing AprilTags
-        !((isAprilTag || isAruco) && tabConfig.tabName === "Threshold") && //Filter out threshold tab if we're doing AprilTags
-        !((isAprilTag || isAruco) && tabConfig.tabName === "Contours") && //Filter out contours if we're doing AprilTags
-        !(!isAprilTag && tabConfig.tabName === "AprilTag") && //Filter out apriltag unless we actually are doing AprilTags
-        !(!isAruco && tabConfig.tabName === "Aruco") //Filter out aruco unless we actually are doing Aruco
+  var ret = getTabGroups()
+    .map((tabGroup) =>
+      tabGroup.filter(
+        (tabConfig) =>
+          !(!allow3d && tabConfig.tabName === "3D") && //Filter out 3D tab any time 3D isn't calibrated
+          !((!allow3d || isAprilTag || isAruco) && tabConfig.tabName === "PnP") && //Filter out the PnP config tab if 3D isn't available, or we're doing AprilTags
+          !((isAprilTag || isAruco) && tabConfig.tabName === "Threshold") && //Filter out threshold tab if we're doing AprilTags
+          !((isAprilTag || isAruco) && tabConfig.tabName === "Contours") && //Filter out contours if we're doing AprilTags
+          !(!isAprilTag && tabConfig.tabName === "AprilTag") && //Filter out apriltag unless we actually are doing AprilTags
+          !(!isAruco && tabConfig.tabName === "Aruco") //Filter out aruco unless we actually are doing Aruco
+      )
     )
-  );
-  // remove empty tab groups
-  ret = ret.filter((it) => it.length);
+    .filter((it) => it.length);
   return ret;
 });
 
