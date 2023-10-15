@@ -15,23 +15,28 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.vision.pipeline;
+package org.photonvision.vision.opencv;
 
-@SuppressWarnings("rawtypes")
-public enum PipelineType {
-    Calib3d(-2, Calibrate3dPipeline.class),
-    DriverMode(-1, DriverModePipeline.class),
-    Reflective(0, ReflectivePipeline.class),
-    ColoredShape(1, ColoredShapePipeline.class),
-    AprilTag(2, AprilTagPipeline.class),
-    Aruco(3, ArucoPipeline.class),
-    Dnn(4, OpencvDnnPipeline.class);
+import org.opencv.dnn.Net;
 
-    public final int baseIndex;
-    public final Class clazz;
+// Hack so we can see the delete function
+public class PhotonNet extends Net implements Releasable {
+    private Net net;
 
-    PipelineType(int baseIndex, Class clazz) {
-        this.baseIndex = baseIndex;
-        this.clazz = clazz;
+    public PhotonNet(Net net) {
+        super(net.getNativeObjAddr());
+        // And keep net around so the GC doesn't try to eat it
+        this.net = net;
+    }
+
+    @Override
+    public void release() {
+        // This relies on opencv calling their private delete from finalize
+        try {
+            finalize();
+        } catch (Throwable e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 }

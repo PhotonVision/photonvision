@@ -15,23 +15,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.vision.pipeline;
+package org.photonvision.vision.pipe.impl;
 
-@SuppressWarnings("rawtypes")
-public enum PipelineType {
-    Calib3d(-2, Calibrate3dPipeline.class),
-    DriverMode(-1, DriverModePipeline.class),
-    Reflective(0, ReflectivePipeline.class),
-    ColoredShape(1, ColoredShapePipeline.class),
-    AprilTag(2, AprilTagPipeline.class),
-    Aruco(3, ArucoPipeline.class),
-    Dnn(4, OpencvDnnPipeline.class);
+import org.opencv.core.Rect2d;
 
-    public final int baseIndex;
-    public final Class clazz;
-
-    PipelineType(int baseIndex, Class clazz) {
-        this.baseIndex = baseIndex;
-        this.clazz = clazz;
+public class NeuralNetworkPipeResult {
+    public NeuralNetworkPipeResult(Rect2d box2, Integer integer, Float float1) {
+        box = box2;
+        classIdx = integer;
+        confidence = float1;
     }
+
+    public final int classIdx;
+    public final Rect2d box;
+    public final double confidence;
 }

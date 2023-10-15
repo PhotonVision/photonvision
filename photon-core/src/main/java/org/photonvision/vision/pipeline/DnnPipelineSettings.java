@@ -17,21 +17,24 @@
 
 package org.photonvision.vision.pipeline;
 
-@SuppressWarnings("rawtypes")
-public enum PipelineType {
-    Calib3d(-2, Calibrate3dPipeline.class),
-    DriverMode(-1, DriverModePipeline.class),
-    Reflective(0, ReflectivePipeline.class),
-    ColoredShape(1, ColoredShapePipeline.class),
-    AprilTag(2, AprilTagPipeline.class),
-    Aruco(3, ArucoPipeline.class),
-    Dnn(4, OpencvDnnPipeline.class);
+public class DnnPipelineSettings extends AdvancedPipelineSettings {
+    public String modelPath;
+    public double confidence;
+    public int modelIndex;
 
-    public final int baseIndex;
-    public final Class clazz;
+    public DnnPipelineSettings() {
+        super();
+        this.pipelineType = PipelineType.Dnn;
 
-    PipelineType(int baseIndex, Class clazz) {
-        this.baseIndex = baseIndex;
-        this.clazz = clazz;
+        // Sane defaults
+        this.outputShowMultipleTargets = true;
+        cameraExposure = 20;
+        cameraAutoExposure = false;
+        ledMode = false;
+
+        this.modelPath = "some_path";
+        this.confidence = 0.3;
+
+        this.modelIndex = -1;
     }
 }

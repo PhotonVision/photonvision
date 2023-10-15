@@ -5,7 +5,8 @@ export enum PipelineType {
   Reflective = 2,
   ColoredShape = 3,
   AprilTag = 4,
-  Aruco = 5
+  Aruco = 5,
+  Dnn = 6
 }
 
 export enum AprilTagFamily {
@@ -237,6 +238,28 @@ export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
   doSingleTargetAlways: false
 };
 
+export interface DnnPipelineSettings extends PipelineSettings {
+  pipelineType: PipelineType.Dnn;
+  modelIndex: number;
+  confidence: number;
+}
+export type ConfigurableDnnPipelineSettings = Partial<Omit<DnnPipelineSettings, "pipelineType">> &
+  ConfigurablePipelineSettings;
+export const DefaultDnnPipelineSettings: DnnPipelineSettings = {
+  ...DefaultPipelineSettings,
+  // Need these for boilerplate
+  cameraGain: 75,
+  outputShowMultipleTargets: true,
+  targetModel: TargetModel.AprilTag6in_16h5,
+  cameraExposure: -1,
+  cameraAutoExposure: true,
+  ledMode: false,
+  pipelineType: PipelineType.Dnn,
+  // actual stuff
+  modelIndex: -1,
+  confidence: 0.3
+};
+
 export interface ArucoPipelineSettings extends PipelineSettings {
   pipelineType: PipelineType.Aruco;
 
@@ -285,10 +308,12 @@ export type ActivePipelineSettings =
   | ReflectivePipelineSettings
   | ColoredShapePipelineSettings
   | AprilTagPipelineSettings
-  | ArucoPipelineSettings;
+  | ArucoPipelineSettings
+  | DnnPipelineSettings;
 
 export type ActiveConfigurablePipelineSettings =
   | ConfigurableReflectivePipelineSettings
   | ConfigurableColoredShapePipelineSettings
   | ConfigurableAprilTagPipelineSettings
-  | ConfigurableArucoPipelineSettings;
+  | ConfigurableArucoPipelineSettings
+  | ConfigurableDnnPipelineSettings;

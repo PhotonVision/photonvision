@@ -56,6 +56,9 @@ export interface PhotonTarget {
   fiducialId: number;
   // undefined if 3d isn't enabled
   pose?: Transform3d;
+
+  confidence: number;
+  classId: number;
 }
 
 export interface MultitagResult {
