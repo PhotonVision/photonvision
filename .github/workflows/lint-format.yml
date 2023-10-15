@@ -54,7 +54,7 @@ jobs:
           chmod +x gradlew
           ./gradlew spotlessCheck
 
-  clientformat:
+  client-lint-format:
     name: "PhotonClient Lint and Formatting"
     defaults:
       run:
@@ -72,3 +72,10 @@ jobs:
         run: npm run lint-ci
       - name: Check Formatting
         run: npm run format-ci
+  server-index:
+    name: "Check server index.html not changed"
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Check index.html not changed
+        run: git --no-pager diff --exit-code origin/master photon-server/src/main/resources/web/index.html
