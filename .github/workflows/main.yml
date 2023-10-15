@@ -256,7 +256,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - container: wpilib/roborio-cross-ubuntu:2023-22.04
+          - container: wpilib/roborio-cross-ubuntu:2024-22.04
             artifact-name: Athena
           - container: wpilib/raspbian-cross-ubuntu:bullseye-22.04
             artifact-name: Raspbian
