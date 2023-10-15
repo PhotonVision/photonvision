@@ -151,6 +151,22 @@ std::optional<cv::Mat> PhotonCamera::GetDistCoeffs() {
   return std::nullopt;
 }
 
+static bool VersionMatches(std::string them_str) {
+  std::smatch match;
+  std::regex versionPattern{"v[0-9]+.[0-9]+.[0-9]+"};
+
+  std::string us_str = PhotonVersion::versionString;
+
+  // Check that both versions are in the right format
+  if (std::regex_search(us_str, match, versionPattern) &&
+      std::regex_search(them_str, match, versionPattern)) {
+    // If they are, check string equality
+    return (us_str == them_str);
+  } else {
+    return false;
+  }
+}
+
 void PhotonCamera::VerifyVersion() {
   if (!PhotonCamera::VERSION_CHECK_ENABLED) return;
 

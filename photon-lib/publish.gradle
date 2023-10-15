@@ -1,7 +1,6 @@
 apply plugin: 'maven-publish'
 
 ext.licenseFile = files("$rootDir/LICENSE")
-ext.photonVersionFile = files("$projectDir/src/generate/native/include")
 
 def outputsFolder = file("$buildDir/outputs")
 def allOutputsFolder = file("$buildDir/allOutputs")
@@ -51,11 +50,9 @@ task cppHeadersZip(type: Zip) {
     archiveBaseName = zipBaseName
     classifier = "headers"
 
-    from(licenseFile) {
-        into '/'
-    }
+    duplicatesStrategy = "warn"
 
-    from(photonVersionFile) {
+    from(licenseFile) {
         into '/'
     }
 
