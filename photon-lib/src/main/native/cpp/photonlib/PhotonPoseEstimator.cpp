@@ -33,6 +33,7 @@
 #include <utility>
 #include <vector>
 
+#include <Eigen/Core>
 #include <frc/Errors.h>
 #include <frc/geometry/Pose3d.h>
 #include <frc/geometry/Rotation3d.h>
@@ -343,21 +344,17 @@ frc::Pose3d detail::ToPose3d(const cv::Mat& tvec, const cv::Mat& rvec) {
   R = R.t();                  // rotation of inverse
   cv::Mat tvecI = -R * tvec;  // translation of inverse
 
-  Vectord<3> tv;
+  Eigen::Matrix<double, 3, 1> tv;
   tv[0] = +tvecI.at<double>(2, 0);
   tv[1] = -tvecI.at<double>(0, 0);
   tv[2] = -tvecI.at<double>(1, 0);
-  Vectord<3> rv;
+  Eigen::Matrix<double, 3, 1> rv;
   rv[0] = +rvec.at<double>(2, 0);
   rv[1] = -rvec.at<double>(0, 0);
   rv[2] = +rvec.at<double>(1, 0);
 
   return Pose3d(Translation3d(meter_t{tv[0]}, meter_t{tv[1]}, meter_t{tv[2]}),
-                Rotation3d(
-                    // radian_t{rv[0]},
-                    // radian_t{rv[1]},
-                    // radian_t{rv[2]}
-                    rv, radian_t{rv.norm()}));
+                Rotation3d(rv));
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagOnCoprocStrategy(

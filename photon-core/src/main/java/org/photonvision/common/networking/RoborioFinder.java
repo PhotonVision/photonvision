@@ -42,7 +42,7 @@ public class RoborioFinder {
     public void findRios() {
         HashMap<String, Object> map = new HashMap<>();
         var subMap = new HashMap<String, Object>();
-        // Seperate from the above so we don't hold stuff up
+        // Separate from the above so we don't hold stuff up
         System.setProperty("java.net.preferIPv4Stack", "true");
         subMap.put(
                 "deviceIps",

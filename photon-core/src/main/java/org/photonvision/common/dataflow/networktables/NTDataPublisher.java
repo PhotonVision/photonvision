@@ -36,7 +36,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
     private final NetworkTable rootTable = NetworkTablesManager.getInstance().kRootTable;
 
-    private NTTopicSet ts = new NTTopicSet();
+    private final NTTopicSet ts = new NTTopicSet();
 
     NTDataChangeListener pipelineIndexListener;
     private final Supplier<Integer> pipelineIndexSupplier;
@@ -178,15 +178,12 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         }
 
         // Something in the result can sometimes be null -- so check probably too many things
-        if (result != null
-                && result.inputAndOutputFrame != null
+        if (result.inputAndOutputFrame != null
                 && result.inputAndOutputFrame.frameStaticProperties != null
                 && result.inputAndOutputFrame.frameStaticProperties.cameraCalibration != null) {
             var fsp = result.inputAndOutputFrame.frameStaticProperties;
-            if (fsp.cameraCalibration != null) {
-                ts.cameraIntrinsicsPublisher.accept(fsp.cameraCalibration.getIntrinsicsArr());
-                ts.cameraDistortionPublisher.accept(fsp.cameraCalibration.getExtrinsicsArr());
-            }
+            ts.cameraIntrinsicsPublisher.accept(fsp.cameraCalibration.getIntrinsicsArr());
+            ts.cameraDistortionPublisher.accept(fsp.cameraCalibration.getExtrinsicsArr());
         } else {
             ts.cameraIntrinsicsPublisher.accept(new double[] {});
             ts.cameraDistortionPublisher.accept(new double[] {});

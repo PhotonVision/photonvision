@@ -168,7 +168,7 @@ public class NetworkTablesManager {
         ntInstance.stopServer();
         ntInstance.startClient4("photonvision");
         try {
-            Integer t = Integer.parseInt(ntServerAddress);
+            int t = Integer.parseInt(ntServerAddress);
             if (!m_isRetryingConnection) logger.info("Starting NT Client, server team is " + t);
             ntInstance.setServerTeam(t);
         } catch (NumberFormatException e) {

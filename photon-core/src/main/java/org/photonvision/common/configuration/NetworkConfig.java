@@ -30,7 +30,7 @@ import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.file.JacksonUtils;
 
 public class NetworkConfig {
-    // Can be a integer team number, or a IP address
+    // Can be an integer team number, or an IP address
     public String ntServerAddress = "0";
     public NetworkMode connectionType = NetworkMode.DHCP;
     public String staticIp = "";
@@ -58,7 +58,7 @@ public class NetworkConfig {
                             .orElse("Wired connection 1");
         }
 
-        // We can (usually) manage networking on Linux devices, and if we can we should try to. Command
+        // We can (usually) manage networking on Linux devices, and if we can, we should try to. Command
         // line inhibitions happen at a level above this class
         setShouldManage(deviceCanManageNetwork());
     }

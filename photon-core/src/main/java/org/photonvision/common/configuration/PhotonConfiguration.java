@@ -33,8 +33,8 @@ import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.processes.VisionSource;
 
 public class PhotonConfiguration {
-    private HardwareConfig hardwareConfig;
-    private HardwareSettings hardwareSettings;
+    private final HardwareConfig hardwareConfig;
+    private final HardwareSettings hardwareSettings;
     private NetworkConfig networkConfig;
     private AprilTagFieldLayout atfl;
     private HashMap<String, CameraConfiguration> cameraConfigurations;

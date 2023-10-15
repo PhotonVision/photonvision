@@ -48,9 +48,9 @@ public class HardwareManager {
     private final StatusLED statusLED;
 
     @SuppressWarnings("FieldCanBeLocal")
-    private IntegerSubscriber ledModeRequest;
+    private final IntegerSubscriber ledModeRequest;
 
-    private IntegerPublisher ledModeState;
+    private final IntegerPublisher ledModeState;
 
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final NTDataChangeListener ledModeListener;

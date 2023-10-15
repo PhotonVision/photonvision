@@ -28,10 +28,3 @@ spotless {
 }
 
 apply from: "examples.gradle"
-
-// Task that depends on the build task for every example
-task buildAllExamples { task ->
-    exampleFolderNames.each { line ->
-        task.dependsOn(line + ":build")
-    }
-}

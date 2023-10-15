@@ -23,11 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -279,8 +275,7 @@ public class SqlConfigProvider extends ConfigProvider {
             var result = query.executeQuery();
 
             while (result.next()) {
-                var contents = result.getString("contents");
-                return contents;
+                return result.getString("contents");
             }
         } catch (SQLException e) {
             logger.error("SQL Err getting file " + filename, e);
@@ -310,7 +305,7 @@ public class SqlConfigProvider extends ConfigProvider {
                 statement.setString(2, JacksonUtils.serializeToString(config));
                 statement.setString(3, JacksonUtils.serializeToString(config.driveModeSettings));
 
-                // Serializing a list of abstract classes sucks. Instead, make it into a array
+                // Serializing a list of abstract classes sucks. Instead, make it into an array
                 // of strings, which we can later unpack back into individual settings
                 List<String> settings =
                         config.pipelineSettings.stream()
@@ -453,7 +448,7 @@ public class SqlConfigProvider extends ConfigProvider {
     private HashMap<String, CameraConfiguration> loadCameraConfigs(Connection conn) {
         HashMap<String, CameraConfiguration> loadedConfigurations = new HashMap<>();
 
-        // Querry every single row of the cameras db
+        // Query every single row of the cameras db
         PreparedStatement query = null;
         try {
             query =

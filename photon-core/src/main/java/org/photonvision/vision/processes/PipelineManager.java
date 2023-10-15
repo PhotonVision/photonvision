@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import org.opencv.aruco.Aruco;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
@@ -67,7 +66,7 @@ public class PipelineManager {
 
         this.driverModePipeline.setSettings(driverSettings);
 
-        if (userPipelines.size() < 1) addPipeline(PipelineType.Reflective);
+        if (userPipelines.isEmpty()) addPipeline(PipelineType.Reflective);
     }
 
     public PipelineManager(CameraConfiguration config) {
@@ -247,9 +246,9 @@ public class PipelineManager {
     }
 
     /**
-     * Returns whether or not driver mode is active.
+     * Returns whether driver mode is active.
      *
-     * @return Whether or not driver mode is active.
+     * @return Whether driver mode is active.
      */
     public boolean getDriverMode() {
         return currentPipelineIndex == DRIVERMODE_INDEX;
@@ -261,7 +260,7 @@ public class PipelineManager {
     /**
      * Sorts the pipeline list by index, and reassigns their indexes to match the new order. <br>
      * <br>
-     * I don't like this but I have no other ideas, and it works so
+     * I don't like this, but I have no other ideas, and it works so
      */
     private void reassignIndexes() {
         userPipelineSettings.sort(PipelineSettingsIndexComparator);
@@ -314,7 +313,7 @@ public class PipelineManager {
                 }
             default:
                 {
-                    logger.error("Got invalid pipeline type: " + type.toString());
+                    logger.error("Got invalid pipeline type: " + type);
                     return null;
                 }
         }
@@ -376,31 +375,31 @@ public class PipelineManager {
 
     private static String createUniqueName(
             String nickname, List<CVPipelineSettings> existingSettings) {
-        String uniqueName = nickname;
+        StringBuilder uniqueName = new StringBuilder(nickname);
         while (true) {
-            String finalUniqueName = uniqueName; // To get around lambda capture
+            String finalUniqueName = uniqueName.toString(); // To get around lambda capture
             var conflictingName =
                     existingSettings.stream().anyMatch(it -> it.pipelineNickname.equals(finalUniqueName));
 
             if (!conflictingName) {
                 // If no conflict, we're done
-                return uniqueName;
+                return uniqueName.toString();
             } else {
                 // Otherwise, we need to add a suffix to the name
                 // If the string doesn't already end in "([0-9]*)", we'll add it
                 // If it does, we'll increment the number in the suffix
 
-                if (uniqueName.matches(".*\\([0-9]*\\)")) {
+                if (uniqueName.toString().matches(".*\\([0-9]*\\)")) {
                     // Because java strings are immutable, we have to do this curstedness
                     // This is like doing "New pipeline (" + 2 + ")"
 
-                    var parenStart = uniqueName.lastIndexOf('(');
+                    var parenStart = uniqueName.toString().lastIndexOf('(');
                     var parenEnd = uniqueName.length() - 1;
                     var number = Integer.parseInt(uniqueName.substring(parenStart + 1, parenEnd)) + 1;
 
-                    uniqueName = uniqueName.substring(0, parenStart + 1) + number + ")";
+                    uniqueName = new StringBuilder(uniqueName.substring(0, parenStart + 1) + number + ")");
                 } else {
-                    uniqueName += " (1)";
+                    uniqueName.append(" (1)");
                 }
             }
         }
@@ -442,7 +441,7 @@ public class PipelineManager {
             return;
         }
 
-        logger.info("Adding new pipe of type " + type.toString() + " at idx " + idx);
+        logger.info("Adding new pipe of type " + type + " at idx " + idx);
         newSettings.pipelineIndex = idx;
         userPipelineSettings.set(idx, newSettings);
         setPipelineInternal(idx);

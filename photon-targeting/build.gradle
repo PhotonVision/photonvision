@@ -5,7 +5,7 @@ apply from: "${rootDir}/shared/common.gradle"
 dependencies {
     implementation wpilibTools.deps.wpilibJava("wpimath")
     implementation wpilibTools.deps.wpilibJava("apriltag")
-    implementation "org.ejml:ejml-simple:0.41"
+    implementation "org.ejml:ejml-simple:0.42"
 
     // Junit
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
