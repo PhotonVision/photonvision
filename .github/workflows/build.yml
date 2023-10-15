@@ -1,0 +1,186 @@
+name: Build
+
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - master
+
+jobs:
+  build-client:
+    name: "PhotonClient Build"
+    defaults:
+      run:
+        working-directory: photon-client
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install Dependencies
+        run: npm ci
+      - name: Build Production Client
+        run: npm run build
+      - uses: actions/upload-artifact@master
+        with:
+          name: built-client
+          path: photon-client/dist/
+  build-examples:
+    name: "Build Examples"
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Fetch tags
+        run: git fetch --tags --force
+      - name: Install Java 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: temurin
+      # Need to publish to maven local first, so that C++ sim can pick it up
+      # Still haven't figured out how to make the vendordep file be copied before trying to build examples
+      - name: Publish photonlib to maven local
+        run: |
+          chmod +x gradlew
+          ./gradlew publishtomavenlocal -x check
+      - name: Build Java examples
+        working-directory: photonlib-java-examples
+        run: |
+          chmod +x gradlew
+          ./gradlew copyPhotonlib -x check
+          ./gradlew build -x check --max-workers 2
+      - name: Build C++ examples
+        working-directory: photonlib-cpp-examples
+        run: |
+          chmod +x gradlew
+          ./gradlew copyPhotonlib -x check
+          ./gradlew build -x check --max-workers 2
+  build-gradle:
+    name: "Gradle Build"
+    runs-on: ubuntu-22.04
+    steps:
+      # Checkout code.
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Fetch tags
+        run: git fetch --tags --force
+      - name: Install Java 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: temurin
+      - name: Gradle Build
+        run: |
+          chmod +x gradlew
+          ./gradlew photon-server:build photon-lib:build -x check --max-workers 2
+      - name: Gradle Tests
+        run: ./gradlew testHeadless -i --max-workers 1 --stacktrace
+      - name: Gradle Coverage
+        run: ./gradlew jacocoTestReport --max-workers 1
+      - name: Publish Coverage Report
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./photon-server/build/reports/jacoco/test/jacocoTestReport.xml
+      - name: Publish Core Coverage Report
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./photon-core/build/reports/jacoco/test/jacocoTestReport.xml
+  build-offline-docs:
+    name: "Build Offline Docs"
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: 'PhotonVision/photonvision-docs.git'
+          ref: master
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install sphinx sphinx_rtd_theme sphinx-tabs sphinxext-opengraph doc8
+          pip install -r requirements.txt
+      - name: Build the docs
+        run: |
+          make html
+      - uses: actions/upload-artifact@master
+        with:
+          name: built-docs
+          path: build/html
+  build-photonlib-host:
+    env:
+      MACOSX_DEPLOYMENT_TARGET: 10.14
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2022
+            artifact-name: Win64
+            architecture: x64
+          # Mac builds are broken due to opencv class loading issues -- disable for now
+          # - os: macos-11
+          #   artifact-name: macOS
+          - os: ubuntu-22.04
+            artifact-name: Linux
+
+    name: "Photonlib - Build Host - ${{ matrix.artifact-name }}"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Install Java 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: temurin
+      - run: git fetch --tags --force
+      - run: |
+          chmod +x gradlew
+          ./gradlew photon-lib:build --max-workers 1
+      - run: ./gradlew photon-lib:publish photon-targeting:publish
+        name: Publish
+        env:
+          ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
+        if: github.event_name == 'push'
+  build-photonlib-docker:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - container: wpilib/roborio-cross-ubuntu:2024-22.04
+            artifact-name: Athena
+          - container: wpilib/raspbian-cross-ubuntu:bullseye-22.04
+            artifact-name: Raspbian
+          - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04
+            artifact-name: Aarch64
+
+    runs-on: ubuntu-22.04
+    container: ${{ matrix.container }}
+    name: "Photonlib - Build Docker - ${{ matrix.artifact-name }}"
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Config Git
+        run: |
+          git config --global --add safe.directory /__w/photonvision/photonvision
+      - name: Build PhotonLib
+        run: |
+          chmod +x gradlew
+          ./gradlew photon-lib:build --max-workers 1
+      - name: Publish
+        run: |
+          chmod +x gradlew
+          ./gradlew photon-lib:publish
+        env:
+          ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
+        if: github.event_name == 'push'
