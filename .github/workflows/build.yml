@@ -184,3 +184,113 @@ jobs:
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
         if: github.event_name == 'push'
+  build-package:
+    needs: [build-client, build-gradle, build-offline-docs]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            artifact-name: Win64
+            architecture: x64
+            arch-override: none
+          - os: macos-latest
+            artifact-name: macOS
+            architecture: x64
+            arch-override: none
+          - os: ubuntu-latest
+            artifact-name: Linux
+            architecture: x64
+            arch-override: none
+          - os: macos-latest
+            artifact-name: macOSArm
+            architecture: x64
+            arch-override: macarm64
+          - os: ubuntu-latest
+            artifact-name: LinuxArm32
+            architecture: x64
+            arch-override: linuxarm32
+          - os: ubuntu-latest
+            artifact-name: LinuxArm64
+            architecture: x64
+            arch-override: linuxarm64
+
+    runs-on: ${{ matrix.os }}
+    name: "Build fat JAR - ${{ matrix.artifact-name }}"
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Install Java 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: temurin
+      - run: |
+          rm -rf photon-server/src/main/resources/web/*
+          mkdir -p photon-server/src/main/resources/web/docs
+        if: ${{ (matrix.os) != 'windows-latest' }}
+      - run: |
+          del photon-server\src\main\resources\web\*.*
+          mkdir photon-server\src\main\resources\web\docs
+        if: ${{ (matrix.os) == 'windows-latest' }}
+      - uses: actions/download-artifact@v3
+        with:
+          name: built-client
+          path: photon-server/src/main/resources/web/
+      - uses: actions/download-artifact@v3
+        with:
+          name: built-docs
+          path: photon-server/src/main/resources/web/docs
+      - run: |
+          chmod +x gradlew
+          ./gradlew photon-server:shadowJar --max-workers 2 -PArchOverride=${{ matrix.arch-override }}
+        if: ${{ (matrix.arch-override != 'none') }}
+      - run: |
+          chmod +x gradlew
+          ./gradlew photon-server:shadowJar --max-workers 2
+        if: ${{ (matrix.arch-override == 'none') }}
+      - uses: actions/upload-artifact@v3
+        with:
+          name: jar-${{ matrix.artifact-name }}
+          path: photon-server/build/libs
+  build-image:
+    needs: [build-package]
+
+    if: ${{ github.event_name != 'pull_request' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact-name: LinuxArm64
+            image_suffix: RaspberryPi
+            image_url: https://api.github.com/repos/photonvision/photon-pi-gen/releases/tags/v2023.1.3_arm64
+          - os: ubuntu-latest
+            artifact-name: LinuxArm64
+            image_suffix: limelight2
+            image_url: https://api.github.com/repos/photonvision/photon-pi-gen/releases/tags/v2023.2.2_limelight-arm64
+
+    runs-on: ${{ matrix.os }}
+    name: "Build image - ${{ matrix.image_url }}"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v2
+        with:
+          name: jar-${{ matrix.artifact-name }}
+      - name: Generate image
+        run: |
+          chmod +x scripts/generatePiImage.sh
+          ./scripts/generatePiImage.sh ${{ matrix.image_url }} ${{ matrix.image_suffix }}
+      - uses: actions/upload-artifact@v3
+        name: Upload image
+        with:
+          name: image-${{ matrix.image_suffix }}
+          path: photonvision*.xz
+
