@@ -73,13 +73,16 @@ public class TrackedTarget implements Releasable {
             TargetCalculationParameters params) {
         m_targetOffsetPoint = new Point(tagDetection.getCenterX(), tagDetection.getCenterY());
         m_robotOffsetPoint = new Point();
-
-        m_pitch =
-                TargetCalculations.calculatePitch(
-                        tagDetection.getCenterY(), params.cameraCenterPoint.y, params.verticalFocalLength);
-        m_yaw =
-                TargetCalculations.calculateYaw(
-                        tagDetection.getCenterX(), params.cameraCenterPoint.x, params.horizontalFocalLength);
+        var yawPitch =
+                TargetCalculations.calculateYawPitch(
+                        params.cameraCenterPoint.x,
+                        tagDetection.getCenterX(),
+                        params.horizontalFocalLength,
+                        params.cameraCenterPoint.y,
+                        tagDetection.getCenterY(),
+                        params.verticalFocalLength);
+        m_yaw = yawPitch.getFirst();
+        m_pitch = yawPitch.getSecond();
         var bestPose = new Transform3d();
         var altPose = new Transform3d();
 
@@ -138,13 +141,16 @@ public class TrackedTarget implements Releasable {
     public TrackedTarget(ArucoDetectionResult result, TargetCalculationParameters params) {
         m_targetOffsetPoint = new Point(result.getCenterX(), result.getCenterY());
         m_robotOffsetPoint = new Point();
-
-        m_pitch =
-                TargetCalculations.calculatePitch(
-                        result.getCenterY(), params.cameraCenterPoint.y, params.verticalFocalLength);
-        m_yaw =
-                TargetCalculations.calculateYaw(
-                        result.getCenterX(), params.cameraCenterPoint.x, params.horizontalFocalLength);
+        var yawPitch =
+                TargetCalculations.calculateYawPitch(
+                        params.cameraCenterPoint.x,
+                        result.getCenterX(),
+                        params.horizontalFocalLength,
+                        params.cameraCenterPoint.y,
+                        result.getCenterY(),
+                        params.verticalFocalLength);
+        m_yaw = yawPitch.getFirst();
+        m_pitch = yawPitch.getSecond();
 
         double[] xCorners = result.getxCorners();
         double[] yCorners = result.getyCorners();
@@ -246,7 +252,7 @@ public class TrackedTarget implements Releasable {
     }
 
     public void calculateValues(TargetCalculationParameters params) {
-        // this MUST happen in this exact order!
+        // this MUST happen in this exact order! (TODO: document why)
         m_targetOffsetPoint =
                 TargetCalculations.calculateTargetOffsetPoint(
                         params.isLandscape, params.targetOffsetPointEdge, getMinAreaRect());
@@ -257,13 +263,18 @@ public class TrackedTarget implements Releasable {
                         params.dualOffsetValues,
                         params.robotOffsetPointMode);
 
-        // order of this stuff doesn't matter though
-        m_pitch =
-                TargetCalculations.calculatePitch(
-                        m_targetOffsetPoint.y, m_robotOffsetPoint.y, params.verticalFocalLength);
-        m_yaw =
-                TargetCalculations.calculateYaw(
-                        m_targetOffsetPoint.x, m_robotOffsetPoint.x, params.horizontalFocalLength);
+        // order of this stuff doesnt matter though
+        var yawPitch =
+                TargetCalculations.calculateYawPitch(
+                        m_robotOffsetPoint.x,
+                        m_targetOffsetPoint.x,
+                        params.horizontalFocalLength,
+                        m_robotOffsetPoint.y,
+                        m_targetOffsetPoint.y,
+                        params.verticalFocalLength);
+        m_yaw = yawPitch.getFirst();
+        m_pitch = yawPitch.getSecond();
+
         m_area = m_mainContour.getMinAreaRect().size.area() / params.imageArea * 100;
 
         m_skew = TargetCalculations.calculateSkew(params.isLandscape, getMinAreaRect());
