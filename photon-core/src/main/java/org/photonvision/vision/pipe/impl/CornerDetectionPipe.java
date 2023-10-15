@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import edu.wpi.first.math.geometry.Translation2d;
 import java.util.*;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
