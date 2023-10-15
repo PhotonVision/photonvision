@@ -67,6 +67,8 @@ public class ArucoDetectionPipe
                 int halfWindowLength =
                         (int) Math.ceil(kRefineWindowImageRatio * Math.min(imgMat.rows(), imgMat.cols()));
                 halfWindowLength += (int) (minDiag * kRefineWindowMarkerRatio);
+                // dont do refinement on small markers
+                if (halfWindowLength < 4) continue;
                 var halfWindowSize = new Size(halfWindowLength, halfWindowLength);
                 var ptsMat = new MatOfPoint2f(cornerPoints);
                 var criteria =
