@@ -37,8 +37,8 @@ copyAllOutputs.dependsOn outputVersions
 
 ext.addTaskToCopyAllOutputs = { task ->
     copyAllOutputs.dependsOn task
-    copyAllOutputs.inputs.file task.archivePath
-    copyAllOutputs.from task.archivePath
+    copyAllOutputs.inputs.file task.archiveFile
+    copyAllOutputs.from task.archiveFile
 }
 
 def artifactGroupId = 'org.photonvision'
@@ -49,7 +49,7 @@ def javaBaseName = "_GROUP_org_photonvision_photonlib_ID_${baseArtifactId}-java_
 task cppHeadersZip(type: Zip) {
     destinationDirectory = outputsFolder
     archiveBaseName = zipBaseName
-    classifier = "headers"
+    archiveClassifier = "headers"
 
     from(licenseFile) {
         into '/'
@@ -67,7 +67,7 @@ task cppHeadersZip(type: Zip) {
 task cppSourcesZip(type: Zip) {
     destinationDirectory = outputsFolder
     archiveBaseName = zipBaseName
-    classifier = "sources"
+    archiveClassifier = "sources"
 
     from(licenseFile) {
         into '/'
@@ -84,12 +84,12 @@ build.dependsOn cppSourcesZip
 addTaskToCopyAllOutputs(cppSourcesZip)
 
 task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
+    archiveClassifier = 'sources'
     from sourceSets.main.allSource
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
+    archiveClassifier = 'javadoc'
     from javadoc.destinationDir
 }
 
@@ -102,14 +102,14 @@ task outputJar(type: Jar, dependsOn: classes) {
 task outputSourcesJar(type: Jar, dependsOn: classes) {
     archiveBaseName = javaBaseName
     destinationDirectory = outputsFolder
-    classifier = 'sources'
+    archiveClassifier = 'sources'
     from sourceSets.main.allSource
 }
 
 task outputJavadocJar(type: Jar, dependsOn: javadoc) {
     archiveBaseName = javaBaseName
     destinationDirectory = outputsFolder
-    classifier = 'javadoc'
+    archiveClassifier = 'javadoc'
     from javadoc.destinationDir
 }
 
@@ -196,6 +196,11 @@ model {
             }
         }
     }
+}
+
+// So I don't actually know the _right_ way to tell gradle that the vendordep json publish requires generation first, so we're doing this
+getTasksByName("publishVendorjsonPublicationToMavenLocal", false).each {
+    it.mustRunAfter generateVendorJson
 }
 
 publishToMavenLocal.dependsOn libraryBuild
