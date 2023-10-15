@@ -486,7 +486,7 @@ public class PhotonPoseEstimator {
                                             .getZ());
 
             if (alternateTransformDelta < smallestHeightDifference
-                  && alternateTransformDelta < bestTransformDelta) {
+                    && alternateTransformDelta < bestTransformDelta) {
                 smallestHeightDifference = alternateTransformDelta;
                 closestHeightTarget =
                         new EstimatedRobotPose(
@@ -496,7 +496,7 @@ public class PhotonPoseEstimator {
                                         .transformBy(robotToCamera.inverse()),
                                 result.getTimestampSeconds(),
                                 result.getTargets());
-            } else if(bestTransformDelta < smallestHeightDifference) {
+            } else if (bestTransformDelta < smallestHeightDifference) {
                 smallestHeightDifference = bestTransformDelta;
                 closestHeightTarget =
                         new EstimatedRobotPose(
