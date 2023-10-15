@@ -65,18 +65,15 @@ public class VisionModuleManager {
             addedModules.put(visionSource.getCameraConfiguration().streamIndex, module);
         }
 
-        var sortedModulesList =
-                addedModules.entrySet().stream()
-                        .sorted(Comparator.comparingInt(Map.Entry::getKey)) // sort by stream index
-                        .map(Map.Entry::getValue) // map to Stream of VisionModule
-                        .collect(Collectors.toList()); // collect in a List
-
-        return sortedModulesList;
+        return addedModules.entrySet().stream()
+                .sorted(Comparator.comparingInt(Map.Entry::getKey)) // sort by stream index
+                .map(Map.Entry::getValue) // map to Stream of VisionModule
+                .collect(Collectors.toList()); // collect in a List
     }
 
     private void assignCameraIndex(List<VisionSource> config) {
-        // We won't necessarily have already added all of the cameras we need to at this point
-        // But by operating on the list, we have a fairly good idea of which we need to change
+        // We won't necessarily have already added all the cameras we need to at this point
+        // But by operating on the list, we have a fairly good idea of which we need to change,
         // but it's not guaranteed that we change the correct one
         // The best we can do is try to avoid a case where the stream index runs away to infinity
         // since we can only stream 5 cameras at once

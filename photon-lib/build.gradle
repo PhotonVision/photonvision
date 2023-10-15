@@ -1,5 +1,5 @@
 plugins {
-    id 'edu.wpi.first.WpilibTools' version '1.0.0'
+    id 'edu.wpi.first.WpilibTools' version '1.1.0'
 }
 
 import java.nio.file.Path
@@ -50,10 +50,10 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-core:2.12.4"
     implementation "com.fasterxml.jackson.core:jackson-databind:2.12.4"
 
-    implementation "edu.wpi.first.thirdparty.frc2023.opencv:opencv-java:$opencvVersion"
-    implementation "edu.wpi.first.thirdparty.frc2023.opencv:opencv-jni:$opencvVersion:$jniPlatform"
+    implementation "edu.wpi.first.thirdparty.frc2024.opencv:opencv-java:$openCVversion"
+    implementation "edu.wpi.first.thirdparty.frc2024.opencv:opencv-jni:$openCVversion:$jniPlatform"
 
-    implementation "org.ejml:ejml-simple:0.41"
+    implementation "org.ejml:ejml-simple:0.42"
 
     // Junit
     testImplementation wpilibTools.deps.wpilibJava("cscore")
@@ -126,7 +126,9 @@ task generateVendorJson() {
         if (photonlibFileOutput.exists()) {
             photonlibFileOutput.delete()
         }
-        def read = photonlibFileInput.text.replace('${photon_version}', pubVersion)
+        def read = photonlibFileInput.text
+            .replace('${photon_version}', pubVersion)
+            .replace('${frc_year}', frcYear)
         photonlibFileOutput.write(read)
     }
 

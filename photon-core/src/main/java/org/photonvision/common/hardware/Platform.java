@@ -17,7 +17,6 @@
 
 package org.photonvision.common.hardware;
 
-import com.jogamp.common.os.Platform.OSType;
 import edu.wpi.first.util.RuntimeDetector;
 import java.io.BufferedReader;
 import java.io.IOException;
