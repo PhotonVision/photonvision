@@ -120,23 +120,22 @@ task generateVendorJson() {
     outputs.file photonlibFileOutput
     inputs.file photonlibFileInput
 
-    doLast {
-        println "Writing version ${pubVersion} to $photonlibFileOutput"
+        println "Writing vendor JSON ${pubVersion} to $photonlibFileOutput"
 
         if (photonlibFileOutput.exists()) {
             photonlibFileOutput.delete()
         }
+        photonlibFileOutput.parentFile.mkdirs()
+
         def read = photonlibFileInput.text
             .replace('${photon_version}', pubVersion)
             .replace('${frc_year}', frcYear)
-        photonlibFileOutput.write(read)
-    }
+        photonlibFileOutput.text = read
 
     outputs.upToDateWhen { false }
 }
 
-build.dependsOn generateVendorJson
-
+build.mustRunAfter generateVendorJson
 
 task writeCurrentVersion {
     def versionFileIn = file("${rootDir}/shared/PhotonVersion.java.in")
@@ -147,7 +146,7 @@ task writeCurrentVersion {
             versionString)
 }
 
-build.dependsOn writeCurrentVersion
+build.mustRunAfter writeCurrentVersion
 
 tasks.withType(Javadoc) {
     options.encoding = 'UTF-8'
