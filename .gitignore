@@ -10,6 +10,8 @@ Python/app/handlers/__pycache__/
 
 \.vscode/
 
+/.vs
+
 backend/settings/
 /.vscode/
 # Compiled class file
@@ -143,6 +145,7 @@ build/spotlessJava
 build/*
 build
 photon-lib/src/main/java/org/photonvision/PhotonVersion.java
+photon-lib/bin/main/images/*
 /photonlib-java-examples/bin/
 photon-lib/src/generate/native/include/PhotonVersion.h
 .gitattributes
@@ -153,3 +156,7 @@ photon-server/src/main/resources/nativelibraries/apriltag/*
 
 photonlib-java-examples/*/vendordeps/*
 photonlib-cpp-examples/*/vendordeps/*
+
+*/networktables.json
+*.sqlite
+photon-server/src/main/resources/web/index.html

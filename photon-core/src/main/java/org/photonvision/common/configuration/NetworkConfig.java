@@ -17,90 +17,131 @@
 
 package org.photonvision.common.configuration;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.Map;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.networking.NetworkMode;
+import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.file.JacksonUtils;
 
 public class NetworkConfig {
-    public int teamNumber = 0;
+    // Can be a integer team number, or a IP address
+    public String ntServerAddress = "0";
     public NetworkMode connectionType = NetworkMode.DHCP;
     public String staticIp = "";
     public String hostname = "photonvision";
     public boolean runNTServer = false;
+    public boolean shouldManage;
 
     @JsonIgnore public static final String NM_IFACE_STRING = "${interface}";
     @JsonIgnore public static final String NM_IP_STRING = "${ipaddr}";
 
-    public String networkManagerIface = "Wired\\ connection\\ 1";
-    public String physicalInterface = "eth0";
+    public String networkManagerIface;
     public String setStaticCommand =
             "nmcli con mod ${interface} ipv4.addresses ${ipaddr}/8 ipv4.method \"manual\" ipv6.method \"disabled\"";
     public String setDHCPcommand =
             "nmcli con mod ${interface} ipv4.method \"auto\" ipv6.method \"disabled\"";
 
-    private boolean shouldManage;
-
     public NetworkConfig() {
-        setShouldManage(false);
+        if (Platform.isLinux()) {
+            // Default to the name of the first Ethernet connection. Otherwise, "Wired connection 1" is a
+            // reasonable guess
+            this.networkManagerIface =
+                    NetworkUtils.getAllWiredInterfaces().stream()
+                            .map(it -> it.connName)
+                            .findFirst()
+                            .orElse("Wired connection 1");
+        }
+
+        // We can (usually) manage networking on Linux devices, and if we can we should try to. Command
+        // line inhibitions happen at a level above this class
+        setShouldManage(deviceCanManageNetwork());
     }
 
     @JsonCreator
     public NetworkConfig(
-            @JsonProperty("teamNumber") int teamNumber,
+            @JsonProperty("ntServerAddress") @JsonAlias({"ntServerAddress", "teamNumber"})
+                    String ntServerAddress,
             @JsonProperty("connectionType") NetworkMode connectionType,
             @JsonProperty("staticIp") String staticIp,
             @JsonProperty("hostname") String hostname,
             @JsonProperty("runNTServer") boolean runNTServer,
             @JsonProperty("shouldManage") boolean shouldManage,
             @JsonProperty("networkManagerIface") String networkManagerIface,
-            @JsonProperty("physicalInterface") String physicalInterface,
             @JsonProperty("setStaticCommand") String setStaticCommand,
             @JsonProperty("setDHCPcommand") String setDHCPcommand) {
-        this.teamNumber = teamNumber;
+        this.ntServerAddress = ntServerAddress;
         this.connectionType = connectionType;
         this.staticIp = staticIp;
         this.hostname = hostname;
         this.runNTServer = runNTServer;
         this.networkManagerIface = networkManagerIface;
-        this.physicalInterface = physicalInterface;
         this.setStaticCommand = setStaticCommand;
         this.setDHCPcommand = setDHCPcommand;
         setShouldManage(shouldManage);
     }
 
-    public static NetworkConfig fromHashMap(Map<String, Object> map) {
-        try {
-            return new ObjectMapper().convertValue(map, NetworkConfig.class);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new NetworkConfig();
-        }
-    }
-
     public Map<String, Object> toHashMap() {
         try {
-            return new ObjectMapper().convertValue(this, JacksonUtils.UIMap.class);
+            var ret = new ObjectMapper().convertValue(this, JacksonUtils.UIMap.class);
+            ret.put("canManage", this.deviceCanManageNetwork());
+            return ret;
         } catch (Exception e) {
             e.printStackTrace();
             return new HashMap<>();
         }
     }
 
-    @JsonGetter("shouldManage")
-    public boolean shouldManage() {
-        return this.shouldManage || Platform.isLinux();
+    @JsonIgnore
+    public String getPhysicalInterfaceName() {
+        return NetworkUtils.getNMinfoForConnName(this.networkManagerIface).devName;
     }
 
-    @JsonSetter("shouldManage")
+    @JsonIgnore
+    public String getEscapedInterfaceName() {
+        return "\"" + networkManagerIface + "\"";
+    }
+
+    @JsonIgnore
+    public boolean shouldManage() {
+        return this.shouldManage;
+    }
+
+    @JsonIgnore
     public void setShouldManage(boolean shouldManage) {
-        this.shouldManage = shouldManage || Platform.isLinux();
+        this.shouldManage = shouldManage && this.deviceCanManageNetwork();
+    }
+
+    @JsonIgnore
+    private boolean deviceCanManageNetwork() {
+        return Platform.isLinux();
+    }
+
+    @Override
+    public String toString() {
+        return "NetworkConfig [serverAddr="
+                + ntServerAddress
+                + ", connectionType="
+                + connectionType
+                + ", staticIp="
+                + staticIp
+                + ", hostname="
+                + hostname
+                + ", runNTServer="
+                + runNTServer
+                + ", networkManagerIface="
+                + networkManagerIface
+                + ", setStaticCommand="
+                + setStaticCommand
+                + ", setDHCPcommand="
+                + setDHCPcommand
+                + ", shouldManage="
+                + shouldManage
+                + "]";
     }
 }

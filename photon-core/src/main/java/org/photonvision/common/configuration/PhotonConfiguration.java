@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.photonvision.PhotonVersion;
 import org.photonvision.common.hardware.Platform;
+import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.vision.processes.VisionModule;
@@ -53,6 +54,10 @@ public class PhotonConfiguration {
         this.hardwareSettings = hardwareSettings;
         this.networkConfig = networkConfig;
         this.cameraConfigurations = cameraConfigurations;
+    }
+
+    public PhotonConfiguration() {
+        this(new HardwareConfig(), new HardwareSettings(), new NetworkConfig());
     }
 
     public HardwareConfig getHardwareConfig() {
@@ -93,7 +98,12 @@ public class PhotonConfiguration {
         Map<String, Object> map = new HashMap<>();
         var settingsSubmap = new HashMap<String, Object>();
 
-        settingsSubmap.put("networkSettings", networkConfig.toHashMap());
+        // Hack active interfaces into networkSettings
+        var netConfigMap = networkConfig.toHashMap();
+        netConfigMap.put("networkInterfaceNames", NetworkUtils.getAllWiredInterfaces());
+
+        settingsSubmap.put("networkSettings", netConfigMap);
+
         map.put(
                 "cameraSettings",
                 VisionModuleManager.getInstance().getModules().stream()

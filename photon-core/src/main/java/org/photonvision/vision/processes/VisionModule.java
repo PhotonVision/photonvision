@@ -136,7 +136,7 @@ public class VisionModule {
                 new NTDataPublisher(
                         visionSource.getSettables().getConfiguration().nickname,
                         pipelineManager::getCurrentPipelineIndex,
-                        pipelineManager::setIndex,
+                        this::setPipeline,
                         pipelineManager::getDriverMode,
                         this::setDriverMode);
         uiDataConsumer = new UIDataPublisher(index);
@@ -363,7 +363,7 @@ public class VisionModule {
 
         if (ret != null) {
             logger.debug("Saving calibration...");
-            visionSource.getSettables().getConfiguration().addCalibration(ret);
+            visionSource.getSettables().addCalibration(ret);
         } else {
             logger.error("Calibration failed...");
         }
@@ -371,15 +371,15 @@ public class VisionModule {
         return ret;
     }
 
-    void setPipeline(int index) {
+    boolean setPipeline(int index) {
         logger.info("Setting pipeline to " + index);
         logger.info("Pipeline name: " + pipelineManager.getPipelineNickname(index));
         pipelineManager.setIndex(index);
         var pipelineSettings = pipelineManager.getPipelineSettings(index);
 
         if (pipelineSettings == null) {
-            logger.error("Config for index " + index + " was null!");
-            return;
+            logger.error("Config for index " + index + " was null! Not changing pipelines");
+            return false;
         }
 
         visionSource.getSettables().setVideoModeInternal(pipelineSettings.cameraVideoModeIndex);
@@ -422,6 +422,8 @@ public class VisionModule {
 
         visionSource.getSettables().getConfiguration().currentPipelineIndex =
                 pipelineManager.getCurrentPipelineIndex();
+
+        return true;
     }
 
     private boolean camShouldControlLEDs() {
@@ -453,9 +455,15 @@ public class VisionModule {
     void saveAndBroadcastSelective(WsContext originContext, String propertyName, Object value) {
         logger.trace("Broadcasting PSC mutation - " + propertyName + ": " + value);
         saveModule();
+
+        HashMap<String, Object> map = new HashMap<>();
+        HashMap<String, Object> subMap = new HashMap<>();
+        subMap.put(propertyName, value);
+        map.put("cameraIndex", this.moduleIndex);
+        map.put("mutatePipelineSettings", subMap);
+
         DataChangeService.getInstance()
-                .publishEvent(
-                        OutgoingUIEvent.wrappedOf("mutatePipeline", propertyName, value, originContext));
+                .publishEvent(new OutgoingUIEvent<>("mutatePipeline", map, originContext));
     }
 
     public void setCameraNickname(String newName) {

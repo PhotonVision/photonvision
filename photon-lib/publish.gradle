@@ -1,6 +1,7 @@
 apply plugin: 'maven-publish'
 
-ext.licenseFile = files("$rootDir/LICENSE.txt")
+ext.licenseFile = files("$rootDir/LICENSE")
+ext.photonVersionFile = files("$projectDir/src/generate/native/include")
 
 def outputsFolder = file("$buildDir/outputs")
 def allOutputsFolder = file("$buildDir/allOutputs")
@@ -54,15 +55,19 @@ task cppHeadersZip(type: Zip) {
         into '/'
     }
 
+    from(photonVersionFile) {
+        into '/'
+    }
+
     from('src/main/native/include/') {
         into '/'
     }
 }
 
-task cppSourceZip(type: Zip) {
+task cppSourcesZip(type: Zip) {
     destinationDirectory = outputsFolder
     archiveBaseName = zipBaseName
-    classifier = "source"
+    classifier = "sources"
 
     from(licenseFile) {
         into '/'
@@ -75,8 +80,8 @@ task cppSourceZip(type: Zip) {
 
 build.dependsOn cppHeadersZip
 addTaskToCopyAllOutputs(cppHeadersZip)
-build.dependsOn cppSourceZip
-addTaskToCopyAllOutputs(cppSourceZip)
+build.dependsOn cppSourcesZip
+addTaskToCopyAllOutputs(cppSourcesZip)
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
@@ -141,8 +146,13 @@ publishing {
                 username 'ghactions'
                 password System.getenv("ARTIFACTORY_API_KEY")
             }
-            println("Publishing to " + url)
         }
+    }
+}
+
+tasks.withType(PublishToMavenRepository) {
+    doFirst {
+        println("Publishing to " + repository.url);
     }
 }
 
@@ -162,7 +172,7 @@ model {
                     artifact it
                 }
                 artifact cppHeadersZip
-                artifact cppSourceZip
+                artifact cppSourcesZip
 
                 artifactId = "${baseArtifactId}-cpp"
                 groupId artifactGroupId

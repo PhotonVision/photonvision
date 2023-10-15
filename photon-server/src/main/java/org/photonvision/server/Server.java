@@ -18,50 +18,58 @@
 package org.photonvision.server;
 
 import io.javalin.Javalin;
-import io.javalin.http.staticfiles.Location;
+import io.javalin.plugin.bundled.CorsPluginConfig;
+import java.net.InetSocketAddress;
+import java.util.StringJoiner;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public class Server {
     private static final Logger logger = new Logger(Server.class, LogGroup.WebServer);
 
-    public static void main(int port) {
-        Javalin app =
+    public static void start(int port) {
+        var app =
                 Javalin.create(
-                        config -> {
-                            config.showJavalinBanner = false;
-                            config.addStaticFiles("web", Location.CLASSPATH);
-                            config.enableCorsForAllOrigins();
+                        javalinConfig -> {
+                            javalinConfig.showJavalinBanner = false;
+                            javalinConfig.staticFiles.add("web");
+                            javalinConfig.plugins.enableCors(
+                                    corsContainer -> {
+                                        corsContainer.add(CorsPluginConfig::anyHost);
+                                    });
 
-                            config.requestLogger(
-                                    (ctx, ms) ->
-                                            logger.debug(
-                                                    "Handled HTTP "
-                                                            + ctx.req.getMethod()
-                                                            + " request from "
-                                                            + ctx.req.getRemoteHost()
-                                                            + " in "
-                                                            + ms.toString()
-                                                            + "ms"));
+                            javalinConfig.requestLogger.http(
+                                    (ctx, ms) -> {
+                                        StringJoiner joiner =
+                                                new StringJoiner(" ")
+                                                        .add("Handled HTTP request of type")
+                                                        .add(ctx.req().getMethod())
+                                                        .add("from endpoint")
+                                                        .add(ctx.path())
+                                                        .add("for host")
+                                                        .add(ctx.req().getRemoteHost())
+                                                        .add("in")
+                                                        .add(ms.toString())
+                                                        .add("ms");
 
-                            config.wsLogger(
-                                    ws ->
-                                            ws.onMessage(
-                                                    ctx -> logger.debug("Got WebSockets message: " + ctx.message())));
-
-                            config.wsLogger(
-                                    ws ->
-                                            ws.onBinaryMessage(
-                                                    ctx ->
-                                                            logger.trace(
-                                                                    () -> {
-                                                                        var insa = ctx.session.getRemote().getInetSocketAddress();
-                                                                        var host = insa.getAddress().toString() + ":" + insa.getPort();
-                                                                        return "Got WebSockets binary message from host " + host;
-                                                                    })));
+                                        logger.debug(joiner.toString());
+                                    });
+                            javalinConfig.requestLogger.ws(
+                                    ws -> {
+                                        ws.onMessage(ctx -> logger.debug("Got WebSockets message: " + ctx.message()));
+                                        ws.onBinaryMessage(
+                                                ctx ->
+                                                        logger.trace(
+                                                                () -> {
+                                                                    var remote = (InetSocketAddress) ctx.session.getRemoteAddress();
+                                                                    var host =
+                                                                            remote.getAddress().toString() + ":" + remote.getPort();
+                                                                    return "Got WebSockets binary message from host: " + host;
+                                                                }));
+                                    });
                         });
 
-        /*Web Socket Events for Data Exchage */
+        /*Web Socket Events for Data Exchange */
         var dsHandler = DataSocketHandler.getInstance();
         app.ws(
                 "/websocket_data",
@@ -70,6 +78,7 @@ public class Server {
                     ws.onClose(dsHandler::onClose);
                     ws.onBinaryMessage(dsHandler::onBinaryMessage);
                 });
+
         /*Web Socket Events for Camera Streaming */
         var camDsHandler = CameraSocketHandler.getInstance();
         app.ws(
@@ -80,20 +89,28 @@ public class Server {
                     ws.onBinaryMessage(camDsHandler::onBinaryMessage);
                     ws.onMessage(camDsHandler::onMessage);
                 });
+
         /*API Events*/
-        app.post("/api/settings/import", RequestHandler::onSettingUpload);
-        app.post("/api/settings/offlineUpdate", RequestHandler::onOfflineUpdate);
-        app.get("/api/settings/photonvision_config.zip", RequestHandler::onSettingsDownload);
-        app.get("/api/settings/photonvision-journalctl.txt", RequestHandler::onExportCurrentLogs);
-        app.post("/api/settings/camera", RequestHandler::onCameraSettingsSave);
-        app.post("/api/settings/general", RequestHandler::onGeneralSettings);
-        app.post("/api/settings/endCalibration", RequestHandler::onCalibrationEnd);
-        app.post("/api/restartDevice", RequestHandler::restartDevice);
-        app.post("api/restartProgram", RequestHandler::restartProgram);
-        app.post("api/vision/pnpModel", RequestHandler::uploadPnpModel);
-        app.post("api/sendMetrics", RequestHandler::sendMetrics);
-        app.post("api/setCameraNickname", RequestHandler::setCameraNickname);
-        app.post("api/calibration/import", RequestHandler::importCalibrationFromCalibdb);
+        // Settings
+        app.post("/api/settings", RequestHandler::onSettingsImportRequest);
+        app.get("/api/settings/photonvision_config.zip", RequestHandler::onSettingsExportRequest);
+        app.post("/api/settings/hardwareConfig", RequestHandler::onHardwareConfigRequest);
+        app.post("/api/settings/hardwareSettings", RequestHandler::onHardwareSettingsRequest);
+        app.post("/api/settings/networkConfig", RequestHandler::onNetworkConfigRequest);
+        app.post("/api/settings/general", RequestHandler::onGeneralSettingsRequest);
+        app.post("/api/settings/camera", RequestHandler::onCameraSettingsRequest);
+        app.post("/api/settings/camera/setNickname", RequestHandler::onCameraNicknameChangeRequest);
+
+        // Utilities
+        app.post("/api/utils/offlineUpdate", RequestHandler::onOfflineUpdateRequest);
+        app.get("/api/utils/logs/photonvision-journalctl.txt", RequestHandler::onLogExportRequest);
+        app.post("/api/utils/restartProgram", RequestHandler::onProgramRestartRequest);
+        app.post("/api/utils/restartDevice", RequestHandler::onDeviceRestartRequest);
+        app.post("/api/utils/publishMetrics", RequestHandler::onMetricsPublishRequest);
+
+        // Calibration
+        app.post("/api/calibration/end", RequestHandler::onCalibrationEndRequest);
+        app.post("/api/calibration/importFromCalibDB", RequestHandler::onCalibrationImportRequest);
 
         app.start(port);
     }

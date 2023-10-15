@@ -17,11 +17,11 @@
 
 package org.photonvision.common.configuration;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -29,13 +29,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.*;
-import java.util.stream.Collectors;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.FileUtils;
-import org.photonvision.common.util.file.JacksonUtils;
-import org.photonvision.vision.pipeline.CVPipelineSettings;
-import org.photonvision.vision.pipeline.DriverModePipelineSettings;
 import org.photonvision.vision.processes.VisionSource;
 import org.zeroturnaround.zip.ZipUtil;
 
@@ -47,290 +43,143 @@ public class ConfigManager {
     public static final String HW_SET_FNAME = "hardwareSettings.json";
     public static final String NET_SET_FNAME = "networkSettings.json";
 
-    private PhotonConfiguration config;
-    private final File hardwareConfigFile;
-    private final File hardwareSettingsFile;
-    private final File networkConfigFile;
-    private final File camerasFolder;
-
     final File configDirectoryFile;
 
-    private long saveRequestTimestamp = -1;
+    private final ConfigProvider m_provider;
+
     private Thread settingsSaveThread;
+    private long saveRequestTimestamp = -1;
+
+    enum ConfigSaveStrategy {
+        SQL,
+        LEGACY,
+        ATOMIC_ZIP;
+    }
+
+    // This logic decides which kind of ConfigManager we load as the default. If we want
+    // to switch back to the legacy config manager, change this constant
+    private static final ConfigSaveStrategy m_saveStrat = ConfigSaveStrategy.SQL;
 
     public static ConfigManager getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new ConfigManager(getRootFolder());
+            switch (m_saveStrat) {
+                case SQL:
+                    INSTANCE = new ConfigManager(getRootFolder(), new SqlConfigProvider(getRootFolder()));
+                    break;
+                case LEGACY:
+                    INSTANCE = new ConfigManager(getRootFolder(), new LegacyConfigProvider(getRootFolder()));
+                    break;
+                case ATOMIC_ZIP:
+                    // not yet done, fall through
+                default:
+                    break;
+            }
         }
         return INSTANCE;
     }
 
-    public static void saveUploadedSettingsZip(File uploadPath) {
+    private void translateLegacyIfPresent(Path folderPath) {
+        if (!(m_provider instanceof SqlConfigProvider)) {
+            // Cannot import into SQL if we aren't in SQL mode rn
+            return;
+        }
+
+        var maybeCams = Path.of(folderPath.toAbsolutePath().toString(), "cameras").toFile();
+        var maybeCamsBak = Path.of(folderPath.toAbsolutePath().toString(), "cameras_backup").toFile();
+
+        if (maybeCams.exists() && maybeCams.isDirectory()) {
+            logger.info("Translating settings zip!");
+            var legacy = new LegacyConfigProvider(folderPath);
+            legacy.load();
+            var loadedConfig = legacy.getConfig();
+
+            // yeet our current cameras directory, not needed anymore
+            if (maybeCamsBak.exists()) FileUtils.deleteDirectory(maybeCamsBak.toPath());
+            if (!maybeCams.canWrite()) {
+                maybeCams.setWritable(true);
+            }
+
+            try {
+                Files.move(maybeCams.toPath(), maybeCamsBak.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                logger.error("Exception moving cameras to cameras_bak!", e);
+
+                // Try to just copy from cams to cams-bak instead of moving? Windows sometimes needs us to
+                // do that
+                try {
+                    org.apache.commons.io.FileUtils.copyDirectory(maybeCams, maybeCamsBak);
+                } catch (IOException e1) {
+                    // So we can't move to cams_bak, and we can't copy and delete either? We just have to give
+                    // up here on preserving the old folder
+                    logger.error("Exception while backup-copying cameras to cameras_bak!", e);
+                    e1.printStackTrace();
+                }
+
+                // So we can't save the old config, and we couldn't copy the folder
+                // But we've loaded the config. So just try to delete the directory so we don't try to load
+                // form it next time. That does mean we have no backup recourse, tho
+                if (maybeCams.exists()) FileUtils.deleteDirectory(maybeCams.toPath());
+            }
+
+            // Save the same config out using SQL loader
+            var sql = new SqlConfigProvider(getRootFolder());
+            sql.setConfig(loadedConfig);
+            sql.saveToDisk();
+        }
+    }
+
+    public static boolean saveUploadedSettingsZip(File uploadPath) {
+        // Unpack to /tmp/something/photonvision
         var folderPath = Path.of(System.getProperty("java.io.tmpdir"), "photonvision").toFile();
         folderPath.mkdirs();
         ZipUtil.unpack(uploadPath, folderPath);
+
+        // Nuke the current settings directory
         FileUtils.deleteDirectory(getRootFolder());
-        try {
-            org.apache.commons.io.FileUtils.copyDirectory(folderPath, getRootFolder().toFile());
-            logger.info("Copied settings successfully!");
-        } catch (IOException e) {
-            logger.error("Exception copying uploaded settings!", e);
-            return;
+
+        // If there's a cameras folder in the upload, we know we need to import from the
+        // old style
+        var maybeCams = Path.of(folderPath.getAbsolutePath(), "cameras").toFile();
+        if (maybeCams.exists() && maybeCams.isDirectory()) {
+            var legacy = new LegacyConfigProvider(folderPath.toPath());
+            legacy.load();
+            var loadedConfig = legacy.getConfig();
+
+            var sql = new SqlConfigProvider(getRootFolder());
+            sql.setConfig(loadedConfig);
+            return sql.saveToDisk();
+        } else {
+            // new structure -- just copy and save like we used to
+            try {
+                org.apache.commons.io.FileUtils.copyDirectory(folderPath, getRootFolder().toFile());
+                logger.info("Copied settings successfully!");
+                return true;
+            } catch (IOException e) {
+                logger.error("Exception copying uploaded settings!", e);
+                return false;
+            }
         }
     }
 
     public PhotonConfiguration getConfig() {
-        return config;
+        return m_provider.getConfig();
     }
 
     private static Path getRootFolder() {
         return Path.of("photonvision_config");
     }
 
-    ConfigManager(Path configDirectoryFile) {
-        this.configDirectoryFile = new File(configDirectoryFile.toUri());
-        this.hardwareConfigFile =
-                new File(Path.of(configDirectoryFile.toString(), HW_CFG_FNAME).toUri());
-        this.hardwareSettingsFile =
-                new File(Path.of(configDirectoryFile.toString(), HW_SET_FNAME).toUri());
-        this.networkConfigFile =
-                new File(Path.of(configDirectoryFile.toString(), NET_SET_FNAME).toUri());
-        this.camerasFolder = new File(Path.of(configDirectoryFile.toString(), "cameras").toUri());
+    ConfigManager(Path configDirectory, ConfigProvider provider) {
+        this.configDirectoryFile = new File(configDirectory.toUri());
+        m_provider = provider;
 
         settingsSaveThread = new Thread(this::saveAndWriteTask);
         settingsSaveThread.start();
     }
 
     public void load() {
-        logger.info("Loading settings...");
-        if (!configDirectoryFile.exists()) {
-            if (configDirectoryFile.mkdirs()) {
-                logger.debug("Root config folder did not exist. Created!");
-            } else {
-                logger.error("Failed to create root config folder!");
-            }
-        }
-        if (!configDirectoryFile.canWrite()) {
-            logger.debug("Making root dir writeable...");
-            try {
-                var success = configDirectoryFile.setWritable(true);
-                if (success) logger.debug("Set root dir writeable!");
-                else logger.error("Could not make root dir writeable!");
-            } catch (SecurityException e) {
-                logger.error("Could not make root dir writeable!", e);
-            }
-        }
-
-        HardwareConfig hardwareConfig;
-        HardwareSettings hardwareSettings;
-        NetworkConfig networkConfig;
-
-        if (hardwareConfigFile.exists()) {
-            try {
-                hardwareConfig =
-                        JacksonUtils.deserialize(hardwareConfigFile.toPath(), HardwareConfig.class);
-                if (hardwareConfig == null) {
-                    logger.error("Could not deserialize hardware config! Loading defaults");
-                    hardwareConfig = new HardwareConfig();
-                }
-            } catch (IOException e) {
-                logger.error("Could not deserialize hardware config! Loading defaults");
-                hardwareConfig = new HardwareConfig();
-            }
-        } else {
-            logger.info("Hardware config does not exist! Loading defaults");
-            hardwareConfig = new HardwareConfig();
-        }
-
-        if (hardwareSettingsFile.exists()) {
-            try {
-                hardwareSettings =
-                        JacksonUtils.deserialize(hardwareSettingsFile.toPath(), HardwareSettings.class);
-                if (hardwareSettings == null) {
-                    logger.error("Could not deserialize hardware settings! Loading defaults");
-                    hardwareSettings = new HardwareSettings();
-                }
-            } catch (IOException e) {
-                logger.error("Could not deserialize hardware settings! Loading defaults");
-                hardwareSettings = new HardwareSettings();
-            }
-        } else {
-            logger.info("Hardware settings does not exist! Loading defaults");
-            hardwareSettings = new HardwareSettings();
-        }
-
-        if (networkConfigFile.exists()) {
-            try {
-                networkConfig = JacksonUtils.deserialize(networkConfigFile.toPath(), NetworkConfig.class);
-                if (networkConfig == null) {
-                    logger.error("Could not deserialize network config! Loading defaults");
-                    networkConfig = new NetworkConfig();
-                }
-            } catch (IOException e) {
-                logger.error("Could not deserialize network config! Loading defaults");
-                networkConfig = new NetworkConfig();
-            }
-        } else {
-            logger.info("Network config file does not exist! Loading defaults");
-            networkConfig = new NetworkConfig();
-        }
-
-        if (!camerasFolder.exists()) {
-            if (camerasFolder.mkdirs()) {
-                logger.debug("Cameras config folder did not exist. Created!");
-            } else {
-                logger.error("Failed to create cameras config folder!");
-            }
-        }
-
-        HashMap<String, CameraConfiguration> cameraConfigurations = loadCameraConfigs();
-
-        this.config =
-                new PhotonConfiguration(
-                        hardwareConfig, hardwareSettings, networkConfig, cameraConfigurations);
-    }
-
-    public void saveToDisk() {
-        // Delete old configs
-        FileUtils.deleteDirectory(camerasFolder.toPath());
-
-        try {
-            JacksonUtils.serialize(networkConfigFile.toPath(), config.getNetworkConfig());
-        } catch (IOException e) {
-            logger.error("Could not save network config!", e);
-        }
-        try {
-            JacksonUtils.serialize(hardwareSettingsFile.toPath(), config.getHardwareSettings());
-        } catch (IOException e) {
-            logger.error("Could not save hardware config!", e);
-        }
-
-        // save all of our cameras
-        var cameraConfigMap = config.getCameraConfigurations();
-        for (var subdirName : cameraConfigMap.keySet()) {
-            var camConfig = cameraConfigMap.get(subdirName);
-            var subdir = Path.of(camerasFolder.toPath().toString(), subdirName);
-
-            if (!subdir.toFile().exists()) {
-                // TODO: check for error
-                subdir.toFile().mkdirs();
-            }
-
-            try {
-                JacksonUtils.serialize(Path.of(subdir.toString(), "config.json"), camConfig);
-            } catch (IOException e) {
-                logger.error("Could not save config.json for " + subdir, e);
-            }
-
-            try {
-                JacksonUtils.serialize(
-                        Path.of(subdir.toString(), "drivermode.json"), camConfig.driveModeSettings);
-            } catch (IOException e) {
-                logger.error("Could not save drivermode.json for " + subdir, e);
-            }
-
-            for (var pipe : camConfig.pipelineSettings) {
-                var pipePath = Path.of(subdir.toString(), "pipelines", pipe.pipelineNickname + ".json");
-
-                if (!pipePath.getParent().toFile().exists()) {
-                    // TODO: check for error
-                    pipePath.getParent().toFile().mkdirs();
-                }
-
-                try {
-                    JacksonUtils.serialize(pipePath, pipe);
-                } catch (IOException e) {
-                    logger.error("Could not save " + pipe.pipelineNickname + ".json!", e);
-                }
-            }
-        }
-        logger.info("Settings saved!");
-    }
-
-    private HashMap<String, CameraConfiguration> loadCameraConfigs() {
-        HashMap<String, CameraConfiguration> loadedConfigurations = new HashMap<>();
-        try {
-            var subdirectories =
-                    Files.list(camerasFolder.toPath())
-                            .filter(f -> f.toFile().isDirectory())
-                            .collect(Collectors.toList());
-
-            for (var subdir : subdirectories) {
-                var cameraConfigPath = Path.of(subdir.toString(), "config.json");
-                CameraConfiguration loadedConfig = null;
-                try {
-                    loadedConfig =
-                            JacksonUtils.deserialize(
-                                    cameraConfigPath.toAbsolutePath(), CameraConfiguration.class);
-                } catch (JsonProcessingException e) {
-                    logger.error("Camera config deserialization failed!", e);
-                    e.printStackTrace();
-                }
-                if (loadedConfig == null) { // If the file could not be deserialized
-                    logger.warn("Could not load camera " + subdir + "'s config.json! Loading " + "default");
-                    continue; // TODO how do we later try to load this camera if it gets reconnected?
-                }
-
-                // At this point we have only loaded the base stuff
-                // We still need to deserialize pipelines, as well as
-                // driver mode settings
-                var driverModeFile = Path.of(subdir.toString(), "drivermode.json");
-                DriverModePipelineSettings driverMode;
-                try {
-                    driverMode =
-                            JacksonUtils.deserialize(
-                                    driverModeFile.toAbsolutePath(), DriverModePipelineSettings.class);
-                } catch (JsonProcessingException e) {
-                    logger.error("Could not deserialize drivermode.json! Loading defaults");
-                    logger.debug(Arrays.toString(e.getStackTrace()));
-                    driverMode = new DriverModePipelineSettings();
-                }
-                if (driverMode == null) {
-                    logger.warn(
-                            "Could not load camera " + subdir + "'s drivermode.json! Loading" + " default");
-                    driverMode = new DriverModePipelineSettings();
-                }
-
-                // Load pipelines by mapping the files within the pipelines subdir
-                // to their deserialized equivalents
-                var pipelineSubdirectory = Path.of(subdir.toString(), "pipelines");
-                List<CVPipelineSettings> settings =
-                        pipelineSubdirectory.toFile().exists()
-                                ? Files.list(pipelineSubdirectory)
-                                        .filter(p -> p.toFile().isFile())
-                                        .map(
-                                                p -> {
-                                                    var relativizedFilePath =
-                                                            configDirectoryFile
-                                                                    .toPath()
-                                                                    .toAbsolutePath()
-                                                                    .relativize(p)
-                                                                    .toString();
-                                                    try {
-                                                        return JacksonUtils.deserialize(p, CVPipelineSettings.class);
-                                                    } catch (JsonProcessingException e) {
-                                                        logger.error("Exception while deserializing " + relativizedFilePath, e);
-                                                    } catch (IOException e) {
-                                                        logger.warn(
-                                                                "Could not load pipeline at "
-                                                                        + relativizedFilePath
-                                                                        + "! Skipping...");
-                                                    }
-                                                    return null;
-                                                })
-                                        .filter(Objects::nonNull)
-                                        .collect(Collectors.toList())
-                                : Collections.emptyList();
-
-                loadedConfig.driveModeSettings = driverMode;
-                loadedConfig.addPipelineSettings(settings);
-
-                loadedConfigurations.put(subdir.toFile().getName(), loadedConfig);
-            }
-        } catch (IOException e) {
-            logger.error("Error loading camera configs!", e);
-        }
-        return loadedConfigurations;
+        translateLegacyIfPresent(this.configDirectoryFile.toPath());
+        m_provider.load();
     }
 
     public void addCameraConfigurations(List<VisionSource> sources) {
@@ -394,36 +243,35 @@ public class ConfigManager {
         return imgFilePath.toPath();
     }
 
-    public Path getHardwareConfigFile() {
-        return this.hardwareConfigFile.toPath();
+    public boolean saveUploadedHardwareConfig(Path uploadPath) {
+        return m_provider.saveUploadedHardwareConfig(uploadPath);
     }
 
-    public Path getHardwareSettingsFile() {
-        return this.hardwareSettingsFile.toPath();
+    public boolean saveUploadedHardwareSettings(Path uploadPath) {
+        return m_provider.saveUploadedHardwareSettings(uploadPath);
     }
 
-    public Path getNetworkConfigFile() {
-        return this.networkConfigFile.toPath();
-    }
-
-    public void saveUploadedHardwareConfig(Path uploadPath) {
-        FileUtils.deleteFile(this.getHardwareConfigFile());
-        FileUtils.copyFile(uploadPath, this.getHardwareConfigFile());
-    }
-
-    public void saveUploadedHardwareSettings(Path uploadPath) {
-        FileUtils.deleteFile(this.getHardwareSettingsFile());
-        FileUtils.copyFile(uploadPath, this.getHardwareSettingsFile());
-    }
-
-    public void saveUploadedNetworkConfig(Path uploadPath) {
-        FileUtils.deleteFile(this.getNetworkConfigFile());
-        FileUtils.copyFile(uploadPath, this.getNetworkConfigFile());
+    public boolean saveUploadedNetworkConfig(Path uploadPath) {
+        return m_provider.saveUploadedNetworkConfig(uploadPath);
     }
 
     public void requestSave() {
         logger.trace("Requesting save...");
         saveRequestTimestamp = System.currentTimeMillis();
+    }
+
+    public void unloadCameraConfigs() {
+        this.getConfig().getCameraConfigurations().clear();
+    }
+
+    public void clearConfig() {
+        logger.info("Clearing configuration!");
+        m_provider.clearConfig();
+        m_provider.saveToDisk();
+    }
+
+    public void saveToDisk() {
+        m_provider.saveToDisk();
     }
 
     private void saveAndWriteTask() {
@@ -441,9 +289,5 @@ public class ConfigManager {
                 logger.error("Exception waiting for settings semaphore", e);
             }
         }
-    }
-
-    public void unloadCameraConfigs() {
-        this.config.getCameraConfigurations().clear();
     }
 }

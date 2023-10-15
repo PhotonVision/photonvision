@@ -16,6 +16,9 @@ modifiableFileExclude {
   \.gif$
   \.so$
   \.dll$
+  \.webp$
+  \.ico$
+  gradlew
 }
 
 includeProject {

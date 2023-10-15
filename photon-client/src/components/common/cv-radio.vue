@@ -1,24 +1,43 @@
+<script setup lang="ts">
+import { computed } from "vue";
+import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
+
+const props = withDefaults(
+  defineProps<{
+    label?: string;
+    tooltip?: string;
+    // TODO fully update v-model usage in custom components on Vue3 update
+    value: number;
+    disabled?: boolean;
+    inputCols?: number;
+    list: string[];
+  }>(),
+  {
+    disabled: false,
+    inputCols: 8
+  }
+);
+
+const emit = defineEmits<{
+  (e: "input", value: number): void;
+}>();
+
+const localValue = computed({
+  get: () => props.value,
+  set: (v) => emit("input", v)
+});
+</script>
+
 <template>
   <div>
-    <v-row
-      dense
-      align="center"
-    >
-      <v-col :cols="12 - (inputCols || 8)">
-        <tooltipped-label
-          :tooltip="tooltip"
-          :text="name"
-        />
+    <v-row dense align="center">
+      <v-col :cols="12 - inputCols">
+        <tooltipped-label :tooltip="tooltip" :label="label" />
       </v-col>
-      <v-col :cols="inputCols || 8">
-        <v-radio-group
-          v-model="localValue"
-          row
-          dark
-          :mandatory="true"
-        >
+      <v-col :cols="inputCols">
+        <v-radio-group v-model="localValue" row dark :mandatory="true">
           <v-radio
-            v-for="(radioName,index) in list"
+            v-for="(radioName, index) in list"
             :key="index"
             color="#ffd843"
             :label="radioName"
@@ -30,33 +49,3 @@
     </v-row>
   </div>
 </template>
-
-<script>
-    import TooltippedLabel from "./cv-tooltipped-label";
-
-    export default {
-        name: 'Radio',
-        components: {
-          TooltippedLabel
-        },
-      // eslint-disable-next-line vue/require-prop-types
-        props: ['name', 'value', 'list', 'disabled', 'inputCols', 'tooltip'],
-        data() {
-            return {}
-        },
-        computed: {
-            localValue: {
-                get() {
-                    return this.value;
-                },
-                set(value) {
-                    this.$emit('input', value);
-                }
-            }
-        }
-    }
-</script>
-
-<style lang="" scoped>
-
-</style>

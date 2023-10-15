@@ -26,7 +26,7 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.FrameStaticProperties;
 
 public abstract class VisionSourceSettables {
-    private static final Logger logger =
+    protected static final Logger logger =
             new Logger(VisionSourceSettables.class, LogGroup.VisionModule);
 
     private final CameraConfiguration configuration;
@@ -49,6 +49,7 @@ public abstract class VisionSourceSettables {
     public abstract void setBrightness(int brightness);
 
     public abstract void setGain(int gain);
+
     // Pretty uncommon so instead of abstract this is just a no-op by default
     // Overriden by cameras with AWB gain support
     public void setRedGain(int red) {}

@@ -44,6 +44,7 @@ public class VisionSourceManager {
     final List<UsbCameraInfo> knownUsbCameras = new CopyOnWriteArrayList<>();
     final List<CameraConfiguration> unmatchedLoadedConfigs = new CopyOnWriteArrayList<>();
     private boolean hasWarned;
+    private String ignoredCamerasRegex = "";
 
     private static class SingletonHolder {
         private static final VisionSourceManager INSTANCE = new VisionSourceManager();
@@ -282,12 +283,18 @@ public class VisionSourceManager {
         return cfg;
     }
 
+    public void setIgnoredCamerasRegex(String ignoredCamerasRegex) {
+        this.ignoredCamerasRegex = ignoredCamerasRegex;
+    }
+
     private List<UsbCameraInfo> filterAllowedDevices(List<UsbCameraInfo> allDevices) {
         List<UsbCameraInfo> filteredDevices = new ArrayList<>();
         for (var device : allDevices) {
             if (deviceBlacklist.contains(device.name)) {
                 logger.trace(
                         "Skipping blacklisted device: \"" + device.name + "\" at \"" + device.path + "\"");
+            } else if (device.name.matches(ignoredCamerasRegex)) {
+                logger.trace("Skipping ignored device: \"" + device.name + "\" at \"" + device.path);
             } else {
                 filteredDevices.add(device);
                 logger.trace(
@@ -319,7 +326,7 @@ public class VisionSourceManager {
             List<CameraConfiguration> camConfigs) {
         var cameraSources = new ArrayList<VisionSource>();
         for (var configuration : camConfigs) {
-            System.out.println("Creating VisionSource for " + configuration);
+            logger.debug("Creating VisionSource for " + configuration);
 
             // Picams should have csi-video in the path
             boolean is_picam =

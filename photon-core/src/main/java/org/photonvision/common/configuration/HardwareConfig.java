@@ -128,12 +128,16 @@ public class HardwareConfig {
         this.blacklistedResIndices = blacklistedResIndices;
     }
 
-    /** @return True if the FOV has been preset to a sane value, false otherwise */
+    /**
+     * @return True if the FOV has been preset to a sane value, false otherwise
+     */
     public final boolean hasPresetFOV() {
         return vendorFOV > 0;
     }
 
-    /** @return True if any command has been configured to a non-default empty, false otherwise */
+    /**
+     * @return True if any command has been configured to a non-default empty, false otherwise
+     */
     public final boolean hasCommandsConfigured() {
         return cpuTempCommand != ""
                 || cpuMemoryCommand != ""
@@ -145,5 +149,54 @@ public class HardwareConfig {
                 || ledBlinkCommand != ""
                 || gpuMemUsageCommand != ""
                 || diskUsageCommand != "";
+    }
+
+    @Override
+    public String toString() {
+        return "HardwareConfig [deviceName="
+                + deviceName
+                + ", deviceLogoPath="
+                + deviceLogoPath
+                + ", supportURL="
+                + supportURL
+                + ", ledPins="
+                + ledPins
+                + ", ledSetCommand="
+                + ledSetCommand
+                + ", ledsCanDim="
+                + ledsCanDim
+                + ", ledBrightnessRange="
+                + ledBrightnessRange
+                + ", ledDimCommand="
+                + ledDimCommand
+                + ", ledBlinkCommand="
+                + ledBlinkCommand
+                + ", statusRGBPins="
+                + statusRGBPins
+                + ", cpuTempCommand="
+                + cpuTempCommand
+                + ", cpuMemoryCommand="
+                + cpuMemoryCommand
+                + ", cpuUtilCommand="
+                + cpuUtilCommand
+                + ", cpuThrottleReasonCmd="
+                + cpuThrottleReasonCmd
+                + ", cpuUptimeCommand="
+                + cpuUptimeCommand
+                + ", gpuMemoryCommand="
+                + gpuMemoryCommand
+                + ", ramUtilCommand="
+                + ramUtilCommand
+                + ", gpuMemUsageCommand="
+                + gpuMemUsageCommand
+                + ", diskUsageCommand="
+                + diskUsageCommand
+                + ", restartHardwareCommand="
+                + restartHardwareCommand
+                + ", vendorFOV="
+                + vendorFOV
+                + ", blacklistedResIndices="
+                + blacklistedResIndices
+                + "]";
     }
 }

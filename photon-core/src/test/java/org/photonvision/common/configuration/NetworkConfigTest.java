@@ -33,4 +33,20 @@ public class NetworkConfigTest {
         Assertions.assertDoesNotThrow(() -> mapper.readValue(path.toFile(), NetworkConfig.class));
         new File("netTest.json").delete();
     }
+
+    @Test
+    public void testDeserializeTeamNumberOrNtServerAddress() {
+        {
+            var folder = Path.of("test-resources/network-old-team-number");
+            var configMgr = new ConfigManager(folder, new LegacyConfigProvider(folder));
+            configMgr.load();
+            Assertions.assertEquals("9999", configMgr.getConfig().getNetworkConfig().ntServerAddress);
+        }
+        {
+            var folder = Path.of("test-resources/network-new-team-number");
+            var configMgr = new ConfigManager(folder, new LegacyConfigProvider(folder));
+            configMgr.load();
+            Assertions.assertEquals("9999", configMgr.getConfig().getNetworkConfig().ntServerAddress);
+        }
+    }
 }
