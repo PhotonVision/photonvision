@@ -104,7 +104,7 @@ const tabGroups = computed<ConfigOption[][]>(() => {
   const isAprilTag = useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.AprilTag;
   const isAruco = useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.Aruco;
 
-  var ret = getTabGroups()
+  return getTabGroups()
     .map((tabGroup) =>
       tabGroup.filter(
         (tabConfig) =>
@@ -117,7 +117,6 @@ const tabGroups = computed<ConfigOption[][]>(() => {
       )
     )
     .filter((it) => it.length);
-  return ret;
 });
 
 onBeforeUpdate(() => {
