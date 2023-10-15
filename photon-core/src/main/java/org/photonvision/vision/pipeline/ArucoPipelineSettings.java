@@ -18,7 +18,6 @@
 package org.photonvision.vision.pipeline;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.vision.target.TargetModel;
 

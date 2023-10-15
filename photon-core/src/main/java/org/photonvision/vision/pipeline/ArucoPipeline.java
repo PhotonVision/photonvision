@@ -122,7 +122,9 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         if (settings.debugThreshold) {
             var thresh =
                     drawThresholdFrame(
-                            frame.processedImage.getMat(), settings.threshWinSizes.getFirst(), settings.threshConstant);
+                            frame.processedImage.getMat(),
+                            settings.threshWinSizes.getFirst(),
+                            settings.threshConstant);
             thresh.copyTo(frame.colorImage.getMat());
             thresh.release();
         }

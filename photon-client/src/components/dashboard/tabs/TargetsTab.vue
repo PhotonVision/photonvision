@@ -35,9 +35,9 @@ import { useStateStore } from "@/stores/StateStore";
               </template>
               <template
                 v-if="
-                  (useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag
-                  || useCameraSettingsStore().currentPipelineType === PipelineType.Aruco)
-                  && useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
+                  (useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
+                    useCameraSettingsStore().currentPipelineType === PipelineType.Aruco) &&
+                  useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
                 "
               >
                 <th class="text-center">Ambiguity %</th>
@@ -49,8 +49,8 @@ import { useStateStore } from "@/stores/StateStore";
               <td>{{ index }}</td>
               <td
                 v-if="
-                  useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag
-                  || useCameraSettingsStore().currentPipelineType === PipelineType.Aruco
+                  useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
+                  useCameraSettingsStore().currentPipelineType === PipelineType.Aruco
                 "
               >
                 {{ target.fiducialId }}
@@ -68,9 +68,9 @@ import { useStateStore } from "@/stores/StateStore";
               </template>
               <template
                 v-if="
-                  (useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag
-                  || useCameraSettingsStore().currentPipelineType === PipelineType.Aruco)
-                  && useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
+                  (useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
+                    useCameraSettingsStore().currentPipelineType === PipelineType.Aruco) &&
+                  useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
                 "
               >
                 <td>{{ target.ambiguity?.toFixed(2) }}%</td>

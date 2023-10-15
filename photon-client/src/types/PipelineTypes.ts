@@ -247,7 +247,7 @@ export interface ArucoPipelineSettings extends PipelineSettings {
   threshConstant: number;
   debugThreshold: boolean;
 
-  useCornerRefinement: boolean,
+  useCornerRefinement: boolean;
 
   useAruco3: boolean;
   aruco3MinMarkerSideRatio: number;

@@ -15,10 +15,9 @@ const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings
 const threshWinSizes = computed<[number, number]>({
   get: () => {
     if (currentPipelineSettings.pipelineType === PipelineType.Aruco) {
-      return (Object.values(currentPipelineSettings.threshWinSizes) as [number, number]);
-    }
-    else {
-      return ([0, 0] as [number, number]);
+      return Object.values(currentPipelineSettings.threshWinSizes) as [number, number];
+    } else {
+      return [0, 0] as [number, number];
     }
   },
   set: (v) => {
