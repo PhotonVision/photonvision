@@ -87,7 +87,6 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         params.useCornerRefinement = settings.useCornerRefinement;
         params.refinementMaxIterations = settings.refineNumIterations;
         params.refinementMinErrorPx = settings.refineMinErrorPx;
-        params.debugRefineWindow = settings.debugRefineWindow;
         params.useAruco3 = settings.useAruco3;
         params.aruco3MinMarkerSideRatio = settings.aruco3MinMarkerSideRatio;
         params.aruco3MinCanonicalImgSide = settings.aruco3MinCanonicalImgSide;

@@ -35,7 +35,7 @@ public class ArucoDetectionPipeParams {
      *
      * <p>E.g. 36h11 -> 11 * errorCorrectionRate = Max error bits
      */
-    public double errorCorrectionRate = 0.5;
+    public double errorCorrectionRate = 0;
 
     /**
      * If obtained corners should be iteratively refined. This should always be on for 3D estimation.

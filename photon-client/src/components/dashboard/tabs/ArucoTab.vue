@@ -21,6 +21,13 @@ const interactiveCols = computed(
 
 <template>
   <div v-if="currentPipelineSettings.pipelineType === PipelineType.Aruco">
+    <cv-switch
+      v-model="currentPipelineSettings.useCornerRefinement"
+      class="pt-2"
+      label="Refine Corners"
+      tooltip="Further refine the initial corners with subpixel accuracy. This should be considered mandatory for 3D estimation."
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ useCornerRefinement: value }, false)"
+    />
     <cv-slider
       v-model="currentPipelineSettings.threshMinSize"
       class="pt-2"
@@ -71,20 +78,6 @@ const interactiveCols = computed(
       label="Debug Threshold"
       tooltip=""
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ debugThreshold: value }, false)"
-    />
-    <cv-switch
-      v-model="currentPipelineSettings.useCornerRefinement"
-      class="pt-2"
-      label="Refine Corners"
-      tooltip="Further refine the initial corners with subpixel accuracy. This should be considered mandatory for 3D estimation."
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ useCornerRefinement: value }, false)"
-    />
-    <cv-switch
-      v-model="currentPipelineSettings.debugRefineWindow"
-      class="pt-2"
-      label="Debug Refine Window"
-      tooltip=""
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ debugRefineWindow: value }, false)"
     />
     <cv-switch
       v-model="currentPipelineSettings.useAruco3"

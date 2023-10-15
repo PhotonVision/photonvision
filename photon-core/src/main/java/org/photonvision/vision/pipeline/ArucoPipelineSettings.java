@@ -31,7 +31,6 @@ public class ArucoPipelineSettings extends AdvancedPipelineSettings {
     public boolean useCornerRefinement = true;
     public int refineNumIterations = 30;
     public double refineMinErrorPx = 0.005;
-    public boolean debugRefineWindow = false;
 
     public boolean useAruco3 = false;
     public double aruco3MinMarkerSideRatio = 0.02;
