@@ -104,7 +104,7 @@ const tabGroups = computed<ConfigOption[][]>(() => {
   const isAprilTag = useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.AprilTag;
   const isAruco = useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.Aruco;
 
-  return getTabGroups().map((tabGroup) =>
+  var ret = getTabGroups().map((tabGroup) =>
     tabGroup.filter(
       (tabConfig) =>
         !(!allow3d && tabConfig.tabName === "3D") && //Filter out 3D tab any time 3D isn't calibrated
@@ -115,6 +115,9 @@ const tabGroups = computed<ConfigOption[][]>(() => {
         !(!isAruco && tabConfig.tabName === "Aruco") //Filter out aruco unless we actually are doing Aruco
     )
   );
+  // remove empty tab groups
+  ret = ret.filter((it) => it.length);
+  return ret;
 });
 
 onBeforeUpdate(() => {
