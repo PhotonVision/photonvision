@@ -46,7 +46,7 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 public class Calibrate3dPipeline
         extends CVPipeline<CVPipelineResult, Calibration3dPipelineSettings> {
-    // For loggging
+    // For logging
     private static final Logger logger = new Logger(Calibrate3dPipeline.class, LogGroup.General);
 
     // Only 2 pipes needed, one for finding the board corners and one for actually calibrating
@@ -63,7 +63,7 @@ public class Calibrate3dPipeline
     /// Output of the calibration, getter method is set for this.
     private CVPipeResult<CameraCalibrationCoefficients> calibrationOutput;
 
-    private int minSnapshots;
+    private final int minSnapshots;
 
     private boolean calibrating = false;
 

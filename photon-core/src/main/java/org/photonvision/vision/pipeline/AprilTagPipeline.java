@@ -29,13 +29,15 @@ import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
-import org.photonvision.vision.pipe.impl.*;
+import org.photonvision.vision.pipe.impl.AprilTagDetectionPipe;
+import org.photonvision.vision.pipe.impl.AprilTagDetectionPipeParams;
+import org.photonvision.vision.pipe.impl.AprilTagPoseEstimatorPipe;
 import org.photonvision.vision.pipe.impl.AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams;
+import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 
-@SuppressWarnings("DuplicatedCode")
 public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipelineSettings> {
     private final AprilTagDetectionPipe aprilTagDetectionPipe = new AprilTagDetectionPipe();
     private final AprilTagPoseEstimatorPipe poseEstimatorPipe = new AprilTagPoseEstimatorPipe();

@@ -119,8 +119,8 @@ public enum TargetModel implements Releasable {
             Units.inchesToMeters(3 * 2));
 
     @JsonIgnore private MatOfPoint3f realWorldTargetCoordinates;
-    @JsonIgnore private MatOfPoint3f visualizationBoxBottom = new MatOfPoint3f();
-    @JsonIgnore private MatOfPoint3f visualizationBoxTop = new MatOfPoint3f();
+    @JsonIgnore private final MatOfPoint3f visualizationBoxBottom = new MatOfPoint3f();
+    @JsonIgnore private final MatOfPoint3f visualizationBoxTop = new MatOfPoint3f();
 
     @JsonProperty("realWorldCoordinatesArray")
     private List<Point3> realWorldCoordinatesArray;

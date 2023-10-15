@@ -18,11 +18,10 @@
 package org.photonvision.vision.aruco;
 
 import java.util.ArrayList;
-import org.opencv.aruco.Aruco;
-import org.opencv.aruco.ArucoDetector;
-import org.opencv.aruco.DetectorParameters;
-import org.opencv.aruco.Dictionary;
 import org.opencv.core.Mat;
+import org.opencv.objdetect.ArucoDetector;
+import org.opencv.objdetect.DetectorParameters;
+import org.opencv.objdetect.Objdetect;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
@@ -31,18 +30,18 @@ public class PhotonArucoDetector {
     private static final Logger logger = new Logger(PhotonArucoDetector.class, LogGroup.VisionModule);
 
     // Detector parameters
-    private final DetectorParameters params = DetectorParameters.create();
+    private final DetectorParameters params = new DetectorParameters();
 
     private final ArucoDetector detector =
-            new ArucoDetector(Dictionary.get(Aruco.DICT_APRILTAG_16h5), params);
+            new ArucoDetector(Objdetect.getPredefinedDictionary(Objdetect.DICT_APRILTAG_16h5), params);
 
     private Mat ids = new Mat();
     private ArrayList<Mat> corners = new ArrayList<Mat>();
     private Mat cornerMat;
 
     public PhotonArucoDetector() {
-        logger.debug("New Aruco Detector");
-        params.set_cornerRefinementMethod(Aruco.CORNER_REFINE_SUBPIX);
+        logger.debug("Creating new Aruco Detector");
+        params.set_cornerRefinementMethod(Objdetect.CORNER_REFINE_SUBPIX);
     }
 
     public ArucoDetector getDetector() {

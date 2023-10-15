@@ -24,14 +24,16 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Point;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
-import org.photonvision.vision.opencv.*;
+import org.photonvision.vision.opencv.CVShape;
+import org.photonvision.vision.opencv.Contour;
+import org.photonvision.vision.opencv.ContourShape;
+import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.*;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.PotentialTarget;
 import org.photonvision.vision.target.TrackedTarget;
 
-@SuppressWarnings({"DuplicatedCode"})
 public class ColoredShapePipeline
         extends CVPipeline<CVPipelineResult, ColoredShapePipelineSettings> {
     private final SpeckleRejectPipe speckleRejectPipe = new SpeckleRejectPipe();

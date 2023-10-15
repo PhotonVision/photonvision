@@ -60,7 +60,7 @@ public class AprilTagTest {
             pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
             printTestResults(pipelineResult);
         } catch (RuntimeException e) {
-            // For now, will throw coz rotation3d ctor
+            // For now, will throw because of the Rotation3d ctor
             return;
         }
 
@@ -116,7 +116,7 @@ public class AprilTagTest {
             pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
             printTestResults(pipelineResult);
         } catch (RuntimeException e) {
-            // For now, will throw coz rotation3d ctor
+            // For now, will throw because of the Rotation3d ctor
             return;
         }
 

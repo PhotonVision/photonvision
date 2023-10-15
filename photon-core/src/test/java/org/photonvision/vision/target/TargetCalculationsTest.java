@@ -21,8 +21,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.opencv.core.*;
+import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.opencv.core.RotatedRect;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.numbers.DoubleCouple;
@@ -31,8 +33,9 @@ import org.photonvision.vision.opencv.DualOffsetValues;
 
 public class TargetCalculationsTest {
 
-    private static Size imageSize = new Size(800, 600);
-    private static Point imageCenterPoint = new Point(imageSize.width / 2, imageSize.height / 2);
+    private static final Size imageSize = new Size(800, 600);
+    private static final Point imageCenterPoint =
+            new Point(imageSize.width / 2, imageSize.height / 2);
     private static final double diagFOV = Math.toRadians(70.0);
 
     private static final FrameStaticProperties props =
