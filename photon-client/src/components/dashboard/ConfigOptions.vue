@@ -116,7 +116,7 @@ const tabGroups = computed<ConfigOption[][]>(() => {
           !(!isAruco && tabConfig.tabName === "Aruco") //Filter out aruco unless we actually are doing Aruco
       )
     )
-    .filter((it) => it.length);
+    .filter((it) => it.length); // Remove empty tab groups
 });
 
 onBeforeUpdate(() => {
