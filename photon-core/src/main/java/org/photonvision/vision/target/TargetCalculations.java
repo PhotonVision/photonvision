@@ -33,7 +33,6 @@ public class TargetCalculations {
         return -Math.toDegrees(Math.atan((offsetCenterY - targetCenterY) / verticalFocalLength));
     }
 
-    @SuppressWarnings("DuplicatedCode")
     public static double calculateSkew(boolean isLandscape, RotatedRect minAreaRect) {
         // https://namkeenman.wordpress.com/2015/12/18/open-cv-determine-angle-of-rotatedrect-minarearect/
         var angle = minAreaRect.angle;

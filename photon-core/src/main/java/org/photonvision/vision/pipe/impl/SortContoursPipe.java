@@ -37,7 +37,7 @@ public class SortContoursPipe
         }
         m_sortedContours.clear();
 
-        if (in.size() > 0) {
+        if (!in.isEmpty()) {
             m_sortedContours.addAll(in);
             if (params.getSortMode() != ContourSortMode.Centermost) {
                 m_sortedContours.sort(params.getSortMode().getComparator());

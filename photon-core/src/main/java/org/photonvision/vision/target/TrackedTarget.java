@@ -24,16 +24,14 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import java.util.HashMap;
 import java.util.List;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint;
-import org.opencv.core.MatOfPoint2f;
-import org.opencv.core.Point;
-import org.opencv.core.RotatedRect;
+import org.opencv.core.*;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.frame.FrameStaticProperties;
-import org.photonvision.vision.opencv.*;
+import org.photonvision.vision.opencv.CVShape;
+import org.photonvision.vision.opencv.Contour;
+import org.photonvision.vision.opencv.DualOffsetValues;
+import org.photonvision.vision.opencv.Releasable;
 
 public class TrackedTarget implements Releasable {
     public final Contour m_mainContour;
@@ -126,11 +124,9 @@ public class TrackedTarget implements Releasable {
         tvec.put(
                 0,
                 0,
-                new double[] {
-                    bestPose.getTranslation().getX(),
-                    bestPose.getTranslation().getY(),
-                    bestPose.getTranslation().getZ()
-                });
+                bestPose.getTranslation().getX(),
+                bestPose.getTranslation().getY(),
+                bestPose.getTranslation().getZ());
         setCameraRelativeTvec(tvec);
 
         // Opencv expects a 3d vector with norm = angle and direction = axis
@@ -185,10 +181,9 @@ public class TrackedTarget implements Releasable {
             var axisangle =
                     VecBuilder.fill(result.getRvec()[0], result.getRvec()[1], result.getRvec()[2]);
             Rotation3d rotation = new Rotation3d(axisangle, axisangle.normF());
-            Transform3d targetPose =
-                    MathUtils.convertOpenCVtoPhotonTransform(new Transform3d(translation, rotation));
 
-            m_bestCameraToTarget3d = targetPose;
+            m_bestCameraToTarget3d =
+                    MathUtils.convertOpenCVtoPhotonTransform(new Transform3d(translation, rotation));
         }
     }
 
@@ -209,7 +204,7 @@ public class TrackedTarget implements Releasable {
     }
 
     /**
-     * Set the approximate bouding polygon.
+     * Set the approximate bounding polygon.
      *
      * @param boundingPolygon List of points to copy. Not modified.
      */
@@ -262,7 +257,7 @@ public class TrackedTarget implements Releasable {
                         params.dualOffsetValues,
                         params.robotOffsetPointMode);
 
-        // order of this stuff doesnt matter though
+        // order of this stuff doesn't matter though
         m_pitch =
                 TargetCalculations.calculatePitch(
                         m_targetOffsetPoint.y, m_robotOffsetPoint.y, params.verticalFocalLength);

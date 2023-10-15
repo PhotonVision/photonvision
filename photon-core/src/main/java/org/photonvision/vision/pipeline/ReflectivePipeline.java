@@ -30,7 +30,6 @@ import org.photonvision.vision.target.TargetOrientation;
 import org.photonvision.vision.target.TrackedTarget;
 
 /** Represents a pipeline for tracking retro-reflective targets. */
-@SuppressWarnings({"DuplicatedCode"})
 public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectivePipelineSettings> {
     private final FindContoursPipe findContoursPipe = new FindContoursPipe();
     private final SpeckleRejectPipe speckleRejectPipe = new SpeckleRejectPipe();
