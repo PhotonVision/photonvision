@@ -29,7 +29,9 @@ export enum TargetModel {
   StrongholdHighGoal = 5,
   Apriltag_200mm = 6,
   Aruco6in_16h5 = 7,
-  Apriltag6in_16h5 = 8
+  Apriltag6in_16h5 = 8,
+  Aruco6p5in_36h11 = 9,
+  Apriltag6p5in_36h11 = 10
 }
 
 export interface PipelineSettings {
