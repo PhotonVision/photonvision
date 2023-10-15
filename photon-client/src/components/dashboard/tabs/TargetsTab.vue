@@ -69,7 +69,7 @@ import { useStateStore } from "@/stores/StateStore";
                   useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
                 "
               >
-                <td>{{ target.ambiguity >= 0 ? target.ambiguity?.toFixed(2)+"%" : "(In Multi-Target)" }}</td>
+                <td>{{ target.ambiguity >= 0 ? target.ambiguity?.toFixed(2) + "%" : "(In Multi-Target)" }}</td>
               </template>
             </tr>
           </tbody>
