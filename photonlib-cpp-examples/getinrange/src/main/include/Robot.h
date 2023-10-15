@@ -53,7 +53,7 @@ class Robot : public frc::TimedRobot {
   // PID constants should be tuned per robot
   const double P_GAIN = 0.1;
   const double D_GAIN = 0.0;
-  frc2::PIDController controller{P_GAIN, 0.0, D_GAIN};
+  frc::PIDController controller{P_GAIN, 0.0, D_GAIN};
 
   // Change this to match the name of your camera
   photonlib::PhotonCamera camera{"photonvision"};

@@ -106,14 +106,14 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew copyPhotonlib -x check
-          ./gradlew buildAllExamples -x check --max-workers 2
+          ./gradlew build -x check --max-workers 2
 
       - name: Build C++ examples
         working-directory: photonlib-cpp-examples
         run: |
           chmod +x gradlew
           ./gradlew copyPhotonlib -x check
-          ./gradlew buildAllExamples -x check --max-workers 2
+          ./gradlew build -x check --max-workers 2
   photon-build-all:
     # The type of runner that the job will run on.
     runs-on: ubuntu-22.04
