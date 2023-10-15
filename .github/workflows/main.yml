@@ -106,14 +106,14 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew copyPhotonlib -x check
-          ./gradlew buildAllExamples -x check --max-workers 2
+          ./gradlew build -x check --max-workers 2
 
       - name: Build C++ examples
         working-directory: photonlib-cpp-examples
         run: |
           chmod +x gradlew
           ./gradlew copyPhotonlib -x check
-          ./gradlew buildAllExamples -x check --max-workers 2
+          ./gradlew build -x check --max-workers 2
   photon-build-all:
     # The type of runner that the job will run on.
     runs-on: ubuntu-22.04
@@ -225,6 +225,7 @@ jobs:
         include:
           - os: windows-2022
             artifact-name: Win64
+            architecture: x64
           # Mac builds are broken due to opencv class loading issues -- disable for now
           # - os: macos-11
           #   artifact-name: macOS
@@ -255,7 +256,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - container: wpilib/roborio-cross-ubuntu:2023-22.04
+          - container: wpilib/roborio-cross-ubuntu:2024-22.04
             artifact-name: Athena
           - container: wpilib/raspbian-cross-ubuntu:bullseye-22.04
             artifact-name: Raspbian

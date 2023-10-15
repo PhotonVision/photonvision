@@ -297,12 +297,12 @@ class VisionSystemSimTest {
         var res = camera.getLatestResult();
         assertTrue(res.hasTargets());
         var tgt = res.getBestTarget();
-        assertEquals(tgt.getYaw(), testYaw, kRotDeltaDeg);
+        assertEquals(testYaw, tgt.getYaw(), kRotDeltaDeg);
     }
 
     @ParameterizedTest
     @ValueSource(doubles = {-10, -5, -0, -1, -2, 5, 7, 10.23, 20.21, -19.999})
-    public void testCameraPitch(double testPitch) {
+    public void testPitchAngles(double testPitch) {
         final var targetPose =
                 new Pose3d(new Translation3d(15.98, 0, 0), new Rotation3d(0, 0, 3 * Math.PI / 4));
         final var robotPose = new Pose2d(new Translation2d(10, 0), new Rotation2d(0));
@@ -331,7 +331,7 @@ class VisionSystemSimTest {
         assertEquals(testPitch, tgt.getPitch(), kRotDeltaDeg);
     }
 
-    private static Stream<Arguments> distCalCParamProvider() {
+    private static Stream<Arguments> testDistanceCalcArgs() {
         // Arbitrary and fairly random assortment of distances, camera pitches, and heights
         return Stream.of(
                 Arguments.of(5, -15.98, 0),
@@ -354,7 +354,7 @@ class VisionSystemSimTest {
     }
 
     @ParameterizedTest
-    @MethodSource("distCalCParamProvider")
+    @MethodSource("testDistanceCalcArgs")
     public void testDistanceCalc(double testDist, double testPitch, double testHeight) {
         // Assume dist along ground and tgt height the same. Iterate over other parameters.
 

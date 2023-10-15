@@ -48,7 +48,6 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 
-@SuppressWarnings("DuplicatedCode")
 public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSettings> {
     private final RotateImagePipe rotateImagePipe = new RotateImagePipe();
     private final GrayscalePipe grayscalePipe = new GrayscalePipe();

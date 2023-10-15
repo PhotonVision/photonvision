@@ -132,7 +132,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         // If we set exposure too low, libcamera crashes or slows down
         // Very weird and smelly
         // For now, band-aid this by just not setting it lower than the "it breaks" limit
-        // Limit is different depending on camera.
+        //  is different depending on camera.
         if (sensorModel == LibCameraJNI.SensorModel.OV9281) {
             if (exposure < 6.0) {
                 exposure = 6.0;

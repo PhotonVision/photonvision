@@ -33,10 +33,10 @@ import org.photonvision.vision.processes.VisionSource;
 
 // TODO rename this class
 public class PhotonConfiguration {
-    private HardwareConfig hardwareConfig;
-    private HardwareSettings hardwareSettings;
+    private final HardwareConfig hardwareConfig;
+    private final HardwareSettings hardwareSettings;
     private NetworkConfig networkConfig;
-    private HashMap<String, CameraConfiguration> cameraConfigurations;
+    private final HashMap<String, CameraConfiguration> cameraConfigurations;
 
     public PhotonConfiguration(
             HardwareConfig hardwareConfig,
@@ -113,7 +113,7 @@ public class PhotonConfiguration {
 
         var lightingConfig = new UILightingConfig();
         lightingConfig.brightness = hardwareSettings.ledBrightnessPercentage;
-        lightingConfig.supported = (hardwareConfig.ledPins.size() != 0);
+        lightingConfig.supported = !hardwareConfig.ledPins.isEmpty();
         settingsSubmap.put("lighting", SerializationUtils.objectToHashMap(lightingConfig));
 
         var generalSubmap = new HashMap<String, Object>();

@@ -25,37 +25,50 @@ import java.util.List;
 import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point3;
 import org.photonvision.vision.opencv.Releasable;
+import org.photonvision.vision.pipe.impl.CornerDetectionPipe;
+import org.photonvision.vision.pipe.impl.SolvePNPPipe;
 
+/**
+ * A model representing the vertices of targets with known shapes. The vertices are in the EDN
+ * coordinate system. When creating a TargetModel, the vertices must be supplied in a certain order
+ * to ensure correct correspondence with corners detected in 2D for use with SolvePNP. For planar
+ * targets, we expect the target's Z-axis to point towards the camera.
+ *
+ * <p>{@link SolvePNPPipe} expects 3d object points to correspond to the {@link CornerDetectionPipe}
+ * implementation. The 2d corner detection finds the 4 extreme corners (bottom-left, bottom-right,
+ * top-right, top-left). To match our expectations, this means the model vertices would look like:
+ *
+ * <ul>
+ *   <li>(+x, +y, 0)
+ *   <li>(-x, +y, 0)
+ *   <li>(-x, -y, 0)
+ *   <li>(+x, -y, 0)
+ * </ul>
+ *
+ * <p>AprilTag models are currently only used for drawing on the output stream.
+ */
 public enum TargetModel implements Releasable {
-    k2020HighGoalOuter(
+    k2016HighGoal(
             List.of(
-                    new Point3(Units.inchesToMeters(-19.625), 0, 0),
-                    new Point3(Units.inchesToMeters(-9.819867), Units.inchesToMeters(-17), 0),
-                    new Point3(Units.inchesToMeters(9.819867), Units.inchesToMeters(-17), 0),
-                    new Point3(Units.inchesToMeters(19.625), 0, 0)),
-            Units.inchesToMeters(12)),
-    k2020HighGoalInner(
-            List.of(
-                    new Point3(Units.inchesToMeters(-19.625), 0, Units.inchesToMeters(2d * 12d + 5.25)),
-                    new Point3(
-                            Units.inchesToMeters(-9.819867),
-                            Units.inchesToMeters(-17),
-                            Units.inchesToMeters(2d * 12d + 5.25)),
-                    new Point3(
-                            Units.inchesToMeters(9.819867),
-                            Units.inchesToMeters(-17),
-                            Units.inchesToMeters(2d * 12d + 5.25)),
-                    new Point3(Units.inchesToMeters(19.625), 0, Units.inchesToMeters(2d * 12d + 5.25))),
-            Units.inchesToMeters(12)),
-
+                    new Point3(Units.inchesToMeters(10), Units.inchesToMeters(6), 0),
+                    new Point3(Units.inchesToMeters(-10), Units.inchesToMeters(6), 0),
+                    new Point3(Units.inchesToMeters(-10), Units.inchesToMeters(-6), 0),
+                    new Point3(Units.inchesToMeters(10), Units.inchesToMeters(-6), 0)),
+            Units.inchesToMeters(6)),
     k2019DualTarget(
             List.of(
-                    new Point3(Units.inchesToMeters(-5.936), Units.inchesToMeters(2.662), 0),
-                    new Point3(Units.inchesToMeters(-7.313), Units.inchesToMeters(-2.662), 0),
-                    new Point3(Units.inchesToMeters(7.313), Units.inchesToMeters(-2.662), 0),
-                    new Point3(Units.inchesToMeters(5.936), Units.inchesToMeters(2.662), 0)),
+                    new Point3(Units.inchesToMeters(7.313), Units.inchesToMeters(2.662), 0),
+                    new Point3(Units.inchesToMeters(-7.313), Units.inchesToMeters(2.662), 0),
+                    new Point3(Units.inchesToMeters(-5.936), Units.inchesToMeters(-2.662), 0),
+                    new Point3(Units.inchesToMeters(5.936), Units.inchesToMeters(-2.662), 0)),
             0.1),
-
+    k2020HighGoalOuter(
+            List.of(
+                    new Point3(Units.inchesToMeters(9.819867), Units.inchesToMeters(8.5), 0),
+                    new Point3(Units.inchesToMeters(-9.819867), Units.inchesToMeters(8.5), 0),
+                    new Point3(Units.inchesToMeters(-19.625), Units.inchesToMeters(-8.5), 0),
+                    new Point3(Units.inchesToMeters(19.625), Units.inchesToMeters(-8.5), 0)),
+            Units.inchesToMeters(12)),
     kCircularPowerCell7in(
             List.of(
                     new Point3(
@@ -94,41 +107,31 @@ public enum TargetModel implements Releasable {
                             -Units.inchesToMeters(9.5) / 2,
                             -Units.inchesToMeters(9.5) / 2)),
             0),
-    k2016HighGoal(
+    k200mmAprilTag( // Corners of the tag's inner black square (excluding white border)
             List.of(
-                    new Point3(Units.inchesToMeters(-10), Units.inchesToMeters(12), 0),
-                    new Point3(Units.inchesToMeters(-10), Units.inchesToMeters(0), 0),
-                    new Point3(Units.inchesToMeters(10), Units.inchesToMeters(0), 0),
-                    new Point3(Units.inchesToMeters(10), Units.inchesToMeters(12), 0)),
-            Units.inchesToMeters(6)),
-    k200mmAprilTag( // Nominal edge length of 200 mm includes the white border, but solvePNP corners
-            // do not
-            List.of(
-                    new Point3(-Units.inchesToMeters(3.25), Units.inchesToMeters(3.25), 0),
                     new Point3(Units.inchesToMeters(3.25), Units.inchesToMeters(3.25), 0),
-                    new Point3(Units.inchesToMeters(3.25), -Units.inchesToMeters(3.25), 0),
-                    new Point3(-Units.inchesToMeters(3.25), -Units.inchesToMeters(3.25), 0)),
+                    new Point3(-Units.inchesToMeters(3.25), Units.inchesToMeters(3.25), 0),
+                    new Point3(-Units.inchesToMeters(3.25), -Units.inchesToMeters(3.25), 0),
+                    new Point3(Units.inchesToMeters(3.25), -Units.inchesToMeters(3.25), 0)),
             Units.inchesToMeters(3.25 * 2)),
-    kAruco6in_16h5( // Nominal edge length of 200 mm includes the white border, but solvePNP corners
-            // do not
+    kAruco6in_16h5( // Corners of the tag's inner black square (excluding white border)
             List.of(
                     new Point3(Units.inchesToMeters(3), Units.inchesToMeters(3), 0),
                     new Point3(Units.inchesToMeters(3), -Units.inchesToMeters(3), 0),
                     new Point3(-Units.inchesToMeters(3), -Units.inchesToMeters(3), 0),
                     new Point3(Units.inchesToMeters(3), -Units.inchesToMeters(3), 0)),
             Units.inchesToMeters(3 * 2)),
-    k6in_16h5( // Nominal edge length of 200 mm includes the white border, but solvePNP corners
-            // do not
+    k6in_16h5( // Corners of the tag's inner black square (excluding white border)
             List.of(
-                    new Point3(-Units.inchesToMeters(3), Units.inchesToMeters(3), 0),
                     new Point3(Units.inchesToMeters(3), Units.inchesToMeters(3), 0),
-                    new Point3(Units.inchesToMeters(3), -Units.inchesToMeters(3), 0),
-                    new Point3(-Units.inchesToMeters(3), -Units.inchesToMeters(3), 0)),
+                    new Point3(-Units.inchesToMeters(3), Units.inchesToMeters(3), 0),
+                    new Point3(-Units.inchesToMeters(3), -Units.inchesToMeters(3), 0),
+                    new Point3(Units.inchesToMeters(3), -Units.inchesToMeters(3), 0)),
             Units.inchesToMeters(3 * 2));
 
     @JsonIgnore private MatOfPoint3f realWorldTargetCoordinates;
-    @JsonIgnore private MatOfPoint3f visualizationBoxBottom = new MatOfPoint3f();
-    @JsonIgnore private MatOfPoint3f visualizationBoxTop = new MatOfPoint3f();
+    @JsonIgnore private final MatOfPoint3f visualizationBoxBottom = new MatOfPoint3f();
+    @JsonIgnore private final MatOfPoint3f visualizationBoxTop = new MatOfPoint3f();
 
     @JsonProperty("realWorldCoordinatesArray")
     private List<Point3> realWorldCoordinatesArray;

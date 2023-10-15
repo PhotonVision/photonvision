@@ -17,12 +17,10 @@
 
 package org.photonvision.common.util.math;
 
-import edu.wpi.first.math.MatBuilder;
-import edu.wpi.first.math.Nat;
+import edu.wpi.first.apriltag.AprilTagPoseEstimate;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.CoordinateSystem;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Quaternion;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
@@ -92,7 +90,7 @@ public class MathUtils {
             throw new IllegalArgumentException("invalid quantile value: " + p);
         }
 
-        if (list.size() == 0) {
+        if (list.isEmpty()) {
             return Double.NaN;
         }
         if (list.size() == 1) {
@@ -141,73 +139,46 @@ public class MathUtils {
         return startValue + (endValue - startValue) * t;
     }
 
-    public static Pose3d EDNtoNWU(final Pose3d pose) {
-        // Change of basis matrix from EDN to NWU. Each column vector is one of the
-        // old basis vectors mapped to its representation in the new basis.
-        //
-        // E (+X) -> N (-Y), D (+Y) -> W (-Z), N (+Z) -> U (+X)
-        var R = new MatBuilder<>(Nat.N3(), Nat.N3()).fill(0, 0, 1, -1, 0, 0, 0, -1, 0);
-
-        // https://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
-        double w = Math.sqrt(1.0 + R.get(0, 0) + R.get(1, 1) + R.get(2, 2)) / 2.0;
-        double x = (R.get(2, 1) - R.get(1, 2)) / (4.0 * w);
-        double y = (R.get(0, 2) - R.get(2, 0)) / (4.0 * w);
-        double z = (R.get(1, 0) - R.get(0, 1)) / (4.0 * w);
-        var rotationQuat = new Rotation3d(new Quaternion(w, x, y, z));
-
-        return new Pose3d(
-                pose.getTranslation().rotateBy(rotationQuat), pose.getRotation().rotateBy(rotationQuat));
-    }
-
     /**
-     * All our solvepnp code returns a tag with X left, Y up, and Z out of the tag To better match
-     * wpilib, we want to apply another rotation so that we get Z up, X out of the tag, and Y to the
-     * right. We apply the following change of basis: X -> Y Y -> Z Z -> X
+     * OpenCV uses the EDN coordinate system, but WPILib uses NWU. Converts a camera-to-target
+     * transformation from EDN to NWU.
+     *
+     * <p>Note: The detected target's rvec and tvec perform a rotation-translation transformation
+     * which converts points in the target's coordinate system to the camera's. This means applying
+     * the transformation to the target point (0,0,0) for example would give the target's center
+     * relative to the camera. Conveniently, if we make a translation-rotation transformation out of
+     * these components instead, we get the transformation from the camera to the target.
+     *
+     * @param cameraToTarget3d A camera-to-target Transform3d in EDN.
+     * @return A camera-to-target Transform3d in NWU.
      */
-    private static final Rotation3d WPILIB_BASE_ROTATION =
-            new Rotation3d(new MatBuilder<>(Nat.N3(), Nat.N3()).fill(0, 1, 0, 0, 0, 1, 1, 0, 0));
-
     public static Transform3d convertOpenCVtoPhotonTransform(Transform3d cameraToTarget3d) {
         // TODO: Refactor into new pipe?
-        // CameraToTarget _should_ be in opencv-land EDN
-        var nwu =
-                CoordinateSystem.convert(
-                        new Pose3d().transformBy(cameraToTarget3d),
-                        CoordinateSystem.EDN(),
-                        CoordinateSystem.NWU());
-        return new Transform3d(nwu.getTranslation(), WPILIB_BASE_ROTATION.rotateBy(nwu.getRotation()));
-    }
-
-    public static Pose3d convertOpenCVtoPhotonPose(Transform3d cameraToTarget3d) {
-        // TODO: Refactor into new pipe?
-        // CameraToTarget _should_ be in opencv-land EDN
-        var nwu =
-                CoordinateSystem.convert(
-                        new Pose3d().transformBy(cameraToTarget3d),
-                        CoordinateSystem.EDN(),
-                        CoordinateSystem.NWU());
-        return new Pose3d(nwu.getTranslation(), WPILIB_BASE_ROTATION.rotateBy(nwu.getRotation()));
+        return CoordinateSystem.convert(
+                cameraToTarget3d, CoordinateSystem.EDN(), CoordinateSystem.NWU());
     }
 
     /*
-     * The AprilTag pose rotation outputs are X left, Y down, Z away from the tag
-     * with the tag facing
-     * the camera upright and the camera facing the target parallel to the floor.
-     * But our OpenCV
-     * solvePNP code would have X left, Y up, Z towards the camera with the target
-     * facing the camera
-     * and both parallel to the floor. So we apply a base rotation to the rotation
-     * component of the
-     * apriltag pose to make it consistent with the EDN system that OpenCV uses,
-     * internally a 180
-     * rotation about the X axis
+     * From the AprilTag repo:
+     * "The coordinate system has the origin at the camera center. The z-axis points from the camera
+     * center out the camera lens. The x-axis is to the right in the image taken by the camera, and
+     * y is down. The tag's coordinate frame is centered at the center of the tag, with x-axis to the
+     * right, y-axis down, and z-axis into the tag."
+     *
+     * This means our detected transformation will be in EDN. Our subsequent uses of the transformation,
+     * however, assume the tag's z-axis point away from the tag instead of into it. This means we
+     * have to correct the transformation's rotation.
      */
     private static final Rotation3d APRILTAG_BASE_ROTATION =
-            new Rotation3d(VecBuilder.fill(1, 0, 0), Units.degreesToRadians(180));
+            new Rotation3d(VecBuilder.fill(0, 1, 0), Units.degreesToRadians(180));
 
     /**
-     * Apply a 180 degree rotation about X to the rotation component of a given Apriltag pose. This
-     * aligns it with the OpenCV poses we use in other places.
+     * AprilTag returns a camera-to-tag transform in EDN, but the tag's z-axis points into the tag
+     * instead of away from it and towards the camera. This means we have to correct the
+     * transformation's rotation.
+     *
+     * @param pose The Transform3d with translation and rotation directly from the {@link
+     *     AprilTagPoseEstimate}.
      */
     public static Transform3d convertApriltagtoOpenCV(Transform3d pose) {
         var ocvRotation = APRILTAG_BASE_ROTATION.rotateBy(pose.getRotation());
