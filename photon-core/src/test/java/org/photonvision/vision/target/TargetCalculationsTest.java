@@ -19,11 +19,17 @@ package org.photonvision.vision.target;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
-import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.numbers.DoubleCouple;
@@ -51,13 +57,13 @@ public class TargetCalculationsTest {
                     props.verticalFocalLength,
                     imageSize.width * imageSize.height);
 
-    @BeforeEach
-    public void Init() {
+    @BeforeAll
+    public static void setup() {
         TestUtils.loadLibraries();
     }
 
     @Test
-    public void yawPitchTest() {
+    public void testYawPitchBehavior() {
         double targetPixelOffsetX = 100;
         double targetPixelOffsetY = 100;
         var targetCenterPoint =
@@ -98,8 +104,57 @@ public class TargetCalculationsTest {
         assertEquals(fovs.getSecond() / 2.0, maxPitch.getSecond(), 0.025, "Vertical FOV check failed");
     }
 
+    private static Stream<Arguments> testYawPitchCalcArgs() {
+        return Stream.of(
+                // (yaw, pitch) in degrees
+                Arguments.of(0, 0),
+                Arguments.of(10, 0),
+                Arguments.of(0, 10),
+                Arguments.of(10, 10),
+                Arguments.of(-10, -10),
+                Arguments.of(30, 45),
+                Arguments.of(-45, -20));
+    }
+
+    private static double[] testCameraMatrix = {240, 0, 320, 0, 240, 320, 0, 0, 1};
+
+    @ParameterizedTest
+    @MethodSource("testYawPitchCalcArgs")
+    public void testYawPitchCalc(double yawDeg, double pitchDeg) {
+        Mat testCameraMat = new Mat(3, 3, CvType.CV_64F);
+        testCameraMat.put(0, 0, testCameraMatrix);
+        // Since we create this translation using the given yaw/pitch, we should see the same angles
+        // calculated
+        var targetTrl =
+                new Translation3d(1, new Rotation3d(0, Math.toRadians(pitchDeg), Math.toRadians(yawDeg)));
+        // NWU to EDN
+        var objectPoints =
+                new MatOfPoint3f(new Point3(-targetTrl.getY(), -targetTrl.getZ(), targetTrl.getX()));
+        var imagePoints = new MatOfPoint2f();
+        // Project translation into camera image
+        Calib3d.projectPoints(
+                objectPoints,
+                new MatOfDouble(0, 0, 0),
+                new MatOfDouble(0, 0, 0),
+                testCameraMat,
+                new MatOfDouble(0, 0, 0, 0, 0),
+                imagePoints);
+        var point = imagePoints.toArray()[0];
+        // Test if the target yaw/pitch calculation matches what the target was created with
+        var yawPitch =
+                TargetCalculations.calculateYawPitch(
+                        point.x,
+                        testCameraMatrix[2],
+                        testCameraMatrix[0],
+                        point.y,
+                        testCameraMatrix[5],
+                        testCameraMatrix[4]);
+        assertEquals(yawDeg, yawPitch.getFirst(), 1e-3, "Yaw calculation incorrect");
+        assertEquals(pitchDeg, yawPitch.getSecond(), 1e-3, "Pitch calculation incorrect");
+    }
+
     @Test
-    public void targetOffsetTest() {
+    public void testTargetOffset() {
         Point center = new Point(0, 0);
         Size rectSize = new Size(10, 5);
         double angle = 30;
@@ -114,11 +169,6 @@ public class TargetCalculationsTest {
                 TargetCalculations.calculateTargetOffsetPoint(true, TargetOffsetPointEdge.Bottom, rect);
         assertEquals(-1.25, result.x, 0.1, "Target offset x not as expected");
         assertEquals(2.17, result.y, 0.1, "Target offset Y not as expected");
-    }
-
-    public static void main(String[] args) {
-        TestUtils.loadLibraries();
-        new TargetCalculationsTest().targetOffsetTest();
     }
 
     @Test
@@ -209,7 +259,7 @@ public class TargetCalculationsTest {
     }
 
     @Test
-    public void robotOffsetDualTest() {
+    public void testDualOffsetCrosshair() {
         final DualOffsetValues dualOffsetValues =
                 new DualOffsetValues(
                         new Point(400, 150), 10,
