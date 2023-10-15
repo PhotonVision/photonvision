@@ -132,7 +132,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         // If we set exposure too low, libcamera crashes or slows down
         // Very weird and smelly
         // For now, band-aid this by just not setting it lower than the "it breaks" limit
-        // Limit is different depending on camera.
+        //  is different depending on camera.
         if (sensorModel == LibCameraJNI.SensorModel.OV9281) {
             if (exposure < 6.0) {
                 exposure = 6.0;
@@ -199,26 +199,27 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         // We need to make sure that other threads don't try to do anything funny while we're recreating
         // the camera
         synchronized (LibCameraJNI.CAMERA_LOCK) {
-            boolean success = false;
             if (m_initialized) {
-                success |= LibCameraJNI.stopCamera();
-                success |= LibCameraJNI.destroyCamera();
+                logger.debug("Stopping libcamera");
+                if (!LibCameraJNI.stopCamera()) {
+                    logger.error("Couldn't stop a zero copy Pi Camera while switching video modes");
+                }
+                logger.debug("Destroying libcamera");
+                if (!LibCameraJNI.destroyCamera()) {
+                    logger.error("Couldn't destroy a zero copy Pi Camera while switching video modes");
+                }
             }
 
-            // if (!success) {
-            //     throw new RuntimeException(
-            //             "Couldn't destroy a zero copy Pi Camera while switching video modes");
-            // }
-
-            System.out.println("Starting camera");
-            success |=
-                    LibCameraJNI.createCamera(
-                            mode.width, mode.height, (m_rotationMode == ImageRotationMode.DEG_180 ? 180 : 0));
-            success |= LibCameraJNI.startCamera();
-            if (!success) {
-                throw new RuntimeException(
-                        "Couldn't create a zero copy Pi Camera while switching video modes");
+            logger.debug("Creating libcamera");
+            if (!LibCameraJNI.createCamera(
+                    mode.width, mode.height, (m_rotationMode == ImageRotationMode.DEG_180 ? 180 : 0))) {
+                logger.error("Couldn't create a zero copy Pi Camera while switching video modes");
             }
+            logger.debug("Starting libcamera");
+            if (!LibCameraJNI.startCamera()) {
+                logger.error("Couldn't start a zero copy Pi Camera while switching video modes");
+            }
+
             m_initialized = true;
         }
 

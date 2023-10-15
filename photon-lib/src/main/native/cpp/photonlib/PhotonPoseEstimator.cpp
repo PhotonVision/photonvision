@@ -33,6 +33,7 @@
 #include <utility>
 #include <vector>
 
+#include <Eigen/Core>
 #include <frc/Errors.h>
 #include <frc/geometry/Pose3d.h>
 #include <frc/geometry/Rotation3d.h>
@@ -115,7 +116,7 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
     const PhotonPipelineResult& result, std::optional<cv::Mat> cameraMatrixData,
-    std::optional<cv::Mat> coeffsData) {
+    std::optional<cv::Mat> cameraDistCoeffs) {
   // Time in the past -- give up, since the following if expects times > 0
   if (result.GetTimestamp() < 0_s) {
     return std::nullopt;
@@ -136,12 +137,12 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
     return std::nullopt;
   }
 
-  return Update(result, cameraMatrixData, coeffsData, this->strategy);
+  return Update(result, cameraMatrixData, cameraDistCoeffs, this->strategy);
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
     PhotonPipelineResult result, std::optional<cv::Mat> cameraMatrixData,
-    std::optional<cv::Mat> coeffsData, PoseStrategy strategy) {
+    std::optional<cv::Mat> cameraDistCoeffs, PoseStrategy strategy) {
   std::optional<EstimatedRobotPose> ret = std::nullopt;
 
   switch (strategy) {
@@ -162,7 +163,7 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
       ret = AverageBestTargetsStrategy(result);
       break;
     case ::photonlib::MULTI_TAG_PNP:
-      ret = MultiTagPnpStrategy(result, coeffsData, cameraMatrixData);
+      ret = MultiTagPnpStrategy(result, cameraMatrixData, cameraDistCoeffs);
       break;
     default:
       FRC_ReportError(frc::warn::Warning, "Invalid Pose Strategy selected!",
@@ -337,21 +338,17 @@ frc::Pose3d detail::ToPose3d(const cv::Mat& tvec, const cv::Mat& rvec) {
   R = R.t();                  // rotation of inverse
   cv::Mat tvecI = -R * tvec;  // translation of inverse
 
-  Vectord<3> tv;
+  Eigen::Matrix<double, 3, 1> tv;
   tv[0] = +tvecI.at<double>(2, 0);
   tv[1] = -tvecI.at<double>(0, 0);
   tv[2] = -tvecI.at<double>(1, 0);
-  Vectord<3> rv;
+  Eigen::Matrix<double, 3, 1> rv;
   rv[0] = +rvec.at<double>(2, 0);
   rv[1] = -rvec.at<double>(0, 0);
   rv[2] = +rvec.at<double>(1, 0);
 
   return Pose3d(Translation3d(meter_t{tv[0]}, meter_t{tv[1]}, meter_t{tv[2]}),
-                Rotation3d(
-                    // radian_t{rv[0]},
-                    // radian_t{rv[1]},
-                    // radian_t{rv[2]}
-                    rv, radian_t{rv.norm()}));
+                Rotation3d(rv));
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagPnpStrategy(
@@ -396,14 +393,14 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagPnpStrategy(
     return Update(result, camMat, distCoeffs, this->multiTagFallbackStrategy);
   }
 
-  // Use OpenCV ITERATIVE solver
+  // Output mats for results
   cv::Mat const rvec(3, 1, cv::DataType<double>::type);
   cv::Mat const tvec(3, 1, cv::DataType<double>::type);
 
   cv::solvePnP(objectPoints, imagePoints, camMat.value(), distCoeffs.value(),
                rvec, tvec, false, cv::SOLVEPNP_SQPNP);
 
-  Pose3d const pose = detail::ToPose3d(tvec, rvec);
+  const Pose3d pose = detail::ToPose3d(tvec, rvec);
 
   return photonlib::EstimatedRobotPose(
       pose.TransformBy(m_robotToCamera.Inverse()), result.GetTimestamp(),

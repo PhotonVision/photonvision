@@ -55,7 +55,7 @@ class LegacyConfigProvider extends ConfigProvider {
     final File configDirectoryFile;
 
     private long saveRequestTimestamp = -1;
-    private Thread settingsSaveThread;
+    private final Thread settingsSaveThread;
 
     public static void saveUploadedSettingsZip(File uploadPath) {
         var folderPath = Path.of(System.getProperty("java.io.tmpdir"), "photonvision").toFile();
@@ -67,7 +67,6 @@ class LegacyConfigProvider extends ConfigProvider {
             logger.info("Copied settings successfully!");
         } catch (IOException e) {
             logger.error("Exception copying uploaded settings!", e);
-            return;
         }
     }
 
@@ -371,7 +370,7 @@ class LegacyConfigProvider extends ConfigProvider {
     }
 
     public Date logFnameToDate(String fname) throws ParseException {
-        // Strip away known unneded portions of the log file name
+        // Strip away known unneeded portions of the log file name
         fname = fname.replace(LOG_PREFIX, "").replace(LOG_EXT, "");
         DateFormat format = new SimpleDateFormat(LOG_DATE_TIME_FORMAT);
         return format.parse(fname);

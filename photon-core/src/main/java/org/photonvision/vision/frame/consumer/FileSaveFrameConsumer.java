@@ -33,8 +33,8 @@ import org.photonvision.vision.opencv.CVMat;
 
 public class FileSaveFrameConsumer implements Consumer<CVMat> {
     // Formatters to generate unique, timestamped file names
-    private static String FILE_PATH = ConfigManager.getInstance().getImageSavePath().toString();
-    private static String FILE_EXTENSION = ".jpg";
+    private static final String FILE_PATH = ConfigManager.getInstance().getImageSavePath().toString();
+    private static final String FILE_EXTENSION = ".jpg";
     DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
     DateFormat tf = new SimpleDateFormat("hhmmssSS");
     private final String NT_SUFFIX = "SaveImgCmd";
@@ -44,7 +44,7 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
     private final Logger logger;
     private long imgSaveCountInternal = 0;
     private String camNickname;
-    private String fnamePrefix;
+    private final String fnamePrefix;
     private IntegerEntry entry;
 
     public FileSaveFrameConsumer(String camNickname, String streamPrefix) {

@@ -2,12 +2,12 @@ plugins {
     id "com.diffplug.spotless" version "6.19.0"
     id "com.github.johnrengelman.shadow" version "7.1.2"
     id "com.github.node-gradle.node" version "3.1.1" apply false
-    id "edu.wpi.first.GradleJni" version "1.0.0"
-    id "edu.wpi.first.GradleVsCode" version "1.1.0"
-    id "edu.wpi.first.NativeUtils" version "2024.1.0" apply false
+    id "edu.wpi.first.GradleJni" version "1.1.0"
+    id "edu.wpi.first.GradleVsCode" version "1.3.0"
+    id "edu.wpi.first.NativeUtils" version "2024.2.0" apply false
     id "edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin" version "2020.2"
     id "org.hidetake.ssh" version "2.10.1"
-    id 'edu.wpi.first.WpilibTools' version '1.0.0'
+    id 'edu.wpi.first.WpilibTools' version '1.1.0'
 }
 
 import org.gradle.api.internal.artifacts.dependencies.DefaultExternalModuleDependency;
@@ -26,9 +26,12 @@ allprojects {
 apply from: "versioningHelper.gradle"
 
 ext {
-    wpilibVersion = "2024.0.0-alpha-1"
-    opencvVersion = "4.6.0-4"
+    wpilibVersion = "2024.1.1-beta-1"
+    openCVversion = "4.8.0-1"
     joglVersion = "2.4.0-rc-20200307"
+    javalinVersion = "5.6.2"
+    frcYear = "2024"
+
     pubVersion = versionString
     isDev = pubVersion.startsWith("dev")
 
@@ -59,4 +62,8 @@ spotless {
         targetExclude("photon-core/src/main/java/org/photonvision/PhotonVersion.java")
         targetExclude("photon-lib/src/main/java/org/photonvision/PhotonVersion.java")
     }
+}
+
+wrapper {
+    gradleVersion '8.3'
 }

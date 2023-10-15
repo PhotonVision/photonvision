@@ -35,6 +35,6 @@ public class CmdBase {
     public String diskUsageCommand = "";
 
     public void initCmds(HardwareConfig config) {
-        return; // default - do nothing
+        // default - do nothing
     }
 }

@@ -69,7 +69,7 @@ public class RequestHandler {
             return;
         }
 
-        if (!file.getExtension().contains("zip")) {
+        if (!file.extension().contains("zip")) {
             ctx.status(400);
             ctx.result(
                     "The uploaded file was not of type 'zip'. The uploaded file should be a .zip file.");
@@ -132,7 +132,7 @@ public class RequestHandler {
             return;
         }
 
-        if (!file.getExtension().contains("json")) {
+        if (!file.extension().contains("json")) {
             ctx.status(400);
             ctx.result(
                     "The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
@@ -174,7 +174,7 @@ public class RequestHandler {
             return;
         }
 
-        if (!file.getExtension().contains("json")) {
+        if (!file.extension().contains("json")) {
             ctx.status(400);
             ctx.result(
                     "The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
@@ -216,7 +216,7 @@ public class RequestHandler {
             return;
         }
 
-        if (!file.getExtension().contains("json")) {
+        if (!file.extension().contains("json")) {
             ctx.status(400);
             ctx.result(
                     "The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
@@ -258,7 +258,7 @@ public class RequestHandler {
             return;
         }
 
-        if (!file.getExtension().contains("jar")) {
+        if (!file.extension().contains("jar")) {
             ctx.status(400);
             ctx.result(
                     "The uploaded file was not of type 'jar'. The uploaded file should be a .jar file.");
@@ -273,7 +273,7 @@ public class RequestHandler {
             File targetFile = new File(filePath.toString());
             var stream = new FileOutputStream(targetFile);
 
-            file.getContent().transferTo(stream);
+            file.content().transferTo(stream);
             stream.close();
 
             ctx.status(200);
@@ -323,7 +323,7 @@ public class RequestHandler {
             var data = kObjectMapper.readTree(ctx.body());
 
             int index = data.get("index").asInt();
-            double fov = kObjectMapper.readTree(data.get("settings").asText()).get("fov").asDouble();
+            double fov = data.get("settings").get("fov").asDouble();
 
             var module = VisionModuleManager.getInstance().getModule(index);
             module.setFov(fov);
@@ -333,7 +333,7 @@ public class RequestHandler {
             ctx.status(200);
             ctx.result("Successfully saved camera settings");
             logger.info("Successfully saved camera settings");
-        } catch (JsonProcessingException e) {
+        } catch (JsonProcessingException | NullPointerException e) {
             ctx.status(400);
             ctx.result("The provided camera settings were malformed");
             logger.error("The provided camera settings were malformed", e);
@@ -492,14 +492,20 @@ public class RequestHandler {
      */
     private static Optional<File> handleTempFileCreation(UploadedFile file) {
         var tempFilePath =
-                new File(Path.of(System.getProperty("java.io.tmpdir"), file.getFilename()).toString());
-        tempFilePath.getParentFile().mkdirs();
+                new File(Path.of(System.getProperty("java.io.tmpdir"), file.filename()).toString());
+        boolean makeDirsRes = tempFilePath.getParentFile().mkdirs();
+
+        if (!makeDirsRes) {
+            logger.error(
+                    "There was an error while uploading " + file.filename() + " to the temp folder!");
+            return Optional.empty();
+        }
 
         try {
-            FileUtils.copyInputStreamToFile(file.getContent(), tempFilePath);
+            FileUtils.copyInputStreamToFile(file.content(), tempFilePath);
         } catch (IOException e) {
             logger.error(
-                    "There was an error while uploading " + file.getFilename() + " to the temp folder!");
+                    "There was an error while uploading " + file.filename() + " to the temp folder!");
             return Optional.empty();
         }
 

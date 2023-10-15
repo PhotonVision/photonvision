@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.photonvision.PhotonVersion;
 import org.photonvision.common.hardware.Platform;
+import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.vision.processes.VisionModule;
@@ -32,10 +33,10 @@ import org.photonvision.vision.processes.VisionSource;
 
 // TODO rename this class
 public class PhotonConfiguration {
-    private HardwareConfig hardwareConfig;
-    private HardwareSettings hardwareSettings;
+    private final HardwareConfig hardwareConfig;
+    private final HardwareSettings hardwareSettings;
     private NetworkConfig networkConfig;
-    private HashMap<String, CameraConfiguration> cameraConfigurations;
+    private final HashMap<String, CameraConfiguration> cameraConfigurations;
 
     public PhotonConfiguration(
             HardwareConfig hardwareConfig,
@@ -53,6 +54,10 @@ public class PhotonConfiguration {
         this.hardwareSettings = hardwareSettings;
         this.networkConfig = networkConfig;
         this.cameraConfigurations = cameraConfigurations;
+    }
+
+    public PhotonConfiguration() {
+        this(new HardwareConfig(), new HardwareSettings(), new NetworkConfig());
     }
 
     public HardwareConfig getHardwareConfig() {
@@ -93,7 +98,12 @@ public class PhotonConfiguration {
         Map<String, Object> map = new HashMap<>();
         var settingsSubmap = new HashMap<String, Object>();
 
-        settingsSubmap.put("networkSettings", networkConfig.toHashMap());
+        // Hack active interfaces into networkSettings
+        var netConfigMap = networkConfig.toHashMap();
+        netConfigMap.put("networkInterfaceNames", NetworkUtils.getAllWiredInterfaces());
+
+        settingsSubmap.put("networkSettings", netConfigMap);
+
         map.put(
                 "cameraSettings",
                 VisionModuleManager.getInstance().getModules().stream()
@@ -103,7 +113,7 @@ public class PhotonConfiguration {
 
         var lightingConfig = new UILightingConfig();
         lightingConfig.brightness = hardwareSettings.ledBrightnessPercentage;
-        lightingConfig.supported = (hardwareConfig.ledPins.size() != 0);
+        lightingConfig.supported = !hardwareConfig.ledPins.isEmpty();
         settingsSubmap.put("lighting", SerializationUtils.objectToHashMap(lightingConfig));
 
         var generalSubmap = new HashMap<String, Object>();
@@ -139,18 +149,5 @@ public class PhotonConfiguration {
         public int inputStreamPort;
         public List<HashMap<String, Object>> calibrations;
         public boolean isFovConfigurable = true;
-    }
-
-    @Override
-    public String toString() {
-        return "PhotonConfiguration [hardwareConfig="
-                + hardwareConfig
-                + ", hardwareSettings="
-                + hardwareSettings
-                + ", networkConfig="
-                + networkConfig
-                + ", cameraConfigurations="
-                + cameraConfigurations
-                + "]";
     }
 }

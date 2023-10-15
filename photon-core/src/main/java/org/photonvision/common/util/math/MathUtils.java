@@ -90,7 +90,7 @@ public class MathUtils {
             throw new IllegalArgumentException("invalid quantile value: " + p);
         }
 
-        if (list.size() == 0) {
+        if (list.isEmpty()) {
             return Double.NaN;
         }
         if (list.size() == 1) {

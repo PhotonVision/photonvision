@@ -2,6 +2,8 @@ plugins {
     id "com.diffplug.spotless" version "6.1.2"
 }
 
+apply from: "examples.gradle"
+
 allprojects {
     repositories {
         mavenCentral()
@@ -24,12 +26,5 @@ spotless {
         target "**/*.java"
         targetExclude("photon-core/src/main/java/org/photonvision/PhotonVersion.java")
         targetExclude("photon-lib/src/main/java/org/photonvision/PhotonVersion.java")
-    }
-}
-
-// Task that depends on the build task for every example
-task buildAllExamples { task ->
-    new File('examples.txt').eachLine { line ->
-        task.dependsOn(line + ":build")
     }
 }

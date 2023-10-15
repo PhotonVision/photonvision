@@ -18,7 +18,10 @@
 package org.photonvision.vision.camera;
 
 import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.cscore.*;
+import edu.wpi.first.cscore.CvSink;
+import edu.wpi.first.cscore.UsbCamera;
+import edu.wpi.first.cscore.VideoException;
+import edu.wpi.first.cscore.VideoMode;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -120,8 +123,8 @@ public class USBCameraSource extends VisionSource {
                 if (!cameraAutoExposure) {
                     // Pick a bunch of reasonable setting defaults for vision processing retroreflective
                     camera.getProperty("auto_exposure_bias").set(0);
-                    camera.getProperty("iso_sensitivity_auto").set(0); // Disable auto ISO adjustement
-                    camera.getProperty("iso_sensitivity").set(0); // Manual ISO adjustement
+                    camera.getProperty("iso_sensitivity_auto").set(0); // Disable auto ISO adjustment
+                    camera.getProperty("iso_sensitivity").set(0); // Manual ISO adjustment
                     camera.getProperty("white_balance_auto_preset").set(2); // Auto white-balance disabled
                     camera.getProperty("auto_exposure").set(1); // auto exposure disabled
                 } else {
@@ -129,7 +132,7 @@ public class USBCameraSource extends VisionSource {
                     // nice-for-humans
                     camera.getProperty("auto_exposure_bias").set(12);
                     camera.getProperty("iso_sensitivity_auto").set(1);
-                    camera.getProperty("iso_sensitivity").set(1); // Manual ISO adjustement by default
+                    camera.getProperty("iso_sensitivity").set(1); // Manual ISO adjustment by default
                     camera.getProperty("white_balance_auto_preset").set(1); // Auto white-balance enabled
                     camera.getProperty("auto_exposure").set(0); // auto exposure enabled
                 }
@@ -179,15 +182,14 @@ public class USBCameraSource extends VisionSource {
                 try {
                     int scaledExposure = 1;
                     if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-                        scaledExposure =
-                                (int) Math.round(timeToPiCamRawExposure(pctToExposureTimeUs(exposure)));
-                        logger.debug("Setting camera raw exposure to " + Integer.toString(scaledExposure));
+                        scaledExposure = Math.round(timeToPiCamRawExposure(pctToExposureTimeUs(exposure)));
+                        logger.debug("Setting camera raw exposure to " + scaledExposure);
                         camera.getProperty("raw_exposure_time_absolute").set(scaledExposure);
                         camera.getProperty("raw_exposure_time_absolute").set(scaledExposure);
 
                     } else {
                         scaledExposure = (int) Math.round(exposure);
-                        logger.debug("Setting camera exposure to " + Integer.toString(scaledExposure));
+                        logger.debug("Setting camera exposure to " + scaledExposure);
                         camera.setExposureManual(scaledExposure);
                         camera.setExposureManual(scaledExposure);
                     }
@@ -264,9 +266,7 @@ public class USBCameraSource extends VisionSource {
                     } else {
                         modes = camera.enumerateVideoModes();
                     }
-                    for (int i = 0; i < modes.length; i++) {
-                        var videoMode = modes[i];
-
+                    for (VideoMode videoMode : modes) {
                         // Filter grey modes
                         if (videoMode.pixelFormat == VideoMode.PixelFormat.kGray
                                 || videoMode.pixelFormat == VideoMode.PixelFormat.kUnknown) {

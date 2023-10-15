@@ -28,7 +28,8 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.FileUtils;
@@ -47,13 +48,13 @@ public class ConfigManager {
 
     private final ConfigProvider m_provider;
 
-    private Thread settingsSaveThread;
+    private final Thread settingsSaveThread;
     private long saveRequestTimestamp = -1;
 
     enum ConfigSaveStrategy {
         SQL,
         LEGACY,
-        ATOMIC_ZIP;
+        ATOMIC_ZIP
     }
 
     // This logic decides which kind of ConfigManager we load as the default. If we want
@@ -83,12 +84,12 @@ public class ConfigManager {
             // Cannot import into SQL if we aren't in SQL mode rn
             return;
         }
-        logger.info("Translating settings zip!");
 
         var maybeCams = Path.of(folderPath.toAbsolutePath().toString(), "cameras").toFile();
         var maybeCamsBak = Path.of(folderPath.toAbsolutePath().toString(), "cameras_backup").toFile();
 
         if (maybeCams.exists() && maybeCams.isDirectory()) {
+            logger.info("Translating settings zip!");
             var legacy = new LegacyConfigProvider(folderPath);
             legacy.load();
             var loadedConfig = legacy.getConfig();
@@ -115,9 +116,8 @@ public class ConfigManager {
                     e1.printStackTrace();
                 }
 
-                // So we can't save the old config, and we couldn't copy the folder
-                // But we've loaded the config. So just try to delete the directory so we don't try to load
-                // form it next time. That does mean we have no backup recourse, tho
+                // Delete the directory because we were successfully able to load the config but were unable
+                // to save or copy the folder.
                 if (maybeCams.exists()) FileUtils.deleteDirectory(maybeCams.toPath());
             }
 
@@ -225,7 +225,7 @@ public class ConfigManager {
     }
 
     public Date logFnameToDate(String fname) throws ParseException {
-        // Strip away known unneded portions of the log file name
+        // Strip away known unneeded portions of the log file name
         fname = fname.replace(LOG_PREFIX, "").replace(LOG_EXT, "");
         DateFormat format = new SimpleDateFormat(LOG_DATE_TIME_FORMAT);
         return format.parse(fname);
@@ -262,6 +262,12 @@ public class ConfigManager {
 
     public void unloadCameraConfigs() {
         this.getConfig().getCameraConfigurations().clear();
+    }
+
+    public void clearConfig() {
+        logger.info("Clearing configuration!");
+        m_provider.clearConfig();
+        m_provider.saveToDisk();
     }
 
     public void saveToDisk() {

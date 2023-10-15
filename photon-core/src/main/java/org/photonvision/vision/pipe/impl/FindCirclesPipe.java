@@ -70,7 +70,7 @@ public class FindCirclesPipe
                 Math.max(1.0, params.accuracy),
                 minRadius,
                 maxRadius);
-        // Great, we now found the center point of the circle and it's radius, but we have no idea what
+        // Great, we now found the center point of the circle, and it's radius, but we have no idea what
         // contour it corresponds to
         // Each contour can only match to one circle, so we keep a list of unmatched contours around and
         // only match against them
@@ -121,7 +121,7 @@ public class FindCirclesPipe
          * If the parameter is too small, multiple neighbor circles may be falsely detected in addition to a true one. If it is too large, some circles may be missed.
          *
          * @param maxCannyThresh -First method-specific parameter. In case of #HOUGH_GRADIENT and #HOUGH_GRADIENT_ALT, it is the higher threshold of the two passed to the Canny edge detector (the lower one is twice smaller).
-         * Note that #HOUGH_GRADIENT_ALT uses #Scharr algorithm to compute image derivatives, so the threshold value shough normally be higher, such as 300 or normally exposed and contrasty images.
+         * Note that #HOUGH_GRADIENT_ALT uses #Scharr algorithm to compute image derivatives, so the threshold value should normally be higher, such as 300 or normally exposed and contrasty images.
          *
          *
          * @param allowableThreshold - When finding the corresponding contour, this is used to see how close a center should be to a contour for it to be considered THAT contour.

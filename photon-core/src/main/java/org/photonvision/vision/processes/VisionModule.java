@@ -20,7 +20,10 @@ package org.photonvision.vision.processes;
 import edu.wpi.first.cscore.VideoException;
 import edu.wpi.first.math.util.Units;
 import io.javalin.websocket.WsContext;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.function.BiConsumer;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
@@ -294,7 +297,7 @@ public class VisionModule {
         var settables = visionSource.getSettables();
         logger.trace(() -> "Setting " + settables.getConfiguration().nickname + ") FOV (" + fov + ")");
 
-        // Only set FOV if we have no vendor JSON and we aren't using a PiCAM
+        // Only set FOV if we have no vendor JSON, and we aren't using a PiCAM
         if (isVendorCamera()) {
             logger.info("Cannot set FOV on a vendor device! Ignoring...");
         } else {
@@ -455,9 +458,15 @@ public class VisionModule {
     void saveAndBroadcastSelective(WsContext originContext, String propertyName, Object value) {
         logger.trace("Broadcasting PSC mutation - " + propertyName + ": " + value);
         saveModule();
+
+        HashMap<String, Object> map = new HashMap<>();
+        HashMap<String, Object> subMap = new HashMap<>();
+        subMap.put(propertyName, value);
+        map.put("cameraIndex", this.moduleIndex);
+        map.put("mutatePipelineSettings", subMap);
+
         DataChangeService.getInstance()
-                .publishEvent(
-                        OutgoingUIEvent.wrappedOf("mutatePipeline", propertyName, value, originContext));
+                .publishEvent(new OutgoingUIEvent<>("mutatePipeline", map, originContext));
     }
 
     public void setCameraNickname(String newName) {

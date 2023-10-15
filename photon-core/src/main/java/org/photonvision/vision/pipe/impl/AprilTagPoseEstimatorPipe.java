@@ -46,7 +46,7 @@ public class AprilTagPoseEstimatorPipe
     @Override
     protected AprilTagPoseEstimate process(AprilTagDetection in) {
         // Save the corner points of our detection to an array
-        Point corners[] = new Point[4];
+        Point[] corners = new Point[4];
         for (int i = 0; i < 4; i++) {
             corners[i] = new Point(in.getCornerX(i), in.getCornerY(i));
         }
@@ -128,8 +128,7 @@ public class AprilTagPoseEstimatorPipe
             if (config == null) {
                 if (other.config != null) return false;
             } else if (!config.equals(other.config)) return false;
-            if (nIters != other.nIters) return false;
-            return true;
+            return nIters == other.nIters;
         }
     }
 }

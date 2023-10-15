@@ -91,7 +91,7 @@ public class NetworkTablesManager {
 
         subMap.put("connected", ntInstance.isConnected());
         if (ntInstance.isConnected()) {
-            var connections = getInstance().ntInstance.getConnections();
+            var connections = ntInstance.getConnections();
             if (connections.length > 0) {
                 subMap.put("address", connections[0].remote_ip + ":" + connections[0].remote_port);
             }
@@ -121,7 +121,7 @@ public class NetworkTablesManager {
         ntInstance.stopServer();
         ntInstance.startClient4("photonvision");
         try {
-            Integer t = Integer.parseInt(ntServerAddress);
+            int t = Integer.parseInt(ntServerAddress);
             if (!isRetryingConnection) logger.info("Starting NT Client, server team is " + t);
             ntInstance.setServerTeam(t);
         } catch (NumberFormatException e) {

@@ -39,8 +39,8 @@ public class FindBoardCornersPipe
     Size imageSize;
     Size patternSize;
 
-    // Configure the optimizations used while using openCV's find corners algorithm
-    // Since we return results in real-time, we want ensure it goes as fast as possible
+    // Configure the optimizations used while using OpenCV's find corners algorithm
+    // Since we return results in real-time, we want to ensure it goes as fast as possible
     // and fails as fast as possible.
     final int findChessboardFlags =
             Calib3d.CALIB_CB_NORMALIZE_IMAGE
@@ -48,9 +48,9 @@ public class FindBoardCornersPipe
                     | Calib3d.CALIB_CB_FILTER_QUADS
                     | Calib3d.CALIB_CB_FAST_CHECK;
 
-    private MatOfPoint2f boardCorners = new MatOfPoint2f();
+    private final MatOfPoint2f boardCorners = new MatOfPoint2f();
 
-    // Intermedeate result mat's
+    // Intermediate result mat's
     Mat smallerInFrame = new Mat();
     MatOfPoint2f smallerBoardCorners = new MatOfPoint2f();
 
@@ -213,7 +213,7 @@ public class FindBoardCornersPipe
     }
 
     /**
-     * Find chessboard corners given a input mat and output mat to draw on
+     * Find chessboard corners given an input mat and output mat to draw on
      *
      * @return Frame resolution, object points, board corners
      */
@@ -223,7 +223,7 @@ public class FindBoardCornersPipe
         var inFrame = in.getLeft();
         var outFrame = in.getRight();
 
-        // Convert the inFrame to grayscale to increase contrast
+        // Convert the inFrame too grayscale to increase contrast
         Imgproc.cvtColor(inFrame, inFrame, Imgproc.COLOR_BGR2GRAY);
         boolean boardFound = false;
 
@@ -328,8 +328,7 @@ public class FindBoardCornersPipe
             if (type != other.type) return false;
             if (Double.doubleToLongBits(gridSize) != Double.doubleToLongBits(other.gridSize))
                 return false;
-            if (divisor != other.divisor) return false;
-            return true;
+            return divisor == other.divisor;
         }
     }
 }

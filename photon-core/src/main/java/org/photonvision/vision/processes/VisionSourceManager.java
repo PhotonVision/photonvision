@@ -19,7 +19,10 @@ package org.photonvision.vision.processes;
 
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.cscore.UsbCameraInfo;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -326,7 +329,7 @@ public class VisionSourceManager {
             List<CameraConfiguration> camConfigs) {
         var cameraSources = new ArrayList<VisionSource>();
         for (var configuration : camConfigs) {
-            System.out.println("Creating VisionSource for " + configuration);
+            logger.debug("Creating VisionSource for " + configuration);
 
             // Picams should have csi-video in the path
             boolean is_picam =

@@ -24,7 +24,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.calib3d.Calib3d;
-import org.opencv.core.*;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfDouble;
+import org.opencv.core.Size;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
@@ -38,24 +40,24 @@ public class Calibrate3dPipe
                 Calibrate3dPipe.CalibratePipeParams> {
     // Camera matrix stores the center of the image and focal length across the x and y-axis in a 3x3
     // matrix
-    private Mat cameraMatrix = new Mat();
+    private final Mat cameraMatrix = new Mat();
     // Stores the radical and tangential distortion in a 5x1 matrix
-    private MatOfDouble distortionCoefficients = new MatOfDouble();
+    private final MatOfDouble distortionCoefficients = new MatOfDouble();
 
-    // For loggging
+    // For logging
     private static final Logger logger = new Logger(Calibrate3dPipe.class, LogGroup.General);
 
     // Translational and rotational matrices
-    private List<Mat> rvecs = new ArrayList<>();
-    private List<Mat> tvecs = new ArrayList<>();
+    private final List<Mat> rvecs = new ArrayList<>();
+    private final List<Mat> tvecs = new ArrayList<>();
 
     // The Standard deviation of the estimated parameters
-    private Mat stdDeviationsIntrinsics = new Mat();
-    private Mat stdDeviationsExtrinsics = new Mat();
+    private final Mat stdDeviationsIntrinsics = new Mat();
+    private final Mat stdDeviationsExtrinsics = new Mat();
 
     // Contains the re projection error of each snapshot by re projecting the corners we found and
-    // finding the euclidean distance between the actual corners.
-    private Mat perViewErrors = new Mat();
+    // finding the Euclidean distance between the actual corners.
+    private final Mat perViewErrors = new Mat();
 
     // RMS of the calibration
     private double calibrationAccuracy;
@@ -135,7 +137,7 @@ public class Calibrate3dPipe
     }
 
     // Calculate standard deviation of the RMS error of the snapshots
-    private static double calculateSD(double numArray[]) {
+    private static double calculateSD(double[] numArray) {
         double sum = 0.0, standardDeviation = 0.0;
         int length = numArray.length;
 

@@ -24,8 +24,8 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import org.opencv.aruco.Aruco;
-import org.opencv.aruco.ArucoDetector;
 import org.opencv.core.Mat;
+import org.opencv.objdetect.ArucoDetector;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
@@ -58,7 +58,7 @@ public class PhotonArucoDetector {
         ids = new Mat();
         tvecs = new Mat();
         rvecs = new Mat();
-        corners = new ArrayList<Mat>();
+        corners = new ArrayList<>();
         tagPose = new Pose3d();
         translation = new Translation3d();
         rotation = new Rotation3d();

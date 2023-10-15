@@ -1,14 +1,40 @@
+<script setup lang="ts">
+import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
+import { computed } from "vue";
+
+const props = withDefaults(
+  defineProps<{
+    label?: string;
+    tooltip?: string;
+    // TODO fully update v-model usage in custom components on Vue3 update
+    value: number;
+    disabled?: boolean;
+    labelCols?: number;
+    rules?: ((v: number) => boolean | string)[];
+    step?: number;
+  }>(),
+  {
+    disabled: false,
+    labelCols: 2,
+    step: 1
+  }
+);
+
+const emit = defineEmits<{
+  (e: "input", value: number): void;
+}>();
+
+const localValue = computed({
+  get: () => props.value,
+  set: (v) => emit("input", parseFloat(v as unknown as string))
+});
+</script>
+
 <template>
   <div>
-    <v-row
-      dense
-      align="center"
-    >
-      <v-col :cols="labelCols || 2">
-        <tooltipped-label
-          :tooltip="tooltip"
-          :text="name"
-        />
+    <v-row dense align="center">
+      <v-col :cols="labelCols">
+        <tooltipped-label :tooltip="tooltip" :label="label" />
       </v-col>
       <v-col>
         <v-text-field
@@ -28,30 +54,3 @@
     </v-row>
   </div>
 </template>
-
-<script>
-    import TooltippedLabel from "./cv-tooltipped-label";
-
-    export default {
-        name: 'NumberInput',
-        components: {
-            TooltippedLabel,
-        },
-      // eslint-disable-next-line vue/require-prop-types
-        props: ['name', 'value', 'step', 'labelCols', 'rules', 'tooltip', 'disabled'],
-        computed: {
-            localValue: {
-                get() {
-                    return this.value;
-                },
-                set(value) {
-                    this.$emit('input', parseFloat(value));
-                }
-            }
-        }
-    }
-</script>
-
-<style lang="" scoped>
-
-</style>

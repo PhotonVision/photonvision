@@ -22,12 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.calib3d.Calib3d;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint;
-import org.opencv.core.MatOfPoint2f;
-import org.opencv.core.MatOfPoint3f;
+import org.opencv.core.*;
 import org.opencv.core.Point;
-import org.opencv.core.Point3;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -95,7 +91,7 @@ public class Draw3dTargetsPipe
                         jac);
 
                 if (params.redistortPoints) {
-                    // Distort the points so they match the image they're being overlaid on
+                    // Distort the points, so they match the image they're being overlaid on
                     distortPoints(tempMat, tempMat);
                 }
 
@@ -111,7 +107,7 @@ public class Draw3dTargetsPipe
                         jac);
 
                 if (params.redistortPoints) {
-                    // Distort the points so they match the image they're being overlaid on
+                    // Distort the points, so they match the image they're being overlaid on
                     distortPoints(tempMat, tempMat);
                 }
                 var topPoints = tempMat.toList();
@@ -119,7 +115,7 @@ public class Draw3dTargetsPipe
                 dividePointList(bottomPoints);
                 dividePointList(topPoints);
 
-                // floor, then pillers, then top
+                // floor, then pillars, then top
                 for (int i = 0; i < bottomPoints.size(); i++) {
                     Imgproc.line(
                             in.getLeft(),
@@ -250,11 +246,11 @@ public class Draw3dTargetsPipe
 
             double r2 = x * x + y * y; // square of the radius from center
 
-            // Radial distorsion
+            // Radial distortion
             double xDistort = x * (1 + k1 * r2 + k2 * r2 * r2 + k3 * r2 * r2 * r2);
             double yDistort = y * (1 + k1 * r2 + k2 * r2 * r2 + k3 * r2 * r2 * r2);
 
-            // Tangential distorsion
+            // Tangential distortion
             xDistort = xDistort + (2 * p1 * x * y + p2 * (r2 + 2 * x * x));
             yDistort = yDistort + (p1 * (r2 + 2 * y * y) + 2 * p2 * x * y);
 
