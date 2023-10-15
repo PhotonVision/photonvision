@@ -485,7 +485,8 @@ public class PhotonPoseEstimator {
                                             .transformBy(target.getBestCameraToTarget().inverse())
                                             .getZ());
 
-            if (alternateTransformDelta < smallestHeightDifference) {
+            if (alternateTransformDelta < smallestHeightDifference
+                    && alternateTransformDelta < bestTransformDelta) {
                 smallestHeightDifference = alternateTransformDelta;
                 closestHeightTarget =
                         new EstimatedRobotPose(
@@ -495,9 +496,7 @@ public class PhotonPoseEstimator {
                                         .transformBy(robotToCamera.inverse()),
                                 result.getTimestampSeconds(),
                                 result.getTargets());
-            }
-
-            if (bestTransformDelta < smallestHeightDifference) {
+            } else if (bestTransformDelta < smallestHeightDifference) {
                 smallestHeightDifference = bestTransformDelta;
                 closestHeightTarget =
                         new EstimatedRobotPose(
@@ -564,13 +563,12 @@ public class PhotonPoseEstimator {
             double altDifference = Math.abs(calculateDifference(referencePose, altTransformPosition));
             double bestDifference = Math.abs(calculateDifference(referencePose, bestTransformPosition));
 
-            if (altDifference < smallestPoseDelta) {
+            if (altDifference < smallestPoseDelta && altDifference < bestDifference) {
                 smallestPoseDelta = altDifference;
                 lowestDeltaPose =
                         new EstimatedRobotPose(
                                 altTransformPosition, result.getTimestampSeconds(), result.getTargets());
-            }
-            if (bestDifference < smallestPoseDelta) {
+            } else if (bestDifference < smallestPoseDelta) {
                 smallestPoseDelta = bestDifference;
                 lowestDeltaPose =
                         new EstimatedRobotPose(
