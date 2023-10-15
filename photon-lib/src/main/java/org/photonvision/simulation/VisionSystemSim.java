@@ -66,6 +66,8 @@ public class VisionSystemSim {
 
     private final Field2d dbgField;
 
+    private final Transform3d kEmptyTrf = new Transform3d();
+
     /**
      * A simulated vision system involving a camera(s) and coprocessor(s) mounted on a mobile robot
      * running PhotonVision, detecting targets placed on the field. {@link VisionTargetSim}s added to
@@ -130,7 +132,8 @@ public class VisionSystemSim {
      * Get a simulated camera's position relative to the robot. If the requested camera is invalid, an
      * empty optional is returned.
      *
-     * @return The transform of this cameraSim, or an empty optional if it is invalid
+     * @param cameraSim The specific camera to get the robot-to-camera transform of
+     * @return The transform of this camera, or an empty optional if it is invalid
      */
     public Optional<Transform3d> getRobotToCamera(PhotonCameraSim cameraSim) {
         return getRobotToCamera(cameraSim, Timer.getFPGATimestamp());
@@ -140,9 +143,9 @@ public class VisionSystemSim {
      * Get a simulated camera's position relative to the robot. If the requested camera is invalid, an
      * empty optional is returned.
      *
-     * @param cameraSim Specific camera to get the robot-to-camera transform of
+     * @param cameraSim The specific camera to get the robot-to-camera transform of
      * @param timeSeconds Timestamp in seconds of when the transform should be observed
-     * @return The transform of this cameraSim, or an empty optional if it is invalid
+     * @return The transform of this camera, or an empty optional if it is invalid
      */
     public Optional<Transform3d> getRobotToCamera(PhotonCameraSim cameraSim, double timeSeconds) {
         var trfBuffer = camTrfMap.get(cameraSim);
@@ -150,6 +153,31 @@ public class VisionSystemSim {
         var sample = trfBuffer.getSample(timeSeconds);
         if (sample.isEmpty()) return Optional.empty();
         return Optional.of(new Transform3d(new Pose3d(), sample.orElse(new Pose3d())));
+    }
+
+    /**
+     * Get a simulated camera's position on the field. If the requested camera is invalid, an empty
+     * optional is returned.
+     *
+     * @param cameraSim The specific camera to get the field pose of
+     * @return The pose of this camera, or an empty optional if it is invalid
+     */
+    public Optional<Pose3d> getCameraPose(PhotonCameraSim cameraSim) {
+        return getCameraPose(cameraSim, Timer.getFPGATimestamp());
+    }
+
+    /**
+     * Get a simulated camera's position on the field. If the requested camera is invalid, an empty
+     * optional is returned.
+     *
+     * @param cameraSim The specific camera to get the field pose of
+     * @param timeSeconds Timestamp in seconds of when the pose should be observed
+     * @return The pose of this camera, or an empty optional if it is invalid
+     */
+    public Optional<Pose3d> getCameraPose(PhotonCameraSim cameraSim, double timeSeconds) {
+        var robotToCamera = getRobotToCamera(cameraSim, timeSeconds);
+        if (robotToCamera.isEmpty()) return Optional.empty();
+        return Optional.of(getRobotPose(timeSeconds).plus(robotToCamera.get()));
     }
 
     /**
@@ -217,15 +245,16 @@ public class VisionSystemSim {
      * PhotonCamera}s simulated from this system will report the location of the camera relative to
      * the subset of these targets which are visible from the given camera position.
      *
-     * <p>The AprilTags from this layout will be added as vision targets under the type "apriltags".
-     * The poses added preserve the tag layout's current alliance origin.
+     * <p>The AprilTags from this layout will be added as vision targets under the type "apriltag".
+     * The poses added preserve the tag layout's current alliance origin. If the tag layout's alliance
+     * origin is changed, these added tags will have to be cleared and re-added.
      *
      * @param tagLayout The field tag layout to get Apriltag poses and IDs from
      */
-    public void addVisionTargets(AprilTagFieldLayout tagLayout) {
+    public void addAprilTags(AprilTagFieldLayout tagLayout) {
         for (AprilTag tag : tagLayout.getTags()) {
             addVisionTargets(
-                    "apriltags",
+                    "apriltag",
                     new VisionTargetSim(
                             tagLayout.getTagPose(tag.ID).get(), // preserve alliance rotation
                             TargetModel.kTag16h5,
@@ -250,6 +279,10 @@ public class VisionSystemSim {
 
     public void clearVisionTargets() {
         targetSets.clear();
+    }
+
+    public void clearAprilTags() {
+        removeVisionTargets("apriltag");
     }
 
     public Set<VisionTargetSim> removeVisionTargets(String type) {
@@ -306,7 +339,7 @@ public class VisionSystemSim {
      * Periodic update. Ensure this is called repeatedly-- camera performance is used to automatically
      * determine if a new frame should be submitted.
      *
-     * @param robotPoseMeters The current robot pose in meters
+     * @param robotPoseMeters The simulated robot pose in meters
      */
     public void update(Pose2d robotPoseMeters) {
         update(new Pose3d(robotPoseMeters));
@@ -316,7 +349,7 @@ public class VisionSystemSim {
      * Periodic update. Ensure this is called repeatedly-- camera performance is used to automatically
      * determine if a new frame should be submitted.
      *
-     * @param robotPoseMeters The current robot pose in meters
+     * @param robotPoseMeters The simulated robot pose in meters
      */
     public void update(Pose3d robotPoseMeters) {
         var targetTypes = targetSets.entrySet();
@@ -339,13 +372,15 @@ public class VisionSystemSim {
 
         var allTargets = new ArrayList<VisionTargetSim>();
         targetTypes.forEach((entry) -> allTargets.addAll(entry.getValue()));
-        var visibleTargets = new ArrayList<Pose3d>();
-        var cameraPose2ds = new ArrayList<Pose2d>();
+        var visTgtPoses2d = new ArrayList<Pose2d>();
+        var cameraPoses2d = new ArrayList<Pose2d>();
+        boolean processed = false;
         // process each camera
         for (var camSim : camSimMap.values()) {
             // check if this camera is ready to process and get latency
             var optTimestamp = camSim.consumeNextEntryTime();
             if (optTimestamp.isEmpty()) continue;
+            else processed = true;
             // when this result "was" read by NT
             long timestampNT = optTimestamp.get();
             // this result's processing latency in milliseconds
@@ -356,7 +391,7 @@ public class VisionSystemSim {
             // use camera pose from the image capture timestamp
             Pose3d lateRobotPose = getRobotPose(timestampCapture);
             Pose3d lateCameraPose = lateRobotPose.plus(getRobotToCamera(camSim, timestampCapture).get());
-            cameraPose2ds.add(lateCameraPose.toPose2d());
+            cameraPoses2d.add(lateCameraPose.toPose2d());
 
             // process a PhotonPipelineResult with visible targets
             var camResult = camSim.process(latencyMillis, lateCameraPose, allTargets);
@@ -364,14 +399,12 @@ public class VisionSystemSim {
             camSim.submitProcessedFrame(camResult, timestampNT);
             // display debug results
             for (var target : camResult.getTargets()) {
-                visibleTargets.add(lateCameraPose.transformBy(target.getBestCameraToTarget()));
+                var trf = target.getBestCameraToTarget();
+                if (trf.equals(kEmptyTrf)) continue;
+                visTgtPoses2d.add(lateCameraPose.transformBy(trf).toPose2d());
             }
         }
-        if (visibleTargets.size() != 0) {
-            dbgField
-                    .getObject("visibleTargetPoses")
-                    .setPoses(visibleTargets.stream().map(Pose3d::toPose2d).collect(Collectors.toList()));
-        }
-        if (cameraPose2ds.size() != 0) dbgField.getObject("cameras").setPoses(cameraPose2ds);
+        if (processed) dbgField.getObject("visibleTargetPoses").setPoses(visTgtPoses2d);
+        if (cameraPoses2d.size() != 0) dbgField.getObject("cameras").setPoses(cameraPoses2d);
     }
 }

@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.opencv.core.Point;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
 
@@ -66,7 +67,7 @@ public class VisionEstimation {
      *
      * @param cameraMatrix The camera intrinsics matrix in standard opencv form
      * @param distCoeffs The camera distortion matrix in standard opencv form
-     * @param visTags The visible tags reported by PV
+     * @param visTags The visible tags reported by PV. Non-tag targets are automatically excluded.
      * @param tagLayout The known tag layout on the field
      * @return The transformation that maps the field origin to the camera pose. Ensure the {@link
      *     PNPResults} are present before utilizing them.
@@ -84,17 +85,28 @@ public class VisionEstimation {
         }
 
         var corners = new ArrayList<TargetCorner>();
-        for (var tag : visTags) corners.addAll(tag.getDetectedCorners());
-        var knownTags = getVisibleLayoutTags(visTags, tagLayout);
+        var knownTags = new ArrayList<AprilTag>();
+        // ensure these are AprilTags in our layout
+        for (var tgt : visTags) {
+            int id = tgt.getFiducialId();
+            tagLayout
+                    .getTagPose(id)
+                    .ifPresent(
+                            pose -> {
+                                knownTags.add(new AprilTag(id, pose));
+                                corners.addAll(tgt.getDetectedCorners());
+                            });
+        }
         if (knownTags.size() == 0 || corners.size() == 0 || corners.size() % 4 != 0) {
             return new PNPResults();
         }
+        Point[] points = OpenCVHelp.cornersToPoints(corners);
 
         // single-tag pnp
-        if (visTags.size() == 1) {
+        if (knownTags.size() == 1) {
             var camToTag =
                     OpenCVHelp.solvePNP_SQUARE(
-                            cameraMatrix, distCoeffs, TargetModel.kTag16h5.vertices, corners);
+                            cameraMatrix, distCoeffs, TargetModel.kTag16h5.vertices, points);
             if (!camToTag.isPresent) return new PNPResults();
             var bestPose = knownTags.get(0).pose.transformBy(camToTag.best.inverse());
             var altPose = new Pose3d();
@@ -113,7 +125,7 @@ public class VisionEstimation {
         else {
             var objectTrls = new ArrayList<Translation3d>();
             for (var tag : knownTags) objectTrls.addAll(TargetModel.kTag16h5.getFieldVertices(tag.pose));
-            var camToOrigin = OpenCVHelp.solvePNP_SQPNP(cameraMatrix, distCoeffs, objectTrls, corners);
+            var camToOrigin = OpenCVHelp.solvePNP_SQPNP(cameraMatrix, distCoeffs, objectTrls, points);
             if (!camToOrigin.isPresent) return new PNPResults();
             return new PNPResults(
                     camToOrigin.best.inverse(),

@@ -19,7 +19,6 @@ package org.photonvision.vision.pipe.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.opencv.core.RotatedRect;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.frame.FrameStaticProperties;
@@ -47,30 +46,12 @@ public class FilterContoursPipe
     private void rejectOutliers(List<Contour> list, double xTol, double yTol) {
         if (list.size() < 2) return; // Must have at least 2 points to reject outliers
 
-/*
-        // Sort by X and find median
-        list.sort(Comparator.comparingDouble(c -> c.getCenterPoint().x));
-
-        double medianX = list.get(list.size() / 2).getCenterPoint().x;
-        if (list.size() % 2 == 0)
-            medianX = (medianX + list.get(list.size() / 2 - 1).getCenterPoint().x) / 2;
-*/
-
         double meanX = list.stream().mapToDouble(it -> it.getCenterPoint().x).sum() / list.size();
 
         double stdDevX =
                 list.stream().mapToDouble(it -> Math.pow(it.getCenterPoint().x - meanX, 2.0)).sum();
         stdDevX /= (list.size() - 1);
         stdDevX = Math.sqrt(stdDevX);
-
-/*
-        // Sort by Y and find median
-        list.sort(Comparator.comparingDouble(c -> c.getCenterPoint().y));
-
-        double medianY = list.get(list.size() / 2).getCenterPoint().y;
-        if (list.size() % 2 == 0)
-            medianY = (medianY + list.get(list.size() / 2 - 1).getCenterPoint().y) / 2;
-*/
 
         double meanY = list.stream().mapToDouble(it -> it.getCenterPoint().y).sum() / list.size();
 
@@ -112,7 +93,8 @@ public class FilterContoursPipe
         if (contourArea <= minFullness || contourArea >= maxFullness) return;
 
         // Aspect Ratio Filtering.
-        double aspectRatio = TargetCalculations.getAspectRatio(contour.getMinAreaRect(), params.isLandscape);
+        double aspectRatio =
+                TargetCalculations.getAspectRatio(contour.getMinAreaRect(), params.isLandscape);
         if (aspectRatio < params.getRatio().getFirst() || aspectRatio > params.getRatio().getSecond())
             return;
 
@@ -134,7 +116,8 @@ public class FilterContoursPipe
                 DoubleCouple extent,
                 FrameStaticProperties camProperties,
                 double xTol,
-                double yTol, boolean isLandscape) {
+                double yTol,
+                boolean isLandscape) {
             this.m_area = area;
             this.m_ratio = ratio;
             this.m_fullness = extent;
