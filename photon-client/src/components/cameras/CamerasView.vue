@@ -41,48 +41,39 @@ const fpsTooLow = computed<boolean>(() => {
 </script>
 
 <template>
-  <v-card class="mb-3 pr-6 pb-3 pa-4" color="primary" dark>
+  <v-card class="mb-3 pb-3 pa-4" color="primary" dark>
     <v-card-title
       class="pb-0 mb-2 pl-4 pt-1"
       style="min-height: 50px; justify-content: space-between; align-content: center"
     >
-      <div style="display: flex; width: 100%; justify-content: space-between">
-        <div style="display: flex; flex-wrap: wrap">
-          <div>
-            <span class="mr-4" style="white-space: nowrap"> Cameras </span>
-          </div>
-          <div>
-            <v-chip
-              label
-              :color="fpsTooLow ? 'error' : 'transparent'"
-              :text-color="fpsTooLow ? '#C7EA46' : '#ff4d00'"
-              style="font-size: 1rem; padding: 0; margin: 0"
-            >
-              <span class="pr-1">
-                {{ Math.round(useStateStore().pipelineResults?.fps || 0) }}&nbsp;FPS &ndash;
-                {{ Math.min(Math.round(useStateStore().pipelineResults?.latency || 0), 9999) }} ms latency
-              </span>
-            </v-chip>
-          </div>
+      <div style="display: flex; flex-wrap: wrap">
+        <div>
+          <span class="mr-4" style="white-space: nowrap"> Cameras </span>
         </div>
         <div>
-          <v-switch
-            v-model="driverMode"
-            :disabled="useCameraSettingsStore().isCalibrationMode"
-            label="Driver Mode"
-            style="margin-left: auto"
-            color="accent"
-            class="pt-2"
-          />
+          <v-chip
+            label
+            :color="fpsTooLow ? 'error' : 'transparent'"
+            :text-color="fpsTooLow ? '#C7EA46' : '#ff4d00'"
+            style="font-size: 1rem; padding: 0; margin: 0"
+          >
+            <span class="pr-1">
+              {{ Math.round(useStateStore().pipelineResults?.fps || 0) }}&nbsp;FPS &ndash;
+              {{ Math.min(Math.round(useStateStore().pipelineResults?.latency || 0), 9999) }} ms latency
+            </span>
+          </v-chip>
         </div>
       </div>
-      <div class="pb-2" style="display: flex; gap: 16px; width: 100%; justify-content: center; flex-wrap: wrap">
-        <v-btn color="secondary" class="snapshot-btn" @click="useCameraSettingsStore().saveInputSnapshot()"
-          >Save Input Snapshot</v-btn
-        >
-        <v-btn color="secondary" class="snapshot-btn" @click="useCameraSettingsStore().saveOutputSnapshot()"
-          >Save Output Snapshot</v-btn
-        >
+
+      <div>
+        <v-switch
+          v-model="driverMode"
+          :disabled="useCameraSettingsStore().isCalibrationMode"
+          label="Driver Mode"
+          style="margin-left: auto"
+          color="accent"
+          class="pt-2"
+        />
       </div>
     </v-card-title>
     <div class="stream-container pb-4">
@@ -142,32 +133,16 @@ th {
 .stream {
   display: flex;
   justify-content: center;
-  width: 100%;
 }
 
-@media only screen and (min-width: 562px) and (max-width: 960px) {
+@media only screen and (min-width: 512px) and (max-width: 960px) {
   .stream-container {
     flex-wrap: nowrap;
+    justify-content: center;
   }
 
   .stream {
-    width: 50%;
-  }
-
-  .snapshot-btn {
-    width: 45%;
-  }
-}
-
-@media only screen and (min-width: 960px) and (max-width: 1587px) {
-  .snapshot-btn {
-    width: 100%;
-  }
-}
-
-@media only screen and (max-width: 562px) {
-  .snapshot-btn {
-    width: 100%;
+    max-width: 50%;
   }
 }
 </style>

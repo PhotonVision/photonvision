@@ -33,47 +33,40 @@ const fpsTooLow = computed<boolean>(() => {
 
 <template>
   <v-card color="primary" height="100%" style="display: flex; flex-direction: column" dark>
-    <v-card-title class="pb-0 mb-0 pl-4 pt-1" style="display: flex; flex-direction: column; width: 100%">
-      <div style="min-height: 50px; justify-content: space-between; align-content: center; display: flex; width: 100%">
-        <div class="pt-2">
-          <span class="mr-4">Cameras</span>
-          <v-chip
-            label
-            :color="fpsTooLow ? 'error' : 'transparent'"
-            :text-color="fpsTooLow ? '#C7EA46' : '#ff4d00'"
-            style="font-size: 1rem; padding: 0; margin: 0"
+    <v-card-title
+      class="pb-0 mb-0 pl-4 pt-1"
+      style="min-height: 50px; justify-content: space-between; align-content: center"
+    >
+      <div class="pt-2">
+        <span class="mr-4">Cameras</span>
+        <v-chip
+          label
+          :color="fpsTooLow ? 'error' : 'transparent'"
+          :text-color="fpsTooLow ? '#C7EA46' : '#ff4d00'"
+          style="font-size: 1rem; padding: 0; margin: 0"
+        >
+          <span class="pr-1">
+            Processing @ {{ Math.round(useStateStore().pipelineResults?.fps || 0) }}&nbsp;FPS &ndash;
+          </span>
+          <span
+            v-if="
+              fpsTooLow &&
+              !useCameraSettingsStore().currentPipelineSettings.inputShouldShow &&
+              useCameraSettingsStore().currentPipelineSettings.pipelineType === PipelineType.Reflective
+            "
           >
-            <span class="pr-1">
-              Processing @ {{ Math.round(useStateStore().pipelineResults?.fps || 0) }}&nbsp;FPS &ndash;
-            </span>
-            <span
-              v-if="
-                fpsTooLow &&
-                !useCameraSettingsStore().currentPipelineSettings.inputShouldShow &&
-                useCameraSettingsStore().currentPipelineSettings.pipelineType === PipelineType.Reflective
-              "
-            >
-              HSV thresholds are too broad; narrow them for better performance
-            </span>
-            <span v-else-if="fpsTooLow && useCameraSettingsStore().currentPipelineSettings.inputShouldShow">
-              stop viewing the raw stream for better performance
-            </span>
-            <span v-else>
-              {{ Math.min(Math.round(useStateStore().pipelineResults?.latency || 0), 9999) }} ms latency
-            </span>
-          </v-chip>
-        </div>
-        <div>
-          <v-switch v-model="driverMode" label="Driver Mode" style="margin-left: auto" color="accent" class="pt-2" />
-        </div>
+            HSV thresholds are too broad; narrow them for better performance
+          </span>
+          <span v-else-if="fpsTooLow && useCameraSettingsStore().currentPipelineSettings.inputShouldShow">
+            stop viewing the raw stream for better performance
+          </span>
+          <span v-else>
+            {{ Math.min(Math.round(useStateStore().pipelineResults?.latency || 0), 9999) }} ms latency
+          </span>
+        </v-chip>
       </div>
-      <div class="pb-2" style="display: flex; gap: 16px; flex-wrap: wrap">
-        <v-btn color="secondary" class="snapshot-btn" @click="useCameraSettingsStore().saveInputSnapshot()"
-          >Save Input Snapshot</v-btn
-        >
-        <v-btn color="secondary" class="snapshot-btn" @click="useCameraSettingsStore().saveOutputSnapshot()"
-          >Save Output Snapshot</v-btn
-        >
+      <div>
+        <v-switch v-model="driverMode" label="Driver Mode" style="margin-left: auto" color="accent" class="pt-2" />
       </div>
     </v-card-title>
     <v-divider style="border-color: white" />
