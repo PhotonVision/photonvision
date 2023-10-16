@@ -107,13 +107,13 @@ public class ConfigTest {
 
         Assertions.assertTrue(
                 reflectivePipelineSettings instanceof ReflectivePipelineSettings,
-                "Conig loaded pipeline settings for index 0 not of expected type ReflectivePipelineSettings!");
+                "Config loaded pipeline settings for index 0 not of expected type ReflectivePipelineSettings!");
         Assertions.assertTrue(
                 coloredShapePipelineSettings instanceof ColoredShapePipelineSettings,
-                "Conig loaded pipeline settings for index 1 not of expected type ColoredShapePipelineSettings!");
+                "Config loaded pipeline settings for index 1 not of expected type ColoredShapePipelineSettings!");
         Assertions.assertTrue(
                 apriltagPipelineSettings instanceof AprilTagPipelineSettings,
-                "Conig loaded pipeline settings for index 2 not of expected type AprilTagPipelineSettings!");
+                "Config loaded pipeline settings for index 2 not of expected type AprilTagPipelineSettings!");
     }
 
     @AfterAll

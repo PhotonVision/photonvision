@@ -42,7 +42,7 @@ class Robot : public frc::TimedRobot {
   // Change this to match the name of your camera
   photonlib::PhotonCamera camera{"photonvision"};
   // PID constants should be tuned per robot
-  frc2::PIDController controller{.1, 0, 0};
+  frc::PIDController controller{.1, 0, 0};
 
   frc::XboxController xboxController{0};
 

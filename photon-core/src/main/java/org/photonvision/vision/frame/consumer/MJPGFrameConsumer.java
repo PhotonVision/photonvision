@@ -106,7 +106,6 @@ public class MJPGFrameConsumer {
     private CvSource cvSource;
     private MjpegServer mjpegServer;
 
-    @SuppressWarnings("FieldCanBeLocal")
     private VideoListener listener;
 
     private final NetworkTable table;

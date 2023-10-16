@@ -40,7 +40,6 @@ public class HSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
             Scalar firstLower = params.getHsvLower().clone();
             Scalar firstUpper = params.getHsvUpper().clone();
             firstLower.val[0] = params.getHsvUpper().val[0];
-            ;
             firstUpper.val[0] = 180;
 
             var lowerThresholdMat = new Mat();

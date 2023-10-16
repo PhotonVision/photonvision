@@ -35,7 +35,7 @@ public enum ContourSortMode {
                             (Math.pow(rect.getMinAreaRect().center.y, 2)
                                     + Math.pow(rect.getMinAreaRect().center.x, 2))));
 
-    private Comparator<PotentialTarget> m_comparator;
+    private final Comparator<PotentialTarget> m_comparator;
 
     ContourSortMode(Comparator<PotentialTarget> comparator) {
         m_comparator = comparator;

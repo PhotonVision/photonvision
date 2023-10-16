@@ -150,7 +150,7 @@ public class OutputStreamPipeline {
 
             if (!(settings instanceof AprilTagPipelineSettings)
                     && !(settings instanceof ArucoPipelineSettings)) {
-                // If we're processing anything other than Apriltags..
+                // If we're processing anything other than Apriltags...
                 var draw2dCrosshairResultOnOutput = draw2dCrosshairPipe.run(Pair.of(outMat, targetsToDraw));
                 sumPipeNanosElapsed += pipeProfileNanos[4] = draw2dCrosshairResultOnOutput.nanosElapsed;
 

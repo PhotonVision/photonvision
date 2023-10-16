@@ -36,10 +36,10 @@ dependencies {
     implementation wpilibTools.deps.wpilibJava("hal")
     implementation wpilibTools.deps.wpilibJava("wpilibj")
 
-    implementation "edu.wpi.first.thirdparty.frc2023.opencv:opencv-java:$opencvVersion"
-    implementation "edu.wpi.first.thirdparty.frc2023.opencv:opencv-jni:$opencvVersion:$jniPlatform"
+    implementation "edu.wpi.first.thirdparty.frc2024.opencv:opencv-java:$openCVversion"
+    implementation "edu.wpi.first.thirdparty.frc2024.opencv:opencv-jni:$openCVversion:$jniPlatform"
 
-    implementation "org.ejml:ejml-simple:0.41"
+    implementation "org.ejml:ejml-simple:0.42"
 
     // test stuff
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
@@ -51,6 +51,7 @@ test {
         events "passed", "skipped", "failed", "standardOut", "standardError"
     }
     workingDir = new File("${rootDir}")
+    finalizedBy jacocoTestReport
 }
 
 task testHeadless(type: Test) {
@@ -67,11 +68,19 @@ task generateJavaDocs(type: Javadoc) {
     destinationDir = file("${projectDir}/build/docs")
 }
 
+
+jacoco {
+    toolVersion = "0.8.9"
+    reportsDirectory = layout.buildDirectory.dir('customJacocoReportDir')
+}
+
 jacocoTestReport {
-//    dependsOn testHeadless // Tests are required to run before generating the report
+    dependsOn testHeadless
 
     reports {
-        xml.enabled true
+        xml.required = true
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
     }
 
     afterEvaluate {
