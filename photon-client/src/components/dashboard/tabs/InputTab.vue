@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import CvSlider from "@/components/common/cv-slider.vue";
+import PvSlider from "@/components/common/pv-slider.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import CvSwitch from "@/components/common/cv-switch.vue";
-import CvSelect from "@/components/common/cv-select.vue";
+import PvSwitch from "@/components/common/pv-switch.vue";
+import PvSelect from "@/components/common/pv-select.vue";
 import { computed, getCurrentInstance } from "vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
@@ -69,7 +69,7 @@ const interactiveCols = computed(
 
 <template>
   <div>
-    <cv-slider
+    <pv-slider
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraExposure"
       :disabled="useCameraSettingsStore().currentCameraSettings.pipelineSettings.cameraAutoExposure"
       label="Exposure"
@@ -80,7 +80,7 @@ const interactiveCols = computed(
       :step="0.1"
       @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraExposure: args }, false)"
     />
-    <cv-slider
+    <pv-slider
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraBrightness"
       label="Brightness"
       :min="0"
@@ -88,7 +88,7 @@ const interactiveCols = computed(
       :slider-cols="interactiveCols"
       @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBrightness: args }, false)"
     />
-    <cv-switch
+    <pv-switch
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraAutoExposure"
       class="pt-2"
       label="Auto Exposure"
@@ -96,7 +96,7 @@ const interactiveCols = computed(
       tooltip="Enables or Disables camera automatic adjustment for current lighting conditions"
       @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraAutoExposure: args }, false)"
     />
-    <cv-slider
+    <pv-slider
       v-if="useCameraSettingsStore().currentPipelineSettings.cameraGain >= 0"
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraGain"
       label="Camera Gain"
@@ -106,7 +106,7 @@ const interactiveCols = computed(
       :slider-cols="interactiveCols"
       @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraGain: args }, false)"
     />
-    <cv-slider
+    <pv-slider
       v-if="useCameraSettingsStore().currentPipelineSettings.cameraRedGain !== -1"
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraRedGain"
       label="Red AWB Gain"
@@ -116,7 +116,7 @@ const interactiveCols = computed(
       tooltip="Controls red automatic white balance gain, which affects how the camera captures colors in different conditions"
       @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraRedGain: args }, false)"
     />
-    <cv-slider
+    <pv-slider
       v-if="useCameraSettingsStore().currentPipelineSettings.cameraBlueGain !== -1"
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraBlueGain"
       label="Blue AWB Gain"
@@ -126,7 +126,7 @@ const interactiveCols = computed(
       tooltip="Controls blue automatic white balance gain, which affects how the camera captures colors in different conditions"
       @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBlueGain: args }, false)"
     />
-    <cv-select
+    <pv-select
       v-model="useCameraSettingsStore().currentPipelineSettings.inputImageRotationMode"
       label="Orientation"
       tooltip="Rotates the camera stream"
@@ -134,7 +134,7 @@ const interactiveCols = computed(
       :select-cols="interactiveCols"
       @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ inputImageRotationMode: args }, false)"
     />
-    <cv-select
+    <pv-select
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraVideoModeIndex"
       label="Resolution"
       tooltip="Resolution and FPS the camera should directly capture at"
@@ -142,7 +142,7 @@ const interactiveCols = computed(
       :select-cols="interactiveCols"
       @input="(args) => handleResolutionChange(args)"
     />
-    <cv-select
+    <pv-select
       v-model="useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor"
       label="Stream Resolution"
       tooltip="Resolution to which camera frames are downscaled for streaming to the dashboard"

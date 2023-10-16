@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { inject, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import CvSelect from "@/components/common/cv-select.vue";
+import PvSelect from "@/components/common/pv-select.vue";
 import axios from "axios";
 
 const restartProgram = () => {
@@ -246,7 +246,7 @@ const handleSettingsImport = () => {
               <v-card-text>
                 Upload and apply previously saved or exported PhotonVision settings to this device
                 <v-row class="mt-6 ml-4">
-                  <cv-select
+                  <pv-select
                     v-model="importType"
                     label="Type"
                     tooltip="Select the type of settings file you are trying to upload"
