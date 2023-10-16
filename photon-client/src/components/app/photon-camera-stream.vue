@@ -68,8 +68,8 @@ const handleCaptureClick = () => {
       <cv-icon
         icon-name="mdi-camera-image"
         tooltip="Capture and save a frame of this stream"
-        @click="handleCaptureClick"
         class="ma-1 mr-2"
+        @click="handleCaptureClick"
       />
     </div>
   </div>
