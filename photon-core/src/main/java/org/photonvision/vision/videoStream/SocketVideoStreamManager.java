@@ -29,8 +29,8 @@ public class SocketVideoStreamManager {
 
     private final Logger logger = new Logger(SocketVideoStreamManager.class, LogGroup.Camera);
 
-    private Map<Integer, SocketVideoStream> streams = new Hashtable<Integer, SocketVideoStream>();
-    private Map<WsContext, Integer> userSubscriptions = new Hashtable<WsContext, Integer>();
+    private final Map<Integer, SocketVideoStream> streams = new Hashtable<>();
+    private final Map<WsContext, Integer> userSubscriptions = new Hashtable<>();
 
     private static class ThreadSafeSingleton {
         private static final SocketVideoStreamManager INSTANCE = new SocketVideoStreamManager();
@@ -45,13 +45,13 @@ public class SocketVideoStreamManager {
     // Register a new available camera stream
     public void addStream(SocketVideoStream newStream) {
         streams.put(newStream.portID, newStream);
-        logger.debug("Added new stream for port " + Integer.toString(newStream.portID));
+        logger.debug("Added new stream for port " + newStream.portID);
     }
 
     // Remove a previously-added camera stream, and unsubscribe all users
     public void removeStream(SocketVideoStream oldStream) {
         streams.remove(oldStream.portID);
-        logger.debug("Removed stream for port " + Integer.toString(oldStream.portID));
+        logger.debug("Removed stream for port " + oldStream.portID);
     }
 
     // Indicate a user would like to subscribe to a camera stream and get frames from it periodically
@@ -61,8 +61,7 @@ public class SocketVideoStreamManager {
             userSubscriptions.put(user, streamPortID);
             stream.addUser();
         } else {
-            logger.error(
-                    "User attempted to subscribe to non-existent port " + Integer.toString(streamPortID));
+            logger.error("User attempted to subscribe to non-existent port " + streamPortID);
         }
     }
 
@@ -92,7 +91,7 @@ public class SocketVideoStreamManager {
         }
     }
 
-    // Causes all streams to "re-trigger" and recieve and convert their next mjpeg frame
+    // Causes all streams to "re-trigger" and receive and convert their next mjpeg frame
     // Only invoke this after all returned jpeg Strings have been used.
     public void allStreamConvertNextFrame() {
         for (SocketVideoStream stream : streams.values()) {

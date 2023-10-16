@@ -30,7 +30,7 @@ import org.photonvision.vision.pipe.impl.HSVPipe;
 import org.photonvision.vision.pipe.impl.RotateImagePipe;
 
 public abstract class CpuImageProcessor implements FrameProvider {
-    protected class CapturedFrame {
+    protected static class CapturedFrame {
         CVMat colorImage;
         FrameStaticProperties staticProps;
         long captureTimestamp;
@@ -119,6 +119,5 @@ public abstract class CpuImageProcessor implements FrameProvider {
     @Override
     public void requestFrameCopies(boolean copyInput, boolean copyOutput) {
         // We don't actually do zero-copy, so this method is a no-op
-        return;
     }
 }

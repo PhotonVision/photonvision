@@ -1,5 +1,5 @@
 plugins {
-    id 'edu.wpi.first.WpilibTools' version '1.0.0'
+    id 'edu.wpi.first.WpilibTools' version '1.1.0'
 }
 
 import java.nio.file.Path
@@ -50,10 +50,10 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-core:2.12.4"
     implementation "com.fasterxml.jackson.core:jackson-databind:2.12.4"
 
-    implementation "edu.wpi.first.thirdparty.frc2023.opencv:opencv-java:$opencvVersion"
-    implementation "edu.wpi.first.thirdparty.frc2023.opencv:opencv-jni:$opencvVersion:$jniPlatform"
+    implementation "edu.wpi.first.thirdparty.frc2024.opencv:opencv-java:$openCVversion"
+    implementation "edu.wpi.first.thirdparty.frc2024.opencv:opencv-jni:$openCVversion:$jniPlatform"
 
-    implementation "org.ejml:ejml-simple:0.41"
+    implementation "org.ejml:ejml-simple:0.42"
 
     // Junit
     testImplementation wpilibTools.deps.wpilibJava("cscore")
@@ -120,21 +120,22 @@ task generateVendorJson() {
     outputs.file photonlibFileOutput
     inputs.file photonlibFileInput
 
-    doLast {
-        println "Writing version ${pubVersion} to $photonlibFileOutput"
+        println "Writing vendor JSON ${pubVersion} to $photonlibFileOutput"
 
         if (photonlibFileOutput.exists()) {
             photonlibFileOutput.delete()
         }
-        def read = photonlibFileInput.text.replace('${photon_version}', pubVersion)
-        photonlibFileOutput.write(read)
-    }
+        photonlibFileOutput.parentFile.mkdirs()
+
+        def read = photonlibFileInput.text
+            .replace('${photon_version}', pubVersion)
+            .replace('${frc_year}', frcYear)
+        photonlibFileOutput.text = read
 
     outputs.upToDateWhen { false }
 }
 
-build.dependsOn generateVendorJson
-
+build.mustRunAfter generateVendorJson
 
 task writeCurrentVersion {
     def versionFileIn = file("${rootDir}/shared/PhotonVersion.java.in")
@@ -145,7 +146,7 @@ task writeCurrentVersion {
             versionString)
 }
 
-build.dependsOn writeCurrentVersion
+build.mustRunAfter writeCurrentVersion
 
 tasks.withType(Javadoc) {
     options.encoding = 'UTF-8'

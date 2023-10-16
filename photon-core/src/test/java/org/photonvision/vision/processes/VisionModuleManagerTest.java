@@ -24,7 +24,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
@@ -169,7 +171,6 @@ public class VisionModuleManagerTest {
                 Arrays.toString(
                         modules.stream()
                                 .map(it -> it.visionSource.getCameraConfiguration().streamIndex)
-                                .collect(Collectors.toList())
                                 .toArray()));
         var idxs =
                 modules.stream()

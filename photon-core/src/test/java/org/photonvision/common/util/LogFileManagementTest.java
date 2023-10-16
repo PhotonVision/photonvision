@@ -57,17 +57,15 @@ public class LogFileManagementTest {
         }
 
         // Confirm new log files were created
-        Assertions.assertEquals(
-                true,
-                Logger.MAX_LOGS_TO_KEEP + 5 <= countLogFiles(testDir),
-                "Not enough log files discovered");
+        Assertions.assertTrue(
+                Logger.MAX_LOGS_TO_KEEP + 5 <= countLogFiles(testDir), "Not enough log files discovered");
 
         // Run the log cleanup routine
         Logger.cleanLogs(Path.of(testDir));
 
         // Confirm we deleted log files
         Assertions.assertEquals(
-                true, Logger.MAX_LOGS_TO_KEEP == countLogFiles(testDir), "Not enough log files deleted");
+                Logger.MAX_LOGS_TO_KEEP, countLogFiles(testDir), "Not enough log files deleted");
 
         // Clean uptest directory
         org.photonvision.common.util.file.FileUtils.deleteDirectory(Path.of(testDir));

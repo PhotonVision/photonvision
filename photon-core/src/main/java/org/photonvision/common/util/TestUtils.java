@@ -245,7 +245,7 @@ public class TestUtils {
     }
 
     public static Path getResourcesFolderPath(boolean testMode) {
-        System.out.println("CWD: " + Path.of("").toAbsolutePath().toString());
+        System.out.println("CWD: " + Path.of("").toAbsolutePath());
 
         // VSCode likes to make this path relative to the wrong root directory, so a fun hack to tell
         // if it's wrong
@@ -362,7 +362,7 @@ public class TestUtils {
         return getCoeffs("laptop.json", true);
     }
 
-    private static int DefaultTimeoutMillis = 5000;
+    private static final int DefaultTimeoutMillis = 5000;
 
     public static void showImage(Mat frame, String title, int timeoutMs) {
         if (frame.empty()) return;

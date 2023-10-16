@@ -24,16 +24,14 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import java.util.HashMap;
 import java.util.List;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint;
-import org.opencv.core.MatOfPoint2f;
-import org.opencv.core.Point;
-import org.opencv.core.RotatedRect;
+import org.opencv.core.*;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.frame.FrameStaticProperties;
-import org.photonvision.vision.opencv.*;
+import org.photonvision.vision.opencv.CVShape;
+import org.photonvision.vision.opencv.Contour;
+import org.photonvision.vision.opencv.DualOffsetValues;
+import org.photonvision.vision.opencv.Releasable;
 
 public class TrackedTarget implements Releasable {
     public final Contour m_mainContour;
@@ -75,13 +73,16 @@ public class TrackedTarget implements Releasable {
             TargetCalculationParameters params) {
         m_targetOffsetPoint = new Point(tagDetection.getCenterX(), tagDetection.getCenterY());
         m_robotOffsetPoint = new Point();
-
-        m_pitch =
-                TargetCalculations.calculatePitch(
-                        tagDetection.getCenterY(), params.cameraCenterPoint.y, params.verticalFocalLength);
-        m_yaw =
-                TargetCalculations.calculateYaw(
-                        tagDetection.getCenterX(), params.cameraCenterPoint.x, params.horizontalFocalLength);
+        var yawPitch =
+                TargetCalculations.calculateYawPitch(
+                        params.cameraCenterPoint.x,
+                        tagDetection.getCenterX(),
+                        params.horizontalFocalLength,
+                        params.cameraCenterPoint.y,
+                        tagDetection.getCenterY(),
+                        params.verticalFocalLength);
+        m_yaw = yawPitch.getFirst();
+        m_pitch = yawPitch.getSecond();
         var bestPose = new Transform3d();
         var altPose = new Transform3d();
 
@@ -126,11 +127,9 @@ public class TrackedTarget implements Releasable {
         tvec.put(
                 0,
                 0,
-                new double[] {
-                    bestPose.getTranslation().getX(),
-                    bestPose.getTranslation().getY(),
-                    bestPose.getTranslation().getZ()
-                });
+                bestPose.getTranslation().getX(),
+                bestPose.getTranslation().getY(),
+                bestPose.getTranslation().getZ());
         setCameraRelativeTvec(tvec);
 
         // Opencv expects a 3d vector with norm = angle and direction = axis
@@ -142,13 +141,16 @@ public class TrackedTarget implements Releasable {
     public TrackedTarget(ArucoDetectionResult result, TargetCalculationParameters params) {
         m_targetOffsetPoint = new Point(result.getCenterX(), result.getCenterY());
         m_robotOffsetPoint = new Point();
-
-        m_pitch =
-                TargetCalculations.calculatePitch(
-                        result.getCenterY(), params.cameraCenterPoint.y, params.verticalFocalLength);
-        m_yaw =
-                TargetCalculations.calculateYaw(
-                        result.getCenterX(), params.cameraCenterPoint.x, params.horizontalFocalLength);
+        var yawPitch =
+                TargetCalculations.calculateYawPitch(
+                        params.cameraCenterPoint.x,
+                        result.getCenterX(),
+                        params.horizontalFocalLength,
+                        params.cameraCenterPoint.y,
+                        result.getCenterY(),
+                        params.verticalFocalLength);
+        m_yaw = yawPitch.getFirst();
+        m_pitch = yawPitch.getSecond();
 
         double[] xCorners = result.getxCorners();
         double[] yCorners = result.getyCorners();
@@ -185,10 +187,9 @@ public class TrackedTarget implements Releasable {
             var axisangle =
                     VecBuilder.fill(result.getRvec()[0], result.getRvec()[1], result.getRvec()[2]);
             Rotation3d rotation = new Rotation3d(axisangle, axisangle.normF());
-            Transform3d targetPose =
-                    MathUtils.convertOpenCVtoPhotonTransform(new Transform3d(translation, rotation));
 
-            m_bestCameraToTarget3d = targetPose;
+            m_bestCameraToTarget3d =
+                    MathUtils.convertOpenCVtoPhotonTransform(new Transform3d(translation, rotation));
         }
     }
 
@@ -209,7 +210,7 @@ public class TrackedTarget implements Releasable {
     }
 
     /**
-     * Set the approximate bouding polygon.
+     * Set the approximate bounding polygon.
      *
      * @param boundingPolygon List of points to copy. Not modified.
      */
@@ -251,7 +252,7 @@ public class TrackedTarget implements Releasable {
     }
 
     public void calculateValues(TargetCalculationParameters params) {
-        // this MUST happen in this exact order!
+        // this MUST happen in this exact order! (TODO: document why)
         m_targetOffsetPoint =
                 TargetCalculations.calculateTargetOffsetPoint(
                         params.isLandscape, params.targetOffsetPointEdge, getMinAreaRect());
@@ -263,12 +264,17 @@ public class TrackedTarget implements Releasable {
                         params.robotOffsetPointMode);
 
         // order of this stuff doesnt matter though
-        m_pitch =
-                TargetCalculations.calculatePitch(
-                        m_targetOffsetPoint.y, m_robotOffsetPoint.y, params.verticalFocalLength);
-        m_yaw =
-                TargetCalculations.calculateYaw(
-                        m_targetOffsetPoint.x, m_robotOffsetPoint.x, params.horizontalFocalLength);
+        var yawPitch =
+                TargetCalculations.calculateYawPitch(
+                        m_robotOffsetPoint.x,
+                        m_targetOffsetPoint.x,
+                        params.horizontalFocalLength,
+                        m_robotOffsetPoint.y,
+                        m_targetOffsetPoint.y,
+                        params.verticalFocalLength);
+        m_yaw = yawPitch.getFirst();
+        m_pitch = yawPitch.getSecond();
+
         m_area = m_mainContour.getMinAreaRect().size.area() / params.imageArea * 100;
 
         m_skew = TargetCalculations.calculateSkew(params.isLandscape, getMinAreaRect());
