@@ -34,6 +34,9 @@ public class PhotonPipelineResult {
     // Timestamp in milliseconds.
     private double timestampSeconds = -1;
 
+    // Multi-tag result
+    private MultiTargetPNPResults multiTagResult = new MultiTargetPNPResults();
+
     /** Constructs an empty pipeline result. */
     public PhotonPipelineResult() {}
 
@@ -49,12 +52,29 @@ public class PhotonPipelineResult {
     }
 
     /**
+     * Constructs a pipeline result.
+     *
+     * @param latencyMillis The latency in the pipeline.
+     * @param targets The list of targets identified by the pipeline.
+     * @param result Result from multi-target PNP.
+     */
+    public PhotonPipelineResult(
+            double latencyMillis, List<PhotonTrackedTarget> targets, MultiTargetPNPResults result) {
+        this.latencyMillis = latencyMillis;
+        this.targets.addAll(targets);
+        this.multiTagResult = result;
+    }
+
+    /**
      * Returns the size of the packet needed to store this pipeline result.
      *
      * @return The size of the packet needed to store this pipeline result.
      */
     public int getPacketSize() {
-        return targets.size() * PhotonTrackedTarget.PACK_SIZE_BYTES + 8 + 2;
+        return targets.size() * PhotonTrackedTarget.PACK_SIZE_BYTES
+                + 8 // latency
+                + MultiTargetPNPResults.PACK_SIZE_BYTES
+                + 1; // target count
     }
 
     /**
@@ -123,6 +143,14 @@ public class PhotonPipelineResult {
     }
 
     /**
+     * Return the latest mulit-target result. Be sure to check
+     * getMultiTagResult().estimatedPose.isPresent before using the pose estimate!
+     */
+    public MultiTargetPNPResults getMultiTagResult() {
+        return multiTagResult;
+    }
+
+    /**
      * Populates the fields of the pipeline result from the packet.
      *
      * @param packet The incoming packet.
@@ -131,6 +159,7 @@ public class PhotonPipelineResult {
     public Packet createFromPacket(Packet packet) {
         // Decode latency, existence of targets, and number of targets.
         latencyMillis = packet.decodeDouble();
+        this.multiTagResult = MultiTargetPNPResults.createFromPacket(packet);
         byte targetCount = packet.decodeByte();
 
         targets.clear();
@@ -154,6 +183,7 @@ public class PhotonPipelineResult {
     public Packet populatePacket(Packet packet) {
         // Encode latency, existence of targets, and number of targets.
         packet.encode(latencyMillis);
+        multiTagResult.populatePacket(packet);
         packet.encode((byte) targets.size());
 
         // Encode the information of each target.
@@ -173,6 +203,7 @@ public class PhotonPipelineResult {
         result = prime * result + (int) (temp ^ (temp >>> 32));
         temp = Double.doubleToLongBits(timestampSeconds);
         result = prime * result + (int) (temp ^ (temp >>> 32));
+        result = prime * result + ((multiTagResult == null) ? 0 : multiTagResult.hashCode());
         return result;
     }
 
@@ -189,6 +220,22 @@ public class PhotonPipelineResult {
             return false;
         if (Double.doubleToLongBits(timestampSeconds)
                 != Double.doubleToLongBits(other.timestampSeconds)) return false;
+        if (multiTagResult == null) {
+            if (other.multiTagResult != null) return false;
+        } else if (!multiTagResult.equals(other.multiTagResult)) return false;
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "PhotonPipelineResult [targets="
+                + targets
+                + ", latencyMillis="
+                + latencyMillis
+                + ", timestampSeconds="
+                + timestampSeconds
+                + ", multiTagResult="
+                + multiTagResult
+                + "]";
     }
 }

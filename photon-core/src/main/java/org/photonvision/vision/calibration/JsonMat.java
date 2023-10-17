@@ -19,7 +19,10 @@ package org.photonvision.vision.calibration;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.Num;
 import java.util.Arrays;
+import org.ejml.simple.SimpleMatrix;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
@@ -32,7 +35,10 @@ public class JsonMat implements Releasable {
     public final int type;
     public final double[] data;
 
-    @JsonIgnore private Mat wrappedMat;
+    // Cached matrices to avoid object recreation
+    @JsonIgnore private Mat wrappedMat = null;
+    @JsonIgnore private Matrix wpilibMat = null;
+
     private MatOfDouble wrappedMatOfDouble;
 
     public JsonMat(int rows, int cols, double[] data) {
@@ -101,6 +107,14 @@ public class JsonMat implements Releasable {
             getAsMat().convertTo(wrappedMatOfDouble, CvType.CV_64F);
         }
         return this.wrappedMatOfDouble;
+    }
+
+    @JsonIgnore
+    public <R extends Num, C extends Num> Matrix<R, C> getAsWpilibMat() {
+        if (wpilibMat == null) {
+            wpilibMat = new Matrix<R, C>(new SimpleMatrix(rows, cols, true, data));
+        }
+        return (Matrix<R, C>) wpilibMat;
     }
 
     @Override

@@ -173,7 +173,9 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       settings: Partial<ActivePipelineSettings>,
       cameraIndex: number = useStateStore().currentCameraIndex
     ) {
-      Object.assign(this.cameras[cameraIndex].pipelineSettings, settings);
+      Object.entries(settings).forEach(([k, v]) => {
+        this.cameras[cameraIndex].pipelineSettings[k] = v;
+      });
     },
     /**
      * Change the nickname of the currently selected pipeline of the provided camera.

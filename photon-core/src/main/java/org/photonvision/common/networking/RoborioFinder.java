@@ -45,7 +45,7 @@ public class RoborioFinder {
         // Separate from the above so we don't hold stuff up
         System.setProperty("java.net.preferIPv4Stack", "true");
         subMap.put(
-                "deviceips",
+                "deviceIps",
                 Arrays.stream(CameraServerJNI.getNetworkInterfaces())
                         .filter(it -> !it.equals("0.0.0.0"))
                         .toArray());

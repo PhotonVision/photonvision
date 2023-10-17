@@ -255,6 +255,10 @@ public class ConfigManager {
         return m_provider.saveUploadedNetworkConfig(uploadPath);
     }
 
+    public boolean saveUploadedAprilTagFieldLayout(Path uploadPath) {
+        return m_provider.saveUploadedAprilTagFieldLayout(uploadPath);
+    }
+
     public void requestSave() {
         logger.trace("Requesting save...");
         saveRequestTimestamp = System.currentTimeMillis();

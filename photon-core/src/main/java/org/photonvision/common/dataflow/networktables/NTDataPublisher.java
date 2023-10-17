@@ -19,20 +19,15 @@ package org.photonvision.common.dataflow.networktables;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import org.opencv.core.Point;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networktables.NTTopicSet;
 import org.photonvision.targeting.PhotonPipelineResult;
-import org.photonvision.targeting.PhotonTrackedTarget;
-import org.photonvision.targeting.TargetCorner;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 
@@ -136,7 +131,9 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     public void accept(CVPipelineResult result) {
         var simplified =
                 new PhotonPipelineResult(
-                        result.getLatencyMillis(), simpleFromTrackedTargets(result.targets));
+                        result.getLatencyMillis(),
+                        TrackedTarget.simpleFromTrackedTargets(result.targets),
+                        result.multiTagResult);
         Packet packet = new Packet(simplified.getPacketSize());
         simplified.populatePacket(packet);
 
@@ -196,40 +193,5 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
         // TODO...nt4... is this needed?
         rootTable.getInstance().flush();
-    }
-
-    public static List<PhotonTrackedTarget> simpleFromTrackedTargets(List<TrackedTarget> targets) {
-        var ret = new ArrayList<PhotonTrackedTarget>();
-        for (var t : targets) {
-            var minAreaRectCorners = new ArrayList<TargetCorner>();
-            var detectedCorners = new ArrayList<TargetCorner>();
-            {
-                var points = new Point[4];
-                t.getMinAreaRect().points(points);
-                for (int i = 0; i < 4; i++) {
-                    minAreaRectCorners.add(new TargetCorner(points[i].x, points[i].y));
-                }
-            }
-            {
-                var points = t.getTargetCorners();
-                for (Point point : points) {
-                    detectedCorners.add(new TargetCorner(point.x, point.y));
-                }
-            }
-
-            ret.add(
-                    new PhotonTrackedTarget(
-                            t.getYaw(),
-                            t.getPitch(),
-                            t.getArea(),
-                            t.getSkew(),
-                            t.getFiducialId(),
-                            t.getBestCameraToTarget3d(),
-                            t.getAltCameraToTarget3d(),
-                            t.getPoseAmbiguity(),
-                            minAreaRectCorners,
-                            detectedCorners));
-        }
-        return ret;
     }
 }

@@ -84,7 +84,10 @@ public class ApriltagWorkbenchTest {
 
         var pe =
                 new PhotonPoseEstimator(
-                        tagLayout, PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP, cam, robotToCamera);
+                        tagLayout,
+                        PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+                        cam,
+                        robotToCamera);
 
         var field = new Field2d();
         SmartDashboard.putData(field);

@@ -24,7 +24,11 @@
 
 package org.photonvision;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.MatBuilder;
+import edu.wpi.first.math.MathSharedStore;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.numbers.*;
@@ -41,6 +45,7 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.RawSubscriber;
+import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.networktables.StringSubscriber;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
@@ -72,6 +77,7 @@ public class PhotonCamera implements AutoCloseable {
     IntegerSubscriber heartbeatEntry;
     private DoubleArraySubscriber cameraIntrinsicsSubscriber;
     private DoubleArraySubscriber cameraDistortionSubscriber;
+    private StringPublisher atflPublisher;
 
     @Override
     public void close() {
@@ -95,6 +101,7 @@ public class PhotonCamera implements AutoCloseable {
         pipelineIndexRequest.close();
         cameraIntrinsicsSubscriber.close();
         cameraDistortionSubscriber.close();
+        atflPublisher.close();
     }
 
     private final String path;
@@ -114,6 +121,7 @@ public class PhotonCamera implements AutoCloseable {
 
     Packet packet = new Packet(1);
 
+    // Existing is enough to make this multisubscriber do its thing
     private final MultiSubscriber m_topicNameSubscriber;
 
     /**
@@ -149,6 +157,10 @@ public class PhotonCamera implements AutoCloseable {
         ledModeRequest = photonvision_root_table.getIntegerTopic("ledModeRequest").publish();
         ledModeState = photonvision_root_table.getIntegerTopic("ledModeState").subscribe(-1);
         versionEntry = photonvision_root_table.getStringTopic("version").subscribe("");
+
+        atflPublisher = photonvision_root_table.getStringTopic("apriltag_field_layout").publish();
+        // Save the layout locally on Rio; on reboot, should be pushed out to NT clients
+        atflPublisher.getTopic().setPersistent(true);
 
         m_topicNameSubscriber =
                 new MultiSubscriber(
@@ -317,6 +329,28 @@ public class PhotonCamera implements AutoCloseable {
         }
 
         return (now - prevHeartbeatChangeTime) < HEARBEAT_DEBOUNCE_SEC;
+    }
+
+    /**
+     * Set the Apriltag Field Layout used by all PhotonVision coprocessors that are (or might later)
+     * connect to this robot. The topic is marked as persistant, so even if you only call this once
+     * ever, it will be saved on the RoboRIO and pushed out to all NT clients when code reboots.
+     * PhotonVision will also store a copy of this layout locally on the coprocessor, but subscribes
+     * to this topic and the local copy will be updated when this function is called.
+     *
+     * @param layout The layout to use for *all* PhotonVision cameras
+     * @return Success of serializing the JSON. This does *not* mean that all PhotonVision clients
+     *     have updated their internal layouts.
+     */
+    public boolean setApriltagFieldLayout(AprilTagFieldLayout layout) {
+        try {
+            var layout_json = new ObjectMapper().writeValueAsString(layout);
+            atflPublisher.set(layout_json);
+            return true;
+        } catch (JsonProcessingException e) {
+            MathSharedStore.reportError("Error setting ATFL in " + this.getName(), e.getStackTrace());
+        }
+        return false;
     }
 
     public Optional<Matrix<N3, N3>> getCameraMatrix() {

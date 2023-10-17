@@ -1,5 +1,6 @@
 import type { GeneralSettings, LightingSettings, LogLevel, MetricData, NetworkSettings } from "@/types/SettingTypes";
 import type { ActivePipelineSettings } from "@/types/PipelineTypes";
+import type { AprilTagFieldLayout, PipelineResult } from "@/types/PhotonTrackingTypes";
 
 export interface WebsocketLogMessage {
   logMessage: {
@@ -11,6 +12,7 @@ export interface WebsocketSettingsUpdate {
   general: Required<GeneralSettings>;
   lighting: Required<LightingSettings>;
   networkSettings: NetworkSettings;
+  atfl: AprilTagFieldLayout;
 }
 
 export interface WebsocketNumberPair {
@@ -60,31 +62,9 @@ export interface WebsocketNTUpdate {
   address?: string;
   clients?: number;
 }
-export type WebsocketPipelineResultUpdate = Record<
-  number,
-  {
-    fps: number;
-    latency: number;
-    targets: {
-      yaw: number;
-      pitch: number;
-      skew: number;
-      area: number;
-      ambiguity: number;
-      fiducialId: number;
-      pose: {
-        angle_z: number;
-        qw: number;
-        qx: number;
-        x: number;
-        qy: number;
-        y: number;
-        qz: number;
-        z: number;
-      };
-    }[];
-  }
->;
+
+// key is the index of the camera, value is that camera's result
+export type WebsocketPipelineResultUpdate = Record<string, PipelineResult>;
 
 export interface WebsocketCalibrationData {
   patternWidth: number;
@@ -106,7 +86,7 @@ export interface IncomingWebsocketData {
   updatePipelineResult?: WebsocketPipelineResultUpdate;
   networkInfo?: {
     possibleRios: string[];
-    deviceips: string[];
+    deviceIps: string[];
   };
   mutatePipelineSettings?: Partial<ActivePipelineSettings>;
   cameraIndex?: number; // Sent when mutating pipeline settings to check against currently active

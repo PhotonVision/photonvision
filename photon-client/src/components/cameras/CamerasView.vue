@@ -30,7 +30,7 @@ const driverMode = computed<boolean>({
 });
 
 const fpsTooLow = computed<boolean>(() => {
-  const currFPS = useStateStore().pipelineResults?.fps || 0;
+  const currFPS = useStateStore().currentPipelineResults?.fps || 0;
   const targetFPS = useCameraSettingsStore().currentVideoFormat.fps;
   const driverMode = useCameraSettingsStore().isDriverMode;
   const gpuAccel = useSettingsStore().general.gpuAcceleration !== undefined;
@@ -58,8 +58,8 @@ const fpsTooLow = computed<boolean>(() => {
             style="font-size: 1rem; padding: 0; margin: 0"
           >
             <span class="pr-1">
-              {{ Math.round(useStateStore().pipelineResults?.fps || 0) }}&nbsp;FPS &ndash;
-              {{ Math.min(Math.round(useStateStore().pipelineResults?.latency || 0), 9999) }} ms latency
+              {{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &ndash;
+              {{ Math.min(Math.round(useStateStore().currentPipelineResults?.latency || 0), 9999) }} ms latency
             </span>
           </v-chip>
         </div>
