@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import CvSelect from "@/components/common/cv-select.vue";
-import CvNumberInput from "@/components/common/cv-number-input.vue";
+import PvSelect from "@/components/common/pv-select.vue";
+import PvNumberInput from "@/components/common/pv-number-input.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { ref, watchEffect } from "vue";
@@ -47,7 +47,7 @@ watchEffect(() => {
   <v-card class="mb-3 pr-6 pb-3" color="primary" dark>
     <v-card-title>Camera Settings</v-card-title>
     <div class="ml-5">
-      <cv-select
+      <pv-select
         v-model="useStateStore().currentCameraIndex"
         label="Camera"
         :items="useCameraSettingsStore().cameraNames"
@@ -59,7 +59,7 @@ watchEffect(() => {
           }
         "
       />
-      <cv-number-input
+      <pv-number-input
         v-model="currentFov"
         :tooltip="
           !useCameraSettingsStore().currentCameraSettings.fov.managedByVendor

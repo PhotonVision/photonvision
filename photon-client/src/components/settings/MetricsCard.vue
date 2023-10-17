@@ -2,7 +2,7 @@
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { computed, onBeforeMount, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import CvIcon from "@/components/common/cv-icon.vue";
+import PvIcon from "@/components/common/pv-icon.vue";
 
 interface MetricItem {
   header: string;
@@ -100,7 +100,7 @@ onBeforeMount(() => {
   <v-card dark class="mb-3 pr-6 pb-3" style="background-color: #006492">
     <v-card-title style="display: flex; justify-content: space-between">
       <span>Stats</span>
-      <cv-icon icon-name="mdi-reload" color="white" tooltip="Reload Metrics" hover @click="fetchMetrics" />
+      <pv-icon icon-name="mdi-reload" color="white" tooltip="Reload Metrics" hover @click="fetchMetrics" />
     </v-card-title>
     <v-row class="pt-2 pa-4 ma-0 ml-5 pb-1">
       <v-card-subtitle class="ma-0 pa-0 pb-2" style="font-size: 16px"> General Metrics </v-card-subtitle>

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import CvSelect from "@/components/common/cv-select.vue";
+import PvSelect from "@/components/common/pv-select.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { PipelineType, RobotOffsetPointMode } from "@/types/PipelineTypes";
-import CvSwitch from "@/components/common/cv-switch.vue";
+import PvSwitch from "@/components/common/pv-switch.vue";
 import { computed, getCurrentInstance } from "vue";
 import { RobotOffsetType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
@@ -53,7 +53,7 @@ const interactiveCols = computed(
 
 <template>
   <div>
-    <cv-select
+    <pv-select
       v-model="useCameraSettingsStore().currentPipelineSettings.contourTargetOffsetPointEdge"
       label="Target Offset Point"
       tooltip="Changes where the 'center' of the target is (used for calculating e.g. pitch and yaw)"
@@ -63,7 +63,7 @@ const interactiveCols = computed(
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOffsetPointEdge: value }, false)
       "
     />
-    <cv-select
+    <pv-select
       v-if="!isTagPipeline"
       v-model="useCameraSettingsStore().currentPipelineSettings.contourTargetOrientation"
       label="Target Orientation"
@@ -74,7 +74,7 @@ const interactiveCols = computed(
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOrientation: value }, false)
       "
     />
-    <cv-switch
+    <pv-switch
       v-model="useCameraSettingsStore().currentPipelineSettings.outputShowMultipleTargets"
       label="Show Multiple Targets"
       tooltip="If enabled, up to five targets will be displayed and sent via PhotonLib, instead of just one"
@@ -124,7 +124,7 @@ const interactiveCols = computed(
         </td>
       </tr>
     </table>
-    <cv-select
+    <pv-select
       v-model="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode"
       label="Robot Offset Mode"
       tooltip="Used to add an arbitrary offset to the location of the targeting crosshair"

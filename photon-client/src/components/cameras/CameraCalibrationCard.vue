@@ -5,11 +5,11 @@ import { CalibrationBoardTypes, type Resolution, type VideoFormat } from "@/type
 import JsPDF from "jspdf";
 import { font as PromptRegular } from "@/assets/fonts/PromptRegular";
 import MonoLogo from "@/assets/images/logoMono.png";
-import CvSlider from "@/components/common/cv-slider.vue";
+import PvSlider from "@/components/common/pv-slider.vue";
 import { useStateStore } from "@/stores/StateStore";
-import CvSwitch from "@/components/common/cv-switch.vue";
-import CvSelect from "@/components/common/cv-select.vue";
-import CvNumberInput from "@/components/common/cv-number-input.vue";
+import PvSwitch from "@/components/common/pv-switch.vue";
+import PvSelect from "@/components/common/pv-select.vue";
+import PvNumberInput from "@/components/common/pv-number-input.vue";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 
 const settingsValid = ref(true);
@@ -224,7 +224,7 @@ const endCalibration = () => {
         <v-row>
           <v-col cols="12" md="6">
             <v-form ref="form" v-model="settingsValid">
-              <cv-select
+              <pv-select
                 v-model="useStateStore().calibrationData.videoFormatIndex"
                 label="Resolution"
                 :select-cols="7"
@@ -232,7 +232,7 @@ const endCalibration = () => {
                 tooltip="Resolution to calibrate at (you will have to calibrate every resolution you use 3D mode on)"
                 :items="getUniqueVideoResolutionStrings()"
               />
-              <cv-select
+              <pv-select
                 v-model="useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor"
                 label="Decimation"
                 tooltip="Resolution to which camera frames are downscaled for detection. Calibration still uses full-res"
@@ -242,7 +242,7 @@ const endCalibration = () => {
                   (v) => useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: v }, false)
                 "
               />
-              <cv-select
+              <pv-select
                 v-model="boardType"
                 label="Board Type"
                 tooltip="Calibration board pattern to use"
@@ -250,7 +250,7 @@ const endCalibration = () => {
                 :items="['Chessboard', 'Dotboard']"
                 :disabled="isCalibrating"
               />
-              <cv-number-input
+              <pv-number-input
                 v-model="squareSizeIn"
                 label="Pattern Spacing (in)"
                 tooltip="Spacing between pattern features in inches"
@@ -258,7 +258,7 @@ const endCalibration = () => {
                 :rules="[(v) => v > 0 || 'Size must be positive']"
                 :label-cols="5"
               />
-              <cv-number-input
+              <pv-number-input
                 v-model="patternWidth"
                 label="Board Width (in)"
                 tooltip="Width of the board in dots or chessboard squares"
@@ -266,7 +266,7 @@ const endCalibration = () => {
                 :rules="[(v) => v >= 4 || 'Width must be at least 4']"
                 :label-cols="5"
               />
-              <cv-number-input
+              <pv-number-input
                 v-model="patternHeight"
                 label="Board Height (in)"
                 tooltip="Height of the board in dots or chessboard squares"
@@ -317,7 +317,7 @@ const endCalibration = () => {
         </v-row>
         <v-row v-if="isCalibrating">
           <v-col cols="12" class="pt-0">
-            <cv-slider
+            <pv-slider
               v-model="useCameraSettingsStore().currentPipelineSettings.cameraExposure"
               :disabled="useCameraSettingsStore().currentCameraSettings.pipelineSettings.cameraAutoExposure"
               label="Exposure"
@@ -328,7 +328,7 @@ const endCalibration = () => {
               :step="0.1"
               @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraExposure: args }, false)"
             />
-            <cv-slider
+            <pv-slider
               v-model="useCameraSettingsStore().currentPipelineSettings.cameraBrightness"
               label="Brightness"
               :min="0"
@@ -338,7 +338,7 @@ const endCalibration = () => {
                 (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBrightness: args }, false)
               "
             />
-            <cv-switch
+            <pv-switch
               v-model="useCameraSettingsStore().currentPipelineSettings.cameraAutoExposure"
               class="pt-2"
               label="Auto Exposure"
@@ -348,7 +348,7 @@ const endCalibration = () => {
                 (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraAutoExposure: args }, false)
               "
             />
-            <cv-slider
+            <pv-slider
               v-if="useCameraSettingsStore().currentPipelineSettings.cameraGain >= 0"
               v-model="useCameraSettingsStore().currentPipelineSettings.cameraGain"
               label="Camera Gain"
@@ -357,7 +357,7 @@ const endCalibration = () => {
               :max="100"
               @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraGain: args }, false)"
             />
-            <cv-slider
+            <pv-slider
               v-if="useCameraSettingsStore().currentPipelineSettings.cameraRedGain !== -1"
               v-model="useCameraSettingsStore().currentPipelineSettings.cameraRedGain"
               label="Red AWB Gain"
@@ -366,7 +366,7 @@ const endCalibration = () => {
               tooltip="Controls red automatic white balance gain, which affects how the camera captures colors in different conditions"
               @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraRedGain: args }, false)"
             />
-            <cv-slider
+            <pv-slider
               v-if="useCameraSettingsStore().currentPipelineSettings.cameraBlueGain !== -1"
               v-model="useCameraSettingsStore().currentPipelineSettings.cameraBlueGain"
               label="Blue AWB Gain"

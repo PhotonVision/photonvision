@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import CvSelect from "@/components/common/cv-select.vue";
+import PvSelect from "@/components/common/pv-select.vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import { computed, ref } from "vue";
-import CvIcon from "@/components/common/cv-icon.vue";
-import CvInput from "@/components/common/cv-input.vue";
+import PvIcon from "@/components/common/pv-icon.vue";
+import PvInput from "@/components/common/pv-input.vue";
 import { PipelineType } from "@/types/PipelineTypes";
 
 const changeCurrentCameraIndex = (index: number) => {
@@ -211,14 +211,14 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
   <v-card color="primary">
     <v-row style="padding: 12px 12px 0 24px">
       <v-col cols="10" class="pa-0">
-        <cv-select
+        <pv-select
           v-if="!isCameraNameEdit"
           v-model="useStateStore().currentCameraIndex"
           label="Camera"
           :items="useCameraSettingsStore().cameraNames"
           @input="changeCurrentCameraIndex"
         />
-        <cv-input
+        <pv-input
           v-else
           v-model="currentCameraName"
           class="pt-2"
@@ -230,12 +230,12 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
         />
       </v-col>
       <v-col cols="2" style="display: flex; align-items: center; justify-content: center">
-        <cv-icon color="#c5c5c5" icon-name="mdi-pencil" tooltip="Edit Camera Name" @click="startCameraNameEdit" />
+        <pv-icon color="#c5c5c5" icon-name="mdi-pencil" tooltip="Edit Camera Name" @click="startCameraNameEdit" />
       </v-col>
     </v-row>
     <v-row style="padding: 0 12px 0 24px">
       <v-col cols="10" class="pa-0">
-        <cv-select
+        <pv-select
           v-if="!isPipelineNameEdit"
           :value="useCameraSettingsStore().currentCameraSettings.currentPipelineIndex"
           label="Pipeline"
@@ -244,7 +244,7 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
           :items="pipelineNamesWrapper"
           @input="(args) => useCameraSettingsStore().changeCurrentPipelineIndex(args, true)"
         />
-        <cv-input
+        <pv-input
           v-else
           v-model="currentPipelineName"
           :input-cols="12 - 3"
@@ -262,17 +262,17 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
           <v-list dark dense color="primary">
             <v-list-item @click="startPipelineNameEdit">
               <v-list-item-title>
-                <cv-icon color="#c5c5c5" :right="true" icon-name="mdi-pencil" tooltip="Edit pipeline name" />
+                <pv-icon color="#c5c5c5" :right="true" icon-name="mdi-pencil" tooltip="Edit pipeline name" />
               </v-list-item-title>
             </v-list-item>
             <v-list-item @click="showCreatePipelineDialog">
               <v-list-item-title>
-                <cv-icon color="#c5c5c5" :right="true" icon-name="mdi-plus" tooltip="Add new pipeline" />
+                <pv-icon color="#c5c5c5" :right="true" icon-name="mdi-plus" tooltip="Add new pipeline" />
               </v-list-item-title>
             </v-list-item>
             <v-list-item @click="showPipelineDeletionConfirmationDialog = true">
               <v-list-item-title>
-                <cv-icon color="red darken-2" :right="true" icon-name="mdi-delete" tooltip="Delete pipeline" />
+                <pv-icon color="red darken-2" :right="true" icon-name="mdi-delete" tooltip="Delete pipeline" />
               </v-list-item-title>
             </v-list-item>
             <v-list-item
@@ -283,7 +283,7 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
               "
             >
               <v-list-item-title>
-                <cv-icon color="#c5c5c5" :right="true" icon-name="mdi-content-copy" tooltip="Duplicate pipeline" />
+                <pv-icon color="#c5c5c5" :right="true" icon-name="mdi-content-copy" tooltip="Duplicate pipeline" />
               </v-list-item-title>
             </v-list-item>
           </v-list>
@@ -292,7 +292,7 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
     </v-row>
     <v-row style="padding: 0 12px 12px 24px">
       <v-col cols="10" class="pa-0">
-        <cv-select
+        <pv-select
           v-model="currentPipelineType"
           label="Type"
           tooltip="Changes the pipeline type, which changes the type of processing that will happen on input frames"
@@ -306,7 +306,7 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
       <v-card dark color="primary">
         <v-card-title> Create New Pipeline </v-card-title>
         <v-card-text>
-          <cv-input
+          <pv-input
             v-model="newPipelineName"
             placeholder="Pipeline Name"
             :label-cols="3"
@@ -314,7 +314,7 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
             label="Pipeline Name"
             :rules="[(v) => checkPipelineName(v)]"
           />
-          <cv-select
+          <pv-select
             v-model="newPipelineType"
             :select-cols="12 - 3"
             label="Tracking Type"

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
+import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
 
 interface SelectItem {
   name: string | number;

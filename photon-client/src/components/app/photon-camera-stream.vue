@@ -4,7 +4,7 @@ import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import loadingImage from "@/assets/images/loading.svg";
 import type { StyleValue } from "vue/types/jsx";
-import CvIcon from "@/components/common/cv-icon.vue";
+import PvIcon from "@/components/common/pv-icon.vue";
 
 const props = defineProps<{
   streamType: "Raw" | "Processed";
@@ -65,7 +65,7 @@ const handleCaptureClick = () => {
       @click="handleStreamClick"
     />
     <div class="stream-overlay" :style="overlayStyle">
-      <cv-icon
+      <pv-icon
         icon-name="mdi-camera-image"
         tooltip="Capture and save a frame of this stream"
         class="ma-1 mr-2"
