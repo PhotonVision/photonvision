@@ -44,7 +44,8 @@ enum PoseStrategy {
   CLOSEST_TO_REFERENCE_POSE,
   CLOSEST_TO_LAST_POSE,
   AVERAGE_BEST_TARGETS,
-  MULTI_TAG_PNP
+  MULTI_TAG_PNP_ON_COPROCESSOR,
+  MULTI_TAG_PNP_ON_RIO,
 };
 
 struct EstimatedRobotPose {
@@ -57,11 +58,16 @@ struct EstimatedRobotPose {
   /** A list of the targets used to compute this pose */
   wpi::SmallVector<PhotonTrackedTarget, 10> targetsUsed;
 
+  /** The strategy actually used to produce this pose */
+  PoseStrategy strategy;
+
   EstimatedRobotPose(frc::Pose3d pose_, units::second_t time_,
-                     std::span<const PhotonTrackedTarget> targets)
+                     std::span<const PhotonTrackedTarget> targets,
+                     PoseStrategy strategy_)
       : estimatedPose(pose_),
         timestamp(time_),
-        targetsUsed(targets.data(), targets.data() + targets.size()) {}
+        targetsUsed(targets.data(), targets.data() + targets.size()),
+        strategy(strategy_) {}
 };
 
 /**
@@ -261,13 +267,22 @@ class PhotonPoseEstimator {
       PhotonPipelineResult result);
 
   /**
+   * Return the pose calculated by combining all tags into one on coprocessor
+   *
+   * @return the estimated position of the robot in the FCS
+   */
+  std::optional<EstimatedRobotPose> MultiTagOnCoprocStrategy(
+      PhotonPipelineResult result, std::optional<cv::Mat> camMat,
+      std::optional<cv::Mat> distCoeffs);
+
+  /**
    * Return the pose calculation using all targets in view in the same PNP()
    calculation
-
+   *
    * @return the estimated position of the robot in the FCS and the estimated
    timestamp of this estimation.
    */
-  std::optional<EstimatedRobotPose> MultiTagPnpStrategy(
+  std::optional<EstimatedRobotPose> MultiTagOnRioStrategy(
       PhotonPipelineResult result, std::optional<cv::Mat> camMat,
       std::optional<cv::Mat> distCoeffs);
 

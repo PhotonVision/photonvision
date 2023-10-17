@@ -24,24 +24,38 @@
 
 #pragma once
 
-#include <photonlib/PhotonCamera.h>
-#include <photonlib/PhotonPoseEstimator.h>
+#include <frc/geometry/Transform3d.h>
+#include <wpi/SmallVector.h>
 
-#include <utility>
+#include "photonlib/Packet.h"
 
-#include <frc/apriltag/AprilTagFieldLayout.h>
-#include <frc/apriltag/AprilTagFields.h>
+namespace photonlib {
 
-class PhotonCameraWrapper {
+class PNPResults {
  public:
-  photonlib::PhotonPoseEstimator m_poseEstimator{
-      frc::LoadAprilTagLayoutField(frc::AprilTagField::k2023ChargedUp),
-      photonlib::MULTI_TAG_PNP_ON_RIO,
-      std::move(photonlib::PhotonCamera{"WPI2023"}), frc::Transform3d{}};
+  // This could be wrapped in an std::optional, but chose to do it this way to
+  // mirror Java
+  bool isValid;
 
-  inline std::optional<photonlib::EstimatedRobotPose> Update(
-      frc::Pose2d estimatedPose) {
-    m_poseEstimator.SetReferencePose(frc::Pose3d(estimatedPose));
-    return m_poseEstimator.Update();
-  }
+  frc::Transform3d best;
+  double bestReprojectionErr;
+
+  frc::Transform3d alt;
+  double altReprojectionErr;
+
+  double ambiguity;
+
+  friend Packet& operator<<(Packet& packet, const PNPResults& result);
+  friend Packet& operator>>(Packet& packet, PNPResults& result);
 };
+
+class MultiTargetPnpResult {
+ public:
+  PNPResults result;
+  wpi::SmallVector<int16_t, 32> fiducialIdsUsed;
+
+  friend Packet& operator<<(Packet& packet, const MultiTargetPnpResult& result);
+  friend Packet& operator>>(Packet& packet, MultiTargetPnpResult& result);
+};
+
+}  // namespace photonlib

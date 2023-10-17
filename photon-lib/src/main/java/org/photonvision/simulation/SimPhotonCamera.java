@@ -35,6 +35,7 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonTargetSortMode;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.networktables.NTTopicSet;
+import org.photonvision.targeting.MultiTargetPNPResults;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
@@ -140,7 +141,8 @@ public class SimPhotonCamera {
             targetList.sort(sortMode.getComparator());
         }
 
-        PhotonPipelineResult newResult = new PhotonPipelineResult(latencyMillis, targetList);
+        PhotonPipelineResult newResult =
+                new PhotonPipelineResult(latencyMillis, targetList, new MultiTargetPNPResults());
         var newPacket = new Packet(newResult.getPacketSize());
         newResult.populatePacket(newPacket);
         ts.rawBytesEntry.set(newPacket.getData());

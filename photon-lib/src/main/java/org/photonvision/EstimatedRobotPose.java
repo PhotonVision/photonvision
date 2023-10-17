@@ -26,6 +26,7 @@ package org.photonvision;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import java.util.List;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 /** An estimated pose based on pipeline result */
@@ -39,6 +40,9 @@ public class EstimatedRobotPose {
     /** A list of the targets used to compute this pose */
     public final List<PhotonTrackedTarget> targetsUsed;
 
+    /** The strategy actually used to produce this pose */
+    public final PoseStrategy strategy;
+
     /**
      * Constructs an EstimatedRobotPose
      *
@@ -46,9 +50,13 @@ public class EstimatedRobotPose {
      * @param timestampSeconds timestamp of the estimate
      */
     public EstimatedRobotPose(
-            Pose3d estimatedPose, double timestampSeconds, List<PhotonTrackedTarget> targetsUsed) {
+            Pose3d estimatedPose,
+            double timestampSeconds,
+            List<PhotonTrackedTarget> targetsUsed,
+            PoseStrategy strategy) {
         this.estimatedPose = estimatedPose;
         this.timestampSeconds = timestampSeconds;
         this.targetsUsed = targetsUsed;
+        this.strategy = strategy;
     }
 }

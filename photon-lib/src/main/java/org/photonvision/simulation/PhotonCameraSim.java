@@ -50,9 +50,9 @@ import org.photonvision.PhotonTargetSortMode;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.networktables.NTTopicSet;
 import org.photonvision.estimation.OpenCVHelp;
-import org.photonvision.estimation.PNPResults;
 import org.photonvision.estimation.RotTrlTransform3d;
 import org.photonvision.estimation.TargetModel;
+import org.photonvision.targeting.PNPResults;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 

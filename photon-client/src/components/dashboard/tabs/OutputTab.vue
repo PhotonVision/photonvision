@@ -40,6 +40,8 @@ const offsetPoints = computed<MetricItem[]>(() => {
   }
 });
 
+const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings;
+
 const interactiveCols = computed(
   () =>
     (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) &&
@@ -75,12 +77,36 @@ const interactiveCols = computed(
     <pv-switch
       v-model="useCameraSettingsStore().currentPipelineSettings.outputShowMultipleTargets"
       label="Show Multiple Targets"
-      tooltip="If enabled, up to five targets will be displayed and sent to user code, instead of just one"
+      tooltip="If enabled, up to five targets will be displayed and sent via PhotonLib, instead of just one"
       :disabled="isTagPipeline"
       :switch-cols="interactiveCols"
       @input="
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ outputShowMultipleTargets: value }, false)
       "
+    />
+    <cv-switch
+      v-if="
+        currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
+        useCameraSettingsStore().isCurrentVideoFormatCalibrated
+      "
+      v-model="currentPipelineSettings.doMultiTarget"
+      label="Do Multi-Target Estimation"
+      tooltip="If enabled, all visible fiducial targets will be used to provide a single pose estimate from their combined model."
+      :switch-cols="interactiveCols"
+      :disabled="!isTagPipeline"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ doMultiTarget: value }, false)"
+    />
+    <cv-switch
+      v-if="
+        currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
+        useCameraSettingsStore().isCurrentVideoFormatCalibrated
+      "
+      v-model="currentPipelineSettings.doSingleTargetAlways"
+      label="Always Do Single-Target Estimation"
+      tooltip="If disabled, visible fiducial targets used for multi-target estimation will not also be used for single-target estimation."
+      :switch-cols="interactiveCols"
+      :disabled="!isTagPipeline || !currentPipelineSettings.doMultiTarget"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ doSingleTargetAlways: value }, false)"
     />
     <v-divider />
     <table
