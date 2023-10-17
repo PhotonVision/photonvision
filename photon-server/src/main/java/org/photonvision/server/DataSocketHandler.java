@@ -265,6 +265,30 @@ public class DataSocketHandler {
                                 dcService.publishEvent(changePipelineEvent);
                                 break;
                             }
+                        case SMT_SAVEINPUTSNAPSHOT:
+                            {
+                                var takeInputSnapshotEvent =
+                                        new IncomingWebSocketEvent<>(
+                                                DataChangeDestination.DCD_ACTIVEMODULE,
+                                                "saveInputSnapshot",
+                                                0,
+                                                cameraIndex,
+                                                context);
+                                dcService.publishEvent(takeInputSnapshotEvent);
+                                break;
+                            }
+                        case SMT_SAVEOUTPUTSNAPSHOT:
+                            {
+                                var takeOutputSnapshotEvent =
+                                        new IncomingWebSocketEvent<>(
+                                                DataChangeDestination.DCD_ACTIVEMODULE,
+                                                "saveOutputSnapshot",
+                                                0,
+                                                cameraIndex,
+                                                context);
+                                dcService.publishEvent(takeOutputSnapshotEvent);
+                                break;
+                            }
                         case SMT_TAKECALIBRATIONSNAPSHOT:
                             {
                                 var takeCalSnapshotEvent =

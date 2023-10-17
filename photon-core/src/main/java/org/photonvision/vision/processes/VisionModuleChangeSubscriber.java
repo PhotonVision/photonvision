@@ -107,6 +107,12 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         parentModule.startCalibration(data);
                         parentModule.saveAndBroadcastAll();
                         return;
+                    case "saveInputSnapshot":
+                        parentModule.saveInputSnapshot();
+                        return;
+                    case "saveOutputSnapshot":
+                        parentModule.saveOutputSnapshot();
+                        return;
                     case "takeCalSnapshot":
                         parentModule.takeCalibrationSnapshot();
                         return;
