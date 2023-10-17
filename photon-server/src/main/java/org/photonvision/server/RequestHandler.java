@@ -495,9 +495,9 @@ public class RequestHandler {
                 new File(Path.of(System.getProperty("java.io.tmpdir"), file.filename()).toString());
         boolean makeDirsRes = tempFilePath.getParentFile().mkdirs();
 
-        if (!makeDirsRes) {
+        if (!makeDirsRes && !(tempFilePath.getParentFile().exists())) {
             logger.error(
-                    "There was an error while uploading " + file.filename() + " to the temp folder!");
+                    "There was an error while creating " + tempFilePath.getAbsolutePath() + "! Exists: " + tempFilePath.getParentFile().exists());
             return Optional.empty();
         }
 
@@ -505,7 +505,7 @@ public class RequestHandler {
             FileUtils.copyInputStreamToFile(file.content(), tempFilePath);
         } catch (IOException e) {
             logger.error(
-                    "There was an error while uploading " + file.filename() + " to the temp folder!");
+                    "There was an error while copying " + file.filename() + " to the temp file " + tempFilePath.getAbsolutePath());
             return Optional.empty();
         }
 
