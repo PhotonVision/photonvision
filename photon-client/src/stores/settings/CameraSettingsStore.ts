@@ -357,12 +357,35 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     /**
      * Take a snapshot for the calibration processes
      *
-     * @param takeSnapshot whether or not to take a snapshot. Defaults to true
      * @param cameraIndex the index of the camera that is currently in the calibration process
      */
-    takeCalibrationSnapshot(takeSnapshot = true, cameraIndex: number = useStateStore().currentCameraIndex) {
+    takeCalibrationSnapshot(cameraIndex: number = useStateStore().currentCameraIndex) {
       const payload = {
-        takeCalibrationSnapshot: takeSnapshot,
+        takeCalibrationSnapshot: true,
+        cameraIndex: cameraIndex
+      };
+      useStateStore().websocket?.send(payload, true);
+    },
+    /**
+     * Save a snapshot of the input frame of the camera.
+     *
+     * @param cameraIndex the index of the camera
+     */
+    saveInputSnapshot(cameraIndex: number = useStateStore().currentCameraIndex) {
+      const payload = {
+        saveInputSnapshot: true,
+        cameraIndex: cameraIndex
+      };
+      useStateStore().websocket?.send(payload, true);
+    },
+    /**
+     * Save a snapshot of the output frame of the camera.
+     *
+     * @param cameraIndex the index of the camera
+     */
+    saveOutputSnapshot(cameraIndex: number = useStateStore().currentCameraIndex) {
+      const payload = {
+        saveOutputSnapshot: true,
         cameraIndex: cameraIndex
       };
       useStateStore().websocket?.send(payload, true);

@@ -384,7 +384,7 @@ const endCalibration = () => {
               color="secondary"
               style="width: 100%"
               :disabled="!settingsValid"
-              @click="isCalibrating ? useCameraSettingsStore().takeCalibrationSnapshot(true) : startCalibration()"
+              @click="isCalibrating ? useCameraSettingsStore().takeCalibrationSnapshot() : startCalibration()"
             >
               {{ isCalibrating ? "Take Snapshot" : "Start Calibration" }}
             </v-btn>

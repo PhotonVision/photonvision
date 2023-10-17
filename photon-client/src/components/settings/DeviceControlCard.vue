@@ -63,18 +63,17 @@ const offlineUpdate = ref();
 const openOfflineUpdatePrompt = () => {
   offlineUpdate.value.click();
 };
-const handleOfflineUpdate = (payload: Event) => {
+const handleOfflineUpdate = (payload: Event & { target: (EventTarget & HTMLInputElement) | null }) => {
+  if (payload.target === null || !payload.target.files) return;
+
+  const formData = new FormData();
+  formData.append("jarData", payload.target.files[0]);
+
   useStateStore().showSnackbarMessage({
     message: "New Software Upload in Progress...",
     color: "secondary",
     timeout: -1
   });
-
-  const formData = new FormData();
-
-  if (payload.target == null || !payload.target?.files) return;
-  const files: FileList = payload.target.files as FileList;
-  formData.append("jarData", files[0]);
 
   axios
     .post("/utils/offlineUpdate", formData, {
@@ -138,21 +137,17 @@ enum ImportType {
   HardwareSettings,
   NetworkConfig
 }
-
 const showImportDialog = ref(false);
 const importType = ref<ImportType | number>(-1);
-const importFile = ref(null);
+const importFile = ref<File | null>(null);
 const handleSettingsImport = () => {
   if (importType.value === -1 || importFile.value === null) return;
 
   const formData = new FormData();
   formData.append("data", importFile.value);
 
-  let settingsEndpoint;
+  let settingsEndpoint: string;
   switch (importType.value) {
-    case ImportType.AllSettings:
-      settingsEndpoint = "";
-      break;
     case ImportType.HardwareConfig:
       settingsEndpoint = "/hardwareConfig";
       break;
@@ -161,6 +156,10 @@ const handleSettingsImport = () => {
       break;
     case ImportType.NetworkConfig:
       settingsEndpoint = "/networkConfig";
+      break;
+    default:
+    case ImportType.AllSettings:
+      settingsEndpoint = "";
       break;
   }
 
@@ -252,14 +251,15 @@ const handleSettingsImport = () => {
                     tooltip="Select the type of settings file you are trying to upload"
                     :items="['All Settings', 'Hardware Config', 'Hardware Settings', 'Network Config']"
                     :select-cols="10"
+                    style="width: 100%"
                   />
                 </v-row>
                 <v-row class="mt-6 ml-4 mr-8">
                   <v-file-input
+                    v-model="importFile"
                     :disabled="importType === -1"
                     :error-messages="importType === -1 ? 'Settings type not selected' : ''"
                     :accept="importType === ImportType.AllSettings ? '.zip' : '.json'"
-                    @change="(file) => (importFile = file)"
                   />
                 </v-row>
                 <v-row
