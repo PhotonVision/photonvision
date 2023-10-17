@@ -497,7 +497,10 @@ public class RequestHandler {
 
         if (!makeDirsRes && !(tempFilePath.getParentFile().exists())) {
             logger.error(
-                    "There was an error while creating " + tempFilePath.getAbsolutePath() + "! Exists: " + tempFilePath.getParentFile().exists());
+                    "There was an error while creating "
+                            + tempFilePath.getAbsolutePath()
+                            + "! Exists: "
+                            + tempFilePath.getParentFile().exists());
             return Optional.empty();
         }
 
@@ -505,7 +508,10 @@ public class RequestHandler {
             FileUtils.copyInputStreamToFile(file.content(), tempFilePath);
         } catch (IOException e) {
             logger.error(
-                    "There was an error while copying " + file.filename() + " to the temp file " + tempFilePath.getAbsolutePath());
+                    "There was an error while copying "
+                            + file.filename()
+                            + " to the temp file "
+                            + tempFilePath.getAbsolutePath());
             return Optional.empty();
         }
 
