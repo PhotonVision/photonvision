@@ -84,7 +84,7 @@ const interactiveCols = computed(
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ outputShowMultipleTargets: value }, false)
       "
     />
-    <cv-switch
+    <pv-switch
       v-if="
         currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
         useCameraSettingsStore().isCurrentVideoFormatCalibrated
@@ -96,7 +96,7 @@ const interactiveCols = computed(
       :disabled="!isTagPipeline"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ doMultiTarget: value }, false)"
     />
-    <cv-switch
+    <pv-switch
       v-if="
         currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
         useCameraSettingsStore().isCurrentVideoFormatCalibrated
