@@ -2,6 +2,8 @@
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { PipelineType } from "@/types/PipelineTypes";
 import PvSlider from "@/components/common/pv-slider.vue";
+import pvSwitch from "@/components/common/pv-switch.vue";
+import pvRangeSlider from "@/components/common/pv-range-slider.vue";
 import { computed, getCurrentInstance } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 
@@ -36,14 +38,14 @@ const interactiveCols = computed(
 
 <template>
   <div v-if="currentPipelineSettings.pipelineType === PipelineType.Aruco">
-    <pv-slider
+    <pv-switch
       v-model="currentPipelineSettings.useCornerRefinement"
       class="pt-2"
       label="Refine Corners"
       tooltip="Further refine the initial corners with subpixel accuracy."
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ useCornerRefinement: value }, false)"
     />
-    <cv-range-slider
+    <pv-range-slider
       v-model="threshWinSizes"
       label="Thresh Min/Max Size"
       tooltip="The minimum and maximum adaptive threshold window size."
@@ -75,21 +77,21 @@ const interactiveCols = computed(
       :step="1"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ threshConstant: value }, false)"
     />
-    <cv-switch
+    <pv-switch
       v-model="currentPipelineSettings.debugThreshold"
       class="pt-2"
       label="Debug Threshold"
       tooltip="Display the first threshold step to the color stream."
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ debugThreshold: value }, false)"
     />
-    <!-- <cv-switch
+    <!-- <pv-switch
       v-model="currentPipelineSettings.useAruco3"
       class="pt-2"
       label="Use ArUco3 Speedup"
       tooltip="Enables an 'ArUco3' implementation which may increase performance at the cost of detection distance. This is similar to AprilTag's 'decimation'."
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ useAruco3: value }, false)"
     />
-    <cv-slider
+    <pv-slider
       v-model="currentPipelineSettings.aruco3MinMarkerSideRatio"
       class="pt-2"
       :slider-cols="interactiveCols"
@@ -102,7 +104,7 @@ const interactiveCols = computed(
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ aruco3MinMarkerSideRatio: value }, false)
       "
     />
-    <cv-slider
+    <pv-slider
       v-model="currentPipelineSettings.aruco3MinCanonicalImgSide"
       class="pt-2"
       :slider-cols="interactiveCols"
