@@ -146,8 +146,10 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
                             new TargetCalculationParameters(
                                     false, null, null, null, null, frameStaticProperties));
 
-            var correctedBestPose = MathUtils.convertOpenCVtoPhotonPose(target.getBestCameraToTarget3d());
-            var correctedAltPose = MathUtils.convertOpenCVtoPhotonPose(target.getAltCameraToTarget3d());
+            var correctedBestPose =
+                    MathUtils.convertOpenCVtoPhotonTransform(target.getBestCameraToTarget3d());
+            var correctedAltPose =
+                    MathUtils.convertOpenCVtoPhotonTransform(target.getAltCameraToTarget3d());
 
             target.setBestCameraToTarget3d(
                     new Transform3d(correctedBestPose.getTranslation(), correctedBestPose.getRotation()));
