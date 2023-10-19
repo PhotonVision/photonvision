@@ -39,9 +39,7 @@ const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: num
           <tbody>
             <tr v-for="(tag, index) in useSettingsStore().currentFieldLayout.tags" :key="index">
               <td>{{ tag.ID }}</td>
-              <td v-for="(val, idx) in Object.values(tag.pose.translation)" :key="idx">
-                {{ val.toFixed(2) }}&nbsp;m
-              </td>
+              <td v-for="(val, idx) in Object.values(tag.pose.translation)" :key="idx">{{ val.toFixed(2) }}&nbsp;m</td>
               <td v-for="(val, idx) in Object.values(quaternionToEuler(tag.pose.rotation.quaternion))" :key="idx + 4">
                 {{ val.toFixed(2) }}&deg;
               </td>
