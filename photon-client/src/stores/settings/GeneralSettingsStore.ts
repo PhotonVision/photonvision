@@ -10,12 +10,14 @@ import { NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import axios from "axios";
 import type { WebsocketSettingsUpdate } from "@/types/WebsocketDataTypes";
+import type { AprilTagFieldLayout } from "@/types/PhotonTrackingTypes";
 
 interface GeneralSettingsStore {
   general: GeneralSettings;
   network: NetworkSettings;
   lighting: LightingSettings;
   metrics: MetricData;
+  currentFieldLayout: AprilTagFieldLayout;
 }
 
 export const useSettingsStore = defineStore("settings", {
@@ -55,6 +57,13 @@ export const useSettingsStore = defineStore("settings", {
       cpuThr: undefined,
       cpuUptime: undefined,
       diskUtilPct: undefined
+    },
+    currentFieldLayout: {
+      field: {
+        length: 16.4592,
+        width: 8.2296
+      },
+      tags: []
     }
   }),
   getters: {
@@ -91,6 +100,7 @@ export const useSettingsStore = defineStore("settings", {
       };
       this.lighting = data.lighting;
       this.network = data.networkSettings;
+      this.currentFieldLayout = data.atfl;
     },
     saveGeneralSettings() {
       const payload: Required<ConfigurableNetworkSettings> = {

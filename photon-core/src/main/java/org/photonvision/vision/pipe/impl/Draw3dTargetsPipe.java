@@ -127,7 +127,7 @@ public class Draw3dTargetsPipe
 
                 // Draw X, Y and Z axis
                 MatOfPoint3f pointMat = new MatOfPoint3f();
-                // Those points are in opencv-land, but we are in NWU
+                // OpenCV expects coordinates in EDN, but we want to visualize in NWU
                 // NWU | EDN
                 // X: Z
                 // Y: -X
@@ -136,11 +136,15 @@ public class Draw3dTargetsPipe
                 var list =
                         List.of(
                                 new Point3(0, 0, 0),
-                                new Point3(0, 0, AXIS_LEN),
-                                new Point3(AXIS_LEN, 0, 0),
-                                new Point3(0, AXIS_LEN, 0));
+                                new Point3(0, 0, AXIS_LEN), // x-axis
+                                new Point3(-AXIS_LEN, 0, 0), // y-axis
+                                new Point3(0, -AXIS_LEN, 0)); // z-axis
                 pointMat.fromList(list);
 
+                // The detected target's rvec and tvec perform a rotation-translation transformation which
+                // converts points in the target's coordinate system to the camera's. This means applying
+                // the transformation to the target point (0,0,0) for example would give the target's center
+                // relative to the camera.
                 Calib3d.projectPoints(
                         pointMat,
                         target.getCameraRelativeRvec(),
@@ -152,19 +156,22 @@ public class Draw3dTargetsPipe
                 var axisPoints = tempMat.toList();
                 dividePointList(axisPoints);
 
-                // Red = x, green y, blue z
+                // XYZ is RGB
+                // y-axis = green
                 Imgproc.line(
                         in.getLeft(),
                         axisPoints.get(0),
                         axisPoints.get(2),
                         ColorHelper.colorToScalar(Color.GREEN),
                         3);
+                // z-axis = blue
                 Imgproc.line(
                         in.getLeft(),
                         axisPoints.get(0),
                         axisPoints.get(3),
                         ColorHelper.colorToScalar(Color.BLUE),
                         3);
+                // x-axis = red
                 Imgproc.line(
                         in.getLeft(),
                         axisPoints.get(0),
@@ -172,6 +179,7 @@ public class Draw3dTargetsPipe
                         ColorHelper.colorToScalar(Color.RED),
                         3);
 
+                // box edges perpendicular to tag
                 for (int i = 0; i < bottomPoints.size(); i++) {
                     Imgproc.line(
                             in.getLeft(),
@@ -180,6 +188,7 @@ public class Draw3dTargetsPipe
                             ColorHelper.colorToScalar(Color.blue),
                             3);
                 }
+                // box edges parallel to tag
                 for (int i = 0; i < topPoints.size(); i++) {
                     Imgproc.line(
                             in.getLeft(),
@@ -254,18 +263,6 @@ public class Draw3dTargetsPipe
     }
 
     private void divideMat2f(MatOfPoint2f src, MatOfPoint dst) {
-        var hull = src.toArray();
-        var pointArray = new Point[hull.length];
-        for (int i = 0; i < hull.length; i++) {
-            var hullAtI = hull[i];
-            pointArray[i] =
-                    new Point(
-                            hullAtI.x / (double) params.divisor.value, hullAtI.y / (double) params.divisor.value);
-        }
-        dst.fromArray(pointArray);
-    }
-
-    private void divideMat2f(MatOfPoint2f src, MatOfPoint2f dst) {
         var hull = src.toArray();
         var pointArray = new Point[hull.length];
         for (int i = 0; i < hull.length; i++) {

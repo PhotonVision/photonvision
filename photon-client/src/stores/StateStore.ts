@@ -24,7 +24,7 @@ interface StateStore {
   logMessages: LogMessage[];
   currentCameraIndex: number;
 
-  pipelineResults?: PipelineResult;
+  backendResults: Record<string, PipelineResult>;
 
   colorPickingMode: boolean;
 
@@ -58,7 +58,7 @@ export const useStateStore = defineStore("state", {
       logMessages: [],
       currentCameraIndex: 0,
 
-      pipelineResults: undefined,
+      backendResults: {},
 
       colorPickingMode: false,
 
@@ -76,6 +76,11 @@ export const useStateStore = defineStore("state", {
         timeout: 2000
       }
     };
+  },
+  getters: {
+    currentPipelineResults(): PipelineResult | undefined {
+      return this.backendResults[this.currentCameraIndex.toString()];
+    }
   },
   actions: {
     setSidebarFolded(value: boolean) {
@@ -95,12 +100,11 @@ export const useStateStore = defineStore("state", {
         clients: data.clients
       };
     },
-    updatePipelineResultsFromWebsocket(data: WebsocketPipelineResultUpdate) {
-      for (const cameraIndex in data) {
-        if (parseInt(cameraIndex) === this.currentCameraIndex) {
-          this.pipelineResults = data[cameraIndex];
-        }
-      }
+    updateBackendResultsFromWebsocket(data: WebsocketPipelineResultUpdate) {
+      this.backendResults = {
+        ...this.backendResults,
+        ...data
+      };
     },
     updateCalibrationStateValuesFromWebsocket(data: WebsocketCalibrationData) {
       this.calibrationData = {

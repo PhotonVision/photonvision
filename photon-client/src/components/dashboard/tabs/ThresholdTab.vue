@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { computed, getCurrentInstance, onBeforeUnmount, onMounted } from "vue";
-import CvRangeSlider from "@/components/common/cv-range-slider.vue";
-import CvSwitch from "@/components/common/cv-switch.vue";
+import PvRangeSlider from "@/components/common/pv-range-slider.vue";
+import PvSwitch from "@/components/common/pv-switch.vue";
 import { useStateStore } from "@/stores/StateStore";
 import { ColorPicker, type HSV } from "@/lib/ColorPicker";
 
@@ -16,7 +16,7 @@ const averageHue = computed<number>(() => {
   return val;
 });
 
-// TODO fix cv-range-slider so that store access doesn't need to be deferred
+// TODO fix pv-range-slider so that store access doesn't need to be deferred
 const hsvHue = computed<[number, number]>({
   get: () => Object.values(useCameraSettingsStore().currentPipelineSettings.hsvHue) as [number, number],
   set: (v) => (useCameraSettingsStore().currentPipelineSettings.hsvHue = v)
@@ -135,7 +135,7 @@ const interactiveCols = computed(
 
 <template>
   <div class="threshold-modifiers" :style="{ '--averageHue': averageHue }">
-    <cv-range-slider
+    <pv-range-slider
       id="hue-slider"
       v-model="hsvHue"
       :class="useCameraSettingsStore().currentPipelineSettings.hueInverted ? 'inverted-slider' : 'normal-slider'"
@@ -147,7 +147,7 @@ const interactiveCols = computed(
       :inverted="useCameraSettingsStore().currentPipelineSettings.hueInverted"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvHue: value }, false)"
     />
-    <cv-range-slider
+    <pv-range-slider
       id="sat-slider"
       v-model="hsvSaturation"
       class="normal-slider"
@@ -158,7 +158,7 @@ const interactiveCols = computed(
       :slider-cols="interactiveCols"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvSaturation: value }, false)"
     />
-    <cv-range-slider
+    <pv-range-slider
       id="value-slider"
       v-model="hsvValue"
       class="normal-slider"
@@ -169,7 +169,7 @@ const interactiveCols = computed(
       :slider-cols="interactiveCols"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvValue: value }, false)"
     />
-    <cv-switch
+    <pv-switch
       v-model="useCameraSettingsStore().currentPipelineSettings.hueInverted"
       label="Invert Hue"
       :switch-cols="interactiveCols"

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { computed, ref } from "vue";
-import CvInput from "@/components/common/cv-input.vue";
-import CvRadio from "@/components/common/cv-radio.vue";
-import CvSwitch from "@/components/common/cv-switch.vue";
-import CvSelect from "@/components/common/cv-select.vue";
+import PvInput from "@/components/common/pv-input.vue";
+import PvRadio from "@/components/common/pv-radio.vue";
+import PvSwitch from "@/components/common/pv-switch.vue";
+import PvSelect from "@/components/common/pv-select.vue";
 import { NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 
@@ -89,7 +89,7 @@ const currentNetworkInterfaceIndex = computed<number>({
     <v-card-title>Networking</v-card-title>
     <div class="ml-5">
       <v-form ref="form" v-model="settingsValid">
-        <cv-input
+        <pv-input
           v-model="useSettingsStore().network.ntServerAddress"
           label="Team Number/NetworkTables Server Address"
           tooltip="Enter the Team Number or the IP address of the NetworkTables Server"
@@ -114,7 +114,7 @@ const currentNetworkInterfaceIndex = computed<number>({
         >
           The NetworkTables Server Address is not set or is invalid. NetworkTables is unable to connect.
         </v-banner>
-        <cv-radio
+        <pv-radio
           v-model="useSettingsStore().network.connectionType"
           label="IP Assignment Mode"
           tooltip="DHCP will make the radio (router) automatically assign an IP address; this may result in an IP address that changes across reboots. Static IP assignment means that you pick the IP address and it won't change."
@@ -122,7 +122,7 @@ const currentNetworkInterfaceIndex = computed<number>({
           :list="['DHCP', 'Static']"
           :disabled="!(useSettingsStore().network.shouldManage && useSettingsStore().network.canManage)"
         />
-        <cv-input
+        <pv-input
           v-if="useSettingsStore().network.connectionType === NetworkConnectionType.Static"
           v-model="useSettingsStore().network.staticIp"
           :input-cols="12 - 4"
@@ -130,7 +130,7 @@ const currentNetworkInterfaceIndex = computed<number>({
           :rules="[(v) => isValidIPv4(v) || 'Invalid IPv4 address']"
           :disabled="!(useSettingsStore().network.shouldManage && useSettingsStore().network.canManage)"
         />
-        <cv-input
+        <pv-input
           v-model="useSettingsStore().network.hostname"
           label="Hostname"
           :input-cols="12 - 4"
@@ -139,7 +139,7 @@ const currentNetworkInterfaceIndex = computed<number>({
         />
         <v-divider class="pb-3" />
         <span style="font-weight: 700">Advanced Networking</span>
-        <cv-switch
+        <pv-switch
           v-model="useSettingsStore().network.shouldManage"
           :disabled="!useSettingsStore().network.canManage"
           label="Manage Device Networking"
@@ -147,7 +147,7 @@ const currentNetworkInterfaceIndex = computed<number>({
           :label-cols="4"
           class="pt-2"
         />
-        <cv-select
+        <pv-select
           v-model="currentNetworkInterfaceIndex"
           label="NetworkManager interface"
           :disabled="!(useSettingsStore().network.shouldManage && useSettingsStore().network.canManage)"
@@ -168,7 +168,7 @@ const currentNetworkInterfaceIndex = computed<number>({
         >
           Photon cannot detect any wired connections! Please send program logs to the developers for help.
         </v-banner>
-        <cv-switch
+        <pv-switch
           v-model="useSettingsStore().network.runNTServer"
           label="Run NetworkTables Server (Debugging Only)"
           tooltip="If enabled, this device will create a NT server. This is useful for home debugging, but should be disabled on-robot."

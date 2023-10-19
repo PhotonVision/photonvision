@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { PipelineType } from "@/types/PipelineTypes";
-import CvSlider from "@/components/common/cv-slider.vue";
-import CvRangeSlider from "@/components/common/cv-range-slider.vue";
-import CvSwitch from "@/components/common/cv-switch.vue";
+import PvSlider from "@/components/common/pv-slider.vue";
 import { computed, getCurrentInstance } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 
@@ -38,7 +36,7 @@ const interactiveCols = computed(
 
 <template>
   <div v-if="currentPipelineSettings.pipelineType === PipelineType.Aruco">
-    <cv-switch
+    <pv-slider
       v-model="currentPipelineSettings.useCornerRefinement"
       class="pt-2"
       label="Refine Corners"
@@ -55,7 +53,7 @@ const interactiveCols = computed(
       :step="2"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ threshWinSizes: value }, false)"
     />
-    <cv-slider
+    <pv-slider
       v-model="currentPipelineSettings.threshStepSize"
       class="pt-2"
       :slider-cols="interactiveCols"
@@ -66,7 +64,7 @@ const interactiveCols = computed(
       :step="1"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ threshStepSize: value }, false)"
     />
-    <cv-slider
+    <pv-slider
       v-model="currentPipelineSettings.threshConstant"
       class="pt-2"
       :slider-cols="interactiveCols"

@@ -8,11 +8,10 @@ import { useStateStore } from "@/stores/StateStore";
   <div>
     <v-row align="start" class="pb-4" style="height: 300px">
       <!-- Simple table height must be set here and in the CSS for the fixed-header to work -->
-      <v-simple-table fixed-header height="100%" dense dark>
+      <v-simple-table fixed-header dense dark>
         <template #default>
           <thead style="font-size: 1.25rem">
             <tr>
-              <th class="text-center">Target Count</th>
               <th
                 v-if="
                   useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
@@ -45,8 +44,7 @@ import { useStateStore } from "@/stores/StateStore";
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(target, index) in useStateStore().pipelineResults?.targets" :key="index">
-              <td>{{ index }}</td>
+            <tr v-for="(target, index) in useStateStore().currentPipelineResults?.targets" :key="index">
               <td
                 v-if="
                   useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
@@ -64,7 +62,7 @@ import { useStateStore } from "@/stores/StateStore";
               <template v-else-if="useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled">
                 <td>{{ target.pose?.x.toFixed(2) }}&nbsp;m</td>
                 <td>{{ target.pose?.y.toFixed(2) }}&nbsp;m</td>
-                <td>{{ ((target.pose?.angle_z * 180.0) / Math.PI).toFixed(2) }}&deg;</td>
+                <td>{{ (((target.pose?.angle_z || 0) * 180.0) / Math.PI).toFixed(2) }}&deg;</td>
               </template>
               <template
                 v-if="
@@ -73,11 +71,35 @@ import { useStateStore } from "@/stores/StateStore";
                   useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
                 "
               >
-                <td>{{ target.ambiguity?.toFixed(2) }}%</td>
+                <td>{{ target.ambiguity >= 0 ? target.ambiguity?.toFixed(2) + "%" : "(In Multi-Target)" }}</td>
               </template>
             </tr>
           </tbody>
         </template>
+      </v-simple-table>
+    </v-row>
+    <v-row
+      v-if="
+        useCameraSettingsStore().currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
+        useCameraSettingsStore().currentPipelineSettings.doMultiTarget
+      "
+      align="start"
+      class="pb-4 white--text"
+    >
+      <v-card-subtitle>Multi-tag pose, field-to-camera</v-card-subtitle>
+      <v-simple-table fixed-header height="100%" dense dark>
+        <thead style="font-size: 1.25rem">
+          <th class="text-center">X meters</th>
+          <th class="text-center">Y meters</th>
+          <th class="text-center">Z Angle &theta;&deg;</th>
+          <th class="text-center">Tags</th>
+        </thead>
+        <tbody>
+          <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.x.toFixed(2) }}</td>
+          <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.y.toFixed(2) }}</td>
+          <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_z.toFixed(2) }}</td>
+          <td>{{ useStateStore().currentPipelineResults?.multitagResult?.fiducialIDsUsed }}</td>
+        </tbody>
       </v-simple-table>
     </v-row>
   </div>

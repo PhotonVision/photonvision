@@ -198,8 +198,7 @@ model {
     }
 }
 
-// So I don't actually know the _right_ way to tell gradle that the vendordep json publish requires generation first, so we're doing this
-getTasksByName("publishVendorjsonPublicationToMavenLocal", false).each {
+tasks.withType(PublishToMavenRepository) {
     it.mustRunAfter generateVendorJson
 }
 

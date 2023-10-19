@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import edu.wpi.first.math.geometry.Translation2d;
 import java.util.*;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
@@ -25,6 +24,10 @@ import org.opencv.imgproc.Imgproc;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.target.TrackedTarget;
 
+/**
+ * Determines the target corners of the {@link TrackedTarget}. The {@link
+ * CornerDetectionPipeParameters} affect how these corners are calculated.
+ */
 public class CornerDetectionPipe
         extends CVPipe<
                 List<TrackedTarget>,
@@ -49,15 +52,15 @@ public class CornerDetectionPipe
     }
 
     /**
-     * @param target the target to find the corners of.
-     * @return the corners. left top, left bottom, right bottom, right top
+     * @param target The target to find the corners of.
+     * @return Corners: (bottom-left, bottom-right, top-right, top-left)
      */
     private List<Point> findBoundingBoxCorners(TrackedTarget target) {
         // extract the corners
         var points = new Point[4];
         target.m_mainContour.getMinAreaRect().points(points);
 
-        // find the tl/tr/bl/br corners
+        // find the bl/br/tr/tl corners
         // first, min by left/right
         var list_ = Arrays.asList(points);
         list_.sort(leftRightComparator);
@@ -68,13 +71,12 @@ public class CornerDetectionPipe
         var right = new ArrayList<>(List.of(list_.get(2), list_.get(3)));
         right.sort(verticalComparator);
 
-        // tl tr bl br
         var tl = left.get(0);
         var bl = left.get(1);
         var tr = right.get(0);
         var br = right.get(1);
 
-        return List.of(tl, bl, br, tr);
+        return List.of(bl, br, tr, tl);
     }
 
     /**
@@ -83,31 +85,22 @@ public class CornerDetectionPipe
      * @return The straight line distance between them.
      */
     private static double distanceBetween(Point a, Point b) {
-        return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
+        double xDelta = a.x - b.x;
+        double yDelta = a.y - b.y;
+        return Math.sqrt(xDelta * xDelta + yDelta * yDelta);
     }
 
     /**
-     * @param a First point.
-     * @param b Second point.
-     * @return The straight line distance between them.
-     */
-    private static double distanceBetween(Translation2d a, Translation2d b) {
-        return Math.sqrt(Math.pow(a.getX() - b.getX(), 2) + Math.pow(a.getY() - b.getY(), 2));
-    }
-
-    /**
-     * Find the 4 most extreme corners,
+     * Find the 4 most extreme corners of the target's contour.
      *
-     * @param target the target to track.
-     * @param convexHull weather to use the convex hull of the target.
-     * @return the 4 extreme corners of the contour.
+     * @param target The target to track.
+     * @param convexHull Whether to use the convex hull of the contour instead.
+     * @return The 4 extreme corners of the contour: (bottom-left, bottom-right, top-right, top-left)
      */
     private List<Point> detectExtremeCornersByApproxPolyDp(TrackedTarget target, boolean convexHull) {
         var centroid = target.getMinAreaRect().center;
-        Comparator<Point> distanceProvider =
-                Comparator.comparingDouble(
-                        (Point point) ->
-                                Math.sqrt(Math.pow(centroid.x - point.x, 2) + Math.pow(centroid.y - point.y, 2)));
+        Comparator<Point> compareCenterDist =
+                Comparator.comparingDouble((Point point) -> distanceBetween(centroid, point));
 
         MatOfPoint2f targetContour;
         if (convexHull) {
@@ -141,17 +134,17 @@ public class CornerDetectionPipe
         // left top, left bottom, right bottom, right top
         var boundingBoxCorners = findBoundingBoxCorners(target);
 
-        var distanceToTlComparator =
-                Comparator.comparingDouble((Point p) -> distanceBetween(p, boundingBoxCorners.get(0)));
-
-        var distanceToTrComparator =
+        var compareDistToTl =
                 Comparator.comparingDouble((Point p) -> distanceBetween(p, boundingBoxCorners.get(3)));
 
-        // top left and top right are the poly corners closest to the bounding box tl and tr
-        pointList.sort(distanceToTlComparator);
+        var compareDistToTr =
+                Comparator.comparingDouble((Point p) -> distanceBetween(p, boundingBoxCorners.get(2)));
+
+        // top left and top right are the poly corners closest to the bouding box tl and tr
+        pointList.sort(compareDistToTl);
         var tl = pointList.get(0);
         pointList.remove(tl);
-        pointList.sort(distanceToTrComparator);
+        pointList.sort(compareDistToTr);
         var tr = pointList.get(0);
         pointList.remove(tr);
 
@@ -177,11 +170,11 @@ public class CornerDetectionPipe
                 }
         }
         if (leftList.isEmpty() || rightList.isEmpty()) return null;
-        leftList.sort(distanceProvider);
-        rightList.sort(distanceProvider);
+        leftList.sort(compareCenterDist);
+        rightList.sort(compareCenterDist);
         var bl = leftList.get(leftList.size() - 1);
         var br = rightList.get(rightList.size() - 1);
-        return List.of(tl, bl, br, tr);
+        return List.of(bl, br, tr, tl);
     }
 
     public static class CornerDetectionPipeParameters {

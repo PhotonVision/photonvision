@@ -1,9 +1,5 @@
-# This workflow builds the client (UI), the server, builds the JAR.
+name: Build
 
-name: CI
-
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
 on:
   push:
     branches: [ master ]
@@ -11,212 +7,117 @@ on:
       - 'v*'
   pull_request:
     branches: [ master ]
-  merge_group:
 
 jobs:
-  photonclient-build:
-    # Let all steps run within the photon-client dir.
+  build-client:
+    name: "PhotonClient Build"
     defaults:
       run:
         working-directory: photon-client
-
-    # The type of runner that the job will run on.
     runs-on: ubuntu-22.04
-
     steps:
-    # Checkout code.
-    - uses: actions/checkout@v3
-
-    # Setup Node.js
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: 17
-
-    # Run npm
-    - name: Install Dependencies
-      run: npm ci
-
-    - name: Build Production Client
-      run: npm run build
-
-    # Upload client artifact.
-    - uses: actions/upload-artifact@master
-      with:
-        name: built-client
-        path: photon-client/dist/
-  photonclient-check-lint:
-    # Let all steps run within the photon-client dir.
-    defaults:
-      run:
-        working-directory: photon-client
-
-    # The type of runner that the job will run on.
-    runs-on: ubuntu-22.04
-
-    steps:
-    # Checkout code.
-    - uses: actions/checkout@v3
-
-    # Setup Node.js
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: 17
-
-    - name: Install Dependencies
-      run: npm ci
-
-    - name: Check Linting
-      run: npm run lint-ci
-
-    - name: Check Formatting
-      run: npm run format-ci
-  photon-build-examples:
-    runs-on: ubuntu-22.04
+      - uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install Dependencies
+        run: npm ci
+      - name: Build Production Client
+        run: npm run build
+      - uses: actions/upload-artifact@master
+        with:
+          name: built-client
+          path: photon-client/dist/
+  build-examples:
     name: "Build Examples"
-
+    runs-on: ubuntu-22.04
     steps:
-      # Checkout code.
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
-      # Fetch tags.
       - name: Fetch tags
         run: git fetch --tags --force
-
-      # Install Java 17.
       - name: Install Java 17
         uses: actions/setup-java@v3
         with:
           java-version: 17
           distribution: temurin
-
       # Need to publish to maven local first, so that C++ sim can pick it up
-      # Still haven't figure out how to make the vendordep file be copied before trying to build examples
+      # Still haven't figured out how to make the vendordep file be copied before trying to build examples
       - name: Publish photonlib to maven local
         run: |
           chmod +x gradlew
           ./gradlew publishtomavenlocal -x check
-
       - name: Build Java examples
         working-directory: photonlib-java-examples
         run: |
           chmod +x gradlew
           ./gradlew copyPhotonlib -x check
           ./gradlew build -x check --max-workers 2
-
       - name: Build C++ examples
         working-directory: photonlib-cpp-examples
         run: |
           chmod +x gradlew
           ./gradlew copyPhotonlib -x check
           ./gradlew build -x check --max-workers 2
-  photon-build-all:
-    # The type of runner that the job will run on.
+  build-gradle:
+    name: "Gradle Build"
     runs-on: ubuntu-22.04
-
     steps:
       # Checkout code.
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
-      # Fetch tags.
       - name: Fetch tags
         run: git fetch --tags --force
-
-      # Install Java 17.
       - name: Install Java 17
         uses: actions/setup-java@v3
         with:
           java-version: 17
           distribution: temurin
-
-      # Run only build tasks, no checks??
       - name: Gradle Build
         run: |
           chmod +x gradlew
           ./gradlew photon-server:build photon-lib:build -x check --max-workers 2
-
-      # Run Gradle Tests.
       - name: Gradle Tests
         run: ./gradlew testHeadless -i --max-workers 1 --stacktrace
-
-      # Generate Coverage Report.
       - name: Gradle Coverage
         run: ./gradlew jacocoTestReport --max-workers 1
-
-      # Publish Coverage Report.
-      - name: Publish Server Coverage Report
+      - name: Publish Coverage Report
         uses: codecov/codecov-action@v3
         with:
           file: ./photon-server/build/reports/jacoco/test/jacocoTestReport.xml
-
       - name: Publish Core Coverage Report
         uses: codecov/codecov-action@v3
         with:
           file: ./photon-core/build/reports/jacoco/test/jacocoTestReport.xml
-  photonserver-build-offline-docs:
+  build-offline-docs:
+    name: "Build Offline Docs"
     runs-on: ubuntu-22.04
-
     steps:
-      # Checkout docs.
       - uses: actions/checkout@v3
         with:
           repository: 'PhotonVision/photonvision-docs.git'
           ref: master
-
-      # Install Python.
       - uses: actions/setup-python@v4
         with:
           python-version: '3.9'
-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install sphinx sphinx_rtd_theme sphinx-tabs sphinxext-opengraph doc8
           pip install -r requirements.txt
-
-      # Don't check the docs. If a PR was merged to the docs repo, it ought to pass CI. No need to re-check here.
-      # - name: Check the docs
-      #   run: |
-      #     make linkcheck
-      #     make lint
-
       - name: Build the docs
         run: |
           make html
-
-      # Upload docs artifact.
       - uses: actions/upload-artifact@master
         with:
           name: built-docs
           path: build/html
-  photonserver-check-lint:
-    # The type of runner that the job will run on.
-    runs-on: ubuntu-22.04
-
-    steps:
-      # Checkout code.
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      # Install Java 17.
-      - uses: actions/setup-java@v3
-        with:
-          java-version: 17
-          distribution: temurin
-
-      # Check server code with Spotless.
-      - run: |
-          chmod +x gradlew
-          ./gradlew spotlessCheck
-  photonlib-build-host:
+  build-photonlib-host:
     env:
       MACOSX_DEPLOYMENT_TARGET: 10.14
     strategy:
@@ -232,13 +133,14 @@ jobs:
           - os: ubuntu-22.04
             artifact-name: Linux
 
-    runs-on: ${{ matrix.os }}
     name: "Photonlib - Build Host - ${{ matrix.artifact-name }}"
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - uses: actions/setup-java@v3
+      - name: Install Java 17
+        uses: actions/setup-java@v3
         with:
           java-version: 17
           distribution: temurin
@@ -251,7 +153,7 @@ jobs:
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
         if: github.event_name == 'push'
-  photonlib-build-docker:
+  build-photonlib-docker:
     strategy:
       fail-fast: false
       matrix:
@@ -284,85 +186,50 @@ jobs:
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
         if: github.event_name == 'push'
-  photonlib-wpiformat:
-    name: "wpiformat"
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v3
-      - name: Fetch all history and metadata
-        run: |
-          git fetch --prune --unshallow
-          git checkout -b pr
-          git branch -f master origin/master
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.8
-      - name: Install wpiformat
-        run: pip3 install wpiformat
-      - name: Check index.html not changed
-        run: git --no-pager diff --exit-code origin/master photon-server/src/main/resources/web/index.html
-      - name: Run
-        run: wpiformat
-      - name: Check output
-        run: git --no-pager diff --exit-code HEAD
-      - name: Generate diff
-        run: git diff HEAD > wpiformat-fixes.patch
-        if: ${{ failure() }}
-      - uses: actions/upload-artifact@v3
-        with:
-          name: wpiformat fixes
-          path: wpiformat-fixes.patch
-        if: ${{ failure() }}
-  photon-build-package:
-    needs: [photonclient-build, photon-build-all, photonserver-build-offline-docs]
+  build-package:
+    needs: [build-client, build-gradle, build-offline-docs]
 
     strategy:
-        fail-fast: false
-        matrix:
-          include:
-            - os: windows-latest
-              artifact-name: Win64
-              architecture: x64
-              arch-override: none
-            - os: macos-latest
-              artifact-name: macOS
-              architecture: x64
-              arch-override: none
-            - os: ubuntu-latest
-              artifact-name: Linux
-              architecture: x64
-              arch-override: none
-            - os: macos-latest
-              artifact-name: macOSArm
-              architecture: x64
-              arch-override: macarm64
-            - os: ubuntu-latest
-              artifact-name: LinuxArm32
-              architecture: x64
-              arch-override: linuxarm32
-            - os: ubuntu-latest
-              artifact-name: LinuxArm64
-              architecture: x64
-              arch-override: linuxarm64
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            artifact-name: Win64
+            architecture: x64
+            arch-override: none
+          - os: macos-latest
+            artifact-name: macOS
+            architecture: x64
+            arch-override: none
+          - os: ubuntu-latest
+            artifact-name: Linux
+            architecture: x64
+            arch-override: none
+          - os: macos-latest
+            artifact-name: macOSArm
+            architecture: x64
+            arch-override: macarm64
+          - os: ubuntu-latest
+            artifact-name: LinuxArm32
+            architecture: x64
+            arch-override: linuxarm32
+          - os: ubuntu-latest
+            artifact-name: LinuxArm64
+            architecture: x64
+            arch-override: linuxarm64
 
-    # The type of runner that the job will run on.
     runs-on: ${{ matrix.os }}
     name: "Build fat JAR - ${{ matrix.artifact-name }}"
 
     steps:
-      # Checkout code.
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
-      # Install Java 17.
-      - uses: actions/setup-java@v3
+      - name: Install Java 17
+        uses: actions/setup-java@v3
         with:
           java-version: 17
           distribution: temurin
-
-      # Clear any existing web resources.
       - run: |
           rm -rf photon-server/src/main/resources/web/*
           mkdir -p photon-server/src/main/resources/web/docs
@@ -371,20 +238,14 @@ jobs:
           del photon-server\src\main\resources\web\*.*
           mkdir photon-server\src\main\resources\web\docs
         if: ${{ (matrix.os) == 'windows-latest' }}
-
-      # Download client artifact to resources folder.
       - uses: actions/download-artifact@v3
         with:
           name: built-client
           path: photon-server/src/main/resources/web/
-
-      # Download docs artifact to resources folder.
       - uses: actions/download-artifact@v3
         with:
           name: built-docs
           path: photon-server/src/main/resources/web/docs
-
-      # Build fat jar for both pi and everything
       - run: |
           chmod +x gradlew
           ./gradlew photon-server:shadowJar --max-workers 2 -PArchOverride=${{ matrix.arch-override }}
@@ -393,62 +254,55 @@ jobs:
           chmod +x gradlew
           ./gradlew photon-server:shadowJar --max-workers 2
         if: ${{ (matrix.arch-override == 'none') }}
-
-      # Upload final fat jar as artifact.
       - uses: actions/upload-artifact@v3
         with:
           name: jar-${{ matrix.artifact-name }}
           path: photon-server/build/libs
-  photon-image-generator:
-    needs: [photon-build-package]
+  build-image:
+    needs: [build-package]
+
     if: ${{ github.event_name != 'pull_request' }}
     strategy:
-        fail-fast: false
-        matrix:
-          include:
-            - os: ubuntu-latest
-              artifact-name: LinuxArm64
-              image_suffix: RaspberryPi
-              image_url: https://api.github.com/repos/photonvision/photon-pi-gen/releases/tags/v2023.1.3_arm64
-            - os: ubuntu-latest
-              artifact-name: LinuxArm64
-              image_suffix: limelight2
-              image_url: https://api.github.com/repos/photonvision/photon-pi-gen/releases/tags/v2023.2.2_limelight-arm64
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact-name: LinuxArm64
+            image_suffix: RaspberryPi
+            image_url: https://api.github.com/repos/photonvision/photon-pi-gen/releases/tags/v2023.1.3_arm64
+          - os: ubuntu-latest
+            artifact-name: LinuxArm64
+            image_suffix: limelight2
+            image_url: https://api.github.com/repos/photonvision/photon-pi-gen/releases/tags/v2023.2.2_limelight-arm64
 
     runs-on: ${{ matrix.os }}
     name: "Build image - ${{ matrix.image_url }}"
 
     steps:
-      # Checkout code.
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
       - uses: actions/download-artifact@v2
         with:
           name: jar-${{ matrix.artifact-name }}
-
       - name: Generate image
         run: |
           chmod +x scripts/generatePiImage.sh
           ./scripts/generatePiImage.sh ${{ matrix.image_url }} ${{ matrix.image_suffix }}
-
       - uses: actions/upload-artifact@v3
         name: Upload image
         with:
           name: image-${{ matrix.image_suffix }}
           path: photonvision*.xz
-  photon-release:
-    needs: [photon-build-package, photon-image-generator]
+  release:
+    needs: [build-package, build-image]
     runs-on: ubuntu-22.04
     steps:
       # Download literally every single artifact. This also downloads client and docs,
       # but the filtering below won't pick these up (I hope)
       - uses: actions/download-artifact@v2
-
       - run: find
-
       # Push to dev release
       - uses: pyTooling/Actions/releaser@r0
         with:
@@ -459,7 +313,6 @@ jobs:
             **/*.xz
             **/*.jar
         if: github.event_name == 'push'
-
       # Upload all jars and xz archives
       - uses: softprops/action-gh-release@v1
         with:

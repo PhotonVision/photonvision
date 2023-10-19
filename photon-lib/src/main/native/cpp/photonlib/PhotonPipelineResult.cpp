@@ -40,7 +40,7 @@ bool PhotonPipelineResult::operator!=(const PhotonPipelineResult& other) const {
 
 Packet& operator<<(Packet& packet, const PhotonPipelineResult& result) {
   // Encode latency and number of targets.
-  packet << result.latency.value() * 1000
+  packet << result.latency.value() * 1000 << result.m_pnpResults
          << static_cast<int8_t>(result.targets.size());
 
   // Encode the information of each target.
@@ -52,9 +52,9 @@ Packet& operator<<(Packet& packet, const PhotonPipelineResult& result) {
 
 Packet& operator>>(Packet& packet, PhotonPipelineResult& result) {
   // Decode latency, existence of targets, and number of targets.
-  int8_t targetCount = 0;
   double latencyMillis = 0;
-  packet >> latencyMillis >> targetCount;
+  int8_t targetCount = 0;
+  packet >> latencyMillis >> result.m_pnpResults >> targetCount;
   result.latency = units::second_t(latencyMillis / 1000.0);
 
   result.targets.clear();

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import CvSelect from "@/components/common/cv-select.vue";
+import PvSelect from "@/components/common/pv-select.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { TargetModel } from "@/types/PipelineTypes";
-import CvSlider from "@/components/common/cv-slider.vue";
+import PvSlider from "@/components/common/pv-slider.vue";
 import { computed, getCurrentInstance } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 
@@ -17,7 +17,7 @@ const interactiveCols = computed(
 
 <template>
   <div>
-    <cv-select
+    <pv-select
       v-model="useCameraSettingsStore().currentPipelineSettings.targetModel"
       label="Target Model"
       :items="[
@@ -34,7 +34,7 @@ const interactiveCols = computed(
       :select-cols="interactiveCols"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ targetModel: value }, false)"
     />
-    <cv-slider
+    <pv-slider
       v-model="useCameraSettingsStore().currentPipelineSettings.cornerDetectionAccuracyPercentage"
       class="pt-2"
       :slider-cols="interactiveCols"
