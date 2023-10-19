@@ -2,6 +2,8 @@
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { PipelineType } from "@/types/PipelineTypes";
 import { useStateStore } from "@/stores/StateStore";
+
+const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings;
 </script>
 
 <template>
@@ -77,10 +79,7 @@ import { useStateStore } from "@/stores/StateStore";
       </v-simple-table>
     </v-row>
     <v-row
-      v-if="
-        useCameraSettingsStore().currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
-        useCameraSettingsStore().currentPipelineSettings.doMultiTarget
-      "
+      v-if="currentPipelineSettings.pipelineType === PipelineType.AprilTag && currentPipelineSettings.doMultiTarget"
       align="start"
       class="pb-4 white--text"
     >
