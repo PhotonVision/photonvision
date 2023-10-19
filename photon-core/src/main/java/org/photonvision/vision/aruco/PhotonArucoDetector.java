@@ -29,20 +29,12 @@ import org.photonvision.common.logging.Logger;
 public class PhotonArucoDetector {
     private static final Logger logger = new Logger(PhotonArucoDetector.class, LogGroup.VisionModule);
 
-    // Detector parameters
-    private final DetectorParameters params = new DetectorParameters();
-
     private final ArucoDetector detector =
-            new ArucoDetector(Objdetect.getPredefinedDictionary(Objdetect.DICT_APRILTAG_16h5), params);
+            new ArucoDetector(Objdetect.getPredefinedDictionary(Objdetect.DICT_APRILTAG_16h5));
 
     private Mat ids = new Mat();
     private ArrayList<Mat> corners = new ArrayList<Mat>();
     private Mat cornerMat;
-
-    public PhotonArucoDetector() {
-        logger.debug("Creating new Aruco Detector");
-        params.set_cornerRefinementMethod(Objdetect.CORNER_REFINE_SUBPIX);
-    }
 
     public ArucoDetector getDetector() {
         return detector;
@@ -53,7 +45,7 @@ public class PhotonArucoDetector {
      * underlying detector object!
      */
     public DetectorParameters getParams() {
-        return params;
+        return detector.getDetectorParameters();
     }
 
     public void setParams(DetectorParameters params) {
@@ -62,24 +54,19 @@ public class PhotonArucoDetector {
 
     /**
      * Detect fiducial tags in the grayscaled image using the {@link ArucoDetector} in this class.
-     * Parameters for detection can be modified with {@link #setDetectorParams(DetectorParameters)}.
+     * Parameters for detection can be modified with {@link #setParams(DetectorParameters)}.
      *
      * @param grayscaleImg A grayscaled image
      * @return An array of ArucoDetectionResult, which contain tag corners and id.
      */
     public ArucoDetectionResult[] detect(Mat grayscaleImg) {
         // detect tags
-        // var param = detector.get_params();
-        // logger.debug("Aruco3: "+param.get_useAruco3Detection()+", iter:
-        // "+param.get_cornerRefinementMaxIterations()+", acc:
-        // "+param.get_cornerRefinementMinAccuracy()+", method: "+param.get_cornerRefinementMethod());
         detector.detectMarkers(grayscaleImg, corners, ids);
 
         ArucoDetectionResult[] toReturn = new ArucoDetectionResult[corners.size()];
         for (int i = 0; i < corners.size(); i++) {
             // each tag has a cornerMat
             cornerMat = corners.get(i);
-            // logger.debug(cornerMat.dump());
 
             // Aruco detection returns corners (TL, TR, BR, BL).
             // For parity with AprilTags and photonlib, we want (BL, BR, TR, TL).
