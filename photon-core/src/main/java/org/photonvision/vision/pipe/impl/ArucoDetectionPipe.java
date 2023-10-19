@@ -107,6 +107,8 @@ public class ArucoDetectionPipe
             detectParams.set_useAruco3Detection(newParams.useAruco3);
             detectParams.set_minSideLengthCanonicalImg(newParams.aruco3MinCanonicalImgSide);
             detectParams.set_minMarkerLengthRatioOriginalImg((float) newParams.aruco3MinMarkerSideRatio);
+
+            photonDetector.setParams(detectParams);
         }
 
         super.setParams(newParams);

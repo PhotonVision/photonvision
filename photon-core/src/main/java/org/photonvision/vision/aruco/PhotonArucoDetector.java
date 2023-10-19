@@ -48,8 +48,16 @@ public class PhotonArucoDetector {
         return detector;
     }
 
+    /**
+     * Get a copy of the current parameters being used. Must next call setParams to update the
+     * underlying detector object!
+     */
     public DetectorParameters getParams() {
         return params;
+    }
+
+    public void setParams(DetectorParameters params) {
+        detector.setDetectorParameters(params);
     }
 
     /**
