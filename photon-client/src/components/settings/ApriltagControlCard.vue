@@ -3,18 +3,21 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { Euler, Quaternion as ThreeQuat } from "three";
 import type { Quaternion } from "@/types/PhotonTrackingTypes";
 
-const quatToEuler = (quat: Quaternion): Euler => {
-  const three_quat = new ThreeQuat(quat.X, quat.Y, quat.Z, quat.W);
-  return new Euler().setFromQuaternion(three_quat, "ZYX");
-};
+const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: number } => {
+  const quat = new ThreeQuat(rot_quat.X, rot_quat.Y, rot_quat.Z, rot_quat.W);
+  const euler = new Euler().setFromQuaternion(quat, "ZYX");
 
-// Convert from radians to degrees.
-const degrees = (radians: number): number => (radians * 180) / Math.PI;
+  return {
+    x: euler.x * (180.0 / Math.PI),
+    y: euler.y * (180.0 / Math.PI),
+    z: euler.z * (180.0 / Math.PI)
+  };
+};
 </script>
 
 <template>
-  <v-card dark class="mb-3 pr-6 pb-3" style="background-color: #006492">
-    <v-card-title>Apriltag Layout</v-card-title>
+  <v-card dark class="pr-6 pb-3" style="background-color: #006492">
+    <v-card-title>AprilTag Field Layout</v-card-title>
     <div class="ml-5">
       <p>Field width: {{ useSettingsStore().currentFieldLayout.field.width.toFixed(2) }} meters</p>
       <p>Field length: {{ useSettingsStore().currentFieldLayout.field.length.toFixed(2) }} meters</p>
@@ -25,24 +28,21 @@ const degrees = (radians: number): number => (radians * 180) / Math.PI;
           <thead style="font-size: 1.25rem">
             <tr>
               <th class="text-center">ID</th>
-              <th class="text-center">X, meters</th>
-              <th class="text-center">Y, meters</th>
-              <th class="text-center">Z, meters</th>
-              <th class="text-center">θ<sub>x</sub> angle, &deg;</th>
-              <th class="text-center">θ<sub>y</sub> angle, &deg;</th>
-              <th class="text-center">θ<sub>z</sub> angle, &deg;</th>
+              <th class="text-center">X meters</th>
+              <th class="text-center">Y meters</th>
+              <th class="text-center">Z meters</th>
+              <th class="text-center">θ<sub>x</sub>&deg;</th>
+              <th class="text-center">θ<sub>y</sub>&deg;</th>
+              <th class="text-center">θ<sub>z</sub>&deg;</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(tag, index) in useSettingsStore().currentFieldLayout.tags" :key="index">
               <td>{{ tag.ID }}</td>
-              <td v-for="(val, idx) in Object.values(tag.pose.translation).slice(0, 3).map(degrees)" :key="idx">
+              <td v-for="(val, idx) in Object.values(tag.pose.translation)" :key="idx">
                 {{ val.toFixed(2) }}
               </td>
-              <td
-                v-for="(val, idx) in Object.values(quatToEuler(tag.pose.rotation.quaternion)).slice(0, 3).map(degrees)"
-                :key="idx"
-              >
+              <td v-for="(val, idx) in Object.values(quaternionToEuler(tag.pose.rotation.quaternion))" :key="idx + 4">
                 {{ val.toFixed(2) }}
               </td>
             </tr>
