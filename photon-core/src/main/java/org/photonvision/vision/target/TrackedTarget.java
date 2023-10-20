@@ -144,22 +144,6 @@ public class TrackedTarget implements Releasable {
 
         // TODO implement skew? or just yeet
         m_skew = 0;
-
-        var tvec = new Mat(3, 1, CvType.CV_64FC1);
-        tvec.put(
-                0,
-                0,
-                new double[] {
-                    bestPose.getTranslation().getX(),
-                    bestPose.getTranslation().getY(),
-                    bestPose.getTranslation().getZ()
-                });
-        setCameraRelativeTvec(tvec);
-
-        // Opencv expects a 3d vector with norm = angle and direction = axis
-        var rvec = new Mat(3, 1, CvType.CV_64FC1);
-        MathUtils.rotationToOpencvRvec(bestPose.getRotation(), rvec);
-        setCameraRelativeRvec(rvec);
     }
 
     public TrackedTarget(
@@ -215,22 +199,22 @@ public class TrackedTarget implements Releasable {
             m_altCameraToTarget3d = altPose;
 
             m_poseAmbiguity = tagPose.getAmbiguity();
+
+            var tvec = new Mat(3, 1, CvType.CV_64FC1);
+            tvec.put(
+                    0,
+                    0,
+                    new double[] {
+                        bestPose.getTranslation().getX(),
+                        bestPose.getTranslation().getY(),
+                        bestPose.getTranslation().getZ()
+                    });
+            setCameraRelativeTvec(tvec);
+
+            var rvec = new Mat(3, 1, CvType.CV_64FC1);
+            MathUtils.rotationToOpencvRvec(bestPose.getRotation(), rvec);
+            setCameraRelativeRvec(rvec);
         }
-
-        var tvec = new Mat(3, 1, CvType.CV_64FC1);
-        tvec.put(
-                0,
-                0,
-                new double[] {
-                    bestPose.getTranslation().getX(),
-                    bestPose.getTranslation().getY(),
-                    bestPose.getTranslation().getZ()
-                });
-        setCameraRelativeTvec(tvec);
-
-        var rvec = new Mat(3, 1, CvType.CV_64FC1);
-        MathUtils.rotationToOpencvRvec(bestPose.getRotation(), rvec);
-        setCameraRelativeRvec(rvec);
     }
 
     public void setFiducialId(int id) {

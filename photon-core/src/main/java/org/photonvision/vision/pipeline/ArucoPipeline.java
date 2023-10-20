@@ -41,7 +41,9 @@ import java.util.ArrayList;
 import java.util.List;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.objdetect.Objdetect;
 import org.photonvision.common.util.math.MathUtils;
+import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
@@ -71,6 +73,10 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
     protected void setPipeParamsImpl() {
         var params = new ArucoDetectionPipeParams();
         // sanitize and record settings
+
+        if (settings.tagFamily == AprilTagFamily.kTag36h11) {
+            params.tagFamily = Objdetect.DICT_APRILTAG_36h11;
+        }
 
         int threshMinSize = Math.max(3, settings.threshWinSizes.getFirst());
         settings.threshWinSizes.setFirst(threshMinSize);

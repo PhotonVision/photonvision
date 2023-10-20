@@ -33,7 +33,7 @@ public class PhotonArucoDetector {
             new ArucoDetector(Objdetect.getPredefinedDictionary(Objdetect.DICT_APRILTAG_16h5));
 
     private Mat ids = new Mat();
-    private ArrayList<Mat> corners = new ArrayList<Mat>();
+    private ArrayList<Mat> cornerMats = new ArrayList<Mat>();
     private Mat cornerMat;
 
     public ArucoDetector getDetector() {
@@ -61,26 +61,26 @@ public class PhotonArucoDetector {
      */
     public ArucoDetectionResult[] detect(Mat grayscaleImg) {
         // detect tags
-        detector.detectMarkers(grayscaleImg, corners, ids);
+        detector.detectMarkers(grayscaleImg, cornerMats, ids);
 
-        ArucoDetectionResult[] toReturn = new ArucoDetectionResult[corners.size()];
-        for (int i = 0; i < corners.size(); i++) {
-            // each tag has a cornerMat
-            cornerMat = corners.get(i);
+        ArucoDetectionResult[] toReturn = new ArucoDetectionResult[cornerMats.size()];
+        for (int i = 0; i < cornerMats.size(); i++) {
+            // each detection has a Mat of corners
+            cornerMat = cornerMats.get(i);
 
-            // Aruco detection returns corners (TL, TR, BR, BL).
+            // Aruco detection returns corners (BR, BL, TL, TR).
             // For parity with AprilTags and photonlib, we want (BL, BR, TR, TL).
             double[] xCorners = {
-                cornerMat.get(0, 3)[0],
-                cornerMat.get(0, 2)[0],
                 cornerMat.get(0, 1)[0],
-                cornerMat.get(0, 0)[0]
+                cornerMat.get(0, 0)[0],
+                cornerMat.get(0, 3)[0],
+                cornerMat.get(0, 2)[0]
             };
             double[] yCorners = {
-                cornerMat.get(0, 3)[1],
-                cornerMat.get(0, 2)[1],
                 cornerMat.get(0, 1)[1],
-                cornerMat.get(0, 0)[1]
+                cornerMat.get(0, 0)[1],
+                cornerMat.get(0, 3)[1],
+                cornerMat.get(0, 2)[1]
             };
             cornerMat.release();
 

@@ -22,7 +22,7 @@ import org.opencv.objdetect.Objdetect;
 
 /** Detector parameters. See https://docs.opencv.org/4.x/d5/dae/tutorial_aruco_detection.html. */
 public class ArucoDetectionPipeParams {
-    /** Tag family. Default: {@link Aruco#DICT_APRILTAG_16h5}. */
+    /** Tag family. Default: {@link Objdetect#DICT_APRILTAG_16h5}. */
     public int tagFamily = Objdetect.DICT_APRILTAG_16h5;
 
     public int threshMinSize = 11;

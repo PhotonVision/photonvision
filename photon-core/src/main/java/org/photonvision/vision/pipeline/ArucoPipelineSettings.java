@@ -19,10 +19,13 @@ package org.photonvision.vision.pipeline;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import org.photonvision.common.util.numbers.IntegerCouple;
+import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.target.TargetModel;
 
 @JsonTypeName("ArucoPipelineSettings")
 public class ArucoPipelineSettings extends AdvancedPipelineSettings {
+    public AprilTagFamily tagFamily = AprilTagFamily.kTag16h5;
+
     public IntegerCouple threshWinSizes = new IntegerCouple(11, 91);
     public int threshStepSize = 40;
     public double threshConstant = 10;
