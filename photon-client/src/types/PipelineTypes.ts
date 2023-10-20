@@ -21,17 +21,16 @@ export enum RobotOffsetPointMode {
 }
 
 export enum TargetModel {
-  InfiniteRechargeHighGoalOuter = 0,
-  InfiniteRechargeHighGoalInner = 1,
-  DeepSpaceDualTarget = 2,
+  StrongholdHighGoal = 0,
+  DeepSpaceDualTarget = 1,
+  InfiniteRechargeHighGoalOuter = 2,
   CircularPowerCell7in = 3,
   RapidReactCircularCargoBall = 4,
-  StrongholdHighGoal = 5,
-  Apriltag_200mm = 6,
-  Aruco6in_16h5 = 7,
-  Apriltag6in_16h5 = 8,
-  Aruco6p5in_36h11 = 9,
-  Apriltag6p5in_36h11 = 10
+  Apriltag_200mm = 5,
+  Aruco6in_16h5 = 6,
+  Apriltag6in_16h5 = 7,
+  Aruco6p5in_36h11 = 8,
+  Apriltag6p5in_36h11 = 9
 }
 
 export interface PipelineSettings {
