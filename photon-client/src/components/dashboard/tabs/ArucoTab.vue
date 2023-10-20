@@ -2,31 +2,15 @@
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { PipelineType } from "@/types/PipelineTypes";
 import PvSlider from "@/components/common/pv-slider.vue";
-import pvSwitch from "@/components/common/pv-switch.vue";
-import pvRangeSlider from "@/components/common/pv-range-slider.vue";
-import pvSelect from "@/components/common/pv-select.vue";
+import PvSwitch from "@/components/common/pv-switch.vue";
+import PvRangeSlider from "@/components/common/pv-range-slider.vue";
+import PvSelect from "@/components/common/pv-select.vue";
 import { computed, getCurrentInstance } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
 // Defer reference to store access method
 const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings;
-
-// TODO fix pv-range-slider so that store access doesn't need to be deferred
-const threshWinSizes = computed<[number, number]>({
-  get: () => {
-    if (currentPipelineSettings.pipelineType === PipelineType.Aruco) {
-      return Object.values(currentPipelineSettings.threshWinSizes) as [number, number];
-    } else {
-      return [0, 0] as [number, number];
-    }
-  },
-  set: (v) => {
-    if (currentPipelineSettings.pipelineType === PipelineType.Aruco) {
-      currentPipelineSettings.threshWinSizes = v;
-    }
-  }
-});
 
 const interactiveCols = computed(
   () =>
@@ -54,7 +38,7 @@ const interactiveCols = computed(
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ useCornerRefinement: value }, false)"
     />
     <pv-range-slider
-      v-model="threshWinSizes"
+      v-model="currentPipelineSettings.threshWinSizes"
       label="Thresh Min/Max Size"
       tooltip="The minimum and maximum adaptive threshold window size."
       :min="3"
@@ -92,38 +76,5 @@ const interactiveCols = computed(
       tooltip="Display the first threshold step to the color stream."
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ debugThreshold: value }, false)"
     />
-    <!-- <pv-switch
-      v-model="currentPipelineSettings.useAruco3"
-      class="pt-2"
-      label="Use ArUco3 Speedup"
-      tooltip="Enables an 'ArUco3' implementation which may increase performance at the cost of detection distance. This is similar to AprilTag's 'decimation'."
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ useAruco3: value }, false)"
-    />
-    <pv-slider
-      v-model="currentPipelineSettings.aruco3MinMarkerSideRatio"
-      class="pt-2"
-      :slider-cols="interactiveCols"
-      label="ArUco3 Min Marker Ratio"
-      tooltip="Minimum side length of markers expressed as a ratio of the largest image dimension."
-      :min="0"
-      :max="0.1"
-      :step="0.001"
-      @input="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ aruco3MinMarkerSideRatio: value }, false)
-      "
-    />
-    <pv-slider
-      v-model="currentPipelineSettings.aruco3MinCanonicalImgSide"
-      class="pt-2"
-      :slider-cols="interactiveCols"
-      label="ArUco3 Min Canonical Side"
-      tooltip="Minimum side length of the canonical image (marker after undoing perspective distortion)."
-      :min="16"
-      :max="128"
-      :step="1"
-      @input="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ aruco3MinCanonicalImgSide: value }, false)
-      "
-    /> -->
   </div>
 </template>
