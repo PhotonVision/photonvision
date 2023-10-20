@@ -288,6 +288,8 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
             </v-list-item>
           </v-list>
         </v-menu>
+        <pv-icon v-else-if="useCameraSettingsStore().isDriverMode &&
+        useCameraSettingsStore().pipelineNames.length === 0" @click="showCreatePipelineDialog" color="#c5c5c5" :right="true" icon-name="mdi-plus" tooltip="Add new pipeline" />
       </v-col>
     </v-row>
     <v-row style="padding: 0 12px 12px 24px">
