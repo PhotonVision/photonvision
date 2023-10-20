@@ -41,7 +41,7 @@ const interactiveCols = computed(
     <pv-range-slider
       v-model="currentPipelineSettings.threshWinSizes"
       label="Thresh Min/Max Size"
-      tooltip="The minimum and maximum adaptive threshold window size."
+      tooltip="The minimum and maximum adaptive threshold window size. Larger windows tend more towards global thresholding, but small windows can be weak to noise."
       :min="3"
       :max="255"
       :slider-cols="interactiveCols"
