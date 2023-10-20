@@ -230,15 +230,22 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
         />
       </v-col>
       <v-col cols="2" style="display: flex; align-items: center; justify-content: center">
-        <div v-if="isCameraNameEdit" style="display: flex; gap:14px">
-          <pv-icon icon-name="mdi-content-save"
-                   color="#c5c5c5"
-                   @click="() => saveCameraNameEdit(currentCameraName)"
-                   :disabled="checkCameraName(currentCameraName) !== true"
+        <div v-if="isCameraNameEdit" style="display: flex; gap: 14px">
+          <pv-icon
+            icon-name="mdi-content-save"
+            color="#c5c5c5"
+            :disabled="checkCameraName(currentCameraName) !== true"
+            @click="() => saveCameraNameEdit(currentCameraName)"
           />
-          <pv-icon icon-name="mdi-cancel" color="red darken-2" @click="cancelCameraNameEdit"/>
+          <pv-icon icon-name="mdi-cancel" color="red darken-2" @click="cancelCameraNameEdit" />
         </div>
-        <pv-icon v-else color="#c5c5c5" icon-name="mdi-pencil" tooltip="Edit Camera Name" @click="startCameraNameEdit" />
+        <pv-icon
+          v-else
+          color="#c5c5c5"
+          icon-name="mdi-pencil"
+          tooltip="Edit Camera Name"
+          @click="startCameraNameEdit"
+        />
       </v-col>
     </v-row>
     <v-row style="padding: 0 12px 0 24px">
@@ -263,13 +270,14 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
         />
       </v-col>
       <v-col cols="2" class="pa-0" style="display: flex; align-items: center; justify-content: center">
-        <div v-if="isPipelineNameEdit" style="display: flex; gap:14px">
+        <div v-if="isPipelineNameEdit" style="display: flex; gap: 14px">
           <pv-icon
-              icon-name="mdi-content-save"
-              color="#c5c5c5"
-              @click="() => savePipelineNameEdit(currentPipelineName)"
-              :disabled="checkPipelineName(currentPipelineName) !== true"/>
-          <pv-icon icon-name="mdi-cancel" color="red darken-2" @click="cancelPipelineNameEdit"/>
+            icon-name="mdi-content-save"
+            color="#c5c5c5"
+            :disabled="checkPipelineName(currentPipelineName) !== true"
+            @click="() => savePipelineNameEdit(currentPipelineName)"
+          />
+          <pv-icon icon-name="mdi-cancel" color="red darken-2" @click="cancelPipelineNameEdit" />
         </div>
         <v-menu v-else-if="!useCameraSettingsStore().isDriverMode" offset-y nudge-bottom="7" auto>
           <template #activator="{ on }">
@@ -304,8 +312,14 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
             </v-list-item>
           </v-list>
         </v-menu>
-        <pv-icon v-else-if="useCameraSettingsStore().isDriverMode &&
-        useCameraSettingsStore().pipelineNames.length === 0" @click="showCreatePipelineDialog" color="#c5c5c5" :right="true" icon-name="mdi-plus" tooltip="Add new pipeline" />
+        <pv-icon
+          v-else-if="useCameraSettingsStore().isDriverMode && useCameraSettingsStore().pipelineNames.length === 0"
+          color="#c5c5c5"
+          :right="true"
+          icon-name="mdi-plus"
+          tooltip="Add new pipeline"
+          @click="showCreatePipelineDialog"
+        />
       </v-col>
     </v-row>
     <v-row style="padding: 0 12px 12px 24px">

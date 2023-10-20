@@ -67,12 +67,12 @@ const fpsTooLow = computed<boolean>(() => {
       </div>
       <div>
         <v-switch
-            v-model="driverMode"
-            :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
-            label="Driver Mode"
-            style="margin-left: auto"
-            color="accent"
-            class="pt-2"
+          v-model="driverMode"
+          :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
+          label="Driver Mode"
+          style="margin-left: auto"
+          color="accent"
+          class="pt-2"
         />
       </div>
     </v-card-title>

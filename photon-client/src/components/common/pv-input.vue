@@ -36,7 +36,7 @@ const handleKeydown = ({ key }) => {
   switch (key) {
     case "Enter":
       // Explicitly check that all rule props return true
-      if(!props.rules?.every(rule => rule(localValue.value) === true)) return;
+      if (!props.rules?.every((rule) => rule(localValue.value) === true)) return;
 
       emit("onEnter", localValue.value);
       break;
