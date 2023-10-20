@@ -60,7 +60,7 @@ const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings
                 <td>{{ target.skew.toFixed(2) }}&deg;</td>
                 <td>{{ target.area.toFixed(2) }}&deg;</td>
               </template>
-              <template v-else-if="useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled">
+              <template v-else>
                 <td>{{ target.pose?.x.toFixed(2) }}&nbsp;m</td>
                 <td>{{ target.pose?.y.toFixed(2) }}&nbsp;m</td>
                 <td>{{ (((target.pose?.angle_z || 0) * 180.0) / Math.PI).toFixed(2) }}&deg;</td>
