@@ -308,7 +308,7 @@ const handleSettingsImport = () => {
             <a
               ref="exportLogFile"
               style="color: black; text-decoration: none; display: none"
-              :href="'http://' + address + '/api/utils/logs/photonvision-journalctl.txt'"
+              :href="`http://${address}/api/utils/photonvision-journalctl.txt`"
               download="photonvision-journalctl.txt"
               target="_blank"
             />
