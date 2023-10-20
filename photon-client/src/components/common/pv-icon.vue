@@ -2,6 +2,7 @@
 const props = withDefaults(
   defineProps<{
     iconName: string;
+    disabled?: boolean;
     color?: string;
     tooltip?: string;
     right?: boolean;
@@ -9,6 +10,7 @@ const props = withDefaults(
   }>(),
   {
     right: false,
+    disabled: false,
     hover: false
   }
 );
@@ -24,7 +26,7 @@ const hoverClass = props.hover ? "hover" : "";
   <div>
     <v-tooltip :right="right" :bottom="!right" nudge-right="10" :disabled="tooltip === undefined">
       <template #activator="{ on, attrs }">
-        <v-icon :class="hoverClass" :color="color" v-bind="attrs" v-on="on" @click="$emit('click')">
+        <v-icon :class="hoverClass" :color="color" v-bind="attrs" v-on="on" @click="$emit('click')" :disabled="disabled">
           {{ iconName }}
         </v-icon>
       </template>
