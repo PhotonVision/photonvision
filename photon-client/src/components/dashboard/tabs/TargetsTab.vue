@@ -81,7 +81,7 @@ import { useStateStore } from "@/stores/StateStore";
     <v-row
       v-if="
         (useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
-                    useCameraSettingsStore().currentPipelineType === PipelineType.Aruco) &&
+          useCameraSettingsStore().currentPipelineType === PipelineType.Aruco) &&
         useCameraSettingsStore().currentPipelineSettings.doMultiTarget
       "
       align="start"

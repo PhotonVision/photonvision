@@ -87,7 +87,7 @@ const interactiveCols = computed(
     <pv-switch
       v-if="
         (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-        currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
+          currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
         useCameraSettingsStore().isCurrentVideoFormatCalibrated
       "
       v-model="currentPipelineSettings.doMultiTarget"
@@ -100,7 +100,7 @@ const interactiveCols = computed(
     <pv-switch
       v-if="
         (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-        currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
+          currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
         useCameraSettingsStore().isCurrentVideoFormatCalibrated
       "
       v-model="currentPipelineSettings.doSingleTargetAlways"

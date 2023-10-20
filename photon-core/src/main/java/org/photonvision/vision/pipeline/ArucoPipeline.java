@@ -79,7 +79,7 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         var params = new ArucoDetectionPipeParams();
         // sanitize and record settings
 
-        switch(settings.tagFamily) {
+        switch (settings.tagFamily) {
             case kTag36h11:
                 params.tagFamily = Objdetect.DICT_APRILTAG_36h11;
                 break;
@@ -196,7 +196,8 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
                                 new Transform3d(
                                         new Pose3d().plus(multiTagResult.estimatedPose.best), tagPose.get());
                         // match expected OpenCV coordinate system
-                        camToTag = CoordinateSystem.convert(camToTag, CoordinateSystem.NWU(), CoordinateSystem.EDN());
+                        camToTag =
+                                CoordinateSystem.convert(camToTag, CoordinateSystem.NWU(), CoordinateSystem.EDN());
 
                         tagPoseEstimate = new AprilTagPoseEstimate(camToTag, camToTag, 0, 0);
                     }

@@ -17,8 +17,8 @@
 
 package org.photonvision.vision.pipeline;
 
+import edu.wpi.first.math.geometry.Translation3d;
 import java.util.stream.Collectors;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,8 +30,6 @@ import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
-
-import edu.wpi.first.math.geometry.Translation3d;
 
 public class ArucoPipelineTest {
     @BeforeEach
