@@ -17,6 +17,7 @@
 
 package org.photonvision.common.configuration;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -31,33 +32,40 @@ import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.processes.VisionSource;
 
-// TODO rename this class
 public class PhotonConfiguration {
     private final HardwareConfig hardwareConfig;
     private final HardwareSettings hardwareSettings;
     private NetworkConfig networkConfig;
-    private final HashMap<String, CameraConfiguration> cameraConfigurations;
+    private AprilTagFieldLayout atfl;
+    private HashMap<String, CameraConfiguration> cameraConfigurations;
 
     public PhotonConfiguration(
             HardwareConfig hardwareConfig,
             HardwareSettings hardwareSettings,
-            NetworkConfig networkConfig) {
-        this(hardwareConfig, hardwareSettings, networkConfig, new HashMap<>());
+            NetworkConfig networkConfig,
+            AprilTagFieldLayout atfl) {
+        this(hardwareConfig, hardwareSettings, networkConfig, atfl, new HashMap<>());
     }
 
     public PhotonConfiguration(
             HardwareConfig hardwareConfig,
             HardwareSettings hardwareSettings,
             NetworkConfig networkConfig,
+            AprilTagFieldLayout atfl,
             HashMap<String, CameraConfiguration> cameraConfigurations) {
         this.hardwareConfig = hardwareConfig;
         this.hardwareSettings = hardwareSettings;
         this.networkConfig = networkConfig;
         this.cameraConfigurations = cameraConfigurations;
+        this.atfl = atfl;
     }
 
     public PhotonConfiguration() {
-        this(new HardwareConfig(), new HardwareSettings(), new NetworkConfig());
+        this(
+                new HardwareConfig(),
+                new HardwareSettings(),
+                new NetworkConfig(),
+                new AprilTagFieldLayout(List.of(), 0, 0));
     }
 
     public HardwareConfig getHardwareConfig() {
@@ -70,6 +78,14 @@ public class PhotonConfiguration {
 
     public HardwareSettings getHardwareSettings() {
         return hardwareSettings;
+    }
+
+    public AprilTagFieldLayout getApriltagFieldLayout() {
+        return atfl;
+    }
+
+    public void setApriltagFieldLayout(AprilTagFieldLayout atfl) {
+        this.atfl = atfl;
     }
 
     public void setNetworkConfig(NetworkConfig networkConfig) {
@@ -115,7 +131,7 @@ public class PhotonConfiguration {
         lightingConfig.brightness = hardwareSettings.ledBrightnessPercentage;
         lightingConfig.supported = !hardwareConfig.ledPins.isEmpty();
         settingsSubmap.put("lighting", SerializationUtils.objectToHashMap(lightingConfig));
-
+        // General Settings
         var generalSubmap = new HashMap<String, Object>();
         generalSubmap.put("version", PhotonVersion.versionString);
         generalSubmap.put(
@@ -126,8 +142,17 @@ public class PhotonConfiguration {
         generalSubmap.put("hardwareModel", hardwareConfig.deviceName);
         generalSubmap.put("hardwarePlatform", Platform.getPlatformName());
         settingsSubmap.put("general", generalSubmap);
+        // AprilTagFieldLayout
+        settingsSubmap.put("atfl", this.atfl);
 
+        map.put(
+                "cameraSettings",
+                VisionModuleManager.getInstance().getModules().stream()
+                        .map(VisionModule::toUICameraConfig)
+                        .map(SerializationUtils::objectToHashMap)
+                        .collect(Collectors.toList()));
         map.put("settings", settingsSubmap);
+
         return map;
     }
 

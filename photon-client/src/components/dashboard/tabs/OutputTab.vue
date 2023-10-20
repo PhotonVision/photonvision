@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import CvSelect from "@/components/common/cv-select.vue";
+import PvSelect from "@/components/common/pv-select.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { PipelineType, RobotOffsetPointMode } from "@/types/PipelineTypes";
-import CvSwitch from "@/components/common/cv-switch.vue";
+import PvSwitch from "@/components/common/pv-switch.vue";
 import { computed, getCurrentInstance } from "vue";
 import { RobotOffsetType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
@@ -40,6 +40,8 @@ const offsetPoints = computed<MetricItem[]>(() => {
   }
 });
 
+const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings;
+
 const interactiveCols = computed(
   () =>
     (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) &&
@@ -51,7 +53,7 @@ const interactiveCols = computed(
 
 <template>
   <div>
-    <cv-select
+    <pv-select
       v-model="useCameraSettingsStore().currentPipelineSettings.contourTargetOffsetPointEdge"
       label="Target Offset Point"
       tooltip="Changes where the 'center' of the target is (used for calculating e.g. pitch and yaw)"
@@ -61,7 +63,7 @@ const interactiveCols = computed(
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOffsetPointEdge: value }, false)
       "
     />
-    <cv-select
+    <pv-select
       v-if="!isTagPipeline"
       v-model="useCameraSettingsStore().currentPipelineSettings.contourTargetOrientation"
       label="Target Orientation"
@@ -72,15 +74,39 @@ const interactiveCols = computed(
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOrientation: value }, false)
       "
     />
-    <cv-switch
+    <pv-switch
       v-model="useCameraSettingsStore().currentPipelineSettings.outputShowMultipleTargets"
       label="Show Multiple Targets"
-      tooltip="If enabled, up to five targets will be displayed and sent to user code, instead of just one"
+      tooltip="If enabled, up to five targets will be displayed and sent via PhotonLib, instead of just one"
       :disabled="isTagPipeline"
       :switch-cols="interactiveCols"
       @input="
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ outputShowMultipleTargets: value }, false)
       "
+    />
+    <cv-switch
+      v-if="
+        currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
+        useCameraSettingsStore().isCurrentVideoFormatCalibrated
+      "
+      v-model="currentPipelineSettings.doMultiTarget"
+      label="Do Multi-Target Estimation"
+      tooltip="If enabled, all visible fiducial targets will be used to provide a single pose estimate from their combined model."
+      :switch-cols="interactiveCols"
+      :disabled="!isTagPipeline"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ doMultiTarget: value }, false)"
+    />
+    <cv-switch
+      v-if="
+        currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
+        useCameraSettingsStore().isCurrentVideoFormatCalibrated
+      "
+      v-model="currentPipelineSettings.doSingleTargetAlways"
+      label="Always Do Single-Target Estimation"
+      tooltip="If disabled, visible fiducial targets used for multi-target estimation will not also be used for single-target estimation."
+      :switch-cols="interactiveCols"
+      :disabled="!isTagPipeline || !currentPipelineSettings.doMultiTarget"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ doSingleTargetAlways: value }, false)"
     />
     <v-divider />
     <table
@@ -98,7 +124,7 @@ const interactiveCols = computed(
         </td>
       </tr>
     </table>
-    <cv-select
+    <pv-select
       v-model="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode"
       label="Robot Offset Mode"
       tooltip="Used to add an arbitrary offset to the location of the targeting crosshair"

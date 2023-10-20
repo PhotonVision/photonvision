@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import TooltippedLabel from "@/components/common/cv-tooltipped-label.vue";
+import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
 import { computed } from "vue";
 
 const props = withDefaults(

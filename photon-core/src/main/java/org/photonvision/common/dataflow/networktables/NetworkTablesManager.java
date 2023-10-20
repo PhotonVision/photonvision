@@ -17,9 +17,14 @@
 
 package org.photonvision.common.dataflow.networktables;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent;
+import edu.wpi.first.networktables.NetworkTableEvent.Kind;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StringSubscriber;
+import java.io.IOException;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.function.Consumer;
 import org.photonvision.PhotonVersion;
@@ -32,17 +37,33 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.scripting.ScriptEventType;
 import org.photonvision.common.scripting.ScriptManager;
 import org.photonvision.common.util.TimedTaskManager;
+import org.photonvision.common.util.file.JacksonUtils;
 
 public class NetworkTablesManager {
     private final NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
     private final String kRootTableName = "/photonvision";
+    private final String kFieldLayoutName = "apriltag_field_layout";
     public final NetworkTable kRootTable = ntInstance.getTable(kRootTableName);
 
-    private boolean isRetryingConnection = false;
+    private final NTLogger m_ntLogger = new NTLogger();
+
+    private boolean m_isRetryingConnection = false;
+
+    private StringSubscriber m_fieldLayoutSubscriber =
+            kRootTable.getStringTopic(kFieldLayoutName).subscribe("");
 
     private NetworkTablesManager() {
-        ntInstance.addLogger(0, 255, new NTLogger()); // to hide error messages
+        ntInstance.addLogger(255, 255, (event) -> {}); // to hide error messages
+        ntInstance.addConnectionListener(true, m_ntLogger); // to hide error messages
+
+        ntInstance.addListener(
+                m_fieldLayoutSubscriber, EnumSet.of(Kind.kValueAll), this::onFieldLayoutChanged);
+
         TimedTaskManager.getInstance().addTask("NTManager", this::ntTick, 5000);
+
+        // Get the UI state in sync with the backend. NT should fire a callback when it first connects
+        // to the robot
+        broadcastConnectedStatus();
     }
 
     private static NetworkTablesManager INSTANCE;
@@ -56,28 +77,54 @@ public class NetworkTablesManager {
 
     private static class NTLogger implements Consumer<NetworkTableEvent> {
         private boolean hasReportedConnectionFailure = false;
-        private long lastConnectMessageMillis = 0;
 
         @Override
         public void accept(NetworkTableEvent event) {
-            if (!hasReportedConnectionFailure && event.logMessage.message.contains("timed out")) {
-                logger.error("NT Connection has failed! Will retry in background.");
+            var isConnEvent = event.is(Kind.kConnected);
+            var isDisconnEvent = event.is(Kind.kDisconnected);
+
+            if (!hasReportedConnectionFailure && isDisconnEvent) {
+                var msg =
+                        String.format(
+                                "NT lost connection to %s:%d! (NT version %d). Will retry in background.",
+                                event.connInfo.remote_ip,
+                                event.connInfo.remote_port,
+                                event.connInfo.protocol_version);
+                logger.error(msg);
+
                 hasReportedConnectionFailure = true;
                 getInstance().broadcastConnectedStatus();
-            } else if (event.logMessage.message.contains("connected")
-                    && System.currentTimeMillis() - lastConnectMessageMillis > 125) {
-                String connectionDescription = "(unknown)";
-                var connections = getInstance().ntInstance.getConnections();
-                if (connections.length > 0) {
-                    connectionDescription = connections[0].remote_ip + ":" + connections[0].remote_port;
-                }
-                logger.info("NT Connected to " + connectionDescription + "!");
+            } else if (isConnEvent && event.connInfo != null) {
+                var msg =
+                        String.format(
+                                "NT connected to %s:%d! (NT version %d)",
+                                event.connInfo.remote_ip,
+                                event.connInfo.remote_port,
+                                event.connInfo.protocol_version);
+                logger.info(msg);
+
                 hasReportedConnectionFailure = false;
-                lastConnectMessageMillis = System.currentTimeMillis();
                 ScriptManager.queueEvent(ScriptEventType.kNTConnected);
                 getInstance().broadcastVersion();
                 getInstance().broadcastConnectedStatus();
             }
+        }
+    }
+
+    private void onFieldLayoutChanged(NetworkTableEvent event) {
+        var atfl_json = event.valueData.value.getString();
+        try {
+            System.out.println("Got new field layout!");
+            var atfl = JacksonUtils.deserialize(atfl_json, AprilTagFieldLayout.class);
+            ConfigManager.getInstance().getConfig().setApriltagFieldLayout(atfl);
+            ConfigManager.getInstance().requestSave();
+            DataChangeService.getInstance()
+                    .publishEvent(
+                            new OutgoingUIEvent<>(
+                                    "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
+        } catch (IOException e) {
+            logger.error("Error deserializing atfl!");
+            logger.error(atfl_json);
         }
     }
 
@@ -122,10 +169,10 @@ public class NetworkTablesManager {
         ntInstance.startClient4("photonvision");
         try {
             int t = Integer.parseInt(ntServerAddress);
-            if (!isRetryingConnection) logger.info("Starting NT Client, server team is " + t);
+            if (!m_isRetryingConnection) logger.info("Starting NT Client, server team is " + t);
             ntInstance.setServerTeam(t);
         } catch (NumberFormatException e) {
-            if (!isRetryingConnection)
+            if (!m_isRetryingConnection)
                 logger.info("Starting NT Client, server IP is \"" + ntServerAddress + "\"");
             ntInstance.setServer(ntServerAddress);
         }
@@ -151,8 +198,8 @@ public class NetworkTablesManager {
             setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
         }
 
-        if (!ntInstance.isConnected() && !isRetryingConnection) {
-            isRetryingConnection = true;
+        if (!ntInstance.isConnected() && !m_isRetryingConnection) {
+            m_isRetryingConnection = true;
             logger.error(
                     "[NetworkTablesManager] Could not connect to the robot! Will retry in the background...");
         }

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { PipelineType } from "@/types/PipelineTypes";
-import CvRangeSlider from "@/components/common/cv-range-slider.vue";
-import CvSelect from "@/components/common/cv-select.vue";
-import CvSlider from "@/components/common/cv-slider.vue";
+import PvRangeSlider from "@/components/common/pv-range-slider.vue";
+import PvSelect from "@/components/common/pv-select.vue";
+import PvSlider from "@/components/common/pv-slider.vue";
 import { computed, getCurrentInstance } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 
@@ -11,7 +11,7 @@ import { useStateStore } from "@/stores/StateStore";
 // Defer reference to store access method
 const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings;
 
-// TODO fix cv-range-slider so that store access doesn't need to be deferred
+// TODO fix pv-range-slider so that store access doesn't need to be deferred
 const contourArea = computed<[number, number]>({
   get: () => Object.values(useCameraSettingsStore().currentPipelineSettings.contourArea) as [number, number],
   set: (v) => (useCameraSettingsStore().currentPipelineSettings.contourArea = v)
@@ -58,7 +58,7 @@ const interactiveCols = computed(
 
 <template>
   <div>
-    <cv-range-slider
+    <pv-range-slider
       v-model="contourArea"
       label="Area"
       :min="0"
@@ -67,7 +67,7 @@ const interactiveCols = computed(
       :step="0.01"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourArea: value }, false)"
     />
-    <cv-range-slider
+    <pv-range-slider
       v-if="useCameraSettingsStore().currentPipelineType !== PipelineType.ColoredShape"
       v-model="contourRatio"
       label="Ratio (W/H)"
@@ -78,7 +78,7 @@ const interactiveCols = computed(
       :step="0.1"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourRatio: value }, false)"
     />
-    <cv-select
+    <pv-select
       v-model="useCameraSettingsStore().currentPipelineSettings.contourTargetOrientation"
       label="Target Orientation"
       tooltip="Used to determine how to calculate target landmarks, as well as aspect ratio"
@@ -88,7 +88,7 @@ const interactiveCols = computed(
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOrientation: value }, false)
       "
     />
-    <cv-range-slider
+    <pv-range-slider
       v-if="useCameraSettingsStore().currentPipelineType === PipelineType.ColoredShape"
       v-model="contourFullness"
       label="Fullness"
@@ -98,7 +98,7 @@ const interactiveCols = computed(
       :slider-cols="interactiveCols"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourFullness: value }, false)"
     />
-    <cv-range-slider
+    <pv-range-slider
       v-if="currentPipelineSettings.pipelineType === PipelineType.ColoredShape"
       v-model="contourPerimeter"
       label="Perimeter"
@@ -108,7 +108,7 @@ const interactiveCols = computed(
       :slider-cols="interactiveCols"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourPerimeter: value }, false)"
     />
-    <cv-slider
+    <pv-slider
       v-model="useCameraSettingsStore().currentPipelineSettings.contourSpecklePercentage"
       label="Speckle Rejection"
       tooltip="Rejects contours whose average area is less than the given percentage of the average area of all the other contours"
@@ -120,7 +120,7 @@ const interactiveCols = computed(
       "
     />
     <template v-if="currentPipelineSettings.pipelineType === PipelineType.Reflective">
-      <cv-slider
+      <pv-slider
         v-model="currentPipelineSettings.contourFilterRangeX"
         label="X Filter Tightness"
         tooltip="Rejects contours whose center X is further than X standard deviations left/right of the mean X location"
@@ -130,7 +130,7 @@ const interactiveCols = computed(
         :slider-cols="interactiveCols"
         @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourFilterRangeX: value }, false)"
       />
-      <cv-slider
+      <pv-slider
         v-model="currentPipelineSettings.contourFilterRangeY"
         label="Y Filter Tightness"
         tooltip="Rejects contours whose center Y is further than X standard deviations above/below the mean Y location"
@@ -140,7 +140,7 @@ const interactiveCols = computed(
         :slider-cols="interactiveCols"
         @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourFilterRangeY: value }, false)"
       />
-      <cv-select
+      <pv-select
         v-model="useCameraSettingsStore().currentPipelineSettings.contourGroupingMode"
         label="Target Grouping"
         tooltip="Whether or not every two targets are paired with each other (good for e.g. 2019 targets)"
@@ -148,7 +148,7 @@ const interactiveCols = computed(
         :items="['Single', 'Dual', 'Two or More']"
         @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourGroupingMode: value }, false)"
       />
-      <cv-select
+      <pv-select
         v-model="useCameraSettingsStore().currentPipelineSettings.contourIntersection"
         label="Target Intersection"
         tooltip="If target grouping is in dual mode it will use this dropdown to decide how targets are grouped with adjacent targets"
@@ -160,7 +160,7 @@ const interactiveCols = computed(
     </template>
     <template v-else-if="currentPipelineSettings.pipelineType === PipelineType.ColoredShape">
       <v-divider class="mt-3" />
-      <cv-select
+      <pv-select
         v-model="currentPipelineSettings.contourShape"
         label="Target Shape"
         tooltip="The shape of targets to look for"
@@ -168,7 +168,7 @@ const interactiveCols = computed(
         :items="['Circle', 'Polygon', 'Triangle', 'Quadrilateral']"
         @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourShape: value }, false)"
       />
-      <cv-slider
+      <pv-slider
         v-model="currentPipelineSettings.accuracyPercentage"
         :disabled="currentPipelineSettings.contourShape < 1"
         label="Shape Simplification"
@@ -178,7 +178,7 @@ const interactiveCols = computed(
         :slider-cols="interactiveCols"
         @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ accuracyPercentage: value }, false)"
       />
-      <cv-slider
+      <pv-slider
         v-model="currentPipelineSettings.circleDetectThreshold"
         :disabled="currentPipelineSettings.contourShape !== 0"
         label="Circle match distance"
@@ -190,7 +190,7 @@ const interactiveCols = computed(
           (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ circleDetectThreshold: value }, false)
         "
       />
-      <cv-range-slider
+      <pv-range-slider
         v-model="contourRadius"
         :disabled="currentPipelineSettings.contourShape !== 0"
         label="Radius"
@@ -199,7 +199,7 @@ const interactiveCols = computed(
         :slider-cols="interactiveCols"
         @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourRadius: value }, false)"
       />
-      <cv-slider
+      <pv-slider
         v-model="currentPipelineSettings.maxCannyThresh"
         :disabled="currentPipelineSettings.contourShape !== 0"
         label="Max Canny Threshold"
@@ -208,7 +208,7 @@ const interactiveCols = computed(
         :slider-cols="interactiveCols"
         @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ maxCannyThresh: value }, false)"
       />
-      <cv-slider
+      <pv-slider
         v-model="currentPipelineSettings.circleAccuracy"
         :disabled="currentPipelineSettings.contourShape !== 0"
         label="Circle Accuracy"
@@ -219,7 +219,7 @@ const interactiveCols = computed(
       />
       <v-divider class="mt-3" />
     </template>
-    <cv-select
+    <pv-select
       v-model="useCameraSettingsStore().currentPipelineSettings.contourSortMode"
       label="Target Sort"
       tooltip="Chooses the sorting mode used to determine the 'best' targets to provide to user code"

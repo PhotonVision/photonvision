@@ -22,10 +22,19 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import org.opencv.core.*;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
+import org.opencv.core.RotatedRect;
+import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.common.util.math.MathUtils;
+import org.photonvision.targeting.PhotonTrackedTarget;
+import org.photonvision.targeting.TargetCorner;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVShape;
@@ -73,13 +82,16 @@ public class TrackedTarget implements Releasable {
             TargetCalculationParameters params) {
         m_targetOffsetPoint = new Point(tagDetection.getCenterX(), tagDetection.getCenterY());
         m_robotOffsetPoint = new Point();
-
-        m_pitch =
-                TargetCalculations.calculatePitch(
-                        tagDetection.getCenterY(), params.cameraCenterPoint.y, params.verticalFocalLength);
-        m_yaw =
-                TargetCalculations.calculateYaw(
-                        tagDetection.getCenterX(), params.cameraCenterPoint.x, params.horizontalFocalLength);
+        var yawPitch =
+                TargetCalculations.calculateYawPitch(
+                        params.cameraCenterPoint.x,
+                        tagDetection.getCenterX(),
+                        params.horizontalFocalLength,
+                        params.cameraCenterPoint.y,
+                        tagDetection.getCenterY(),
+                        params.verticalFocalLength);
+        m_yaw = yawPitch.getFirst();
+        m_pitch = yawPitch.getSecond();
         var bestPose = new Transform3d();
         var altPose = new Transform3d();
 
@@ -99,6 +111,22 @@ public class TrackedTarget implements Releasable {
             m_altCameraToTarget3d = altPose;
 
             m_poseAmbiguity = tagPose.getAmbiguity();
+
+            var tvec = new Mat(3, 1, CvType.CV_64FC1);
+            tvec.put(
+                    0,
+                    0,
+                    new double[] {
+                        bestPose.getTranslation().getX(),
+                        bestPose.getTranslation().getY(),
+                        bestPose.getTranslation().getZ()
+                    });
+            setCameraRelativeTvec(tvec);
+
+            // Opencv expects a 3d vector with norm = angle and direction = axis
+            var rvec = new Mat(3, 1, CvType.CV_64FC1);
+            MathUtils.rotationToOpencvRvec(bestPose.getRotation(), rvec);
+            setCameraRelativeRvec(rvec);
         }
 
         double[] corners = tagDetection.getCorners();
@@ -124,9 +152,11 @@ public class TrackedTarget implements Releasable {
         tvec.put(
                 0,
                 0,
-                bestPose.getTranslation().getX(),
-                bestPose.getTranslation().getY(),
-                bestPose.getTranslation().getZ());
+                new double[] {
+                    bestPose.getTranslation().getX(),
+                    bestPose.getTranslation().getY(),
+                    bestPose.getTranslation().getZ()
+                });
         setCameraRelativeTvec(tvec);
 
         // Opencv expects a 3d vector with norm = angle and direction = axis
@@ -138,13 +168,16 @@ public class TrackedTarget implements Releasable {
     public TrackedTarget(ArucoDetectionResult result, TargetCalculationParameters params) {
         m_targetOffsetPoint = new Point(result.getCenterX(), result.getCenterY());
         m_robotOffsetPoint = new Point();
-
-        m_pitch =
-                TargetCalculations.calculatePitch(
-                        result.getCenterY(), params.cameraCenterPoint.y, params.verticalFocalLength);
-        m_yaw =
-                TargetCalculations.calculateYaw(
-                        result.getCenterX(), params.cameraCenterPoint.x, params.horizontalFocalLength);
+        var yawPitch =
+                TargetCalculations.calculateYawPitch(
+                        params.cameraCenterPoint.x,
+                        result.getCenterX(),
+                        params.horizontalFocalLength,
+                        params.cameraCenterPoint.y,
+                        result.getCenterY(),
+                        params.verticalFocalLength);
+        m_yaw = yawPitch.getFirst();
+        m_pitch = yawPitch.getSecond();
 
         double[] xCorners = result.getxCorners();
         double[] yCorners = result.getyCorners();
@@ -246,7 +279,7 @@ public class TrackedTarget implements Releasable {
     }
 
     public void calculateValues(TargetCalculationParameters params) {
-        // this MUST happen in this exact order!
+        // this MUST happen in this exact order! (TODO: document why)
         m_targetOffsetPoint =
                 TargetCalculations.calculateTargetOffsetPoint(
                         params.isLandscape, params.targetOffsetPointEdge, getMinAreaRect());
@@ -257,13 +290,18 @@ public class TrackedTarget implements Releasable {
                         params.dualOffsetValues,
                         params.robotOffsetPointMode);
 
-        // order of this stuff doesn't matter though
-        m_pitch =
-                TargetCalculations.calculatePitch(
-                        m_targetOffsetPoint.y, m_robotOffsetPoint.y, params.verticalFocalLength);
-        m_yaw =
-                TargetCalculations.calculateYaw(
-                        m_targetOffsetPoint.x, m_robotOffsetPoint.x, params.horizontalFocalLength);
+        // order of this stuff doesnt matter though
+        var yawPitch =
+                TargetCalculations.calculateYawPitch(
+                        m_robotOffsetPoint.x,
+                        m_targetOffsetPoint.x,
+                        params.horizontalFocalLength,
+                        m_robotOffsetPoint.y,
+                        m_targetOffsetPoint.y,
+                        params.verticalFocalLength);
+        m_yaw = yawPitch.getFirst();
+        m_pitch = yawPitch.getSecond();
+
         m_area = m_mainContour.getMinAreaRect().size.area() / params.imageArea * 100;
 
         m_skew = TargetCalculations.calculateSkew(params.isLandscape, getMinAreaRect());
@@ -345,29 +383,52 @@ public class TrackedTarget implements Releasable {
         ret.put("skew", getSkew());
         ret.put("area", getArea());
         ret.put("ambiguity", getPoseAmbiguity());
-        if (getBestCameraToTarget3d() != null) {
-            ret.put("pose", transformToMap(getBestCameraToTarget3d()));
+
+        var bestCameraToTarget3d = getBestCameraToTarget3d();
+        if (bestCameraToTarget3d != null) {
+            ret.put("pose", SerializationUtils.transformToHashMap(bestCameraToTarget3d));
         }
         ret.put("fiducialId", getFiducialId());
         return ret;
     }
 
-    private static HashMap<String, Object> transformToMap(Transform3d transform) {
-        var ret = new HashMap<String, Object>();
-        ret.put("x", transform.getTranslation().getX());
-        ret.put("y", transform.getTranslation().getY());
-        ret.put("z", transform.getTranslation().getZ());
-        ret.put("qw", transform.getRotation().getQuaternion().getW());
-        ret.put("qx", transform.getRotation().getQuaternion().getX());
-        ret.put("qy", transform.getRotation().getQuaternion().getY());
-        ret.put("qz", transform.getRotation().getQuaternion().getZ());
-
-        ret.put("angle_z", transform.getRotation().getZ());
-        return ret;
-    }
-
     public boolean isFiducial() {
         return this.m_fiducialId >= 0;
+    }
+
+    public static List<PhotonTrackedTarget> simpleFromTrackedTargets(List<TrackedTarget> targets) {
+        var ret = new ArrayList<PhotonTrackedTarget>();
+        for (var t : targets) {
+            var minAreaRectCorners = new ArrayList<TargetCorner>();
+            var detectedCorners = new ArrayList<TargetCorner>();
+            {
+                var points = new Point[4];
+                t.getMinAreaRect().points(points);
+                for (int i = 0; i < 4; i++) {
+                    minAreaRectCorners.add(new TargetCorner(points[i].x, points[i].y));
+                }
+            }
+            {
+                var points = t.getTargetCorners();
+                for (int i = 0; i < points.size(); i++) {
+                    detectedCorners.add(new TargetCorner(points.get(i).x, points.get(i).y));
+                }
+            }
+
+            ret.add(
+                    new PhotonTrackedTarget(
+                            t.getYaw(),
+                            t.getPitch(),
+                            t.getArea(),
+                            t.getSkew(),
+                            t.getFiducialId(),
+                            t.getBestCameraToTarget3d(),
+                            t.getAltCameraToTarget3d(),
+                            t.getPoseAmbiguity(),
+                            minAreaRectCorners,
+                            detectedCorners));
+        }
+        return ret;
     }
 
     public static class TargetCalculationParameters {

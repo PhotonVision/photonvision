@@ -27,8 +27,6 @@ public class AprilTagDetectionPipe
         extends CVPipe<CVMat, List<AprilTagDetection>, AprilTagDetectionPipeParams> {
     private final AprilTagDetector m_detector = new AprilTagDetector();
 
-    boolean useNativePoseEst;
-
     public AprilTagDetectionPipe() {
         super();
 
@@ -61,9 +59,5 @@ public class AprilTagDetectionPipe
         }
 
         super.setParams(newParams);
-    }
-
-    public void setNativePoseEstimationEnabled(boolean enabled) {
-        this.useNativePoseEst = enabled;
     }
 }

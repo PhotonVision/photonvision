@@ -246,6 +246,48 @@ public class RequestHandler {
         }
     }
 
+    public static void onAprilTagFieldLayoutRequest(Context ctx) {
+        var file = ctx.uploadedFile("data");
+
+        if (file == null) {
+            ctx.status(400);
+            ctx.result(
+                    "No File was sent with the request. Make sure that the field layout json is sent at the key 'data'");
+            logger.error(
+                    "No File was sent with the request. Make sure that the field layout json is sent at the key 'data'");
+            return;
+        }
+
+        if (!file.extension().contains("json")) {
+            ctx.status(400);
+            ctx.result(
+                    "The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
+            logger.error(
+                    "The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
+            return;
+        }
+
+        // Create a temp file
+        var tempFilePath = handleTempFileCreation(file);
+
+        if (tempFilePath.isEmpty()) {
+            ctx.status(500);
+            ctx.result("There was an error while creating a temporary copy of the file");
+            logger.error("There was an error while creating a temporary copy of the file");
+            return;
+        }
+
+        if (ConfigManager.getInstance().saveUploadedAprilTagFieldLayout(tempFilePath.get().toPath())) {
+            ctx.status(200);
+            ctx.result("Successfully saved the uploaded AprilTagFieldLayout");
+            logger.info("Successfully saved the uploaded AprilTagFieldLayout");
+        } else {
+            ctx.status(500);
+            ctx.result("There was an error while saving the uploaded AprilTagFieldLayout");
+            logger.error("There was an error while saving the uploaded AprilTagFieldLayout");
+        }
+    }
+
     public static void onOfflineUpdateRequest(Context ctx) {
         var file = ctx.uploadedFile("jarData");
 
@@ -495,9 +537,12 @@ public class RequestHandler {
                 new File(Path.of(System.getProperty("java.io.tmpdir"), file.filename()).toString());
         boolean makeDirsRes = tempFilePath.getParentFile().mkdirs();
 
-        if (!makeDirsRes) {
+        if (!makeDirsRes && !(tempFilePath.getParentFile().exists())) {
             logger.error(
-                    "There was an error while uploading " + file.filename() + " to the temp folder!");
+                    "There was an error while creating "
+                            + tempFilePath.getAbsolutePath()
+                            + "! Exists: "
+                            + tempFilePath.getParentFile().exists());
             return Optional.empty();
         }
 
@@ -505,7 +550,10 @@ public class RequestHandler {
             FileUtils.copyInputStreamToFile(file.content(), tempFilePath);
         } catch (IOException e) {
             logger.error(
-                    "There was an error while uploading " + file.filename() + " to the temp folder!");
+                    "There was an error while copying "
+                            + file.filename()
+                            + " to the temp file "
+                            + tempFilePath.getAbsolutePath());
             return Optional.empty();
         }
 

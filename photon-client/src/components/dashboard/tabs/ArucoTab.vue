@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { PipelineType } from "@/types/PipelineTypes";
-import CvSlider from "@/components/common/cv-slider.vue";
+import PvSlider from "@/components/common/pv-slider.vue";
 import { computed, getCurrentInstance } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 
@@ -20,7 +20,7 @@ const interactiveCols = computed(
 
 <template>
   <div v-if="currentPipelineSettings.pipelineType === PipelineType.Aruco">
-    <cv-slider
+    <pv-slider
       v-model="currentPipelineSettings.decimate"
       class="pt-2"
       :slider-cols="interactiveCols"
@@ -30,7 +30,7 @@ const interactiveCols = computed(
       :max="8"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ decimate: value }, false)"
     />
-    <cv-slider
+    <pv-slider
       v-model="currentPipelineSettings.numIterations"
       class="pt-2"
       :slider-cols="interactiveCols"
@@ -41,7 +41,7 @@ const interactiveCols = computed(
       :step="5"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ numIterations: value }, false)"
     />
-    <cv-slider
+    <pv-slider
       v-model="currentPipelineSettings.cornerAccuracy"
       class="pt-2"
       :slider-cols="interactiveCols"

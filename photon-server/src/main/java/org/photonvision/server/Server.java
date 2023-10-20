@@ -97,13 +97,14 @@ public class Server {
         app.post("/api/settings/hardwareConfig", RequestHandler::onHardwareConfigRequest);
         app.post("/api/settings/hardwareSettings", RequestHandler::onHardwareSettingsRequest);
         app.post("/api/settings/networkConfig", RequestHandler::onNetworkConfigRequest);
+        app.post("/api/settings/aprilTagFieldLayout", RequestHandler::onAprilTagFieldLayoutRequest);
         app.post("/api/settings/general", RequestHandler::onGeneralSettingsRequest);
         app.post("/api/settings/camera", RequestHandler::onCameraSettingsRequest);
         app.post("/api/settings/camera/setNickname", RequestHandler::onCameraNicknameChangeRequest);
 
         // Utilities
         app.post("/api/utils/offlineUpdate", RequestHandler::onOfflineUpdateRequest);
-        app.get("/api/utils/logs/photonvision-journalctl.txt", RequestHandler::onLogExportRequest);
+        app.get("/api/utils/photonvision-journalctl.txt", RequestHandler::onLogExportRequest);
         app.post("/api/utils/restartProgram", RequestHandler::onProgramRestartRequest);
         app.post("/api/utils/restartDevice", RequestHandler::onDeviceRestartRequest);
         app.post("/api/utils/publishMetrics", RequestHandler::onMetricsPublishRequest);
