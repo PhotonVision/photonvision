@@ -138,7 +138,7 @@ const cancelPipelineCreation = () => {
   newPipelineType.value = useCameraSettingsStore().currentWebsocketPipelineType;
 };
 
-// Pipeline Creation
+// Pipeline Deletion
 const showPipelineDeletionConfirmationDialog = ref(false);
 const confirmDeleteCurrentPipeline = () => {
   useCameraSettingsStore().deleteCurrentPipeline();
@@ -184,6 +184,11 @@ const confirmChangePipelineType = () => {
 const cancelChangePipelineType = () => {
   pipelineType.value = useCameraSettingsStore().currentWebsocketPipelineType;
   showPipelineTypeChangeDialog.value = false;
+};
+
+// Pipeline duplication'
+const duplicateCurrentPipeline = () => {
+  useCameraSettingsStore().duplicatePipeline(useCameraSettingsStore().currentCameraSettings.currentPipelineIndex);
 };
 
 // Change Props whenever the pipeline settings are changed
@@ -299,13 +304,7 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
                 <pv-icon color="red darken-2" :right="true" icon-name="mdi-delete" tooltip="Delete pipeline" />
               </v-list-item-title>
             </v-list-item>
-            <v-list-item
-              @click="
-                useCameraSettingsStore().duplicatePipeline(
-                  useCameraSettingsStore().currentCameraSettings.currentPipelineIndex
-                )
-              "
-            >
+            <v-list-item @click="duplicateCurrentPipeline">
               <v-list-item-title>
                 <pv-icon color="#c5c5c5" :right="true" icon-name="mdi-content-copy" tooltip="Duplicate pipeline" />
               </v-list-item-title>
