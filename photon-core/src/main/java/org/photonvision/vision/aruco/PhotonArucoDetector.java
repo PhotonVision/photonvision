@@ -18,6 +18,7 @@
 package org.photonvision.vision.aruco;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import org.opencv.core.Mat;
 import org.opencv.objdetect.ArucoDetector;
 import org.opencv.objdetect.DetectorParameters;
@@ -88,6 +89,17 @@ public class PhotonArucoDetector {
         }
 
         ids.release();
+
+        // sort tags by ID
+        Arrays.sort(
+                toReturn,
+                (ArucoDetectionResult a, ArucoDetectionResult b) -> {
+                    if (a.getId() > b.getId()) {
+                        return 1;
+                    } else if (a.getId() < b.getId()) {
+                        return -1;
+                    } else return 0;
+                });
 
         return toReturn;
     }
