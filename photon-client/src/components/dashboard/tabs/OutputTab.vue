@@ -84,9 +84,10 @@ const interactiveCols = computed(
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ outputShowMultipleTargets: value }, false)
       "
     />
-    <cv-switch
+    <pv-switch
       v-if="
-        currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
+        (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
+        currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
         useCameraSettingsStore().isCurrentVideoFormatCalibrated
       "
       v-model="currentPipelineSettings.doMultiTarget"
@@ -96,9 +97,10 @@ const interactiveCols = computed(
       :disabled="!isTagPipeline"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ doMultiTarget: value }, false)"
     />
-    <cv-switch
+    <pv-switch
       v-if="
-        currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
+        (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
+        currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
         useCameraSettingsStore().isCurrentVideoFormatCalibrated
       "
       v-model="currentPipelineSettings.doSingleTargetAlways"

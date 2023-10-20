@@ -4,6 +4,7 @@ import { PipelineType } from "@/types/PipelineTypes";
 import PvSlider from "@/components/common/pv-slider.vue";
 import pvSwitch from "@/components/common/pv-switch.vue";
 import pvRangeSlider from "@/components/common/pv-range-slider.vue";
+import pvSelect from "@/components/common/pv-select.vue";
 import { computed, getCurrentInstance } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 
@@ -11,7 +12,7 @@ import { useStateStore } from "@/stores/StateStore";
 // Defer reference to store access method
 const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings;
 
-// TODO fix cv-range-slider so that store access doesn't need to be deferred
+// TODO fix pv-range-slider so that store access doesn't need to be deferred
 const threshWinSizes = computed<[number, number]>({
   get: () => {
     if (currentPipelineSettings.pipelineType === PipelineType.Aruco) {
@@ -38,6 +39,13 @@ const interactiveCols = computed(
 
 <template>
   <div v-if="currentPipelineSettings.pipelineType === PipelineType.Aruco">
+    <pv-select
+      v-model="currentPipelineSettings.tagFamily"
+      label="Target family"
+      :items="['AprilTag Family 36h11', 'AprilTag Family 25h9', 'AprilTag Family 16h5']"
+      :select-cols="interactiveCols"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ tagFamily: value }, false)"
+    />
     <pv-switch
       v-model="currentPipelineSettings.useCornerRefinement"
       class="pt-2"

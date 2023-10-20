@@ -246,6 +246,8 @@ export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
 export interface ArucoPipelineSettings extends PipelineSettings {
   pipelineType: PipelineType.Aruco;
 
+  tagFamily: AprilTagFamily;
+
   threshWinSizes: WebsocketNumberPair | [number, number];
   threshStepSize: number;
   threshConstant: number;
@@ -256,6 +258,9 @@ export interface ArucoPipelineSettings extends PipelineSettings {
   useAruco3: boolean;
   aruco3MinMarkerSideRatio: number;
   aruco3MinCanonicalImgSide: number;
+
+  doMultiTarget: boolean;
+  doSingleTargetAlways: boolean;
 }
 export type ConfigurableArucoPipelineSettings = Partial<Omit<ArucoPipelineSettings, "pipelineType">> &
   ConfigurablePipelineSettings;
@@ -268,6 +273,7 @@ export const DefaultArucoPipelineSettings: ArucoPipelineSettings = {
   ledMode: false,
   pipelineType: PipelineType.Aruco,
 
+  tagFamily: AprilTagFamily.Family16h5,
   threshWinSizes: { first: 11, second: 91 },
   threshStepSize: 40,
   threshConstant: 10,
@@ -275,7 +281,9 @@ export const DefaultArucoPipelineSettings: ArucoPipelineSettings = {
   useCornerRefinement: true,
   useAruco3: false,
   aruco3MinMarkerSideRatio: 0.02,
-  aruco3MinCanonicalImgSide: 32
+  aruco3MinCanonicalImgSide: 32,
+  doMultiTarget: false,
+  doSingleTargetAlways: false
 };
 
 export type ActivePipelineSettings =

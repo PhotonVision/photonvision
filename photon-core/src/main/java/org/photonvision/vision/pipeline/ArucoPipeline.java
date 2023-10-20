@@ -35,6 +35,8 @@
 package org.photonvision.vision.pipeline;
 
 import edu.wpi.first.apriltag.AprilTagPoseEstimate;
+import edu.wpi.first.math.geometry.CoordinateSystem;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
@@ -42,21 +44,24 @@ import java.util.List;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.Objdetect;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.math.MathUtils;
-import org.photonvision.vision.apriltag.AprilTagFamily;
+import org.photonvision.targeting.MultiTargetPNPResults;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.*;
 import org.photonvision.vision.pipe.impl.ArucoPoseEstimatorPipe.ArucoPoseEstimatorPipeParams;
+import org.photonvision.vision.pipe.impl.MultiTargetPNPPipe.MultiTargetPNPPipeParams;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 
 public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSettings> {
     private final ArucoDetectionPipe arucoDetectionPipe = new ArucoDetectionPipe();
-    private final ArucoPoseEstimatorPipe poseEstimatorPipe = new ArucoPoseEstimatorPipe();
+    private final ArucoPoseEstimatorPipe singleTagPoseEstimatorPipe = new ArucoPoseEstimatorPipe();
+    private final MultiTargetPNPPipe multiTagPNPPipe = new MultiTargetPNPPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
     public ArucoPipeline() {
@@ -74,8 +79,15 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         var params = new ArucoDetectionPipeParams();
         // sanitize and record settings
 
-        if (settings.tagFamily == AprilTagFamily.kTag36h11) {
-            params.tagFamily = Objdetect.DICT_APRILTAG_36h11;
+        switch(settings.tagFamily) {
+            case kTag36h11:
+                params.tagFamily = Objdetect.DICT_APRILTAG_36h11;
+                break;
+            case kTag25h9:
+                params.tagFamily = Objdetect.DICT_APRILTAG_25h9;
+                break;
+            default:
+                params.tagFamily = Objdetect.DICT_APRILTAG_16h5;
         }
 
         int threshMinSize = Math.max(3, settings.threshWinSizes.getFirst());
@@ -99,11 +111,16 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
 
         if (frameStaticProperties.cameraCalibration != null) {
             var cameraMatrix = frameStaticProperties.cameraCalibration.getCameraIntrinsicsMat();
-            if (cameraMatrix != null) {
+            if (cameraMatrix != null && cameraMatrix.rows() > 0) {
                 var estimatorParams =
                         new ArucoPoseEstimatorPipeParams(
                                 frameStaticProperties.cameraCalibration, Units.inchesToMeters(6));
-                poseEstimatorPipe.setParams(estimatorParams);
+                singleTagPoseEstimatorPipe.setParams(estimatorParams);
+
+                // TODO global state ew
+                var atfl = ConfigManager.getInstance().getConfig().getApriltagFieldLayout();
+                multiTagPNPPipe.setParams(
+                        new MultiTargetPNPPipeParams(frameStaticProperties.cameraCalibration, atfl));
             }
         }
     }
@@ -111,8 +128,6 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
     @Override
     protected CVPipelineResult process(Frame frame, ArucoPipelineSettings settings) {
         long sumPipeNanosElapsed = 0L;
-
-        List<TrackedTarget> targetList;
 
         if (frame.type != FrameThresholdType.GREYSCALE) {
             // We asked for a GREYSCALE frame, but didn't get one -- best we can do is give up
@@ -132,43 +147,88 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
                     settings.threshConstant);
         }
 
-        targetList = new ArrayList<>();
+        List<TrackedTarget> targetList = new ArrayList<>();
         for (ArucoDetectionResult detection : tagDetectionPipeResult.output) {
-            // TODO this should be in a pipe, not in the top level here (Matt)
-
-            AprilTagPoseEstimate tagPoseEstimate = null;
-            if (settings.solvePNPEnabled) {
-                var poseResult = poseEstimatorPipe.run(detection);
-                sumPipeNanosElapsed += poseResult.nanosElapsed;
-                tagPoseEstimate = poseResult.output;
-            }
-
-            // populate the target list
-            // Challenge here is that TrackedTarget functions with OpenCV Contour
+            // Populate target list for multitag
+            // (TODO: Address circular dependencies. Multitag only requires corners and IDs, this should
+            // not be necessary.)
             TrackedTarget target =
                     new TrackedTarget(
                             detection,
-                            tagPoseEstimate,
+                            null,
                             new TargetCalculationParameters(
                                     false, null, null, null, null, frameStaticProperties));
 
-            var correctedBestPose =
-                    MathUtils.convertOpenCVtoPhotonTransform(target.getBestCameraToTarget3d());
-            var correctedAltPose =
-                    MathUtils.convertOpenCVtoPhotonTransform(target.getAltCameraToTarget3d());
-
-            target.setBestCameraToTarget3d(
-                    new Transform3d(correctedBestPose.getTranslation(), correctedBestPose.getRotation()));
-            target.setAltCameraToTarget3d(
-                    new Transform3d(correctedAltPose.getTranslation(), correctedAltPose.getRotation()));
-
             targetList.add(target);
+        }
+
+        // Do multi-tag pose estimation
+        MultiTargetPNPResults multiTagResult = new MultiTargetPNPResults();
+        if (settings.solvePNPEnabled && settings.doMultiTarget) {
+            var multiTagOutput = multiTagPNPPipe.run(targetList);
+            sumPipeNanosElapsed += multiTagOutput.nanosElapsed;
+            multiTagResult = multiTagOutput.output;
+        }
+
+        // Do single-tag pose estimation
+        if (settings.solvePNPEnabled) {
+            // Clear target list that was used for multitag so we can add target transforms
+            targetList.clear();
+            // TODO global state again ew
+            var atfl = ConfigManager.getInstance().getConfig().getApriltagFieldLayout();
+
+            for (ArucoDetectionResult detection : tagDetectionPipeResult.output) {
+                AprilTagPoseEstimate tagPoseEstimate = null;
+                // Do single-tag estimation when "always enabled" or if a tag was not used for multitag
+                if (settings.doSingleTargetAlways
+                        || !multiTagResult.fiducialIDsUsed.contains(Integer.valueOf(detection.getId()))) {
+                    var poseResult = singleTagPoseEstimatorPipe.run(detection);
+                    sumPipeNanosElapsed += poseResult.nanosElapsed;
+                    tagPoseEstimate = poseResult.output;
+                }
+
+                // If single-tag estimation was not done, this is a multi-target tag from the layout
+                if (tagPoseEstimate == null) {
+                    // compute this tag's camera-to-tag transform using the multitag result
+                    var tagPose = atfl.getTagPose(detection.getId());
+                    if (tagPose.isPresent()) {
+                        var camToTag =
+                                new Transform3d(
+                                        new Pose3d().plus(multiTagResult.estimatedPose.best), tagPose.get());
+                        // match expected OpenCV coordinate system
+                        camToTag = CoordinateSystem.convert(camToTag, CoordinateSystem.NWU(), CoordinateSystem.EDN());
+
+                        tagPoseEstimate = new AprilTagPoseEstimate(camToTag, camToTag, 0, 0);
+                    }
+                }
+
+                // populate the target list
+                // Challenge here is that TrackedTarget functions with OpenCV Contour
+                TrackedTarget target =
+                        new TrackedTarget(
+                                detection,
+                                tagPoseEstimate,
+                                new TargetCalculationParameters(
+                                        false, null, null, null, null, frameStaticProperties));
+
+                var correctedBestPose =
+                        MathUtils.convertOpenCVtoPhotonTransform(target.getBestCameraToTarget3d());
+                var correctedAltPose =
+                        MathUtils.convertOpenCVtoPhotonTransform(target.getAltCameraToTarget3d());
+
+                target.setBestCameraToTarget3d(
+                        new Transform3d(correctedBestPose.getTranslation(), correctedBestPose.getRotation()));
+                target.setAltCameraToTarget3d(
+                        new Transform3d(correctedAltPose.getTranslation(), correctedAltPose.getRotation()));
+
+                targetList.add(target);
+            }
         }
 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
-        return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, frame);
+        return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, multiTagResult, frame);
     }
 
     private void drawThresholdFrame(Mat greyMat, Mat outputMat, int windowSize, double constant) {

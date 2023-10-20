@@ -39,6 +39,9 @@ public class ArucoPipelineSettings extends AdvancedPipelineSettings {
     public double aruco3MinMarkerSideRatio = 0.02;
     public int aruco3MinCanonicalImgSide = 32;
 
+    public boolean doMultiTarget = false;
+    public boolean doSingleTargetAlways = false;
+
     public ArucoPipelineSettings() {
         super();
         pipelineType = PipelineType.Aruco;
