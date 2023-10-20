@@ -82,7 +82,8 @@ const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings
       v-if="
         currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
         currentPipelineSettings.doMultiTarget &&
-        useCameraSettingsStore().isCurrentVideoFormatCalibrated
+        useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
+        useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "
       align="start"
       class="pb-4 white--text"

@@ -87,7 +87,8 @@ const interactiveCols = computed(
     <pv-switch
       v-if="
         currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
-        useCameraSettingsStore().isCurrentVideoFormatCalibrated
+        useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
+        useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "
       v-model="currentPipelineSettings.doMultiTarget"
       label="Do Multi-Target Estimation"
@@ -99,7 +100,8 @@ const interactiveCols = computed(
     <pv-switch
       v-if="
         currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
-        useCameraSettingsStore().isCurrentVideoFormatCalibrated
+        useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
+        useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "
       v-model="currentPipelineSettings.doSingleTargetAlways"
       label="Always Do Single-Target Estimation"
