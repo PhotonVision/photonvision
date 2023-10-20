@@ -35,6 +35,7 @@ const interactiveCols = computed(
       class="pt-2"
       label="Refine Corners"
       tooltip="Further refine the initial corners with subpixel accuracy."
+      :switch-cols="interactiveCols"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ useCornerRefinement: value }, false)"
     />
     <pv-range-slider
@@ -74,6 +75,7 @@ const interactiveCols = computed(
       class="pt-2"
       label="Debug Threshold"
       tooltip="Display the first threshold step to the color stream."
+      :switch-cols="interactiveCols"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ debugThreshold: value }, false)"
     />
   </div>
