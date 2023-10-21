@@ -35,9 +35,10 @@ const localValue = computed({
 const handleKeydown = ({ key }) => {
   switch (key) {
     case "Enter":
-      if (!(props.rules || []).some((v) => v(localValue.value) === false || typeof v(localValue.value) === "string")) {
-        emit("onEnter", localValue.value);
-      }
+      // Explicitly check that all rule props return true
+      if (!props.rules?.every((rule) => rule(localValue.value) === true)) return;
+
+      emit("onEnter", localValue.value);
       break;
     case "Escape":
       emit("onEscape");
