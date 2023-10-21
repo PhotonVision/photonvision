@@ -37,6 +37,7 @@ import edu.wpi.first.util.WPIUtilJNI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -52,6 +53,8 @@ import org.photonvision.common.networktables.NTTopicSet;
 import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.RotTrlTransform3d;
 import org.photonvision.estimation.TargetModel;
+import org.photonvision.estimation.VisionEstimation;
+import org.photonvision.targeting.MultiTargetPNPResults;
 import org.photonvision.targeting.PNPResults;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
@@ -524,11 +527,26 @@ public class PhotonCameraSim implements AutoCloseable {
             videoSimProcessed.putFrame(videoSimFrameProcessed);
         } else videoSimProcessed.setConnectionStrategy(ConnectionStrategy.kForceClose);
 
-        // put this simulated data to NT
+        // calculate multitag results
+        var multitagResults = new MultiTargetPNPResults();
+        var tagLayout = cam.getAprilTagFieldLayout();
+        var visibleLayoutTags = VisionEstimation.getVisibleLayoutTags(detectableTgts, tagLayout);
+        if (visibleLayoutTags.size() > 1) {
+            List<Integer> usedIDs =
+                    visibleLayoutTags.stream().map(t -> t.ID).sorted().collect(Collectors.toList());
+            var pnpResults =
+                    VisionEstimation.estimateCamPosePNP(
+                            prop.getIntrinsics(), prop.getDistCoeffs(), detectableTgts, tagLayout);
+            multitagResults = new MultiTargetPNPResults(pnpResults, usedIDs);
+        }
+
+        // sort target order
         if (sortMode != null) {
             detectableTgts.sort(sortMode.getComparator());
         }
-        return new PhotonPipelineResult(latencyMillis, detectableTgts);
+
+        // put this simulated data to NT
+        return new PhotonPipelineResult(latencyMillis, detectableTgts, multitagResults);
     }
 
     /**
