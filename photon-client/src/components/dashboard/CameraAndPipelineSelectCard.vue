@@ -138,7 +138,7 @@ const cancelPipelineCreation = () => {
   newPipelineType.value = useCameraSettingsStore().currentWebsocketPipelineType;
 };
 
-// Pipeline Creation
+// Pipeline Deletion
 const showPipelineDeletionConfirmationDialog = ref(false);
 const confirmDeleteCurrentPipeline = () => {
   useCameraSettingsStore().deleteCurrentPipeline();
@@ -186,6 +186,11 @@ const cancelChangePipelineType = () => {
   showPipelineTypeChangeDialog.value = false;
 };
 
+// Pipeline duplication'
+const duplicateCurrentPipeline = () => {
+  useCameraSettingsStore().duplicatePipeline(useCameraSettingsStore().currentCameraSettings.currentPipelineIndex);
+};
+
 // Change Props whenever the pipeline settings are changed
 useCameraSettingsStore().$subscribe((mutation, state) => {
   const currentCameraSettings = state.cameras[useStateStore().currentCameraIndex];
@@ -225,12 +230,27 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
           :input-cols="12 - 3"
           :rules="[(v) => checkCameraName(v)]"
           label="Camera"
-          @on-enter="saveCameraNameEdit"
-          @on-escape="cancelCameraNameEdit"
+          @onEnter="saveCameraNameEdit"
+          @onEscape="cancelCameraNameEdit"
         />
       </v-col>
       <v-col cols="2" style="display: flex; align-items: center; justify-content: center">
-        <pv-icon color="#c5c5c5" icon-name="mdi-pencil" tooltip="Edit Camera Name" @click="startCameraNameEdit" />
+        <div v-if="isCameraNameEdit" style="display: flex; gap: 14px">
+          <pv-icon
+            icon-name="mdi-content-save"
+            color="#c5c5c5"
+            :disabled="checkCameraName(currentCameraName) !== true"
+            @click="() => saveCameraNameEdit(currentCameraName)"
+          />
+          <pv-icon icon-name="mdi-cancel" color="red darken-2" @click="cancelCameraNameEdit" />
+        </div>
+        <pv-icon
+          v-else
+          color="#c5c5c5"
+          icon-name="mdi-pencil"
+          tooltip="Edit Camera Name"
+          @click="startCameraNameEdit"
+        />
       </v-col>
     </v-row>
     <v-row style="padding: 0 12px 0 24px">
@@ -250,12 +270,21 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
           :input-cols="12 - 3"
           :rules="[(v) => checkPipelineName(v)]"
           label="Pipeline"
-          @on-enter="(v) => savePipelineNameEdit(v)"
-          @on-escape="cancelPipelineNameEdit"
+          @onEnter="(v) => savePipelineNameEdit(v)"
+          @onEscape="cancelPipelineNameEdit"
         />
       </v-col>
       <v-col cols="2" class="pa-0" style="display: flex; align-items: center; justify-content: center">
-        <v-menu v-if="!useCameraSettingsStore().isDriverMode" offset-y nudge-bottom="7" auto>
+        <div v-if="isPipelineNameEdit" style="display: flex; gap: 14px">
+          <pv-icon
+            icon-name="mdi-content-save"
+            color="#c5c5c5"
+            :disabled="checkPipelineName(currentPipelineName) !== true"
+            @click="() => savePipelineNameEdit(currentPipelineName)"
+          />
+          <pv-icon icon-name="mdi-cancel" color="red darken-2" @click="cancelPipelineNameEdit" />
+        </div>
+        <v-menu v-else-if="!useCameraSettingsStore().isDriverMode" offset-y nudge-bottom="7" auto>
           <template #activator="{ on }">
             <v-icon color="#c5c5c5" v-on="on" @click="cancelPipelineNameEdit"> mdi-menu </v-icon>
           </template>
@@ -275,19 +304,21 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
                 <pv-icon color="red darken-2" :right="true" icon-name="mdi-delete" tooltip="Delete pipeline" />
               </v-list-item-title>
             </v-list-item>
-            <v-list-item
-              @click="
-                useCameraSettingsStore().duplicatePipeline(
-                  useCameraSettingsStore().currentCameraSettings.currentPipelineIndex
-                )
-              "
-            >
+            <v-list-item @click="duplicateCurrentPipeline">
               <v-list-item-title>
                 <pv-icon color="#c5c5c5" :right="true" icon-name="mdi-content-copy" tooltip="Duplicate pipeline" />
               </v-list-item-title>
             </v-list-item>
           </v-list>
         </v-menu>
+        <pv-icon
+          v-else-if="useCameraSettingsStore().isDriverMode && useCameraSettingsStore().pipelineNames.length === 0"
+          color="#c5c5c5"
+          :right="true"
+          icon-name="mdi-plus"
+          tooltip="Add new pipeline"
+          @click="showCreatePipelineDialog"
+        />
       </v-col>
     </v-row>
     <v-row style="padding: 0 12px 12px 24px">
@@ -340,7 +371,13 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
     <v-dialog v-model="showPipelineDeletionConfirmationDialog" dark width="500">
       <v-card dark color="primary">
         <v-card-title> Pipeline Deletion Confirmation </v-card-title>
-        <v-card-text> Are you sure you want to delete this pipeline? This cannot be undone. </v-card-text>
+        <v-card-text>
+          Are you sure you want to delete the pipeline
+          <b style="color: white; font-weight: bold">{{
+            useCameraSettingsStore().currentPipelineSettings.pipelineNickname
+          }}</b
+          >? This cannot be undone.
+        </v-card-text>
         <v-divider />
         <v-card-actions>
           <v-spacer />

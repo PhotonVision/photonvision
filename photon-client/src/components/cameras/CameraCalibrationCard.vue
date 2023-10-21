@@ -233,6 +233,7 @@ const endCalibration = () => {
                 :items="getUniqueVideoResolutionStrings()"
               />
               <pv-select
+                v-show="isCalibrating"
                 v-model="useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor"
                 label="Decimation"
                 tooltip="Resolution to which camera frames are downscaled for detection. Calibration still uses full-res"
