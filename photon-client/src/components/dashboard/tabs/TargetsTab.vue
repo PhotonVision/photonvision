@@ -2,6 +2,8 @@
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { PipelineType } from "@/types/PipelineTypes";
 import { useStateStore } from "@/stores/StateStore";
+
+const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings;
 </script>
 
 <template>
@@ -59,7 +61,7 @@ import { useStateStore } from "@/stores/StateStore";
                 <td>{{ target.skew.toFixed(2) }}&deg;</td>
                 <td>{{ target.area.toFixed(2) }}&deg;</td>
               </template>
-              <template v-else-if="useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled">
+              <template v-else>
                 <td>{{ target.pose?.x.toFixed(2) }}&nbsp;m</td>
                 <td>{{ target.pose?.y.toFixed(2) }}&nbsp;m</td>
                 <td>{{ (((target.pose?.angle_z || 0) * 180.0) / Math.PI).toFixed(2) }}&deg;</td>
@@ -82,12 +84,14 @@ import { useStateStore } from "@/stores/StateStore";
       v-if="
         (useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
           useCameraSettingsStore().currentPipelineType === PipelineType.Aruco) &&
-        useCameraSettingsStore().currentPipelineSettings.doMultiTarget
+        currentPipelineSettings.doMultiTarget &&
+        useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
+        useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "
       align="start"
       class="pb-4 white--text"
     >
-      <v-card-subtitle>Multi-tag pose, field-to-camera</v-card-subtitle>
+      <v-card-subtitle class="ma-0 pa-0 pb-4" style="font-size: 16px">Multi-tag pose, field-to-camera</v-card-subtitle>
       <v-simple-table fixed-header height="100%" dense dark>
         <thead style="font-size: 1.25rem">
           <th class="text-center">X meters</th>
@@ -95,10 +99,10 @@ import { useStateStore } from "@/stores/StateStore";
           <th class="text-center">Z Angle &theta;&deg;</th>
           <th class="text-center">Tags</th>
         </thead>
-        <tbody>
-          <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.x.toFixed(2) }}</td>
-          <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.y.toFixed(2) }}</td>
-          <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_z.toFixed(2) }}</td>
+        <tbody v-show="useStateStore().currentPipelineResults?.multitagResult">
+          <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.x.toFixed(2) }}&nbsp;m</td>
+          <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.y.toFixed(2) }}&nbsp;m</td>
+          <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_z.toFixed(2) }}&deg;</td>
           <td>{{ useStateStore().currentPipelineResults?.multitagResult?.fiducialIDsUsed }}</td>
         </tbody>
       </v-simple-table>

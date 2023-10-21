@@ -68,7 +68,7 @@ const fpsTooLow = computed<boolean>(() => {
       <div>
         <v-switch
           v-model="driverMode"
-          :disabled="useCameraSettingsStore().isCalibrationMode"
+          :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
           label="Driver Mode"
           style="margin-left: auto"
           color="accent"
@@ -125,6 +125,7 @@ th {
 
 .stream-container {
   display: flex;
+  justify-content: center;
   flex-wrap: wrap;
   align-items: center;
   gap: 12px;

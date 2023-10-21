@@ -88,7 +88,8 @@ const interactiveCols = computed(
       v-if="
         (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
           currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
-        useCameraSettingsStore().isCurrentVideoFormatCalibrated
+        useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
+        useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "
       v-model="currentPipelineSettings.doMultiTarget"
       label="Do Multi-Target Estimation"
@@ -101,7 +102,8 @@ const interactiveCols = computed(
       v-if="
         (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
           currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
-        useCameraSettingsStore().isCurrentVideoFormatCalibrated
+        useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
+        useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "
       v-model="currentPipelineSettings.doSingleTargetAlways"
       label="Always Do Single-Target Estimation"
