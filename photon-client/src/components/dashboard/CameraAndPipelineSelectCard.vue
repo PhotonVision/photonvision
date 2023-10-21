@@ -371,7 +371,13 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
     <v-dialog v-model="showPipelineDeletionConfirmationDialog" dark width="500">
       <v-card dark color="primary">
         <v-card-title> Pipeline Deletion Confirmation </v-card-title>
-        <v-card-text> Are you sure you want to delete this pipeline? This cannot be undone. </v-card-text>
+        <v-card-text>
+          Are you sure you want to delete the pipeline
+          <b style="color: white; font-weight: bold">{{
+            useCameraSettingsStore().currentPipelineSettings.pipelineNickname
+          }}</b
+          >? This cannot be undone.
+        </v-card-text>
         <v-divider />
         <v-card-actions>
           <v-spacer />
