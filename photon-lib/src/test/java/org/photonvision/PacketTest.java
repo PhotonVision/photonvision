@@ -32,9 +32,6 @@ import org.junit.jupiter.api.Test;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.targeting.MultiTargetPNPResults;
 import org.photonvision.targeting.PNPResults;
-import org.photonvision.targeting.PhotonPipelineResult;
-import org.photonvision.targeting.PhotonTrackedTarget;
-import org.photonvision.targeting.TargetCorner;
 
 class PacketTest {
     @Test

@@ -29,6 +29,7 @@ dependencies {
     implementation "org.xerial:sqlite-jdbc:3.41.0.0"
 }
 
+
 task writeCurrentVersionJava {
     def versionFileIn = file("${rootDir}/shared/PhotonVersion.java.in")
     writePhotonVersionFile(versionFileIn, Path.of("$projectDir", "src", "main", "java", "org", "photonvision", "PhotonVersion.java"),

@@ -27,7 +27,7 @@ import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networktables.NTTopicSet;
-import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.proto.PhotonTypes.PhotonPipelineResult;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 
@@ -129,15 +129,22 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
     @Override
     public void accept(CVPipelineResult result) {
-        var simplified =
-                new PhotonPipelineResult(
-                        result.getLatencyMillis(),
-                        TrackedTarget.simpleFromTrackedTargets(result.targets),
-                        result.multiTagResult);
-        Packet packet = new Packet(simplified.getPacketSize());
-        simplified.populatePacket(packet);
+        // var simplified =
+        //         new PhotonPipelineResult(
+        //                 result.getLatencyMillis(),
+        //                 TrackedTarget.simpleFromTrackedTargets(result.targets),
+        //                 result.multiTagResult);
+        // Packet packet = new Packet(simplified.getPacketSize());
+        // simplified.populatePacket(packet);
 
-        ts.rawBytesEntry.set(packet.getData());
+        PhotonPipelineResult resultProto = PhotonPipelineResult.newInstance();
+        resultProto.setLatencyMs(result.getLatencyMillis());
+        resultProto.addAllTargets(TrackedTarget.simpleFromTrackedTargets(result.targets));
+        if (result.multiTagResult.estimatedPose.isPresent) {
+            resultProto.setMultiTargetResult(result.multiTagResult.toProto());
+        }
+
+        ts.rawBytesEntry.set(resultProto);
 
         ts.pipelineIndexPublisher.set(pipelineIndexSupplier.get());
         ts.driverModePublisher.set(driverModeSupplier.getAsBoolean());

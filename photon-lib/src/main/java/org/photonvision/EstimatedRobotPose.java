@@ -27,7 +27,7 @@ package org.photonvision;
 import edu.wpi.first.math.geometry.Pose3d;
 import java.util.List;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
-import org.photonvision.targeting.PhotonTrackedTarget;
+import org.photonvision.proto.PhotonTypes.PhotonPipelineResult.PhotonTrackedTarget;
 
 /** An estimated pose based on pipeline result */
 public class EstimatedRobotPose {

@@ -41,8 +41,8 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
     : mainTable(instance.GetTable("photonvision")),
       rootTable(mainTable->GetSubTable(cameraName)),
       rawBytesEntry(
-          rootTable->GetRawTopic("rawBytes")
-              .Subscribe("rawBytes", {}, {.periodic = 0.01, .sendAll = true})),
+          rootTable->GetRawTopic("result_proto")
+              .Subscribe("asdfasdfasdf", {}, {.periodic = 0.01, .sendAll = true})),
       inputSaveImgEntry(
           rootTable->GetIntegerTopic("inputSaveImgCmd").Publish()),
       inputSaveImgSubscriber(

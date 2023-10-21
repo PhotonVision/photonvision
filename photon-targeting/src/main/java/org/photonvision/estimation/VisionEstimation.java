@@ -29,9 +29,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.opencv.core.Point;
+import org.photonvision.proto.PhotonTypes.PhotonPipelineResult.PhotonTrackedTarget;
+import org.photonvision.proto.PhotonTypes.PhotonPipelineResult.TargetCorner;
 import org.photonvision.targeting.PNPResults;
-import org.photonvision.targeting.PhotonTrackedTarget;
-import org.photonvision.targeting.TargetCorner;
 
 public class VisionEstimation {
     /** Get the visible {@link AprilTag}s which are in the tag layout using the visible tag IDs. */
@@ -88,7 +88,9 @@ public class VisionEstimation {
                     .ifPresent(
                             pose -> {
                                 knownTags.add(new AprilTag(id, pose));
-                                corners.addAll(tgt.getDetectedCorners());
+                                for (var c : tgt.getDetectedCorners()) {
+                                    corners.add(c);
+                                }
                             });
         }
         if (knownTags.size() == 0 || corners.size() == 0 || corners.size() % 4 != 0) {

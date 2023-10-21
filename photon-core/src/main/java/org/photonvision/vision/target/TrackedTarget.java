@@ -22,6 +22,8 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.proto.Geometry3D.ProtobufTransform3d;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,8 +35,8 @@ import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.common.util.math.MathUtils;
-import org.photonvision.targeting.PhotonTrackedTarget;
-import org.photonvision.targeting.TargetCorner;
+import org.photonvision.proto.PhotonTypes.PhotonPipelineResult.PhotonTrackedTarget;
+import org.photonvision.proto.PhotonTypes.PhotonPipelineResult.TargetCorner;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVShape;
@@ -396,37 +398,64 @@ public class TrackedTarget implements Releasable {
         return this.m_fiducialId >= 0;
     }
 
-    public static List<PhotonTrackedTarget> simpleFromTrackedTargets(List<TrackedTarget> targets) {
-        var ret = new ArrayList<PhotonTrackedTarget>();
-        for (var t : targets) {
-            var minAreaRectCorners = new ArrayList<TargetCorner>();
-            var detectedCorners = new ArrayList<TargetCorner>();
+    public static PhotonTrackedTarget[] simpleFromTrackedTargets(List<TrackedTarget> targets) {
+        var ret = new PhotonTrackedTarget[targets.size()];
+        for (int tgtIdx = 0; tgtIdx < targets.size(); tgtIdx++) {
+            var t = targets.get(tgtIdx);
+            var minAreaRectCorners = new TargetCorner[4];
+            var detectedCorners = new TargetCorner[t.getTargetCorners().size()];
             {
                 var points = new Point[4];
                 t.getMinAreaRect().points(points);
                 for (int i = 0; i < 4; i++) {
-                    minAreaRectCorners.add(new TargetCorner(points[i].x, points[i].y));
+                    var c = TargetCorner.newInstance();
+                    c.setX(points[i].x);
+                    c.setY(points[i].y);
+                    minAreaRectCorners[i] = c;
                 }
             }
             {
                 var points = t.getTargetCorners();
                 for (int i = 0; i < points.size(); i++) {
-                    detectedCorners.add(new TargetCorner(points.get(i).x, points.get(i).y));
+                    var c = TargetCorner.newInstance();
+                    c.setX(points.get(i).x);
+                    c.setY(points.get(i).y);
+                    detectedCorners[i] = c;
                 }
             }
 
-            ret.add(
-                    new PhotonTrackedTarget(
-                            t.getYaw(),
-                            t.getPitch(),
-                            t.getArea(),
-                            t.getSkew(),
-                            t.getFiducialId(),
-                            t.getBestCameraToTarget3d(),
-                            t.getAltCameraToTarget3d(),
-                            t.getPoseAmbiguity(),
-                            minAreaRectCorners,
-                            detectedCorners));
+            var tt = PhotonTrackedTarget.newInstance();
+
+            var best = Transform3d.proto.createMessage();
+            var alt = Transform3d.proto.createMessage();
+            Transform3d.proto.pack(best, t.getBestCameraToTarget3d());
+            Transform3d.proto.pack(alt, t.getAltCameraToTarget3d());
+
+            tt.setYaw(t.getYaw());
+            tt.setPitch(t.getPitch());
+            tt.setArea(t.getArea());
+            tt.setSkew(t.getSkew());
+            tt.setFiducialId(t.getFiducialId());
+            tt.setBestCameraToTarget(best);
+            tt.setAltCameraToTarget(alt);
+            tt.setPoseAmbiguity(t.getPoseAmbiguity());
+            tt.addAllMinAreaRectCorners(minAreaRectCorners);
+            tt.addAllDetectedCorners(detectedCorners);
+
+            ret[tgtIdx] = tt;
+
+            // ret.add(
+            //         new PhotonTrackedTarget(
+            //                 t.getYaw(),
+            //                 t.getPitch(),
+            //                 t.getArea(),
+            //                 t.getSkew(),
+            //                 t.getFiducialId(),
+            //                 t.getBestCameraToTarget3d(),
+            //                 t.getAltCameraToTarget3d(),
+            //                 t.getPoseAmbiguity(),
+            //                 minAreaRectCorners,
+            //                 detectedCorners));
         }
         return ret;
     }

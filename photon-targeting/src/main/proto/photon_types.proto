@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package photonvision.proto;
+
+option java_package = "org.photonvision.proto";
+
+import "geometry3d.proto";
+
+message PhotonPipelineResult {
+  double latency_ms = 1;
+  double timestamp_sec = 2;
+  
+  message TargetCorner {
+    double x = 1;
+    double y = 2;
+  }
+
+  message PhotonTrackedTarget {
+    double yaw = 1;
+    double pitch = 2;
+    double area = 3;
+    double skew = 4;
+    int32 fiducialId = 5;
+    wpi.proto.ProtobufTransform3d bestCameraToTarget = 6;
+    wpi.proto.ProtobufTransform3d altCameraToTarget = 7;
+    double poseAmbiguity = 8;
+    repeated TargetCorner minAreaRectCorners = 9;
+    repeated TargetCorner detectedCorners = 10;
+  }
+
+  message MultiTargetPNPResults {
+    wpi.proto.ProtobufTransform3d best = 1;
+    double bestReprojErr = 2;
+    optional wpi.proto.ProtobufTransform3d alt = 3;
+    optional double altReprojErr = 4;
+    double ambiguity = 5;
+
+    repeated int32 fiducial_ids_used = 6;
+  }
+
+  repeated PhotonTrackedTarget targets = 3;
+  MultiTargetPNPResults multi_target_result = 4;
+}
+

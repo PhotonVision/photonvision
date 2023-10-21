@@ -42,8 +42,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.photonvision.estimation.VisionEstimation;
-import org.photonvision.targeting.PhotonPipelineResult;
-import org.photonvision.targeting.PhotonTrackedTarget;
 
 /**
  * The PhotonPoseEstimator class filters or combines readings from all the AprilTags visible at a

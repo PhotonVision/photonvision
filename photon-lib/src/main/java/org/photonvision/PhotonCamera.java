@@ -49,11 +49,13 @@ import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.networktables.StringSubscriber;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import us.hebi.quickbuf.InvalidProtocolBufferException;
+
 import java.util.Optional;
 import java.util.Set;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.hardware.VisionLEDMode;
-import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.proto.PhotonTypes.PhotonPipelineResult;
 
 /** Represents a camera that is connected to PhotonVision. */
 public class PhotonCamera implements AutoCloseable {
@@ -139,9 +141,9 @@ public class PhotonCamera implements AutoCloseable {
         path = cameraTable.getPath();
         rawBytesEntry =
                 cameraTable
-                        .getRawTopic("rawBytes")
+                        .getRawTopic("result_proto")
                         .subscribe(
-                                "rawBytes", new byte[] {}, PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
+                                "proto:" + PhotonPipelineResult.getDescriptor().getFullName(), new byte[] {}, PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
         driverModePublisher = cameraTable.getBooleanTopic("driverModeRequest").publish();
         driverModeSubscriber = cameraTable.getBooleanTopic("driverMode").subscribe(false);
         inputSaveImgEntry = cameraTable.getIntegerTopic("inputSaveImgCmd").getEntry(0);
@@ -182,23 +184,26 @@ public class PhotonCamera implements AutoCloseable {
      * @return The latest pipeline result.
      */
     public PhotonPipelineResult getLatestResult() {
-        verifyVersion();
+        // verifyVersion(); // Protobufs _should_ deal with this for us
 
-        // Clear the packet.
-        packet.clear();
+        var ret = PhotonPipelineResult.newInstance();
 
-        // Create latest result.
-        var ret = new PhotonPipelineResult();
+        var bytes = rawBytesEntry.get(new byte[] {});
+        if (bytes.length < 1) {
+            return PhotonPipelineResult.newInstance();
+        }
 
-        // Populate packet and create result.
-        packet.setData(rawBytesEntry.get(new byte[] {}));
-
-        if (packet.getSize() < 1) return ret;
-        ret.createFromPacket(packet);
+        try {
+            ret = PhotonPipelineResult.parseFrom(bytes);
+        } catch (InvalidProtocolBufferException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return ret;
+        }
 
         // Set the timestamp of the result.
         // getLatestChange returns in microseconds, so we divide by 1e6 to convert to seconds.
-        ret.setTimestampSeconds((rawBytesEntry.getLastChange() / 1e6) - ret.getLatencyMillis() / 1e3);
+        ret.setTimestampSec((rawBytesEntry.getLastChange() / 1e6) - ret.getLatencyMs() / 1e3);
 
         // Return result.
         return ret;

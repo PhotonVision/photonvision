@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.common.dataflow.structures.Packet;
 
+import edu.wpi.first.math.geometry.Transform3d;
+
 public class MultiTargetPNPResults {
     // Seeing 32 apriltags at once seems like a sane limit
     private static final int MAX_IDS = 32;
@@ -89,5 +91,25 @@ public class MultiTargetPNPResults {
                 + ", fiducialIDsUsed="
                 + fiducialIDsUsed
                 + "]";
+    }
+
+    public org.photonvision.proto.PhotonTypes.PhotonPipelineResult.MultiTargetPNPResults toProto() {
+        var ret = org.photonvision.proto.PhotonTypes.PhotonPipelineResult.MultiTargetPNPResults.newInstance();
+
+        var best = Transform3d.proto.createMessage();
+        var alt = Transform3d.proto.createMessage();
+        Transform3d.proto.pack(best, this.estimatedPose.best);
+        Transform3d.proto.pack(alt, this.estimatedPose.alt);
+        ret.setBest(best);
+        ret.setAlt(alt);
+        ret.setBestReprojErr(this.estimatedPose.bestReprojErr);
+        ret.setAltReprojErr(this.estimatedPose.altReprojErr);
+        ret.setAmbiguity(this.estimatedPose.ambiguity);
+        int[] ids = new int[this.fiducialIDsUsed.size()];
+
+        for (int i = 0; i < ids.length; i++) ids[i] = this.fiducialIDsUsed.get(i);
+        ret.addAllFiducialIdsUsed(ids);
+
+        return ret;
     }
 }
