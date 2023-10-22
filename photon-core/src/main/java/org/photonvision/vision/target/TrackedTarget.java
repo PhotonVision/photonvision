@@ -407,8 +407,8 @@ public class TrackedTarget implements Releasable {
             }
             {
                 var points = t.getTargetCorners();
-                for (int i = 0; i < points.size(); i++) {
-                    detectedCorners.add(new TargetCorner(points.get(i).x, points.get(i).y));
+                for (Point point : points) {
+                    detectedCorners.add(new TargetCorner(point.x, point.y));
                 }
             }
 
