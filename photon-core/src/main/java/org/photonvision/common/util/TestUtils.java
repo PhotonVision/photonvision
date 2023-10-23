@@ -28,7 +28,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.net.WPINetJNI;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
-import edu.wpi.first.util.RuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
 import java.awt.*;
 import java.io.File;
@@ -60,8 +59,7 @@ public class TestUtils {
                     "wpiHaljni",
                     Core.NATIVE_LIBRARY_NAME,
                     "cscorejni",
-                    "apriltagjni"
-            );
+                    "apriltagjni");
 
             return true;
         } catch (IOException e) {
