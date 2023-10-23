@@ -1,5 +1,6 @@
 plugins {
     id 'edu.wpi.first.WpilibTools' version '1.1.0'
+    id "com.github.node-gradle.node" version "7.0.1"
 }
 
 apply plugin: "application"
@@ -55,28 +56,22 @@ shadowJar {
     archiveClassifier.set(wpilibTools.platformMapper.currentPlatform.platformName)
     archiveBaseName = "photonvision"
     archiveVersion = project.version
-    // archiveFileName.set("${name}.jar")
 }
 
-task runNpmOnClient(type: Exec) {
-    workingDir "${projectDir}/../photon-client"
-    if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
-        commandLine 'cmd', '/c', 'npm run build'
-    } else {
-        commandLine 'npm', 'run', 'build'
-    }
+
+node {
+    nodeProjectDir = file("${projectDir}/../photon-client")
 }
 
-task copyClientUIToResources(type: Copy) {
+tasks.register('copyClientUIToResources', Copy) {
     from "${projectDir}/../photon-client/dist/"
     into "${projectDir}/src/main/resources/web/"
 }
 
-task buildAndCopyUI {}
-
-buildAndCopyUI.dependsOn copyClientUIToResources
-copyClientUIToResources.dependsOn runNpmOnClient
-copyClientUIToResources.shouldRunAfter runNpmOnClient
+tasks.register("buildAndCopyUI") {
+    dependsOn "npm_run_build"
+    finalizedBy "copyClientUIToResources"
+}
 
 run {
     if (project.hasProperty("profile")) {
