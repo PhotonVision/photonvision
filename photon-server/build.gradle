@@ -1,10 +1,10 @@
 plugins {
+    id "application"
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
     id 'edu.wpi.first.WpilibTools' version '1.1.0'
     id "com.github.node-gradle.node" version "7.0.1"
 }
 
-apply plugin: "application"
-apply plugin: "com.github.johnrengelman.shadow"
 apply plugin: "org.hidetake.ssh"
 
 evaluationDependsOn(':photon-core')
@@ -51,11 +51,10 @@ dependencies {
 }
 
 shadowJar {
-    configurations = [project.configurations.runtimeClasspath]
-    String name = "photonvision-${project.version}"
-    archiveClassifier.set(wpilibTools.platformMapper.currentPlatform.platformName)
     archiveBaseName = "photonvision"
-    archiveVersion = project.version
+    archiveVersion = project.version as String
+    archiveClassifier.set(wpilibTools.currentPlatform.platformName)
+    configurations = [project.configurations.runtimeClasspath]
 }
 
 
@@ -101,9 +100,6 @@ remotes {
     }
 }
 
-import java.io.*;
-import java.net.*;
-
 task findDeployTarget {
     doLast {
         if(project.hasProperty('tgtIP')){
@@ -140,14 +136,6 @@ task findDeployTarget {
 run {
   environment "PATH_PREFIX", "../"
 }
-
-// task overrideToPi {
-//     doLast {
-//         project.setProperty('ArchOverride', 'linuxarm32')
-//     }
-// }
-
-
 
 task deploy {
     //dependsOn overrideToPi
