@@ -22,62 +22,62 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public class ArucoDetectionResult {
-    private static final Logger logger =
-            new Logger(ArucoDetectionResult.class, LogGroup.VisionModule);
-    double[] xCorners;
-    double[] yCorners;
+  private static final Logger logger =
+      new Logger(ArucoDetectionResult.class, LogGroup.VisionModule);
+  double[] xCorners;
+  double[] yCorners;
 
-    int id;
+  int id;
 
-    double[] tvec, rvec;
+  double[] tvec, rvec;
 
-    public ArucoDetectionResult(
-            double[] xCorners, double[] yCorners, int id, double[] tvec, double[] rvec) {
-        this.xCorners = xCorners;
-        this.yCorners = yCorners;
-        this.id = id;
-        this.tvec = tvec;
-        this.rvec = rvec;
-        // logger.debug("Creating a new detection result: " + this.toString());
-    }
+  public ArucoDetectionResult(
+      double[] xCorners, double[] yCorners, int id, double[] tvec, double[] rvec) {
+    this.xCorners = xCorners;
+    this.yCorners = yCorners;
+    this.id = id;
+    this.tvec = tvec;
+    this.rvec = rvec;
+    // logger.debug("Creating a new detection result: " + this.toString());
+  }
 
-    public double[] getTvec() {
-        return tvec;
-    }
+  public double[] getTvec() {
+    return tvec;
+  }
 
-    public double[] getRvec() {
-        return rvec;
-    }
+  public double[] getRvec() {
+    return rvec;
+  }
 
-    public double[] getxCorners() {
-        return xCorners;
-    }
+  public double[] getxCorners() {
+    return xCorners;
+  }
 
-    public double[] getyCorners() {
-        return yCorners;
-    }
+  public double[] getyCorners() {
+    return yCorners;
+  }
 
-    public int getId() {
-        return id;
-    }
+  public int getId() {
+    return id;
+  }
 
-    public double getCenterX() {
-        return (xCorners[0] + xCorners[1] + xCorners[2] + xCorners[3]) * .25;
-    }
+  public double getCenterX() {
+    return (xCorners[0] + xCorners[1] + xCorners[2] + xCorners[3]) * .25;
+  }
 
-    public double getCenterY() {
-        return (yCorners[0] + yCorners[1] + yCorners[2] + yCorners[3]) * .25;
-    }
+  public double getCenterY() {
+    return (yCorners[0] + yCorners[1] + yCorners[2] + yCorners[3]) * .25;
+  }
 
-    @Override
-    public String toString() {
-        return "ArucoDetectionResult{"
-                + "xCorners="
-                + Arrays.toString(xCorners)
-                + ", yCorners="
-                + Arrays.toString(yCorners)
-                + ", id="
-                + id
-                + '}';
-    }
+  @Override
+  public String toString() {
+    return "ArucoDetectionResult{"
+        + "xCorners="
+        + Arrays.toString(xCorners)
+        + ", yCorners="
+        + Arrays.toString(yCorners)
+        + ", id="
+        + id
+        + '}';
+  }
 }

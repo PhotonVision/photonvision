@@ -29,41 +29,41 @@ import org.photonvision.vision.opencv.Contour;
 import org.photonvision.vision.opencv.DualOffsetValues;
 
 public class TrackedTargetTest {
-    @BeforeEach
-    public void Init() {
-        TestUtils.loadLibraries();
-    }
+  @BeforeEach
+  public void Init() {
+    TestUtils.loadLibraries();
+  }
 
-    @Test
-    void axisTest() {
-        MatOfPoint mat = new MatOfPoint();
-        mat.fromList(
-                List.of(
-                        new Point(400, 298),
-                        new Point(426.22, 298),
-                        new Point(426.22, 302),
-                        new Point(400, 302))); // gives contour with center of 426, 300
-        Contour contour = new Contour(mat);
+  @Test
+  void axisTest() {
+    MatOfPoint mat = new MatOfPoint();
+    mat.fromList(
+        List.of(
+            new Point(400, 298),
+            new Point(426.22, 298),
+            new Point(426.22, 302),
+            new Point(400, 302))); // gives contour with center of 426, 300
+    Contour contour = new Contour(mat);
 
-        var pTarget = new PotentialTarget(contour);
+    var pTarget = new PotentialTarget(contour);
 
-        var imageSize = new Size(800, 600);
+    var imageSize = new Size(800, 600);
 
-        var setting =
-                new TrackedTarget.TargetCalculationParameters(
-                        false,
-                        TargetOffsetPointEdge.Center,
-                        RobotOffsetPointMode.None,
-                        new Point(0, 0),
-                        new DualOffsetValues(),
-                        new Point(imageSize.width / 2, imageSize.height / 2),
-                        61,
-                        34.3,
-                        imageSize.area());
+    var setting =
+        new TrackedTarget.TargetCalculationParameters(
+            false,
+            TargetOffsetPointEdge.Center,
+            RobotOffsetPointMode.None,
+            new Point(0, 0),
+            new DualOffsetValues(),
+            new Point(imageSize.width / 2, imageSize.height / 2),
+            61,
+            34.3,
+            imageSize.area());
 
-        var trackedTarget = new TrackedTarget(pTarget, setting, null);
-        // TODO change these hardcoded values
-        assertEquals(12.0, trackedTarget.getYaw(), 0.05, "Yaw was incorrect");
-        assertEquals(0, trackedTarget.getPitch(), 0.05, "Pitch was incorrect");
-    }
+    var trackedTarget = new TrackedTarget(pTarget, setting, null);
+    // TODO change these hardcoded values
+    assertEquals(12.0, trackedTarget.getYaw(), 0.05, "Yaw was incorrect");
+    assertEquals(0, trackedTarget.getPitch(), 0.05, "Pitch was incorrect");
+  }
 }

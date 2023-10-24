@@ -24,22 +24,22 @@ import java.util.EnumSet;
 import java.util.function.Consumer;
 
 public class NTDataChangeListener {
-    private final NetworkTableInstance instance;
-    private final Subscriber watchedEntry;
-    private final int listenerID;
+  private final NetworkTableInstance instance;
+  private final Subscriber watchedEntry;
+  private final int listenerID;
 
-    public NTDataChangeListener(
-            NetworkTableInstance instance,
-            Subscriber watchedSubscriber,
-            Consumer<NetworkTableEvent> dataChangeConsumer) {
-        this.watchedEntry = watchedSubscriber;
-        this.instance = instance;
-        listenerID =
-                this.instance.addListener(
-                        watchedEntry, EnumSet.of(NetworkTableEvent.Kind.kValueAll), dataChangeConsumer);
-    }
+  public NTDataChangeListener(
+      NetworkTableInstance instance,
+      Subscriber watchedSubscriber,
+      Consumer<NetworkTableEvent> dataChangeConsumer) {
+    this.watchedEntry = watchedSubscriber;
+    this.instance = instance;
+    listenerID =
+        this.instance.addListener(
+            watchedEntry, EnumSet.of(NetworkTableEvent.Kind.kValueAll), dataChangeConsumer);
+  }
 
-    public void remove() {
-        this.instance.removeListener(listenerID);
-    }
+  public void remove() {
+    this.instance.removeListener(listenerID);
+  }
 }

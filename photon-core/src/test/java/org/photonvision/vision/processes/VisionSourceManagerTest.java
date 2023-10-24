@@ -27,31 +27,31 @@ import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 
 public class VisionSourceManagerTest {
-    @Test
-    public void visionSourceTest() {
-        var inst = new VisionSourceManager();
-        var infoList = new ArrayList<UsbCameraInfo>();
-        inst.cameraInfoSupplier = () -> infoList;
-        ConfigManager.getInstance().load();
+  @Test
+  public void visionSourceTest() {
+    var inst = new VisionSourceManager();
+    var infoList = new ArrayList<UsbCameraInfo>();
+    inst.cameraInfoSupplier = () -> infoList;
+    ConfigManager.getInstance().load();
 
-        inst.tryMatchUSBCamImpl();
-        var config = new CameraConfiguration("secondTestVideo", "dev/video1");
-        UsbCameraInfo info1 = new UsbCameraInfo(0, "dev/video0", "testVideo", new String[0], 1, 2);
-        infoList.add(info1);
+    inst.tryMatchUSBCamImpl();
+    var config = new CameraConfiguration("secondTestVideo", "dev/video1");
+    UsbCameraInfo info1 = new UsbCameraInfo(0, "dev/video0", "testVideo", new String[0], 1, 2);
+    infoList.add(info1);
 
-        inst.registerLoadedConfigs(config);
-        var sources = inst.tryMatchUSBCamImpl(false);
+    inst.registerLoadedConfigs(config);
+    var sources = inst.tryMatchUSBCamImpl(false);
 
-        assertTrue(inst.knownUsbCameras.contains(info1));
-        assertEquals(1, inst.unmatchedLoadedConfigs.size());
+    assertTrue(inst.knownUsbCameras.contains(info1));
+    assertEquals(1, inst.unmatchedLoadedConfigs.size());
 
-        UsbCameraInfo info2 =
-                new UsbCameraInfo(0, "dev/video1", "secondTestVideo", new String[0], 2, 1);
-        infoList.add(info2);
-        inst.tryMatchUSBCamImpl(false);
+    UsbCameraInfo info2 =
+        new UsbCameraInfo(0, "dev/video1", "secondTestVideo", new String[0], 2, 1);
+    infoList.add(info2);
+    inst.tryMatchUSBCamImpl(false);
 
-        assertTrue(inst.knownUsbCameras.contains(info2));
-        assertEquals(2, inst.knownUsbCameras.size());
-        assertEquals(0, inst.unmatchedLoadedConfigs.size());
-    }
+    assertTrue(inst.knownUsbCameras.contains(info2));
+    assertEquals(2, inst.knownUsbCameras.size());
+    assertEquals(0, inst.unmatchedLoadedConfigs.size());
+  }
 }

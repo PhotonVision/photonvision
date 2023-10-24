@@ -52,583 +52,583 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
 
 class PhotonPoseEstimatorTest {
-    static AprilTagFieldLayout aprilTags;
+  static AprilTagFieldLayout aprilTags;
 
-    @BeforeAll
-    public static void init() {
-        JNIWrapper.Helper.setExtractOnStaticLoad(false);
-        WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
-        NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
-        WPINetJNI.Helper.setExtractOnStaticLoad(false);
+  @BeforeAll
+  public static void init() {
+    JNIWrapper.Helper.setExtractOnStaticLoad(false);
+    WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
+    NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
+    WPINetJNI.Helper.setExtractOnStaticLoad(false);
 
-        try {
-            CombinedRuntimeLoader.loadLibraries(
-                    PhotonPoseEstimatorTest.class, "wpiutiljni", "ntcorejni", "wpinetjni", "wpiHaljni");
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        List<AprilTag> tagList = new ArrayList<AprilTag>(2);
-        tagList.add(new AprilTag(0, new Pose3d(3, 3, 3, new Rotation3d())));
-        tagList.add(new AprilTag(1, new Pose3d(5, 5, 5, new Rotation3d())));
-        double fieldLength = Units.feetToMeters(54.0);
-        double fieldWidth = Units.feetToMeters(27.0);
-        aprilTags = new AprilTagFieldLayout(tagList, fieldLength, fieldWidth);
+    try {
+      CombinedRuntimeLoader.loadLibraries(
+          PhotonPoseEstimatorTest.class, "wpiutiljni", "ntcorejni", "wpinetjni", "wpiHaljni");
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
     }
 
-    @Test
-    void testLowestAmbiguityStrategy() {
-        PhotonCameraInjector cameraOne = new PhotonCameraInjector();
-        cameraOne.result =
-                new PhotonPipelineResult(
-                        2,
-                        List.of(
-                                new PhotonTrackedTarget(
-                                        3.0,
-                                        -4.0,
-                                        9.0,
-                                        4.0,
-                                        0,
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                        0.7,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8))),
-                                new PhotonTrackedTarget(
-                                        3.0,
-                                        -4.0,
-                                        9.1,
-                                        6.7,
-                                        1,
-                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(0, 0, 0)),
-                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
-                                        0.3,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8))),
-                                new PhotonTrackedTarget(
-                                        9.0,
-                                        -2.0,
-                                        19.0,
-                                        3.0,
-                                        0,
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                        0.4,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)))));
-        cameraOne.result.setTimestampSeconds(11);
+    List<AprilTag> tagList = new ArrayList<AprilTag>(2);
+    tagList.add(new AprilTag(0, new Pose3d(3, 3, 3, new Rotation3d())));
+    tagList.add(new AprilTag(1, new Pose3d(5, 5, 5, new Rotation3d())));
+    double fieldLength = Units.feetToMeters(54.0);
+    double fieldWidth = Units.feetToMeters(27.0);
+    aprilTags = new AprilTagFieldLayout(tagList, fieldLength, fieldWidth);
+  }
 
-        PhotonPoseEstimator estimator =
-                new PhotonPoseEstimator(
-                        aprilTags, PoseStrategy.LOWEST_AMBIGUITY, cameraOne, new Transform3d());
+  @Test
+  void testLowestAmbiguityStrategy() {
+    PhotonCameraInjector cameraOne = new PhotonCameraInjector();
+    cameraOne.result =
+        new PhotonPipelineResult(
+            2,
+            List.of(
+                new PhotonTrackedTarget(
+                    3.0,
+                    -4.0,
+                    9.0,
+                    4.0,
+                    0,
+                    new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                    new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                    0.7,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8))),
+                new PhotonTrackedTarget(
+                    3.0,
+                    -4.0,
+                    9.1,
+                    6.7,
+                    1,
+                    new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(0, 0, 0)),
+                    new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                    0.3,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8))),
+                new PhotonTrackedTarget(
+                    9.0,
+                    -2.0,
+                    19.0,
+                    3.0,
+                    0,
+                    new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                    new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                    0.4,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)))));
+    cameraOne.result.setTimestampSeconds(11);
 
-        Optional<EstimatedRobotPose> estimatedPose = estimator.update();
-        Pose3d pose = estimatedPose.get().estimatedPose;
+    PhotonPoseEstimator estimator =
+        new PhotonPoseEstimator(
+            aprilTags, PoseStrategy.LOWEST_AMBIGUITY, cameraOne, new Transform3d());
 
-        assertEquals(11, estimatedPose.get().timestampSeconds);
-        assertEquals(1, pose.getX(), .01);
-        assertEquals(3, pose.getY(), .01);
-        assertEquals(2, pose.getZ(), .01);
+    Optional<EstimatedRobotPose> estimatedPose = estimator.update();
+    Pose3d pose = estimatedPose.get().estimatedPose;
+
+    assertEquals(11, estimatedPose.get().timestampSeconds);
+    assertEquals(1, pose.getX(), .01);
+    assertEquals(3, pose.getY(), .01);
+    assertEquals(2, pose.getZ(), .01);
+  }
+
+  @Test
+  void testClosestToCameraHeightStrategy() {
+    PhotonCameraInjector cameraOne = new PhotonCameraInjector();
+    cameraOne.result =
+        new PhotonPipelineResult(
+            2,
+            List.of(
+                new PhotonTrackedTarget(
+                    3.0,
+                    -4.0,
+                    9.0,
+                    4.0,
+                    1,
+                    new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()),
+                    new Transform3d(new Translation3d(1, 1, 1), new Rotation3d()),
+                    0.7,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8))),
+                new PhotonTrackedTarget(
+                    3.0,
+                    -4.0,
+                    9.1,
+                    6.7,
+                    1,
+                    new Transform3d(new Translation3d(2, 2, 2), new Rotation3d()),
+                    new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
+                    0.3,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8))),
+                new PhotonTrackedTarget(
+                    9.0,
+                    -2.0,
+                    19.0,
+                    3.0,
+                    0,
+                    new Transform3d(new Translation3d(4, 4, 4), new Rotation3d()),
+                    new Transform3d(new Translation3d(5, 5, 5), new Rotation3d()),
+                    0.4,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)))));
+
+    cameraOne.result.setTimestampSeconds(4);
+
+    PhotonPoseEstimator estimator =
+        new PhotonPoseEstimator(
+            aprilTags,
+            PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT,
+            cameraOne,
+            new Transform3d(new Translation3d(0, 0, 4), new Rotation3d()));
+
+    Optional<EstimatedRobotPose> estimatedPose = estimator.update();
+    Pose3d pose = estimatedPose.get().estimatedPose;
+
+    assertEquals(4, estimatedPose.get().timestampSeconds);
+    assertEquals(4, pose.getX(), .01);
+    assertEquals(4, pose.getY(), .01);
+    assertEquals(0, pose.getZ(), .01);
+  }
+
+  @Test
+  void closestToReferencePoseStrategy() {
+    PhotonCameraInjector cameraOne = new PhotonCameraInjector();
+    cameraOne.result =
+        new PhotonPipelineResult(
+            2,
+            List.of(
+                new PhotonTrackedTarget(
+                    3.0,
+                    -4.0,
+                    9.0,
+                    4.0,
+                    1,
+                    new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()),
+                    new Transform3d(new Translation3d(1, 1, 1), new Rotation3d()),
+                    0.7,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8))),
+                new PhotonTrackedTarget(
+                    3.0,
+                    -4.0,
+                    9.1,
+                    6.7,
+                    1,
+                    new Transform3d(new Translation3d(2, 2, 2), new Rotation3d()),
+                    new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
+                    0.3,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8))),
+                new PhotonTrackedTarget(
+                    9.0,
+                    -2.0,
+                    19.0,
+                    3.0,
+                    0,
+                    new Transform3d(new Translation3d(2.2, 2.2, 2.2), new Rotation3d()),
+                    new Transform3d(new Translation3d(2, 1.9, 2.1), new Rotation3d()),
+                    0.4,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)))));
+    cameraOne.result.setTimestampSeconds(17);
+
+    PhotonPoseEstimator estimator =
+        new PhotonPoseEstimator(
+            aprilTags,
+            PoseStrategy.CLOSEST_TO_REFERENCE_POSE,
+            cameraOne,
+            new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
+    estimator.setReferencePose(new Pose3d(1, 1, 1, new Rotation3d()));
+
+    Optional<EstimatedRobotPose> estimatedPose = estimator.update();
+    Pose3d pose = estimatedPose.get().estimatedPose;
+
+    assertEquals(17, estimatedPose.get().timestampSeconds);
+    assertEquals(1, pose.getX(), .01);
+    assertEquals(1.1, pose.getY(), .01);
+    assertEquals(.9, pose.getZ(), .01);
+  }
+
+  @Test
+  void closestToLastPose() {
+    PhotonCameraInjector cameraOne = new PhotonCameraInjector();
+    cameraOne.result =
+        new PhotonPipelineResult(
+            2,
+            List.of(
+                new PhotonTrackedTarget(
+                    3.0,
+                    -4.0,
+                    9.0,
+                    4.0,
+                    1,
+                    new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()),
+                    new Transform3d(new Translation3d(1, 1, 1), new Rotation3d()),
+                    0.7,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8))),
+                new PhotonTrackedTarget(
+                    3.0,
+                    -4.0,
+                    9.1,
+                    6.7,
+                    1,
+                    new Transform3d(new Translation3d(2, 2, 2), new Rotation3d()),
+                    new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
+                    0.3,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8))),
+                new PhotonTrackedTarget(
+                    9.0,
+                    -2.0,
+                    19.0,
+                    3.0,
+                    0,
+                    new Transform3d(new Translation3d(2.2, 2.2, 2.2), new Rotation3d()),
+                    new Transform3d(new Translation3d(2, 1.9, 2.1), new Rotation3d()),
+                    0.4,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)))));
+    cameraOne.result.setTimestampSeconds(1);
+
+    PhotonPoseEstimator estimator =
+        new PhotonPoseEstimator(
+            aprilTags,
+            PoseStrategy.CLOSEST_TO_LAST_POSE,
+            cameraOne,
+            new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
+
+    estimator.setLastPose(new Pose3d(1, 1, 1, new Rotation3d()));
+
+    Optional<EstimatedRobotPose> estimatedPose = estimator.update();
+    Pose3d pose = estimatedPose.get().estimatedPose;
+
+    cameraOne.result =
+        new PhotonPipelineResult(
+            2,
+            List.of(
+                new PhotonTrackedTarget(
+                    3.0,
+                    -4.0,
+                    9.0,
+                    4.0,
+                    1,
+                    new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()),
+                    new Transform3d(new Translation3d(1, 1, 1), new Rotation3d()),
+                    0.7,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8))),
+                new PhotonTrackedTarget(
+                    3.0,
+                    -4.0,
+                    9.1,
+                    6.7,
+                    0,
+                    new Transform3d(new Translation3d(2.1, 1.9, 2), new Rotation3d()),
+                    new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
+                    0.3,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8))),
+                new PhotonTrackedTarget(
+                    9.0,
+                    -2.0,
+                    19.0,
+                    3.0,
+                    0,
+                    new Transform3d(new Translation3d(2.4, 2.4, 2.2), new Rotation3d()),
+                    new Transform3d(new Translation3d(2, 1, 2), new Rotation3d()),
+                    0.4,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)))));
+    cameraOne.result.setTimestampSeconds(7);
+
+    estimatedPose = estimator.update();
+    pose = estimatedPose.get().estimatedPose;
+
+    assertEquals(7, estimatedPose.get().timestampSeconds);
+    assertEquals(.9, pose.getX(), .01);
+    assertEquals(1.1, pose.getY(), .01);
+    assertEquals(1, pose.getZ(), .01);
+  }
+
+  @Test
+  void cacheIsInvalidated() {
+    PhotonCameraInjector cameraOne = new PhotonCameraInjector();
+    var result =
+        new PhotonPipelineResult(
+            2,
+            List.of(
+                new PhotonTrackedTarget(
+                    3.0,
+                    -4.0,
+                    9.0,
+                    4.0,
+                    0,
+                    new Transform3d(new Translation3d(2, 2, 2), new Rotation3d()),
+                    new Transform3d(new Translation3d(1, 1, 1), new Rotation3d()),
+                    0.7,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)))));
+    result.setTimestampSeconds(20);
+
+    PhotonPoseEstimator estimator =
+        new PhotonPoseEstimator(
+            aprilTags,
+            PoseStrategy.AVERAGE_BEST_TARGETS,
+            cameraOne,
+            new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
+
+    // Empty result, expect empty result
+    cameraOne.result = new PhotonPipelineResult();
+    cameraOne.result.setTimestampSeconds(1);
+    Optional<EstimatedRobotPose> estimatedPose = estimator.update();
+    assertFalse(estimatedPose.isPresent());
+
+    // Set actual result
+    cameraOne.result = result;
+    estimatedPose = estimator.update();
+    assertTrue(estimatedPose.isPresent());
+    assertEquals(20, estimatedPose.get().timestampSeconds, .01);
+    assertEquals(20, estimator.poseCacheTimestampSeconds);
+
+    // And again -- pose cache should mean this is empty
+    cameraOne.result = result;
+    estimatedPose = estimator.update();
+    assertFalse(estimatedPose.isPresent());
+    // Expect the old timestamp to still be here
+    assertEquals(20, estimator.poseCacheTimestampSeconds);
+
+    // Set new field layout -- right after, the pose cache timestamp should be -1
+    estimator.setFieldTags(new AprilTagFieldLayout(List.of(new AprilTag(0, new Pose3d())), 0, 0));
+    assertEquals(-1, estimator.poseCacheTimestampSeconds);
+    // Update should cache the current timestamp (20) again
+    cameraOne.result = result;
+    estimatedPose = estimator.update();
+    assertEquals(20, estimatedPose.get().timestampSeconds, .01);
+    assertEquals(20, estimator.poseCacheTimestampSeconds);
+  }
+
+  @Test
+  void averageBestPoses() {
+    PhotonCameraInjector cameraOne = new PhotonCameraInjector();
+    cameraOne.result =
+        new PhotonPipelineResult(
+            2,
+            List.of(
+                new PhotonTrackedTarget(
+                    3.0,
+                    -4.0,
+                    9.0,
+                    4.0,
+                    0,
+                    new Transform3d(new Translation3d(2, 2, 2), new Rotation3d()),
+                    new Transform3d(new Translation3d(1, 1, 1), new Rotation3d()),
+                    0.7,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8))), // 1 1 1 ambig: .7
+                new PhotonTrackedTarget(
+                    3.0,
+                    -4.0,
+                    9.1,
+                    6.7,
+                    1,
+                    new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
+                    new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
+                    0.3,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8))), // 2 2 2 ambig .3
+                new PhotonTrackedTarget(
+                    9.0,
+                    -2.0,
+                    19.0,
+                    3.0,
+                    0,
+                    new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()),
+                    new Transform3d(new Translation3d(2, 1.9, 2.1), new Rotation3d()),
+                    0.4,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8))))); // 3 3 3 ambig .4
+    cameraOne.result.setTimestampSeconds(20);
+
+    PhotonPoseEstimator estimator =
+        new PhotonPoseEstimator(
+            aprilTags,
+            PoseStrategy.AVERAGE_BEST_TARGETS,
+            cameraOne,
+            new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
+
+    Optional<EstimatedRobotPose> estimatedPose = estimator.update();
+    Pose3d pose = estimatedPose.get().estimatedPose;
+
+    assertEquals(20, estimatedPose.get().timestampSeconds, .01);
+    assertEquals(2.15, pose.getX(), .01);
+    assertEquals(2.15, pose.getY(), .01);
+    assertEquals(2.15, pose.getZ(), .01);
+  }
+
+  private class PhotonCameraInjector extends PhotonCamera {
+    public PhotonCameraInjector() {
+      super("Test");
     }
 
-    @Test
-    void testClosestToCameraHeightStrategy() {
-        PhotonCameraInjector cameraOne = new PhotonCameraInjector();
-        cameraOne.result =
-                new PhotonPipelineResult(
-                        2,
-                        List.of(
-                                new PhotonTrackedTarget(
-                                        3.0,
-                                        -4.0,
-                                        9.0,
-                                        4.0,
-                                        1,
-                                        new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()),
-                                        new Transform3d(new Translation3d(1, 1, 1), new Rotation3d()),
-                                        0.7,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8))),
-                                new PhotonTrackedTarget(
-                                        3.0,
-                                        -4.0,
-                                        9.1,
-                                        6.7,
-                                        1,
-                                        new Transform3d(new Translation3d(2, 2, 2), new Rotation3d()),
-                                        new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
-                                        0.3,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8))),
-                                new PhotonTrackedTarget(
-                                        9.0,
-                                        -2.0,
-                                        19.0,
-                                        3.0,
-                                        0,
-                                        new Transform3d(new Translation3d(4, 4, 4), new Rotation3d()),
-                                        new Transform3d(new Translation3d(5, 5, 5), new Rotation3d()),
-                                        0.4,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)))));
+    PhotonPipelineResult result;
 
-        cameraOne.result.setTimestampSeconds(4);
-
-        PhotonPoseEstimator estimator =
-                new PhotonPoseEstimator(
-                        aprilTags,
-                        PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT,
-                        cameraOne,
-                        new Transform3d(new Translation3d(0, 0, 4), new Rotation3d()));
-
-        Optional<EstimatedRobotPose> estimatedPose = estimator.update();
-        Pose3d pose = estimatedPose.get().estimatedPose;
-
-        assertEquals(4, estimatedPose.get().timestampSeconds);
-        assertEquals(4, pose.getX(), .01);
-        assertEquals(4, pose.getY(), .01);
-        assertEquals(0, pose.getZ(), .01);
+    @Override
+    public PhotonPipelineResult getLatestResult() {
+      return result;
     }
-
-    @Test
-    void closestToReferencePoseStrategy() {
-        PhotonCameraInjector cameraOne = new PhotonCameraInjector();
-        cameraOne.result =
-                new PhotonPipelineResult(
-                        2,
-                        List.of(
-                                new PhotonTrackedTarget(
-                                        3.0,
-                                        -4.0,
-                                        9.0,
-                                        4.0,
-                                        1,
-                                        new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()),
-                                        new Transform3d(new Translation3d(1, 1, 1), new Rotation3d()),
-                                        0.7,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8))),
-                                new PhotonTrackedTarget(
-                                        3.0,
-                                        -4.0,
-                                        9.1,
-                                        6.7,
-                                        1,
-                                        new Transform3d(new Translation3d(2, 2, 2), new Rotation3d()),
-                                        new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
-                                        0.3,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8))),
-                                new PhotonTrackedTarget(
-                                        9.0,
-                                        -2.0,
-                                        19.0,
-                                        3.0,
-                                        0,
-                                        new Transform3d(new Translation3d(2.2, 2.2, 2.2), new Rotation3d()),
-                                        new Transform3d(new Translation3d(2, 1.9, 2.1), new Rotation3d()),
-                                        0.4,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)))));
-        cameraOne.result.setTimestampSeconds(17);
-
-        PhotonPoseEstimator estimator =
-                new PhotonPoseEstimator(
-                        aprilTags,
-                        PoseStrategy.CLOSEST_TO_REFERENCE_POSE,
-                        cameraOne,
-                        new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
-        estimator.setReferencePose(new Pose3d(1, 1, 1, new Rotation3d()));
-
-        Optional<EstimatedRobotPose> estimatedPose = estimator.update();
-        Pose3d pose = estimatedPose.get().estimatedPose;
-
-        assertEquals(17, estimatedPose.get().timestampSeconds);
-        assertEquals(1, pose.getX(), .01);
-        assertEquals(1.1, pose.getY(), .01);
-        assertEquals(.9, pose.getZ(), .01);
-    }
-
-    @Test
-    void closestToLastPose() {
-        PhotonCameraInjector cameraOne = new PhotonCameraInjector();
-        cameraOne.result =
-                new PhotonPipelineResult(
-                        2,
-                        List.of(
-                                new PhotonTrackedTarget(
-                                        3.0,
-                                        -4.0,
-                                        9.0,
-                                        4.0,
-                                        1,
-                                        new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()),
-                                        new Transform3d(new Translation3d(1, 1, 1), new Rotation3d()),
-                                        0.7,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8))),
-                                new PhotonTrackedTarget(
-                                        3.0,
-                                        -4.0,
-                                        9.1,
-                                        6.7,
-                                        1,
-                                        new Transform3d(new Translation3d(2, 2, 2), new Rotation3d()),
-                                        new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
-                                        0.3,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8))),
-                                new PhotonTrackedTarget(
-                                        9.0,
-                                        -2.0,
-                                        19.0,
-                                        3.0,
-                                        0,
-                                        new Transform3d(new Translation3d(2.2, 2.2, 2.2), new Rotation3d()),
-                                        new Transform3d(new Translation3d(2, 1.9, 2.1), new Rotation3d()),
-                                        0.4,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)))));
-        cameraOne.result.setTimestampSeconds(1);
-
-        PhotonPoseEstimator estimator =
-                new PhotonPoseEstimator(
-                        aprilTags,
-                        PoseStrategy.CLOSEST_TO_LAST_POSE,
-                        cameraOne,
-                        new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
-
-        estimator.setLastPose(new Pose3d(1, 1, 1, new Rotation3d()));
-
-        Optional<EstimatedRobotPose> estimatedPose = estimator.update();
-        Pose3d pose = estimatedPose.get().estimatedPose;
-
-        cameraOne.result =
-                new PhotonPipelineResult(
-                        2,
-                        List.of(
-                                new PhotonTrackedTarget(
-                                        3.0,
-                                        -4.0,
-                                        9.0,
-                                        4.0,
-                                        1,
-                                        new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()),
-                                        new Transform3d(new Translation3d(1, 1, 1), new Rotation3d()),
-                                        0.7,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8))),
-                                new PhotonTrackedTarget(
-                                        3.0,
-                                        -4.0,
-                                        9.1,
-                                        6.7,
-                                        0,
-                                        new Transform3d(new Translation3d(2.1, 1.9, 2), new Rotation3d()),
-                                        new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
-                                        0.3,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8))),
-                                new PhotonTrackedTarget(
-                                        9.0,
-                                        -2.0,
-                                        19.0,
-                                        3.0,
-                                        0,
-                                        new Transform3d(new Translation3d(2.4, 2.4, 2.2), new Rotation3d()),
-                                        new Transform3d(new Translation3d(2, 1, 2), new Rotation3d()),
-                                        0.4,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)))));
-        cameraOne.result.setTimestampSeconds(7);
-
-        estimatedPose = estimator.update();
-        pose = estimatedPose.get().estimatedPose;
-
-        assertEquals(7, estimatedPose.get().timestampSeconds);
-        assertEquals(.9, pose.getX(), .01);
-        assertEquals(1.1, pose.getY(), .01);
-        assertEquals(1, pose.getZ(), .01);
-    }
-
-    @Test
-    void cacheIsInvalidated() {
-        PhotonCameraInjector cameraOne = new PhotonCameraInjector();
-        var result =
-                new PhotonPipelineResult(
-                        2,
-                        List.of(
-                                new PhotonTrackedTarget(
-                                        3.0,
-                                        -4.0,
-                                        9.0,
-                                        4.0,
-                                        0,
-                                        new Transform3d(new Translation3d(2, 2, 2), new Rotation3d()),
-                                        new Transform3d(new Translation3d(1, 1, 1), new Rotation3d()),
-                                        0.7,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)))));
-        result.setTimestampSeconds(20);
-
-        PhotonPoseEstimator estimator =
-                new PhotonPoseEstimator(
-                        aprilTags,
-                        PoseStrategy.AVERAGE_BEST_TARGETS,
-                        cameraOne,
-                        new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
-
-        // Empty result, expect empty result
-        cameraOne.result = new PhotonPipelineResult();
-        cameraOne.result.setTimestampSeconds(1);
-        Optional<EstimatedRobotPose> estimatedPose = estimator.update();
-        assertFalse(estimatedPose.isPresent());
-
-        // Set actual result
-        cameraOne.result = result;
-        estimatedPose = estimator.update();
-        assertTrue(estimatedPose.isPresent());
-        assertEquals(20, estimatedPose.get().timestampSeconds, .01);
-        assertEquals(20, estimator.poseCacheTimestampSeconds);
-
-        // And again -- pose cache should mean this is empty
-        cameraOne.result = result;
-        estimatedPose = estimator.update();
-        assertFalse(estimatedPose.isPresent());
-        // Expect the old timestamp to still be here
-        assertEquals(20, estimator.poseCacheTimestampSeconds);
-
-        // Set new field layout -- right after, the pose cache timestamp should be -1
-        estimator.setFieldTags(new AprilTagFieldLayout(List.of(new AprilTag(0, new Pose3d())), 0, 0));
-        assertEquals(-1, estimator.poseCacheTimestampSeconds);
-        // Update should cache the current timestamp (20) again
-        cameraOne.result = result;
-        estimatedPose = estimator.update();
-        assertEquals(20, estimatedPose.get().timestampSeconds, .01);
-        assertEquals(20, estimator.poseCacheTimestampSeconds);
-    }
-
-    @Test
-    void averageBestPoses() {
-        PhotonCameraInjector cameraOne = new PhotonCameraInjector();
-        cameraOne.result =
-                new PhotonPipelineResult(
-                        2,
-                        List.of(
-                                new PhotonTrackedTarget(
-                                        3.0,
-                                        -4.0,
-                                        9.0,
-                                        4.0,
-                                        0,
-                                        new Transform3d(new Translation3d(2, 2, 2), new Rotation3d()),
-                                        new Transform3d(new Translation3d(1, 1, 1), new Rotation3d()),
-                                        0.7,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8))), // 1 1 1 ambig: .7
-                                new PhotonTrackedTarget(
-                                        3.0,
-                                        -4.0,
-                                        9.1,
-                                        6.7,
-                                        1,
-                                        new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
-                                        new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
-                                        0.3,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8))), // 2 2 2 ambig .3
-                                new PhotonTrackedTarget(
-                                        9.0,
-                                        -2.0,
-                                        19.0,
-                                        3.0,
-                                        0,
-                                        new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()),
-                                        new Transform3d(new Translation3d(2, 1.9, 2.1), new Rotation3d()),
-                                        0.4,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8))))); // 3 3 3 ambig .4
-        cameraOne.result.setTimestampSeconds(20);
-
-        PhotonPoseEstimator estimator =
-                new PhotonPoseEstimator(
-                        aprilTags,
-                        PoseStrategy.AVERAGE_BEST_TARGETS,
-                        cameraOne,
-                        new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
-
-        Optional<EstimatedRobotPose> estimatedPose = estimator.update();
-        Pose3d pose = estimatedPose.get().estimatedPose;
-
-        assertEquals(20, estimatedPose.get().timestampSeconds, .01);
-        assertEquals(2.15, pose.getX(), .01);
-        assertEquals(2.15, pose.getY(), .01);
-        assertEquals(2.15, pose.getZ(), .01);
-    }
-
-    private class PhotonCameraInjector extends PhotonCamera {
-        public PhotonCameraInjector() {
-            super("Test");
-        }
-
-        PhotonPipelineResult result;
-
-        @Override
-        public PhotonPipelineResult getLatestResult() {
-            return result;
-        }
-    }
+  }
 }

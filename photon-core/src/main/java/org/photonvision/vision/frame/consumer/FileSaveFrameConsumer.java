@@ -32,78 +32,78 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.opencv.CVMat;
 
 public class FileSaveFrameConsumer implements Consumer<CVMat> {
-    private final Logger logger = new Logger(FileSaveFrameConsumer.class, LogGroup.General);
+  private final Logger logger = new Logger(FileSaveFrameConsumer.class, LogGroup.General);
 
-    // Formatters to generate unique, timestamped file names
-    private static final String FILE_PATH = ConfigManager.getInstance().getImageSavePath().toString();
-    private static final String FILE_EXTENSION = ".jpg";
-    private static final String NT_SUFFIX = "SaveImgCmd";
+  // Formatters to generate unique, timestamped file names
+  private static final String FILE_PATH = ConfigManager.getInstance().getImageSavePath().toString();
+  private static final String FILE_EXTENSION = ".jpg";
+  private static final String NT_SUFFIX = "SaveImgCmd";
 
-    DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-    DateFormat tf = new SimpleDateFormat("hhmmssSS");
+  DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+  DateFormat tf = new SimpleDateFormat("hhmmssSS");
 
-    private final NetworkTable rootTable;
-    private NetworkTable subTable;
-    private final String ntEntryName;
-    private IntegerEntry saveFrameEntry;
+  private final NetworkTable rootTable;
+  private NetworkTable subTable;
+  private final String ntEntryName;
+  private IntegerEntry saveFrameEntry;
 
-    private String cameraNickname;
-    private final String streamType;
+  private String cameraNickname;
+  private final String streamType;
 
-    private long savedImagesCount = 0;
+  private long savedImagesCount = 0;
 
-    public FileSaveFrameConsumer(String camNickname, String streamPrefix) {
-        this.ntEntryName = streamPrefix + NT_SUFFIX;
-        this.cameraNickname = camNickname;
-        this.streamType = streamPrefix;
+  public FileSaveFrameConsumer(String camNickname, String streamPrefix) {
+    this.ntEntryName = streamPrefix + NT_SUFFIX;
+    this.cameraNickname = camNickname;
+    this.streamType = streamPrefix;
 
-        this.rootTable = NetworkTablesManager.getInstance().kRootTable;
-        updateCameraNickname(camNickname);
+    this.rootTable = NetworkTablesManager.getInstance().kRootTable;
+    updateCameraNickname(camNickname);
+  }
+
+  public void accept(CVMat image) {
+    if (image != null && image.getMat() != null && !image.getMat().empty()) {
+      long currentCount = saveFrameEntry.get();
+
+      // Await save request
+      if (currentCount == -1) return;
+
+      // The requested count is greater than the actual count
+      if (savedImagesCount < currentCount) {
+        Date now = new Date();
+
+        String fileName =
+            cameraNickname + "_" + streamType + "_" + df.format(now) + "T" + tf.format(now);
+        String saveFilePath = FILE_PATH + File.separator + fileName + FILE_EXTENSION;
+
+        Imgcodecs.imwrite(saveFilePath, image.getMat());
+
+        savedImagesCount++;
+        logger.info("Saved new image at " + saveFilePath);
+      } else if (savedImagesCount > currentCount) {
+        // Reset local value with NT value in case of de-sync
+        savedImagesCount = currentCount;
+      }
+    }
+  }
+
+  public void updateCameraNickname(String newCameraNickname) {
+    // Remove existing entries
+    if (this.subTable != null) {
+      if (this.subTable.containsKey(ntEntryName)) {
+        this.subTable.getEntry(ntEntryName).close();
+      }
     }
 
-    public void accept(CVMat image) {
-        if (image != null && image.getMat() != null && !image.getMat().empty()) {
-            long currentCount = saveFrameEntry.get();
+    // Recreate and re-init network tables structure
+    this.cameraNickname = newCameraNickname;
+    this.subTable = rootTable.getSubTable(this.cameraNickname);
+    this.subTable.getEntry(ntEntryName).setInteger(savedImagesCount);
+    this.saveFrameEntry = subTable.getIntegerTopic(ntEntryName).getEntry(-1); // Default negative
+  }
 
-            // Await save request
-            if (currentCount == -1) return;
-
-            // The requested count is greater than the actual count
-            if (savedImagesCount < currentCount) {
-                Date now = new Date();
-
-                String fileName =
-                        cameraNickname + "_" + streamType + "_" + df.format(now) + "T" + tf.format(now);
-                String saveFilePath = FILE_PATH + File.separator + fileName + FILE_EXTENSION;
-
-                Imgcodecs.imwrite(saveFilePath, image.getMat());
-
-                savedImagesCount++;
-                logger.info("Saved new image at " + saveFilePath);
-            } else if (savedImagesCount > currentCount) {
-                // Reset local value with NT value in case of de-sync
-                savedImagesCount = currentCount;
-            }
-        }
-    }
-
-    public void updateCameraNickname(String newCameraNickname) {
-        // Remove existing entries
-        if (this.subTable != null) {
-            if (this.subTable.containsKey(ntEntryName)) {
-                this.subTable.getEntry(ntEntryName).close();
-            }
-        }
-
-        // Recreate and re-init network tables structure
-        this.cameraNickname = newCameraNickname;
-        this.subTable = rootTable.getSubTable(this.cameraNickname);
-        this.subTable.getEntry(ntEntryName).setInteger(savedImagesCount);
-        this.saveFrameEntry = subTable.getIntegerTopic(ntEntryName).getEntry(-1); // Default negative
-    }
-
-    public void overrideTakeSnapshot() {
-        // Simulate NT change
-        saveFrameEntry.set(saveFrameEntry.get() + 1);
-    }
+  public void overrideTakeSnapshot() {
+    // Simulate NT change
+    saveFrameEntry.set(saveFrameEntry.get() + 1);
+  }
 }

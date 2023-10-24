@@ -26,71 +26,71 @@ import org.photonvision.vision.opencv.ContourShape;
 
 @JsonTypeName("ColoredShapePipelineSettings")
 public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
-    public ContourShape contourShape = ContourShape.Triangle;
-    public DoubleCouple contourPerimeter = new DoubleCouple(0, Double.MAX_VALUE);
-    public double accuracyPercentage = 10.0;
-    // Circle detection
-    public int circleDetectThreshold = 5;
-    public IntegerCouple contourRadius = new IntegerCouple(0, 100);
-    public int minDist = 20;
-    public int maxCannyThresh = 90;
-    public int circleAccuracy = 20;
+  public ContourShape contourShape = ContourShape.Triangle;
+  public DoubleCouple contourPerimeter = new DoubleCouple(0, Double.MAX_VALUE);
+  public double accuracyPercentage = 10.0;
+  // Circle detection
+  public int circleDetectThreshold = 5;
+  public IntegerCouple contourRadius = new IntegerCouple(0, 100);
+  public int minDist = 20;
+  public int maxCannyThresh = 90;
+  public int circleAccuracy = 20;
 
-    // 3d settings
-    public CameraCalibrationCoefficients cameraCalibration;
+  // 3d settings
+  public CameraCalibrationCoefficients cameraCalibration;
 
-    public ColoredShapePipelineSettings() {
-        super();
-        pipelineType = PipelineType.ColoredShape;
-        cameraExposure = 20;
-    }
+  public ColoredShapePipelineSettings() {
+    super();
+    pipelineType = PipelineType.ColoredShape;
+    cameraExposure = 20;
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-        ColoredShapePipelineSettings that = (ColoredShapePipelineSettings) o;
-        return Double.compare(that.accuracyPercentage, accuracyPercentage) == 0
-                && circleDetectThreshold == that.circleDetectThreshold
-                && minDist == that.minDist
-                && maxCannyThresh == that.maxCannyThresh
-                && circleAccuracy == that.circleAccuracy
-                && cornerDetectionUseConvexHulls == that.cornerDetectionUseConvexHulls
-                && cornerDetectionExactSideCount == that.cornerDetectionExactSideCount
-                && cornerDetectionSideCount == that.cornerDetectionSideCount
-                && Double.compare(that.cornerDetectionAccuracyPercentage, cornerDetectionAccuracyPercentage)
-                        == 0
-                && contourShape == that.contourShape
-                && Objects.equals(contourArea, that.contourArea)
-                && Objects.equals(contourPerimeter, that.contourPerimeter)
-                && Objects.equals(contourRadius, that.contourRadius)
-                && contourGroupingMode == that.contourGroupingMode
-                && contourIntersection == that.contourIntersection
-                && Objects.equals(cameraCalibration, that.cameraCalibration)
-                && cornerDetectionStrategy == that.cornerDetectionStrategy;
-    }
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    if (!super.equals(o)) return false;
+    ColoredShapePipelineSettings that = (ColoredShapePipelineSettings) o;
+    return Double.compare(that.accuracyPercentage, accuracyPercentage) == 0
+        && circleDetectThreshold == that.circleDetectThreshold
+        && minDist == that.minDist
+        && maxCannyThresh == that.maxCannyThresh
+        && circleAccuracy == that.circleAccuracy
+        && cornerDetectionUseConvexHulls == that.cornerDetectionUseConvexHulls
+        && cornerDetectionExactSideCount == that.cornerDetectionExactSideCount
+        && cornerDetectionSideCount == that.cornerDetectionSideCount
+        && Double.compare(that.cornerDetectionAccuracyPercentage, cornerDetectionAccuracyPercentage)
+            == 0
+        && contourShape == that.contourShape
+        && Objects.equals(contourArea, that.contourArea)
+        && Objects.equals(contourPerimeter, that.contourPerimeter)
+        && Objects.equals(contourRadius, that.contourRadius)
+        && contourGroupingMode == that.contourGroupingMode
+        && contourIntersection == that.contourIntersection
+        && Objects.equals(cameraCalibration, that.cameraCalibration)
+        && cornerDetectionStrategy == that.cornerDetectionStrategy;
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(
-                super.hashCode(),
-                contourShape,
-                contourArea,
-                contourPerimeter,
-                accuracyPercentage,
-                circleDetectThreshold,
-                contourRadius,
-                minDist,
-                maxCannyThresh,
-                circleAccuracy,
-                contourGroupingMode,
-                contourIntersection,
-                cameraCalibration,
-                cornerDetectionStrategy,
-                cornerDetectionUseConvexHulls,
-                cornerDetectionExactSideCount,
-                cornerDetectionSideCount,
-                cornerDetectionAccuracyPercentage);
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        super.hashCode(),
+        contourShape,
+        contourArea,
+        contourPerimeter,
+        accuracyPercentage,
+        circleDetectThreshold,
+        contourRadius,
+        minDist,
+        maxCannyThresh,
+        circleAccuracy,
+        contourGroupingMode,
+        contourIntersection,
+        cameraCalibration,
+        cornerDetectionStrategy,
+        cornerDetectionUseConvexHulls,
+        cornerDetectionExactSideCount,
+        cornerDetectionSideCount,
+        cornerDetectionAccuracyPercentage);
+  }
 }

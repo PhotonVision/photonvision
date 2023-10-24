@@ -28,21 +28,21 @@ import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.util.TestUtils;
 
 public class HardwareConfigTest {
-    @Test
-    public void loadJson() {
-        try {
-            System.out.println("Loading Hardware configs...");
-            var config =
-                    new ObjectMapper().readValue(TestUtils.getHardwareConfigJson(), HardwareConfig.class);
-            assertEquals(config.deviceName, "PhotonVision");
-            assertEquals(config.deviceLogoPath, "photonvision.png");
-            assertEquals(config.supportURL, "https://support.photonvision.com");
-            Assertions.assertArrayEquals(
-                    config.ledPins.stream().mapToInt(i -> i).toArray(), new int[] {2, 13});
-            CustomGPIO.setConfig(config);
+  @Test
+  public void loadJson() {
+    try {
+      System.out.println("Loading Hardware configs...");
+      var config =
+          new ObjectMapper().readValue(TestUtils.getHardwareConfigJson(), HardwareConfig.class);
+      assertEquals(config.deviceName, "PhotonVision");
+      assertEquals(config.deviceLogoPath, "photonvision.png");
+      assertEquals(config.supportURL, "https://support.photonvision.com");
+      Assertions.assertArrayEquals(
+          config.ledPins.stream().mapToInt(i -> i).toArray(), new int[] {2, 13});
+      CustomGPIO.setConfig(config);
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    } catch (IOException e) {
+      e.printStackTrace();
     }
+  }
 }

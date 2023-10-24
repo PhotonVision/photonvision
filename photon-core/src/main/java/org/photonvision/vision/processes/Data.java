@@ -22,10 +22,10 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 // TODO replace with CTT's data class
 public class Data implements Releasable {
-    public CVPipelineResult result;
+  public CVPipelineResult result;
 
-    @Override
-    public void release() {
-        result.release();
-    }
+  @Override
+  public void release() {
+    result.release();
+  }
 }

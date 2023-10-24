@@ -34,154 +34,154 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
 
 public class HardwareManager {
-    private static HardwareManager instance;
+  private static HardwareManager instance;
 
-    private final ShellExec shellExec = new ShellExec(true, false);
-    private final Logger logger = new Logger(HardwareManager.class, LogGroup.General);
+  private final ShellExec shellExec = new ShellExec(true, false);
+  private final Logger logger = new Logger(HardwareManager.class, LogGroup.General);
 
-    private final HardwareConfig hardwareConfig;
-    private final HardwareSettings hardwareSettings;
+  private final HardwareConfig hardwareConfig;
+  private final HardwareSettings hardwareSettings;
 
-    private final MetricsManager metricsManager;
+  private final MetricsManager metricsManager;
 
-    @SuppressWarnings({"FieldCanBeLocal", "unused"})
-    private final StatusLED statusLED;
+  @SuppressWarnings({"FieldCanBeLocal", "unused"})
+  private final StatusLED statusLED;
 
-    @SuppressWarnings("FieldCanBeLocal")
-    private final IntegerSubscriber ledModeRequest;
+  @SuppressWarnings("FieldCanBeLocal")
+  private final IntegerSubscriber ledModeRequest;
 
-    private final IntegerPublisher ledModeState;
+  private final IntegerPublisher ledModeState;
 
-    @SuppressWarnings({"FieldCanBeLocal", "unused"})
-    private final NTDataChangeListener ledModeListener;
+  @SuppressWarnings({"FieldCanBeLocal", "unused"})
+  private final NTDataChangeListener ledModeListener;
 
-    public final VisionLED visionLED; // May be null if no LED is specified
+  public final VisionLED visionLED; // May be null if no LED is specified
 
-    private final PigpioSocket pigpioSocket; // will be null unless on Raspi
+  private final PigpioSocket pigpioSocket; // will be null unless on Raspi
 
-    public static HardwareManager getInstance() {
-        if (instance == null) {
-            var conf = ConfigManager.getInstance().getConfig();
-            instance = new HardwareManager(conf.getHardwareConfig(), conf.getHardwareSettings());
-        }
-        return instance;
+  public static HardwareManager getInstance() {
+    if (instance == null) {
+      var conf = ConfigManager.getInstance().getConfig();
+      instance = new HardwareManager(conf.getHardwareConfig(), conf.getHardwareSettings());
+    }
+    return instance;
+  }
+
+  private HardwareManager(HardwareConfig hardwareConfig, HardwareSettings hardwareSettings) {
+    this.hardwareConfig = hardwareConfig;
+    this.hardwareSettings = hardwareSettings;
+
+    this.metricsManager = new MetricsManager();
+    this.metricsManager.setConfig(hardwareConfig);
+
+    ledModeRequest =
+        NetworkTablesManager.getInstance()
+            .kRootTable
+            .getIntegerTopic("ledModeRequest")
+            .subscribe(-1);
+    ledModeState =
+        NetworkTablesManager.getInstance().kRootTable.getIntegerTopic("ledModeState").publish();
+    ledModeState.set(VisionLEDMode.kDefault.value);
+
+    CustomGPIO.setConfig(hardwareConfig);
+
+    if (Platform.isRaspberryPi()) {
+      pigpioSocket = new PigpioSocket();
+    } else {
+      pigpioSocket = null;
     }
 
-    private HardwareManager(HardwareConfig hardwareConfig, HardwareSettings hardwareSettings) {
-        this.hardwareConfig = hardwareConfig;
-        this.hardwareSettings = hardwareSettings;
+    statusLED =
+        hardwareConfig.statusRGBPins.size() == 3
+            ? new StatusLED(hardwareConfig.statusRGBPins)
+            : null;
 
-        this.metricsManager = new MetricsManager();
-        this.metricsManager.setConfig(hardwareConfig);
+    var hasBrightnessRange = hardwareConfig.ledBrightnessRange.size() == 2;
+    visionLED =
+        hardwareConfig.ledPins.isEmpty()
+            ? null
+            : new VisionLED(
+                hardwareConfig.ledPins,
+                hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(0) : 0,
+                hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(1) : 100,
+                pigpioSocket,
+                ledModeState::set);
 
-        ledModeRequest =
-                NetworkTablesManager.getInstance()
-                        .kRootTable
-                        .getIntegerTopic("ledModeRequest")
-                        .subscribe(-1);
-        ledModeState =
-                NetworkTablesManager.getInstance().kRootTable.getIntegerTopic("ledModeState").publish();
-        ledModeState.set(VisionLEDMode.kDefault.value);
+    ledModeListener =
+        visionLED == null
+            ? null
+            : new NTDataChangeListener(
+                NetworkTablesManager.getInstance().kRootTable.getInstance(),
+                ledModeRequest,
+                visionLED::onLedModeChange);
 
-        CustomGPIO.setConfig(hardwareConfig);
+    Runtime.getRuntime().addShutdownHook(new Thread(this::onJvmExit));
 
-        if (Platform.isRaspberryPi()) {
-            pigpioSocket = new PigpioSocket();
-        } else {
-            pigpioSocket = null;
-        }
-
-        statusLED =
-                hardwareConfig.statusRGBPins.size() == 3
-                        ? new StatusLED(hardwareConfig.statusRGBPins)
-                        : null;
-
-        var hasBrightnessRange = hardwareConfig.ledBrightnessRange.size() == 2;
-        visionLED =
-                hardwareConfig.ledPins.isEmpty()
-                        ? null
-                        : new VisionLED(
-                                hardwareConfig.ledPins,
-                                hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(0) : 0,
-                                hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(1) : 100,
-                                pigpioSocket,
-                                ledModeState::set);
-
-        ledModeListener =
-                visionLED == null
-                        ? null
-                        : new NTDataChangeListener(
-                                NetworkTablesManager.getInstance().kRootTable.getInstance(),
-                                ledModeRequest,
-                                visionLED::onLedModeChange);
-
-        Runtime.getRuntime().addShutdownHook(new Thread(this::onJvmExit));
-
-        if (visionLED != null) {
-            visionLED.setBrightness(hardwareSettings.ledBrightnessPercentage);
-            visionLED.blink(85, 4); // bootup blink
-        }
-
-        // Start hardware metrics thread (Disabled until implemented)
-        // if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
+    if (visionLED != null) {
+      visionLED.setBrightness(hardwareSettings.ledBrightnessPercentage);
+      visionLED.blink(85, 4); // bootup blink
     }
 
-    public void setBrightnessPercent(int percent) {
-        if (percent != hardwareSettings.ledBrightnessPercentage) {
-            hardwareSettings.ledBrightnessPercentage = percent;
-            if (visionLED != null) visionLED.setBrightness(percent);
-            ConfigManager.getInstance().requestSave();
-            logger.info("Setting led brightness to " + percent + "%");
-        }
-    }
+    // Start hardware metrics thread (Disabled until implemented)
+    // if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
+  }
 
-    private void onJvmExit() {
-        logger.info("Shutting down LEDs...");
-        if (visionLED != null) visionLED.setState(false);
-
-        logger.info("Force-flushing settings...");
-        ConfigManager.getInstance().saveToDisk();
+  public void setBrightnessPercent(int percent) {
+    if (percent != hardwareSettings.ledBrightnessPercentage) {
+      hardwareSettings.ledBrightnessPercentage = percent;
+      if (visionLED != null) visionLED.setBrightness(percent);
+      ConfigManager.getInstance().requestSave();
+      logger.info("Setting led brightness to " + percent + "%");
     }
+  }
 
-    public boolean restartDevice() {
-        if (Platform.isLinux()) {
-            try {
-                return shellExec.executeBashCommand("reboot now") == 0;
-            } catch (IOException e) {
-                logger.error("Could not restart device!", e);
-                return false;
-            }
-        }
-        try {
-            return shellExec.executeBashCommand(hardwareConfig.restartHardwareCommand) == 0;
-        } catch (IOException e) {
-            logger.error("Could not restart device!", e);
-            return false;
-        }
-    }
+  private void onJvmExit() {
+    logger.info("Shutting down LEDs...");
+    if (visionLED != null) visionLED.setState(false);
 
-    public void setStatus(ProgramStatus status) {
-        switch (status) {
-            case UHOH:
-                // red flashing, green off
-                break;
-            case RUNNING:
-                // red solid, green off
-                break;
-            case RUNNING_NT:
-                // red off, green solid
-                break;
-            case RUNNING_NT_TARGET:
-                // red off, green flashing
-                break;
-        }
-    }
+    logger.info("Force-flushing settings...");
+    ConfigManager.getInstance().saveToDisk();
+  }
 
-    public HardwareConfig getConfig() {
-        return hardwareConfig;
+  public boolean restartDevice() {
+    if (Platform.isLinux()) {
+      try {
+        return shellExec.executeBashCommand("reboot now") == 0;
+      } catch (IOException e) {
+        logger.error("Could not restart device!", e);
+        return false;
+      }
     }
+    try {
+      return shellExec.executeBashCommand(hardwareConfig.restartHardwareCommand) == 0;
+    } catch (IOException e) {
+      logger.error("Could not restart device!", e);
+      return false;
+    }
+  }
 
-    public void publishMetrics() {
-        metricsManager.publishMetrics();
+  public void setStatus(ProgramStatus status) {
+    switch (status) {
+      case UHOH:
+        // red flashing, green off
+        break;
+      case RUNNING:
+        // red solid, green off
+        break;
+      case RUNNING_NT:
+        // red off, green solid
+        break;
+      case RUNNING_NT_TARGET:
+        // red off, green flashing
+        break;
     }
+  }
+
+  public HardwareConfig getConfig() {
+    return hardwareConfig;
+  }
+
+  public void publishMetrics() {
+    metricsManager.publishMetrics();
+  }
 }

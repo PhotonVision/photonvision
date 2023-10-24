@@ -22,12 +22,12 @@ import org.opencv.imgproc.Imgproc;
 import org.photonvision.vision.pipe.MutatingPipe;
 
 public class OutputMatPipe extends MutatingPipe<Mat, OutputMatPipe.OutputMatParams> {
-    @Override
-    protected Void process(Mat in) {
-        // convert input mat
-        Imgproc.cvtColor(in, in, Imgproc.COLOR_GRAY2BGR, 3);
-        return null;
-    }
+  @Override
+  protected Void process(Mat in) {
+    // convert input mat
+    Imgproc.cvtColor(in, in, Imgproc.COLOR_GRAY2BGR, 3);
+    return null;
+  }
 
-    public static class OutputMatParams {}
+  public static class OutputMatParams {}
 }

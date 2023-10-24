@@ -25,77 +25,77 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public class SocketVideoStreamManager {
-    private static final int NO_STREAM_PORT = -1;
+  private static final int NO_STREAM_PORT = -1;
 
-    private final Logger logger = new Logger(SocketVideoStreamManager.class, LogGroup.Camera);
+  private final Logger logger = new Logger(SocketVideoStreamManager.class, LogGroup.Camera);
 
-    private final Map<Integer, SocketVideoStream> streams = new Hashtable<>();
-    private final Map<WsContext, Integer> userSubscriptions = new Hashtable<>();
+  private final Map<Integer, SocketVideoStream> streams = new Hashtable<>();
+  private final Map<WsContext, Integer> userSubscriptions = new Hashtable<>();
 
-    private static class ThreadSafeSingleton {
-        private static final SocketVideoStreamManager INSTANCE = new SocketVideoStreamManager();
+  private static class ThreadSafeSingleton {
+    private static final SocketVideoStreamManager INSTANCE = new SocketVideoStreamManager();
+  }
+
+  public static SocketVideoStreamManager getInstance() {
+    return ThreadSafeSingleton.INSTANCE;
+  }
+
+  private SocketVideoStreamManager() {}
+
+  // Register a new available camera stream
+  public void addStream(SocketVideoStream newStream) {
+    streams.put(newStream.portID, newStream);
+    logger.debug("Added new stream for port " + newStream.portID);
+  }
+
+  // Remove a previously-added camera stream, and unsubscribe all users
+  public void removeStream(SocketVideoStream oldStream) {
+    streams.remove(oldStream.portID);
+    logger.debug("Removed stream for port " + oldStream.portID);
+  }
+
+  // Indicate a user would like to subscribe to a camera stream and get frames from it periodically
+  public void addSubscription(WsContext user, int streamPortID) {
+    var stream = streams.get(streamPortID);
+    if (stream != null) {
+      userSubscriptions.put(user, streamPortID);
+      stream.addUser();
+    } else {
+      logger.error("User attempted to subscribe to non-existent port " + streamPortID);
     }
+  }
 
-    public static SocketVideoStreamManager getInstance() {
-        return ThreadSafeSingleton.INSTANCE;
+  // Indicate a user would like to stop receiving one camera stream
+  public void removeSubscription(WsContext user) {
+    var port = userSubscriptions.get(user);
+    if (port != null && port != NO_STREAM_PORT) {
+      var stream = streams.get(port);
+      userSubscriptions.put(user, NO_STREAM_PORT);
+      if (stream != null) {
+        stream.removeUser();
+      }
+    } else {
+      logger.error(
+          "User attempted to unsubscribe, but had not yet previously subscribed successfully.");
     }
+  }
 
-    private SocketVideoStreamManager() {}
-
-    // Register a new available camera stream
-    public void addStream(SocketVideoStream newStream) {
-        streams.put(newStream.portID, newStream);
-        logger.debug("Added new stream for port " + newStream.portID);
+  // For a given user, return the jpeg bytes (or null) for the most recent frame
+  public ByteBuffer getSendFrame(WsContext user) {
+    var port = userSubscriptions.get(user);
+    if (port != null && port != NO_STREAM_PORT) {
+      var stream = streams.get(port);
+      return stream.getJPEGByteBuffer();
+    } else {
+      return null;
     }
+  }
 
-    // Remove a previously-added camera stream, and unsubscribe all users
-    public void removeStream(SocketVideoStream oldStream) {
-        streams.remove(oldStream.portID);
-        logger.debug("Removed stream for port " + oldStream.portID);
+  // Causes all streams to "re-trigger" and receive and convert their next mjpeg frame
+  // Only invoke this after all returned jpeg Strings have been used.
+  public void allStreamConvertNextFrame() {
+    for (SocketVideoStream stream : streams.values()) {
+      stream.convertNextFrame();
     }
-
-    // Indicate a user would like to subscribe to a camera stream and get frames from it periodically
-    public void addSubscription(WsContext user, int streamPortID) {
-        var stream = streams.get(streamPortID);
-        if (stream != null) {
-            userSubscriptions.put(user, streamPortID);
-            stream.addUser();
-        } else {
-            logger.error("User attempted to subscribe to non-existent port " + streamPortID);
-        }
-    }
-
-    // Indicate a user would like to stop receiving one camera stream
-    public void removeSubscription(WsContext user) {
-        var port = userSubscriptions.get(user);
-        if (port != null && port != NO_STREAM_PORT) {
-            var stream = streams.get(port);
-            userSubscriptions.put(user, NO_STREAM_PORT);
-            if (stream != null) {
-                stream.removeUser();
-            }
-        } else {
-            logger.error(
-                    "User attempted to unsubscribe, but had not yet previously subscribed successfully.");
-        }
-    }
-
-    // For a given user, return the jpeg bytes (or null) for the most recent frame
-    public ByteBuffer getSendFrame(WsContext user) {
-        var port = userSubscriptions.get(user);
-        if (port != null && port != NO_STREAM_PORT) {
-            var stream = streams.get(port);
-            return stream.getJPEGByteBuffer();
-        } else {
-            return null;
-        }
-    }
-
-    // Causes all streams to "re-trigger" and receive and convert their next mjpeg frame
-    // Only invoke this after all returned jpeg Strings have been used.
-    public void allStreamConvertNextFrame() {
-        for (SocketVideoStream stream : streams.values()) {
-            stream.convertNextFrame();
-        }
-    }
+  }
 }

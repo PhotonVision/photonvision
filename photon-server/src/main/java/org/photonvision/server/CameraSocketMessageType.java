@@ -23,24 +23,24 @@ import java.util.Map;
 
 @SuppressWarnings("unused")
 public enum CameraSocketMessageType {
-    CSMT_SUBSCRIBE("subscribe"),
-    CSMT_UNSUBSCRIBE("unsubscribe");
+  CSMT_SUBSCRIBE("subscribe"),
+  CSMT_UNSUBSCRIBE("unsubscribe");
 
-    public final String entryKey;
+  public final String entryKey;
 
-    CameraSocketMessageType(String entryKey) {
-        this.entryKey = entryKey;
+  CameraSocketMessageType(String entryKey) {
+    this.entryKey = entryKey;
+  }
+
+  private static final Map<String, CameraSocketMessageType> entryKeyToValueMap = new HashMap<>();
+
+  static {
+    for (var value : EnumSet.allOf(CameraSocketMessageType.class)) {
+      entryKeyToValueMap.put(value.entryKey, value);
     }
+  }
 
-    private static final Map<String, CameraSocketMessageType> entryKeyToValueMap = new HashMap<>();
-
-    static {
-        for (var value : EnumSet.allOf(CameraSocketMessageType.class)) {
-            entryKeyToValueMap.put(value.entryKey, value);
-        }
-    }
-
-    public static CameraSocketMessageType fromEntryKey(String entryKey) {
-        return entryKeyToValueMap.get(entryKey);
-    }
+  public static CameraSocketMessageType fromEntryKey(String entryKey) {
+    return entryKeyToValueMap.get(entryKey);
+  }
 }

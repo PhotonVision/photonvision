@@ -23,38 +23,38 @@ import java.util.Map;
 
 @SuppressWarnings("unused")
 public enum DataSocketMessageType {
-    SMT_DRIVERMODE("driverMode"),
-    SMT_CHANGECAMERANAME("changeCameraName"),
-    SMT_CHANGEPIPELINENAME("changePipelineName"),
-    SMT_ADDNEWPIPELINE("addNewPipeline"),
-    SMT_DELETECURRENTPIPELINE("deleteCurrentPipeline"),
-    SMT_CURRENTCAMERA("currentCamera"),
-    SMT_PIPELINESETTINGCHANGE("changePipelineSetting"),
-    SMT_CURRENTPIPELINE("currentPipeline"),
-    SMT_STARTPNPCALIBRATION("startPnpCalibration"),
-    SMT_SAVEINPUTSNAPSHOT("saveInputSnapshot"),
-    SMT_SAVEOUTPUTSNAPSHOT("saveOutputSnapshot"),
-    SMT_TAKECALIBRATIONSNAPSHOT("takeCalibrationSnapshot"),
-    SMT_DUPLICATEPIPELINE("duplicatePipeline"),
-    SMT_CHANGEBRIGHTNESS("enabledLEDPercentage"),
-    SMT_ROBOTOFFSETPOINT("robotOffsetPoint"),
-    SMT_CHANGEPIPELINETYPE("pipelineType");
+  SMT_DRIVERMODE("driverMode"),
+  SMT_CHANGECAMERANAME("changeCameraName"),
+  SMT_CHANGEPIPELINENAME("changePipelineName"),
+  SMT_ADDNEWPIPELINE("addNewPipeline"),
+  SMT_DELETECURRENTPIPELINE("deleteCurrentPipeline"),
+  SMT_CURRENTCAMERA("currentCamera"),
+  SMT_PIPELINESETTINGCHANGE("changePipelineSetting"),
+  SMT_CURRENTPIPELINE("currentPipeline"),
+  SMT_STARTPNPCALIBRATION("startPnpCalibration"),
+  SMT_SAVEINPUTSNAPSHOT("saveInputSnapshot"),
+  SMT_SAVEOUTPUTSNAPSHOT("saveOutputSnapshot"),
+  SMT_TAKECALIBRATIONSNAPSHOT("takeCalibrationSnapshot"),
+  SMT_DUPLICATEPIPELINE("duplicatePipeline"),
+  SMT_CHANGEBRIGHTNESS("enabledLEDPercentage"),
+  SMT_ROBOTOFFSETPOINT("robotOffsetPoint"),
+  SMT_CHANGEPIPELINETYPE("pipelineType");
 
-    public final String entryKey;
+  public final String entryKey;
 
-    DataSocketMessageType(String entryKey) {
-        this.entryKey = entryKey;
+  DataSocketMessageType(String entryKey) {
+    this.entryKey = entryKey;
+  }
+
+  private static final Map<String, DataSocketMessageType> entryKeyToValueMap = new HashMap<>();
+
+  static {
+    for (var value : EnumSet.allOf(DataSocketMessageType.class)) {
+      entryKeyToValueMap.put(value.entryKey, value);
     }
+  }
 
-    private static final Map<String, DataSocketMessageType> entryKeyToValueMap = new HashMap<>();
-
-    static {
-        for (var value : EnumSet.allOf(DataSocketMessageType.class)) {
-            entryKeyToValueMap.put(value.entryKey, value);
-        }
-    }
-
-    public static DataSocketMessageType fromEntryKey(String entryKey) {
-        return entryKeyToValueMap.get(entryKey);
-    }
+  public static DataSocketMessageType fromEntryKey(String entryKey) {
+    return entryKeyToValueMap.get(entryKey);
+  }
 }

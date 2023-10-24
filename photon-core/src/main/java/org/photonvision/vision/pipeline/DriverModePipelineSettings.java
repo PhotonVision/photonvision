@@ -23,14 +23,14 @@ import org.photonvision.vision.processes.PipelineManager;
 
 @JsonTypeName("DriverModePipelineSettings")
 public class DriverModePipelineSettings extends CVPipelineSettings {
-    public DoubleCouple offsetPoint = new DoubleCouple();
+  public DoubleCouple offsetPoint = new DoubleCouple();
 
-    public DriverModePipelineSettings() {
-        super();
-        pipelineNickname = "Driver Mode";
-        pipelineIndex = PipelineManager.DRIVERMODE_INDEX;
-        pipelineType = PipelineType.DriverMode;
-        inputShouldShow = true;
-        cameraAutoExposure = true;
-    }
+  public DriverModePipelineSettings() {
+    super();
+    pipelineNickname = "Driver Mode";
+    pipelineIndex = PipelineManager.DRIVERMODE_INDEX;
+    pipelineType = PipelineType.DriverMode;
+    inputShouldShow = true;
+    cameraAutoExposure = true;
+  }
 }

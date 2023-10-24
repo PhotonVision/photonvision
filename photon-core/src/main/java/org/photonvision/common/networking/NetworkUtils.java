@@ -29,111 +29,111 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
 
 public class NetworkUtils {
-    private static final Logger logger = new Logger(NetworkUtils.class, LogGroup.General);
+  private static final Logger logger = new Logger(NetworkUtils.class, LogGroup.General);
 
-    public enum NMType {
-        NMTYPE_ETHERNET("ethernet"),
-        NMTYPE_WIFI("wifi"),
-        NMTYPE_UNKNOWN("");
+  public enum NMType {
+    NMTYPE_ETHERNET("ethernet"),
+    NMTYPE_WIFI("wifi"),
+    NMTYPE_UNKNOWN("");
 
-        NMType(String id) {
-            identifier = id;
-        }
-
-        private final String identifier;
-
-        public static NMType typeForString(String s) {
-            for (var t : NMType.values()) {
-                if (t.identifier.equals(s)) {
-                    return t;
-                }
-            }
-            return NMTYPE_UNKNOWN;
-        }
+    NMType(String id) {
+      identifier = id;
     }
 
-    public static class NMDeviceInfo {
-        public NMDeviceInfo(String c, String d, String type) {
-            connName = c;
-            devName = d;
-            nmType = NMType.typeForString(type);
-        }
+    private final String identifier;
 
-        public final String connName; // Human-readable name used by "nmcli con"
-        public final String devName; // underlying device, used by dhclient
-        public final NMType nmType;
-
-        @Override
-        public String toString() {
-            return "NMDeviceInfo [connName="
-                    + connName
-                    + ", devName="
-                    + devName
-                    + ", nmType="
-                    + nmType
-                    + "]";
+    public static NMType typeForString(String s) {
+      for (var t : NMType.values()) {
+        if (t.identifier.equals(s)) {
+          return t;
         }
+      }
+      return NMTYPE_UNKNOWN;
+    }
+  }
+
+  public static class NMDeviceInfo {
+    public NMDeviceInfo(String c, String d, String type) {
+      connName = c;
+      devName = d;
+      nmType = NMType.typeForString(type);
     }
 
-    private static List<NMDeviceInfo> allInterfaces = new ArrayList<>();
-    private static long lastReadTimestamp = 0;
+    public final String connName; // Human-readable name used by "nmcli con"
+    public final String devName; // underlying device, used by dhclient
+    public final NMType nmType;
 
-    public static List<NMDeviceInfo> getAllInterfaces() {
-        long now = System.currentTimeMillis();
-        if (now - lastReadTimestamp < 5000) return allInterfaces;
-        else lastReadTimestamp = now;
+    @Override
+    public String toString() {
+      return "NMDeviceInfo [connName="
+          + connName
+          + ", devName="
+          + devName
+          + ", nmType="
+          + nmType
+          + "]";
+    }
+  }
 
-        var ret = new ArrayList<NMDeviceInfo>();
+  private static List<NMDeviceInfo> allInterfaces = new ArrayList<>();
+  private static long lastReadTimestamp = 0;
 
-        if (!Platform.isLinux()) {
-            // Can only determine interface name on Linux, give up
-            return ret;
-        }
+  public static List<NMDeviceInfo> getAllInterfaces() {
+    long now = System.currentTimeMillis();
+    if (now - lastReadTimestamp < 5000) return allInterfaces;
+    else lastReadTimestamp = now;
 
-        try {
-            var shell = new ShellExec(true, false);
-            shell.executeBashCommand(
-                    "nmcli -t -f GENERAL.CONNECTION,GENERAL.DEVICE,GENERAL.TYPE device show");
-            String out = shell.getOutput();
-            if (out == null) {
-                return new ArrayList<>();
-            }
-            Pattern pattern =
-                    Pattern.compile("GENERAL.CONNECTION:(.*)\nGENERAL.DEVICE:(.*)\nGENERAL.TYPE:(.*)");
-            Matcher matcher = pattern.matcher(out);
-            while (matcher.find()) {
-                ret.add(new NMDeviceInfo(matcher.group(1), matcher.group(2), matcher.group(3)));
-            }
-        } catch (IOException e) {
-            logger.error("Could not get active NM ifaces!", e);
-        }
+    var ret = new ArrayList<NMDeviceInfo>();
 
-        logger.debug("Found network interfaces:\n" + ret);
-
-        allInterfaces = ret;
-        return ret;
+    if (!Platform.isLinux()) {
+      // Can only determine interface name on Linux, give up
+      return ret;
     }
 
-    public static List<NMDeviceInfo> getAllActiveInterfaces() {
-        // Seems like if an interface exists but isn't actually connected, the connection name will be
-        // an empty string. Check here and only return connections with non-empty names
-        return getAllInterfaces().stream()
-                .filter(it -> !it.connName.trim().isEmpty())
-                .collect(Collectors.toList());
+    try {
+      var shell = new ShellExec(true, false);
+      shell.executeBashCommand(
+          "nmcli -t -f GENERAL.CONNECTION,GENERAL.DEVICE,GENERAL.TYPE device show");
+      String out = shell.getOutput();
+      if (out == null) {
+        return new ArrayList<>();
+      }
+      Pattern pattern =
+          Pattern.compile("GENERAL.CONNECTION:(.*)\nGENERAL.DEVICE:(.*)\nGENERAL.TYPE:(.*)");
+      Matcher matcher = pattern.matcher(out);
+      while (matcher.find()) {
+        ret.add(new NMDeviceInfo(matcher.group(1), matcher.group(2), matcher.group(3)));
+      }
+    } catch (IOException e) {
+      logger.error("Could not get active NM ifaces!", e);
     }
 
-    public static List<NMDeviceInfo> getAllWiredInterfaces() {
-        return getAllActiveInterfaces().stream()
-                .filter(it -> it.nmType == NMType.NMTYPE_ETHERNET)
-                .collect(Collectors.toList());
-    }
+    logger.debug("Found network interfaces:\n" + ret);
 
-    public static NMDeviceInfo getNMinfoForConnName(String connName) {
-        for (NMDeviceInfo info : getAllActiveInterfaces()) {
-            if (info.connName.equals(connName)) {
-                return info;
-            }
-        }
-        return null;
+    allInterfaces = ret;
+    return ret;
+  }
+
+  public static List<NMDeviceInfo> getAllActiveInterfaces() {
+    // Seems like if an interface exists but isn't actually connected, the connection name will be
+    // an empty string. Check here and only return connections with non-empty names
+    return getAllInterfaces().stream()
+        .filter(it -> !it.connName.trim().isEmpty())
+        .collect(Collectors.toList());
+  }
+
+  public static List<NMDeviceInfo> getAllWiredInterfaces() {
+    return getAllActiveInterfaces().stream()
+        .filter(it -> it.nmType == NMType.NMTYPE_ETHERNET)
+        .collect(Collectors.toList());
+  }
+
+  public static NMDeviceInfo getNMinfoForConnName(String connName) {
+    for (NMDeviceInfo info : getAllActiveInterfaces()) {
+      if (info.connName.equals(connName)) {
+        return info;
+      }
     }
+    return null;
+  }
 }

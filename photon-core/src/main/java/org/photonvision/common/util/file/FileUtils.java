@@ -34,109 +34,109 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public class FileUtils {
-    private FileUtils() {}
+  private FileUtils() {}
 
-    private static final Logger logger = new Logger(FileUtils.class, LogGroup.General);
-    private static final Set<PosixFilePermission> allReadWriteExecutePerms =
-            new HashSet<>(Arrays.asList(PosixFilePermission.values()));
+  private static final Logger logger = new Logger(FileUtils.class, LogGroup.General);
+  private static final Set<PosixFilePermission> allReadWriteExecutePerms =
+      new HashSet<>(Arrays.asList(PosixFilePermission.values()));
 
-    public static void deleteDirectory(Path path) {
-        try {
-            var files = Files.walk(path);
+  public static void deleteDirectory(Path path) {
+    try {
+      var files = Files.walk(path);
 
-            // delete directory including files and sub-folders
-            files
-                    .sorted(Comparator.reverseOrder())
-                    .map(Path::toFile)
-                    // .filter(File::isFile) // we want to delete directories and sub-dirs, too
-                    .forEach((var file) -> deleteFile(file.toPath()));
+      // delete directory including files and sub-folders
+      files
+          .sorted(Comparator.reverseOrder())
+          .map(Path::toFile)
+          // .filter(File::isFile) // we want to delete directories and sub-dirs, too
+          .forEach((var file) -> deleteFile(file.toPath()));
 
-            // close the stream
-            files.close();
-        } catch (IOException e) {
-            logger.error("Exception deleting files in " + path + "!", e);
+      // close the stream
+      files.close();
+    } catch (IOException e) {
+      logger.error("Exception deleting files in " + path + "!", e);
+    }
+  }
+
+  /**
+   * Delete the file at the path.
+   *
+   * @param path file path to delete.
+   * @return whether the operation was successful.
+   */
+  public static boolean deleteFile(Path path) {
+    try {
+      Files.delete(path);
+      return true;
+    } catch (FileNotFoundException | NoSuchFileException fe) {
+      logger.warn("Tried to delete file \"" + path + "\" but it did not exist");
+      return false;
+    } catch (IOException e) {
+      logger.error("Exception deleting file \"" + path + "\"!", e);
+      return false;
+    }
+  }
+
+  /**
+   * Copy a file from a source to a new destination.
+   *
+   * @param src the file path to copy.
+   * @param dst the file path to replace.
+   * @return whether the operation was successful.
+   */
+  public static boolean copyFile(Path src, Path dst) {
+    try {
+      Files.copy(src, dst);
+      return true;
+    } catch (IOException e) {
+      logger.error("Exception copying file " + src + " to " + dst + "!", e);
+      return false;
+    }
+  }
+
+  /**
+   * Replace the destination file with a new source.
+   *
+   * @param src the file path to replace with.
+   * @param dst the file path to replace.
+   * @return whether the operation was successful.
+   */
+  public static boolean replaceFile(Path src, Path dst) {
+    boolean fileDeleted = deleteFile(dst);
+    boolean fileCopied = copyFile(src, dst);
+    return fileDeleted && fileCopied;
+  }
+
+  public static void setFilePerms(Path path) throws IOException {
+    if (Platform.isLinux()) {
+      File thisFile = path.toFile();
+      Set<PosixFilePermission> perms =
+          Files.readAttributes(path, PosixFileAttributes.class).permissions();
+      if (!perms.equals(allReadWriteExecutePerms)) {
+        logger.info("Setting perms on" + path);
+        Files.setPosixFilePermissions(path, perms);
+        var theseFiles = thisFile.listFiles();
+        if (thisFile.isDirectory() && theseFiles != null) {
+          for (File subfile : theseFiles) {
+            setFilePerms(subfile.toPath());
+          }
         }
+      }
     }
+  }
 
-    /**
-     * Delete the file at the path.
-     *
-     * @param path file path to delete.
-     * @return whether the operation was successful.
-     */
-    public static boolean deleteFile(Path path) {
-        try {
-            Files.delete(path);
-            return true;
-        } catch (FileNotFoundException | NoSuchFileException fe) {
-            logger.warn("Tried to delete file \"" + path + "\" but it did not exist");
-            return false;
-        } catch (IOException e) {
-            logger.error("Exception deleting file \"" + path + "\"!", e);
-            return false;
-        }
+  public static void setAllPerms(Path path) {
+    if (Platform.isLinux()) {
+      String command = String.format("chmod 777 -R %s", path.toString());
+      try {
+        Process p = Runtime.getRuntime().exec(command);
+        p.waitFor();
+
+      } catch (Exception e) {
+        logger.error("Setting perms failed!", e);
+      }
+    } else {
+      logger.info("Cannot set directory permissions on Windows!");
     }
-
-    /**
-     * Copy a file from a source to a new destination.
-     *
-     * @param src the file path to copy.
-     * @param dst the file path to replace.
-     * @return whether the operation was successful.
-     */
-    public static boolean copyFile(Path src, Path dst) {
-        try {
-            Files.copy(src, dst);
-            return true;
-        } catch (IOException e) {
-            logger.error("Exception copying file " + src + " to " + dst + "!", e);
-            return false;
-        }
-    }
-
-    /**
-     * Replace the destination file with a new source.
-     *
-     * @param src the file path to replace with.
-     * @param dst the file path to replace.
-     * @return whether the operation was successful.
-     */
-    public static boolean replaceFile(Path src, Path dst) {
-        boolean fileDeleted = deleteFile(dst);
-        boolean fileCopied = copyFile(src, dst);
-        return fileDeleted && fileCopied;
-    }
-
-    public static void setFilePerms(Path path) throws IOException {
-        if (Platform.isLinux()) {
-            File thisFile = path.toFile();
-            Set<PosixFilePermission> perms =
-                    Files.readAttributes(path, PosixFileAttributes.class).permissions();
-            if (!perms.equals(allReadWriteExecutePerms)) {
-                logger.info("Setting perms on" + path);
-                Files.setPosixFilePermissions(path, perms);
-                var theseFiles = thisFile.listFiles();
-                if (thisFile.isDirectory() && theseFiles != null) {
-                    for (File subfile : theseFiles) {
-                        setFilePerms(subfile.toPath());
-                    }
-                }
-            }
-        }
-    }
-
-    public static void setAllPerms(Path path) {
-        if (Platform.isLinux()) {
-            String command = String.format("chmod 777 -R %s", path.toString());
-            try {
-                Process p = Runtime.getRuntime().exec(command);
-                p.waitFor();
-
-            } catch (Exception e) {
-                logger.error("Setting perms failed!", e);
-            }
-        } else {
-            logger.info("Cannot set directory permissions on Windows!");
-        }
-    }
+  }
 }

@@ -26,34 +26,34 @@ package org.photonvision.vision.pipe;
  * @param <P> Parameters type for the pipe
  */
 public abstract class CVPipe<I, O, P> {
-    protected CVPipeResult<O> result = new CVPipeResult<>();
-    protected P params;
+  protected CVPipeResult<O> result = new CVPipeResult<>();
+  protected P params;
 
-    public void setParams(P params) {
-        this.params = params;
-    }
+  public void setParams(P params) {
+    this.params = params;
+  }
 
-    /**
-     * Runs the process for the pipe.
-     *
-     * @param in Input for pipe processing.
-     * @return Result of processing.
-     */
-    protected abstract O process(I in);
+  /**
+   * Runs the process for the pipe.
+   *
+   * @param in Input for pipe processing.
+   * @return Result of processing.
+   */
+  protected abstract O process(I in);
 
-    /**
-     * @param in Input for pipe processing.
-     * @return Result of processing.
-     */
-    public CVPipeResult<O> run(I in) {
-        long pipeStartNanos = System.nanoTime();
-        result.output = process(in);
-        result.nanosElapsed = System.nanoTime() - pipeStartNanos;
-        return result;
-    }
+  /**
+   * @param in Input for pipe processing.
+   * @return Result of processing.
+   */
+  public CVPipeResult<O> run(I in) {
+    long pipeStartNanos = System.nanoTime();
+    result.output = process(in);
+    result.nanosElapsed = System.nanoTime() - pipeStartNanos;
+    return result;
+  }
 
-    public static class CVPipeResult<O> {
-        public O output;
-        public long nanosElapsed;
-    }
+  public static class CVPipeResult<O> {
+    public O output;
+    public long nanosElapsed;
+  }
 }

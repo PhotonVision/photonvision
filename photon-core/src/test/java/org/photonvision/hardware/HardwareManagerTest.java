@@ -27,23 +27,23 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public class HardwareManagerTest {
-    public static final Logger logger = new Logger(HardwareManager.class, LogGroup.General);
+  public static final Logger logger = new Logger(HardwareManager.class, LogGroup.General);
 
-    @Test
-    public void managementTest() throws InterruptedException {
-        Assumptions.assumeTrue(Platform.isRaspberryPi());
-        var socket = new PigpioSocket();
-        try {
-            socket.gpioWrite(18, false);
-            socket.gpioWrite(13, false);
-            Thread.sleep(500);
-            for (int i = 0; i < 1000000; i++) {
-                int duty = 1000000 - i;
-                socket.hardwarePWM(18, 1000000, duty);
-                Thread.sleep(0, 25);
-            }
-        } catch (PigpioException e) {
-            logger.error("error", e);
-        }
+  @Test
+  public void managementTest() throws InterruptedException {
+    Assumptions.assumeTrue(Platform.isRaspberryPi());
+    var socket = new PigpioSocket();
+    try {
+      socket.gpioWrite(18, false);
+      socket.gpioWrite(13, false);
+      Thread.sleep(500);
+      for (int i = 0; i < 1000000; i++) {
+        int duty = 1000000 - i;
+        socket.hardwarePWM(18, 1000000, duty);
+        Thread.sleep(0, 25);
+      }
+    } catch (PigpioException e) {
+      logger.error("error", e);
     }
+  }
 }

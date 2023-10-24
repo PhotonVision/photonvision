@@ -24,40 +24,40 @@ import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class AprilTagDetectionPipe
-        extends CVPipe<CVMat, List<AprilTagDetection>, AprilTagDetectionPipeParams> {
-    private final AprilTagDetector m_detector = new AprilTagDetector();
+    extends CVPipe<CVMat, List<AprilTagDetection>, AprilTagDetectionPipeParams> {
+  private final AprilTagDetector m_detector = new AprilTagDetector();
 
-    public AprilTagDetectionPipe() {
-        super();
+  public AprilTagDetectionPipe() {
+    super();
 
-        m_detector.addFamily("tag16h5");
-        m_detector.addFamily("tag36h11");
+    m_detector.addFamily("tag16h5");
+    m_detector.addFamily("tag36h11");
+  }
+
+  @Override
+  protected List<AprilTagDetection> process(CVMat in) {
+    if (in.getMat().empty()) {
+      return List.of();
     }
 
-    @Override
-    protected List<AprilTagDetection> process(CVMat in) {
-        if (in.getMat().empty()) {
-            return List.of();
-        }
+    var ret = m_detector.detect(in.getMat());
 
-        var ret = m_detector.detect(in.getMat());
-
-        if (ret == null) {
-            return List.of();
-        }
-
-        return List.of(ret);
+    if (ret == null) {
+      return List.of();
     }
 
-    @Override
-    public void setParams(AprilTagDetectionPipeParams newParams) {
-        if (this.params == null || !this.params.equals(newParams)) {
-            m_detector.setConfig(newParams.detectorParams);
+    return List.of(ret);
+  }
 
-            m_detector.clearFamilies();
-            m_detector.addFamily(newParams.family.getNativeName());
-        }
+  @Override
+  public void setParams(AprilTagDetectionPipeParams newParams) {
+    if (this.params == null || !this.params.equals(newParams)) {
+      m_detector.setConfig(newParams.detectorParams);
 
-        super.setParams(newParams);
+      m_detector.clearFamilies();
+      m_detector.addFamily(newParams.family.getNativeName());
     }
+
+    super.setParams(newParams);
+  }
 }

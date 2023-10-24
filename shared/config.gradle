@@ -78,7 +78,7 @@ ext.createComponentZipTasks = { components, names, base, type, project, func ->
         if (it in NativeLibrarySpec && stringNames.contains(it.name)) {
             it.binaries.each {
                 if (!it.buildable) return
-                def target = nativeUtils.getPublishClassifier(it)
+                    def target = nativeUtils.getPublishClassifier(it)
                 if (configMap.containsKey(target)) {
                     configMap.get(target).add(it)
                 } else {
@@ -128,7 +128,7 @@ ext.createAllCombined = { list, name, base, type, project ->
 
         list.each {
             if (it.name.endsWith('debug')) return
-            from project.zipTree(it.archiveFile)
+                from project.zipTree(it.archiveFile)
             dependsOn it
         }
     }
@@ -140,7 +140,6 @@ ext.createAllCombined = { list, name, base, type, project ->
     }
 
     return task
-
 }
 
 // Create the standard ZIP format for the dependencies.

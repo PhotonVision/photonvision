@@ -24,85 +24,85 @@ import org.photonvision.common.logging.Logger;
 
 /** VisionModuleManager has many VisionModules, and provides camera configuration data to them. */
 public class VisionModuleManager {
-    private final Logger logger = new Logger(VisionModuleManager.class, LogGroup.VisionModule);
+  private final Logger logger = new Logger(VisionModuleManager.class, LogGroup.VisionModule);
 
-    private static class ThreadSafeSingleton {
-        private static final VisionModuleManager INSTANCE = new VisionModuleManager();
+  private static class ThreadSafeSingleton {
+    private static final VisionModuleManager INSTANCE = new VisionModuleManager();
+  }
+
+  public static VisionModuleManager getInstance() {
+    return VisionModuleManager.ThreadSafeSingleton.INSTANCE;
+  }
+
+  protected final List<VisionModule> visionModules = new ArrayList<>();
+
+  VisionModuleManager() {}
+
+  public List<VisionModule> getModules() {
+    return visionModules;
+  }
+
+  public VisionModule getModule(String nickname) {
+    for (var module : visionModules) {
+      if (module.getStateAsCameraConfig().nickname.equals(nickname)) return module;
+    }
+    return null;
+  }
+
+  public VisionModule getModule(int i) {
+    return visionModules.get(i);
+  }
+
+  public List<VisionModule> addSources(List<VisionSource> visionSources) {
+    var addedModules = new HashMap<Integer, VisionModule>();
+
+    assignCameraIndex(visionSources);
+    for (var visionSource : visionSources) {
+      var pipelineManager = new PipelineManager(visionSource.getCameraConfiguration());
+
+      var module = new VisionModule(pipelineManager, visionSource, visionModules.size());
+      visionModules.add(module);
+      addedModules.put(visionSource.getCameraConfiguration().streamIndex, module);
     }
 
-    public static VisionModuleManager getInstance() {
-        return VisionModuleManager.ThreadSafeSingleton.INSTANCE;
-    }
+    return addedModules.entrySet().stream()
+        .sorted(Comparator.comparingInt(Map.Entry::getKey)) // sort by stream index
+        .map(Map.Entry::getValue) // map to Stream of VisionModule
+        .collect(Collectors.toList()); // collect in a List
+  }
 
-    protected final List<VisionModule> visionModules = new ArrayList<>();
+  private void assignCameraIndex(List<VisionSource> config) {
+    // We won't necessarily have already added all the cameras we need to at this point
+    // But by operating on the list, we have a fairly good idea of which we need to change,
+    // but it's not guaranteed that we change the correct one
+    // The best we can do is try to avoid a case where the stream index runs away to infinity
+    // since we can only stream 5 cameras at once
 
-    VisionModuleManager() {}
+    // Big list, which should contain every vision source (currently loaded plus the new ones being
+    // added)
+    var bigList = new ArrayList<VisionSource>();
+    bigList.addAll(
+        this.getModules().stream().map(it -> it.visionSource).collect(Collectors.toList()));
+    bigList.addAll(config);
 
-    public List<VisionModule> getModules() {
-        return visionModules;
-    }
-
-    public VisionModule getModule(String nickname) {
-        for (var module : visionModules) {
-            if (module.getStateAsCameraConfig().nickname.equals(nickname)) return module;
+    for (var v : config) {
+      var listNoV = new ArrayList<>(bigList);
+      listNoV.remove(v);
+      if (listNoV.stream()
+          .anyMatch(
+              it ->
+                  it.getCameraConfiguration().streamIndex
+                      == v.getCameraConfiguration().streamIndex)) {
+        int idx = 0;
+        while (listNoV.stream()
+            .map(it -> it.getCameraConfiguration().streamIndex)
+            .collect(Collectors.toList())
+            .contains(idx)) {
+          idx++;
         }
-        return null;
+        logger.debug("Assigning idx " + idx);
+        v.getCameraConfiguration().streamIndex = idx;
+      }
     }
-
-    public VisionModule getModule(int i) {
-        return visionModules.get(i);
-    }
-
-    public List<VisionModule> addSources(List<VisionSource> visionSources) {
-        var addedModules = new HashMap<Integer, VisionModule>();
-
-        assignCameraIndex(visionSources);
-        for (var visionSource : visionSources) {
-            var pipelineManager = new PipelineManager(visionSource.getCameraConfiguration());
-
-            var module = new VisionModule(pipelineManager, visionSource, visionModules.size());
-            visionModules.add(module);
-            addedModules.put(visionSource.getCameraConfiguration().streamIndex, module);
-        }
-
-        return addedModules.entrySet().stream()
-                .sorted(Comparator.comparingInt(Map.Entry::getKey)) // sort by stream index
-                .map(Map.Entry::getValue) // map to Stream of VisionModule
-                .collect(Collectors.toList()); // collect in a List
-    }
-
-    private void assignCameraIndex(List<VisionSource> config) {
-        // We won't necessarily have already added all the cameras we need to at this point
-        // But by operating on the list, we have a fairly good idea of which we need to change,
-        // but it's not guaranteed that we change the correct one
-        // The best we can do is try to avoid a case where the stream index runs away to infinity
-        // since we can only stream 5 cameras at once
-
-        // Big list, which should contain every vision source (currently loaded plus the new ones being
-        // added)
-        var bigList = new ArrayList<VisionSource>();
-        bigList.addAll(
-                this.getModules().stream().map(it -> it.visionSource).collect(Collectors.toList()));
-        bigList.addAll(config);
-
-        for (var v : config) {
-            var listNoV = new ArrayList<>(bigList);
-            listNoV.remove(v);
-            if (listNoV.stream()
-                    .anyMatch(
-                            it ->
-                                    it.getCameraConfiguration().streamIndex
-                                            == v.getCameraConfiguration().streamIndex)) {
-                int idx = 0;
-                while (listNoV.stream()
-                        .map(it -> it.getCameraConfiguration().streamIndex)
-                        .collect(Collectors.toList())
-                        .contains(idx)) {
-                    idx++;
-                }
-                logger.debug("Assigning idx " + idx);
-                v.getCameraConfiguration().streamIndex = idx;
-            }
-        }
-    }
+  }
 }

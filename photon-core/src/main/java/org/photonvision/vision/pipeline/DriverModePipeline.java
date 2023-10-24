@@ -31,75 +31,75 @@ import org.photonvision.vision.pipe.impl.RotateImagePipe;
 import org.photonvision.vision.pipeline.result.DriverModePipelineResult;
 
 public class DriverModePipeline
-        extends CVPipeline<DriverModePipelineResult, DriverModePipelineSettings> {
-    private final RotateImagePipe rotateImagePipe = new RotateImagePipe();
-    private final Draw2dCrosshairPipe draw2dCrosshairPipe = new Draw2dCrosshairPipe();
-    private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
-    private final ResizeImagePipe resizeImagePipe = new ResizeImagePipe();
+    extends CVPipeline<DriverModePipelineResult, DriverModePipelineSettings> {
+  private final RotateImagePipe rotateImagePipe = new RotateImagePipe();
+  private final Draw2dCrosshairPipe draw2dCrosshairPipe = new Draw2dCrosshairPipe();
+  private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
+  private final ResizeImagePipe resizeImagePipe = new ResizeImagePipe();
 
-    private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
+  private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
-    public DriverModePipeline() {
-        super(PROCESSING_TYPE);
-        settings = new DriverModePipelineSettings();
+  public DriverModePipeline() {
+    super(PROCESSING_TYPE);
+    settings = new DriverModePipelineSettings();
+  }
+
+  public DriverModePipeline(DriverModePipelineSettings settings) {
+    super(PROCESSING_TYPE);
+    this.settings = settings;
+  }
+
+  @Override
+  protected void setPipeParamsImpl() {
+    RotateImagePipe.RotateImageParams rotateImageParams =
+        new RotateImagePipe.RotateImageParams(settings.inputImageRotationMode);
+    rotateImagePipe.setParams(rotateImageParams);
+
+    Draw2dCrosshairPipe.Draw2dCrosshairParams draw2dCrosshairParams =
+        new Draw2dCrosshairPipe.Draw2dCrosshairParams(
+            frameStaticProperties, settings.streamingFrameDivisor, settings.inputImageRotationMode);
+    draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
+
+    resizeImagePipe.setParams(
+        new ResizeImagePipe.ResizeImageParams(settings.streamingFrameDivisor));
+
+    // if (LibCameraJNI.isSupported() && cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+    // LibCameraJNI.setRotation(settings.inputImageRotationMode.value);
+    // LibCameraJNI.setShouldCopyColor(true);
+    // }
+  }
+
+  @Override
+  public DriverModePipelineResult process(Frame frame, DriverModePipelineSettings settings) {
+    long totalNanos = 0;
+    boolean accelerated = LibCameraJNI.isSupported() && cameraQuirks.hasQuirk(CameraQuirk.PiCam);
+
+    // apply pipes
+    var inputMat = frame.colorImage.getMat();
+
+    boolean emptyIn = inputMat.empty();
+
+    if (!emptyIn) {
+      if (!accelerated) {
+        var rotateImageResult = rotateImagePipe.run(inputMat);
+        totalNanos += rotateImageResult.nanosElapsed;
+      }
+
+      totalNanos += resizeImagePipe.run(inputMat).nanosElapsed;
+
+      var draw2dCrosshairResult = draw2dCrosshairPipe.run(Pair.of(inputMat, List.of()));
+
+      // calculate elapsed nanoseconds
+      totalNanos += draw2dCrosshairResult.nanosElapsed;
     }
 
-    public DriverModePipeline(DriverModePipelineSettings settings) {
-        super(PROCESSING_TYPE);
-        this.settings = settings;
-    }
+    var fpsResult = calculateFPSPipe.run(null);
+    var fps = fpsResult.output;
 
-    @Override
-    protected void setPipeParamsImpl() {
-        RotateImagePipe.RotateImageParams rotateImageParams =
-                new RotateImagePipe.RotateImageParams(settings.inputImageRotationMode);
-        rotateImagePipe.setParams(rotateImageParams);
-
-        Draw2dCrosshairPipe.Draw2dCrosshairParams draw2dCrosshairParams =
-                new Draw2dCrosshairPipe.Draw2dCrosshairParams(
-                        frameStaticProperties, settings.streamingFrameDivisor, settings.inputImageRotationMode);
-        draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
-
-        resizeImagePipe.setParams(
-                new ResizeImagePipe.ResizeImageParams(settings.streamingFrameDivisor));
-
-        // if (LibCameraJNI.isSupported() && cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-        // LibCameraJNI.setRotation(settings.inputImageRotationMode.value);
-        // LibCameraJNI.setShouldCopyColor(true);
-        // }
-    }
-
-    @Override
-    public DriverModePipelineResult process(Frame frame, DriverModePipelineSettings settings) {
-        long totalNanos = 0;
-        boolean accelerated = LibCameraJNI.isSupported() && cameraQuirks.hasQuirk(CameraQuirk.PiCam);
-
-        // apply pipes
-        var inputMat = frame.colorImage.getMat();
-
-        boolean emptyIn = inputMat.empty();
-
-        if (!emptyIn) {
-            if (!accelerated) {
-                var rotateImageResult = rotateImagePipe.run(inputMat);
-                totalNanos += rotateImageResult.nanosElapsed;
-            }
-
-            totalNanos += resizeImagePipe.run(inputMat).nanosElapsed;
-
-            var draw2dCrosshairResult = draw2dCrosshairPipe.run(Pair.of(inputMat, List.of()));
-
-            // calculate elapsed nanoseconds
-            totalNanos += draw2dCrosshairResult.nanosElapsed;
-        }
-
-        var fpsResult = calculateFPSPipe.run(null);
-        var fps = fpsResult.output;
-
-        // Flip-flop input and output in the Frame
-        return new DriverModePipelineResult(
-                MathUtils.nanosToMillis(totalNanos),
-                fps,
-                new Frame(frame.processedImage, frame.colorImage, frame.type, frame.frameStaticProperties));
-    }
+    // Flip-flop input and output in the Frame
+    return new DriverModePipelineResult(
+        MathUtils.nanosToMillis(totalNanos),
+        fps,
+        new Frame(frame.processedImage, frame.colorImage, frame.type, frame.frameStaticProperties));
+  }
 }

@@ -31,118 +31,118 @@ import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class AprilTagTest {
-    @BeforeEach
-    public void Init() {
-        TestUtils.loadLibraries();
+  @BeforeEach
+  public void Init() {
+    TestUtils.loadLibraries();
+  }
+
+  @Test
+  public void testApriltagFacingCamera() {
+    var pipeline = new AprilTagPipeline();
+
+    pipeline.getSettings().inputShouldShow = true;
+    pipeline.getSettings().outputShouldDraw = true;
+    pipeline.getSettings().solvePNPEnabled = true;
+    pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
+    pipeline.getSettings().cornerDetectionUseConvexHulls = true;
+    pipeline.getSettings().targetModel = TargetModel.k200mmAprilTag;
+    pipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
+
+    var frameProvider =
+        new FileFrameProvider(
+            TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false),
+            TestUtils.WPI2020Image.FOV,
+            TestUtils.get2020LifeCamCoeffs(false));
+    frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
+
+    CVPipelineResult pipelineResult;
+    try {
+      pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
+      printTestResults(pipelineResult);
+    } catch (RuntimeException e) {
+      // For now, will throw because of the Rotation3d ctor
+      return;
     }
 
-    @Test
-    public void testApriltagFacingCamera() {
-        var pipeline = new AprilTagPipeline();
+    // Draw on input
+    var outputPipe = new OutputStreamPipeline();
+    var ret =
+        outputPipe.process(
+            pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
 
-        pipeline.getSettings().inputShouldShow = true;
-        pipeline.getSettings().outputShouldDraw = true;
-        pipeline.getSettings().solvePNPEnabled = true;
-        pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
-        pipeline.getSettings().cornerDetectionUseConvexHulls = true;
-        pipeline.getSettings().targetModel = TargetModel.k200mmAprilTag;
-        pipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
+    TestUtils.showImage(ret.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
 
-        var frameProvider =
-                new FileFrameProvider(
-                        TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false),
-                        TestUtils.WPI2020Image.FOV,
-                        TestUtils.get2020LifeCamCoeffs(false));
-        frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
+    // these numbers are not *accurate*, but they are known and expected
+    var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
+    Assertions.assertEquals(2, pose.getTranslation().getX(), 0.2);
+    Assertions.assertEquals(0.1, pose.getTranslation().getY(), 0.2);
+    Assertions.assertEquals(0.0, pose.getTranslation().getZ(), 0.2);
 
-        CVPipelineResult pipelineResult;
-        try {
-            pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-            printTestResults(pipelineResult);
-        } catch (RuntimeException e) {
-            // For now, will throw because of the Rotation3d ctor
-            return;
-        }
+    // We expect the object axes to be in NWU, with the x-axis coming out of the tag
+    // This visible tag is facing the camera almost parallel, so in world space:
 
-        // Draw on input
-        var outputPipe = new OutputStreamPipeline();
-        var ret =
-                outputPipe.process(
-                        pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
+    // The object's X axis should be (-1, 0, 0)
+    Assertions.assertEquals(
+        -1, new Translation3d(1, 0, 0).rotateBy(pose.getRotation()).getX(), 0.1);
+    // The object's Y axis should be (0, -1, 0)
+    Assertions.assertEquals(
+        -1, new Translation3d(0, 1, 0).rotateBy(pose.getRotation()).getY(), 0.1);
+    // The object's Z axis should be (0, 0, 1)
+    Assertions.assertEquals(1, new Translation3d(0, 0, 1).rotateBy(pose.getRotation()).getZ(), 0.1);
+  }
 
-        TestUtils.showImage(ret.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
+  @Test
+  public void testApriltagDistorted() {
+    var pipeline = new AprilTagPipeline();
 
-        // these numbers are not *accurate*, but they are known and expected
-        var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
-        Assertions.assertEquals(2, pose.getTranslation().getX(), 0.2);
-        Assertions.assertEquals(0.1, pose.getTranslation().getY(), 0.2);
-        Assertions.assertEquals(0.0, pose.getTranslation().getZ(), 0.2);
+    pipeline.getSettings().inputShouldShow = true;
+    pipeline.getSettings().outputShouldDraw = true;
+    pipeline.getSettings().solvePNPEnabled = true;
+    pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
+    pipeline.getSettings().cornerDetectionUseConvexHulls = true;
+    pipeline.getSettings().targetModel = TargetModel.k200mmAprilTag;
+    pipeline.getSettings().tagFamily = AprilTagFamily.kTag16h5;
 
-        // We expect the object axes to be in NWU, with the x-axis coming out of the tag
-        // This visible tag is facing the camera almost parallel, so in world space:
+    var frameProvider =
+        new FileFrameProvider(
+            TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag_corner_1280, false),
+            TestUtils.WPI2020Image.FOV,
+            TestUtils.getCoeffs(TestUtils.LIMELIGHT_480P_CAL_FILE, false));
+    frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
 
-        // The object's X axis should be (-1, 0, 0)
-        Assertions.assertEquals(
-                -1, new Translation3d(1, 0, 0).rotateBy(pose.getRotation()).getX(), 0.1);
-        // The object's Y axis should be (0, -1, 0)
-        Assertions.assertEquals(
-                -1, new Translation3d(0, 1, 0).rotateBy(pose.getRotation()).getY(), 0.1);
-        // The object's Z axis should be (0, 0, 1)
-        Assertions.assertEquals(1, new Translation3d(0, 0, 1).rotateBy(pose.getRotation()).getZ(), 0.1);
+    CVPipelineResult pipelineResult;
+    try {
+      pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
+      printTestResults(pipelineResult);
+    } catch (RuntimeException e) {
+      // For now, will throw because of the Rotation3d ctor
+      return;
     }
 
-    @Test
-    public void testApriltagDistorted() {
-        var pipeline = new AprilTagPipeline();
+    // Draw on input
+    var outputPipe = new OutputStreamPipeline();
+    var ret =
+        outputPipe.process(
+            pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
 
-        pipeline.getSettings().inputShouldShow = true;
-        pipeline.getSettings().outputShouldDraw = true;
-        pipeline.getSettings().solvePNPEnabled = true;
-        pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
-        pipeline.getSettings().cornerDetectionUseConvexHulls = true;
-        pipeline.getSettings().targetModel = TargetModel.k200mmAprilTag;
-        pipeline.getSettings().tagFamily = AprilTagFamily.kTag16h5;
+    TestUtils.showImage(ret.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
 
-        var frameProvider =
-                new FileFrameProvider(
-                        TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag_corner_1280, false),
-                        TestUtils.WPI2020Image.FOV,
-                        TestUtils.getCoeffs(TestUtils.LIMELIGHT_480P_CAL_FILE, false));
-        frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
+    // these numbers are not *accurate*, but they are known and expected
+    var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
+    Assertions.assertEquals(4.14, pose.getTranslation().getX(), 0.2);
+    Assertions.assertEquals(2, pose.getTranslation().getY(), 0.2);
+    Assertions.assertEquals(0.0, pose.getTranslation().getZ(), 0.2);
+  }
 
-        CVPipelineResult pipelineResult;
-        try {
-            pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-            printTestResults(pipelineResult);
-        } catch (RuntimeException e) {
-            // For now, will throw because of the Rotation3d ctor
-            return;
-        }
-
-        // Draw on input
-        var outputPipe = new OutputStreamPipeline();
-        var ret =
-                outputPipe.process(
-                        pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
-
-        TestUtils.showImage(ret.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
-
-        // these numbers are not *accurate*, but they are known and expected
-        var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
-        Assertions.assertEquals(4.14, pose.getTranslation().getX(), 0.2);
-        Assertions.assertEquals(2, pose.getTranslation().getY(), 0.2);
-        Assertions.assertEquals(0.0, pose.getTranslation().getZ(), 0.2);
-    }
-
-    private static void printTestResults(CVPipelineResult pipelineResult) {
-        double fps = 1000 / pipelineResult.getLatencyMillis();
-        System.out.println(
-                "Pipeline ran in " + pipelineResult.getLatencyMillis() + "ms (" + fps + " " + "fps)");
-        System.out.println("Found " + pipelineResult.targets.size() + " valid targets");
-        System.out.println(
-                "Found targets at "
-                        + pipelineResult.targets.stream()
-                                .map(TrackedTarget::getBestCameraToTarget3d)
-                                .collect(Collectors.toList()));
-    }
+  private static void printTestResults(CVPipelineResult pipelineResult) {
+    double fps = 1000 / pipelineResult.getLatencyMillis();
+    System.out.println(
+        "Pipeline ran in " + pipelineResult.getLatencyMillis() + "ms (" + fps + " " + "fps)");
+    System.out.println("Found " + pipelineResult.targets.size() + " valid targets");
+    System.out.println(
+        "Found targets at "
+            + pipelineResult.targets.stream()
+                .map(TrackedTarget::getBestCameraToTarget3d)
+                .collect(Collectors.toList()));
+  }
 }

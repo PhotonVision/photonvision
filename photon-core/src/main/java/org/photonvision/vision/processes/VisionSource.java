@@ -21,19 +21,19 @@ import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.frame.FrameProvider;
 
 public abstract class VisionSource {
-    protected final CameraConfiguration cameraConfiguration;
+  protected final CameraConfiguration cameraConfiguration;
 
-    protected VisionSource(CameraConfiguration cameraConfiguration) {
-        this.cameraConfiguration = cameraConfiguration;
-    }
+  protected VisionSource(CameraConfiguration cameraConfiguration) {
+    this.cameraConfiguration = cameraConfiguration;
+  }
 
-    public CameraConfiguration getCameraConfiguration() {
-        return cameraConfiguration;
-    }
+  public CameraConfiguration getCameraConfiguration() {
+    return cameraConfiguration;
+  }
 
-    public abstract FrameProvider getFrameProvider();
+  public abstract FrameProvider getFrameProvider();
 
-    public abstract VisionSourceSettables getSettables();
+  public abstract VisionSourceSettables getSettables();
 
-    public abstract boolean isVendorCamera();
+  public abstract boolean isVendorCamera();
 }

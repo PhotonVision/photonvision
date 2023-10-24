@@ -21,6 +21,6 @@ import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.NetworkConfig;
 
 public class UISettings {
-    public NetworkConfig networkConfig;
-    public CameraConfiguration currentCameraConfiguration;
+  public NetworkConfig networkConfig;
+  public CameraConfiguration currentCameraConfiguration;
 }

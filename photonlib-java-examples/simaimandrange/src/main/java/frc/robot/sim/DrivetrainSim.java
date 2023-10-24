@@ -44,62 +44,62 @@ import frc.robot.Robot;
  * real motors/sensors/physics are used instead.
  */
 public class DrivetrainSim {
-    // ----- Simulation specific constants
-    // Drivetrain plant and simulation. This will calculate how the robot pose changes over time as
-    // motor voltages are applied.
-    private static final LinearSystem<N2, N2, N2> drivetrainSystem =
-            LinearSystemId.identifyDrivetrainSystem(
-                    LINEAR_KV, LINEAR_KA, ANGULAR_KV, ANGULAR_KA, TRACKWIDTH_METERS);
-    private static final DifferentialDrivetrainSim drivetrainSimulator =
-            new DifferentialDrivetrainSim(
-                    drivetrainSystem,
-                    DRIVE_MOTORS,
-                    GEARING,
-                    TRACKWIDTH_METERS,
-                    WHEEL_DIAMETER_METERS / 2.0,
-                    null);
-    // -----
+  // ----- Simulation specific constants
+  // Drivetrain plant and simulation. This will calculate how the robot pose changes over time as
+  // motor voltages are applied.
+  private static final LinearSystem<N2, N2, N2> drivetrainSystem =
+      LinearSystemId.identifyDrivetrainSystem(
+          LINEAR_KV, LINEAR_KA, ANGULAR_KV, ANGULAR_KA, TRACKWIDTH_METERS);
+  private static final DifferentialDrivetrainSim drivetrainSimulator =
+      new DifferentialDrivetrainSim(
+          drivetrainSystem,
+          DRIVE_MOTORS,
+          GEARING,
+          TRACKWIDTH_METERS,
+          WHEEL_DIAMETER_METERS / 2.0,
+          null);
+  // -----
 
-    // PWM handles for getting commanded motor controller speeds
-    private final PWMSim leftLeader;
-    private final PWMSim rightLeader;
+  // PWM handles for getting commanded motor controller speeds
+  private final PWMSim leftLeader;
+  private final PWMSim rightLeader;
 
-    public DrivetrainSim(PWMMotorController leftController, PWMMotorController rightController) {
-        leftLeader = new PWMSim(leftController);
-        rightLeader = new PWMSim(rightController);
+  public DrivetrainSim(PWMMotorController leftController, PWMMotorController rightController) {
+    leftLeader = new PWMSim(leftController);
+    rightLeader = new PWMSim(rightController);
+  }
+
+  /**
+   * Perform all periodic drivetrain simulation related tasks to advance our simulation of robot
+   * physics forward by a single 20ms step.
+   */
+  public void update() {
+    double leftMotorCmd = 0;
+    double rightMotorCmd = 0;
+
+    if (DriverStation.isEnabled() && !RobotController.isBrownedOut()) {
+      leftMotorCmd = leftLeader.getSpeed();
+      rightMotorCmd = rightLeader.getSpeed();
     }
 
-    /**
-     * Perform all periodic drivetrain simulation related tasks to advance our simulation of robot
-     * physics forward by a single 20ms step.
-     */
-    public void update() {
-        double leftMotorCmd = 0;
-        double rightMotorCmd = 0;
+    drivetrainSimulator.setInputs(
+        leftMotorCmd * RobotController.getBatteryVoltage(),
+        -rightMotorCmd * RobotController.getBatteryVoltage());
 
-        if (DriverStation.isEnabled() && !RobotController.isBrownedOut()) {
-            leftMotorCmd = leftLeader.getSpeed();
-            rightMotorCmd = rightLeader.getSpeed();
-        }
+    drivetrainSimulator.update(Robot.kDefaultPeriod);
+  }
 
-        drivetrainSimulator.setInputs(
-                leftMotorCmd * RobotController.getBatteryVoltage(),
-                -rightMotorCmd * RobotController.getBatteryVoltage());
+  public Pose2d getPose() {
+    return drivetrainSimulator.getPose();
+  }
 
-        drivetrainSimulator.update(Robot.kDefaultPeriod);
-    }
-
-    public Pose2d getPose() {
-        return drivetrainSimulator.getPose();
-    }
-
-    /**
-     * Resets the simulation back to a pre-defined pose. Useful to simulate the action of placing the
-     * robot onto a specific spot in the field (e.g. at the start of each match).
-     *
-     * @param pose
-     */
-    public void resetPose(Pose2d pose) {
-        drivetrainSimulator.setPose(pose);
-    }
+  /**
+   * Resets the simulation back to a pre-defined pose. Useful to simulate the action of placing the
+   * robot onto a specific spot in the field (e.g. at the start of each match).
+   *
+   * @param pose
+   */
+  public void resetPose(Pose2d pose) {
+    drivetrainSimulator.setPose(pose);
+  }
 }

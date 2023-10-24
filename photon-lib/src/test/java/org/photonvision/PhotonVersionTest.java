@@ -30,30 +30,30 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class PhotonVersionTest {
-    public static final boolean versionMatches(String versionString, String other) {
-        String c = versionString;
-        Pattern p = Pattern.compile("v[0-9]+.[0-9]+.[0-9]+");
-        Matcher m = p.matcher(c);
-        if (m.find()) {
-            c = m.group(0);
-        } else {
-            return false;
-        }
-        m = p.matcher(other);
-        if (m.find()) {
-            other = m.group(0);
-        } else {
-            return false;
-        }
-        return c.equals(other);
+  public static final boolean versionMatches(String versionString, String other) {
+    String c = versionString;
+    Pattern p = Pattern.compile("v[0-9]+.[0-9]+.[0-9]+");
+    Matcher m = p.matcher(c);
+    if (m.find()) {
+      c = m.group(0);
+    } else {
+      return false;
     }
+    m = p.matcher(other);
+    if (m.find()) {
+      other = m.group(0);
+    } else {
+      return false;
+    }
+    return c.equals(other);
+  }
 
-    @Test
-    public void testVersion() {
-        Assertions.assertTrue(versionMatches("v2021.1.6", "v2021.1.6"));
-        Assertions.assertTrue(versionMatches("dev-v2021.1.6", "v2021.1.6"));
-        Assertions.assertTrue(versionMatches("dev-v2021.1.6-5-gca49ea50", "v2021.1.6"));
-        Assertions.assertFalse(versionMatches("", "v2021.1.6"));
-        Assertions.assertFalse(versionMatches("v2021.1.6", ""));
-    }
+  @Test
+  public void testVersion() {
+    Assertions.assertTrue(versionMatches("v2021.1.6", "v2021.1.6"));
+    Assertions.assertTrue(versionMatches("dev-v2021.1.6", "v2021.1.6"));
+    Assertions.assertTrue(versionMatches("dev-v2021.1.6-5-gca49ea50", "v2021.1.6"));
+    Assertions.assertFalse(versionMatches("", "v2021.1.6"));
+    Assertions.assertFalse(versionMatches("v2021.1.6", ""));
+  }
 }

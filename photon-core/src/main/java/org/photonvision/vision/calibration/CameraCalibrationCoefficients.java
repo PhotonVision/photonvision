@@ -28,116 +28,116 @@ import org.opencv.core.Size;
 import org.photonvision.vision.opencv.Releasable;
 
 public class CameraCalibrationCoefficients implements Releasable {
-    @JsonProperty("resolution")
-    public final Size resolution;
+  @JsonProperty("resolution")
+  public final Size resolution;
 
-    @JsonProperty("cameraIntrinsics")
-    public final JsonMat cameraIntrinsics;
+  @JsonProperty("cameraIntrinsics")
+  public final JsonMat cameraIntrinsics;
 
-    @JsonProperty("cameraExtrinsics")
-    @JsonAlias({"cameraExtrinsics", "distCoeffs"})
-    public final JsonMat distCoeffs;
+  @JsonProperty("cameraExtrinsics")
+  @JsonAlias({"cameraExtrinsics", "distCoeffs"})
+  public final JsonMat distCoeffs;
 
-    @JsonProperty("perViewErrors")
-    public final double[] perViewErrors;
+  @JsonProperty("perViewErrors")
+  public final double[] perViewErrors;
 
-    @JsonProperty("standardDeviation")
-    public final double standardDeviation;
+  @JsonProperty("standardDeviation")
+  public final double standardDeviation;
 
-    @JsonIgnore private final double[] intrinsicsArr = new double[9];
+  @JsonIgnore private final double[] intrinsicsArr = new double[9];
 
-    @JsonIgnore private final double[] extrinsicsArr = new double[5];
+  @JsonIgnore private final double[] extrinsicsArr = new double[5];
 
-    @JsonCreator
-    public CameraCalibrationCoefficients(
-            @JsonProperty("resolution") Size resolution,
-            @JsonProperty("cameraIntrinsics") JsonMat cameraIntrinsics,
-            @JsonProperty("cameraExtrinsics") JsonMat distCoeffs,
-            @JsonProperty("perViewErrors") double[] perViewErrors,
-            @JsonProperty("standardDeviation") double standardDeviation) {
-        this.resolution = resolution;
-        this.cameraIntrinsics = cameraIntrinsics;
-        this.distCoeffs = distCoeffs;
-        this.perViewErrors = perViewErrors;
-        this.standardDeviation = standardDeviation;
+  @JsonCreator
+  public CameraCalibrationCoefficients(
+      @JsonProperty("resolution") Size resolution,
+      @JsonProperty("cameraIntrinsics") JsonMat cameraIntrinsics,
+      @JsonProperty("cameraExtrinsics") JsonMat distCoeffs,
+      @JsonProperty("perViewErrors") double[] perViewErrors,
+      @JsonProperty("standardDeviation") double standardDeviation) {
+    this.resolution = resolution;
+    this.cameraIntrinsics = cameraIntrinsics;
+    this.distCoeffs = distCoeffs;
+    this.perViewErrors = perViewErrors;
+    this.standardDeviation = standardDeviation;
 
-        // do this once so gets are quick
-        getCameraIntrinsicsMat().get(0, 0, intrinsicsArr);
-        getDistCoeffsMat().get(0, 0, extrinsicsArr);
-    }
+    // do this once so gets are quick
+    getCameraIntrinsicsMat().get(0, 0, intrinsicsArr);
+    getDistCoeffsMat().get(0, 0, extrinsicsArr);
+  }
 
-    @JsonIgnore
-    public Mat getCameraIntrinsicsMat() {
-        return cameraIntrinsics.getAsMat();
-    }
+  @JsonIgnore
+  public Mat getCameraIntrinsicsMat() {
+    return cameraIntrinsics.getAsMat();
+  }
 
-    @JsonIgnore
-    public MatOfDouble getDistCoeffsMat() {
-        return distCoeffs.getAsMatOfDouble();
-    }
+  @JsonIgnore
+  public MatOfDouble getDistCoeffsMat() {
+    return distCoeffs.getAsMatOfDouble();
+  }
 
-    @JsonIgnore
-    public double[] getIntrinsicsArr() {
-        return intrinsicsArr;
-    }
+  @JsonIgnore
+  public double[] getIntrinsicsArr() {
+    return intrinsicsArr;
+  }
 
-    @JsonIgnore
-    public double[] getExtrinsicsArr() {
-        return extrinsicsArr;
-    }
+  @JsonIgnore
+  public double[] getExtrinsicsArr() {
+    return extrinsicsArr;
+  }
 
-    @JsonIgnore
-    public double[] getPerViewErrors() {
-        return perViewErrors;
-    }
+  @JsonIgnore
+  public double[] getPerViewErrors() {
+    return perViewErrors;
+  }
 
-    @JsonIgnore
-    public double getStandardDeviation() {
-        return standardDeviation;
-    }
+  @JsonIgnore
+  public double getStandardDeviation() {
+    return standardDeviation;
+  }
 
-    @Override
-    public void release() {
-        cameraIntrinsics.release();
-        distCoeffs.release();
-    }
+  @Override
+  public void release() {
+    cameraIntrinsics.release();
+    distCoeffs.release();
+  }
 
-    public static CameraCalibrationCoefficients parseFromCalibdbJson(JsonNode json) {
-        // camera_matrix is a row major, array of arrays
-        var cam_matrix = json.get("camera_matrix");
+  public static CameraCalibrationCoefficients parseFromCalibdbJson(JsonNode json) {
+    // camera_matrix is a row major, array of arrays
+    var cam_matrix = json.get("camera_matrix");
 
-        double[] cam_arr =
-                new double[] {
-                    cam_matrix.get(0).get(0).doubleValue(),
-                    cam_matrix.get(0).get(1).doubleValue(),
-                    cam_matrix.get(0).get(2).doubleValue(),
-                    cam_matrix.get(1).get(0).doubleValue(),
-                    cam_matrix.get(1).get(1).doubleValue(),
-                    cam_matrix.get(1).get(2).doubleValue(),
-                    cam_matrix.get(2).get(0).doubleValue(),
-                    cam_matrix.get(2).get(1).doubleValue(),
-                    cam_matrix.get(2).get(2).doubleValue()
-                };
+    double[] cam_arr =
+        new double[] {
+          cam_matrix.get(0).get(0).doubleValue(),
+          cam_matrix.get(0).get(1).doubleValue(),
+          cam_matrix.get(0).get(2).doubleValue(),
+          cam_matrix.get(1).get(0).doubleValue(),
+          cam_matrix.get(1).get(1).doubleValue(),
+          cam_matrix.get(1).get(2).doubleValue(),
+          cam_matrix.get(2).get(0).doubleValue(),
+          cam_matrix.get(2).get(1).doubleValue(),
+          cam_matrix.get(2).get(2).doubleValue()
+        };
 
-        var dist_coefs = json.get("distortion_coefficients");
+    var dist_coefs = json.get("distortion_coefficients");
 
-        double[] dist_array =
-                new double[] {
-                    dist_coefs.get(0).doubleValue(),
-                    dist_coefs.get(1).doubleValue(),
-                    dist_coefs.get(2).doubleValue(),
-                    dist_coefs.get(3).doubleValue(),
-                    dist_coefs.get(4).doubleValue(),
-                };
+    double[] dist_array =
+        new double[] {
+          dist_coefs.get(0).doubleValue(),
+          dist_coefs.get(1).doubleValue(),
+          dist_coefs.get(2).doubleValue(),
+          dist_coefs.get(3).doubleValue(),
+          dist_coefs.get(4).doubleValue(),
+        };
 
-        var cam_jsonmat = new JsonMat(3, 3, cam_arr);
-        var distortion_jsonmat = new JsonMat(1, 5, dist_array);
+    var cam_jsonmat = new JsonMat(3, 3, cam_arr);
+    var distortion_jsonmat = new JsonMat(1, 5, dist_array);
 
-        var error = json.get("avg_reprojection_error").asDouble();
-        var width = json.get("img_size").get(0).doubleValue();
-        var height = json.get("img_size").get(1).doubleValue();
+    var error = json.get("avg_reprojection_error").asDouble();
+    var width = json.get("img_size").get(0).doubleValue();
+    var height = json.get("img_size").get(1).doubleValue();
 
-        return new CameraCalibrationCoefficients(
-                new Size(width, height), cam_jsonmat, distortion_jsonmat, new double[] {error}, 0);
-    }
+    return new CameraCalibrationCoefficients(
+        new Size(width, height), cam_jsonmat, distortion_jsonmat, new double[] {error}, 0);
+  }
 }

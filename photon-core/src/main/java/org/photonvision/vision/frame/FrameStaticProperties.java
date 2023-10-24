@@ -24,84 +24,84 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 
 /** Represents the properties of a frame. */
 public class FrameStaticProperties {
-    public final int imageWidth;
-    public final int imageHeight;
-    public final double fov;
-    public final double imageArea;
-    public final double centerX;
-    public final double centerY;
-    public final Point centerPoint;
-    public final double horizontalFocalLength;
-    public final double verticalFocalLength;
-    public CameraCalibrationCoefficients cameraCalibration;
+  public final int imageWidth;
+  public final int imageHeight;
+  public final double fov;
+  public final double imageArea;
+  public final double centerX;
+  public final double centerY;
+  public final Point centerPoint;
+  public final double horizontalFocalLength;
+  public final double verticalFocalLength;
+  public CameraCalibrationCoefficients cameraCalibration;
 
-    /**
-     * Instantiates a new Frame static properties.
-     *
-     * @param mode The Video Mode of the camera.
-     * @param fov The FOV (Field Of Vision) of the image in degrees.
-     */
-    public FrameStaticProperties(VideoMode mode, double fov, CameraCalibrationCoefficients cal) {
-        this(mode != null ? mode.width : 1, mode != null ? mode.height : 1, fov, cal);
+  /**
+   * Instantiates a new Frame static properties.
+   *
+   * @param mode The Video Mode of the camera.
+   * @param fov The FOV (Field Of Vision) of the image in degrees.
+   */
+  public FrameStaticProperties(VideoMode mode, double fov, CameraCalibrationCoefficients cal) {
+    this(mode != null ? mode.width : 1, mode != null ? mode.height : 1, fov, cal);
+  }
+
+  /**
+   * Instantiates a new Frame static properties.
+   *
+   * @param imageWidth The width of the image in pixels.
+   * @param imageHeight The width of the image in pixels.
+   * @param fov The FOV (Field Of Vision) of the image in degrees.
+   */
+  public FrameStaticProperties(
+      int imageWidth, int imageHeight, double fov, CameraCalibrationCoefficients cal) {
+    this.imageWidth = imageWidth;
+    this.imageHeight = imageHeight;
+    this.fov = fov;
+    this.cameraCalibration = cal;
+
+    imageArea = this.imageWidth * this.imageHeight;
+
+    // pinhole model calculations
+    if (cameraCalibration != null && cameraCalibration.getCameraIntrinsicsMat() != null) {
+      // Use calibration data
+      var camIntrinsics = cameraCalibration.getCameraIntrinsicsMat();
+      centerX = camIntrinsics.get(0, 2)[0];
+      centerY = camIntrinsics.get(1, 2)[0];
+      centerPoint = new Point(centerX, centerY);
+      horizontalFocalLength = camIntrinsics.get(0, 0)[0];
+      verticalFocalLength = camIntrinsics.get(1, 1)[0];
+    } else {
+      // No calibration data. Calculate from user provided diagonal FOV
+      centerX = (this.imageWidth / 2.0) - 0.5;
+      centerY = (this.imageHeight / 2.0) - 0.5;
+      centerPoint = new Point(centerX, centerY);
+
+      DoubleCouple horizVertViews =
+          calculateHorizontalVerticalFoV(this.fov, this.imageWidth, this.imageHeight);
+      double horizFOV = Math.toRadians(horizVertViews.getFirst());
+      double vertFOV = Math.toRadians(horizVertViews.getSecond());
+      horizontalFocalLength = (this.imageWidth / 2.0) / Math.tan(horizFOV / 2.0);
+      verticalFocalLength = (this.imageHeight / 2.0) / Math.tan(vertFOV / 2.0);
     }
+  }
 
-    /**
-     * Instantiates a new Frame static properties.
-     *
-     * @param imageWidth The width of the image in pixels.
-     * @param imageHeight The width of the image in pixels.
-     * @param fov The FOV (Field Of Vision) of the image in degrees.
-     */
-    public FrameStaticProperties(
-            int imageWidth, int imageHeight, double fov, CameraCalibrationCoefficients cal) {
-        this.imageWidth = imageWidth;
-        this.imageHeight = imageHeight;
-        this.fov = fov;
-        this.cameraCalibration = cal;
+  /**
+   * Calculates the horizontal and vertical FOV components from a given diagonal FOV and image size.
+   *
+   * @param diagonalFoV Diagonal FOV in degrees
+   * @param imageWidth Image width in pixels
+   * @param imageHeight Image height in pixels
+   * @return Horizontal and vertical FOV in degrees
+   */
+  public static DoubleCouple calculateHorizontalVerticalFoV(
+      double diagonalFoV, int imageWidth, int imageHeight) {
+    diagonalFoV = Math.toRadians(diagonalFoV);
+    double diagonalAspect = Math.hypot(imageWidth, imageHeight);
 
-        imageArea = this.imageWidth * this.imageHeight;
+    double horizontalView =
+        Math.atan(Math.tan(diagonalFoV / 2) * (imageWidth / diagonalAspect)) * 2;
+    double verticalView = Math.atan(Math.tan(diagonalFoV / 2) * (imageHeight / diagonalAspect)) * 2;
 
-        // pinhole model calculations
-        if (cameraCalibration != null && cameraCalibration.getCameraIntrinsicsMat() != null) {
-            // Use calibration data
-            var camIntrinsics = cameraCalibration.getCameraIntrinsicsMat();
-            centerX = camIntrinsics.get(0, 2)[0];
-            centerY = camIntrinsics.get(1, 2)[0];
-            centerPoint = new Point(centerX, centerY);
-            horizontalFocalLength = camIntrinsics.get(0, 0)[0];
-            verticalFocalLength = camIntrinsics.get(1, 1)[0];
-        } else {
-            // No calibration data. Calculate from user provided diagonal FOV
-            centerX = (this.imageWidth / 2.0) - 0.5;
-            centerY = (this.imageHeight / 2.0) - 0.5;
-            centerPoint = new Point(centerX, centerY);
-
-            DoubleCouple horizVertViews =
-                    calculateHorizontalVerticalFoV(this.fov, this.imageWidth, this.imageHeight);
-            double horizFOV = Math.toRadians(horizVertViews.getFirst());
-            double vertFOV = Math.toRadians(horizVertViews.getSecond());
-            horizontalFocalLength = (this.imageWidth / 2.0) / Math.tan(horizFOV / 2.0);
-            verticalFocalLength = (this.imageHeight / 2.0) / Math.tan(vertFOV / 2.0);
-        }
-    }
-
-    /**
-     * Calculates the horizontal and vertical FOV components from a given diagonal FOV and image size.
-     *
-     * @param diagonalFoV Diagonal FOV in degrees
-     * @param imageWidth Image width in pixels
-     * @param imageHeight Image height in pixels
-     * @return Horizontal and vertical FOV in degrees
-     */
-    public static DoubleCouple calculateHorizontalVerticalFoV(
-            double diagonalFoV, int imageWidth, int imageHeight) {
-        diagonalFoV = Math.toRadians(diagonalFoV);
-        double diagonalAspect = Math.hypot(imageWidth, imageHeight);
-
-        double horizontalView =
-                Math.atan(Math.tan(diagonalFoV / 2) * (imageWidth / diagonalAspect)) * 2;
-        double verticalView = Math.atan(Math.tan(diagonalFoV / 2) * (imageHeight / diagonalAspect)) * 2;
-
-        return new DoubleCouple(Math.toDegrees(horizontalView), Math.toDegrees(verticalView));
-    }
+    return new DoubleCouple(Math.toDegrees(horizontalView), Math.toDegrees(verticalView));
+  }
 }

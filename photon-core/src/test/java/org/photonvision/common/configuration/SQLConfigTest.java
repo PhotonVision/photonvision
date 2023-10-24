@@ -30,40 +30,40 @@ import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 
 public class SQLConfigTest {
-    @BeforeAll
-    public static void init() {
-        TestUtils.loadLibraries();
-    }
+  @BeforeAll
+  public static void init() {
+    TestUtils.loadLibraries();
+  }
 
-    @Test
-    public void testLoad() {
-        var cfgLoader = new SqlConfigProvider(Path.of("jdbc_test"));
+  @Test
+  public void testLoad() {
+    var cfgLoader = new SqlConfigProvider(Path.of("jdbc_test"));
 
-        cfgLoader.load();
+    cfgLoader.load();
 
-        var testcamcfg =
-                new CameraConfiguration(
-                        "basename",
-                        "a_unique_name",
-                        "a_nick_name",
-                        69,
-                        "a/path/idk",
-                        CameraType.UsbCamera,
-                        List.of(),
-                        0);
-        testcamcfg.pipelineSettings =
-                List.of(
-                        new ReflectivePipelineSettings(),
-                        new AprilTagPipelineSettings(),
-                        new ColoredShapePipelineSettings());
+    var testcamcfg =
+        new CameraConfiguration(
+            "basename",
+            "a_unique_name",
+            "a_nick_name",
+            69,
+            "a/path/idk",
+            CameraType.UsbCamera,
+            List.of(),
+            0);
+    testcamcfg.pipelineSettings =
+        List.of(
+            new ReflectivePipelineSettings(),
+            new AprilTagPipelineSettings(),
+            new ColoredShapePipelineSettings());
 
-        cfgLoader.getConfig().addCameraConfig(testcamcfg);
-        cfgLoader.getConfig().getNetworkConfig().ntServerAddress = "5940";
-        cfgLoader.saveToDisk();
+    cfgLoader.getConfig().addCameraConfig(testcamcfg);
+    cfgLoader.getConfig().getNetworkConfig().ntServerAddress = "5940";
+    cfgLoader.saveToDisk();
 
-        cfgLoader.load();
-        System.out.println(cfgLoader.getConfig());
+    cfgLoader.load();
+    System.out.println(cfgLoader.getConfig());
 
-        assertEquals(cfgLoader.getConfig().getNetworkConfig().ntServerAddress, "5940");
-    }
+    assertEquals(cfgLoader.getConfig().getNetworkConfig().ntServerAddress, "5940");
+  }
 }

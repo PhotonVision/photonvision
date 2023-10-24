@@ -37,261 +37,261 @@ import org.photonvision.vision.processes.VisionSource;
 import org.zeroturnaround.zip.ZipUtil;
 
 public class ConfigManager {
-    private static final Logger logger = new Logger(ConfigManager.class, LogGroup.General);
-    private static ConfigManager INSTANCE;
+  private static final Logger logger = new Logger(ConfigManager.class, LogGroup.General);
+  private static ConfigManager INSTANCE;
 
-    public static final String HW_CFG_FNAME = "hardwareConfig.json";
-    public static final String HW_SET_FNAME = "hardwareSettings.json";
-    public static final String NET_SET_FNAME = "networkSettings.json";
+  public static final String HW_CFG_FNAME = "hardwareConfig.json";
+  public static final String HW_SET_FNAME = "hardwareSettings.json";
+  public static final String NET_SET_FNAME = "networkSettings.json";
 
-    final File configDirectoryFile;
+  final File configDirectoryFile;
 
-    private final ConfigProvider m_provider;
+  private final ConfigProvider m_provider;
 
-    private final Thread settingsSaveThread;
-    private long saveRequestTimestamp = -1;
+  private final Thread settingsSaveThread;
+  private long saveRequestTimestamp = -1;
 
-    enum ConfigSaveStrategy {
-        SQL,
-        LEGACY,
-        ATOMIC_ZIP
+  enum ConfigSaveStrategy {
+    SQL,
+    LEGACY,
+    ATOMIC_ZIP
+  }
+
+  // This logic decides which kind of ConfigManager we load as the default. If we want
+  // to switch back to the legacy config manager, change this constant
+  private static final ConfigSaveStrategy m_saveStrat = ConfigSaveStrategy.SQL;
+
+  public static ConfigManager getInstance() {
+    if (INSTANCE == null) {
+      switch (m_saveStrat) {
+        case SQL:
+          INSTANCE = new ConfigManager(getRootFolder(), new SqlConfigProvider(getRootFolder()));
+          break;
+        case LEGACY:
+          INSTANCE = new ConfigManager(getRootFolder(), new LegacyConfigProvider(getRootFolder()));
+          break;
+        case ATOMIC_ZIP:
+          // not yet done, fall through
+        default:
+          break;
+      }
+    }
+    return INSTANCE;
+  }
+
+  private void translateLegacyIfPresent(Path folderPath) {
+    if (!(m_provider instanceof SqlConfigProvider)) {
+      // Cannot import into SQL if we aren't in SQL mode rn
+      return;
     }
 
-    // This logic decides which kind of ConfigManager we load as the default. If we want
-    // to switch back to the legacy config manager, change this constant
-    private static final ConfigSaveStrategy m_saveStrat = ConfigSaveStrategy.SQL;
+    var maybeCams = Path.of(folderPath.toAbsolutePath().toString(), "cameras").toFile();
+    var maybeCamsBak = Path.of(folderPath.toAbsolutePath().toString(), "cameras_backup").toFile();
 
-    public static ConfigManager getInstance() {
-        if (INSTANCE == null) {
-            switch (m_saveStrat) {
-                case SQL:
-                    INSTANCE = new ConfigManager(getRootFolder(), new SqlConfigProvider(getRootFolder()));
-                    break;
-                case LEGACY:
-                    INSTANCE = new ConfigManager(getRootFolder(), new LegacyConfigProvider(getRootFolder()));
-                    break;
-                case ATOMIC_ZIP:
-                    // not yet done, fall through
-                default:
-                    break;
-            }
-        }
-        return INSTANCE;
-    }
+    if (maybeCams.exists() && maybeCams.isDirectory()) {
+      logger.info("Translating settings zip!");
+      var legacy = new LegacyConfigProvider(folderPath);
+      legacy.load();
+      var loadedConfig = legacy.getConfig();
 
-    private void translateLegacyIfPresent(Path folderPath) {
-        if (!(m_provider instanceof SqlConfigProvider)) {
-            // Cannot import into SQL if we aren't in SQL mode rn
-            return;
-        }
+      // yeet our current cameras directory, not needed anymore
+      if (maybeCamsBak.exists()) FileUtils.deleteDirectory(maybeCamsBak.toPath());
+      if (!maybeCams.canWrite()) {
+        maybeCams.setWritable(true);
+      }
 
-        var maybeCams = Path.of(folderPath.toAbsolutePath().toString(), "cameras").toFile();
-        var maybeCamsBak = Path.of(folderPath.toAbsolutePath().toString(), "cameras_backup").toFile();
+      try {
+        Files.move(maybeCams.toPath(), maybeCamsBak.toPath(), StandardCopyOption.REPLACE_EXISTING);
+      } catch (IOException e) {
+        logger.error("Exception moving cameras to cameras_bak!", e);
 
-        if (maybeCams.exists() && maybeCams.isDirectory()) {
-            logger.info("Translating settings zip!");
-            var legacy = new LegacyConfigProvider(folderPath);
-            legacy.load();
-            var loadedConfig = legacy.getConfig();
-
-            // yeet our current cameras directory, not needed anymore
-            if (maybeCamsBak.exists()) FileUtils.deleteDirectory(maybeCamsBak.toPath());
-            if (!maybeCams.canWrite()) {
-                maybeCams.setWritable(true);
-            }
-
-            try {
-                Files.move(maybeCams.toPath(), maybeCamsBak.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException e) {
-                logger.error("Exception moving cameras to cameras_bak!", e);
-
-                // Try to just copy from cams to cams-bak instead of moving? Windows sometimes needs us to
-                // do that
-                try {
-                    org.apache.commons.io.FileUtils.copyDirectory(maybeCams, maybeCamsBak);
-                } catch (IOException e1) {
-                    // So we can't move to cams_bak, and we can't copy and delete either? We just have to give
-                    // up here on preserving the old folder
-                    logger.error("Exception while backup-copying cameras to cameras_bak!", e);
-                    e1.printStackTrace();
-                }
-
-                // Delete the directory because we were successfully able to load the config but were unable
-                // to save or copy the folder.
-                if (maybeCams.exists()) FileUtils.deleteDirectory(maybeCams.toPath());
-            }
-
-            // Save the same config out using SQL loader
-            var sql = new SqlConfigProvider(getRootFolder());
-            sql.setConfig(loadedConfig);
-            sql.saveToDisk();
-        }
-    }
-
-    public static boolean saveUploadedSettingsZip(File uploadPath) {
-        // Unpack to /tmp/something/photonvision
-        var folderPath = Path.of(System.getProperty("java.io.tmpdir"), "photonvision").toFile();
-        folderPath.mkdirs();
-        ZipUtil.unpack(uploadPath, folderPath);
-
-        // Nuke the current settings directory
-        FileUtils.deleteDirectory(getRootFolder());
-
-        // If there's a cameras folder in the upload, we know we need to import from the
-        // old style
-        var maybeCams = Path.of(folderPath.getAbsolutePath(), "cameras").toFile();
-        if (maybeCams.exists() && maybeCams.isDirectory()) {
-            var legacy = new LegacyConfigProvider(folderPath.toPath());
-            legacy.load();
-            var loadedConfig = legacy.getConfig();
-
-            var sql = new SqlConfigProvider(getRootFolder());
-            sql.setConfig(loadedConfig);
-            return sql.saveToDisk();
-        } else {
-            // new structure -- just copy and save like we used to
-            try {
-                org.apache.commons.io.FileUtils.copyDirectory(folderPath, getRootFolder().toFile());
-                logger.info("Copied settings successfully!");
-                return true;
-            } catch (IOException e) {
-                logger.error("Exception copying uploaded settings!", e);
-                return false;
-            }
-        }
-    }
-
-    public PhotonConfiguration getConfig() {
-        return m_provider.getConfig();
-    }
-
-    private static Path getRootFolder() {
-        return Path.of("photonvision_config");
-    }
-
-    ConfigManager(Path configDirectory, ConfigProvider provider) {
-        this.configDirectoryFile = new File(configDirectory.toUri());
-        m_provider = provider;
-
-        settingsSaveThread = new Thread(this::saveAndWriteTask);
-        settingsSaveThread.start();
-    }
-
-    public void load() {
-        translateLegacyIfPresent(this.configDirectoryFile.toPath());
-        m_provider.load();
-    }
-
-    public void addCameraConfigurations(List<VisionSource> sources) {
-        getConfig().addCameraConfigs(sources);
-        requestSave();
-    }
-
-    public void saveModule(CameraConfiguration config, String uniqueName) {
-        getConfig().addCameraConfig(uniqueName, config);
-        requestSave();
-    }
-
-    public File getSettingsFolderAsZip() {
-        File out = Path.of(System.getProperty("java.io.tmpdir"), "photonvision-settings.zip").toFile();
+        // Try to just copy from cams to cams-bak instead of moving? Windows sometimes needs us to
+        // do that
         try {
-            ZipUtil.pack(configDirectoryFile, out);
-        } catch (Exception e) {
-            e.printStackTrace();
+          org.apache.commons.io.FileUtils.copyDirectory(maybeCams, maybeCamsBak);
+        } catch (IOException e1) {
+          // So we can't move to cams_bak, and we can't copy and delete either? We just have to give
+          // up here on preserving the old folder
+          logger.error("Exception while backup-copying cameras to cameras_bak!", e);
+          e1.printStackTrace();
         }
-        return out;
+
+        // Delete the directory because we were successfully able to load the config but were unable
+        // to save or copy the folder.
+        if (maybeCams.exists()) FileUtils.deleteDirectory(maybeCams.toPath());
+      }
+
+      // Save the same config out using SQL loader
+      var sql = new SqlConfigProvider(getRootFolder());
+      sql.setConfig(loadedConfig);
+      sql.saveToDisk();
     }
+  }
 
-    public void setNetworkSettings(NetworkConfig networkConfig) {
-        getConfig().setNetworkConfig(networkConfig);
-        requestSave();
+  public static boolean saveUploadedSettingsZip(File uploadPath) {
+    // Unpack to /tmp/something/photonvision
+    var folderPath = Path.of(System.getProperty("java.io.tmpdir"), "photonvision").toFile();
+    folderPath.mkdirs();
+    ZipUtil.unpack(uploadPath, folderPath);
+
+    // Nuke the current settings directory
+    FileUtils.deleteDirectory(getRootFolder());
+
+    // If there's a cameras folder in the upload, we know we need to import from the
+    // old style
+    var maybeCams = Path.of(folderPath.getAbsolutePath(), "cameras").toFile();
+    if (maybeCams.exists() && maybeCams.isDirectory()) {
+      var legacy = new LegacyConfigProvider(folderPath.toPath());
+      legacy.load();
+      var loadedConfig = legacy.getConfig();
+
+      var sql = new SqlConfigProvider(getRootFolder());
+      sql.setConfig(loadedConfig);
+      return sql.saveToDisk();
+    } else {
+      // new structure -- just copy and save like we used to
+      try {
+        org.apache.commons.io.FileUtils.copyDirectory(folderPath, getRootFolder().toFile());
+        logger.info("Copied settings successfully!");
+        return true;
+      } catch (IOException e) {
+        logger.error("Exception copying uploaded settings!", e);
+        return false;
+      }
     }
+  }
 
-    public Path getLogsDir() {
-        return Path.of(configDirectoryFile.toString(), "logs");
+  public PhotonConfiguration getConfig() {
+    return m_provider.getConfig();
+  }
+
+  private static Path getRootFolder() {
+    return Path.of("photonvision_config");
+  }
+
+  ConfigManager(Path configDirectory, ConfigProvider provider) {
+    this.configDirectoryFile = new File(configDirectory.toUri());
+    m_provider = provider;
+
+    settingsSaveThread = new Thread(this::saveAndWriteTask);
+    settingsSaveThread.start();
+  }
+
+  public void load() {
+    translateLegacyIfPresent(this.configDirectoryFile.toPath());
+    m_provider.load();
+  }
+
+  public void addCameraConfigurations(List<VisionSource> sources) {
+    getConfig().addCameraConfigs(sources);
+    requestSave();
+  }
+
+  public void saveModule(CameraConfiguration config, String uniqueName) {
+    getConfig().addCameraConfig(uniqueName, config);
+    requestSave();
+  }
+
+  public File getSettingsFolderAsZip() {
+    File out = Path.of(System.getProperty("java.io.tmpdir"), "photonvision-settings.zip").toFile();
+    try {
+      ZipUtil.pack(configDirectoryFile, out);
+    } catch (Exception e) {
+      e.printStackTrace();
     }
+    return out;
+  }
 
-    public Path getCalibDir() {
-        return Path.of(configDirectoryFile.toString(), "calibImgs");
+  public void setNetworkSettings(NetworkConfig networkConfig) {
+    getConfig().setNetworkConfig(networkConfig);
+    requestSave();
+  }
+
+  public Path getLogsDir() {
+    return Path.of(configDirectoryFile.toString(), "logs");
+  }
+
+  public Path getCalibDir() {
+    return Path.of(configDirectoryFile.toString(), "calibImgs");
+  }
+
+  public static final String LOG_PREFIX = "photonvision-";
+  public static final String LOG_EXT = ".log";
+  public static final String LOG_DATE_TIME_FORMAT = "yyyy-M-d_hh-mm-ss";
+
+  public String taToLogFname(TemporalAccessor date) {
+    var dateString = DateTimeFormatter.ofPattern(LOG_DATE_TIME_FORMAT).format(date);
+    return LOG_PREFIX + dateString + LOG_EXT;
+  }
+
+  public Date logFnameToDate(String fname) throws ParseException {
+    // Strip away known unneeded portions of the log file name
+    fname = fname.replace(LOG_PREFIX, "").replace(LOG_EXT, "");
+    DateFormat format = new SimpleDateFormat(LOG_DATE_TIME_FORMAT);
+    return format.parse(fname);
+  }
+
+  public Path getLogPath() {
+    var logFile = Path.of(this.getLogsDir().toString(), taToLogFname(LocalDateTime.now())).toFile();
+    if (!logFile.getParentFile().exists()) logFile.getParentFile().mkdirs();
+    return logFile.toPath();
+  }
+
+  public Path getImageSavePath() {
+    var imgFilePath = Path.of(configDirectoryFile.toString(), "imgSaves").toFile();
+    if (!imgFilePath.exists()) imgFilePath.mkdirs();
+    return imgFilePath.toPath();
+  }
+
+  public boolean saveUploadedHardwareConfig(Path uploadPath) {
+    return m_provider.saveUploadedHardwareConfig(uploadPath);
+  }
+
+  public boolean saveUploadedHardwareSettings(Path uploadPath) {
+    return m_provider.saveUploadedHardwareSettings(uploadPath);
+  }
+
+  public boolean saveUploadedNetworkConfig(Path uploadPath) {
+    return m_provider.saveUploadedNetworkConfig(uploadPath);
+  }
+
+  public boolean saveUploadedAprilTagFieldLayout(Path uploadPath) {
+    return m_provider.saveUploadedAprilTagFieldLayout(uploadPath);
+  }
+
+  public void requestSave() {
+    logger.trace("Requesting save...");
+    saveRequestTimestamp = System.currentTimeMillis();
+  }
+
+  public void unloadCameraConfigs() {
+    this.getConfig().getCameraConfigurations().clear();
+  }
+
+  public void clearConfig() {
+    logger.info("Clearing configuration!");
+    m_provider.clearConfig();
+    m_provider.saveToDisk();
+  }
+
+  public void saveToDisk() {
+    m_provider.saveToDisk();
+  }
+
+  private void saveAndWriteTask() {
+    // Only save if 1 second has past since the request was made
+    while (!Thread.currentThread().isInterrupted()) {
+      if (saveRequestTimestamp > 0 && (System.currentTimeMillis() - saveRequestTimestamp) > 1000L) {
+        saveRequestTimestamp = -1;
+        logger.debug("Saving to disk...");
+        saveToDisk();
+      }
+
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException e) {
+        logger.error("Exception waiting for settings semaphore", e);
+      }
     }
-
-    public static final String LOG_PREFIX = "photonvision-";
-    public static final String LOG_EXT = ".log";
-    public static final String LOG_DATE_TIME_FORMAT = "yyyy-M-d_hh-mm-ss";
-
-    public String taToLogFname(TemporalAccessor date) {
-        var dateString = DateTimeFormatter.ofPattern(LOG_DATE_TIME_FORMAT).format(date);
-        return LOG_PREFIX + dateString + LOG_EXT;
-    }
-
-    public Date logFnameToDate(String fname) throws ParseException {
-        // Strip away known unneeded portions of the log file name
-        fname = fname.replace(LOG_PREFIX, "").replace(LOG_EXT, "");
-        DateFormat format = new SimpleDateFormat(LOG_DATE_TIME_FORMAT);
-        return format.parse(fname);
-    }
-
-    public Path getLogPath() {
-        var logFile = Path.of(this.getLogsDir().toString(), taToLogFname(LocalDateTime.now())).toFile();
-        if (!logFile.getParentFile().exists()) logFile.getParentFile().mkdirs();
-        return logFile.toPath();
-    }
-
-    public Path getImageSavePath() {
-        var imgFilePath = Path.of(configDirectoryFile.toString(), "imgSaves").toFile();
-        if (!imgFilePath.exists()) imgFilePath.mkdirs();
-        return imgFilePath.toPath();
-    }
-
-    public boolean saveUploadedHardwareConfig(Path uploadPath) {
-        return m_provider.saveUploadedHardwareConfig(uploadPath);
-    }
-
-    public boolean saveUploadedHardwareSettings(Path uploadPath) {
-        return m_provider.saveUploadedHardwareSettings(uploadPath);
-    }
-
-    public boolean saveUploadedNetworkConfig(Path uploadPath) {
-        return m_provider.saveUploadedNetworkConfig(uploadPath);
-    }
-
-    public boolean saveUploadedAprilTagFieldLayout(Path uploadPath) {
-        return m_provider.saveUploadedAprilTagFieldLayout(uploadPath);
-    }
-
-    public void requestSave() {
-        logger.trace("Requesting save...");
-        saveRequestTimestamp = System.currentTimeMillis();
-    }
-
-    public void unloadCameraConfigs() {
-        this.getConfig().getCameraConfigurations().clear();
-    }
-
-    public void clearConfig() {
-        logger.info("Clearing configuration!");
-        m_provider.clearConfig();
-        m_provider.saveToDisk();
-    }
-
-    public void saveToDisk() {
-        m_provider.saveToDisk();
-    }
-
-    private void saveAndWriteTask() {
-        // Only save if 1 second has past since the request was made
-        while (!Thread.currentThread().isInterrupted()) {
-            if (saveRequestTimestamp > 0 && (System.currentTimeMillis() - saveRequestTimestamp) > 1000L) {
-                saveRequestTimestamp = -1;
-                logger.debug("Saving to disk...");
-                saveToDisk();
-            }
-
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                logger.error("Exception waiting for settings semaphore", e);
-            }
-        }
-    }
+  }
 }

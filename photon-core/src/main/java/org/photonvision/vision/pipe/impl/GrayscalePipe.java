@@ -22,17 +22,17 @@ import org.opencv.imgproc.Imgproc;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class GrayscalePipe extends CVPipe<Mat, Mat, GrayscalePipe.GrayscaleParams> {
-    @Override
-    protected Mat process(Mat in) {
-        var outputMat = new Mat();
-        // We can save a copy here by sending the output of cvtcolor to outputMat directly
-        // rather than copying. Free performance!
-        Imgproc.cvtColor(in, outputMat, Imgproc.COLOR_BGR2GRAY, 3);
+  @Override
+  protected Mat process(Mat in) {
+    var outputMat = new Mat();
+    // We can save a copy here by sending the output of cvtcolor to outputMat directly
+    // rather than copying. Free performance!
+    Imgproc.cvtColor(in, outputMat, Imgproc.COLOR_BGR2GRAY, 3);
 
-        return outputMat;
-    }
+    return outputMat;
+  }
 
-    public static class GrayscaleParams {
-        public GrayscaleParams() {}
-    }
+  public static class GrayscaleParams {
+    public GrayscaleParams() {}
+  }
 }

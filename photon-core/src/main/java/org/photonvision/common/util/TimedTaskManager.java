@@ -23,60 +23,60 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public class TimedTaskManager {
-    private static final Logger logger = new Logger(TimedTaskManager.class, LogGroup.General);
+  private static final Logger logger = new Logger(TimedTaskManager.class, LogGroup.General);
 
-    private static class Singleton {
-        public static final TimedTaskManager INSTANCE = new TimedTaskManager();
+  private static class Singleton {
+    public static final TimedTaskManager INSTANCE = new TimedTaskManager();
+  }
+
+  public static TimedTaskManager getInstance() {
+    return Singleton.INSTANCE;
+  }
+
+  private static class CaughtThreadFactory implements ThreadFactory {
+    private static final ThreadFactory defaultThreadFactory = Executors.defaultThreadFactory();
+
+    @Override
+    public Thread newThread(@NotNull Runnable r) {
+      Thread thread = defaultThreadFactory.newThread(r);
+      thread.setUncaughtExceptionHandler(
+          (t, e) -> logger.error("TimedTask threw uncaught exception!", e));
+      return thread;
     }
+  }
 
-    public static TimedTaskManager getInstance() {
-        return Singleton.INSTANCE;
+  private final ScheduledExecutorService timedTaskExecutorPool =
+      new ScheduledThreadPoolExecutor(2, new CaughtThreadFactory());
+  private final ConcurrentHashMap<String, Future<?>> activeTasks = new ConcurrentHashMap<>();
+
+  public void addTask(String identifier, Runnable runnable, long millisInterval) {
+    if (!activeTasks.containsKey(identifier)) {
+      var future =
+          timedTaskExecutorPool.scheduleAtFixedRate(
+              runnable, 0, millisInterval, TimeUnit.MILLISECONDS);
+      activeTasks.put(identifier, future);
     }
+  }
 
-    private static class CaughtThreadFactory implements ThreadFactory {
-        private static final ThreadFactory defaultThreadFactory = Executors.defaultThreadFactory();
-
-        @Override
-        public Thread newThread(@NotNull Runnable r) {
-            Thread thread = defaultThreadFactory.newThread(r);
-            thread.setUncaughtExceptionHandler(
-                    (t, e) -> logger.error("TimedTask threw uncaught exception!", e));
-            return thread;
-        }
+  public void addTask(
+      String identifier, Runnable runnable, long millisStartDelay, long millisInterval) {
+    if (!activeTasks.containsKey(identifier)) {
+      var future =
+          timedTaskExecutorPool.scheduleAtFixedRate(
+              runnable, millisStartDelay, millisInterval, TimeUnit.MILLISECONDS);
+      activeTasks.put(identifier, future);
     }
+  }
 
-    private final ScheduledExecutorService timedTaskExecutorPool =
-            new ScheduledThreadPoolExecutor(2, new CaughtThreadFactory());
-    private final ConcurrentHashMap<String, Future<?>> activeTasks = new ConcurrentHashMap<>();
+  public void addOneShotTask(Runnable runnable, long millisStartDelay) {
+    timedTaskExecutorPool.schedule(runnable, millisStartDelay, TimeUnit.MILLISECONDS);
+  }
 
-    public void addTask(String identifier, Runnable runnable, long millisInterval) {
-        if (!activeTasks.containsKey(identifier)) {
-            var future =
-                    timedTaskExecutorPool.scheduleAtFixedRate(
-                            runnable, 0, millisInterval, TimeUnit.MILLISECONDS);
-            activeTasks.put(identifier, future);
-        }
+  public void cancelTask(String identifier) {
+    var future = activeTasks.getOrDefault(identifier, null);
+    if (future != null) {
+      future.cancel(true);
+      activeTasks.remove(identifier);
     }
-
-    public void addTask(
-            String identifier, Runnable runnable, long millisStartDelay, long millisInterval) {
-        if (!activeTasks.containsKey(identifier)) {
-            var future =
-                    timedTaskExecutorPool.scheduleAtFixedRate(
-                            runnable, millisStartDelay, millisInterval, TimeUnit.MILLISECONDS);
-            activeTasks.put(identifier, future);
-        }
-    }
-
-    public void addOneShotTask(Runnable runnable, long millisStartDelay) {
-        timedTaskExecutorPool.schedule(runnable, millisStartDelay, TimeUnit.MILLISECONDS);
-    }
-
-    public void cancelTask(String identifier) {
-        var future = activeTasks.getOrDefault(identifier, null);
-        if (future != null) {
-            future.cancel(true);
-            activeTasks.remove(identifier);
-        }
-    }
+  }
 }

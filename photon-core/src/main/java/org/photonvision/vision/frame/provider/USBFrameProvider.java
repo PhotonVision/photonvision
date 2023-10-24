@@ -23,36 +23,36 @@ import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.processes.VisionSourceSettables;
 
 public class USBFrameProvider extends CpuImageProcessor {
-    private final CvSink cvSink;
+  private final CvSink cvSink;
 
-    @SuppressWarnings("SpellCheckingInspection")
-    private final VisionSourceSettables settables;
+  @SuppressWarnings("SpellCheckingInspection")
+  private final VisionSourceSettables settables;
 
-    @SuppressWarnings("SpellCheckingInspection")
-    public USBFrameProvider(CvSink sink, VisionSourceSettables visionSettables) {
-        cvSink = sink;
-        cvSink.setEnabled(true);
-        this.settables = visionSettables;
+  @SuppressWarnings("SpellCheckingInspection")
+  public USBFrameProvider(CvSink sink, VisionSourceSettables visionSettables) {
+    cvSink = sink;
+    cvSink.setEnabled(true);
+    this.settables = visionSettables;
+  }
+
+  @Override
+  public CapturedFrame getInputMat() {
+    var mat = new CVMat(); // We do this so that we don't fill a Mat in use by another thread
+    // This is from wpi::Now, or WPIUtilJNI.now()
+    long time =
+        cvSink.grabFrame(mat.getMat())
+            * 1000; // Units are microseconds, epoch is the same as the Unix epoch
+
+    // Sometimes CSCore gives us a zero frametime.
+    if (time <= 1e-6) {
+      time = MathUtils.wpiNanoTime();
     }
 
-    @Override
-    public CapturedFrame getInputMat() {
-        var mat = new CVMat(); // We do this so that we don't fill a Mat in use by another thread
-        // This is from wpi::Now, or WPIUtilJNI.now()
-        long time =
-                cvSink.grabFrame(mat.getMat())
-                        * 1000; // Units are microseconds, epoch is the same as the Unix epoch
+    return new CapturedFrame(mat, settables.getFrameStaticProperties(), time);
+  }
 
-        // Sometimes CSCore gives us a zero frametime.
-        if (time <= 1e-6) {
-            time = MathUtils.wpiNanoTime();
-        }
-
-        return new CapturedFrame(mat, settables.getFrameStaticProperties(), time);
-    }
-
-    @Override
-    public String getName() {
-        return "USBFrameProvider - " + cvSink.getName();
-    }
+  @Override
+  public String getName() {
+    return "USBFrameProvider - " + cvSink.getName();
+  }
 }

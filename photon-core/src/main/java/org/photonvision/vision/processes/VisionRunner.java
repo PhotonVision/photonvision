@@ -31,77 +31,77 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 /** VisionRunner has a frame supplier, a pipeline supplier, and a result consumer */
 @SuppressWarnings("rawtypes")
 public class VisionRunner {
-    private final Logger logger;
-    private final Thread visionProcessThread;
-    private final FrameProvider frameSupplier;
-    private final Supplier<CVPipeline> pipelineSupplier;
-    private final Consumer<CVPipelineResult> pipelineResultConsumer;
-    private final QuirkyCamera cameraQuirks;
+  private final Logger logger;
+  private final Thread visionProcessThread;
+  private final FrameProvider frameSupplier;
+  private final Supplier<CVPipeline> pipelineSupplier;
+  private final Consumer<CVPipelineResult> pipelineResultConsumer;
+  private final QuirkyCamera cameraQuirks;
 
-    private long loopCount;
+  private long loopCount;
 
-    /**
-     * VisionRunner contains a thread to run a pipeline, given a frame, and will give the result to
-     * the consumer.
-     *
-     * @param frameSupplier The supplier of the latest frame.
-     * @param pipelineSupplier The supplier of the current pipeline.
-     * @param pipelineResultConsumer The consumer of the latest result.
-     */
-    public VisionRunner(
-            FrameProvider frameSupplier,
-            Supplier<CVPipeline> pipelineSupplier,
-            Consumer<CVPipelineResult> pipelineResultConsumer,
-            QuirkyCamera cameraQuirks) {
-        this.frameSupplier = frameSupplier;
-        this.pipelineSupplier = pipelineSupplier;
-        this.pipelineResultConsumer = pipelineResultConsumer;
-        this.cameraQuirks = cameraQuirks;
+  /**
+   * VisionRunner contains a thread to run a pipeline, given a frame, and will give the result to
+   * the consumer.
+   *
+   * @param frameSupplier The supplier of the latest frame.
+   * @param pipelineSupplier The supplier of the current pipeline.
+   * @param pipelineResultConsumer The consumer of the latest result.
+   */
+  public VisionRunner(
+      FrameProvider frameSupplier,
+      Supplier<CVPipeline> pipelineSupplier,
+      Consumer<CVPipelineResult> pipelineResultConsumer,
+      QuirkyCamera cameraQuirks) {
+    this.frameSupplier = frameSupplier;
+    this.pipelineSupplier = pipelineSupplier;
+    this.pipelineResultConsumer = pipelineResultConsumer;
+    this.cameraQuirks = cameraQuirks;
 
-        visionProcessThread = new Thread(this::update);
-        visionProcessThread.setName("VisionRunner - " + frameSupplier.getName());
-        logger = new Logger(VisionRunner.class, frameSupplier.getName(), LogGroup.VisionModule);
+    visionProcessThread = new Thread(this::update);
+    visionProcessThread.setName("VisionRunner - " + frameSupplier.getName());
+    logger = new Logger(VisionRunner.class, frameSupplier.getName(), LogGroup.VisionModule);
+  }
+
+  public void startProcess() {
+    visionProcessThread.start();
+  }
+
+  private void update() {
+    while (!Thread.interrupted()) {
+      var pipeline = pipelineSupplier.get();
+
+      // Tell our camera implementation here what kind of pre-processing we need it to be doing
+      // (pipeline-dependent). I kinda hate how much leak this has...
+      // TODO would a callback object be a better fit?
+      var wantedProcessType = pipeline.getThresholdType();
+      frameSupplier.requestFrameThresholdType(wantedProcessType);
+      var settings = pipeline.getSettings();
+      if (settings instanceof AdvancedPipelineSettings) {
+        var advanced = (AdvancedPipelineSettings) settings;
+        var hsvParams =
+            new HSVPipe.HSVParams(
+                advanced.hsvHue, advanced.hsvSaturation, advanced.hsvValue, advanced.hueInverted);
+        // TODO who should deal with preventing this from happening _every single loop_?
+        frameSupplier.requestHsvSettings(hsvParams);
+      }
+      frameSupplier.requestFrameRotation(settings.inputImageRotationMode);
+      frameSupplier.requestFrameCopies(settings.inputShouldShow, settings.outputShouldShow);
+
+      // Grab the new camera frame
+      var frame = frameSupplier.get();
+
+      // There's no guarantee the processing type change will occur this tick, so pipelines should
+      // check themselves
+      try {
+        var pipelineResult = pipeline.run(frame, cameraQuirks);
+        pipelineResultConsumer.accept(pipelineResult);
+      } catch (Exception ex) {
+        logger.error("Exception on loop " + loopCount);
+        ex.printStackTrace();
+      }
+
+      loopCount++;
     }
-
-    public void startProcess() {
-        visionProcessThread.start();
-    }
-
-    private void update() {
-        while (!Thread.interrupted()) {
-            var pipeline = pipelineSupplier.get();
-
-            // Tell our camera implementation here what kind of pre-processing we need it to be doing
-            // (pipeline-dependent). I kinda hate how much leak this has...
-            // TODO would a callback object be a better fit?
-            var wantedProcessType = pipeline.getThresholdType();
-            frameSupplier.requestFrameThresholdType(wantedProcessType);
-            var settings = pipeline.getSettings();
-            if (settings instanceof AdvancedPipelineSettings) {
-                var advanced = (AdvancedPipelineSettings) settings;
-                var hsvParams =
-                        new HSVPipe.HSVParams(
-                                advanced.hsvHue, advanced.hsvSaturation, advanced.hsvValue, advanced.hueInverted);
-                // TODO who should deal with preventing this from happening _every single loop_?
-                frameSupplier.requestHsvSettings(hsvParams);
-            }
-            frameSupplier.requestFrameRotation(settings.inputImageRotationMode);
-            frameSupplier.requestFrameCopies(settings.inputShouldShow, settings.outputShouldShow);
-
-            // Grab the new camera frame
-            var frame = frameSupplier.get();
-
-            // There's no guarantee the processing type change will occur this tick, so pipelines should
-            // check themselves
-            try {
-                var pipelineResult = pipeline.run(frame, cameraQuirks);
-                pipelineResultConsumer.accept(pipelineResult);
-            } catch (Exception ex) {
-                logger.error("Exception on loop " + loopCount);
-                ex.printStackTrace();
-            }
-
-            loopCount++;
-        }
-    }
+  }
 }

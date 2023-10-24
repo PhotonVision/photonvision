@@ -25,43 +25,43 @@ import org.photonvision.vision.opencv.Releasable;
 
 public class PotentialTarget implements Releasable {
 
-    public final Contour m_mainContour;
-    public final List<Contour> m_subContours;
-    public final CVShape shape;
+  public final Contour m_mainContour;
+  public final List<Contour> m_subContours;
+  public final CVShape shape;
 
-    public PotentialTarget(Contour inputContour) {
-        this(inputContour, List.of());
-    }
+  public PotentialTarget(Contour inputContour) {
+    this(inputContour, List.of());
+  }
 
-    public PotentialTarget(Contour inputContour, List<Contour> subContours) {
-        this(inputContour, subContours, null);
-    }
+  public PotentialTarget(Contour inputContour, List<Contour> subContours) {
+    this(inputContour, subContours, null);
+  }
 
-    public PotentialTarget(Contour inputContour, List<Contour> subContours, CVShape shape) {
-        m_mainContour = inputContour;
-        m_subContours = new ArrayList<>(subContours);
-        this.shape = shape;
-    }
+  public PotentialTarget(Contour inputContour, List<Contour> subContours, CVShape shape) {
+    m_mainContour = inputContour;
+    m_subContours = new ArrayList<>(subContours);
+    this.shape = shape;
+  }
 
-    public PotentialTarget(Contour inputContour, CVShape shape) {
-        this(inputContour, List.of(), shape);
-    }
+  public PotentialTarget(Contour inputContour, CVShape shape) {
+    this(inputContour, List.of(), shape);
+  }
 
-    public RotatedRect getMinAreaRect() {
-        return m_mainContour.getMinAreaRect();
-    }
+  public RotatedRect getMinAreaRect() {
+    return m_mainContour.getMinAreaRect();
+  }
 
-    public double getArea() {
-        return m_mainContour.getArea();
-    }
+  public double getArea() {
+    return m_mainContour.getArea();
+  }
 
-    @Override
-    public void release() {
-        m_mainContour.release();
-        for (var sc : m_subContours) {
-            sc.release();
-        }
-        m_subContours.clear();
-        if (shape != null) shape.release();
+  @Override
+  public void release() {
+    m_mainContour.release();
+    for (var sc : m_subContours) {
+      sc.release();
     }
+    m_subContours.clear();
+    if (shape != null) shape.release();
+  }
 }

@@ -24,39 +24,39 @@ import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.QuirkyCamera;
 
 public class QuirkyCameraTest {
-    @Test
-    public void ps3EyeTest() {
-        HashMap<CameraQuirk, Boolean> ps3EyeQuirks = new HashMap<>();
-        ps3EyeQuirks.put(CameraQuirk.Gain, true);
-        ps3EyeQuirks.put(CameraQuirk.FPSCap100, true);
-        for (var q : CameraQuirk.values()) {
-            ps3EyeQuirks.putIfAbsent(q, false);
-        }
-
-        QuirkyCamera psEye = QuirkyCamera.getQuirkyCamera(0x2000, 0x1415);
-        Assertions.assertEquals(psEye.quirks, ps3EyeQuirks);
+  @Test
+  public void ps3EyeTest() {
+    HashMap<CameraQuirk, Boolean> ps3EyeQuirks = new HashMap<>();
+    ps3EyeQuirks.put(CameraQuirk.Gain, true);
+    ps3EyeQuirks.put(CameraQuirk.FPSCap100, true);
+    for (var q : CameraQuirk.values()) {
+      ps3EyeQuirks.putIfAbsent(q, false);
     }
 
-    @Test
-    public void picamTest() {
-        HashMap<CameraQuirk, Boolean> picamQuirks = new HashMap<>();
-        picamQuirks.put(CameraQuirk.PiCam, true);
-        for (var q : CameraQuirk.values()) {
-            picamQuirks.putIfAbsent(q, false);
-        }
+    QuirkyCamera psEye = QuirkyCamera.getQuirkyCamera(0x2000, 0x1415);
+    Assertions.assertEquals(psEye.quirks, ps3EyeQuirks);
+  }
 
-        QuirkyCamera picam = QuirkyCamera.getQuirkyCamera(-1, -1, "mmal service 16.1");
-        Assertions.assertEquals(picam.quirks, picamQuirks);
+  @Test
+  public void picamTest() {
+    HashMap<CameraQuirk, Boolean> picamQuirks = new HashMap<>();
+    picamQuirks.put(CameraQuirk.PiCam, true);
+    for (var q : CameraQuirk.values()) {
+      picamQuirks.putIfAbsent(q, false);
     }
 
-    @Test
-    public void quirklessCameraTest() {
-        HashMap<CameraQuirk, Boolean> noQuirks = new HashMap<>();
-        for (var q : CameraQuirk.values()) {
-            noQuirks.put(q, false);
-        }
+    QuirkyCamera picam = QuirkyCamera.getQuirkyCamera(-1, -1, "mmal service 16.1");
+    Assertions.assertEquals(picam.quirks, picamQuirks);
+  }
 
-        QuirkyCamera quirkless = QuirkyCamera.getQuirkyCamera(1234, 8888);
-        Assertions.assertEquals(quirkless.quirks, noQuirks);
+  @Test
+  public void quirklessCameraTest() {
+    HashMap<CameraQuirk, Boolean> noQuirks = new HashMap<>();
+    for (var q : CameraQuirk.values()) {
+      noQuirks.put(q, false);
     }
+
+    QuirkyCamera quirkless = QuirkyCamera.getQuirkyCamera(1234, 8888);
+    Assertions.assertEquals(quirkless.quirks, noQuirks);
+  }
 }

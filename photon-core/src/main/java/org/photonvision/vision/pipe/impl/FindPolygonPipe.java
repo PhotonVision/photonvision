@@ -26,65 +26,65 @@ import org.photonvision.vision.opencv.ContourShape;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class FindPolygonPipe
-        extends CVPipe<List<Contour>, List<CVShape>, FindPolygonPipe.FindPolygonPipeParams> {
-    List<CVShape> shapeList = new ArrayList<>();
+    extends CVPipe<List<Contour>, List<CVShape>, FindPolygonPipe.FindPolygonPipeParams> {
+  List<CVShape> shapeList = new ArrayList<>();
 
-    /*
-     * Runs the process for the pipe.
-     *
-     * @param in Input for pipe processing.
-     * @return Result of processing.
-     */
-    @Override
-    protected List<CVShape> process(List<Contour> in) {
-        shapeList.forEach(CVShape::release);
-        shapeList.clear();
-        shapeList = new ArrayList<>();
+  /*
+   * Runs the process for the pipe.
+   *
+   * @param in Input for pipe processing.
+   * @return Result of processing.
+   */
+  @Override
+  protected List<CVShape> process(List<Contour> in) {
+    shapeList.forEach(CVShape::release);
+    shapeList.clear();
+    shapeList = new ArrayList<>();
 
-        for (Contour contour : in) {
-            shapeList.add(getShape(contour));
-        }
-
-        return shapeList;
+    for (Contour contour : in) {
+      shapeList.add(getShape(contour));
     }
 
-    private CVShape getShape(Contour in) {
-        int corners = getCorners(in);
+    return shapeList;
+  }
 
-        /*The contourShape enum has predefined shapes for Circles, Triangles, and Quads
-        meaning any shape not fitting in those predefined shapes must be a custom shape.
-        */
-        if (ContourShape.fromSides(corners) == null) {
-            return new CVShape(in, ContourShape.Custom);
-        }
-        switch (ContourShape.fromSides(corners)) {
-            case Circle:
-                return new CVShape(in, ContourShape.Circle);
-            case Triangle:
-                return new CVShape(in, ContourShape.Triangle);
-            case Quadrilateral:
-                return new CVShape(in, ContourShape.Quadrilateral);
-        }
+  private CVShape getShape(Contour in) {
+    int corners = getCorners(in);
 
-        return new CVShape(in, ContourShape.Custom);
+    /*The contourShape enum has predefined shapes for Circles, Triangles, and Quads
+    meaning any shape not fitting in those predefined shapes must be a custom shape.
+    */
+    if (ContourShape.fromSides(corners) == null) {
+      return new CVShape(in, ContourShape.Custom);
+    }
+    switch (ContourShape.fromSides(corners)) {
+      case Circle:
+        return new CVShape(in, ContourShape.Circle);
+      case Triangle:
+        return new CVShape(in, ContourShape.Triangle);
+      case Quadrilateral:
+        return new CVShape(in, ContourShape.Quadrilateral);
     }
 
-    private int getCorners(Contour contour) {
-        var approx =
-                contour.getApproxPolyDp(
-                        (100 - params.accuracyPercentage) / 100.0 * Imgproc.arcLength(contour.getMat2f(), true),
-                        true);
+    return new CVShape(in, ContourShape.Custom);
+  }
 
-        // The height of the resultant approximation is the number of vertices
-        return (int) approx.size().height;
+  private int getCorners(Contour contour) {
+    var approx =
+        contour.getApproxPolyDp(
+            (100 - params.accuracyPercentage) / 100.0 * Imgproc.arcLength(contour.getMat2f(), true),
+            true);
+
+    // The height of the resultant approximation is the number of vertices
+    return (int) approx.size().height;
+  }
+
+  public static class FindPolygonPipeParams {
+    private final double accuracyPercentage;
+
+    // Should be a value between 0-100
+    public FindPolygonPipeParams(double accuracyPercentage) {
+      this.accuracyPercentage = accuracyPercentage;
     }
-
-    public static class FindPolygonPipeParams {
-        private final double accuracyPercentage;
-
-        // Should be a value between 0-100
-        public FindPolygonPipeParams(double accuracyPercentage) {
-            this.accuracyPercentage = accuracyPercentage;
-        }
-    }
+  }
 }

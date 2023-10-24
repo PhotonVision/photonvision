@@ -46,197 +46,197 @@ import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 
 public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipelineSettings> {
-    private final AprilTagDetectionPipe aprilTagDetectionPipe = new AprilTagDetectionPipe();
-    private final AprilTagPoseEstimatorPipe singleTagPoseEstimatorPipe =
-            new AprilTagPoseEstimatorPipe();
-    private final MultiTargetPNPPipe multiTagPNPPipe = new MultiTargetPNPPipe();
-    private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
+  private final AprilTagDetectionPipe aprilTagDetectionPipe = new AprilTagDetectionPipe();
+  private final AprilTagPoseEstimatorPipe singleTagPoseEstimatorPipe =
+      new AprilTagPoseEstimatorPipe();
+  private final MultiTargetPNPPipe multiTagPNPPipe = new MultiTargetPNPPipe();
+  private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
-    private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.GREYSCALE;
+  private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.GREYSCALE;
 
-    public AprilTagPipeline() {
-        super(PROCESSING_TYPE);
-        settings = new AprilTagPipelineSettings();
+  public AprilTagPipeline() {
+    super(PROCESSING_TYPE);
+    settings = new AprilTagPipelineSettings();
+  }
+
+  public AprilTagPipeline(AprilTagPipelineSettings settings) {
+    super(PROCESSING_TYPE);
+    this.settings = settings;
+  }
+
+  @Override
+  protected void setPipeParamsImpl() {
+    // Sanitize thread count - not supported to have fewer than 1 threads
+    settings.threads = Math.max(1, settings.threads);
+
+    // if (cameraQuirks.hasQuirk(CameraQuirk.PiCam) && LibCameraJNI.isSupported()) {
+    //     // TODO: Picam grayscale
+    //     LibCameraJNI.setRotation(settings.inputImageRotationMode.value);
+    //     // LibCameraJNI.setShouldCopyColor(true); // need the color image to grayscale
+    // }
+
+    // TODO (HACK): tag width is Fun because it really belongs in the "target model"
+    // We need the tag width for the JNI to figure out target pose, but we need a
+    // target model for the draw 3d targets pipeline to work...
+
+    // for now, hard code tag width based on enum value
+    double tagWidth = Units.inchesToMeters(3 * 2); // for 6in 16h5 tag.
+
+    // AprilTagDetectorParams aprilTagDetectionParams =
+    //         new AprilTagDetectorParams(
+    //                 settings.tagFamily,
+    //                 settings.decimate,
+    //                 settings.blur,
+    //                 settings.threads,
+    //                 settings.debug,
+    //                 settings.refineEdges);
+
+    var config = new AprilTagDetector.Config();
+    config.numThreads = settings.threads;
+    config.refineEdges = settings.refineEdges;
+    config.quadSigma = (float) settings.blur;
+    config.quadDecimate = settings.decimate;
+    aprilTagDetectionPipe.setParams(new AprilTagDetectionPipeParams(settings.tagFamily, config));
+
+    if (frameStaticProperties.cameraCalibration != null) {
+      var cameraMatrix = frameStaticProperties.cameraCalibration.getCameraIntrinsicsMat();
+      if (cameraMatrix != null && cameraMatrix.rows() > 0) {
+        var cx = cameraMatrix.get(0, 2)[0];
+        var cy = cameraMatrix.get(1, 2)[0];
+        var fx = cameraMatrix.get(0, 0)[0];
+        var fy = cameraMatrix.get(1, 1)[0];
+
+        singleTagPoseEstimatorPipe.setParams(
+            new AprilTagPoseEstimatorPipeParams(
+                new Config(tagWidth, fx, fy, cx, cy),
+                frameStaticProperties.cameraCalibration,
+                settings.numIterations));
+
+        // TODO global state ew
+        var atfl = ConfigManager.getInstance().getConfig().getApriltagFieldLayout();
+        multiTagPNPPipe.setParams(
+            new MultiTargetPNPPipeParams(frameStaticProperties.cameraCalibration, atfl));
+      }
+    }
+  }
+
+  @Override
+  protected CVPipelineResult process(Frame frame, AprilTagPipelineSettings settings) {
+    long sumPipeNanosElapsed = 0L;
+
+    if (frame.type != FrameThresholdType.GREYSCALE) {
+      // TODO so all cameras should give us GREYSCALE -- how should we handle if not?
+      // Right now, we just return nothing
+      return new CVPipelineResult(0, 0, List.of(), frame);
     }
 
-    public AprilTagPipeline(AprilTagPipelineSettings settings) {
-        super(PROCESSING_TYPE);
-        this.settings = settings;
+    CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult;
+    tagDetectionPipeResult = aprilTagDetectionPipe.run(frame.processedImage);
+    sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
+
+    List<AprilTagDetection> detections = tagDetectionPipeResult.output;
+    List<AprilTagDetection> usedDetections = new ArrayList<>();
+    List<TrackedTarget> targetList = new ArrayList<>();
+
+    // Filter out detections based on pipeline settings
+    for (AprilTagDetection detection : detections) {
+      // TODO this should be in a pipe, not in the top level here (Matt)
+      if (detection.getDecisionMargin() < settings.decisionMargin) continue;
+      if (detection.getHamming() > settings.hammingDist) continue;
+
+      usedDetections.add(detection);
+
+      // Populate target list for multitag
+      // (TODO: Address circular dependencies. Multitag only requires corners and IDs, this should
+      // not be necessary.)
+      TrackedTarget target =
+          new TrackedTarget(
+              detection,
+              null,
+              new TargetCalculationParameters(
+                  false, null, null, null, null, frameStaticProperties));
+
+      targetList.add(target);
     }
 
-    @Override
-    protected void setPipeParamsImpl() {
-        // Sanitize thread count - not supported to have fewer than 1 threads
-        settings.threads = Math.max(1, settings.threads);
-
-        // if (cameraQuirks.hasQuirk(CameraQuirk.PiCam) && LibCameraJNI.isSupported()) {
-        //     // TODO: Picam grayscale
-        //     LibCameraJNI.setRotation(settings.inputImageRotationMode.value);
-        //     // LibCameraJNI.setShouldCopyColor(true); // need the color image to grayscale
-        // }
-
-        // TODO (HACK): tag width is Fun because it really belongs in the "target model"
-        // We need the tag width for the JNI to figure out target pose, but we need a
-        // target model for the draw 3d targets pipeline to work...
-
-        // for now, hard code tag width based on enum value
-        double tagWidth = Units.inchesToMeters(3 * 2); // for 6in 16h5 tag.
-
-        // AprilTagDetectorParams aprilTagDetectionParams =
-        //         new AprilTagDetectorParams(
-        //                 settings.tagFamily,
-        //                 settings.decimate,
-        //                 settings.blur,
-        //                 settings.threads,
-        //                 settings.debug,
-        //                 settings.refineEdges);
-
-        var config = new AprilTagDetector.Config();
-        config.numThreads = settings.threads;
-        config.refineEdges = settings.refineEdges;
-        config.quadSigma = (float) settings.blur;
-        config.quadDecimate = settings.decimate;
-        aprilTagDetectionPipe.setParams(new AprilTagDetectionPipeParams(settings.tagFamily, config));
-
-        if (frameStaticProperties.cameraCalibration != null) {
-            var cameraMatrix = frameStaticProperties.cameraCalibration.getCameraIntrinsicsMat();
-            if (cameraMatrix != null && cameraMatrix.rows() > 0) {
-                var cx = cameraMatrix.get(0, 2)[0];
-                var cy = cameraMatrix.get(1, 2)[0];
-                var fx = cameraMatrix.get(0, 0)[0];
-                var fy = cameraMatrix.get(1, 1)[0];
-
-                singleTagPoseEstimatorPipe.setParams(
-                        new AprilTagPoseEstimatorPipeParams(
-                                new Config(tagWidth, fx, fy, cx, cy),
-                                frameStaticProperties.cameraCalibration,
-                                settings.numIterations));
-
-                // TODO global state ew
-                var atfl = ConfigManager.getInstance().getConfig().getApriltagFieldLayout();
-                multiTagPNPPipe.setParams(
-                        new MultiTargetPNPPipeParams(frameStaticProperties.cameraCalibration, atfl));
-            }
-        }
+    // Do multi-tag pose estimation
+    MultiTargetPNPResults multiTagResult = new MultiTargetPNPResults();
+    if (settings.solvePNPEnabled && settings.doMultiTarget) {
+      var multiTagOutput = multiTagPNPPipe.run(targetList);
+      sumPipeNanosElapsed += multiTagOutput.nanosElapsed;
+      multiTagResult = multiTagOutput.output;
     }
 
-    @Override
-    protected CVPipelineResult process(Frame frame, AprilTagPipelineSettings settings) {
-        long sumPipeNanosElapsed = 0L;
+    // Do single-tag pose estimation
+    if (settings.solvePNPEnabled) {
+      // Clear target list that was used for multitag so we can add target transforms
+      targetList.clear();
+      // TODO global state again ew
+      var atfl = ConfigManager.getInstance().getConfig().getApriltagFieldLayout();
 
-        if (frame.type != FrameThresholdType.GREYSCALE) {
-            // TODO so all cameras should give us GREYSCALE -- how should we handle if not?
-            // Right now, we just return nothing
-            return new CVPipelineResult(0, 0, List.of(), frame);
+      for (AprilTagDetection detection : usedDetections) {
+        AprilTagPoseEstimate tagPoseEstimate = null;
+        // Do single-tag estimation when "always enabled" or if a tag was not used for multitag
+        if (settings.doSingleTargetAlways
+            || !multiTagResult.fiducialIDsUsed.contains(Integer.valueOf(detection.getId()))) {
+          var poseResult = singleTagPoseEstimatorPipe.run(detection);
+          sumPipeNanosElapsed += poseResult.nanosElapsed;
+          tagPoseEstimate = poseResult.output;
         }
 
-        CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult;
-        tagDetectionPipeResult = aprilTagDetectionPipe.run(frame.processedImage);
-        sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
-
-        List<AprilTagDetection> detections = tagDetectionPipeResult.output;
-        List<AprilTagDetection> usedDetections = new ArrayList<>();
-        List<TrackedTarget> targetList = new ArrayList<>();
-
-        // Filter out detections based on pipeline settings
-        for (AprilTagDetection detection : detections) {
-            // TODO this should be in a pipe, not in the top level here (Matt)
-            if (detection.getDecisionMargin() < settings.decisionMargin) continue;
-            if (detection.getHamming() > settings.hammingDist) continue;
-
-            usedDetections.add(detection);
-
-            // Populate target list for multitag
-            // (TODO: Address circular dependencies. Multitag only requires corners and IDs, this should
-            // not be necessary.)
-            TrackedTarget target =
-                    new TrackedTarget(
-                            detection,
-                            null,
-                            new TargetCalculationParameters(
-                                    false, null, null, null, null, frameStaticProperties));
-
-            targetList.add(target);
+        // If single-tag estimation was not done, this is a multi-target tag from the layout
+        if (tagPoseEstimate == null) {
+          // compute this tag's camera-to-tag transform using the multitag result
+          var tagPose = atfl.getTagPose(detection.getId());
+          if (tagPose.isPresent()) {
+            var camToTag =
+                new Transform3d(
+                    new Pose3d().plus(multiTagResult.estimatedPose.best), tagPose.get());
+            // match expected AprilTag coordinate system
+            // TODO cleanup coordinate systems in wpilib 2024
+            var apriltagTrl =
+                CoordinateSystem.convert(
+                    camToTag.getTranslation(), CoordinateSystem.NWU(), CoordinateSystem.EDN());
+            var apriltagRot =
+                CoordinateSystem.convert(
+                        new Rotation3d(), CoordinateSystem.EDN(), CoordinateSystem.NWU())
+                    .plus(
+                        CoordinateSystem.convert(
+                            camToTag.getRotation(),
+                            CoordinateSystem.NWU(),
+                            CoordinateSystem.EDN()));
+            apriltagRot = new Rotation3d(0, Math.PI, 0).plus(apriltagRot);
+            camToTag = new Transform3d(apriltagTrl, apriltagRot);
+            tagPoseEstimate = new AprilTagPoseEstimate(camToTag, camToTag, 0, 0);
+          }
         }
 
-        // Do multi-tag pose estimation
-        MultiTargetPNPResults multiTagResult = new MultiTargetPNPResults();
-        if (settings.solvePNPEnabled && settings.doMultiTarget) {
-            var multiTagOutput = multiTagPNPPipe.run(targetList);
-            sumPipeNanosElapsed += multiTagOutput.nanosElapsed;
-            multiTagResult = multiTagOutput.output;
-        }
+        // populate the target list
+        // Challenge here is that TrackedTarget functions with OpenCV Contour
+        TrackedTarget target =
+            new TrackedTarget(
+                detection,
+                tagPoseEstimate,
+                new TargetCalculationParameters(
+                    false, null, null, null, null, frameStaticProperties));
 
-        // Do single-tag pose estimation
-        if (settings.solvePNPEnabled) {
-            // Clear target list that was used for multitag so we can add target transforms
-            targetList.clear();
-            // TODO global state again ew
-            var atfl = ConfigManager.getInstance().getConfig().getApriltagFieldLayout();
+        var correctedBestPose =
+            MathUtils.convertOpenCVtoPhotonTransform(target.getBestCameraToTarget3d());
+        var correctedAltPose =
+            MathUtils.convertOpenCVtoPhotonTransform(target.getAltCameraToTarget3d());
 
-            for (AprilTagDetection detection : usedDetections) {
-                AprilTagPoseEstimate tagPoseEstimate = null;
-                // Do single-tag estimation when "always enabled" or if a tag was not used for multitag
-                if (settings.doSingleTargetAlways
-                        || !multiTagResult.fiducialIDsUsed.contains(Integer.valueOf(detection.getId()))) {
-                    var poseResult = singleTagPoseEstimatorPipe.run(detection);
-                    sumPipeNanosElapsed += poseResult.nanosElapsed;
-                    tagPoseEstimate = poseResult.output;
-                }
+        target.setBestCameraToTarget3d(
+            new Transform3d(correctedBestPose.getTranslation(), correctedBestPose.getRotation()));
+        target.setAltCameraToTarget3d(
+            new Transform3d(correctedAltPose.getTranslation(), correctedAltPose.getRotation()));
 
-                // If single-tag estimation was not done, this is a multi-target tag from the layout
-                if (tagPoseEstimate == null) {
-                    // compute this tag's camera-to-tag transform using the multitag result
-                    var tagPose = atfl.getTagPose(detection.getId());
-                    if (tagPose.isPresent()) {
-                        var camToTag =
-                                new Transform3d(
-                                        new Pose3d().plus(multiTagResult.estimatedPose.best), tagPose.get());
-                        // match expected AprilTag coordinate system
-                        // TODO cleanup coordinate systems in wpilib 2024
-                        var apriltagTrl =
-                                CoordinateSystem.convert(
-                                        camToTag.getTranslation(), CoordinateSystem.NWU(), CoordinateSystem.EDN());
-                        var apriltagRot =
-                                CoordinateSystem.convert(
-                                                new Rotation3d(), CoordinateSystem.EDN(), CoordinateSystem.NWU())
-                                        .plus(
-                                                CoordinateSystem.convert(
-                                                        camToTag.getRotation(),
-                                                        CoordinateSystem.NWU(),
-                                                        CoordinateSystem.EDN()));
-                        apriltagRot = new Rotation3d(0, Math.PI, 0).plus(apriltagRot);
-                        camToTag = new Transform3d(apriltagTrl, apriltagRot);
-                        tagPoseEstimate = new AprilTagPoseEstimate(camToTag, camToTag, 0, 0);
-                    }
-                }
-
-                // populate the target list
-                // Challenge here is that TrackedTarget functions with OpenCV Contour
-                TrackedTarget target =
-                        new TrackedTarget(
-                                detection,
-                                tagPoseEstimate,
-                                new TargetCalculationParameters(
-                                        false, null, null, null, null, frameStaticProperties));
-
-                var correctedBestPose =
-                        MathUtils.convertOpenCVtoPhotonTransform(target.getBestCameraToTarget3d());
-                var correctedAltPose =
-                        MathUtils.convertOpenCVtoPhotonTransform(target.getAltCameraToTarget3d());
-
-                target.setBestCameraToTarget3d(
-                        new Transform3d(correctedBestPose.getTranslation(), correctedBestPose.getRotation()));
-                target.setAltCameraToTarget3d(
-                        new Transform3d(correctedAltPose.getTranslation(), correctedAltPose.getRotation()));
-
-                targetList.add(target);
-            }
-        }
-
-        var fpsResult = calculateFPSPipe.run(null);
-        var fps = fpsResult.output;
-
-        return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, multiTagResult, frame);
+        targetList.add(target);
+      }
     }
+
+    var fpsResult = calculateFPSPipe.run(null);
+    var fps = fpsResult.output;
+
+    return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, multiTagResult, frame);
+  }
 }

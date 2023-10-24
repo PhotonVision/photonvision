@@ -24,54 +24,54 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public class ArucoDetectorParams {
-    private static final Logger logger = new Logger(PhotonArucoDetector.class, LogGroup.VisionModule);
+  private static final Logger logger = new Logger(PhotonArucoDetector.class, LogGroup.VisionModule);
 
-    private float m_decimate = -1;
-    private int m_iterations = -1;
-    private double m_accuracy = -1;
+  private float m_decimate = -1;
+  private int m_iterations = -1;
+  private double m_accuracy = -1;
 
-    DetectorParameters parameters = new DetectorParameters();
-    ArucoDetector detector;
+  DetectorParameters parameters = new DetectorParameters();
+  ArucoDetector detector;
 
-    public ArucoDetectorParams() {
-        setDecimation(1);
-        setCornerAccuracy(25);
-        setCornerRefinementMaxIterations(100);
+  public ArucoDetectorParams() {
+    setDecimation(1);
+    setCornerAccuracy(25);
+    setCornerRefinementMaxIterations(100);
 
-        detector =
-                new ArucoDetector(
-                        Objdetect.getPredefinedDictionary(Objdetect.DICT_APRILTAG_16h5), parameters);
-    }
+    detector =
+        new ArucoDetector(
+            Objdetect.getPredefinedDictionary(Objdetect.DICT_APRILTAG_16h5), parameters);
+  }
 
-    public void setDecimation(float decimate) {
-        if (decimate == m_decimate) return;
+  public void setDecimation(float decimate) {
+    if (decimate == m_decimate) return;
 
-        logger.info("Setting decimation from " + m_decimate + " to " + decimate);
+    logger.info("Setting decimation from " + m_decimate + " to " + decimate);
 
-        // We only need to mutate the parameters -- the detector keeps a pointer to the parameters
-        // object internally, so it should automatically update
-        parameters.set_aprilTagQuadDecimate(decimate);
-        m_decimate = decimate;
-    }
+    // We only need to mutate the parameters -- the detector keeps a pointer to the parameters
+    // object internally, so it should automatically update
+    parameters.set_aprilTagQuadDecimate(decimate);
+    m_decimate = decimate;
+  }
 
-    public void setCornerRefinementMaxIterations(int iters) {
-        if (iters == m_iterations || iters <= 0) return;
+  public void setCornerRefinementMaxIterations(int iters) {
+    if (iters == m_iterations || iters <= 0) return;
 
-        parameters.set_cornerRefinementMethod(Objdetect.CORNER_REFINE_SUBPIX);
-        parameters.set_cornerRefinementMaxIterations(iters); // 200
+    parameters.set_cornerRefinementMethod(Objdetect.CORNER_REFINE_SUBPIX);
+    parameters.set_cornerRefinementMaxIterations(iters); // 200
 
-        m_iterations = iters;
-    }
+    m_iterations = iters;
+  }
 
-    public void setCornerAccuracy(double accuracy) {
-        if (accuracy == m_accuracy || accuracy <= 0) return;
+  public void setCornerAccuracy(double accuracy) {
+    if (accuracy == m_accuracy || accuracy <= 0) return;
 
-        parameters.set_cornerRefinementMinAccuracy(
-                accuracy / 1000.0); // divides by 1000 because the UI multiplies it by 1000
-        m_accuracy = accuracy;
-    }
+    parameters.set_cornerRefinementMinAccuracy(
+        accuracy / 1000.0); // divides by 1000 because the UI multiplies it by 1000
+    m_accuracy = accuracy;
+  }
 
-    public ArucoDetector getDetector() {
-        return detector;
-    }
+  public ArucoDetector getDetector() {
+    return detector;
+  }
 }

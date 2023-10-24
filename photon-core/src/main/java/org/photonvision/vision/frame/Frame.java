@@ -22,53 +22,53 @@ import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;
 
 public class Frame implements Releasable {
-    public final long timestampNanos;
+  public final long timestampNanos;
 
-    // Frame should at _least_ contain the thresholded frame, and sometimes the color image
-    public final CVMat colorImage;
-    public final CVMat processedImage;
-    public final FrameThresholdType type;
+  // Frame should at _least_ contain the thresholded frame, and sometimes the color image
+  public final CVMat colorImage;
+  public final CVMat processedImage;
+  public final FrameThresholdType type;
 
-    public final FrameStaticProperties frameStaticProperties;
+  public final FrameStaticProperties frameStaticProperties;
 
-    public Frame(
-            CVMat color,
-            CVMat processed,
-            FrameThresholdType type,
-            long timestampNanos,
-            FrameStaticProperties frameStaticProperties) {
-        this.colorImage = color;
-        this.processedImage = processed;
-        this.type = type;
-        this.timestampNanos = timestampNanos;
-        this.frameStaticProperties = frameStaticProperties;
-    }
+  public Frame(
+      CVMat color,
+      CVMat processed,
+      FrameThresholdType type,
+      long timestampNanos,
+      FrameStaticProperties frameStaticProperties) {
+    this.colorImage = color;
+    this.processedImage = processed;
+    this.type = type;
+    this.timestampNanos = timestampNanos;
+    this.frameStaticProperties = frameStaticProperties;
+  }
 
-    public Frame(
-            CVMat color,
-            CVMat processed,
-            FrameThresholdType processType,
-            FrameStaticProperties frameStaticProperties) {
-        this(color, processed, processType, MathUtils.wpiNanoTime(), frameStaticProperties);
-    }
+  public Frame(
+      CVMat color,
+      CVMat processed,
+      FrameThresholdType processType,
+      FrameStaticProperties frameStaticProperties) {
+    this(color, processed, processType, MathUtils.wpiNanoTime(), frameStaticProperties);
+  }
 
-    public Frame() {
-        this(
-                new CVMat(),
-                new CVMat(),
-                FrameThresholdType.NONE,
-                MathUtils.wpiNanoTime(),
-                new FrameStaticProperties(0, 0, 0, null));
-    }
+  public Frame() {
+    this(
+        new CVMat(),
+        new CVMat(),
+        FrameThresholdType.NONE,
+        MathUtils.wpiNanoTime(),
+        new FrameStaticProperties(0, 0, 0, null));
+  }
 
-    public void copyTo(Frame destFrame) {
-        colorImage.getMat().copyTo(destFrame.colorImage.getMat());
-        processedImage.getMat().copyTo(destFrame.processedImage.getMat());
-    }
+  public void copyTo(Frame destFrame) {
+    colorImage.getMat().copyTo(destFrame.colorImage.getMat());
+    processedImage.getMat().copyTo(destFrame.processedImage.getMat());
+  }
 
-    @Override
-    public void release() {
-        colorImage.release();
-        processedImage.release();
-    }
+  @Override
+  public void release() {
+    colorImage.release();
+    processedImage.release();
+  }
 }

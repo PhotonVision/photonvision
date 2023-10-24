@@ -18,5 +18,5 @@
 package org.photonvision.common.util.java;
 
 public interface TriConsumer<T, U, V> {
-    void accept(T t, U u, V v);
+  void accept(T t, U u, V v);
 }

@@ -30,17 +30,17 @@ import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.targeting.PhotonPipelineResult;
 
 class PhotonCameraTest {
-    @Test
-    public void testEmpty() {
-        Assertions.assertDoesNotThrow(
-                () -> {
-                    var packet = new Packet(1);
-                    var ret = new PhotonPipelineResult();
-                    packet.setData(new byte[0]);
-                    if (packet.getSize() < 1) {
-                        return;
-                    }
-                    ret.createFromPacket(packet);
-                });
-    }
+  @Test
+  public void testEmpty() {
+    Assertions.assertDoesNotThrow(
+        () -> {
+          var packet = new Packet(1);
+          var ret = new PhotonPipelineResult();
+          packet.setData(new byte[0]);
+          if (packet.getSize() < 1) {
+            return;
+          }
+          ret.createFromPacket(packet);
+        });
+  }
 }

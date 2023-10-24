@@ -27,21 +27,21 @@ import org.photonvision.vision.opencv.Contour;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class FindContoursPipe
-        extends CVPipe<Mat, List<Contour>, FindContoursPipe.FindContoursParams> {
-    private final List<MatOfPoint> m_foundContours = new ArrayList<>();
+    extends CVPipe<Mat, List<Contour>, FindContoursPipe.FindContoursParams> {
+  private final List<MatOfPoint> m_foundContours = new ArrayList<>();
 
-    @Override
-    protected List<Contour> process(Mat in) {
-        for (var m : m_foundContours) {
-            m.release(); // necessary?
-        }
-        m_foundContours.clear();
-
-        Imgproc.findContours(
-                in, m_foundContours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_TC89_KCOS);
-
-        return m_foundContours.stream().map(Contour::new).collect(Collectors.toList());
+  @Override
+  protected List<Contour> process(Mat in) {
+    for (var m : m_foundContours) {
+      m.release(); // necessary?
     }
+    m_foundContours.clear();
 
-    public static class FindContoursParams {}
+    Imgproc.findContours(
+        in, m_foundContours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_TC89_KCOS);
+
+    return m_foundContours.stream().map(Contour::new).collect(Collectors.toList());
+  }
+
+  public static class FindContoursParams {}
 }

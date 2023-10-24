@@ -21,27 +21,27 @@ import java.util.Comparator;
 import org.photonvision.vision.target.PotentialTarget;
 
 public enum ContourSortMode {
-    Largest(
-            Comparator.comparingDouble(PotentialTarget::getArea)
-                    .reversed()), // reversed so that zero index has the largest size
-    Smallest(Largest.getComparator().reversed()),
-    Highest(Comparator.comparingDouble(rect -> rect.getMinAreaRect().center.y)),
-    Lowest(Highest.getComparator().reversed()),
-    Leftmost(Comparator.comparingDouble(target -> target.getMinAreaRect().center.x * -1)),
-    Rightmost(Leftmost.getComparator().reversed()),
-    Centermost(
-            Comparator.comparingDouble(
-                    rect ->
-                            (Math.pow(rect.getMinAreaRect().center.y, 2)
-                                    + Math.pow(rect.getMinAreaRect().center.x, 2))));
+  Largest(
+      Comparator.comparingDouble(PotentialTarget::getArea)
+          .reversed()), // reversed so that zero index has the largest size
+  Smallest(Largest.getComparator().reversed()),
+  Highest(Comparator.comparingDouble(rect -> rect.getMinAreaRect().center.y)),
+  Lowest(Highest.getComparator().reversed()),
+  Leftmost(Comparator.comparingDouble(target -> target.getMinAreaRect().center.x * -1)),
+  Rightmost(Leftmost.getComparator().reversed()),
+  Centermost(
+      Comparator.comparingDouble(
+          rect ->
+              (Math.pow(rect.getMinAreaRect().center.y, 2)
+                  + Math.pow(rect.getMinAreaRect().center.x, 2))));
 
-    private final Comparator<PotentialTarget> m_comparator;
+  private final Comparator<PotentialTarget> m_comparator;
 
-    ContourSortMode(Comparator<PotentialTarget> comparator) {
-        m_comparator = comparator;
-    }
+  ContourSortMode(Comparator<PotentialTarget> comparator) {
+    m_comparator = comparator;
+  }
 
-    public Comparator<PotentialTarget> getComparator() {
-        return m_comparator;
-    }
+  public Comparator<PotentialTarget> getComparator() {
+    return m_comparator;
+  }
 }

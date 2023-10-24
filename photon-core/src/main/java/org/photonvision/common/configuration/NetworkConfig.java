@@ -30,118 +30,118 @@ import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.file.JacksonUtils;
 
 public class NetworkConfig {
-    // Can be an integer team number, or an IP address
-    public String ntServerAddress = "0";
-    public NetworkMode connectionType = NetworkMode.DHCP;
-    public String staticIp = "";
-    public String hostname = "photonvision";
-    public boolean runNTServer = false;
-    public boolean shouldManage;
+  // Can be an integer team number, or an IP address
+  public String ntServerAddress = "0";
+  public NetworkMode connectionType = NetworkMode.DHCP;
+  public String staticIp = "";
+  public String hostname = "photonvision";
+  public boolean runNTServer = false;
+  public boolean shouldManage;
 
-    @JsonIgnore public static final String NM_IFACE_STRING = "${interface}";
-    @JsonIgnore public static final String NM_IP_STRING = "${ipaddr}";
+  @JsonIgnore public static final String NM_IFACE_STRING = "${interface}";
+  @JsonIgnore public static final String NM_IP_STRING = "${ipaddr}";
 
-    public String networkManagerIface;
-    public String setStaticCommand =
-            "nmcli con mod ${interface} ipv4.addresses ${ipaddr}/8 ipv4.method \"manual\" ipv6.method \"disabled\"";
-    public String setDHCPcommand =
-            "nmcli con mod ${interface} ipv4.method \"auto\" ipv6.method \"disabled\"";
+  public String networkManagerIface;
+  public String setStaticCommand =
+      "nmcli con mod ${interface} ipv4.addresses ${ipaddr}/8 ipv4.method \"manual\" ipv6.method \"disabled\"";
+  public String setDHCPcommand =
+      "nmcli con mod ${interface} ipv4.method \"auto\" ipv6.method \"disabled\"";
 
-    public NetworkConfig() {
-        if (Platform.isLinux()) {
-            // Default to the name of the first Ethernet connection. Otherwise, "Wired connection 1" is a
-            // reasonable guess
-            this.networkManagerIface =
-                    NetworkUtils.getAllWiredInterfaces().stream()
-                            .map(it -> it.connName)
-                            .findFirst()
-                            .orElse("Wired connection 1");
-        }
-
-        // We can (usually) manage networking on Linux devices, and if we can, we should try to. Command
-        // line inhibitions happen at a level above this class
-        setShouldManage(deviceCanManageNetwork());
+  public NetworkConfig() {
+    if (Platform.isLinux()) {
+      // Default to the name of the first Ethernet connection. Otherwise, "Wired connection 1" is a
+      // reasonable guess
+      this.networkManagerIface =
+          NetworkUtils.getAllWiredInterfaces().stream()
+              .map(it -> it.connName)
+              .findFirst()
+              .orElse("Wired connection 1");
     }
 
-    @JsonCreator
-    public NetworkConfig(
-            @JsonProperty("ntServerAddress") @JsonAlias({"ntServerAddress", "teamNumber"})
-                    String ntServerAddress,
-            @JsonProperty("connectionType") NetworkMode connectionType,
-            @JsonProperty("staticIp") String staticIp,
-            @JsonProperty("hostname") String hostname,
-            @JsonProperty("runNTServer") boolean runNTServer,
-            @JsonProperty("shouldManage") boolean shouldManage,
-            @JsonProperty("networkManagerIface") String networkManagerIface,
-            @JsonProperty("setStaticCommand") String setStaticCommand,
-            @JsonProperty("setDHCPcommand") String setDHCPcommand) {
-        this.ntServerAddress = ntServerAddress;
-        this.connectionType = connectionType;
-        this.staticIp = staticIp;
-        this.hostname = hostname;
-        this.runNTServer = runNTServer;
-        this.networkManagerIface = networkManagerIface;
-        this.setStaticCommand = setStaticCommand;
-        this.setDHCPcommand = setDHCPcommand;
-        setShouldManage(shouldManage);
-    }
+    // We can (usually) manage networking on Linux devices, and if we can, we should try to. Command
+    // line inhibitions happen at a level above this class
+    setShouldManage(deviceCanManageNetwork());
+  }
 
-    public Map<String, Object> toHashMap() {
-        try {
-            var ret = new ObjectMapper().convertValue(this, JacksonUtils.UIMap.class);
-            ret.put("canManage", this.deviceCanManageNetwork());
-            return ret;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new HashMap<>();
-        }
-    }
+  @JsonCreator
+  public NetworkConfig(
+      @JsonProperty("ntServerAddress") @JsonAlias({"ntServerAddress", "teamNumber"})
+          String ntServerAddress,
+      @JsonProperty("connectionType") NetworkMode connectionType,
+      @JsonProperty("staticIp") String staticIp,
+      @JsonProperty("hostname") String hostname,
+      @JsonProperty("runNTServer") boolean runNTServer,
+      @JsonProperty("shouldManage") boolean shouldManage,
+      @JsonProperty("networkManagerIface") String networkManagerIface,
+      @JsonProperty("setStaticCommand") String setStaticCommand,
+      @JsonProperty("setDHCPcommand") String setDHCPcommand) {
+    this.ntServerAddress = ntServerAddress;
+    this.connectionType = connectionType;
+    this.staticIp = staticIp;
+    this.hostname = hostname;
+    this.runNTServer = runNTServer;
+    this.networkManagerIface = networkManagerIface;
+    this.setStaticCommand = setStaticCommand;
+    this.setDHCPcommand = setDHCPcommand;
+    setShouldManage(shouldManage);
+  }
 
-    @JsonIgnore
-    public String getPhysicalInterfaceName() {
-        return NetworkUtils.getNMinfoForConnName(this.networkManagerIface).devName;
+  public Map<String, Object> toHashMap() {
+    try {
+      var ret = new ObjectMapper().convertValue(this, JacksonUtils.UIMap.class);
+      ret.put("canManage", this.deviceCanManageNetwork());
+      return ret;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return new HashMap<>();
     }
+  }
 
-    @JsonIgnore
-    public String getEscapedInterfaceName() {
-        return "\"" + networkManagerIface + "\"";
-    }
+  @JsonIgnore
+  public String getPhysicalInterfaceName() {
+    return NetworkUtils.getNMinfoForConnName(this.networkManagerIface).devName;
+  }
 
-    @JsonIgnore
-    public boolean shouldManage() {
-        return this.shouldManage;
-    }
+  @JsonIgnore
+  public String getEscapedInterfaceName() {
+    return "\"" + networkManagerIface + "\"";
+  }
 
-    @JsonIgnore
-    public void setShouldManage(boolean shouldManage) {
-        this.shouldManage = shouldManage && this.deviceCanManageNetwork();
-    }
+  @JsonIgnore
+  public boolean shouldManage() {
+    return this.shouldManage;
+  }
 
-    @JsonIgnore
-    private boolean deviceCanManageNetwork() {
-        return Platform.isLinux();
-    }
+  @JsonIgnore
+  public void setShouldManage(boolean shouldManage) {
+    this.shouldManage = shouldManage && this.deviceCanManageNetwork();
+  }
 
-    @Override
-    public String toString() {
-        return "NetworkConfig [serverAddr="
-                + ntServerAddress
-                + ", connectionType="
-                + connectionType
-                + ", staticIp="
-                + staticIp
-                + ", hostname="
-                + hostname
-                + ", runNTServer="
-                + runNTServer
-                + ", networkManagerIface="
-                + networkManagerIface
-                + ", setStaticCommand="
-                + setStaticCommand
-                + ", setDHCPcommand="
-                + setDHCPcommand
-                + ", shouldManage="
-                + shouldManage
-                + "]";
-    }
+  @JsonIgnore
+  private boolean deviceCanManageNetwork() {
+    return Platform.isLinux();
+  }
+
+  @Override
+  public String toString() {
+    return "NetworkConfig [serverAddr="
+        + ntServerAddress
+        + ", connectionType="
+        + connectionType
+        + ", staticIp="
+        + staticIp
+        + ", hostname="
+        + hostname
+        + ", runNTServer="
+        + runNTServer
+        + ", networkManagerIface="
+        + networkManagerIface
+        + ", setStaticCommand="
+        + setStaticCommand
+        + ", setDHCPcommand="
+        + setDHCPcommand
+        + ", shouldManage="
+        + shouldManage
+        + "]";
+  }
 }

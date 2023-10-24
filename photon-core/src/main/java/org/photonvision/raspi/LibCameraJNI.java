@@ -27,165 +27,165 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public class LibCameraJNI {
-    private static boolean libraryLoaded = false;
-    private static final Logger logger = new Logger(LibCameraJNI.class, LogGroup.Camera);
+  private static boolean libraryLoaded = false;
+  private static final Logger logger = new Logger(LibCameraJNI.class, LogGroup.Camera);
 
-    public static final Object CAMERA_LOCK = new Object();
+  public static final Object CAMERA_LOCK = new Object();
 
-    public static synchronized void forceLoad() throws IOException {
-        if (libraryLoaded) return;
+  public static synchronized void forceLoad() throws IOException {
+    if (libraryLoaded) return;
 
-        try {
-            File libDirectory = Path.of("lib/").toFile();
-            if (!libDirectory.exists()) {
-                Files.createDirectory(libDirectory.toPath()).toFile();
-            }
+    try {
+      File libDirectory = Path.of("lib/").toFile();
+      if (!libDirectory.exists()) {
+        Files.createDirectory(libDirectory.toPath()).toFile();
+      }
 
-            // We always extract the shared object (we could hash each so, but that's a lot of work)
-            URL resourceURL = LibCameraJNI.class.getResource("/nativelibraries/libphotonlibcamera.so");
-            File libFile = Path.of("lib/libphotonlibcamera.so").toFile();
-            try (InputStream in = resourceURL.openStream()) {
-                if (libFile.exists()) Files.delete(libFile.toPath());
-                Files.copy(in, libFile.toPath());
-            } catch (Exception e) {
-                logger.error("Could not extract the native library!");
-            }
-            System.load(libFile.getAbsolutePath());
+      // We always extract the shared object (we could hash each so, but that's a lot of work)
+      URL resourceURL = LibCameraJNI.class.getResource("/nativelibraries/libphotonlibcamera.so");
+      File libFile = Path.of("lib/libphotonlibcamera.so").toFile();
+      try (InputStream in = resourceURL.openStream()) {
+        if (libFile.exists()) Files.delete(libFile.toPath());
+        Files.copy(in, libFile.toPath());
+      } catch (Exception e) {
+        logger.error("Could not extract the native library!");
+      }
+      System.load(libFile.getAbsolutePath());
 
-            libraryLoaded = true;
-            logger.info("Successfully loaded libpicam shared object");
-        } catch (UnsatisfiedLinkError e) {
-            logger.error("Couldn't load libpicam shared object");
-            e.printStackTrace();
-        }
+      libraryLoaded = true;
+      logger.info("Successfully loaded libpicam shared object");
+    } catch (UnsatisfiedLinkError e) {
+      logger.error("Couldn't load libpicam shared object");
+      e.printStackTrace();
     }
+  }
 
-    public enum SensorModel {
-        Disconnected,
-        OV5647, // Picam v1
-        IMX219, // Picam v2
-        IMX477, // Picam HQ
-        OV9281,
-        OV7251,
-        Unknown;
+  public enum SensorModel {
+    Disconnected,
+    OV5647, // Picam v1
+    IMX219, // Picam v2
+    IMX477, // Picam HQ
+    OV9281,
+    OV7251,
+    Unknown;
 
-        public String getFriendlyName() {
-            switch (this) {
-                case Disconnected:
-                    return "Disconnected Camera";
-                case OV5647:
-                    return "Camera Module v1";
-                case IMX219:
-                    return "Camera Module v2";
-                case IMX477:
-                    return "HQ Camera";
-                case OV9281:
-                    return "OV9281";
-                case OV7251:
-                    return "OV7251";
-                case Unknown:
-                default:
-                    return "Unknown Camera";
-            }
-        }
+    public String getFriendlyName() {
+      switch (this) {
+        case Disconnected:
+          return "Disconnected Camera";
+        case OV5647:
+          return "Camera Module v1";
+        case IMX219:
+          return "Camera Module v2";
+        case IMX477:
+          return "HQ Camera";
+        case OV9281:
+          return "OV9281";
+        case OV7251:
+          return "OV7251";
+        case Unknown:
+        default:
+          return "Unknown Camera";
+      }
     }
+  }
 
-    public static SensorModel getSensorModel() {
-        int model = getSensorModelRaw();
-        return SensorModel.values()[model];
-    }
+  public static SensorModel getSensorModel() {
+    int model = getSensorModelRaw();
+    return SensorModel.values()[model];
+  }
 
-    public static boolean isSupported() {
-        return libraryLoaded
-                // && getSensorModel() != PicamJNI.SensorModel.Disconnected
-                // && Platform.isRaspberryPi()
-                && isLibraryWorking();
-    }
+  public static boolean isSupported() {
+    return libraryLoaded
+        // && getSensorModel() != PicamJNI.SensorModel.Disconnected
+        // && Platform.isRaspberryPi()
+        && isLibraryWorking();
+  }
 
-    private static native boolean isLibraryWorking();
+  private static native boolean isLibraryWorking();
 
-    public static native int getSensorModelRaw();
+  public static native int getSensorModelRaw();
 
-    // ======================================================== //
+  // ======================================================== //
 
-    /**
-     * Creates a new runner with a given width/height/fps
-     *
-     * @param width Camera video mode width in pixels
-     * @param height Camera video mode height in pixels
-     * @param fps Camera video mode FPS
-     * @return success of creating a camera object
-     */
-    public static native boolean createCamera(int width, int height, int rotation);
+  /**
+   * Creates a new runner with a given width/height/fps
+   *
+   * @param width Camera video mode width in pixels
+   * @param height Camera video mode height in pixels
+   * @param fps Camera video mode FPS
+   * @return success of creating a camera object
+   */
+  public static native boolean createCamera(int width, int height, int rotation);
 
-    /**
-     * Starts the camera thresholder and display threads running. Make sure that this function is
-     * called synchronously with stopCamera and returnFrame!
-     */
-    public static native boolean startCamera();
+  /**
+   * Starts the camera thresholder and display threads running. Make sure that this function is
+   * called synchronously with stopCamera and returnFrame!
+   */
+  public static native boolean startCamera();
 
-    /** Stops the camera runner. Make sure to call prior to destroying the camera! */
-    public static native boolean stopCamera();
+  /** Stops the camera runner. Make sure to call prior to destroying the camera! */
+  public static native boolean stopCamera();
 
-    // Destroy all native resources associated with a camera. Ensure stop is called prior!
-    public static native boolean destroyCamera();
+  // Destroy all native resources associated with a camera. Ensure stop is called prior!
+  public static native boolean destroyCamera();
 
-    // ======================================================== //
+  // ======================================================== //
 
-    // Set thresholds on [0..1]
-    public static native boolean setThresholds(
-            double hl, double sl, double vl, double hu, double su, double vu, boolean hueInverted);
+  // Set thresholds on [0..1]
+  public static native boolean setThresholds(
+      double hl, double sl, double vl, double hu, double su, double vu, boolean hueInverted);
 
-    public static native boolean setAutoExposure(boolean doAutoExposure);
+  public static native boolean setAutoExposure(boolean doAutoExposure);
 
-    // Exposure time, in microseconds
-    public static native boolean setExposure(int exposureUs);
+  // Exposure time, in microseconds
+  public static native boolean setExposure(int exposureUs);
 
-    // Set brightness on [-1, 1]
-    public static native boolean setBrightness(double brightness);
+  // Set brightness on [-1, 1]
+  public static native boolean setBrightness(double brightness);
 
-    // Unknown ranges for red and blue AWB gain
-    public static native boolean setAwbGain(double red, double blue);
+  // Unknown ranges for red and blue AWB gain
+  public static native boolean setAwbGain(double red, double blue);
 
-    /**
-     * Get the time when the first pixel exposure was started, in the same timebase as libcamera gives
-     * the frame capture time. Units are nanoseconds.
-     */
-    public static native long getFrameCaptureTime();
+  /**
+   * Get the time when the first pixel exposure was started, in the same timebase as libcamera gives
+   * the frame capture time. Units are nanoseconds.
+   */
+  public static native long getFrameCaptureTime();
 
-    /**
-     * Get the current time, in the same timebase as libcamera gives the frame capture time. Units are
-     * nanoseconds.
-     */
-    public static native long getLibcameraTimestamp();
+  /**
+   * Get the current time, in the same timebase as libcamera gives the frame capture time. Units are
+   * nanoseconds.
+   */
+  public static native long getLibcameraTimestamp();
 
-    public static native long setFramesToCopy(boolean copyIn, boolean copyOut);
+  public static native long setFramesToCopy(boolean copyIn, boolean copyOut);
 
-    // Analog gain multiplier to apply to all color channels, on [1, Big Number]
-    public static native boolean setAnalogGain(double analog);
+  // Analog gain multiplier to apply to all color channels, on [1, Big Number]
+  public static native boolean setAnalogGain(double analog);
 
-    /** Block until a new frame is available from native code. */
-    public static native boolean awaitNewFrame();
+  /** Block until a new frame is available from native code. */
+  public static native boolean awaitNewFrame();
 
-    /**
-     * Get a pointer to the most recent color mat generated. Call this immediately after
-     * awaitNewFrame, and call only once per new frame!
-     */
-    public static native long takeColorFrame();
+  /**
+   * Get a pointer to the most recent color mat generated. Call this immediately after
+   * awaitNewFrame, and call only once per new frame!
+   */
+  public static native long takeColorFrame();
 
-    /**
-     * Get a pointer to the most recent processed mat generated. Call this immediately after
-     * awaitNewFrame, and call only once per new frame!
-     */
-    public static native long takeProcessedFrame();
+  /**
+   * Get a pointer to the most recent processed mat generated. Call this immediately after
+   * awaitNewFrame, and call only once per new frame!
+   */
+  public static native long takeProcessedFrame();
 
-    /**
-     * Set the GPU processing type we should do. Enum of [none, HSV, greyscale, adaptive threshold].
-     */
-    public static native boolean setGpuProcessType(int type);
+  /**
+   * Set the GPU processing type we should do. Enum of [none, HSV, greyscale, adaptive threshold].
+   */
+  public static native boolean setGpuProcessType(int type);
 
-    public static native int getGpuProcessType();
+  public static native int getGpuProcessType();
 
-    // Release a frame pointer back to the libcamera driver code to be filled again */
-    // public static native long returnFrame(long frame);
+  // Release a frame pointer back to the libcamera driver code to be filled again */
+  // public static native long returnFrame(long frame);
 }

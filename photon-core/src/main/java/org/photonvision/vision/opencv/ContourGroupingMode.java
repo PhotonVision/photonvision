@@ -18,13 +18,13 @@
 package org.photonvision.vision.opencv;
 
 public enum ContourGroupingMode {
-    Single(1),
-    Dual(2),
-    TwoOrMore(2);
+  Single(1),
+  Dual(2),
+  TwoOrMore(2);
 
-    public final int count;
+  public final int count;
 
-    ContourGroupingMode(int count) {
-        this.count = count;
-    }
+  ContourGroupingMode(int count) {
+    this.count = count;
+  }
 }
