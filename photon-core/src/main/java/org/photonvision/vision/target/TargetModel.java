@@ -107,16 +107,18 @@ public enum TargetModel implements Releasable {
                             -Units.inchesToMeters(9.5) / 2,
                             -Units.inchesToMeters(9.5) / 2)),
             0),
-    k6in_16h5( // Nominal edge length of 200 mm includes the white border, but solvePNP corners
-            // do not
+    // 2023 AprilTag, with 6 inch marker width (inner black square).
+    kAprilTag6in_16h5(
+            // Corners of the tag's inner black square (excluding white border)
             List.of(
                     new Point3(Units.inchesToMeters(3), Units.inchesToMeters(3), 0),
                     new Point3(-Units.inchesToMeters(3), Units.inchesToMeters(3), 0),
                     new Point3(-Units.inchesToMeters(3), -Units.inchesToMeters(3), 0),
                     new Point3(Units.inchesToMeters(3), -Units.inchesToMeters(3), 0)),
             Units.inchesToMeters(3 * 2)),
-    // 2024 FRC tag. 6.5in inner tag, 8.125 overall
-    k6p5in_36h11(
+    // 2024 AprilTag, with 6.5 inch marker width (inner black square).
+    kAprilTag6p5in_36h11(
+            // Corners of the tag's inner black square (excluding white border)
             List.of(
                     new Point3(-Units.inchesToMeters(6.5 / 2.0), Units.inchesToMeters(6.5 / 2.0), 0),
                     new Point3(Units.inchesToMeters(6.5 / 2.0), Units.inchesToMeters(6.5 / 2.0), 0),
