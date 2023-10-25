@@ -46,6 +46,7 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.Objdetect;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.math.MathUtils;
+import org.photonvision.estimation.TargetModel;
 import org.photonvision.targeting.MultiTargetPNPResults;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.frame.Frame;
@@ -79,19 +80,21 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         var params = new ArucoDetectionPipeParams();
         // sanitize and record settings
 
-        double tagWidth;
+        // for now, hard code tag width based on enum value
+        // 2023/other: best guess is 6in
+        double tagWidth = Units.inchesToMeters(6);
+        TargetModel tagModel = TargetModel.kAprilTag16h5;
         switch (settings.tagFamily) {
             case kTag36h11:
+                // 2024 tag, 6.5in
                 params.tagFamily = Objdetect.DICT_APRILTAG_36h11;
                 tagWidth = Units.inchesToMeters(6.5);
                 break;
             case kTag25h9:
                 params.tagFamily = Objdetect.DICT_APRILTAG_25h9;
-                tagWidth = Units.inchesToMeters(6);
                 break;
             default:
                 params.tagFamily = Objdetect.DICT_APRILTAG_16h5;
-                tagWidth = Units.inchesToMeters(6);
         }
 
         int threshMinSize = Math.max(3, settings.threshWinSizes.getFirst());
@@ -124,7 +127,7 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
                 // TODO global state ew
                 var atfl = ConfigManager.getInstance().getConfig().getApriltagFieldLayout();
                 multiTagPNPPipe.setParams(
-                        new MultiTargetPNPPipeParams(frameStaticProperties.cameraCalibration, atfl));
+                        new MultiTargetPNPPipeParams(frameStaticProperties.cameraCalibration, atfl, tagModel));
             }
         }
     }
