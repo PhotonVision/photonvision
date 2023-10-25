@@ -49,6 +49,7 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonTargetSortMode;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.networktables.NTTopicSet;
+import org.photonvision.estimation.CameraTargetRelation;
 import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.RotTrlTransform3d;
 import org.photonvision.estimation.TargetModel;
@@ -205,23 +206,16 @@ public class PhotonCameraSim implements AutoCloseable {
      * @return If this vision target can be seen before image projection.
      */
     public boolean canSeeTargetPose(Pose3d camPose, VisionTargetSim target) {
-        // var rel = new CameraTargetRelation(camPose, target.getPose());
-        // TODO: removal awaiting wpilib Rotation3d performance improvements
-        var relTarget = RotTrlTransform3d.makeRelativeTo(camPose).apply(target.getPose());
-        var camToTargYaw = new Rotation2d(relTarget.getX(), relTarget.getY());
-        var camToTargPitch =
-                new Rotation2d(Math.hypot(relTarget.getX(), relTarget.getY()), -relTarget.getZ());
-        var relCam = RotTrlTransform3d.makeRelativeTo(target.getPose()).apply(camPose);
-        var targToCamAngle = new Rotation2d(relCam.getX(), Math.hypot(relCam.getY(), relCam.getZ()));
+        var rel = new CameraTargetRelation(camPose, target.getPose());
 
         return (
         // target translation is outside of camera's FOV
-        (Math.abs(camToTargYaw.getDegrees()) < prop.getHorizFOV().getDegrees() / 2)
-                && (Math.abs(camToTargPitch.getDegrees()) < prop.getVertFOV().getDegrees() / 2)
+        (Math.abs(rel.camToTargYaw.getDegrees()) < prop.getHorizFOV().getDegrees() / 2)
+                && (Math.abs(rel.camToTargPitch.getDegrees()) < prop.getVertFOV().getDegrees() / 2)
                 && (!target.getModel().isPlanar
-                        || Math.abs(targToCamAngle.getDegrees())
+                        || Math.abs(rel.targToCamAngle.getDegrees())
                                 < 90) // camera is behind planar target and it should be occluded
-                && (relTarget.getTranslation().getNorm() <= maxSightRangeMeters)); // target is too far
+                && (rel.camToTarg.getTranslation().getNorm() <= maxSightRangeMeters)); // target is too far
     }
 
     /**
