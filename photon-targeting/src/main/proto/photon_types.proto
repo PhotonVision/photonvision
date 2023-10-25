@@ -31,8 +31,8 @@ message PhotonPipelineResult {
   message MultiTargetPNPResults {
     wpi.proto.ProtobufTransform3d best = 1;
     double bestReprojErr = 2;
-    optional wpi.proto.ProtobufTransform3d alt = 3;
-    optional double altReprojErr = 4;
+    wpi.proto.ProtobufTransform3d alt = 3;
+    double altReprojErr = 4;
     double ambiguity = 5;
 
     repeated int32 fiducial_ids_used = 6;
