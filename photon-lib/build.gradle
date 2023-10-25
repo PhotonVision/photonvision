@@ -120,17 +120,17 @@ task generateVendorJson() {
     outputs.file photonlibFileOutput
     inputs.file photonlibFileInput
 
-        println "Writing vendor JSON ${pubVersion} to $photonlibFileOutput"
+    println "Writing vendor JSON ${pubVersion} to $photonlibFileOutput"
 
-        if (photonlibFileOutput.exists()) {
-            photonlibFileOutput.delete()
-        }
-        photonlibFileOutput.parentFile.mkdirs()
+    if (photonlibFileOutput.exists()) {
+        photonlibFileOutput.delete()
+    }
+    photonlibFileOutput.parentFile.mkdirs()
 
-        def read = photonlibFileInput.text
+    def read = photonlibFileInput.text
             .replace('${photon_version}', pubVersion)
             .replace('${frc_year}', frcYear)
-        photonlibFileOutput.text = read
+    photonlibFileOutput.text = read
 
     outputs.upToDateWhen { false }
 }
