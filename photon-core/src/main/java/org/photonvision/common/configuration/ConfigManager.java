@@ -37,7 +37,6 @@ import org.photonvision.vision.processes.VisionSource;
 import org.zeroturnaround.zip.ZipUtil;
 
 public class ConfigManager {
-    private static final Logger logger = new Logger(ConfigManager.class, LogGroup.General);
     private static ConfigManager INSTANCE;
 
     public static final String HW_CFG_FNAME = "hardwareConfig.json";
@@ -78,6 +77,8 @@ public class ConfigManager {
         }
         return INSTANCE;
     }
+
+    private static final Logger logger = new Logger(ConfigManager.class, LogGroup.General);
 
     private void translateLegacyIfPresent(Path folderPath) {
         if (!(m_provider instanceof SqlConfigProvider)) {

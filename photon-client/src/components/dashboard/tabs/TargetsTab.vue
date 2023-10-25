@@ -36,7 +36,8 @@ const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings
               </template>
               <template
                 v-if="
-                  useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag &&
+                  (useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
+                    useCameraSettingsStore().currentPipelineType === PipelineType.Aruco) &&
                   useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
                 "
               >
@@ -67,7 +68,8 @@ const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings
               </template>
               <template
                 v-if="
-                  useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag &&
+                  (useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
+                    useCameraSettingsStore().currentPipelineType === PipelineType.Aruco) &&
                   useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
                 "
               >
@@ -80,7 +82,8 @@ const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings
     </v-row>
     <v-row
       v-if="
-        currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
+        (useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
+          useCameraSettingsStore().currentPipelineType === PipelineType.Aruco) &&
         currentPipelineSettings.doMultiTarget &&
         useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
         useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled

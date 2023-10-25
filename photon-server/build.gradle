@@ -38,7 +38,9 @@ shadowJar {
     archiveBaseName = "photonvision"
     archiveVersion = project.version as String
     archiveClassifier.set(wpilibTools.currentPlatform.platformName)
-    configurations = [project.configurations.runtimeClasspath]
+    configurations = [
+        project.configurations.runtimeClasspath
+    ]
 }
 
 
@@ -59,11 +61,11 @@ tasks.register("buildAndCopyUI") {
 run {
     if (project.hasProperty("profile")) {
         jvmArgs=[
-                "-Dcom.sun.management.jmxremote=true",
-                "-Dcom.sun.management.jmxremote.ssl=false",
-                "-Dcom.sun.management.jmxremote.authenticate=false",
-                "-Dcom.sun.management.jmxremote.port=5000",
-                "-Djava.rmi.server.hostname=0.0.0.0",
+            "-Dcom.sun.management.jmxremote=true",
+            "-Dcom.sun.management.jmxremote.ssl=false",
+            "-Dcom.sun.management.jmxremote.authenticate=false",
+            "-Dcom.sun.management.jmxremote.port=5000",
+            "-Djava.rmi.server.hostname=0.0.0.0",
         ]
     }
 }
@@ -118,7 +120,7 @@ task findDeployTarget {
 }
 
 run {
-  environment "PATH_PREFIX", "../"
+    environment "PATH_PREFIX", "../"
 }
 
 task deployIdc {
@@ -126,7 +128,7 @@ task deployIdc {
     dependsOn assemble
     dependsOn findDeployTarget
 
-        doLast {
+    doLast {
         println 'Starting deployment to ' + findDeployTarget.rmt.host
         println 'targetArch = ' + wpilibTools.platformMapper.currentPlatform.platformName
         ssh.run{
@@ -137,7 +139,7 @@ task deployIdc {
                 execute 'sleep 3'
                 // Copy into a folder owned by PI. Mostly because, as far as I can tell, the put command doesn't support sudo.
                 put from: "${projectDir}/build/libs/photonvision-${project.version}-${wpilibTools.platformMapper.currentPlatform.platformName}.jar", into: "/tmp/photonvision.jar"
-                 //belt-and-suspenders. Make sure the old jar is gone first.
+                //belt-and-suspenders. Make sure the old jar is gone first.
                 execute 'sudo rm -f /opt/photonvision/photonvision.jar'
                 //Copy in the new .jar and make sure it's executable
                 execute 'sudo mv /tmp/photonvision.jar /opt/photonvision/photonvision.jar'

@@ -31,6 +31,7 @@ import java.util.List;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.targeting.MultiTargetPNPResults;
+import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
@@ -69,27 +70,15 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         // Sanitize thread count - not supported to have fewer than 1 threads
         settings.threads = Math.max(1, settings.threads);
 
-        // if (cameraQuirks.hasQuirk(CameraQuirk.PiCam) && LibCameraJNI.isSupported()) {
-        //     // TODO: Picam grayscale
-        //     LibCameraJNI.setRotation(settings.inputImageRotationMode.value);
-        //     // LibCameraJNI.setShouldCopyColor(true); // need the color image to grayscale
-        // }
-
-        // TODO (HACK): tag width is Fun because it really belongs in the "target model"
-        // We need the tag width for the JNI to figure out target pose, but we need a
-        // target model for the draw 3d targets pipeline to work...
-
         // for now, hard code tag width based on enum value
-        double tagWidth = Units.inchesToMeters(3 * 2); // for 6in 16h5 tag.
-
-        // AprilTagDetectorParams aprilTagDetectionParams =
-        //         new AprilTagDetectorParams(
-        //                 settings.tagFamily,
-        //                 settings.decimate,
-        //                 settings.blur,
-        //                 settings.threads,
-        //                 settings.debug,
-        //                 settings.refineEdges);
+        double tagWidth;
+        if (settings.tagFamily == AprilTagFamily.kTag36h11) {
+            // 2024 tag, guess 6.5in
+            tagWidth = Units.inchesToMeters(6.5);
+        } else {
+            // 2023/other: best guess is 6in
+            tagWidth = Units.inchesToMeters(6);
+        }
 
         var config = new AprilTagDetector.Config();
         config.numThreads = settings.threads;
@@ -125,8 +114,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         long sumPipeNanosElapsed = 0L;
 
         if (frame.type != FrameThresholdType.GREYSCALE) {
-            // TODO so all cameras should give us GREYSCALE -- how should we handle if not?
-            // Right now, we just return nothing
+            // We asked for a GREYSCALE frame, but didn't get one -- best we can do is give up
             return new CVPipelineResult(0, 0, List.of(), frame);
         }
 

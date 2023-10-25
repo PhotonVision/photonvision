@@ -1,5 +1,5 @@
 plugins {
-    id "com.diffplug.spotless" version "6.19.0"
+    id "com.diffplug.spotless" version "6.22.0"
     id "edu.wpi.first.NativeUtils" version "2024.2.0" apply false
     id "edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin" version "2020.2"
     id "edu.wpi.first.GradleRIO" version "2024.1.1-beta-2"
@@ -43,6 +43,10 @@ wpilibTools.deps.wpilibVersion = wpilibVersion
 
 spotless {
     java {
+        target fileTree('.') {
+            include '**/*.java'
+            exclude '**/build/**', '**/build-*/**', "photon-core\\src\\main\\java\\org\\photonvision\\PhotonVersion.java", "photon-lib\\src\\main\\java\\org\\photonvision\\PhotonVersion.java"
+        }
         toggleOffOn()
         googleJavaFormat()
         indentWithTabs(2)
@@ -51,10 +55,34 @@ spotless {
         trimTrailingWhitespace()
         endWithNewline()
     }
-    java {
-        target "**/*.java"
-        targetExclude("photon-core/src/main/java/org/photonvision/PhotonVersion.java")
-        targetExclude("photon-lib/src/main/java/org/photonvision/PhotonVersion.java")
+    groovyGradle {
+        target fileTree('.') {
+            include '**/*.gradle'
+            exclude '**/build/**', '**/build-*/**'
+        }
+        greclipse()
+        indentWithSpaces(4)
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+    format 'xml', {
+        target fileTree('.') {
+            include '**/*.xml'
+            exclude '**/build/**', '**/build-*/**', "**/.idea/**"
+        }
+        eclipseWtp('xml')
+        trimTrailingWhitespace()
+        indentWithSpaces(2)
+        endWithNewline()
+    }
+    format 'misc', {
+        target fileTree('.') {
+            include '**/*.md', '**/.gitignore'
+            exclude '**/build/**', '**/build-*/**'
+        }
+        trimTrailingWhitespace()
+        indentWithSpaces(2)
+        endWithNewline()
     }
 }
 
