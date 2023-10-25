@@ -79,15 +79,19 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         var params = new ArucoDetectionPipeParams();
         // sanitize and record settings
 
+        double tagWidth;
         switch (settings.tagFamily) {
             case kTag36h11:
                 params.tagFamily = Objdetect.DICT_APRILTAG_36h11;
+                tagWidth = Units.inchesToMeters(6.5);
                 break;
             case kTag25h9:
                 params.tagFamily = Objdetect.DICT_APRILTAG_25h9;
+                tagWidth = Units.inchesToMeters(6);
                 break;
             default:
                 params.tagFamily = Objdetect.DICT_APRILTAG_16h5;
+                tagWidth = Units.inchesToMeters(6);
         }
 
         int threshMinSize = Math.max(3, settings.threshWinSizes.getFirst());
@@ -114,7 +118,7 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
             if (cameraMatrix != null && cameraMatrix.rows() > 0) {
                 var estimatorParams =
                         new ArucoPoseEstimatorPipeParams(
-                                frameStaticProperties.cameraCalibration, Units.inchesToMeters(6));
+                                frameStaticProperties.cameraCalibration, tagWidth);
                 singleTagPoseEstimatorPipe.setParams(estimatorParams);
 
                 // TODO global state ew
