@@ -86,7 +86,8 @@ const interactiveCols = computed(
     />
     <pv-switch
       v-if="
-        currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
+        (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
+          currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
         useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
         useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "
@@ -99,7 +100,8 @@ const interactiveCols = computed(
     />
     <pv-switch
       v-if="
-        currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
+        (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
+          currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
         useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
         useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "

@@ -125,8 +125,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         long sumPipeNanosElapsed = 0L;
 
         if (frame.type != FrameThresholdType.GREYSCALE) {
-            // TODO so all cameras should give us GREYSCALE -- how should we handle if not?
-            // Right now, we just return nothing
+            // We asked for a GREYSCALE frame, but didn't get one -- best we can do is give up
             return new CVPipelineResult(0, 0, List.of(), frame);
         }
 
