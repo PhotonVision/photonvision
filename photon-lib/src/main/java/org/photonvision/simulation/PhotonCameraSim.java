@@ -24,6 +24,7 @@
 
 package org.photonvision.simulation;
 
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.CvSource;
 import edu.wpi.first.cscore.VideoMode.PixelFormat;
@@ -529,7 +530,9 @@ public class PhotonCameraSim implements AutoCloseable {
 
         // calculate multitag results
         var multitagResults = new MultiTargetPNPResults();
-        var tagLayout = cam.getAprilTagFieldLayout();
+        // TODO: Implement ATFL subscribing in backend
+        // var tagLayout = cam.getAprilTagFieldLayout();
+        var tagLayout = AprilTagFields.kDefaultField.loadAprilTagLayoutField();
         var visibleLayoutTags = VisionEstimation.getVisibleLayoutTags(detectableTgts, tagLayout);
         if (visibleLayoutTags.size() > 1) {
             List<Integer> usedIDs =
