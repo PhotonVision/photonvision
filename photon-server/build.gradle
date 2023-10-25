@@ -123,10 +123,9 @@ run {
     environment "PATH_PREFIX", "../"
 }
 
-task deployIdc {
-    //dependsOn overrideToPi
-    dependsOn assemble
+task deploy {
     dependsOn findDeployTarget
+    dependsOn assemble
 
     doLast {
         println 'Starting deployment to ' + findDeployTarget.rmt.host
