@@ -29,58 +29,58 @@ import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class ArucoPipelineTest {
-  @BeforeEach
-  public void Init() throws IOException {
-    TestUtils.loadLibraries();
-  }
-
-  @Test
-  public void testApriltagFacingCameraAruco() {
-    var pipeline = new ArucoPipeline();
-
-    pipeline.getSettings().inputShouldShow = true;
-    pipeline.getSettings().outputShouldDraw = true;
-    pipeline.getSettings().solvePNPEnabled = true;
-    pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
-    pipeline.getSettings().cornerDetectionUseConvexHulls = true;
-    pipeline.getSettings().targetModel = TargetModel.k200mmAprilTag;
-
-    // pipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
-
-    var frameProvider =
-        new FileFrameProvider(
-            TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_16h5_1280, false),
-            106,
-            TestUtils.getCoeffs("laptop_1280.json", false));
-    frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
-
-    CVPipelineResult pipelineResult;
-    try {
-      pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-      printTestResults(pipelineResult);
-    } catch (RuntimeException e) {
-      // For now, will throw because of the Rotation3d ctor
-      return;
+    @BeforeEach
+    public void Init() throws IOException {
+        TestUtils.loadLibraries();
     }
 
-    // Draw on input
-    var outputPipe = new OutputStreamPipeline();
-    outputPipe.process(
-        pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
+    @Test
+    public void testApriltagFacingCameraAruco() {
+        var pipeline = new ArucoPipeline();
 
-    TestUtils.showImage(
-        pipelineResult.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
-  }
+        pipeline.getSettings().inputShouldShow = true;
+        pipeline.getSettings().outputShouldDraw = true;
+        pipeline.getSettings().solvePNPEnabled = true;
+        pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
+        pipeline.getSettings().cornerDetectionUseConvexHulls = true;
+        pipeline.getSettings().targetModel = TargetModel.k200mmAprilTag;
 
-  private static void printTestResults(CVPipelineResult pipelineResult) {
-    double fps = 1000 / pipelineResult.getLatencyMillis();
-    System.out.println(
-        "Pipeline ran in " + pipelineResult.getLatencyMillis() + "ms (" + fps + " " + "fps)");
-    System.out.println("Found " + pipelineResult.targets.size() + " valid targets");
-    System.out.println(
-        "Found targets at "
-            + pipelineResult.targets.stream()
-                .map(TrackedTarget::getBestCameraToTarget3d)
-                .collect(Collectors.toList()));
-  }
+        // pipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
+
+        var frameProvider =
+                new FileFrameProvider(
+                        TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_16h5_1280, false),
+                        106,
+                        TestUtils.getCoeffs("laptop_1280.json", false));
+        frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
+
+        CVPipelineResult pipelineResult;
+        try {
+            pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
+            printTestResults(pipelineResult);
+        } catch (RuntimeException e) {
+            // For now, will throw because of the Rotation3d ctor
+            return;
+        }
+
+        // Draw on input
+        var outputPipe = new OutputStreamPipeline();
+        outputPipe.process(
+                pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
+
+        TestUtils.showImage(
+                pipelineResult.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
+    }
+
+    private static void printTestResults(CVPipelineResult pipelineResult) {
+        double fps = 1000 / pipelineResult.getLatencyMillis();
+        System.out.println(
+                "Pipeline ran in " + pipelineResult.getLatencyMillis() + "ms (" + fps + " " + "fps)");
+        System.out.println("Found " + pipelineResult.targets.size() + " valid targets");
+        System.out.println(
+                "Found targets at "
+                        + pipelineResult.targets.stream()
+                                .map(TrackedTarget::getBestCameraToTarget3d)
+                                .collect(Collectors.toList()));
+    }
 }

@@ -28,98 +28,98 @@ import org.photonvision.vision.opencv.ContourShape;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 public class ColoredShapePipelineTest {
-  public static void testTriangleDetection(
-      ColoredShapePipeline pipeline, ColoredShapePipelineSettings settings, Frame frame) {
-    pipeline.settings = settings;
-    CVPipelineResult colouredShapePipelineResult = pipeline.run(frame, QuirkyCamera.DefaultCamera);
-    TestUtils.showImage(
-        colouredShapePipelineResult.inputAndOutputFrame.processedImage.getMat(),
-        "Pipeline output: Triangle.");
-    printTestResults(colouredShapePipelineResult);
-  }
+    public static void testTriangleDetection(
+            ColoredShapePipeline pipeline, ColoredShapePipelineSettings settings, Frame frame) {
+        pipeline.settings = settings;
+        CVPipelineResult colouredShapePipelineResult = pipeline.run(frame, QuirkyCamera.DefaultCamera);
+        TestUtils.showImage(
+                colouredShapePipelineResult.inputAndOutputFrame.processedImage.getMat(),
+                "Pipeline output: Triangle.");
+        printTestResults(colouredShapePipelineResult);
+    }
 
-  public static void testQuadrilateralDetection(
-      ColoredShapePipeline pipeline, ColoredShapePipelineSettings settings, Frame frame) {
-    settings.contourShape = ContourShape.Quadrilateral;
-    pipeline.settings = settings;
-    CVPipelineResult colouredShapePipelineResult = pipeline.run(frame, QuirkyCamera.DefaultCamera);
-    TestUtils.showImage(
-        colouredShapePipelineResult.inputAndOutputFrame.processedImage.getMat(),
-        "Pipeline output: Quadrilateral.");
-    printTestResults(colouredShapePipelineResult);
-  }
+    public static void testQuadrilateralDetection(
+            ColoredShapePipeline pipeline, ColoredShapePipelineSettings settings, Frame frame) {
+        settings.contourShape = ContourShape.Quadrilateral;
+        pipeline.settings = settings;
+        CVPipelineResult colouredShapePipelineResult = pipeline.run(frame, QuirkyCamera.DefaultCamera);
+        TestUtils.showImage(
+                colouredShapePipelineResult.inputAndOutputFrame.processedImage.getMat(),
+                "Pipeline output: Quadrilateral.");
+        printTestResults(colouredShapePipelineResult);
+    }
 
-  public static void testCustomShapeDetection(
-      ColoredShapePipeline pipeline, ColoredShapePipelineSettings settings, Frame frame) {
-    settings.contourShape = ContourShape.Custom;
-    pipeline.settings = settings;
-    CVPipelineResult colouredShapePipelineResult = pipeline.run(frame, QuirkyCamera.DefaultCamera);
-    TestUtils.showImage(
-        colouredShapePipelineResult.inputAndOutputFrame.processedImage.getMat(),
-        "Pipeline output: Custom.");
-    printTestResults(colouredShapePipelineResult);
-  }
+    public static void testCustomShapeDetection(
+            ColoredShapePipeline pipeline, ColoredShapePipelineSettings settings, Frame frame) {
+        settings.contourShape = ContourShape.Custom;
+        pipeline.settings = settings;
+        CVPipelineResult colouredShapePipelineResult = pipeline.run(frame, QuirkyCamera.DefaultCamera);
+        TestUtils.showImage(
+                colouredShapePipelineResult.inputAndOutputFrame.processedImage.getMat(),
+                "Pipeline output: Custom.");
+        printTestResults(colouredShapePipelineResult);
+    }
 
-  @Test
-  public static void testCircleShapeDetection(
-      ColoredShapePipeline pipeline, ColoredShapePipelineSettings settings, Frame frame) {
-    settings.contourShape = ContourShape.Circle;
-    pipeline.settings = settings;
-    CVPipelineResult colouredShapePipelineResult = pipeline.run(frame, QuirkyCamera.DefaultCamera);
-    TestUtils.showImage(
-        colouredShapePipelineResult.inputAndOutputFrame.processedImage.getMat(),
-        "Pipeline output: Circle.");
-    printTestResults(colouredShapePipelineResult);
-  }
+    @Test
+    public static void testCircleShapeDetection(
+            ColoredShapePipeline pipeline, ColoredShapePipelineSettings settings, Frame frame) {
+        settings.contourShape = ContourShape.Circle;
+        pipeline.settings = settings;
+        CVPipelineResult colouredShapePipelineResult = pipeline.run(frame, QuirkyCamera.DefaultCamera);
+        TestUtils.showImage(
+                colouredShapePipelineResult.inputAndOutputFrame.processedImage.getMat(),
+                "Pipeline output: Circle.");
+        printTestResults(colouredShapePipelineResult);
+    }
 
-  @Test
-  public static void testPowercellDetection(
-      ColoredShapePipelineSettings settings, ColoredShapePipeline pipeline) {
-    settings.hsvHue.set(10, 40);
-    settings.hsvSaturation.set(100, 255);
-    settings.hsvValue.set(100, 255);
-    settings.maxCannyThresh = 50;
-    settings.circleAccuracy = 15;
-    settings.circleDetectThreshold = 5;
-    var frameProvider =
-        new FileFrameProvider(
-            TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_6, false),
-            TestUtils.WPI2019Image.FOV);
-    testCircleShapeDetection(pipeline, settings, frameProvider.get());
-  }
+    @Test
+    public static void testPowercellDetection(
+            ColoredShapePipelineSettings settings, ColoredShapePipeline pipeline) {
+        settings.hsvHue.set(10, 40);
+        settings.hsvSaturation.set(100, 255);
+        settings.hsvValue.set(100, 255);
+        settings.maxCannyThresh = 50;
+        settings.circleAccuracy = 15;
+        settings.circleDetectThreshold = 5;
+        var frameProvider =
+                new FileFrameProvider(
+                        TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_6, false),
+                        TestUtils.WPI2019Image.FOV);
+        testCircleShapeDetection(pipeline, settings, frameProvider.get());
+    }
 
-  public static void main(String[] args) {
-    TestUtils.loadLibraries();
-    System.out.println(
-        TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_108in_Center, false));
-    var frameProvider =
-        new FileFrameProvider(
-            TestUtils.getPolygonImagePath(TestUtils.PolygonTestImages.kPolygons, false),
-            TestUtils.WPI2019Image.FOV);
-    var settings = new ColoredShapePipelineSettings();
-    settings.hsvHue.set(0, 100);
-    settings.hsvSaturation.set(100, 255);
-    settings.hsvValue.set(100, 255);
-    settings.outputShouldDraw = true;
-    settings.outputShowMultipleTargets = true;
-    settings.contourGroupingMode = ContourGroupingMode.Single;
-    settings.contourIntersection = ContourIntersectionDirection.Up;
-    settings.contourShape = ContourShape.Triangle;
-    settings.circleDetectThreshold = 10;
-    settings.accuracyPercentage = 30.0;
+    public static void main(String[] args) {
+        TestUtils.loadLibraries();
+        System.out.println(
+                TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_108in_Center, false));
+        var frameProvider =
+                new FileFrameProvider(
+                        TestUtils.getPolygonImagePath(TestUtils.PolygonTestImages.kPolygons, false),
+                        TestUtils.WPI2019Image.FOV);
+        var settings = new ColoredShapePipelineSettings();
+        settings.hsvHue.set(0, 100);
+        settings.hsvSaturation.set(100, 255);
+        settings.hsvValue.set(100, 255);
+        settings.outputShouldDraw = true;
+        settings.outputShowMultipleTargets = true;
+        settings.contourGroupingMode = ContourGroupingMode.Single;
+        settings.contourIntersection = ContourIntersectionDirection.Up;
+        settings.contourShape = ContourShape.Triangle;
+        settings.circleDetectThreshold = 10;
+        settings.accuracyPercentage = 30.0;
 
-    ColoredShapePipeline pipeline = new ColoredShapePipeline();
-    testTriangleDetection(pipeline, settings, frameProvider.get());
-    testQuadrilateralDetection(pipeline, settings, frameProvider.get());
-    testCustomShapeDetection(pipeline, settings, frameProvider.get());
-    //        testCircleShapeDetection(pipeline, settings, frameProvider.get());
-    //        testPowercellDetection(settings, pipeline);
-  }
+        ColoredShapePipeline pipeline = new ColoredShapePipeline();
+        testTriangleDetection(pipeline, settings, frameProvider.get());
+        testQuadrilateralDetection(pipeline, settings, frameProvider.get());
+        testCustomShapeDetection(pipeline, settings, frameProvider.get());
+        //        testCircleShapeDetection(pipeline, settings, frameProvider.get());
+        //        testPowercellDetection(settings, pipeline);
+    }
 
-  private static void printTestResults(CVPipelineResult pipelineResult) {
-    double fps = 1000 / pipelineResult.getLatencyMillis();
-    System.out.print(
-        "Pipeline ran in " + pipelineResult.getLatencyMillis() + "ms (" + fps + " fps), ");
-    System.out.println("Found " + pipelineResult.targets.size() + " valid targets");
-  }
+    private static void printTestResults(CVPipelineResult pipelineResult) {
+        double fps = 1000 / pipelineResult.getLatencyMillis();
+        System.out.print(
+                "Pipeline ran in " + pipelineResult.getLatencyMillis() + "ms (" + fps + " fps), ");
+        System.out.println("Found " + pipelineResult.targets.size() + " valid targets");
+    }
 }

@@ -42,63 +42,63 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 
 public class ApriltagWorkbenchTest {
-  @BeforeAll
-  public static void setUp() {
-    JNIWrapper.Helper.setExtractOnStaticLoad(false);
-    WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
-    NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
-    WPINetJNI.Helper.setExtractOnStaticLoad(false);
-    CameraServerCvJNI.Helper.setExtractOnStaticLoad(false);
+    @BeforeAll
+    public static void setUp() {
+        JNIWrapper.Helper.setExtractOnStaticLoad(false);
+        WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
+        NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
+        WPINetJNI.Helper.setExtractOnStaticLoad(false);
+        CameraServerCvJNI.Helper.setExtractOnStaticLoad(false);
 
-    try {
-      CombinedRuntimeLoader.loadLibraries(
-          ApriltagWorkbenchTest.class,
-          "wpiutiljni",
-          "ntcorejni",
-          "wpinetjni",
-          "wpiHaljni",
-          "cscorejnicvstatic");
-    } catch (Exception e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+        try {
+            CombinedRuntimeLoader.loadLibraries(
+                    ApriltagWorkbenchTest.class,
+                    "wpiutiljni",
+                    "ntcorejni",
+                    "wpinetjni",
+                    "wpiHaljni",
+                    "cscorejnicvstatic");
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        // No version check for testing
+        PhotonCamera.setVersionCheckEnabled(false);
     }
 
-    // No version check for testing
-    PhotonCamera.setVersionCheckEnabled(false);
-  }
+    // @Test
+    public void testMeme() throws IOException, InterruptedException {
+        NetworkTableInstance instance = NetworkTableInstance.getDefault();
+        instance.stopServer();
+        // set the NT server if simulating this code.
+        // "localhost" for photon on desktop, or "photonvision.local" / "[ip-address]"
+        // for coprocessor
+        instance.setServer("localhost");
+        instance.startClient4("myRobot");
 
-  // @Test
-  public void testMeme() throws IOException, InterruptedException {
-    NetworkTableInstance instance = NetworkTableInstance.getDefault();
-    instance.stopServer();
-    // set the NT server if simulating this code.
-    // "localhost" for photon on desktop, or "photonvision.local" / "[ip-address]"
-    // for coprocessor
-    instance.setServer("localhost");
-    instance.startClient4("myRobot");
+        var robotToCamera = new Transform3d();
+        var cam = new PhotonCamera("WPI2023");
+        var tagLayout =
+                AprilTagFieldLayout.loadFromResource(AprilTagFields.k2023ChargedUp.m_resourceFile);
 
-    var robotToCamera = new Transform3d();
-    var cam = new PhotonCamera("WPI2023");
-    var tagLayout =
-        AprilTagFieldLayout.loadFromResource(AprilTagFields.k2023ChargedUp.m_resourceFile);
+        var pe =
+                new PhotonPoseEstimator(
+                        tagLayout,
+                        PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+                        cam,
+                        robotToCamera);
 
-    var pe =
-        new PhotonPoseEstimator(
-            tagLayout,
-            PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-            cam,
-            robotToCamera);
+        var field = new Field2d();
+        SmartDashboard.putData(field);
 
-    var field = new Field2d();
-    SmartDashboard.putData(field);
+        while (!Thread.interrupted()) {
+            Thread.sleep(500);
 
-    while (!Thread.interrupted()) {
-      Thread.sleep(500);
+            var ret = pe.update();
+            System.out.println(ret);
 
-      var ret = pe.update();
-      System.out.println(ret);
-
-      field.setRobotPose(ret.get().estimatedPose.toPose2d());
+            field.setRobotPose(ret.get().estimatedPose.toPose2d());
+        }
     }
-  }
 }

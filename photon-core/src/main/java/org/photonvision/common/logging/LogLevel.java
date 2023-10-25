@@ -18,17 +18,17 @@
 package org.photonvision.common.logging;
 
 public enum LogLevel {
-  ERROR(0, Logger.ANSI_RED),
-  WARN(1, Logger.ANSI_YELLOW),
-  INFO(2, Logger.ANSI_GREEN),
-  DEBUG(3, Logger.ANSI_WHITE),
-  TRACE(4, Logger.ANSI_CYAN);
+    ERROR(0, Logger.ANSI_RED),
+    WARN(1, Logger.ANSI_YELLOW),
+    INFO(2, Logger.ANSI_GREEN),
+    DEBUG(3, Logger.ANSI_WHITE),
+    TRACE(4, Logger.ANSI_CYAN);
 
-  public final String colorCode;
-  public final int code;
+    public final String colorCode;
+    public final int code;
 
-  LogLevel(int code, String colorCode) {
-    this.code = code;
-    this.colorCode = colorCode;
-  }
+    LogLevel(int code, String colorCode) {
+        this.code = code;
+        this.colorCode = colorCode;
+    }
 }

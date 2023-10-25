@@ -22,36 +22,36 @@ import org.opencv.objdetect.ArucoDetector;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 
 public class ArucoDetectionPipeParams {
-  public ArucoDetector detectorParams;
-  public final CameraCalibrationCoefficients cameraCalibrationCoefficients;
+    public ArucoDetector detectorParams;
+    public final CameraCalibrationCoefficients cameraCalibrationCoefficients;
 
-  public ArucoDetectionPipeParams(
-      ArucoDetector detector, CameraCalibrationCoefficients cameraCalibrationCoefficients) {
-    this.detectorParams = detector;
-    this.cameraCalibrationCoefficients = cameraCalibrationCoefficients;
-  }
+    public ArucoDetectionPipeParams(
+            ArucoDetector detector, CameraCalibrationCoefficients cameraCalibrationCoefficients) {
+        this.detectorParams = detector;
+        this.cameraCalibrationCoefficients = cameraCalibrationCoefficients;
+    }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    ArucoDetectionPipeParams that = (ArucoDetectionPipeParams) o;
-    return Objects.equals(detectorParams, that.detectorParams)
-        && Objects.equals(cameraCalibrationCoefficients, that.cameraCalibrationCoefficients);
-  }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ArucoDetectionPipeParams that = (ArucoDetectionPipeParams) o;
+        return Objects.equals(detectorParams, that.detectorParams)
+                && Objects.equals(cameraCalibrationCoefficients, that.cameraCalibrationCoefficients);
+    }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(detectorParams, cameraCalibrationCoefficients);
-  }
+    @Override
+    public int hashCode() {
+        return Objects.hash(detectorParams, cameraCalibrationCoefficients);
+    }
 
-  @Override
-  public String toString() {
-    return "ArucoDetectionPipeParams{"
-        + "detectorParams="
-        + detectorParams
-        + ", cameraCalibrationCoefficients="
-        + cameraCalibrationCoefficients
-        + '}';
-  }
+    @Override
+    public String toString() {
+        return "ArucoDetectionPipeParams{"
+                + "detectorParams="
+                + detectorParams
+                + ", cameraCalibrationCoefficients="
+                + cameraCalibrationCoefficients
+                + '}';
+    }
 }

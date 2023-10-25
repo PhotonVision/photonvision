@@ -26,23 +26,23 @@ import org.photonvision.vision.pipe.MutatingPipe;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class DrawCornerDetectionPipe
-    extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, DrawCornerDetectionPipe.DrawCornerParams> {
-  @Override
-  protected Void process(Pair<Mat, List<TrackedTarget>> in) {
-    Mat image = in.getLeft();
+        extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, DrawCornerDetectionPipe.DrawCornerParams> {
+    @Override
+    protected Void process(Pair<Mat, List<TrackedTarget>> in) {
+        Mat image = in.getLeft();
 
-    for (var target : in.getRight()) {
-      var corners = target.getTargetCorners();
-      for (var corner : corners) {
-        Imgproc.circle(image, corner, params.dotRadius, params.dotColor);
-      }
+        for (var target : in.getRight()) {
+            var corners = target.getTargetCorners();
+            for (var corner : corners) {
+                Imgproc.circle(image, corner, params.dotRadius, params.dotColor);
+            }
+        }
+
+        return null;
     }
 
-    return null;
-  }
-
-  public static class DrawCornerParams {
-    int dotRadius;
-    Scalar dotColor;
-  }
+    public static class DrawCornerParams {
+        int dotRadius;
+        Scalar dotColor;
+    }
 }

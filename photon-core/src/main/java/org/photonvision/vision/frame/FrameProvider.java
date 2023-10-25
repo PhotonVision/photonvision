@@ -22,17 +22,17 @@ import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.pipe.impl.HSVPipe;
 
 public interface FrameProvider extends Supplier<Frame> {
-  String getName();
+    String getName();
 
-  /** Ask the camera to produce a certain kind of processed image (e.g. HSV or greyscale) */
-  void requestFrameThresholdType(FrameThresholdType type);
+    /** Ask the camera to produce a certain kind of processed image (e.g. HSV or greyscale) */
+    void requestFrameThresholdType(FrameThresholdType type);
 
-  /** Ask the camera to rotate frames it outputs */
-  void requestFrameRotation(ImageRotationMode rotationMode);
+    /** Ask the camera to rotate frames it outputs */
+    void requestFrameRotation(ImageRotationMode rotationMode);
 
-  /** Ask the camera to provide either the input, output, or both frames. */
-  void requestFrameCopies(boolean copyInput, boolean copyOutput);
+    /** Ask the camera to provide either the input, output, or both frames. */
+    void requestFrameCopies(boolean copyInput, boolean copyOutput);
 
-  /** Ask the camera to rotate frames it outputs */
-  void requestHsvSettings(HSVPipe.HSVParams params);
+    /** Ask the camera to rotate frames it outputs */
+    void requestHsvSettings(HSVPipe.HSVParams params);
 }

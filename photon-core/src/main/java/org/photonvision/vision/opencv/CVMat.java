@@ -23,80 +23,80 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public class CVMat implements Releasable {
-  private static final Logger logger = new Logger(CVMat.class, LogGroup.General);
+    private static final Logger logger = new Logger(CVMat.class, LogGroup.General);
 
-  private static int allMatCounter = 0;
-  private static final HashMap<Mat, Integer> allMats = new HashMap<>();
+    private static int allMatCounter = 0;
+    private static final HashMap<Mat, Integer> allMats = new HashMap<>();
 
-  private static boolean shouldPrint;
+    private static boolean shouldPrint;
 
-  private final Mat mat;
+    private final Mat mat;
 
-  public CVMat() {
-    this(new Mat());
-  }
-
-  public void copyTo(CVMat srcMat) {
-    copyTo(srcMat.getMat());
-  }
-
-  public void copyTo(Mat srcMat) {
-    srcMat.copyTo(mat);
-  }
-
-  private StringBuilder getStackTraceBuilder() {
-    var trace = Thread.currentThread().getStackTrace();
-
-    final int STACK_FRAMES_TO_SKIP = 3;
-    final var traceStr = new StringBuilder();
-    for (int idx = STACK_FRAMES_TO_SKIP; idx < trace.length; idx++) {
-      traceStr.append("\t\n").append(trace[idx]);
+    public CVMat() {
+        this(new Mat());
     }
-    traceStr.append("\n");
-    return traceStr;
-  }
 
-  public CVMat(Mat mat) {
-    this.mat = mat;
-    allMatCounter++;
-    allMats.put(mat, allMatCounter);
-
-    if (shouldPrint) {
-      logger.trace(() -> "CVMat" + allMatCounter + " alloc - new count: " + allMats.size());
-      logger.trace(getStackTraceBuilder()::toString);
+    public void copyTo(CVMat srcMat) {
+        copyTo(srcMat.getMat());
     }
-  }
 
-  @Override
-  public void release() {
-    // If this mat is empty, all we can do is return
-    if (mat.empty()) return;
-
-    // If the mat isn't in the hashmap, we can't remove it
-    Integer matNo = allMats.get(mat);
-    if (matNo != null) allMats.remove(mat);
-    mat.release();
-
-    if (shouldPrint) {
-      logger.trace(() -> "CVMat" + matNo + " de-alloc - new count: " + allMats.size());
-      logger.trace(getStackTraceBuilder()::toString);
+    public void copyTo(Mat srcMat) {
+        srcMat.copyTo(mat);
     }
-  }
 
-  public Mat getMat() {
-    return mat;
-  }
+    private StringBuilder getStackTraceBuilder() {
+        var trace = Thread.currentThread().getStackTrace();
 
-  @Override
-  public String toString() {
-    return "CVMat{" + mat.toString() + '}';
-  }
+        final int STACK_FRAMES_TO_SKIP = 3;
+        final var traceStr = new StringBuilder();
+        for (int idx = STACK_FRAMES_TO_SKIP; idx < trace.length; idx++) {
+            traceStr.append("\t\n").append(trace[idx]);
+        }
+        traceStr.append("\n");
+        return traceStr;
+    }
 
-  public static int getMatCount() {
-    return allMats.size();
-  }
+    public CVMat(Mat mat) {
+        this.mat = mat;
+        allMatCounter++;
+        allMats.put(mat, allMatCounter);
 
-  public static void enablePrint(boolean enabled) {
-    shouldPrint = enabled;
-  }
+        if (shouldPrint) {
+            logger.trace(() -> "CVMat" + allMatCounter + " alloc - new count: " + allMats.size());
+            logger.trace(getStackTraceBuilder()::toString);
+        }
+    }
+
+    @Override
+    public void release() {
+        // If this mat is empty, all we can do is return
+        if (mat.empty()) return;
+
+        // If the mat isn't in the hashmap, we can't remove it
+        Integer matNo = allMats.get(mat);
+        if (matNo != null) allMats.remove(mat);
+        mat.release();
+
+        if (shouldPrint) {
+            logger.trace(() -> "CVMat" + matNo + " de-alloc - new count: " + allMats.size());
+            logger.trace(getStackTraceBuilder()::toString);
+        }
+    }
+
+    public Mat getMat() {
+        return mat;
+    }
+
+    @Override
+    public String toString() {
+        return "CVMat{" + mat.toString() + '}';
+    }
+
+    public static int getMatCount() {
+        return allMats.size();
+    }
+
+    public static void enablePrint(boolean enabled) {
+        shouldPrint = enabled;
+    }
 }

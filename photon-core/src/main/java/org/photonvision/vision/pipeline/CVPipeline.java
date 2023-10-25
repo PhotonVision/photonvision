@@ -24,55 +24,55 @@ import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelineSettings> {
-  protected S settings;
-  protected FrameStaticProperties frameStaticProperties;
-  protected QuirkyCamera cameraQuirks;
+    protected S settings;
+    protected FrameStaticProperties frameStaticProperties;
+    protected QuirkyCamera cameraQuirks;
 
-  private final FrameThresholdType thresholdType;
+    private final FrameThresholdType thresholdType;
 
-  public CVPipeline(FrameThresholdType thresholdType) {
-    this.thresholdType = thresholdType;
-  }
-
-  public FrameThresholdType getThresholdType() {
-    return thresholdType;
-  }
-
-  protected void setPipeParams(
-      FrameStaticProperties frameStaticProperties, S settings, QuirkyCamera cameraQuirks) {
-    this.settings = settings;
-    this.frameStaticProperties = frameStaticProperties;
-    this.cameraQuirks = cameraQuirks;
-
-    setPipeParamsImpl();
-  }
-
-  protected abstract void setPipeParamsImpl();
-
-  protected abstract R process(Frame frame, S settings);
-
-  public S getSettings() {
-    return settings;
-  }
-
-  public void setSettings(S s) {
-    this.settings = s;
-  }
-
-  public R run(Frame frame, QuirkyCamera cameraQuirks) {
-    if (settings == null) {
-      throw new RuntimeException("No settings provided for pipeline!");
+    public CVPipeline(FrameThresholdType thresholdType) {
+        this.thresholdType = thresholdType;
     }
-    setPipeParams(frame.frameStaticProperties, settings, cameraQuirks);
 
-    // if (frame.image.getMat().empty()) {
-    //     //noinspection unchecked
-    //     return (R) new CVPipelineResult(0, 0, List.of(), frame);
-    // }
-    R result = process(frame, settings);
+    public FrameThresholdType getThresholdType() {
+        return thresholdType;
+    }
 
-    result.setImageCaptureTimestampNanos(frame.timestampNanos);
+    protected void setPipeParams(
+            FrameStaticProperties frameStaticProperties, S settings, QuirkyCamera cameraQuirks) {
+        this.settings = settings;
+        this.frameStaticProperties = frameStaticProperties;
+        this.cameraQuirks = cameraQuirks;
 
-    return result;
-  }
+        setPipeParamsImpl();
+    }
+
+    protected abstract void setPipeParamsImpl();
+
+    protected abstract R process(Frame frame, S settings);
+
+    public S getSettings() {
+        return settings;
+    }
+
+    public void setSettings(S s) {
+        this.settings = s;
+    }
+
+    public R run(Frame frame, QuirkyCamera cameraQuirks) {
+        if (settings == null) {
+            throw new RuntimeException("No settings provided for pipeline!");
+        }
+        setPipeParams(frame.frameStaticProperties, settings, cameraQuirks);
+
+        // if (frame.image.getMat().empty()) {
+        //     //noinspection unchecked
+        //     return (R) new CVPipelineResult(0, 0, List.of(), frame);
+        // }
+        R result = process(frame, settings);
+
+        result.setImageCaptureTimestampNanos(frame.timestampNanos);
+
+        return result;
+    }
 }

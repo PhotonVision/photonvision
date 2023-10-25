@@ -48,169 +48,169 @@ import org.photonvision.vision.pipe.impl.SolvePNPPipe;
  * <p>AprilTag models are currently only used for drawing on the output stream.
  */
 public enum TargetModel implements Releasable {
-  k2016HighGoal(
-      List.of(
-          new Point3(Units.inchesToMeters(10), Units.inchesToMeters(6), 0),
-          new Point3(Units.inchesToMeters(-10), Units.inchesToMeters(6), 0),
-          new Point3(Units.inchesToMeters(-10), Units.inchesToMeters(-6), 0),
-          new Point3(Units.inchesToMeters(10), Units.inchesToMeters(-6), 0)),
-      Units.inchesToMeters(6)),
-  k2019DualTarget(
-      List.of(
-          new Point3(Units.inchesToMeters(7.313), Units.inchesToMeters(2.662), 0),
-          new Point3(Units.inchesToMeters(-7.313), Units.inchesToMeters(2.662), 0),
-          new Point3(Units.inchesToMeters(-5.936), Units.inchesToMeters(-2.662), 0),
-          new Point3(Units.inchesToMeters(5.936), Units.inchesToMeters(-2.662), 0)),
-      0.1),
-  k2020HighGoalOuter(
-      List.of(
-          new Point3(Units.inchesToMeters(9.819867), Units.inchesToMeters(8.5), 0),
-          new Point3(Units.inchesToMeters(-9.819867), Units.inchesToMeters(8.5), 0),
-          new Point3(Units.inchesToMeters(-19.625), Units.inchesToMeters(-8.5), 0),
-          new Point3(Units.inchesToMeters(19.625), Units.inchesToMeters(-8.5), 0)),
-      Units.inchesToMeters(12)),
-  kCircularPowerCell7in(
-      List.of(
-          new Point3(
-              -Units.inchesToMeters(7) / 2,
-              -Units.inchesToMeters(7) / 2,
-              -Units.inchesToMeters(7) / 2),
-          new Point3(
-              -Units.inchesToMeters(7) / 2,
-              Units.inchesToMeters(7) / 2,
-              -Units.inchesToMeters(7) / 2),
-          new Point3(
-              Units.inchesToMeters(7) / 2,
-              Units.inchesToMeters(7) / 2,
-              -Units.inchesToMeters(7) / 2),
-          new Point3(
-              Units.inchesToMeters(7) / 2,
-              -Units.inchesToMeters(7) / 2,
-              -Units.inchesToMeters(7) / 2)),
-      0),
-  k2022CircularCargoBall(
-      List.of(
-          new Point3(
-              -Units.inchesToMeters(9.5) / 2,
-              -Units.inchesToMeters(9.5) / 2,
-              -Units.inchesToMeters(9.5) / 2),
-          new Point3(
-              -Units.inchesToMeters(9.5) / 2,
-              Units.inchesToMeters(9.5) / 2,
-              -Units.inchesToMeters(9.5) / 2),
-          new Point3(
-              Units.inchesToMeters(9.5) / 2,
-              Units.inchesToMeters(9.5) / 2,
-              -Units.inchesToMeters(9.5) / 2),
-          new Point3(
-              Units.inchesToMeters(9.5) / 2,
-              -Units.inchesToMeters(9.5) / 2,
-              -Units.inchesToMeters(9.5) / 2)),
-      0),
-  k200mmAprilTag( // Corners of the tag's inner black square (excluding white border)
-      List.of(
-          new Point3(Units.inchesToMeters(3.25), Units.inchesToMeters(3.25), 0),
-          new Point3(-Units.inchesToMeters(3.25), Units.inchesToMeters(3.25), 0),
-          new Point3(-Units.inchesToMeters(3.25), -Units.inchesToMeters(3.25), 0),
-          new Point3(Units.inchesToMeters(3.25), -Units.inchesToMeters(3.25), 0)),
-      Units.inchesToMeters(3.25 * 2)),
-  kAruco6in_16h5( // Corners of the tag's inner black square (excluding white border)
-      List.of(
-          new Point3(Units.inchesToMeters(3), Units.inchesToMeters(3), 0),
-          new Point3(Units.inchesToMeters(3), -Units.inchesToMeters(3), 0),
-          new Point3(-Units.inchesToMeters(3), -Units.inchesToMeters(3), 0),
-          new Point3(Units.inchesToMeters(3), -Units.inchesToMeters(3), 0)),
-      Units.inchesToMeters(3 * 2)),
-  k6in_16h5( // Corners of the tag's inner black square (excluding white border)
-      List.of(
-          new Point3(Units.inchesToMeters(3), Units.inchesToMeters(3), 0),
-          new Point3(-Units.inchesToMeters(3), Units.inchesToMeters(3), 0),
-          new Point3(-Units.inchesToMeters(3), -Units.inchesToMeters(3), 0),
-          new Point3(Units.inchesToMeters(3), -Units.inchesToMeters(3), 0)),
-      Units.inchesToMeters(3 * 2));
+    k2016HighGoal(
+            List.of(
+                    new Point3(Units.inchesToMeters(10), Units.inchesToMeters(6), 0),
+                    new Point3(Units.inchesToMeters(-10), Units.inchesToMeters(6), 0),
+                    new Point3(Units.inchesToMeters(-10), Units.inchesToMeters(-6), 0),
+                    new Point3(Units.inchesToMeters(10), Units.inchesToMeters(-6), 0)),
+            Units.inchesToMeters(6)),
+    k2019DualTarget(
+            List.of(
+                    new Point3(Units.inchesToMeters(7.313), Units.inchesToMeters(2.662), 0),
+                    new Point3(Units.inchesToMeters(-7.313), Units.inchesToMeters(2.662), 0),
+                    new Point3(Units.inchesToMeters(-5.936), Units.inchesToMeters(-2.662), 0),
+                    new Point3(Units.inchesToMeters(5.936), Units.inchesToMeters(-2.662), 0)),
+            0.1),
+    k2020HighGoalOuter(
+            List.of(
+                    new Point3(Units.inchesToMeters(9.819867), Units.inchesToMeters(8.5), 0),
+                    new Point3(Units.inchesToMeters(-9.819867), Units.inchesToMeters(8.5), 0),
+                    new Point3(Units.inchesToMeters(-19.625), Units.inchesToMeters(-8.5), 0),
+                    new Point3(Units.inchesToMeters(19.625), Units.inchesToMeters(-8.5), 0)),
+            Units.inchesToMeters(12)),
+    kCircularPowerCell7in(
+            List.of(
+                    new Point3(
+                            -Units.inchesToMeters(7) / 2,
+                            -Units.inchesToMeters(7) / 2,
+                            -Units.inchesToMeters(7) / 2),
+                    new Point3(
+                            -Units.inchesToMeters(7) / 2,
+                            Units.inchesToMeters(7) / 2,
+                            -Units.inchesToMeters(7) / 2),
+                    new Point3(
+                            Units.inchesToMeters(7) / 2,
+                            Units.inchesToMeters(7) / 2,
+                            -Units.inchesToMeters(7) / 2),
+                    new Point3(
+                            Units.inchesToMeters(7) / 2,
+                            -Units.inchesToMeters(7) / 2,
+                            -Units.inchesToMeters(7) / 2)),
+            0),
+    k2022CircularCargoBall(
+            List.of(
+                    new Point3(
+                            -Units.inchesToMeters(9.5) / 2,
+                            -Units.inchesToMeters(9.5) / 2,
+                            -Units.inchesToMeters(9.5) / 2),
+                    new Point3(
+                            -Units.inchesToMeters(9.5) / 2,
+                            Units.inchesToMeters(9.5) / 2,
+                            -Units.inchesToMeters(9.5) / 2),
+                    new Point3(
+                            Units.inchesToMeters(9.5) / 2,
+                            Units.inchesToMeters(9.5) / 2,
+                            -Units.inchesToMeters(9.5) / 2),
+                    new Point3(
+                            Units.inchesToMeters(9.5) / 2,
+                            -Units.inchesToMeters(9.5) / 2,
+                            -Units.inchesToMeters(9.5) / 2)),
+            0),
+    k200mmAprilTag( // Corners of the tag's inner black square (excluding white border)
+            List.of(
+                    new Point3(Units.inchesToMeters(3.25), Units.inchesToMeters(3.25), 0),
+                    new Point3(-Units.inchesToMeters(3.25), Units.inchesToMeters(3.25), 0),
+                    new Point3(-Units.inchesToMeters(3.25), -Units.inchesToMeters(3.25), 0),
+                    new Point3(Units.inchesToMeters(3.25), -Units.inchesToMeters(3.25), 0)),
+            Units.inchesToMeters(3.25 * 2)),
+    kAruco6in_16h5( // Corners of the tag's inner black square (excluding white border)
+            List.of(
+                    new Point3(Units.inchesToMeters(3), Units.inchesToMeters(3), 0),
+                    new Point3(Units.inchesToMeters(3), -Units.inchesToMeters(3), 0),
+                    new Point3(-Units.inchesToMeters(3), -Units.inchesToMeters(3), 0),
+                    new Point3(Units.inchesToMeters(3), -Units.inchesToMeters(3), 0)),
+            Units.inchesToMeters(3 * 2)),
+    k6in_16h5( // Corners of the tag's inner black square (excluding white border)
+            List.of(
+                    new Point3(Units.inchesToMeters(3), Units.inchesToMeters(3), 0),
+                    new Point3(-Units.inchesToMeters(3), Units.inchesToMeters(3), 0),
+                    new Point3(-Units.inchesToMeters(3), -Units.inchesToMeters(3), 0),
+                    new Point3(Units.inchesToMeters(3), -Units.inchesToMeters(3), 0)),
+            Units.inchesToMeters(3 * 2));
 
-  @JsonIgnore private MatOfPoint3f realWorldTargetCoordinates;
-  @JsonIgnore private final MatOfPoint3f visualizationBoxBottom = new MatOfPoint3f();
-  @JsonIgnore private final MatOfPoint3f visualizationBoxTop = new MatOfPoint3f();
+    @JsonIgnore private MatOfPoint3f realWorldTargetCoordinates;
+    @JsonIgnore private final MatOfPoint3f visualizationBoxBottom = new MatOfPoint3f();
+    @JsonIgnore private final MatOfPoint3f visualizationBoxTop = new MatOfPoint3f();
 
-  @JsonProperty("realWorldCoordinatesArray")
-  private List<Point3> realWorldCoordinatesArray;
+    @JsonProperty("realWorldCoordinatesArray")
+    private List<Point3> realWorldCoordinatesArray;
 
-  @JsonProperty("boxHeight")
-  private double boxHeight;
+    @JsonProperty("boxHeight")
+    private double boxHeight;
 
-  TargetModel() {}
+    TargetModel() {}
 
-  TargetModel(MatOfPoint3f realWorldTargetCoordinates, double boxHeight) {
-    this.realWorldTargetCoordinates = realWorldTargetCoordinates;
-    this.realWorldCoordinatesArray = realWorldTargetCoordinates.toList();
-    this.boxHeight = boxHeight;
+    TargetModel(MatOfPoint3f realWorldTargetCoordinates, double boxHeight) {
+        this.realWorldTargetCoordinates = realWorldTargetCoordinates;
+        this.realWorldCoordinatesArray = realWorldTargetCoordinates.toList();
+        this.boxHeight = boxHeight;
 
-    var bottomList = realWorldTargetCoordinates.toList();
-    var topList = new ArrayList<Point3>();
-    for (var c : bottomList) {
-      topList.add(new Point3(c.x, c.y, c.z + boxHeight));
+        var bottomList = realWorldTargetCoordinates.toList();
+        var topList = new ArrayList<Point3>();
+        for (var c : bottomList) {
+            topList.add(new Point3(c.x, c.y, c.z + boxHeight));
+        }
+
+        this.visualizationBoxBottom.fromList(bottomList);
+        this.visualizationBoxTop.fromList(topList);
     }
 
-    this.visualizationBoxBottom.fromList(bottomList);
-    this.visualizationBoxTop.fromList(topList);
-  }
+    @JsonCreator
+    TargetModel(
+            @JsonProperty(value = "realWorldCoordinatesArray") List<Point3> points,
+            @JsonProperty(value = "boxHeight") double boxHeight) {
+        this(listToMat(points), boxHeight);
+    }
 
-  @JsonCreator
-  TargetModel(
-      @JsonProperty(value = "realWorldCoordinatesArray") List<Point3> points,
-      @JsonProperty(value = "boxHeight") double boxHeight) {
-    this(listToMat(points), boxHeight);
-  }
+    public List<Point3> getRealWorldCoordinatesArray() {
+        return this.realWorldCoordinatesArray;
+    }
 
-  public List<Point3> getRealWorldCoordinatesArray() {
-    return this.realWorldCoordinatesArray;
-  }
+    public double getBoxHeight() {
+        return boxHeight;
+    }
 
-  public double getBoxHeight() {
-    return boxHeight;
-  }
+    public void setRealWorldCoordinatesArray(List<Point3> realWorldCoordinatesArray) {
+        this.realWorldCoordinatesArray = realWorldCoordinatesArray;
+    }
 
-  public void setRealWorldCoordinatesArray(List<Point3> realWorldCoordinatesArray) {
-    this.realWorldCoordinatesArray = realWorldCoordinatesArray;
-  }
+    public void setBoxHeight(double boxHeight) {
+        this.boxHeight = boxHeight;
+    }
 
-  public void setBoxHeight(double boxHeight) {
-    this.boxHeight = boxHeight;
-  }
+    private static MatOfPoint3f listToMat(List<Point3> points) {
+        var mat = new MatOfPoint3f();
+        mat.fromList(points);
+        return mat;
+    }
 
-  private static MatOfPoint3f listToMat(List<Point3> points) {
-    var mat = new MatOfPoint3f();
-    mat.fromList(points);
-    return mat;
-  }
+    public MatOfPoint3f getRealWorldTargetCoordinates() {
+        return realWorldTargetCoordinates;
+    }
 
-  public MatOfPoint3f getRealWorldTargetCoordinates() {
-    return realWorldTargetCoordinates;
-  }
+    public MatOfPoint3f getVisualizationBoxBottom() {
+        return visualizationBoxBottom;
+    }
 
-  public MatOfPoint3f getVisualizationBoxBottom() {
-    return visualizationBoxBottom;
-  }
+    public MatOfPoint3f getVisualizationBoxTop() {
+        return visualizationBoxTop;
+    }
 
-  public MatOfPoint3f getVisualizationBoxTop() {
-    return visualizationBoxTop;
-  }
+    //    public static TargetModel getCircleTarget(double Units.inchesToMeters(7)) {
+    //        var corners =
+    //            List.of(
+    //                new Point3(-Units.inchesToMeters(7) / 2, -radius / 2, -radius / 2),
+    //                new Point3(-Units.inchesToMeters(7) / 2, radius / 2, -radius / 2),
+    //                new Point3(Units.inchesToMeters(7) / 2, radius / 2, -radius / 2),
+    //                new Point3(Units.inchesToMeters(7) / 2, -radius / 2, -radius / 2));
+    //        return new TargetModel(corners, 0);
+    //    }
 
-  //    public static TargetModel getCircleTarget(double Units.inchesToMeters(7)) {
-  //        var corners =
-  //            List.of(
-  //                new Point3(-Units.inchesToMeters(7) / 2, -radius / 2, -radius / 2),
-  //                new Point3(-Units.inchesToMeters(7) / 2, radius / 2, -radius / 2),
-  //                new Point3(Units.inchesToMeters(7) / 2, radius / 2, -radius / 2),
-  //                new Point3(Units.inchesToMeters(7) / 2, -radius / 2, -radius / 2));
-  //        return new TargetModel(corners, 0);
-  //    }
-
-  @Override
-  public void release() {
-    realWorldTargetCoordinates.release();
-    visualizationBoxBottom.release();
-    visualizationBoxTop.release();
-  }
+    @Override
+    public void release() {
+        realWorldTargetCoordinates.release();
+        visualizationBoxBottom.release();
+        visualizationBoxTop.release();
+    }
 }

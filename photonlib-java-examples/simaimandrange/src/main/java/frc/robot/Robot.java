@@ -44,82 +44,82 @@ import org.photonvision.PhotonUtils;
  * project.
  */
 public class Robot extends TimedRobot {
-  // Change this to match the name of your camera
-  PhotonCamera camera = new PhotonCamera("photonvision");
+    // Change this to match the name of your camera
+    PhotonCamera camera = new PhotonCamera("photonvision");
 
-  // PID constants should be tuned per robot
-  PIDController forwardController = new PIDController(LINEAR_P, 0, LINEAR_D);
-  PIDController turnController = new PIDController(ANGULAR_P, 0, ANGULAR_D);
+    // PID constants should be tuned per robot
+    PIDController forwardController = new PIDController(LINEAR_P, 0, LINEAR_D);
+    PIDController turnController = new PIDController(ANGULAR_P, 0, ANGULAR_D);
 
-  XboxController xboxController = new XboxController(0);
+    XboxController xboxController = new XboxController(0);
 
-  // Drive motors
-  PWMVictorSPX leftMotor = new PWMVictorSPX(LEFT_MOTOR_CHANNEL);
-  PWMVictorSPX rightMotor = new PWMVictorSPX(RIGHT_MOTOR_CHANNEL);
-  DifferentialDrive drive = new DifferentialDrive(leftMotor, rightMotor);
+    // Drive motors
+    PWMVictorSPX leftMotor = new PWMVictorSPX(LEFT_MOTOR_CHANNEL);
+    PWMVictorSPX rightMotor = new PWMVictorSPX(RIGHT_MOTOR_CHANNEL);
+    DifferentialDrive drive = new DifferentialDrive(leftMotor, rightMotor);
 
-  @Override
-  public void robotInit() {
-    leftMotor.setInverted(false);
-    rightMotor.setInverted(true);
-  }
-
-  @Override
-  public void teleopPeriodic() {
-    double forwardSpeed;
-    double rotationSpeed;
-
-    if (xboxController.getAButton()) {
-      // Vision-alignment mode
-      // Query the latest result from PhotonVision
-      var result = camera.getLatestResult();
-
-      if (result.hasTargets()) {
-        // First calculate range
-        double range =
-            PhotonUtils.calculateDistanceToTargetMeters(
-                CAMERA_HEIGHT_METERS,
-                TARGET_POSE.getZ(),
-                CAMERA_PITCH_RADIANS,
-                Units.degreesToRadians(result.getBestTarget().getPitch()));
-
-        // Use this range as the measurement we give to the PID controller.
-        // (This forwardSpeed must be positive to go forward.)
-        forwardSpeed = -forwardController.calculate(range, GOAL_RANGE_METERS);
-
-        // Also calculate angular power
-        // (This rotationSpeed must be positive to turn counter-clockwise.)
-        rotationSpeed = -turnController.calculate(result.getBestTarget().getYaw(), 0);
-      } else {
-        // If we have no targets, stay still.
-        forwardSpeed = 0;
-        rotationSpeed = 0;
-      }
-    } else {
-      // Manual Driver Mode
-      forwardSpeed = -xboxController.getLeftY() * DRIVESPEED;
-      rotationSpeed = -xboxController.getRightX() * DRIVESPEED;
+    @Override
+    public void robotInit() {
+        leftMotor.setInverted(false);
+        rightMotor.setInverted(true);
     }
 
-    // Use our forward/turn speeds to control the drivetrain
-    drive.arcadeDrive(forwardSpeed, rotationSpeed);
-  }
+    @Override
+    public void teleopPeriodic() {
+        double forwardSpeed;
+        double rotationSpeed;
 
-  ////////////////////////////////////////////////////
-  // Simulation support
+        if (xboxController.getAButton()) {
+            // Vision-alignment mode
+            // Query the latest result from PhotonVision
+            var result = camera.getLatestResult();
 
-  DrivetrainSim dtSim;
-  VisionSim visionSim;
+            if (result.hasTargets()) {
+                // First calculate range
+                double range =
+                        PhotonUtils.calculateDistanceToTargetMeters(
+                                CAMERA_HEIGHT_METERS,
+                                TARGET_POSE.getZ(),
+                                CAMERA_PITCH_RADIANS,
+                                Units.degreesToRadians(result.getBestTarget().getPitch()));
 
-  @Override
-  public void simulationInit() {
-    dtSim = new DrivetrainSim(leftMotor, rightMotor);
-    visionSim = new VisionSim("main", camera);
-  }
+                // Use this range as the measurement we give to the PID controller.
+                // (This forwardSpeed must be positive to go forward.)
+                forwardSpeed = -forwardController.calculate(range, GOAL_RANGE_METERS);
 
-  @Override
-  public void simulationPeriodic() {
-    dtSim.update();
-    visionSim.update(dtSim.getPose());
-  }
+                // Also calculate angular power
+                // (This rotationSpeed must be positive to turn counter-clockwise.)
+                rotationSpeed = -turnController.calculate(result.getBestTarget().getYaw(), 0);
+            } else {
+                // If we have no targets, stay still.
+                forwardSpeed = 0;
+                rotationSpeed = 0;
+            }
+        } else {
+            // Manual Driver Mode
+            forwardSpeed = -xboxController.getLeftY() * DRIVESPEED;
+            rotationSpeed = -xboxController.getRightX() * DRIVESPEED;
+        }
+
+        // Use our forward/turn speeds to control the drivetrain
+        drive.arcadeDrive(forwardSpeed, rotationSpeed);
+    }
+
+    ////////////////////////////////////////////////////
+    // Simulation support
+
+    DrivetrainSim dtSim;
+    VisionSim visionSim;
+
+    @Override
+    public void simulationInit() {
+        dtSim = new DrivetrainSim(leftMotor, rightMotor);
+        visionSim = new VisionSim("main", camera);
+    }
+
+    @Override
+    public void simulationPeriodic() {
+        dtSim.update();
+        visionSim.update(dtSim.getPose());
+    }
 }

@@ -21,32 +21,32 @@ import edu.wpi.first.apriltag.AprilTagDetector;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 
 public class AprilTagDetectionPipeParams {
-  public final AprilTagFamily family;
-  public final AprilTagDetector.Config detectorParams;
+    public final AprilTagFamily family;
+    public final AprilTagDetector.Config detectorParams;
 
-  public AprilTagDetectionPipeParams(AprilTagFamily tagFamily, AprilTagDetector.Config config) {
-    this.family = tagFamily;
-    this.detectorParams = config;
-  }
+    public AprilTagDetectionPipeParams(AprilTagFamily tagFamily, AprilTagDetector.Config config) {
+        this.family = tagFamily;
+        this.detectorParams = config;
+    }
 
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((family == null) ? 0 : family.hashCode());
-    result = prime * result + ((detectorParams == null) ? 0 : detectorParams.hashCode());
-    return result;
-  }
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((family == null) ? 0 : family.hashCode());
+        result = prime * result + ((detectorParams == null) ? 0 : detectorParams.hashCode());
+        return result;
+    }
 
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) return true;
-    if (obj == null) return false;
-    if (getClass() != obj.getClass()) return false;
-    AprilTagDetectionPipeParams other = (AprilTagDetectionPipeParams) obj;
-    if (family != other.family) return false;
-    if (detectorParams == null) {
-      return other.detectorParams == null;
-    } else return detectorParams.equals(other.detectorParams);
-  }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        AprilTagDetectionPipeParams other = (AprilTagDetectionPipeParams) obj;
+        if (family != other.family) return false;
+        if (detectorParams == null) {
+            return other.detectorParams == null;
+        } else return detectorParams.equals(other.detectorParams);
+    }
 }

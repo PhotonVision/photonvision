@@ -22,22 +22,22 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class CalculateFPSPipe
-    extends CVPipe<Void, Integer, CalculateFPSPipe.CalculateFPSPipeParams> {
-  private final LinearFilter fpsFilter = LinearFilter.movingAverage(20);
-  StopWatch clock = new StopWatch();
+        extends CVPipe<Void, Integer, CalculateFPSPipe.CalculateFPSPipeParams> {
+    private final LinearFilter fpsFilter = LinearFilter.movingAverage(20);
+    StopWatch clock = new StopWatch();
 
-  @Override
-  protected Integer process(Void in) {
-    if (!clock.isStarted()) {
-      clock.reset();
-      clock.start();
+    @Override
+    protected Integer process(Void in) {
+        if (!clock.isStarted()) {
+            clock.reset();
+            clock.start();
+        }
+        clock.stop();
+        var fps = (int) fpsFilter.calculate(1000.0 / clock.getTime());
+        clock.reset();
+        clock.start();
+        return fps;
     }
-    clock.stop();
-    var fps = (int) fpsFilter.calculate(1000.0 / clock.getTime());
-    clock.reset();
-    clock.start();
-    return fps;
-  }
 
-  public static class CalculateFPSPipeParams {}
+    public static class CalculateFPSPipeParams {}
 }

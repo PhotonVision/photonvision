@@ -30,73 +30,73 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class PhotonUtilTest {
-  @Test
-  public void testDistance() {
-    var camHeight = 1;
-    var targetHeight = 3;
-    var camPitch = Units.degreesToRadians(0);
-    var targetPitch = Units.degreesToRadians(30);
+    @Test
+    public void testDistance() {
+        var camHeight = 1;
+        var targetHeight = 3;
+        var camPitch = Units.degreesToRadians(0);
+        var targetPitch = Units.degreesToRadians(30);
 
-    var dist =
-        PhotonUtils.calculateDistanceToTargetMeters(camHeight, targetHeight, camPitch, targetPitch);
+        var dist =
+                PhotonUtils.calculateDistanceToTargetMeters(camHeight, targetHeight, camPitch, targetPitch);
 
-    Assertions.assertEquals(3.464, dist, 0.01);
+        Assertions.assertEquals(3.464, dist, 0.01);
 
-    camHeight = 1;
-    targetHeight = 2;
-    camPitch = Units.degreesToRadians(20);
-    targetPitch = Units.degreesToRadians(-10);
+        camHeight = 1;
+        targetHeight = 2;
+        camPitch = Units.degreesToRadians(20);
+        targetPitch = Units.degreesToRadians(-10);
 
-    dist =
-        PhotonUtils.calculateDistanceToTargetMeters(camHeight, targetHeight, camPitch, targetPitch);
-    Assertions.assertEquals(5.671, dist, 0.01);
-  }
+        dist =
+                PhotonUtils.calculateDistanceToTargetMeters(camHeight, targetHeight, camPitch, targetPitch);
+        Assertions.assertEquals(5.671, dist, 0.01);
+    }
 
-  @Test
-  public void testTransform() {
-    var camHeight = 1;
-    var tgtHeight = 3;
-    var camPitch = 0;
-    var tgtPitch = Units.degreesToRadians(30);
-    var tgtYaw = new Rotation2d();
-    var gyroAngle = new Rotation2d();
-    var fieldToTarget = new Pose2d();
-    var cameraToRobot = new Transform2d();
+    @Test
+    public void testTransform() {
+        var camHeight = 1;
+        var tgtHeight = 3;
+        var camPitch = 0;
+        var tgtPitch = Units.degreesToRadians(30);
+        var tgtYaw = new Rotation2d();
+        var gyroAngle = new Rotation2d();
+        var fieldToTarget = new Pose2d();
+        var cameraToRobot = new Transform2d();
 
-    var fieldToRobot =
-        PhotonUtils.estimateFieldToRobot(
-            PhotonUtils.estimateCameraToTarget(
-                PhotonUtils.estimateCameraToTargetTranslation(
-                    PhotonUtils.calculateDistanceToTargetMeters(
-                        camHeight, tgtHeight, camPitch, tgtPitch),
-                    tgtYaw),
-                fieldToTarget,
-                gyroAngle),
-            fieldToTarget,
-            cameraToRobot);
+        var fieldToRobot =
+                PhotonUtils.estimateFieldToRobot(
+                        PhotonUtils.estimateCameraToTarget(
+                                PhotonUtils.estimateCameraToTargetTranslation(
+                                        PhotonUtils.calculateDistanceToTargetMeters(
+                                                camHeight, tgtHeight, camPitch, tgtPitch),
+                                        tgtYaw),
+                                fieldToTarget,
+                                gyroAngle),
+                        fieldToTarget,
+                        cameraToRobot);
 
-    Assertions.assertEquals(-3.464, fieldToRobot.getX(), 0.1);
-    Assertions.assertEquals(0, fieldToRobot.getY(), 0.1);
-    Assertions.assertEquals(0, fieldToRobot.getRotation().getDegrees(), 0.1);
-  }
+        Assertions.assertEquals(-3.464, fieldToRobot.getX(), 0.1);
+        Assertions.assertEquals(0, fieldToRobot.getY(), 0.1);
+        Assertions.assertEquals(0, fieldToRobot.getRotation().getDegrees(), 0.1);
+    }
 
-  @Test
-  public void testAprilTagUtils() {
-    var cameraToTarget = new Transform3d(new Translation3d(1, 0, 0), new Rotation3d());
-    var tagPose = new Pose3d(5, 0, 0, new Rotation3d());
-    var cameraToRobot = new Transform3d();
+    @Test
+    public void testAprilTagUtils() {
+        var cameraToTarget = new Transform3d(new Translation3d(1, 0, 0), new Rotation3d());
+        var tagPose = new Pose3d(5, 0, 0, new Rotation3d());
+        var cameraToRobot = new Transform3d();
 
-    var fieldToRobot =
-        PhotonUtils.estimateFieldToRobotAprilTag(cameraToTarget, tagPose, cameraToRobot);
+        var fieldToRobot =
+                PhotonUtils.estimateFieldToRobotAprilTag(cameraToTarget, tagPose, cameraToRobot);
 
-    var targetPose =
-        new Pose2d(
-            new Translation2d(Units.inchesToMeters(324), Units.inchesToMeters(162)),
-            new Rotation2d());
-    var currentPose = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
-    Assertions.assertEquals(4.0, fieldToRobot.getX());
-    Assertions.assertEquals(
-        Math.toDegrees(Math.atan2((Units.inchesToMeters(162)), (Units.inchesToMeters(324)))),
-        PhotonUtils.getYawToPose(currentPose, targetPose).getDegrees());
-  }
+        var targetPose =
+                new Pose2d(
+                        new Translation2d(Units.inchesToMeters(324), Units.inchesToMeters(162)),
+                        new Rotation2d());
+        var currentPose = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
+        Assertions.assertEquals(4.0, fieldToRobot.getX());
+        Assertions.assertEquals(
+                Math.toDegrees(Math.atan2((Units.inchesToMeters(162)), (Units.inchesToMeters(324)))),
+                PhotonUtils.getYawToPose(currentPose, targetPose).getDegrees());
+    }
 }

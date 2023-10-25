@@ -36,109 +36,109 @@ import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.target.TargetModel;
 
 public class ConfigTest {
-  private static ConfigManager configMgr;
-  private static final CameraConfiguration cameraConfig =
-      new CameraConfiguration("TestCamera", "/dev/video420");
-  private static ReflectivePipelineSettings REFLECTIVE_PIPELINE_SETTINGS;
-  private static ColoredShapePipelineSettings COLORED_SHAPE_PIPELINE_SETTINGS;
-  private static AprilTagPipelineSettings APRIL_TAG_PIPELINE_SETTINGS;
+    private static ConfigManager configMgr;
+    private static final CameraConfiguration cameraConfig =
+            new CameraConfiguration("TestCamera", "/dev/video420");
+    private static ReflectivePipelineSettings REFLECTIVE_PIPELINE_SETTINGS;
+    private static ColoredShapePipelineSettings COLORED_SHAPE_PIPELINE_SETTINGS;
+    private static AprilTagPipelineSettings APRIL_TAG_PIPELINE_SETTINGS;
 
-  @BeforeAll
-  public static void init() {
-    TestUtils.loadLibraries();
-    var path = Path.of("testconfigdir");
-    configMgr = new ConfigManager(path, new LegacyConfigProvider(path));
-    configMgr.load();
+    @BeforeAll
+    public static void init() {
+        TestUtils.loadLibraries();
+        var path = Path.of("testconfigdir");
+        configMgr = new ConfigManager(path, new LegacyConfigProvider(path));
+        configMgr.load();
 
-    Logger.setLevel(LogGroup.General, LogLevel.TRACE);
+        Logger.setLevel(LogGroup.General, LogLevel.TRACE);
 
-    REFLECTIVE_PIPELINE_SETTINGS = new ReflectivePipelineSettings();
-    COLORED_SHAPE_PIPELINE_SETTINGS = new ColoredShapePipelineSettings();
-    APRIL_TAG_PIPELINE_SETTINGS = new AprilTagPipelineSettings();
+        REFLECTIVE_PIPELINE_SETTINGS = new ReflectivePipelineSettings();
+        COLORED_SHAPE_PIPELINE_SETTINGS = new ColoredShapePipelineSettings();
+        APRIL_TAG_PIPELINE_SETTINGS = new AprilTagPipelineSettings();
 
-    REFLECTIVE_PIPELINE_SETTINGS.pipelineNickname = "2019Tape";
-    REFLECTIVE_PIPELINE_SETTINGS.targetModel = TargetModel.k2019DualTarget;
+        REFLECTIVE_PIPELINE_SETTINGS.pipelineNickname = "2019Tape";
+        REFLECTIVE_PIPELINE_SETTINGS.targetModel = TargetModel.k2019DualTarget;
 
-    COLORED_SHAPE_PIPELINE_SETTINGS.pipelineNickname = "2019Cargo";
-    COLORED_SHAPE_PIPELINE_SETTINGS.pipelineIndex = 1;
+        COLORED_SHAPE_PIPELINE_SETTINGS.pipelineNickname = "2019Cargo";
+        COLORED_SHAPE_PIPELINE_SETTINGS.pipelineIndex = 1;
 
-    APRIL_TAG_PIPELINE_SETTINGS.pipelineNickname = "apriltag";
-    APRIL_TAG_PIPELINE_SETTINGS.pipelineIndex = 2;
+        APRIL_TAG_PIPELINE_SETTINGS.pipelineNickname = "apriltag";
+        APRIL_TAG_PIPELINE_SETTINGS.pipelineIndex = 2;
 
-    cameraConfig.addPipelineSetting(REFLECTIVE_PIPELINE_SETTINGS);
-    cameraConfig.addPipelineSetting(COLORED_SHAPE_PIPELINE_SETTINGS);
-    cameraConfig.addPipelineSetting(APRIL_TAG_PIPELINE_SETTINGS);
-  }
-
-  @Test
-  @Order(1)
-  public void serializeConfig() {
-    TestUtils.loadLibraries();
-
-    Logger.setLevel(LogGroup.General, LogLevel.TRACE);
-    configMgr.getConfig().addCameraConfig(cameraConfig);
-    configMgr.saveToDisk();
-
-    var camConfDir =
-        new File(
-            Path.of(configMgr.configDirectoryFile.toString(), "cameras", "TestCamera")
-                .toAbsolutePath()
-                .toString());
-    Assertions.assertTrue(camConfDir.exists(), "TestCamera config folder not found!");
-
-    Assertions.assertTrue(
-        Files.exists(Path.of(configMgr.configDirectoryFile.toString(), "networkSettings.json")),
-        "networkSettings.json file not found!");
-  }
-
-  @Test
-  @Order(2)
-  public void deserializeConfig() {
-    var reflectivePipelineSettings =
-        configMgr.getConfig().getCameraConfigurations().get("TestCamera").pipelineSettings.get(0);
-    var coloredShapePipelineSettings =
-        configMgr.getConfig().getCameraConfigurations().get("TestCamera").pipelineSettings.get(1);
-    var apriltagPipelineSettings =
-        configMgr.getConfig().getCameraConfigurations().get("TestCamera").pipelineSettings.get(2);
-
-    Assertions.assertEquals(REFLECTIVE_PIPELINE_SETTINGS, reflectivePipelineSettings);
-    Assertions.assertEquals(COLORED_SHAPE_PIPELINE_SETTINGS, coloredShapePipelineSettings);
-    Assertions.assertEquals(APRIL_TAG_PIPELINE_SETTINGS, apriltagPipelineSettings);
-
-    Assertions.assertTrue(
-        reflectivePipelineSettings instanceof ReflectivePipelineSettings,
-        "Config loaded pipeline settings for index 0 not of expected type ReflectivePipelineSettings!");
-    Assertions.assertTrue(
-        coloredShapePipelineSettings instanceof ColoredShapePipelineSettings,
-        "Config loaded pipeline settings for index 1 not of expected type ColoredShapePipelineSettings!");
-    Assertions.assertTrue(
-        apriltagPipelineSettings instanceof AprilTagPipelineSettings,
-        "Config loaded pipeline settings for index 2 not of expected type AprilTagPipelineSettings!");
-  }
-
-  @AfterAll
-  public static void cleanup() throws IOException {
-    try {
-      Files.deleteIfExists(Paths.get("settings.json"));
-    } catch (IOException e) {
-      e.printStackTrace();
+        cameraConfig.addPipelineSetting(REFLECTIVE_PIPELINE_SETTINGS);
+        cameraConfig.addPipelineSetting(COLORED_SHAPE_PIPELINE_SETTINGS);
+        cameraConfig.addPipelineSetting(APRIL_TAG_PIPELINE_SETTINGS);
     }
 
-    FileUtils.cleanDirectory(configMgr.configDirectoryFile);
-    configMgr.configDirectoryFile.delete();
-  }
+    @Test
+    @Order(1)
+    public void serializeConfig() {
+        TestUtils.loadLibraries();
 
-  @Test
-  public void testJacksonHandlesOldVersions() throws IOException {
-    var str =
-        "{\"baseName\":\"aaaaaa\",\"uniqueName\":\"aaaaaa\",\"nickname\":\"aaaaaa\",\"FOV\":70.0,\"path\":\"dev/vid\",\"cameraType\":\"UsbCamera\",\"currentPipelineIndex\":0,\"camPitch\":{\"radians\":0.0},\"calibrations\":[], \"cameraLEDs\":[]}";
-    var writer = new FileWriter("test.json");
-    writer.write(str);
-    writer.flush();
-    writer.close();
-    Assertions.assertDoesNotThrow(
-        () -> JacksonUtils.deserialize(Path.of("test.json"), CameraConfiguration.class));
+        Logger.setLevel(LogGroup.General, LogLevel.TRACE);
+        configMgr.getConfig().addCameraConfig(cameraConfig);
+        configMgr.saveToDisk();
 
-    new File("test.json").delete();
-  }
+        var camConfDir =
+                new File(
+                        Path.of(configMgr.configDirectoryFile.toString(), "cameras", "TestCamera")
+                                .toAbsolutePath()
+                                .toString());
+        Assertions.assertTrue(camConfDir.exists(), "TestCamera config folder not found!");
+
+        Assertions.assertTrue(
+                Files.exists(Path.of(configMgr.configDirectoryFile.toString(), "networkSettings.json")),
+                "networkSettings.json file not found!");
+    }
+
+    @Test
+    @Order(2)
+    public void deserializeConfig() {
+        var reflectivePipelineSettings =
+                configMgr.getConfig().getCameraConfigurations().get("TestCamera").pipelineSettings.get(0);
+        var coloredShapePipelineSettings =
+                configMgr.getConfig().getCameraConfigurations().get("TestCamera").pipelineSettings.get(1);
+        var apriltagPipelineSettings =
+                configMgr.getConfig().getCameraConfigurations().get("TestCamera").pipelineSettings.get(2);
+
+        Assertions.assertEquals(REFLECTIVE_PIPELINE_SETTINGS, reflectivePipelineSettings);
+        Assertions.assertEquals(COLORED_SHAPE_PIPELINE_SETTINGS, coloredShapePipelineSettings);
+        Assertions.assertEquals(APRIL_TAG_PIPELINE_SETTINGS, apriltagPipelineSettings);
+
+        Assertions.assertTrue(
+                reflectivePipelineSettings instanceof ReflectivePipelineSettings,
+                "Config loaded pipeline settings for index 0 not of expected type ReflectivePipelineSettings!");
+        Assertions.assertTrue(
+                coloredShapePipelineSettings instanceof ColoredShapePipelineSettings,
+                "Config loaded pipeline settings for index 1 not of expected type ColoredShapePipelineSettings!");
+        Assertions.assertTrue(
+                apriltagPipelineSettings instanceof AprilTagPipelineSettings,
+                "Config loaded pipeline settings for index 2 not of expected type AprilTagPipelineSettings!");
+    }
+
+    @AfterAll
+    public static void cleanup() throws IOException {
+        try {
+            Files.deleteIfExists(Paths.get("settings.json"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        FileUtils.cleanDirectory(configMgr.configDirectoryFile);
+        configMgr.configDirectoryFile.delete();
+    }
+
+    @Test
+    public void testJacksonHandlesOldVersions() throws IOException {
+        var str =
+                "{\"baseName\":\"aaaaaa\",\"uniqueName\":\"aaaaaa\",\"nickname\":\"aaaaaa\",\"FOV\":70.0,\"path\":\"dev/vid\",\"cameraType\":\"UsbCamera\",\"currentPipelineIndex\":0,\"camPitch\":{\"radians\":0.0},\"calibrations\":[], \"cameraLEDs\":[]}";
+        var writer = new FileWriter("test.json");
+        writer.write(str);
+        writer.flush();
+        writer.close();
+        Assertions.assertDoesNotThrow(
+                () -> JacksonUtils.deserialize(Path.of("test.json"), CameraConfiguration.class));
+
+        new File("test.json").delete();
+    }
 }

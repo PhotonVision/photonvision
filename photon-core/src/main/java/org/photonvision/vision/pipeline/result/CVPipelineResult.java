@@ -26,71 +26,71 @@ import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class CVPipelineResult implements Releasable {
-  private long imageCaptureTimestampNanos;
-  public final double processingNanos;
-  public final double fps;
-  public final List<TrackedTarget> targets;
-  public final Frame inputAndOutputFrame;
-  public MultiTargetPNPResults multiTagResult;
+    private long imageCaptureTimestampNanos;
+    public final double processingNanos;
+    public final double fps;
+    public final List<TrackedTarget> targets;
+    public final Frame inputAndOutputFrame;
+    public MultiTargetPNPResults multiTagResult;
 
-  public CVPipelineResult(
-      double processingNanos, double fps, List<TrackedTarget> targets, Frame inputFrame) {
-    this(processingNanos, fps, targets, new MultiTargetPNPResults(), inputFrame);
-  }
-
-  public CVPipelineResult(
-      double processingNanos,
-      double fps,
-      List<TrackedTarget> targets,
-      MultiTargetPNPResults multiTagResults,
-      Frame inputFrame) {
-    this.processingNanos = processingNanos;
-    this.fps = fps;
-    this.targets = targets != null ? targets : Collections.emptyList();
-    this.multiTagResult = multiTagResults;
-
-    this.inputAndOutputFrame = inputFrame;
-  }
-
-  public CVPipelineResult(
-      double processingNanos,
-      double fps,
-      List<TrackedTarget> targets,
-      MultiTargetPNPResults multiTagResults) {
-    this(processingNanos, fps, targets, multiTagResults, null);
-  }
-
-  public boolean hasTargets() {
-    return !targets.isEmpty();
-  }
-
-  public void release() {
-    for (TrackedTarget tt : targets) {
-      tt.release();
+    public CVPipelineResult(
+            double processingNanos, double fps, List<TrackedTarget> targets, Frame inputFrame) {
+        this(processingNanos, fps, targets, new MultiTargetPNPResults(), inputFrame);
     }
-    if (inputAndOutputFrame != null) inputAndOutputFrame.release();
-  }
 
-  /**
-   * Get the latency between now (wpi::Now) and the time at which the image was captured. FOOTGUN:
-   * the latency is relative to the time at which this method is called. Waiting to call this method
-   * will change the latency this method returns.
-   */
-  @Deprecated
-  public double getLatencyMillis() {
-    var now = MathUtils.wpiNanoTime();
-    return MathUtils.nanosToMillis(now - imageCaptureTimestampNanos);
-  }
+    public CVPipelineResult(
+            double processingNanos,
+            double fps,
+            List<TrackedTarget> targets,
+            MultiTargetPNPResults multiTagResults,
+            Frame inputFrame) {
+        this.processingNanos = processingNanos;
+        this.fps = fps;
+        this.targets = targets != null ? targets : Collections.emptyList();
+        this.multiTagResult = multiTagResults;
 
-  public double getProcessingMillis() {
-    return MathUtils.nanosToMillis(processingNanos);
-  }
+        this.inputAndOutputFrame = inputFrame;
+    }
 
-  public long getImageCaptureTimestampNanos() {
-    return imageCaptureTimestampNanos;
-  }
+    public CVPipelineResult(
+            double processingNanos,
+            double fps,
+            List<TrackedTarget> targets,
+            MultiTargetPNPResults multiTagResults) {
+        this(processingNanos, fps, targets, multiTagResults, null);
+    }
 
-  public void setImageCaptureTimestampNanos(long imageCaptureTimestampNanos) {
-    this.imageCaptureTimestampNanos = imageCaptureTimestampNanos;
-  }
+    public boolean hasTargets() {
+        return !targets.isEmpty();
+    }
+
+    public void release() {
+        for (TrackedTarget tt : targets) {
+            tt.release();
+        }
+        if (inputAndOutputFrame != null) inputAndOutputFrame.release();
+    }
+
+    /**
+     * Get the latency between now (wpi::Now) and the time at which the image was captured. FOOTGUN:
+     * the latency is relative to the time at which this method is called. Waiting to call this method
+     * will change the latency this method returns.
+     */
+    @Deprecated
+    public double getLatencyMillis() {
+        var now = MathUtils.wpiNanoTime();
+        return MathUtils.nanosToMillis(now - imageCaptureTimestampNanos);
+    }
+
+    public double getProcessingMillis() {
+        return MathUtils.nanosToMillis(processingNanos);
+    }
+
+    public long getImageCaptureTimestampNanos() {
+        return imageCaptureTimestampNanos;
+    }
+
+    public void setImageCaptureTimestampNanos(long imageCaptureTimestampNanos) {
+        this.imageCaptureTimestampNanos = imageCaptureTimestampNanos;
+    }
 }

@@ -31,102 +31,102 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 
 public class PhotonArucoDetector {
-  private static final Logger logger = new Logger(PhotonArucoDetector.class, LogGroup.VisionModule);
+    private static final Logger logger = new Logger(PhotonArucoDetector.class, LogGroup.VisionModule);
 
-  private static final Rotation3d ARUCO_BASE_ROTATION =
-      new Rotation3d(VecBuilder.fill(0, 0, 1), Units.degreesToRadians(180));
+    private static final Rotation3d ARUCO_BASE_ROTATION =
+            new Rotation3d(VecBuilder.fill(0, 0, 1), Units.degreesToRadians(180));
 
-  Mat ids;
+    Mat ids;
 
-  Mat tvecs;
-  Mat rvecs;
-  ArrayList<Mat> corners;
+    Mat tvecs;
+    Mat rvecs;
+    ArrayList<Mat> corners;
 
-  Mat cornerMat;
-  Translation3d translation;
-  Rotation3d rotation;
-  double timeStartDetect;
-  double timeEndDetect;
-  Pose3d tagPose;
-  double timeStartProcess;
-  double timeEndProcess;
-  double[] xCorners = new double[4];
-  double[] yCorners = new double[4];
+    Mat cornerMat;
+    Translation3d translation;
+    Rotation3d rotation;
+    double timeStartDetect;
+    double timeEndDetect;
+    Pose3d tagPose;
+    double timeStartProcess;
+    double timeEndProcess;
+    double[] xCorners = new double[4];
+    double[] yCorners = new double[4];
 
-  public PhotonArucoDetector() {
-    logger.debug("New Aruco Detector");
-    ids = new Mat();
-    tvecs = new Mat();
-    rvecs = new Mat();
-    corners = new ArrayList<>();
-    tagPose = new Pose3d();
-    translation = new Translation3d();
-    rotation = new Rotation3d();
-  }
-
-  public ArucoDetectionResult[] detect(
-      Mat grayscaleImg,
-      float tagSize,
-      CameraCalibrationCoefficients coeffs,
-      ArucoDetector detector) {
-    detector.detectMarkers(grayscaleImg, corners, ids);
-    if (coeffs != null) {
-      Aruco.estimatePoseSingleMarkers(
-          corners,
-          tagSize,
-          coeffs.getCameraIntrinsicsMat(),
-          coeffs.getDistCoeffsMat(),
-          rvecs,
-          tvecs);
+    public PhotonArucoDetector() {
+        logger.debug("New Aruco Detector");
+        ids = new Mat();
+        tvecs = new Mat();
+        rvecs = new Mat();
+        corners = new ArrayList<>();
+        tagPose = new Pose3d();
+        translation = new Translation3d();
+        rotation = new Rotation3d();
     }
 
-    ArucoDetectionResult[] toReturn = new ArucoDetectionResult[corners.size()];
-    timeStartProcess = System.currentTimeMillis();
-    for (int i = 0; i < corners.size(); i++) {
-      cornerMat = corners.get(i);
-      // logger.debug(cornerMat.dump());
-      xCorners =
-          new double[] {
-            cornerMat.get(0, 0)[0],
-            cornerMat.get(0, 1)[0],
-            cornerMat.get(0, 2)[0],
-            cornerMat.get(0, 3)[0]
-          };
-      yCorners =
-          new double[] {
-            cornerMat.get(0, 0)[1],
-            cornerMat.get(0, 1)[1],
-            cornerMat.get(0, 2)[1],
-            cornerMat.get(0, 3)[1]
-          };
-      cornerMat.release();
+    public ArucoDetectionResult[] detect(
+            Mat grayscaleImg,
+            float tagSize,
+            CameraCalibrationCoefficients coeffs,
+            ArucoDetector detector) {
+        detector.detectMarkers(grayscaleImg, corners, ids);
+        if (coeffs != null) {
+            Aruco.estimatePoseSingleMarkers(
+                    corners,
+                    tagSize,
+                    coeffs.getCameraIntrinsicsMat(),
+                    coeffs.getDistCoeffsMat(),
+                    rvecs,
+                    tvecs);
+        }
 
-      double[] tvec;
-      double[] rvec;
-      if (coeffs != null) {
-        // Need to apply a 180 rotation about Z
-        var origRvec = rvecs.get(i, 0);
-        var axisangle = VecBuilder.fill(origRvec[0], origRvec[1], origRvec[2]);
-        Rotation3d rotation = new Rotation3d(axisangle, axisangle.normF());
-        var ocvRotation = ARUCO_BASE_ROTATION.rotateBy(rotation);
+        ArucoDetectionResult[] toReturn = new ArucoDetectionResult[corners.size()];
+        timeStartProcess = System.currentTimeMillis();
+        for (int i = 0; i < corners.size(); i++) {
+            cornerMat = corners.get(i);
+            // logger.debug(cornerMat.dump());
+            xCorners =
+                    new double[] {
+                        cornerMat.get(0, 0)[0],
+                        cornerMat.get(0, 1)[0],
+                        cornerMat.get(0, 2)[0],
+                        cornerMat.get(0, 3)[0]
+                    };
+            yCorners =
+                    new double[] {
+                        cornerMat.get(0, 0)[1],
+                        cornerMat.get(0, 1)[1],
+                        cornerMat.get(0, 2)[1],
+                        cornerMat.get(0, 3)[1]
+                    };
+            cornerMat.release();
 
-        var angle = ocvRotation.getAngle();
-        var finalAxisAngle = ocvRotation.getAxis().times(angle);
+            double[] tvec;
+            double[] rvec;
+            if (coeffs != null) {
+                // Need to apply a 180 rotation about Z
+                var origRvec = rvecs.get(i, 0);
+                var axisangle = VecBuilder.fill(origRvec[0], origRvec[1], origRvec[2]);
+                Rotation3d rotation = new Rotation3d(axisangle, axisangle.normF());
+                var ocvRotation = ARUCO_BASE_ROTATION.rotateBy(rotation);
 
-        tvec = tvecs.get(i, 0);
-        rvec = finalAxisAngle.getData();
-      } else {
-        tvec = new double[] {0, 0, 0};
-        rvec = new double[] {0, 0, 0};
-      }
+                var angle = ocvRotation.getAngle();
+                var finalAxisAngle = ocvRotation.getAxis().times(angle);
 
-      toReturn[i] =
-          new ArucoDetectionResult(xCorners, yCorners, (int) ids.get(i, 0)[0], tvec, rvec);
+                tvec = tvecs.get(i, 0);
+                rvec = finalAxisAngle.getData();
+            } else {
+                tvec = new double[] {0, 0, 0};
+                rvec = new double[] {0, 0, 0};
+            }
+
+            toReturn[i] =
+                    new ArucoDetectionResult(xCorners, yCorners, (int) ids.get(i, 0)[0], tvec, rvec);
+        }
+        rvecs.release();
+        tvecs.release();
+        ids.release();
+
+        return toReturn;
     }
-    rvecs.release();
-    tvecs.release();
-    ids.release();
-
-    return toReturn;
-  }
 }

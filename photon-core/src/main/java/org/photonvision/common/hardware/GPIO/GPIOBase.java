@@ -24,76 +24,76 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
 
 public abstract class GPIOBase {
-  private static final Logger logger = new Logger(GPIOBase.class, LogGroup.General);
-  private static final ShellExec runCommand = new ShellExec(true, true);
+    private static final Logger logger = new Logger(GPIOBase.class, LogGroup.General);
+    private static final ShellExec runCommand = new ShellExec(true, true);
 
-  protected static HashMap<String, String> commands =
-      new HashMap<>() {
-        {
-          put("setState", "");
-          put("shutdown", "");
-          put("dim", "");
-          put("blink", "");
+    protected static HashMap<String, String> commands =
+            new HashMap<>() {
+                {
+                    put("setState", "");
+                    put("shutdown", "");
+                    put("dim", "");
+                    put("blink", "");
+                }
+            };
+
+    protected static String execute(String command) {
+        try {
+            runCommand.executeBashCommand(command);
+        } catch (Exception e) {
+            logger.error(Arrays.toString(e.getStackTrace()));
+            return "";
         }
-      };
-
-  protected static String execute(String command) {
-    try {
-      runCommand.executeBashCommand(command);
-    } catch (Exception e) {
-      logger.error(Arrays.toString(e.getStackTrace()));
-      return "";
+        return runCommand.getOutput();
     }
-    return runCommand.getOutput();
-  }
 
-  public abstract int getPinNumber();
+    public abstract int getPinNumber();
 
-  public void setState(boolean state) {
-    if (getPinNumber() != -1) {
-      setStateImpl(state);
+    public void setState(boolean state) {
+        if (getPinNumber() != -1) {
+            setStateImpl(state);
+        }
     }
-  }
 
-  protected abstract void setStateImpl(boolean state);
+    protected abstract void setStateImpl(boolean state);
 
-  public final void setOff() {
-    setState(false);
-  }
-
-  public final void setOn() {
-    setState(true);
-  }
-
-  public void togglePin() {
-    setState(!getStateImpl());
-  }
-
-  public abstract boolean shutdown();
-
-  public final boolean getState() {
-    if (getPinNumber() != -1) {
-      return getStateImpl();
-    } else return false;
-  }
-
-  public abstract boolean getStateImpl();
-
-  public final void blink(int pulseTimeMillis, int blinks) {
-    if (getPinNumber() != -1) {
-      blinkImpl(pulseTimeMillis, blinks);
+    public final void setOff() {
+        setState(false);
     }
-  }
 
-  protected abstract void blinkImpl(int pulseTimeMillis, int blinks);
-
-  public final void setBrightness(int brightness) {
-    if (getPinNumber() != -1) {
-      if (brightness > 100) brightness = 100;
-      if (brightness < 0) brightness = 0;
-      setBrightnessImpl(brightness);
+    public final void setOn() {
+        setState(true);
     }
-  }
 
-  protected abstract void setBrightnessImpl(int brightness);
+    public void togglePin() {
+        setState(!getStateImpl());
+    }
+
+    public abstract boolean shutdown();
+
+    public final boolean getState() {
+        if (getPinNumber() != -1) {
+            return getStateImpl();
+        } else return false;
+    }
+
+    public abstract boolean getStateImpl();
+
+    public final void blink(int pulseTimeMillis, int blinks) {
+        if (getPinNumber() != -1) {
+            blinkImpl(pulseTimeMillis, blinks);
+        }
+    }
+
+    protected abstract void blinkImpl(int pulseTimeMillis, int blinks);
+
+    public final void setBrightness(int brightness) {
+        if (getPinNumber() != -1) {
+            if (brightness > 100) brightness = 100;
+            if (brightness < 0) brightness = 0;
+            setBrightnessImpl(brightness);
+        }
+    }
+
+    protected abstract void setBrightnessImpl(int brightness);
 }

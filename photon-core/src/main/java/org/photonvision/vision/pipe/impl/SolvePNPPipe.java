@@ -35,82 +35,82 @@ import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class SolvePNPPipe
-    extends CVPipe<List<TrackedTarget>, List<TrackedTarget>, SolvePNPPipe.SolvePNPPipeParams> {
-  private static final Logger logger = new Logger(SolvePNPPipe.class, LogGroup.VisionModule);
+        extends CVPipe<List<TrackedTarget>, List<TrackedTarget>, SolvePNPPipe.SolvePNPPipeParams> {
+    private static final Logger logger = new Logger(SolvePNPPipe.class, LogGroup.VisionModule);
 
-  private final MatOfPoint2f imagePoints = new MatOfPoint2f();
+    private final MatOfPoint2f imagePoints = new MatOfPoint2f();
 
-  private boolean hasWarned = false;
+    private boolean hasWarned = false;
 
-  @Override
-  protected List<TrackedTarget> process(List<TrackedTarget> targetList) {
-    if (params.cameraCoefficients == null
-        || params.cameraCoefficients.getCameraIntrinsicsMat() == null
-        || params.cameraCoefficients.getDistCoeffsMat() == null) {
-      if (!hasWarned) {
-        logger.warn(
-            "Cannot perform solvePNP an uncalibrated camera! Please calibrate this resolution...");
-        hasWarned = true;
-      }
-      return targetList;
+    @Override
+    protected List<TrackedTarget> process(List<TrackedTarget> targetList) {
+        if (params.cameraCoefficients == null
+                || params.cameraCoefficients.getCameraIntrinsicsMat() == null
+                || params.cameraCoefficients.getDistCoeffsMat() == null) {
+            if (!hasWarned) {
+                logger.warn(
+                        "Cannot perform solvePNP an uncalibrated camera! Please calibrate this resolution...");
+                hasWarned = true;
+            }
+            return targetList;
+        }
+
+        for (var target : targetList) {
+            calculateTargetPose(target);
+        }
+        return targetList;
     }
 
-    for (var target : targetList) {
-      calculateTargetPose(target);
+    private void calculateTargetPose(TrackedTarget target) {
+        var corners = target.getTargetCorners();
+        if (corners == null
+                || corners.isEmpty()
+                || params.cameraCoefficients == null
+                || params.cameraCoefficients.getCameraIntrinsicsMat() == null
+                || params.cameraCoefficients.getDistCoeffsMat() == null) {
+            return;
+        }
+        this.imagePoints.fromList(corners);
+
+        var rVec = new Mat();
+        var tVec = new Mat();
+        try {
+            Calib3d.solvePnP(
+                    params.targetModel.getRealWorldTargetCoordinates(),
+                    imagePoints,
+                    params.cameraCoefficients.getCameraIntrinsicsMat(),
+                    params.cameraCoefficients.getDistCoeffsMat(),
+                    rVec,
+                    tVec);
+        } catch (Exception e) {
+            logger.error("Exception when attempting solvePnP!", e);
+            return;
+        }
+
+        target.setCameraRelativeTvec(tVec);
+        target.setCameraRelativeRvec(rVec);
+
+        Translation3d translation =
+                new Translation3d(tVec.get(0, 0)[0], tVec.get(1, 0)[0], tVec.get(2, 0)[0]);
+        Rotation3d rotation =
+                new Rotation3d(
+                        VecBuilder.fill(rVec.get(0, 0)[0], rVec.get(1, 0)[0], rVec.get(2, 0)[0]),
+                        Core.norm(rVec));
+
+        Transform3d camToTarget =
+                MathUtils.convertOpenCVtoPhotonTransform(new Transform3d(translation, rotation));
+        target.setBestCameraToTarget3d(camToTarget);
+        target.setAltCameraToTarget3d(new Transform3d());
     }
-    return targetList;
-  }
 
-  private void calculateTargetPose(TrackedTarget target) {
-    var corners = target.getTargetCorners();
-    if (corners == null
-        || corners.isEmpty()
-        || params.cameraCoefficients == null
-        || params.cameraCoefficients.getCameraIntrinsicsMat() == null
-        || params.cameraCoefficients.getDistCoeffsMat() == null) {
-      return;
+    public static class SolvePNPPipeParams {
+        private final CameraCalibrationCoefficients cameraCoefficients;
+        private final TargetModel targetModel;
+
+        public SolvePNPPipeParams(
+                CameraCalibrationCoefficients cameraCoefficients, TargetModel targetModel) {
+            this.cameraCoefficients = cameraCoefficients;
+            this.targetModel = targetModel;
+        }
     }
-    this.imagePoints.fromList(corners);
-
-    var rVec = new Mat();
-    var tVec = new Mat();
-    try {
-      Calib3d.solvePnP(
-          params.targetModel.getRealWorldTargetCoordinates(),
-          imagePoints,
-          params.cameraCoefficients.getCameraIntrinsicsMat(),
-          params.cameraCoefficients.getDistCoeffsMat(),
-          rVec,
-          tVec);
-    } catch (Exception e) {
-      logger.error("Exception when attempting solvePnP!", e);
-      return;
-    }
-
-    target.setCameraRelativeTvec(tVec);
-    target.setCameraRelativeRvec(rVec);
-
-    Translation3d translation =
-        new Translation3d(tVec.get(0, 0)[0], tVec.get(1, 0)[0], tVec.get(2, 0)[0]);
-    Rotation3d rotation =
-        new Rotation3d(
-            VecBuilder.fill(rVec.get(0, 0)[0], rVec.get(1, 0)[0], rVec.get(2, 0)[0]),
-            Core.norm(rVec));
-
-    Transform3d camToTarget =
-        MathUtils.convertOpenCVtoPhotonTransform(new Transform3d(translation, rotation));
-    target.setBestCameraToTarget3d(camToTarget);
-    target.setAltCameraToTarget3d(new Transform3d());
-  }
-
-  public static class SolvePNPPipeParams {
-    private final CameraCalibrationCoefficients cameraCoefficients;
-    private final TargetModel targetModel;
-
-    public SolvePNPPipeParams(
-        CameraCalibrationCoefficients cameraCoefficients, TargetModel targetModel) {
-      this.cameraCoefficients = cameraCoefficients;
-      this.targetModel = targetModel;
-    }
-  }
 }

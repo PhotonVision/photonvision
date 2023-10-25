@@ -49,79 +49,79 @@ import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 
 public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSettings> {
-  private final RotateImagePipe rotateImagePipe = new RotateImagePipe();
-  private final GrayscalePipe grayscalePipe = new GrayscalePipe();
+    private final RotateImagePipe rotateImagePipe = new RotateImagePipe();
+    private final GrayscalePipe grayscalePipe = new GrayscalePipe();
 
-  private final ArucoDetectionPipe arucoDetectionPipe = new ArucoDetectionPipe();
-  private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
+    private final ArucoDetectionPipe arucoDetectionPipe = new ArucoDetectionPipe();
+    private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
-  ArucoDetectorParams m_arucoDetectorParams = new ArucoDetectorParams();
+    ArucoDetectorParams m_arucoDetectorParams = new ArucoDetectorParams();
 
-  public ArucoPipeline() {
-    super(FrameThresholdType.GREYSCALE);
-    settings = new ArucoPipelineSettings();
-  }
-
-  public ArucoPipeline(ArucoPipelineSettings settings) {
-    super(FrameThresholdType.GREYSCALE);
-    this.settings = settings;
-  }
-
-  @Override
-  protected void setPipeParamsImpl() {
-    // Sanitize thread count - not supported to have fewer than 1 threads
-    settings.threads = Math.max(1, settings.threads);
-
-    RotateImagePipe.RotateImageParams rotateImageParams =
-        new RotateImagePipe.RotateImageParams(settings.inputImageRotationMode);
-    rotateImagePipe.setParams(rotateImageParams);
-
-    m_arucoDetectorParams.setDecimation((float) settings.decimate);
-    m_arucoDetectorParams.setCornerRefinementMaxIterations(settings.numIterations);
-    m_arucoDetectorParams.setCornerAccuracy(settings.cornerAccuracy);
-
-    arucoDetectionPipe.setParams(
-        new ArucoDetectionPipeParams(
-            m_arucoDetectorParams.getDetector(), frameStaticProperties.cameraCalibration));
-  }
-
-  @Override
-  protected CVPipelineResult process(Frame frame, ArucoPipelineSettings settings) {
-    long sumPipeNanosElapsed = 0L;
-    Mat rawInputMat;
-    rawInputMat = frame.colorImage.getMat();
-
-    List<TrackedTarget> targetList;
-    CVPipeResult<List<ArucoDetectionResult>> tagDetectionPipeResult;
-
-    if (rawInputMat.empty()) {
-      return new CVPipelineResult(sumPipeNanosElapsed, 0, List.of(), frame);
+    public ArucoPipeline() {
+        super(FrameThresholdType.GREYSCALE);
+        settings = new ArucoPipelineSettings();
     }
 
-    tagDetectionPipeResult = arucoDetectionPipe.run(rawInputMat);
-    targetList = new ArrayList<>();
-    for (ArucoDetectionResult detection : tagDetectionPipeResult.output) {
-      // TODO this should be in a pipe, not in the top level here (Matt)
-
-      // populate the target list
-      // Challenge here is that TrackedTarget functions with OpenCV Contour
-      TrackedTarget target =
-          new TrackedTarget(
-              detection,
-              new TargetCalculationParameters(
-                  false, null, null, null, null, frameStaticProperties));
-
-      var correctedBestPose = target.getBestCameraToTarget3d();
-
-      target.setBestCameraToTarget3d(
-          new Transform3d(correctedBestPose.getTranslation(), correctedBestPose.getRotation()));
-
-      targetList.add(target);
+    public ArucoPipeline(ArucoPipelineSettings settings) {
+        super(FrameThresholdType.GREYSCALE);
+        this.settings = settings;
     }
 
-    var fpsResult = calculateFPSPipe.run(null);
-    var fps = fpsResult.output;
+    @Override
+    protected void setPipeParamsImpl() {
+        // Sanitize thread count - not supported to have fewer than 1 threads
+        settings.threads = Math.max(1, settings.threads);
 
-    return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, frame);
-  }
+        RotateImagePipe.RotateImageParams rotateImageParams =
+                new RotateImagePipe.RotateImageParams(settings.inputImageRotationMode);
+        rotateImagePipe.setParams(rotateImageParams);
+
+        m_arucoDetectorParams.setDecimation((float) settings.decimate);
+        m_arucoDetectorParams.setCornerRefinementMaxIterations(settings.numIterations);
+        m_arucoDetectorParams.setCornerAccuracy(settings.cornerAccuracy);
+
+        arucoDetectionPipe.setParams(
+                new ArucoDetectionPipeParams(
+                        m_arucoDetectorParams.getDetector(), frameStaticProperties.cameraCalibration));
+    }
+
+    @Override
+    protected CVPipelineResult process(Frame frame, ArucoPipelineSettings settings) {
+        long sumPipeNanosElapsed = 0L;
+        Mat rawInputMat;
+        rawInputMat = frame.colorImage.getMat();
+
+        List<TrackedTarget> targetList;
+        CVPipeResult<List<ArucoDetectionResult>> tagDetectionPipeResult;
+
+        if (rawInputMat.empty()) {
+            return new CVPipelineResult(sumPipeNanosElapsed, 0, List.of(), frame);
+        }
+
+        tagDetectionPipeResult = arucoDetectionPipe.run(rawInputMat);
+        targetList = new ArrayList<>();
+        for (ArucoDetectionResult detection : tagDetectionPipeResult.output) {
+            // TODO this should be in a pipe, not in the top level here (Matt)
+
+            // populate the target list
+            // Challenge here is that TrackedTarget functions with OpenCV Contour
+            TrackedTarget target =
+                    new TrackedTarget(
+                            detection,
+                            new TargetCalculationParameters(
+                                    false, null, null, null, null, frameStaticProperties));
+
+            var correctedBestPose = target.getBestCameraToTarget3d();
+
+            target.setBestCameraToTarget3d(
+                    new Transform3d(correctedBestPose.getTranslation(), correctedBestPose.getRotation()));
+
+            targetList.add(target);
+        }
+
+        var fpsResult = calculateFPSPipe.run(null);
+        var fps = fpsResult.output;
+
+        return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, frame);
+    }
 }

@@ -27,55 +27,55 @@ import org.photonvision.vision.target.*;
 
 /** Represents a pipe that collects available 2d targets. */
 public class Collect2dTargetsPipe
-    extends CVPipe<
-        List<PotentialTarget>, List<TrackedTarget>, Collect2dTargetsPipe.Collect2dTargetsParams> {
-  /**
-   * Processes this pipeline.
-   *
-   * @param in Input for pipe processing.
-   * @return A list of tracked targets.
-   */
-  @Override
-  protected List<TrackedTarget> process(List<PotentialTarget> in) {
-    List<TrackedTarget> targets = new ArrayList<>();
+        extends CVPipe<
+                List<PotentialTarget>, List<TrackedTarget>, Collect2dTargetsPipe.Collect2dTargetsParams> {
+    /**
+     * Processes this pipeline.
+     *
+     * @param in Input for pipe processing.
+     * @return A list of tracked targets.
+     */
+    @Override
+    protected List<TrackedTarget> process(List<PotentialTarget> in) {
+        List<TrackedTarget> targets = new ArrayList<>();
 
-    var calculationParams =
-        new TrackedTarget.TargetCalculationParameters(
-            params.targetOrientation == TargetOrientation.Landscape,
-            params.targetOffsetPointEdge,
-            params.robotOffsetPointMode,
-            params.robotOffsetSinglePoint,
-            params.dualOffsetValues,
-            params.frameStaticProperties);
+        var calculationParams =
+                new TrackedTarget.TargetCalculationParameters(
+                        params.targetOrientation == TargetOrientation.Landscape,
+                        params.targetOffsetPointEdge,
+                        params.robotOffsetPointMode,
+                        params.robotOffsetSinglePoint,
+                        params.dualOffsetValues,
+                        params.frameStaticProperties);
 
-    for (PotentialTarget target : in) {
-      targets.add(new TrackedTarget(target, calculationParams, target.shape));
+        for (PotentialTarget target : in) {
+            targets.add(new TrackedTarget(target, calculationParams, target.shape));
+        }
+
+        return targets;
     }
 
-    return targets;
-  }
+    public static class Collect2dTargetsParams {
+        private final RobotOffsetPointMode robotOffsetPointMode;
+        private final Point robotOffsetSinglePoint;
+        private final DualOffsetValues dualOffsetValues;
+        private final TargetOffsetPointEdge targetOffsetPointEdge;
+        private final TargetOrientation targetOrientation;
+        private final FrameStaticProperties frameStaticProperties;
 
-  public static class Collect2dTargetsParams {
-    private final RobotOffsetPointMode robotOffsetPointMode;
-    private final Point robotOffsetSinglePoint;
-    private final DualOffsetValues dualOffsetValues;
-    private final TargetOffsetPointEdge targetOffsetPointEdge;
-    private final TargetOrientation targetOrientation;
-    private final FrameStaticProperties frameStaticProperties;
-
-    public Collect2dTargetsParams(
-        RobotOffsetPointMode robotOffsetPointMode,
-        Point robotOffsetSinglePoint,
-        DualOffsetValues dualOffsetValues,
-        TargetOffsetPointEdge targetOffsetPointEdge,
-        TargetOrientation orientation,
-        FrameStaticProperties frameStaticProperties) {
-      this.frameStaticProperties = frameStaticProperties;
-      this.robotOffsetPointMode = robotOffsetPointMode;
-      this.robotOffsetSinglePoint = robotOffsetSinglePoint;
-      this.dualOffsetValues = dualOffsetValues;
-      this.targetOffsetPointEdge = targetOffsetPointEdge;
-      targetOrientation = orientation;
+        public Collect2dTargetsParams(
+                RobotOffsetPointMode robotOffsetPointMode,
+                Point robotOffsetSinglePoint,
+                DualOffsetValues dualOffsetValues,
+                TargetOffsetPointEdge targetOffsetPointEdge,
+                TargetOrientation orientation,
+                FrameStaticProperties frameStaticProperties) {
+            this.frameStaticProperties = frameStaticProperties;
+            this.robotOffsetPointMode = robotOffsetPointMode;
+            this.robotOffsetSinglePoint = robotOffsetSinglePoint;
+            this.dualOffsetValues = dualOffsetValues;
+            this.targetOffsetPointEdge = targetOffsetPointEdge;
+            targetOrientation = orientation;
+        }
     }
-  }
 }

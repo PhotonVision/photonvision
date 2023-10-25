@@ -25,28 +25,28 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class NetworkConfigTest {
-  @Test
-  public void testSerialization() throws IOException {
-    var mapper = new ObjectMapper();
-    var path = Path.of("netTest.json");
-    mapper.writeValue(path.toFile(), new NetworkConfig());
-    Assertions.assertDoesNotThrow(() -> mapper.readValue(path.toFile(), NetworkConfig.class));
-    new File("netTest.json").delete();
-  }
+    @Test
+    public void testSerialization() throws IOException {
+        var mapper = new ObjectMapper();
+        var path = Path.of("netTest.json");
+        mapper.writeValue(path.toFile(), new NetworkConfig());
+        Assertions.assertDoesNotThrow(() -> mapper.readValue(path.toFile(), NetworkConfig.class));
+        new File("netTest.json").delete();
+    }
 
-  @Test
-  public void testDeserializeTeamNumberOrNtServerAddress() {
-    {
-      var folder = Path.of("test-resources/network-old-team-number");
-      var configMgr = new ConfigManager(folder, new LegacyConfigProvider(folder));
-      configMgr.load();
-      Assertions.assertEquals("9999", configMgr.getConfig().getNetworkConfig().ntServerAddress);
+    @Test
+    public void testDeserializeTeamNumberOrNtServerAddress() {
+        {
+            var folder = Path.of("test-resources/network-old-team-number");
+            var configMgr = new ConfigManager(folder, new LegacyConfigProvider(folder));
+            configMgr.load();
+            Assertions.assertEquals("9999", configMgr.getConfig().getNetworkConfig().ntServerAddress);
+        }
+        {
+            var folder = Path.of("test-resources/network-new-team-number");
+            var configMgr = new ConfigManager(folder, new LegacyConfigProvider(folder));
+            configMgr.load();
+            Assertions.assertEquals("9999", configMgr.getConfig().getNetworkConfig().ntServerAddress);
+        }
     }
-    {
-      var folder = Path.of("test-resources/network-new-team-number");
-      var configMgr = new ConfigManager(folder, new LegacyConfigProvider(folder));
-      configMgr.load();
-      Assertions.assertEquals("9999", configMgr.getConfig().getNetworkConfig().ntServerAddress);
-    }
-  }
 }

@@ -33,29 +33,29 @@ import org.photonvision.common.logging.Logger;
  * DO NOT use logging in this class. If you do, the logs will recurse forever!
  */
 class UIOutboundSubscriber extends DataChangeSubscriber {
-  Logger logger = new Logger(UIOutboundSubscriber.class, LogGroup.WebServer);
+    Logger logger = new Logger(UIOutboundSubscriber.class, LogGroup.WebServer);
 
-  private final DataSocketHandler socketHandler;
+    private final DataSocketHandler socketHandler;
 
-  public UIOutboundSubscriber(DataSocketHandler socketHandler) {
-    super(DataChangeSource.AllSources, Collections.singletonList(DataChangeDestination.DCD_UI));
-    this.socketHandler = socketHandler;
-  }
-
-  @Override
-  public void onDataChangeEvent(DataChangeEvent event) {
-    if (event instanceof OutgoingUIEvent) {
-      var thisEvent = (OutgoingUIEvent) event;
-      try {
-        if (event.data instanceof HashMap) {
-          var data = (HashMap) event.data;
-          socketHandler.broadcastMessage(data, thisEvent.originContext);
-        } else {
-          socketHandler.broadcastMessage(event.data, thisEvent.originContext);
-        }
-      } catch (JsonProcessingException e) {
-        logger.error("Failed to process outgoing message!", e);
-      }
+    public UIOutboundSubscriber(DataSocketHandler socketHandler) {
+        super(DataChangeSource.AllSources, Collections.singletonList(DataChangeDestination.DCD_UI));
+        this.socketHandler = socketHandler;
     }
-  }
+
+    @Override
+    public void onDataChangeEvent(DataChangeEvent event) {
+        if (event instanceof OutgoingUIEvent) {
+            var thisEvent = (OutgoingUIEvent) event;
+            try {
+                if (event.data instanceof HashMap) {
+                    var data = (HashMap) event.data;
+                    socketHandler.broadcastMessage(data, thisEvent.originContext);
+                } else {
+                    socketHandler.broadcastMessage(event.data, thisEvent.originContext);
+                }
+            } catch (JsonProcessingException e) {
+                logger.error("Failed to process outgoing message!", e);
+            }
+        }
+    }
 }

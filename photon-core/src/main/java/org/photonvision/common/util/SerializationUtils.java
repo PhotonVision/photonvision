@@ -23,39 +23,39 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public final class SerializationUtils {
-  private static final Logger logger = new Logger(SerializationUtils.class, LogGroup.General);
+    private static final Logger logger = new Logger(SerializationUtils.class, LogGroup.General);
 
-  public static HashMap<String, Object> objectToHashMap(Object src) {
-    var ret = new HashMap<String, Object>();
-    for (var field : src.getClass().getFields()) {
-      try {
-        field.setAccessible(true);
-        if (!field
-            .getType()
-            .isEnum()) { // if the field is not an enum, get it based on the current pipeline
-          ret.put(field.getName(), field.get(src));
-        } else {
-          var ordinal = (Enum) field.get(src);
-          ret.put(field.getName(), ordinal.ordinal());
+    public static HashMap<String, Object> objectToHashMap(Object src) {
+        var ret = new HashMap<String, Object>();
+        for (var field : src.getClass().getFields()) {
+            try {
+                field.setAccessible(true);
+                if (!field
+                        .getType()
+                        .isEnum()) { // if the field is not an enum, get it based on the current pipeline
+                    ret.put(field.getName(), field.get(src));
+                } else {
+                    var ordinal = (Enum) field.get(src);
+                    ret.put(field.getName(), ordinal.ordinal());
+                }
+            } catch (IllegalArgumentException | IllegalAccessException e) {
+                logger.error("Could not serialize " + src.getClass().getSimpleName(), e);
+            }
         }
-      } catch (IllegalArgumentException | IllegalAccessException e) {
-        logger.error("Could not serialize " + src.getClass().getSimpleName(), e);
-      }
+        return ret;
     }
-    return ret;
-  }
 
-  public static HashMap<String, Object> transformToHashMap(Transform3d transform) {
-    var ret = new HashMap<String, Object>();
-    ret.put("x", transform.getTranslation().getX());
-    ret.put("y", transform.getTranslation().getY());
-    ret.put("z", transform.getTranslation().getZ());
-    ret.put("qw", transform.getRotation().getQuaternion().getW());
-    ret.put("qx", transform.getRotation().getQuaternion().getX());
-    ret.put("qy", transform.getRotation().getQuaternion().getY());
-    ret.put("qz", transform.getRotation().getQuaternion().getZ());
+    public static HashMap<String, Object> transformToHashMap(Transform3d transform) {
+        var ret = new HashMap<String, Object>();
+        ret.put("x", transform.getTranslation().getX());
+        ret.put("y", transform.getTranslation().getY());
+        ret.put("z", transform.getTranslation().getZ());
+        ret.put("qw", transform.getRotation().getQuaternion().getW());
+        ret.put("qx", transform.getRotation().getQuaternion().getX());
+        ret.put("qy", transform.getRotation().getQuaternion().getY());
+        ret.put("qz", transform.getRotation().getQuaternion().getZ());
 
-    ret.put("angle_z", transform.getRotation().getZ());
-    return ret;
-  }
+        ret.put("angle_z", transform.getRotation().getZ());
+        return ret;
+    }
 }

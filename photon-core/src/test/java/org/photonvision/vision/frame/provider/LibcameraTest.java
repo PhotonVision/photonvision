@@ -22,18 +22,18 @@ import org.junit.jupiter.api.Test;
 // import org.photonvision.raspi.LibCameraJNI;
 
 public class LibcameraTest {
-  @Test
-  public void testBasic() {
-    // System.load("/home/pi/photon-libcamera-gl-driver/build/libphotonlibcamera.so");
-    // LibCameraJNI.createCamera(1920, 1080, 60);
-    // try {
-    //     Thread.sleep(1000);
-    // } catch (InterruptedException e) {
-    // }
-    // LibCameraJNI.startCamera();
-    // try {
-    //     Thread.sleep(5000);
-    // } catch (InterruptedException e) {
-    // }
-  }
+    @Test
+    public void testBasic() {
+        // System.load("/home/pi/photon-libcamera-gl-driver/build/libphotonlibcamera.so");
+        // LibCameraJNI.createCamera(1920, 1080, 60);
+        // try {
+        //     Thread.sleep(1000);
+        // } catch (InterruptedException e) {
+        // }
+        // LibCameraJNI.startCamera();
+        // try {
+        //     Thread.sleep(5000);
+        // } catch (InterruptedException e) {
+        // }
+    }
 }

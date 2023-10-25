@@ -34,110 +34,110 @@ import java.nio.file.Path;
 import java.util.HashMap;
 
 public class JacksonUtils {
-  public static class UIMap extends HashMap<String, Object> {}
+    public static class UIMap extends HashMap<String, Object> {}
 
-  public static <T> void serialize(Path path, T object) throws IOException {
-    serialize(path, object, true);
-  }
-
-  public static <T> String serializeToString(T object) throws IOException {
-    PolymorphicTypeValidator ptv =
-        BasicPolymorphicTypeValidator.builder().allowIfBaseType(object.getClass()).build();
-    ObjectMapper objectMapper =
-        JsonMapper.builder()
-            .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
-            .build();
-    return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(object);
-  }
-
-  public static <T> void serialize(Path path, T object, boolean forceSync) throws IOException {
-    PolymorphicTypeValidator ptv =
-        BasicPolymorphicTypeValidator.builder().allowIfBaseType(object.getClass()).build();
-    ObjectMapper objectMapper =
-        JsonMapper.builder()
-            .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
-            .build();
-    String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(object);
-    saveJsonString(json, path, forceSync);
-  }
-
-  public static <T> T deserialize(String s, Class<T> ref) throws IOException {
-    PolymorphicTypeValidator ptv =
-        BasicPolymorphicTypeValidator.builder().allowIfBaseType(ref).build();
-    ObjectMapper objectMapper =
-        JsonMapper.builder()
-            .configure(JsonReadFeature.ALLOW_JAVA_COMMENTS, true)
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
-            .build();
-
-    return objectMapper.readValue(s, ref);
-  }
-
-  public static <T> T deserialize(Path path, Class<T> ref) throws IOException {
-    PolymorphicTypeValidator ptv =
-        BasicPolymorphicTypeValidator.builder().allowIfBaseType(ref).build();
-    ObjectMapper objectMapper =
-        JsonMapper.builder()
-            .configure(JsonReadFeature.ALLOW_JAVA_COMMENTS, true)
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
-            .build();
-    File jsonFile = new File(path.toString());
-    if (jsonFile.exists() && jsonFile.length() > 0) {
-      return objectMapper.readValue(jsonFile, ref);
+    public static <T> void serialize(Path path, T object) throws IOException {
+        serialize(path, object, true);
     }
-    return null;
-  }
 
-  public static <T> T deserialize(Path path, Class<T> ref, StdDeserializer<T> deserializer)
-      throws IOException {
-    ObjectMapper objectMapper = new ObjectMapper();
-    SimpleModule module = new SimpleModule();
-    module.addDeserializer(ref, deserializer);
-    objectMapper.registerModule(module);
-
-    File jsonFile = new File(path.toString());
-    if (jsonFile.exists() && jsonFile.length() > 0) {
-      return objectMapper.readValue(jsonFile, ref);
+    public static <T> String serializeToString(T object) throws IOException {
+        PolymorphicTypeValidator ptv =
+                BasicPolymorphicTypeValidator.builder().allowIfBaseType(object.getClass()).build();
+        ObjectMapper objectMapper =
+                JsonMapper.builder()
+                        .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
+                        .build();
+        return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(object);
     }
-    return null;
-  }
 
-  public static <T> void serialize(Path path, T object, Class<T> ref, StdSerializer<T> serializer)
-      throws IOException {
-    serialize(path, object, ref, serializer, true);
-  }
+    public static <T> void serialize(Path path, T object, boolean forceSync) throws IOException {
+        PolymorphicTypeValidator ptv =
+                BasicPolymorphicTypeValidator.builder().allowIfBaseType(object.getClass()).build();
+        ObjectMapper objectMapper =
+                JsonMapper.builder()
+                        .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
+                        .build();
+        String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(object);
+        saveJsonString(json, path, forceSync);
+    }
 
-  public static <T> void serialize(
-      Path path, T object, Class<T> ref, StdSerializer<T> serializer, boolean forceSync)
-      throws IOException {
-    ObjectMapper objectMapper = new ObjectMapper();
-    SimpleModule module = new SimpleModule();
-    module.addSerializer(ref, serializer);
-    objectMapper.registerModule(module);
-    String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(object);
-    saveJsonString(json, path, forceSync);
-  }
+    public static <T> T deserialize(String s, Class<T> ref) throws IOException {
+        PolymorphicTypeValidator ptv =
+                BasicPolymorphicTypeValidator.builder().allowIfBaseType(ref).build();
+        ObjectMapper objectMapper =
+                JsonMapper.builder()
+                        .configure(JsonReadFeature.ALLOW_JAVA_COMMENTS, true)
+                        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                        .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
+                        .build();
 
-  private static void saveJsonString(String json, Path path, boolean forceSync) throws IOException {
-    var file = path.toFile();
-    if (file.getParentFile() != null && !file.getParentFile().exists()) {
-      file.getParentFile().mkdirs();
+        return objectMapper.readValue(s, ref);
     }
-    if (!file.exists()) {
-      if (!file.canWrite()) {
-        file.setWritable(true);
-      }
-      file.createNewFile();
+
+    public static <T> T deserialize(Path path, Class<T> ref) throws IOException {
+        PolymorphicTypeValidator ptv =
+                BasicPolymorphicTypeValidator.builder().allowIfBaseType(ref).build();
+        ObjectMapper objectMapper =
+                JsonMapper.builder()
+                        .configure(JsonReadFeature.ALLOW_JAVA_COMMENTS, true)
+                        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                        .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
+                        .build();
+        File jsonFile = new File(path.toString());
+        if (jsonFile.exists() && jsonFile.length() > 0) {
+            return objectMapper.readValue(jsonFile, ref);
+        }
+        return null;
     }
-    FileOutputStream fileOutputStream = new FileOutputStream(file);
-    fileOutputStream.write(json.getBytes());
-    fileOutputStream.flush();
-    if (forceSync) {
-      FileDescriptor fileDescriptor = fileOutputStream.getFD();
-      fileDescriptor.sync();
+
+    public static <T> T deserialize(Path path, Class<T> ref, StdDeserializer<T> deserializer)
+            throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        SimpleModule module = new SimpleModule();
+        module.addDeserializer(ref, deserializer);
+        objectMapper.registerModule(module);
+
+        File jsonFile = new File(path.toString());
+        if (jsonFile.exists() && jsonFile.length() > 0) {
+            return objectMapper.readValue(jsonFile, ref);
+        }
+        return null;
     }
-    fileOutputStream.close();
-  }
+
+    public static <T> void serialize(Path path, T object, Class<T> ref, StdSerializer<T> serializer)
+            throws IOException {
+        serialize(path, object, ref, serializer, true);
+    }
+
+    public static <T> void serialize(
+            Path path, T object, Class<T> ref, StdSerializer<T> serializer, boolean forceSync)
+            throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(ref, serializer);
+        objectMapper.registerModule(module);
+        String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(object);
+        saveJsonString(json, path, forceSync);
+    }
+
+    private static void saveJsonString(String json, Path path, boolean forceSync) throws IOException {
+        var file = path.toFile();
+        if (file.getParentFile() != null && !file.getParentFile().exists()) {
+            file.getParentFile().mkdirs();
+        }
+        if (!file.exists()) {
+            if (!file.canWrite()) {
+                file.setWritable(true);
+            }
+            file.createNewFile();
+        }
+        FileOutputStream fileOutputStream = new FileOutputStream(file);
+        fileOutputStream.write(json.getBytes());
+        fileOutputStream.flush();
+        if (forceSync) {
+            FileDescriptor fileDescriptor = fileOutputStream.getFD();
+            fileDescriptor.sync();
+        }
+        fileOutputStream.close();
+    }
 }

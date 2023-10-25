@@ -23,42 +23,42 @@ import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point;
 
 public class CVShape implements Releasable {
-  public final Contour contour;
+    public final Contour contour;
 
-  @Nullable public final ContourShape shape;
+    @Nullable public final ContourShape shape;
 
-  public double radius = 0;
-  public Point center = null;
+    public double radius = 0;
+    public Point center = null;
 
-  private MatOfPoint3f customTarget = null;
+    private MatOfPoint3f customTarget = null;
 
-  private final MatOfPoint2f approxCurve = new MatOfPoint2f();
+    private final MatOfPoint2f approxCurve = new MatOfPoint2f();
 
-  public CVShape(Contour contour, ContourShape shape) {
-    this.contour = contour;
-    this.shape = shape;
-  }
+    public CVShape(Contour contour, ContourShape shape) {
+        this.contour = contour;
+        this.shape = shape;
+    }
 
-  public CVShape(Contour contour, Point center, double radius) {
-    this(contour, ContourShape.Circle);
-    this.radius = radius;
-    this.center = center;
-  }
+    public CVShape(Contour contour, Point center, double radius) {
+        this(contour, ContourShape.Circle);
+        this.radius = radius;
+        this.center = center;
+    }
 
-  public CVShape(Contour contour, MatOfPoint3f targetPoints) {
-    this.contour = contour;
-    this.shape = ContourShape.Custom;
-    customTarget = targetPoints;
-  }
+    public CVShape(Contour contour, MatOfPoint3f targetPoints) {
+        this.contour = contour;
+        this.shape = ContourShape.Custom;
+        customTarget = targetPoints;
+    }
 
-  public Contour getContour() {
-    return contour;
-  }
+    public Contour getContour() {
+        return contour;
+    }
 
-  @Override
-  public void release() {
-    if (customTarget != null) customTarget.release();
-    approxCurve.release();
-    contour.release();
-  }
+    @Override
+    public void release() {
+        if (customTarget != null) customTarget.release();
+        approxCurve.release();
+        contour.release();
+    }
 }

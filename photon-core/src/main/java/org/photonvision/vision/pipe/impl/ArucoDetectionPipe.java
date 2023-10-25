@@ -26,25 +26,25 @@ import org.photonvision.vision.aruco.PhotonArucoDetector;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class ArucoDetectionPipe
-    extends CVPipe<Mat, List<ArucoDetectionResult>, ArucoDetectionPipeParams> {
-  PhotonArucoDetector detector = new PhotonArucoDetector();
+        extends CVPipe<Mat, List<ArucoDetectionResult>, ArucoDetectionPipeParams> {
+    PhotonArucoDetector detector = new PhotonArucoDetector();
 
-  @Override
-  protected List<ArucoDetectionResult> process(Mat in) {
-    return List.of(
-        detector.detect(
-            in,
-            (float) Units.inchesToMeters(6),
-            params.cameraCalibrationCoefficients,
-            params.detectorParams));
-  }
+    @Override
+    protected List<ArucoDetectionResult> process(Mat in) {
+        return List.of(
+                detector.detect(
+                        in,
+                        (float) Units.inchesToMeters(6),
+                        params.cameraCalibrationCoefficients,
+                        params.detectorParams));
+    }
 
-  @Override
-  public void setParams(ArucoDetectionPipeParams params) {
-    super.setParams(params);
-  }
+    @Override
+    public void setParams(ArucoDetectionPipeParams params) {
+        super.setParams(params);
+    }
 
-  public DetectorParameters getParameters() {
-    return params == null ? null : params.detectorParams.getDetectorParameters();
-  }
+    public DetectorParameters getParameters() {
+        return params == null ? null : params.detectorParams.getDetectorParameters();
+    }
 }

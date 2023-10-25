@@ -24,41 +24,41 @@ import org.photonvision.vision.pipe.MutatingPipe;
 
 /** Represents a pipeline that blurs the image. */
 public class BlurPipe extends MutatingPipe<Mat, BlurPipe.BlurParams> {
-  /**
-   * Processes this pipe.
-   *
-   * @param in Input for pipe processing.
-   * @return The processed frame.
-   */
-  @Override
-  protected Void process(Mat in) {
-    Imgproc.blur(in, in, params.getBlurSize());
-    return null;
-  }
-
-  public static class BlurParams {
-    // Default BlurImagePrams with zero blur.
-    public static BlurParams DEFAULT = new BlurParams(0);
-
-    // Member to store the blur size.
-    private final int m_blurSize;
-
     /**
-     * Constructs a new BlurImageParams.
+     * Processes this pipe.
      *
-     * @param blurSize The blur size.
+     * @param in Input for pipe processing.
+     * @return The processed frame.
      */
-    public BlurParams(int blurSize) {
-      m_blurSize = blurSize;
+    @Override
+    protected Void process(Mat in) {
+        Imgproc.blur(in, in, params.getBlurSize());
+        return null;
     }
 
-    /**
-     * Returns the blur size.
-     *
-     * @return The blur size.
-     */
-    public Size getBlurSize() {
-      return new Size(m_blurSize, m_blurSize);
+    public static class BlurParams {
+        // Default BlurImagePrams with zero blur.
+        public static BlurParams DEFAULT = new BlurParams(0);
+
+        // Member to store the blur size.
+        private final int m_blurSize;
+
+        /**
+         * Constructs a new BlurImageParams.
+         *
+         * @param blurSize The blur size.
+         */
+        public BlurParams(int blurSize) {
+            m_blurSize = blurSize;
+        }
+
+        /**
+         * Returns the blur size.
+         *
+         * @return The blur size.
+         */
+        public Size getBlurSize() {
+            return new Size(m_blurSize, m_blurSize);
+        }
     }
-  }
 }

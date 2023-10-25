@@ -20,25 +20,25 @@ package org.photonvision.common.configuration;
 import java.nio.file.Path;
 
 public abstract class ConfigProvider {
-  protected PhotonConfiguration config;
+    protected PhotonConfiguration config;
 
-  abstract void load();
+    abstract void load();
 
-  abstract boolean saveToDisk();
+    abstract boolean saveToDisk();
 
-  PhotonConfiguration getConfig() {
-    return config;
-  }
+    PhotonConfiguration getConfig() {
+        return config;
+    }
 
-  public void clearConfig() {
-    config = new PhotonConfiguration();
-  }
+    public void clearConfig() {
+        config = new PhotonConfiguration();
+    }
 
-  public abstract boolean saveUploadedHardwareConfig(Path uploadPath);
+    public abstract boolean saveUploadedHardwareConfig(Path uploadPath);
 
-  public abstract boolean saveUploadedHardwareSettings(Path uploadPath);
+    public abstract boolean saveUploadedHardwareSettings(Path uploadPath);
 
-  public abstract boolean saveUploadedNetworkConfig(Path uploadPath);
+    public abstract boolean saveUploadedNetworkConfig(Path uploadPath);
 
-  public abstract boolean saveUploadedAprilTagFieldLayout(Path uploadPath);
+    public abstract boolean saveUploadedAprilTagFieldLayout(Path uploadPath);
 }

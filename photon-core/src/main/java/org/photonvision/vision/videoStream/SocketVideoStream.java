@@ -30,88 +30,88 @@ import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
 import org.photonvision.vision.opencv.CVMat;
 
 public class SocketVideoStream implements Consumer<CVMat> {
-  int portID = 0; // Align with cscore's port for unique identification of stream
-  MatOfByte jpegBytes = null;
+    int portID = 0; // Align with cscore's port for unique identification of stream
+    MatOfByte jpegBytes = null;
 
-  // Gets set to true when another class reads out valid jpeg bytes at least once
-  // Set back to false when another frame is freshly converted
-  // Should eliminate synchronization issues of differing rates of putting frames in
-  // and taking them back out
-  boolean frameWasConsumed = false;
+    // Gets set to true when another class reads out valid jpeg bytes at least once
+    // Set back to false when another frame is freshly converted
+    // Should eliminate synchronization issues of differing rates of putting frames in
+    // and taking them back out
+    boolean frameWasConsumed = false;
 
-  // Synclock around manipulating the jpeg bytes from multiple threads
-  Lock jpegBytesLock = new ReentrantLock();
-  private int userCount = 0;
+    // Synclock around manipulating the jpeg bytes from multiple threads
+    Lock jpegBytesLock = new ReentrantLock();
+    private int userCount = 0;
 
-  // FPS-limited MJPEG sender
-  private final double FPS_MAX = 30.0;
-  private final long minFramePeriodNanos = Math.round(1000000000.0 / FPS_MAX);
-  private long nextFrameSendTime = MathUtils.wpiNanoTime() + minFramePeriodNanos;
-  MJPGFrameConsumer oldSchoolServer;
+    // FPS-limited MJPEG sender
+    private final double FPS_MAX = 30.0;
+    private final long minFramePeriodNanos = Math.round(1000000000.0 / FPS_MAX);
+    private long nextFrameSendTime = MathUtils.wpiNanoTime() + minFramePeriodNanos;
+    MJPGFrameConsumer oldSchoolServer;
 
-  public SocketVideoStream(int portID) {
-    this.portID = portID;
-    oldSchoolServer =
-        new MJPGFrameConsumer(
-            CameraServerJNI.getHostname() + "_Port_" + portID + "_MJPEG_Server", portID);
-  }
+    public SocketVideoStream(int portID) {
+        this.portID = portID;
+        oldSchoolServer =
+                new MJPGFrameConsumer(
+                        CameraServerJNI.getHostname() + "_Port_" + portID + "_MJPEG_Server", portID);
+    }
 
-  @Override
-  public void accept(CVMat image) {
-    if (userCount > 0) {
-      if (jpegBytesLock
-          .tryLock()) { // we assume frames are coming in frequently. Just skip this frame if we're
-        // locked doing something else.
-        try {
-          // Does a single-shot frame receive and convert to JPEG for efficiency
-          // Will not capture/convert again until convertNextFrame() is called
-          if (image != null && !image.getMat().empty() && jpegBytes == null) {
-            frameWasConsumed = false;
-            jpegBytes = new MatOfByte();
-            Imgcodecs.imencode(
-                ".jpg",
-                image.getMat(),
-                jpegBytes,
-                new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 75));
-          }
-        } finally {
-          jpegBytesLock.unlock();
+    @Override
+    public void accept(CVMat image) {
+        if (userCount > 0) {
+            if (jpegBytesLock
+                    .tryLock()) { // we assume frames are coming in frequently. Just skip this frame if we're
+                // locked doing something else.
+                try {
+                    // Does a single-shot frame receive and convert to JPEG for efficiency
+                    // Will not capture/convert again until convertNextFrame() is called
+                    if (image != null && !image.getMat().empty() && jpegBytes == null) {
+                        frameWasConsumed = false;
+                        jpegBytes = new MatOfByte();
+                        Imgcodecs.imencode(
+                                ".jpg",
+                                image.getMat(),
+                                jpegBytes,
+                                new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 75));
+                    }
+                } finally {
+                    jpegBytesLock.unlock();
+                }
+            }
         }
-      }
+
+        // Send the frame in an FPS-limited fashion
+        var now = MathUtils.wpiNanoTime();
+        if (now > nextFrameSendTime) {
+            oldSchoolServer.accept(image);
+            nextFrameSendTime = now + minFramePeriodNanos;
+        }
     }
 
-    // Send the frame in an FPS-limited fashion
-    var now = MathUtils.wpiNanoTime();
-    if (now > nextFrameSendTime) {
-      oldSchoolServer.accept(image);
-      nextFrameSendTime = now + minFramePeriodNanos;
+    public ByteBuffer getJPEGByteBuffer() {
+        ByteBuffer sendStr = null;
+        jpegBytesLock.lock();
+        if (jpegBytes != null) {
+            sendStr = ByteBuffer.wrap(jpegBytes.toArray());
+        }
+        jpegBytesLock.unlock();
+        return sendStr;
     }
-  }
 
-  public ByteBuffer getJPEGByteBuffer() {
-    ByteBuffer sendStr = null;
-    jpegBytesLock.lock();
-    if (jpegBytes != null) {
-      sendStr = ByteBuffer.wrap(jpegBytes.toArray());
+    public void convertNextFrame() {
+        jpegBytesLock.lock();
+        if (jpegBytes != null) {
+            jpegBytes.release();
+            jpegBytes = null;
+        }
+        jpegBytesLock.unlock();
     }
-    jpegBytesLock.unlock();
-    return sendStr;
-  }
 
-  public void convertNextFrame() {
-    jpegBytesLock.lock();
-    if (jpegBytes != null) {
-      jpegBytes.release();
-      jpegBytes = null;
+    public void addUser() {
+        userCount++;
     }
-    jpegBytesLock.unlock();
-  }
 
-  public void addUser() {
-    userCount++;
-  }
-
-  public void removeUser() {
-    userCount--;
-  }
+    public void removeUser() {
+        userCount--;
+    }
 }

@@ -28,65 +28,65 @@ import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.hardware.metrics.MetricsManager;
 
 public class HardwareTest {
-  @Test
-  public void testHardware() {
-    MetricsManager mm = new MetricsManager();
+    @Test
+    public void testHardware() {
+        MetricsManager mm = new MetricsManager();
 
-    if (!Platform.isRaspberryPi()) return;
+        if (!Platform.isRaspberryPi()) return;
 
-    System.out.println("Testing on platform: " + Platform.getPlatformName());
+        System.out.println("Testing on platform: " + Platform.getPlatformName());
 
-    System.out.println("Printing CPU Info:");
-    System.out.println("Memory: " + mm.getMemory() + "MB");
-    System.out.println("Temperature: " + mm.getTemp() + "C");
-    System.out.println("Utilization: : " + mm.getUtilization() + "%");
+        System.out.println("Printing CPU Info:");
+        System.out.println("Memory: " + mm.getMemory() + "MB");
+        System.out.println("Temperature: " + mm.getTemp() + "C");
+        System.out.println("Utilization: : " + mm.getUtilization() + "%");
 
-    System.out.println("Printing GPU Info:");
-    System.out.println("Memory: " + mm.getGPUMemorySplit() + "MB");
+        System.out.println("Printing GPU Info:");
+        System.out.println("Memory: " + mm.getGPUMemorySplit() + "MB");
 
-    System.out.println("Printing RAM Info: ");
-    System.out.println("Used RAM: : " + mm.getUsedRam() + "MB");
-  }
-
-  @Test
-  public void testGPIO() {
-    GPIOBase gpio;
-    if (Platform.isRaspberryPi()) {
-      gpio = new PigpioPin(18);
-    } else {
-      gpio = new CustomGPIO(18);
+        System.out.println("Printing RAM Info: ");
+        System.out.println("Used RAM: : " + mm.getUsedRam() + "MB");
     }
 
-    gpio.setOn(); // HIGH
-    assertTrue(gpio.getState());
+    @Test
+    public void testGPIO() {
+        GPIOBase gpio;
+        if (Platform.isRaspberryPi()) {
+            gpio = new PigpioPin(18);
+        } else {
+            gpio = new CustomGPIO(18);
+        }
 
-    gpio.setOff(); // LOW
-    assertFalse(gpio.getState());
+        gpio.setOn(); // HIGH
+        assertTrue(gpio.getState());
 
-    gpio.togglePin(); // HIGH
-    assertTrue(gpio.getState());
+        gpio.setOff(); // LOW
+        assertFalse(gpio.getState());
 
-    gpio.togglePin(); // LOW
-    assertFalse(gpio.getState());
+        gpio.togglePin(); // HIGH
+        assertTrue(gpio.getState());
 
-    gpio.setState(true); // HIGH
-    assertTrue(gpio.getState());
+        gpio.togglePin(); // LOW
+        assertFalse(gpio.getState());
 
-    gpio.setState(false); // LOW
-    assertFalse(gpio.getState());
+        gpio.setState(true); // HIGH
+        assertTrue(gpio.getState());
 
-    var success = gpio.shutdown();
-    assertTrue(success);
-  }
+        gpio.setState(false); // LOW
+        assertFalse(gpio.getState());
 
-  @Test
-  public void testBlink() {
-    if (!Platform.isRaspberryPi()) return;
-    GPIOBase pwm = new PigpioPin(18);
-    pwm.blink(125, 3);
-    var startms = System.currentTimeMillis();
-    while (true) {
-      if (System.currentTimeMillis() - startms > 4500) break;
+        var success = gpio.shutdown();
+        assertTrue(success);
     }
-  }
+
+    @Test
+    public void testBlink() {
+        if (!Platform.isRaspberryPi()) return;
+        GPIOBase pwm = new PigpioPin(18);
+        pwm.blink(125, 3);
+        var startms = System.currentTimeMillis();
+        while (true) {
+            if (System.currentTimeMillis() - startms > 4500) break;
+        }
+    }
 }

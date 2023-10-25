@@ -22,18 +22,18 @@ import org.opencv.core.Size;
 import org.photonvision.vision.frame.FrameDivisor;
 
 public class Calibration3dPipelineSettings extends AdvancedPipelineSettings {
-  public int boardHeight = 8;
-  public int boardWidth = 8;
-  public UICalibrationData.BoardType boardType = UICalibrationData.BoardType.CHESSBOARD;
-  public double gridSize = Units.inchesToMeters(1.0);
+    public int boardHeight = 8;
+    public int boardWidth = 8;
+    public UICalibrationData.BoardType boardType = UICalibrationData.BoardType.CHESSBOARD;
+    public double gridSize = Units.inchesToMeters(1.0);
 
-  public Size resolution = new Size(640, 480);
+    public Size resolution = new Size(640, 480);
 
-  public Calibration3dPipelineSettings() {
-    super();
-    this.cameraAutoExposure = true;
-    this.inputShouldShow = true;
-    this.outputShouldShow = true;
-    this.streamingFrameDivisor = FrameDivisor.HALF;
-  }
+    public Calibration3dPipelineSettings() {
+        super();
+        this.cameraAutoExposure = true;
+        this.inputShouldShow = true;
+        this.outputShouldShow = true;
+        this.streamingFrameDivisor = FrameDivisor.HALF;
+    }
 }
