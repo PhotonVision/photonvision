@@ -32,7 +32,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public int numIterations = 40;
     public int hammingDist = 0;
     public int decisionMargin = 35;
-    public boolean doMultiTarget = true;
+    public boolean doMultiTarget = false;
     public boolean doSingleTargetAlways = false;
 
     // 3d settings
