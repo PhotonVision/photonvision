@@ -71,7 +71,8 @@ public class MultiTargetPNPPipe
                         params.cameraCoefficients.cameraIntrinsics.getAsWpilibMat(),
                         params.cameraCoefficients.distCoeffs.getAsWpilibMat(),
                         TrackedTarget.simpleFromTrackedTargets(targetList),
-                        params.atfl, params.targetModel);
+                        params.atfl,
+                        params.targetModel);
 
         return new MultiTargetPNPResults(estimatedPose, tagIDsUsed);
     }
@@ -82,7 +83,9 @@ public class MultiTargetPNPPipe
         private final TargetModel targetModel;
 
         public MultiTargetPNPPipeParams(
-                CameraCalibrationCoefficients cameraCoefficients, AprilTagFieldLayout atfl, TargetModel targetModel) {
+                CameraCalibrationCoefficients cameraCoefficients,
+                AprilTagFieldLayout atfl,
+                TargetModel targetModel) {
             this.cameraCoefficients = cameraCoefficients;
             this.atfl = atfl;
             this.targetModel = targetModel;

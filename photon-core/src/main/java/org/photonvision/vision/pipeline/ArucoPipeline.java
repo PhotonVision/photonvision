@@ -120,8 +120,7 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
             var cameraMatrix = frameStaticProperties.cameraCalibration.getCameraIntrinsicsMat();
             if (cameraMatrix != null && cameraMatrix.rows() > 0) {
                 var estimatorParams =
-                        new ArucoPoseEstimatorPipeParams(
-                                frameStaticProperties.cameraCalibration, tagWidth);
+                        new ArucoPoseEstimatorPipeParams(frameStaticProperties.cameraCalibration, tagWidth);
                 singleTagPoseEstimatorPipe.setParams(estimatorParams);
 
                 // TODO global state ew

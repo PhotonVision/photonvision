@@ -100,8 +100,7 @@ public class VisionEstimation {
         // single-tag pnp
         if (knownTags.size() == 1) {
             var camToTag =
-                    OpenCVHelp.solvePNP_SQUARE(
-                            cameraMatrix, distCoeffs, tagModel.vertices, points);
+                    OpenCVHelp.solvePNP_SQUARE(cameraMatrix, distCoeffs, tagModel.vertices, points);
             if (!camToTag.isPresent) return new PNPResults();
             var bestPose = knownTags.get(0).pose.transformBy(camToTag.best.inverse());
             var altPose = new Pose3d();
