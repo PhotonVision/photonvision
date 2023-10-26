@@ -24,6 +24,8 @@
 
 package org.photonvision.simulation;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.CvSource;
 import edu.wpi.first.cscore.VideoMode.PixelFormat;
@@ -31,12 +33,12 @@ import edu.wpi.first.cscore.VideoSource.ConnectionStrategy;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.util.RuntimeLoader;
+import edu.wpi.first.util.CombinedRuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -49,9 +51,12 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonTargetSortMode;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.networktables.NTTopicSet;
+import org.photonvision.estimation.CameraTargetRelation;
 import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.RotTrlTransform3d;
 import org.photonvision.estimation.TargetModel;
+import org.photonvision.estimation.VisionEstimation;
+import org.photonvision.targeting.MultiTargetPNPResults;
 import org.photonvision.targeting.PNPResults;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
@@ -77,6 +82,8 @@ public class PhotonCameraSim implements AutoCloseable {
     private double minTargetAreaPercent;
     private PhotonTargetSortMode sortMode = PhotonTargetSortMode.Largest;
 
+    private AprilTagFieldLayout tagLayout = AprilTagFields.kDefaultField.loadAprilTagLayoutField();
+
     // video stream simulation
     private final CvSource videoSimRaw;
     private final Mat videoSimFrameRaw = new Mat();
@@ -89,10 +96,7 @@ public class PhotonCameraSim implements AutoCloseable {
 
     static {
         try {
-            var loader =
-                    new RuntimeLoader<>(
-                            Core.NATIVE_LIBRARY_NAME, RuntimeLoader.getDefaultExtractionRoot(), Core.class);
-            loader.loadLibrary();
+            CombinedRuntimeLoader.loadLibraries(OpenCVHelp.class, Core.NATIVE_LIBRARY_NAME, "cscorejni");
         } catch (Exception e) {
             throw new RuntimeException("Failed to load native libraries!", e);
         }
@@ -205,23 +209,16 @@ public class PhotonCameraSim implements AutoCloseable {
      * @return If this vision target can be seen before image projection.
      */
     public boolean canSeeTargetPose(Pose3d camPose, VisionTargetSim target) {
-        // var rel = new CameraTargetRelation(camPose, target.getPose());
-        // TODO: removal awaiting wpilib Rotation3d performance improvements
-        var relTarget = RotTrlTransform3d.makeRelativeTo(camPose).apply(target.getPose());
-        var camToTargYaw = new Rotation2d(relTarget.getX(), relTarget.getY());
-        var camToTargPitch =
-                new Rotation2d(Math.hypot(relTarget.getX(), relTarget.getY()), -relTarget.getZ());
-        var relCam = RotTrlTransform3d.makeRelativeTo(target.getPose()).apply(camPose);
-        var targToCamAngle = new Rotation2d(relCam.getX(), Math.hypot(relCam.getY(), relCam.getZ()));
+        var rel = new CameraTargetRelation(camPose, target.getPose());
 
         return (
         // target translation is outside of camera's FOV
-        (Math.abs(camToTargYaw.getDegrees()) < prop.getHorizFOV().getDegrees() / 2)
-                && (Math.abs(camToTargPitch.getDegrees()) < prop.getVertFOV().getDegrees() / 2)
+        (Math.abs(rel.camToTargYaw.getDegrees()) < prop.getHorizFOV().getDegrees() / 2)
+                && (Math.abs(rel.camToTargPitch.getDegrees()) < prop.getVertFOV().getDegrees() / 2)
                 && (!target.getModel().isPlanar
-                        || Math.abs(targToCamAngle.getDegrees())
+                        || Math.abs(rel.targToCamAngle.getDegrees())
                                 < 90) // camera is behind planar target and it should be occluded
-                && (relTarget.getTranslation().getNorm() <= maxSightRangeMeters)); // target is too far
+                && (rel.camToTarg.getTranslation().getNorm() <= maxSightRangeMeters)); // target is too far
     }
 
     /**
@@ -524,11 +521,27 @@ public class PhotonCameraSim implements AutoCloseable {
             videoSimProcessed.putFrame(videoSimFrameProcessed);
         } else videoSimProcessed.setConnectionStrategy(ConnectionStrategy.kForceClose);
 
-        // put this simulated data to NT
+        // calculate multitag results
+        var multitagResults = new MultiTargetPNPResults();
+        // TODO: Implement ATFL subscribing in backend
+        // var tagLayout = cam.getAprilTagFieldLayout();
+        var visibleLayoutTags = VisionEstimation.getVisibleLayoutTags(detectableTgts, tagLayout);
+        if (visibleLayoutTags.size() > 1) {
+            List<Integer> usedIDs =
+                    visibleLayoutTags.stream().map(t -> t.ID).sorted().collect(Collectors.toList());
+            var pnpResults =
+                    VisionEstimation.estimateCamPosePNP(
+                            prop.getIntrinsics(), prop.getDistCoeffs(), detectableTgts, tagLayout);
+            multitagResults = new MultiTargetPNPResults(pnpResults, usedIDs);
+        }
+
+        // sort target order
         if (sortMode != null) {
             detectableTgts.sort(sortMode.getComparator());
         }
-        return new PhotonPipelineResult(latencyMillis, detectableTgts);
+
+        // put this simulated data to NT
+        return new PhotonPipelineResult(latencyMillis, detectableTgts, multitagResults);
     }
 
     /**

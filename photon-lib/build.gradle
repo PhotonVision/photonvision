@@ -1,12 +1,12 @@
 plugins {
-    id 'edu.wpi.first.WpilibTools' version '1.1.0'
+    id "java"
+    id 'cpp'
+    id "google-test-test-suite"
+    id 'edu.wpi.first.WpilibTools' version '1.3.0'
 }
 
 import java.nio.file.Path
 
-apply plugin: "cpp"
-apply plugin: "java"
-apply plugin: "google-test-test-suite"
 apply plugin: "edu.wpi.first.NativeUtils"
 
 apply from: "${rootDir}/shared/config.gradle"
@@ -16,19 +16,13 @@ test {
     useJUnitPlatform()
 }
 
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
 
-wpilibTools.deps.wpilibVersion = wpilibVersion
+wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()
 println("Building for WPILib ${wpilibTools.deps.wpilibVersion}")
-
-// From wpilib shared/config.gradle:
-// NativeUtils adds the following OpenCV warning suppression for Linux, but not
-// for macOS
-// https://github.com/opencv/opencv/issues/20269
-nativeUtils.platformConfigs.osxuniversal.cppCompiler.args.add("-Wno-deprecated-anon-enum-enum-conversion")
-nativeUtils.platformConfigs.linuxathena.cppCompiler.args.add("-Wno-deprecated-anon-enum-enum-conversion")
-// nativeUtils.platformConfigs.linuxx64.cppCompiler.args.add("-Wno-deprecated-anon-enum-enum-conversion")
 
 // Apply Java configuration
 dependencies {
@@ -44,16 +38,15 @@ dependencies {
     implementation wpilibTools.deps.wpilibJava("ntcore")
     implementation wpilibTools.deps.wpilibJava("wpilibj")
     implementation wpilibTools.deps.wpilibJava("apriltag")
+    implementation wpilibTools.deps.wpilibOpenCvJava("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())
 
     // Jackson
-    implementation "com.fasterxml.jackson.core:jackson-annotations:2.12.4"
-    implementation "com.fasterxml.jackson.core:jackson-core:2.12.4"
-    implementation "com.fasterxml.jackson.core:jackson-databind:2.12.4"
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: wpi.versions.jacksonVersion.get()
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-core", version: wpi.versions.jacksonVersion.get()
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-databind", version: wpi.versions.jacksonVersion.get()
 
-    implementation "edu.wpi.first.thirdparty.frc2024.opencv:opencv-java:$openCVversion"
-    implementation "edu.wpi.first.thirdparty.frc2024.opencv:opencv-jni:$openCVversion:$jniPlatform"
-
-    implementation "org.ejml:ejml-simple:0.42"
+    implementation group: "org.ejml", name: "ejml-simple", version: wpi.versions.ejmlVersion.get()
+    implementation group: "us.hebi.quickbuf", name: "quickbuf-runtime", version: wpi.versions.quickbufVersion.get();
 
     // Junit
     testImplementation wpilibTools.deps.wpilibJava("cscore")
@@ -167,10 +160,10 @@ def testNativeTasks = wpilibTools.createExtractionTasks {
 
 testNativeTasks.addToSourceSetResources(sourceSets.test)
 
-testNativeConfig.dependencies.add wpilibTools.deps.cscore()
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
 testNativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
 testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
 testNativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
 testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
 testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
-testNativeConfig.dependencies.add wpilibTools.deps.cscore()
+testNativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())

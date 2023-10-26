@@ -182,20 +182,13 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                                 new Transform3d(
                                         new Pose3d().plus(multiTagResult.estimatedPose.best), tagPose.get());
                         // match expected AprilTag coordinate system
-                        // TODO cleanup coordinate systems in wpilib 2024
-                        var apriltagTrl =
-                                CoordinateSystem.convert(
-                                        camToTag.getTranslation(), CoordinateSystem.NWU(), CoordinateSystem.EDN());
-                        var apriltagRot =
-                                CoordinateSystem.convert(
-                                                new Rotation3d(), CoordinateSystem.EDN(), CoordinateSystem.NWU())
-                                        .plus(
-                                                CoordinateSystem.convert(
-                                                        camToTag.getRotation(),
-                                                        CoordinateSystem.NWU(),
-                                                        CoordinateSystem.EDN()));
-                        apriltagRot = new Rotation3d(0, Math.PI, 0).plus(apriltagRot);
-                        camToTag = new Transform3d(apriltagTrl, apriltagRot);
+                        camToTag =
+                                CoordinateSystem.convert(camToTag, CoordinateSystem.NWU(), CoordinateSystem.EDN());
+                        // (AprilTag expects Z axis going into tag)
+                        camToTag =
+                                new Transform3d(
+                                        camToTag.getTranslation(),
+                                        new Rotation3d(0, Math.PI, 0).plus(camToTag.getRotation()));
                         tagPoseEstimate = new AprilTagPoseEstimate(camToTag, camToTag, 0, 0);
                     }
                 }
