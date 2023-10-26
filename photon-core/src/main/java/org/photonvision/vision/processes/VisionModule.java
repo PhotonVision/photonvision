@@ -182,8 +182,12 @@ public class VisionModule {
                         visionSource.getSettables().getConfiguration().nickname, "output");
 
         String camHostname = CameraServerJNI.getHostname();
-        inputVideoStreamer = new MJPGFrameConsumer(camHostname + "_Port_" + inputStreamPort + "_MJPEG_Server", inputStreamPort);
-        outputVideoStreamer = new MJPGFrameConsumer(camHostname + "_Port_" + outputStreamPort + "_MJPEG_Server", outputStreamPort);
+        inputVideoStreamer =
+                new MJPGFrameConsumer(
+                        camHostname + "_Port_" + inputStreamPort + "_MJPEG_Server", inputStreamPort);
+        outputVideoStreamer =
+                new MJPGFrameConsumer(
+                        camHostname + "_Port_" + outputStreamPort + "_MJPEG_Server", outputStreamPort);
     }
 
     private void recreateStreamResultConsumers() {
