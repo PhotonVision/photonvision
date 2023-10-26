@@ -32,7 +32,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.util.RuntimeLoader;
+import edu.wpi.first.util.CombinedRuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
 import java.util.ArrayList;
 import java.util.List;
@@ -89,10 +89,7 @@ public class PhotonCameraSim implements AutoCloseable {
 
     static {
         try {
-            var loader =
-                    new RuntimeLoader<>(
-                            Core.NATIVE_LIBRARY_NAME, RuntimeLoader.getDefaultExtractionRoot(), Core.class);
-            loader.loadLibrary();
+            CombinedRuntimeLoader.loadLibraries(OpenCVHelp.class, Core.NATIVE_LIBRARY_NAME, "cscorejni");
         } catch (Exception e) {
             throw new RuntimeException("Failed to load native libraries!", e);
         }
