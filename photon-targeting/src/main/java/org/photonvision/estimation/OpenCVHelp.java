@@ -49,8 +49,8 @@ import org.photonvision.targeting.PNPResults;
 import org.photonvision.targeting.TargetCorner;
 
 public final class OpenCVHelp {
-    private static RotTrlTransform3d NWU_TO_EDN;
-    private static RotTrlTransform3d EDN_TO_NWU;
+    private static Rotation3d NWU_TO_EDN;
+    private static Rotation3d EDN_TO_NWU;
 
     static {
         try {
@@ -59,18 +59,12 @@ public final class OpenCVHelp {
             throw new RuntimeException("Failed to load native libraries!", e);
         }
 
-        NWU_TO_EDN =
-                new RotTrlTransform3d(
-                        new Rotation3d(Matrix.mat(Nat.N3(), Nat.N3()).fill(0, -1, 0, 0, 0, -1, 1, 0, 0)),
-                        new Translation3d());
-        EDN_TO_NWU =
-                new RotTrlTransform3d(
-                        new Rotation3d(Matrix.mat(Nat.N3(), Nat.N3()).fill(0, 0, 1, -1, 0, 0, 0, -1, 0)),
-                        new Translation3d());
+        NWU_TO_EDN = new Rotation3d(Matrix.mat(Nat.N3(), Nat.N3()).fill(0, -1, 0, 0, 0, -1, 1, 0, 0));
+        EDN_TO_NWU = new Rotation3d(Matrix.mat(Nat.N3(), Nat.N3()).fill(0, 0, 1, -1, 0, 0, 0, -1, 0));
     }
 
     public static Mat matrixToMat(SimpleMatrix matrix) {
-        var mat = new Mat(matrix.numRows(), matrix.numCols(), CvType.CV_64F);
+        var mat = new Mat(matrix.getNumRows(), matrix.getNumCols(), CvType.CV_64F);
         mat.put(0, 0, matrix.getDDRM().getData());
         return mat;
     }
@@ -219,14 +213,12 @@ public final class OpenCVHelp {
         return reordered;
     }
 
-    // TODO: RotTrlTransform3d removal awaiting Rotation3d performance improvements
     /**
      * Convert a rotation delta from EDN to NWU. For example, if you have a rotation X,Y,Z {1, 0, 0}
      * in EDN, this would be {0, -1, 0} in NWU.
      */
     private static Rotation3d rotationEDNtoNWU(Rotation3d rot) {
-        return new RotTrlTransform3d(EDN_TO_NWU.apply(rot), new Translation3d())
-                .apply(EDN_TO_NWU.inverse().getRotation());
+        return EDN_TO_NWU.unaryMinus().plus(rot.plus(EDN_TO_NWU));
     }
 
     /**
@@ -234,8 +226,7 @@ public final class OpenCVHelp {
      * in NWU, this would be {0, 0, 1} in EDN.
      */
     private static Rotation3d rotationNWUtoEDN(Rotation3d rot) {
-        return new RotTrlTransform3d(NWU_TO_EDN.apply(rot), new Translation3d())
-                .apply(NWU_TO_EDN.inverse().getRotation());
+        return NWU_TO_EDN.unaryMinus().plus(rot.plus(NWU_TO_EDN));
     }
 
     /**
@@ -243,7 +234,7 @@ public final class OpenCVHelp {
      * in EDN, this would be {0, -1, 0} in NWU.
      */
     private static Translation3d translationEDNtoNWU(Translation3d trl) {
-        return EDN_TO_NWU.apply(trl);
+        return trl.rotateBy(EDN_TO_NWU);
     }
 
     /**
@@ -251,7 +242,7 @@ public final class OpenCVHelp {
      * in NWU, this would be {0, 0, 1} in EDN.
      */
     private static Translation3d translationNWUtoEDN(Translation3d trl) {
-        return NWU_TO_EDN.apply(trl);
+        return trl.rotateBy(NWU_TO_EDN);
     }
 
     /**
