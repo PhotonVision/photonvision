@@ -46,7 +46,6 @@ import edu.wpi.first.net.WPINetJNI;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
-import edu.wpi.first.util.RuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
 import java.util.ArrayList;
 import java.util.List;
@@ -101,13 +100,9 @@ class VisionSystemSimTest {
                     "ntcorejni",
                     "wpinetjni",
                     "wpiHaljni",
+                    Core.NATIVE_LIBRARY_NAME,
                     "cscorejni",
-                    "cscorejnicvstatic");
-
-            var loader =
-                    new RuntimeLoader<>(
-                            Core.NATIVE_LIBRARY_NAME, RuntimeLoader.getDefaultExtractionRoot(), Core.class);
-            loader.loadLibrary();
+                    "apriltagjni");
         } catch (Exception e) {
             e.printStackTrace();
         }
