@@ -26,8 +26,8 @@ export enum TargetModel {
   InfiniteRechargeHighGoalOuter = 2,
   CircularPowerCell7in = 3,
   RapidReactCircularCargoBall = 4,
-  kAprilTag6in_16h5 = 5,
-  kAprilTag6p5in_36h11 = 6
+  AprilTag6in_16h5 = 5,
+  AprilTag6p5in_36h11 = 6
 }
 
 export interface PipelineSettings {
@@ -222,7 +222,7 @@ export type ConfigurableAprilTagPipelineSettings = Partial<
 export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
   ...DefaultPipelineSettings,
   cameraGain: 75,
-  targetModel: TargetModel.kAprilTag6in_16h5,
+  targetModel: TargetModel.AprilTag6in_16h5,
   ledMode: false,
   outputShowMultipleTargets: true,
   cameraExposure: 20,
@@ -265,7 +265,7 @@ export type ConfigurableArucoPipelineSettings = Partial<Omit<ArucoPipelineSettin
 export const DefaultArucoPipelineSettings: ArucoPipelineSettings = {
   ...DefaultPipelineSettings,
   outputShowMultipleTargets: true,
-  targetModel: TargetModel.kAprilTag6in_16h5,
+  targetModel: TargetModel.AprilTag6in_16h5,
   cameraExposure: -1,
   cameraAutoExposure: true,
   ledMode: false,
