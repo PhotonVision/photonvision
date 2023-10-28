@@ -119,7 +119,7 @@ jobs:
           path: build/html
   build-photonlib-host:
     env:
-      MACOSX_DEPLOYMENT_TARGET: 10.14
+      MACOSX_DEPLOYMENT_TARGET: 11
     strategy:
       fail-fast: false
       matrix:
@@ -127,9 +127,9 @@ jobs:
           - os: windows-2022
             artifact-name: Win64
             architecture: x64
-          # Mac builds are broken due to opencv class loading issues -- disable for now
-          # - os: macos-11
-          #   artifact-name: macOS
+          - os: macos-12
+            artifact-name: macOS
+            architecture: x64
           - os: ubuntu-22.04
             artifact-name: Linux
 

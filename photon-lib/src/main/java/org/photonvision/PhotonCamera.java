@@ -24,11 +24,9 @@
 
 package org.photonvision;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.MatBuilder;
-import edu.wpi.first.math.MathSharedStore;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.numbers.*;
@@ -122,6 +120,9 @@ public class PhotonCamera implements AutoCloseable {
     }
 
     Packet packet = new Packet(1);
+
+    private static AprilTagFieldLayout lastSetTagLayout =
+            AprilTagFields.kDefaultField.loadAprilTagLayoutField();
 
     // Existing is enough to make this multisubscriber do its thing
     private final MultiSubscriber m_topicNameSubscriber;
@@ -336,27 +337,45 @@ public class PhotonCamera implements AutoCloseable {
         return (now - prevHeartbeatChangeTime) < HEARBEAT_DEBOUNCE_SEC;
     }
 
-    /**
-     * Set the Apriltag Field Layout used by all PhotonVision coprocessors that are (or might later)
-     * connect to this robot. The topic is marked as persistant, so even if you only call this once
-     * ever, it will be saved on the RoboRIO and pushed out to all NT clients when code reboots.
-     * PhotonVision will also store a copy of this layout locally on the coprocessor, but subscribes
-     * to this topic and the local copy will be updated when this function is called.
-     *
-     * @param layout The layout to use for *all* PhotonVision cameras
-     * @return Success of serializing the JSON. This does *not* mean that all PhotonVision clients
-     *     have updated their internal layouts.
-     */
-    public boolean setApriltagFieldLayout(AprilTagFieldLayout layout) {
-        try {
-            var layout_json = new ObjectMapper().writeValueAsString(layout);
-            atflPublisher.set(layout_json);
-            return true;
-        } catch (JsonProcessingException e) {
-            MathSharedStore.reportError("Error setting ATFL in " + this.getName(), e.getStackTrace());
-        }
-        return false;
-    }
+    // TODO: Implement ATFL subscribing in backend
+    // /**
+    //  * Get the last set {@link AprilTagFieldLayout}. The tag layout is shared between all
+    // PhotonVision
+    //  * coprocessors on the same NT instance-- this method returns the most recent layout set. If no
+    //  * layout has been set by the user, this is equal to {@link AprilTagFields#kDefaultField}.
+    //  *
+    //  * @return The last set layout
+    //  */
+    // public AprilTagFieldLayout getAprilTagFieldLayout() {
+    //     return lastSetTagLayout;
+    // }
+
+    // /**
+    //  * Set the {@link AprilTagFieldLayout} used by all PhotonVision coprocessors that are (or might
+    //  * later) connect to this robot. The topic is marked as persistent, so even if you only call
+    // this
+    //  * once ever, it will be saved on the RoboRIO and pushed out to all NT clients when code
+    // reboots.
+    //  * PhotonVision will also store a copy of this layout locally on the coprocessor, but
+    // subscribes
+    //  * to this topic and the local copy will be updated when this function is called.
+    //  *
+    //  * @param layout The layout to use for *all* PhotonVision cameras
+    //  * @return Success of serializing the JSON. This does *not* mean that all PhotonVision clients
+    //  *     have updated their internal layouts.
+    //  */
+    // public boolean setAprilTagFieldLayout(AprilTagFieldLayout layout) {
+    //     try {
+    //         var layout_json = new ObjectMapper().writeValueAsString(layout);
+    //         atflPublisher.set(layout_json);
+    //         lastSetTagLayout = layout;
+    //         return true;
+    //     } catch (JsonProcessingException e) {
+    //         MathSharedStore.reportError("Error setting ATFL in " + this.getName(),
+    // e.getStackTrace());
+    //     }
+    //     return false;
+    // }
 
     public Optional<Matrix<N3, N3>> getCameraMatrix() {
         var cameraMatrix = cameraIntrinsicsSubscriber.get();

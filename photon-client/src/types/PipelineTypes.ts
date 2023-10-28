@@ -21,15 +21,16 @@ export enum RobotOffsetPointMode {
 }
 
 export enum TargetModel {
-  InfiniteRechargeHighGoalOuter = 0,
-  InfiniteRechargeHighGoalInner = 1,
-  DeepSpaceDualTarget = 2,
+  StrongholdHighGoal = 0,
+  DeepSpaceDualTarget = 1,
+  InfiniteRechargeHighGoalOuter = 2,
   CircularPowerCell7in = 3,
   RapidReactCircularCargoBall = 4,
-  StrongholdHighGoal = 5,
-  Apriltag_200mm = 6,
-  Aruco6in_16h5 = 7,
-  Apriltag6in_16h5 = 8
+  Apriltag_200mm = 5,
+  Aruco6in_16h5 = 6,
+  Apriltag6in_16h5 = 7,
+  Aruco6p5in_36h11 = 8,
+  Apriltag6p5in_36h11 = 9
 }
 
 export interface PipelineSettings {
@@ -245,11 +246,22 @@ export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
 
 export interface ArucoPipelineSettings extends PipelineSettings {
   pipelineType: PipelineType.Aruco;
-  decimate: number;
-  threads: number;
-  numIterations: number;
-  cornerAccuracy: number;
+
+  tagFamily: AprilTagFamily;
+
+  threshWinSizes: WebsocketNumberPair | [number, number];
+  threshStepSize: number;
+  threshConstant: number;
+  debugThreshold: boolean;
+
+  useCornerRefinement: boolean;
+
   useAruco3: boolean;
+  aruco3MinMarkerSideRatio: number;
+  aruco3MinCanonicalImgSide: number;
+
+  doMultiTarget: boolean;
+  doSingleTargetAlways: boolean;
 }
 export type ConfigurableArucoPipelineSettings = Partial<Omit<ArucoPipelineSettings, "pipelineType">> &
   ConfigurablePipelineSettings;
@@ -262,11 +274,17 @@ export const DefaultArucoPipelineSettings: ArucoPipelineSettings = {
   ledMode: false,
   pipelineType: PipelineType.Aruco,
 
-  decimate: 1,
-  threads: 2,
-  numIterations: 100,
-  cornerAccuracy: 25,
-  useAruco3: true
+  tagFamily: AprilTagFamily.Family16h5,
+  threshWinSizes: { first: 11, second: 91 },
+  threshStepSize: 40,
+  threshConstant: 10,
+  debugThreshold: false,
+  useCornerRefinement: true,
+  useAruco3: false,
+  aruco3MinMarkerSideRatio: 0.02,
+  aruco3MinCanonicalImgSide: 32,
+  doMultiTarget: false,
+  doSingleTargetAlways: false
 };
 
 export type ActivePipelineSettings =
