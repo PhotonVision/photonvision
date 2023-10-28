@@ -22,6 +22,7 @@
           ],
           "weight": 3.0
         },
+        "bottom": 514,
         "cameras": {
           "arrowColor": [
             0.0,
@@ -33,7 +34,19 @@
           "selectable": false,
           "style": "Hidden"
         },
+        "height": 8.210550308227539,
+        "image": "2020-field.png",
+        "left": 96,
+        "right": 1040,
         "targets": {
+          "arrowColor": [
+            0.27848100662231445,
+            1.0,
+            0.0,
+            255.0
+          ],
+          "arrowSize": 58,
+          "arrowWeight": 6.0,
           "color": [
             0.05063295364379883,
             1.0,
@@ -43,6 +56,8 @@
           "style": "Hidden",
           "weight": 1.0
         },
+        "top": 25,
+        "width": 15.982950210571289,
         "window": {
           "visible": true
         }

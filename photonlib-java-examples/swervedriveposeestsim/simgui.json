@@ -57,10 +57,12 @@
           "weight": 2.0
         },
         "apriltag": {
+          "arrows": false,
           "image": "tag-green.png",
-          "length": 0.5,
-          "width": 0.4000000059604645
+          "length": 0.6000000238418579,
+          "width": 0.5
         },
+        "bottom": 544,
         "cameras": {
           "arrowColor": [
             0.29535865783691406,
@@ -75,7 +77,11 @@
           "weight": 1.0,
           "width": 1.0
         },
-        "height": 8.013699531555176,
+        "height": 8.013679504394531,
+        "image": "2023-field.png",
+        "left": 46,
+        "right": 1088,
+        "top": 36,
         "visibleTargetPoses": {
           "arrows": false,
           "image": "tag-blue.png",
@@ -83,7 +89,7 @@
           "selectable": false,
           "width": 0.4000000059604645
         },
-        "width": 16.541749954223633,
+        "width": 16.541748046875,
         "window": {
           "visible": true
         }
