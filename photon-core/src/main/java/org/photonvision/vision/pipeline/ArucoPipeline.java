@@ -89,6 +89,7 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
                 // 2024 tag, 6.5in
                 params.tagFamily = Objdetect.DICT_APRILTAG_36h11;
                 tagWidth = Units.inchesToMeters(6.5);
+                tagModel = TargetModel.kAprilTag36h11;
                 break;
             case kTag25h9:
                 params.tagFamily = Objdetect.DICT_APRILTAG_25h9;
