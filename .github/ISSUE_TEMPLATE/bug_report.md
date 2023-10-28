@@ -25,9 +25,9 @@ If applicable, add screenshots to help explain your problem.
 
 **Platform:**
  - Hardware (ex. Raspberry Pi 4):
- - PhotonVision Version: 
- - Browser: 
- - Camera Used: 
+ - PhotonVision Version:
+ - Browser:
+ - Camera Used:
 
 **Additional context**
 Add any other context about the problem here.
