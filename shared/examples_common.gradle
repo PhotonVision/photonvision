@@ -1,14 +1,6 @@
 task copyPhotonlib() {
     doFirst {
         // Assume publish to maven local has just be run. Kinda curst
-        // // first, invoke gradle to generate the vendor json
-        // try {
-        //     exec {
-        //         commandLine 'gradlew', 'photon-lib:generateVendorJson', '-x', "check"
-        //     }
-        // } catch (Exception e) {
-        //     // ignored
-        // }
 
         def vendorJsonSrc = new File("${rootDir}", "../photon-lib/build/generated/vendordeps/");
         def vendorJsonDst = new File("${projectDir}/vendordeps/");
