@@ -184,10 +184,10 @@ public class VisionModule {
         String camHostname = CameraServerJNI.getHostname();
         inputVideoStreamer =
                 new MJPGFrameConsumer(
-                        camHostname + "_Port_" + inputStreamPort + "_MJPEG_Server", inputStreamPort);
+                        camHostname + "_Port_" + inputStreamPort + "_Input_MJPEG_Server", inputStreamPort);
         outputVideoStreamer =
                 new MJPGFrameConsumer(
-                        camHostname + "_Port_" + outputStreamPort + "_MJPEG_Server", outputStreamPort);
+                        camHostname + "_Port_" + outputStreamPort + "_Output_MJPEG_Server", outputStreamPort);
     }
 
     private void recreateStreamResultConsumers() {
