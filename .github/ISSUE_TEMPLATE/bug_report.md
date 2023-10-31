@@ -21,7 +21,7 @@ Steps to reproduce the behavior:
 A clear and concise description of what you expected to happen.
 
 **Screenshots / Videos**
-If applicable, add screenshots to help explain your problem.
+If applicable, add screenshots to help explain your problem. Additionally, provide journalctl logs and settings zip export. 
 
 **Platform:**
  - Hardware Platform (ex. Raspberry Pi 4, Windows x64):
