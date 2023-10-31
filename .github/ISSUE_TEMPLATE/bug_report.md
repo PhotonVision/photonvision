@@ -25,7 +25,7 @@ If applicable, add screenshots to help explain your problem. Additionally, provi
 
 **Platform:**
  - Hardware Platform (ex. Raspberry Pi 4, Windows x64):
- - Network Configuration:
+ - Network Configuration (Connection between the Radio and any devices in between, such as a Network Switch):
  - PhotonVision Version:
  - Browser (with Version) (Chrome, Edge, Firefox, etc.):
  - Camera(s) Used:
