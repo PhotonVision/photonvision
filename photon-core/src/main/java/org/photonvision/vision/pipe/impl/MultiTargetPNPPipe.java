@@ -39,7 +39,8 @@ public class MultiTargetPNPPipe
 
     @Override
     protected MultiTargetPNPResults process(List<TrackedTarget> targetList) {
-        if (params == null || params.cameraCoefficients == null
+        if (params == null
+                || params.cameraCoefficients == null
                 || params.cameraCoefficients.getCameraIntrinsicsMat() == null
                 || params.cameraCoefficients.getDistCoeffsMat() == null) {
             if (!hasWarned) {
