@@ -37,8 +37,10 @@ public class TargetModel {
     public final boolean isPlanar;
     public final boolean isSpherical;
 
-    public static final TargetModel kTag16h5 =
+    public static final TargetModel kAprilTag16h5 =
             new TargetModel(Units.inchesToMeters(6), Units.inchesToMeters(6));
+    public static final TargetModel kAprilTag36h11 =
+            new TargetModel(Units.inchesToMeters(6.5), Units.inchesToMeters(6.5));
 
     /**
      * Creates a rectangular, planar target model given the width and height. The model has four
