@@ -22,9 +22,9 @@ Note that these are case sensitive!
     * linuxathena
     * linuxarm32
     * linuxarm64
-    * arm32"
-    * arm64"
-    * x86-64"
+    * arm32
+    * arm64
+    * x86-64
     * x86"
 - `-PtgtIp`: Specifies where `./gradlew deploy` should try to copy the fat JAR to
 - `-Pprofile`: enables JVM profiling
