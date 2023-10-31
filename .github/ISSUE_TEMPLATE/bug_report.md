@@ -24,10 +24,11 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Platform:**
- - Hardware (ex. Raspberry Pi 4):
+ - Hardware Platform (ex. Raspberry Pi 4, Windows x64):
+ - Network Configuration:
  - PhotonVision Version:
- - Browser:
- - Camera Used:
+ - Browser (with Version) (Chrome, Edge, Firefox, etc.):
+ - Camera(s) Used:
 
 **Additional context**
 Add any other context about the problem here.
