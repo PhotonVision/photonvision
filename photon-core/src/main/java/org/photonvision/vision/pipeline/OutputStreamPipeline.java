@@ -107,7 +107,7 @@ public class OutputStreamPipeline {
                 new Draw3dArucoPipe.Draw3dArucoParams(
                         settings.outputShouldDraw,
                         frameStaticProperties.cameraCalibration,
-                        TargetModel.k6in_16h5,
+                        TargetModel.kAprilTag6in_16h5,
                         settings.streamingFrameDivisor);
         draw3dArucoPipe.setParams(draw3dArucoParams);
 

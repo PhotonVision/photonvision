@@ -26,11 +26,8 @@ const interactiveCols = computed(
         { name: '2020 High Goal Outer', value: TargetModel.InfiniteRechargeHighGoalOuter },
         { name: '2020 Power Cell (7in)', value: TargetModel.CircularPowerCell7in },
         { name: '2022 Cargo Ball (9.5in)', value: TargetModel.RapidReactCircularCargoBall },
-        { name: '200mm AprilTag', value: TargetModel.Apriltag_200mm },
-        { name: '6in (16h5) Aruco', value: TargetModel.Aruco6in_16h5 },
-        { name: '6in (16h5) AprilTag', value: TargetModel.Apriltag6in_16h5 },
-        { name: '6.5in (36h11) Aruco', value: TargetModel.Aruco6p5in_36h11 },
-        { name: '6.5in (36h11) AprilTag', value: TargetModel.Apriltag6p5in_36h11 }
+        { name: '2023 AprilTag 6in (16h5)', value: TargetModel.AprilTag6in_16h5 },
+        { name: '2024 AprilTag 6.5in (36h11)', value: TargetModel.AprilTag6p5in_36h11 }
       ]"
       :select-cols="interactiveCols"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ targetModel: value }, false)"

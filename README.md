@@ -18,9 +18,15 @@ If you are interested in contributing code or documentation to the project, plea
 
 Note that these are case sensitive!
 
-* `-PArchOverride=foobar`: builds for a target system other than your current architecture. Valid overrides are winx32, winx64,
-macx64, macarm64, linuxx64, linuxarm64, linuxarm32, and linuxathena.
-- `-PtgtIp`: deploys (builds and copies the JAR) to the coprocessor at the specified IP
+* `-PArchOverride=foobar`: builds for a target system other than your current architecture. Valid overrides are:
+    * linuxathena
+    * linuxarm32
+    * linuxarm64
+    * arm32
+    * arm64
+    * x86-64
+    * x86
+- `-PtgtIp`: Specifies where `./gradlew deploy` should try to copy the fat JAR to
 - `-Pprofile`: enables JVM profiling
 
 ## Building
