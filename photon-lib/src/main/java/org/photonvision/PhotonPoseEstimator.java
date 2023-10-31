@@ -41,6 +41,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.photonvision.estimation.TargetModel;
 import org.photonvision.estimation.VisionEstimation;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
@@ -82,6 +83,7 @@ public class PhotonPoseEstimator {
     }
 
     private AprilTagFieldLayout fieldTags;
+    private TargetModel tagModel = TargetModel.kAprilTag16h5;
     private PoseStrategy primaryStrategy;
     private PoseStrategy multiTagFallbackStrategy = PoseStrategy.LOWEST_AMBIGUITY;
     private final PhotonCamera camera;
@@ -153,6 +155,24 @@ public class PhotonPoseEstimator {
     public void setFieldTags(AprilTagFieldLayout fieldTags) {
         checkUpdate(this.fieldTags, fieldTags);
         this.fieldTags = fieldTags;
+    }
+
+    /**
+     * Get the TargetModel representing the tags being detected. This is used for on-rio multitag.
+     *
+     * <p>By default, this is {@link TargetModel#kAprilTag16h5}.
+     */
+    public TargetModel getTagModel() {
+        return tagModel;
+    }
+
+    /**
+     * Set the TargetModel representing the tags being detected. This is used for on-rio multitag.
+     *
+     * @param tagModel E.g. {@link TargetModel#kAprilTag16h5}.
+     */
+    public void setTagModel(TargetModel tagModel) {
+        this.tagModel = tagModel;
     }
 
     /**
@@ -419,7 +439,7 @@ public class PhotonPoseEstimator {
 
         var pnpResults =
                 VisionEstimation.estimateCamPosePNP(
-                        cameraMatrixOpt.get(), distCoeffsOpt.get(), result.getTargets(), fieldTags);
+                        cameraMatrixOpt.get(), distCoeffsOpt.get(), result.getTargets(), fieldTags, tagModel);
         // try fallback strategy if solvePNP fails for some reason
         if (!pnpResults.isPresent)
             return update(result, cameraMatrixOpt, distCoeffsOpt, this.multiTagFallbackStrategy);

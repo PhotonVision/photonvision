@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.math.MathUtils;
+import org.photonvision.estimation.TargetModel;
 import org.photonvision.targeting.MultiTargetPNPResults;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.frame.Frame;
@@ -71,13 +72,13 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         settings.threads = Math.max(1, settings.threads);
 
         // for now, hard code tag width based on enum value
-        double tagWidth;
+        // 2023/other: best guess is 6in
+        double tagWidth = Units.inchesToMeters(6);
+        TargetModel tagModel = TargetModel.kAprilTag16h5;
         if (settings.tagFamily == AprilTagFamily.kTag36h11) {
-            // 2024 tag, guess 6.5in
+            // 2024 tag, 6.5in
             tagWidth = Units.inchesToMeters(6.5);
-        } else {
-            // 2023/other: best guess is 6in
-            tagWidth = Units.inchesToMeters(6);
+            tagModel = TargetModel.kAprilTag36h11;
         }
 
         var config = new AprilTagDetector.Config();
@@ -104,7 +105,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                 // TODO global state ew
                 var atfl = ConfigManager.getInstance().getConfig().getApriltagFieldLayout();
                 multiTagPNPPipe.setParams(
-                        new MultiTargetPNPPipeParams(frameStaticProperties.cameraCalibration, atfl));
+                        new MultiTargetPNPPipeParams(frameStaticProperties.cameraCalibration, atfl, tagModel));
             }
         }
     }
