@@ -102,7 +102,8 @@ public class USBCameraSource extends VisionSource {
         protected USBCameraSettables(CameraConfiguration configuration) {
             super(configuration);
             getAllVideoModes();
-            setVideoMode(videoModes.get(0));
+            if (!cameraQuirks.hasQuirk(CameraQuirk.StickyFPS))
+                setVideoMode(videoModes.get(0)); // fixes double FPS set
         }
 
         public void setAutoExposure(boolean cameraAutoExposure) {
