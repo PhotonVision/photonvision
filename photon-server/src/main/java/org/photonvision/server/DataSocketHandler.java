@@ -347,25 +347,40 @@ public class DataSocketHandler {
         }
     }
 
-    private void sendMessage(Object message, WsContext user) throws JsonProcessingException {
+    private boolean sendMessage(Object message, WsContext user) throws JsonProcessingException {
         ByteBuffer b = ByteBuffer.wrap(objectMapper.writeValueAsBytes(message));
-        user.send(b);
+        if (user.session.isOpen()) {
+            user.send(b);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public void broadcastMessage(Object message, WsContext userToSkip)
             throws JsonProcessingException {
+        var badUsers = new ArrayList<WsContext>();
         if (userToSkip == null) {
             for (WsContext user : users) {
-                sendMessage(message, user);
+                if (!sendMessage(message, user)) {
+                    badUsers.add(user);
+                }
             }
         } else {
             var skipUserPort = ((InetSocketAddress) userToSkip.session.getRemoteAddress()).getPort();
             for (WsContext user : users) {
                 var userPort = ((InetSocketAddress) user.session.getRemoteAddress()).getPort();
                 if (userPort != skipUserPort) {
-                    sendMessage(message, user);
+                    if (!sendMessage(message, user)) {
+                        badUsers.add(user);
+                    }
                 }
             }
         }
+
+        for (var user : badUsers) {
+            user.closeSession();
+        }
+        users.removeAll(badUsers);
     }
 }
