@@ -53,8 +53,6 @@ public class DataSocketHandler {
     @SuppressWarnings("FieldCanBeLocal")
     private final UIOutboundSubscriber uiOutboundSubscriber = new UIOutboundSubscriber(this);
 
-    public static class UIMap extends HashMap<String, Object> {}
-
     private static class ThreadSafeSingleton {
         private static final DataSocketHandler INSTANCE = new DataSocketHandler();
     }
@@ -70,23 +68,23 @@ public class DataSocketHandler {
     }
 
     public void onConnect(WsConnectContext context) {
+        users.add(context);
         context.session.setIdleTimeout(
                 Duration.ofMillis(Long.MAX_VALUE)); // TODO: determine better value
         var remote = (InetSocketAddress) context.session.getRemoteAddress();
         var host = remote.getAddress().toString() + ":" + remote.getPort();
         logger.info("New websocket connection from " + host);
-        users.add(context);
         dcService.publishEvent(
                 new IncomingWebSocketEvent<>(
                         DataChangeDestination.DCD_GENSETTINGS, "userConnected", context));
     }
 
     protected void onClose(WsCloseContext context) {
+        users.remove(context);
         var remote = (InetSocketAddress) context.session.getRemoteAddress();
         var host = remote.getAddress().toString() + ":" + remote.getPort();
         var reason = context.reason() != null ? context.reason() : "Connection closed by client";
         logger.info("Closing websocket connection from " + host + " for reason: " + reason);
-        users.remove(context);
     }
 
     @SuppressWarnings({"unchecked"})
@@ -347,40 +345,27 @@ public class DataSocketHandler {
         }
     }
 
-    private boolean sendMessage(Object message, WsContext user) throws JsonProcessingException {
+    private void sendMessage(Object message, WsContext user) throws JsonProcessingException {
         ByteBuffer b = ByteBuffer.wrap(objectMapper.writeValueAsBytes(message));
         if (user.session.isOpen()) {
             user.send(b);
-            return true;
-        } else {
-            return false;
         }
     }
 
     public void broadcastMessage(Object message, WsContext userToSkip)
             throws JsonProcessingException {
-        var badUsers = new ArrayList<WsContext>();
         if (userToSkip == null) {
             for (WsContext user : users) {
-                if (!sendMessage(message, user)) {
-                    badUsers.add(user);
-                }
+                sendMessage(message, user);
             }
         } else {
             var skipUserPort = ((InetSocketAddress) userToSkip.session.getRemoteAddress()).getPort();
             for (WsContext user : users) {
                 var userPort = ((InetSocketAddress) user.session.getRemoteAddress()).getPort();
                 if (userPort != skipUserPort) {
-                    if (!sendMessage(message, user)) {
-                        badUsers.add(user);
-                    }
+                    sendMessage(message, user);
                 }
             }
         }
-
-        for (var user : badUsers) {
-            user.closeSession();
-        }
-        users.removeAll(badUsers);
     }
 }
