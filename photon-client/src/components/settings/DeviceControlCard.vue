@@ -380,40 +380,51 @@ const showSpecificSnapshotDialog = ref(false);
       <v-card dark class="pt-3 pl-5 pr-5" color="primary" flat>
         <v-card-title> View Saved Frame Snapshots </v-card-title>
         <v-divider />
-        <v-card-text v-if="imgData.length === 0" style="font-size: 18px; font-weight: 600">
-          There are no logs to show
+        <v-card-text v-if="imgData.length === 0" style="font-size: 18px; font-weight: 600" class="pt-4">
+          There are no snapshots saved
         </v-card-text>
-        <v-virtual-scroll v-else :items="imgData" item-height="50" height="600" class="mt-2">
-          <template #default="{ item, index }">
-            <div style="display: flex; width: 100%; justify-content: space-between">
-              <div>
-                {{ index }}
-              </div>
-              <div>
-                {{ item.imgName }}
-              </div>
-              <div>
-                <pv-icon
-                  icon-name="mdi-image"
-                  @click="
-                    () => {
-                      selectedImg = index;
-                      showSpecificSnapshotDialog = true;
-                    }
-                  "
-                />
-              </div>
-            </div>
-          </template>
-        </v-virtual-scroll>
-      </v-card>
-      <v-dialog v-model="showSpecificSnapshotDialog">
-        <v-card dark class="pt-3 pl-5 pr-5" color="primary" flat>
-          <div style="display: flex; align-items: center; justify-content: center">
-            <img v-if="imgData[selectedImg]" :src="imgData[selectedImg].imgSrc" />
+        <div v-else>
+          <div style="display: flex; justify-content: space-around; font-size: 18px" class="pb-2 pt-2">
+            <span>Image Index</span>
+            <span>Image Name</span>
+            <span>View Image</span>
           </div>
-        </v-card>
-      </v-dialog>
+          <v-virtual-scroll :items="imgData" item-height="50" height="600" class="mt-2">
+            <template #default="{ item, index }">
+              <div class="img-row">
+                <div style="display: flex; justify-content: center; width: 33%">
+                  {{ index }}
+                </div>
+                <div style="display: flex; justify-content: center; width: 33%">
+                  {{ item.imgName }}
+                </div>
+                <div style="display: flex; justify-content: center; width: 33%">
+                  <pv-icon
+                    icon-name="mdi-image"
+                    @click="
+                      () => {
+                        selectedImg = index;
+                        showSpecificSnapshotDialog = true;
+                      }
+                    "
+                  />
+                </div>
+              </div>
+            </template>
+          </v-virtual-scroll>
+        </div>
+      </v-card>
+    </v-dialog>
+    <v-dialog v-model="showSpecificSnapshotDialog" width="800px">
+      <v-card v-if="imgData[selectedImg]" dark color="primary" flat class="pa-4">
+        <v-card-title style="display: flex; justify-content: center">
+          {{ imgData[selectedImg].imgName }}
+        </v-card-title>
+        <v-divider class="pb-3" />
+        <div style="display: flex; align-items: center; justify-content: center">
+          <img :src="imgData[selectedImg].imgSrc" alt="snapshot-image" />
+        </div>
+      </v-card>
     </v-dialog>
   </v-card>
 </template>
@@ -424,5 +435,10 @@ const showSpecificSnapshotDialog = ref(false);
 }
 .v-btn {
   width: 100%;
+}
+.img-row {
+  display: flex;
+  width: 100%;
+  justify-content: space-around;
 }
 </style>
