@@ -525,8 +525,7 @@ public class RequestHandler {
     }
 
     public static void onImageSnapshotsRequest(Context ctx) {
-        // img name, img src
-        var imagesMap = new HashMap<String, Object>();
+        var imagesMap = new HashMap<String, byte[]>();
         var images = ConfigManager.getInstance().getImageSavePath().toFile().listFiles();
 
         if (images != null) {

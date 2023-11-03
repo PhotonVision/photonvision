@@ -212,7 +212,7 @@ const fetchSnapshots = () => {
   axios
     .get("/utils/getImageSnapshots")
     .then((response) => {
-      imgData.value = Object.entries(response.data as Record<string, any>).map(([k, v]) => {
+      imgData.value = Object.entries(response.data as Record<string, string>).map(([k, v]) => {
         return {
           imgName: k,
           imgSrc: "data:image/jpg;base64," + v
