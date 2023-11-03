@@ -30,4 +30,6 @@ public enum CameraQuirk {
     CompletelyBroken,
     /** Has adjustable focus and autofocus switch */
     AdjustableFocus,
+    /** Changing FPS repeatedly with small delay does not work correctly */
+    StickyFPS,
 }
