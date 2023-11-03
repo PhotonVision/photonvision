@@ -422,7 +422,7 @@ const showSpecificSnapshotDialog = ref(false);
         </v-card-title>
         <v-divider class="pb-3" />
         <div style="display: flex; align-items: center; justify-content: center">
-          <img :src="imgData[selectedImg].imgSrc" alt="snapshot-image" />
+          <img :src="imgData[selectedImg].imgSrc" alt="snapshot-image" style="width: 100%" />
         </div>
       </v-card>
     </v-dialog>
