@@ -97,6 +97,7 @@ public class Server {
         app.post("/api/utils/restartProgram", RequestHandler::onProgramRestartRequest);
         app.post("/api/utils/restartDevice", RequestHandler::onDeviceRestartRequest);
         app.post("/api/utils/publishMetrics", RequestHandler::onMetricsPublishRequest);
+        app.get("/api/utils/getImageSnapshots", RequestHandler::onImageSnapshotsRequest);
 
         // Calibration
         app.post("/api/calibration/end", RequestHandler::onCalibrationEndRequest);

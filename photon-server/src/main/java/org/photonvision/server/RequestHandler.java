@@ -21,15 +21,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.http.Context;
 import io.javalin.http.UploadedFile;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.Optional;
+import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
@@ -524,6 +522,31 @@ public class RequestHandler {
     public static void onMetricsPublishRequest(Context ctx) {
         HardwareManager.getInstance().publishMetrics();
         ctx.status(204);
+    }
+
+    public static void onImageSnapshotsRequest(Context ctx) {
+        // img name, img src
+        var imagesMap = new HashMap<String, Object>();
+        var images = ConfigManager.getInstance().getImageSavePath().toFile().listFiles();
+
+        if (images != null) {
+            try {
+                for (File image : images) {
+                    var bufferedImage = ImageIO.read(image);
+                    var buffer = new ByteArrayOutputStream();
+                    ImageIO.write(bufferedImage, "jpg", buffer);
+                    byte[] data = buffer.toByteArray();
+
+                    imagesMap.put(image.getName(), data);
+                }
+            } catch (IOException e) {
+                ctx.status(500);
+                ctx.result("Unable to read saved images");
+            }
+        }
+
+        ctx.status(200);
+        ctx.json(imagesMap);
     }
 
     /**

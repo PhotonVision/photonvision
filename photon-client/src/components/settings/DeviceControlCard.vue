@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { inject, ref } from "vue";
+import { computed, inject, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import PvSelect from "@/components/common/pv-select.vue";
 import axios from "axios";
+import PvIcon from "@/components/common/pv-icon.vue";
 
 const restartProgram = () => {
   axios
@@ -200,6 +201,51 @@ const handleSettingsImport = () => {
   importType.value = -1;
   importFile.value = null;
 };
+
+interface ImageData {
+  imgName: string;
+  imgSrc: string;
+}
+
+const imgData = ref<ImageData[]>([]);
+const fetchSnapshots = () => {
+  axios
+    .get("/utils/getImageSnapshots")
+    .then((response) => {
+      imgData.value = Object.entries(response.data as Record<string, any>).map(([k, v]) => {
+        return {
+          imgName: k,
+          imgSrc: "data:image/jpg;base64," + v
+        };
+      });
+    })
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: error.response.data.text || error.response.data
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "Error while trying to process the request! The backend didn't respond."
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "An error occurred while trying to process the request."
+        });
+      }
+    });
+};
+
+const showSnapshotViewerDialog = ref(false);
+const selectedImg = ref(-1);
+const showSnapshotViewer = () => {
+  fetchSnapshots();
+  showSnapshotViewerDialog.value = true;
+};
+const showSpecificSnapshotDialog = ref(false);
 </script>
 
 <template>
@@ -321,7 +367,54 @@ const handleSettingsImport = () => {
           </v-btn>
         </v-col>
       </v-row>
+      <v-row>
+        <v-col>
+          <v-btn color="secondary" @click="showSnapshotViewer">
+            <v-icon left> mdi-folder </v-icon>
+            Check Saved Frame Snapshots
+          </v-btn>
+        </v-col>
+      </v-row>
     </div>
+    <v-dialog v-model="showSnapshotViewerDialog">
+      <v-card dark class="pt-3 pl-5 pr-5" color="primary" flat>
+        <v-card-title> View Saved Frame Snapshots </v-card-title>
+        <v-divider />
+        <v-card-text v-if="imgData.length === 0" style="font-size: 18px; font-weight: 600">
+          There are no logs to show
+        </v-card-text>
+        <v-virtual-scroll v-else :items="imgData" item-height="50" height="600" class="mt-2">
+          <template #default="{ item, index }">
+            <div style="display: flex; width: 100%; justify-content: space-between">
+              <div>
+                {{ index }}
+              </div>
+              <div>
+                {{ item.imgName }}
+              </div>
+              <div>
+                <pv-icon
+                  icon-name="mdi-image"
+                  @click="
+                    () => {
+                      selectedImg = index;
+                      showSpecificSnapshotDialog = true;
+                    }
+                  "
+                />
+              </div>
+            </div>
+          </template>
+        </v-virtual-scroll>
+      </v-card>
+      <v-dialog v-model="showSpecificSnapshotDialog">
+        <v-card dark class="pt-3 pl-5 pr-5" color="primary" flat>
+          <div style="display: flex; align-items: center; justify-content: center">
+            <img v-if="imgData[selectedImg]" :src="imgData[selectedImg].imgSrc" />
+          </div>
+        </v-card>
+      </v-dialog>
+    </v-dialog>
   </v-card>
 </template>
 
