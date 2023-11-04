@@ -332,9 +332,4 @@ const handleSettingsImport = () => {
 .v-btn {
   width: 100%;
 }
-.img-row {
-  display: flex;
-  width: 100%;
-  justify-content: space-around;
-}
 </style>
