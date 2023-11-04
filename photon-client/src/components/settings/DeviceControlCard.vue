@@ -3,7 +3,6 @@ import { inject, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import PvSelect from "@/components/common/pv-select.vue";
 import axios from "axios";
-import PvIcon from "@/components/common/pv-icon.vue";
 
 const restartProgram = () => {
   axios
@@ -322,7 +321,6 @@ const handleSettingsImport = () => {
           </v-btn>
         </v-col>
       </v-row>
-
     </div>
   </v-card>
 </template>

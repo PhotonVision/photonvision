@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import {ref} from "vue";
+import { ref } from "vue";
 import axios from "axios";
-import {useStateStore} from "@/stores/StateStore";
+import { useStateStore } from "@/stores/StateStore";
 import PvIcon from "@/components/common/pv-icon.vue";
 
 interface ImageData {
@@ -11,40 +11,39 @@ interface ImageData {
 const imgData = ref<ImageData[]>([]);
 const fetchSnapshots = () => {
   axios
-      .get("/utils/getImageSnapshots")
-      .then((response) => {
-        imgData.value = Object.entries(response.data as Record<string, string>).map(([k, v]) => {
-          return {
-            imgName: k,
-            imgSrc: "data:image/jpg;base64," + v
-          };
-        });
-        showSnapshotViewerDialog.value = true;
-      })
-      .catch((error) => {
-        if (error.response) {
-          useStateStore().showSnackbarMessage({
-            color: "error",
-            message: error.response.data.text || error.response.data
-          });
-        } else if (error.request) {
-          useStateStore().showSnackbarMessage({
-            color: "error",
-            message: "Error while trying to process the request! The backend didn't respond."
-          });
-        } else {
-          useStateStore().showSnackbarMessage({
-            color: "error",
-            message: "An error occurred while trying to process the request."
-          });
-        }
+    .get("/utils/getImageSnapshots")
+    .then((response) => {
+      imgData.value = Object.entries(response.data as Record<string, string>).map(([k, v]) => {
+        return {
+          imgName: k,
+          imgSrc: "data:image/jpg;base64," + v
+        };
       });
+      showSnapshotViewerDialog.value = true;
+    })
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: error.response.data.text || error.response.data
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "Error while trying to process the request! The backend didn't respond."
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "An error occurred while trying to process the request."
+        });
+      }
+    });
 };
 const showSnapshotViewerDialog = ref(false);
 const selectedImg = ref(-1);
 const showSpecificSnapshotDialog = ref(false);
 </script>
-
 
 <template>
   <v-card dark class="pr-6 pb-3" style="background-color: #006492">
@@ -81,8 +80,8 @@ const showSpecificSnapshotDialog = ref(false);
                 </div>
                 <div style="display: flex; justify-content: center; width: 33%">
                   <pv-icon
-                      icon-name="mdi-image"
-                      @click="
+                    icon-name="mdi-image"
+                    @click="
                       () => {
                         selectedImg = index;
                         showSpecificSnapshotDialog = true;
