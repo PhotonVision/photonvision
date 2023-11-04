@@ -8,7 +8,6 @@ interface ImageData {
   imgName: string;
   imgSrc: string;
 }
-
 const imgData = ref<ImageData[]>([]);
 const fetchSnapshots = () => {
   axios
@@ -20,6 +19,7 @@ const fetchSnapshots = () => {
             imgSrc: "data:image/jpg;base64," + v
           };
         });
+        showSnapshotViewerDialog.value = true;
       })
       .catch((error) => {
         if (error.response) {
@@ -40,13 +40,8 @@ const fetchSnapshots = () => {
         }
       });
 };
-
 const showSnapshotViewerDialog = ref(false);
 const selectedImg = ref(-1);
-const showSnapshotViewer = () => {
-  fetchSnapshots();
-  showSnapshotViewerDialog.value = true;
-};
 const showSpecificSnapshotDialog = ref(false);
 </script>
 
@@ -56,7 +51,7 @@ const showSpecificSnapshotDialog = ref(false);
     <v-card-title>Camera Control</v-card-title>
     <v-row class="pl-6">
       <v-col>
-        <v-btn color="secondary" @click="showSnapshotViewer">
+        <v-btn color="secondary" @click="fetchSnapshots">
           <v-icon left> mdi-folder </v-icon>
           Show Saved Snapshots
         </v-btn>
