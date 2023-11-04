@@ -1,6 +1,6 @@
 plugins {
     id "com.diffplug.spotless" version "6.1.2"
-    id "edu.wpi.first.GradleRIO" version "2024.1.1-beta-2" apply false
+    id "edu.wpi.first.GradleRIO" version "2024.1.1-beta-3" apply false
 }
 
 allprojects {
