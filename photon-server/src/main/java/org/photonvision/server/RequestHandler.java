@@ -25,6 +25,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
 import javax.imageio.ImageIO;
@@ -525,18 +526,31 @@ public class RequestHandler {
     }
 
     public static void onImageSnapshotsRequest(Context ctx) {
-        var imagesMap = new HashMap<String, byte[]>();
-        var images = ConfigManager.getInstance().getImageSavePath().toFile().listFiles();
+        var snapshots = new ArrayList<HashMap<String, Object>>();
+        var cameraDirs = ConfigManager.getInstance().getImageSavePath().toFile().listFiles();
 
-        if (images != null) {
+        if (cameraDirs != null) {
             try {
-                for (File image : images) {
-                    var bufferedImage = ImageIO.read(image);
-                    var buffer = new ByteArrayOutputStream();
-                    ImageIO.write(bufferedImage, "jpg", buffer);
-                    byte[] data = buffer.toByteArray();
+                for(File cameraDir : cameraDirs) {
+                    var cameraSnapshots = cameraDir.listFiles();
+                    if(cameraSnapshots == null) continue;
 
-                    imagesMap.put(image.getName(), data);
+                    String cameraUniqueName = cameraDir.getName();
+
+                    for(File snapshot : cameraSnapshots) {
+                        var snapshotData = new HashMap<String, Object>();
+
+                        var bufferedImage = ImageIO.read(snapshot);
+                        var buffer = new ByteArrayOutputStream();
+                        ImageIO.write(bufferedImage, "jpg", buffer);
+                        byte[] data = buffer.toByteArray();
+
+                        snapshotData.put("snapshotName", snapshot.getName());
+                        snapshotData.put("cameraUniqueName", cameraUniqueName);
+                        snapshotData.put("snapshotData", data);
+
+                        snapshots.add(snapshotData);
+                    }
                 }
             } catch (IOException e) {
                 ctx.status(500);
@@ -545,7 +559,7 @@ public class RequestHandler {
         }
 
         ctx.status(200);
-        ctx.json(imagesMap);
+        ctx.json(snapshots);
     }
 
     /**
