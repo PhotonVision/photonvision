@@ -80,15 +80,11 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
                 // Check if the Unique Camera directory exists and create it if it doesn't
                 String cameraPath = FILE_PATH + File.separator + this.cameraUniqueName;
                 var cameraDir = new File(cameraPath);
-                if(!cameraDir.exists()) {
+                if (!cameraDir.exists()) {
                     cameraDir.mkdir();
                 }
 
-                String saveFilePath =
-                        cameraPath
-                                + File.separator
-                                + fileName
-                                + FILE_EXTENSION;
+                String saveFilePath = cameraPath + File.separator + fileName + FILE_EXTENSION;
 
                 Imgcodecs.imwrite(saveFilePath, image.getMat());
 

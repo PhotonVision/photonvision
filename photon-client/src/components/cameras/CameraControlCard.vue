@@ -5,19 +5,19 @@ import { useStateStore } from "@/stores/StateStore";
 import PvIcon from "@/components/common/pv-icon.vue";
 
 interface SnapshotMetadata {
-  snapshotName: string,
-  cameraNickname: string,
-  streamType: "input" | "output",
-  timeCreated: Date
+  snapshotName: string;
+  cameraNickname: string;
+  streamType: "input" | "output";
+  timeCreated: Date;
 }
 const getSnapshotMetadataFromName = (snapshotName: string): SnapshotMetadata => {
-  snapshotName = snapshotName.replace(/\.[^/.]+$/, "")
+  snapshotName = snapshotName.replace(/\.[^/.]+$/, "");
 
-  const data = snapshotName.split("_")
+  const data = snapshotName.split("_");
 
-  const cameraName = data.slice(0, data.length-2).join("_")
-  const streamType = data[data.length-2] as "input" | "output"
-  const dateStr = data[data.length-1]
+  const cameraName = data.slice(0, data.length - 2).join("_");
+  const streamType = data[data.length - 2] as "input" | "output";
+  const dateStr = data[data.length - 1];
 
   const year = parseInt(dateStr.substring(0, 4), 10);
   const month = parseInt(dateStr.substring(5, 7), 10) - 1; // Months are zero-based
@@ -32,16 +32,16 @@ const getSnapshotMetadataFromName = (snapshotName: string): SnapshotMetadata => 
     cameraNickname: cameraName,
     streamType: streamType,
     timeCreated: new Date(year, month, day, hours, minutes, seconds, milliseconds)
-  }
-}
+  };
+};
 
 interface Snapshot {
-  snapshotName: string,
-  snapshotShortName: string,
-  cameraUniqueName: string,
-  cameraNickname: string,
-  streamType: "input" | "output",
-  timeCreated: Date
+  snapshotName: string;
+  snapshotShortName: string;
+  cameraUniqueName: string;
+  cameraNickname: string;
+  streamType: "input" | "output";
+  timeCreated: Date;
   snapshotSrc: string;
 }
 const imgData = ref<Snapshot[]>([]);
@@ -49,19 +49,21 @@ const fetchSnapshots = () => {
   axios
     .get("/utils/getImageSnapshots")
     .then((response) => {
-      imgData.value = response.data.map((snapshotData: {snapshotName: string, cameraUniqueName: string, snapshotData: string}) => {
-        const metadata = getSnapshotMetadataFromName(snapshotData.snapshotName)
+      imgData.value = response.data.map(
+        (snapshotData: { snapshotName: string; cameraUniqueName: string; snapshotData: string }) => {
+          const metadata = getSnapshotMetadataFromName(snapshotData.snapshotName);
 
-        return {
-          snapshotName: snapshotData.snapshotName,
-          snapshotShortName: metadata.snapshotName,
-          cameraUniqueName: snapshotData. cameraUniqueName,
-          cameraNickname: metadata.cameraNickname,
-          streamType: metadata.streamType,
-          timeCreated: metadata.timeCreated,
-          snapshotSrc: "data:image/jpg;base64," + snapshotData.snapshotData
+          return {
+            snapshotName: snapshotData.snapshotName,
+            snapshotShortName: metadata.snapshotName,
+            cameraUniqueName: snapshotData.cameraUniqueName,
+            cameraNickname: metadata.cameraNickname,
+            streamType: metadata.streamType,
+            timeCreated: metadata.timeCreated,
+            snapshotSrc: "data:image/jpg;base64," + snapshotData.snapshotData
+          };
         }
-      })
+      );
       showSnapshotViewerDialog.value = true;
     })
     .catch((error) => {

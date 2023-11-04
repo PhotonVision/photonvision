@@ -531,13 +531,13 @@ public class RequestHandler {
 
         if (cameraDirs != null) {
             try {
-                for(File cameraDir : cameraDirs) {
+                for (File cameraDir : cameraDirs) {
                     var cameraSnapshots = cameraDir.listFiles();
-                    if(cameraSnapshots == null) continue;
+                    if (cameraSnapshots == null) continue;
 
                     String cameraUniqueName = cameraDir.getName();
 
-                    for(File snapshot : cameraSnapshots) {
+                    for (File snapshot : cameraSnapshots) {
                         var snapshotData = new HashMap<String, Object>();
 
                         var bufferedImage = ImageIO.read(snapshot);
