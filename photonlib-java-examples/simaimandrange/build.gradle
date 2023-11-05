@@ -11,6 +11,10 @@ apply from: "${rootDir}/../../shared/examples_common.gradle"
 
 def ROBOT_MAIN_CLASS = "frc.robot.Main"
 
+repositories {
+    mavenLocal()
+}
+
 // Define my targets (RoboRIO) and artifacts (deployable files)
 // This is added by GradleRIO's backing project DeployUtils.
 deploy {

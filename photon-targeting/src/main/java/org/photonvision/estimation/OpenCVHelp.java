@@ -17,6 +17,7 @@
 
 package org.photonvision.estimation;
 
+import edu.wpi.first.cscore.CvSink;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.Num;
@@ -52,13 +53,15 @@ public final class OpenCVHelp {
     private static Rotation3d NWU_TO_EDN;
     private static Rotation3d EDN_TO_NWU;
 
-    static {
-        try {
-            CombinedRuntimeLoader.loadLibraries(OpenCVHelp.class, Core.NATIVE_LIBRARY_NAME, "cscorejni");
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to load native libraries!", e);
-        }
+    // Creating a cscore object is sufficient to load opencv, per https://www.chiefdelphi.com/t/unsatisfied-link-error-when-simulating-java-robot-code-using-opencv/426731/4
+    private static CvSink dummySink = null;
+    public static void forceLoadOpenCV() {
+        if (dummySink == null) return;
+        dummySink = new CvSink("ignored");
+        dummySink.close();
+    }
 
+    static {
         NWU_TO_EDN = new Rotation3d(Matrix.mat(Nat.N3(), Nat.N3()).fill(0, -1, 0, 0, 0, -1, 1, 0, 0));
         EDN_TO_NWU = new Rotation3d(Matrix.mat(Nat.N3(), Nat.N3()).fill(0, 0, 1, -1, 0, 0, 0, -1, 0));
     }

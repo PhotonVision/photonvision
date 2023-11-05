@@ -24,6 +24,7 @@
 
 package org.photonvision.simulation;
 
+import edu.wpi.first.cscore.CvSink;
 import edu.wpi.first.cscore.CvSource;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -67,11 +68,7 @@ public class VideoSimUtil {
     private static double fieldWidth = 8.0137;
 
     static {
-        try {
-            CombinedRuntimeLoader.loadLibraries(OpenCVHelp.class, Core.NATIVE_LIBRARY_NAME, "cscorejni");
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to load native libraries!", e);
-        }
+        OpenCVHelp.forceLoadOpenCV();
 
         // create Mats of 8x8 apriltag images
         for (int i = 0; i < VideoSimUtil.kNumTags16h5; i++) {

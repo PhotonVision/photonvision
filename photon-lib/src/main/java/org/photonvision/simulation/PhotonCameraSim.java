@@ -95,11 +95,7 @@ public class PhotonCameraSim implements AutoCloseable {
     private boolean videoSimProcEnabled = true;
 
     static {
-        try {
-            CombinedRuntimeLoader.loadLibraries(OpenCVHelp.class, Core.NATIVE_LIBRARY_NAME, "cscorejni");
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to load native libraries!", e);
-        }
+        OpenCVHelp.forceLoadOpenCV();
     }
 
     @Override
