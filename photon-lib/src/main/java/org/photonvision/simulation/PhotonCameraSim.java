@@ -33,13 +33,11 @@ import edu.wpi.first.cscore.VideoSource.ConnectionStrategy;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.util.CombinedRuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -95,11 +93,7 @@ public class PhotonCameraSim implements AutoCloseable {
     private boolean videoSimProcEnabled = true;
 
     static {
-        try {
-            CombinedRuntimeLoader.loadLibraries(OpenCVHelp.class, Core.NATIVE_LIBRARY_NAME, "cscorejni");
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to load native libraries!", e);
-        }
+        OpenCVHelp.forceLoadOpenCV();
     }
 
     @Override
