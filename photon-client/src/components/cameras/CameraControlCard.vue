@@ -190,7 +190,6 @@ const expanded = ref([]);
   }
 }
 
-
 .snapshot-preview {
   max-width: 55%;
 }
