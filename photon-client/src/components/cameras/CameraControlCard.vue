@@ -129,7 +129,7 @@ const expanded = ref([]);
             <template #expanded-item="{ headers, item }">
               <td :colspan="headers.length">
                 <div style="display: flex; justify-content: center; width: 100%">
-                  <img :src="item.snapshotSrc" alt="snapshot-image" class="pt-2 pb-2" style="max-width: 55%" />
+                  <img :src="item.snapshotSrc" alt="snapshot-image" class="snapshot-preview pt-2 pb-2" />
                 </div>
               </td>
             </template>
@@ -159,11 +159,6 @@ const expanded = ref([]);
 .v-btn {
   width: 100%;
 }
-.img-row {
-  display: flex;
-  width: 100%;
-  justify-content: space-around;
-}
 .v-data-table {
   text-align: center;
   background-color: #006492 !important;
@@ -192,6 +187,17 @@ const expanded = ref([]);
   ::-webkit-scrollbar-thumb {
     background-color: #ffd843;
     border-radius: 10px;
+  }
+}
+
+
+.snapshot-preview {
+  max-width: 55%;
+}
+
+@media only screen and (max-width: 512px) {
+  .snapshot-preview {
+    max-width: 100%;
   }
 }
 </style>
