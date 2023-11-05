@@ -2,7 +2,6 @@
 import { ref } from "vue";
 import axios from "axios";
 import { useStateStore } from "@/stores/StateStore";
-import PvIcon from "@/components/common/pv-icon.vue";
 
 interface SnapshotMetadata {
   snapshotName: string;
@@ -36,6 +35,7 @@ const getSnapshotMetadataFromName = (snapshotName: string): SnapshotMetadata => 
 };
 
 interface Snapshot {
+  index: number;
   snapshotName: string;
   snapshotShortName: string;
   cameraUniqueName: string;
@@ -50,10 +50,11 @@ const fetchSnapshots = () => {
     .get("/utils/getImageSnapshots")
     .then((response) => {
       imgData.value = response.data.map(
-        (snapshotData: { snapshotName: string; cameraUniqueName: string; snapshotData: string }) => {
+        (snapshotData: { snapshotName: string; cameraUniqueName: string; snapshotData: string }, index) => {
           const metadata = getSnapshotMetadataFromName(snapshotData.snapshotName);
 
           return {
+            index: index,
             snapshotName: snapshotData.snapshotName,
             snapshotShortName: metadata.snapshotName,
             cameraUniqueName: snapshotData.cameraUniqueName,
@@ -86,8 +87,7 @@ const fetchSnapshots = () => {
     });
 };
 const showSnapshotViewerDialog = ref(false);
-const selectedImg = ref(-1);
-const showSpecificSnapshotDialog = ref(false);
+const expanded = ref([]);
 </script>
 
 <template>
@@ -108,53 +108,51 @@ const showSpecificSnapshotDialog = ref(false);
         <v-card-text v-if="imgData.length === 0" style="font-size: 18px; font-weight: 600" class="pt-4">
           There are no snapshots saved
         </v-card-text>
-        <div v-else>
-          <div style="display: flex; justify-content: space-around; font-size: 18px" class="pb-2 pt-2">
-            <span>Image Index</span>
-            <span>Image Name</span>
-            <span>View Image</span>
-          </div>
-          <v-virtual-scroll :items="imgData" item-height="50" height="600" class="mt-2">
-            <template #default="{ item, index }">
-              <div class="img-row">
-                <div style="display: flex; justify-content: center; width: 33%">
-                  {{ index }}
+        <div v-else class="pb-2">
+          <v-data-table
+            v-model:expanded="expanded"
+            :headers="[
+              { text: 'Snapshot Name', value: 'snapshotShortName', sortable: false },
+              { text: 'Camera Unique Name', value: 'cameraUniqueName' },
+              { text: 'Camera Nickname', value: 'cameraNickname' },
+              { text: 'Stream Type', value: 'streamType' },
+              { text: 'Time Created', value: 'timeCreated' },
+              { text: 'Actions', value: 'actions', sortable: false }
+            ]"
+            :items="imgData"
+            group-by="cameraUniqueName"
+            class="elevation-0"
+            item-key="index"
+            show-expand
+            expand-icon="mdi-eye"
+          >
+            <template #expanded-item="{ headers, item }">
+              <td :colspan="headers.length">
+                <div style="display: flex; justify-content: center; width: 100%">
+                  <img :src="item.snapshotSrc" alt="snapshot-image" class="pt-2 pb-2" style="max-width: 55%" />
                 </div>
-                <div style="display: flex; justify-content: center; width: 33%">
-                  {{ item.snapshotName }}
-                </div>
-                <div style="display: flex; justify-content: center; width: 33%">
-                  <pv-icon
-                    icon-name="mdi-image"
-                    @click="
-                      () => {
-                        selectedImg = index;
-                        showSpecificSnapshotDialog = true;
-                      }
-                    "
-                  />
-                </div>
+              </td>
+            </template>
+            <!-- eslint-disable-next-line vue/valid-v-slot-->
+            <template #item.actions="{ item }">
+              <div style="display: flex; justify-content: center">
+                <a :download="item.snapshotName" :href="item.snapshotSrc">
+                  <v-icon small> mdi-download </v-icon>
+                </a>
               </div>
             </template>
-          </v-virtual-scroll>
-        </div>
-      </v-card>
-    </v-dialog>
-    <v-dialog v-model="showSpecificSnapshotDialog" width="800px">
-      <v-card v-if="imgData[selectedImg]" dark color="primary" flat class="pa-4">
-        <v-card-title style="display: flex; justify-content: center">
-          {{ imgData[selectedImg].snapshotName }}
-        </v-card-title>
-        <v-divider class="pb-3" />
-        <div style="display: flex; align-items: center; justify-content: center">
-          <img :src="imgData[selectedImg].snapshotSrc" alt="snapshot-image" style="width: 100%" />
+          </v-data-table>
+          <span
+            >Snapshot Timestamps may be incorrect as they depend on when the coprocessor was last connected to the
+            internet</span
+          >
         </div>
       </v-card>
     </v-dialog>
   </v-card>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .v-divider {
   border-color: white !important;
 }
@@ -165,5 +163,35 @@ const showSpecificSnapshotDialog = ref(false);
   display: flex;
   width: 100%;
   justify-content: space-around;
+}
+.v-data-table {
+  text-align: center;
+  background-color: #006492 !important;
+
+  th,
+  td {
+    background-color: #005281 !important;
+    font-size: 1rem !important;
+  }
+
+  tbody :hover tr {
+    background-color: #005281 !important;
+  }
+
+  ::-webkit-scrollbar {
+    width: 0;
+    height: 0.55em;
+    border-radius: 5px;
+  }
+
+  ::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: #ffd843;
+    border-radius: 10px;
+  }
 }
 </style>
