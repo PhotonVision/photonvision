@@ -1,12 +1,13 @@
 plugins {
     id "java"
-    id "edu.wpi.first.GradleRIO"
+    // id "edu.wpi.first.GradleRIO"
+    id "edu.wpi.first.GradleRIO" version "2024.1.1-beta-3"
 }
 
 sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
 
-apply from: "${rootDir}/../shared/examples_common.gradle"
+apply from: "${rootDir}/../../shared/examples_common.gradle"
 
 def ROBOT_MAIN_CLASS = "frc.robot.Main"
 
