@@ -98,7 +98,8 @@ public class PhotonPoseEstimator {
      * @param fieldTags A WPILib {@link AprilTagFieldLayout} linking AprilTag IDs to Pose3d objects
      *     with respect to the FIRST field using the <a href=
      *     "https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#field-coordinate-system">Field
-     *     Coordinate System</a>.
+     *     Coordinate System</a>. Note that setting the origin of this layout object will affect the
+     *     results from this class.
      * @param strategy The strategy it should use to determine the best pose.
      * @param camera PhotonCamera
      * @param robotToCamera Transform3d from the center of the robot to the camera mount position (ie,
@@ -139,6 +140,8 @@ public class PhotonPoseEstimator {
     /**
      * Get the AprilTagFieldLayout being used by the PositionEstimator.
      *
+     * <p>Note: Setting the origin of this layout will affect the results from this class.
+     *
      * @return the AprilTagFieldLayout
      */
     public AprilTagFieldLayout getFieldTags() {
@@ -147,6 +150,8 @@ public class PhotonPoseEstimator {
 
     /**
      * Set the AprilTagFieldLayout being used by the PositionEstimator.
+     *
+     * <p>Note: Setting the origin of this layout will affect the results from this class.
      *
      * @param fieldTags the AprilTagFieldLayout
      */
@@ -413,6 +418,7 @@ public class PhotonPoseEstimator {
             var best =
                     new Pose3d()
                             .plus(best_tf) // field-to-camera
+                            .relativeTo(fieldTags.getOrigin())
                             .plus(robotToCamera.inverse()); // field-to-robot
             return Optional.of(
                     new EstimatedRobotPose(

@@ -176,10 +176,15 @@ public class VisionModule {
         this.outputStreamPort = 1181 + (camStreamIdx * 2) + 1;
 
         inputFrameSaver =
-                new FileSaveFrameConsumer(visionSource.getSettables().getConfiguration().nickname, "input");
+                new FileSaveFrameConsumer(
+                        visionSource.getSettables().getConfiguration().nickname,
+                        visionSource.getSettables().getConfiguration().uniqueName,
+                        "input");
         outputFrameSaver =
                 new FileSaveFrameConsumer(
-                        visionSource.getSettables().getConfiguration().nickname, "output");
+                        visionSource.getSettables().getConfiguration().nickname,
+                        visionSource.getSettables().getConfiguration().uniqueName,
+                        "output");
 
         String camHostname = CameraServerJNI.getHostname();
         inputVideoStreamer =
