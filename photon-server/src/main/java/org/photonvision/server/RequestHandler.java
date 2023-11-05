@@ -21,15 +21,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.http.Context;
 import io.javalin.http.UploadedFile;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Optional;
+import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
@@ -524,6 +523,43 @@ public class RequestHandler {
     public static void onMetricsPublishRequest(Context ctx) {
         HardwareManager.getInstance().publishMetrics();
         ctx.status(204);
+    }
+
+    public static void onImageSnapshotsRequest(Context ctx) {
+        var snapshots = new ArrayList<HashMap<String, Object>>();
+        var cameraDirs = ConfigManager.getInstance().getImageSavePath().toFile().listFiles();
+
+        if (cameraDirs != null) {
+            try {
+                for (File cameraDir : cameraDirs) {
+                    var cameraSnapshots = cameraDir.listFiles();
+                    if (cameraSnapshots == null) continue;
+
+                    String cameraUniqueName = cameraDir.getName();
+
+                    for (File snapshot : cameraSnapshots) {
+                        var snapshotData = new HashMap<String, Object>();
+
+                        var bufferedImage = ImageIO.read(snapshot);
+                        var buffer = new ByteArrayOutputStream();
+                        ImageIO.write(bufferedImage, "jpg", buffer);
+                        byte[] data = buffer.toByteArray();
+
+                        snapshotData.put("snapshotName", snapshot.getName());
+                        snapshotData.put("cameraUniqueName", cameraUniqueName);
+                        snapshotData.put("snapshotData", data);
+
+                        snapshots.add(snapshotData);
+                    }
+                }
+            } catch (IOException e) {
+                ctx.status(500);
+                ctx.result("Unable to read saved images");
+            }
+        }
+
+        ctx.status(200);
+        ctx.json(snapshots);
     }
 
     /**

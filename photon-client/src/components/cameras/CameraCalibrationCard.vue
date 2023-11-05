@@ -218,7 +218,7 @@ const endCalibration = () => {
 
 <template>
   <div>
-    <v-card class="pr-6 pb-3" color="primary" dark>
+    <v-card class="mb-3 pr-6 pb-3" color="primary" dark>
       <v-card-title>Camera Calibration</v-card-title>
       <div class="ml-5">
         <v-row>

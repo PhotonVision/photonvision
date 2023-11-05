@@ -47,14 +47,16 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
     private final String ntEntryName;
     private IntegerEntry saveFrameEntry;
 
+    private final String cameraUniqueName;
     private String cameraNickname;
     private final String streamType;
 
     private long savedImagesCount = 0;
 
-    public FileSaveFrameConsumer(String camNickname, String streamPrefix) {
+    public FileSaveFrameConsumer(String camNickname, String cameraUniqueName, String streamPrefix) {
         this.ntEntryName = streamPrefix + NT_SUFFIX;
         this.cameraNickname = camNickname;
+        this.cameraUniqueName = cameraUniqueName;
         this.streamType = streamPrefix;
 
         this.rootTable = NetworkTablesManager.getInstance().kRootTable;
@@ -74,7 +76,15 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
 
                 String fileName =
                         cameraNickname + "_" + streamType + "_" + df.format(now) + "T" + tf.format(now);
-                String saveFilePath = FILE_PATH + File.separator + fileName + FILE_EXTENSION;
+
+                // Check if the Unique Camera directory exists and create it if it doesn't
+                String cameraPath = FILE_PATH + File.separator + this.cameraUniqueName;
+                var cameraDir = new File(cameraPath);
+                if (!cameraDir.exists()) {
+                    cameraDir.mkdir();
+                }
+
+                String saveFilePath = cameraPath + File.separator + fileName + FILE_EXTENSION;
 
                 Imgcodecs.imwrite(saveFilePath, image.getMat());
 
