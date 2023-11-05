@@ -1,5 +1,5 @@
 import org.gradle.internal.os.OperatingSystem
-// rootProject.name = 'simaimandrange'
+rootProject.name = 'simaimandrange'
 
 pluginManagement {
     repositories {

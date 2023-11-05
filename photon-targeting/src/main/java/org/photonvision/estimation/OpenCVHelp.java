@@ -27,7 +27,6 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.*;
-import edu.wpi.first.util.CombinedRuntimeLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -53,10 +52,12 @@ public final class OpenCVHelp {
     private static Rotation3d NWU_TO_EDN;
     private static Rotation3d EDN_TO_NWU;
 
-    // Creating a cscore object is sufficient to load opencv, per https://www.chiefdelphi.com/t/unsatisfied-link-error-when-simulating-java-robot-code-using-opencv/426731/4
+    // Creating a cscore object is sufficient to load opencv, per
+    // https://www.chiefdelphi.com/t/unsatisfied-link-error-when-simulating-java-robot-code-using-opencv/426731/4
     private static CvSink dummySink = null;
+
     public static void forceLoadOpenCV() {
-        if (dummySink == null) return;
+        if (dummySink != null) return;
         dummySink = new CvSink("ignored");
         dummySink.close();
     }
