@@ -24,11 +24,11 @@
 
 package org.photonvision.simulation;
 
+import edu.wpi.first.cscore.CameraServerCvJNI;
 import edu.wpi.first.cscore.CvSource;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.util.CombinedRuntimeLoader;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -68,7 +68,7 @@ public class VideoSimUtil {
 
     static {
         try {
-            CombinedRuntimeLoader.loadLibraries(OpenCVHelp.class, Core.NATIVE_LIBRARY_NAME, "cscorejni");
+            CameraServerCvJNI.forceLoad();
         } catch (Exception e) {
             throw new RuntimeException("Failed to load native libraries!", e);
         }
