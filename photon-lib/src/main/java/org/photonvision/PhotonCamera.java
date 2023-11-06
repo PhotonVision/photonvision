@@ -51,8 +51,7 @@ import java.util.Optional;
 import java.util.Set;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.hardware.VisionLEDMode;
-import org.photonvision.proto.PhotonTypes.PhotonPipelineResult;
-import us.hebi.quickbuf.InvalidProtocolBufferException;
+import org.photonvision.targeting.PhotonPipelineResult;
 
 /** Represents a camera that is connected to PhotonVision. */
 public class PhotonCamera implements AutoCloseable {
@@ -143,7 +142,7 @@ public class PhotonCamera implements AutoCloseable {
                 cameraTable
                         .getRawTopic("result_proto")
                         .subscribe(
-                                "proto:" + PhotonPipelineResult.getDescriptor().getFullName(),
+                                "proto:" + PhotonPipelineResult.proto.getDescriptor().getFullName(),
                                 new byte[] {},
                                 PubSubOption.periodic(0.01),
                                 PubSubOption.sendAll(true));
@@ -187,26 +186,23 @@ public class PhotonCamera implements AutoCloseable {
      * @return The latest pipeline result.
      */
     public PhotonPipelineResult getLatestResult() {
-        // verifyVersion(); // Protobufs _should_ deal with this for us
+        verifyVersion();
 
-        var ret = PhotonPipelineResult.newInstance();
+        // Clear the packet.
+        packet.clear();
 
-        var bytes = rawBytesEntry.get(new byte[] {});
-        if (bytes.length < 1) {
-            return PhotonPipelineResult.newInstance();
-        }
+        // Create latest result.
+        var ret = new PhotonPipelineResult();
 
-        try {
-            ret = PhotonPipelineResult.parseFrom(bytes);
-        } catch (InvalidProtocolBufferException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return ret;
-        }
+        // Populate packet and create result.
+        packet.setData(rawBytesEntry.get(new byte[] {}));
+
+        if (packet.getSize() < 1) return ret;
+        ret.createFromPacket(packet);
 
         // Set the timestamp of the result.
         // getLatestChange returns in microseconds, so we divide by 1e6 to convert to seconds.
-        ret.setTimestampSec((rawBytesEntry.getLastChange() / 1e6) - ret.getLatencyMs() / 1e3);
+        ret.setTimestampSeconds((rawBytesEntry.getLastChange() / 1e6) - ret.getLatencyMillis() / 1e3);
 
         // Return result.
         return ret;

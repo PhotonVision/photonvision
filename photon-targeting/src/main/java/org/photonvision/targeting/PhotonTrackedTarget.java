@@ -18,31 +18,37 @@
 package org.photonvision.targeting;
 
 import edu.wpi.first.math.geometry.Transform3d;
-
+import edu.wpi.first.util.protobuf.Protobuf;
 import java.util.ArrayList;
 import java.util.List;
-import edu.wpi.first.util.protobuf.Protobuf;
+import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.proto.PhotonTypes.ProtobufPhotonTrackedTarget;
 import org.photonvision.proto.PhotonTypes.ProtobufTargetCorner;
+import org.photonvision.utils.PacketUtils;
 import us.hebi.quickbuf.Descriptors.Descriptor;
 import us.hebi.quickbuf.RepeatedMessage;
 
 public class PhotonTrackedTarget {
     private static final int MAX_CORNERS = 8;
+    public static final int PACK_SIZE_BYTES =
+            Double.BYTES * (5 + 7 + 2 * 4 + 1 + 7 + 2 * MAX_CORNERS);
 
-    private final double yaw;
-    private final double pitch;
-    private final double area;
-    private final double skew;
-    private final int fiducialId;
-    private final Transform3d bestCameraToTarget;
-    private final Transform3d altCameraToTarget;
-    private final double poseAmbiguity;
+    private double yaw;
+    private double pitch;
+    private double area;
+    private double skew;
+    private int fiducialId;
+    private Transform3d bestCameraToTarget = new Transform3d();
+    private Transform3d altCameraToTarget = new Transform3d();
+    private double poseAmbiguity;
 
     // Corners from the min-area rectangle bounding the target
-    private final List<TargetCorner> minAreaRectCorners;
+    private List<TargetCorner> minAreaRectCorners;
+
     // Corners from whatever corner detection method was used
-    private final List<TargetCorner> detectedCorners;
+    private List<TargetCorner> detectedCorners;
+
+    public PhotonTrackedTarget() {}
 
     /** Construct a tracked target, given exactly 4 corners */
     public PhotonTrackedTarget(
@@ -195,6 +201,81 @@ public class PhotonTrackedTarget {
         return true;
     }
 
+    private static void encodeList(Packet packet, List<TargetCorner> list) {
+        packet.encode((byte) Math.min(list.size(), Byte.MAX_VALUE));
+        for (int i = 0; i < list.size(); i++) {
+            packet.encode(list.get(i).x);
+            packet.encode(list.get(i).y);
+        }
+    }
+
+    private static List<TargetCorner> decodeList(Packet p) {
+        byte len = p.decodeByte();
+        var ret = new ArrayList<TargetCorner>();
+        for (int i = 0; i < len; i++) {
+            double cx = p.decodeDouble();
+            double cy = p.decodeDouble();
+            ret.add(new TargetCorner(cx, cy));
+        }
+        return ret;
+    }
+
+    /**
+     * Populates the fields of this class with information from the incoming packet.
+     *
+     * @param packet The incoming packet.
+     * @return The incoming packet.
+     */
+    public Packet createFromPacket(Packet packet) {
+        this.yaw = packet.decodeDouble();
+        this.pitch = packet.decodeDouble();
+        this.area = packet.decodeDouble();
+        this.skew = packet.decodeDouble();
+        this.fiducialId = packet.decodeInt();
+
+        this.bestCameraToTarget = PacketUtils.decodeTransform(packet);
+        this.altCameraToTarget = PacketUtils.decodeTransform(packet);
+
+        this.poseAmbiguity = packet.decodeDouble();
+
+        this.minAreaRectCorners = new ArrayList<>(4);
+        for (int i = 0; i < 4; i++) {
+            double cx = packet.decodeDouble();
+            double cy = packet.decodeDouble();
+            minAreaRectCorners.add(new TargetCorner(cx, cy));
+        }
+
+        detectedCorners = decodeList(packet);
+
+        return packet;
+    }
+
+    /**
+     * Populates the outgoing packet with information from the current target.
+     *
+     * @param packet The outgoing packet.
+     * @return The outgoing packet.
+     */
+    public Packet populatePacket(Packet packet) {
+        packet.encode(yaw);
+        packet.encode(pitch);
+        packet.encode(area);
+        packet.encode(skew);
+        packet.encode(fiducialId);
+        PacketUtils.encodeTransform(packet, bestCameraToTarget);
+        PacketUtils.encodeTransform(packet, altCameraToTarget);
+        packet.encode(poseAmbiguity);
+
+        for (int i = 0; i < 4; i++) {
+            packet.encode(minAreaRectCorners.get(i).x);
+            packet.encode(minAreaRectCorners.get(i).y);
+        }
+
+        encodeList(packet, detectedCorners);
+
+        return packet;
+    }
+
     @Override
     public String toString() {
         return "PhotonTrackedTarget{"
@@ -215,7 +296,8 @@ public class PhotonTrackedTarget {
                 + '}';
     }
 
-    public static final class AProto implements Protobuf<PhotonTrackedTarget, ProtobufPhotonTrackedTarget> {
+    public static final class AProto
+            implements Protobuf<PhotonTrackedTarget, ProtobufPhotonTrackedTarget> {
         @Override
         public Class<PhotonTrackedTarget> getTypeClass() {
             return PhotonTrackedTarget.class;
@@ -225,7 +307,6 @@ public class PhotonTrackedTarget {
         public Descriptor getDescriptor() {
             return ProtobufPhotonTrackedTarget.getDescriptor();
         }
-
 
         @Override
         public ProtobufPhotonTrackedTarget createMessage() {
@@ -244,13 +325,12 @@ public class PhotonTrackedTarget {
                     Transform3d.proto.unpack(msg.getAltCameraToTarget()),
                     msg.getPoseAmbiguity(),
                     TargetCorner.proto.unpack(msg.getMinAreaRectCorners()),
-                    TargetCorner.proto.unpack(msg.getDetectedCorners())
-                );
+                    TargetCorner.proto.unpack(msg.getDetectedCorners()));
         }
 
         public List<PhotonTrackedTarget> unpack(RepeatedMessage<ProtobufPhotonTrackedTarget> msg) {
             ArrayList<PhotonTrackedTarget> targets = new ArrayList<>(msg.length());
-            for(ProtobufPhotonTrackedTarget target : msg) {
+            for (ProtobufPhotonTrackedTarget target : msg) {
                 targets.add(unpack(target));
             }
             return targets;
@@ -258,8 +338,7 @@ public class PhotonTrackedTarget {
 
         @Override
         public void pack(ProtobufPhotonTrackedTarget msg, PhotonTrackedTarget value) {
-            msg
-                    .setYaw(value.getYaw())
+            msg.setYaw(value.getYaw())
                     .setPitch(value.getPitch())
                     .setSkew(value.getSkew())
                     .setArea(value.getArea())
@@ -269,21 +348,18 @@ public class PhotonTrackedTarget {
             Transform3d.proto.pack(msg.getMutableBestCameraToTarget(), value.bestCameraToTarget);
             Transform3d.proto.pack(msg.getMutableAltCameraToTarget(), value.altCameraToTarget);
 
-            ProtobufTargetCorner[] minAreaRectCorners = new ProtobufTargetCorner[value.minAreaRectCorners.size()];
-            ProtobufTargetCorner[] detectedCorners = new ProtobufTargetCorner[value.minAreaRectCorners.size()];
+            RepeatedMessage<ProtobufTargetCorner> minAreaRectCorners =
+                    msg.getMutableMinAreaRectCorners().reserve(value.minAreaRectCorners.size());
+            for (int i = 0; i < value.minAreaRectCorners.size(); i++) {
+                ProtobufTargetCorner corner = minAreaRectCorners.next();
+                TargetCorner.proto.pack(corner, value.minAreaRectCorners.get(i));
+            }
 
-            TargetCorner.proto.pack(minAreaRectCorners, value.minAreaRectCorners);
-            TargetCorner.proto.pack(detectedCorners, value.detectedCorners);
-
-            msg.addAllMinAreaRectCorners(minAreaRectCorners);
-            msg.addAllDetectedCorners(detectedCorners);
-        }
-
-        public void pack(ProtobufPhotonTrackedTarget[] buffer, List<PhotonTrackedTarget> targets) {
-            for(int i = 0; i < targets.size(); i++) {
-                var protoTarget = createMessage();
-                pack(protoTarget, targets.get(i));
-                buffer[i] = protoTarget;
+            RepeatedMessage<ProtobufTargetCorner> detectedCorners =
+                    msg.getMutableDetectedCorners().reserve(value.detectedCorners.size());
+            for (int i = 0; i < value.detectedCorners.size(); i++) {
+                ProtobufTargetCorner corner = detectedCorners.next();
+                TargetCorner.proto.pack(corner, value.detectedCorners.get(i));
             }
         }
     }

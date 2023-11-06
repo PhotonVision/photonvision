@@ -128,11 +128,11 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
     @Override
     public void accept(CVPipelineResult result) {
-        var res = new PhotonPipelineResult(
-                result.getLatencyMillis(),
-                TrackedTarget.simpleFromTrackedTargets(result.targets),
-                result.multiTagResult
-        );
+        var res =
+                new PhotonPipelineResult(
+                        result.getLatencyMillis(),
+                        TrackedTarget.simpleFromTrackedTargets(result.targets),
+                        result.multiTagResult);
 
         ts.rawBytesEntry.set(res);
 

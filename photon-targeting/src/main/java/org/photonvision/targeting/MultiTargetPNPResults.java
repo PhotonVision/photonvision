@@ -18,19 +18,49 @@
 package org.photonvision.targeting;
 
 import edu.wpi.first.util.protobuf.Protobuf;
-import org.photonvision.proto.PhotonTypes.ProtobufMultiTargetPNPResults;
-import us.hebi.quickbuf.Descriptors.Descriptor;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.photonvision.common.dataflow.structures.Packet;
+import org.photonvision.proto.PhotonTypes.ProtobufMultiTargetPNPResults;
+import us.hebi.quickbuf.Descriptors.Descriptor;
 
 public class MultiTargetPNPResults {
-    public final PNPResults estimatedPose;
-    public final List<Integer> fiducialIDsUsed;
+    // Seeing 32 apriltags at once seems like a sane limit
+    private static final int MAX_IDS = 32;
+    // pnpresult + MAX_IDS possible targets (arbitrary upper limit that should never be hit, ideally)
+    public static final int PACK_SIZE_BYTES = PNPResults.PACK_SIZE_BYTES + (Short.BYTES * MAX_IDS);
+
+    public PNPResults estimatedPose = new PNPResults();
+    public List<Integer> fiducialIDsUsed = List.of();
+
+    public MultiTargetPNPResults() {}
 
     public MultiTargetPNPResults(PNPResults results, List<Integer> ids) {
         estimatedPose = results;
         fiducialIDsUsed = ids;
+    }
+
+    public static MultiTargetPNPResults createFromPacket(Packet packet) {
+        var results = PNPResults.createFromPacket(packet);
+        var ids = new ArrayList<Integer>(MAX_IDS);
+        for (int i = 0; i < MAX_IDS; i++) {
+            int targetId = (int) packet.decodeShort();
+            if (targetId > -1) ids.add(targetId);
+        }
+        return new MultiTargetPNPResults(results, ids);
+    }
+
+    public void populatePacket(Packet packet) {
+        estimatedPose.populatePacket(packet);
+        for (int i = 0; i < MAX_IDS; i++) {
+            if (i < fiducialIDsUsed.size()) {
+                packet.encode((short) fiducialIDsUsed.get(i).byteValue());
+            } else {
+                packet.encode((short) -1);
+            }
+        }
     }
 
     @Override
@@ -66,7 +96,8 @@ public class MultiTargetPNPResults {
                 + "]";
     }
 
-    public static final class AProto implements Protobuf<MultiTargetPNPResults, ProtobufMultiTargetPNPResults> {
+    public static final class AProto
+            implements Protobuf<MultiTargetPNPResults, ProtobufMultiTargetPNPResults> {
         @Override
         public Class<MultiTargetPNPResults> getTypeClass() {
             return MultiTargetPNPResults.class;
@@ -87,10 +118,7 @@ public class MultiTargetPNPResults {
             return new MultiTargetPNPResults(
                     PNPResults.proto.unpack(msg.getEstimatedPose()),
                     // TODO better way of doing this
-                    Arrays.stream(msg.getFiducialIdsUsed().array())
-                            .boxed()
-                            .collect(Collectors.toList())
-            );
+                    Arrays.stream(msg.getFiducialIdsUsed().array()).boxed().collect(Collectors.toList()));
         }
 
         @Override
@@ -99,7 +127,7 @@ public class MultiTargetPNPResults {
 
             // TODO better way of doing this
             int[] ids = new int[value.fiducialIDsUsed.size()];
-            for(int i = 0; i < ids.length; i++) {
+            for (int i = 0; i < ids.length; i++) {
                 ids[i] = value.fiducialIDsUsed.get(i);
             }
             msg.addAllFiducialIdsUsed(ids);

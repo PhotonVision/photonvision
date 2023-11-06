@@ -19,7 +19,9 @@ package org.photonvision.targeting;
 
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.util.protobuf.Protobuf;
+import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.proto.PhotonTypes.ProtobufPNPResults;
+import org.photonvision.utils.PacketUtils;
 import us.hebi.quickbuf.Descriptors.Descriptor;
 
 /**
@@ -32,6 +34,12 @@ import us.hebi.quickbuf.Descriptors.Descriptor;
  * method.
  */
 public class PNPResults {
+    /**
+     * If this result is valid. A false value indicates there was an error in estimation, and this
+     * result should not be used.
+     */
+    public final boolean isPresent;
+
     /**
      * The best-fit transform. The coordinate frame of this transform depends on the method which gave
      * this result.
@@ -53,12 +61,27 @@ public class PNPResults {
     /** If no alternate solution is found, this is 0 */
     public final double ambiguity;
 
+    /** An empty (invalid) result. */
+    public PNPResults() {
+        this.isPresent = false;
+        this.best = new Transform3d();
+        this.alt = new Transform3d();
+        this.ambiguity = 0;
+        this.bestReprojErr = 0;
+        this.altReprojErr = 0;
+    }
+
+    public PNPResults(Transform3d best, double bestReprojErr) {
+        this(best, best, 0, bestReprojErr, bestReprojErr);
+    }
+
     public PNPResults(
             Transform3d best,
             Transform3d alt,
             double ambiguity,
             double bestReprojErr,
             double altReprojErr) {
+        this.isPresent = true;
         this.best = best;
         this.alt = alt;
         this.ambiguity = ambiguity;
@@ -66,14 +89,37 @@ public class PNPResults {
         this.altReprojErr = altReprojErr;
     }
 
-    public PNPResults(Transform3d best, double bestReprojErr) {
-        this(best, best, 0, bestReprojErr, bestReprojErr);
+    public static final int PACK_SIZE_BYTES = 1 + (Double.BYTES * 7 * 2) + (Double.BYTES * 3);
+
+    public static PNPResults createFromPacket(Packet packet) {
+        var present = packet.decodeBoolean();
+        var best = PacketUtils.decodeTransform(packet);
+        var alt = PacketUtils.decodeTransform(packet);
+        var bestEr = packet.decodeDouble();
+        var altEr = packet.decodeDouble();
+        var ambiguity = packet.decodeDouble();
+        if (present) {
+            return new PNPResults(best, alt, ambiguity, bestEr, altEr);
+        } else {
+            return new PNPResults();
+        }
+    }
+
+    public Packet populatePacket(Packet packet) {
+        packet.encode(isPresent);
+        PacketUtils.encodeTransform(packet, best);
+        PacketUtils.encodeTransform(packet, alt);
+        packet.encode(bestReprojErr);
+        packet.encode(altReprojErr);
+        packet.encode(ambiguity);
+        return packet;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
+        result = prime * result + (isPresent ? 1231 : 1237);
         result = prime * result + ((best == null) ? 0 : best.hashCode());
         long temp;
         temp = Double.doubleToLongBits(bestReprojErr);
@@ -92,6 +138,7 @@ public class PNPResults {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         PNPResults other = (PNPResults) obj;
+        if (isPresent != other.isPresent) return false;
         if (best == null) {
             if (other.best != null) return false;
         } else if (!best.equals(other.best)) return false;
@@ -109,7 +156,9 @@ public class PNPResults {
 
     @Override
     public String toString() {
-        return "PNPResults [best="
+        return "PNPResults [isPresent="
+                + isPresent
+                + ", best="
                 + best
                 + ", bestReprojErr="
                 + bestReprojErr
@@ -145,16 +194,16 @@ public class PNPResults {
                     Transform3d.proto.unpack(msg.getAlt()),
                     msg.getAmbiguity(),
                     msg.getBestReprojErr(),
-                    msg.getAltReprojErr()
-            );
+                    msg.getAltReprojErr());
         }
 
         @Override
         public void pack(ProtobufPNPResults msg, PNPResults value) {
             Transform3d.proto.pack(msg.getMutableBest(), value.best);
             Transform3d.proto.pack(msg.getMutableAlt(), value.alt);
-            msg.setAmbiguity(value.ambiguity).setBestReprojErr(value.bestReprojErr).setAltReprojErr(value.altReprojErr);
-
+            msg.setAmbiguity(value.ambiguity)
+                    .setBestReprojErr(value.bestReprojErr)
+                    .setAltReprojErr(value.altReprojErr);
         }
     }
 

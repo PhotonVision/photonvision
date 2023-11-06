@@ -27,6 +27,7 @@ package org.photonvision;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.dataflow.structures.Packet;
+import org.photonvision.targeting.PhotonPipelineResult;
 
 class PhotonCameraTest {
     @Test

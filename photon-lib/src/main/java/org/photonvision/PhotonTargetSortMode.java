@@ -25,7 +25,7 @@
 package org.photonvision;
 
 import java.util.Comparator;
-import org.photonvision.proto.PhotonTypes.PhotonPipelineResult.PhotonTrackedTarget;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 public enum PhotonTargetSortMode {
     Smallest(Comparator.comparingDouble(PhotonTrackedTarget::getArea)),

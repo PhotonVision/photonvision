@@ -17,10 +17,10 @@
 
 package org.photonvision.targeting;
 
+import edu.wpi.first.util.protobuf.Protobuf;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import edu.wpi.first.util.protobuf.Protobuf;
 import org.photonvision.proto.PhotonTypes.ProtobufTargetCorner;
 import us.hebi.quickbuf.Descriptors.Descriptor;
 import us.hebi.quickbuf.RepeatedMessage;
@@ -79,7 +79,7 @@ public class TargetCorner {
 
         public List<TargetCorner> unpack(RepeatedMessage<ProtobufTargetCorner> msg) {
             ArrayList<TargetCorner> corners = new ArrayList<>(msg.length());
-            for(ProtobufTargetCorner corner : msg) {
+            for (ProtobufTargetCorner corner : msg) {
                 corners.add(unpack(corner));
             }
             return corners;
@@ -88,14 +88,6 @@ public class TargetCorner {
         @Override
         public void pack(ProtobufTargetCorner msg, TargetCorner value) {
             msg.setX(value.x).setY(value.y);
-        }
-
-        public void pack(ProtobufTargetCorner[] buffer, List<TargetCorner> corners) {
-            for(int i = 0; i < corners.size(); i++) {
-                var protoCorner = createMessage();
-                pack(protoCorner, corners.get(i));
-                buffer[i] = protoCorner;
-            }
         }
     }
 

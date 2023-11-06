@@ -18,21 +18,43 @@
 package org.photonvision.targeting;
 
 import edu.wpi.first.util.protobuf.Protobuf;
-import org.photonvision.proto.PhotonTypes.ProtobufPhotonTrackedTarget;
-import org.photonvision.proto.PhotonTypes.ProtobufPhotonPipelineResult;
-import us.hebi.quickbuf.Descriptors.Descriptor;
 import java.util.ArrayList;
 import java.util.List;
+import org.photonvision.common.dataflow.structures.Packet;
+import org.photonvision.proto.PhotonTypes.ProtobufPhotonPipelineResult;
+import org.photonvision.proto.PhotonTypes.ProtobufPhotonTrackedTarget;
+import us.hebi.quickbuf.Descriptors.Descriptor;
+import us.hebi.quickbuf.RepeatedMessage;
 
 /** Represents a pipeline result from a PhotonCamera. */
 public class PhotonPipelineResult {
     private static boolean HAS_WARNED = false;
 
+    // Targets to store.
     public final List<PhotonTrackedTarget> targets = new ArrayList<>();
-    private final double latencyMillis;
-    private final MultiTargetPNPResults multiTagResult;
 
+    // Latency in milliseconds.
+    private double latencyMillis;
+
+    // Timestamp in milliseconds.
     private double timestampSeconds = -1;
+
+    // Multi-tag result
+    private MultiTargetPNPResults multiTagResult = new MultiTargetPNPResults();
+
+    /** Constructs an empty pipeline result. */
+    public PhotonPipelineResult() {}
+
+    /**
+     * Constructs a pipeline result.
+     *
+     * @param latencyMillis The latency in the pipeline.
+     * @param targets The list of targets identified by the pipeline.
+     */
+    public PhotonPipelineResult(double latencyMillis, List<PhotonTrackedTarget> targets) {
+        this.latencyMillis = latencyMillis;
+        this.targets.addAll(targets);
+    }
 
     /**
      * Constructs a pipeline result.
@@ -46,6 +68,18 @@ public class PhotonPipelineResult {
         this.latencyMillis = latencyMillis;
         this.targets.addAll(targets);
         this.multiTagResult = result;
+    }
+
+    /**
+     * Returns the size of the packet needed to store this pipeline result.
+     *
+     * @return The size of the packet needed to store this pipeline result.
+     */
+    public int getPacketSize() {
+        return targets.size() * PhotonTrackedTarget.PACK_SIZE_BYTES
+                + 8 // latency
+                + MultiTargetPNPResults.PACK_SIZE_BYTES
+                + 1; // target count
     }
 
     /**
@@ -77,15 +111,6 @@ public class PhotonPipelineResult {
     }
 
     /**
-     * Sets the FPGA timestamp of this result in seconds.
-     *
-     * @param timestampSeconds The timestamp in seconds.
-     */
-    public void setTimestampSeconds(double timestampSeconds) {
-        this.timestampSeconds = timestampSeconds;
-    }
-
-    /**
      * Returns the estimated time the frame was taken, This is more accurate than using <code>
      * getLatencyMillis()</code>
      *
@@ -96,12 +121,21 @@ public class PhotonPipelineResult {
     }
 
     /**
+     * Sets the FPGA timestamp of this result in seconds.
+     *
+     * @param timestampSeconds The timestamp in seconds.
+     */
+    public void setTimestampSeconds(double timestampSeconds) {
+        this.timestampSeconds = timestampSeconds;
+    }
+
+    /**
      * Returns whether the pipeline has targets.
      *
      * @return Whether the pipeline has targets.
      */
     public boolean hasTargets() {
-        return !targets.isEmpty();
+        return targets.size() > 0;
     }
 
     /**
@@ -119,6 +153,49 @@ public class PhotonPipelineResult {
      */
     public MultiTargetPNPResults getMultiTagResult() {
         return multiTagResult;
+    }
+
+    /**
+     * Populates the fields of the pipeline result from the packet.
+     *
+     * @param packet The incoming packet.
+     * @return The incoming packet.
+     */
+    public Packet createFromPacket(Packet packet) {
+        // Decode latency, existence of targets, and number of targets.
+        latencyMillis = packet.decodeDouble();
+        this.multiTagResult = MultiTargetPNPResults.createFromPacket(packet);
+        byte targetCount = packet.decodeByte();
+
+        targets.clear();
+
+        // Decode the information of each target.
+        for (int i = 0; i < (int) targetCount; ++i) {
+            var target = new PhotonTrackedTarget();
+            target.createFromPacket(packet);
+            targets.add(target);
+        }
+
+        return packet;
+    }
+
+    /**
+     * Populates the outgoing packet with information from this pipeline result.
+     *
+     * @param packet The outgoing packet.
+     * @return The outgoing packet.
+     */
+    public Packet populatePacket(Packet packet) {
+        // Encode latency, existence of targets, and number of targets.
+        packet.encode(latencyMillis);
+        multiTagResult.populatePacket(packet);
+        packet.encode((byte) targets.size());
+
+        // Encode the information of each target.
+        for (var target : targets) target.populatePacket(packet);
+
+        // Return the packet.
+        return packet;
     }
 
     @Override
@@ -167,7 +244,8 @@ public class PhotonPipelineResult {
                 + "]";
     }
 
-    public static final class AProto implements Protobuf<PhotonPipelineResult, ProtobufPhotonPipelineResult> {
+    public static final class AProto
+            implements Protobuf<PhotonPipelineResult, ProtobufPhotonPipelineResult> {
         @Override
         public Class<PhotonPipelineResult> getTypeClass() {
             return PhotonPipelineResult.class;
@@ -188,15 +266,17 @@ public class PhotonPipelineResult {
             return new PhotonPipelineResult(
                     msg.getLatencyMs(),
                     PhotonTrackedTarget.proto.unpack(msg.getTargets()),
-                    MultiTargetPNPResults.proto.unpack(msg.getMultiTargetResult())
-            );
+                    MultiTargetPNPResults.proto.unpack(msg.getMultiTargetResult()));
         }
 
         @Override
         public void pack(ProtobufPhotonPipelineResult msg, PhotonPipelineResult value) {
-            ProtobufPhotonTrackedTarget[] targets = new ProtobufPhotonTrackedTarget[value.targets.size()];
-            PhotonTrackedTarget.proto.pack(targets, value.targets);
-            msg.addAllTargets(targets);
+            RepeatedMessage<ProtobufPhotonTrackedTarget> targets =
+                    msg.getMutableTargets().reserve(value.targets.size());
+            for (int i = 0; i < value.targets.size(); i++) {
+                ProtobufPhotonTrackedTarget corner = targets.next();
+                PhotonTrackedTarget.proto.pack(corner, value.targets.get(i));
+            }
 
             MultiTargetPNPResults.proto.pack(msg.getMutableMultiTargetResult(), value.multiTagResult);
 

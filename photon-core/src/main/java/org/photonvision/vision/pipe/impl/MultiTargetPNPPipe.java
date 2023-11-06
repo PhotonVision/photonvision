@@ -71,8 +71,8 @@ public class MultiTargetPNPPipe
                 VisionEstimation.estimateCamPosePNP(
                         params.cameraCoefficients.cameraIntrinsics.getAsWpilibMat(),
                         params.cameraCoefficients.distCoeffs.getAsWpilibMat(),
-                        List.of(TrackedTarget.simpleFromTrackedTargets(targetList)),
-                        params.atfl);
+                        TrackedTarget.simpleFromTrackedTargets(targetList),
+                        params.atfl,
                         params.targetModel);
 
         return new MultiTargetPNPResults(estimatedPose, tagIDsUsed);
