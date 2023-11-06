@@ -45,8 +45,8 @@ import org.opencv.core.Point3;
 import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 import org.opencv.imgproc.Imgproc;
-import org.photonvision.proto.PhotonTypes.PhotonPipelineResult.TargetCorner;
 import org.photonvision.targeting.PNPResults;
+import org.photonvision.targeting.TargetCorner;
 
 public final class OpenCVHelp {
     private static RotTrlTransform3d NWU_TO_EDN;
@@ -73,7 +73,7 @@ public final class OpenCVHelp {
     }
 
     public static Mat matrixToMat(SimpleMatrix matrix) {
-        var mat = new Mat(matrix.numRows(), matrix.numCols(), CvType.CV_64F);
+        var mat = new Mat(matrix.getNumRows(), matrix.getNumCols(), CvType.CV_64F);
         mat.put(0, 0, matrix.getDDRM().getData());
         return mat;
     }
@@ -160,7 +160,7 @@ public final class OpenCVHelp {
         var points = new Point[corners.size()];
         for (int i = 0; i < corners.size(); i++) {
             var corn = corners.get(i);
-            points[i] = new Point(corn.getX(), corn.getY());
+            points[i] = new Point(corn.x, corn.y);
         }
         return points;
     }
@@ -168,18 +168,18 @@ public final class OpenCVHelp {
     public static Point[] cornersToPoints(TargetCorner... corners) {
         var points = new Point[corners.length];
         for (int i = 0; i < corners.length; i++) {
-            points[i] = new Point(corners[i].getX(), corners[i].getY());
+            points[i] = new Point(corners[i].x, corners[i].y);
         }
         return points;
     }
 
     public static List<TargetCorner> pointsToCorners(Point... points) {
         var corners = new ArrayList<TargetCorner>(points.length);
-        for (int i = 0; i < points.length; i++) {
-            var c = TargetCorner.newInstance();
-            c.setX(points[i].x);
-            c.setY(points[i].y);
-            corners.add(c);
+        for (Point point : points) {
+            corners.add(new TargetCorner(
+                    point.x,
+                    point.y
+            ));
         }
         return corners;
     }
@@ -189,10 +189,7 @@ public final class OpenCVHelp {
         float[] data = new float[(int) matInput.total() * matInput.channels()];
         matInput.get(0, 0, data);
         for (int i = 0; i < (int) matInput.total(); i++) {
-            var c = TargetCorner.newInstance();
-            c.setX(data[0 + 2 * i]);
-            c.setY(data[1 + 2 * i]);
-            corners.add(c);
+            corners.add(new TargetCorner(data[0 + 2 * i], data[1 + 2 * i]));
         }
         return corners;
     }
