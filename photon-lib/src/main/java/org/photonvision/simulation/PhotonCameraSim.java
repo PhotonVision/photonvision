@@ -562,7 +562,7 @@ public class PhotonCameraSim implements AutoCloseable {
     public void submitProcessedFrame(PhotonPipelineResult result, long receiveTimestamp) {
         ts.latencyMillisEntry.set(result.getLatencyMillis(), receiveTimestamp);
 
-        ts.rawBytesEntry.set(result, receiveTimestamp);
+        ts.pipelineResultsPublisher.set(result, receiveTimestamp);
 
         boolean hasTargets = result.hasTargets();
         ts.hasTargetEntry.set(hasTargets, receiveTimestamp);

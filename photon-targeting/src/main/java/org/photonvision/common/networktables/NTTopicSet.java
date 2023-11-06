@@ -40,7 +40,7 @@ import org.photonvision.targeting.PhotonPipelineResult;
  */
 public class NTTopicSet {
     public NetworkTable subTable;
-    public ProtobufPublisher<PhotonPipelineResult> rawBytesEntry;
+    public ProtobufPublisher<PhotonPipelineResult> pipelineResultsPublisher;
 
     public IntegerPublisher pipelineIndexPublisher;
     public IntegerSubscriber pipelineIndexRequestSub;
@@ -70,7 +70,7 @@ public class NTTopicSet {
     public DoubleArrayPublisher cameraDistortionPublisher;
 
     public void updateEntries() {
-        rawBytesEntry =
+        pipelineResultsPublisher =
                 subTable
                         .getProtobufTopic("result_proto", PhotonPipelineResult.proto)
                         .publish(PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
@@ -105,7 +105,7 @@ public class NTTopicSet {
 
     @SuppressWarnings("DuplicatedCode")
     public void removeEntries() {
-        if (rawBytesEntry != null) rawBytesEntry.close();
+        if (pipelineResultsPublisher != null) pipelineResultsPublisher.close();
         if (pipelineIndexPublisher != null) pipelineIndexPublisher.close();
         if (pipelineIndexRequestSub != null) pipelineIndexRequestSub.close();
 

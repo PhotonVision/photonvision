@@ -134,7 +134,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
                         TrackedTarget.simpleFromTrackedTargets(result.targets),
                         result.multiTagResult);
 
-        ts.rawBytesEntry.set(res);
+        ts.pipelineResultsPublisher.set(res);
 
         ts.pipelineIndexPublisher.set(pipelineIndexSupplier.get());
         ts.driverModePublisher.set(driverModeSupplier.getAsBoolean());
