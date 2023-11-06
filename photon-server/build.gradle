@@ -1,10 +1,10 @@
 plugins {
-    id 'edu.wpi.first.WpilibTools' version '1.1.0'
+    id "application"
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id "com.github.node-gradle.node" version "7.0.1"
+    id "org.hidetake.ssh" version "2.11.2"
+    id 'edu.wpi.first.WpilibTools' version '1.3.0'
 }
-
-apply plugin: "application"
-apply plugin: "com.github.johnrengelman.shadow"
-apply plugin: "org.hidetake.ssh"
 
 evaluationDependsOn(':photon-core')
 
@@ -15,26 +15,12 @@ version versionString + (project.hasProperty('pionly') ? "-raspi" : "")
 
 apply from: "${rootDir}/shared/common.gradle"
 
-def nativeConfigName = 'wpilibTestNative'
-def nativeConfig = configurations.create(nativeConfigName)
-
-def nativeTasks = wpilibTools.createExtractionTasks { configurationName = nativeConfigName }
-
-nativeTasks.addToSourceSetResources(sourceSets.main)
-
-nativeConfig.dependencies.add wpilibTools.deps.cscore()
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
-
 dependencies {
     implementation project(':photon-core')
     implementation project(':photon-targeting')
 
     implementation "io.javalin:javalin:$javalinVersion"
+    implementation "org.slf4j:slf4j-simple:2.0.7"
 
     implementation wpilibTools.deps.wpilibJava("wpiutil")
     implementation wpilibTools.deps.wpilibJava("wpimath")
@@ -42,50 +28,44 @@ dependencies {
     implementation wpilibTools.deps.wpilibJava("hal")
     implementation wpilibTools.deps.wpilibJava("ntcore")
     implementation wpilibTools.deps.wpilibJava("wpilibj")
+    implementation wpilibTools.deps.wpilibOpenCv("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())
 
     implementation "org.msgpack:msgpack-core:0.9.0"
     implementation "org.msgpack:jackson-dataformat-msgpack:0.9.0"
-
-    implementation "org.slf4j:slf4j-simple:2.0.7"
 }
 
 shadowJar {
-    configurations = [project.configurations.runtimeClasspath]
-    String name = "photonvision-${project.version}"
-    archiveClassifier.set(wpilibTools.platformMapper.currentPlatform.platformName)
     archiveBaseName = "photonvision"
-    archiveVersion = project.version
-    // archiveFileName.set("${name}.jar")
+    archiveVersion = project.version as String
+    archiveClassifier.set(wpilibTools.currentPlatform.platformName)
+    configurations = [
+        project.configurations.runtimeClasspath
+    ]
 }
 
-task runNpmOnClient(type: Exec) {
-    workingDir "${projectDir}/../photon-client"
-    if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
-        commandLine 'cmd', '/c', 'npm run build'
-    } else {
-        commandLine 'npm', 'run', 'build'
-    }
+
+node {
+    nodeProjectDir = file("${projectDir}/../photon-client")
 }
 
-task copyClientUIToResources(type: Copy) {
+tasks.register('copyClientUIToResources', Copy) {
     from "${projectDir}/../photon-client/dist/"
     into "${projectDir}/src/main/resources/web/"
 }
 
-task buildAndCopyUI {}
-
-buildAndCopyUI.dependsOn copyClientUIToResources
-copyClientUIToResources.dependsOn runNpmOnClient
-copyClientUIToResources.shouldRunAfter runNpmOnClient
+tasks.register("buildAndCopyUI") {
+    dependsOn "npm_run_build"
+    finalizedBy "copyClientUIToResources"
+}
 
 run {
     if (project.hasProperty("profile")) {
         jvmArgs=[
-                "-Dcom.sun.management.jmxremote=true",
-                "-Dcom.sun.management.jmxremote.ssl=false",
-                "-Dcom.sun.management.jmxremote.authenticate=false",
-                "-Dcom.sun.management.jmxremote.port=5000",
-                "-Djava.rmi.server.hostname=0.0.0.0",
+            "-Dcom.sun.management.jmxremote=true",
+            "-Dcom.sun.management.jmxremote.ssl=false",
+            "-Dcom.sun.management.jmxremote.authenticate=false",
+            "-Dcom.sun.management.jmxremote.port=5000",
+            "-Djava.rmi.server.hostname=0.0.0.0",
         ]
     }
 }
@@ -105,9 +85,6 @@ remotes {
         knownHosts = allowAnyHosts
     }
 }
-
-import java.io.*;
-import java.net.*;
 
 task findDeployTarget {
     doLast {
@@ -143,23 +120,14 @@ task findDeployTarget {
 }
 
 run {
-  environment "PATH_PREFIX", "../"
+    environment "PATH_PREFIX", "../"
 }
 
-// task overrideToPi {
-//     doLast {
-//         project.setProperty('ArchOverride', 'linuxarm32')
-//     }
-// }
-
-
-
 task deploy {
-    //dependsOn overrideToPi
-    dependsOn assemble
     dependsOn findDeployTarget
+    dependsOn assemble
 
-        doLast {
+    doLast {
         println 'Starting deployment to ' + findDeployTarget.rmt.host
         println 'targetArch = ' + wpilibTools.platformMapper.currentPlatform.platformName
         ssh.run{
@@ -170,7 +138,7 @@ task deploy {
                 execute 'sleep 3'
                 // Copy into a folder owned by PI. Mostly because, as far as I can tell, the put command doesn't support sudo.
                 put from: "${projectDir}/build/libs/photonvision-${project.version}-${wpilibTools.platformMapper.currentPlatform.platformName}.jar", into: "/tmp/photonvision.jar"
-                 //belt-and-suspenders. Make sure the old jar is gone first.
+                //belt-and-suspenders. Make sure the old jar is gone first.
                 execute 'sudo rm -f /opt/photonvision/photonvision.jar'
                 //Copy in the new .jar and make sure it's executable
                 execute 'sudo mv /tmp/photonvision.jar /opt/photonvision/photonvision.jar'

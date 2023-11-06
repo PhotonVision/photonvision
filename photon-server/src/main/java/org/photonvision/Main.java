@@ -251,7 +251,7 @@ public class Main {
             var pipeline2023 = new AprilTagPipelineSettings();
             var path_split = Path.of(camConf2023.path).getFileName().toString();
             pipeline2023.pipelineNickname = path_split.replace(".png", "");
-            pipeline2023.targetModel = TargetModel.k6in_16h5;
+            pipeline2023.targetModel = TargetModel.kAprilTag6in_16h5;
             pipeline2023.inputShouldShow = true;
             pipeline2023.solvePNPEnabled = true;
 

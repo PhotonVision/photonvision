@@ -70,7 +70,8 @@ public class VisionEstimation {
             Matrix<N3, N3> cameraMatrix,
             Matrix<N5, N1> distCoeffs,
             List<PhotonTrackedTarget> visTags,
-            AprilTagFieldLayout tagLayout) {
+            AprilTagFieldLayout tagLayout,
+            TargetModel tagModel) {
         if (tagLayout == null
                 || visTags == null
                 || tagLayout.getTags().size() == 0
@@ -101,8 +102,7 @@ public class VisionEstimation {
         // single-tag pnp
         if (knownTags.size() == 1) {
             var camToTag =
-                    OpenCVHelp.solvePNP_SQUARE(
-                            cameraMatrix, distCoeffs, TargetModel.kTag16h5.vertices, points);
+                    OpenCVHelp.solvePNP_SQUARE(cameraMatrix, distCoeffs, tagModel.vertices, points);
             if (!camToTag.isPresent) return new PNPResults();
             var bestPose = knownTags.get(0).pose.transformBy(camToTag.best.inverse());
             var altPose = new Pose3d();
@@ -120,7 +120,7 @@ public class VisionEstimation {
         // multi-tag pnp
         else {
             var objectTrls = new ArrayList<Translation3d>();
-            for (var tag : knownTags) objectTrls.addAll(TargetModel.kTag16h5.getFieldVertices(tag.pose));
+            for (var tag : knownTags) objectTrls.addAll(tagModel.getFieldVertices(tag.pose));
             var camToOrigin = OpenCVHelp.solvePNP_SQPNP(cameraMatrix, distCoeffs, objectTrls, points);
             if (!camToOrigin.isPresent) return new PNPResults();
             return new PNPResults(

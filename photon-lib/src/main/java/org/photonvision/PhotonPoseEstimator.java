@@ -41,6 +41,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.photonvision.estimation.TargetModel;
 import org.photonvision.estimation.VisionEstimation;
 
 /**
@@ -80,6 +81,7 @@ public class PhotonPoseEstimator {
     }
 
     private AprilTagFieldLayout fieldTags;
+    private TargetModel tagModel = TargetModel.kAprilTag16h5;
     private PoseStrategy primaryStrategy;
     private PoseStrategy multiTagFallbackStrategy = PoseStrategy.LOWEST_AMBIGUITY;
     private final PhotonCamera camera;
@@ -96,7 +98,8 @@ public class PhotonPoseEstimator {
      * @param fieldTags A WPILib {@link AprilTagFieldLayout} linking AprilTag IDs to Pose3d objects
      *     with respect to the FIRST field using the <a href=
      *     "https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#field-coordinate-system">Field
-     *     Coordinate System</a>.
+     *     Coordinate System</a>. Note that setting the origin of this layout object will affect the
+     *     results from this class.
      * @param strategy The strategy it should use to determine the best pose.
      * @param camera PhotonCamera
      * @param robotToCamera Transform3d from the center of the robot to the camera mount position (ie,
@@ -137,6 +140,8 @@ public class PhotonPoseEstimator {
     /**
      * Get the AprilTagFieldLayout being used by the PositionEstimator.
      *
+     * <p>Note: Setting the origin of this layout will affect the results from this class.
+     *
      * @return the AprilTagFieldLayout
      */
     public AprilTagFieldLayout getFieldTags() {
@@ -146,11 +151,31 @@ public class PhotonPoseEstimator {
     /**
      * Set the AprilTagFieldLayout being used by the PositionEstimator.
      *
+     * <p>Note: Setting the origin of this layout will affect the results from this class.
+     *
      * @param fieldTags the AprilTagFieldLayout
      */
     public void setFieldTags(AprilTagFieldLayout fieldTags) {
         checkUpdate(this.fieldTags, fieldTags);
         this.fieldTags = fieldTags;
+    }
+
+    /**
+     * Get the TargetModel representing the tags being detected. This is used for on-rio multitag.
+     *
+     * <p>By default, this is {@link TargetModel#kAprilTag16h5}.
+     */
+    public TargetModel getTagModel() {
+        return tagModel;
+    }
+
+    /**
+     * Set the TargetModel representing the tags being detected. This is used for on-rio multitag.
+     *
+     * @param tagModel E.g. {@link TargetModel#kAprilTag16h5}.
+     */
+    public void setTagModel(TargetModel tagModel) {
+        this.tagModel = tagModel;
     }
 
     /**
@@ -393,6 +418,7 @@ public class PhotonPoseEstimator {
             var best =
                     new Pose3d()
                             .plus(best_tf) // field-to-camera
+                            .relativeTo(fieldTags.getOrigin())
                             .plus(robotToCamera.inverse()); // field-to-robot
             return Optional.of(
                     new EstimatedRobotPose(
@@ -417,7 +443,7 @@ public class PhotonPoseEstimator {
 
         var pnpResults =
                 VisionEstimation.estimateCamPosePNP(
-                        cameraMatrixOpt.get(), distCoeffsOpt.get(), result.getTargets(), fieldTags);
+                        cameraMatrixOpt.get(), distCoeffsOpt.get(), result.getTargets(), fieldTags, tagModel);
         // try fallback strategy if solvePNP fails for some reason
         if (!pnpResults.isPresent)
             return update(result, cameraMatrixOpt, distCoeffsOpt, this.multiTagFallbackStrategy);

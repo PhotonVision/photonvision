@@ -32,7 +32,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public int numIterations = 40;
     public int hammingDist = 0;
     public int decisionMargin = 35;
-    public boolean doMultiTarget = true;
+    public boolean doMultiTarget = false;
     public boolean doSingleTargetAlways = false;
 
     // 3d settings
@@ -41,7 +41,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         super();
         pipelineType = PipelineType.AprilTag;
         outputShowMultipleTargets = true;
-        targetModel = TargetModel.k6in_16h5;
+        targetModel = TargetModel.kAprilTag6in_16h5;
         cameraExposure = 20;
         cameraAutoExposure = false;
         ledMode = false;

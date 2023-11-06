@@ -40,7 +40,6 @@ import edu.wpi.first.net.WPINetJNI;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
-import edu.wpi.first.util.RuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
@@ -101,13 +100,9 @@ public class OpenCVTest {
                     "ntcorejni",
                     "wpinetjni",
                     "wpiHaljni",
+                    Core.NATIVE_LIBRARY_NAME,
                     "cscorejni",
-                    "cscorejnicvstatic");
-
-            var loader =
-                    new RuntimeLoader<>(
-                            Core.NATIVE_LIBRARY_NAME, RuntimeLoader.getDefaultExtractionRoot(), Core.class);
-            loader.loadLibrary();
+                    "apriltagjni");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -142,7 +137,7 @@ public class OpenCVTest {
     public void testProjection() {
         var target =
                 new VisionTargetSim(
-                        new Pose3d(1, 0, 0, new Rotation3d(0, 0, Math.PI)), TargetModel.kTag16h5, 0);
+                        new Pose3d(1, 0, 0, new Rotation3d(0, 0, Math.PI)), TargetModel.kAprilTag16h5, 0);
         var cameraPose = new Pose3d(0, 0, 0, new Rotation3d());
         var camRt = RotTrlTransform3d.makeRelativeTo(cameraPose);
         var imagePoints =
@@ -198,7 +193,7 @@ public class OpenCVTest {
         // square AprilTag target
         var target =
                 new VisionTargetSim(
-                        new Pose3d(5, 0.5, 1, new Rotation3d(0, 0, Math.PI)), TargetModel.kTag16h5, 0);
+                        new Pose3d(5, 0.5, 1, new Rotation3d(0, 0, Math.PI)), TargetModel.kAprilTag16h5, 0);
         var cameraPose = new Pose3d(0, 0, 0, new Rotation3d());
         var camRt = RotTrlTransform3d.makeRelativeTo(cameraPose);
         // target relative to camera

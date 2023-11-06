@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.camera.QuirkyCamera;
@@ -32,8 +33,9 @@ import org.photonvision.vision.target.TrackedTarget;
 
 public class AprilTagTest {
     @BeforeEach
-    public void Init() {
+    public void setup() {
         TestUtils.loadLibraries();
+        ConfigManager.getInstance().load();
     }
 
     @Test
@@ -45,7 +47,7 @@ public class AprilTagTest {
         pipeline.getSettings().solvePNPEnabled = true;
         pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
         pipeline.getSettings().cornerDetectionUseConvexHulls = true;
-        pipeline.getSettings().targetModel = TargetModel.k200mmAprilTag;
+        pipeline.getSettings().targetModel = TargetModel.kAprilTag6p5in_36h11;
         pipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
 
         var frameProvider =
@@ -56,13 +58,8 @@ public class AprilTagTest {
         frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
 
         CVPipelineResult pipelineResult;
-        try {
-            pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-            printTestResults(pipelineResult);
-        } catch (RuntimeException e) {
-            // For now, will throw because of the Rotation3d ctor
-            return;
-        }
+        pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
+        printTestResults(pipelineResult);
 
         // Draw on input
         var outputPipe = new OutputStreamPipeline();
@@ -73,11 +70,26 @@ public class AprilTagTest {
         TestUtils.showImage(ret.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
 
         // these numbers are not *accurate*, but they are known and expected
-        var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
+        var target = pipelineResult.targets.get(0);
+
+        // Test corner order
+        var corners = target.getTargetCorners();
+        Assertions.assertEquals(260, corners.get(0).x, 10);
+        Assertions.assertEquals(245, corners.get(0).y, 10);
+        Assertions.assertEquals(315, corners.get(1).x, 10);
+        Assertions.assertEquals(245, corners.get(1).y, 10);
+        Assertions.assertEquals(315, corners.get(2).x, 10);
+        Assertions.assertEquals(190, corners.get(2).y, 10);
+        Assertions.assertEquals(260, corners.get(3).x, 10);
+        Assertions.assertEquals(190, corners.get(3).y, 10);
+
+        var pose = target.getBestCameraToTarget3d();
+        // Test pose estimate translation
         Assertions.assertEquals(2, pose.getTranslation().getX(), 0.2);
         Assertions.assertEquals(0.1, pose.getTranslation().getY(), 0.2);
         Assertions.assertEquals(0.0, pose.getTranslation().getZ(), 0.2);
 
+        // Test pose estimate rotation
         // We expect the object axes to be in NWU, with the x-axis coming out of the tag
         // This visible tag is facing the camera almost parallel, so in world space:
 
@@ -100,7 +112,7 @@ public class AprilTagTest {
         pipeline.getSettings().solvePNPEnabled = true;
         pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
         pipeline.getSettings().cornerDetectionUseConvexHulls = true;
-        pipeline.getSettings().targetModel = TargetModel.k200mmAprilTag;
+        pipeline.getSettings().targetModel = TargetModel.kAprilTag6p5in_36h11;
         pipeline.getSettings().tagFamily = AprilTagFamily.kTag16h5;
 
         var frameProvider =
@@ -111,13 +123,8 @@ public class AprilTagTest {
         frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
 
         CVPipelineResult pipelineResult;
-        try {
-            pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-            printTestResults(pipelineResult);
-        } catch (RuntimeException e) {
-            // For now, will throw because of the Rotation3d ctor
-            return;
-        }
+        pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
+        printTestResults(pipelineResult);
 
         // Draw on input
         var outputPipe = new OutputStreamPipeline();

@@ -79,17 +79,6 @@ public class Server {
                     ws.onBinaryMessage(dsHandler::onBinaryMessage);
                 });
 
-        /*Web Socket Events for Camera Streaming */
-        var camDsHandler = CameraSocketHandler.getInstance();
-        app.ws(
-                "/websocket_cameras",
-                ws -> {
-                    ws.onConnect(camDsHandler::onConnect);
-                    ws.onClose(camDsHandler::onClose);
-                    ws.onBinaryMessage(camDsHandler::onBinaryMessage);
-                    ws.onMessage(camDsHandler::onMessage);
-                });
-
         /*API Events*/
         // Settings
         app.post("/api/settings", RequestHandler::onSettingsImportRequest);
@@ -108,6 +97,7 @@ public class Server {
         app.post("/api/utils/restartProgram", RequestHandler::onProgramRestartRequest);
         app.post("/api/utils/restartDevice", RequestHandler::onDeviceRestartRequest);
         app.post("/api/utils/publishMetrics", RequestHandler::onMetricsPublishRequest);
+        app.get("/api/utils/getImageSnapshots", RequestHandler::onImageSnapshotsRequest);
 
         // Calibration
         app.post("/api/calibration/end", RequestHandler::onCalibrationEndRequest);

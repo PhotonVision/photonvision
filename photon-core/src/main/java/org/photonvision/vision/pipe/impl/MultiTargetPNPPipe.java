@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.estimation.TargetModel;
 import org.photonvision.estimation.VisionEstimation;
 import org.photonvision.targeting.MultiTargetPNPResults;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
@@ -38,7 +39,8 @@ public class MultiTargetPNPPipe
 
     @Override
     protected MultiTargetPNPResults process(List<TrackedTarget> targetList) {
-        if (params.cameraCoefficients == null
+        if (params == null
+                || params.cameraCoefficients == null
                 || params.cameraCoefficients.getCameraIntrinsicsMat() == null
                 || params.cameraCoefficients.getDistCoeffsMat() == null) {
             if (!hasWarned) {
@@ -71,6 +73,7 @@ public class MultiTargetPNPPipe
                         params.cameraCoefficients.distCoeffs.getAsWpilibMat(),
                         List.of(TrackedTarget.simpleFromTrackedTargets(targetList)),
                         params.atfl);
+                        params.targetModel);
 
         return new MultiTargetPNPResults(estimatedPose, tagIDsUsed);
     }
@@ -78,11 +81,15 @@ public class MultiTargetPNPPipe
     public static class MultiTargetPNPPipeParams {
         private final CameraCalibrationCoefficients cameraCoefficients;
         private final AprilTagFieldLayout atfl;
+        private final TargetModel targetModel;
 
         public MultiTargetPNPPipeParams(
-                CameraCalibrationCoefficients cameraCoefficients, AprilTagFieldLayout atfl) {
+                CameraCalibrationCoefficients cameraCoefficients,
+                AprilTagFieldLayout atfl,
+                TargetModel targetModel) {
             this.cameraCoefficients = cameraCoefficients;
             this.atfl = atfl;
+            this.targetModel = targetModel;
         }
     }
 }

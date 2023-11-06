@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.processes;
 
+import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.cscore.VideoException;
 import edu.wpi.first.math.util.Units;
 import io.javalin.websocket.WsContext;
@@ -44,6 +45,7 @@ import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.USBCameraSource;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.consumer.FileSaveFrameConsumer;
+import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.OutputStreamPipeline;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
@@ -51,8 +53,6 @@ import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
-import org.photonvision.vision.videoStream.SocketVideoStream;
-import org.photonvision.vision.videoStream.SocketVideoStreamManager;
 
 /**
  * This is the God Class
@@ -83,8 +83,8 @@ public class VisionModule {
     FileSaveFrameConsumer inputFrameSaver;
     FileSaveFrameConsumer outputFrameSaver;
 
-    SocketVideoStream inputVideoStreamer;
-    SocketVideoStream outputVideoStreamer;
+    MJPGFrameConsumer inputVideoStreamer;
+    MJPGFrameConsumer outputVideoStreamer;
 
     public VisionModule(PipelineManager pipelineManager, VisionSource visionSource, int index) {
         logger =
@@ -169,11 +169,6 @@ public class VisionModule {
         saveAndBroadcastAll();
     }
 
-    private void destroyStreams() {
-        SocketVideoStreamManager.getInstance().removeStream(inputVideoStreamer);
-        SocketVideoStreamManager.getInstance().removeStream(outputVideoStreamer);
-    }
-
     private void createStreams() {
         var camStreamIdx = visionSource.getSettables().getConfiguration().streamIndex;
         // If idx = 0, we want (1181, 1182)
@@ -181,15 +176,23 @@ public class VisionModule {
         this.outputStreamPort = 1181 + (camStreamIdx * 2) + 1;
 
         inputFrameSaver =
-                new FileSaveFrameConsumer(visionSource.getSettables().getConfiguration().nickname, "input");
+                new FileSaveFrameConsumer(
+                        visionSource.getSettables().getConfiguration().nickname,
+                        visionSource.getSettables().getConfiguration().uniqueName,
+                        "input");
         outputFrameSaver =
                 new FileSaveFrameConsumer(
-                        visionSource.getSettables().getConfiguration().nickname, "output");
+                        visionSource.getSettables().getConfiguration().nickname,
+                        visionSource.getSettables().getConfiguration().uniqueName,
+                        "output");
 
-        inputVideoStreamer = new SocketVideoStream(this.inputStreamPort);
-        outputVideoStreamer = new SocketVideoStream(this.outputStreamPort);
-        SocketVideoStreamManager.getInstance().addStream(inputVideoStreamer);
-        SocketVideoStreamManager.getInstance().addStream(outputVideoStreamer);
+        String camHostname = CameraServerJNI.getHostname();
+        inputVideoStreamer =
+                new MJPGFrameConsumer(
+                        camHostname + "_Port_" + inputStreamPort + "_Input_MJPEG_Server", inputStreamPort);
+        outputVideoStreamer =
+                new MJPGFrameConsumer(
+                        camHostname + "_Port_" + outputStreamPort + "_Output_MJPEG_Server", outputStreamPort);
     }
 
     private void recreateStreamResultConsumers() {
@@ -482,16 +485,6 @@ public class VisionModule {
         ntConsumer.updateCameraNickname(newName);
         inputFrameSaver.updateCameraNickname(newName);
         outputFrameSaver.updateCameraNickname(newName);
-
-        // Rename streams
-        streamResultConsumers.clear();
-
-        // Teardown and recreate streams
-        destroyStreams();
-        createStreams();
-
-        // Rebuild streamers
-        recreateStreamResultConsumers();
 
         // Push new data to the UI
         saveAndBroadcastAll();
