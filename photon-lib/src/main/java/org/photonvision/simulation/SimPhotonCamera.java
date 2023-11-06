@@ -143,9 +143,7 @@ public class SimPhotonCamera {
 
         PhotonPipelineResult newResult =
                 new PhotonPipelineResult(latencyMillis, targetList, new MultiTargetPNPResults());
-        var newPacket = new Packet(newResult.getPacketSize());
-        newResult.populatePacket(newPacket);
-        ts.rawBytesEntry.set(newPacket.getData());
+        ts.rawBytesEntry.set(newResult);
 
         boolean hasTargets = newResult.hasTargets();
         ts.hasTargetEntry.set(hasTargets);
