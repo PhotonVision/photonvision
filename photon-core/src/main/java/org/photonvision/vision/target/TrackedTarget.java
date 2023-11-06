@@ -113,11 +113,10 @@ public class TrackedTarget implements Releasable {
             tvec.put(
                     0,
                     0,
-                    new double[] {
-                            bestPose.getTranslation().getX(),
-                            bestPose.getTranslation().getY(),
-                            bestPose.getTranslation().getZ()
-                    });
+                    bestPose.getTranslation().getX(),
+                    bestPose.getTranslation().getY(),
+                    bestPose.getTranslation().getZ()
+            );
             setCameraRelativeTvec(tvec);
 
             // Opencv expects a 3d vector with norm = angle and direction = axis
@@ -129,10 +128,10 @@ public class TrackedTarget implements Releasable {
         double[] corners = tagDetection.getCorners();
         Point[] cornerPoints =
                 new Point[] {
-                        new Point(corners[0], corners[1]),
-                        new Point(corners[2], corners[3]),
-                        new Point(corners[4], corners[5]),
-                        new Point(corners[6], corners[7])
+                    new Point(corners[0], corners[1]),
+                    new Point(corners[2], corners[3]),
+                    new Point(corners[4], corners[5]),
+                    new Point(corners[6], corners[7])
                 };
         m_targetCorners = List.of(cornerPoints);
         MatOfPoint contourMat = new MatOfPoint(cornerPoints);
@@ -168,10 +167,10 @@ public class TrackedTarget implements Releasable {
 
         Point[] cornerPoints =
                 new Point[] {
-                        new Point(xCorners[0], yCorners[0]),
-                        new Point(xCorners[1], yCorners[1]),
-                        new Point(xCorners[2], yCorners[2]),
-                        new Point(xCorners[3], yCorners[3])
+                    new Point(xCorners[0], yCorners[0]),
+                    new Point(xCorners[1], yCorners[1]),
+                    new Point(xCorners[2], yCorners[2]),
+                    new Point(xCorners[3], yCorners[3])
                 };
         m_targetCorners = List.of(cornerPoints);
         MatOfPoint contourMat = new MatOfPoint(cornerPoints);
@@ -204,11 +203,10 @@ public class TrackedTarget implements Releasable {
             tvec.put(
                     0,
                     0,
-                    new double[] {
-                            bestPose.getTranslation().getX(),
-                            bestPose.getTranslation().getY(),
-                            bestPose.getTranslation().getZ()
-                    });
+                    bestPose.getTranslation().getX(),
+                    bestPose.getTranslation().getY(),
+                    bestPose.getTranslation().getZ()
+            );
             setCameraRelativeTvec(tvec);
 
             var rvec = new Mat(3, 1, CvType.CV_64FC1);

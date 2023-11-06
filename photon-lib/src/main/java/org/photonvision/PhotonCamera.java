@@ -47,13 +47,12 @@ import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.networktables.StringSubscriber;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
-import us.hebi.quickbuf.InvalidProtocolBufferException;
-
 import java.util.Optional;
 import java.util.Set;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.hardware.VisionLEDMode;
 import org.photonvision.proto.PhotonTypes.PhotonPipelineResult;
+import us.hebi.quickbuf.InvalidProtocolBufferException;
 
 /** Represents a camera that is connected to PhotonVision. */
 public class PhotonCamera implements AutoCloseable {
@@ -144,7 +143,10 @@ public class PhotonCamera implements AutoCloseable {
                 cameraTable
                         .getRawTopic("result_proto")
                         .subscribe(
-                                "proto:" + PhotonPipelineResult.getDescriptor().getFullName(), new byte[] {}, PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
+                                "proto:" + PhotonPipelineResult.getDescriptor().getFullName(),
+                                new byte[] {},
+                                PubSubOption.periodic(0.01),
+                                PubSubOption.sendAll(true));
         driverModePublisher = cameraTable.getBooleanTopic("driverModeRequest").publish();
         driverModeSubscriber = cameraTable.getBooleanTopic("driverMode").subscribe(false);
         inputSaveImgEntry = cameraTable.getIntegerTopic("inputSaveImgCmd").getEntry(0);

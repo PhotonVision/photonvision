@@ -48,7 +48,8 @@ class SimPhotonCamera : public PhotonCamera {
     targetAreaEntry = rootTable->GetEntry("targetAreaEntry");
     targetSkewEntry = rootTable->GetEntry("targetSkewEntry");
     targetPoseEntry = rootTable->GetEntry("targetPoseEntry");
-    rawBytesPublisher = rootTable->GetRawTopic("result_proto").Publish("asdfasdfasdf");
+    rawBytesPublisher =
+        rootTable->GetRawTopic("result_proto").Publish("asdfasdfasdf");
     versionEntry = instance.GetTable("photonvision")->GetEntry("version");
     // versionEntry.SetString(PhotonVersion.versionString);
   }
