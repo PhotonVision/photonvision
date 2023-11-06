@@ -141,7 +141,7 @@ public class PhotonCamera implements AutoCloseable {
         pipelineResultsSubscriber =
                 cameraTable
                         .getProtobufTopic("result_proto", PhotonPipelineResult.proto)
-                        .subscribe(null, PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
+                        .subscribe(new PhotonPipelineResult(), PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
 
         driverModePublisher = cameraTable.getBooleanTopic("driverModeRequest").publish();
         driverModeSubscriber = cameraTable.getBooleanTopic("driverMode").subscribe(false);
@@ -184,8 +184,6 @@ public class PhotonCamera implements AutoCloseable {
      */
     public PhotonPipelineResult getLatestResult() {
         var ret = pipelineResultsSubscriber.get();
-
-        // TOOD: handle no results (ret == null)
 
         // Set the timestamp of the result.
         // getLatestChange returns in microseconds, so we divide by 1e6 to convert to seconds.
