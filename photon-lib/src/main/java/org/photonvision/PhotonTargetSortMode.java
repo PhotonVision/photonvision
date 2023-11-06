@@ -25,7 +25,6 @@
 package org.photonvision;
 
 import java.util.Comparator;
-
 import org.photonvision.proto.PhotonTypes.PhotonPipelineResult.PhotonTrackedTarget;
 
 public enum PhotonTargetSortMode {

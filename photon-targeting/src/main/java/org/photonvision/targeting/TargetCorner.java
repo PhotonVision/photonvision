@@ -20,7 +20,6 @@ package org.photonvision.targeting;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
 import edu.wpi.first.util.protobuf.Protobuf;
 import org.photonvision.proto.PhotonTypes.ProtobufTargetCorner;
 import us.hebi.quickbuf.Descriptors.Descriptor;

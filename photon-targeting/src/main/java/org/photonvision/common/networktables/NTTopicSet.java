@@ -17,9 +17,6 @@
 
 package org.photonvision.common.networktables;
 
-import org.photonvision.proto.PhotonTypes.PhotonPipelineResult;
-import org.photonvision.targeting.PhotonPipelineResultProto;
-
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.BooleanTopic;
@@ -31,7 +28,7 @@ import edu.wpi.first.networktables.IntegerTopic;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.ProtobufPublisher;
 import edu.wpi.first.networktables.PubSubOption;
-import edu.wpi.first.networktables.RawPublisher;
+import org.photonvision.targeting.PhotonPipelineResult;
 
 /**
  * This class is a wrapper around all per-pipeline NT topics that PhotonVision should be publishing
@@ -75,7 +72,7 @@ public class NTTopicSet {
     public void updateEntries() {
         rawBytesEntry =
                 subTable
-                        .getProtobufTopic("result_proto", PhotonPipelineResultProto.proto)
+                        .getProtobufTopic("result_proto", PhotonPipelineResult.proto)
                         .publish(PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
 
         pipelineIndexPublisher = subTable.getIntegerTopic("pipelineIndexState").publish();

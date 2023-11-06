@@ -33,12 +33,6 @@ import us.hebi.quickbuf.Descriptors.Descriptor;
  */
 public class PNPResults {
     /**
-     * If this result is valid. A false value indicates there was an error in estimation, and this
-     * result should not be used.
-     */
-    public final boolean isPresent;
-
-    /**
      * The best-fit transform. The coordinate frame of this transform depends on the method which gave
      * this result.
      */
@@ -65,7 +59,6 @@ public class PNPResults {
             double ambiguity,
             double bestReprojErr,
             double altReprojErr) {
-        this.isPresent = true;
         this.best = best;
         this.alt = alt;
         this.ambiguity = ambiguity;
@@ -81,7 +74,6 @@ public class PNPResults {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + (isPresent ? 1231 : 1237);
         result = prime * result + ((best == null) ? 0 : best.hashCode());
         long temp;
         temp = Double.doubleToLongBits(bestReprojErr);
@@ -100,7 +92,6 @@ public class PNPResults {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         PNPResults other = (PNPResults) obj;
-        if (isPresent != other.isPresent) return false;
         if (best == null) {
             if (other.best != null) return false;
         } else if (!best.equals(other.best)) return false;
@@ -118,9 +109,7 @@ public class PNPResults {
 
     @Override
     public String toString() {
-        return "PNPResults [isPresent="
-                + isPresent
-                + ", best="
+        return "PNPResults [best="
                 + best
                 + ", bestReprojErr="
                 + bestReprojErr
