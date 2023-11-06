@@ -6,39 +6,41 @@ option java_package = "org.photonvision.proto";
 
 import "geometry3d.proto";
 
-message PhotonPipelineResult {
-  double latency_ms = 1;
-  double timestamp_sec = 2;
-  
-  message TargetCorner {
-    double x = 1;
-    double y = 2;
-  }
-
-  message PhotonTrackedTarget {
-    double yaw = 1;
-    double pitch = 2;
-    double area = 3;
-    double skew = 4;
-    int32 fiducialId = 5;
-    wpi.proto.ProtobufTransform3d bestCameraToTarget = 6;
-    wpi.proto.ProtobufTransform3d altCameraToTarget = 7;
-    double poseAmbiguity = 8;
-    repeated TargetCorner minAreaRectCorners = 9;
-    repeated TargetCorner detectedCorners = 10;
-  }
-
-  message MultiTargetPNPResults {
-    wpi.proto.ProtobufTransform3d best = 1;
-    double bestReprojErr = 2;
-    optional wpi.proto.ProtobufTransform3d alt = 3;
-    optional double altReprojErr = 4;
-    double ambiguity = 5;
-
-    repeated int32 fiducial_ids_used = 6;
-  }
-
-  repeated PhotonTrackedTarget targets = 3;
-  MultiTargetPNPResults multi_target_result = 4;
+message ProtobufTargetCorner {
+  double x = 1;
+  double y = 2;
 }
 
+message ProtobufPNPResults {
+  bool isPresent = 1;
+  wpi.proto.ProtobufTransform3d best = 2;
+  double bestReprojErr = 3;
+  optional wpi.proto.ProtobufTransform3d alt = 4;
+  optional double altReprojErr = 5;
+  double ambiguity = 6;
+}
+
+message ProtobufMultiTargetPNPResults {
+  ProtobufPNPResults estimatedPose = 1;
+  repeated int32 fiducial_ids_used = 2;
+}
+
+message ProtobufPhotonTrackedTarget {
+  double yaw = 1;
+  double pitch = 2;
+  double area = 3;
+  double skew = 4;
+  int32 fiducialId = 5;
+  wpi.proto.ProtobufTransform3d bestCameraToTarget = 6;
+  wpi.proto.ProtobufTransform3d altCameraToTarget = 7;
+  double poseAmbiguity = 8;
+  repeated ProtobufTargetCorner minAreaRectCorners = 9;
+  repeated ProtobufTargetCorner detectedCorners = 10;
+}
+
+message ProtobufPhotonPipelineResult {
+  double latency_ms = 1;
+
+  repeated ProtobufPhotonTrackedTarget targets = 3;
+  ProtobufMultiTargetPNPResults multi_target_result = 4;
+}

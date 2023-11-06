@@ -18,8 +18,9 @@
 package org.photonvision.targeting;
 
 import edu.wpi.first.math.geometry.Transform3d;
-import org.photonvision.common.dataflow.structures.Packet;
-import org.photonvision.utils.PacketUtils;
+import edu.wpi.first.util.protobuf.Protobuf;
+import org.photonvision.proto.PhotonTypes.ProtobufPNPResults;
+import us.hebi.quickbuf.Descriptors.Descriptor;
 
 /**
  * The best estimated transformation from solvePnP, and possibly an alternate transformation
@@ -58,20 +59,6 @@ public class PNPResults {
     /** If no alternate solution is found, this is 0 */
     public final double ambiguity;
 
-    /** An empty (invalid) result. */
-    public PNPResults() {
-        this.isPresent = false;
-        this.best = new Transform3d();
-        this.alt = new Transform3d();
-        this.ambiguity = 0;
-        this.bestReprojErr = 0;
-        this.altReprojErr = 0;
-    }
-
-    public PNPResults(Transform3d best, double bestReprojErr) {
-        this(best, best, 0, bestReprojErr, bestReprojErr);
-    }
-
     public PNPResults(
             Transform3d best,
             Transform3d alt,
@@ -86,30 +73,8 @@ public class PNPResults {
         this.altReprojErr = altReprojErr;
     }
 
-    public static final int PACK_SIZE_BYTES = 1 + (Double.BYTES * 7 * 2) + (Double.BYTES * 3);
-
-    public static PNPResults createFromPacket(Packet packet) {
-        var present = packet.decodeBoolean();
-        var best = PacketUtils.decodeTransform(packet);
-        var alt = PacketUtils.decodeTransform(packet);
-        var bestEr = packet.decodeDouble();
-        var altEr = packet.decodeDouble();
-        var ambiguity = packet.decodeDouble();
-        if (present) {
-            return new PNPResults(best, alt, ambiguity, bestEr, altEr);
-        } else {
-            return new PNPResults();
-        }
-    }
-
-    public Packet populatePacket(Packet packet) {
-        packet.encode(isPresent);
-        PacketUtils.encodeTransform(packet, best);
-        PacketUtils.encodeTransform(packet, alt);
-        packet.encode(bestReprojErr);
-        packet.encode(altReprojErr);
-        packet.encode(ambiguity);
-        return packet;
+    public PNPResults(Transform3d best, double bestReprojErr) {
+        this(best, best, 0, bestReprojErr, bestReprojErr);
     }
 
     @Override
@@ -167,4 +132,42 @@ public class PNPResults {
                 + ambiguity
                 + "]";
     }
+
+    public static final class AProto implements Protobuf<PNPResults, ProtobufPNPResults> {
+        @Override
+        public Class<PNPResults> getTypeClass() {
+            return PNPResults.class;
+        }
+
+        @Override
+        public Descriptor getDescriptor() {
+            return ProtobufPNPResults.getDescriptor();
+        }
+
+        @Override
+        public ProtobufPNPResults createMessage() {
+            return ProtobufPNPResults.newInstance();
+        }
+
+        @Override
+        public PNPResults unpack(ProtobufPNPResults msg) {
+            return new PNPResults(
+                    Transform3d.proto.unpack(msg.getBest()),
+                    Transform3d.proto.unpack(msg.getAlt()),
+                    msg.getAmbiguity(),
+                    msg.getBestReprojErr(),
+                    msg.getAltReprojErr()
+            );
+        }
+
+        @Override
+        public void pack(ProtobufPNPResults msg, PNPResults value) {
+            Transform3d.proto.pack(msg.getMutableBest(), value.best);
+            Transform3d.proto.pack(msg.getMutableAlt(), value.alt);
+            msg.setAmbiguity(value.ambiguity).setBestReprojErr(value.bestReprojErr).setAltReprojErr(value.altReprojErr);
+
+        }
+    }
+
+    public static final AProto proto = new AProto();
 }

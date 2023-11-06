@@ -17,47 +17,20 @@
 
 package org.photonvision.targeting;
 
-import java.util.ArrayList;
+import edu.wpi.first.util.protobuf.Protobuf;
+import org.photonvision.proto.PhotonTypes.ProtobufMultiTargetPNPResults;
+import us.hebi.quickbuf.Descriptors.Descriptor;
+import java.util.Arrays;
 import java.util.List;
-import org.photonvision.common.dataflow.structures.Packet;
-
-import edu.wpi.first.math.geometry.Transform3d;
+import java.util.stream.Collectors;
 
 public class MultiTargetPNPResults {
-    // Seeing 32 apriltags at once seems like a sane limit
-    private static final int MAX_IDS = 32;
-    // pnpresult + MAX_IDS possible targets (arbitrary upper limit that should never be hit, ideally)
-    public static final int PACK_SIZE_BYTES = PNPResults.PACK_SIZE_BYTES + (Short.BYTES * MAX_IDS);
-
-    public PNPResults estimatedPose = new PNPResults();
-    public List<Integer> fiducialIDsUsed = List.of();
-
-    public MultiTargetPNPResults() {}
+    public final PNPResults estimatedPose;
+    public final List<Integer> fiducialIDsUsed;
 
     public MultiTargetPNPResults(PNPResults results, List<Integer> ids) {
         estimatedPose = results;
         fiducialIDsUsed = ids;
-    }
-
-    public static MultiTargetPNPResults createFromPacket(Packet packet) {
-        var results = PNPResults.createFromPacket(packet);
-        var ids = new ArrayList<Integer>(MAX_IDS);
-        for (int i = 0; i < MAX_IDS; i++) {
-            int targetId = (int) packet.decodeShort();
-            if (targetId > -1) ids.add(targetId);
-        }
-        return new MultiTargetPNPResults(results, ids);
-    }
-
-    public void populatePacket(Packet packet) {
-        estimatedPose.populatePacket(packet);
-        for (int i = 0; i < MAX_IDS; i++) {
-            if (i < fiducialIDsUsed.size()) {
-                packet.encode((short) fiducialIDsUsed.get(i).byteValue());
-            } else {
-                packet.encode((short) -1);
-            }
-        }
     }
 
     @Override
@@ -93,23 +66,45 @@ public class MultiTargetPNPResults {
                 + "]";
     }
 
-    public org.photonvision.proto.PhotonTypes.PhotonPipelineResult.MultiTargetPNPResults toProto() {
-        var ret = org.photonvision.proto.PhotonTypes.PhotonPipelineResult.MultiTargetPNPResults.newInstance();
+    public static final class AProto implements Protobuf<MultiTargetPNPResults, ProtobufMultiTargetPNPResults> {
+        @Override
+        public Class<MultiTargetPNPResults> getTypeClass() {
+            return MultiTargetPNPResults.class;
+        }
 
-        var best = Transform3d.proto.createMessage();
-        var alt = Transform3d.proto.createMessage();
-        Transform3d.proto.pack(best, this.estimatedPose.best);
-        Transform3d.proto.pack(alt, this.estimatedPose.alt);
-        ret.setBest(best);
-        ret.setAlt(alt);
-        ret.setBestReprojErr(this.estimatedPose.bestReprojErr);
-        ret.setAltReprojErr(this.estimatedPose.altReprojErr);
-        ret.setAmbiguity(this.estimatedPose.ambiguity);
-        int[] ids = new int[this.fiducialIDsUsed.size()];
+        @Override
+        public Descriptor getDescriptor() {
+            return ProtobufMultiTargetPNPResults.getDescriptor();
+        }
 
-        for (int i = 0; i < ids.length; i++) ids[i] = this.fiducialIDsUsed.get(i);
-        ret.addAllFiducialIdsUsed(ids);
+        @Override
+        public ProtobufMultiTargetPNPResults createMessage() {
+            return ProtobufMultiTargetPNPResults.newInstance();
+        }
 
-        return ret;
+        @Override
+        public MultiTargetPNPResults unpack(ProtobufMultiTargetPNPResults msg) {
+            return new MultiTargetPNPResults(
+                    PNPResults.proto.unpack(msg.getEstimatedPose()),
+                    // TODO better way of doing this
+                    Arrays.stream(msg.getFiducialIdsUsed().array())
+                            .boxed()
+                            .collect(Collectors.toList())
+            );
+        }
+
+        @Override
+        public void pack(ProtobufMultiTargetPNPResults msg, MultiTargetPNPResults value) {
+            PNPResults.proto.pack(msg.getMutableEstimatedPose(), value.estimatedPose);
+
+            // TODO better way of doing this
+            int[] ids = new int[value.fiducialIDsUsed.size()];
+            for(int i = 0; i < ids.length; i++) {
+                ids[i] = value.fiducialIDsUsed.get(i);
+            }
+            msg.addAllFiducialIdsUsed(ids);
+        }
     }
+
+    public static final AProto proto = new AProto();
 }

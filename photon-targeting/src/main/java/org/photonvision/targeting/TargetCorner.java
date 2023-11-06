@@ -15,38 +15,90 @@
 //  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //  */
 
-// package org.photonvision.targeting;
+package org.photonvision.targeting;
 
-// import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
-// /**
-//  * Represents a point in an image at the corner of the minimum-area bounding rectangle, in pixels.
-//  * Origin at the top left, plus-x to the right, plus-y down.
-//  */
-// public class TargetCorner {
-//     public final double x;
-//     public final double y;
+import edu.wpi.first.util.protobuf.Protobuf;
+import org.photonvision.proto.PhotonTypes.ProtobufTargetCorner;
+import us.hebi.quickbuf.Descriptors.Descriptor;
+import us.hebi.quickbuf.RepeatedMessage;
 
-//     public TargetCorner(double cx, double cy) {
-//         this.x = cx;
-//         this.y = cy;
-//     }
+/**
+ * Represents a point in an image at the corner of the minimum-area bounding rectangle, in pixels.
+ * Origin at the top left, plus-x to the right, plus-y down.
+ */
+public class TargetCorner {
+    public final double x;
+    public final double y;
 
-//     @Override
-//     public boolean equals(Object o) {
-//         if (this == o) return true;
-//         if (o == null || getClass() != o.getClass()) return false;
-//         TargetCorner that = (TargetCorner) o;
-//         return Double.compare(that.x, x) == 0 && Double.compare(that.y, y) == 0;
-//     }
+    public TargetCorner(double cx, double cy) {
+        this.x = cx;
+        this.y = cy;
+    }
 
-//     @Override
-//     public int hashCode() {
-//         return Objects.hash(x, y);
-//     }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TargetCorner that = (TargetCorner) o;
+        return Double.compare(that.x, x) == 0 && Double.compare(that.y, y) == 0;
+    }
 
-//     @Override
-//     public String toString() {
-//         return "(" + x + "," + y + ')';
-//     }
-// }
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y);
+    }
+
+    @Override
+    public String toString() {
+        return "(" + x + "," + y + ')';
+    }
+
+    public static final class AProto implements Protobuf<TargetCorner, ProtobufTargetCorner> {
+        @Override
+        public Class<TargetCorner> getTypeClass() {
+            return TargetCorner.class;
+        }
+
+        @Override
+        public Descriptor getDescriptor() {
+            return ProtobufTargetCorner.getDescriptor();
+        }
+
+        @Override
+        public ProtobufTargetCorner createMessage() {
+            return ProtobufTargetCorner.newInstance();
+        }
+
+        @Override
+        public TargetCorner unpack(ProtobufTargetCorner msg) {
+            return new TargetCorner(msg.getX(), msg.getY());
+        }
+
+        public List<TargetCorner> unpack(RepeatedMessage<ProtobufTargetCorner> msg) {
+            ArrayList<TargetCorner> corners = new ArrayList<>(msg.length());
+            for(ProtobufTargetCorner corner : msg) {
+                corners.add(unpack(corner));
+            }
+            return corners;
+        }
+
+        @Override
+        public void pack(ProtobufTargetCorner msg, TargetCorner value) {
+            msg.setX(value.x).setY(value.y);
+        }
+
+        public void pack(ProtobufTargetCorner[] buffer, List<TargetCorner> corners) {
+            for(int i = 0; i < corners.size(); i++) {
+                var protoCorner = createMessage();
+                pack(protoCorner, corners.get(i));
+                buffer[i] = protoCorner;
+            }
+        }
+    }
+
+    public static final AProto proto = new AProto();
+}
