@@ -43,10 +43,10 @@ public class PhotonTrackedTarget {
     private double poseAmbiguity;
 
     // Corners from the min-area rectangle bounding the target
-    private List<TargetCorner> minAreaRectCorners;
+    private List<TargetCorner> minAreaRectCorners = List.of();
 
     // Corners from whatever corner detection method was used
-    private List<TargetCorner> detectedCorners;
+    private List<TargetCorner> detectedCorners = List.of();
 
     public PhotonTrackedTarget() {}
 
@@ -315,6 +315,10 @@ public class PhotonTrackedTarget {
 
         @Override
         public PhotonTrackedTarget unpack(ProtobufPhotonTrackedTarget msg) {
+            if (msg.getMinAreaRectCorners().length() != 4) {
+                return new PhotonTrackedTarget();
+            }
+
             return new PhotonTrackedTarget(
                     msg.getYaw(),
                     msg.getPitch(),

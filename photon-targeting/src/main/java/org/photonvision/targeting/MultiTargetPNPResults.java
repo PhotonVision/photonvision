@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.proto.PhotonTypes.ProtobufMultiTargetPNPResults;
 import us.hebi.quickbuf.Descriptors.Descriptor;
+import us.hebi.quickbuf.RepeatedInt;
 
 public class MultiTargetPNPResults {
     // Seeing 32 apriltags at once seems like a sane limit
@@ -125,12 +126,10 @@ public class MultiTargetPNPResults {
         public void pack(ProtobufMultiTargetPNPResults msg, MultiTargetPNPResults value) {
             PNPResults.proto.pack(msg.getMutableEstimatedPose(), value.estimatedPose);
 
-            // TODO better way of doing this
-            int[] ids = new int[value.fiducialIDsUsed.size()];
-            for (int i = 0; i < ids.length; i++) {
-                ids[i] = value.fiducialIDsUsed.get(i);
+            RepeatedInt idsUsed = msg.getMutableFiducialIdsUsed().reserve(value.fiducialIDsUsed.size());
+            for (int i = 0; i < value.fiducialIDsUsed.size(); i++) {
+                idsUsed.add(value.fiducialIDsUsed.get(i));
             }
-            msg.addAllFiducialIdsUsed(ids);
         }
     }
 

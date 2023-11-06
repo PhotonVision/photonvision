@@ -189,6 +189,10 @@ public class PNPResults {
 
         @Override
         public PNPResults unpack(ProtobufPNPResults msg) {
+            if (!msg.getIsPresent()) {
+                return new PNPResults();
+            }
+
             return new PNPResults(
                     Transform3d.proto.unpack(msg.getBest()),
                     Transform3d.proto.unpack(msg.getAlt()),
@@ -203,7 +207,8 @@ public class PNPResults {
             Transform3d.proto.pack(msg.getMutableAlt(), value.alt);
             msg.setAmbiguity(value.ambiguity)
                     .setBestReprojErr(value.bestReprojErr)
-                    .setAltReprojErr(value.altReprojErr);
+                    .setAltReprojErr(value.altReprojErr)
+                    .setIsPresent(value.isPresent);
         }
     }
 
