@@ -37,7 +37,7 @@ public class TargetCornerTest {
         var a = new TargetCorner(0, 1);
         var b = new TargetCorner(0, 1);
 
-        assertNotEquals(a, b);
+        assertEquals(a, b);
     }
 
     @Test
