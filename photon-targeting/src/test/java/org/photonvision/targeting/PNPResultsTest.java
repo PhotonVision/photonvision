@@ -18,6 +18,7 @@
 package org.photonvision.targeting;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -37,5 +38,55 @@ public class PNPResultsTest {
         PNPResults.proto.pack(serializedPNPRes, pnpRes);
         unpackedPNPRes = PNPResults.proto.unpack(serializedPNPRes);
         assertEquals(pnpRes, unpackedPNPRes);
+    }
+
+    @Test
+    public void equalityTest() {
+        var a = new PNPResults();
+        var b = new PNPResults();
+        assertEquals(a, b);
+
+        a = new PNPResults(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
+        b = new PNPResults(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
+        assertEquals(a, b);
+
+        a =
+                new PNPResults(
+                        new Transform3d(0, 1, 2, new Rotation3d()),
+                        new Transform3d(3, 4, 5, new Rotation3d()),
+                        0.5,
+                        0.1,
+                        0.1);
+        b =
+                new PNPResults(
+                        new Transform3d(0, 1, 2, new Rotation3d()),
+                        new Transform3d(3, 4, 5, new Rotation3d()),
+                        0.5,
+                        0.1,
+                        0.1);
+        assertEquals(a, b);
+    }
+
+    @Test
+    public void inequalityTest() {
+        var a = new PNPResults(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
+        var b = new PNPResults(new Transform3d(3, 4, 5, new Rotation3d()), 0.1);
+        assertNotEquals(a, b);
+
+        a =
+                new PNPResults(
+                        new Transform3d(3, 4, 5, new Rotation3d()),
+                        new Transform3d(0, 1, 2, new Rotation3d()),
+                        0.5,
+                        0.1,
+                        0.1);
+        b =
+                new PNPResults(
+                        new Transform3d(3, 4, 5, new Rotation3d()),
+                        new Transform3d(0, 1, 2, new Rotation3d()),
+                        0.5,
+                        0.1,
+                        0.2);
+        assertNotEquals(a, b);
     }
 }

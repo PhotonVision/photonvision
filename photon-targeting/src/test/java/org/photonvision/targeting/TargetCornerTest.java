@@ -18,6 +18,7 @@
 package org.photonvision.targeting;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import org.junit.jupiter.api.Test;
 
@@ -29,5 +30,21 @@ public class TargetCornerTest {
         TargetCorner.proto.pack(serializedCorner, corner);
         var unpackedCorner = TargetCorner.proto.unpack(serializedCorner);
         assertEquals(corner, unpackedCorner);
+    }
+
+    @Test
+    public void equalityTest() {
+        var a = new TargetCorner(0, 1);
+        var b = new TargetCorner(0, 1);
+
+        assertNotEquals(a, b);
+    }
+
+    @Test
+    public void inequalityTest() {
+        var a = new TargetCorner(0, 1);
+        var b = new TargetCorner(2, 4);
+
+        assertNotEquals(a, b);
     }
 }

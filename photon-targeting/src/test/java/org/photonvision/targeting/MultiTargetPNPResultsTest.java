@@ -18,6 +18,7 @@
 package org.photonvision.targeting;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -43,5 +44,42 @@ public class MultiTargetPNPResultsTest {
         MultiTargetPNPResults.proto.pack(serializedResult, result);
         unpackedResult = MultiTargetPNPResults.proto.unpack(serializedResult);
         assertEquals(result, unpackedResult);
+    }
+
+    @Test
+    public void equalityTest() {
+        var a = new MultiTargetPNPResults();
+        var b = new MultiTargetPNPResults();
+        assertEquals(a, b);
+
+        a =
+                new MultiTargetPNPResults(
+                        new PNPResults(
+                                new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
+                        List.of(1, 2, 3));
+
+        b =
+                new MultiTargetPNPResults(
+                        new PNPResults(
+                                new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
+                        List.of(1, 2, 3));
+
+        assertEquals(a, b);
+    }
+
+    @Test
+    public void inequalityTest() {
+        var a =
+                new MultiTargetPNPResults(
+                        new PNPResults(
+                                new Transform3d(new Translation3d(1, 8, 3), new Rotation3d(1, 2, 3)), 0.1),
+                        List.of(3, 4, 7));
+        var b =
+                new MultiTargetPNPResults(
+                        new PNPResults(
+                                new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
+                        List.of(1, 2, 3));
+
+        assertNotEquals(a, b);
     }
 }
