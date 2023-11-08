@@ -19,9 +19,7 @@ package org.photonvision.targeting;
 
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.util.protobuf.Protobuf;
-import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.proto.PhotonTypes.ProtobufPNPResults;
-import org.photonvision.utils.PacketUtils;
 import us.hebi.quickbuf.Descriptors.Descriptor;
 
 /**
@@ -87,32 +85,6 @@ public class PNPResults {
         this.ambiguity = ambiguity;
         this.bestReprojErr = bestReprojErr;
         this.altReprojErr = altReprojErr;
-    }
-
-    public static final int PACK_SIZE_BYTES = 1 + (Double.BYTES * 7 * 2) + (Double.BYTES * 3);
-
-    public static PNPResults createFromPacket(Packet packet) {
-        var present = packet.decodeBoolean();
-        var best = PacketUtils.decodeTransform(packet);
-        var alt = PacketUtils.decodeTransform(packet);
-        var bestEr = packet.decodeDouble();
-        var altEr = packet.decodeDouble();
-        var ambiguity = packet.decodeDouble();
-        if (present) {
-            return new PNPResults(best, alt, ambiguity, bestEr, altEr);
-        } else {
-            return new PNPResults();
-        }
-    }
-
-    public Packet populatePacket(Packet packet) {
-        packet.encode(isPresent);
-        PacketUtils.encodeTransform(packet, best);
-        PacketUtils.encodeTransform(packet, alt);
-        packet.encode(bestReprojErr);
-        packet.encode(altReprojErr);
-        packet.encode(ambiguity);
-        return packet;
     }
 
     @Override

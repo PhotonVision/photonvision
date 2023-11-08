@@ -20,7 +20,6 @@ package org.photonvision.targeting;
 import edu.wpi.first.util.protobuf.Protobuf;
 import java.util.ArrayList;
 import java.util.List;
-import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.proto.PhotonTypes.ProtobufPhotonPipelineResult;
 import org.photonvision.proto.PhotonTypes.ProtobufPhotonTrackedTarget;
 import us.hebi.quickbuf.Descriptors.Descriptor;
@@ -68,18 +67,6 @@ public class PhotonPipelineResult {
         this.latencyMillis = latencyMillis;
         this.targets.addAll(targets);
         this.multiTagResult = result;
-    }
-
-    /**
-     * Returns the size of the packet needed to store this pipeline result.
-     *
-     * @return The size of the packet needed to store this pipeline result.
-     */
-    public int getPacketSize() {
-        return targets.size() * PhotonTrackedTarget.PACK_SIZE_BYTES
-                + 8 // latency
-                + MultiTargetPNPResults.PACK_SIZE_BYTES
-                + 1; // target count
     }
 
     /**
@@ -135,7 +122,7 @@ public class PhotonPipelineResult {
      * @return Whether the pipeline has targets.
      */
     public boolean hasTargets() {
-        return targets.size() > 0;
+        return !targets.isEmpty();
     }
 
     /**
@@ -153,49 +140,6 @@ public class PhotonPipelineResult {
      */
     public MultiTargetPNPResults getMultiTagResult() {
         return multiTagResult;
-    }
-
-    /**
-     * Populates the fields of the pipeline result from the packet.
-     *
-     * @param packet The incoming packet.
-     * @return The incoming packet.
-     */
-    public Packet createFromPacket(Packet packet) {
-        // Decode latency, existence of targets, and number of targets.
-        latencyMillis = packet.decodeDouble();
-        this.multiTagResult = MultiTargetPNPResults.createFromPacket(packet);
-        byte targetCount = packet.decodeByte();
-
-        targets.clear();
-
-        // Decode the information of each target.
-        for (int i = 0; i < (int) targetCount; ++i) {
-            var target = new PhotonTrackedTarget();
-            target.createFromPacket(packet);
-            targets.add(target);
-        }
-
-        return packet;
-    }
-
-    /**
-     * Populates the outgoing packet with information from this pipeline result.
-     *
-     * @param packet The outgoing packet.
-     * @return The outgoing packet.
-     */
-    public Packet populatePacket(Packet packet) {
-        // Encode latency, existence of targets, and number of targets.
-        packet.encode(latencyMillis);
-        multiTagResult.populatePacket(packet);
-        packet.encode((byte) targets.size());
-
-        // Encode the information of each target.
-        for (var target : targets) target.populatePacket(packet);
-
-        // Return the packet.
-        return packet;
     }
 
     @Override

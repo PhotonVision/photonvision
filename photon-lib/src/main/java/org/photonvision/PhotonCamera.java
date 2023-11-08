@@ -49,7 +49,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import java.util.Optional;
 import java.util.Set;
-import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.hardware.VisionLEDMode;
 import org.photonvision.targeting.PhotonPipelineResult;
 
@@ -116,8 +115,6 @@ public class PhotonCamera implements AutoCloseable {
     public static void setVersionCheckEnabled(boolean enabled) {
         VERSION_CHECK_ENABLED = enabled;
     }
-
-    Packet packet = new Packet(1);
 
     private static AprilTagFieldLayout lastSetTagLayout =
             AprilTagFields.kDefaultField.loadAprilTagLayoutField();

@@ -21,17 +21,13 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.util.protobuf.Protobuf;
 import java.util.ArrayList;
 import java.util.List;
-import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.proto.PhotonTypes.ProtobufPhotonTrackedTarget;
 import org.photonvision.proto.PhotonTypes.ProtobufTargetCorner;
-import org.photonvision.utils.PacketUtils;
 import us.hebi.quickbuf.Descriptors.Descriptor;
 import us.hebi.quickbuf.RepeatedMessage;
 
 public class PhotonTrackedTarget {
     private static final int MAX_CORNERS = 8;
-    public static final int PACK_SIZE_BYTES =
-            Double.BYTES * (5 + 7 + 2 * 4 + 1 + 7 + 2 * MAX_CORNERS);
 
     private double yaw;
     private double pitch;
@@ -199,81 +195,6 @@ public class PhotonTrackedTarget {
             if (other.detectedCorners != null) return false;
         } else if (!detectedCorners.equals(other.detectedCorners)) return false;
         return true;
-    }
-
-    private static void encodeList(Packet packet, List<TargetCorner> list) {
-        packet.encode((byte) Math.min(list.size(), Byte.MAX_VALUE));
-        for (int i = 0; i < list.size(); i++) {
-            packet.encode(list.get(i).x);
-            packet.encode(list.get(i).y);
-        }
-    }
-
-    private static List<TargetCorner> decodeList(Packet p) {
-        byte len = p.decodeByte();
-        var ret = new ArrayList<TargetCorner>();
-        for (int i = 0; i < len; i++) {
-            double cx = p.decodeDouble();
-            double cy = p.decodeDouble();
-            ret.add(new TargetCorner(cx, cy));
-        }
-        return ret;
-    }
-
-    /**
-     * Populates the fields of this class with information from the incoming packet.
-     *
-     * @param packet The incoming packet.
-     * @return The incoming packet.
-     */
-    public Packet createFromPacket(Packet packet) {
-        this.yaw = packet.decodeDouble();
-        this.pitch = packet.decodeDouble();
-        this.area = packet.decodeDouble();
-        this.skew = packet.decodeDouble();
-        this.fiducialId = packet.decodeInt();
-
-        this.bestCameraToTarget = PacketUtils.decodeTransform(packet);
-        this.altCameraToTarget = PacketUtils.decodeTransform(packet);
-
-        this.poseAmbiguity = packet.decodeDouble();
-
-        this.minAreaRectCorners = new ArrayList<>(4);
-        for (int i = 0; i < 4; i++) {
-            double cx = packet.decodeDouble();
-            double cy = packet.decodeDouble();
-            minAreaRectCorners.add(new TargetCorner(cx, cy));
-        }
-
-        detectedCorners = decodeList(packet);
-
-        return packet;
-    }
-
-    /**
-     * Populates the outgoing packet with information from the current target.
-     *
-     * @param packet The outgoing packet.
-     * @return The outgoing packet.
-     */
-    public Packet populatePacket(Packet packet) {
-        packet.encode(yaw);
-        packet.encode(pitch);
-        packet.encode(area);
-        packet.encode(skew);
-        packet.encode(fiducialId);
-        PacketUtils.encodeTransform(packet, bestCameraToTarget);
-        PacketUtils.encodeTransform(packet, altCameraToTarget);
-        packet.encode(poseAmbiguity);
-
-        for (int i = 0; i < 4; i++) {
-            packet.encode(minAreaRectCorners.get(i).x);
-            packet.encode(minAreaRectCorners.get(i).y);
-        }
-
-        encodeList(packet, detectedCorners);
-
-        return packet;
     }
 
     @Override
