@@ -41,6 +41,6 @@ message ProtobufPhotonTrackedTarget {
 message ProtobufPhotonPipelineResult {
   double latency_ms = 1;
 
-  repeated ProtobufPhotonTrackedTarget targets = 3;
-  ProtobufMultiTargetPNPResults multi_target_result = 4;
+  repeated ProtobufPhotonTrackedTarget targets = 2;
+  ProtobufMultiTargetPNPResults multi_target_result = 3;
 }
