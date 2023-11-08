@@ -334,7 +334,8 @@ public class PhotonTrackedTarget {
 
         public List<PhotonTrackedTarget> unpack(RepeatedMessage<ProtobufPhotonTrackedTarget> msg) {
             ArrayList<PhotonTrackedTarget> targets = new ArrayList<>(msg.length());
-            for (ProtobufPhotonTrackedTarget target : msg) {
+            for (int i = 0; i < msg.length(); i++) {
+                var target = msg.next();
                 targets.add(unpack(target));
             }
             return targets;

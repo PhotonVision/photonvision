@@ -79,7 +79,8 @@ public class TargetCorner {
 
         public List<TargetCorner> unpack(RepeatedMessage<ProtobufTargetCorner> msg) {
             ArrayList<TargetCorner> corners = new ArrayList<>(msg.length());
-            for (ProtobufTargetCorner corner : msg) {
+            for (int i = 0; i < msg.length(); i++) {
+                var corner = msg.next();
                 corners.add(unpack(corner));
             }
             return corners;
