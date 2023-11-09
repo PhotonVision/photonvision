@@ -74,8 +74,8 @@ public class VisionEstimation {
             TargetModel tagModel) {
         if (tagLayout == null
                 || visTags == null
-                || tagLayout.getTags().size() == 0
-                || visTags.size() == 0) {
+                || tagLayout.getTags().isEmpty()
+                || visTags.isEmpty()) {
             return new PNPResults();
         }
 
@@ -92,7 +92,7 @@ public class VisionEstimation {
                                 corners.addAll(tgt.getDetectedCorners());
                             });
         }
-        if (knownTags.size() == 0 || corners.size() == 0 || corners.size() % 4 != 0) {
+        if (knownTags.isEmpty() || corners.isEmpty() || corners.size() % 4 != 0) {
             return new PNPResults();
         }
         Point[] points = OpenCVHelp.cornersToPoints(corners);
