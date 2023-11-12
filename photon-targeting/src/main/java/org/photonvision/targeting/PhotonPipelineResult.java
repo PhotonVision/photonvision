@@ -144,7 +144,7 @@ public class PhotonPipelineResult {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((targets == null) ? 0 : targets.hashCode());
+        result = prime * result + targets.hashCode();
         long temp;
         temp = Double.doubleToLongBits(latencyMillis);
         result = prime * result + (int) (temp ^ (temp >>> 32));
@@ -160,9 +160,7 @@ public class PhotonPipelineResult {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         PhotonPipelineResult other = (PhotonPipelineResult) obj;
-        if (targets == null) {
-            if (other.targets != null) return false;
-        } else if (!targets.equals(other.targets)) return false;
+        if (!targets.equals(other.targets)) return false;
         if (Double.doubleToLongBits(latencyMillis) != Double.doubleToLongBits(other.latencyMillis))
             return false;
         if (Double.doubleToLongBits(timestampSeconds)

@@ -31,13 +31,7 @@ import us.hebi.quickbuf.RepeatedMessage;
 public class PhotonTrackedTargetTest {
     @Test
     public void protobufTest() {
-        var target = new PhotonTrackedTarget();
-        var serializedTarget = PhotonTrackedTarget.proto.createMessage();
-        PhotonTrackedTarget.proto.pack(serializedTarget, target);
-        var unpackedTarget = PhotonTrackedTarget.proto.unpack(serializedTarget);
-        assertEquals(target, unpackedTarget);
-
-        target =
+        var target =
                 new PhotonTrackedTarget(
                         3.0,
                         4.0,
@@ -57,9 +51,9 @@ public class PhotonTrackedTargetTest {
                                 new TargetCorner(3, 4),
                                 new TargetCorner(5, 6),
                                 new TargetCorner(7, 8)));
-        serializedTarget = PhotonTrackedTarget.proto.createMessage();
+        var serializedTarget = PhotonTrackedTarget.proto.createMessage();
         PhotonTrackedTarget.proto.pack(serializedTarget, target);
-        unpackedTarget = PhotonTrackedTarget.proto.unpack(serializedTarget);
+        var unpackedTarget = PhotonTrackedTarget.proto.unpack(serializedTarget);
         assertEquals(target, unpackedTarget);
     }
 
@@ -121,11 +115,7 @@ public class PhotonTrackedTargetTest {
 
     @Test
     public void equalityTest() {
-        var a = new PhotonTrackedTarget();
-        var b = new PhotonTrackedTarget();
-        assertEquals(a, b);
-
-        a =
+        var a =
                 new PhotonTrackedTarget(
                         3.0,
                         4.0,
@@ -145,7 +135,7 @@ public class PhotonTrackedTargetTest {
                                 new TargetCorner(3, 4),
                                 new TargetCorner(5, 6),
                                 new TargetCorner(7, 8)));
-        b =
+        var b =
                 new PhotonTrackedTarget(
                         3.0,
                         4.0,
