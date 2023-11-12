@@ -21,9 +21,7 @@ import edu.wpi.first.util.protobuf.Protobuf;
 import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.proto.PhotonTypes.ProtobufPhotonPipelineResult;
-import org.photonvision.proto.PhotonTypes.ProtobufPhotonTrackedTarget;
 import us.hebi.quickbuf.Descriptors.Descriptor;
-import us.hebi.quickbuf.RepeatedMessage;
 
 /** Represents a pipeline result from a PhotonCamera. */
 public class PhotonPipelineResult {
@@ -198,6 +196,11 @@ public class PhotonPipelineResult {
         @Override
         public Descriptor getDescriptor() {
             return ProtobufPhotonPipelineResult.getDescriptor();
+        }
+
+        @Override
+        public Protobuf<?, ?>[] getNested() {
+            return new Protobuf<?, ?>[] {PhotonTrackedTarget.proto, MultiTargetPNPResults.proto};
         }
 
         @Override

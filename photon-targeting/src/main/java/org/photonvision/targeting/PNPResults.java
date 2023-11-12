@@ -155,6 +155,11 @@ public class PNPResults {
         }
 
         @Override
+        public Protobuf<?, ?>[] getNested() {
+            return new Protobuf<?, ?>[] {Transform3d.proto};
+        }
+
+        @Override
         public ProtobufPNPResults createMessage() {
             return ProtobufPNPResults.newInstance();
         }

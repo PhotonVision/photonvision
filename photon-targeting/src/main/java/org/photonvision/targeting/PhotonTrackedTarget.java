@@ -230,6 +230,11 @@ public class PhotonTrackedTarget {
         }
 
         @Override
+        public Protobuf<?, ?>[] getNested() {
+            return new Protobuf<?, ?>[] {Transform3d.proto, TargetCorner.proto};
+        }
+
+        @Override
         public ProtobufPhotonTrackedTarget createMessage() {
             return ProtobufPhotonTrackedTarget.newInstance();
         }
