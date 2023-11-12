@@ -254,6 +254,7 @@ public class PhotonTrackedTarget {
         }
 
         public List<PhotonTrackedTarget> unpack(RepeatedMessage<ProtobufPhotonTrackedTarget> msg) {
+            // TODO add test
             ArrayList<PhotonTrackedTarget> targets = new ArrayList<>(msg.length());
             for (ProtobufPhotonTrackedTarget target : msg) {
                 targets.add(unpack(target));
@@ -273,19 +274,13 @@ public class PhotonTrackedTarget {
             Transform3d.proto.pack(msg.getMutableBestCameraToTarget(), value.bestCameraToTarget);
             Transform3d.proto.pack(msg.getMutableAltCameraToTarget(), value.altCameraToTarget);
 
-            RepeatedMessage<ProtobufTargetCorner> minAreaRectCorners =
-                    msg.getMutableMinAreaRectCorners().reserve(value.minAreaRectCorners.size());
-            for (int i = 0; i < value.minAreaRectCorners.size(); i++) {
-                ProtobufTargetCorner corner = minAreaRectCorners.next();
-                TargetCorner.proto.pack(corner, value.minAreaRectCorners.get(i));
-            }
+            TargetCorner.proto.pack(msg.getMutableMinAreaRectCorners(), value.getMinAreaRectCorners());
+            TargetCorner.proto.pack(msg.getMutableDetectedCorners(), value.getDetectedCorners());
+        }
 
-            RepeatedMessage<ProtobufTargetCorner> detectedCorners =
-                    msg.getMutableDetectedCorners().reserve(value.detectedCorners.size());
-            for (int i = 0; i < value.detectedCorners.size(); i++) {
-                ProtobufTargetCorner corner = detectedCorners.next();
-                TargetCorner.proto.pack(corner, value.detectedCorners.get(i));
-            }
+        public void pack(RepeatedMessage<ProtobufPhotonTrackedTarget> msg, List<PhotonTrackedTarget> value) {
+            // TODO write
+            // TODO add test
         }
     }
 

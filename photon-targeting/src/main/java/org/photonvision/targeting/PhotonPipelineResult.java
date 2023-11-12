@@ -215,13 +215,7 @@ public class PhotonPipelineResult {
 
         @Override
         public void pack(ProtobufPhotonPipelineResult msg, PhotonPipelineResult value) {
-            RepeatedMessage<ProtobufPhotonTrackedTarget> targets =
-                    msg.getMutableTargets().reserve(value.targets.size());
-            for (int i = 0; i < value.targets.size(); i++) {
-                ProtobufPhotonTrackedTarget corner = targets.next();
-                PhotonTrackedTarget.proto.pack(corner, value.targets.get(i));
-            }
-
+            PhotonTrackedTarget.proto.pack(msg.getMutableTargets(), value.getTargets());
             MultiTargetPNPResults.proto.pack(msg.getMutableMultiTargetResult(), value.multiTagResult);
 
             msg.setLatencyMs(value.getLatencyMillis());

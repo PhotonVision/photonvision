@@ -78,6 +78,7 @@ public class TargetCorner {
         }
 
         public List<TargetCorner> unpack(RepeatedMessage<ProtobufTargetCorner> msg) {
+            // TODO add test
             ArrayList<TargetCorner> corners = new ArrayList<>(msg.length());
             for (ProtobufTargetCorner corner : msg) {
                 corners.add(unpack(corner));
@@ -88,6 +89,11 @@ public class TargetCorner {
         @Override
         public void pack(ProtobufTargetCorner msg, TargetCorner value) {
             msg.setX(value.x).setY(value.y);
+        }
+
+        public void pack(RepeatedMessage<ProtobufTargetCorner> msg, List<TargetCorner> value) {
+            // TODO write
+            // TODO add test
         }
     }
 
