@@ -218,7 +218,7 @@ public class PhotonPipelineResult {
 
         @Override
         public void pack(ProtobufPhotonPipelineResult msg, PhotonPipelineResult value) {
-            PhotonTrackedTarget.proto.pack(msg.getMutableTargets(), value.getTargets());
+            PhotonTrackedTarget.proto.pack(msg.getMutableTargets(), value.targets);
             MultiTargetPNPResults.proto.pack(msg.getMutableMultiTargetResult(), value.multiTagResult);
 
             msg.setLatencyMs(value.getLatencyMillis());
