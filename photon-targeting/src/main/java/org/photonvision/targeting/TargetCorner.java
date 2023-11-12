@@ -78,7 +78,6 @@ public class TargetCorner {
         }
 
         public List<TargetCorner> unpack(RepeatedMessage<ProtobufTargetCorner> msg) {
-            // TODO add test
             ArrayList<TargetCorner> corners = new ArrayList<>(msg.length());
             for (ProtobufTargetCorner corner : msg) {
                 corners.add(unpack(corner));
@@ -92,8 +91,11 @@ public class TargetCorner {
         }
 
         public void pack(RepeatedMessage<ProtobufTargetCorner> msg, List<TargetCorner> value) {
-            // TODO write
-            // TODO add test
+            var corners = msg.reserve(value.size());
+            for (TargetCorner targetCorner : value) {
+                var corner = corners.next();
+                pack(corner, targetCorner);
+            }
         }
     }
 

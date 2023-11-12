@@ -22,7 +22,6 @@ import edu.wpi.first.util.protobuf.Protobuf;
 import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.proto.PhotonTypes.ProtobufPhotonTrackedTarget;
-import org.photonvision.proto.PhotonTypes.ProtobufTargetCorner;
 import us.hebi.quickbuf.Descriptors.Descriptor;
 import us.hebi.quickbuf.RepeatedMessage;
 
@@ -259,7 +258,6 @@ public class PhotonTrackedTarget {
         }
 
         public List<PhotonTrackedTarget> unpack(RepeatedMessage<ProtobufPhotonTrackedTarget> msg) {
-            // TODO add test
             ArrayList<PhotonTrackedTarget> targets = new ArrayList<>(msg.length());
             for (ProtobufPhotonTrackedTarget target : msg) {
                 targets.add(unpack(target));
@@ -283,9 +281,13 @@ public class PhotonTrackedTarget {
             TargetCorner.proto.pack(msg.getMutableDetectedCorners(), value.getDetectedCorners());
         }
 
-        public void pack(RepeatedMessage<ProtobufPhotonTrackedTarget> msg, List<PhotonTrackedTarget> value) {
-            // TODO write
-            // TODO add test
+        public void pack(
+                RepeatedMessage<ProtobufPhotonTrackedTarget> msg, List<PhotonTrackedTarget> value) {
+            var targets = msg.reserve(value.size());
+            for (PhotonTrackedTarget trackedTarget : value) {
+                var target = targets.next();
+                pack(target, trackedTarget);
+            }
         }
     }
 
