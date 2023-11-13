@@ -80,8 +80,8 @@ tasks.register("generateNativePhotonProtos") {
 
     // instead, hard-code
     outputs.dir "build/generated/source/proto/main/cpp"
-    
-    // outputs.files.each { println it } 
+
+    // outputs.files.each { println it }
 
     // reflectino go brr
     // tasks.named("generateProto").get().metaClass.properties.each { println it.name }
