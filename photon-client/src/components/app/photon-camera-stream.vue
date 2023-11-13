@@ -105,8 +105,4 @@ const handleFullscreenRequest = () => {
 .stream-container:hover .stream-overlay {
   opacity: 1;
 }
-
-.stream-popout-viewer {
-  display: none;
-}
 </style>
