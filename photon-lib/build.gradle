@@ -64,6 +64,12 @@ nativeUtils {
     }
 }
 
+
+// Gradle complains about using outputs without an explicit dependency w/o this
+tasks.named("compileJava") {
+    dependsOn ":photon-targeting:generateNativePhotonProtos"
+}
+
 model {
     components {
         Photon(NativeLibrarySpec) {
@@ -71,6 +77,7 @@ model {
                 cpp {
                     source {
                         srcDirs "src/main/native/cpp"
+                        srcDirs project(":photon-targeting").tasks.named("generateNativePhotonProtos").get().outputs.files
                         include "**/*.cpp"
                     }
                     exportedHeaders {

@@ -23,7 +23,7 @@ dependencies {
 sourceSets {
     main {
         java {
-            // TODO this is a hack! I think! Why are we generating wpilib quickbufs anyways?
+            // So quickbuffers generates messages for all included protobufs, even wpilib ones. For now, exclude
             srcDirs 'build/generated/source/proto/main/quickbuf/org'
             exclude 'build/generated/source/proto/main/quickbuf/edu/wpi/**'
         }
@@ -70,5 +70,25 @@ protobuf {
         }
     }
 }
+
+
+tasks.register("generateNativePhotonProtos") {
+    dependsOn tasks.named("generateProto")
+
+    // This is also valid, but i'd need to append "cpp" to it
+    // tasks.named("generateProto").get().outputs.files.each { println it }
+
+    // instead, hard-code
+    outputs.dir "build/generated/source/proto/main/cpp"
+    
+    // outputs.files.each { println it } 
+
+    // reflectino go brr
+    // tasks.named("generateProto").get().metaClass.properties.each { println it.name }
+    // it.outputs.metaClass.methods.each { println it.name }
+}
+
+
+
 
 apply from: "publish.gradle"
