@@ -170,8 +170,8 @@ public final class OpenCVHelp {
 
     public static List<TargetCorner> pointsToCorners(Point... points) {
         var corners = new ArrayList<TargetCorner>(points.length);
-        for (int i = 0; i < points.length; i++) {
-            corners.add(new TargetCorner(points[i].x, points[i].y));
+        for (Point point : points) {
+            corners.add(new TargetCorner(point.x, point.y));
         }
         return corners;
     }
