@@ -102,14 +102,13 @@ public class PNPResult {
         }
     }
 
-    public Packet populatePacket(Packet packet) {
+    public void populatePacket(Packet packet) {
         packet.encode(isPresent);
         PacketUtils.encodeTransform(packet, best);
         PacketUtils.encodeTransform(packet, alt);
         packet.encode(bestReprojErr);
         packet.encode(altReprojErr);
         packet.encode(ambiguity);
-        return packet;
     }
 
     @Override

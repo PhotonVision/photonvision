@@ -79,7 +79,7 @@ public class SimCameraProperties {
     private double avgLatencyMs = 0;
     private double latencyStdDevMs = 0;
     // util
-    private List<DMatrix3> viewplanes = new ArrayList<>();
+    private final List<DMatrix3> viewplanes = new ArrayList<>();
 
     /** Default constructor which is the same as {@link #PERFECT_90DEG} */
     public SimCameraProperties() {
@@ -215,8 +215,8 @@ public class SimCameraProperties {
                                     0, getPixelPitch(resHeight).plus(new Rotation2d(-Math.PI / 2)).getRadians(), 0))
                 };
         viewplanes.clear();
-        for (int i = 0; i < p.length; i++) {
-            viewplanes.add(new DMatrix3(p[i].getX(), p[i].getY(), p[i].getZ()));
+        for (Translation3d translation3d : p) {
+            viewplanes.add(new DMatrix3(translation3d.getX(), translation3d.getY(), translation3d.getZ()));
         }
     }
 
@@ -457,8 +457,7 @@ public class SimCameraProperties {
         // check if the ends of the line segment are visible
         boolean aVisible = true;
         boolean bVisible = true;
-        for (int i = 0; i < viewplanes.size(); i++) {
-            var normal = viewplanes.get(i);
+        for (DMatrix3 normal : viewplanes) {
             double aVisibility = CommonOps_DDF3.dot(av, normal);
             if (aVisibility < 0) aVisible = false;
             double bVisibility = CommonOps_DDF3.dot(bv, normal);
@@ -467,7 +466,7 @@ public class SimCameraProperties {
             if (aVisibility <= 0 && bVisibility <= 0) return new Pair<>(null, null);
         }
         // both ends are inside frustum
-        if (aVisible && bVisible) return new Pair<>(Double.valueOf(0), Double.valueOf(1));
+        if (aVisible && bVisible) return new Pair<>((double) 0, 1.0);
 
         // parametrized (t=0 at a, t=1 at b) intersections with viewplanes
         double[] intersections = {Double.NaN, Double.NaN, Double.NaN, Double.NaN};
@@ -546,8 +545,8 @@ public class SimCameraProperties {
         }
         // one viewplane intersection
         else if (!Double.isNaN(inter1)) {
-            if (aVisible) return new Pair<>(Double.valueOf(0), inter1);
-            if (bVisible) return new Pair<>(inter1, Double.valueOf(1));
+            if (aVisible) return new Pair<>((double) 0, inter1);
+            if (bVisible) return new Pair<>(inter1, 1.0);
             return new Pair<>(inter1, null);
         }
         // no intersections

@@ -49,8 +49,8 @@ import org.photonvision.targeting.PNPResult;
 import org.photonvision.targeting.TargetCorner;
 
 public final class OpenCVHelp {
-    private static Rotation3d NWU_TO_EDN;
-    private static Rotation3d EDN_TO_NWU;
+    private static final Rotation3d NWU_TO_EDN;
+    private static final Rotation3d EDN_TO_NWU;
 
     // Creating a cscore object is sufficient to load opencv, per
     // https://www.chiefdelphi.com/t/unsatisfied-link-error-when-simulating-java-robot-code-using-opencv/426731/4
@@ -199,7 +199,7 @@ public final class OpenCVHelp {
      * <p>({1,2,3}, true, 1) == {3,2,1}
      *
      * @param <T> Element type
-     * @param elements
+     * @param elements list elements
      * @param backwards If indexing should happen in reverse (0, size-1, size-2, ...)
      * @param shiftStart How much the inital index should be shifted (instead of starting at index 0,
      *     start at shiftStart, negated if backwards)

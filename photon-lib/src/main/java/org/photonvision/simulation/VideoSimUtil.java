@@ -374,8 +374,8 @@ public class VideoSimUtil {
     /**
      * Set the field dimensions that are used for drawing the field wireframe.
      *
-     * @param fieldLengthMeters
-     * @param fieldWidthMeters
+     * @param fieldLengthMeters field length in meters
+     * @param fieldWidthMeters field wideth in meters
      */
     public static void setFieldDimensionsMeters(double fieldLengthMeters, double fieldWidthMeters) {
         fieldLength = fieldLengthMeters;
@@ -501,8 +501,8 @@ public class VideoSimUtil {
             if (inter.getSecond() == null) continue;
 
             // cull line to the inside of the camera fulcrum
-            double inter1 = inter.getFirst().doubleValue();
-            double inter2 = inter.getSecond().doubleValue();
+            double inter1 = inter.getFirst();
+            double inter2 = inter.getSecond();
             var baseDelta = ptb.minus(pta);
             var old_pta = pta;
             if (inter1 > 0) pta = old_pta.plus(baseDelta.times(inter1));
@@ -510,11 +510,9 @@ public class VideoSimUtil {
             baseDelta = ptb.minus(pta);
 
             // project points into 2d
-            var poly = new ArrayList<Point>();
-            poly.addAll(
-                    Arrays.asList(
-                            OpenCVHelp.projectPoints(
-                                    prop.getIntrinsics(), prop.getDistCoeffs(), camRt, List.of(pta, ptb))));
+            var poly = new ArrayList<>(Arrays.asList(
+                    OpenCVHelp.projectPoints(
+                            prop.getIntrinsics(), prop.getDistCoeffs(), camRt, List.of(pta, ptb))));
             var pxa = poly.get(0);
             var pxb = poly.get(1);
 
@@ -526,7 +524,7 @@ public class VideoSimUtil {
             for (int j = 0; j < subdivisions; j++) {
                 subPts.add(pta.plus(subDelta.times(j + 1)));
             }
-            if (subPts.size() > 0) {
+            if (!subPts.isEmpty()) {
                 poly.addAll(
                         1,
                         Arrays.asList(

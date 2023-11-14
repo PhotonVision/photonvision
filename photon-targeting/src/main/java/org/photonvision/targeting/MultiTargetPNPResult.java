@@ -41,7 +41,7 @@ public class MultiTargetPNPResult {
         var results = PNPResult.createFromPacket(packet);
         var ids = new ArrayList<Integer>(MAX_IDS);
         for (int i = 0; i < MAX_IDS; i++) {
-            int targetId = (int) packet.decodeShort();
+            int targetId = packet.decodeShort();
             if (targetId > -1) ids.add(targetId);
         }
         return new MultiTargetPNPResult(results, ids);
