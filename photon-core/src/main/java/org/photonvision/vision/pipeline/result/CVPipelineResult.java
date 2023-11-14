@@ -20,7 +20,7 @@ package org.photonvision.vision.pipeline.result;
 import java.util.Collections;
 import java.util.List;
 import org.photonvision.common.util.math.MathUtils;
-import org.photonvision.targeting.MultiTargetPNPResults;
+import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.target.TrackedTarget;
@@ -31,23 +31,23 @@ public class CVPipelineResult implements Releasable {
     public final double fps;
     public final List<TrackedTarget> targets;
     public final Frame inputAndOutputFrame;
-    public MultiTargetPNPResults multiTagResult;
+    public MultiTargetPNPResult multiTagResult;
 
     public CVPipelineResult(
             double processingNanos, double fps, List<TrackedTarget> targets, Frame inputFrame) {
-        this(processingNanos, fps, targets, new MultiTargetPNPResults(), inputFrame);
+        this(processingNanos, fps, targets, new MultiTargetPNPResult(), inputFrame);
     }
 
     public CVPipelineResult(
             double processingNanos,
             double fps,
             List<TrackedTarget> targets,
-            MultiTargetPNPResults multiTagResults,
+            MultiTargetPNPResult multiTagResult,
             Frame inputFrame) {
         this.processingNanos = processingNanos;
         this.fps = fps;
         this.targets = targets != null ? targets : Collections.emptyList();
-        this.multiTagResult = multiTagResults;
+        this.multiTagResult = multiTagResult;
 
         this.inputAndOutputFrame = inputFrame;
     }
@@ -56,8 +56,8 @@ public class CVPipelineResult implements Releasable {
             double processingNanos,
             double fps,
             List<TrackedTarget> targets,
-            MultiTargetPNPResults multiTagResults) {
-        this(processingNanos, fps, targets, multiTagResults, null);
+            MultiTargetPNPResult multiTagResult) {
+        this(processingNanos, fps, targets, multiTagResult, null);
     }
 
     public boolean hasTargets() {

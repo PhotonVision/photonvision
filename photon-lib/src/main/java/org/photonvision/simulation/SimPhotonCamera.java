@@ -35,7 +35,7 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonTargetSortMode;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.networktables.NTTopicSet;
-import org.photonvision.targeting.MultiTargetPNPResults;
+import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
@@ -142,7 +142,7 @@ public class SimPhotonCamera {
         }
 
         PhotonPipelineResult newResult =
-                new PhotonPipelineResult(latencyMillis, targetList, new MultiTargetPNPResults());
+                new PhotonPipelineResult(latencyMillis, targetList, new MultiTargetPNPResult());
         var newPacket = new Packet(newResult.getPacketSize());
         newResult.populatePacket(newPacket);
         ts.rawBytesEntry.set(newPacket.getData());

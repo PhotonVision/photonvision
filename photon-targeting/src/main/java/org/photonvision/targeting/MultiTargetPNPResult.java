@@ -21,30 +21,30 @@ import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.common.dataflow.structures.Packet;
 
-public class MultiTargetPNPResults {
+public class MultiTargetPNPResult {
     // Seeing 32 apriltags at once seems like a sane limit
     private static final int MAX_IDS = 32;
     // pnpresult + MAX_IDS possible targets (arbitrary upper limit that should never be hit, ideally)
-    public static final int PACK_SIZE_BYTES = PNPResults.PACK_SIZE_BYTES + (Short.BYTES * MAX_IDS);
+    public static final int PACK_SIZE_BYTES = PNPResult.PACK_SIZE_BYTES + (Short.BYTES * MAX_IDS);
 
-    public PNPResults estimatedPose = new PNPResults();
+    public PNPResult estimatedPose = new PNPResult();
     public List<Integer> fiducialIDsUsed = List.of();
 
-    public MultiTargetPNPResults() {}
+    public MultiTargetPNPResult() {}
 
-    public MultiTargetPNPResults(PNPResults results, List<Integer> ids) {
+    public MultiTargetPNPResult(PNPResult results, List<Integer> ids) {
         estimatedPose = results;
         fiducialIDsUsed = ids;
     }
 
-    public static MultiTargetPNPResults createFromPacket(Packet packet) {
-        var results = PNPResults.createFromPacket(packet);
+    public static MultiTargetPNPResult createFromPacket(Packet packet) {
+        var results = PNPResult.createFromPacket(packet);
         var ids = new ArrayList<Integer>(MAX_IDS);
         for (int i = 0; i < MAX_IDS; i++) {
             int targetId = (int) packet.decodeShort();
             if (targetId > -1) ids.add(targetId);
         }
-        return new MultiTargetPNPResults(results, ids);
+        return new MultiTargetPNPResult(results, ids);
     }
 
     public void populatePacket(Packet packet) {
@@ -72,7 +72,7 @@ public class MultiTargetPNPResults {
         if (this == obj) return true;
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
-        MultiTargetPNPResults other = (MultiTargetPNPResults) obj;
+        MultiTargetPNPResult other = (MultiTargetPNPResult) obj;
         if (estimatedPose == null) {
             if (other.estimatedPose != null) return false;
         } else if (!estimatedPose.equals(other.estimatedPose)) return false;
@@ -84,7 +84,7 @@ public class MultiTargetPNPResults {
 
     @Override
     public String toString() {
-        return "MultiTargetPNPResults [estimatedPose="
+        return "MultiTargetPNPResult [estimatedPose="
                 + estimatedPose
                 + ", fiducialIDsUsed="
                 + fiducialIDsUsed
