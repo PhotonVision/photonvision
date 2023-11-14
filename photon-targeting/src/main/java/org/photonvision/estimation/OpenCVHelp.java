@@ -466,8 +466,7 @@ public final class OpenCVHelp {
             // check if solvePnP failed with NaN results and retrying failed
             if (Double.isNaN(errors[0])) throw new Exception("SolvePNP_SQUARE NaN result");
 
-            if (alt != null)
-                return new PNPResult(best, alt, errors[0] / errors[1], errors[0], errors[1]);
+            if (alt != null) return new PNPResult(best, alt, errors[0] / errors[1], errors[0], errors[1]);
             else return new PNPResult(best, errors[0]);
         }
         // solvePnP failed
