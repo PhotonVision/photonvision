@@ -110,7 +110,7 @@ public class PhotonCamera implements AutoCloseable {
 
     private long prevHeartbeatValue = -1;
     private double prevHeartbeatChangeTime = 0;
-    private static final double HEARBEAT_DEBOUNCE_SEC = 0.5;
+    private static final double HEARTBEAT_DEBOUNCE_SEC = 0.5;
 
     public static void setVersionCheckEnabled(boolean enabled) {
         VERSION_CHECK_ENABLED = enabled;
@@ -183,6 +183,8 @@ public class PhotonCamera implements AutoCloseable {
      * @return The latest pipeline result.
      */
     public PhotonPipelineResult getLatestResult() {
+        verifyVersion();
+
         var ret = pipelineResultsSubscriber.get();
 
         // Set the timestamp of the result.
@@ -318,7 +320,7 @@ public class PhotonCamera implements AutoCloseable {
             prevHeartbeatValue = curHeartbeat;
         }
 
-        return (now - prevHeartbeatChangeTime) < HEARBEAT_DEBOUNCE_SEC;
+        return (now - prevHeartbeatChangeTime) < HEARTBEAT_DEBOUNCE_SEC;
     }
 
     // TODO: Implement ATFL subscribing in backend
@@ -417,7 +419,7 @@ public class PhotonCamera implements AutoCloseable {
 
         // Check for version. Warn if the versions aren't aligned.
         String versionString = versionEntry.get("");
-        if (!versionString.equals("") && !PhotonVersion.versionMatches(versionString)) {
+        if (!versionString.isEmpty() && !PhotonVersion.versionMatches(versionString)) {
             // Error on a verified version mismatch
             // But stay silent otherwise
             DriverStation.reportWarning(
