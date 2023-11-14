@@ -510,9 +510,11 @@ public class VideoSimUtil {
             baseDelta = ptb.minus(pta);
 
             // project points into 2d
-            var poly = new ArrayList<>(Arrays.asList(
-                    OpenCVHelp.projectPoints(
-                            prop.getIntrinsics(), prop.getDistCoeffs(), camRt, List.of(pta, ptb))));
+            var poly =
+                    new ArrayList<>(
+                            Arrays.asList(
+                                    OpenCVHelp.projectPoints(
+                                            prop.getIntrinsics(), prop.getDistCoeffs(), camRt, List.of(pta, ptb))));
             var pxa = poly.get(0);
             var pxb = poly.get(1);
 

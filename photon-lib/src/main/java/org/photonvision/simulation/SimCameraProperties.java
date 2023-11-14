@@ -216,7 +216,8 @@ public class SimCameraProperties {
                 };
         viewplanes.clear();
         for (Translation3d translation3d : p) {
-            viewplanes.add(new DMatrix3(translation3d.getX(), translation3d.getY(), translation3d.getZ()));
+            viewplanes.add(
+                    new DMatrix3(translation3d.getX(), translation3d.getY(), translation3d.getZ()));
         }
     }
 
