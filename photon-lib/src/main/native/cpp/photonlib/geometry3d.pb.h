@@ -22,4 +22,8 @@
  * SOFTWARE.
  */
 
-#include "photon_types.pb.h"
+#pragma once
+// So wpilib publishes protbufs here at wpimath/protobuf. but generated code
+// assumes that the protobuf includes are on your include path. So we need this
+// stupid shim
+#include "wpimath/protobuf/geometry3d.pb.h"

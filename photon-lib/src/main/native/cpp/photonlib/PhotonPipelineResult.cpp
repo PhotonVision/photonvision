@@ -24,6 +24,8 @@
 
 #include "photonlib/PhotonPipelineResult.h"
 
+#include "photon_types.pb.h"
+
 namespace photonlib {
 PhotonPipelineResult::PhotonPipelineResult(
     units::second_t latency, std::span<const PhotonTrackedTarget> targets)
