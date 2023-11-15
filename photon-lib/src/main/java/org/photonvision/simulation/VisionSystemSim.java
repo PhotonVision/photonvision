@@ -176,8 +176,7 @@ public class VisionSystemSim {
      */
     public Optional<Pose3d> getCameraPose(PhotonCameraSim cameraSim, double timeSeconds) {
         var robotToCamera = getRobotToCamera(cameraSim, timeSeconds);
-        if (robotToCamera.isEmpty()) return Optional.empty();
-        return Optional.of(getRobotPose(timeSeconds).plus(robotToCamera.get()));
+        return robotToCamera.map(transform3d -> getRobotPose(timeSeconds).plus(transform3d));
     }
 
     /**
@@ -405,6 +404,6 @@ public class VisionSystemSim {
             }
         }
         if (processed) dbgField.getObject("visibleTargetPoses").setPoses(visTgtPoses2d);
-        if (cameraPoses2d.size() != 0) dbgField.getObject("cameras").setPoses(cameraPoses2d);
+        if (!cameraPoses2d.isEmpty()) dbgField.getObject("cameras").setPoses(cameraPoses2d);
     }
 }

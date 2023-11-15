@@ -30,7 +30,7 @@ import org.photonvision.utils.PacketUtils;
  * <p>Note that the coordinate frame of these transforms depends on the implementing solvePnP
  * method.
  */
-public class PNPResults {
+public class PNPResult {
     /**
      * If this result is valid. A false value indicates there was an error in estimation, and this
      * result should not be used.
@@ -59,7 +59,7 @@ public class PNPResults {
     public final double ambiguity;
 
     /** An empty (invalid) result. */
-    public PNPResults() {
+    public PNPResult() {
         this.isPresent = false;
         this.best = new Transform3d();
         this.alt = new Transform3d();
@@ -68,11 +68,11 @@ public class PNPResults {
         this.altReprojErr = 0;
     }
 
-    public PNPResults(Transform3d best, double bestReprojErr) {
+    public PNPResult(Transform3d best, double bestReprojErr) {
         this(best, best, 0, bestReprojErr, bestReprojErr);
     }
 
-    public PNPResults(
+    public PNPResult(
             Transform3d best,
             Transform3d alt,
             double ambiguity,
@@ -88,7 +88,7 @@ public class PNPResults {
 
     public static final int PACK_SIZE_BYTES = 1 + (Double.BYTES * 7 * 2) + (Double.BYTES * 3);
 
-    public static PNPResults createFromPacket(Packet packet) {
+    public static PNPResult createFromPacket(Packet packet) {
         var present = packet.decodeBoolean();
         var best = PacketUtils.decodeTransform(packet);
         var alt = PacketUtils.decodeTransform(packet);
@@ -96,20 +96,19 @@ public class PNPResults {
         var altEr = packet.decodeDouble();
         var ambiguity = packet.decodeDouble();
         if (present) {
-            return new PNPResults(best, alt, ambiguity, bestEr, altEr);
+            return new PNPResult(best, alt, ambiguity, bestEr, altEr);
         } else {
-            return new PNPResults();
+            return new PNPResult();
         }
     }
 
-    public Packet populatePacket(Packet packet) {
+    public void populatePacket(Packet packet) {
         packet.encode(isPresent);
         PacketUtils.encodeTransform(packet, best);
         PacketUtils.encodeTransform(packet, alt);
         packet.encode(bestReprojErr);
         packet.encode(altReprojErr);
         packet.encode(ambiguity);
-        return packet;
     }
 
     @Override
@@ -134,7 +133,7 @@ public class PNPResults {
         if (this == obj) return true;
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
-        PNPResults other = (PNPResults) obj;
+        PNPResult other = (PNPResult) obj;
         if (isPresent != other.isPresent) return false;
         if (best == null) {
             if (other.best != null) return false;
@@ -153,7 +152,7 @@ public class PNPResults {
 
     @Override
     public String toString() {
-        return "PNPResults [isPresent="
+        return "PNPResult [isPresent="
                 + isPresent
                 + ", best="
                 + best

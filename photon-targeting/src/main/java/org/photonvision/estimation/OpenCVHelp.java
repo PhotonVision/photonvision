@@ -45,12 +45,12 @@ import org.opencv.core.Point3;
 import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 import org.opencv.imgproc.Imgproc;
-import org.photonvision.targeting.PNPResults;
+import org.photonvision.targeting.PNPResult;
 import org.photonvision.targeting.TargetCorner;
 
 public final class OpenCVHelp {
-    private static Rotation3d NWU_TO_EDN;
-    private static Rotation3d EDN_TO_NWU;
+    private static final Rotation3d NWU_TO_EDN;
+    private static final Rotation3d EDN_TO_NWU;
 
     // Creating a cscore object is sufficient to load opencv, per
     // https://www.chiefdelphi.com/t/unsatisfied-link-error-when-simulating-java-robot-code-using-opencv/426731/4
@@ -170,8 +170,8 @@ public final class OpenCVHelp {
 
     public static List<TargetCorner> pointsToCorners(Point... points) {
         var corners = new ArrayList<TargetCorner>(points.length);
-        for (int i = 0; i < points.length; i++) {
-            corners.add(new TargetCorner(points[i].x, points[i].y));
+        for (Point point : points) {
+            corners.add(new TargetCorner(point.x, point.y));
         }
         return corners;
     }
@@ -199,7 +199,7 @@ public final class OpenCVHelp {
      * <p>({1,2,3}, true, 1) == {3,2,1}
      *
      * @param <T> Element type
-     * @param elements
+     * @param elements list elements
      * @param backwards If indexing should happen in reverse (0, size-1, size-2, ...)
      * @param shiftStart How much the inital index should be shifted (instead of starting at index 0,
      *     start at shiftStart, negated if backwards)
@@ -401,7 +401,7 @@ public final class OpenCVHelp {
      * @return The resulting transformation that maps the camera pose to the target pose and the
      *     ambiguity if an alternate solution is available.
      */
-    public static PNPResults solvePNP_SQUARE(
+    public static PNPResult solvePNP_SQUARE(
             Matrix<N3, N3> cameraMatrix,
             Matrix<N5, N1> distCoeffs,
             List<Translation3d> modelTrls,
@@ -466,15 +466,14 @@ public final class OpenCVHelp {
             // check if solvePnP failed with NaN results and retrying failed
             if (Double.isNaN(errors[0])) throw new Exception("SolvePNP_SQUARE NaN result");
 
-            if (alt != null)
-                return new PNPResults(best, alt, errors[0] / errors[1], errors[0], errors[1]);
-            else return new PNPResults(best, errors[0]);
+            if (alt != null) return new PNPResult(best, alt, errors[0] / errors[1], errors[0], errors[1]);
+            else return new PNPResult(best, errors[0]);
         }
         // solvePnP failed
         catch (Exception e) {
             System.err.println("SolvePNP_SQUARE failed!");
             e.printStackTrace();
-            return new PNPResults();
+            return new PNPResult();
         } finally {
             // release our Mats from native memory
             objectMat.release();
@@ -509,7 +508,7 @@ public final class OpenCVHelp {
      *     model points are supplied relative to the origin, this transformation brings the camera to
      *     the origin.
      */
-    public static PNPResults solvePNP_SQPNP(
+    public static PNPResult solvePNP_SQPNP(
             Matrix<N3, N3> cameraMatrix,
             Matrix<N5, N1> distCoeffs,
             List<Translation3d> objectTrls,
@@ -558,11 +557,11 @@ public final class OpenCVHelp {
             // check if solvePnP failed with NaN results
             if (Double.isNaN(error[0])) throw new Exception("SolvePNP_SQPNP NaN result");
 
-            return new PNPResults(best, error[0]);
+            return new PNPResult(best, error[0]);
         } catch (Exception e) {
             System.err.println("SolvePNP_SQPNP failed!");
             e.printStackTrace();
-            return new PNPResults();
+            return new PNPResult();
         }
     }
 }
