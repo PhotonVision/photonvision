@@ -374,8 +374,8 @@ public class VideoSimUtil {
     /**
      * Set the field dimensions that are used for drawing the field wireframe.
      *
-     * @param fieldLengthMeters field length in meters
-     * @param fieldWidthMeters field wideth in meters
+     * @param fieldLengthMeters field length in meters (x direction)
+     * @param fieldWidthMeters field width in meters (y direction)
      */
     public static void setFieldDimensionsMeters(double fieldLengthMeters, double fieldWidthMeters) {
         fieldLength = fieldLengthMeters;
