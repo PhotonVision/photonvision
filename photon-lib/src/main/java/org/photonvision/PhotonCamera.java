@@ -36,6 +36,7 @@ import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.IntegerEntry;
 import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.IntegerSubscriber;
+import edu.wpi.first.networktables.MultiSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.PubSubOption;
@@ -148,8 +149,9 @@ public class PhotonCamera implements AutoCloseable {
         versionEntry = photonvision_root_table.getStringTopic("version").subscribe("");
 
         // Existing is enough to make this multisubscriber do its thing
-        MultiSubscriber m_topicNameSubscriber = new MultiSubscriber(
-                instance, new String[]{"/photonvision/"}, PubSubOption.topicsOnly(true));
+        MultiSubscriber m_topicNameSubscriber =
+                new MultiSubscriber(
+                        instance, new String[] {"/photonvision/"}, PubSubOption.topicsOnly(true));
     }
 
     /**
