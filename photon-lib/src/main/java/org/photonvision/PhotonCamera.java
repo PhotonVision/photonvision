@@ -146,6 +146,10 @@ public class PhotonCamera implements AutoCloseable {
         ledModeRequest = photonvision_root_table.getIntegerTopic("ledModeRequest").publish();
         ledModeState = photonvision_root_table.getIntegerTopic("ledModeState").subscribe(-1);
         versionEntry = photonvision_root_table.getStringTopic("version").subscribe("");
+
+        // Existing is enough to make this multisubscriber do its thing
+        MultiSubscriber m_topicNameSubscriber = new MultiSubscriber(
+                instance, new String[]{"/photonvision/"}, PubSubOption.topicsOnly(true));
     }
 
     /**
