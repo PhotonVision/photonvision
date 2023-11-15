@@ -282,6 +282,7 @@ public class VisionSourceManager {
             logger.debug("Updating path config from " + cfg.path + " to " + info.path);
             cfg.path = info.path;
         }
+        cfg.otherPaths = info.otherPaths;
 
         return cfg;
     }
@@ -293,15 +294,41 @@ public class VisionSourceManager {
     private List<UsbCameraInfo> filterAllowedDevices(List<UsbCameraInfo> allDevices) {
         List<UsbCameraInfo> filteredDevices = new ArrayList<>();
         for (var device : allDevices) {
+
+            // Filter devices that are physically the same device but may show up as multiple devices that
+            // really cant be accessed. First noticed with raspi 5 and ov5647.
+            List<String> paths = new ArrayList<>();
+
+            for (String p : device.otherPaths) {
+                paths.add(p.replace("index" + device.dev, ""));
+            }
+            boolean skip = false;
+            for (var otherDevice : filteredDevices) {
+                List<String> otherPaths = new ArrayList<>();
+                for (String p : otherDevice.otherPaths) {
+                    otherPaths.add(p.replace("index" + otherDevice.dev, ""));
+                }
+                if (paths.containsAll(otherPaths)) {
+                    if (otherDevice.dev >= device.dev) {
+                        filteredDevices.remove(otherDevice);
+
+                    } else {
+                        skip = true;
+                        break;
+                    }
+                }
+            }
             if (deviceBlacklist.contains(device.name)) {
                 logger.trace(
                         "Skipping blacklisted device: \"" + device.name + "\" at \"" + device.path + "\"");
             } else if (device.name.matches(ignoredCamerasRegex)) {
                 logger.trace("Skipping ignored device: \"" + device.name + "\" at \"" + device.path);
-            } else {
+            } else if (!skip) {
                 filteredDevices.add(device);
                 logger.trace(
                         "Adding local video device - \"" + device.name + "\" at \"" + device.path + "\"");
+            } else {
+                logger.trace("Skipping duplicate device: \"" + device.name + "\" at \"" + device.path);
             }
         }
         return filteredDevices;
