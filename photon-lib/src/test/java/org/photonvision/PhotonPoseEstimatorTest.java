@@ -69,7 +69,7 @@ class PhotonPoseEstimatorTest {
             e.printStackTrace();
         }
 
-        List<AprilTag> tagList = new ArrayList<AprilTag>(2);
+        List<AprilTag> tagList = new ArrayList<>(2);
         tagList.add(new AprilTag(0, new Pose3d(3, 3, 3, new Rotation3d())));
         tagList.add(new AprilTag(1, new Pose3d(5, 5, 5, new Rotation3d())));
         double fieldLength = Units.feetToMeters(54.0);
@@ -619,7 +619,7 @@ class PhotonPoseEstimatorTest {
         assertEquals(2.15, pose.getZ(), .01);
     }
 
-    private class PhotonCameraInjector extends PhotonCamera {
+    private static class PhotonCameraInjector extends PhotonCamera {
         public PhotonCameraInjector() {
             super("Test");
         }

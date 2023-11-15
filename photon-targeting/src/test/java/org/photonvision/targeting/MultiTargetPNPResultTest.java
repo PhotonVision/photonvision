@@ -26,41 +26,41 @@ import edu.wpi.first.math.geometry.Translation3d;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-public class MultiTargetPNPResultsTest {
+public class MultiTargetPNPResultTest {
     @Test
     public void protobufTest() {
-        var result = new MultiTargetPNPResults();
-        var serializedResult = MultiTargetPNPResults.proto.createMessage();
-        MultiTargetPNPResults.proto.pack(serializedResult, result);
-        var unpackedResult = MultiTargetPNPResults.proto.unpack(serializedResult);
+        var result = new MultiTargetPNPResult();
+        var serializedResult = MultiTargetPNPResult.proto.createMessage();
+        MultiTargetPNPResult.proto.pack(serializedResult, result);
+        var unpackedResult = MultiTargetPNPResult.proto.unpack(serializedResult);
         assertEquals(result, unpackedResult);
 
         result =
-                new MultiTargetPNPResults(
-                        new PNPResults(
+                new MultiTargetPNPResult(
+                        new PNPResult(
                                 new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
                         List.of(1, 2, 3));
-        serializedResult = MultiTargetPNPResults.proto.createMessage();
-        MultiTargetPNPResults.proto.pack(serializedResult, result);
-        unpackedResult = MultiTargetPNPResults.proto.unpack(serializedResult);
+        serializedResult = MultiTargetPNPResult.proto.createMessage();
+        MultiTargetPNPResult.proto.pack(serializedResult, result);
+        unpackedResult = MultiTargetPNPResult.proto.unpack(serializedResult);
         assertEquals(result, unpackedResult);
     }
 
     @Test
     public void equalityTest() {
-        var a = new MultiTargetPNPResults();
-        var b = new MultiTargetPNPResults();
+        var a = new MultiTargetPNPResult();
+        var b = new MultiTargetPNPResult();
         assertEquals(a, b);
 
         a =
-                new MultiTargetPNPResults(
-                        new PNPResults(
+                new MultiTargetPNPResult(
+                        new PNPResult(
                                 new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
                         List.of(1, 2, 3));
 
         b =
-                new MultiTargetPNPResults(
-                        new PNPResults(
+                new MultiTargetPNPResult(
+                        new PNPResult(
                                 new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
                         List.of(1, 2, 3));
 
@@ -70,13 +70,13 @@ public class MultiTargetPNPResultsTest {
     @Test
     public void inequalityTest() {
         var a =
-                new MultiTargetPNPResults(
-                        new PNPResults(
+                new MultiTargetPNPResult(
+                        new PNPResult(
                                 new Transform3d(new Translation3d(1, 8, 3), new Rotation3d(1, 2, 3)), 0.1),
                         List.of(3, 4, 7));
         var b =
-                new MultiTargetPNPResults(
-                        new PNPResults(
+                new MultiTargetPNPResult(
+                        new PNPResult(
                                 new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
                         List.of(1, 2, 3));
 

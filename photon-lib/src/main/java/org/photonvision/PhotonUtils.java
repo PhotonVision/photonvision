@@ -201,7 +201,7 @@ public final class PhotonUtils {
      *
      * @param robotPose Pose of the robot
      * @param targetPose Pose of the target
-     * @return
+     * @return distance to the pose
      */
     public static double getDistanceToPose(Pose2d robotPose, Pose2d targetPose) {
         return robotPose.getTranslation().getDistance(targetPose.getTranslation());

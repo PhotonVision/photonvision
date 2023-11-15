@@ -24,8 +24,6 @@
 
 package org.photonvision;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
@@ -43,7 +41,6 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.ProtobufSubscriber;
 import edu.wpi.first.networktables.PubSubOption;
-import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.networktables.StringSubscriber;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
@@ -72,9 +69,8 @@ public class PhotonCamera implements AutoCloseable {
     IntegerPublisher pipelineIndexRequest, ledModeRequest;
     IntegerSubscriber pipelineIndexState, ledModeState;
     IntegerSubscriber heartbeatEntry;
-    private DoubleArraySubscriber cameraIntrinsicsSubscriber;
-    private DoubleArraySubscriber cameraDistortionSubscriber;
-    private StringPublisher atflPublisher;
+    DoubleArraySubscriber cameraIntrinsicsSubscriber;
+    DoubleArraySubscriber cameraDistortionSubscriber;
 
     @Override
     public void close() {
@@ -98,7 +94,6 @@ public class PhotonCamera implements AutoCloseable {
         pipelineIndexRequest.close();
         cameraIntrinsicsSubscriber.close();
         cameraDistortionSubscriber.close();
-        atflPublisher.close();
     }
 
     private final String path;
@@ -115,12 +110,6 @@ public class PhotonCamera implements AutoCloseable {
     public static void setVersionCheckEnabled(boolean enabled) {
         VERSION_CHECK_ENABLED = enabled;
     }
-
-    private static AprilTagFieldLayout lastSetTagLayout =
-            AprilTagFields.kDefaultField.loadAprilTagLayoutField();
-
-    // Existing is enough to make this multisubscriber do its thing
-    private final MultiSubscriber m_topicNameSubscriber;
 
     /**
      * Constructs a PhotonCamera from a root table.
@@ -159,11 +148,8 @@ public class PhotonCamera implements AutoCloseable {
         ledModeState = photonvision_root_table.getIntegerTopic("ledModeState").subscribe(-1);
         versionEntry = photonvision_root_table.getStringTopic("version").subscribe("");
 
-        atflPublisher = photonvision_root_table.getStringTopic("apriltag_field_layout").publish();
-        // Save the layout locally on Rio; on reboot, should be pushed out to NT clients
-        atflPublisher.getTopic().setPersistent(true);
-
-        m_topicNameSubscriber =
+        // Existing is enough to make this multisubscriber do its thing
+        MultiSubscriber m_topicNameSubscriber =
                 new MultiSubscriber(
                         instance, new String[] {"/photonvision/"}, PubSubOption.topicsOnly(true));
     }
@@ -322,46 +308,6 @@ public class PhotonCamera implements AutoCloseable {
 
         return (now - prevHeartbeatChangeTime) < HEARTBEAT_DEBOUNCE_SEC;
     }
-
-    // TODO: Implement ATFL subscribing in backend
-    // /**
-    //  * Get the last set {@link AprilTagFieldLayout}. The tag layout is shared between all
-    // PhotonVision
-    //  * coprocessors on the same NT instance-- this method returns the most recent layout set. If no
-    //  * layout has been set by the user, this is equal to {@link AprilTagFields#kDefaultField}.
-    //  *
-    //  * @return The last set layout
-    //  */
-    // public AprilTagFieldLayout getAprilTagFieldLayout() {
-    //     return lastSetTagLayout;
-    // }
-
-    // /**
-    //  * Set the {@link AprilTagFieldLayout} used by all PhotonVision coprocessors that are (or might
-    //  * later) connect to this robot. The topic is marked as persistent, so even if you only call
-    // this
-    //  * once ever, it will be saved on the RoboRIO and pushed out to all NT clients when code
-    // reboots.
-    //  * PhotonVision will also store a copy of this layout locally on the coprocessor, but
-    // subscribes
-    //  * to this topic and the local copy will be updated when this function is called.
-    //  *
-    //  * @param layout The layout to use for *all* PhotonVision cameras
-    //  * @return Success of serializing the JSON. This does *not* mean that all PhotonVision clients
-    //  *     have updated their internal layouts.
-    //  */
-    // public boolean setAprilTagFieldLayout(AprilTagFieldLayout layout) {
-    //     try {
-    //         var layout_json = new ObjectMapper().writeValueAsString(layout);
-    //         atflPublisher.set(layout_json);
-    //         lastSetTagLayout = layout;
-    //         return true;
-    //     } catch (JsonProcessingException e) {
-    //         MathSharedStore.reportError("Error setting ATFL in " + this.getName(),
-    // e.getStackTrace());
-    //     }
-    //     return false;
-    // }
 
     public Optional<Matrix<N3, N3>> getCameraMatrix() {
         var cameraMatrix = cameraIntrinsicsSubscriber.get();

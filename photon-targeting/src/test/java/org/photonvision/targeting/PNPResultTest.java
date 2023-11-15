@@ -24,41 +24,41 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import org.junit.jupiter.api.Test;
 
-public class PNPResultsTest {
+public class PNPResultTest {
     @Test
     public void protobufTest() {
-        var pnpRes = new PNPResults();
-        var serializedPNPRes = PNPResults.proto.createMessage();
-        PNPResults.proto.pack(serializedPNPRes, pnpRes);
-        var unpackedPNPRes = PNPResults.proto.unpack(serializedPNPRes);
+        var pnpRes = new PNPResult();
+        var serializedPNPRes = PNPResult.proto.createMessage();
+        PNPResult.proto.pack(serializedPNPRes, pnpRes);
+        var unpackedPNPRes = PNPResult.proto.unpack(serializedPNPRes);
         assertEquals(pnpRes, unpackedPNPRes);
 
-        pnpRes = new PNPResults(new Transform3d(1, 2, 3, new Rotation3d(1, 2, 3)), 0.1);
-        serializedPNPRes = PNPResults.proto.createMessage();
-        PNPResults.proto.pack(serializedPNPRes, pnpRes);
-        unpackedPNPRes = PNPResults.proto.unpack(serializedPNPRes);
+        pnpRes = new PNPResult(new Transform3d(1, 2, 3, new Rotation3d(1, 2, 3)), 0.1);
+        serializedPNPRes = PNPResult.proto.createMessage();
+        PNPResult.proto.pack(serializedPNPRes, pnpRes);
+        unpackedPNPRes = PNPResult.proto.unpack(serializedPNPRes);
         assertEquals(pnpRes, unpackedPNPRes);
     }
 
     @Test
     public void equalityTest() {
-        var a = new PNPResults();
-        var b = new PNPResults();
+        var a = new PNPResult();
+        var b = new PNPResult();
         assertEquals(a, b);
 
-        a = new PNPResults(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
-        b = new PNPResults(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
+        a = new PNPResult(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
+        b = new PNPResult(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
         assertEquals(a, b);
 
         a =
-                new PNPResults(
+                new PNPResult(
                         new Transform3d(0, 1, 2, new Rotation3d()),
                         new Transform3d(3, 4, 5, new Rotation3d()),
                         0.5,
                         0.1,
                         0.1);
         b =
-                new PNPResults(
+                new PNPResult(
                         new Transform3d(0, 1, 2, new Rotation3d()),
                         new Transform3d(3, 4, 5, new Rotation3d()),
                         0.5,
@@ -69,19 +69,19 @@ public class PNPResultsTest {
 
     @Test
     public void inequalityTest() {
-        var a = new PNPResults(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
-        var b = new PNPResults(new Transform3d(3, 4, 5, new Rotation3d()), 0.1);
+        var a = new PNPResult(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
+        var b = new PNPResult(new Transform3d(3, 4, 5, new Rotation3d()), 0.1);
         assertNotEquals(a, b);
 
         a =
-                new PNPResults(
+                new PNPResult(
                         new Transform3d(3, 4, 5, new Rotation3d()),
                         new Transform3d(0, 1, 2, new Rotation3d()),
                         0.5,
                         0.1,
                         0.1);
         b =
-                new PNPResults(
+                new PNPResult(
                         new Transform3d(3, 4, 5, new Rotation3d()),
                         new Transform3d(0, 1, 2, new Rotation3d()),
                         0.5,
