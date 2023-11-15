@@ -40,9 +40,6 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
                            const std::string_view cameraName)
     : mainTable(instance.GetTable("photonvision")),
       rootTable(mainTable->GetSubTable(cameraName)),
-      // rawBytesEntry(
-      //     rootTable->GetRawTopic("rawBytes")
-      //         .Subscribe("rawBytes", {}, {.periodic = 0.01, .sendAll = true})),
       pipelineResultsSubscriber(
         rootTable->GetProtobufTopic<PhotonPipelineResult>("result_proto").Subscribe(PhotonPipelineResult(), {.periodic = 0.01, .sendAll = true})
       ),
