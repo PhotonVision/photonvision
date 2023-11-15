@@ -71,3 +71,48 @@ Packet& operator>>(Packet& packet, PhotonPipelineResult& result) {
 }
 
 }  // namespace photonlib
+
+google::protobuf::Message* wpi::Protobuf<photonlib::PhotonPipelineResult>::New(
+    google::protobuf::Arena* arena) {
+  return google::protobuf::Arena::CreateMessage<
+      photonvision::proto::ProtobufPhotonPipelineResult>(arena);
+}
+
+photonlib::PhotonPipelineResult
+wpi::Protobuf<photonlib::PhotonPipelineResult>::Unpack(
+    const google::protobuf::Message& msg) {
+  using namespace photonlib;
+  using photonvision::proto::ProtobufPhotonPipelineResult;
+
+  auto m = static_cast<const ProtobufPhotonPipelineResult*>(&msg);
+
+  std::vector<PhotonTrackedTarget> targets;
+  targets.reserve(m->targets_size());
+  for (const auto& t : m->targets()) {
+    targets.emplace_back(wpi::UnpackProtobuf<PhotonTrackedTarget>(t));
+  }
+
+  // TODO -- multi-target
+
+  return photonlib::PhotonPipelineResult{units::millisecond_t{m->latency_ms()},
+                                         targets};
+}
+
+void wpi::Protobuf<photonlib::PhotonPipelineResult>::Pack(
+    google::protobuf::Message* msg,
+    const photonlib::PhotonPipelineResult& value) {
+  using namespace photonlib;
+  using photonvision::proto::ProtobufPhotonPipelineResult;
+  using photonvision::proto::ProtobufPhotonTrackedTarget;
+
+  auto m = static_cast<ProtobufPhotonPipelineResult*>(msg);
+
+  m->set_latency_ms(units::millisecond_t(value.GetLatency()).value());
+
+  m->clear_targets();
+  for (const auto& t : value.GetTargets()) {
+    wpi::PackProtobuf(m->add_targets(), t);
+  }
+
+  // TODO -- multi-target
+}

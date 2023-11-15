@@ -27,6 +27,7 @@
 #include <memory>
 #include <string>
 
+#include <networktables/ProtobufTopic.h>
 #include <networktables/BooleanTopic.h>
 #include <networktables/DoubleArrayTopic.h>
 #include <networktables/DoubleTopic.h>
@@ -34,7 +35,6 @@
 #include <networktables/MultiSubscriber.h>
 #include <networktables/NetworkTable.h>
 #include <networktables/NetworkTableInstance.h>
-#include <networktables/RawTopic.h>
 #include <networktables/StringTopic.h>
 #include <units/time.h>
 #include <wpi/deprecated.h>
@@ -175,7 +175,7 @@ class PhotonCamera {
  protected:
   std::shared_ptr<nt::NetworkTable> mainTable;
   std::shared_ptr<nt::NetworkTable> rootTable;
-  nt::RawSubscriber rawBytesEntry;
+  nt::ProtobufSubscriber<PhotonPipelineResult> pipelineResultsSubscriber;
   nt::IntegerPublisher inputSaveImgEntry;
   nt::IntegerSubscriber inputSaveImgSubscriber;
   nt::IntegerPublisher outputSaveImgEntry;

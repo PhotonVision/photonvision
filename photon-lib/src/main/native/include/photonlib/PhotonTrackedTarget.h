@@ -97,7 +97,8 @@ class PhotonTrackedTarget {
    * down), in no particular order, of the minimum area bounding rectangle of
    * this target
    */
-  wpi::SmallVector<std::pair<double, double>, 4> GetMinAreaRectCorners() const {
+  const wpi::SmallVector<std::pair<double, double>, 4>& GetMinAreaRectCorners()
+      const {
     return minAreaRectCorners;
   }
 
@@ -112,7 +113,7 @@ class PhotonTrackedTarget {
    * V + Y     |       |
    *           0 ----- 1
    */
-  std::vector<std::pair<double, double>> GetDetectedCorners() {
+  const std::vector<std::pair<double, double>>& GetDetectedCorners() const {
     return detectedCorners;
   }
 
@@ -159,3 +160,12 @@ class PhotonTrackedTarget {
   std::vector<std::pair<double, double>> detectedCorners;
 };
 }  // namespace photonlib
+
+template <>
+struct wpi::Protobuf<photonlib::PhotonTrackedTarget> {
+  static google::protobuf::Message* New(google::protobuf::Arena* arena);
+  static photonlib::PhotonTrackedTarget Unpack(
+      const google::protobuf::Message& msg);
+  static void Pack(google::protobuf::Message* msg,
+                   const photonlib::PhotonTrackedTarget& value);
+};

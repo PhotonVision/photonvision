@@ -48,9 +48,8 @@ class SimPhotonCamera : public PhotonCamera {
     targetAreaEntry = rootTable->GetEntry("targetAreaEntry");
     targetSkewEntry = rootTable->GetEntry("targetSkewEntry");
     targetPoseEntry = rootTable->GetEntry("targetPoseEntry");
-    rawBytesPublisher = rootTable->GetRawTopic("rawBytes").Publish("rawBytes");
+    // rawBytesPublisher = rootTable->GetRawTopic("rawBytes").Publish("rawBytes");
     versionEntry = instance.GetTable("photonvision")->GetEntry("version");
-    // versionEntry.SetString(PhotonVersion.versionString);
   }
 
   explicit SimPhotonCamera(const std::string& cameraName)
@@ -89,8 +88,8 @@ class SimPhotonCamera : public PhotonCamera {
     Packet packet{};
     packet << newResult;
 
-    rawBytesPublisher.Set(
-        std::span{packet.GetData().data(), packet.GetDataSize()});
+    // rawBytesPublisher.Set(
+    //     std::span{packet.GetData().data(), packet.GetDataSize()});
 
     bool hasTargets = newResult.HasTargets();
     hasTargetEntry.SetBoolean(hasTargets);
@@ -127,6 +126,6 @@ class SimPhotonCamera : public PhotonCamera {
   nt::NetworkTableEntry targetSkewEntry;
   nt::NetworkTableEntry targetPoseEntry;
   nt::NetworkTableEntry versionEntry;
-  nt::RawPublisher rawBytesPublisher;
+  nt::ProtobufPublisher<PhotonPipelineResult> pipelineResultsPublisher;
 };
 }  // namespace photonlib

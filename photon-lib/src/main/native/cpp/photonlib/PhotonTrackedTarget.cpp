@@ -30,6 +30,8 @@
 #include <frc/geometry/Translation2d.h>
 #include <wpi/SmallVector.h>
 
+#include "photon_types.pb.h"
+
 static constexpr const uint8_t MAX_CORNERS = 8;
 
 namespace photonlib {
@@ -145,3 +147,59 @@ Packet& operator>>(Packet& packet, PhotonTrackedTarget& target) {
 }
 
 }  // namespace photonlib
+
+google::protobuf::Message* wpi::Protobuf<photonlib::PhotonTrackedTarget>::New(
+    google::protobuf::Arena* arena) {
+  return google::protobuf::Arena::CreateMessage<
+      photonvision::proto::ProtobufPhotonTrackedTarget>(arena);
+}
+
+photonlib::PhotonTrackedTarget
+wpi::Protobuf<photonlib::PhotonTrackedTarget>::Unpack(
+    const google::protobuf::Message& msg) {
+  using namespace photonlib;
+  using photonvision::proto::ProtobufPhotonTrackedTarget;
+
+  auto m = static_cast<const ProtobufPhotonTrackedTarget*>(&msg);
+
+  return photonlib::PhotonTrackedTarget{};
+}
+
+void wpi::Protobuf<photonlib::PhotonTrackedTarget>::Pack(
+    google::protobuf::Message* msg,
+    const photonlib::PhotonTrackedTarget& value) {
+  using namespace photonlib;
+  using photonvision::proto::ProtobufPhotonTrackedTarget;
+
+  auto m = static_cast<ProtobufPhotonTrackedTarget*>(msg);
+
+#define SET(proto, getter) m->set_##proto(value.Get##getter())
+  SET(yaw, Yaw);
+  SET(pitch, Yaw);
+  SET(area, Area);
+  SET(skew, Skew);
+  SET(fiducialid, FiducialId);
+  SET(poseambiguity, PoseAmbiguity);
+#undef SET
+
+  m->clear_minarearectcorners();
+  for (const auto& t : value.GetMinAreaRectCorners()) {
+    auto* corner = m->add_minarearectcorners();
+    corner->set_x(t.first);
+    corner->set_y(t.second);
+  }
+
+  m->clear_detectedcorners();
+  for (const std::pair<double, double>& t : value.GetDetectedCorners()) {
+    auto* corner = m->add_detectedcorners();
+    corner->set_x(t.first);
+    corner->set_y(t.second);
+  }
+
+  wpi::PackProtobuf(m->mutable_bestcameratotarget(),
+                    value.GetBestCameraToTarget());
+  wpi::PackProtobuf(m->mutable_altcameratotarget(),
+                    value.GetAlternateCameraToTarget());
+
+  // TODO -- multi-target
+}

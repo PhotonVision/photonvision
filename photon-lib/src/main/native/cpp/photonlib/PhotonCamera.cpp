@@ -40,9 +40,12 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
                            const std::string_view cameraName)
     : mainTable(instance.GetTable("photonvision")),
       rootTable(mainTable->GetSubTable(cameraName)),
-      rawBytesEntry(
-          rootTable->GetRawTopic("rawBytes")
-              .Subscribe("rawBytes", {}, {.periodic = 0.01, .sendAll = true})),
+      // rawBytesEntry(
+      //     rootTable->GetRawTopic("rawBytes")
+      //         .Subscribe("rawBytes", {}, {.periodic = 0.01, .sendAll = true})),
+      pipelineResultsSubscriber(
+        rootTable->GetProtobufTopic<PhotonPipelineResult>("result_proto").Subscribe(PhotonPipelineResult(), {.periodic = 0.01, .sendAll = true})
+      ),
       inputSaveImgEntry(
           rootTable->GetIntegerTopic("inputSaveImgCmd").Publish()),
       inputSaveImgSubscriber(
@@ -85,17 +88,9 @@ PhotonPipelineResult PhotonCamera::GetLatestResult() {
   packet.Clear();
 
   // Create the new result;
-  PhotonPipelineResult result;
+  PhotonPipelineResult result = pipelineResultsSubscriber.Get();
 
-  // Fill the packet with latest data and populate result.
-  const auto value = rawBytesEntry.Get();
-  if (!value.size()) return result;
-
-  photonlib::Packet packet{value};
-
-  packet >> result;
-
-  result.SetTimestamp(units::microsecond_t(rawBytesEntry.GetLastChange()) -
+  result.SetTimestamp(units::microsecond_t(pipelineResultsSubscriber.GetLastChange()) -
                       result.GetLatency());
 
   return result;

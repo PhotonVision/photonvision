@@ -30,6 +30,7 @@
 #include <frc/Errors.h>
 #include <units/time.h>
 #include <wpi/SmallVector.h>
+#include <wpi/protobuf/Protobuf.h>
 
 #include "photonlib/MultiTargetPNPResult.h"
 #include "photonlib/Packet.h"
@@ -131,3 +132,12 @@ class PhotonPipelineResult {
   inline static bool HAS_WARNED = false;
 };
 }  // namespace photonlib
+
+template <>
+struct wpi::Protobuf<photonlib::PhotonPipelineResult> {
+  static google::protobuf::Message* New(google::protobuf::Arena* arena);
+  static photonlib::PhotonPipelineResult Unpack(
+      const google::protobuf::Message& msg);
+  static void Pack(google::protobuf::Message* msg,
+                   const photonlib::PhotonPipelineResult& value);
+};
