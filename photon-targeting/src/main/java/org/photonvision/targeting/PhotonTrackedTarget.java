@@ -198,9 +198,9 @@ public class PhotonTrackedTarget {
 
     private static void encodeList(Packet packet, List<TargetCorner> list) {
         packet.encode((byte) Math.min(list.size(), Byte.MAX_VALUE));
-        for (int i = 0; i < list.size(); i++) {
-            packet.encode(list.get(i).x);
-            packet.encode(list.get(i).y);
+        for (TargetCorner targetCorner : list) {
+            packet.encode(targetCorner.x);
+            packet.encode(targetCorner.y);
         }
     }
 
