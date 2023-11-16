@@ -293,12 +293,19 @@ public class VisionSourceManager {
 
     private List<UsbCameraInfo> filterAllowedDevices(List<UsbCameraInfo> allDevices) {
         List<UsbCameraInfo> filteredDevices = new ArrayList<>();
+        List<UsbCameraInfo> badDevices = new ArrayList<>();
+
         for (var device : allDevices) {
 
             // Filter devices that are physically the same device but may show up as multiple devices that
             // really cant be accessed. First noticed with raspi 5 and ov5647.
+
             List<String> paths = new ArrayList<>();
 
+
+            // Use the other paths to filter out devices that share the same path other than the index select only the lowest index.
+            // A ov5647 on a raspi 5 would show another path as platform-1000880000.pisp_be-video-index0, platform-1000880000.pisp_be-video-index4, and platform-1000880000.pisp_be-video-index5.
+            // This code will remove "indexX" from all the other paths from all the devices and make sure that we only take one camera stream from each device the stream with the lowest index.
             for (String p : device.otherPaths) {
                 paths.add(p.replace("index" + device.dev, ""));
             }
@@ -310,14 +317,14 @@ public class VisionSourceManager {
                 }
                 if (paths.containsAll(otherPaths)) {
                     if (otherDevice.dev >= device.dev) {
-                        filteredDevices.remove(otherDevice);
-
+                        badDevices.add(otherDevice);
                     } else {
                         skip = true;
                         break;
                     }
                 }
             }
+            filteredDevices.removeAll(badDevices);
             if (deviceBlacklist.contains(device.name)) {
                 logger.trace(
                         "Skipping blacklisted device: \"" + device.name + "\" at \"" + device.path + "\"");
