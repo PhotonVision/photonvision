@@ -33,7 +33,6 @@
 #include <wpi/protobuf/Protobuf.h>
 
 #include "photonlib/MultiTargetPNPResult.h"
-#include "photonlib/Packet.h"
 #include "photonlib/PhotonTrackedTarget.h"
 
 namespace photonlib {
@@ -120,9 +119,6 @@ class PhotonPipelineResult {
 
   bool operator==(const PhotonPipelineResult& other) const;
   bool operator!=(const PhotonPipelineResult& other) const;
-
-  friend Packet& operator<<(Packet& packet, const PhotonPipelineResult& result);
-  friend Packet& operator>>(Packet& packet, PhotonPipelineResult& result);
 
  private:
   units::second_t latency = 0_s;

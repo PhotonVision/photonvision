@@ -27,8 +27,6 @@
 #include <frc/geometry/Transform3d.h>
 #include <wpi/SmallVector.h>
 
-#include "photonlib/Packet.h"
-
 namespace photonlib {
 
 class PNPResults {
@@ -44,18 +42,12 @@ class PNPResults {
   double altReprojectionErr;
 
   double ambiguity;
-
-  friend Packet& operator<<(Packet& packet, const PNPResults& result);
-  friend Packet& operator>>(Packet& packet, PNPResults& result);
 };
 
 class MultiTargetPnpResult {
  public:
   PNPResults result;
   wpi::SmallVector<int16_t, 32> fiducialIdsUsed;
-
-  friend Packet& operator<<(Packet& packet, const MultiTargetPnpResult& result);
-  friend Packet& operator>>(Packet& packet, MultiTargetPnpResult& result);
 };
 
 }  // namespace photonlib

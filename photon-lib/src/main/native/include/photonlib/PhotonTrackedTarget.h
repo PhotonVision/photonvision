@@ -32,8 +32,6 @@
 #include <frc/geometry/Transform3d.h>
 #include <wpi/SmallVector.h>
 
-#include "photonlib/Packet.h"
-
 namespace photonlib {
 /**
  * Represents a tracked target within a pipeline.
@@ -143,9 +141,6 @@ class PhotonTrackedTarget {
 
   bool operator==(const PhotonTrackedTarget& other) const;
   bool operator!=(const PhotonTrackedTarget& other) const;
-
-  friend Packet& operator<<(Packet& packet, const PhotonTrackedTarget& target);
-  friend Packet& operator>>(Packet& packet, PhotonTrackedTarget& target);
 
  private:
   double yaw = 0;

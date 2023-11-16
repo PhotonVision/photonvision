@@ -48,8 +48,9 @@ class SimPhotonCamera : public PhotonCamera {
     targetAreaEntry = rootTable->GetEntry("targetAreaEntry");
     targetSkewEntry = rootTable->GetEntry("targetSkewEntry");
     targetPoseEntry = rootTable->GetEntry("targetPoseEntry");
-    // rawBytesPublisher =
-    // rootTable->GetRawTopic("rawBytes").Publish("rawBytes");
+    pipelineResultsPublisher =
+        rootTable->GetProtobufTopic<PhotonPipelineResult>("result_proto")
+            .Publish({.periodic = 0.01, .sendAll = true});
     versionEntry = instance.GetTable("photonvision")->GetEntry("version");
   }
 
@@ -86,11 +87,8 @@ class SimPhotonCamera : public PhotonCamera {
     std::sort(targetList.begin(), targetList.end(),
               [&](auto lhs, auto rhs) { return sortMode(lhs, rhs); });
     PhotonPipelineResult newResult{latency, targetList};
-    Packet packet{};
-    packet << newResult;
 
-    // rawBytesPublisher.Set(
-    //     std::span{packet.GetData().data(), packet.GetDataSize()});
+    pipelineResultsPublisher.Set(newResult);
 
     bool hasTargets = newResult.HasTargets();
     hasTargetEntry.SetBoolean(hasTargets);

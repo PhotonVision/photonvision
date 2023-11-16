@@ -198,8 +198,6 @@ class PhotonCamera {
   std::string path;
   std::string m_cameraName;
 
-  mutable Packet packet;
-
  private:
   units::second_t lastVersionCheckTime = 0_s;
   inline static bool VERSION_CHECK_ENABLED = true;

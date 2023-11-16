@@ -29,7 +29,6 @@
 #include <opencv2/core/mat.hpp>
 
 #include "PhotonVersion.h"
-#include "photonlib/Packet.h"
 
 namespace photonlib {
 
@@ -81,9 +80,6 @@ PhotonPipelineResult PhotonCamera::GetLatestResult() {
 
   // Prints warning if not connected
   VerifyVersion();
-
-  // Clear the current packet.
-  packet.Clear();
 
   // Create the new result;
   PhotonPipelineResult result = pipelineResultsSubscriber.Get();
