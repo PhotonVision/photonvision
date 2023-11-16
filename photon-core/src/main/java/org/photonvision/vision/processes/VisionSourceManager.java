@@ -302,18 +302,20 @@ public class VisionSourceManager {
 
             List<String> paths = new ArrayList<>();
 
-
-            // Use the other paths to filter out devices that share the same path other than the index select only the lowest index.
-            // A ov5647 on a raspi 5 would show another path as platform-1000880000.pisp_be-video-index0, platform-1000880000.pisp_be-video-index4, and platform-1000880000.pisp_be-video-index5.
-            // This code will remove "indexX" from all the other paths from all the devices and make sure that we only take one camera stream from each device the stream with the lowest index.
+            // Use the other paths to filter out devices that share the same path other than the index
+            // select only the lowest index.
+            // A ov5647 on a raspi 5 would show another path as platform-1000880000.pisp_be-video-index0,
+            // platform-1000880000.pisp_be-video-index4, and platform-1000880000.pisp_be-video-index5.
+            // This code will remove "indexX" from all the other paths from all the devices and make sure
+            // that we only take one camera stream from each device the stream with the lowest index.
             for (String p : device.otherPaths) {
-                paths.add(p.replace("index" + device.dev, ""));
+                paths.add(p.split("index")[0]);
             }
             boolean skip = false;
             for (var otherDevice : filteredDevices) {
                 List<String> otherPaths = new ArrayList<>();
                 for (String p : otherDevice.otherPaths) {
-                    otherPaths.add(p.replace("index" + otherDevice.dev, ""));
+                    otherPaths.add(p.split("index")[0]);
                 }
                 if (paths.containsAll(otherPaths)) {
                     if (otherDevice.dev >= device.dev) {
