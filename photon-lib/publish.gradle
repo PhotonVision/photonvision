@@ -152,7 +152,7 @@ publishing {
 
 tasks.withType(PublishToMavenRepository) {
     doFirst {
-        println("Publishing to " + repository.url);
+        println("Publishing to " + repository.url)
     }
 }
 

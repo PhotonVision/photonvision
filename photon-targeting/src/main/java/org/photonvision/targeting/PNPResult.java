@@ -19,7 +19,7 @@ package org.photonvision.targeting;
 
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.util.protobuf.Protobuf;
-import org.photonvision.proto.PhotonTypes.ProtobufPNPResults;
+import org.photonvision.proto.PhotonTypes.ProtobufPNPResult;
 import us.hebi.quickbuf.Descriptors.Descriptor;
 
 /**
@@ -31,7 +31,7 @@ import us.hebi.quickbuf.Descriptors.Descriptor;
  * <p>Note that the coordinate frame of these transforms depends on the implementing solvePnP
  * method.
  */
-public class PNPResults {
+public class PNPResult {
     /**
      * If this result is valid. A false value indicates there was an error in estimation, and this
      * result should not be used.
@@ -60,7 +60,7 @@ public class PNPResults {
     public final double ambiguity;
 
     /** An empty (invalid) result. */
-    public PNPResults() {
+    public PNPResult() {
         this.isPresent = false;
         this.best = new Transform3d();
         this.alt = new Transform3d();
@@ -69,11 +69,11 @@ public class PNPResults {
         this.altReprojErr = 0;
     }
 
-    public PNPResults(Transform3d best, double bestReprojErr) {
+    public PNPResult(Transform3d best, double bestReprojErr) {
         this(best, best, 0, bestReprojErr, bestReprojErr);
     }
 
-    public PNPResults(
+    public PNPResult(
             Transform3d best,
             Transform3d alt,
             double ambiguity,
@@ -109,7 +109,7 @@ public class PNPResults {
         if (this == obj) return true;
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
-        PNPResults other = (PNPResults) obj;
+        PNPResult other = (PNPResult) obj;
         if (isPresent != other.isPresent) return false;
         if (best == null) {
             if (other.best != null) return false;
@@ -128,7 +128,7 @@ public class PNPResults {
 
     @Override
     public String toString() {
-        return "PNPResults [isPresent="
+        return "PNPResult [isPresent="
                 + isPresent
                 + ", best="
                 + best
@@ -143,15 +143,15 @@ public class PNPResults {
                 + "]";
     }
 
-    public static final class AProto implements Protobuf<PNPResults, ProtobufPNPResults> {
+    public static final class AProto implements Protobuf<PNPResult, ProtobufPNPResult> {
         @Override
-        public Class<PNPResults> getTypeClass() {
-            return PNPResults.class;
+        public Class<PNPResult> getTypeClass() {
+            return PNPResult.class;
         }
 
         @Override
         public Descriptor getDescriptor() {
-            return ProtobufPNPResults.getDescriptor();
+            return ProtobufPNPResult.getDescriptor();
         }
 
         @Override
@@ -160,17 +160,17 @@ public class PNPResults {
         }
 
         @Override
-        public ProtobufPNPResults createMessage() {
-            return ProtobufPNPResults.newInstance();
+        public ProtobufPNPResult createMessage() {
+            return ProtobufPNPResult.newInstance();
         }
 
         @Override
-        public PNPResults unpack(ProtobufPNPResults msg) {
+        public PNPResult unpack(ProtobufPNPResult msg) {
             if (!msg.getIsPresent()) {
-                return new PNPResults();
+                return new PNPResult();
             }
 
-            return new PNPResults(
+            return new PNPResult(
                     Transform3d.proto.unpack(msg.getBest()),
                     Transform3d.proto.unpack(msg.getAlt()),
                     msg.getAmbiguity(),
@@ -179,7 +179,7 @@ public class PNPResults {
         }
 
         @Override
-        public void pack(ProtobufPNPResults msg, PNPResults value) {
+        public void pack(ProtobufPNPResult msg, PNPResult value) {
             Transform3d.proto.pack(msg.getMutableBest(), value.best);
             Transform3d.proto.pack(msg.getMutableAlt(), value.alt);
             msg.setAmbiguity(value.ambiguity)

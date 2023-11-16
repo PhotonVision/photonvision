@@ -31,7 +31,7 @@ import java.util.List;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.estimation.TargetModel;
-import org.photonvision.targeting.MultiTargetPNPResults;
+import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
@@ -149,7 +149,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         }
 
         // Do multi-tag pose estimation
-        MultiTargetPNPResults multiTagResult = new MultiTargetPNPResults();
+        MultiTargetPNPResult multiTagResult = new MultiTargetPNPResult();
         if (settings.solvePNPEnabled && settings.doMultiTarget) {
             var multiTagOutput = multiTagPNPPipe.run(targetList);
             sumPipeNanosElapsed += multiTagOutput.nanosElapsed;

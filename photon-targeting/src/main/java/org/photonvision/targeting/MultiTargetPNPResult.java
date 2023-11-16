@@ -21,17 +21,17 @@ import edu.wpi.first.util.protobuf.Protobuf;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.photonvision.proto.PhotonTypes.ProtobufMultiTargetPNPResults;
+import org.photonvision.proto.PhotonTypes.ProtobufMultiTargetPNPResult;
 import us.hebi.quickbuf.Descriptors.Descriptor;
 import us.hebi.quickbuf.RepeatedInt;
 
-public class MultiTargetPNPResults {
-    public PNPResults estimatedPose = new PNPResults();
+public class MultiTargetPNPResult {
+    public PNPResult estimatedPose = new PNPResult();
     public List<Integer> fiducialIDsUsed = List.of();
 
-    public MultiTargetPNPResults() {}
+    public MultiTargetPNPResult() {}
 
-    public MultiTargetPNPResults(PNPResults results, List<Integer> ids) {
+    public MultiTargetPNPResult(PNPResult results, List<Integer> ids) {
         estimatedPose = results;
         fiducialIDsUsed = ids;
     }
@@ -50,7 +50,7 @@ public class MultiTargetPNPResults {
         if (this == obj) return true;
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
-        MultiTargetPNPResults other = (MultiTargetPNPResults) obj;
+        MultiTargetPNPResult other = (MultiTargetPNPResult) obj;
         if (estimatedPose == null) {
             if (other.estimatedPose != null) return false;
         } else if (!estimatedPose.equals(other.estimatedPose)) return false;
@@ -62,7 +62,7 @@ public class MultiTargetPNPResults {
 
     @Override
     public String toString() {
-        return "MultiTargetPNPResults [estimatedPose="
+        return "MultiTargetPNPResult [estimatedPose="
                 + estimatedPose
                 + ", fiducialIDsUsed="
                 + fiducialIDsUsed
@@ -70,38 +70,38 @@ public class MultiTargetPNPResults {
     }
 
     public static final class AProto
-            implements Protobuf<MultiTargetPNPResults, ProtobufMultiTargetPNPResults> {
+            implements Protobuf<MultiTargetPNPResult, ProtobufMultiTargetPNPResult> {
         @Override
-        public Class<MultiTargetPNPResults> getTypeClass() {
-            return MultiTargetPNPResults.class;
+        public Class<MultiTargetPNPResult> getTypeClass() {
+            return MultiTargetPNPResult.class;
         }
 
         @Override
         public Descriptor getDescriptor() {
-            return ProtobufMultiTargetPNPResults.getDescriptor();
+            return ProtobufMultiTargetPNPResult.getDescriptor();
         }
 
         @Override
         public Protobuf<?, ?>[] getNested() {
-            return new Protobuf<?, ?>[] {PNPResults.proto};
+            return new Protobuf<?, ?>[] {PNPResult.proto};
         }
 
         @Override
-        public ProtobufMultiTargetPNPResults createMessage() {
-            return ProtobufMultiTargetPNPResults.newInstance();
+        public ProtobufMultiTargetPNPResult createMessage() {
+            return ProtobufMultiTargetPNPResult.newInstance();
         }
 
         @Override
-        public MultiTargetPNPResults unpack(ProtobufMultiTargetPNPResults msg) {
-            return new MultiTargetPNPResults(
-                    PNPResults.proto.unpack(msg.getEstimatedPose()),
+        public MultiTargetPNPResult unpack(ProtobufMultiTargetPNPResult msg) {
+            return new MultiTargetPNPResult(
+                    PNPResult.proto.unpack(msg.getEstimatedPose()),
                     // TODO better way of doing this
                     Arrays.stream(msg.getFiducialIdsUsed().array()).boxed().collect(Collectors.toList()));
         }
 
         @Override
-        public void pack(ProtobufMultiTargetPNPResults msg, MultiTargetPNPResults value) {
-            PNPResults.proto.pack(msg.getMutableEstimatedPose(), value.estimatedPose);
+        public void pack(ProtobufMultiTargetPNPResult msg, MultiTargetPNPResult value) {
+            PNPResult.proto.pack(msg.getMutableEstimatedPose(), value.estimatedPose);
 
             RepeatedInt idsUsed = msg.getMutableFiducialIdsUsed().reserve(value.fiducialIDsUsed.size());
             for (int i = 0; i < value.fiducialIDsUsed.size(); i++) {

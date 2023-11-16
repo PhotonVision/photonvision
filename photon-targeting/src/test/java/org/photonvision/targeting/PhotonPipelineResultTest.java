@@ -127,8 +127,8 @@ public class PhotonPipelineResultTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))),
-                        new MultiTargetPNPResults(
-                                new PNPResults(
+                        new MultiTargetPNPResult(
+                                new PNPResult(
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
                                 List.of(1, 2, 3)));
         serializedResult = PhotonPipelineResult.proto.createMessage();
@@ -271,8 +271,8 @@ public class PhotonPipelineResultTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))),
-                        new MultiTargetPNPResults(
-                                new PNPResults(
+                        new MultiTargetPNPResult(
+                                new PNPResult(
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
                                 List.of(1, 2, 3)));
         b =
@@ -317,8 +317,8 @@ public class PhotonPipelineResultTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))),
-                        new MultiTargetPNPResults(
-                                new PNPResults(
+                        new MultiTargetPNPResult(
+                                new PNPResult(
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
                                 List.of(1, 2, 3)));
         assertEquals(a, b);
@@ -454,8 +454,8 @@ public class PhotonPipelineResultTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))),
-                        new MultiTargetPNPResults(
-                                new PNPResults(
+                        new MultiTargetPNPResult(
+                                new PNPResult(
                                         new Transform3d(new Translation3d(1, 8, 3), new Rotation3d(1, 2, 3)), 0.1),
                                 List.of(3, 4, 7)));
         b =
@@ -500,8 +500,8 @@ public class PhotonPipelineResultTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))),
-                        new MultiTargetPNPResults(
-                                new PNPResults(
+                        new MultiTargetPNPResult(
+                                new PNPResult(
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
                                 List.of(1, 2, 3)));
         assertNotEquals(a, b);

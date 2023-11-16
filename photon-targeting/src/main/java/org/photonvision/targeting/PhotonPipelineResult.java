@@ -37,7 +37,7 @@ public class PhotonPipelineResult {
     private double timestampSeconds = -1;
 
     // Multi-tag result
-    private MultiTargetPNPResults multiTagResult = new MultiTargetPNPResults();
+    private MultiTargetPNPResult multiTagResult = new MultiTargetPNPResult();
 
     /** Constructs an empty pipeline result. */
     public PhotonPipelineResult() {}
@@ -61,7 +61,7 @@ public class PhotonPipelineResult {
      * @param result Result from multi-target PNP.
      */
     public PhotonPipelineResult(
-            double latencyMillis, List<PhotonTrackedTarget> targets, MultiTargetPNPResults result) {
+            double latencyMillis, List<PhotonTrackedTarget> targets, MultiTargetPNPResult result) {
         this.latencyMillis = latencyMillis;
         this.targets.addAll(targets);
         this.multiTagResult = result;
@@ -133,10 +133,10 @@ public class PhotonPipelineResult {
     }
 
     /**
-     * Return the latest mulit-target result. Be sure to check
+     * Return the latest multi-target result. Be sure to check
      * getMultiTagResult().estimatedPose.isPresent before using the pose estimate!
      */
-    public MultiTargetPNPResults getMultiTagResult() {
+    public MultiTargetPNPResult getMultiTagResult() {
         return multiTagResult;
     }
 
@@ -198,7 +198,7 @@ public class PhotonPipelineResult {
 
         @Override
         public Protobuf<?, ?>[] getNested() {
-            return new Protobuf<?, ?>[] {PhotonTrackedTarget.proto, MultiTargetPNPResults.proto};
+            return new Protobuf<?, ?>[] {PhotonTrackedTarget.proto, MultiTargetPNPResult.proto};
         }
 
         @Override
@@ -211,13 +211,13 @@ public class PhotonPipelineResult {
             return new PhotonPipelineResult(
                     msg.getLatencyMs(),
                     PhotonTrackedTarget.proto.unpack(msg.getTargets()),
-                    MultiTargetPNPResults.proto.unpack(msg.getMultiTargetResult()));
+                    MultiTargetPNPResult.proto.unpack(msg.getMultiTargetResult()));
         }
 
         @Override
         public void pack(ProtobufPhotonPipelineResult msg, PhotonPipelineResult value) {
             PhotonTrackedTarget.proto.pack(msg.getMutableTargets(), value.targets);
-            MultiTargetPNPResults.proto.pack(msg.getMutableMultiTargetResult(), value.multiTagResult);
+            MultiTargetPNPResult.proto.pack(msg.getMutableMultiTargetResult(), value.multiTagResult);
 
             msg.setLatencyMs(value.getLatencyMillis());
         }

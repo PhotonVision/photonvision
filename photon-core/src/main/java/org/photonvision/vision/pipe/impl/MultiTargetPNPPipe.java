@@ -24,7 +24,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.estimation.VisionEstimation;
-import org.photonvision.targeting.MultiTargetPNPResults;
+import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.target.TrackedTarget;
@@ -32,13 +32,13 @@ import org.photonvision.vision.target.TrackedTarget;
 /** Estimate the camera pose given multiple Apriltag observations */
 public class MultiTargetPNPPipe
         extends CVPipe<
-                List<TrackedTarget>, MultiTargetPNPResults, MultiTargetPNPPipe.MultiTargetPNPPipeParams> {
+                List<TrackedTarget>, MultiTargetPNPResult, MultiTargetPNPPipe.MultiTargetPNPPipeParams> {
     private static final Logger logger = new Logger(MultiTargetPNPPipe.class, LogGroup.VisionModule);
 
     private boolean hasWarned = false;
 
     @Override
-    protected MultiTargetPNPResults process(List<TrackedTarget> targetList) {
+    protected MultiTargetPNPResult process(List<TrackedTarget> targetList) {
         if (params == null
                 || params.cameraCoefficients == null
                 || params.cameraCoefficients.getCameraIntrinsicsMat() == null
@@ -48,13 +48,13 @@ public class MultiTargetPNPPipe
                         "Cannot perform solvePNP an uncalibrated camera! Please calibrate this resolution...");
                 hasWarned = true;
             }
-            return new MultiTargetPNPResults();
+            return new MultiTargetPNPResult();
         }
 
         return calculateCameraInField(targetList);
     }
 
-    private MultiTargetPNPResults calculateCameraInField(List<TrackedTarget> targetList) {
+    private MultiTargetPNPResult calculateCameraInField(List<TrackedTarget> targetList) {
         // Find tag IDs that exist in the tag layout
         var tagIDsUsed = new ArrayList<Integer>();
         for (var target : targetList) {
@@ -64,7 +64,7 @@ public class MultiTargetPNPPipe
 
         // Only run with multiple targets
         if (tagIDsUsed.size() < 2) {
-            return new MultiTargetPNPResults();
+            return new MultiTargetPNPResult();
         }
 
         var estimatedPose =
@@ -75,7 +75,7 @@ public class MultiTargetPNPPipe
                         params.atfl,
                         params.targetModel);
 
-        return new MultiTargetPNPResults(estimatedPose, tagIDsUsed);
+        return new MultiTargetPNPResult(estimatedPose, tagIDsUsed);
     }
 
     public static class MultiTargetPNPPipeParams {
