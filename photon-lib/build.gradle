@@ -78,7 +78,7 @@ model {
                     source {
                         srcDirs "src/main/native/cpp"
                         srcDirs project(":photon-targeting").tasks.named("generateNativePhotonProtos").get().outputs.files
-                        include "**/*.cpp"
+                        include "**/*.cpp", "**/*.cc"
                     }
                     exportedHeaders {
                         srcDirs "src/main/native/include"
