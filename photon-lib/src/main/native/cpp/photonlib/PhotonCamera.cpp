@@ -41,8 +41,9 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
     : mainTable(instance.GetTable("photonvision")),
       rootTable(mainTable->GetSubTable(cameraName)),
       pipelineResultsSubscriber(
-        rootTable->GetProtobufTopic<PhotonPipelineResult>("result_proto").Subscribe(PhotonPipelineResult(), {.periodic = 0.01, .sendAll = true})
-      ),
+          rootTable->GetProtobufTopic<PhotonPipelineResult>("result_proto")
+              .Subscribe(PhotonPipelineResult(),
+                         {.periodic = 0.01, .sendAll = true})),
       inputSaveImgEntry(
           rootTable->GetIntegerTopic("inputSaveImgCmd").Publish()),
       inputSaveImgSubscriber(
@@ -87,8 +88,9 @@ PhotonPipelineResult PhotonCamera::GetLatestResult() {
   // Create the new result;
   PhotonPipelineResult result = pipelineResultsSubscriber.Get();
 
-  result.SetTimestamp(units::microsecond_t(pipelineResultsSubscriber.GetLastChange()) -
-                      result.GetLatency());
+  result.SetTimestamp(
+      units::microsecond_t(pipelineResultsSubscriber.GetLastChange()) -
+      result.GetLatency());
 
   return result;
 }

@@ -162,7 +162,15 @@ wpi::Protobuf<photonlib::PhotonTrackedTarget>::Unpack(
 
   auto m = static_cast<const ProtobufPhotonTrackedTarget*>(&msg);
 
-  return photonlib::PhotonTrackedTarget{};
+  return photonlib::PhotonTrackedTarget(
+      m->yaw(), m->pitch(), m->area(), m->skew(), m->fiducialid(),
+      wpi::UnpackProtobuf<frc::Transform3d>(m->bestcameratotarget()),
+      wpi::UnpackProtobuf<frc::Transform3d>(m->altcameratotarget()),
+      m->poseambiguity(),
+      // corners
+      {},
+      // detected corners
+      {});
 }
 
 void wpi::Protobuf<photonlib::PhotonTrackedTarget>::Pack(

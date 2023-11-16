@@ -27,7 +27,6 @@
 #include <memory>
 #include <string>
 
-#include <networktables/ProtobufTopic.h>
 #include <networktables/BooleanTopic.h>
 #include <networktables/DoubleArrayTopic.h>
 #include <networktables/DoubleTopic.h>
@@ -35,6 +34,7 @@
 #include <networktables/MultiSubscriber.h>
 #include <networktables/NetworkTable.h>
 #include <networktables/NetworkTableInstance.h>
+#include <networktables/ProtobufTopic.h>
 #include <networktables/StringTopic.h>
 #include <units/time.h>
 #include <wpi/deprecated.h>
