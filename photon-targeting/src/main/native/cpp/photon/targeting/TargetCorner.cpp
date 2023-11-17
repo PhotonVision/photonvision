@@ -20,9 +20,5 @@
 using namespace photon;
 
 bool TargetCorner::operator==(const TargetCorner& other) const {
-  return other.x == x && other.y == y;
-}
-
-bool TargetCorner::operator!=(const TargetCorner& other) const {
-  return !operator==(other);
+  return x == other.x && y == other.y;
 }

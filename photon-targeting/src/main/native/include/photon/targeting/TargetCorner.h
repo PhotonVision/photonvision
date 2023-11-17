@@ -21,15 +21,11 @@ namespace photon {
 
 class TargetCorner {
  public:
-  TargetCorner(double x, double y) {
-    this->x = x;
-    this->y = y;
-  }
+  TargetCorner(double x, double y) : x(x), y(y) {}
 
   double x;
   double y;
 
   bool operator==(const TargetCorner& other) const;
-  bool operator!=(const TargetCorner& other) const;
 };
 }  // namespace photon
