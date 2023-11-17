@@ -27,7 +27,6 @@ class MultiTargetPNPResult {
  public:
   MultiTargetPNPResult() = default;
 
-
   MultiTargetPNPResult(PNPResult result,
                        wpi::SmallVector<int16_t, 32> fiducialIdsUsed);
 

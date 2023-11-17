@@ -19,9 +19,10 @@
 
 using namespace photon;
 
-photon::MultiTargetPNPResult::MultiTargetPNPResult(PNPResult result, wpi::SmallVector<int16_t, 32> fiducialIdsUsed) : result(result), fiducialIdsUsed(fiducialIdsUsed) {}
+photon::MultiTargetPNPResult::MultiTargetPNPResult(
+    PNPResult result, wpi::SmallVector<int16_t, 32> fiducialIdsUsed)
+    : result(result), fiducialIdsUsed(fiducialIdsUsed) {}
 
-bool MultiTargetPNPResult::operator==(const MultiTargetPNPResult& other)
-const {
+bool MultiTargetPNPResult::operator==(const MultiTargetPNPResult& other) const {
   return other.result == result && other.fiducialIdsUsed == fiducialIdsUsed;
 }
