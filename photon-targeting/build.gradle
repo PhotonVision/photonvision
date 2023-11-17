@@ -7,44 +7,8 @@ plugins {
     id 'edu.wpi.first.NativeUtils' version '2024.2.0'
 }
 
+apply from: "${rootDir}/shared/common.gradle"
 apply from: "${rootDir}/shared/config.gradle"
-
-wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()
-
-def nativeConfigName = 'wpilibNatives'
-def nativeConfig = configurations.create(nativeConfigName)
-
-def nativeTasks = wpilibTools.createExtractionTasks {
-    configurationName = nativeConfigName
-}
-
-nativeTasks.addToSourceSetResources(sourceSets.main)
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
-nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())
-
-dependencies {
-    implementation wpilibTools.deps.wpilibJava("wpimath")
-    implementation wpilibTools.deps.wpilibJava("wpinet")
-    implementation wpilibTools.deps.wpilibJava("wpiutil")
-    implementation wpilibTools.deps.wpilibJava("ntcore")
-    implementation wpilibTools.deps.wpilibJava("cscore")
-    implementation wpilibTools.deps.wpilibJava("apriltag")
-    implementation wpilibTools.deps.wpilibJava("hal")
-    implementation wpilibTools.deps.wpilibOpenCvJava("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())
-
-    implementation group: "org.ejml", name: "ejml-simple", version: wpi.versions.ejmlVersion.get()
-    implementation group: "us.hebi.quickbuf", name: "quickbuf-runtime", version: wpi.versions.quickbufVersion.get();
-
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
-}
 
 model {
     components {
