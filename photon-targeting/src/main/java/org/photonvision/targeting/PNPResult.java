@@ -19,7 +19,7 @@ package org.photonvision.targeting;
 
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.util.protobuf.Protobuf;
-import org.photonvision.proto.PhotonTypes.ProtobufPNPResult;
+import org.photonvision.proto.Photon.ProtobufPNPResult;
 import us.hebi.quickbuf.Descriptors.Descriptor;
 
 /**

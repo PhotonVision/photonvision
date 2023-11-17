@@ -21,7 +21,7 @@ import edu.wpi.first.util.protobuf.Protobuf;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.photonvision.proto.PhotonTypes.ProtobufMultiTargetPNPResult;
+import org.photonvision.proto.Photon.ProtobufMultiTargetPNPResult;
 import us.hebi.quickbuf.Descriptors.Descriptor;
 import us.hebi.quickbuf.RepeatedInt;
 

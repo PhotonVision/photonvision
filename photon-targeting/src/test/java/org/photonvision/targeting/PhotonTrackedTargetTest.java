@@ -25,7 +25,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import org.photonvision.proto.PhotonTypes;
+import org.photonvision.proto.Photon.ProtobufPhotonTrackedTarget;
 import us.hebi.quickbuf.RepeatedMessage;
 
 public class PhotonTrackedTargetTest {
@@ -61,7 +61,7 @@ public class PhotonTrackedTargetTest {
     public void protobufListTest() {
         List<PhotonTrackedTarget> targets = List.of();
         var serializedTargets =
-                RepeatedMessage.newEmptyInstance(PhotonTypes.ProtobufPhotonTrackedTarget.getFactory());
+                RepeatedMessage.newEmptyInstance(ProtobufPhotonTrackedTarget.getFactory());
         PhotonTrackedTarget.proto.pack(serializedTargets, targets);
         var unpackedTargets = PhotonTrackedTarget.proto.unpack(serializedTargets);
         assertEquals(targets, unpackedTargets);
@@ -107,7 +107,7 @@ public class PhotonTrackedTargetTest {
                                         new TargetCorner(5, 6),
                                         new TargetCorner(7, 8))));
         serializedTargets =
-                RepeatedMessage.newEmptyInstance(PhotonTypes.ProtobufPhotonTrackedTarget.getFactory());
+                RepeatedMessage.newEmptyInstance(ProtobufPhotonTrackedTarget.getFactory());
         PhotonTrackedTarget.proto.pack(serializedTargets, targets);
         unpackedTargets = PhotonTrackedTarget.proto.unpack(serializedTargets);
         assertEquals(targets, unpackedTargets);

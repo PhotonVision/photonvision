@@ -21,7 +21,7 @@ import edu.wpi.first.util.protobuf.Protobuf;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import org.photonvision.proto.PhotonTypes.ProtobufTargetCorner;
+import org.photonvision.proto.Photon.ProtobufTargetCorner;
 import us.hebi.quickbuf.Descriptors.Descriptor;
 import us.hebi.quickbuf.RepeatedMessage;
 

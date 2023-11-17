@@ -20,7 +20,7 @@ package org.photonvision.targeting;
 import edu.wpi.first.util.protobuf.Protobuf;
 import java.util.ArrayList;
 import java.util.List;
-import org.photonvision.proto.PhotonTypes.ProtobufPhotonPipelineResult;
+import org.photonvision.proto.Photon.ProtobufPhotonPipelineResult;
 import us.hebi.quickbuf.Descriptors.Descriptor;
 
 /** Represents a pipeline result from a PhotonCamera. */

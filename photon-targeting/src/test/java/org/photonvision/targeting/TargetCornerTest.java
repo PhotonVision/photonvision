@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import org.photonvision.proto.PhotonTypes;
+import org.photonvision.proto.Photon.ProtobufTargetCorner;
 import us.hebi.quickbuf.RepeatedMessage;
 
 public class TargetCornerTest {
@@ -39,14 +39,14 @@ public class TargetCornerTest {
     public void protobufListTest() {
         List<TargetCorner> corners = List.of();
         var serializedCorners =
-                RepeatedMessage.newEmptyInstance(PhotonTypes.ProtobufTargetCorner.getFactory());
+                RepeatedMessage.newEmptyInstance(ProtobufTargetCorner.getFactory());
         TargetCorner.proto.pack(serializedCorners, corners);
         var unpackedCorners = TargetCorner.proto.unpack(serializedCorners);
         assertEquals(corners, unpackedCorners);
 
         corners = List.of(new TargetCorner(0, 1), new TargetCorner(1, 2));
         serializedCorners =
-                RepeatedMessage.newEmptyInstance(PhotonTypes.ProtobufTargetCorner.getFactory());
+                RepeatedMessage.newEmptyInstance(ProtobufTargetCorner.getFactory());
         TargetCorner.proto.pack(serializedCorners, corners);
         unpackedCorners = TargetCorner.proto.unpack(serializedCorners);
         assertEquals(corners, unpackedCorners);

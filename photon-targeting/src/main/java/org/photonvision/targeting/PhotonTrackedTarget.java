@@ -21,7 +21,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.util.protobuf.Protobuf;
 import java.util.ArrayList;
 import java.util.List;
-import org.photonvision.proto.PhotonTypes.ProtobufPhotonTrackedTarget;
+import org.photonvision.proto.Photon.ProtobufPhotonTrackedTarget;
 import us.hebi.quickbuf.Descriptors.Descriptor;
 import us.hebi.quickbuf.RepeatedMessage;
 
