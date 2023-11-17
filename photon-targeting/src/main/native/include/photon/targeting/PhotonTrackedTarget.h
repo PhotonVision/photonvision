@@ -135,7 +135,6 @@ class PhotonTrackedTarget {
   }
 
   bool operator==(const PhotonTrackedTarget& other) const;
-  bool operator!=(const PhotonTrackedTarget& other) const;
 
  private:
   double yaw = 0;

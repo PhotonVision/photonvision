@@ -23,9 +23,17 @@
 #include "PNPResult.h"
 
 namespace photon {
-class MultiTargetPnpResult {
+class MultiTargetPNPResult {
  public:
+  MultiTargetPNPResult() = default;
+
+
+  MultiTargetPNPResult(PNPResult result,
+                       wpi::SmallVector<int16_t, 32> fiducialIdsUsed);
+
   PNPResult result;
   wpi::SmallVector<int16_t, 32> fiducialIdsUsed;
+
+  bool operator==(const MultiTargetPNPResult& other) const;
 };
 }  // namespace photon

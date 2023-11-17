@@ -16,6 +16,7 @@
  */
 
 #include "photon/targeting/PhotonTrackedTarget.h"
+#include "photon/targeting/TargetCorner.h"
 
 #include <iostream>
 #include <utility>
@@ -23,7 +24,6 @@
 #include <frc/geometry/Translation2d.h>
 #include <wpi/SmallVector.h>
 
-#include "photon/targeting/TargetCorner.h"
 
 static constexpr const uint8_t MAX_CORNERS = 8;
 
@@ -50,8 +50,4 @@ bool PhotonTrackedTarget::operator==(const PhotonTrackedTarget& other) const {
   return other.yaw == yaw && other.pitch == pitch && other.area == area &&
          other.skew == skew && other.bestCameraToTarget == bestCameraToTarget &&
          other.minAreaRectCorners == minAreaRectCorners;
-}
-
-bool PhotonTrackedTarget::operator!=(const PhotonTrackedTarget& other) const {
-  return !operator==(other);
 }

@@ -16,6 +16,7 @@
  */
 
 #include "photon/targeting/PhotonPipelineResult.h"
+#include "photon/targeting/PNPResult.h"
 
 using namespace photon;
 
@@ -24,10 +25,11 @@ PhotonPipelineResult::PhotonPipelineResult(
     : latency(latency),
       targets(targets.data(), targets.data() + targets.size()) {}
 
-bool PhotonPipelineResult::operator==(const PhotonPipelineResult& other) const {
-  return latency == other.latency && targets == other.targets;
-}
+PhotonPipelineResult::PhotonPipelineResult(
+    units::second_t latency, std::span<const PhotonTrackedTarget> targets,
+    MultiTargetPNPResult multitagResult) : latency(latency), targets(targets.data(), targets.data() + targets.size()), multitagResult(multitagResult) {}
 
-bool PhotonPipelineResult::operator!=(const PhotonPipelineResult& other) const {
-  return !operator==(other);
+bool PhotonPipelineResult::operator==(
+    const PhotonPipelineResult& other) const {
+  return latency == other.latency && targets == other.targets && multitagResult == other.multitagResult;
 }

@@ -25,19 +25,21 @@ class PNPResult {
  public:
   PNPResult() = default;
 
-  PNPResult(frc::Transform3d best, frc::Transform3d alt, double ambiguity,
-            double bestReprojErr, double altReprojErr);
+  PNPResult(frc::Transform3d best, double bestReprojErr, frc::Transform3d alt,
+            double altReprojErr, double ambiguity);
 
   // This could be wrapped in an std::optional, but chose to do it this way to
   // mirror Java
-  bool isValid;
+  bool isPresent;
 
   frc::Transform3d best;
-  double bestReprojectionErr;
+  double bestReprojErr;
 
   frc::Transform3d alt;
-  double altReprojectionErr;
+  double altReprojErr;
 
   double ambiguity;
+
+  bool operator==(const PNPResult& other) const;
 };
 }  // namespace photon

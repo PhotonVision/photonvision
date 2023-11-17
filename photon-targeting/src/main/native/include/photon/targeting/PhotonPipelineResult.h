@@ -54,7 +54,7 @@ class PhotonPipelineResult {
    */
   PhotonPipelineResult(units::second_t latency,
                        std::span<const PhotonTrackedTarget> targets,
-                       MultiTargetPnpResult multitagResult);
+                       MultiTargetPNPResult multitagResult);
 
   /**
    * Returns the best target in this pipeline result. If there are no targets,
@@ -92,10 +92,10 @@ class PhotonPipelineResult {
 
   /**
    * Return the latest mulit-target result, as calculated on your coprocessor.
-   * Be sure to check getMultiTagResult().estimatedPose.isValid before using the
-   * pose estimate!
+   * Be sure to check getMultiTagResult().estimatedPose.isPresent before using
+   * the pose estimate!
    */
-  const MultiTargetPnpResult& MultiTagResult() const { return m_pnpResult; }
+  const MultiTargetPNPResult& MultiTagResult() const { return multitagResult; }
 
   /**
    * Sets the timestamp in seconds
@@ -120,13 +120,12 @@ class PhotonPipelineResult {
   }
 
   bool operator==(const PhotonPipelineResult& other) const;
-  bool operator!=(const PhotonPipelineResult& other) const;
 
  private:
   units::second_t latency = 0_s;
   units::second_t timestamp = -1_s;
   wpi::SmallVector<PhotonTrackedTarget, 10> targets;
-  MultiTargetPnpResult m_pnpResult;
+  MultiTargetPNPResult multitagResult;
   inline static bool HAS_WARNED = false;
 };
 }  // namespace photon
