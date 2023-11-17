@@ -20,6 +20,8 @@ nativeUtils.wpi.configureDependencies {
 nativeUtils.wpi.addWarnings()
 nativeUtils.wpi.addWarningsAsErrors()
 
+nativeUtils.setSinglePrintPerPlatform()
+
 // Enable builds for all platforms.
 model {
     components {
