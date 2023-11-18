@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include "photon/dataflow/structures/Packet.h"
+
 namespace photon {
 
 class TargetCorner {
@@ -27,5 +29,8 @@ class TargetCorner {
   double y;
 
   bool operator==(const TargetCorner& other) const;
+
+  friend Packet& operator<<(Packet& packet, const TargetCorner& target);
+  friend Packet& operator>>(Packet& packet, TargetCorner& target);
 };
 }  // namespace photon

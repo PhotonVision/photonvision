@@ -21,6 +21,7 @@
 #include <wpi/SmallVector.h>
 
 #include "PNPResult.h"
+#include "photon/dataflow/structures/Packet.h"
 
 namespace photon {
 class MultiTargetPNPResult {
@@ -34,5 +35,8 @@ class MultiTargetPNPResult {
   wpi::SmallVector<int16_t, 32> fiducialIdsUsed;
 
   bool operator==(const MultiTargetPNPResult& other) const;
+
+  friend Packet& operator<<(Packet& packet, const MultiTargetPNPResult& target);
+  friend Packet& operator>>(Packet& packet, MultiTargetPNPResult& target);
 };
 }  // namespace photon

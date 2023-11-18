@@ -26,6 +26,7 @@
 
 #include "MultiTargetPNPResult.h"
 #include "PhotonTrackedTarget.h"
+#include "photon/dataflow/structures/Packet.h"
 
 namespace photon {
 /**
@@ -120,6 +121,9 @@ class PhotonPipelineResult {
   }
 
   bool operator==(const PhotonPipelineResult& other) const;
+
+  friend Packet& operator<<(Packet& packet, const PhotonPipelineResult& result);
+  friend Packet& operator>>(Packet& packet, PhotonPipelineResult& result);
 
  private:
   units::second_t latency = 0_s;

@@ -19,6 +19,8 @@
 
 #include <frc/geometry/Transform3d.h>
 
+#include "photon/dataflow/structures/Packet.h"
+
 namespace photon {
 
 class PNPResult {
@@ -41,5 +43,8 @@ class PNPResult {
   double ambiguity;
 
   bool operator==(const PNPResult& other) const;
+
+  friend Packet& operator<<(Packet& packet, const PNPResult& target);
+  friend Packet& operator>>(Packet& packet, PNPResult& target);
 };
 }  // namespace photon

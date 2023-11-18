@@ -26,6 +26,7 @@
 #include <wpi/SmallVector.h>
 
 #include "TargetCorner.h"
+#include "photon/dataflow/structures/Packet.h"
 
 namespace photon {
 /**
@@ -135,6 +136,9 @@ class PhotonTrackedTarget {
   }
 
   bool operator==(const PhotonTrackedTarget& other) const;
+
+  friend Packet& operator<<(Packet& packet, const PhotonTrackedTarget& target);
+  friend Packet& operator>>(Packet& packet, PhotonTrackedTarget& target);
 
  private:
   double yaw = 0;
