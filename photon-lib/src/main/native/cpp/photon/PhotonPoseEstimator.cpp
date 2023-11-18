@@ -366,8 +366,8 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagOnCoprocStrategy(
     const auto fieldToRobot =
         frc::Pose3d() + field2camera + m_robotToCamera.Inverse();
     return photon::EstimatedRobotPose(fieldToRobot, result.GetTimestamp(),
-                                         result.GetTargets(),
-                                         MULTI_TAG_PNP_ON_COPROCESSOR);
+                                      result.GetTargets(),
+                                      MULTI_TAG_PNP_ON_COPROCESSOR);
   }
 
   return Update(result, std::nullopt, std::nullopt,
@@ -425,9 +425,9 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagOnRioStrategy(
 
   const Pose3d pose = detail::ToPose3d(tvec, rvec);
 
-  return photon::EstimatedRobotPose(
-      pose.TransformBy(m_robotToCamera.Inverse()), result.GetTimestamp(),
-      result.GetTargets(), MULTI_TAG_PNP_ON_RIO);
+  return photon::EstimatedRobotPose(pose.TransformBy(m_robotToCamera.Inverse()),
+                                    result.GetTimestamp(), result.GetTargets(),
+                                    MULTI_TAG_PNP_ON_RIO);
 }
 
 std::optional<EstimatedRobotPose>

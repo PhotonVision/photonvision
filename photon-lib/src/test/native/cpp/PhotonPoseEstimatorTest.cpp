@@ -35,15 +35,13 @@
 #include <wpi/SmallVector.h>
 
 #include "gtest/gtest.h"
-
 #include "photon/PhotonCamera.h"
 #include "photon/PhotonPoseEstimator.h"
-
 #include "photon/dataflow/structures/Packet.h"
 #include "photon/targeting/MultiTargetPNPResult.h"
+#include "photon/targeting/PNPResult.h"
 #include "photon/targeting/PhotonPipelineResult.h"
 #include "photon/targeting/PhotonTrackedTarget.h"
-#include "photon/targeting/PNPResult.h"
 #include "photon/targeting/TargetCorner.h"
 
 static std::vector<frc::AprilTag> tags = {
@@ -89,8 +87,8 @@ TEST(PhotonPoseEstimatorTest, LowestAmbiguityStrategy) {
   cameraOne.testResult = {2_ms, targets};
   cameraOne.testResult.SetTimestamp(units::second_t(11));
 
-  photon::PhotonPoseEstimator estimator(
-      aprilTags, photon::LOWEST_AMBIGUITY, std::move(cameraOne), {});
+  photon::PhotonPoseEstimator estimator(aprilTags, photon::LOWEST_AMBIGUITY,
+                                        std::move(cameraOne), {});
   auto estimatedPose = estimator.Update();
   frc::Pose3d pose = estimatedPose.value().estimatedPose;
 
@@ -187,9 +185,8 @@ TEST(PhotonPoseEstimatorTest, ClosestToReferencePoseStrategy) {
   cameraOne.testResult = {2_ms, targets};
   cameraOne.testResult.SetTimestamp(units::second_t(17));
 
-  photon::PhotonPoseEstimator estimator(aprilTags,
-                                           photon::CLOSEST_TO_REFERENCE_POSE,
-                                           std::move(cameraOne), {});
+  photon::PhotonPoseEstimator estimator(
+      aprilTags, photon::CLOSEST_TO_REFERENCE_POSE, std::move(cameraOne), {});
   estimator.SetReferencePose(
       frc::Pose3d(1_m, 1_m, 1_m, frc::Rotation3d(0_rad, 0_rad, 0_rad)));
   auto estimatedPose = estimator.Update();
@@ -232,8 +229,8 @@ TEST(PhotonPoseEstimatorTest, ClosestToLastPose) {
   cameraOne.testResult = {2_ms, targets};
   cameraOne.testResult.SetTimestamp(units::second_t(17));
 
-  photon::PhotonPoseEstimator estimator(
-      aprilTags, photon::CLOSEST_TO_LAST_POSE, std::move(cameraOne), {});
+  photon::PhotonPoseEstimator estimator(aprilTags, photon::CLOSEST_TO_LAST_POSE,
+                                        std::move(cameraOne), {});
   estimator.SetLastPose(
       frc::Pose3d(1_m, 1_m, 1_m, frc::Rotation3d(0_rad, 0_rad, 0_rad)));
   auto estimatedPose = estimator.Update();
@@ -307,8 +304,8 @@ TEST(PhotonPoseEstimatorTest, AverageBestPoses) {
   cameraOne.testResult = {2_ms, targets};
   cameraOne.testResult.SetTimestamp(units::second_t(15));
 
-  photon::PhotonPoseEstimator estimator(
-      aprilTags, photon::AVERAGE_BEST_TARGETS, std::move(cameraOne), {});
+  photon::PhotonPoseEstimator estimator(aprilTags, photon::AVERAGE_BEST_TARGETS,
+                                        std::move(cameraOne), {});
   auto estimatedPose = estimator.Update();
   frc::Pose3d pose = estimatedPose.value().estimatedPose;
 
@@ -347,8 +344,8 @@ TEST(PhotonPoseEstimatorTest, PoseCache) {
 
   cameraOne.test = true;
 
-  photon::PhotonPoseEstimator estimator(
-      aprilTags, photon::AVERAGE_BEST_TARGETS, std::move(cameraOne), {});
+  photon::PhotonPoseEstimator estimator(aprilTags, photon::AVERAGE_BEST_TARGETS,
+                                        std::move(cameraOne), {});
 
   // empty input, expect empty out
   estimator.GetCamera()->testResult = {2_ms, {}};

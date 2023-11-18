@@ -164,10 +164,9 @@ TEST_F(SimVisionSystemTest, TestNotVisibleTooFarForLEDs) {
   const frc::Pose3d targetPose{
       {15.98_m, 0_m, 1_m},
       frc::Rotation3d{0_deg, 0_deg, units::constants::detail::PI_VAL * 1_rad}};
-  photon::SimVisionSystem sys{
-      "Test", 80.0_deg, frc::Transform3d{}, 10_m, 640, 480, 1.0};
-  sys.AddSimVisionTarget(
-      photon::SimVisionTarget{targetPose, 1_m, 0.25_m, 78});
+  photon::SimVisionSystem sys{"Test", 80.0_deg, frc::Transform3d{}, 10_m, 640,
+                              480,    1.0};
+  sys.AddSimVisionTarget(photon::SimVisionTarget{targetPose, 1_m, 0.25_m, 78});
 
   frc::Pose2d robotPose{{10_m, 0_m}, frc::Rotation2d{5_deg}};
   sys.ProcessFrame(robotPose);
@@ -186,8 +185,7 @@ TEST_P(SimVisionSystemTestWithParamsTest, YawAngles) {
   frc::Pose2d robotPose{{10_m, 0_m}, frc::Rotation2d{GetParam() * -1.0}};
   photon::SimVisionSystem sys{
       "Test", 120.0_deg, frc::Transform3d{}, 99999_m, 640, 480, 0};
-  sys.AddSimVisionTarget(
-      photon::SimVisionTarget{targetPose, 0.5_m, 0.5_m, 23});
+  sys.AddSimVisionTarget(photon::SimVisionTarget{targetPose, 0.5_m, 0.5_m, 23});
 
   sys.ProcessFrame(robotPose);
 
@@ -208,8 +206,7 @@ TEST_P(SimVisionSystemTestWithParamsTest, PitchAngles) {
   frc::Pose2d robotPose{{10_m, 0_m}, frc::Rotation2d{0_deg}};
   photon::SimVisionSystem sys{
       "Test", 120.0_deg, frc::Transform3d{}, 99999_m, 640, 480, 0};
-  sys.AddSimVisionTarget(
-      photon::SimVisionTarget{targetPose, 0.5_m, 0.5_m, 23});
+  sys.AddSimVisionTarget(photon::SimVisionTarget{targetPose, 0.5_m, 0.5_m, 23});
 
   sys.MoveCamera(frc::Transform3d{frc::Translation3d{},
                                   frc::Rotation3d{0_deg, GetParam(), 0_deg}});
@@ -251,8 +248,7 @@ TEST_P(SimVisionSystemTestDistanceParamsTest, DistanceCalc) {
       640,
       480,
       0};
-  sys.AddSimVisionTarget(
-      photon::SimVisionTarget{targetPose, 0.5_m, 0.5_m, 0});
+  sys.AddSimVisionTarget(photon::SimVisionTarget{targetPose, 0.5_m, 0.5_m, 0});
   sys.ProcessFrame(robotPose);
 
   auto results = sys.cam.GetLatestResult();
