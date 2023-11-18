@@ -20,7 +20,6 @@
 #include <units/angle.h>
 
 #include "gtest/gtest.h"
-
 #include "photon/dataflow/structures/Packet.h"
 #include "photon/targeting/MultiTargetPNPResult.h"
 #include "photon/targeting/PNPResult.h"
