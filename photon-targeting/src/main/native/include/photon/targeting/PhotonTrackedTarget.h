@@ -25,7 +25,6 @@
 #include <frc/geometry/Transform3d.h>
 #include <wpi/SmallVector.h>
 
-#include "TargetCorner.h"
 #include "photon/dataflow/structures/Packet.h"
 
 namespace photon {
@@ -54,8 +53,8 @@ class PhotonTrackedTarget {
       double yaw, double pitch, double area, double skew, int fiducialID,
       const frc::Transform3d& pose, const frc::Transform3d& alternatePose,
       double ambiguity,
-      const wpi::SmallVector<TargetCorner, 4> minAreaRectCorners,
-      const std::vector<TargetCorner> detectedCorners);
+      const wpi::SmallVector<std::pair<double, double>, 4> minAreaRectCorners,
+      const std::vector<std::pair<double, double>> detectedCorners);
 
   /**
    * Returns the target yaw (positive-left).
@@ -92,7 +91,8 @@ class PhotonTrackedTarget {
    * down), in no particular order, of the minimum area bounding rectangle of
    * this target
    */
-  const wpi::SmallVector<TargetCorner, 4>& GetMinAreaRectCorners() const {
+  const wpi::SmallVector<std::pair<double, double>, 4>& GetMinAreaRectCorners()
+      const {
     return minAreaRectCorners;
   }
 
@@ -107,7 +107,7 @@ class PhotonTrackedTarget {
    * V + Y     |       |
    *           0 ----- 1
    */
-  const std::vector<TargetCorner>& GetDetectedCorners() const {
+  const std::vector<std::pair<double, double>>& GetDetectedCorners() const {
     return detectedCorners;
   }
 
@@ -140,7 +140,6 @@ class PhotonTrackedTarget {
   friend Packet& operator<<(Packet& packet, const PhotonTrackedTarget& target);
   friend Packet& operator>>(Packet& packet, PhotonTrackedTarget& target);
 
- private:
   double yaw = 0;
   double pitch = 0;
   double area = 0;
@@ -149,7 +148,7 @@ class PhotonTrackedTarget {
   frc::Transform3d bestCameraToTarget;
   frc::Transform3d altCameraToTarget;
   double poseAmbiguity;
-  wpi::SmallVector<TargetCorner, 4> minAreaRectCorners;
-  std::vector<TargetCorner> detectedCorners;
+  wpi::SmallVector<std::pair<double, double>, 4> minAreaRectCorners;
+  std::vector<std::pair<double, double>> detectedCorners;
 };
 }  // namespace photon

@@ -125,7 +125,6 @@ class PhotonPipelineResult {
   friend Packet& operator<<(Packet& packet, const PhotonPipelineResult& result);
   friend Packet& operator>>(Packet& packet, PhotonPipelineResult& result);
 
- private:
   units::second_t latency = 0_s;
   units::second_t timestamp = -1_s;
   wpi::SmallVector<PhotonTrackedTarget, 10> targets;

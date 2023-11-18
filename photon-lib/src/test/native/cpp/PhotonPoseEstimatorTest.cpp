@@ -42,7 +42,6 @@
 #include "photon/targeting/PNPResult.h"
 #include "photon/targeting/PhotonPipelineResult.h"
 #include "photon/targeting/PhotonTrackedTarget.h"
-#include "photon/targeting/TargetCorner.h"
 
 static std::vector<frc::AprilTag> tags = {
     {0, frc::Pose3d(units::meter_t(3), units::meter_t(3), units::meter_t(3),

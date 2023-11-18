@@ -23,8 +23,6 @@
 #include <frc/geometry/Translation2d.h>
 #include <wpi/SmallVector.h>
 
-#include "photon/targeting/TargetCorner.h"
-
 static constexpr const uint8_t MAX_CORNERS = 8;
 
 using namespace photon;
@@ -33,8 +31,8 @@ PhotonTrackedTarget::PhotonTrackedTarget(
     double yaw, double pitch, double area, double skew, int id,
     const frc::Transform3d& pose, const frc::Transform3d& alternatePose,
     double ambiguity,
-    const wpi::SmallVector<TargetCorner, 4> minAreaRectCorners,
-    const std::vector<TargetCorner> detectedCorners)
+    const wpi::SmallVector<std::pair<double, double>, 4> minAreaRectCorners,
+    const std::vector<std::pair<double, double>> detectedCorners)
     : yaw(yaw),
       pitch(pitch),
       area(area),

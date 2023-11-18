@@ -37,7 +37,6 @@
 #include "photon/targeting/PNPResult.h"
 #include "photon/targeting/PhotonPipelineResult.h"
 #include "photon/targeting/PhotonTrackedTarget.h"
-#include "photon/targeting/TargetCorner.h"
 
 namespace photon {
 class PhotonUtils {
