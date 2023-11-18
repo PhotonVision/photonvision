@@ -84,8 +84,8 @@ TEST(PacketTest, PhotonPipelineResult) {
           frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
                            frc::Rotation3d(1_rad, 2_rad, 3_rad)),
           -1,
-          {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6}, std::pair{7, 8}},
-          {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6}, std::pair{7, 8}}},
+          {photon::TargetCorner(1,2), photon::TargetCorner(3,4), photon::TargetCorner(5,6), photon::TargetCorner(7,8)},
+          {photon::TargetCorner(1,2), photon::TargetCorner(3,4), photon::TargetCorner(5,6), photon::TargetCorner(7,8)}},
       photon::PhotonTrackedTarget{
           3.0,
           -4.0,
@@ -97,9 +97,8 @@ TEST(PacketTest, PhotonPipelineResult) {
           frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
                            frc::Rotation3d(1_rad, 2_rad, 3_rad)),
           -1,
-          {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6}, std::pair{7, 8}},
-          {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6},
-           std::pair{7, 8}}}};
+          {photon::TargetCorner(1,2), photon::TargetCorner(3,4), photon::TargetCorner(5,6), photon::TargetCorner(7,8)},
+          {photon::TargetCorner(1,2), photon::TargetCorner(3,4), photon::TargetCorner(5,6), photon::TargetCorner(7,8)}}};
 
   photon::PhotonPipelineResult result2{2_s, targets};
   photon::Packet p2;
