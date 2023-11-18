@@ -79,6 +79,11 @@ model {
                     }
                 }
             }
+
+            binaries.all {
+                lib project: ':photon-targeting', library: 'PhotonTargeting', linkage: 'shared'
+            }
+
             nativeUtils.useRequiredLibrary(it, "wpilib_shared")
             nativeUtils.useRequiredLibrary(it, "apriltag_shared")
             nativeUtils.useRequiredLibrary(it, "opencv_shared")
@@ -93,6 +98,10 @@ model {
                     srcDir "src/test/native/cpp"
                     include "**/*.cpp"
                 }
+            }
+
+            binaries.all {
+                lib project: ':photon-targeting', library: 'PhotonTargeting', linkage: 'shared'
             }
 
             nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared")
