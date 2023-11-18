@@ -24,7 +24,7 @@
 
 #include "Robot.h"
 
-#include <photonlib/PhotonUtils.h>
+#include <photon/PhotonUtils.h>
 
 void Robot::TeleopPeriodic() {
   double forwardSpeed = -xboxController.GetRightY();
@@ -33,7 +33,7 @@ void Robot::TeleopPeriodic() {
   if (xboxController.GetAButton()) {
     // Vision-alignment mode
     // Query the latest result from PhotonVision
-    photonlib::PhotonPipelineResult result = camera.GetLatestResult();
+    photon::PhotonPipelineResult result = camera.GetLatestResult();
 
     if (result.HasTargets()) {
       // Rotation speed is the output of the PID controller

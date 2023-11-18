@@ -24,8 +24,8 @@
 
 #pragma once
 
-#include <photonlib/PhotonCamera.h>
-#include <photonlib/PhotonPoseEstimator.h>
+#include <photon/PhotonCamera.h>
+#include <photon/PhotonPoseEstimator.h>
 
 #include <utility>
 
@@ -34,12 +34,12 @@
 
 class PhotonCameraWrapper {
  public:
-  photonlib::PhotonPoseEstimator m_poseEstimator{
+  photon::PhotonPoseEstimator m_poseEstimator{
       frc::LoadAprilTagLayoutField(frc::AprilTagField::k2023ChargedUp),
-      photonlib::MULTI_TAG_PNP_ON_RIO,
-      std::move(photonlib::PhotonCamera{"WPI2023"}), frc::Transform3d{}};
+      photon::MULTI_TAG_PNP_ON_RIO,
+      std::move(photon::PhotonCamera{"WPI2023"}), frc::Transform3d{}};
 
-  inline std::optional<photonlib::EstimatedRobotPose> Update(
+  inline std::optional<photon::EstimatedRobotPose> Update(
       frc::Pose2d estimatedPose) {
     m_poseEstimator.SetReferencePose(frc::Pose3d(estimatedPose));
     return m_poseEstimator.Update();

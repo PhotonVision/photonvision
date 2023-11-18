@@ -27,11 +27,16 @@
 #include <units/angle.h>
 
 #include "gtest/gtest.h"
-#include "photonlib/PhotonPipelineResult.h"
-#include "photonlib/PhotonTrackedTarget.h"
+
+#include "photon/dataflow/structures/Packet.h"
+#include "photon/targeting/MultiTargetPNPResult.h"
+#include "photon/targeting/PhotonPipelineResult.h"
+#include "photon/targeting/PhotonTrackedTarget.h"
+#include "photon/targeting/PNPResult.h"
+#include "photon/targeting/TargetCorner.h"
 
 TEST(PacketTest, PhotonTrackedTarget) {
-  photonlib::PhotonTrackedTarget target{
+  photon::PhotonTrackedTarget target{
       3.0,
       4.0,
       9.0,
@@ -45,10 +50,10 @@ TEST(PacketTest, PhotonTrackedTarget) {
       {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6}, std::pair{7, 8}},
       {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6}, std::pair{7, 8}}};
 
-  photonlib::Packet p;
+  photon::Packet p;
   p << target;
 
-  photonlib::PhotonTrackedTarget b;
+  photon::PhotonTrackedTarget b;
   p >> b;
 
   for (auto& c : p.GetData()) {
@@ -59,17 +64,17 @@ TEST(PacketTest, PhotonTrackedTarget) {
 }
 
 TEST(PacketTest, PhotonPipelineResult) {
-  photonlib::PhotonPipelineResult result{1_s, {}};
-  photonlib::Packet p;
+  photon::PhotonPipelineResult result{1_s, {}};
+  photon::Packet p;
   p << result;
 
-  photonlib::PhotonPipelineResult b;
+  photon::PhotonPipelineResult b;
   p >> b;
 
   EXPECT_EQ(result, b);
 
-  wpi::SmallVector<photonlib::PhotonTrackedTarget, 2> targets{
-      photonlib::PhotonTrackedTarget{
+  wpi::SmallVector<photon::PhotonTrackedTarget, 2> targets{
+      photon::PhotonTrackedTarget{
           3.0,
           -4.0,
           9.0,
@@ -82,7 +87,7 @@ TEST(PacketTest, PhotonPipelineResult) {
           -1,
           {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6}, std::pair{7, 8}},
           {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6}, std::pair{7, 8}}},
-      photonlib::PhotonTrackedTarget{
+      photon::PhotonTrackedTarget{
           3.0,
           -4.0,
           9.1,
@@ -97,11 +102,11 @@ TEST(PacketTest, PhotonPipelineResult) {
           {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6},
            std::pair{7, 8}}}};
 
-  photonlib::PhotonPipelineResult result2{2_s, targets};
-  photonlib::Packet p2;
+  photon::PhotonPipelineResult result2{2_s, targets};
+  photon::Packet p2;
   p2 << result2;
 
-  photonlib::PhotonPipelineResult b2;
+  photon::PhotonPipelineResult b2;
   p2 >> b2;
 
   EXPECT_EQ(result2, b2);

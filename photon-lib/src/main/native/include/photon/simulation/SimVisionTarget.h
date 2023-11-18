@@ -27,7 +27,14 @@
 #include <frc/geometry/Pose3d.h>
 #include <units/area.h>
 
-namespace photonlib {
+#include "photon/dataflow/structures/Packet.h"
+#include "photon/targeting/MultiTargetPNPResult.h"
+#include "photon/targeting/PhotonPipelineResult.h"
+#include "photon/targeting/PhotonTrackedTarget.h"
+#include "photon/targeting/PNPResult.h"
+#include "photon/targeting/TargetCorner.h"
+
+namespace photon {
 class SimVisionTarget {
  public:
   SimVisionTarget() = default;
@@ -56,4 +63,4 @@ class SimVisionTarget {
   units::square_meter_t targetArea;
   int targetId;
 };
-}  // namespace photonlib
+}  // namespace photon

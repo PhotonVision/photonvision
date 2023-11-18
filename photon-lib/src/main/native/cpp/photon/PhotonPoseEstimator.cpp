@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-#include "photonlib/PhotonPoseEstimator.h"
+#include "photon/PhotonPoseEstimator.h"
 
 #include <cmath>
 #include <iostream>
@@ -44,11 +44,11 @@
 #include <units/math.h>
 #include <units/time.h>
 
-#include "photonlib/PhotonCamera.h"
-#include "photonlib/PhotonPipelineResult.h"
-#include "photonlib/PhotonTrackedTarget.h"
+#include "photon/PhotonCamera.h"
+#include "photon/targeting/PhotonPipelineResult.h"
+#include "photon/targeting/PhotonTrackedTarget.h"
 
-namespace photonlib {
+namespace photon {
 
 namespace detail {
 cv::Point3d ToPoint3d(const frc::Translation3d& translation);
@@ -360,12 +360,12 @@ frc::Pose3d detail::ToPose3d(const cv::Mat& tvec, const cv::Mat& rvec) {
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagOnCoprocStrategy(
     PhotonPipelineResult result, std::optional<cv::Mat> camMat,
     std::optional<cv::Mat> distCoeffs) {
-  if (result.MultiTagResult().result.isValid) {
+  if (result.MultiTagResult().result.isPresent) {
     const auto field2camera = result.MultiTagResult().result.best;
 
     const auto fieldToRobot =
         frc::Pose3d() + field2camera + m_robotToCamera.Inverse();
-    return photonlib::EstimatedRobotPose(fieldToRobot, result.GetTimestamp(),
+    return photon::EstimatedRobotPose(fieldToRobot, result.GetTimestamp(),
                                          result.GetTargets(),
                                          MULTI_TAG_PNP_ON_COPROCESSOR);
   }
@@ -404,8 +404,8 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagOnRioStrategy(
         tagCorners.has_value()) {
       auto const targetCorners = target.GetDetectedCorners();
       for (size_t cornerIdx = 0; cornerIdx < 4; ++cornerIdx) {
-        imagePoints.emplace_back(targetCorners[cornerIdx].first,
-                                 targetCorners[cornerIdx].second);
+        imagePoints.emplace_back(targetCorners[cornerIdx].x,
+                                 targetCorners[cornerIdx].y);
         objectPoints.emplace_back((*tagCorners)[cornerIdx]);
       }
     }
@@ -425,7 +425,7 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagOnRioStrategy(
 
   const Pose3d pose = detail::ToPose3d(tvec, rvec);
 
-  return photonlib::EstimatedRobotPose(
+  return photon::EstimatedRobotPose(
       pose.TransformBy(m_robotToCamera.Inverse()), result.GetTimestamp(),
       result.GetTargets(), MULTI_TAG_PNP_ON_RIO);
 }
@@ -476,4 +476,4 @@ PhotonPoseEstimator::AverageBestTargetsStrategy(PhotonPipelineResult result) {
                             result.GetTimestamp(), result.GetTargets(),
                             AVERAGE_BEST_TARGETS};
 }
-}  // namespace photonlib
+}  // namespace photon
