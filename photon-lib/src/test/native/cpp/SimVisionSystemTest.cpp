@@ -24,7 +24,7 @@
 
 #include "gtest/gtest.h"
 #include "photonlib/PhotonUtils.h"
-#include "photonlib/SimVisionSystem.h"
+#include "photonlib/simulation/SimVisionSystem.h"
 
 class SimVisionSystemTest : public ::testing::Test {
   void SetUp() override {
