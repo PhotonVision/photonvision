@@ -17,8 +17,6 @@
 
 #include "photon/targeting/PhotonPipelineResult.h"
 
-#include "photon/targeting/PNPResult.h"
-
 namespace photon {
 PhotonPipelineResult::PhotonPipelineResult(
     units::second_t latency, std::span<const PhotonTrackedTarget> targets)

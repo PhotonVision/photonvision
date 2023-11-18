@@ -15,13 +15,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "photon/targeting/PhotonTrackedTarget.h"
 
 #include <iostream>
 #include <utility>
 
 #include <frc/geometry/Translation2d.h>
 #include <wpi/SmallVector.h>
+
+#include "photon/targeting/PhotonTrackedTarget.h"
 
 static constexpr const uint8_t MAX_CORNERS = 8;
 
