@@ -17,8 +17,7 @@
 
 #include "photon/targeting/MultiTargetPNPResult.h"
 
-using namespace photon;
-
+namespace photon {
 photon::MultiTargetPNPResult::MultiTargetPNPResult(
     PNPResult result, wpi::SmallVector<int16_t, 32> fiducialIdsUsed)
     : result(result), fiducialIdsUsed(fiducialIdsUsed) {}
@@ -57,3 +56,4 @@ Packet& operator>>(Packet& packet, MultiTargetPNPResult& target) {
 
   return packet;
 }
+} // namespace photon

@@ -19,8 +19,7 @@
 
 #include "photon/targeting/PNPResult.h"
 
-using namespace photon;
-
+namespace photon {
 PhotonPipelineResult::PhotonPipelineResult(
     units::second_t latency, std::span<const PhotonTrackedTarget> targets)
     : latency(latency),
@@ -67,3 +66,4 @@ Packet& operator>>(Packet& packet, PhotonPipelineResult& result) {
   }
   return packet;
 }
+} // namespace photon

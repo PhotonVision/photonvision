@@ -17,8 +17,7 @@
 
 #include "photon/targeting/PNPResult.h"
 
-using namespace photon;
-
+namespace photon {
 PNPResult::PNPResult(frc::Transform3d best, double bestReprojErr,
                      frc::Transform3d alt, double altReprojErr,
                      double ambiguity)
@@ -80,9 +79,10 @@ Packet& operator<<(Packet& packet, PNPResult const& result) {
   return packet;
 }
 
-Packet& operator>>(Packet& packet, PNPResult result) {
+Packet& operator>>(Packet& packet, PNPResult& result) {
   packet >> result.isPresent >> result.best >> result.alt >>
       result.bestReprojErr >> result.altReprojErr >> result.ambiguity;
 
   return packet;
 }
+} // namespace photon

@@ -25,7 +25,7 @@
 
 static constexpr const uint8_t MAX_CORNERS = 8;
 
-using namespace photon;
+namespace photon {
 
 PhotonTrackedTarget::PhotonTrackedTarget(
     double yaw, double pitch, double area, double skew, int id,
@@ -132,3 +132,4 @@ Packet& operator>>(Packet& packet, PhotonTrackedTarget& target) {
 
   return packet;
 }
+} // namespace photon
