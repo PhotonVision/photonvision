@@ -28,8 +28,8 @@ model {
                 }
             }
 
-            binaries.all {
-                if(project.hasProperty('includePhotonTargeting')) {
+            if(project.hasProperty('includePhotonTargeting')) {
+                binaries.all {
                     lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
                 }
             }
@@ -42,7 +42,7 @@ model {
     testSuites {
         "${nativeName}Test"(GoogleTestTestSuiteSpec) {
             for(NativeComponentSpec c : $.components) {
-                if ("${nativeName}" == c.name) {
+                if (c.name == nativeName) {
                     testing c
                     break
                 }
@@ -59,8 +59,8 @@ model {
                 }
             }
 
-            binaries.all {
-                if(project.hasProperty('includePhotonTargeting')) {
+            if(project.hasProperty('includePhotonTargeting')) {
+                binaries.all {
                     lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
                 }
             }
