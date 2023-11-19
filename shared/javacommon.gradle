@@ -2,6 +2,11 @@ apply plugin: 'maven-publish'
 apply plugin: 'java-library'
 apply plugin: 'jacoco'
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
 def baseArtifactId = nativeName
 def artifactGroupId = 'org.photonvision'
 def javaBaseName = "_GROUP_org_photonvision_${baseArtifactId}_ID_${baseArtifactId}-java_CLS"
