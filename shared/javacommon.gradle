@@ -13,6 +13,10 @@ def javaBaseName = "_GROUP_org_photonvision_${baseArtifactId}_ID_${baseArtifactI
 
 def outputsFolder = file("$buildDir/outputs")
 
+javadoc {
+    options.encoding = 'UTF-8'
+}
+
 task sourcesJar(type: Jar, dependsOn: classes) {
     archiveClassifier = 'sources'
     from sourceSets.main.allSource
