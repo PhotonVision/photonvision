@@ -18,17 +18,6 @@
 #include "photon/targeting/PNPResult.h"
 
 namespace photon {
-PNPResult::PNPResult(frc::Transform3d best, double bestReprojErr,
-                     frc::Transform3d alt, double altReprojErr,
-                     double ambiguity)
-    : best(best),
-      bestReprojErr(bestReprojErr),
-      alt(alt),
-      altReprojErr(altReprojErr),
-      ambiguity(ambiguity) {
-  this->isPresent = true;
-}
-
 bool PNPResult::operator==(const PNPResult& other) const {
   return other.isPresent == isPresent && other.best == best &&
          other.altReprojErr == bestReprojErr && other.alt == alt &&

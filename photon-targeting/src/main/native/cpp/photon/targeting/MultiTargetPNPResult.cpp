@@ -18,21 +18,18 @@
 #include "photon/targeting/MultiTargetPNPResult.h"
 
 namespace photon {
-photon::MultiTargetPNPResult::MultiTargetPNPResult(
-    PNPResult result, wpi::SmallVector<int16_t, 32> fiducialIdsUsed)
-    : result(result), fiducialIdsUsed(fiducialIdsUsed) {}
 
 bool MultiTargetPNPResult::operator==(const MultiTargetPNPResult& other) const {
   return other.result == result && other.fiducialIdsUsed == fiducialIdsUsed;
 }
 
-Packet& operator<<(Packet& packet, const MultiTargetPNPResult& target) {
-  packet << target.result;
+Packet& operator<<(Packet& packet, const MultiTargetPNPResult& result) {
+  packet << result.result;
 
   size_t i;
-  for (i = 0; i < target.fiducialIdsUsed.capacity(); i++) {
-    if (i < target.fiducialIdsUsed.size()) {
-      packet << static_cast<int16_t>(target.fiducialIdsUsed[i]);
+  for (i = 0; i < result.fiducialIdsUsed.capacity(); i++) {
+    if (i < result.fiducialIdsUsed.size()) {
+      packet << static_cast<int16_t>(result.fiducialIdsUsed[i]);
     } else {
       packet << static_cast<int16_t>(-1);
     }
@@ -41,16 +38,16 @@ Packet& operator<<(Packet& packet, const MultiTargetPNPResult& target) {
   return packet;
 }
 
-Packet& operator>>(Packet& packet, MultiTargetPNPResult& target) {
-  packet >> target.result;
+Packet& operator>>(Packet& packet, MultiTargetPNPResult& result) {
+  packet >> result.result;
 
-  target.fiducialIdsUsed.clear();
-  for (size_t i = 0; i < target.fiducialIdsUsed.capacity(); i++) {
+  result.fiducialIdsUsed.clear();
+  for (size_t i = 0; i < result.fiducialIdsUsed.capacity(); i++) {
     int16_t id = 0;
     packet >> id;
 
     if (id > -1) {
-      target.fiducialIdsUsed.push_back(id);
+      result.fiducialIdsUsed.push_back(id);
     }
   }
 

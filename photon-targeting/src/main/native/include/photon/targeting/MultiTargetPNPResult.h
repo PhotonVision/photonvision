@@ -26,17 +26,12 @@
 namespace photon {
 class MultiTargetPNPResult {
  public:
-  MultiTargetPNPResult() = default;
-
-  MultiTargetPNPResult(PNPResult result,
-                       wpi::SmallVector<int16_t, 32> fiducialIdsUsed);
-
   PNPResult result;
   wpi::SmallVector<int16_t, 32> fiducialIdsUsed;
 
   bool operator==(const MultiTargetPNPResult& other) const;
 
-  friend Packet& operator<<(Packet& packet, const MultiTargetPNPResult& target);
-  friend Packet& operator>>(Packet& packet, MultiTargetPNPResult& target);
+  friend Packet& operator<<(Packet& packet, const MultiTargetPNPResult& result);
+  friend Packet& operator>>(Packet& packet, MultiTargetPNPResult& result);
 };
 }  // namespace photon
