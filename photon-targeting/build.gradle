@@ -1,61 +1,50 @@
 plugins {
-    id "java"
-    id "cpp"
-    id 'google-test'
     id 'edu.wpi.first.WpilibTools' version '1.3.0'
 }
 
-apply plugin: "edu.wpi.first.NativeUtils"
-
-apply from: "${rootDir}/shared/common.gradle"
-apply from: "${rootDir}/shared/config.gradle"
-
-model {
-    components {
-        PhotonTargeting(NativeLibrarySpec) {
-            sources {
-                cpp {
-                    source {
-                        srcDirs 'src/main/native/cpp'
-                        include '**/*.cpp'
-                    }
-                    exportedHeaders {
-                        srcDirs 'src/main/native/include'
-                        include "**/*.h"
-                    }
-                }
-            }
-
-            nativeUtils.useRequiredLibrary(it, "wpilib_shared")
-            nativeUtils.useRequiredLibrary(it, "apriltag_shared")
-            nativeUtils.useRequiredLibrary(it, "opencv_shared")
-        }
-    }
-    testSuites {
-        PhotonTargetingTest {
-            sources.cpp {
-                source {
-                    srcDir 'src/test/native/cpp'
-                    include '**/*.cpp'
-                }
-            }
-
-            nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared")
-            nativeUtils.useRequiredLibrary(it, "googletest_static")
-            nativeUtils.useRequiredLibrary(it, "apriltag_shared")
-            nativeUtils.useRequiredLibrary(it, "opencv_shared")
-        }
-    }
+ext {
+    nativeName = "photontargeting"
 }
 
+apply from: "${rootDir}/shared/setupBuild.gradle"
 
-java {
-    withJavadocJar()
-    withSourcesJar()
+
+wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()
+
+def nativeConfigName = 'wpilibNatives'
+def nativeConfig = configurations.create(nativeConfigName)
+
+def nativeTasks = wpilibTools.createExtractionTasks {
+    configurationName = nativeConfigName
 }
 
-test {
-    useJUnitPlatform()
-}
+nativeTasks.addToSourceSetResources(sourceSets.main)
 
-apply from: "publish.gradle"
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
+nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())
+
+dependencies {
+    implementation wpilibTools.deps.wpilibJava("wpiutil")
+    implementation wpilibTools.deps.wpilibJava("cameraserver")
+    implementation wpilibTools.deps.wpilibJava("cscore")
+    implementation wpilibTools.deps.wpilibJava("wpinet")
+    implementation wpilibTools.deps.wpilibJava("wpimath")
+    implementation wpilibTools.deps.wpilibJava("ntcore")
+    implementation wpilibTools.deps.wpilibJava("hal")
+    implementation wpilibTools.deps.wpilibJava("wpilibj")
+    implementation wpilibTools.deps.wpilibJava("apriltag")
+    implementation wpilibTools.deps.wpilibOpenCvJava("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())
+
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: wpi.versions.jacksonVersion.get()
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-core", version: wpi.versions.jacksonVersion.get()
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-databind", version: wpi.versions.jacksonVersion.get()
+
+    implementation group: "org.ejml", name: "ejml-simple", version: wpi.versions.ejmlVersion.get()
+    implementation group: "us.hebi.quickbuf", name: "quickbuf-runtime", version: wpi.versions.quickbufVersion.get();
+}
