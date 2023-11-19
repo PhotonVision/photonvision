@@ -15,8 +15,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
-
 #include <units/angle.h>
 
 #include "gtest/gtest.h"
@@ -68,10 +66,6 @@ TEST(PacketTest, PhotonTrackedTarget) {
 
   photon::PhotonTrackedTarget b;
   p >> b;
-
-  for (auto& c : p.GetData()) {
-    std::cout << static_cast<int>(c) << ",";
-  }
 
   EXPECT_EQ(target, b);
 }
