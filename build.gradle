@@ -1,5 +1,4 @@
 plugins {
-    id "java"
     id "com.diffplug.spotless" version "6.22.0"
     id "edu.wpi.first.NativeUtils" version "2024.2.0" apply false
     id "edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin" version "2020.2"
@@ -38,18 +37,6 @@ ext {
     if (nativeName == "macarm64") nativeName = "osxarm64";
     jniPlatform = nativeName
     println("Building for platform " + jniPlatform)
-}
-
-def outputsFolder = file("$buildDir/allOutputs")
-
-task copyAllOutputs(type: Copy) {
-    destinationDir outputsFolder
-}
-
-ext.addTaskToCopyAllOutputs = { task ->
-    copyAllOutputs.dependsOn task
-    copyAllOutputs.inputs.file task.archiveFile
-    copyAllOutputs.from task.archiveFile
 }
 
 wpilibTools.deps.wpilibVersion = wpilibVersion

@@ -36,6 +36,18 @@ model {
     }
 }
 
+def outputsFolder = file("$buildDir/allOutputs")
+
+task copyAllOutputs(type: Copy) {
+    destinationDir outputsFolder
+}
+
+ext.addTaskToCopyAllOutputs = { task ->
+    copyAllOutputs.dependsOn task
+    copyAllOutputs.inputs.file task.archiveFile
+    copyAllOutputs.from task.archiveFile
+}
+
 // Add debug path to binaries.
 ext.appendDebugPathToBinaries = { binaries ->
     binaries.withType(StaticLibraryBinarySpec) {
