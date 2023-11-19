@@ -404,8 +404,8 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagOnRioStrategy(
         tagCorners.has_value()) {
       auto const targetCorners = target.GetDetectedCorners();
       for (size_t cornerIdx = 0; cornerIdx < 4; ++cornerIdx) {
-        imagePoints.emplace_back(targetCorners[cornerIdx].x,
-                                 targetCorners[cornerIdx].y);
+        imagePoints.emplace_back(targetCorners[cornerIdx].first,
+                                 targetCorners[cornerIdx].second);
         objectPoints.emplace_back((*tagCorners)[cornerIdx]);
       }
     }
