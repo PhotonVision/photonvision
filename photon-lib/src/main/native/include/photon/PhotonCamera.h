@@ -39,13 +39,16 @@
 #include <units/time.h>
 #include <wpi/deprecated.h>
 
-#include "photonlib/PhotonPipelineResult.h"
+#include "photon/targeting/MultiTargetPNPResult.h"
+#include "photon/targeting/PNPResult.h"
+#include "photon/targeting/PhotonPipelineResult.h"
+#include "photon/targeting/PhotonTrackedTarget.h"
 
 namespace cv {
 class Mat;
 }  // namespace cv
 
-namespace photonlib {
+namespace photon {
 
 enum LEDMode : int { kDefault = -1, kOff = 0, kOn = 1, kBlink = 2 };
 
@@ -205,4 +208,4 @@ class PhotonCamera {
   void VerifyVersion();
 };
 
-}  // namespace photonlib
+}  // namespace photon

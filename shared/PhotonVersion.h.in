@@ -23,7 +23,7 @@
  * regenerated any time the publish task is run, or when this file is deleted.
  */
 
-namespace photonlib {
+namespace photon {
   namespace PhotonVersion {
     const std::string versionString = "${version}";
     const std::string buildDate = "${date}";

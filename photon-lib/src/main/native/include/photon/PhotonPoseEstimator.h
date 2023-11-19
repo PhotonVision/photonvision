@@ -30,14 +30,17 @@
 #include <frc/geometry/Pose3d.h>
 #include <frc/geometry/Transform3d.h>
 
-#include "photonlib/PhotonCamera.h"
-#include "photonlib/PhotonPipelineResult.h"
+#include "photon/PhotonCamera.h"
+#include "photon/targeting/MultiTargetPNPResult.h"
+#include "photon/targeting/PNPResult.h"
+#include "photon/targeting/PhotonPipelineResult.h"
+#include "photon/targeting/PhotonTrackedTarget.h"
 
 namespace cv {
 class Mat;
 }  // namespace cv
 
-namespace photonlib {
+namespace photon {
 enum PoseStrategy {
   LOWEST_AMBIGUITY = 0,
   CLOSEST_TO_CAMERA_HEIGHT,
@@ -296,4 +299,4 @@ class PhotonPoseEstimator {
       PhotonPipelineResult result);
 };
 
-}  // namespace photonlib
+}  // namespace photon

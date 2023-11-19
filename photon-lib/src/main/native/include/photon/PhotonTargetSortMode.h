@@ -26,9 +26,12 @@
 
 #include <cmath>
 
-#include "photonlib/PhotonTrackedTarget.h"
+#include "photon/targeting/MultiTargetPNPResult.h"
+#include "photon/targeting/PNPResult.h"
+#include "photon/targeting/PhotonPipelineResult.h"
+#include "photon/targeting/PhotonTrackedTarget.h"
 
-namespace photonlib {
+namespace photon {
 
 namespace PhotonTargetSortMode {
 
@@ -82,4 +85,4 @@ struct CenterMost {
   }
 };
 }  // namespace PhotonTargetSortMode
-}  // namespace photonlib
+}  // namespace photon

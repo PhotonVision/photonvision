@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include <photonlib/PhotonCamera.h>
+#include <photon/PhotonCamera.h>
 
 #include <frc/TimedRobot.h>
 #include <frc/XboxController.h>
@@ -40,7 +40,7 @@ class Robot : public frc::TimedRobot {
 
  private:
   // Change this to match the name of your camera
-  photonlib::PhotonCamera camera{"photonvision"};
+  photon::PhotonCamera camera{"photonvision"};
   // PID constants should be tuned per robot
   frc::PIDController controller{.1, 0, 0};
 

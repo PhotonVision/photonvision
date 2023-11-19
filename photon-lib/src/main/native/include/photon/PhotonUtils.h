@@ -32,7 +32,12 @@
 #include <units/length.h>
 #include <units/math.h>
 
-namespace photonlib {
+#include "photon/targeting/MultiTargetPNPResult.h"
+#include "photon/targeting/PNPResult.h"
+#include "photon/targeting/PhotonPipelineResult.h"
+#include "photon/targeting/PhotonTrackedTarget.h"
+
+namespace photon {
 class PhotonUtils {
  public:
   /**
@@ -177,4 +182,4 @@ class PhotonUtils {
     return fieldToTarget.TransformBy(targetToCamera);
   }
 };
-}  // namespace photonlib
+}  // namespace photon

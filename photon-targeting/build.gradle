@@ -1,92 +1,50 @@
 plugins {
-    id "java"
-    id 'com.google.protobuf' version '0.9.3'
     id 'edu.wpi.first.WpilibTools' version '1.3.0'
 }
 
-apply from: "${rootDir}/shared/common.gradle"
+ext {
+    nativeName = "photontargeting"
+}
+
+apply from: "${rootDir}/shared/setupBuild.gradle"
+
+
+wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()
+
+def nativeConfigName = 'wpilibNatives'
+def nativeConfig = configurations.create(nativeConfigName)
+
+def nativeTasks = wpilibTools.createExtractionTasks {
+    configurationName = nativeConfigName
+}
+
+nativeTasks.addToSourceSetResources(sourceSets.main)
+
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
+nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())
 
 dependencies {
-    implementation wpilibTools.deps.wpilibJava("wpimath")
-    implementation wpilibTools.deps.wpilibJava("apriltag")
+    implementation wpilibTools.deps.wpilibJava("wpiutil")
+    implementation wpilibTools.deps.wpilibJava("cameraserver")
     implementation wpilibTools.deps.wpilibJava("cscore")
+    implementation wpilibTools.deps.wpilibJava("wpinet")
+    implementation wpilibTools.deps.wpilibJava("wpimath")
+    implementation wpilibTools.deps.wpilibJava("ntcore")
+    implementation wpilibTools.deps.wpilibJava("hal")
+    implementation wpilibTools.deps.wpilibJava("wpilibj")
+    implementation wpilibTools.deps.wpilibJava("apriltag")
     implementation wpilibTools.deps.wpilibOpenCvJava("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())
 
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: wpi.versions.jacksonVersion.get()
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-core", version: wpi.versions.jacksonVersion.get()
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-databind", version: wpi.versions.jacksonVersion.get()
+
     implementation group: "org.ejml", name: "ejml-simple", version: wpi.versions.ejmlVersion.get()
-
-    // Junit
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
+    implementation group: "us.hebi.quickbuf", name: "quickbuf-runtime", version: wpi.versions.quickbufVersion.get();
 }
-
-sourceSets {
-    main {
-        java {
-            // So quickbuffers generates messages for all included protobufs, even wpilib ones. For now, exclude
-            srcDirs 'build/generated/source/proto/main/quickbuf/org'
-            exclude 'build/generated/source/proto/main/quickbuf/edu/wpi/**'
-        }
-    }
-}
-
-tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
-}
-tasks.withType(Javadoc) {
-    options.encoding = 'UTF-8'
-}
-
-java {
-    withJavadocJar()
-    withSourcesJar()
-}
-
-test {
-    useJUnitPlatform()
-}
-
-
-protobuf {
-    protoc {
-        artifact = 'com.google.protobuf:protoc:3.21.12'
-    }
-    plugins {
-        quickbuf {
-            artifact = 'us.hebi.quickbuf:protoc-gen-quickbuf:1.3.2'
-        }
-    }
-    generateProtoTasks {
-        all().configureEach { task ->
-            task.builtins {
-                cpp {}
-                remove java
-            }
-            task.plugins {
-                quickbuf {
-                    option "gen_descriptors=true"
-                }
-            }
-        }
-    }
-}
-
-
-tasks.register("generateNativePhotonProtos") {
-    dependsOn tasks.named("generateProto")
-
-    // This is also valid, but i'd need to append "cpp" to it
-    // tasks.named("generateProto").get().outputs.files.each { println it }
-
-    // instead, hard-code
-    outputs.dir "build/generated/source/proto/main/cpp"
-
-    // outputs.files.each { println it }
-
-    // reflectino go brr
-    // tasks.named("generateProto").get().metaClass.properties.each { println it.name }
-    // it.outputs.metaClass.methods.each { println it.name }
-}
-
-
-apply from: "publish.gradle"

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-#include "photonlib/PhotonPoseEstimator.h"
+#include "photon/PhotonPoseEstimator.h"
 
 #include <cmath>
 #include <iostream>
@@ -44,11 +44,11 @@
 #include <units/math.h>
 #include <units/time.h>
 
-#include "photonlib/PhotonCamera.h"
-#include "photonlib/PhotonPipelineResult.h"
-#include "photonlib/PhotonTrackedTarget.h"
+#include "photon/PhotonCamera.h"
+#include "photon/targeting/PhotonPipelineResult.h"
+#include "photon/targeting/PhotonTrackedTarget.h"
 
-namespace photonlib {
+namespace photon {
 
 namespace detail {
 cv::Point3d ToPoint3d(const frc::Translation3d& translation);
@@ -360,14 +360,14 @@ frc::Pose3d detail::ToPose3d(const cv::Mat& tvec, const cv::Mat& rvec) {
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagOnCoprocStrategy(
     PhotonPipelineResult result, std::optional<cv::Mat> camMat,
     std::optional<cv::Mat> distCoeffs) {
-  if (result.MultiTagResult().result.isValid) {
+  if (result.MultiTagResult().result.isPresent) {
     const auto field2camera = result.MultiTagResult().result.best;
 
     const auto fieldToRobot =
         frc::Pose3d() + field2camera + m_robotToCamera.Inverse();
-    return photonlib::EstimatedRobotPose(fieldToRobot, result.GetTimestamp(),
-                                         result.GetTargets(),
-                                         MULTI_TAG_PNP_ON_COPROCESSOR);
+    return photon::EstimatedRobotPose(fieldToRobot, result.GetTimestamp(),
+                                      result.GetTargets(),
+                                      MULTI_TAG_PNP_ON_COPROCESSOR);
   }
 
   return Update(result, std::nullopt, std::nullopt,
@@ -425,9 +425,9 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagOnRioStrategy(
 
   const Pose3d pose = detail::ToPose3d(tvec, rvec);
 
-  return photonlib::EstimatedRobotPose(
-      pose.TransformBy(m_robotToCamera.Inverse()), result.GetTimestamp(),
-      result.GetTargets(), MULTI_TAG_PNP_ON_RIO);
+  return photon::EstimatedRobotPose(pose.TransformBy(m_robotToCamera.Inverse()),
+                                    result.GetTimestamp(), result.GetTargets(),
+                                    MULTI_TAG_PNP_ON_RIO);
 }
 
 std::optional<EstimatedRobotPose>
@@ -476,4 +476,4 @@ PhotonPoseEstimator::AverageBestTargetsStrategy(PhotonPipelineResult result) {
                             result.GetTimestamp(), result.GetTargets(),
                             AVERAGE_BEST_TARGETS};
 }
-}  // namespace photonlib
+}  // namespace photon

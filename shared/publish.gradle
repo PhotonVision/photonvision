@@ -1,0 +1,81 @@
+apply plugin: 'maven-publish'
+
+def outputsFolder = file("$buildDir/outputs")
+
+def baseArtifactId = nativeName
+def artifactGroupId = 'org.photonvision'
+def zipBaseName = "_GROUP_org_photonvision_${baseArtifactId}_ID_${baseArtifactId}-cpp_CLS"
+
+def licenseFile = file("$rootDir/LICENCE")
+
+task cppSourcesZip(type: Zip) {
+    destinationDirectory = outputsFolder
+    archiveBaseName = zipBaseName
+    archiveClassifier = "sources"
+
+    from(licenseFile) {
+        into '/'
+    }
+
+    from('src/main/native/cpp') {
+        into '/'
+    }
+}
+
+task cppHeadersZip(type: Zip) {
+    destinationDirectory = outputsFolder
+    archiveBaseName = zipBaseName
+    archiveClassifier = "headers"
+
+    from(licenseFile) {
+        into '/'
+    }
+
+    ext.includeDirs = [
+        project.file('src/main/native/include')
+    ]
+
+    ext.includeDirs.each {
+        from(it) {
+            into '/'
+        }
+    }
+}
+
+artifacts {
+    archives cppHeadersZip
+    archives cppSourcesZip
+}
+
+addTaskToCopyAllOutputs(cppSourcesZip)
+addTaskToCopyAllOutputs(cppHeadersZip)
+
+model {
+    publishing {
+        def taskList = createComponentZipTasks($.components, [nativeName], zipBaseName, Zip, project, includeStandardZipFormat)
+
+        publications {
+            cpp(MavenPublication) {
+                taskList.each {
+                    artifact it
+                }
+                artifact cppHeadersZip
+                artifact cppSourcesZip
+
+                artifactId = "${baseArtifactId}-cpp"
+                groupId artifactGroupId
+                version pubVersion
+            }
+        }
+
+        repositories {
+            maven {
+                url ('https://maven.photonvision.org/repository/' + (isDev ? 'snapshots' : 'internal'))
+                credentials {
+                    username 'ghactions'
+                    password System.getenv("ARTIFACTORY_API_KEY")
+                }
+            }
+        }
+    }
+}

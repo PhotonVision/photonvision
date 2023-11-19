@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-#include "photonlib/PhotonCamera.h"
+#include "photon/PhotonCamera.h"
 
 #include <frc/Errors.h>
 #include <frc/Timer.h>
@@ -30,7 +30,7 @@
 
 #include "PhotonVersion.h"
 
-namespace photonlib {
+namespace photon {
 
 constexpr const units::second_t VERSION_CHECK_INTERVAL = 5_s;
 static const std::vector<std::string_view> PHOTON_PREFIX = {"/photonvision/"};
@@ -182,4 +182,4 @@ void PhotonCamera::VerifyVersion() {
   }
 }
 
-}  // namespace photonlib
+}  // namespace photon

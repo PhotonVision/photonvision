@@ -1,25 +1,18 @@
 /*
- * MIT License
+ * Copyright (C) Photon Vision.
  *
- * Copyright (c) PhotonVision
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #pragma once
@@ -31,8 +24,10 @@
 
 #include <frc/geometry/Transform3d.h>
 #include <wpi/SmallVector.h>
+#include <wpi/protobuf/Protobuf.h>
 
-namespace photonlib {
+
+namespace photon {
 /**
  * Represents a tracked target within a pipeline.
  */
@@ -51,13 +46,14 @@ class PhotonTrackedTarget {
    * @param skew The skew of the target.
    * @param pose The camera-relative pose of the target.
    * @param alternatePose The alternate camera-relative pose of the target.
-   * @Param corners The corners of the bounding rectangle.
+   * @param minAreaRectCorners The corners of the bounding rectangle.
+   * @param detectedCorners All detected corners
    */
   PhotonTrackedTarget(
       double yaw, double pitch, double area, double skew, int fiducialID,
       const frc::Transform3d& pose, const frc::Transform3d& alternatePose,
       double ambiguity,
-      const wpi::SmallVector<std::pair<double, double>, 4> corners,
+      const wpi::SmallVector<std::pair<double, double>, 4> minAreaRectCorners,
       const std::vector<std::pair<double, double>> detectedCorners);
 
   /**
@@ -140,7 +136,6 @@ class PhotonTrackedTarget {
   }
 
   bool operator==(const PhotonTrackedTarget& other) const;
-  bool operator!=(const PhotonTrackedTarget& other) const;
 
  private:
   double yaw = 0;
@@ -157,10 +152,9 @@ class PhotonTrackedTarget {
 }  // namespace photonlib
 
 template <>
-struct wpi::Protobuf<photonlib::PhotonTrackedTarget> {
+struct wpi::Protobuf<photon::PhotonTrackedTarget> {
   static google::protobuf::Message* New(google::protobuf::Arena* arena);
-  static photonlib::PhotonTrackedTarget Unpack(
-      const google::protobuf::Message& msg);
+  static photon::PhotonTrackedTarget Unpack(const google::protobuf::Message& msg);
   static void Pack(google::protobuf::Message* msg,
-                   const photonlib::PhotonTrackedTarget& value);
+                  const photon::PhotonTrackedTarget& value);
 };
