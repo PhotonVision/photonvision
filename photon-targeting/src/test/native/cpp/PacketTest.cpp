@@ -21,8 +21,32 @@
 
 #include "gtest/gtest.h"
 #include "photon/dataflow/structures/Packet.h"
+#include "photon/targeting/MultiTargetPNPResult.h"
+#include "photon/targeting/PNPResult.h"
 #include "photon/targeting/PhotonPipelineResult.h"
 #include "photon/targeting/PhotonTrackedTarget.h"
+
+TEST(PacketTest, PNPResult) {
+  photon::PNPResult result;
+  photon::Packet p;
+  p << result;
+
+  photon::PNPResult b;
+  p >> b;
+
+  EXPECT_EQ(result, b);
+}
+
+TEST(PacketTest, MultiTargetPNPResult) {
+  photon::MultiTargetPNPResult result;
+  photon::Packet p;
+  p << result;
+
+  photon::MultiTargetPNPResult b;
+  p >> b;
+
+  EXPECT_EQ(result, b);
+}
 
 TEST(PacketTest, PhotonTrackedTarget) {
   photon::PhotonTrackedTarget target{
