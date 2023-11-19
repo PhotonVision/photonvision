@@ -122,19 +122,19 @@ class PhotonPipelineResult {
 
   bool operator==(const PhotonPipelineResult& other) const;
 
- private:
   units::second_t latency = 0_s;
   units::second_t timestamp = -1_s;
   wpi::SmallVector<PhotonTrackedTarget, 10> targets;
   MultiTargetPNPResult multitagResult;
   inline static bool HAS_WARNED = false;
 };
-}  // namespace photonlib
+}  // namespace photon
 
 template <>
 struct wpi::Protobuf<photon::PhotonPipelineResult> {
   static google::protobuf::Message* New(google::protobuf::Arena* arena);
-  static photon::PhotonPipelineResult Unpack(const google::protobuf::Message& msg);
+  static photon::PhotonPipelineResult Unpack(
+      const google::protobuf::Message& msg);
   static void Pack(google::protobuf::Message* msg,
-                  const photon::PhotonPipelineResult& value);
+                   const photon::PhotonPipelineResult& value);
 };

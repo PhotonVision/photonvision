@@ -36,7 +36,8 @@ class MultiTargetPNPResult {
 template <>
 struct wpi::Protobuf<photon::MultiTargetPNPResult> {
   static google::protobuf::Message* New(google::protobuf::Arena* arena);
-  static photon::MultiTargetPNPResult Unpack(const google::protobuf::Message& msg);
+  static photon::MultiTargetPNPResult Unpack(
+      const google::protobuf::Message& msg);
   static void Pack(google::protobuf::Message* msg,
-                  const photon::MultiTargetPNPResult& value);
+                   const photon::MultiTargetPNPResult& value);
 };

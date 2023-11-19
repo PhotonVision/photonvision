@@ -23,8 +23,6 @@
 #include <frc/geometry/Translation2d.h>
 #include <wpi/SmallVector.h>
 
-#include "photon_types.pb.h"
-
 static constexpr const uint8_t MAX_CORNERS = 8;
 
 namespace photon {

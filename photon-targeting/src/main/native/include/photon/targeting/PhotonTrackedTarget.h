@@ -26,7 +26,6 @@
 #include <wpi/SmallVector.h>
 #include <wpi/protobuf/Protobuf.h>
 
-
 namespace photon {
 /**
  * Represents a tracked target within a pipeline.
@@ -137,7 +136,6 @@ class PhotonTrackedTarget {
 
   bool operator==(const PhotonTrackedTarget& other) const;
 
- private:
   double yaw = 0;
   double pitch = 0;
   double area = 0;
@@ -149,12 +147,13 @@ class PhotonTrackedTarget {
   wpi::SmallVector<std::pair<double, double>, 4> minAreaRectCorners;
   std::vector<std::pair<double, double>> detectedCorners;
 };
-}  // namespace photonlib
+}  // namespace photon
 
 template <>
 struct wpi::Protobuf<photon::PhotonTrackedTarget> {
   static google::protobuf::Message* New(google::protobuf::Arena* arena);
-  static photon::PhotonTrackedTarget Unpack(const google::protobuf::Message& msg);
+  static photon::PhotonTrackedTarget Unpack(
+      const google::protobuf::Message& msg);
   static void Pack(google::protobuf::Message* msg,
-                  const photon::PhotonTrackedTarget& value);
+                   const photon::PhotonTrackedTarget& value);
 };
