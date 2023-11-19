@@ -57,13 +57,6 @@ dependencies {
     implementation group: "us.hebi.quickbuf", name: "quickbuf-runtime", version: wpi.versions.quickbufVersion.get();
 }
 
-nativeUtils {
-    exportsConfigs {
-        // Main library is just default empty. This will export everything
-        photonlib {}
-    }
-}
-
 cppHeadersZip {
     from('src/generate/native/include') {
         into '/'
