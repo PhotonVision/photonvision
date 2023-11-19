@@ -60,7 +60,7 @@ dependencies {
 nativeUtils {
     exportsConfigs {
         // Main library is just default empty. This will export everything
-        Photon {}
+        photonlib {}
     }
 }
 

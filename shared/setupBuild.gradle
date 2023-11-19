@@ -7,7 +7,7 @@ apply from: "${rootDir}/shared/javacommon.gradle"
 
 model {
     components {
-        "${nativeName}Base"(NativeLibrarySpec) {
+        "${nativeName}"(NativeLibrarySpec) {
             sources {
                 cpp {
                     source {
@@ -23,7 +23,7 @@ model {
 
             binaries.all {
                 if(project.hasProperty('includePhotonTargeting')) {
-                    lib project: ':photon-targeting', library: 'photontargetingBase', linkage: 'shared'
+                    lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
                 }
             }
 
@@ -35,7 +35,7 @@ model {
     testSuites {
         "${nativeName}Test"(GoogleTestTestSuiteSpec) {
             for(NativeComponentSpec c : $.components) {
-                if ("${nativeName}Base" == c.name) {
+                if ("${nativeName}" == c.name) {
                     testing c
                     break
                 }
@@ -54,7 +54,7 @@ model {
 
             binaries.all {
                 if(project.hasProperty('includePhotonTargeting')) {
-                    lib project: ':photon-targeting', library: 'photontargetingBase', linkage: 'shared'
+                    lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
                 }
             }
 
