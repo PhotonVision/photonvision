@@ -20,7 +20,7 @@
 namespace photon {
 bool PNPResult::operator==(const PNPResult& other) const {
   return other.isPresent == isPresent && other.best == best &&
-         other.altReprojErr == bestReprojErr && other.alt == alt &&
+         other.bestReprojErr == bestReprojErr && other.alt == alt &&
          other.altReprojErr == altReprojErr && other.ambiguity == ambiguity;
 }
 
