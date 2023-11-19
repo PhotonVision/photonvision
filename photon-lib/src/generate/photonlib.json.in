@@ -13,9 +13,24 @@
   "cppDependencies": [
     {
       "groupId": "org.photonvision",
-      "artifactId": "PhotonLib-cpp",
+      "artifactId": "photonlib-cpp",
       "version": "${photon_version}",
-      "libName": "Photon",
+      "libName": "photonlib",
+      "headerClassifier": "headers",
+      "sharedLibrary": true,
+      "skipInvalidPlatforms": true,
+      "binaryPlatforms": [
+        "windowsx86-64",
+        "linuxathena",
+        "linuxx86-64",
+        "osxuniversal"
+      ]
+    },
+    {
+      "groupId": "org.photonvision",
+      "artifactId": "photontargeting-cpp",
+      "version": "${photon_version}",
+      "libName": "photontargeting",
       "headerClassifier": "headers",
       "sharedLibrary": true,
       "skipInvalidPlatforms": true,
@@ -30,12 +45,12 @@
   "javaDependencies": [
     {
       "groupId": "org.photonvision",
-      "artifactId": "PhotonLib-java",
+      "artifactId": "photonlib-java",
       "version": "${photon_version}"
     },
     {
       "groupId": "org.photonvision",
-      "artifactId": "PhotonTargeting-java",
+      "artifactId": "photontargeting-java",
       "version": "${photon_version}"
     }
   ]
