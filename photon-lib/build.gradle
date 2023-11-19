@@ -70,21 +70,10 @@ cppHeadersZip {
     }
 }
 
-model {
-    components {
-        all {
-            it.sources.each {
-                it.exportedHeaders {
-                    srcDirs "src/main/native/include"
-                    srcDirs "src/generate/native/include"
-                }
-            }
-        }
-    }
-}
-
 def photonlibFileInput = file("src/generate/photonlib.json.in")
 ext.photonlibFileOutput = file("$buildDir/generated/vendordeps/photonlib.json")
+
+def vendorJson = artifacts.add('archives', file("$photonlibFileOutput"))
 
 task generateVendorJson() {
     description = "Generates the vendor JSON file"
@@ -121,9 +110,19 @@ task writeCurrentVersion {
 
 build.mustRunAfter writeCurrentVersion
 
-def vendorJson = artifacts.add('archives', file("$photonlibFileOutput"))
-
 model {
+    components {
+        all {
+            it.sources.each {
+                it.exportedHeaders {
+                    srcDirs "src/main/native/include"
+                    srcDirs "src/generate/native/include"
+                }
+            }
+        }
+    }
+
+    // Publish the vendordep json
     publishing {
         publications {
             vendorjson(MavenPublication) {
