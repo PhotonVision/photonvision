@@ -38,7 +38,7 @@ public class CVPipelineSettings implements Cloneable {
     public int pipelineIndex = 0;
     public PipelineType pipelineType = PipelineType.DriverMode;
     public ImageRotationMode inputImageRotationMode = ImageRotationMode.DEG_0;
-    public String pipelineNickname = "New Pipeline";
+    public String pipelineNickname = "New Pipeline " + pipelineIndex;
     public boolean cameraAutoExposure = false;
     // manual exposure only used if cameraAutoExposure is false
     public double cameraExposure = 20;
