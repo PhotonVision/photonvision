@@ -85,4 +85,4 @@ Packet& operator>>(Packet& packet, PNPResult& result) {
 
   return packet;
 }
-} // namespace photon
+}  // namespace photon

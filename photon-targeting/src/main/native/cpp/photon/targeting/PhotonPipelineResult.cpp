@@ -64,4 +64,4 @@ Packet& operator>>(Packet& packet, PhotonPipelineResult& result) {
   }
   return packet;
 }
-} // namespace photon
+}  // namespace photon

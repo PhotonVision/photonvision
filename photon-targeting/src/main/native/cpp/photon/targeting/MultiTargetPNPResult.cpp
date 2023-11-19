@@ -56,4 +56,4 @@ Packet& operator>>(Packet& packet, MultiTargetPNPResult& target) {
 
   return packet;
 }
-} // namespace photon
+}  // namespace photon
