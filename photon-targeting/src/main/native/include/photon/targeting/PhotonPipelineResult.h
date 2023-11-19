@@ -1,25 +1,18 @@
 /*
- * MIT License
+ * Copyright (C) Photon Vision.
  *
- * Copyright (c) PhotonVision
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #pragma once
@@ -31,18 +24,18 @@
 #include <units/time.h>
 #include <wpi/SmallVector.h>
 
-#include "photonlib/MultiTargetPNPResult.h"
-#include "photonlib/Packet.h"
-#include "photonlib/PhotonTrackedTarget.h"
+#include "MultiTargetPNPResult.h"
+#include "PhotonTrackedTarget.h"
+#include "photon/dataflow/structures/Packet.h"
 
-namespace photonlib {
+namespace photon {
 /**
  * Represents a pipeline result from a PhotonCamera.
  */
 class PhotonPipelineResult {
  public:
   /**
-   * Constructs an empty pipeline result.
+   * Constructs an empty pipeline result
    */
   PhotonPipelineResult() = default;
 
@@ -55,9 +48,19 @@ class PhotonPipelineResult {
                        std::span<const PhotonTrackedTarget> targets);
 
   /**
+   * Constructs a pipeline result.
+   * @param latency The latency in the pipeline.
+   * @param targets The list of targets identified by the pipeline.
+   * @param multitagResult The multitarget result
+   */
+  PhotonPipelineResult(units::second_t latency,
+                       std::span<const PhotonTrackedTarget> targets,
+                       MultiTargetPNPResult multitagResult);
+
+  /**
    * Returns the best target in this pipeline result. If there are no targets,
-   * this method will return an empty target with all values set to zero. The
-   * best target is determined by the target sort mode in the PhotonVision UI.
+   * this method will return null. The best target is determined by the target
+   * sort mode in the PhotonVision UI.
    *
    * @return The best target of the pipeline result.
    */
@@ -90,10 +93,10 @@ class PhotonPipelineResult {
 
   /**
    * Return the latest mulit-target result, as calculated on your coprocessor.
-   * Be sure to check getMultiTagResult().estimatedPose.isValid before using the
-   * pose estimate!
+   * Be sure to check getMultiTagResult().estimatedPose.isPresent before using
+   * the pose estimate!
    */
-  const MultiTargetPnpResult& MultiTagResult() const { return m_pnpResults; }
+  const MultiTargetPNPResult& MultiTagResult() const { return multitagResult; }
 
   /**
    * Sets the timestamp in seconds
@@ -118,16 +121,14 @@ class PhotonPipelineResult {
   }
 
   bool operator==(const PhotonPipelineResult& other) const;
-  bool operator!=(const PhotonPipelineResult& other) const;
 
   friend Packet& operator<<(Packet& packet, const PhotonPipelineResult& result);
   friend Packet& operator>>(Packet& packet, PhotonPipelineResult& result);
 
- private:
   units::second_t latency = 0_s;
   units::second_t timestamp = -1_s;
   wpi::SmallVector<PhotonTrackedTarget, 10> targets;
-  MultiTargetPnpResult m_pnpResults;
+  MultiTargetPNPResult multitagResult;
   inline static bool HAS_WARNED = false;
 };
-}  // namespace photonlib
+}  // namespace photon

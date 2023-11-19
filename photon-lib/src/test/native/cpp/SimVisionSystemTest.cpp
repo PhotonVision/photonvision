@@ -23,13 +23,13 @@
  */
 
 #include "gtest/gtest.h"
-#include "photonlib/PhotonUtils.h"
-#include "photonlib/SimVisionSystem.h"
+#include "photon/PhotonUtils.h"
+#include "photon/simulation/SimVisionSystem.h"
 
 class SimVisionSystemTest : public ::testing::Test {
   void SetUp() override {
     nt::NetworkTableInstance::GetDefault().StartServer();
-    photonlib::PhotonCamera::SetVersionCheckEnabled(false);
+    photon::PhotonCamera::SetVersionCheckEnabled(false);
   }
 
   void TearDown() override {}
@@ -44,7 +44,7 @@ class SimVisionSystemTestDistanceParamsTest
           std::tuple<units::foot_t, units::degree_t, units::foot_t>> {};
 
 TEST_F(SimVisionSystemTest, TestEmpty) {
-  photonlib::SimVisionSystem sys{
+  photon::SimVisionSystem sys{
       "Test", 80.0_deg, frc::Transform3d{}, 99999_m, 320, 240, 0};
   SUCCEED();
 }
@@ -53,9 +53,9 @@ TEST_F(SimVisionSystemTest, TestVisibilityCupidShuffle) {
   const frc::Pose3d targetPose{
       {15.98_m, 0_m, 2_m},
       frc::Rotation3d{0_deg, 0_deg, units::constants::detail::PI_VAL * 1_rad}};
-  photonlib::SimVisionSystem sys{
+  photon::SimVisionSystem sys{
       "Test", 80.0_deg, frc::Transform3d{}, 99999_m, 640, 480, 0};
-  sys.AddSimVisionTarget(photonlib::SimVisionTarget{targetPose, 1_m, 3_m, 3});
+  sys.AddSimVisionTarget(photon::SimVisionTarget{targetPose, 1_m, 3_m, 3});
 
   // To the right, to the right
   frc::Pose2d robotPose{{5_m, 0_m}, frc::Rotation2d{-70_deg}};
@@ -104,9 +104,9 @@ TEST_F(SimVisionSystemTest, TestNotVisibleVertOne) {
   const frc::Pose3d targetPose{
       {15.98_m, 0_m, 1_m},
       frc::Rotation3d{0_deg, 0_deg, units::constants::detail::PI_VAL * 1_rad}};
-  photonlib::SimVisionSystem sys{
+  photon::SimVisionSystem sys{
       "Test", 80.0_deg, frc::Transform3d{}, 99999_m, 640, 480, 0};
-  sys.AddSimVisionTarget(photonlib::SimVisionTarget{targetPose, 1_m, 3_m, 3});
+  sys.AddSimVisionTarget(photon::SimVisionTarget{targetPose, 1_m, 3_m, 3});
 
   frc::Pose2d robotPose{{5_m, 0_m}, frc::Rotation2d{5_deg}};
   sys.ProcessFrame(robotPose);
@@ -128,10 +128,10 @@ TEST_F(SimVisionSystemTest, TestNotVisibleVertOne) {
 //       frc::Translation3d{0_m, 0_m, 1_m},
 //       frc::Rotation3d{0_deg, (units::constants::detail::PI_VAL / 4) * 1_rad,
 //                       0_deg}};
-//   photonlib::SimVisionSystem sys{
+//   photon::SimVisionSystem sys{
 //       "Test", 80.0_deg, robotToCamera.Inverse(), 99999_m, 1234, 1234, 0};
 //   sys.AddSimVisionTarget(
-//       photonlib::SimVisionTarget{targetPose, 3_m, 0.5_m, 1736});
+//       photon::SimVisionTarget{targetPose, 3_m, 0.5_m, 1736});
 
 //   frc::Pose2d robotPose{{14.98_m, 0_m}, frc::Rotation2d{5_deg}};
 //   sys.ProcessFrame(robotPose);
@@ -146,10 +146,10 @@ TEST_F(SimVisionSystemTest, TestNotVisibleTargetSize) {
   const frc::Pose3d targetPose{
       {15.98_m, 0_m, 1_m},
       frc::Rotation3d{0_deg, 0_deg, units::constants::detail::PI_VAL * 1_rad}};
-  photonlib::SimVisionSystem sys{
+  photon::SimVisionSystem sys{
       "Test", 80.0_deg, frc::Transform3d{}, 99999_m, 640, 480, 20.0};
   sys.AddSimVisionTarget(
-      photonlib::SimVisionTarget{targetPose, 0.1_m, 0.025_m, 24});
+      photon::SimVisionTarget{targetPose, 0.1_m, 0.025_m, 24});
 
   frc::Pose2d robotPose{{12_m, 0_m}, frc::Rotation2d{5_deg}};
   sys.ProcessFrame(robotPose);
@@ -164,10 +164,9 @@ TEST_F(SimVisionSystemTest, TestNotVisibleTooFarForLEDs) {
   const frc::Pose3d targetPose{
       {15.98_m, 0_m, 1_m},
       frc::Rotation3d{0_deg, 0_deg, units::constants::detail::PI_VAL * 1_rad}};
-  photonlib::SimVisionSystem sys{
-      "Test", 80.0_deg, frc::Transform3d{}, 10_m, 640, 480, 1.0};
-  sys.AddSimVisionTarget(
-      photonlib::SimVisionTarget{targetPose, 1_m, 0.25_m, 78});
+  photon::SimVisionSystem sys{"Test", 80.0_deg, frc::Transform3d{}, 10_m, 640,
+                              480,    1.0};
+  sys.AddSimVisionTarget(photon::SimVisionTarget{targetPose, 1_m, 0.25_m, 78});
 
   frc::Pose2d robotPose{{10_m, 0_m}, frc::Rotation2d{5_deg}};
   sys.ProcessFrame(robotPose);
@@ -184,10 +183,9 @@ TEST_P(SimVisionSystemTestWithParamsTest, YawAngles) {
       frc::Rotation3d{0_deg, 0_deg,
                       (3 * units::constants::detail::PI_VAL / 4) * 1_rad}};
   frc::Pose2d robotPose{{10_m, 0_m}, frc::Rotation2d{GetParam() * -1.0}};
-  photonlib::SimVisionSystem sys{
+  photon::SimVisionSystem sys{
       "Test", 120.0_deg, frc::Transform3d{}, 99999_m, 640, 480, 0};
-  sys.AddSimVisionTarget(
-      photonlib::SimVisionTarget{targetPose, 0.5_m, 0.5_m, 23});
+  sys.AddSimVisionTarget(photon::SimVisionTarget{targetPose, 0.5_m, 0.5_m, 23});
 
   sys.ProcessFrame(robotPose);
 
@@ -195,7 +193,7 @@ TEST_P(SimVisionSystemTestWithParamsTest, YawAngles) {
 
   ASSERT_TRUE(results.HasTargets());
 
-  photonlib::PhotonTrackedTarget target = results.GetBestTarget();
+  photon::PhotonTrackedTarget target = results.GetBestTarget();
 
   ASSERT_NEAR(GetParam().to<double>(), target.GetYaw(), 0.0001);
 }
@@ -206,10 +204,9 @@ TEST_P(SimVisionSystemTestWithParamsTest, PitchAngles) {
       frc::Rotation3d{0_deg, 0_deg,
                       (3 * units::constants::detail::PI_VAL / 4) * 1_rad}};
   frc::Pose2d robotPose{{10_m, 0_m}, frc::Rotation2d{0_deg}};
-  photonlib::SimVisionSystem sys{
+  photon::SimVisionSystem sys{
       "Test", 120.0_deg, frc::Transform3d{}, 99999_m, 640, 480, 0};
-  sys.AddSimVisionTarget(
-      photonlib::SimVisionTarget{targetPose, 0.5_m, 0.5_m, 23});
+  sys.AddSimVisionTarget(photon::SimVisionTarget{targetPose, 0.5_m, 0.5_m, 23});
 
   sys.MoveCamera(frc::Transform3d{frc::Translation3d{},
                                   frc::Rotation3d{0_deg, GetParam(), 0_deg}});
@@ -219,7 +216,7 @@ TEST_P(SimVisionSystemTestWithParamsTest, PitchAngles) {
 
   ASSERT_TRUE(results.HasTargets());
 
-  photonlib::PhotonTrackedTarget target = results.GetBestTarget();
+  photon::PhotonTrackedTarget target = results.GetBestTarget();
 
   ASSERT_NEAR(GetParam().to<double>(), target.GetPitch(), 0.0001);
 }
@@ -242,7 +239,7 @@ TEST_P(SimVisionSystemTestDistanceParamsTest, DistanceCalc) {
   frc::Pose3d robotPose{{15.98_m - distParam, 0_m, 0_m}, frc::Rotation3d{}};
   frc::Transform3d robotToCamera{frc::Translation3d{0_m, 0_m, heightParam},
                                  frc::Rotation3d{0_deg, pitchParam, 0_deg}};
-  photonlib::SimVisionSystem sys{
+  photon::SimVisionSystem sys{
       "absurdlylongnamewhichshouldneveractuallyhappenbuteehwelltestitanywaysoho"
       "wsyourdaygoingihopegoodhaveagreatrestofyourlife",
       160.0_deg,
@@ -251,19 +248,18 @@ TEST_P(SimVisionSystemTestDistanceParamsTest, DistanceCalc) {
       640,
       480,
       0};
-  sys.AddSimVisionTarget(
-      photonlib::SimVisionTarget{targetPose, 0.5_m, 0.5_m, 0});
+  sys.AddSimVisionTarget(photon::SimVisionTarget{targetPose, 0.5_m, 0.5_m, 0});
   sys.ProcessFrame(robotPose);
 
   auto results = sys.cam.GetLatestResult();
 
   ASSERT_TRUE(results.HasTargets());
 
-  photonlib::PhotonTrackedTarget target = results.GetBestTarget();
+  photon::PhotonTrackedTarget target = results.GetBestTarget();
 
   ASSERT_NEAR(target.GetYaw(), 0.0, 0.0001);
 
-  units::meter_t dist = photonlib::PhotonUtils::CalculateDistanceToTarget(
+  units::meter_t dist = photon::PhotonUtils::CalculateDistanceToTarget(
       robotToCamera.Z(), targetPose.Z(), pitchParam,
       units::degree_t{target.GetPitch()});
   ASSERT_NEAR(dist.to<double>(),
@@ -300,51 +296,51 @@ TEST_F(SimVisionSystemTest, TestMultipleTargets) {
   const frc::Pose3d targetPoseR{
       {15.98_m, -2_m, 0_m},
       frc::Rotation3d{0_deg, 0_deg, units::constants::detail::PI_VAL * 1_rad}};
-  photonlib::SimVisionSystem sys{
+  photon::SimVisionSystem sys{
       "Test", 160.0_deg, frc::Transform3d{}, 99999_m, 640, 480, 20.0};
-  sys.AddSimVisionTarget(photonlib::SimVisionTarget{
+  sys.AddSimVisionTarget(photon::SimVisionTarget{
       targetPoseL.TransformBy(frc::Transform3d{
           frc::Translation3d{0_m, 0_m, 0_m}, frc::Rotation3d{}}),
       0.25_m, 0.25_m, 1});
-  sys.AddSimVisionTarget(photonlib::SimVisionTarget{
+  sys.AddSimVisionTarget(photon::SimVisionTarget{
       targetPoseC.TransformBy(frc::Transform3d{
           frc::Translation3d{0_m, 0_m, 0_m}, frc::Rotation3d{}}),
       0.25_m, 0.25_m, 2});
-  sys.AddSimVisionTarget(photonlib::SimVisionTarget{
+  sys.AddSimVisionTarget(photon::SimVisionTarget{
       targetPoseR.TransformBy(frc::Transform3d{
           frc::Translation3d{0_m, 0_m, 0_m}, frc::Rotation3d{}}),
       0.25_m, 0.25_m, 3});
 
-  sys.AddSimVisionTarget(photonlib::SimVisionTarget{
+  sys.AddSimVisionTarget(photon::SimVisionTarget{
       targetPoseL.TransformBy(frc::Transform3d{
           frc::Translation3d{0_m, 0_m, 1_m}, frc::Rotation3d{}}),
       0.25_m, 0.25_m, 4});
-  sys.AddSimVisionTarget(photonlib::SimVisionTarget{
+  sys.AddSimVisionTarget(photon::SimVisionTarget{
       targetPoseC.TransformBy(frc::Transform3d{
           frc::Translation3d{0_m, 0_m, 1_m}, frc::Rotation3d{}}),
       0.25_m, 0.25_m, 5});
-  sys.AddSimVisionTarget(photonlib::SimVisionTarget{
+  sys.AddSimVisionTarget(photon::SimVisionTarget{
       targetPoseR.TransformBy(frc::Transform3d{
           frc::Translation3d{0_m, 0_m, 1_m}, frc::Rotation3d{}}),
       0.25_m, 0.25_m, 6});
 
-  sys.AddSimVisionTarget(photonlib::SimVisionTarget{
+  sys.AddSimVisionTarget(photon::SimVisionTarget{
       targetPoseL.TransformBy(frc::Transform3d{
           frc::Translation3d{0_m, 0_m, 0.5_m}, frc::Rotation3d{}}),
       0.25_m, 0.25_m, 7});
-  sys.AddSimVisionTarget(photonlib::SimVisionTarget{
+  sys.AddSimVisionTarget(photon::SimVisionTarget{
       targetPoseC.TransformBy(frc::Transform3d{
           frc::Translation3d{0_m, 0_m, 0.5_m}, frc::Rotation3d{}}),
       0.25_m, 0.25_m, 8});
-  sys.AddSimVisionTarget(photonlib::SimVisionTarget{
+  sys.AddSimVisionTarget(photon::SimVisionTarget{
       targetPoseL.TransformBy(frc::Transform3d{
           frc::Translation3d{0_m, 0_m, 0.75_m}, frc::Rotation3d{}}),
       0.25_m, 0.25_m, 9});
-  sys.AddSimVisionTarget(photonlib::SimVisionTarget{
+  sys.AddSimVisionTarget(photon::SimVisionTarget{
       targetPoseR.TransformBy(frc::Transform3d{
           frc::Translation3d{0_m, 0_m, 0.75_m}, frc::Rotation3d{}}),
       0.25_m, 0.25_m, 10});
-  sys.AddSimVisionTarget(photonlib::SimVisionTarget{
+  sys.AddSimVisionTarget(photon::SimVisionTarget{
       targetPoseL.TransformBy(frc::Transform3d{
           frc::Translation3d{0_m, 0_m, 0.25_m}, frc::Rotation3d{}}),
       0.25_m, 0.25_m, 11});

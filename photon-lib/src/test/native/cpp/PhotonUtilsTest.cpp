@@ -23,6 +23,6 @@
  */
 
 #include "gtest/gtest.h"
-#include "photonlib/PhotonUtils.h"
+#include "photon/PhotonUtils.h"
 
 TEST(PhotonUtilsTest, Include) {}

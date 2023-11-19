@@ -1,1 +1,6 @@
-rootProject.name = 'photon-targeting'
+pluginManagement {
+    repositories {
+        mavenLocal()
+        gradlePluginPortal()
+    }
+}

@@ -22,16 +22,16 @@
  * SOFTWARE.
  */
 
-#include "photonlib/PhotonCamera.h"
+#include "photon/PhotonCamera.h"
 
 #include <frc/Errors.h>
 #include <frc/Timer.h>
 #include <opencv2/core/mat.hpp>
 
 #include "PhotonVersion.h"
-#include "photonlib/Packet.h"
+#include "photon/dataflow/structures/Packet.h"
 
-namespace photonlib {
+namespace photon {
 
 constexpr const units::second_t VERSION_CHECK_INTERVAL = 5_s;
 static const std::vector<std::string_view> PHOTON_PREFIX = {"/photonvision/"};
@@ -91,7 +91,7 @@ PhotonPipelineResult PhotonCamera::GetLatestResult() {
   const auto value = rawBytesEntry.Get();
   if (!value.size()) return result;
 
-  photonlib::Packet packet{value};
+  photon::Packet packet{value};
 
   packet >> result;
 
@@ -192,4 +192,4 @@ void PhotonCamera::VerifyVersion() {
   }
 }
 
-}  // namespace photonlib
+}  // namespace photon

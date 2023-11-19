@@ -24,7 +24,7 @@
 
 #include "Robot.h"
 
-#include <photonlib/PhotonUtils.h>
+#include <photon/PhotonUtils.h>
 
 void Robot::TeleopPeriodic() {
   double forwardSpeed;
@@ -37,7 +37,7 @@ void Robot::TeleopPeriodic() {
 
     if (result.HasTargets()) {
       // First calculate range
-      units::meter_t range = photonlib::PhotonUtils::CalculateDistanceToTarget(
+      units::meter_t range = photon::PhotonUtils::CalculateDistanceToTarget(
           CAMERA_HEIGHT, TARGET_HEIGHT, CAMERA_PITCH,
           units::degree_t{result.GetBestTarget().GetPitch()});
 

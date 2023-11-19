@@ -1,37 +1,53 @@
 /*
- * MIT License
+ * Copyright (C) Photon Vision.
  *
- * Copyright (c) PhotonVision
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-#include <iostream>
 
 #include <units/angle.h>
 
 #include "gtest/gtest.h"
-#include "photonlib/PhotonPipelineResult.h"
-#include "photonlib/PhotonTrackedTarget.h"
+#include "photon/dataflow/structures/Packet.h"
+#include "photon/targeting/MultiTargetPNPResult.h"
+#include "photon/targeting/PNPResult.h"
+#include "photon/targeting/PhotonPipelineResult.h"
+#include "photon/targeting/PhotonTrackedTarget.h"
+
+TEST(PacketTest, PNPResult) {
+  photon::PNPResult result;
+  photon::Packet p;
+  p << result;
+
+  photon::PNPResult b;
+  p >> b;
+
+  EXPECT_EQ(result, b);
+}
+
+TEST(PacketTest, MultiTargetPNPResult) {
+  photon::MultiTargetPNPResult result;
+  photon::Packet p;
+  p << result;
+
+  photon::MultiTargetPNPResult b;
+  p >> b;
+
+  EXPECT_EQ(result, b);
+}
 
 TEST(PacketTest, PhotonTrackedTarget) {
-  photonlib::PhotonTrackedTarget target{
+  photon::PhotonTrackedTarget target{
       3.0,
       4.0,
       9.0,
@@ -45,31 +61,27 @@ TEST(PacketTest, PhotonTrackedTarget) {
       {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6}, std::pair{7, 8}},
       {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6}, std::pair{7, 8}}};
 
-  photonlib::Packet p;
+  photon::Packet p;
   p << target;
 
-  photonlib::PhotonTrackedTarget b;
+  photon::PhotonTrackedTarget b;
   p >> b;
-
-  for (auto& c : p.GetData()) {
-    std::cout << static_cast<int>(c) << ",";
-  }
 
   EXPECT_EQ(target, b);
 }
 
 TEST(PacketTest, PhotonPipelineResult) {
-  photonlib::PhotonPipelineResult result{1_s, {}};
-  photonlib::Packet p;
+  photon::PhotonPipelineResult result{1_s, {}};
+  photon::Packet p;
   p << result;
 
-  photonlib::PhotonPipelineResult b;
+  photon::PhotonPipelineResult b;
   p >> b;
 
   EXPECT_EQ(result, b);
 
-  wpi::SmallVector<photonlib::PhotonTrackedTarget, 2> targets{
-      photonlib::PhotonTrackedTarget{
+  wpi::SmallVector<photon::PhotonTrackedTarget, 2> targets{
+      photon::PhotonTrackedTarget{
           3.0,
           -4.0,
           9.0,
@@ -82,7 +94,7 @@ TEST(PacketTest, PhotonPipelineResult) {
           -1,
           {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6}, std::pair{7, 8}},
           {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6}, std::pair{7, 8}}},
-      photonlib::PhotonTrackedTarget{
+      photon::PhotonTrackedTarget{
           3.0,
           -4.0,
           9.1,
@@ -97,11 +109,11 @@ TEST(PacketTest, PhotonPipelineResult) {
           {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6},
            std::pair{7, 8}}}};
 
-  photonlib::PhotonPipelineResult result2{2_s, targets};
-  photonlib::Packet p2;
+  photon::PhotonPipelineResult result2{2_s, targets};
+  photon::Packet p2;
   p2 << result2;
 
-  photonlib::PhotonPipelineResult b2;
+  photon::PhotonPipelineResult b2;
   p2 >> b2;
 
   EXPECT_EQ(result2, b2);
