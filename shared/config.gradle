@@ -36,9 +36,9 @@ model {
     }
 }
 
-def outputsFolder = file("$buildDir/allOutputs")
 
 task copyAllOutputs(type: Copy) {
+    def outputsFolder = file("$project.buildDir/outputs")
     destinationDir outputsFolder
 }
 
