@@ -8,6 +8,7 @@ import java.nio.file.Path
 
 ext {
     nativeName = "photonlib"
+    includePhotonTargeting = true
 }
 
 apply from: "${rootDir}/shared/setupBuild.gradle"
@@ -77,23 +78,6 @@ model {
                     srcDirs "src/main/native/include"
                     srcDirs "src/generate/native/include"
                 }
-            }
-            it.binaries.all {
-                lib project: ':photon-targeting', library: 'photontargetingBase', linkage: 'shared'
-            }
-        }
-    }
-    testSuites {
-        all {
-            it.sources.each {
-                it.exportedHeaders {
-                    srcDirs "src/main/native/include"
-                    srcDirs "src/generate/native/include"
-                }
-            }
-
-            it.binaries.all {
-                lib project: ':photon-targeting', library: 'photontargetingBase', linkage: 'shared'
             }
         }
     }

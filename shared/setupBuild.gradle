@@ -21,6 +21,12 @@ model {
                 }
             }
 
+            binaries.all {
+                if(project.hasProperty('includePhotonTargeting')) {
+                    lib project: ':photon-targeting', library: 'photontargetingBase', linkage: 'shared'
+                }
+            }
+
             nativeUtils.useRequiredLibrary(it, "wpilib_shared")
             nativeUtils.useRequiredLibrary(it, "apriltag_shared")
             nativeUtils.useRequiredLibrary(it, "opencv_shared")
@@ -43,6 +49,12 @@ model {
                     exportedHeaders {
                         srcDirs 'src/test/native/include', 'src/main/native/cpp'
                     }
+                }
+            }
+
+            binaries.all {
+                if(project.hasProperty('includePhotonTargeting')) {
+                    lib project: ':photon-targeting', library: 'photontargetingBase', linkage: 'shared'
                 }
             }
 
