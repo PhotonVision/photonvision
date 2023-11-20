@@ -390,7 +390,7 @@ public class VisionSourceManager {
 
     private boolean usbCamEquals(UsbCameraInfo a, UsbCameraInfo b) {
         return a.path.equals(b.path)
-                && a.dev == b.dev
+                // && a.dev == b.dev (dev is not constant in Windows)
                 && a.name.equals(b.name)
                 && a.productId == b.productId
                 && a.vendorId == b.vendorId;
