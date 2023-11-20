@@ -32,10 +32,15 @@
 
 #include <networktables/NetworkTableInstance.h>
 
-#include "photonlib/PhotonCamera.h"
-#include "photonlib/PhotonTargetSortMode.h"
+#include "photon/PhotonCamera.h"
+#include "photon/PhotonTargetSortMode.h"
+#include "photon/dataflow/structures/Packet.h"
+#include "photon/targeting/MultiTargetPNPResult.h"
+#include "photon/targeting/PNPResult.h"
+#include "photon/targeting/PhotonPipelineResult.h"
+#include "photon/targeting/PhotonTrackedTarget.h"
 
-namespace photonlib {
+namespace photon {
 class SimPhotonCamera : public PhotonCamera {
  public:
   SimPhotonCamera(nt::NetworkTableInstance instance,
@@ -129,4 +134,4 @@ class SimPhotonCamera : public PhotonCamera {
   nt::NetworkTableEntry versionEntry;
   nt::RawPublisher rawBytesPublisher;
 };
-}  // namespace photonlib
+}  // namespace photon

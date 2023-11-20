@@ -34,8 +34,13 @@
 
 #include "SimPhotonCamera.h"
 #include "SimVisionTarget.h"
+#include "photon/dataflow/structures/Packet.h"
+#include "photon/targeting/MultiTargetPNPResult.h"
+#include "photon/targeting/PNPResult.h"
+#include "photon/targeting/PhotonPipelineResult.h"
+#include "photon/targeting/PhotonTrackedTarget.h"
 
-namespace photonlib {
+namespace photon {
 class SimVisionSystem {
  public:
   SimPhotonCamera cam;
@@ -218,4 +223,4 @@ class SimVisionSystem {
     return (inRange && inHorizAngle && inVertAngle && targetBigEnough);
   }
 };
-}  // namespace photonlib
+}  // namespace photon
