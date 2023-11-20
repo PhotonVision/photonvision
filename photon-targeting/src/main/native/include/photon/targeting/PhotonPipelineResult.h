@@ -34,6 +34,12 @@ namespace photon {
  */
 class PhotonPipelineResult {
  public:
+  units::millisecond_t latency = 0_s;
+  units::second_t timestamp = -1_s;
+  wpi::SmallVector<PhotonTrackedTarget, 10> targets;
+  MultiTargetPNPResult multitagResult;
+  inline static bool HAS_WARNED = false;
+
   /**
    * Constructs an empty pipeline result
    */
@@ -44,8 +50,10 @@ class PhotonPipelineResult {
    * @param latency The latency in the pipeline.
    * @param targets The list of targets identified by the pipeline.
    */
-  PhotonPipelineResult(units::second_t latency,
-                       std::span<const PhotonTrackedTarget> targets);
+  PhotonPipelineResult(units::millisecond_t latency,
+                       std::span<const PhotonTrackedTarget> targets)
+      : latency(latency),
+        targets(targets.data(), targets.data() + targets.size()) {}
 
   /**
    * Constructs a pipeline result.
@@ -53,9 +61,12 @@ class PhotonPipelineResult {
    * @param targets The list of targets identified by the pipeline.
    * @param multitagResult The multitarget result
    */
-  PhotonPipelineResult(units::second_t latency,
+  PhotonPipelineResult(units::millisecond_t latency,
                        std::span<const PhotonTrackedTarget> targets,
-                       MultiTargetPNPResult multitagResult);
+                       MultiTargetPNPResult multitagResult)
+      : latency(latency),
+        targets(targets.data(), targets.data() + targets.size()),
+        multitagResult(multitagResult) {}
 
   /**
    * Returns the best target in this pipeline result. If there are no targets,
@@ -121,12 +132,6 @@ class PhotonPipelineResult {
   }
 
   bool operator==(const PhotonPipelineResult& other) const;
-
-  units::second_t latency = 0_s;
-  units::second_t timestamp = -1_s;
-  wpi::SmallVector<PhotonTrackedTarget, 10> targets;
-  MultiTargetPNPResult multitagResult;
-  inline static bool HAS_WARNED = false;
 };
 }  // namespace photon
 

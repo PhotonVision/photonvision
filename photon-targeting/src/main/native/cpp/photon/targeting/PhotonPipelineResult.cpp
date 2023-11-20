@@ -17,19 +17,8 @@
 
 #include "photon/targeting/PhotonPipelineResult.h"
 
+
 namespace photon {
-PhotonPipelineResult::PhotonPipelineResult(
-    units::second_t latency, std::span<const PhotonTrackedTarget> targets)
-    : latency(latency),
-      targets(targets.data(), targets.data() + targets.size()) {}
-
-PhotonPipelineResult::PhotonPipelineResult(
-    units::second_t latency, std::span<const PhotonTrackedTarget> targets,
-    MultiTargetPNPResult multitagResult)
-    : latency(latency),
-      targets(targets.data(), targets.data() + targets.size()),
-      multitagResult(multitagResult) {}
-
 bool PhotonPipelineResult::operator==(const PhotonPipelineResult& other) const {
   return latency == other.latency && targets == other.targets &&
          multitagResult == other.multitagResult;
