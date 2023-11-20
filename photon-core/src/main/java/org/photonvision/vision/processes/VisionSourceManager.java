@@ -196,7 +196,7 @@ public class VisionSourceManager {
      * @param loadedUsbCamConfigs The USB {@link CameraConfiguration}s loaded from disk.
      * @return the matched configurations.
      */
-    private List<CameraConfiguration> matchUSBCameras(
+    protected List<CameraConfiguration> matchUSBCameras(
             List<UsbCameraInfo> detectedCamInfos, List<CameraConfiguration> loadedUsbCamConfigs) {
         var detectedCameraList = new ArrayList<>(detectedCamInfos);
         ArrayList<CameraConfiguration> cameraConfigurations = new ArrayList<>();

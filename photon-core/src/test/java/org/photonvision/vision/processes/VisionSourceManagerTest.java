@@ -35,23 +35,90 @@ public class VisionSourceManagerTest {
         ConfigManager.getInstance().load();
 
         inst.tryMatchUSBCamImpl();
-        var config = new CameraConfiguration("secondTestVideo", "dev/video1");
+        var config3 =
+                new CameraConfiguration(
+                        "secondTestVideo",
+                        "secondTestVideo1",
+                        "secondTestVideo1",
+                        "dev/video1",
+                        new String[] {"by-id/123"});
+        var config4 =
+                new CameraConfiguration(
+                        "secondTestVideo",
+                        "secondTestVideo2",
+                        "secondTestVideo2",
+                        "dev/video2",
+                        new String[] {"by-id/321"});
+
         UsbCameraInfo info1 = new UsbCameraInfo(0, "dev/video0", "testVideo", new String[0], 1, 2);
+
         infoList.add(info1);
 
-        inst.registerLoadedConfigs(config);
-        var sources = inst.tryMatchUSBCamImpl(false);
+        inst.registerLoadedConfigs(config3, config4);
+
+        inst.tryMatchUSBCamImpl(false);
 
         assertTrue(inst.knownUsbCameras.contains(info1));
-        assertEquals(1, inst.unmatchedLoadedConfigs.size());
+        assertEquals(2, inst.unmatchedLoadedConfigs.size());
 
-        UsbCameraInfo info2 =
-                new UsbCameraInfo(0, "dev/video1", "secondTestVideo", new String[0], 2, 1);
+        UsbCameraInfo info2 = new UsbCameraInfo(0, "dev/video1", "testVideo", new String[0], 1, 2);
+
         infoList.add(info2);
+
+        var cams = inst.matchUSBCameras(infoList, inst.unmatchedLoadedConfigs);
+
+        // assertEquals("testVideo (1)", cams.get(0).uniqueName); // Proper suffixing
+
         inst.tryMatchUSBCamImpl(false);
 
         assertTrue(inst.knownUsbCameras.contains(info2));
-        assertEquals(2, inst.knownUsbCameras.size());
+        assertEquals(2, inst.unmatchedLoadedConfigs.size());
+
+        UsbCameraInfo info3 =
+                new UsbCameraInfo(0, "dev/video2", "secondTestVideo", new String[] {"by-id/123"}, 2, 1);
+
+        UsbCameraInfo info4 =
+                new UsbCameraInfo(0, "dev/video3", "secondTestVideo", new String[] {"by-id/321"}, 3, 1);
+
+        infoList.add(info4);
+
+        cams = inst.matchUSBCameras(infoList, inst.unmatchedLoadedConfigs);
+
+        var cam4 =
+                cams.stream()
+                        .filter(
+                                cam -> cam.otherPaths.length > 0 && cam.otherPaths[0].equals(config4.otherPaths[0]))
+                        .findFirst()
+                        .orElse(null);
+        // If this is null, cam4 got matched to config3 instead of config4
+
+        assertEquals(cam4.nickname, config4.nickname);
+
+        infoList.add(info3);
+
+        cams = inst.matchUSBCameras(infoList, inst.unmatchedLoadedConfigs);
+
+        inst.tryMatchUSBCamImpl(false);
+
+        assertTrue(inst.knownUsbCameras.contains(info2));
+        assertTrue(inst.knownUsbCameras.contains(info3));
+
+        var cam3 =
+                cams.stream()
+                        .filter(
+                                cam -> cam.otherPaths.length > 0 && cam.otherPaths[0].equals(config3.otherPaths[0]))
+                        .findFirst()
+                        .orElse(null);
+        cam4 =
+                cams.stream()
+                        .filter(
+                                cam -> cam.otherPaths.length > 0 && cam.otherPaths[0].equals(config4.otherPaths[0]))
+                        .findFirst()
+                        .orElse(null);
+
+        assertEquals(cam3.nickname, config3.nickname);
+        assertEquals(cam4.nickname, config4.nickname);
+        assertEquals(4, inst.knownUsbCameras.size());
         assertEquals(0, inst.unmatchedLoadedConfigs.size());
     }
 }
