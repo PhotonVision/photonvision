@@ -346,8 +346,9 @@ public class USBCameraSource extends VisionSource {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        USBCameraSource that = (USBCameraSource) o;
-        return cameraQuirks.equals(that.cameraQuirks);
+        // USBCameraSource that = (USBCameraSource) o;
+        // return cameraQuirks.equals(that.cameraQuirks);
+        return false;
     }
 
     @Override
