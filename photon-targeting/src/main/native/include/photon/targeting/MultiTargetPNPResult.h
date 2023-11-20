@@ -29,6 +29,12 @@ class MultiTargetPNPResult {
   PNPResult result;
   wpi::SmallVector<int16_t, 32> fiducialIdsUsed;
 
+  MultiTargetPNPResult() = default;
+
+  MultiTargetPNPResult(PNPResult result,
+                       wpi::SmallVector<int16_t, 32> fiducialIdsUsed)
+      : result(result), fiducialIdsUsed(fiducialIdsUsed) {}
+
   bool operator==(const MultiTargetPNPResult& other) const;
 };
 }  // namespace photon

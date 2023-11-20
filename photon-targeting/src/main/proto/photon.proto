@@ -50,7 +50,7 @@ message ProtobufPhotonTrackedTarget {
   int32 fiducial_id = 5;
   wpi.proto.ProtobufTransform3d best_camera_to_target = 6;
   wpi.proto.ProtobufTransform3d alt_camera_to_target = 7;
-  double poseAmbiguity = 8;
+  double pose_ambiguity = 8;
   repeated ProtobufTargetCorner min_area_rect_corners = 9;
   repeated ProtobufTargetCorner detected_corners = 10;
 }

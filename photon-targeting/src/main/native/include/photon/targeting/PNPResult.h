@@ -36,6 +36,18 @@ class PNPResult {
 
   double ambiguity;
 
+  PNPResult() = default;
+
+  PNPResult(frc::Transform3d best, double bestReprojErr, frc::Transform3d alt,
+            double altReprojErr, double ambiguity)
+      : best(best),
+        bestReprojErr(bestReprojErr),
+        alt(alt),
+        altReprojErr(altReprojErr),
+        ambiguity(ambiguity) {
+    this->isPresent = true;
+  }
+
   bool operator==(const PNPResult& other) const;
 };
 }  // namespace photon
