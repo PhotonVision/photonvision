@@ -18,18 +18,26 @@ model {
             sources {
                 cpp {
                     source {
+                        srcDirs 'src/main/native/cpp', "$buildDir/generated/source/proto/main/cpp"
                         srcDirs 'src/main/native/cpp'
-                        include '**/*.cpp'
+                        include '**/*.cpp', '**/*.cc'
                     }
                     exportedHeaders {
+                        srcDirs 'src/main/native/include', "$buildDir/generated/source/proto/main/cpp"
                         srcDirs 'src/main/native/include'
-                        include "**/*.h"
+                        include '**/*.h'
                     }
                 }
             }
-
-            if(project.hasProperty('includePhotonTargeting')) {
-                binaries.all {
+            binaries.all {
+                if (it instanceof SharedLibraryBinarySpec) {
+                    it.buildable = false
+                    return
+                }
+                it.tasks.withType(CppCompile) {
+                    it.dependsOn generateProto
+                }
+                if(project.hasProperty('includePhotonTargeting')) {
                     lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
                 }
             }
@@ -59,16 +67,21 @@ model {
                 }
             }
 
-            if(project.hasProperty('includePhotonTargeting')) {
-                binaries.all {
-                    lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
-                }
-            }
-
             nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared")
             nativeUtils.useRequiredLibrary(it, "googletest_static")
             nativeUtils.useRequiredLibrary(it, "apriltag_shared")
             nativeUtils.useRequiredLibrary(it, "opencv_shared")
+        }
+    }
+    binaries {
+        withType(GoogleTestTestSuiteBinarySpec) {
+            it.tasks.withType(CppCompile) {
+                it.dependsOn generateProto
+            }
+
+            if(project.hasProperty('includePhotonTargeting')) {
+                lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
+            }
         }
     }
 }
