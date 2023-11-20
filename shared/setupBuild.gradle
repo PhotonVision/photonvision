@@ -23,10 +23,11 @@ model {
                     }
                     exportedHeaders {
                         srcDirs 'src/main/native/include', "$buildDir/generated/source/proto/main/cpp"
-                        include '**/*.h'
+                        include "**/*.h"
                     }
                 }
             }
+
             binaries.all {
                 if (it instanceof SharedLibraryBinarySpec) {
                     it.buildable = false
@@ -60,8 +61,17 @@ model {
                         include '**/*.cpp'
                     }
                     exportedHeaders {
-                        srcDirs 'src/test/native/include', 'src/main/native/cpp'
+                        srcDirs 'src/test/native/include', "$buildDir/generated/source/proto/main/cpp"
                     }
+                }
+            }
+
+            binaries.all {
+                it.tasks.withType(CppCompile) {
+                    it.dependsOn generateProto
+                }
+                if(project.hasProperty('includePhotonTargeting')) {
+                    lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
                 }
             }
 
@@ -69,17 +79,6 @@ model {
             nativeUtils.useRequiredLibrary(it, "googletest_static")
             nativeUtils.useRequiredLibrary(it, "apriltag_shared")
             nativeUtils.useRequiredLibrary(it, "opencv_shared")
-        }
-    }
-    binaries {
-        withType(GoogleTestTestSuiteBinarySpec) {
-            it.tasks.withType(CppCompile) {
-                it.dependsOn generateProto
-            }
-
-            if(project.hasProperty('includePhotonTargeting')) {
-                lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
-            }
         }
     }
 }
