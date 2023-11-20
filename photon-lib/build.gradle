@@ -57,12 +57,6 @@ dependencies {
     implementation group: "us.hebi.quickbuf", name: "quickbuf-runtime", version: wpi.versions.quickbufVersion.get();
 }
 
-cppHeadersZip {
-    from('src/generate/native/include') {
-        into '/'
-    }
-}
-
 def photonlibFileInput = file("src/generate/photonlib.json.in")
 ext.photonlibFileOutput = file("$buildDir/generated/vendordeps/photonlib.json")
 
@@ -102,6 +96,14 @@ task writeCurrentVersion {
 }
 
 build.mustRunAfter writeCurrentVersion
+
+cppHeadersZip {
+    from('src/generate/native/include') {
+        into '/'
+    }
+}
+
+cppHeadersZip.dependsOn writeCurrentVersion
 
 model {
     components {
