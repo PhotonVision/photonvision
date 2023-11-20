@@ -106,8 +106,7 @@ public class PhotonTrackedTargetTest {
                                         new TargetCorner(3, 4),
                                         new TargetCorner(5, 6),
                                         new TargetCorner(7, 8))));
-        serializedTargets =
-                RepeatedMessage.newEmptyInstance(ProtobufPhotonTrackedTarget.getFactory());
+        serializedTargets = RepeatedMessage.newEmptyInstance(ProtobufPhotonTrackedTarget.getFactory());
         PhotonTrackedTarget.proto.pack(serializedTargets, targets);
         unpackedTargets = PhotonTrackedTarget.proto.unpack(serializedTargets);
         assertEquals(targets, unpackedTargets);

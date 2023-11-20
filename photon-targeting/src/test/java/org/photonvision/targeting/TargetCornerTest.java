@@ -38,15 +38,13 @@ public class TargetCornerTest {
     @Test
     public void protobufListTest() {
         List<TargetCorner> corners = List.of();
-        var serializedCorners =
-                RepeatedMessage.newEmptyInstance(ProtobufTargetCorner.getFactory());
+        var serializedCorners = RepeatedMessage.newEmptyInstance(ProtobufTargetCorner.getFactory());
         TargetCorner.proto.pack(serializedCorners, corners);
         var unpackedCorners = TargetCorner.proto.unpack(serializedCorners);
         assertEquals(corners, unpackedCorners);
 
         corners = List.of(new TargetCorner(0, 1), new TargetCorner(1, 2));
-        serializedCorners =
-                RepeatedMessage.newEmptyInstance(ProtobufTargetCorner.getFactory());
+        serializedCorners = RepeatedMessage.newEmptyInstance(ProtobufTargetCorner.getFactory());
         TargetCorner.proto.pack(serializedCorners, corners);
         unpackedCorners = TargetCorner.proto.unpack(serializedCorners);
         assertEquals(corners, unpackedCorners);
