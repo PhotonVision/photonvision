@@ -211,7 +211,6 @@ public class VisionSourceManager {
             if (config.otherPaths.length == 0) {
                 logger.debug("No valid path-by-id found for config with name " + config.baseName);
             } else {
-
                 // attempt matching by path and basename
                 logger.debug(
                         "Trying to find a match for loaded camera "
@@ -453,7 +452,6 @@ public class VisionSourceManager {
      * @return If the list of cameras contains the unique name.
      */
     private boolean containsName(final String uniqueName) {
-
         return VisionModuleManager.getInstance().getModules().stream()
                 .anyMatch(camera -> camera.visionSource.cameraConfiguration.uniqueName.equals(uniqueName));
     }
