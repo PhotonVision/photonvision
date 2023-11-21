@@ -51,6 +51,7 @@ void wpi::Protobuf<photon::PNPResult>::Pack(google::protobuf::Message* msg,
                                             const photon::PNPResult& value) {
   auto m = static_cast<photonvision::proto::ProtobufPNPResult*>(msg);
 
+  m->set_is_present(value.isPresent);
   wpi::PackProtobuf(m->mutable_best(), value.best);
   m->set_best_reproj_err(value.bestReprojErr);
   wpi::PackProtobuf(m->mutable_alt(), value.alt);
