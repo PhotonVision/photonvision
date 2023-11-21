@@ -29,10 +29,6 @@ model {
             }
 
             binaries.all {
-                if (it instanceof SharedLibraryBinarySpec) {
-                    it.buildable = false
-                    return
-                }
                 it.tasks.withType(CppCompile) {
                     it.dependsOn generateProto
                 }

@@ -114,6 +114,20 @@ model {
                     srcDirs "src/generate/native/include"
                 }
             }
+            it.binaries.all {
+                it.tasks.withType(CppCompile) {
+                    it.dependsOn ":photon-targeting:generateProto"
+                }
+            }
+        }
+    }
+    testSuites {
+        all {
+            it.binaries.all {
+                it.tasks.withType(CppCompile) {
+                    it.dependsOn ":photon-targeting:generateProto"
+                }
+            }
         }
     }
 
