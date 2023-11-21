@@ -105,6 +105,7 @@ cppHeadersZip {
 
 cppHeadersZip.dependsOn writeCurrentVersion
 
+// Building photon-lib requires photon-targeting to generate its proto files. This technically shouldn't be required but is needed for it to build.
 model {
     components {
         all {
