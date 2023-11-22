@@ -16,10 +16,57 @@
  */
 
 #include "gtest/gtest.h"
+#include "photon.pb.h"
 #include "photon/targeting/PNPResult.h"
 
-// TODO
-TEST(PNPResultTest, Equality) {}
+TEST(PNPResultTest, Equality) {
+  photon::PNPResult a;
+  photon::PNPResult b;
 
-// TODO
-TEST(PNPResultTest, Inequality) {}
+  EXPECT_EQ(a, b);
+
+  photon::PNPResult a1{frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
+                                        frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+                       0.1,
+                       frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
+                                        frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+                       0.1, 0};
+  photon::PNPResult b1{frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
+                                        frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+                       0.1,
+                       frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
+                                        frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+                       0.1, 0};
+
+  EXPECT_EQ(a1, b1);
+}
+
+TEST(PNPResultTest, Roundtrip) {
+  photon::PNPResult result;
+
+  google::protobuf::Arena arena;
+  google::protobuf::Message* proto =
+      wpi::Protobuf<photon::PNPResult>::New(&arena);
+  wpi::Protobuf<photon::PNPResult>::Pack(proto, result);
+
+  photon::PNPResult unpacked_data =
+      wpi::Protobuf<photon::PNPResult>::Unpack(*proto);
+
+  EXPECT_EQ(result, unpacked_data);
+
+  photon::PNPResult result1{
+      frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
+                       frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+      0.1,
+      frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
+                       frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+      0.1, 0};
+
+  proto = wpi::Protobuf<photon::PNPResult>::New(&arena);
+  wpi::Protobuf<photon::PNPResult>::Pack(proto, result1);
+
+  photon::PNPResult unpacked_data2 =
+      wpi::Protobuf<photon::PNPResult>::Unpack(*proto);
+
+  EXPECT_EQ(result1, unpacked_data2);
+}
