@@ -43,6 +43,9 @@ model {
                     }
                     exportedHeaders {
                         srcDirs 'src/main/native/include'
+                        if (project.hasProperty('generatedHeaders')) {
+                            srcDir generatedHeaders
+                        }
                         include "**/*.h"
                     }
                 }
