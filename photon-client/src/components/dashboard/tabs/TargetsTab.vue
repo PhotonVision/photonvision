@@ -41,7 +41,7 @@ const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings
                   useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
                 "
               >
-                <th class="text-center">Ambiguity %</th>
+                <th class="text-center">Ambiguity Ratio</th>
               </template>
             </tr>
           </thead>
@@ -73,7 +73,7 @@ const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings
                   useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
                 "
               >
-                <td>{{ target.ambiguity >= 0 ? target.ambiguity?.toFixed(2) + "%" : "(In Multi-Target)" }}</td>
+                <td>{{ target.ambiguity >= 0 ? target.ambiguity?.toFixed(2) : "(In Multi-Target)" }}</td>
               </template>
             </tr>
           </tbody>
