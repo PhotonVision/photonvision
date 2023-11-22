@@ -63,7 +63,6 @@ const handleFullscreenRequest = () => {
       :src="streamSrc"
       :alt="streamDesc"
       :style="streamStyle"
-      onclick="this.requestFullscreen()"
     />
     <div class="stream-overlay" :style="overlayStyle">
       <pv-icon
