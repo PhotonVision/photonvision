@@ -9,11 +9,12 @@ nativeUtils.withCrossLinuxArm64()
 // Configure WPI dependencies.
 nativeUtils.wpi.configureDependencies {
     wpiVersion = wpilibVersion
+    wpimathVersion = wpimathVersion
     opencvYear = 'frc2024'
     opencvVersion = openCVversion
-    googleTestYear = "frc2023"
+    googleTestYear = "frc2024"
+    googleTestVersion = "1.14.0-1"
     niLibVersion = "2024.1.1"
-    googleTestVersion = "1.12.1-2"
 }
 
 // Configure warnings and errors

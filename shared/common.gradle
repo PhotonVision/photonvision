@@ -7,7 +7,13 @@ java {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
-wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()
+wpilibTools.deps.wpilibVersion = wpilibVersion
+
+// Tell gradlerio what version of things to use (that we care about)
+// See: https://github.com/wpilibsuite/GradleRIO/blob/main/src/main/java/edu/wpi/first/gradlerio/wpi/WPIVersionsExtension.java
+wpi.getVersions().getOpencvVersion().convention(openCVversion);
+wpi.getVersions().getWpilibVersion().convention(wpilibVersion);
+wpi.getVersions().getWpimathVersion().convention(wpimathVersion);
 
 dependencies {
     implementation project(':photon-targeting')
@@ -32,13 +38,12 @@ dependencies {
     implementation group: "com.fasterxml.jackson.core", name: "jackson-core", version: wpi.versions.jacksonVersion.get()
     implementation group: "com.fasterxml.jackson.core", name: "jackson-databind", version: wpi.versions.jacksonVersion.get()
 
-    implementation group: "org.apache.commons", name: "commons-lang3", version: "3.12.0"
-    implementation group: "commons-io", name: "commons-io", version: "2.11.0"
-    implementation group: "commons-cli", name: "commons-cli", version: "1.5.0"
-
     implementation group: "org.ejml", name: "ejml-simple", version: wpi.versions.ejmlVersion.get()
     implementation group: "us.hebi.quickbuf", name: "quickbuf-runtime", version: wpi.versions.quickbufVersion.get();
 
+    implementation "commons-io:commons-io:2.11.0"
+    implementation "commons-cli:commons-cli:1.5.0"
+    implementation "org.apache.commons:commons-lang3:3.12.0"
     implementation "org.apache.commons:commons-collections4:4.4"
     implementation "org.apache.commons:commons-exec:1.3"
 
