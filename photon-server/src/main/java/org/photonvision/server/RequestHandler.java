@@ -89,8 +89,9 @@ public class RequestHandler {
 
         if (ConfigManager.saveUploadedSettingsZip(tempFilePath.get())) {
             ctx.status(200);
-            ctx.result("Successfully saved the uploaded settings zip");
-            logger.info("Successfully saved the uploaded settings zip");
+            ctx.result("Successfully saved the uploaded settings zip, rebooting");
+            logger.info("Successfully saved the uploaded settings zip, rebooting");
+            restartProgram();
         } else {
             ctx.status(500);
             ctx.result("There was an error while saving the uploaded zip file");
