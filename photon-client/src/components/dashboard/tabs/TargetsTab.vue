@@ -2,8 +2,38 @@
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { PipelineType } from "@/types/PipelineTypes";
 import { useStateStore } from "@/stores/StateStore";
+import Vue, { ref, watch } from "vue";
+import type { Transform3d } from "@/types/PhotonTrackingTypes";
 
-const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings;
+let oldResults: {targets: Transform3d[]} = Vue.observable({ targets: [] });
+let stdev = ref({
+  x: 0,
+  y: 0,
+  z_angle: 0
+});
+
+const standardDeviation = (arr, usePopulation = false) => {
+  if (arr.length < 2) {
+    return 0;
+  }
+
+  const mean = arr.reduce((acc, val) => acc + val, 0) / arr.length;
+  return Math.sqrt(
+    arr
+      .reduce((acc, val) => acc.concat((val - mean) ** 2), [])
+      .reduce((acc, val) => acc + val, 0) /
+      (arr.length - (usePopulation ? 0 : 1))
+  );
+};
+
+watch(() => useStateStore().currentPipelineResults?.multitagResult?.bestTransform, (newThing: any) => {
+  oldResults.targets.push(newThing);
+  oldResults.targets = oldResults.targets.filter(item => item).slice(-100);
+
+  stdev.value.x = standardDeviation(oldResults.targets.map(it => it.x));
+  stdev.value.y = standardDeviation(oldResults.targets.map(it => it.y));
+  stdev.value.z_angle = standardDeviation(oldResults.targets.map(it => it.angle_z));
+});
 </script>
 
 <template>
@@ -80,14 +110,16 @@ const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings
         </template>
       </v-simple-table>
     </v-row>
-    <v-row
+    <template
       v-if="
         (useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
           useCameraSettingsStore().currentPipelineType === PipelineType.Aruco) &&
-        currentPipelineSettings.doMultiTarget &&
+        useCameraSettingsStore().currentPipelineSettings.doMultiTarget  &&
         useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
         useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "
+    >
+    <v-row
       align="start"
       class="pb-4 white--text"
     >
@@ -107,6 +139,22 @@ const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings
         </tbody>
       </v-simple-table>
     </v-row>
+    <v-row align="start" class="pb-4 white--text">
+      <v-card-subtitle class="ma-0 pa-0 pb-4" style="font-size: 16px">Multi-tag pose standard deviation over 100 samples</v-card-subtitle>
+      <v-simple-table fixed-header height="100%" dense dark>
+        <thead style="font-size: 1.25rem">
+          <th class="text-center">X meters</th>
+          <th class="text-center">Y meters</th>
+          <th class="text-center">Z Angle &theta;&deg;</th>
+        </thead>
+        <tbody v-show="useStateStore().currentPipelineResults?.multitagResult">
+          <td>{{ stdev.x.toFixed(5) }}&nbsp;m</td>
+          <td>{{ stdev.y.toFixed(5) }}&nbsp;m</td>
+          <td>{{ stdev.z_angle.toFixed(5) }}&deg;</td>
+        </tbody>
+      </v-simple-table>
+    </v-row>
+    </template>
   </div>
 </template>
 
