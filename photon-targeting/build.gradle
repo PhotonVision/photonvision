@@ -6,7 +6,7 @@ ext {
     nativeName = "photontargeting"
 }
 
-apply from: "${rootDir}/shared/setupBuild.gradle"
+apply from: "${rootDir}/shared/javacpp/setupBuild.gradle"
 
 
 wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()

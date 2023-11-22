@@ -11,7 +11,7 @@ ext {
     includePhotonTargeting = true
 }
 
-apply from: "${rootDir}/shared/setupBuild.gradle"
+apply from: "${rootDir}/shared/javacpp/setupBuild.gradle"
 apply from: "${rootDir}/versioningHelper.gradle"
 
 

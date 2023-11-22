@@ -73,4 +73,4 @@ model {
     }
 }
 
-apply from: "${rootDir}/shared/publish.gradle"
+apply from: "${rootDir}/shared/javacpp/publish.gradle"
