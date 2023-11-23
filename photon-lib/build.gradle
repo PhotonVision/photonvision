@@ -22,7 +22,6 @@ cppHeadersZip {
         into '/'
     }
 }
-cppHeadersZip.dependsOn writeCurrentVersion
 
 def photonlibFileInput = file("src/generate/photonlib.json.in")
 ext.photonlibFileOutput = file("$buildDir/generated/vendordeps/photonlib.json")
@@ -61,6 +60,7 @@ task writeCurrentVersion {
 }
 
 build.mustRunAfter writeCurrentVersion
+cppHeadersZip.dependsOn writeCurrentVersion
 
 // Building photon-lib requires photon-targeting to generate its proto files. This technically shouldn't be required but is needed for it to build.
 model {
