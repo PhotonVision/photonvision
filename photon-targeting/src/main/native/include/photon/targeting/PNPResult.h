@@ -36,7 +36,15 @@ class PNPResult {
 
   double ambiguity;
 
-  PNPResult() = default;
+  // Apparently this can't be default-constructed? Things seem to have garbadge
+  // with the defaulted empty constructor anyhow
+  PNPResult()
+      : isPresent{false},
+        best{frc::Transform3d{}},
+        bestReprojErr{0},
+        alt{frc::Transform3d()},
+        altReprojErr{0},
+        ambiguity{0} {}
 
   PNPResult(frc::Transform3d best, double bestReprojErr, frc::Transform3d alt,
             double altReprojErr, double ambiguity)
