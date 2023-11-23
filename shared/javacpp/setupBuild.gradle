@@ -5,6 +5,26 @@ apply plugin: 'edu.wpi.first.NativeUtils'
 apply from: "${rootDir}/shared/config.gradle"
 apply from: "${rootDir}/shared/javacommon.gradle"
 
+wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()
+
+def nativeConfigName = 'wpilibNatives'
+def nativeConfig = configurations.create(nativeConfigName)
+
+def nativeTasks = wpilibTools.createExtractionTasks {
+    configurationName = nativeConfigName
+}
+
+nativeTasks.addToSourceSetResources(sourceSets.main)
+
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
+nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())
+
 // Windows specific functionality to export all symbols from a binary automatically
 nativeUtils {
     exportsConfigs {
@@ -23,6 +43,9 @@ model {
                     }
                     exportedHeaders {
                         srcDirs 'src/main/native/include', "$buildDir/generated/source/proto/main/cpp"
+                        if (project.hasProperty('generatedHeaders')) {
+                            srcDir generatedHeaders
+                        }
                         include "**/*.h"
                     }
                 }
@@ -79,4 +102,4 @@ model {
     }
 }
 
-apply from: "${rootDir}/shared/publish.gradle"
+apply from: "${rootDir}/shared/javacpp/publish.gradle"
