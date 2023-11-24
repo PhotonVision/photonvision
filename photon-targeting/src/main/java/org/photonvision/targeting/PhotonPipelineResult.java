@@ -20,6 +20,7 @@ package org.photonvision.targeting;
 import edu.wpi.first.util.protobuf.Protobuf;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.photonvision.proto.Photon.ProtobufPhotonPipelineResult;
 import us.hebi.quickbuf.Descriptors.Descriptor;
 
@@ -27,31 +28,11 @@ import us.hebi.quickbuf.Descriptors.Descriptor;
 public class PhotonPipelineResult {
     private static boolean HAS_WARNED = false;
 
-    // Targets to store.
+    private final double latencyMillis;
     public final List<PhotonTrackedTarget> targets = new ArrayList<>();
+    private final MultiTargetPNPResult multiTagResult;
 
-    // Latency in milliseconds.
-    private double latencyMillis;
-
-    // Timestamp in milliseconds.
     private double timestampSeconds = -1;
-
-    // Multi-tag result
-    private MultiTargetPNPResult multiTagResult = new MultiTargetPNPResult();
-
-    /** Constructs an empty pipeline result. */
-    public PhotonPipelineResult() {}
-
-    /**
-     * Constructs a pipeline result.
-     *
-     * @param latencyMillis The latency in the pipeline.
-     * @param targets The list of targets identified by the pipeline.
-     */
-    public PhotonPipelineResult(double latencyMillis, List<PhotonTrackedTarget> targets) {
-        this.latencyMillis = latencyMillis;
-        this.targets.addAll(targets);
-    }
 
     /**
      * Constructs a pipeline result.
@@ -65,6 +46,16 @@ public class PhotonPipelineResult {
         this.latencyMillis = latencyMillis;
         this.targets.addAll(targets);
         this.multiTagResult = result;
+    }
+
+    /**
+     * Constructs a pipeline result.
+     *
+     * @param latencyMillis The latency in the pipeline.
+     * @param targets The list of targets identified by the pipeline.
+     */
+    public PhotonPipelineResult(double latencyMillis, List<PhotonTrackedTarget> targets) {
+        this(latencyMillis, targets, null);
     }
 
     /**
@@ -133,11 +124,12 @@ public class PhotonPipelineResult {
     }
 
     /**
-     * Return the latest multi-target result. Be sure to check
-     * getMultiTagResult().estimatedPose.isPresent before using the pose estimate!
+     * Return the MultiTarget Result. Empty if disabled or unable to create result.
+     *
+     * @return multitarget result
      */
-    public MultiTargetPNPResult getMultiTagResult() {
-        return multiTagResult;
+    public Optional<MultiTargetPNPResult> getMultiTagResult() {
+        return Optional.ofNullable(multiTagResult);
     }
 
     @Override
@@ -211,14 +203,15 @@ public class PhotonPipelineResult {
             return new PhotonPipelineResult(
                     msg.getLatencyMs(),
                     PhotonTrackedTarget.proto.unpack(msg.getTargets()),
-                    MultiTargetPNPResult.proto.unpack(msg.getMultiTargetResult()));
+                    msg.tryGetMultiTargetResult().map(MultiTargetPNPResult.proto::unpack).orElse(null));
         }
 
         @Override
         public void pack(ProtobufPhotonPipelineResult msg, PhotonPipelineResult value) {
             PhotonTrackedTarget.proto.pack(msg.getMutableTargets(), value.targets);
-            MultiTargetPNPResult.proto.pack(msg.getMutableMultiTargetResult(), value.multiTagResult);
-
+            if (value.multiTagResult != null) {
+                MultiTargetPNPResult.proto.pack(msg.getMutableMultiTargetResult(), value.multiTagResult);
+            }
             msg.setLatencyMs(value.getLatencyMillis());
         }
     }

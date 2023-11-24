@@ -44,6 +44,8 @@ import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.StringSubscriber;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.photonvision.common.hardware.VisionLEDMode;
@@ -128,7 +130,7 @@ public class PhotonCamera implements AutoCloseable {
                 cameraTable
                         .getProtobufTopic("result_proto", PhotonPipelineResult.proto)
                         .subscribe(
-                                new PhotonPipelineResult(),
+                                new PhotonPipelineResult(0, List.of()),
                                 PubSubOption.periodic(0.01),
                                 PubSubOption.sendAll(true));
 

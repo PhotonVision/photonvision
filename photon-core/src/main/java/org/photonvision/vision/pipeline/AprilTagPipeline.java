@@ -28,6 +28,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.estimation.TargetModel;
@@ -149,11 +150,11 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         }
 
         // Do multi-tag pose estimation
-        MultiTargetPNPResult multiTagResult = new MultiTargetPNPResult();
+        Optional<MultiTargetPNPResult> multiTagResultOpt = Optional.empty();
         if (settings.solvePNPEnabled && settings.doMultiTarget) {
             var multiTagOutput = multiTagPNPPipe.run(targetList);
             sumPipeNanosElapsed += multiTagOutput.nanosElapsed;
-            multiTagResult = multiTagOutput.output;
+            multiTagResultOpt = multiTagOutput.output;
         }
 
         // Do single-tag pose estimation
@@ -167,7 +168,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                 AprilTagPoseEstimate tagPoseEstimate = null;
                 // Do single-tag estimation when "always enabled" or if a tag was not used for multitag
                 if (settings.doSingleTargetAlways
-                        || !multiTagResult.fiducialIDsUsed.contains(Integer.valueOf(detection.getId()))) {
+                        || (multiTagResultOpt.isPresent()
+                                && !multiTagResultOpt.get().fiducialIDsUsed.contains(detection.getId()))) {
                     var poseResult = singleTagPoseEstimatorPipe.run(detection);
                     sumPipeNanosElapsed += poseResult.nanosElapsed;
                     tagPoseEstimate = poseResult.output;
@@ -180,7 +182,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                     if (tagPose.isPresent()) {
                         var camToTag =
                                 new Transform3d(
-                                        new Pose3d().plus(multiTagResult.estimatedPose.best), tagPose.get());
+                                        new Pose3d().plus(multiTagResultOpt.map(v -> v.best).orElse(new Transform3d())),
+                                        tagPose.get());
                         // match expected AprilTag coordinate system
                         camToTag =
                                 CoordinateSystem.convert(camToTag, CoordinateSystem.NWU(), CoordinateSystem.EDN());
@@ -219,6 +222,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
-        return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, multiTagResult, frame);
+        return new CVPipelineResult(
+                sumPipeNanosElapsed, fps, targetList, multiTagResultOpt.orElse(null), frame);
     }
 }

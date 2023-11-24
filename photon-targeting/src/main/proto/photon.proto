@@ -28,18 +28,13 @@ message ProtobufTargetCorner {
   double y = 2;
 }
 
-message ProtobufPNPResult {
-  bool is_present = 1;
-  wpi.proto.ProtobufTransform3d best = 2;
-  double best_reproj_err = 3;
-  optional wpi.proto.ProtobufTransform3d alt = 4;
-  optional double alt_reproj_err = 5;
-  double ambiguity = 6;
-}
-
 message ProtobufMultiTargetPNPResult {
-  ProtobufPNPResult estimated_pose = 1;
-  repeated int32 fiducial_ids_used = 2;
+  wpi.proto.ProtobufTransform3d best = 1;
+  double best_reproj_err = 2;
+  optional wpi.proto.ProtobufTransform3d alt = 3;
+  optional double alt_reproj_err = 4;
+  double ambiguity = 5;
+  repeated int32 fiducial_ids_used = 6;
 }
 
 message ProtobufPhotonTrackedTarget {
@@ -59,5 +54,5 @@ message ProtobufPhotonPipelineResult {
   double latency_ms = 1;
 
   repeated ProtobufPhotonTrackedTarget targets = 2;
-  ProtobufMultiTargetPNPResult multi_target_result = 3;
+  optional ProtobufMultiTargetPNPResult multi_target_result = 3;
 }

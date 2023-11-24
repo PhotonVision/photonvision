@@ -132,7 +132,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
                 new PhotonPipelineResult(
                         result.getLatencyMillis(),
                         TrackedTarget.simpleFromTrackedTargets(result.targets),
-                        result.multiTagResult);
+                        result.getMultiTagResult().orElse(null));
 
         ts.pipelineResultsPublisher.set(res);
 

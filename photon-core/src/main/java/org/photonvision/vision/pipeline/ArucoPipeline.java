@@ -41,6 +41,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.Objdetect;
@@ -170,11 +171,11 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         }
 
         // Do multi-tag pose estimation
-        MultiTargetPNPResult multiTagResult = new MultiTargetPNPResult();
+        Optional<MultiTargetPNPResult> multiTagResultOpt = Optional.empty();
         if (settings.solvePNPEnabled && settings.doMultiTarget) {
             var multiTagOutput = multiTagPNPPipe.run(targetList);
             sumPipeNanosElapsed += multiTagOutput.nanosElapsed;
-            multiTagResult = multiTagOutput.output;
+            multiTagResultOpt = multiTagOutput.output;
         }
 
         // Do single-tag pose estimation
@@ -186,9 +187,11 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
 
             for (ArucoDetectionResult detection : tagDetectionPipeResult.output) {
                 AprilTagPoseEstimate tagPoseEstimate = null;
+
                 // Do single-tag estimation when "always enabled" or if a tag was not used for multitag
                 if (settings.doSingleTargetAlways
-                        || !multiTagResult.fiducialIDsUsed.contains(detection.getId())) {
+                        || (multiTagResultOpt.isPresent()
+                                && !multiTagResultOpt.get().fiducialIDsUsed.contains(detection.getId()))) {
                     var poseResult = singleTagPoseEstimatorPipe.run(detection);
                     sumPipeNanosElapsed += poseResult.nanosElapsed;
                     tagPoseEstimate = poseResult.output;
@@ -198,10 +201,12 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
                 if (tagPoseEstimate == null) {
                     // compute this tag's camera-to-tag transform using the multitag result
                     var tagPose = atfl.getTagPose(detection.getId());
+
                     if (tagPose.isPresent()) {
                         var camToTag =
                                 new Transform3d(
-                                        new Pose3d().plus(multiTagResult.estimatedPose.best), tagPose.get());
+                                        new Pose3d().plus(multiTagResultOpt.map(v -> v.best).orElse(new Transform3d())),
+                                        tagPose.get());
                         // match expected OpenCV coordinate system
                         camToTag =
                                 CoordinateSystem.convert(camToTag, CoordinateSystem.NWU(), CoordinateSystem.EDN());
@@ -236,7 +241,8 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
-        return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, multiTagResult, frame);
+        return new CVPipelineResult(
+                sumPipeNanosElapsed, fps, targetList, multiTagResultOpt.orElse(null), frame);
     }
 
     private void drawThresholdFrame(Mat greyMat, Mat outputMat, int windowSize, double constant) {

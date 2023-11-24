@@ -158,6 +158,7 @@ protobuf {
             task.plugins {
                 quickbuf {
                     option "gen_descriptors=true"
+                    option "java8_optional=true"
                 }
             }
         }
