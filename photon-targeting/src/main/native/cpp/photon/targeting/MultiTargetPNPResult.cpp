@@ -22,10 +22,10 @@
 namespace photon {
 
 bool MultiTargetPNPResult::operator==(const MultiTargetPNPResult& other) const {
-  return other.best == best &&
-         other.bestReprojErr == bestReprojErr && other.alt == alt &&
-         other.altReprojErr == altReprojErr && other.ambiguity == ambiguity
-         && other.fiducialIdsUsed == fiducialIdsUsed;
+  return other.best == best && other.bestReprojErr == bestReprojErr &&
+         other.alt == alt && other.altReprojErr == altReprojErr &&
+         other.ambiguity == ambiguity &&
+         other.fiducialIdsUsed == fiducialIdsUsed;
 }
 }  // namespace photon
 

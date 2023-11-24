@@ -17,9 +17,9 @@
 
 #pragma once
 
+#include <optional>
 #include <span>
 #include <string>
-#include <optional>
 
 #include <frc/Errors.h>
 #include <units/time.h>
@@ -104,9 +104,12 @@ class PhotonPipelineResult {
   units::second_t GetTimestamp() const { return timestamp; }
 
   /**
-   * Return the MultiTarget Result. Empty if disabled or unable to create result.
+   * Return the MultiTarget Result. Empty if disabled or unable to create
+   * result.
    */
-  std::optional<MultiTargetPNPResult> MultiTagResult() { return multitagResult; }
+  std::optional<MultiTargetPNPResult> MultiTagResult() {
+    return multitagResult;
+  }
 
   /**
    * Sets the timestamp in seconds

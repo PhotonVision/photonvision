@@ -45,12 +45,14 @@ wpi::Protobuf<photon::PhotonPipelineResult>::Unpack(
     targets.emplace_back(wpi::UnpackProtobuf<photon::PhotonTrackedTarget>(t));
   }
 
-  if(m->has_multi_target_result()) {
+  if (m->has_multi_target_result()) {
     return photon::PhotonPipelineResult{
         units::millisecond_t{m->latency_ms()}, targets,
-        wpi::UnpackProtobuf<photon::MultiTargetPNPResult>(m->multi_target_result())};
+        wpi::UnpackProtobuf<photon::MultiTargetPNPResult>(
+            m->multi_target_result())};
   } else {
-    return photon::PhotonPipelineResult{units::millisecond_t{m->latency_ms()}, targets};
+    return photon::PhotonPipelineResult{units::millisecond_t{m->latency_ms()},
+                                        targets};
   }
 }
 
@@ -65,7 +67,8 @@ void wpi::Protobuf<photon::PhotonPipelineResult>::Pack(
     wpi::PackProtobuf(m->add_targets(), t);
   }
 
-  if(value.multitagResult.has_value()) {
-    wpi::PackProtobuf(m->mutable_multi_target_result(), value.multitagResult.value());
+  if (value.multitagResult.has_value()) {
+    wpi::PackProtobuf(m->mutable_multi_target_result(),
+                      value.multitagResult.value());
   }
 }
