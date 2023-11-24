@@ -21,19 +21,29 @@
 #include <wpi/SmallVector.h>
 #include <wpi/protobuf/Protobuf.h>
 
-#include "PNPResult.h"
-
 namespace photon {
 class MultiTargetPNPResult {
  public:
-  PNPResult result;
+  frc::Transform3d best;
+  double bestReprojErr;
+
+  frc::Transform3d alt;
+  double altReprojErr;
+
+  double ambiguity;
+
   wpi::SmallVector<int16_t, 32> fiducialIdsUsed;
 
-  MultiTargetPNPResult() = default;
-
-  MultiTargetPNPResult(PNPResult result,
+  MultiTargetPNPResult(frc::Transform3d best, double bestReprojErr,
+                       frc::Transform3d alt, double altReprojErr,
+                       double ambiguity,
                        wpi::SmallVector<int16_t, 32> fiducialIdsUsed)
-      : result(result), fiducialIdsUsed(fiducialIdsUsed) {}
+      : best(best),
+        bestReprojErr(bestReprojErr),
+        alt(alt),
+        altReprojErr(altReprojErr),
+        ambiguity(ambiguity),
+        fiducialIdsUsed(fiducialIdsUsed) {}
 
   bool operator==(const MultiTargetPNPResult& other) const;
 };

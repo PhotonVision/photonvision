@@ -19,6 +19,7 @@
 
 #include <span>
 #include <string>
+#include <optional>
 
 #include <frc/Errors.h>
 #include <units/time.h>
@@ -37,7 +38,7 @@ class PhotonPipelineResult {
   units::millisecond_t latency = 0_s;
   units::second_t timestamp = -1_s;
   wpi::SmallVector<PhotonTrackedTarget, 10> targets;
-  MultiTargetPNPResult multitagResult;
+  std::optional<MultiTargetPNPResult> multitagResult;
   inline static bool HAS_WARNED = false;
 
   /**
@@ -103,11 +104,9 @@ class PhotonPipelineResult {
   units::second_t GetTimestamp() const { return timestamp; }
 
   /**
-   * Return the latest mulit-target result, as calculated on your coprocessor.
-   * Be sure to check getMultiTagResult().estimatedPose.isPresent before using
-   * the pose estimate!
+   * Return the MultiTarget Result. Empty if disabled or unable to create result.
    */
-  const MultiTargetPNPResult& MultiTagResult() const { return multitagResult; }
+  std::optional<MultiTargetPNPResult> MultiTagResult() { return multitagResult; }
 
   /**
    * Sets the timestamp in seconds

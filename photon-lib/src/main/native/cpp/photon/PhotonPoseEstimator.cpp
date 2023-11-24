@@ -360,8 +360,8 @@ frc::Pose3d detail::ToPose3d(const cv::Mat& tvec, const cv::Mat& rvec) {
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagOnCoprocStrategy(
     PhotonPipelineResult result, std::optional<cv::Mat> camMat,
     std::optional<cv::Mat> distCoeffs) {
-  if (result.MultiTagResult().result.isPresent) {
-    const auto field2camera = result.MultiTagResult().result.best;
+  if (result.MultiTagResult().has_value()) {
+    const auto field2camera = result.MultiTagResult().value().best;
 
     const auto fieldToRobot =
         frc::Pose3d() + field2camera + m_robotToCamera.Inverse();

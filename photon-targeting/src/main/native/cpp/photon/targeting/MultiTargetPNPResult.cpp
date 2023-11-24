@@ -22,7 +22,10 @@
 namespace photon {
 
 bool MultiTargetPNPResult::operator==(const MultiTargetPNPResult& other) const {
-  return other.result == result && other.fiducialIdsUsed == fiducialIdsUsed;
+  return other.best == best &&
+         other.bestReprojErr == bestReprojErr && other.alt == alt &&
+         other.altReprojErr == altReprojErr && other.ambiguity == ambiguity
+         && other.fiducialIdsUsed == fiducialIdsUsed;
 }
 }  // namespace photon
 
@@ -45,7 +48,11 @@ wpi::Protobuf<photon::MultiTargetPNPResult>::Unpack(
   }
 
   return photon::MultiTargetPNPResult{
-      wpi::UnpackProtobuf<photon::PNPResult>(m->estimated_pose()),
+      wpi::UnpackProtobuf<frc::Transform3d>(m->best()),
+      m->best_reproj_err(),
+      wpi::UnpackProtobuf<frc::Transform3d>(m->alt()),
+      m->alt_reproj_err(),
+      m->ambiguity(),
       fiducialIdsUsed};
 }
 
@@ -53,7 +60,11 @@ void wpi::Protobuf<photon::MultiTargetPNPResult>::Pack(
     google::protobuf::Message* msg, const photon::MultiTargetPNPResult& value) {
   auto m = static_cast<photonvision::proto::ProtobufMultiTargetPNPResult*>(msg);
 
-  wpi::PackProtobuf(m->mutable_estimated_pose(), value.result);
+  wpi::PackProtobuf(m->mutable_best(), value.best);
+  m->set_best_reproj_err(value.bestReprojErr);
+  wpi::PackProtobuf(m->mutable_alt(), value.alt);
+  m->set_alt_reproj_err(value.altReprojErr);
+  m->set_ambiguity(value.ambiguity);
 
   m->clear_fiducial_ids_used();
   for (const auto& t : value.fiducialIdsUsed) {

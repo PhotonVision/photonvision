@@ -40,7 +40,6 @@
 #include <wpi/deprecated.h>
 
 #include "photon/targeting/MultiTargetPNPResult.h"
-#include "photon/targeting/PNPResult.h"
 #include "photon/targeting/PhotonPipelineResult.h"
 #include "photon/targeting/PhotonTrackedTarget.h"
 
