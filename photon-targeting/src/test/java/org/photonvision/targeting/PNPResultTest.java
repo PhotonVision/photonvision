@@ -26,28 +26,9 @@ import org.junit.jupiter.api.Test;
 
 public class PNPResultTest {
     @Test
-    public void protobufTest() {
-        var pnpRes = new PNPResult();
-        var serializedPNPRes = PNPResult.proto.createMessage();
-        PNPResult.proto.pack(serializedPNPRes, pnpRes);
-        var unpackedPNPRes = PNPResult.proto.unpack(serializedPNPRes);
-        assertEquals(pnpRes, unpackedPNPRes);
-
-        pnpRes = new PNPResult(new Transform3d(1, 2, 3, new Rotation3d(1, 2, 3)), 0.1);
-        serializedPNPRes = PNPResult.proto.createMessage();
-        PNPResult.proto.pack(serializedPNPRes, pnpRes);
-        unpackedPNPRes = PNPResult.proto.unpack(serializedPNPRes);
-        assertEquals(pnpRes, unpackedPNPRes);
-    }
-
-    @Test
     public void equalityTest() {
-        var a = new PNPResult();
-        var b = new PNPResult();
-        assertEquals(a, b);
-
-        a = new PNPResult(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
-        b = new PNPResult(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
+        var a = new PNPResult(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
+        var b = new PNPResult(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
         assertEquals(a, b);
 
         a =

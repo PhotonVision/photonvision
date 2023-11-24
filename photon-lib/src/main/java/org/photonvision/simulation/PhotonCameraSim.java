@@ -33,6 +33,7 @@ import edu.wpi.first.cscore.VideoSource.ConnectionStrategy;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.util.WPIUtilJNI;
 import java.util.ArrayList;
 import java.util.List;
@@ -419,9 +420,9 @@ public class PhotonCameraSim implements AutoCloseable {
             // projected target can't be detected, skip to next
             if (!(canSeeCorners(noisyTargetCorners) && areaPercent >= minTargetAreaPercent)) continue;
 
-            var pnpSim = new PNPResult();
+            Optional<PNPResult> pnpSimOpt = Optional.empty();
             if (tgt.fiducialID >= 0 && tgt.getFieldVertices().size() == 4) { // single AprilTag solvePNP
-                pnpSim =
+                pnpSimOpt =
                         OpenCVHelp.solvePNP_SQUARE(
                                 prop.getIntrinsics(),
                                 prop.getDistCoeffs(),
@@ -436,9 +437,9 @@ public class PhotonCameraSim implements AutoCloseable {
                             areaPercent,
                             Math.toDegrees(centerRot.getX()),
                             tgt.fiducialID,
-                            pnpSim.best,
-                            pnpSim.alt,
-                            pnpSim.ambiguity,
+                            pnpSimOpt.map(v -> v.best).orElse(new Transform3d()),
+                            pnpSimOpt.map(v -> v.alt).orElse(new Transform3d()),
+                            pnpSimOpt.map(v -> v.ambiguity).orElse(0.0),
                             OpenCVHelp.pointsToCorners(minAreaRectPts),
                             OpenCVHelp.pointsToCorners(noisyTargetCorners)));
         }
@@ -516,7 +517,7 @@ public class PhotonCameraSim implements AutoCloseable {
         } else videoSimProcessed.setConnectionStrategy(ConnectionStrategy.kForceClose);
 
         // calculate multitag results
-        var multitagResult = new MultiTargetPNPResult();
+        MultiTargetPNPResult multitagResult = null;
         // TODO: Implement ATFL subscribing in backend
         // var tagLayout = cam.getAprilTagFieldLayout();
         var visibleLayoutTags = VisionEstimation.getVisibleLayoutTags(detectableTgts, tagLayout);
@@ -530,7 +531,7 @@ public class PhotonCameraSim implements AutoCloseable {
                             detectableTgts,
                             tagLayout,
                             TargetModel.kAprilTag16h5);
-            multitagResult = new MultiTargetPNPResult(pnpResult, usedIDs);
+            multitagResult = pnpResult.map(res -> new MultiTargetPNPResult(res, usedIDs)).orElse(null);
         }
 
         // sort target order

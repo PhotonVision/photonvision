@@ -30,7 +30,7 @@ public class PhotonPipelineResultTest {
     @Test
     public void protobufTest() {
         // Empty Result
-        var result = new PhotonPipelineResult();
+        var result = new PhotonPipelineResult(0.0, List.of());
         var serializedResult = PhotonPipelineResult.proto.createMessage();
         PhotonPipelineResult.proto.pack(serializedResult, result);
         var unpackedResult = PhotonPipelineResult.proto.unpack(serializedResult);
@@ -139,8 +139,8 @@ public class PhotonPipelineResultTest {
 
     @Test
     public void equalityTest() {
-        var a = new PhotonPipelineResult();
-        var b = new PhotonPipelineResult();
+        var a = new PhotonPipelineResult(0, List.of());
+        var b = new PhotonPipelineResult(0, List.of());
         assertEquals(a, b);
 
         a =
