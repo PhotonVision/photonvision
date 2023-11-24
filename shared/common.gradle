@@ -7,28 +7,22 @@ java {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
-wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()
+wpilibTools.deps.wpilibVersion = wpilibVersion
 
-def nativeConfigName = 'wpilibTestNative'
-def nativeConfig = configurations.create(nativeConfigName)
-
-def nativeTasks = wpilibTools.createExtractionTasks {
-    configurationName = nativeConfigName
-}
-
-nativeTasks.addToSourceSetResources(sourceSets.main)
-
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
-nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())
+// Tell gradlerio what version of things to use (that we care about)
+// See: https://github.com/wpilibsuite/GradleRIO/blob/main/src/main/java/edu/wpi/first/gradlerio/wpi/WPIVersionsExtension.java
+wpi.getVersions().getOpencvVersion().convention(openCVversion);
+wpi.getVersions().getWpilibVersion().convention(wpilibVersion);
+wpi.getVersions().getWpimathVersion().convention(wpimathVersion);
 
 dependencies {
-    // WPILib deps
+    implementation project(':photon-targeting')
+
+    implementation "io.javalin:javalin:$javalinVersion"
+
+    implementation 'org.msgpack:msgpack-core:0.9.0'
+    implementation 'org.msgpack:jackson-dataformat-msgpack:0.9.0'
+
     implementation wpilibTools.deps.wpilibJava("wpiutil")
     implementation wpilibTools.deps.wpilibJava("cameraserver")
     implementation wpilibTools.deps.wpilibJava("cscore")
@@ -41,25 +35,22 @@ dependencies {
     implementation wpilibTools.deps.wpilibJava("wpiunits")
     implementation wpilibTools.deps.wpilibOpenCvJava("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())
 
-    // Jackson
     implementation group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: wpi.versions.jacksonVersion.get()
     implementation group: "com.fasterxml.jackson.core", name: "jackson-core", version: wpi.versions.jacksonVersion.get()
     implementation group: "com.fasterxml.jackson.core", name: "jackson-databind", version: wpi.versions.jacksonVersion.get()
 
-    // Apache commons
-    implementation group: "org.apache.commons", name: "commons-lang3", version: "3.12.0"
-    implementation group: "commons-io", name: "commons-io", version: "2.11.0"
-    implementation group: "commons-cli", name: "commons-cli", version: "1.5.0"
-    implementation "org.apache.commons:commons-collections4:4.4"
-    implementation "org.apache.commons:commons-exec:1.3"
-
     implementation group: "org.ejml", name: "ejml-simple", version: wpi.versions.ejmlVersion.get()
     implementation group: "us.hebi.quickbuf", name: "quickbuf-runtime", version: wpi.versions.quickbufVersion.get();
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
+    implementation "commons-io:commons-io:2.11.0"
+    implementation "commons-cli:commons-cli:1.5.0"
+    implementation "org.apache.commons:commons-lang3:3.12.0"
+    implementation "org.apache.commons:commons-collections4:4.4"
+    implementation "org.apache.commons:commons-exec:1.3"
 
-    // wpilib serde
-    implementation 'us.hebi.quickbuf:quickbuf-runtime:1.3.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.10.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
 }
 
 test {

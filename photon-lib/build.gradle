@@ -9,59 +9,22 @@ import java.nio.file.Path
 ext {
     nativeName = "photonlib"
     includePhotonTargeting = true
+    // Include the generated Version file
+    generatedHeaders = "src/generate/native/include"
 }
 
-apply from: "${rootDir}/shared/setupBuild.gradle"
+apply from: "${rootDir}/shared/javacpp/setupBuild.gradle"
 apply from: "${rootDir}/versioningHelper.gradle"
 
-
-wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()
-
-def nativeConfigName = 'wpilibNatives'
-def nativeConfig = configurations.create(nativeConfigName)
-
-def nativeTasks = wpilibTools.createExtractionTasks {
-    configurationName = nativeConfigName
-}
-
-nativeTasks.addToSourceSetResources(sourceSets.main)
-
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
-nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())
-
-dependencies {
-    implementation project(":photon-targeting")
-
-    implementation wpilibTools.deps.wpilibJava("wpiutil")
-    implementation wpilibTools.deps.wpilibJava("cameraserver")
-    implementation wpilibTools.deps.wpilibJava("cscore")
-    implementation wpilibTools.deps.wpilibJava("wpinet")
-    implementation wpilibTools.deps.wpilibJava("wpimath")
-    implementation wpilibTools.deps.wpilibJava("ntcore")
-    implementation wpilibTools.deps.wpilibJava("hal")
-    implementation wpilibTools.deps.wpilibJava("wpilibj")
-    implementation wpilibTools.deps.wpilibJava("apriltag")
-    implementation wpilibTools.deps.wpilibJava("wpiunits")
-    implementation wpilibTools.deps.wpilibOpenCvJava("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())
-
-    implementation group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: wpi.versions.jacksonVersion.get()
-    implementation group: "com.fasterxml.jackson.core", name: "jackson-core", version: wpi.versions.jacksonVersion.get()
-    implementation group: "com.fasterxml.jackson.core", name: "jackson-databind", version: wpi.versions.jacksonVersion.get()
-
-    implementation group: "org.ejml", name: "ejml-simple", version: wpi.versions.ejmlVersion.get()
-    implementation group: "us.hebi.quickbuf", name: "quickbuf-runtime", version: wpi.versions.quickbufVersion.get();
+// Include the version file in the distributed sources
+cppHeadersZip {
+    from('src/generate/native/include') {
+        into '/'
+    }
 }
 
 def photonlibFileInput = file("src/generate/photonlib.json.in")
 ext.photonlibFileOutput = file("$buildDir/generated/vendordeps/photonlib.json")
-
-def vendorJson = artifacts.add('archives', file("$photonlibFileOutput"))
 
 task generateVendorJson() {
     description = "Generates the vendor JSON file"
@@ -97,13 +60,6 @@ task writeCurrentVersion {
 }
 
 build.mustRunAfter writeCurrentVersion
-
-cppHeadersZip {
-    from('src/generate/native/include') {
-        into '/'
-    }
-}
-
 cppHeadersZip.dependsOn writeCurrentVersion
 
 // Building photon-lib requires photon-targeting to generate its proto files. This technically shouldn't be required but is needed for it to build.
@@ -132,7 +88,10 @@ model {
             }
         }
     }
+}
+def vendorJson = artifacts.add('archives', file("$photonlibFileOutput"))
 
+model {
     // Publish the vendordep json
     publishing {
         publications {
