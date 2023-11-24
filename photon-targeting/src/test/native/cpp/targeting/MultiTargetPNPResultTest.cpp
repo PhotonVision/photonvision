@@ -20,27 +20,39 @@
 #include "photon/targeting/MultiTargetPNPResult.h"
 
 TEST(MultiTargetPNPResultTest, Equality) {
-  photon::MultiTargetPNPResult a;
-  photon::MultiTargetPNPResult b;
-
-  EXPECT_EQ(a, b);
-
-  photon::PNPResult pnpRes{
+  photon::MultiTargetPNPResult a{
       frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
                        frc::Rotation3d(1_rad, 2_rad, 3_rad)),
       0.1,
       frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
                        frc::Rotation3d(1_rad, 2_rad, 3_rad)),
-      0.1, 0};
+      0.1,
+      0,
 
-  photon::MultiTargetPNPResult a1{pnpRes, {1, 2, 3, 4}};
-  photon::MultiTargetPNPResult b1{pnpRes, {1, 2, 3, 4}};
+      {1, 2, 3, 4}};
+  photon::MultiTargetPNPResult b{
+      frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
+                       frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+      0.1,
+      frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
+                       frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+      0.1,
+      0,
+      {1, 2, 3, 4}};
 
-  EXPECT_EQ(a1, b1);
+  EXPECT_EQ(a, b);
 }
 
 TEST(MultiTargetPNPResultTest, Roundtrip) {
-  photon::MultiTargetPNPResult result;
+  photon::MultiTargetPNPResult result{
+      frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
+                       frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+      0.1,
+      frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
+                       frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+      0.1,
+      0,
+      {1, 2, 3, 4}};
 
   google::protobuf::Arena arena;
   google::protobuf::Message* proto =
@@ -51,22 +63,4 @@ TEST(MultiTargetPNPResultTest, Roundtrip) {
       wpi::Protobuf<photon::MultiTargetPNPResult>::Unpack(*proto);
 
   EXPECT_EQ(result, unpacked_data);
-
-  photon::PNPResult pnpRes{
-      frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
-                       frc::Rotation3d(1_rad, 2_rad, 3_rad)),
-      0.1,
-      frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
-                       frc::Rotation3d(1_rad, 2_rad, 3_rad)),
-      0.1, 0};
-
-  photon::MultiTargetPNPResult result1{pnpRes, {1, 2, 3, 4}};
-
-  proto = wpi::Protobuf<photon::MultiTargetPNPResult>::New(&arena);
-  wpi::Protobuf<photon::MultiTargetPNPResult>::Pack(proto, result1);
-
-  photon::MultiTargetPNPResult unpacked_data1 =
-      wpi::Protobuf<photon::MultiTargetPNPResult>::Unpack(*proto);
-
-  EXPECT_EQ(result1, unpacked_data1);
 }

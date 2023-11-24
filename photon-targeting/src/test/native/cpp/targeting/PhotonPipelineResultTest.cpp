@@ -61,15 +61,15 @@ TEST(PhotonPipelineResultTest, Equality) {
 
   EXPECT_EQ(a1, b1);
 
-  photon::PNPResult pnpRes{
+  photon::MultiTargetPNPResult multitagRes{
       frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
                        frc::Rotation3d(1_rad, 2_rad, 3_rad)),
       0.1,
       frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
                        frc::Rotation3d(1_rad, 2_rad, 3_rad)),
-      0.1, 0};
-
-  photon::MultiTargetPNPResult multitagRes{pnpRes, {1, 2, 3, 4}};
+      0.1,
+      0,
+      {1, 2, 3, 4}};
 
   photon::PhotonPipelineResult a2{12_ms, targets, multitagRes};
   photon::PhotonPipelineResult b2{12_ms, targets, multitagRes};
@@ -77,7 +77,6 @@ TEST(PhotonPipelineResultTest, Equality) {
   EXPECT_EQ(a2, b2);
 }
 
-// TODO
 TEST(PhotonPipelineResultTest, Roundtrip) {
   photon::PhotonPipelineResult result{12_ms, {}};
 
@@ -130,15 +129,15 @@ TEST(PhotonPipelineResultTest, Roundtrip) {
 
   EXPECT_EQ(result2, unpacked_data2);
 
-  photon::PNPResult pnpRes{
+  photon::MultiTargetPNPResult multitagRes{
       frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
                        frc::Rotation3d(1_rad, 2_rad, 3_rad)),
       0.1,
       frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
                        frc::Rotation3d(1_rad, 2_rad, 3_rad)),
-      0.1, 0};
-
-  photon::MultiTargetPNPResult multitagRes{pnpRes, {1, 2, 3, 4}};
+      0.1,
+      0,
+      {1, 2, 3, 4}};
 
   photon::PhotonPipelineResult result3{12_ms, targets, multitagRes};
 

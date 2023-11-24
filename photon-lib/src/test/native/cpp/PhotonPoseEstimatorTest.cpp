@@ -38,7 +38,6 @@
 #include "photon/PhotonCamera.h"
 #include "photon/PhotonPoseEstimator.h"
 #include "photon/targeting/MultiTargetPNPResult.h"
-#include "photon/targeting/PNPResult.h"
 #include "photon/targeting/PhotonPipelineResult.h"
 #include "photon/targeting/PhotonTrackedTarget.h"
 
