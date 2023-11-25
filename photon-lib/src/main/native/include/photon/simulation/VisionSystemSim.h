@@ -34,7 +34,7 @@
 #include <frc/interpolation/TimeInterpolatableBuffer.h>
 #include <frc/smartdashboard/Field2d.h>
 #include <frc/smartdashboard/FieldObject2d.h>
-#include <frc/smartdashboard/Smartdashboard.h>
+#include <frc/smartdashboard/SmartDashboard.h>
 
 #include "photon/simulation/PhotonCameraSim.h"
 
@@ -181,8 +181,8 @@ class VisionSystemSim {
   std::vector<VisionTargetSim> RemoveVisionTargets(
       const std::vector<VisionTargetSim>& targets) {
     std::vector<VisionTargetSim> removedList;
-    for (const auto& entry : targetSets) {
-      for (const auto& target : entry.second) {
+    for (auto& entry : targetSets) {
+      for (auto& target : entry.second) {
         auto it = std::find(targets.begin(), targets.end(), target);
         if (it != targets.end()) {
           removedList.emplace_back(target);
