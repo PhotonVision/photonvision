@@ -33,7 +33,7 @@
 #include <utility>
 #include <vector>
 
-#include <frc/apriltag/Apriltag.h>
+#include <frc/apriltag/AprilTag.h>
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/objdetect.hpp>
