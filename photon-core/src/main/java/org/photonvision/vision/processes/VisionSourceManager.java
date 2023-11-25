@@ -142,7 +142,15 @@ public class VisionSourceManager {
             logger.debug("Trying to match " + usbCamConfigs.size() + " unmatched configs...");
 
         // Match camera configs to physical cameras
-        var matchedCameras = matchUSBCameras(notYetLoadedCams, unmatchedLoadedConfigs);
+
+        List<CameraConfiguration> matchedCameras;
+
+        if (!createSources) {
+            matchedCameras = matchUSBCameras(notYetLoadedCams, unmatchedLoadedConfigs, false);
+        } else {
+            matchedCameras = matchUSBCameras(notYetLoadedCams, unmatchedLoadedConfigs);
+        }
+
         unmatchedLoadedConfigs.removeAll(matchedCameras);
         if (!unmatchedLoadedConfigs.isEmpty() && !hasWarned) {
             logger.warn(
@@ -198,6 +206,22 @@ public class VisionSourceManager {
      */
     private List<CameraConfiguration> matchUSBCameras(
             List<UsbCameraInfo> detectedCamInfos, List<CameraConfiguration> loadedUsbCamConfigs) {
+        return matchUSBCameras(detectedCamInfos, loadedUsbCamConfigs, true);
+    }
+
+    /**
+     * Create {@link CameraConfiguration}s based on a list of detected USB cameras and the configs on
+     * disk.
+     *
+     * @param detectedCamInfos Information about currently connected USB cameras.
+     * @param loadedUsbCamConfigs The USB {@link CameraConfiguration}s loaded from disk.
+     * @param useJNI If false, this is a unit test and the JNI should not be used for CSI devices.
+     * @return the matched configurations.
+     */
+    private List<CameraConfiguration> matchUSBCameras(
+            List<UsbCameraInfo> detectedCamInfos,
+            List<CameraConfiguration> loadedUsbCamConfigs,
+            boolean useJNI) {
         var detectedCameraList = new ArrayList<>(detectedCamInfos);
         ArrayList<CameraConfiguration> cameraConfigurations = new ArrayList<>();
 
@@ -260,7 +284,11 @@ public class VisionSourceManager {
             // HACK -- for picams, we want to use the camera model
             String nickname = uniqueName;
             if (isCsiCamera(info)) {
-                nickname = LibCameraJNI.getSensorModel().toString();
+                if (useJNI) {
+                    nickname = LibCameraJNI.getSensorModel().toString();
+                } else {
+                    nickname = "CSICAM-DEV";
+                }
             }
 
             CameraConfiguration configuration =
@@ -302,30 +330,36 @@ public class VisionSourceManager {
 
             List<String> paths = new ArrayList<>();
 
-            // Use the other paths to filter out devices that share the same path other than the index
-            // select only the lowest index.
-            // A ov5647 on a raspi 5 would show another path as platform-1000880000.pisp_be-video-index0,
-            // platform-1000880000.pisp_be-video-index4, and platform-1000880000.pisp_be-video-index5.
-            // This code will remove "indexX" from all the other paths from all the devices and make sure
-            // that we only take one camera stream from each device the stream with the lowest index.
-            for (String p : device.otherPaths) {
-                paths.add(p.split("index")[0]);
-            }
             boolean skip = false;
-            for (var otherDevice : filteredDevices) {
-                List<String> otherPaths = new ArrayList<>();
-                for (String p : otherDevice.otherPaths) {
-                    otherPaths.add(p.split("index")[0]);
+            if (device.otherPaths.length != 0) {
+                // Use the other paths to filter out devices that share the same path other than the index
+                // select only the lowest index.
+                // A ov5647 on a raspi 5 would show another path as
+                // platform-1000880000.pisp_be-video-index0,
+                // platform-1000880000.pisp_be-video-index4, and platform-1000880000.pisp_be-video-index5.
+                // This code will remove "indexX" from all the other paths from all the devices and make
+                // sure
+                // that we only take one camera stream from each device the stream with the lowest index.
+                for (String p : device.otherPaths) {
+                    paths.add(p.split("index")[0]);
                 }
-                if (paths.containsAll(otherPaths)) {
-                    if (otherDevice.dev >= device.dev) {
-                        badDevices.add(otherDevice);
-                    } else {
-                        skip = true;
-                        break;
+                for (var otherDevice : filteredDevices) {
+                    if (otherDevice.otherPaths.length == 0) continue;
+                    List<String> otherPaths = new ArrayList<>();
+                    for (String p : otherDevice.otherPaths) {
+                        otherPaths.add(p.split("index")[0]);
+                    }
+                    if (paths.containsAll(otherPaths)) {
+                        if (otherDevice.dev >= device.dev) {
+                            badDevices.add(otherDevice);
+                        } else {
+                            skip = true;
+                            break;
+                        }
                     }
                 }
             }
+
             filteredDevices.removeAll(badDevices);
             if (deviceBlacklist.contains(device.name)) {
                 logger.trace(
