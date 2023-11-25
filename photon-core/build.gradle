@@ -1,38 +1,24 @@
-plugins {
-    id 'edu.wpi.first.WpilibTools' version '1.3.0'
-}
-
 import java.nio.file.Path
 
 apply from: "${rootDir}/shared/common.gradle"
 
 dependencies {
-    implementation project(':photon-targeting')
-
-    implementation "io.javalin:javalin:$javalinVersion"
-
-    implementation 'org.msgpack:msgpack-core:0.9.0'
-    implementation 'org.msgpack:jackson-dataformat-msgpack:0.9.0'
-
     // JOGL stuff (currently we only distribute for aarch64, which is Pi 4)
     implementation "org.jogamp.gluegen:gluegen-rt:$joglVersion"
     implementation "org.jogamp.jogl:jogl-all:$joglVersion"
-
     implementation "org.jogamp.gluegen:gluegen-rt:$joglVersion:natives-linux-aarch64"
     implementation "org.jogamp.jogl:jogl-all:$joglVersion:natives-linux-aarch64"
 
     // Zip
     implementation 'org.zeroturnaround:zt-zip:1.14'
 
-    implementation wpilibTools.deps.wpilibJava("apriltag")
-
     implementation "org.xerial:sqlite-jdbc:3.41.0.0"
 }
 
-task writeCurrentVersionJava {
+task writeCurrentVersion {
     def versionFileIn = file("${rootDir}/shared/PhotonVersion.java.in")
     writePhotonVersionFile(versionFileIn, Path.of("$projectDir", "src", "main", "java", "org", "photonvision", "PhotonVersion.java"),
             versionString)
 }
 
-build.dependsOn writeCurrentVersionJava
+build.dependsOn writeCurrentVersion
