@@ -168,8 +168,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                 AprilTagPoseEstimate tagPoseEstimate = null;
                 // Do single-tag estimation when "always enabled" or if a tag was not used for multitag
                 if (settings.doSingleTargetAlways
-                        || (multiTagResultOpt.isPresent()
-                                && !multiTagResultOpt.get().fiducialIDsUsed.contains(detection.getId()))) {
+                        || multiTagResultOpt.isEmpty()
+                        || !multiTagResultOpt.get().fiducialIDsUsed.contains(detection.getId())) {
                     var poseResult = singleTagPoseEstimatorPipe.run(detection);
                     sumPipeNanosElapsed += poseResult.nanosElapsed;
                     tagPoseEstimate = poseResult.output;

@@ -190,8 +190,8 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
 
                 // Do single-tag estimation when "always enabled" or if a tag was not used for multitag
                 if (settings.doSingleTargetAlways
-                        || (multiTagResultOpt.isPresent()
-                                && !multiTagResultOpt.get().fiducialIDsUsed.contains(detection.getId()))) {
+                        || multiTagResultOpt.isEmpty()
+                        || !multiTagResultOpt.get().fiducialIDsUsed.contains(detection.getId())) {
                     var poseResult = singleTagPoseEstimatorPipe.run(detection);
                     sumPipeNanosElapsed += poseResult.nanosElapsed;
                     tagPoseEstimate = poseResult.output;
