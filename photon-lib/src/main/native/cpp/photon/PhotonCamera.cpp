@@ -26,6 +26,7 @@
 
 #include <frc/Errors.h>
 #include <frc/Timer.h>
+#include <opencv2/core.hpp>
 #include <opencv2/core/mat.hpp>
 
 #include "PhotonVersion.h"
@@ -128,8 +129,13 @@ LEDMode PhotonCamera::GetLEDMode() const {
 std::optional<cv::Mat> PhotonCamera::GetCameraMatrix() {
   auto camCoeffs = cameraIntrinsicsSubscriber.Get();
   if (camCoeffs.size() == 9) {
-    // clone should deal with ownership concerns? not sure
-    return cv::Mat(3, 3, CV_64FC1, camCoeffs.data()).clone();
+    cv::Mat retVal(3, 3, CV_64FC1);
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        retVal.at<double>(i, j) = camCoeffs[(j * 3) + i];
+      }
+    }
+    return retVal;
   }
   return std::nullopt;
 }
@@ -145,8 +151,11 @@ const std::string_view PhotonCamera::GetCameraName() const {
 std::optional<cv::Mat> PhotonCamera::GetDistCoeffs() {
   auto distCoeffs = cameraDistortionSubscriber.Get();
   if (distCoeffs.size() == 5) {
-    // clone should deal with ownership concerns? not sure
-    return cv::Mat(5, 1, CV_64FC1, distCoeffs.data()).clone();
+    cv::Mat retVal(5, 1, CV_64FC1);
+    for (int i = 0; i < 5; i++) {
+      retVal.at<double>(i, 0) = distCoeffs[i];
+    }
+    return retVal;
   }
   return std::nullopt;
 }
