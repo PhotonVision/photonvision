@@ -169,25 +169,29 @@ class VisionSystemSim {
   }
   void AddAprilTags(const frc::AprilTagFieldLayout& layout) {
     std::vector<VisionTargetSim> targets;
-    for(const frc::AprilTag& tag : layout.GetTags()) {
-      targets.emplace_back(VisionTargetSim{layout.GetTagPose(tag.ID).value(), photon::kAprilTag16h5, tag.ID});
+    for (const frc::AprilTag& tag : layout.GetTags()) {
+      targets.emplace_back(VisionTargetSim{layout.GetTagPose(tag.ID).value(),
+                                           photon::kAprilTag16h5, tag.ID});
     }
     AddVisionTargets("apriltag", targets);
   }
   void ClearVisionTargets() { targetSets.clear(); }
   void ClearAprilTags() { RemoveVisionTargets("apriltag"); }
   void RemoveVisionTargets(std::string type) { targetSets.erase(type); }
-  // TODO: Fix algo
-  // void RemoveVisionTargets(const std::vector<VisionTargetSim>& targets) {
-  //   for(const auto& entry : targetSets) {
-  //     for(const auto& target : entry.second) {
-  //       auto it = std::find(targets.begin(), targets.end(), target);
-  //       if(it != targets.end()) {
-  //         entry.second.erase(target);
-  //       }
-  //     }
-  //   }
-  // }
+  std::vector<VisionTargetSim> RemoveVisionTargets(
+      const std::vector<VisionTargetSim>& targets) {
+    std::vector<VisionTargetSim> removedList;
+    for (const auto& entry : targetSets) {
+      for (const auto& target : entry.second) {
+        auto it = std::find(targets.begin(), targets.end(), target);
+        if (it != targets.end()) {
+          removedList.emplace_back(target);
+          entry.second.erase(target);
+        }
+      }
+    }
+    return removedList;
+  }
   frc::Pose3d GetRobotPose() {
     return GetRobotPose(frc::Timer::GetFPGATimestamp());
   }
