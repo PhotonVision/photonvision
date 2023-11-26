@@ -59,7 +59,7 @@ class VisionTargetSim {
                             other.GetPose().Translation().Z()) < 1_in &&
            units::math::abs(pose.Rotation().Degrees() -
                             other.GetPose().Degrees()) < 1_deg &&
-           pose.model.GetIsPlanar() == other.model.GetIsPlanar();
+           pose.model.GetIsPlanar() == other.GetModel().GetIsPlanar();
   }
 
  private:
