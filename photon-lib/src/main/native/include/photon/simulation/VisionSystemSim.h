@@ -186,7 +186,7 @@ class VisionSystemSim {
         auto it = std::find(targets.begin(), targets.end(), target);
         if (it != targets.end()) {
           removedList.emplace_back(target);
-          entry.second.erase(target);
+          entry.second.erase(it);
         }
       }
     }
