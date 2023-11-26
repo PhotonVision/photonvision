@@ -50,6 +50,18 @@ class VisionTargetSim {
     return pose.Translation().Norm() < right.pose.Translation().Norm();
   }
 
+  bool operator==(const VisionTargetSim& other) const {
+    return units::math::abs(pose.Translation().X() -
+                            other.GetPose().Translation().X()) < 1_in &&
+           units::math::abs(pose.Translation().Y() -
+                            other.GetPose().Translation().Y()) < 1_in &&
+           units::math::abs(pose.Translation().Z() -
+                            other.GetPose().Translation().Z()) < 1_in &&
+           units::math::abs(pose.Rotation().Degrees() -
+                            other.GetPose().Degrees()) < 1_deg &&
+           pose.model.GetIsPlanar() == other.model.GetIsPlanar();
+  }
+
  private:
   frc::Pose3d pose;
   TargetModel model;
