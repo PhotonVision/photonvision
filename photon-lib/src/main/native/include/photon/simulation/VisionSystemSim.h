@@ -24,7 +24,6 @@
 
 #pragma once
 
-#include <ranges>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -54,8 +53,11 @@ class VisionSystemSim {
     }
   }
   std::vector<PhotonCameraSim*> GetCameraSims() {
-    auto vals = std::views::values(camSimMap);
-    return std::vector<PhotonCameraSim*>{vals.begin(), vals.end()};
+    std::vector<PhotonCameraSim*> retVal;
+    for (auto const& cam : camSimMap) {
+      retVal.emplace_back(cam.second);
+    }
+    return retVal;
   }
   void AddCamera(PhotonCameraSim* cameraSim,
                  const frc::Transform3d& robotToCamera) {

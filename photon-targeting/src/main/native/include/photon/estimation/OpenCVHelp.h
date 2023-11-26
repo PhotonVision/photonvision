@@ -269,7 +269,6 @@ static frc::Rotation3d RVecToRotation(const cv::Mat& rvecInput) {
 
   float error = 0;
   frc::Transform3d best{};
-  std::optional<frc::Transform3d> alt{std::nullopt};
 
   cv::solvePnPGeneric(objectMat, imagePoints, cameraMat, distCoeffsMat, rvecs,
                       tvecs, false, cv::SOLVEPNP_SQPNP, rvec, tvec,
