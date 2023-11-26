@@ -57,9 +57,13 @@ class VisionTargetSim {
                             other.GetPose().Translation().Y()) < 1_in &&
            units::math::abs(pose.Translation().Z() -
                             other.GetPose().Translation().Z()) < 1_in &&
-           units::math::abs(pose.Rotation().Degrees() -
-                            other.GetPose().Degrees()) < 1_deg &&
-           pose.model.GetIsPlanar() == other.GetModel().GetIsPlanar();
+           units::math::abs(pose.Rotation().X() -
+                            other.GetPose().Rotation().X()) < 1_deg &&
+           units::math::abs(pose.Rotation().Y() -
+                            other.GetPose().Rotation().Y()) < 1_deg &&
+           units::math::abs(pose.Rotation().Z() -
+                            other.GetPose().Rotation().Z()) < 1_deg &&
+           model.GetIsPlanar() == other.GetModel().GetIsPlanar();
   }
 
  private:
