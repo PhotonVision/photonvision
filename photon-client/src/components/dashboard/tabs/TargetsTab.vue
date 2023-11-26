@@ -102,7 +102,14 @@ const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings
         <tbody v-show="useStateStore().currentPipelineResults?.multitagResult">
           <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.x.toFixed(2) }}&nbsp;m</td>
           <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.y.toFixed(2) }}&nbsp;m</td>
-          <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_z.toFixed(2) }}&deg;</td>
+          <td>
+            {{
+              (
+                useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_z *
+                (180.0 / Math.PI)
+              ).toFixed(2)
+            }}&deg;
+          </td>
           <td>{{ useStateStore().currentPipelineResults?.multitagResult?.fiducialIDsUsed }}</td>
         </tbody>
       </v-simple-table>
