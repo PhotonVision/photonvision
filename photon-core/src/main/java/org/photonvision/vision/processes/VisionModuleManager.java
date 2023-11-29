@@ -72,35 +72,72 @@ public class VisionModuleManager {
     }
 
     private void assignCameraIndex(List<VisionSource> config) {
-        // We won't necessarily have already added all the cameras we need to at this point
-        // But by operating on the list, we have a fairly good idea of which we need to change,
-        // but it's not guaranteed that we change the correct one
-        // The best we can do is try to avoid a case where the stream index runs away to infinity
-        // since we can only stream 5 cameras at once
+        // We won't necessarily have already added all the cameras we need to at this point. By
+        // operating on the list, we have a fairly good idea of which we need to change, but it's not
+        // guaranteed that we change the correct one The best we can do is try to avoid a case where the
+        // stream index runs away to infinity since we can only stream 5 cameras at once
 
-        // Big list, which should contain every vision source (currently loaded plus the new ones being
-        // added)
-        var bigList = new ArrayList<VisionSource>();
-        bigList.addAll(
+        var currentSources = new ArrayList<VisionSource>();
+        currentSources.addAll(
                 this.getModules().stream().map(it -> it.visionSource).collect(Collectors.toList()));
-        bigList.addAll(config);
 
-        for (var v : config) {
-            var listNoV = new ArrayList<>(bigList);
-            listNoV.remove(v);
-            if (listNoV.stream()
+        // Go through the current list of sources to make sure that none of them have
+        // the same index as another already existing.
+        for (int i = 0; i < currentSources.size(); i++) {
+            var v = currentSources.get(i);
+            var currentDevModified = new ArrayList<VisionSource>(currentSources);
+            currentDevModified.remove(i);
+            int idx = 0;
+            if (currentDevModified.stream()
                     .anyMatch(
-                            it ->
-                                    it.getCameraConfiguration().streamIndex
-                                            == v.getCameraConfiguration().streamIndex)) {
-                int idx = 0;
-                while (listNoV.stream()
+                            it -> it.getCameraConfiguration().streamIndex == v.cameraConfiguration.streamIndex)) {
+                while (currentDevModified.stream()
                         .map(it -> it.getCameraConfiguration().streamIndex)
                         .collect(Collectors.toList())
                         .contains(idx)) {
                     idx++;
                 }
-                logger.debug("Assigning idx " + idx);
+                logger.warn(
+                        v.cameraConfiguration.toString()
+                                + " is using an already used stream index assigning new index idx: "
+                                + idx);
+                v.getCameraConfiguration().streamIndex = idx;
+            }
+        }
+
+        var newSources = new ArrayList<VisionSource>(config);
+
+        // Go through all of the new devices and see if their proposed index already
+        // exists or if there are duplicate indexs in the new sources.
+        for (int i = 0; i < newSources.size(); i++) {
+            var v = newSources.get(i);
+            var newDevModified = new ArrayList<VisionSource>(newSources);
+            newDevModified.remove(i);
+            int idx = 0;
+            if (newDevModified.stream()
+                            .anyMatch(
+                                    it ->
+                                            it.getCameraConfiguration().streamIndex == v.cameraConfiguration.streamIndex)
+                    || currentSources.stream()
+                            .anyMatch(
+                                    t ->
+                                            t.getCameraConfiguration().streamIndex
+                                                    == v.cameraConfiguration.streamIndex)) {
+                while (newDevModified.stream()
+                                .map(it -> it.getCameraConfiguration().streamIndex)
+                                .collect(Collectors.toList())
+                                .contains(idx)
+                        || currentSources.stream()
+                                .map(it -> it.getCameraConfiguration().streamIndex)
+                                .collect(Collectors.toList())
+                                .contains(idx)) {
+                    idx++;
+                }
+                logger.debug(
+                        "Assigning new device "
+                                + v.cameraConfiguration.toString()
+                                + " a new index idx: "
+                                + idx);
                 v.getCameraConfiguration().streamIndex = idx;
             }
         }
