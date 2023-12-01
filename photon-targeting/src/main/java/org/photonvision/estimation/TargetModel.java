@@ -151,7 +151,7 @@ public class TargetModel {
      */
     public List<Translation3d> getFieldVertices(Pose3d targetPose) {
         var basisChange = new RotTrlTransform3d(targetPose.getRotation(), targetPose.getTranslation());
-        return vertices.stream().map(t -> basisChange.apply(t)).collect(Collectors.toList());
+        return vertices.stream().map(basisChange::apply).collect(Collectors.toList());
     }
 
     /**

@@ -1,105 +1,25 @@
 plugins {
-    id "java"
-    id 'cpp'
-    id "google-test-test-suite"
     id 'edu.wpi.first.WpilibTools' version '1.3.0'
 }
 
-import java.nio.file.Path
-
 apply plugin: "edu.wpi.first.NativeUtils"
 
-apply from: "${rootDir}/shared/config.gradle"
+import java.nio.file.Path
+
+ext {
+    nativeName = "photonlib"
+    includePhotonTargeting = true
+    // Include the generated Version file
+    generatedHeaders = "src/generate/native/include"
+}
+
+apply from: "${rootDir}/shared/javacpp/setupBuild.gradle"
 apply from: "${rootDir}/versioningHelper.gradle"
 
-test {
-    useJUnitPlatform()
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
-}
-
-wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()
-println("Building for WPILib ${wpilibTools.deps.wpilibVersion}")
-
-// Apply Java configuration
-dependencies {
-    implementation project(":photon-targeting")
-
-    // WPILib deps
-    implementation wpilibTools.deps.wpilibJava("wpiutil")
-    implementation wpilibTools.deps.wpilibJava("cameraserver")
-    implementation wpilibTools.deps.wpilibJava("cscore")
-    implementation wpilibTools.deps.wpilibJava("wpimath")
-    implementation wpilibTools.deps.wpilibJava("wpinet")
-    implementation wpilibTools.deps.wpilibJava("hal")
-    implementation wpilibTools.deps.wpilibJava("ntcore")
-    implementation wpilibTools.deps.wpilibJava("wpilibj")
-    implementation wpilibTools.deps.wpilibJava("apriltag")
-    implementation wpilibTools.deps.wpilibOpenCvJava("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())
-
-    // Jackson
-    implementation group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: wpi.versions.jacksonVersion.get()
-    implementation group: "com.fasterxml.jackson.core", name: "jackson-core", version: wpi.versions.jacksonVersion.get()
-    implementation group: "com.fasterxml.jackson.core", name: "jackson-databind", version: wpi.versions.jacksonVersion.get()
-
-    implementation group: "org.ejml", name: "ejml-simple", version: wpi.versions.ejmlVersion.get()
-    implementation group: "us.hebi.quickbuf", name: "quickbuf-runtime", version: wpi.versions.quickbufVersion.get();
-
-    // Junit
-    testImplementation wpilibTools.deps.wpilibJava("cscore")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
-}
-
-// Set up exports properly
-nativeUtils {
-    exportsConfigs {
-        // Main library is just default empty. This will export everything
-        Photon {
-        }
-    }
-}
-
-model {
-    components {
-        Photon(NativeLibrarySpec) {
-            sources {
-                cpp {
-                    source {
-                        srcDirs "src/main/native/cpp"
-                        include "**/*.cpp"
-                    }
-                    exportedHeaders {
-                        srcDirs "src/main/native/include"
-                        srcDirs "src/generate/native/include"
-                    }
-                }
-            }
-            nativeUtils.useRequiredLibrary(it, "wpilib_shared")
-            nativeUtils.useRequiredLibrary(it, "apriltag_shared")
-            nativeUtils.useRequiredLibrary(it, "opencv_shared")
-        }
-    }
-    testSuites {
-        cppTest(GoogleTestTestSuiteSpec) {
-            testing $.components.Photon
-
-            sources.cpp {
-                source {
-                    srcDir "src/test/native/cpp"
-                    include "**/*.cpp"
-                }
-            }
-
-            nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared")
-            nativeUtils.useRequiredLibrary(it, "apriltag_shared")
-            nativeUtils.useRequiredLibrary(it, "googletest_static")
-            nativeUtils.useRequiredLibrary(it, "opencv_shared")
-        }
+// Include the version file in the distributed sources
+cppHeadersZip {
+    from('src/generate/native/include') {
+        into '/'
     }
 }
 
@@ -141,29 +61,19 @@ task writeCurrentVersion {
 
 build.mustRunAfter writeCurrentVersion
 
-tasks.withType(Javadoc) {
-    options.encoding = 'UTF-8'
+def vendorJson = artifacts.add('archives', file("$photonlibFileOutput"))
+
+model {
+    // Publish the vendordep json
+    publishing {
+        publications {
+            vendorjson(MavenPublication) {
+                artifact vendorJson
+
+                artifactId = "${nativeName}-json"
+                groupId = "org.photonvision"
+                version "1.0"
+            }
+        }
+    }
 }
-
-apply from: "publish.gradle"
-
-def testNativeConfigName = 'wpilibTestNatives'
-def testNativeConfig = configurations.create(testNativeConfigName)
-
-def folder = project.layout.buildDirectory.dir('NativeTest')
-
-def testNativeTasks = wpilibTools.createExtractionTasks {
-    taskPostfix = "Test"
-    configurationName = testNativeConfigName
-    rootTaskFolder.set(folder)
-}
-
-testNativeTasks.addToSourceSetResources(sourceSets.test)
-
-testNativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
-testNativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
-testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
-testNativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
-testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
-testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
-testNativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())

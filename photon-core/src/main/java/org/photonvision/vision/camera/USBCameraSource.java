@@ -28,7 +28,9 @@ import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.frame.FrameProvider;
+import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.frame.provider.USBFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceSettables;
@@ -37,10 +39,10 @@ public class USBCameraSource extends VisionSource {
     private final Logger logger;
     private final UsbCamera camera;
     private final USBCameraSettables usbCameraSettables;
-    private final USBFrameProvider usbFrameProvider;
+    private FrameProvider usbFrameProvider;
     private final CvSink cvSink;
 
-    public final QuirkyCamera cameraQuirks;
+    private QuirkyCamera cameraQuirks;
 
     public USBCameraSource(CameraConfiguration config) {
         super(config);
@@ -77,6 +79,22 @@ public class USBCameraSource extends VisionSource {
         }
     }
 
+    /**
+     * Mostly just used for unit tests to better simulate a usb camera without a camera being present.
+     */
+    public USBCameraSource(CameraConfiguration config, int pid, int vid, boolean unitTest) {
+        this(config);
+
+        cameraQuirks = QuirkyCamera.getQuirkyCamera(pid, vid, config.baseName);
+
+        if (unitTest)
+            usbFrameProvider =
+                    new FileFrameProvider(
+                            TestUtils.getWPIImagePath(
+                                    TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                            TestUtils.WPI2019Image.FOV);
+    }
+
     void disableAutoFocus() {
         if (cameraQuirks.hasQuirk(CameraQuirk.AdjustableFocus)) {
             try {
@@ -86,6 +104,10 @@ public class USBCameraSource extends VisionSource {
                 logger.error("Unable to disable autofocus!", e);
             }
         }
+    }
+
+    public QuirkyCamera getCameraQuirks() {
+        return this.cameraQuirks;
     }
 
     @Override
@@ -103,7 +125,7 @@ public class USBCameraSource extends VisionSource {
             super(configuration);
             getAllVideoModes();
             if (!cameraQuirks.hasQuirk(CameraQuirk.StickyFPS))
-                setVideoMode(videoModes.get(0)); // fixes double FPS set
+                if (!videoModes.isEmpty()) setVideoMode(videoModes.get(0)); // fixes double FPS set
         }
 
         public void setAutoExposure(boolean cameraAutoExposure) {
@@ -343,11 +365,27 @@ public class USBCameraSource extends VisionSource {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        USBCameraSource that = (USBCameraSource) o;
-        return cameraQuirks.equals(that.cameraQuirks);
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        USBCameraSource other = (USBCameraSource) obj;
+        if (camera == null) {
+            if (other.camera != null) return false;
+        } else if (!camera.equals(other.camera)) return false;
+        if (usbCameraSettables == null) {
+            if (other.usbCameraSettables != null) return false;
+        } else if (!usbCameraSettables.equals(other.usbCameraSettables)) return false;
+        if (usbFrameProvider == null) {
+            if (other.usbFrameProvider != null) return false;
+        } else if (!usbFrameProvider.equals(other.usbFrameProvider)) return false;
+        if (cvSink == null) {
+            if (other.cvSink != null) return false;
+        } else if (!cvSink.equals(other.cvSink)) return false;
+        if (cameraQuirks == null) {
+            if (other.cameraQuirks != null) return false;
+        } else if (!cameraQuirks.equals(other.cameraQuirks)) return false;
+        return true;
     }
 
     @Override

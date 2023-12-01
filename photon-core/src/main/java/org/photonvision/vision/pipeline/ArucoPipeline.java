@@ -47,7 +47,7 @@ import org.opencv.objdetect.Objdetect;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.estimation.TargetModel;
-import org.photonvision.targeting.MultiTargetPNPResults;
+import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
@@ -170,7 +170,7 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         }
 
         // Do multi-tag pose estimation
-        MultiTargetPNPResults multiTagResult = new MultiTargetPNPResults();
+        MultiTargetPNPResult multiTagResult = new MultiTargetPNPResult();
         if (settings.solvePNPEnabled && settings.doMultiTarget) {
             var multiTagOutput = multiTagPNPPipe.run(targetList);
             sumPipeNanosElapsed += multiTagOutput.nanosElapsed;

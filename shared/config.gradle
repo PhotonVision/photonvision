@@ -9,16 +9,19 @@ nativeUtils.withCrossLinuxArm64()
 // Configure WPI dependencies.
 nativeUtils.wpi.configureDependencies {
     wpiVersion = wpilibVersion
+    wpimathVersion = wpimathVersion
     opencvYear = 'frc2024'
     opencvVersion = openCVversion
-    googleTestYear = "frc2023"
+    googleTestYear = "frc2024"
+    googleTestVersion = "1.14.0-1"
     niLibVersion = "2024.1.1"
-    googleTestVersion = "1.12.1-2"
 }
 
 // Configure warnings and errors
 nativeUtils.wpi.addWarnings()
 nativeUtils.wpi.addWarningsAsErrors()
+
+nativeUtils.setSinglePrintPerPlatform()
 
 // Enable builds for all platforms.
 model {
@@ -32,6 +35,18 @@ model {
             nativeUtils.usePlatformArguments(it)
         }
     }
+}
+
+
+task copyAllOutputs(type: Copy) {
+    def outputsFolder = file("$project.buildDir/outputs")
+    destinationDir outputsFolder
+}
+
+ext.addTaskToCopyAllOutputs = { task ->
+    copyAllOutputs.dependsOn task
+    copyAllOutputs.inputs.file task.archiveFile
+    copyAllOutputs.from task.archiveFile
 }
 
 // Add debug path to binaries.
@@ -68,6 +83,8 @@ ext.appendDebugPathToBinaries = { binaries ->
         }
     }
 }
+
+def licenseFile = file("$rootDir/LICENCE")
 
 // Create ZIP tasks for each component.
 ext.createComponentZipTasks = { components, names, base, type, project, func ->

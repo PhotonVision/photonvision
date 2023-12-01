@@ -1,0 +1,139 @@
+apply plugin: 'maven-publish'
+apply plugin: 'java-library'
+apply plugin: 'jacoco'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+def baseArtifactId = nativeName
+def artifactGroupId = 'org.photonvision'
+def javaBaseName = "_GROUP_org_photonvision_${baseArtifactId}_ID_${baseArtifactId}-java_CLS"
+
+def outputsFolder = file("$buildDir/outputs")
+
+javadoc {
+    options.encoding = 'UTF-8'
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    archiveClassifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    archiveClassifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+task outputJar(type: Jar, dependsOn: classes) {
+    archiveBaseName = javaBaseName
+    destinationDirectory = outputsFolder
+    from sourceSets.main.output
+}
+
+task outputSourcesJar(type: Jar, dependsOn: classes) {
+    archiveBaseName = javaBaseName
+    destinationDirectory = outputsFolder
+    archiveClassifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task outputJavadocJar(type: Jar, dependsOn: javadoc) {
+    archiveBaseName = javaBaseName
+    destinationDirectory = outputsFolder
+    archiveClassifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+    archives outputJar
+    archives outputSourcesJar
+    archives outputJavadocJar
+}
+
+addTaskToCopyAllOutputs(outputSourcesJar)
+addTaskToCopyAllOutputs(outputJavadocJar)
+addTaskToCopyAllOutputs(outputJar)
+
+build.dependsOn outputSourcesJar
+build.dependsOn outputJavadocJar
+build.dependsOn outputJar
+
+publishing {
+    publications {
+        java(MavenPublication) {
+            artifact jar
+            artifact sourcesJar
+            artifact javadocJar
+
+            artifactId = "${baseArtifactId}-java"
+            groupId artifactGroupId
+            version pubVersion
+        }
+    }
+
+    repositories {
+        maven {
+            url ('https://maven.photonvision.org/repository/' + (isDev ? 'snapshots' : 'internal'))
+            credentials {
+                username 'ghactions'
+                password System.getenv("ARTIFACTORY_API_KEY")
+            }
+        }
+    }
+}
+
+test {
+    useJUnitPlatform()
+    systemProperty 'junit.jupiter.extensions.autodetection.enabled', 'true'
+    testLogging {
+        events "failed"
+        exceptionFormat "full"
+    }
+    finalizedBy jacocoTestReport
+}
+
+wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()
+
+dependencies {
+    if(project.hasProperty('includePhotonTargeting')) {
+        implementation project(":photon-targeting")
+    }
+
+    implementation wpilibTools.deps.wpilibJava("wpiutil")
+    implementation wpilibTools.deps.wpilibJava("cameraserver")
+    implementation wpilibTools.deps.wpilibJava("cscore")
+    implementation wpilibTools.deps.wpilibJava("wpinet")
+    implementation wpilibTools.deps.wpilibJava("wpimath")
+    implementation wpilibTools.deps.wpilibJava("ntcore")
+    implementation wpilibTools.deps.wpilibJava("hal")
+    implementation wpilibTools.deps.wpilibJava("wpilibj")
+    implementation wpilibTools.deps.wpilibJava("apriltag")
+    implementation wpilibTools.deps.wpilibOpenCvJava("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())
+
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: wpi.versions.jacksonVersion.get()
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-core", version: wpi.versions.jacksonVersion.get()
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-databind", version: wpi.versions.jacksonVersion.get()
+
+    implementation group: "org.ejml", name: "ejml-simple", version: wpi.versions.ejmlVersion.get()
+    implementation group: "us.hebi.quickbuf", name: "quickbuf-runtime", version: wpi.versions.quickbufVersion.get();
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.10.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
+}
+
+jacoco {
+    toolVersion = "0.8.10"
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
