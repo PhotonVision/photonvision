@@ -17,6 +17,8 @@
 
 package org.photonvision.vision.camera;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -109,7 +111,17 @@ public class QuirkyCamera {
             boolean hasBaseName = !qc.baseName.isEmpty();
             boolean matchesBaseName = qc.baseName.equals(baseName) || !hasBaseName;
             if (qc.usbVid == usbVid && qc.usbPid == usbPid && matchesBaseName) {
-                return qc;
+                List<CameraQuirk> quirks = new ArrayList<CameraQuirk>();
+                for (var q : CameraQuirk.values()) {
+                    if (qc.hasQuirk(q)) quirks.add(q);
+                }
+                QuirkyCamera c =
+                        new QuirkyCamera(
+                                usbVid,
+                                usbPid,
+                                baseName,
+                                Arrays.copyOf(quirks.toArray(), quirks.size(), CameraQuirk[].class));
+                return c;
             }
         }
         return new QuirkyCamera(usbVid, usbPid, baseName);

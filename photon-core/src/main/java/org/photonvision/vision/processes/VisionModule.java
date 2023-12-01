@@ -95,7 +95,7 @@ public class VisionModule {
 
         // Find quirks for the current camera
         if (visionSource instanceof USBCameraSource) {
-            cameraQuirks = ((USBCameraSource) visionSource).cameraQuirks;
+            cameraQuirks = ((USBCameraSource) visionSource).getCameraQuirks();
         } else if (visionSource instanceof LibcameraGpuSource) {
             cameraQuirks = QuirkyCamera.ZeroCopyPiCamera;
         } else {

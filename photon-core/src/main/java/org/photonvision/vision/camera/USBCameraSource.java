@@ -28,7 +28,9 @@ import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.frame.FrameProvider;
+import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.frame.provider.USBFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceSettables;
@@ -37,10 +39,10 @@ public class USBCameraSource extends VisionSource {
     private final Logger logger;
     private final UsbCamera camera;
     private final USBCameraSettables usbCameraSettables;
-    private final USBFrameProvider usbFrameProvider;
+    private FrameProvider usbFrameProvider;
     private final CvSink cvSink;
 
-    public final QuirkyCamera cameraQuirks;
+    private QuirkyCamera cameraQuirks;
 
     public USBCameraSource(CameraConfiguration config) {
         super(config);
@@ -77,6 +79,22 @@ public class USBCameraSource extends VisionSource {
         }
     }
 
+    /**
+     * Mostly just used for unit tests to better simulate a usb camera without a camera being present.
+     */
+    public USBCameraSource(CameraConfiguration config, int pid, int vid, boolean unitTest) {
+        this(config);
+
+        cameraQuirks = QuirkyCamera.getQuirkyCamera(pid, vid, config.baseName);
+
+        if (unitTest)
+            usbFrameProvider =
+                    new FileFrameProvider(
+                            TestUtils.getWPIImagePath(
+                                    TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                            TestUtils.WPI2019Image.FOV);
+    }
+
     void disableAutoFocus() {
         if (cameraQuirks.hasQuirk(CameraQuirk.AdjustableFocus)) {
             try {
@@ -86,6 +104,10 @@ public class USBCameraSource extends VisionSource {
                 logger.error("Unable to disable autofocus!", e);
             }
         }
+    }
+
+    public QuirkyCamera getCameraQuirks() {
+        return this.cameraQuirks;
     }
 
     @Override
@@ -104,7 +126,7 @@ public class USBCameraSource extends VisionSource {
             super(configuration);
             getAllVideoModes();
             if (!cameraQuirks.hasQuirk(CameraQuirk.StickyFPS))
-                setVideoMode(videoModes.get(0)); // fixes double FPS set
+                if (!videoModes.isEmpty()) setVideoMode(videoModes.get(0)); // fixes double FPS set
         }
 
         public void setAutoExposure(boolean cameraAutoExposure) {
