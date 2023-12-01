@@ -121,7 +121,6 @@ public class USBCameraSource extends VisionSource {
     }
 
     public class USBCameraSettables extends VisionSourceSettables {
-
         protected USBCameraSettables(CameraConfiguration configuration) {
             super(configuration);
             getAllVideoModes();
