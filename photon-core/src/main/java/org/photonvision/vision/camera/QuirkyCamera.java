@@ -110,6 +110,8 @@ public class QuirkyCamera {
         for (var qc : quirkyCameras) {
             boolean hasBaseName = !qc.baseName.isEmpty();
             boolean matchesBaseName = qc.baseName.equals(baseName) || !hasBaseName;
+            // If we have a quirkycamera we need to copy the quirks from our predefined object and create
+            // a quirkycamera object with the baseName.
             if (qc.usbVid == usbVid && qc.usbPid == usbPid && matchesBaseName) {
                 List<CameraQuirk> quirks = new ArrayList<CameraQuirk>();
                 for (var q : CameraQuirk.values()) {
