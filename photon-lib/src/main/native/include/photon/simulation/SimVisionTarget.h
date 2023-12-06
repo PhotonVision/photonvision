@@ -27,9 +27,7 @@
 #include <frc/geometry/Pose3d.h>
 #include <units/area.h>
 
-#include "photon/dataflow/structures/Packet.h"
 #include "photon/targeting/MultiTargetPNPResult.h"
-#include "photon/targeting/PNPResult.h"
 #include "photon/targeting/PhotonPipelineResult.h"
 #include "photon/targeting/PhotonTrackedTarget.h"
 

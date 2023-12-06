@@ -17,51 +17,58 @@
 
 #include "photon/targeting/PhotonPipelineResult.h"
 
+#include "photon.pb.h"
+
 namespace photon {
-PhotonPipelineResult::PhotonPipelineResult(
-    units::second_t latency, std::span<const PhotonTrackedTarget> targets)
-    : latency(latency),
-      targets(targets.data(), targets.data() + targets.size()) {}
-
-PhotonPipelineResult::PhotonPipelineResult(
-    units::second_t latency, std::span<const PhotonTrackedTarget> targets,
-    MultiTargetPNPResult multitagResult)
-    : latency(latency),
-      targets(targets.data(), targets.data() + targets.size()),
-      multitagResult(multitagResult) {}
-
 bool PhotonPipelineResult::operator==(const PhotonPipelineResult& other) const {
   return latency == other.latency && targets == other.targets &&
          multitagResult == other.multitagResult;
 }
-
-Packet& operator<<(Packet& packet, const PhotonPipelineResult& result) {
-  // Encode latency and number of targets.
-  packet << result.latency.value() * 1000 << result.multitagResult
-         << static_cast<int8_t>(result.targets.size());
-
-  // Encode the information of each target.
-  for (auto& target : result.targets) packet << target;
-
-  // Return the packet
-  return packet;
-}
-
-Packet& operator>>(Packet& packet, PhotonPipelineResult& result) {
-  // Decode latency, existence of targets, and number of targets.
-  double latencyMillis = 0;
-  int8_t targetCount = 0;
-  packet >> latencyMillis >> result.multitagResult >> targetCount;
-  result.latency = units::second_t(latencyMillis / 1000.0);
-
-  result.targets.clear();
-
-  // Decode the information of each target.
-  for (int i = 0; i < targetCount; ++i) {
-    PhotonTrackedTarget target;
-    packet >> target;
-    result.targets.push_back(target);
-  }
-  return packet;
-}
 }  // namespace photon
+
+google::protobuf::Message* wpi::Protobuf<photon::PhotonPipelineResult>::New(
+    google::protobuf::Arena* arena) {
+  return google::protobuf::Arena::CreateMessage<
+      photonvision::proto::ProtobufPhotonPipelineResult>(arena);
+}
+
+photon::PhotonPipelineResult
+wpi::Protobuf<photon::PhotonPipelineResult>::Unpack(
+    const google::protobuf::Message& msg) {
+  auto m =
+      static_cast<const photonvision::proto::ProtobufPhotonPipelineResult*>(
+          &msg);
+
+  std::vector<photon::PhotonTrackedTarget> targets;
+  targets.reserve(m->targets_size());
+  for (const auto& t : m->targets()) {
+    targets.emplace_back(wpi::UnpackProtobuf<photon::PhotonTrackedTarget>(t));
+  }
+
+  if (m->has_multi_target_result()) {
+    return photon::PhotonPipelineResult{
+        units::millisecond_t{m->latency_ms()}, targets,
+        wpi::UnpackProtobuf<photon::MultiTargetPNPResult>(
+            m->multi_target_result())};
+  } else {
+    return photon::PhotonPipelineResult{units::millisecond_t{m->latency_ms()},
+                                        targets};
+  }
+}
+
+void wpi::Protobuf<photon::PhotonPipelineResult>::Pack(
+    google::protobuf::Message* msg, const photon::PhotonPipelineResult& value) {
+  auto m = static_cast<photonvision::proto::ProtobufPhotonPipelineResult*>(msg);
+
+  m->set_latency_ms(value.latency.value());
+
+  m->clear_targets();
+  for (const auto& t : value.GetTargets()) {
+    wpi::PackProtobuf(m->add_targets(), t);
+  }
+
+  if (value.multitagResult.has_value()) {
+    wpi::PackProtobuf(m->mutable_multi_target_result(),
+                      value.multitagResult.value());
+  }
+}

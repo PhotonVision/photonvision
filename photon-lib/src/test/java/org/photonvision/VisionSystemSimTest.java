@@ -516,7 +516,7 @@ class VisionSystemSimTest {
                         camera.getLatestResult().getTargets(),
                         layout,
                         TargetModel.kAprilTag16h5);
-        Pose3d pose = new Pose3d().plus(results.best);
+        Pose3d pose = new Pose3d().plus(results.get().best);
         assertEquals(5, pose.getX(), .01);
         assertEquals(1, pose.getY(), .01);
         assertEquals(0, pose.getZ(), .01);
@@ -535,7 +535,7 @@ class VisionSystemSimTest {
                         camera.getLatestResult().getTargets(),
                         layout,
                         TargetModel.kAprilTag16h5);
-        pose = new Pose3d().plus(results.best);
+        pose = new Pose3d().plus(results.get().best);
         assertEquals(5, pose.getX(), .01);
         assertEquals(1, pose.getY(), .01);
         assertEquals(0, pose.getZ(), .01);

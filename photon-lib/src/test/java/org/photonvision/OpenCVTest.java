@@ -203,13 +203,14 @@ public class OpenCVTest {
         var targetCorners =
                 OpenCVHelp.projectPoints(
                         prop.getIntrinsics(), prop.getDistCoeffs(), camRt, target.getFieldVertices());
-        var pnpSim =
+        var pnpSimOpt =
                 OpenCVHelp.solvePNP_SQUARE(
                         prop.getIntrinsics(), prop.getDistCoeffs(), target.getModel().vertices, targetCorners);
 
         // check solvePNP estimation accuracy
-        assertSame(relTarget.getRotation(), pnpSim.best.getRotation());
-        assertSame(relTarget.getTranslation(), pnpSim.best.getTranslation());
+        var best = pnpSimOpt.map(v -> v.best).orElse(new Transform3d());
+        assertSame(relTarget.getRotation(), best.getRotation());
+        assertSame(relTarget.getTranslation(), best.getTranslation());
     }
 
     @Test
@@ -238,12 +239,13 @@ public class OpenCVTest {
         var targetCorners =
                 OpenCVHelp.projectPoints(
                         prop.getIntrinsics(), prop.getDistCoeffs(), camRt, target.getFieldVertices());
-        var pnpSim =
+        var pnpSimOpt =
                 OpenCVHelp.solvePNP_SQPNP(
                         prop.getIntrinsics(), prop.getDistCoeffs(), target.getModel().vertices, targetCorners);
 
         // check solvePNP estimation accuracy
-        assertSame(relTarget.getRotation(), pnpSim.best.getRotation());
-        assertSame(relTarget.getTranslation(), pnpSim.best.getTranslation());
+        var best = pnpSimOpt.map(v -> v.best).orElse(new Transform3d());
+        assertSame(relTarget.getRotation(), best.getRotation());
+        assertSame(relTarget.getTranslation(), best.getTranslation());
     }
 }

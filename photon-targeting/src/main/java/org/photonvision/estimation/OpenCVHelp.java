@@ -18,6 +18,7 @@
 package org.photonvision.estimation;
 
 import edu.wpi.first.cscore.CvSink;
+import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.Num;
@@ -30,6 +31,7 @@ import edu.wpi.first.math.numbers.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import org.ejml.simple.SimpleMatrix;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
@@ -63,8 +65,8 @@ public final class OpenCVHelp {
     }
 
     static {
-        NWU_TO_EDN = new Rotation3d(Matrix.mat(Nat.N3(), Nat.N3()).fill(0, -1, 0, 0, 0, -1, 1, 0, 0));
-        EDN_TO_NWU = new Rotation3d(Matrix.mat(Nat.N3(), Nat.N3()).fill(0, 0, 1, -1, 0, 0, 0, -1, 0));
+        NWU_TO_EDN = new Rotation3d(MatBuilder.fill(Nat.N3(), Nat.N3(), 0, -1, 0, 0, 0, -1, 1, 0, 0));
+        EDN_TO_NWU = new Rotation3d(MatBuilder.fill(Nat.N3(), Nat.N3(), 0, 0, 1, -1, 0, 0, 0, -1, 0));
     }
 
     public static Mat matrixToMat(SimpleMatrix matrix) {
@@ -401,7 +403,7 @@ public final class OpenCVHelp {
      * @return The resulting transformation that maps the camera pose to the target pose and the
      *     ambiguity if an alternate solution is available.
      */
-    public static PNPResult solvePNP_SQUARE(
+    public static Optional<PNPResult> solvePNP_SQUARE(
             Matrix<N3, N3> cameraMatrix,
             Matrix<N5, N1> distCoeffs,
             List<Translation3d> modelTrls,
@@ -466,14 +468,15 @@ public final class OpenCVHelp {
             // check if solvePnP failed with NaN results and retrying failed
             if (Double.isNaN(errors[0])) throw new Exception("SolvePNP_SQUARE NaN result");
 
-            if (alt != null) return new PNPResult(best, alt, errors[0] / errors[1], errors[0], errors[1]);
-            else return new PNPResult(best, errors[0]);
+            if (alt != null)
+                return Optional.of(new PNPResult(best, alt, errors[0] / errors[1], errors[0], errors[1]));
+            else return Optional.of(new PNPResult(best, errors[0]));
         }
         // solvePnP failed
         catch (Exception e) {
             System.err.println("SolvePNP_SQUARE failed!");
             e.printStackTrace();
-            return new PNPResult();
+            return Optional.empty();
         } finally {
             // release our Mats from native memory
             objectMat.release();
@@ -508,7 +511,7 @@ public final class OpenCVHelp {
      *     model points are supplied relative to the origin, this transformation brings the camera to
      *     the origin.
      */
-    public static PNPResult solvePNP_SQPNP(
+    public static Optional<PNPResult> solvePNP_SQPNP(
             Matrix<N3, N3> cameraMatrix,
             Matrix<N5, N1> distCoeffs,
             List<Translation3d> objectTrls,
@@ -557,11 +560,11 @@ public final class OpenCVHelp {
             // check if solvePnP failed with NaN results
             if (Double.isNaN(error[0])) throw new Exception("SolvePNP_SQPNP NaN result");
 
-            return new PNPResult(best, error[0]);
+            return Optional.of(new PNPResult(best, error[0]));
         } catch (Exception e) {
             System.err.println("SolvePNP_SQPNP failed!");
             e.printStackTrace();
-            return new PNPResult();
+            return Optional.empty();
         }
     }
 }

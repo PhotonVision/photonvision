@@ -19,6 +19,7 @@ package org.photonvision.vision.pipeline.result;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.vision.frame.Frame;
@@ -31,11 +32,11 @@ public class CVPipelineResult implements Releasable {
     public final double fps;
     public final List<TrackedTarget> targets;
     public final Frame inputAndOutputFrame;
-    public MultiTargetPNPResult multiTagResult;
+    private final MultiTargetPNPResult multiTagResult;
 
     public CVPipelineResult(
             double processingNanos, double fps, List<TrackedTarget> targets, Frame inputFrame) {
-        this(processingNanos, fps, targets, new MultiTargetPNPResult(), inputFrame);
+        this(processingNanos, fps, targets, null, inputFrame);
     }
 
     public CVPipelineResult(
@@ -64,11 +65,12 @@ public class CVPipelineResult implements Releasable {
         return !targets.isEmpty();
     }
 
-    public void release() {
-        for (TrackedTarget tt : targets) {
-            tt.release();
-        }
-        if (inputAndOutputFrame != null) inputAndOutputFrame.release();
+    public long getImageCaptureTimestampNanos() {
+        return imageCaptureTimestampNanos;
+    }
+
+    public double getProcessingMillis() {
+        return MathUtils.nanosToMillis(processingNanos);
     }
 
     /**
@@ -82,15 +84,18 @@ public class CVPipelineResult implements Releasable {
         return MathUtils.nanosToMillis(now - imageCaptureTimestampNanos);
     }
 
-    public double getProcessingMillis() {
-        return MathUtils.nanosToMillis(processingNanos);
-    }
-
-    public long getImageCaptureTimestampNanos() {
-        return imageCaptureTimestampNanos;
+    public Optional<MultiTargetPNPResult> getMultiTagResult() {
+        return Optional.ofNullable(multiTagResult);
     }
 
     public void setImageCaptureTimestampNanos(long imageCaptureTimestampNanos) {
         this.imageCaptureTimestampNanos = imageCaptureTimestampNanos;
+    }
+
+    public void release() {
+        for (TrackedTarget tt : targets) {
+            tt.release();
+        }
+        if (inputAndOutputFrame != null) inputAndOutputFrame.release();
     }
 }

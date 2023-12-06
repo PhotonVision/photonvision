@@ -27,12 +27,8 @@ import org.junit.jupiter.api.Test;
 public class PNPResultTest {
     @Test
     public void equalityTest() {
-        var a = new PNPResult();
-        var b = new PNPResult();
-        assertEquals(a, b);
-
-        a = new PNPResult(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
-        b = new PNPResult(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
+        var a = new PNPResult(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
+        var b = new PNPResult(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
         assertEquals(a, b);
 
         a =

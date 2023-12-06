@@ -24,8 +24,7 @@
 
 #include <frc/geometry/Transform3d.h>
 #include <wpi/SmallVector.h>
-
-#include "photon/dataflow/structures/Packet.h"
+#include <wpi/protobuf/Protobuf.h>
 
 namespace photon {
 /**
@@ -33,6 +32,17 @@ namespace photon {
  */
 class PhotonTrackedTarget {
  public:
+  double yaw = 0;
+  double pitch = 0;
+  double area = 0;
+  double skew = 0;
+  int fiducialId;
+  frc::Transform3d bestCameraToTarget;
+  frc::Transform3d altCameraToTarget;
+  double poseAmbiguity;
+  wpi::SmallVector<std::pair<double, double>, 4> minAreaRectCorners;
+  std::vector<std::pair<double, double>> detectedCorners;
+
   /**
    * Constructs an empty target.
    */
@@ -50,11 +60,21 @@ class PhotonTrackedTarget {
    * @param detectedCorners All detected corners
    */
   PhotonTrackedTarget(
-      double yaw, double pitch, double area, double skew, int fiducialID,
-      const frc::Transform3d& pose, const frc::Transform3d& alternatePose,
+      double yaw, double pitch, double area, double skew, int fiducialId,
+      const frc::Transform3d pose, const frc::Transform3d alternatePose,
       double ambiguity,
       const wpi::SmallVector<std::pair<double, double>, 4> minAreaRectCorners,
-      const std::vector<std::pair<double, double>> detectedCorners);
+      const std::vector<std::pair<double, double>> detectedCorners)
+      : yaw(yaw),
+        pitch(pitch),
+        area(area),
+        skew(skew),
+        fiducialId(fiducialId),
+        bestCameraToTarget(pose),
+        altCameraToTarget(alternatePose),
+        poseAmbiguity(ambiguity),
+        minAreaRectCorners(minAreaRectCorners),
+        detectedCorners(detectedCorners) {}
 
   /**
    * Returns the target yaw (positive-left).
@@ -138,19 +158,14 @@ class PhotonTrackedTarget {
   }
 
   bool operator==(const PhotonTrackedTarget& other) const;
-
-  friend Packet& operator<<(Packet& packet, const PhotonTrackedTarget& target);
-  friend Packet& operator>>(Packet& packet, PhotonTrackedTarget& target);
-
-  double yaw = 0;
-  double pitch = 0;
-  double area = 0;
-  double skew = 0;
-  int fiducialId;
-  frc::Transform3d bestCameraToTarget;
-  frc::Transform3d altCameraToTarget;
-  double poseAmbiguity;
-  wpi::SmallVector<std::pair<double, double>, 4> minAreaRectCorners;
-  std::vector<std::pair<double, double>> detectedCorners;
 };
 }  // namespace photon
+
+template <>
+struct wpi::Protobuf<photon::PhotonTrackedTarget> {
+  static google::protobuf::Message* New(google::protobuf::Arena* arena);
+  static photon::PhotonTrackedTarget Unpack(
+      const google::protobuf::Message& msg);
+  static void Pack(google::protobuf::Message* msg,
+                   const photon::PhotonTrackedTarget& value);
+};

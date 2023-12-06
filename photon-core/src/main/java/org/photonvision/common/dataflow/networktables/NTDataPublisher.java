@@ -23,7 +23,6 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
-import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networktables.NTTopicSet;
@@ -129,15 +128,13 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
     @Override
     public void accept(CVPipelineResult result) {
-        var simplified =
+        var res =
                 new PhotonPipelineResult(
                         result.getLatencyMillis(),
                         TrackedTarget.simpleFromTrackedTargets(result.targets),
-                        result.multiTagResult);
-        Packet packet = new Packet(simplified.getPacketSize());
-        simplified.populatePacket(packet);
+                        result.getMultiTagResult().orElse(null));
 
-        ts.rawBytesEntry.set(packet.getData());
+        ts.pipelineResultsPublisher.set(res);
 
         ts.pipelineIndexPublisher.set(pipelineIndexSupplier.get());
         ts.driverModePublisher.set(driverModeSupplier.getAsBoolean());

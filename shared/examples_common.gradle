@@ -18,3 +18,6 @@ task copyPhotonlib() {
     }
     outputs.upToDateWhen { false }
 }
+
+wpi.maven.useDevelopment = true
+wpi.versions.wpilibVersion = "2024.1.1-beta-3-43-g25b7dca"

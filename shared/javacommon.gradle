@@ -1,6 +1,7 @@
 apply plugin: 'maven-publish'
 apply plugin: 'java-library'
 apply plugin: 'jacoco'
+apply plugin: 'com.google.protobuf'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_11
@@ -113,6 +114,7 @@ dependencies {
     implementation wpilibTools.deps.wpilibJava("hal")
     implementation wpilibTools.deps.wpilibJava("wpilibj")
     implementation wpilibTools.deps.wpilibJava("apriltag")
+    implementation wpilibTools.deps.wpilibJava("wpiunits")
     implementation wpilibTools.deps.wpilibOpenCvJava("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())
 
     implementation group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: wpi.versions.jacksonVersion.get()
@@ -135,5 +137,30 @@ jacocoTestReport {
     reports {
         xml.required = true
         html.required = true
+    }
+}
+
+protobuf {
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.21.12'
+    }
+    plugins {
+        quickbuf {
+            artifact = 'us.hebi.quickbuf:protoc-gen-quickbuf:1.3.2'
+        }
+    }
+    generateProtoTasks {
+        all().configureEach { task ->
+            task.builtins {
+                cpp {}
+                remove java
+            }
+            task.plugins {
+                quickbuf {
+                    option "gen_descriptors=true"
+                    option "java8_optional=true"
+                }
+            }
+        }
     }
 }

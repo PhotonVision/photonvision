@@ -34,14 +34,12 @@
 #include <networktables/MultiSubscriber.h>
 #include <networktables/NetworkTable.h>
 #include <networktables/NetworkTableInstance.h>
-#include <networktables/RawTopic.h>
+#include <networktables/ProtobufTopic.h>
 #include <networktables/StringTopic.h>
 #include <units/time.h>
 #include <wpi/deprecated.h>
 
-#include "photon/dataflow/structures/Packet.h"
 #include "photon/targeting/MultiTargetPNPResult.h"
-#include "photon/targeting/PNPResult.h"
 #include "photon/targeting/PhotonPipelineResult.h"
 #include "photon/targeting/PhotonTrackedTarget.h"
 
@@ -179,7 +177,7 @@ class PhotonCamera {
  protected:
   std::shared_ptr<nt::NetworkTable> mainTable;
   std::shared_ptr<nt::NetworkTable> rootTable;
-  nt::RawSubscriber rawBytesEntry;
+  nt::ProtobufSubscriber<PhotonPipelineResult> pipelineResultsSubscriber;
   nt::IntegerPublisher inputSaveImgEntry;
   nt::IntegerSubscriber inputSaveImgSubscriber;
   nt::IntegerPublisher outputSaveImgEntry;
@@ -201,8 +199,6 @@ class PhotonCamera {
 
   std::string path;
   std::string m_cameraName;
-
-  mutable Packet packet;
 
  private:
   units::second_t lastVersionCheckTime = 0_s;

@@ -39,14 +39,14 @@ import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.MultiSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.ProtobufSubscriber;
 import edu.wpi.first.networktables.PubSubOption;
-import edu.wpi.first.networktables.RawSubscriber;
 import edu.wpi.first.networktables.StringSubscriber;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.hardware.VisionLEDMode;
 import org.photonvision.targeting.PhotonPipelineResult;
 
@@ -55,7 +55,7 @@ public class PhotonCamera implements AutoCloseable {
     public static final String kTableName = "photonvision";
 
     private final NetworkTable cameraTable;
-    RawSubscriber rawBytesEntry;
+    ProtobufSubscriber<PhotonPipelineResult> pipelineResultsSubscriber;
     BooleanPublisher driverModePublisher;
     BooleanSubscriber driverModeSubscriber;
     DoublePublisher latencyMillisEntry;
@@ -75,7 +75,7 @@ public class PhotonCamera implements AutoCloseable {
 
     @Override
     public void close() {
-        rawBytesEntry.close();
+        pipelineResultsSubscriber.close();
         driverModePublisher.close();
         driverModeSubscriber.close();
         latencyMillisEntry.close();
@@ -112,8 +112,6 @@ public class PhotonCamera implements AutoCloseable {
         VERSION_CHECK_ENABLED = enabled;
     }
 
-    Packet packet = new Packet(1);
-
     /**
      * Constructs a PhotonCamera from a root table.
      *
@@ -127,11 +125,14 @@ public class PhotonCamera implements AutoCloseable {
         var photonvision_root_table = instance.getTable(kTableName);
         this.cameraTable = photonvision_root_table.getSubTable(cameraName);
         path = cameraTable.getPath();
-        rawBytesEntry =
+        pipelineResultsSubscriber =
                 cameraTable
-                        .getRawTopic("rawBytes")
+                        .getProtobufTopic("result_proto", PhotonPipelineResult.proto)
                         .subscribe(
-                                "rawBytes", new byte[] {}, PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
+                                new PhotonPipelineResult(0, List.of()),
+                                PubSubOption.periodic(0.01),
+                                PubSubOption.sendAll(true));
+
         driverModePublisher = cameraTable.getBooleanTopic("driverModeRequest").publish();
         driverModeSubscriber = cameraTable.getBooleanTopic("driverMode").subscribe(false);
         inputSaveImgEntry = cameraTable.getIntegerTopic("inputSaveImgCmd").getEntry(0);
@@ -171,21 +172,12 @@ public class PhotonCamera implements AutoCloseable {
     public PhotonPipelineResult getLatestResult() {
         verifyVersion();
 
-        // Clear the packet.
-        packet.clear();
-
-        // Create latest result.
-        var ret = new PhotonPipelineResult();
-
-        // Populate packet and create result.
-        packet.setData(rawBytesEntry.get(new byte[] {}));
-
-        if (packet.getSize() < 1) return ret;
-        ret.createFromPacket(packet);
+        var ret = pipelineResultsSubscriber.get();
 
         // Set the timestamp of the result.
         // getLatestChange returns in microseconds, so we divide by 1e6 to convert to seconds.
-        ret.setTimestampSeconds((rawBytesEntry.getLastChange() / 1e6) - ret.getLatencyMillis() / 1e3);
+        ret.setTimestampSeconds(
+                (pipelineResultsSubscriber.getLastChange() / 1e6) - ret.getLatencyMillis() / 1e3);
 
         // Return result.
         return ret;
@@ -321,14 +313,14 @@ public class PhotonCamera implements AutoCloseable {
     public Optional<Matrix<N3, N3>> getCameraMatrix() {
         var cameraMatrix = cameraIntrinsicsSubscriber.get();
         if (cameraMatrix != null && cameraMatrix.length == 9) {
-            return Optional.of(new MatBuilder<>(Nat.N3(), Nat.N3()).fill(cameraMatrix));
+            return Optional.of(MatBuilder.fill(Nat.N3(), Nat.N3(), cameraMatrix));
         } else return Optional.empty();
     }
 
     public Optional<Matrix<N5, N1>> getDistCoeffs() {
         var distCoeffs = cameraDistortionSubscriber.get();
         if (distCoeffs != null && distCoeffs.length == 5) {
-            return Optional.of(new MatBuilder<>(Nat.N5(), Nat.N1()).fill(distCoeffs));
+            return Optional.of(MatBuilder.fill(Nat.N5(), Nat.N1(), distCoeffs));
         } else return Optional.empty();
     }
 

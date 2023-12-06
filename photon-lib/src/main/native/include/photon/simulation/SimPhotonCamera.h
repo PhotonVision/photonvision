@@ -34,9 +34,7 @@
 
 #include "photon/PhotonCamera.h"
 #include "photon/PhotonTargetSortMode.h"
-#include "photon/dataflow/structures/Packet.h"
 #include "photon/targeting/MultiTargetPNPResult.h"
-#include "photon/targeting/PNPResult.h"
 #include "photon/targeting/PhotonPipelineResult.h"
 #include "photon/targeting/PhotonTrackedTarget.h"
 
@@ -53,9 +51,10 @@ class SimPhotonCamera : public PhotonCamera {
     targetAreaEntry = rootTable->GetEntry("targetAreaEntry");
     targetSkewEntry = rootTable->GetEntry("targetSkewEntry");
     targetPoseEntry = rootTable->GetEntry("targetPoseEntry");
-    rawBytesPublisher = rootTable->GetRawTopic("rawBytes").Publish("rawBytes");
+    pipelineResultsPublisher =
+        rootTable->GetProtobufTopic<PhotonPipelineResult>("result_proto")
+            .Publish({.periodic = 0.01, .sendAll = true});
     versionEntry = instance.GetTable("photonvision")->GetEntry("version");
-    // versionEntry.SetString(PhotonVersion.versionString);
   }
 
   explicit SimPhotonCamera(const std::string& cameraName)
@@ -91,11 +90,8 @@ class SimPhotonCamera : public PhotonCamera {
     std::sort(targetList.begin(), targetList.end(),
               [&](auto lhs, auto rhs) { return sortMode(lhs, rhs); });
     PhotonPipelineResult newResult{latency, targetList};
-    Packet packet{};
-    packet << newResult;
 
-    rawBytesPublisher.Set(
-        std::span{packet.GetData().data(), packet.GetDataSize()});
+    pipelineResultsPublisher.Set(newResult);
 
     bool hasTargets = newResult.HasTargets();
     hasTargetEntry.SetBoolean(hasTargets);
@@ -132,6 +128,6 @@ class SimPhotonCamera : public PhotonCamera {
   nt::NetworkTableEntry targetSkewEntry;
   nt::NetworkTableEntry targetPoseEntry;
   nt::NetworkTableEntry versionEntry;
-  nt::RawPublisher rawBytesPublisher;
+  nt::ProtobufPublisher<PhotonPipelineResult> pipelineResultsPublisher;
 };
 }  // namespace photon

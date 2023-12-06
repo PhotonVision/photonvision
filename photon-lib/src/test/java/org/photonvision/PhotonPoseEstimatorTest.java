@@ -508,7 +508,7 @@ class PhotonPoseEstimatorTest {
                         new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
 
         // Empty result, expect empty result
-        cameraOne.result = new PhotonPipelineResult();
+        cameraOne.result = new PhotonPipelineResult(0.0, List.of());
         cameraOne.result.setTimestampSeconds(1);
         Optional<EstimatedRobotPose> estimatedPose = estimator.update();
         assertFalse(estimatedPose.isPresent());

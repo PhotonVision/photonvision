@@ -16,10 +16,51 @@
  */
 
 #include "gtest/gtest.h"
+#include "photon.pb.h"
 #include "photon/targeting/MultiTargetPNPResult.h"
 
-// TODO
-TEST(MultiTargetPNPResultTest, Equality) {}
+TEST(MultiTargetPNPResultTest, Equality) {
+  photon::MultiTargetPNPResult a{
+      frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
+                       frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+      0.1,
+      frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
+                       frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+      0.1,
+      0,
 
-// TODO
-TEST(MultiTargetPNPResultTest, Inequality) {}
+      {1, 2, 3, 4}};
+  photon::MultiTargetPNPResult b{
+      frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
+                       frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+      0.1,
+      frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
+                       frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+      0.1,
+      0,
+      {1, 2, 3, 4}};
+
+  EXPECT_EQ(a, b);
+}
+
+TEST(MultiTargetPNPResultTest, Roundtrip) {
+  photon::MultiTargetPNPResult result{
+      frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
+                       frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+      0.1,
+      frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
+                       frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+      0.1,
+      0,
+      {1, 2, 3, 4}};
+
+  google::protobuf::Arena arena;
+  google::protobuf::Message* proto =
+      wpi::Protobuf<photon::MultiTargetPNPResult>::New(&arena);
+  wpi::Protobuf<photon::MultiTargetPNPResult>::Pack(proto, result);
+
+  photon::MultiTargetPNPResult unpacked_data =
+      wpi::Protobuf<photon::MultiTargetPNPResult>::Unpack(*proto);
+
+  EXPECT_EQ(result, unpacked_data);
+}

@@ -17,16 +17,17 @@
 
 #pragma once
 
+#include <optional>
 #include <span>
 #include <string>
 
 #include <frc/Errors.h>
 #include <units/time.h>
 #include <wpi/SmallVector.h>
+#include <wpi/protobuf/Protobuf.h>
 
 #include "MultiTargetPNPResult.h"
 #include "PhotonTrackedTarget.h"
-#include "photon/dataflow/structures/Packet.h"
 
 namespace photon {
 /**
@@ -34,6 +35,12 @@ namespace photon {
  */
 class PhotonPipelineResult {
  public:
+  units::millisecond_t latency = 0_s;
+  units::second_t timestamp = -1_s;
+  wpi::SmallVector<PhotonTrackedTarget, 10> targets;
+  std::optional<MultiTargetPNPResult> multitagResult;
+  inline static bool HAS_WARNED = false;
+
   /**
    * Constructs an empty pipeline result
    */
@@ -44,8 +51,10 @@ class PhotonPipelineResult {
    * @param latency The latency in the pipeline.
    * @param targets The list of targets identified by the pipeline.
    */
-  PhotonPipelineResult(units::second_t latency,
-                       std::span<const PhotonTrackedTarget> targets);
+  PhotonPipelineResult(units::millisecond_t latency,
+                       std::span<const PhotonTrackedTarget> targets)
+      : latency(latency),
+        targets(targets.data(), targets.data() + targets.size()) {}
 
   /**
    * Constructs a pipeline result.
@@ -53,9 +62,12 @@ class PhotonPipelineResult {
    * @param targets The list of targets identified by the pipeline.
    * @param multitagResult The multitarget result
    */
-  PhotonPipelineResult(units::second_t latency,
+  PhotonPipelineResult(units::millisecond_t latency,
                        std::span<const PhotonTrackedTarget> targets,
-                       MultiTargetPNPResult multitagResult);
+                       MultiTargetPNPResult multitagResult)
+      : latency(latency),
+        targets(targets.data(), targets.data() + targets.size()),
+        multitagResult(multitagResult) {}
 
   /**
    * Returns the best target in this pipeline result. If there are no targets,
@@ -92,11 +104,12 @@ class PhotonPipelineResult {
   units::second_t GetTimestamp() const { return timestamp; }
 
   /**
-   * Return the latest mulit-target result, as calculated on your coprocessor.
-   * Be sure to check getMultiTagResult().estimatedPose.isPresent before using
-   * the pose estimate!
+   * Return the MultiTarget Result. Empty if disabled or unable to create
+   * result.
    */
-  const MultiTargetPNPResult& MultiTagResult() const { return multitagResult; }
+  std::optional<MultiTargetPNPResult> MultiTagResult() {
+    return multitagResult;
+  }
 
   /**
    * Sets the timestamp in seconds
@@ -121,14 +134,14 @@ class PhotonPipelineResult {
   }
 
   bool operator==(const PhotonPipelineResult& other) const;
-
-  friend Packet& operator<<(Packet& packet, const PhotonPipelineResult& result);
-  friend Packet& operator>>(Packet& packet, PhotonPipelineResult& result);
-
-  units::second_t latency = 0_s;
-  units::second_t timestamp = -1_s;
-  wpi::SmallVector<PhotonTrackedTarget, 10> targets;
-  MultiTargetPNPResult multitagResult;
-  inline static bool HAS_WARNED = false;
 };
 }  // namespace photon
+
+template <>
+struct wpi::Protobuf<photon::PhotonPipelineResult> {
+  static google::protobuf::Message* New(google::protobuf::Arena* arena);
+  static photon::PhotonPipelineResult Unpack(
+      const google::protobuf::Message& msg);
+  static void Pack(google::protobuf::Message* msg,
+                   const photon::PhotonPipelineResult& value);
+};

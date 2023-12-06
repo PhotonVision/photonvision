@@ -18,59 +18,15 @@
 package org.photonvision.targeting;
 
 import edu.wpi.first.math.geometry.Transform3d;
-import org.photonvision.common.dataflow.structures.Packet;
-import org.photonvision.utils.PacketUtils;
 
-/**
- * The best estimated transformation from solvePnP, and possibly an alternate transformation
- * depending on the solvePNP method. If an alternate solution is present, the ambiguity value
- * represents the ratio of reprojection error in the best solution to the alternate (best /
- * alternate).
- *
- * <p>Note that the coordinate frame of these transforms depends on the implementing solvePnP
- * method.
- */
 public class PNPResult {
-    /**
-     * If this result is valid. A false value indicates there was an error in estimation, and this
-     * result should not be used.
-     */
-    public final boolean isPresent;
-
-    /**
-     * The best-fit transform. The coordinate frame of this transform depends on the method which gave
-     * this result.
-     */
     public final Transform3d best;
-
-    /** Reprojection error of the best solution, in pixels */
     public final double bestReprojErr;
 
-    /**
-     * Alternate, ambiguous solution from solvepnp. If no alternate solution is found, this is equal
-     * to the best solution.
-     */
     public final Transform3d alt;
-
-    /** If no alternate solution is found, this is bestReprojErr */
     public final double altReprojErr;
 
-    /** If no alternate solution is found, this is 0 */
     public final double ambiguity;
-
-    /** An empty (invalid) result. */
-    public PNPResult() {
-        this.isPresent = false;
-        this.best = new Transform3d();
-        this.alt = new Transform3d();
-        this.ambiguity = 0;
-        this.bestReprojErr = 0;
-        this.altReprojErr = 0;
-    }
-
-    public PNPResult(Transform3d best, double bestReprojErr) {
-        this(best, best, 0, bestReprojErr, bestReprojErr);
-    }
 
     public PNPResult(
             Transform3d best,
@@ -78,7 +34,6 @@ public class PNPResult {
             double ambiguity,
             double bestReprojErr,
             double altReprojErr) {
-        this.isPresent = true;
         this.best = best;
         this.alt = alt;
         this.ambiguity = ambiguity;
@@ -86,36 +41,14 @@ public class PNPResult {
         this.altReprojErr = altReprojErr;
     }
 
-    public static final int PACK_SIZE_BYTES = 1 + (Double.BYTES * 7 * 2) + (Double.BYTES * 3);
-
-    public static PNPResult createFromPacket(Packet packet) {
-        var present = packet.decodeBoolean();
-        var best = PacketUtils.decodeTransform(packet);
-        var alt = PacketUtils.decodeTransform(packet);
-        var bestEr = packet.decodeDouble();
-        var altEr = packet.decodeDouble();
-        var ambiguity = packet.decodeDouble();
-        if (present) {
-            return new PNPResult(best, alt, ambiguity, bestEr, altEr);
-        } else {
-            return new PNPResult();
-        }
-    }
-
-    public void populatePacket(Packet packet) {
-        packet.encode(isPresent);
-        PacketUtils.encodeTransform(packet, best);
-        PacketUtils.encodeTransform(packet, alt);
-        packet.encode(bestReprojErr);
-        packet.encode(altReprojErr);
-        packet.encode(ambiguity);
+    public PNPResult(Transform3d best, double bestReprojErr) {
+        this(best, best, 0, bestReprojErr, bestReprojErr);
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + (isPresent ? 1231 : 1237);
         result = prime * result + ((best == null) ? 0 : best.hashCode());
         long temp;
         temp = Double.doubleToLongBits(bestReprojErr);
@@ -134,7 +67,6 @@ public class PNPResult {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         PNPResult other = (PNPResult) obj;
-        if (isPresent != other.isPresent) return false;
         if (best == null) {
             if (other.best != null) return false;
         } else if (!best.equals(other.best)) return false;
@@ -152,9 +84,7 @@ public class PNPResult {
 
     @Override
     public String toString() {
-        return "PNPResult [isPresent="
-                + isPresent
-                + ", best="
+        return "PNPResult [best="
                 + best
                 + ", bestReprojErr="
                 + bestReprojErr

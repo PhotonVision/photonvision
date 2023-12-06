@@ -15,11 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "gtest/gtest.h"
-#include "photon/targeting/PNPResult.h"
-
-// TODO
-TEST(PNPResultTest, Equality) {}
-
-// TODO
-TEST(PNPResultTest, Inequality) {}
+#pragma once
+// So wpilib publishes protbufs here at wpimath/protobuf. but generated code
+// assumes that the protobuf includes are on your include path. So we need this
+// stupid shim
+#include "wpimath/protobuf/geometry3d.pb.h"

@@ -20,9 +20,36 @@ package org.photonvision.targeting;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
+import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.photonvision.proto.Photon.ProtobufTargetCorner;
+import us.hebi.quickbuf.RepeatedMessage;
 
 public class TargetCornerTest {
+    @Test
+    public void protobufTest() {
+        var corner = new TargetCorner(0, 1);
+        var serializedCorner = TargetCorner.proto.createMessage();
+        TargetCorner.proto.pack(serializedCorner, corner);
+        var unpackedCorner = TargetCorner.proto.unpack(serializedCorner);
+        assertEquals(corner, unpackedCorner);
+    }
+
+    @Test
+    public void protobufListTest() {
+        List<TargetCorner> corners = List.of();
+        var serializedCorners = RepeatedMessage.newEmptyInstance(ProtobufTargetCorner.getFactory());
+        TargetCorner.proto.pack(serializedCorners, corners);
+        var unpackedCorners = TargetCorner.proto.unpack(serializedCorners);
+        assertEquals(corners, unpackedCorners);
+
+        corners = List.of(new TargetCorner(0, 1), new TargetCorner(1, 2));
+        serializedCorners = RepeatedMessage.newEmptyInstance(ProtobufTargetCorner.getFactory());
+        TargetCorner.proto.pack(serializedCorners, corners);
+        unpackedCorners = TargetCorner.proto.unpack(serializedCorners);
+        assertEquals(corners, unpackedCorners);
+    }
+
     @Test
     public void equalityTest() {
         var a = new TargetCorner(0, 1);

@@ -17,7 +17,13 @@
 
 package org.photonvision.targeting;
 
+import edu.wpi.first.util.protobuf.Protobuf;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import org.photonvision.proto.Photon.ProtobufTargetCorner;
+import us.hebi.quickbuf.Descriptors.Descriptor;
+import us.hebi.quickbuf.RepeatedMessage;
 
 /**
  * Represents a point in an image at the corner of the minimum-area bounding rectangle, in pixels.
@@ -49,4 +55,49 @@ public class TargetCorner {
     public String toString() {
         return "(" + x + "," + y + ')';
     }
+
+    public static final class AProto implements Protobuf<TargetCorner, ProtobufTargetCorner> {
+        @Override
+        public Class<TargetCorner> getTypeClass() {
+            return TargetCorner.class;
+        }
+
+        @Override
+        public Descriptor getDescriptor() {
+            return ProtobufTargetCorner.getDescriptor();
+        }
+
+        @Override
+        public ProtobufTargetCorner createMessage() {
+            return ProtobufTargetCorner.newInstance();
+        }
+
+        @Override
+        public TargetCorner unpack(ProtobufTargetCorner msg) {
+            return new TargetCorner(msg.getX(), msg.getY());
+        }
+
+        public List<TargetCorner> unpack(RepeatedMessage<ProtobufTargetCorner> msg) {
+            ArrayList<TargetCorner> corners = new ArrayList<>(msg.length());
+            for (ProtobufTargetCorner corner : msg) {
+                corners.add(unpack(corner));
+            }
+            return corners;
+        }
+
+        @Override
+        public void pack(ProtobufTargetCorner msg, TargetCorner value) {
+            msg.setX(value.x).setY(value.y);
+        }
+
+        public void pack(RepeatedMessage<ProtobufTargetCorner> msg, List<TargetCorner> value) {
+            var corners = msg.reserve(value.size());
+            for (TargetCorner targetCorner : value) {
+                var corner = corners.next();
+                pack(corner, targetCorner);
+            }
+        }
+    }
+
+    public static final AProto proto = new AProto();
 }

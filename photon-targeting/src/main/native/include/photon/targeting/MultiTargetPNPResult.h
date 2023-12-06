@@ -19,19 +19,41 @@
 
 #include <frc/geometry/Transform3d.h>
 #include <wpi/SmallVector.h>
-
-#include "PNPResult.h"
-#include "photon/dataflow/structures/Packet.h"
+#include <wpi/protobuf/Protobuf.h>
 
 namespace photon {
 class MultiTargetPNPResult {
  public:
-  PNPResult result;
+  frc::Transform3d best;
+  double bestReprojErr;
+
+  frc::Transform3d alt;
+  double altReprojErr;
+
+  double ambiguity;
+
   wpi::SmallVector<int16_t, 32> fiducialIdsUsed;
 
-  bool operator==(const MultiTargetPNPResult& other) const;
+  MultiTargetPNPResult(frc::Transform3d best, double bestReprojErr,
+                       frc::Transform3d alt, double altReprojErr,
+                       double ambiguity,
+                       wpi::SmallVector<int16_t, 32> fiducialIdsUsed)
+      : best(best),
+        bestReprojErr(bestReprojErr),
+        alt(alt),
+        altReprojErr(altReprojErr),
+        ambiguity(ambiguity),
+        fiducialIdsUsed(fiducialIdsUsed) {}
 
-  friend Packet& operator<<(Packet& packet, const MultiTargetPNPResult& result);
-  friend Packet& operator>>(Packet& packet, MultiTargetPNPResult& result);
+  bool operator==(const MultiTargetPNPResult& other) const;
 };
 }  // namespace photon
+
+template <>
+struct wpi::Protobuf<photon::MultiTargetPNPResult> {
+  static google::protobuf::Message* New(google::protobuf::Arena* arena);
+  static photon::MultiTargetPNPResult Unpack(
+      const google::protobuf::Message& msg);
+  static void Pack(google::protobuf::Message* msg,
+                   const photon::MultiTargetPNPResult& value);
+};

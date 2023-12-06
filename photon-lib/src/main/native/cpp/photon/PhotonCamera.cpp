@@ -29,7 +29,6 @@
 #include <opencv2/core/mat.hpp>
 
 #include "PhotonVersion.h"
-#include "photon/dataflow/structures/Packet.h"
 
 namespace photon {
 
@@ -40,9 +39,10 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
                            const std::string_view cameraName)
     : mainTable(instance.GetTable("photonvision")),
       rootTable(mainTable->GetSubTable(cameraName)),
-      rawBytesEntry(
-          rootTable->GetRawTopic("rawBytes")
-              .Subscribe("rawBytes", {}, {.periodic = 0.01, .sendAll = true})),
+      pipelineResultsSubscriber(
+          rootTable->GetProtobufTopic<PhotonPipelineResult>("result_proto")
+              .Subscribe(PhotonPipelineResult(),
+                         {.periodic = 0.01, .sendAll = true})),
       inputSaveImgEntry(
           rootTable->GetIntegerTopic("inputSaveImgCmd").Publish()),
       inputSaveImgSubscriber(
@@ -81,22 +81,12 @@ PhotonPipelineResult PhotonCamera::GetLatestResult() {
   // Prints warning if not connected
   VerifyVersion();
 
-  // Clear the current packet.
-  packet.Clear();
-
   // Create the new result;
-  PhotonPipelineResult result;
+  PhotonPipelineResult result = pipelineResultsSubscriber.Get();
 
-  // Fill the packet with latest data and populate result.
-  const auto value = rawBytesEntry.Get();
-  if (!value.size()) return result;
-
-  photon::Packet packet{value};
-
-  packet >> result;
-
-  result.SetTimestamp(units::microsecond_t(rawBytesEntry.GetLastChange()) -
-                      result.GetLatency());
+  result.SetTimestamp(
+      units::microsecond_t(pipelineResultsSubscriber.GetLastChange()) -
+      result.GetLatency());
 
   return result;
 }

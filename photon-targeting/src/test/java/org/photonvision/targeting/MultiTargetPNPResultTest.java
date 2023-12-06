@@ -28,18 +28,27 @@ import org.junit.jupiter.api.Test;
 
 public class MultiTargetPNPResultTest {
     @Test
-    public void equalityTest() {
-        var a = new MultiTargetPNPResult();
-        var b = new MultiTargetPNPResult();
-        assertEquals(a, b);
+    public void protobufTest() {
+        var result =
+                new MultiTargetPNPResult(
+                        new PNPResult(
+                                new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
+                        List.of(1, 2, 3));
+        var serializedResult = MultiTargetPNPResult.proto.createMessage();
+        MultiTargetPNPResult.proto.pack(serializedResult, result);
+        var unpackedResult = MultiTargetPNPResult.proto.unpack(serializedResult);
+        assertEquals(result, unpackedResult);
+    }
 
-        a =
+    @Test
+    public void equalityTest() {
+        var a =
                 new MultiTargetPNPResult(
                         new PNPResult(
                                 new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
                         List.of(1, 2, 3));
 
-        b =
+        var b =
                 new MultiTargetPNPResult(
                         new PNPResult(
                                 new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),

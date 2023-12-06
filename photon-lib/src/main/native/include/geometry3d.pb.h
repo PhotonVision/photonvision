@@ -10,8 +10,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -22,25 +22,8 @@
  * SOFTWARE.
  */
 
-package org.photonvision;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.photonvision.common.dataflow.structures.Packet;
-import org.photonvision.targeting.PhotonPipelineResult;
-
-class PhotonCameraTest {
-    @Test
-    public void testEmpty() {
-        Assertions.assertDoesNotThrow(
-                () -> {
-                    var packet = new Packet(1);
-                    var ret = new PhotonPipelineResult();
-                    packet.setData(new byte[0]);
-                    if (packet.getSize() < 1) {
-                        return;
-                    }
-                    ret.createFromPacket(packet);
-                });
-    }
-}
+#pragma once
+// So wpilib publishes protbufs here at wpimath/protobuf. but generated code
+// assumes that the protobuf includes are on your include path. So we need this
+// stupid shim
+#include "wpimath/protobuf/geometry3d.pb.h"
