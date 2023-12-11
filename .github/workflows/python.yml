@@ -33,6 +33,7 @@ jobs:
       - name: Build wheel
         working-directory: ./photon-lib/py
         run: |
+          git fetch
           git fetch --tags --force
           python setup.py sdist bdist_wheel
 
