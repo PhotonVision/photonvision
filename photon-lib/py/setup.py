@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import subprocess
 
-versionStr = subprocess.check_output(['git', 'describe', '--tags', "--match=v*"]).decode('utf-8').strip()
+versionStr = subprocess.check_output(['git', 'describe', '--tags', "--match=v*", "--always"]).decode('utf-8').strip()
 print(f"Building version {versionStr}")
 
 setup(
