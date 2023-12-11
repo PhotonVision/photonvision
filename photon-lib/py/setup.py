@@ -15,4 +15,3 @@ setup(
     url="https://photonvision.org",
     author="Photonvision Development Team",
 )
-
