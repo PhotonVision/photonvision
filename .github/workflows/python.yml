@@ -22,7 +22,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.8  # CHose earliest that robotpy supports
+          python-version: 3.11  # CHose earliest that robotpy supports
 
       - name: Install dependencies
         run: |
