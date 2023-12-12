@@ -4,20 +4,21 @@ import wpilib
 
 class Packet:
 
-    """
-     * Constructs an empty packet.
-     *
-     * @param self.size The self.size of the packet buffer.
-    """
+
     def __init__(self, data:list[int]):
+        """
+         * Constructs an empty packet.
+         *
+         * @param self.size The self.size of the packet buffer.
+        """
         self.packetData = data
         self.size = len(data)
         self.readPos = 0
         self.outOfBytes = False
     
 
-    """ Clears the packet and resets the read and write positions."""
     def clear(self): 
+        """ Clears the packet and resets the read and write positions."""
         self.packetData = [0]*self.size
         self.readPos = 0
         self.outOfBytes = False
@@ -45,21 +46,20 @@ class Packet:
 
         return retVal
 
-    """
-     * Returns the packet data. 
-     *
-     * @return The packet data.
-    """
-    def getData(self) -> list[int]: 
+    def getData(self) -> list[int]:      
+        """
+        * Returns the packet data. 
+        *
+        * @return The packet data.
+        """
         return self.packetData
     
-
-    """
-     * Sets the packet data.
-     *
-     * @param data The packet data.
-    """
     def setData(self, data:list[int]):
+        """
+        * Sets the packet data.
+        *
+        * @param data The packet data.
+        """
         self.clear()
         self.packetData = data
         self.size = len(self.packetData)
@@ -76,55 +76,64 @@ class Packet:
 
         return value
 
-
-    """
-     * Returns a single decoded byte from the packet.
-     *
-     * @return A decoded byte from the packet.
-    """
     def decode8(self) -> int: 
+        """
+        * Returns a single decoded byte from the packet.
+        *
+        * @return A decoded byte from the packet.
+        """
         return self._decodeGeneric(">b", 1)
     
-    """
-     * Returns a single decoded byte from the packet.
-     *
-     * @return A decoded byte from the packet.
-    """
     def decode16(self) -> int: 
+        """
+        * Returns a single decoded byte from the packet.
+        *
+        * @return A decoded byte from the packet.
+        """
         return self._decodeGeneric(">h", 2)
 
-
-    """
-     * Returns a decoded int (32 bytes) from the packet.
-     *
-     * @return A decoded int from the packet.
-    """
     def decode32(self) -> int: 
+        """
+        * Returns a decoded int (32 bytes) from the packet.
+        *
+        * @return A decoded int from the packet.
+        """
         return self._decodeGeneric(">l", 4)
 
-    """
-     * Returns a decoded double from the packet.
-     *
-     * @return A decoded double from the packet.
-    """
     def decodeDouble(self) -> float: 
+        """
+        * Returns a decoded double from the packet.
+        *
+        * @return A decoded double from the packet.
+        """
         return self._decodeGeneric(">d", 8)
     
-    """
-     * Returns a decoded boolean from the packet.
-     *
-     * @return A decoded boolean from the packet.
-    """
+
     def decodeBoolean(self) -> bool:
+        """
+        * Returns a decoded boolean from the packet.
+        *
+        * @return A decoded boolean from the packet.
+        """
         return (self.decode8() == 1)
 
     def decodeDoubleArray(self, length:int) -> list[float]:
+        """
+        * Returns a decoded array of floats from the packet.
+        *
+        * @return A decoded array of floats from the packet.
+        """
         ret = []
         for _ in range(length):
             ret.append(self.decodeDouble())
         return ret
     
     def decodeTransform(self) -> Transform3d:
+        """
+        * Returns a decoded Transform3d
+        *
+        * @return A decoded Tansform3d from the packet.
+        """
         x = self.decodeDouble()
         y = self.decodeDouble()
         z = self.decodeDouble()

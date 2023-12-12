@@ -1,3 +1,4 @@
 photonlibpy.egg-info/
 dist/
 build/
+.eggs/

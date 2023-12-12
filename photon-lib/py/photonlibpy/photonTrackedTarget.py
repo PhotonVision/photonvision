@@ -1,33 +1,31 @@
+from dataclasses import dataclass
 from wpimath.geometry import Transform3d
 from photonlibpy.packet import Packet
 
 
+@dataclass
 class TargetCorner:
-    def __init__(self, x:float, y:float):
-        self.x = x
-        self.y = y
+    x:float
+    y:float
 
+@dataclass
 class PhotonTrackedTarget:
 
     _MAX_CORNERS = 8
     _NUM_BYTES_IN_FLOAT = 8
     _PACK_SIZE_BYTES = _NUM_BYTES_IN_FLOAT * (5 + 7 + 2 * 4 + 1 + 7 + 2 * _MAX_CORNERS)
 
-    def __init__(self, yaw:float=0, pitch:float=0, area:float=0, skew:float=0, 
-                 id:int=0, pose:Transform3d=Transform3d(), altPose: Transform3d=Transform3d(), 
-                 ambiguity:float=0, 
-                 minAreaRectCorners: list[TargetCorner]|None = None, 
-                 detectedCorners: list[TargetCorner]|None = None):
-        self.yaw = yaw
-        self.pitch = pitch
-        self.area = area
-        self.skew = skew
-        self.fiducialId  = id
-        self.bestCameraToTarget  = pose
-        self.altCameraToTarget  = altPose
-        self.minAreaRectCorners = minAreaRectCorners
-        self.detectedCorners = detectedCorners
-        self.poseAmbiguity = ambiguity
+
+    yaw:float = 0.0
+    pitch:float = 0.0
+    area:float = 0.0
+    skew:float = 0.0
+    fiducialId:int  = -1
+    bestCameraToTarget:Transform3d  = Transform3d()
+    altCameraToTarget:Transform3d  = Transform3d()
+    minAreaRectCorners:list[TargetCorner]|None = None
+    detectedCorners:list[TargetCorner]|None = None
+    poseAmbiguity:float = 0.0
 
     def getYaw(self) -> float:
         return self.yaw
@@ -83,6 +81,3 @@ class PhotonTrackedTarget:
         numCorners = packet.decode8()
         self.detectedCorners = self._decodeTargetList(packet, numCorners)
         return packet
-    
-    def __str__(self) -> str:
-        return f"PhotonTrackedTarget{{yaw={self.yaw},pitch={self.pitch},area={self.area},skew={self.skew},fiducialId={self.fiducialId},bestCameraToTarget={self.bestCameraToTarget}}}"

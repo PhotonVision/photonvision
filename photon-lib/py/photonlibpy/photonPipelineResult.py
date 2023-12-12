@@ -1,13 +1,15 @@
+from dataclasses import dataclass
+
 from photonlibpy.multiTargetPNPResult import MultiTargetPNPResult
 from photonlibpy.packet import Packet
 from photonlibpy.photonTrackedTarget import PhotonTrackedTarget
 
+@dataclass
 class PhotonPipelineResult:
-    def __init__(self):
-        self.latencyMillis = -0.0
-        self.timestampSec = -1.0
-        self.targets:list[PhotonTrackedTarget] = []
-        self.multiTagResult = MultiTargetPNPResult()
+    latencyMillis:float = -1.0
+    timestampSec:float = -1.0
+    targets:list[PhotonTrackedTarget] = []
+    multiTagResult:MultiTargetPNPResult = MultiTargetPNPResult()
         
     def populateFromPacket(self, packet:Packet) -> Packet:
         self.targets = []
