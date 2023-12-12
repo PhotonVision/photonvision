@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from wpimath.geometry import Transform3d
 from photonlibpy.packet import Packet
 
@@ -21,8 +21,8 @@ class PhotonTrackedTarget:
     area:float = 0.0
     skew:float = 0.0
     fiducialId:int  = -1
-    bestCameraToTarget:Transform3d  = Transform3d()
-    altCameraToTarget:Transform3d  = Transform3d()
+    bestCameraToTarget:Transform3d = field(default_factory=Transform3d)
+    altCameraToTarget:Transform3d  = field(default_factory=Transform3d)
     minAreaRectCorners:list[TargetCorner]|None = None
     detectedCorners:list[TargetCorner]|None = None
     poseAmbiguity:float = 0.0
