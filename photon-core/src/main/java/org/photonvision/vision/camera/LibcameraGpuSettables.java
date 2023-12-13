@@ -82,6 +82,18 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
             videoModes.put(
                     3, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1280, 800, 60, 60, 1));
 
+        } else if (sensorModel == LibCameraJNI.SensorModel.IMX708) {
+            videoModes.put(
+                    0, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1536 / 4, 864 / 4, 120, 120, 1));
+            videoModes.put(
+                    1, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1536 / 2, 864 / 2, 120, 120, 1));
+            videoModes.put(
+                    2, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1536, 864, 120, 120, 1));
+            videoModes.put(
+                    3, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 4608 / 2, 2592 / 2, 60, 60, 1));
+            // videoModes.put(
+            //         4, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 4608, 2592, 14, 14, 1)); // Crashes...
+
         } else {
             if (sensorModel == LibCameraJNI.SensorModel.IMX477) {
                 LibcameraGpuSource.logger.warn(
