@@ -5,10 +5,8 @@ from photonlibpy.packet import Packet
 
 @dataclass
 class PNPResult:
-
     _NUM_BYTES_IN_FLOAT = 8
-    PACK_SIZE_BYTES = 1 + (_NUM_BYTES_IN_FLOAT * 7 * 2) + (_NUM_BYTES_IN_FLOAT *
-                                                           3)
+    PACK_SIZE_BYTES = 1 + (_NUM_BYTES_IN_FLOAT * 7 * 2) + (_NUM_BYTES_IN_FLOAT * 3)
 
     isPresent: bool = False
     best: Transform3d = field(default_factory=Transform3d)
@@ -29,7 +27,6 @@ class PNPResult:
 
 @dataclass
 class MultiTargetPNPResult:
-
     _MAX_IDS = 32
     # pnpresult + MAX_IDS possible targets (arbitrary upper limit that should never be hit, ideally)
     _PACK_SIZE_BYTES = PNPResult.PACK_SIZE_BYTES + (1 * _MAX_IDS)
@@ -43,6 +40,6 @@ class MultiTargetPNPResult:
         self.fiducialIDsUsed = []
         for _ in range(MultiTargetPNPResult._MAX_IDS):
             fidId = packet.decode16()
-            if (fidId >= 0):
+            if fidId >= 0:
                 self.fiducialIDsUsed.append(fidId)
         return packet

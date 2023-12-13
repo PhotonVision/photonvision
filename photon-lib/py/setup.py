@@ -1,11 +1,13 @@
 from setuptools import setup, find_packages
 import subprocess, re
 
-gitDescribeResult = subprocess.check_output(
-    ['git', 'describe', '--tags', "--match=v*",
-     "--always"]).decode('utf-8').strip()
+gitDescribeResult = (
+    subprocess.check_output(["git", "describe", "--tags", "--match=v*", "--always"])
+    .decode("utf-8")
+    .strip()
+)
 
-m = re.search(r'v[0-9]{4}\.[0-9]{1}.[0-9]{1}', gitDescribeResult)
+m = re.search(r"v[0-9]{4}\.[0-9]{1}.[0-9]{1}", gitDescribeResult)
 
 # Extract the first portion of the git describe result
 # which should be PEP440 compliant
@@ -24,7 +26,7 @@ Implemented with PhotonVision version {gitDescribeResult} .
 """
 
 setup(
-    name='photonlibpy',
+    name="photonlibpy",
     packages=find_packages(),
     version=versionString,
     install_requires=[

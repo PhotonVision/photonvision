@@ -11,11 +11,9 @@ class TargetCorner:
 
 @dataclass
 class PhotonTrackedTarget:
-
     _MAX_CORNERS = 8
     _NUM_BYTES_IN_FLOAT = 8
-    _PACK_SIZE_BYTES = _NUM_BYTES_IN_FLOAT * (5 + 7 + 2 * 4 + 1 + 7 +
-                                              2 * _MAX_CORNERS)
+    _PACK_SIZE_BYTES = _NUM_BYTES_IN_FLOAT * (5 + 7 + 2 * 4 + 1 + 7 + 2 * _MAX_CORNERS)
 
     yaw: float = 0.0
     pitch: float = 0.0
@@ -58,8 +56,7 @@ class PhotonTrackedTarget:
     def getAlternateCameraToTarget(self) -> Transform3d:
         return self.altCameraToTarget
 
-    def _decodeTargetList(self, packet: Packet,
-                          numTargets: int) -> list[TargetCorner]:
+    def _decodeTargetList(self, packet: Packet, numTargets: int) -> list[TargetCorner]:
         retList = []
         for _ in range(numTargets):
             cx = packet.decodeDouble()
@@ -79,8 +76,7 @@ class PhotonTrackedTarget:
 
         self.poseAmbiguity = packet.decodeDouble()
 
-        self.minAreaRectCorners = self._decodeTargetList(packet,
-                                                         4)  # always four
+        self.minAreaRectCorners = self._decodeTargetList(packet, 4)  # always four
         numCorners = packet.decode8()
         self.detectedCorners = self._decodeTargetList(packet, numCorners)
         return packet

@@ -13,42 +13,50 @@ class VisionLEDMode(Enum):
 
 
 class PhotonCamera:
-
     def __init__(self, cameraName: str):
         instance = ntcore.NetworkTableInstance.getDefault()
         self.name = cameraName
         photonvision_root_table = instance.getTable("photonvision")
         cameraTable = photonvision_root_table.getSubTable(cameraName)
         self.path = cameraTable.getPath()
-        self.rawBytesEntry = cameraTable.getRawTopic("rawBytes") \
-                        .subscribe("rawBytes", bytes([]), ntcore.PubSubOptions(periodic=0.01, sendAll=True))
+        self.rawBytesEntry = cameraTable.getRawTopic("rawBytes").subscribe(
+            "rawBytes", bytes([]), ntcore.PubSubOptions(periodic=0.01, sendAll=True)
+        )
 
         self.driverModePublisher = cameraTable.getBooleanTopic(
-            "driverModeRequest").publish()
-        self.driverModeSubscriber = cameraTable.getBooleanTopic(
-            "driverMode").subscribe(False)
+            "driverModeRequest"
+        ).publish()
+        self.driverModeSubscriber = cameraTable.getBooleanTopic("driverMode").subscribe(
+            False
+        )
         self.inputSaveImgEntry = cameraTable.getIntegerTopic(
-            "inputSaveImgCmd").getEntry(0)
+            "inputSaveImgCmd"
+        ).getEntry(0)
         self.outputSaveImgEntry = cameraTable.getIntegerTopic(
-            "outputSaveImgCmd").getEntry(0)
+            "outputSaveImgCmd"
+        ).getEntry(0)
         self.pipelineIndexRequest = cameraTable.getIntegerTopic(
-            "pipelineIndexRequest").publish()
+            "pipelineIndexRequest"
+        ).publish()
         self.pipelineIndexState = cameraTable.getIntegerTopic(
-            "pipelineIndexState").subscribe(0)
-        self.heartbeatEntry = cameraTable.getIntegerTopic(
-            "heartbeat").subscribe(-1)
+            "pipelineIndexState"
+        ).subscribe(0)
+        self.heartbeatEntry = cameraTable.getIntegerTopic("heartbeat").subscribe(-1)
 
         self.ledModeRequest = photonvision_root_table.getIntegerTopic(
-            "ledModeRequest").publish()
+            "ledModeRequest"
+        ).publish()
         self.ledModeState = photonvision_root_table.getIntegerTopic(
-            "ledModeState").subscribe(-1)
-        self.versionEntry = photonvision_root_table.getStringTopic(
-            "version").subscribe("")
+            "ledModeState"
+        ).subscribe(-1)
+        self.versionEntry = photonvision_root_table.getStringTopic("version").subscribe(
+            ""
+        )
 
         # Existing is enough to make this multisubscriber do its thing
-        self.topicNameSubscriber = \
-                ntcore.MultiSubscriber( \
-                        instance, ["/photonvision/"], ntcore.PubSubOptions(topicsOnly =True))
+        self.topicNameSubscriber = ntcore.MultiSubscriber(
+            instance, ["/photonvision/"], ntcore.PubSubOptions(topicsOnly=True)
+        )
 
         self.prevHeartbeat = 0
         self.prevHeartbeatChangeTime = Timer.getFPGATimestamp()
@@ -59,13 +67,14 @@ class PhotonCamera:
         byteList = packetWithTimestamp.value
         timestamp = packetWithTimestamp.time
 
-        if (len(byteList) < 1):
+        if len(byteList) < 1:
             return retVal
         else:
             retVal.populateFromPacket(Packet(byteList))
             # NT4 allows us to correct the timestamp based on when the message was sent
-            retVal.setTimestampSeconds(timestamp / 1e-6 -
-                                       retVal.getLatencyMillis() / 1e-3)
+            retVal.setTimestampSeconds(
+                timestamp / 1e-6 - retVal.getLatencyMillis() / 1e-3
+            )
             return retVal
 
     def getDriverMode(self) -> bool:
@@ -100,7 +109,7 @@ class PhotonCamera:
         curHeartbeat = self.heartbeatEntry.get()
         now = Timer.getFPGATimestamp()
 
-        if (curHeartbeat != self.prevHeartbeat):
+        if curHeartbeat != self.prevHeartbeat:
             self.prevHeartbeat = curHeartbeat
             self.prevHeartbeatChangeTime = now
 

@@ -4,12 +4,11 @@ import wpilib
 
 
 class Packet:
-
     def __init__(self, data: list[int]):
         """
-         * Constructs an empty packet.
-         *
-         * @param self.size The self.size of the packet buffer.
+        * Constructs an empty packet.
+        *
+        * @param self.size The self.size of the packet buffer.
         """
         self.packetData = data
         self.size = len(data)
@@ -17,7 +16,7 @@ class Packet:
         self.outOfBytes = False
 
     def clear(self):
-        """ Clears the packet and resets the read and write positions."""
+        """Clears the packet and resets the read and write positions."""
         self.packetData = [0] * self.size
         self.readPos = 0
         self.outOfBytes = False
@@ -34,9 +33,9 @@ class Packet:
     def _getNextByte(self) -> int:
         retVal = 0x00
 
-        if (not self.outOfBytes):
+        if not self.outOfBytes:
             try:
-                retVal = 0x00ff & self.packetData[self.readPos]
+                retVal = 0x00FF & self.packetData[self.readPos]
                 self.readPos += 1
             except IndexError:
                 wpilib.reportError(Packet._NO_MORE_BYTES_MESSAGE, True)
@@ -63,7 +62,6 @@ class Packet:
         self.size = len(self.packetData)
 
     def _decodeGeneric(self, unpackFormat, numBytes):
-
         # Read ints in from the data buffer
         intList = []
         for _ in range(numBytes):
@@ -112,7 +110,7 @@ class Packet:
         *
         * @return A decoded boolean from the packet.
         """
-        return (self.decode8() == 1)
+        return self.decode8() == 1
 
     def decodeDoubleArray(self, length: int) -> list[float]:
         """
