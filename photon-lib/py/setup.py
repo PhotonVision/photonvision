@@ -11,10 +11,12 @@ m = re.search(r'v[0-9]{4}\.[0-9]{1}.[0-9]{1}', gitDescribeResult)
 # which should be PEP440 compliant
 if m:
     versionString = m.group(0)
-    print(f"Building version {versionString}")
 else:
     print("Warning, no valid version found")
-    versionString = "0.0.0"
+    versionString = gitDescribeResult
+
+print(f"Building version {versionString}")
+
 
 descriptionStr = f"""
 Pure-python implementation of PhotonLib for interfacing with PhotonVision on coprocessors.
