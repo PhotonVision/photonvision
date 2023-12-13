@@ -2,10 +2,10 @@ import struct
 from wpimath.geometry import Transform3d, Translation3d, Rotation3d, Quaternion
 import wpilib
 
+
 class Packet:
 
-
-    def __init__(self, data:list[int]):
+    def __init__(self, data: list[int]):
         """
          * Constructs an empty packet.
          *
@@ -15,28 +15,26 @@ class Packet:
         self.size = len(data)
         self.readPos = 0
         self.outOfBytes = False
-    
 
-    def clear(self): 
+    def clear(self):
         """ Clears the packet and resets the read and write positions."""
-        self.packetData = [0]*self.size
+        self.packetData = [0] * self.size
         self.readPos = 0
         self.outOfBytes = False
-    
 
-    def getSize(self): 
+    def getSize(self):
         return self.size
-    
+
     _NO_MORE_BYTES_MESSAGE = """
-    Photonlib - Ran out of bytes while decoding. 
-    Make sure the version of photonvision on the coprocessor 
+    Photonlib - Ran out of bytes while decoding.
+    Make sure the version of photonvision on the coprocessor
     matches the version of photonlib running in the robot code.
-    """    
+    """
 
     def _getNextByte(self) -> int:
         retVal = 0x00
-        
-        if(not self.outOfBytes):
+
+        if (not self.outOfBytes):
             try:
                 retVal = 0x00ff & self.packetData[self.readPos]
                 self.readPos += 1
@@ -46,15 +44,15 @@ class Packet:
 
         return retVal
 
-    def getData(self) -> list[int]:      
+    def getData(self) -> list[int]:
         """
-        * Returns the packet data. 
+        * Returns the packet data.
         *
         * @return The packet data.
         """
         return self.packetData
-    
-    def setData(self, data:list[int]):
+
+    def setData(self, data: list[int]):
         """
         * Sets the packet data.
         *
@@ -63,28 +61,28 @@ class Packet:
         self.clear()
         self.packetData = data
         self.size = len(self.packetData)
-    
+
     def _decodeGeneric(self, unpackFormat, numBytes):
 
         # Read ints in from the data buffer
         intList = []
         for _ in range(numBytes):
             intList.append(self._getNextByte())
-       
+
         # Interpret the bytes as a floating point number
         value = struct.unpack(unpackFormat, bytes(intList))[0]
 
         return value
 
-    def decode8(self) -> int: 
+    def decode8(self) -> int:
         """
         * Returns a single decoded byte from the packet.
         *
         * @return A decoded byte from the packet.
         """
         return self._decodeGeneric(">b", 1)
-    
-    def decode16(self) -> int: 
+
+    def decode16(self) -> int:
         """
         * Returns a single decoded byte from the packet.
         *
@@ -92,7 +90,7 @@ class Packet:
         """
         return self._decodeGeneric(">h", 2)
 
-    def decode32(self) -> int: 
+    def decode32(self) -> int:
         """
         * Returns a decoded int (32 bytes) from the packet.
         *
@@ -100,14 +98,13 @@ class Packet:
         """
         return self._decodeGeneric(">l", 4)
 
-    def decodeDouble(self) -> float: 
+    def decodeDouble(self) -> float:
         """
         * Returns a decoded double from the packet.
         *
         * @return A decoded double from the packet.
         """
         return self._decodeGeneric(">d", 8)
-    
 
     def decodeBoolean(self) -> bool:
         """
@@ -117,7 +114,7 @@ class Packet:
         """
         return (self.decode8() == 1)
 
-    def decodeDoubleArray(self, length:int) -> list[float]:
+    def decodeDoubleArray(self, length: int) -> list[float]:
         """
         * Returns a decoded array of floats from the packet.
         *
@@ -127,7 +124,7 @@ class Packet:
         for _ in range(length):
             ret.append(self.decodeDouble())
         return ret
-    
+
     def decodeTransform(self) -> Transform3d:
         """
         * Returns a decoded Transform3d
@@ -137,13 +134,12 @@ class Packet:
         x = self.decodeDouble()
         y = self.decodeDouble()
         z = self.decodeDouble()
-        translation = Translation3d(x,y,z)
+        translation = Translation3d(x, y, z)
 
         w = self.decodeDouble()
         x = self.decodeDouble()
         y = self.decodeDouble()
         z = self.decodeDouble()
-        rotation = Rotation3d(Quaternion(w,x,y,z))
+        rotation = Rotation3d(Quaternion(w, x, y, z))
 
         return Transform3d(translation, rotation)
-

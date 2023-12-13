@@ -1,17 +1,34 @@
 from setuptools import setup, find_packages
-import subprocess
+import subprocess, re
 
-versionStr = subprocess.check_output(['git', 'describe', '--tags', "--match=v*", "--always"]).decode('utf-8').strip()
-print(f"Building version {versionStr}")
+gitDescribeResult = subprocess.check_output(
+    ['git', 'describe', '--tags', "--match=v*",
+     "--always"]).decode('utf-8').strip()
+
+m = re.search(r'v[0-9]{4}\.[0-9]{1}.[0-9]{1}', gitDescribeResult)
+
+# Extract the first portion of the git describe result
+# which should be PEP440 compliant
+if m:
+    versionString = m.group(0)
+    print(f"Building version {versionString}")
+else:
+    print("Warning, no valid version found")
+    versionString = "0.0.0"
+
+descriptionStr = f"""
+Pure-python implementation of PhotonLib for interfacing with PhotonVision on coprocessors.
+Implemented with PhotonVision version {gitDescribeResult} .
+"""
 
 setup(
     name='photonlibpy',
     packages=find_packages(),
-    version="0.0.2",
+    version=versionString,
     install_requires=[
-        "wpilib<2025,>=2024.0.0b2", 
+        "wpilib<2025,>=2024.0.0b2",
     ],
-    description=f"Pure-python implementation of PhotonLib for interfacing with PhotonVision on coprocessors. Goes with photonvision version {versionStr}",
+    description=descriptionStr,
     url="https://photonvision.org",
     author="Photonvision Development Team",
 )

@@ -22,7 +22,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.11  # CHose earliest that robotpy supports
+          python-version: 3.10
 
       - name: Install dependencies
         run: |
@@ -38,9 +38,9 @@ jobs:
       - name: Run Unit Tests
         working-directory: ./photon-lib/py
         run: |
-            pip install dist/photonlibpy-0.0.2-py3-none-any.whl
+            pip install --no-cache-dir dist/*.whl
             pytest
-  
+
 
       - name: Upload artifacts
         uses: actions/upload-artifact@master
@@ -65,7 +65,8 @@ jobs:
           name: dist
           path: dist/
       - name: Publish package distributions to TestPyPI
+        # Only upload on tags
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
-          
