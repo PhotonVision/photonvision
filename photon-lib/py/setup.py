@@ -19,6 +19,11 @@ else:
 
 print(f"Building version {versionString}")
 
+# Put the version info into a python file for runtime access
+with open("photonlibpy/version.py", "w", encoding="utf-8") as fp:
+    fp.write(f'PHOTONLIB_VERSION="{versionString}"\n')
+    fp.write(f'PHOTONVISION_VERSION="{gitDescribeResult}"\n')
+
 
 descriptionStr = f"""
 Pure-python implementation of PhotonLib for interfacing with PhotonVision on coprocessors.
@@ -31,6 +36,8 @@ setup(
     version=versionString,
     install_requires=[
         "wpilib<2025,>=2024.0.0b2",
+        "robotpy-wpimath<2025,>=2024.0.0b2",
+        "pyntcore<2025,>=2024.0.0b2",
     ],
     description=descriptionStr,
     url="https://photonvision.org",

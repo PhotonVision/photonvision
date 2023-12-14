@@ -1,8 +1,10 @@
 from enum import Enum
 import ntcore
 from wpilib import Timer
+import wpilib
 from photonlibpy.packet import Packet
 from photonlibpy.photonPipelineResult import PhotonPipelineResult
+from photonlibpy.version import PHOTONVISION_VERSION, PHOTONLIB_VERSION
 
 
 class VisionLEDMode(Enum):
@@ -12,36 +14,47 @@ class VisionLEDMode(Enum):
     kBlink = 2
 
 
+lastVersionTimeCheck = 0.0
+_VERSION_CHECK_ENABLED = True
+
+
+def setVersionCheckEnabled(enabled: bool):
+    _VERSION_CHECK_ENABLED = enabled
+
+
 class PhotonCamera:
     def __init__(self, cameraName: str):
         instance = ntcore.NetworkTableInstance.getDefault()
         self.name = cameraName
-        photonvision_root_table = instance.getTable("photonvision")
-        cameraTable = photonvision_root_table.getSubTable(cameraName)
-        self.path = cameraTable.getPath()
-        self.rawBytesEntry = cameraTable.getRawTopic("rawBytes").subscribe(
+        self._tableName = "photonvision"
+        photonvision_root_table = instance.getTable(self._tableName)
+        self.cameraTable = photonvision_root_table.getSubTable(cameraName)
+        self.path = self.cameraTable.getPath()
+        self.rawBytesEntry = self.cameraTable.getRawTopic("rawBytes").subscribe(
             "rawBytes", bytes([]), ntcore.PubSubOptions(periodic=0.01, sendAll=True)
         )
 
-        self.driverModePublisher = cameraTable.getBooleanTopic(
+        self.driverModePublisher = self.cameraTable.getBooleanTopic(
             "driverModeRequest"
         ).publish()
-        self.driverModeSubscriber = cameraTable.getBooleanTopic("driverMode").subscribe(
-            False
-        )
-        self.inputSaveImgEntry = cameraTable.getIntegerTopic(
+        self.driverModeSubscriber = self.cameraTable.getBooleanTopic(
+            "driverMode"
+        ).subscribe(False)
+        self.inputSaveImgEntry = self.cameraTable.getIntegerTopic(
             "inputSaveImgCmd"
         ).getEntry(0)
-        self.outputSaveImgEntry = cameraTable.getIntegerTopic(
+        self.outputSaveImgEntry = self.cameraTable.getIntegerTopic(
             "outputSaveImgCmd"
         ).getEntry(0)
-        self.pipelineIndexRequest = cameraTable.getIntegerTopic(
+        self.pipelineIndexRequest = self.cameraTable.getIntegerTopic(
             "pipelineIndexRequest"
         ).publish()
-        self.pipelineIndexState = cameraTable.getIntegerTopic(
+        self.pipelineIndexState = self.cameraTable.getIntegerTopic(
             "pipelineIndexState"
         ).subscribe(0)
-        self.heartbeatEntry = cameraTable.getIntegerTopic("heartbeat").subscribe(-1)
+        self.heartbeatEntry = self.cameraTable.getIntegerTopic("heartbeat").subscribe(
+            -1
+        )
 
         self.ledModeRequest = photonvision_root_table.getIntegerTopic(
             "ledModeRequest"
@@ -62,6 +75,8 @@ class PhotonCamera:
         self.prevHeartbeatChangeTime = Timer.getFPGATimestamp()
 
     def getLatestResult(self) -> PhotonPipelineResult:
+        self._versionCheck()
+
         retVal = PhotonPipelineResult()
         packetWithTimestamp = self.rawBytesEntry.getAtomic()
         byteList = packetWithTimestamp.value
@@ -114,3 +129,42 @@ class PhotonCamera:
             self.prevHeartbeatChangeTime = now
 
         return (now - self.prevHeartbeatChangeTime) < 0.5
+
+    def _versionCheck(self) -> None:
+        if not _VERSION_CHECK_ENABLED:
+            return
+
+        if (Timer.getFPGATimestamp() - lastVersionTimeCheck) < 5.0:
+            return
+
+        if not self.heartbeatEntry.exists():
+            cameraNames = (
+                self.cameraTable.getInstance().getTable(self._tableName).getSubTables()
+            )
+            if len(cameraNames) == 0:
+                wpilib.reportError(
+                    "Could not find any PhotonVision coprocessors on NetworkTables. Double check that PhotonVision is running, and that your camera is connected!",
+                    False,
+                )
+            else:
+                wpilib.reportError(
+                    f"PhotonVision coprocessor at path {self.path} not found in Network Tables. Double check that your camera names match! Only the following camera names were found: { ''.join(cameraNames)}",
+                    True,
+                )
+
+        elif not self.isConnected():
+            wpilib.reportWarning(
+                f"PhotonVision coprocessor at path {self.path} is not sending new data.",
+                True,
+            )
+
+        versionString = self.versionEntry.get(defaultValue="")
+        if len(versionString) > 0 and versionString != PHOTONVISION_VERSION:
+            wpilib.reportWarning(
+                "Photon version "
+                + PHOTONVISION_VERSION
+                + " does not match coprocessor version "
+                + versionString
+                + f"! Please install photonlibpy version {PHOTONLIB_VERSION}",
+                True,
+            )
