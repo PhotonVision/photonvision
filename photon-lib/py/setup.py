@@ -7,12 +7,18 @@ gitDescribeResult = (
     .strip()
 )
 
-m = re.search(r"v[0-9]{4}\.[0-9]{1}.[0-9]{1}", gitDescribeResult)
+m = re.search(r"(v[0-9]{4}\.[0-9]{1}\.[0-9]{1})-?((?:beta)?(?:alpha)?)-?([0-9\.]*)", gitDescribeResult)
 
 # Extract the first portion of the git describe result
 # which should be PEP440 compliant
 if m:
     versionString = m.group(0)
+    prefix = m.group(1)
+    maturity = m.group(2)
+    suffix = m.group(3).replace(".", "")
+    versionString = f"{prefix}.{maturity}.{suffix}"
+    
+    
 else:
     print("Warning, no valid version found")
     versionString = gitDescribeResult
