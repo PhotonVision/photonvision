@@ -57,6 +57,6 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages_dir: ./photon-lib/py/dist/
-  
+
     permissions:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
