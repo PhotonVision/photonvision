@@ -24,6 +24,8 @@
 
 #include "photon/PhotonPoseEstimator.h"
 
+#include <hal/FRCUsageReporting.h>
+
 #include <cmath>
 #include <iostream>
 #include <limits>
@@ -68,7 +70,11 @@ PhotonPoseEstimator::PhotonPoseEstimator(frc::AprilTagFieldLayout tags,
       m_robotToCamera(robotToCamera),
       lastPose(frc::Pose3d()),
       referencePose(frc::Pose3d()),
-      poseCacheTimestamp(-1_s) {}
+      poseCacheTimestamp(-1_s) {
+  HAL_Report(HALUsageReporting::kResourceType_PhotonPoseEstimator,
+             InstanceCount);
+  InstanceCount++;
+}
 
 PhotonPoseEstimator::PhotonPoseEstimator(frc::AprilTagFieldLayout tags,
                                          PoseStrategy strat, PhotonCamera&& cam,
@@ -79,7 +85,11 @@ PhotonPoseEstimator::PhotonPoseEstimator(frc::AprilTagFieldLayout tags,
       m_robotToCamera(robotToCamera),
       lastPose(frc::Pose3d()),
       referencePose(frc::Pose3d()),
-      poseCacheTimestamp(-1_s) {}
+      poseCacheTimestamp(-1_s) {
+  HAL_Report(HALUsageReporting::kResourceType_PhotonPoseEstimator,
+             InstanceCount);
+  InstanceCount++;
+}
 
 void PhotonPoseEstimator::SetMultiTagFallbackStrategy(PoseStrategy strategy) {
   if (strategy == MULTI_TAG_PNP_ON_COPROCESSOR ||

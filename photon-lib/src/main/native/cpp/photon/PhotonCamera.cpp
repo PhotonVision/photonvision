@@ -24,6 +24,8 @@
 
 #include "photon/PhotonCamera.h"
 
+#include <hal/FRCUsageReporting.h>
+
 #include <frc/Errors.h>
 #include <frc/Timer.h>
 #include <opencv2/core.hpp>
@@ -69,7 +71,10 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
           rootTable->GetBooleanTopic("driverModeRequest").Publish()),
       m_topicNameSubscriber(instance, PHOTON_PREFIX, {.topicsOnly = true}),
       path(rootTable->GetPath()),
-      m_cameraName(cameraName) {}
+      m_cameraName(cameraName) {
+  HAL_Report(HALUsageReporting::kResourceType_PhotonCamera, InstanceCount);
+  InstanceCount++;
+}
 
 PhotonCamera::PhotonCamera(const std::string_view cameraName)
     : PhotonCamera(nt::NetworkTableInstance::GetDefault(), cameraName) {}
