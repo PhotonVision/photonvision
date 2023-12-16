@@ -86,48 +86,85 @@ public class ConfigManager {
             return;
         }
 
-        var maybeCams = Path.of(folderPath.toAbsolutePath().toString(), "cameras").toFile();
-        var maybeCamsBak = Path.of(folderPath.toAbsolutePath().toString(), "cameras_backup").toFile();
+        var folderPathStr = folderPath.toAbsolutePath().toString();
 
-        if (maybeCams.exists() && maybeCams.isDirectory()) {
-            logger.info("Translating settings zip!");
+        var maybeCams = Path.of(folderPathStr, "cameras").toFile();
+        var maybeCamsBak = Path.of(folderPathStr, "cameras_backup").toFile();
+        var maybeHwConfig = Path.of(folderPathStr, LegacyConfigProvider.HW_CFG_FNAME).toFile();
+        var maybeNetworkSettings = Path.of(folderPathStr, LegacyConfigProvider.NET_SET_FNAME).toFile();
+        var maybeATFLSettings = Path.of(folderPathStr, LegacyConfigProvider.ATFL_SET_FNAME).toFile();
+
+        var legacyCamConfigsExist = maybeCams.exists() && maybeCams.isDirectory();
+        var hwConfigExists = maybeHwConfig.exists() && maybeHwConfig.isFile();
+        var networkConfigExists = maybeNetworkSettings.exists() && maybeHwConfig.isFile();
+        var atflConfigExists = maybeATFLSettings.exists() && maybeATFLSettings.isFile();
+
+        var translateNeeded = 
+            (legacyCamConfigsExist) ||
+            (hwConfigExists) ||
+            (networkConfigExists) ||
+            (atflConfigExists);
+
+        if (translateNeeded) {
+            logger.info("Translating legacy settings to database...");
             var legacy = new LegacyConfigProvider(folderPath);
             legacy.load();
             var loadedConfig = legacy.getConfig();
 
-            // yeet our current cameras directory, not needed anymore
+            // yeet our current cameras backup directory, not needed anymore
             if (maybeCamsBak.exists()) FileUtils.deleteDirectory(maybeCamsBak.toPath());
-            if (!maybeCams.canWrite()) {
-                maybeCams.setWritable(true);
-            }
 
-            try {
-                Files.move(maybeCams.toPath(), maybeCamsBak.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException e) {
-                logger.error("Exception moving cameras to cameras_bak!", e);
-
-                // Try to just copy from cams to cams-bak instead of moving? Windows sometimes needs us to
-                // do that
-                try {
-                    org.apache.commons.io.FileUtils.copyDirectory(maybeCams, maybeCamsBak);
-                } catch (IOException e1) {
-                    // So we can't move to cams_bak, and we can't copy and delete either? We just have to give
-                    // up here on preserving the old folder
-                    logger.error("Exception while backup-copying cameras to cameras_bak!", e);
-                    e1.printStackTrace();
+            if(legacyCamConfigsExist){
+                //Make a backup of camera configurations
+                if (!maybeCams.canWrite()) {
+                    maybeCams.setWritable(true);
                 }
 
-                // Delete the directory because we were successfully able to load the config but were unable
-                // to save or copy the folder.
-                if (maybeCams.exists()) FileUtils.deleteDirectory(maybeCams.toPath());
+                try {
+                    Files.move(maybeCams.toPath(), maybeCamsBak.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException e) {
+                    logger.error("Exception moving cameras to cameras_bak!", e);
+
+                    // Try to just copy from cams to cams-bak instead of moving? Windows sometimes needs us to
+                    // do that
+                    try {
+                        org.apache.commons.io.FileUtils.copyDirectory(maybeCams, maybeCamsBak);
+                    } catch (IOException e1) {
+                        // So we can't move to cams_bak, and we can't copy and delete either? We just have to give
+                        // up here on preserving the old folder
+                        logger.error("Exception while backup-copying cameras to cameras_bak!", e);
+                        e1.printStackTrace();
+                    }
+
+                    // Delete the directory because we were successfully able to load the config but were unable
+                    // to save or copy the folder.
+                    if (maybeCams.exists()) FileUtils.deleteDirectory(maybeCams.toPath());
+                }
             }
+
+            //Yeet the other files so we don't reload them on boot
+            if(hwConfigExists){
+                FileUtils.deleteFile(maybeHwConfig.toPath());
+            }
+
+            if(networkConfigExists){
+                FileUtils.deleteFile(maybeNetworkSettings.toPath());
+            }
+
+            if(atflConfigExists){
+                FileUtils.deleteFile(maybeATFLSettings.toPath());
+            }
+           
 
             // Save the same config out using SQL loader
             var sql = new SqlConfigProvider(getRootFolder());
             sql.setConfig(loadedConfig);
             sql.saveToDisk();
+            logger.info("Finished camera settings");
         }
+
     }
+
 
     public static boolean saveUploadedSettingsZip(File uploadPath) {
         // Unpack to /tmp/something/photonvision
