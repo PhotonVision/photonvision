@@ -24,8 +24,11 @@
 
 #include "photon/PhotonCamera.h"
 
+#include <hal/FRCUsageReporting.h>
+
 #include <frc/Errors.h>
 #include <frc/Timer.h>
+#include <opencv2/core.hpp>
 #include <opencv2/core/mat.hpp>
 
 #include "PhotonVersion.h"
@@ -68,7 +71,10 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
           rootTable->GetBooleanTopic("driverModeRequest").Publish()),
       m_topicNameSubscriber(instance, PHOTON_PREFIX, {.topicsOnly = true}),
       path(rootTable->GetPath()),
-      m_cameraName(cameraName) {}
+      m_cameraName(cameraName) {
+  HAL_Report(HALUsageReporting::kResourceType_PhotonCamera, InstanceCount);
+  InstanceCount++;
+}
 
 PhotonCamera::PhotonCamera(const std::string_view cameraName)
     : PhotonCamera(nt::NetworkTableInstance::GetDefault(), cameraName) {}
@@ -128,8 +134,13 @@ LEDMode PhotonCamera::GetLEDMode() const {
 std::optional<cv::Mat> PhotonCamera::GetCameraMatrix() {
   auto camCoeffs = cameraIntrinsicsSubscriber.Get();
   if (camCoeffs.size() == 9) {
-    // clone should deal with ownership concerns? not sure
-    return cv::Mat(3, 3, CV_64FC1, camCoeffs.data()).clone();
+    cv::Mat retVal(3, 3, CV_64FC1);
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        retVal.at<double>(i, j) = camCoeffs[(j * 3) + i];
+      }
+    }
+    return retVal;
   }
   return std::nullopt;
 }
@@ -145,8 +156,11 @@ const std::string_view PhotonCamera::GetCameraName() const {
 std::optional<cv::Mat> PhotonCamera::GetDistCoeffs() {
   auto distCoeffs = cameraDistortionSubscriber.Get();
   if (distCoeffs.size() == 5) {
-    // clone should deal with ownership concerns? not sure
-    return cv::Mat(5, 1, CV_64FC1, distCoeffs.data()).clone();
+    cv::Mat retVal(5, 1, CV_64FC1);
+    for (int i = 0; i < 5; i++) {
+      retVal.at<double>(i, 0) = distCoeffs[i];
+    }
+    return retVal;
   }
   return std::nullopt;
 }
