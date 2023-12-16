@@ -24,6 +24,8 @@
 
 package org.photonvision;
 
+import edu.wpi.first.hal.FRCNetComm.tResourceType;
+import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
@@ -52,6 +54,7 @@ import org.photonvision.targeting.PhotonPipelineResult;
 
 /** Represents a camera that is connected to PhotonVision. */
 public class PhotonCamera implements AutoCloseable {
+    private static int InstanceCount = 0;
     public static final String kTableName = "photonvision";
 
     private final NetworkTable cameraTable;
@@ -152,6 +155,9 @@ public class PhotonCamera implements AutoCloseable {
         MultiSubscriber m_topicNameSubscriber =
                 new MultiSubscriber(
                         instance, new String[] {"/photonvision/"}, PubSubOption.topicsOnly(true));
+
+        HAL.report(tResourceType.kResourceType_PhotonCamera, InstanceCount);
+        InstanceCount++;
     }
 
     /**
@@ -321,14 +327,14 @@ public class PhotonCamera implements AutoCloseable {
     public Optional<Matrix<N3, N3>> getCameraMatrix() {
         var cameraMatrix = cameraIntrinsicsSubscriber.get();
         if (cameraMatrix != null && cameraMatrix.length == 9) {
-            return Optional.of(new MatBuilder<>(Nat.N3(), Nat.N3()).fill(cameraMatrix));
+            return Optional.of(MatBuilder.fill(Nat.N3(), Nat.N3(), cameraMatrix));
         } else return Optional.empty();
     }
 
     public Optional<Matrix<N5, N1>> getDistCoeffs() {
         var distCoeffs = cameraDistortionSubscriber.get();
         if (distCoeffs != null && distCoeffs.length == 5) {
-            return Optional.of(new MatBuilder<>(Nat.N5(), Nat.N1()).fill(distCoeffs));
+            return Optional.of(MatBuilder.fill(Nat.N5(), Nat.N1(), distCoeffs));
         } else return Optional.empty();
     }
 

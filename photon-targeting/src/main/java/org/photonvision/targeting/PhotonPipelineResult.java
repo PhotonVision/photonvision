@@ -88,7 +88,7 @@ public class PhotonPipelineResult {
             String errStr =
                     "This PhotonPipelineResult object has no targets associated with it! Please check hasTargets() "
                             + "before calling this method. For more information, please review the PhotonLib "
-                            + "documentation at http://docs.photonvision.org";
+                            + "documentation at https://docs.photonvision.org";
             System.err.println(errStr);
             new Exception().printStackTrace();
             HAS_WARNED = true;
