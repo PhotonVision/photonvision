@@ -51,6 +51,7 @@ public class SqlConfigProvider extends ConfigProvider {
         static final String CAM_UNIQUE_NAME = "unique_name";
         static final String CONFIG_JSON = "config_json";
         static final String DRIVERMODE_JSON = "drivermode_json";
+        static final String OTHERPATHS_JSON = "otherpaths_json";
         static final String PIPELINE_JSONS = "pipeline_jsons";
 
         static final String NETWORK_CONFIG = "networkConfig";
@@ -147,6 +148,7 @@ public class SqlConfigProvider extends ConfigProvider {
                                 + " unique_name TINYTEXT PRIMARY KEY,\n"
                                 + " config_json text NOT NULL,\n"
                                 + " drivermode_json text NOT NULL,\n"
+                                + " otherpaths_json text NOT NULL,\n"
                                 + " pipeline_jsons mediumtext NOT NULL\n"
                                 + ");";
                 createCameraTableStatement.execute(sql);
@@ -295,8 +297,8 @@ public class SqlConfigProvider extends ConfigProvider {
         try {
             // Replace this camera's row with the new settings
             var sqlString =
-                    "REPLACE INTO cameras (unique_name, config_json, drivermode_json, pipeline_jsons) VALUES "
-                            + "(?,?,?,?);";
+                    "REPLACE INTO cameras (unique_name, config_json, drivermode_json, otherpaths_json, pipeline_jsons) VALUES "
+                            + "(?,?,?,?,?);";
 
             for (var c : config.getCameraConfigurations().entrySet()) {
                 PreparedStatement statement = conn.prepareStatement(sqlString);
@@ -305,6 +307,7 @@ public class SqlConfigProvider extends ConfigProvider {
                 statement.setString(1, c.getKey());
                 statement.setString(2, JacksonUtils.serializeToString(config));
                 statement.setString(3, JacksonUtils.serializeToString(config.driveModeSettings));
+                statement.setString(4, JacksonUtils.serializeToString(config.otherPaths));
 
                 // Serializing a list of abstract classes sucks. Instead, make it into an array
                 // of strings, which we can later unpack back into individual settings
@@ -321,7 +324,7 @@ public class SqlConfigProvider extends ConfigProvider {
                                         })
                                 .filter(Objects::nonNull)
                                 .collect(Collectors.toList());
-                statement.setString(4, JacksonUtils.serializeToString(settings));
+                statement.setString(5, JacksonUtils.serializeToString(settings));
 
                 statement.executeUpdate();
             }
@@ -455,10 +458,11 @@ public class SqlConfigProvider extends ConfigProvider {
             query =
                     conn.prepareStatement(
                             String.format(
-                                    "SELECT %s, %s, %s, %s FROM cameras",
+                                    "SELECT %s, %s, %s, %s, %s FROM cameras",
                                     TableKeys.CAM_UNIQUE_NAME,
                                     TableKeys.CONFIG_JSON,
                                     TableKeys.DRIVERMODE_JSON,
+                                    TableKeys.OTHERPATHS_JSON,
                                     TableKeys.PIPELINE_JSONS));
 
             var result = query.executeQuery();
@@ -474,6 +478,8 @@ public class SqlConfigProvider extends ConfigProvider {
                 var driverMode =
                         JacksonUtils.deserialize(
                                 result.getString(TableKeys.DRIVERMODE_JSON), DriverModePipelineSettings.class);
+                var otherPaths =
+                        JacksonUtils.deserialize(result.getString(TableKeys.OTHERPATHS_JSON), String[].class);
                 List<?> pipelineSettings =
                         JacksonUtils.deserialize(
                                 result.getString(TableKeys.PIPELINE_JSONS), dummyList.getClass());
@@ -487,6 +493,7 @@ public class SqlConfigProvider extends ConfigProvider {
 
                 config.pipelineSettings = loadedSettings;
                 config.driveModeSettings = driverMode;
+                config.otherPaths = otherPaths;
                 loadedConfigurations.put(uniqueName, config);
             }
         } catch (SQLException | IOException e) {

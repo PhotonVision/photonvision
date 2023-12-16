@@ -204,7 +204,7 @@ public class VisionSourceManager {
      * @param loadedUsbCamConfigs The USB {@link CameraConfiguration}s loaded from disk.
      * @return the matched configurations.
      */
-    private List<CameraConfiguration> matchUSBCameras(
+    protected List<CameraConfiguration> matchUSBCameras(
             List<UsbCameraInfo> detectedCamInfos, List<CameraConfiguration> loadedUsbCamConfigs) {
         return matchUSBCameras(detectedCamInfos, loadedUsbCamConfigs, true);
     }
@@ -225,47 +225,107 @@ public class VisionSourceManager {
         var detectedCameraList = new ArrayList<>(detectedCamInfos);
         ArrayList<CameraConfiguration> cameraConfigurations = new ArrayList<>();
 
-        // loop over all the configs loaded from disk
+        List<CameraConfiguration> unmatchedAfterByID = new ArrayList<>(loadedUsbCamConfigs);
+
+        // loop over all the configs loaded from disk, attempting to match each camera
+        // to a config by path-by-id on linux
         for (CameraConfiguration config : loadedUsbCamConfigs) {
             UsbCameraInfo cameraInfo;
 
-            // attempt matching by path and basename
-            logger.debug(
-                    "Trying to find a match for loaded camera "
-                            + config.baseName
-                            + " with path "
-                            + config.path);
-            cameraInfo =
-                    detectedCameraList.stream()
-                            .filter(
-                                    usbCameraInfo ->
-                                            usbCameraInfo.path.equals(config.path)
-                                                    && cameraNameToBaseName(usbCameraInfo.name).equals(config.baseName))
-                            .findFirst()
-                            .orElse(null);
-
-            // if path based fails, attempt basename only match
-            if (cameraInfo == null) {
-                logger.debug("Failed to match by path and name, falling back to name-only match");
+            if (config.otherPaths.length == 0) {
+                logger.debug("No valid path-by-id found for config with name " + config.baseName);
+            } else {
+                // attempt matching by path and basename
+                logger.debug(
+                        "Trying to find a match for loaded camera "
+                                + config.baseName
+                                + " with path-by-id "
+                                + config.otherPaths[0]);
                 cameraInfo =
                         detectedCameraList.stream()
                                 .filter(
                                         usbCameraInfo ->
-                                                cameraNameToBaseName(usbCameraInfo.name).equals(config.baseName))
+                                                usbCameraInfo.otherPaths.length != 0
+                                                        && usbCameraInfo.otherPaths[0].equals(config.otherPaths[0])
+                                                        && cameraNameToBaseName(usbCameraInfo.name).equals(config.baseName))
                                 .findFirst()
                                 .orElse(null);
-            }
 
-            // If we actually matched a camera to a config, remove that camera from the list and add it to
-            // the output
-            if (cameraInfo != null) {
-                logger.debug("Matched the config for " + config.baseName + " to a physical camera!");
-                detectedCameraList.remove(cameraInfo);
-                cameraConfigurations.add(mergeInfoIntoConfig(config, cameraInfo));
+                // If we actually matched a camera to a config, remove that camera from the list
+                // and add it to the output
+                if (cameraInfo != null) {
+                    logger.debug("Matched the config for " + config.baseName + " to a physical camera!");
+                    detectedCameraList.remove(cameraInfo);
+                    unmatchedAfterByID.remove(config);
+                    cameraConfigurations.add(mergeInfoIntoConfig(config, cameraInfo));
+                }
             }
         }
 
-        // If we have any unmatched cameras left, create a new CameraConfiguration for them here.
+        if (!unmatchedAfterByID.isEmpty() && !detectedCameraList.isEmpty()) {
+            logger.debug("Match by path-by-id failed, falling back to path-only matching");
+
+            List<CameraConfiguration> unmatchedAfterByPath = new ArrayList<>(loadedUsbCamConfigs);
+
+            // now attempt to match the cameras and configs remaining by normal path
+            for (CameraConfiguration config : unmatchedAfterByID) {
+                UsbCameraInfo cameraInfo;
+
+                // attempt matching by path and basename
+                logger.debug(
+                        "Trying to find a match for loaded camera "
+                                + config.baseName
+                                + " with path "
+                                + config.path);
+                cameraInfo =
+                        detectedCameraList.stream()
+                                .filter(
+                                        usbCameraInfo ->
+                                                usbCameraInfo.path.equals(config.path)
+                                                        && cameraNameToBaseName(usbCameraInfo.name).equals(config.baseName))
+                                .findFirst()
+                                .orElse(null);
+
+                // If we actually matched a camera to a config, remove that camera from the list
+                // and add it to the output
+                if (cameraInfo != null) {
+                    logger.debug("Matched the config for " + config.baseName + " to a physical camera!");
+                    detectedCameraList.remove(cameraInfo);
+                    unmatchedAfterByPath.remove(config);
+                    cameraConfigurations.add(mergeInfoIntoConfig(config, cameraInfo));
+                }
+            }
+
+            if (!unmatchedAfterByPath.isEmpty() && !detectedCameraList.isEmpty()) {
+                logger.debug("Match by ID and path failed, falling back to name-only matching");
+
+                // if both path and ID based matching fails, attempt basename only match
+                for (CameraConfiguration config : unmatchedAfterByPath) {
+                    UsbCameraInfo cameraInfo;
+
+                    logger.debug("Trying to find a match for loaded camera with name " + config.baseName);
+
+                    cameraInfo =
+                            detectedCameraList.stream()
+                                    .filter(
+                                            usbCameraInfo ->
+                                                    cameraNameToBaseName(usbCameraInfo.name).equals(config.baseName))
+                                    .findFirst()
+                                    .orElse(null);
+
+                    // If we actually matched a camera to a config, remove that camera from the list
+                    // and add it to the output
+                    if (cameraInfo != null) {
+                        logger.debug("Matched the config for " + config.baseName + " to a physical camera!");
+                        detectedCameraList.remove(cameraInfo);
+                        cameraConfigurations.add(mergeInfoIntoConfig(config, cameraInfo));
+                    }
+                }
+            }
+        }
+
+        // If we have any unmatched cameras left, create a new CameraConfiguration for
+        // them here.
         logger.debug(
                 "After matching loaded configs " + detectedCameraList.size() + " cameras were unmatched.");
         for (UsbCameraInfo info : detectedCameraList) {
@@ -274,7 +334,7 @@ public class VisionSourceManager {
             String uniqueName = baseNameToUniqueName(baseName);
 
             int suffix = 0;
-            while (containsName(cameraConfigurations, uniqueName)) {
+            while (containsName(cameraConfigurations, uniqueName) || containsName(uniqueName)) {
                 suffix++;
                 uniqueName = String.format("%s (%d)", uniqueName, suffix);
             }
@@ -311,6 +371,27 @@ public class VisionSourceManager {
             cfg.path = info.path;
         }
         cfg.otherPaths = info.otherPaths;
+
+        if (cfg.otherPaths.length != info.otherPaths.length) {
+            logger.debug(
+                    "Updating otherPath config from "
+                            + Arrays.toString(cfg.otherPaths)
+                            + " to "
+                            + Arrays.toString(info.otherPaths));
+            cfg.otherPaths = info.otherPaths.clone();
+        } else {
+            for (int i = 0; i < info.otherPaths.length; i++) {
+                if (!cfg.otherPaths[i].equals(info.otherPaths[i])) {
+                    logger.debug(
+                            "Updating otherPath config from "
+                                    + Arrays.toString(cfg.otherPaths)
+                                    + " to "
+                                    + Arrays.toString(info.otherPaths));
+                    cfg.otherPaths = info.otherPaths.clone();
+                    break;
+                }
+            }
+        }
 
         return cfg;
     }
@@ -379,7 +460,7 @@ public class VisionSourceManager {
 
     private boolean usbCamEquals(UsbCameraInfo a, UsbCameraInfo b) {
         return a.path.equals(b.path)
-                && a.dev == b.dev
+                // && a.dev == b.dev (dev is not constant in Windows)
                 && a.name.equals(b.name)
                 && a.productId == b.productId
                 && a.vendorId == b.vendorId;
@@ -432,5 +513,16 @@ public class VisionSourceManager {
             final List<CameraConfiguration> configList, final String uniqueName) {
         return configList.stream()
                 .anyMatch(configuration -> configuration.uniqueName.equals(uniqueName));
+    }
+
+    /**
+     * Check if the current list of known cameras contains the given unique name.
+     *
+     * @param uniqueName The unique name.
+     * @return If the list of cameras contains the unique name.
+     */
+    private boolean containsName(final String uniqueName) {
+        return VisionModuleManager.getInstance().getModules().stream()
+                .anyMatch(camera -> camera.visionSource.cameraConfiguration.uniqueName.equals(uniqueName));
     }
 }
