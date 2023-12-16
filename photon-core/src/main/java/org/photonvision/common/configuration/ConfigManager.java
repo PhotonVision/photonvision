@@ -99,7 +99,7 @@ public class ConfigManager {
         var networkConfigExists = maybeNetworkSettings.exists() && maybeHwConfig.isFile();
         var atflConfigExists = maybeATFLSettings.exists() && maybeATFLSettings.isFile();
 
-        var translateNeeded = 
+        var translateNeeded =
             (legacyCamConfigsExist) ||
             (hwConfigExists) ||
             (networkConfigExists) ||
@@ -154,7 +154,7 @@ public class ConfigManager {
             if(atflConfigExists){
                 FileUtils.deleteFile(maybeATFLSettings.toPath());
             }
-           
+
 
             // Save the same config out using SQL loader
             var sql = new SqlConfigProvider(getRootFolder());
