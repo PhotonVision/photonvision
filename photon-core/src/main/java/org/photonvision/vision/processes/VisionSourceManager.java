@@ -405,7 +405,6 @@ public class VisionSourceManager {
         List<UsbCameraInfo> badDevices = new ArrayList<>();
 
         for (var device : allDevices) {
-
             // Filter devices that are physically the same device but may show up as multiple devices that
             // really cant be accessed. First noticed with raspi 5 and ov5647.
 
