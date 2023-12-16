@@ -24,6 +24,8 @@
 
 package org.photonvision;
 
+import edu.wpi.first.hal.FRCNetComm.tResourceType;
+import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
@@ -52,6 +54,7 @@ import org.photonvision.targeting.PhotonPipelineResult;
 
 /** Represents a camera that is connected to PhotonVision. */
 public class PhotonCamera implements AutoCloseable {
+    private static int InstanceCount = 0;
     public static final String kTableName = "photonvision";
 
     private final NetworkTable cameraTable;
@@ -152,6 +155,9 @@ public class PhotonCamera implements AutoCloseable {
         MultiSubscriber m_topicNameSubscriber =
                 new MultiSubscriber(
                         instance, new String[] {"/photonvision/"}, PubSubOption.topicsOnly(true));
+
+        HAL.report(tResourceType.kResourceType_PhotonCamera, InstanceCount);
+        InstanceCount++;
     }
 
     /**
