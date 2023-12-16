@@ -100,10 +100,7 @@ public class ConfigManager {
         var atflConfigExists = maybeATFLSettings.exists() && maybeATFLSettings.isFile();
 
         var translateNeeded =
-            (legacyCamConfigsExist) ||
-            (hwConfigExists) ||
-            (networkConfigExists) ||
-            (atflConfigExists);
+                (legacyCamConfigsExist) || (hwConfigExists) || (networkConfigExists) || (atflConfigExists);
 
         if (translateNeeded) {
             logger.info("Translating legacy settings to database...");
@@ -114,14 +111,15 @@ public class ConfigManager {
             // yeet our current cameras backup directory, not needed anymore
             if (maybeCamsBak.exists()) FileUtils.deleteDirectory(maybeCamsBak.toPath());
 
-            if(legacyCamConfigsExist){
-                //Make a backup of camera configurations
+            if (legacyCamConfigsExist) {
+                // Make a backup of camera configurations
                 if (!maybeCams.canWrite()) {
                     maybeCams.setWritable(true);
                 }
 
                 try {
-                    Files.move(maybeCams.toPath(), maybeCamsBak.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    Files.move(
+                            maybeCams.toPath(), maybeCamsBak.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 } catch (IOException e) {
                     logger.error("Exception moving cameras to cameras_bak!", e);
 
@@ -130,31 +128,30 @@ public class ConfigManager {
                     try {
                         org.apache.commons.io.FileUtils.copyDirectory(maybeCams, maybeCamsBak);
                     } catch (IOException e1) {
-                        // So we can't move to cams_bak, and we can't copy and delete either? We just have to give
-                        // up here on preserving the old folder
+                        // So we can't move to cams_bak, and we can't copy and delete either? We just have to
+                        // give up here on preserving the old folder
                         logger.error("Exception while backup-copying cameras to cameras_bak!", e);
                         e1.printStackTrace();
                     }
 
-                    // Delete the directory because we were successfully able to load the config but were unable
-                    // to save or copy the folder.
+                    // Delete the directory because we were successfully able to load the config but were
+                    // unable to save or copy the folder.
                     if (maybeCams.exists()) FileUtils.deleteDirectory(maybeCams.toPath());
                 }
             }
 
-            //Yeet the other files so we don't reload them on boot
-            if(hwConfigExists){
+            // Yeet the other files so we don't reload them on boot
+            if (hwConfigExists) {
                 FileUtils.deleteFile(maybeHwConfig.toPath());
             }
 
-            if(networkConfigExists){
+            if (networkConfigExists) {
                 FileUtils.deleteFile(maybeNetworkSettings.toPath());
             }
 
-            if(atflConfigExists){
+            if (atflConfigExists) {
                 FileUtils.deleteFile(maybeATFLSettings.toPath());
             }
-
 
             // Save the same config out using SQL loader
             var sql = new SqlConfigProvider(getRootFolder());
@@ -162,9 +159,7 @@ public class ConfigManager {
             sql.saveToDisk();
             logger.info("Finished camera settings");
         }
-
     }
-
 
     public static boolean saveUploadedSettingsZip(File uploadPath) {
         // Unpack to /tmp/something/photonvision
