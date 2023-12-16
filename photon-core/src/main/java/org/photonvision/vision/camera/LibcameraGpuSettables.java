@@ -82,23 +82,15 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
             videoModes.put(
                     3, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1280, 800, 60, 60, 1));
 
-        } else if (sensorModel == LibCameraJNI.SensorModel.IMX708) {
-            videoModes.put(
-                    0, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1536 / 4, 864 / 4, 120, 120, 1));
-            videoModes.put(
-                    1, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1536 / 2, 864 / 2, 120, 120, 1));
-            videoModes.put(
-                    2, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1536, 864, 120, 120, 1));
-            videoModes.put(
-                    3, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 4608 / 2, 2592 / 2, 60, 60, 1));
-            // videoModes.put(
-            //         4, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 4608, 2592, 14, 14, 1)); // Crashes...
-
         } else {
             if (sensorModel == LibCameraJNI.SensorModel.IMX477) {
                 LibcameraGpuSource.logger.warn(
                         "It appears you are using a Pi HQ Camera. This camera is not officially supported. You will have to set your camera FOV differently based on resolution.");
-            } else if (sensorModel == LibCameraJNI.SensorModel.Unknown) {
+            }else if (sensorModel == LibCameraJNI.SensorModel.IMX708) {
+                LibcameraGpuSource.logger.warn(
+                        "It appears you are using a Pi Camera V3. This camera is not officially supported. You will have to set your camera FOV differently based on resolution.");
+            }
+             else if (sensorModel == LibCameraJNI.SensorModel.Unknown) {
                 LibcameraGpuSource.logger.warn(
                         "You have an unknown sensor connected to your Pi over CSI! This is likely a bug. If it is not, then you will have to set your camera FOV differently based on resolution.");
             }
