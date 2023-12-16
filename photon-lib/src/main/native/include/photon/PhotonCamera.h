@@ -39,11 +39,7 @@
 #include <units/time.h>
 #include <wpi/deprecated.h>
 
-#include "photon/dataflow/structures/Packet.h"
-#include "photon/targeting/MultiTargetPNPResult.h"
-#include "photon/targeting/PNPResult.h"
-#include "photon/targeting/PhotonPipelineResult.h"
-#include "photon/targeting/PhotonTrackedTarget.h"
+#include "photon/targeting//PhotonPipelineResult.h"
 
 namespace cv {
 class Mat;
@@ -171,6 +167,8 @@ class PhotonCamera {
   inline static void SetVersionCheckEnabled(bool enabled) {
     PhotonCamera::VERSION_CHECK_ENABLED = enabled;
   }
+
+  std::shared_ptr<nt::NetworkTable> GetCameraTable() const { return rootTable; }
 
   // For use in tests
   bool test = false;
