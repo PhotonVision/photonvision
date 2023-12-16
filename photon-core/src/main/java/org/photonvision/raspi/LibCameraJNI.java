@@ -64,6 +64,7 @@ public class LibCameraJNI {
         Disconnected,
         OV5647, // Picam v1
         IMX219, // Picam v2
+        IMX708, // Picam v3
         IMX477, // Picam HQ
         OV9281,
         OV7251,
@@ -77,6 +78,8 @@ public class LibCameraJNI {
                     return "Camera Module v1";
                 case IMX219:
                     return "Camera Module v2";
+                case IMX708:
+                    return "Camera Module v3";
                 case IMX477:
                     return "HQ Camera";
                 case OV9281:
