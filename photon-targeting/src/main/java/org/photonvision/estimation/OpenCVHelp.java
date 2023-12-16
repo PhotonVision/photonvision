@@ -18,6 +18,7 @@
 package org.photonvision.estimation;
 
 import edu.wpi.first.cscore.CvSink;
+import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.Num;
@@ -63,8 +64,8 @@ public final class OpenCVHelp {
     }
 
     static {
-        NWU_TO_EDN = new Rotation3d(Matrix.mat(Nat.N3(), Nat.N3()).fill(0, -1, 0, 0, 0, -1, 1, 0, 0));
-        EDN_TO_NWU = new Rotation3d(Matrix.mat(Nat.N3(), Nat.N3()).fill(0, 0, 1, -1, 0, 0, 0, -1, 0));
+        NWU_TO_EDN = new Rotation3d(MatBuilder.fill(Nat.N3(), Nat.N3(), 0, -1, 0, 0, 0, -1, 1, 0, 0));
+        EDN_TO_NWU = new Rotation3d(MatBuilder.fill(Nat.N3(), Nat.N3(), 0, 0, 1, -1, 0, 0, 0, -1, 0));
     }
 
     public static Mat matrixToMat(SimpleMatrix matrix) {
