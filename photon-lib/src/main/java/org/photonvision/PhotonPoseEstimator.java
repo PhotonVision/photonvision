@@ -25,6 +25,8 @@
 package org.photonvision;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.hal.FRCNetComm.tResourceType;
+import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -52,6 +54,8 @@ import org.photonvision.targeting.PhotonTrackedTarget;
  * below. Example usage can be found in our apriltagExample example project.
  */
 public class PhotonPoseEstimator {
+    private static int InstanceCount = 0;
+
     /** Position estimation strategies that can be used by the {@link PhotonPoseEstimator} class. */
     public enum PoseStrategy {
         /** Choose the Pose with the lowest ambiguity. */
@@ -118,14 +122,14 @@ public class PhotonPoseEstimator {
         this.primaryStrategy = strategy;
         this.camera = camera;
         this.robotToCamera = robotToCamera;
+
+        HAL.report(tResourceType.kResourceType_PhotonPoseEstimator, InstanceCount);
+        InstanceCount++;
     }
 
     public PhotonPoseEstimator(
             AprilTagFieldLayout fieldTags, PoseStrategy strategy, Transform3d robotToCamera) {
-        this.fieldTags = fieldTags;
-        this.primaryStrategy = strategy;
-        this.camera = null;
-        this.robotToCamera = robotToCamera;
+        this(fieldTags, strategy, null, robotToCamera);
     }
 
     /** Invalidates the pose cache. */
