@@ -104,7 +104,6 @@ dependencies {
         implementation project(":photon-targeting")
     }
 
-    implementation wpilibTools.deps.wpilibJava("wpiunits")
     implementation wpilibTools.deps.wpilibJava("wpiutil")
     implementation wpilibTools.deps.wpilibJava("cameraserver")
     implementation wpilibTools.deps.wpilibJava("cscore")
