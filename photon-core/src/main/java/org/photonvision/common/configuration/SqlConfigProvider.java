@@ -199,7 +199,7 @@ public class SqlConfigProvider extends ConfigProvider {
 
     @Override
     public void load() {
-        logger.debug("Loading config... for CRS");
+        logger.debug("Loading config...");
         var conn = createConn();
         if (conn == null) return;
 
