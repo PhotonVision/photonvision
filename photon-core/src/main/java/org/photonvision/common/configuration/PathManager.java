@@ -25,14 +25,14 @@ public class PathManager {
     private PathManager() {
         this.configDirectoryFile = new File(getRootFolder().toUri());
     }
-    
+
     public Path getRootFolder() {
         return Path.of("photonvision_config");
     }
-    
+
     public Path getLogsDir() {
         return Path.of(configDirectoryFile.toString(), "logs");
-    }    
+    }
 
     public static final String LOG_PREFIX = "photonvision-";
     public static final String LOG_EXT = ".log";

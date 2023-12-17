@@ -134,8 +134,7 @@ public class Logger {
         logFileList.removeIf(
                 (File arg0) -> {
                     try {
-                        logFileStartDateMap.put(
-                                arg0, PathManager.getInstance().logFnameToDate(arg0.getName()));
+                        logFileStartDateMap.put(arg0, PathManager.getInstance().logFnameToDate(arg0.getName()));
                         return false;
                     } catch (ParseException e) {
                         return true;
