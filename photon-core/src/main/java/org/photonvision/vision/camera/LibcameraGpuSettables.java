@@ -86,6 +86,9 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
             if (sensorModel == LibCameraJNI.SensorModel.IMX477) {
                 LibcameraGpuSource.logger.warn(
                         "It appears you are using a Pi HQ Camera. This camera is not officially supported. You will have to set your camera FOV differently based on resolution.");
+            } else if (sensorModel == LibCameraJNI.SensorModel.IMX708) {
+                LibcameraGpuSource.logger.warn(
+                        "It appears you are using a Pi Camera V3. This camera is not officially supported. You will have to set your camera FOV differently based on resolution.");
             } else if (sensorModel == LibCameraJNI.SensorModel.Unknown) {
                 LibcameraGpuSource.logger.warn(
                         "You have an unknown sensor connected to your Pi over CSI! This is likely a bug. If it is not, then you will have to set your camera FOV differently based on resolution.");
