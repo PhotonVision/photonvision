@@ -45,7 +45,7 @@ import org.photonvision.vision.pipeline.DriverModePipelineSettings;
  * <p>Global has one row per global config file (like hardware settings and network settings)
  */
 public class SqlConfigProvider extends ConfigProvider {
-    private final Logger logger = new Logger(SqlConfigProvider.class, LogGroup.Config);
+    private static final Logger logger = new Logger(SqlConfigProvider.class, LogGroup.Config);
 
     static class TableKeys {
         static final String CAM_UNIQUE_NAME = "unique_name";
@@ -199,7 +199,7 @@ public class SqlConfigProvider extends ConfigProvider {
 
     @Override
     public void load() {
-        logger.debug("Loading config...");
+        logger.debug("Loading config... for CRS");
         var conn = createConn();
         if (conn == null) return;
 
