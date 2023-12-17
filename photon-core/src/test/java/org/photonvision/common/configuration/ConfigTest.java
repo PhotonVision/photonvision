@@ -155,8 +155,11 @@ public class ConfigTest {
         writer.write(str);
         writer.flush();
         writer.close();
-        Assertions.assertDoesNotThrow(
-                () -> JacksonUtils.deserialize(tempFile.toPath(), CVPipelineSettings.class));
+
+        AprilTagPipelineSettings settings =
+                (AprilTagPipelineSettings)
+                        JacksonUtils.deserialize(tempFile.toPath(), CVPipelineSettings.class);
+        Assertions.assertEquals(TargetModel.kAprilTag6in_16h5, settings.targetModel);
 
         tempFile.delete();
     }
