@@ -133,27 +133,31 @@ public class ConfigTest {
     public void testJacksonHandlesOldVersions() throws IOException {
         var str =
                 "{\"baseName\":\"aaaaaa\",\"uniqueName\":\"aaaaaa\",\"nickname\":\"aaaaaa\",\"FOV\":70.0,\"path\":\"dev/vid\",\"cameraType\":\"UsbCamera\",\"currentPipelineIndex\":0,\"camPitch\":{\"radians\":0.0},\"calibrations\":[], \"cameraLEDs\":[]}";
-        var writer = new FileWriter("test.json");
+        File tempFile = File.createTempFile("test", ".json");
+        tempFile.deleteOnExit();
+        var writer = new FileWriter(tempFile);
         writer.write(str);
         writer.flush();
         writer.close();
         Assertions.assertDoesNotThrow(
-                () -> JacksonUtils.deserialize(Path.of("test.json"), CameraConfiguration.class));
+                () -> JacksonUtils.deserialize(tempFile.toPath(), CameraConfiguration.class));
 
-        new File("test.json").delete();
+        tempFile.delete();
     }
 
     @Test
     public void testJacksonHandlesOldTargetEnum() throws IOException {
-        var str =
-                "[ \"AprilTagPipelineSettings\", {\n" + "  \"targetModel\" : \"k6in_16h5\"\n" + "} ]\n";
-        var writer = new FileWriter("test.json");
+        var str = "[ \"AprilTagPipelineSettings\", {\n  \"targetModel\" : \"k6in_16h5\"\n} ]\n";
+
+        File tempFile = File.createTempFile("test", ".json");
+        tempFile.deleteOnExit();
+        var writer = new FileWriter(tempFile);
         writer.write(str);
         writer.flush();
         writer.close();
         Assertions.assertDoesNotThrow(
-                () -> JacksonUtils.deserialize(Path.of("test.json"), CVPipelineSettings.class));
+                () -> JacksonUtils.deserialize(tempFile.toPath(), CVPipelineSettings.class));
 
-        new File("test.json").delete();
+        tempFile.delete();
     }
 }
