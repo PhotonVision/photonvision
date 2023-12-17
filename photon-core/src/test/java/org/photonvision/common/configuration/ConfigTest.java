@@ -31,6 +31,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
+import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.target.TargetModel;
@@ -138,6 +139,20 @@ public class ConfigTest {
         writer.close();
         Assertions.assertDoesNotThrow(
                 () -> JacksonUtils.deserialize(Path.of("test.json"), CameraConfiguration.class));
+
+        new File("test.json").delete();
+    }
+
+    @Test
+    public void testJacksonHandlesOldTargetEnum() throws IOException {
+        var str =
+                "[ \"AprilTagPipelineSettings\", {\n" + "  \"targetModel\" : \"k6in_16h5\"\n" + "} ]\n";
+        var writer = new FileWriter("test.json");
+        writer.write(str);
+        writer.flush();
+        writer.close();
+        Assertions.assertDoesNotThrow(
+                () -> JacksonUtils.deserialize(Path.of("test.json"), CVPipelineSettings.class));
 
         new File("test.json").delete();
     }
