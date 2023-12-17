@@ -19,6 +19,7 @@ _VERSION_CHECK_ENABLED = True
 
 
 def setVersionCheckEnabled(enabled: bool):
+    global _VERSION_CHECK_ENABLED
     _VERSION_CHECK_ENABLED = enabled
 
 
@@ -131,11 +132,15 @@ class PhotonCamera:
         return (now - self.prevHeartbeatChangeTime) < 0.5
 
     def _versionCheck(self) -> None:
+        global lastVersionTimeCheck
+        
         if not _VERSION_CHECK_ENABLED:
             return
 
         if (Timer.getFPGATimestamp() - lastVersionTimeCheck) < 5.0:
             return
+
+        lastVersionTimeCheck = Timer.getFPGATimestamp()
 
         if not self.heartbeatEntry.exists():
             cameraNames = (
