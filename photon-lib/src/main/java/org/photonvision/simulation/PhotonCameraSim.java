@@ -465,7 +465,7 @@ public class PhotonCameraSim implements AutoCloseable {
                 var corn = pair.getSecond();
 
                 if (tgt.fiducialID >= 0) { // apriltags
-                    VideoSimUtil.warp16h5TagImage(tgt.fiducialID, corn, true, videoSimFrameRaw);
+                    VideoSimUtil.warp36h11TagImage(tgt.fiducialID, corn, true, videoSimFrameRaw);
                 } else if (!tgt.getModel().isSpherical) { // non-spherical targets
                     var contour = corn;
                     if (!tgt.getModel()
@@ -530,7 +530,7 @@ public class PhotonCameraSim implements AutoCloseable {
                             prop.getDistCoeffs(),
                             detectableTgts,
                             tagLayout,
-                            TargetModel.kAprilTag16h5);
+                            TargetModel.kAprilTag36h11);
             multitagResult = new MultiTargetPNPResult(pnpResult, usedIDs);
         }
 

@@ -51,13 +51,13 @@ int sgn(T val) {
 
 namespace photon {
 namespace VideoSimUtil {
-static constexpr int kNumTags16h5 = 30;
+static constexpr int kNumTags36h11 = 30;
 
 static constexpr units::meter_t fieldLength{16.54175_m};
 static constexpr units::meter_t fieldWidth{8.0137_m};
 
-static cv::Mat Get16h5TagImage(int id) {
-  wpi::RawFrame frame = frc::AprilTag::Generate16h5AprilTagImage(id);
+static cv::Mat Get36h11TagImage(int id) {
+  wpi::RawFrame frame = frc::AprilTag::Generate36h11AprilTagImage(id);
   cv::Mat markerImage{frame.height, frame.width, CV_8UC1, frame.data};
   cv::Mat markerClone = markerImage.colRange(0, frame.dataLength).clone();
   return markerClone;
@@ -65,8 +65,8 @@ static cv::Mat Get16h5TagImage(int id) {
 
 static std::unordered_map<int, cv::Mat> LoadAprilTagImages() {
   std::unordered_map<int, cv::Mat> retVal{};
-  for (int i = 0; i < kNumTags16h5; i++) {
-    cv::Mat tagImage = Get16h5TagImage(i);
+  for (int i = 0; i < kNumTags36h11; i++) {
+    cv::Mat tagImage = Get36h11TagImage(i);
     retVal[i] = tagImage;
   }
   return retVal;
@@ -81,27 +81,27 @@ static std::vector<cv::Point2f> GetImageCorners(const cv::Size& size) {
   return retVal;
 }
 
-static std::vector<cv::Point2f> Get16h5MarkerPts(int scale) {
-  cv::Rect2f roi16h5{cv::Point2f{1, 1}, cv::Point2f{6, 6}};
-  roi16h5.x *= scale;
-  roi16h5.y *= scale;
-  roi16h5.width *= scale;
-  roi16h5.height *= scale;
-  std::vector<cv::Point2f> pts = GetImageCorners(roi16h5.size());
+static std::vector<cv::Point2f> Get36h11MarkerPts(int scale) {
+  cv::Rect2f roi36h11{cv::Point2f{1, 1}, cv::Point2f{8, 8}};
+  roi36h11.x *= scale;
+  roi36h11.y *= scale;
+  roi36h11.width *= scale;
+  roi36h11.height *= scale;
+  std::vector<cv::Point2f> pts = GetImageCorners(roi36h11.size());
   for (size_t i = 0; i < pts.size(); i++) {
     cv::Point2f pt = pts[i];
-    pts[i] = cv::Point2f{roi16h5.tl().x + pt.x, roi16h5.tl().y + pt.y};
+    pts[i] = cv::Point2f{roi36h11.tl().x + pt.x, roi36h11.tl().y + pt.y};
   }
   return pts;
 }
 
-static std::vector<cv::Point2f> Get16h5MarkerPts() {
-  return Get16h5MarkerPts(1);
+static std::vector<cv::Point2f> Get36h11MarkerPts() {
+  return Get36h11MarkerPts(1);
 }
 
-static const std::unordered_map<int, cv::Mat> kTag16h5Images =
+static const std::unordered_map<int, cv::Mat> kTag36h11Images =
     LoadAprilTagImages();
-static const std::vector<cv::Point2f> kTag16h5MarkPts = Get16h5MarkerPts();
+static const std::vector<cv::Point2f> kTag36h11MarkPts = Get36h11MarkerPts();
 
 [[maybe_unused]] static void UpdateVideoProp(cs::CvSource& video,
                                              const SimCameraProperties& prop) {
@@ -112,11 +112,11 @@ static const std::vector<cv::Point2f> kTag16h5MarkPts = Get16h5MarkerPts();
 [[maybe_unused]] static void Warp165h5TagImage(
     int tagId, const std::vector<cv::Point2f>& dstPoints, bool antialiasing,
     cv::Mat& destination) {
-  if (!kTag16h5Images.contains(tagId)) {
+  if (!kTag36h11Images.contains(tagId)) {
     return;
   }
-  cv::Mat tagImage = kTag16h5Images.at(tagId);
-  std::vector<cv::Point2f> tagPoints{kTag16h5MarkPts};
+  cv::Mat tagImage = kTag36h11Images.at(tagId);
+  std::vector<cv::Point2f> tagPoints{kTag36h11MarkPts};
   std::vector<cv::Point2f> tagImageCorners{GetImageCorners(tagImage.size())};
   std::vector<cv::Point2f> dstPointMat = dstPoints;
   cv::Rect boundingRect = cv::boundingRect(dstPointMat);
@@ -132,7 +132,7 @@ static const std::vector<cv::Point2f> kTag16h5MarkPts = Get16h5MarkerPts();
 
   int supersampling = 6;
   supersampling = static_cast<int>(std::ceil(supersampling / warpedTagUpscale));
-  supersampling = std::max(std::min(supersampling, 8), 1);
+  supersampling = std::max(std::min(supersampling, 10), 1);
 
   cv::Mat scaledTagImage{};
   if (warpedTagUpscale > 2.0) {
@@ -142,7 +142,7 @@ static const std::vector<cv::Point2f> kTag16h5MarkPts = Get16h5MarkerPts();
     scaleFactor *= supersampling;
     cv::resize(tagImage, scaledTagImage, cv::Size{}, scaleFactor, scaleFactor,
                cv::INTER_NEAREST);
-    tagPoints = Get16h5MarkerPts(scaleFactor);
+    tagPoints = Get36h11MarkerPts(scaleFactor);
   } else {
     scaledTagImage = tagImage;
   }

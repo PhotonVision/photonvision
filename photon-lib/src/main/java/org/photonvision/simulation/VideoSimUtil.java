@@ -24,10 +24,12 @@
 
 package org.photonvision.simulation;
 
+import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.cscore.CvSource;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.util.RawFrame;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -51,15 +53,12 @@ import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.RotTrlTransform3d;
 
 public class VideoSimUtil {
-    public static final String kLocalTagImagesPath = "./src/main/resources/images/apriltags/";
-    public static final String kResourceTagImagesPath = "/images/apriltags/";
-    public static final String kTag16h5ImageName = "tag16_05_00000";
-    public static final int kNumTags16h5 = 30;
+    public static final int kNumTags36h11 = 30;
 
-    // All 16h5 tag images
-    private static final Map<Integer, Mat> kTag16h5Images = new HashMap<>();
-    // Points corresponding to marker(black square) corners of 8x8 16h5 tag images
-    public static final Point[] kTag16h5MarkerPts;
+    // All 36h11 tag images
+    private static final Map<Integer, Mat> kTag36h11Images = new HashMap<>();
+    // Points corresponding to marker(black square) corners of 10x10 36h11 tag images
+    public static final Point[] kTag36h11MarkerPts;
 
     // field dimensions for wireframe
     private static double fieldLength = 16.54175;
@@ -68,13 +67,13 @@ public class VideoSimUtil {
     static {
         OpenCVHelp.forceLoadOpenCV();
 
-        // create Mats of 8x8 apriltag images
-        for (int i = 0; i < VideoSimUtil.kNumTags16h5; i++) {
-            Mat tagImage = VideoSimUtil.get16h5TagImage(i);
-            kTag16h5Images.put(i, tagImage);
+        // create Mats of 10x10 apriltag images
+        for (int i = 0; i < VideoSimUtil.kNumTags36h11; i++) {
+            Mat tagImage = VideoSimUtil.get36h11TagImage(i);
+            kTag36h11Images.put(i, tagImage);
         }
 
-        kTag16h5MarkerPts = get16h5MarkerPts();
+        kTag36h11MarkerPts = get36h11MarkerPts();
     }
 
     /** Updates the properties of this CvSource video stream with the given camera properties. */
@@ -100,69 +99,42 @@ public class VideoSimUtil {
     }
 
     /**
-     * Gets the 8x8 (grayscale) image of a specific 16h5 AprilTag.
+     * Gets the 10x10 (grayscale) image of a specific 36h11 AprilTag.
      *
      * @param id The fiducial id of the desired tag
      */
-    public static Mat get16h5TagImage(int id) {
-        String name = kTag16h5ImageName;
-        String idString = String.valueOf(id);
-        name = name.substring(0, name.length() - idString.length()) + idString;
-
-        var resource = VideoSimUtil.class.getResource(kResourceTagImagesPath + name + ".png");
-
-        Mat result = new Mat();
-        // reading jar file
-        if (resource != null && resource.getPath().startsWith("file")) {
-            BufferedImage buf;
-            try {
-                buf = ImageIO.read(resource);
-            } catch (IOException e) {
-                System.err.println("Couldn't read tag image!");
-                return result;
-            }
-
-            result = new Mat(buf.getHeight(), buf.getWidth(), CvType.CV_8UC1);
-
-            byte[] px = new byte[1];
-            for (int y = 0; y < result.height(); y++) {
-                for (int x = 0; x < result.width(); x++) {
-                    px[0] = (byte) (buf.getRGB(x, y) & 0xFF);
-                    result.put(y, x, px);
-                }
-            }
-        }
-        // local IDE tests
-        else result = Imgcodecs.imread(kLocalTagImagesPath + name + ".png", Imgcodecs.IMREAD_GRAYSCALE);
+    public static Mat get36h11TagImage(int id) {
+        RawFrame frame = AprilTag.generate36h11AprilTagImage(id);
+        Mat result = new Mat(10, 10, CvType.CV_8UC1, frame.getDataByteBuffer());
         return result;
     }
 
     /** Gets the points representing the marker(black square) corners. */
-    public static Point[] get16h5MarkerPts() {
-        return get16h5MarkerPts(1);
+    public static Point[] get36h11MarkerPts() {
+        return get36h11MarkerPts(1);
     }
 
     /**
      * Gets the points representing the marker(black square) corners.
      *
-     * @param scale The scale of the tag image (8*scale x 8*scale image)
+     * @param scale The scale of the tag image (10*scale x 10*scale image)
      */
-    public static Point[] get16h5MarkerPts(int scale) {
-        var roi16h5 = new Rect(new Point(1, 1), new Size(6, 6));
-        roi16h5.x *= scale;
-        roi16h5.y *= scale;
-        roi16h5.width *= scale;
-        roi16h5.height *= scale;
-        var pts = getImageCorners(roi16h5.size());
+    public static Point[] get36h11MarkerPts(int scale) {
+        var roi36h11 = new Rect(new Point(1, 1), new Size(8, 8));
+        roi36h11.x *= scale;
+        roi36h11.y *= scale;
+        roi36h11.width *= scale;
+        roi36h11.height *= scale;
+        var pts = getImageCorners(roi36h11.size());
         for (int i = 0; i < pts.length; i++) {
             var pt = pts[i];
-            pts[i] = new Point(roi16h5.tl().x + pt.x, roi16h5.tl().y + pt.y);
+            pts[i] = new Point(roi36h11.tl().x + pt.x, roi36h11.tl().y + pt.y);
         }
         return pts;
     }
 
     /**
-     * Warps the image of a specific 16h5 AprilTag onto the destination image at the given points.
+     * Warps the image of a specific 36h11 AprilTag onto the destination image at the given points.
      *
      * @param tagId The id of the specific tag to warp onto the destination image
      * @param dstPoints Points(4) in destination image where the tag marker(black square) corners
@@ -172,11 +144,11 @@ public class VideoSimUtil {
      *     is desired or target detection is being done on the stream, but can hurt performance.
      * @param destination The destination image to place the warped tag image onto.
      */
-    public static void warp16h5TagImage(
+    public static void warp36h11TagImage(
             int tagId, Point[] dstPoints, boolean antialiasing, Mat destination) {
-        Mat tagImage = kTag16h5Images.get(tagId);
+        Mat tagImage = kTag36h11Images.get(tagId);
         if (tagImage == null || tagImage.empty()) return;
-        var tagPoints = new MatOfPoint2f(kTag16h5MarkerPts);
+        var tagPoints = new MatOfPoint2f(kTag36h11MarkerPts);
         // points of tag image corners
         var tagImageCorners = new MatOfPoint2f(getImageCorners(tagImage.size()));
         var dstPointMat = new MatOfPoint2f(dstPoints);
@@ -206,7 +178,7 @@ public class VideoSimUtil {
         */
         int supersampling = 6;
         supersampling = (int) Math.ceil(supersampling / warpedTagUpscale);
-        supersampling = Math.max(Math.min(supersampling, 8), 1);
+        supersampling = Math.max(Math.min(supersampling, 10), 1);
 
         Mat scaledTagImage = new Mat();
         if (warpedTagUpscale > 2.0) {
@@ -216,7 +188,7 @@ public class VideoSimUtil {
             scaleFactor *= supersampling;
             Imgproc.resize(
                     tagImage, scaledTagImage, new Size(), scaleFactor, scaleFactor, Imgproc.INTER_NEAREST);
-            tagPoints.fromArray(get16h5MarkerPts(scaleFactor));
+            tagPoints.fromArray(get36h11MarkerPts(scaleFactor));
         } else tagImage.assignTo(scaledTagImage);
 
         // constrain the bounding rect inside of the destination image

@@ -6,11 +6,6 @@ plugins {
     id "com.dorongold.task-tree" version "2.1.0"
 }
 
-wpi.maven.useLocal = false
-wpi.maven.useDevelopment = true
-wpi.versions.wpilibVersion = '2024.1.1-beta-3-53-g31cd015'
-wpi.versions.wpimathVersion = '2024.1.1-beta-3-53-g31cd015'
-
 repositories {
     mavenLocal()
     jcenter()
