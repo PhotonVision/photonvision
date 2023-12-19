@@ -21,6 +21,16 @@ import edu.wpi.first.math.geometry.*;
 import org.photonvision.common.dataflow.structures.Packet;
 
 public class PacketUtils {
+    public static final int ROTATION2D_BYTE_SIZE = Double.BYTES;
+    public static final int QUATERNION_BYTE_SIZE = Double.BYTES * 4;
+    public static final int ROTATION3D_BYTE_SIZE = QUATERNION_BYTE_SIZE;
+    public static final int TRANSLATION2D_BYTE_SIZE = Double.BYTES * 2;
+    public static final int TRANSLATION3D_BYTE_SIZE = Double.BYTES * 3;
+    public static final int TRANSFORM2D_BYTE_SIZE = TRANSLATION2D_BYTE_SIZE + ROTATION2D_BYTE_SIZE;
+    public static final int TRANSFORM3D_BYTE_SIZE = TRANSLATION3D_BYTE_SIZE + ROTATION3D_BYTE_SIZE;
+    public static final int POSE2D_BYTE_SIZE = TRANSLATION2D_BYTE_SIZE + ROTATION2D_BYTE_SIZE;
+    public static final int POSE3D_BYTE_SIZE = TRANSLATION3D_BYTE_SIZE + ROTATION3D_BYTE_SIZE;
+
     public static void packRotation2d(Packet packet, Rotation2d rotation) {
         packet.encode(rotation.getRadians());
     }
