@@ -116,18 +116,30 @@ const resetCurrentBuffer = () => {
             <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.x.toFixed(2) }}&nbsp;m</td>
             <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.y.toFixed(2) }}&nbsp;m</td>
             <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.z.toFixed(2) }}&nbsp;m</td>
-            <td>{{ (
-                useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_x *
-                (180.0 / Math.PI)
-              ).toFixed(2) }}&deg;</td>
-                          <td>{{ (
-                useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_y *
-                (180.0 / Math.PI)
-              ).toFixed(2) }}&deg;</td>
-            <td>{{ (
-                useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_z *
-                (180.0 / Math.PI)
-              ).toFixed(2) }}&deg;</td>
+            <td>
+              {{
+                (
+                  useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_x *
+                  (180.0 / Math.PI)
+                ).toFixed(2)
+              }}&deg;
+            </td>
+            <td>
+              {{
+                (
+                  useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_y *
+                  (180.0 / Math.PI)
+                ).toFixed(2)
+              }}&deg;
+            </td>
+            <td>
+              {{
+                (
+                  useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_z *
+                  (180.0 / Math.PI)
+                ).toFixed(2)
+              }}&deg;
+            </td>
             <td>{{ useStateStore().currentPipelineResults?.multitagResult?.fiducialIDsUsed }}</td>
           </tbody>
         </v-simple-table>
