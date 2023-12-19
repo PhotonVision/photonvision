@@ -23,7 +23,6 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
-import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networktables.NTTopicSet;
@@ -134,10 +133,8 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
                         result.getLatencyMillis(),
                         TrackedTarget.simpleFromTrackedTargets(result.targets),
                         result.multiTagResult);
-        Packet packet = new Packet(simplified.getPacketSize());
-        PhotonPipelineResult.serde.pack(packet, simplified);
 
-        ts.rawBytesEntry.set(packet.getData());
+        ts.resultPublisher.accept(simplified, simplified.getPacketSize());
 
         ts.pipelineIndexPublisher.set(pipelineIndexSupplier.get());
         ts.driverModePublisher.set(driverModeSupplier.getAsBoolean());

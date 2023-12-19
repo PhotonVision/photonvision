@@ -47,7 +47,6 @@ import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonTargetSortMode;
-import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.networktables.NTTopicSet;
 import org.photonvision.estimation.CameraTargetRelation;
 import org.photonvision.estimation.OpenCVHelp;
@@ -564,9 +563,7 @@ public class PhotonCameraSim implements AutoCloseable {
     public void submitProcessedFrame(PhotonPipelineResult result, long receiveTimestamp) {
         ts.latencyMillisEntry.set(result.getLatencyMillis(), receiveTimestamp);
 
-        var newPacket = new Packet(result.getPacketSize());
-        PhotonPipelineResult.serde.pack(newPacket, result);
-        ts.rawBytesEntry.set(newPacket.getData(), receiveTimestamp);
+        ts.resultPublisher.accept(result, result.getPacketSize());
 
         boolean hasTargets = result.hasTargets();
         ts.hasTargetEntry.set(hasTargets, receiveTimestamp);

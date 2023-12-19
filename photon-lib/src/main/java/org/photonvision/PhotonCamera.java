@@ -42,14 +42,13 @@ import edu.wpi.first.networktables.MultiSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.PubSubOption;
-import edu.wpi.first.networktables.RawSubscriber;
 import edu.wpi.first.networktables.StringSubscriber;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import java.util.Optional;
 import java.util.Set;
-import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.hardware.VisionLEDMode;
+import org.photonvision.common.networktables.PacketSubscriber;
 import org.photonvision.targeting.PhotonPipelineResult;
 
 /** Represents a camera that is connected to PhotonVision. */
@@ -58,7 +57,7 @@ public class PhotonCamera implements AutoCloseable {
     public static final String kTableName = "photonvision";
 
     private final NetworkTable cameraTable;
-    RawSubscriber rawBytesEntry;
+    PacketSubscriber<PhotonPipelineResult> resultSubscriber;
     BooleanPublisher driverModePublisher;
     BooleanSubscriber driverModeSubscriber;
     DoublePublisher latencyMillisEntry;
@@ -78,7 +77,7 @@ public class PhotonCamera implements AutoCloseable {
 
     @Override
     public void close() {
-        rawBytesEntry.close();
+        resultSubscriber.close();
         driverModePublisher.close();
         driverModeSubscriber.close();
         latencyMillisEntry.close();
@@ -115,8 +114,6 @@ public class PhotonCamera implements AutoCloseable {
         VERSION_CHECK_ENABLED = enabled;
     }
 
-    Packet packet = new Packet(1);
-
     /**
      * Constructs a PhotonCamera from a root table.
      *
@@ -130,11 +127,14 @@ public class PhotonCamera implements AutoCloseable {
         var photonvision_root_table = instance.getTable(kTableName);
         this.cameraTable = photonvision_root_table.getSubTable(cameraName);
         path = cameraTable.getPath();
-        rawBytesEntry =
+        var rawBytesEntry =
                 cameraTable
                         .getRawTopic("rawBytes")
                         .subscribe(
                                 "rawBytes", new byte[] {}, PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
+        resultSubscriber =
+                new PacketSubscriber<>(
+                        rawBytesEntry, PhotonPipelineResult.serde, new PhotonPipelineResult());
         driverModePublisher = cameraTable.getBooleanTopic("driverModeRequest").publish();
         driverModeSubscriber = cameraTable.getBooleanTopic("driverMode").subscribe(false);
         inputSaveImgEntry = cameraTable.getIntegerTopic("inputSaveImgCmd").getEntry(0);
@@ -177,21 +177,12 @@ public class PhotonCamera implements AutoCloseable {
     public PhotonPipelineResult getLatestResult() {
         verifyVersion();
 
-        // Clear the packet.
-        packet.clear();
-
-        // Create latest result.
-        var ret = new PhotonPipelineResult();
-
-        // Populate packet and create result.
-        packet.setData(rawBytesEntry.get(new byte[] {}));
-
-        if (packet.getSize() < 1) return ret;
-        ret = PhotonPipelineResult.serde.unpack(packet);
+        var ret = resultSubscriber.get();
 
         // Set the timestamp of the result.
         // getLatestChange returns in microseconds, so we divide by 1e6 to convert to seconds.
-        ret.setTimestampSeconds((rawBytesEntry.getLastChange() / 1e6) - ret.getLatencyMillis() / 1e3);
+        ret.setTimestampSeconds(
+                (resultSubscriber.subscriber.getLastChange() / 1e6) - ret.getLatencyMillis() / 1e3);
 
         // Return result.
         return ret;
