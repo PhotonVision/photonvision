@@ -22,32 +22,41 @@
  * SOFTWARE.
  */
 
-#include "com_vendor_jni_VendorJNI.h"
-#include "jni.h"
+#pragma once
 
-JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
-  // Check to ensure the JNI version is valid
+#include <frc/TimedRobot.h>
+#include <frc/Timer.h>
+#include <frc/XboxController.h>
+#include <frc/filter/SlewRateLimiter.h>
 
-  JNIEnv* env;
-  if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK)
-    return JNI_ERR;
+#include "Vision.h"
+#include "subsystems/SwerveDrive.h"
 
-  // In here is also where you store things like class references
-  // if they are ever needed
+class Robot : public frc::TimedRobot {
+ public:
+  void RobotInit() override;
+  void RobotPeriodic() override;
+  void DisabledInit() override;
+  void DisabledPeriodic() override;
+  void DisabledExit() override;
+  void AutonomousInit() override;
+  void AutonomousPeriodic() override;
+  void AutonomousExit() override;
+  void TeleopInit() override;
+  void TeleopPeriodic() override;
+  void TeleopExit() override;
+  void TestInit() override;
+  void TestPeriodic() override;
+  void TestExit() override;
+  void SimulationPeriodic() override;
 
-  return JNI_VERSION_1_6;
-}
-
-JNIEXPORT void JNICALL JNI_OnUnload(JavaVM* vm, void* reserved) {}
-
-/*
- * Class:     com_vendor_jni_VendorJNI
- * Method:    initialize
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL
-Java_com_vendor_jni_VendorJNI_initialize
-  (JNIEnv*, jclass)
-{
-  return 0;
-}
+ private:
+  SwerveDrive drivetrain{};
+  Vision vision{};
+  frc::XboxController controller{0};
+  frc::SlewRateLimiter<units::scalar> forwardLimiter{1.0 / 0.6_s};
+  frc::SlewRateLimiter<units::scalar> strafeLimiter{1.0 / 0.6_s};
+  frc::SlewRateLimiter<units::scalar> turnLimiter{1.0 / 0.33_s};
+  frc::Timer autoTimer{};
+  double kDriveSpeed{0.6};
+};

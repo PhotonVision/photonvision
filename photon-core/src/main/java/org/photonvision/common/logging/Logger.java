@@ -24,7 +24,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.tuple.Pair;
-import org.photonvision.common.configuration.ConfigManager;
+// import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.PathManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.util.TimedTaskManager;
@@ -103,8 +104,8 @@ public class Logger {
     static {
         currentAppenders.add(new ConsoleLogAppender());
         currentAppenders.add(uiLogAppender);
-        addFileAppender(ConfigManager.getInstance().getLogPath());
-        cleanLogs(ConfigManager.getInstance().getLogsDir());
+        addFileAppender(PathManager.getInstance().getLogPath());
+        cleanLogs(PathManager.getInstance().getLogsDir());
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -133,8 +134,7 @@ public class Logger {
         logFileList.removeIf(
                 (File arg0) -> {
                     try {
-                        logFileStartDateMap.put(
-                                arg0, ConfigManager.getInstance().logFnameToDate(arg0.getName()));
+                        logFileStartDateMap.put(arg0, PathManager.getInstance().logFnameToDate(arg0.getName()));
                         return false;
                     } catch (ParseException e) {
                         return true;

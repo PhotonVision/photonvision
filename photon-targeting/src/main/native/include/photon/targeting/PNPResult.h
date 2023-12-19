@@ -27,15 +27,15 @@ class PNPResult {
  public:
   // This could be wrapped in an std::optional, but chose to do it this way to
   // mirror Java
-  bool isPresent;
+  bool isPresent{false};
 
-  frc::Transform3d best;
-  double bestReprojErr;
+  frc::Transform3d best{};
+  double bestReprojErr{0};
 
-  frc::Transform3d alt;
-  double altReprojErr;
+  frc::Transform3d alt{};
+  double altReprojErr{0};
 
-  double ambiguity;
+  double ambiguity{0};
 
   bool operator==(const PNPResult& other) const;
 

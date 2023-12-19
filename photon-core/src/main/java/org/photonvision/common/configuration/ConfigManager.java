@@ -62,12 +62,13 @@ public class ConfigManager {
 
     public static ConfigManager getInstance() {
         if (INSTANCE == null) {
+            Path rootFolder = PathManager.getInstance().getRootFolder();
             switch (m_saveStrat) {
                 case SQL:
-                    INSTANCE = new ConfigManager(getRootFolder(), new SqlConfigProvider(getRootFolder()));
+                    INSTANCE = new ConfigManager(rootFolder, new SqlConfigProvider(rootFolder));
                     break;
                 case LEGACY:
-                    INSTANCE = new ConfigManager(getRootFolder(), new LegacyConfigProvider(getRootFolder()));
+                    INSTANCE = new ConfigManager(rootFolder, new LegacyConfigProvider(rootFolder));
                     break;
                 case ATOMIC_ZIP:
                     // not yet done, fall through
@@ -78,7 +79,7 @@ public class ConfigManager {
         return INSTANCE;
     }
 
-    private static final Logger logger = new Logger(ConfigManager.class, LogGroup.General);
+    private static final Logger logger = new Logger(ConfigManager.class, LogGroup.Config);
 
     private void translateLegacyIfPresent(Path folderPath) {
         if (!(m_provider instanceof SqlConfigProvider)) {
@@ -167,7 +168,7 @@ public class ConfigManager {
     }
 
     private static Path getRootFolder() {
-        return Path.of("photonvision_config");
+        return PathManager.getInstance().getRootFolder();
     }
 
     ConfigManager(Path configDirectory, ConfigProvider provider) {

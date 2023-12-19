@@ -50,7 +50,7 @@ const resetCurrentBuffer = () => {
                   useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
                 "
               >
-                <th class="text-center">Ambiguity %</th>
+                <th class="text-center">Ambiguity Ratio</th>
               </template>
             </tr>
           </thead>
@@ -82,7 +82,7 @@ const resetCurrentBuffer = () => {
                   useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
                 "
               >
-                <td>{{ target.ambiguity >= 0 ? target.ambiguity?.toFixed(2) + "%" : "(In Multi-Target)" }}</td>
+                <td>{{ target.ambiguity >= 0 ? target.ambiguity.toFixed(2) : "(In Multi-Target)" }}</td>
               </template>
             </tr>
           </tbody>
@@ -116,9 +116,18 @@ const resetCurrentBuffer = () => {
             <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.x.toFixed(2) }}&nbsp;m</td>
             <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.y.toFixed(2) }}&nbsp;m</td>
             <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.z.toFixed(2) }}&nbsp;m</td>
-            <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_x.toFixed(2) }}&deg;</td>
-            <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_y.toFixed(2) }}&deg;</td>
-            <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_z.toFixed(2) }}&deg;</td>
+            <td>{{ (
+                useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_x *
+                (180.0 / Math.PI)
+              ).toFixed(2) }}&deg;</td>
+                          <td>{{ (
+                useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_y *
+                (180.0 / Math.PI)
+              ).toFixed(2) }}&deg;</td>
+            <td>{{ (
+                useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_z *
+                (180.0 / Math.PI)
+              ).toFixed(2) }}&deg;</td>
             <td>{{ useStateStore().currentPipelineResults?.multitagResult?.fiducialIDsUsed }}</td>
           </tbody>
         </v-simple-table>

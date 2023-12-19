@@ -1,0 +1,57 @@
+{
+  "NTProvider": {
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/SmartDashboard/VisionSystemSim-main/Sim Field": "Field2d"
+    },
+    "windows": {
+      "/SmartDashboard/VisionSystemSim-main/Sim Field": {
+        "EstimatedRobotModules": {
+          "arrows": false,
+          "image": "swerve_module.png",
+          "length": 0.30000001192092896,
+          "width": 0.30000001192092896
+        },
+        "apriltag": {
+          "image": "tag-green.png",
+          "length": 0.6000000238418579,
+          "width": 0.6000000238418579
+        },
+        "bottom": 544,
+        "builtin": "2023 Charged Up",
+        "cameras": {
+          "arrowSize": 19,
+          "arrowWeight": 1.0,
+          "style": "Hidden"
+        },
+        "height": 8.013679504394531,
+        "left": 46,
+        "right": 1088,
+        "top": 36,
+        "visibleTargetPoses": {
+          "image": "tag-blue.png"
+        },
+        "width": 16.541748046875,
+        "window": {
+          "visible": true
+        }
+      }
+    }
+  },
+  "NetworkTables": {
+    "transitory": {
+      "SmartDashboard": {
+        "Drive": {
+          "open": true
+        },
+        "open": true
+      },
+      "photonvision": {
+        "open": true,
+        "photonvision": {
+          "open": true
+        }
+      }
+    }
+  }
+}
