@@ -27,22 +27,20 @@ import org.photonvision.utils.PacketUtils;
 public class PhotonTrackedTarget {
     private static final int MAX_CORNERS = 8;
 
-    private double yaw;
-    private double pitch;
-    private double area;
-    private double skew;
-    private int fiducialId;
-    private Transform3d bestCameraToTarget = new Transform3d();
-    private Transform3d altCameraToTarget = new Transform3d();
-    private double poseAmbiguity;
+    private final double yaw;
+    private final double pitch;
+    private final double area;
+    private final double skew;
+    private final int fiducialId;
+    private final Transform3d bestCameraToTarget;
+    private final Transform3d altCameraToTarget;
+    private final double poseAmbiguity;
 
     // Corners from the min-area rectangle bounding the target
-    private List<TargetCorner> minAreaRectCorners;
+    private final List<TargetCorner> minAreaRectCorners;
 
     // Corners from whatever corner detection method was used
-    private List<TargetCorner> detectedCorners;
-
-    public PhotonTrackedTarget() {}
+    private final List<TargetCorner> detectedCorners;
 
     /** Construct a tracked target, given exactly 4 corners */
     public PhotonTrackedTarget(
