@@ -9,6 +9,9 @@ let oldResults: {targets: Transform3d[]} = Vue.observable({ targets: [] });
 let stdev = ref({
   x: 0,
   y: 0,
+  z: 0,
+  x_angle: 0,
+  y_angle: 0,
   z_angle: 0
 });
 
@@ -32,6 +35,9 @@ watch(() => useStateStore().currentPipelineResults?.multitagResult?.bestTransfor
 
   stdev.value.x = standardDeviation(oldResults.targets.map(it => it.x));
   stdev.value.y = standardDeviation(oldResults.targets.map(it => it.y));
+  stdev.value.z = standardDeviation(oldResults.targets.map(it => it.z));
+  stdev.value.x_angle = standardDeviation(oldResults.targets.map(it => it.angle_x));
+  stdev.value.y_angle = standardDeviation(oldResults.targets.map(it => it.angle_y));
   stdev.value.z_angle = standardDeviation(oldResults.targets.map(it => it.angle_z));
 });
 </script>
@@ -128,12 +134,18 @@ watch(() => useStateStore().currentPipelineResults?.multitagResult?.bestTransfor
         <thead style="font-size: 1.25rem">
           <th class="text-center">X meters</th>
           <th class="text-center">Y meters</th>
+          <th class="text-center">Z meters</th>
+          <th class="text-center">X Angle &theta;&deg;</th>
+          <th class="text-center">Y Angle &theta;&deg;</th>
           <th class="text-center">Z Angle &theta;&deg;</th>
           <th class="text-center">Tags</th>
         </thead>
         <tbody v-show="useStateStore().currentPipelineResults?.multitagResult">
           <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.x.toFixed(2) }}&nbsp;m</td>
           <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.y.toFixed(2) }}&nbsp;m</td>
+          <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.z.toFixed(2) }}&nbsp;m</td>
+          <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_x.toFixed(2) }}&deg;</td>
+          <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_y.toFixed(2) }}&deg;</td>
           <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_z.toFixed(2) }}&deg;</td>
           <td>{{ useStateStore().currentPipelineResults?.multitagResult?.fiducialIDsUsed }}</td>
         </tbody>
@@ -145,11 +157,17 @@ watch(() => useStateStore().currentPipelineResults?.multitagResult?.bestTransfor
         <thead style="font-size: 1.25rem">
           <th class="text-center">X meters</th>
           <th class="text-center">Y meters</th>
+          <th class="text-center">Z meters</th>
+          <th class="text-center">X Angle &theta;&deg;</th>
+          <th class="text-center">Y Angle &theta;&deg;</th>
           <th class="text-center">Z Angle &theta;&deg;</th>
         </thead>
         <tbody v-show="useStateStore().currentPipelineResults?.multitagResult">
           <td>{{ stdev.x.toFixed(5) }}&nbsp;m</td>
           <td>{{ stdev.y.toFixed(5) }}&nbsp;m</td>
+          <td>{{ stdev.z.toFixed(5) }}&nbsp;m</td>
+          <td>{{ stdev.x_angle.toFixed(5) }}&deg;</td>
+          <td>{{ stdev.y_angle.toFixed(5) }}&deg;</td>
           <td>{{ stdev.z_angle.toFixed(5) }}&deg;</td>
         </tbody>
       </v-simple-table>

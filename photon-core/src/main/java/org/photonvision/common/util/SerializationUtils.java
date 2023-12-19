@@ -55,6 +55,8 @@ public final class SerializationUtils {
         ret.put("qy", transform.getRotation().getQuaternion().getY());
         ret.put("qz", transform.getRotation().getQuaternion().getZ());
 
+        ret.put("angle_x", transform.getRotation().getX());
+        ret.put("angle_y", transform.getRotation().getY());
         ret.put("angle_z", transform.getRotation().getZ());
         return ret;
     }
