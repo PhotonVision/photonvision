@@ -179,17 +179,23 @@ const resetCurrentBuffer = () => {
             </td>
             <td>
               {{
-                calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.angle_x)).toFixed(5)
+                calculateStdDev(
+                  useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.angle_x * (180.0 / Math.PI))
+                ).toFixed(5)
               }}&deg;
             </td>
             <td>
               {{
-                calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.angle_y)).toFixed(5)
+                calculateStdDev(
+                  useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.angle_y * (180.0 / Math.PI))
+                ).toFixed(5)
               }}&deg;
             </td>
             <td>
               {{
-                calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.angle_z)).toFixed(5)
+                calculateStdDev(
+                  useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.angle_z * (180.0 / Math.PI))
+                ).toFixed(5)
               }}&deg;
             </td>
           </tbody>
