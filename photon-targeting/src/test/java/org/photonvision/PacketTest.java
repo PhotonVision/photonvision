@@ -167,9 +167,9 @@ class PacketTest {
                         9.0,
                         -5.0,
                         -1,
-                        new Transform3d(new Translation3d(), new Rotation3d()),
-                        new Transform3d(new Translation3d(), new Rotation3d()),
-                        0.25,
+                        new Transform3d(),
+                        new Transform3d(),
+                        -1,
                         List.of(
                                 new TargetCorner(1, 2),
                                 new TargetCorner(3, 4),

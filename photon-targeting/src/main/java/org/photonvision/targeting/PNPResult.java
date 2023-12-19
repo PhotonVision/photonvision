@@ -152,26 +152,30 @@ public class PNPResult {
         @Override
         public void pack(Packet packet, PNPResult value) {
             packet.encode(value.isPresent);
-            PacketUtils.packTransform3d(packet, value.best);
-            PacketUtils.packTransform3d(packet, value.alt);
-            packet.encode(value.bestReprojErr);
-            packet.encode(value.altReprojErr);
-            packet.encode(value.ambiguity);
+
+            if (value.isPresent) {
+                PacketUtils.packTransform3d(packet, value.best);
+                PacketUtils.packTransform3d(packet, value.alt);
+                packet.encode(value.bestReprojErr);
+                packet.encode(value.altReprojErr);
+                packet.encode(value.ambiguity);
+            }
         }
 
         @Override
         public PNPResult unpack(Packet packet) {
             var present = packet.decodeBoolean();
+
+            if (!present) {
+                return new PNPResult();
+            }
+
             var best = PacketUtils.unpackTransform3d(packet);
             var alt = PacketUtils.unpackTransform3d(packet);
             var bestEr = packet.decodeDouble();
             var altEr = packet.decodeDouble();
             var ambiguity = packet.decodeDouble();
-            if (present) {
-                return new PNPResult(best, alt, ambiguity, bestEr, altEr);
-            } else {
-                return new PNPResult();
-            }
+            return new PNPResult(best, alt, ambiguity, bestEr, altEr);
         }
     }
 
