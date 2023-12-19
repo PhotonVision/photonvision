@@ -135,7 +135,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
                         TrackedTarget.simpleFromTrackedTargets(result.targets),
                         result.multiTagResult);
         Packet packet = new Packet(simplified.getPacketSize());
-        simplified.populatePacket(packet);
+        PhotonPipelineResult.serde.pack(packet, simplified);
 
         ts.rawBytesEntry.set(packet.getData());
 

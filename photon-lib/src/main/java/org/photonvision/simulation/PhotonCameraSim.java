@@ -565,7 +565,7 @@ public class PhotonCameraSim implements AutoCloseable {
         ts.latencyMillisEntry.set(result.getLatencyMillis(), receiveTimestamp);
 
         var newPacket = new Packet(result.getPacketSize());
-        result.populatePacket(newPacket);
+        PhotonPipelineResult.serde.pack(newPacket, result);
         ts.rawBytesEntry.set(newPacket.getData(), receiveTimestamp);
 
         boolean hasTargets = result.hasTargets();

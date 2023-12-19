@@ -17,33 +17,90 @@
 
 package org.photonvision.utils;
 
-import edu.wpi.first.math.geometry.Quaternion;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.geometry.*;
 import org.photonvision.common.dataflow.structures.Packet;
 
 public class PacketUtils {
-    public static Transform3d decodeTransform(Packet packet) {
-        double x = packet.decodeDouble();
-        double y = packet.decodeDouble();
-        double z = packet.decodeDouble();
-        var translation = new Translation3d(x, y, z);
-        double w = packet.decodeDouble();
-        x = packet.decodeDouble();
-        y = packet.decodeDouble();
-        z = packet.decodeDouble();
-        var rotation = new Rotation3d(new Quaternion(w, x, y, z));
-        return new Transform3d(translation, rotation);
+    public static void packRotation2d(Packet packet, Rotation2d rotation) {
+        packet.encode(rotation.getRadians());
     }
 
-    public static void encodeTransform(Packet packet, Transform3d transform) {
-        packet.encode(transform.getTranslation().getX());
-        packet.encode(transform.getTranslation().getY());
-        packet.encode(transform.getTranslation().getZ());
-        packet.encode(transform.getRotation().getQuaternion().getW());
-        packet.encode(transform.getRotation().getQuaternion().getX());
-        packet.encode(transform.getRotation().getQuaternion().getY());
-        packet.encode(transform.getRotation().getQuaternion().getZ());
+    public static Rotation2d unpackRotation2d(Packet packet) {
+        return new Rotation2d(packet.decodeDouble());
+    }
+
+    public static void packQuaternion(Packet packet, Quaternion quaternion) {
+        packet.encode(quaternion.getW());
+        packet.encode(quaternion.getX());
+        packet.encode(quaternion.getY());
+        packet.encode(quaternion.getZ());
+    }
+
+    public static Quaternion unpackQuaternion(Packet packet) {
+        return new Quaternion(
+                packet.decodeDouble(), packet.decodeDouble(), packet.decodeDouble(), packet.decodeDouble());
+    }
+
+    public static void packRotation3d(Packet packet, Rotation3d rotation) {
+        packQuaternion(packet, rotation.getQuaternion());
+    }
+
+    public static Rotation3d unpackRotation3d(Packet packet) {
+        return new Rotation3d(unpackQuaternion(packet));
+    }
+
+    public static void packTranslation2d(Packet packet, Translation2d translation) {
+        packet.encode(translation.getX());
+        packet.encode(translation.getY());
+    }
+
+    public static Translation2d unpackTranslation2d(Packet packet) {
+        return new Translation2d(packet.decodeDouble(), packet.decodeDouble());
+    }
+
+    public static void packTranslation3d(Packet packet, Translation3d translation) {
+        packet.encode(translation.getX());
+        packet.encode(translation.getY());
+        packet.encode(translation.getZ());
+    }
+
+    public static Translation3d unpackTranslation3d(Packet packet) {
+        return new Translation3d(packet.decodeDouble(), packet.decodeDouble(), packet.decodeDouble());
+    }
+
+    public static void packTransform2d(Packet packet, Transform2d transform) {
+        packTranslation2d(packet, transform.getTranslation());
+        packRotation2d(packet, transform.getRotation());
+    }
+
+    public static Transform2d unpackTransform2d(Packet packet) {
+        return new Transform2d(unpackTranslation2d(packet), unpackRotation2d(packet));
+    }
+
+    public static void packTransform3d(Packet packet, Transform3d transform) {
+        packTranslation3d(packet, transform.getTranslation());
+        packRotation3d(packet, transform.getRotation());
+    }
+
+    public static Transform3d unpackTransform3d(Packet packet) {
+        return new Transform3d(unpackTranslation3d(packet), unpackRotation3d(packet));
+    }
+
+    public static void packPose2d(Packet packet, Pose2d pose) {
+        packTranslation2d(packet, pose.getTranslation());
+        packRotation2d(packet, pose.getRotation());
+    }
+
+    public static Pose2d unpackPose2d(Packet packet) {
+        return new Pose2d(unpackTranslation2d(packet), unpackRotation2d(packet));
+    }
+
+    public static void packPose3d(Packet packet, Pose3d pose) {
+        packTranslation3d(packet, pose.getTranslation());
+        packRotation3d(packet, pose.getRotation());
+    }
+
+    public static Pose3d unpackPose3d(Packet packet) {
+        return new Pose3d(unpackTranslation3d(packet), unpackRotation3d(packet));
     }
 }
