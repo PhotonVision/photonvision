@@ -23,10 +23,16 @@ import edu.wpi.first.math.geometry.CoordinateSystem;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.WPIUtilJNI;
 import java.util.Arrays;
 import java.util.List;
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
+import org.ejml.simple.SimpleMatrix;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
 
 public class MathUtils {
@@ -197,5 +203,16 @@ public class MathUtils {
         var angle = rotation.getAngle();
         var axis = rotation.getAxis().times(angle);
         rvecOutput.put(0, 0, axis.getData());
+    }
+
+    public static Pose3d opencvRTtoPose3d(Mat rVec, Mat tVec) {
+        Translation3d translation =
+                new Translation3d(tVec.get(0, 0)[0], tVec.get(1, 0)[0], tVec.get(2, 0)[0]);
+        Rotation3d rotation =
+                new Rotation3d(
+                        VecBuilder.fill(rVec.get(0, 0)[0], rVec.get(1, 0)[0], rVec.get(2, 0)[0]),
+                        Core.norm(rVec));
+
+        return new Pose3d(translation, rotation);
     }
 }

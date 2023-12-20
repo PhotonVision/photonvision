@@ -83,8 +83,6 @@ export interface VideoFormat {
 export interface CameraCalibrationResult {
   resolution: Resolution;
   distCoeffs: number[];
-  standardDeviation: number;
-  perViewErrors: number[];
   intrinsics: number[];
 }
 

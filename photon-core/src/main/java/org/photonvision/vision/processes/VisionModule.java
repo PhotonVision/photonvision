@@ -38,6 +38,7 @@ import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
+import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.LibcameraGpuSource;
@@ -522,18 +523,17 @@ public class VisionModule {
         ret.outputStreamPort = this.outputStreamPort;
         ret.inputStreamPort = this.inputStreamPort;
 
-        var calList = new ArrayList<HashMap<String, Object>>();
+        var calList = new ArrayList<Object>();
         for (var c : visionSource.getSettables().getConfiguration().calibrations) {
-            var internalMap = new HashMap<String, Object>();
+            // var internalMap = new HashMap<String, Object>();
 
-            internalMap.put("perViewErrors", c.perViewErrors);
-            internalMap.put("standardDeviation", c.standardDeviation);
-            internalMap.put("width", c.resolution.width);
-            internalMap.put("height", c.resolution.height);
-            internalMap.put("intrinsics", c.cameraIntrinsics.data);
-            internalMap.put("distCoeffs", c.distCoeffs.data);
+            // internalMap.put("observations", c.observations);
+            // internalMap.put("width", c.resolution.width);
+            // internalMap.put("height", c.resolution.height);
+            // internalMap.put("intrinsics", c.cameraIntrinsics.data);
+            // internalMap.put("distCoeffs", c.distCoeffs.data);
 
-            calList.add(internalMap);
+            calList.add(c);
         }
         ret.calibrations = calList;
 

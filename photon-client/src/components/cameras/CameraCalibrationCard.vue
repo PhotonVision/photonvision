@@ -31,7 +31,6 @@ const getUniqueVideoResolutions = (): VideoFormat[] => {
 
       const calib = getCalibrationCoeffs(format.resolution);
       if (calib !== undefined) {
-        format.standardDeviation = calib.standardDeviation;
         format.mean = calib.perViewErrors.reduce((a, b) => a + b) / calib.perViewErrors.length;
         format.horizontalFOV = 2 * Math.atan2(format.resolution.width / 2, calib.intrinsics[0]) * (180 / Math.PI);
         format.verticalFOV = 2 * Math.atan2(format.resolution.height / 2, calib.intrinsics[4]) * (180 / Math.PI);
@@ -214,6 +213,71 @@ const endCalibration = () => {
       isCalibrating.value = false;
     });
 };
+
+
+const createSeries = (
+      label,
+      xData,
+      yData,
+      color,
+      showLine = true,
+      fill = false,
+) => {
+      if (xData.length !== yData.length) {
+        return null;
+      }
+
+      if (xData == null || yData == null) {
+        console.log("Data was null. Skipping.");
+        return null;
+      }
+
+      // Convert data to list of x/y pairs
+      let data = [];
+      yData.forEach((y, idx) => {
+        if (!isNaN(y) || y != null) {
+          data.push({ x: xData[idx], y: y });
+        }
+      });
+      return {
+        backgroundColor: color,
+        borderColor: color,
+        label: label,
+        showLine: showLine,
+        fill: fill,
+        data: data,
+        lineTension: 0,
+      };
+};
+
+const reprojectionErrorSeries = () => {
+  // HUGE hack!
+  const calib = useCameraSettingsStore().currentCameraSettings.completeCalibrations[0];
+
+  const errorNorms = calib.observations.map(it2 => it2.reprojectionErrors).map(it2 => it2.map(it3 => Math.sqrt(it3.x * it3.x + it3.y * it3.y))).flat(1);
+  const xLocs = calib.observations.map(it => it.locationInImageSpace.map(it => it.x)).flat(1);
+  const yLocs = calib.observations.map(it => it.locationInImageSpace.map(it => it.y)).flat(1);
+  console.log(errorNorms);
+  console.log(xLocs);
+  console.log(yLocs);
+
+  function rgb(r, g, b){
+    return "rgb("+r+","+g+","+b+")";
+  }
+
+  const colors = errorNorms.map(it => rgb(it * 200, 0, 0))
+  
+  return {
+    datasets: [
+      createSeries(
+        `Reprojection error`,
+        xLocs, yLocs, colors,
+        false
+      ),
+    ],
+  };
+}
+
 </script>
 
 <template>
@@ -284,7 +348,6 @@ const endCalibration = () => {
                   <tr>
                     <th>Resolution</th>
                     <th>Mean Error</th>
-                    <th>Standard Deviation</th>
                     <th>Horizontal FOV</th>
                     <th>Vertical FOV</th>
                     <th>Diagonal FOV</th>
@@ -294,9 +357,6 @@ const endCalibration = () => {
                   <tr v-for="(value, index) in getUniqueVideoResolutions()" :key="index">
                     <td>{{ value.resolution.width }} X {{ value.resolution.height }}</td>
                     <td>{{ value.mean !== undefined ? value.mean.toFixed(2) + "px" : "-" }}</td>
-                    <td>
-                      {{ value.standardDeviation !== undefined ? value.standardDeviation.toFixed(2) + "px" : "-" }}
-                    </td>
                     <td>{{ value.horizontalFOV !== undefined ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
                     <td>{{ value.verticalFOV !== undefined ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
                     <td>{{ value.diagonalFOV !== undefined ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
@@ -431,6 +491,14 @@ const endCalibration = () => {
             />
           </v-col>
         </v-row>
+
+        <LineChart
+          :chartData="reprojectionErrorSeries"
+          min="0"
+          max="3500"
+          ref="loadCell"
+        />
+
       </div>
     </v-card>
     <v-dialog v-model="showCalibEndDialog" width="500px" :persistent="true">
