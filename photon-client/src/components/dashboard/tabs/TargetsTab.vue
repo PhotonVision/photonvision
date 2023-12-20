@@ -3,13 +3,22 @@ import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { PipelineType } from "@/types/PipelineTypes";
 import { useStateStore } from "@/stores/StateStore";
 
-const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings;
+const calculateStdDev = (values: number[]): number => {
+  if (values.length < 2) return 0;
+
+  const mean = values.reduce((sum, number) => sum + number, 0) / values.length;
+
+  return Math.sqrt(values.map((x) => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / values.length);
+};
+const resetCurrentBuffer = () => {
+  // Need to clear the array in place
+  while (useStateStore().currentMultitagBuffer?.length != 0) useStateStore().currentMultitagBuffer?.pop();
+};
 </script>
 
 <template>
   <div>
     <v-row align="start" class="pb-4" style="height: 300px">
-      <!-- Simple table height must be set here and in the CSS for the fixed-header to work -->
       <v-simple-table fixed-header dense dark>
         <template #default>
           <thead style="font-size: 1.25rem">
@@ -80,40 +89,119 @@ const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings
         </template>
       </v-simple-table>
     </v-row>
-    <v-row
+    <v-container
       v-if="
         (useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
           useCameraSettingsStore().currentPipelineType === PipelineType.Aruco) &&
-        currentPipelineSettings.doMultiTarget &&
+        useCameraSettingsStore().currentPipelineSettings.doMultiTarget &&
         useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
         useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "
-      align="start"
-      class="pb-4 white--text"
     >
-      <v-card-subtitle class="ma-0 pa-0 pb-4" style="font-size: 16px">Multi-tag pose, field-to-camera</v-card-subtitle>
-      <v-simple-table fixed-header height="100%" dense dark>
-        <thead style="font-size: 1.25rem">
-          <th class="text-center">X meters</th>
-          <th class="text-center">Y meters</th>
-          <th class="text-center">Z Angle &theta;&deg;</th>
-          <th class="text-center">Tags</th>
-        </thead>
-        <tbody v-show="useStateStore().currentPipelineResults?.multitagResult">
-          <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.x.toFixed(2) }}&nbsp;m</td>
-          <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.y.toFixed(2) }}&nbsp;m</td>
-          <td>
-            {{
-              (
-                useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_z *
-                (180.0 / Math.PI)
-              ).toFixed(2)
-            }}&deg;
-          </td>
-          <td>{{ useStateStore().currentPipelineResults?.multitagResult?.fiducialIDsUsed }}</td>
-        </tbody>
-      </v-simple-table>
-    </v-row>
+      <v-row class="pb-4 white--text">
+        <v-card-subtitle class="ma-0 pa-0 pb-4" style="font-size: 16px"
+          >Multi-tag pose, field-to-camera</v-card-subtitle
+        >
+        <v-simple-table fixed-header height="100%" dense dark>
+          <thead style="font-size: 1.25rem">
+            <th class="text-center">X meters</th>
+            <th class="text-center">Y meters</th>
+            <th class="text-center">Z meters</th>
+            <th class="text-center">X Angle &theta;&deg;</th>
+            <th class="text-center">Y Angle &theta;&deg;</th>
+            <th class="text-center">Z Angle &theta;&deg;</th>
+            <th class="text-center">Tags</th>
+          </thead>
+          <tbody v-show="useStateStore().currentPipelineResults?.multitagResult">
+            <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.x.toFixed(2) }}&nbsp;m</td>
+            <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.y.toFixed(2) }}&nbsp;m</td>
+            <td>{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.z.toFixed(2) }}&nbsp;m</td>
+            <td>
+              {{
+                (
+                  useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_x *
+                  (180.0 / Math.PI)
+                ).toFixed(2)
+              }}&deg;
+            </td>
+            <td>
+              {{
+                (
+                  useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_y *
+                  (180.0 / Math.PI)
+                ).toFixed(2)
+              }}&deg;
+            </td>
+            <td>
+              {{
+                (
+                  useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_z *
+                  (180.0 / Math.PI)
+                ).toFixed(2)
+              }}&deg;
+            </td>
+            <td>{{ useStateStore().currentPipelineResults?.multitagResult?.fiducialIDsUsed }}</td>
+          </tbody>
+        </v-simple-table>
+      </v-row>
+      <v-row class="pb-4 white--text" style="display: flex; flex-direction: column">
+        <v-card-subtitle class="ma-0 pa-0 pb-4 pr-4" style="font-size: 16px"
+          >Multi-tag pose standard deviation over the last {{ useStateStore().currentMultitagBuffer.length }}/100
+          samples
+        </v-card-subtitle>
+        <v-btn color="secondary" class="mb-4 mt-1" style="width: min-content" depressed @click="resetCurrentBuffer"
+          >Reset Samples</v-btn
+        >
+        <v-simple-table fixed-header height="100%" dense dark>
+          <thead style="font-size: 1.25rem">
+            <th class="text-center">X meters</th>
+            <th class="text-center">Y meters</th>
+            <th class="text-center">Z meters</th>
+            <th class="text-center">X Angle &theta;&deg;</th>
+            <th class="text-center">Y Angle &theta;&deg;</th>
+            <th class="text-center">Z Angle &theta;&deg;</th>
+          </thead>
+          <tbody v-show="useStateStore().currentPipelineResults?.multitagResult">
+            <td>
+              {{
+                calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.x)).toFixed(5)
+              }}&nbsp;m
+            </td>
+            <td>
+              {{
+                calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.y)).toFixed(5)
+              }}&nbsp;m
+            </td>
+            <td>
+              {{
+                calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.z)).toFixed(5)
+              }}&nbsp;m
+            </td>
+            <td>
+              {{
+                calculateStdDev(
+                  useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.angle_x * (180.0 / Math.PI))
+                ).toFixed(5)
+              }}&deg;
+            </td>
+            <td>
+              {{
+                calculateStdDev(
+                  useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.angle_y * (180.0 / Math.PI))
+                ).toFixed(5)
+              }}&deg;
+            </td>
+            <td>
+              {{
+                calculateStdDev(
+                  useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.angle_z * (180.0 / Math.PI))
+                ).toFixed(5)
+              }}&deg;
+            </td>
+          </tbody>
+        </v-simple-table>
+      </v-row>
+    </v-container>
   </div>
 </template>
 
