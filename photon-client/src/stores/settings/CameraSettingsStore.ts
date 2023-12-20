@@ -1,7 +1,6 @@
 import { defineStore } from "pinia";
 import type {
   CalibrationBoardTypes,
-  CameraCalibrationResult,
   CameraSettings,
   ConfigurableCameraSettings,
   RobotOffsetType,

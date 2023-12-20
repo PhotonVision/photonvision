@@ -31,17 +31,22 @@ const getUniqueVideoResolutions = (): VideoFormat[] => {
 
       const calib = getCalibrationCoeffs(format.resolution);
       if (calib !== undefined) {
-        format.mean = calib.perViewErrors.reduce((a, b) => a + b) / calib.perViewErrors.length;
-        format.horizontalFOV = 2 * Math.atan2(format.resolution.width / 2, calib.intrinsics[0]) * (180 / Math.PI);
-        format.verticalFOV = 2 * Math.atan2(format.resolution.height / 2, calib.intrinsics[4]) * (180 / Math.PI);
+        console.log(calib)
+
+        // Is this the right formula for RMS error? who knows! not me!
+        const perViewSumSquareReprojectionError = calib.observations.flatMap(it=>it.reprojectionErrors.flatMap(it2=>[it2.x, it2.y]))
+        format.mean = Math.sqrt(perViewSumSquareReprojectionError.reduce((a, b) => a + b, 0))
+
+        format.horizontalFOV = 2 * Math.atan2(format.resolution.width / 2, calib.cameraIntrinsics.data[0]) * (180 / Math.PI);
+        format.verticalFOV = 2 * Math.atan2(format.resolution.height / 2, calib.cameraIntrinsics.data[4]) * (180 / Math.PI);
         format.diagonalFOV =
           2 *
           Math.atan2(
             Math.sqrt(
               format.resolution.width ** 2 +
-                (format.resolution.height / (calib.intrinsics[4] / calib.intrinsics[0])) ** 2
+                (format.resolution.height / (calib.cameraIntrinsics.data[4] / calib.cameraIntrinsics.data[0])) ** 2
             ) / 2,
-            calib.intrinsics[0]
+            calib.cameraIntrinsics.data[0]
           ) *
           (180 / Math.PI);
       }
@@ -492,12 +497,12 @@ const reprojectionErrorSeries = () => {
           </v-col>
         </v-row>
 
-        <LineChart
+        <!-- <LineChart
           :chartData="reprojectionErrorSeries"
           min="0"
           max="3500"
           ref="loadCell"
-        />
+        /> -->
 
       </div>
     </v-card>

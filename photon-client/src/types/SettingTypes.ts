@@ -76,14 +76,44 @@ export interface VideoFormat {
   diagonalFOV?: number;
   horizontalFOV?: number;
   verticalFOV?: number;
-  standardDeviation?: number;
   mean?: number;
+}
+
+export interface JsonMat {
+  rows: number
+  cols: number
+  type: number
+  data: number[]
+}
+
+export interface Point3 {
+  x: number
+  y: number
+  z: number
+}
+export interface Point2 {
+  x: number
+  y: number
+}
+
+export interface Pose3d {
+  translation: { x: number, y: number, z: number }
+  rotation: { quaternion: { W: number, X: number, Y: number, Z: number } }
+}
+
+export interface BoardObservation {
+  locationInObjectSpace: Point3[]
+  locationInImageSpace: Point2[]
+  reprojectionErrors: Point2[]
+  optimisedCameraToObject: Pose3d[]  
 }
 
 export interface CameraCalibrationResult {
   resolution: Resolution;
-  distCoeffs: number[];
-  intrinsics: number[];
+  cameraIntrinsics: JsonMat;
+  // TODO rename to be Right
+  cameraExtrinsics: JsonMat;
+  observations: BoardObservation[]
 }
 
 export interface ConfigurableCameraSettings {

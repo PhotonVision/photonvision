@@ -20,6 +20,7 @@ package org.photonvision.vision.calibration;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -35,6 +36,7 @@ import org.opencv.core.Point3;
 import org.opencv.core.Size;
 import org.photonvision.vision.opencv.Releasable;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CameraCalibrationCoefficients implements Releasable {
     public static final class BoardObservation {
         @JsonProperty("locationInObjectSpace")
@@ -88,6 +90,10 @@ public class CameraCalibrationCoefficients implements Releasable {
         this.cameraIntrinsics = cameraIntrinsics;
         this.distCoeffs = distCoeffs;
 
+        // Legacy migration just to make sure that observations is at worst empty and never null
+        if (observations == null) {
+            observations = List.of();
+        }
         this.observations = observations;
 
         // do this once so gets are quick
