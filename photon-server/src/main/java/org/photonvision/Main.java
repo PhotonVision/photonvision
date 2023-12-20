@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.commons.cli.*;
+import org.mrgingham.MrginghamJNI;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
@@ -315,7 +316,13 @@ public class Main {
         try {
             LibCameraJNI.forceLoad();
         } catch (IOException e) {
-            logger.error("Failed to load native libraries!", e);
+            logger.error("Failed to load libcamera JNI!", e);
+        }
+
+        try {
+            MrginghamJNI.forceLoad();
+        } catch (Exception e) {
+            logger.error("Failed to load mrgingham! Falling back on opencv", e);
         }
 
         try {

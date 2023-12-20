@@ -77,9 +77,8 @@ public class Calibrate3dPipeTest {
         calibrate3dPipe.setParams(new Calibrate3dPipe.CalibratePipeParams(new Size(640, 480)));
 
         var calibrate3dPipeOutput = calibrate3dPipe.run(foundCornersList);
-        assertTrue(calibrate3dPipeOutput.output.perViewErrors.length > 0);
-        System.out.println(
-                "Per View Errors: " + Arrays.toString(calibrate3dPipeOutput.output.perViewErrors));
+        assertTrue(calibrate3dPipeOutput.output.observations.size() > 0);
+        // System.out.println("Per View Errors: " + Arrays.toString(calibrate3dPipeOutput.output.perViewErrors));
 
         for (var f : frames) {
             f.release();
@@ -138,13 +137,12 @@ public class Calibrate3dPipeTest {
         calibration3dPipeline.finishCalibration();
 
         assertNotNull(cal);
-        assertNotNull(cal.perViewErrors);
-        System.out.println("Per View Errors: " + Arrays.toString(cal.perViewErrors));
+        assertNotNull(cal.observations);
+        // System.out.println("Per View Errors: " + Arrays.toString(cal.perViewErrors));
         System.out.println("Camera Intrinsics: " + cal.cameraIntrinsics.toString());
         System.out.println("Dist Coeffs: " + cal.distCoeffs.toString());
         System.out.println("Standard Deviation: " + cal.standardDeviation);
-        System.out.println(
-                "Mean: " + Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
+        // System.out.println("Mean: " + Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
 
         // Confirm we didn't get leaky on our mat usage
         // assertTrue(CVMat.getMatCount() == startMatCount); // TODO Figure out why this doesn't work in
@@ -297,7 +295,7 @@ public class Calibrate3dPipeTest {
 
         // Confirm we have indeed gotten valid calibration objects
         assertNotNull(cal);
-        assertNotNull(cal.perViewErrors);
+        assertNotNull(cal.observations);
 
         // Confirm the calibrated center pixel is fairly close to of the "expected" location at the
         // center of the sensor.
@@ -309,12 +307,11 @@ public class Calibrate3dPipeTest {
         assertTrue(centerXErrPct < 10.0);
         assertTrue(centerYErrPct < 10.0);
 
-        System.out.println("Per View Errors: " + Arrays.toString(cal.perViewErrors));
+        // System.out.println("Per View Errors: " + Arrays.toString(cal.perViewErrors));
         System.out.println("Camera Intrinsics: " + cal.cameraIntrinsics.toString());
         System.out.println("Dist Coeffs: " + cal.distCoeffs.toString());
         System.out.println("Standard Deviation: " + cal.standardDeviation);
-        System.out.println(
-                "Mean: " + Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
+        // System.out.println("Mean: " + Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
 
         // Confirm we didn't get leaky on our mat usage
         // assertEquals(startMatCount, CVMat.getMatCount()); // TODO Figure out why this doesn't

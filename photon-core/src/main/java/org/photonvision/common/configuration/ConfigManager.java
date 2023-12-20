@@ -32,6 +32,7 @@ import java.util.*;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.FileUtils;
+import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.processes.VisionSource;
 import org.zeroturnaround.zip.ZipUtil;
 
@@ -83,12 +84,12 @@ public class ConfigManager {
             // Cannot import into SQL if we aren't in SQL mode rn
             return;
         }
-        logger.info("Translating settings zip!");
 
         var maybeCams = Path.of(folderPath.toAbsolutePath().toString(), "cameras").toFile();
         var maybeCamsBak = Path.of(folderPath.toAbsolutePath().toString(), "cameras_backup").toFile();
 
         if (maybeCams.exists() && maybeCams.isDirectory()) {
+            logger.info("Translating settings zip!");
             var legacy = new LegacyConfigProvider(folderPath);
             legacy.load();
             var loadedConfig = legacy.getConfig();
@@ -178,6 +179,13 @@ public class ConfigManager {
     public void load() {
         translateLegacyIfPresent(this.configDirectoryFile.toPath());
         m_provider.load();
+
+        try {
+            logger.debug("Loaded cameras:");
+            logger.debug(JacksonUtils.serializeToString(getConfig().getCameraConfigurations()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void addCameraConfigurations(List<VisionSource> sources) {

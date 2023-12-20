@@ -22,9 +22,13 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.ConfigManager;
@@ -35,6 +39,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.common.util.file.FileUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients.BoardObservation;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
@@ -43,13 +48,14 @@ import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
 import org.photonvision.vision.pipe.impl.Calibrate3dPipe;
 import org.photonvision.vision.pipe.impl.FindBoardCornersPipe;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.photonvision.vision.pipeline.result.CalibrationPipelineResult;
 
 public class Calibrate3dPipeline
         extends CVPipeline<CVPipelineResult, Calibration3dPipelineSettings> {
     // For loggging
     private static final Logger logger = new Logger(Calibrate3dPipeline.class, LogGroup.General);
 
-    // Only 2 pipes needed, one for finding the board corners and one for actually calibrating
+    // Find board corners decides internally between opencv and mrgingham
     private final FindBoardCornersPipe findBoardCornersPipe = new FindBoardCornersPipe();
     private final Calibrate3dPipe calibrate3dPipe = new Calibrate3dPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
@@ -118,7 +124,8 @@ public class Calibrate3dPipeline
         // Check if the frame has chessboard corners
         var outputColorCVMat = new CVMat();
         inputColorMat.copyTo(outputColorCVMat.getMat());
-        var findBoardResult =
+
+        Triple<Size, Mat, Mat> findBoardResult =
                 findBoardCornersPipe.run(Pair.of(inputColorMat, outputColorCVMat.getMat())).output;
 
         var fpsResult = calculateFPSPipe.run(null);
@@ -130,6 +137,7 @@ public class Calibrate3dPipeline
 
             if (findBoardResult != null) {
                 foundCornersList.add(findBoardResult);
+                imageDir.toFile().mkdirs();
                 Imgcodecs.imwrite(
                         Path.of(imageDir.toString(), "img" + foundCornersList.size() + ".jpg").toString(),
                         inputColorMat);
@@ -142,12 +150,17 @@ public class Calibrate3dPipeline
         frame.release();
 
         // Return the drawn chessboard if corners are found, if not, then return the input image.
-        return new CVPipelineResult(
+        return new CalibrationPipelineResult(
                 sumPipeNanosElapsed,
                 fps, // Unused but here in case
-                Collections.emptyList(),
                 new Frame(
-                        new CVMat(), outputColorCVMat, FrameThresholdType.NONE, frame.frameStaticProperties));
+                        new CVMat(), outputColorCVMat, FrameThresholdType.NONE, frame.frameStaticProperties),
+                getCornersList()
+                        );
+    }
+
+    List<List<Point>> getCornersList() {
+        return foundCornersList.stream().map(it -> ((MatOfPoint2f)it.getRight()).toList()).collect(Collectors.toList());
     }
 
     public void deleteSavedImages() {
@@ -186,8 +199,8 @@ public class Calibrate3dPipeline
         takeSnapshot = true;
     }
 
-    public double[] perViewErrors() {
-        return calibrationOutput.output.perViewErrors;
+    public List<BoardObservation> perViewErrors() {
+        return calibrationOutput.output.observations;
     }
 
     public void finishCalibration() {

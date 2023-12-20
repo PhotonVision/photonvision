@@ -19,12 +19,16 @@ package org.photonvision.vision.camera;
 
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.*;
+import edu.wpi.first.cscore.VideoProperty.Kind;
+import edu.wpi.first.math.MathUtil;
+
 import java.util.*;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.provider.USBFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
@@ -144,6 +148,7 @@ public class USBCameraSource extends VisionSource {
                     if (canSetWhiteBalance) {
                         camera.setWhiteBalanceManual(4000); // Auto white-balance disabled, 4000K preset
                     }
+                    camera.setExposureAuto(); // auto exposure enabled
                 } else {
                     // Pick a bunch of reasonable setting defaults for driver, fiducials, or otherwise
                     // nice-for-humans
@@ -185,6 +190,11 @@ public class USBCameraSource extends VisionSource {
                         camera.getProperty("raw_exposure_time_absolute").set(scaledExposure);
                         camera.getProperty("raw_exposure_time_absolute").set(scaledExposure);
 
+                    } else if (camera.getProperty("exposure_time_absolute").getKind() != Kind.kNone) {
+                        // Seems like the name changed at some point in v4l? set it instead
+                        var prop = camera.getProperty("exposure_time_absolute");
+                        var exposure_manual_val = MathUtils.map(Math.round(exposure), 0, 100, prop.getMin(), prop.getMax());
+                        prop.set((int)exposure_manual_val);
                     } else {
                         scaledExposure = (int) Math.round(exposure);
                         logger.debug("Setting camera exposure to " + Integer.toString(scaledExposure));

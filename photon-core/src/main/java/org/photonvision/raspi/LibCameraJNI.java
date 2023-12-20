@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
@@ -42,13 +43,18 @@ public class LibCameraJNI {
             }
 
             // We always extract the shared object (we could hash each so, but that's a lot of work)
-            URL resourceURL = LibCameraJNI.class.getResource("/nativelibraries/libphotonlibcamera.so");
+            var arch_name = Platform.getNativeLibraryFolderName();
+            URL resourceURL =
+                    LibCameraJNI.class.getResource(
+                            "/nativelibraries/" + arch_name + "/libphotonlibcamera.so");
             File libFile = Path.of("lib/libphotonlibcamera.so").toFile();
             try (InputStream in = resourceURL.openStream()) {
                 if (libFile.exists()) Files.delete(libFile.toPath());
                 Files.copy(in, libFile.toPath());
             } catch (Exception e) {
                 logger.error("Could not extract the native library!");
+                libraryLoaded = false;
+                return;
             }
             System.load(libFile.getAbsolutePath());
 
