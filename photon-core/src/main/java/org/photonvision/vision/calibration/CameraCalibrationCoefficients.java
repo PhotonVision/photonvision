@@ -23,12 +23,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-
 import edu.wpi.first.math.geometry.Pose3d;
-
-import java.util.Arrays;
 import java.util.List;
-
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
 import org.opencv.core.Point;
@@ -41,22 +37,21 @@ public class CameraCalibrationCoefficients implements Releasable {
     public static final class BoardObservation {
         @JsonProperty("locationInObjectSpace")
         public List<Point3> locationInObjectSpace; // Expected feature 3d location in the camera frame
+
         @JsonProperty("locationInImageSpace")
         public List<Point> locationInImageSpace; // Observed location in pixel space
+
         @JsonProperty("reprojectionErrors")
         public List<Point> reprojectionErrors; // (measured location in pixels) - (expected from FK)
+
         public Pose3d optimisedCameraToObject; // Solver optimized board poses
 
         @JsonCreator
         public BoardObservation(
-            @JsonProperty("locationInObjectSpace")
-            List<Point3> locationInObjectSpace, 
-            @JsonProperty("locationInImageSpace")
-            List<Point> locationInImageSpace,
-            @JsonProperty("reprojectionErrors")
-            List<Point> reprojectionErrors,
-            @JsonProperty("optimisedCameraToObject")
-            Pose3d optimisedCameraToObject) {
+                @JsonProperty("locationInObjectSpace") List<Point3> locationInObjectSpace,
+                @JsonProperty("locationInImageSpace") List<Point> locationInImageSpace,
+                @JsonProperty("reprojectionErrors") List<Point> reprojectionErrors,
+                @JsonProperty("optimisedCameraToObject") Pose3d optimisedCameraToObject) {
             this.locationInObjectSpace = locationInObjectSpace;
             this.locationInImageSpace = locationInImageSpace;
             this.reprojectionErrors = reprojectionErrors;

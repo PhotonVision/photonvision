@@ -6,7 +6,7 @@ export default {
   props: {
     chartData: {
       type: Object,
-      default: null,
+      default: null
     },
     min: String,
     max: String,
@@ -22,8 +22,8 @@ export default {
           legend: {
             labels: {
               fontColor: "white",
-              fontSize: 12,
-            },
+              fontSize: 12
+            }
           },
           scales: {
             yAxes: [
@@ -46,11 +46,11 @@ export default {
               //     fontSize: 12,
               //   }
               // }
-            ],
-          },
+            ]
+          }
         };
-      },
-    },
+      }
+    }
   },
   computed: {
     chartOptions: {
@@ -58,19 +58,15 @@ export default {
         const opts = this.options;
 
         if (this.min) {
-          opts.scales.yAxes.forEach(
-            (it) => (it.ticks.suggestedMin = parseFloat(this.min))
-          );
+          opts.scales.yAxes.forEach((it) => (it.ticks.suggestedMin = parseFloat(this.min)));
         }
         if (this.max) {
-          opts.scales.yAxes.forEach(
-            (it) => (it.ticks.suggestedMax = parseFloat(this.max))
-          );
+          opts.scales.yAxes.forEach((it) => (it.ticks.suggestedMax = parseFloat(this.max)));
         }
 
         return opts;
-      },
-    },
+      }
+    }
   },
   mounted() {
     this.renderChart(this.chartData, this.chartOptions);
@@ -83,7 +79,7 @@ export default {
   methods: {
     update() {
       this.renderChart(this.chartData, this.chartOptions);
-    },
-  },
+    }
+  }
 };
 </script>

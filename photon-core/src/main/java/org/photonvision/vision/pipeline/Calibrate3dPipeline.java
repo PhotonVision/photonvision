@@ -20,10 +20,8 @@ package org.photonvision.vision.pipeline;
 import edu.wpi.first.math.util.Units;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.core.Mat;
@@ -38,7 +36,6 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.common.util.file.FileUtils;
-import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients.BoardObservation;
 import org.photonvision.vision.frame.Frame;
@@ -158,12 +155,13 @@ public class Calibrate3dPipeline
                 // new MultiTargetPNPResult(),
                 new Frame(
                         new CVMat(), outputColorCVMat, FrameThresholdType.NONE, frame.frameStaticProperties),
-                getCornersList()
-                        );
+                getCornersList());
     }
 
     List<List<Point>> getCornersList() {
-        return foundCornersList.stream().map(it -> ((MatOfPoint2f)it.getRight()).toList()).collect(Collectors.toList());
+        return foundCornersList.stream()
+                .map(it -> ((MatOfPoint2f) it.getRight()).toList())
+                .collect(Collectors.toList());
     }
 
     public void deleteSavedImages() {

@@ -33,37 +33,29 @@ public class DrawCalibrationPipe
                 Pair<Mat, List<TrackedTarget>>, DrawCalibrationPipe.DrawCalibrationPipeParams> {
     @Override
     protected Void process(Pair<Mat, List<TrackedTarget>> in) {
-
         var image = in.getLeft();
 
         for (var target : in.getRight()) {
-
             for (var c : target.getTargetCorners()) {
-                c = new Point(c.x / params.divisor.value.doubleValue(), c.y / params.divisor.value.doubleValue());
+                c =
+                        new Point(
+                                c.x / params.divisor.value.doubleValue(), c.y / params.divisor.value.doubleValue());
                 var r = 4;
                 var r2 = r / Math.sqrt(2);
                 var color = ColorHelper.colorToScalar(Color.RED, 0.4);
                 Imgproc.circle(image, c, r, color, 1);
-                Imgproc.line(image, 
-                    new Point(c.x-r2, c.y-r2),
-                    new Point(c.x+r2, c.y+r2),
-                    color);
-                Imgproc.line(image, 
-                    new Point(c.x+r2, c.y-r2),
-                    new Point(c.x-r2, c.y+r2),
-                    color);
+                Imgproc.line(image, new Point(c.x - r2, c.y - r2), new Point(c.x + r2, c.y + r2), color);
+                Imgproc.line(image, new Point(c.x + r2, c.y - r2), new Point(c.x - r2, c.y + r2), color);
             }
-
         }
-            
+
         return null;
     }
 
     public static class DrawCalibrationPipeParams {
         private final FrameDivisor divisor;
 
-        public DrawCalibrationPipeParams(
-                FrameDivisor divisor) {
+        public DrawCalibrationPipeParams(FrameDivisor divisor) {
             this.divisor = divisor;
         }
     }

@@ -1,7 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import Vue, { computed, ref, type Ref } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { CalibrationBoardTypes, type Resolution, type VideoFormat } from "@/types/SettingTypes";
+import {
+  CalibrationBoardTypes,
+  type CameraCalibrationResult,
+  type Resolution,
+  type VideoFormat
+} from "@/types/SettingTypes";
 import JsPDF from "jspdf";
 import { font as PromptRegular } from "@/assets/fonts/PromptRegular";
 import MonoLogo from "@/assets/images/logoMono.png";
@@ -11,6 +16,7 @@ import PvSwitch from "@/components/common/pv-switch.vue";
 import PvSelect from "@/components/common/pv-select.vue";
 import PvNumberInput from "@/components/common/pv-number-input.vue";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
+import loadingImage from "@/assets/images/loading.svg";
 
 const settingsValid = ref(true);
 
@@ -31,14 +37,16 @@ const getUniqueVideoResolutions = (): VideoFormat[] => {
 
       const calib = getCalibrationCoeffs(format.resolution);
       if (calib !== undefined) {
-        console.log(calib)
-
         // Is this the right formula for RMS error? who knows! not me!
-        const perViewSumSquareReprojectionError = calib.observations.flatMap(it=>it.reprojectionErrors.flatMap(it2=>[it2.x, it2.y]))
-        format.mean = Math.sqrt(perViewSumSquareReprojectionError.reduce((a, b) => a + b, 0))
+        const perViewSumSquareReprojectionError = calib.observations.flatMap((it) =>
+          it.reprojectionErrors.flatMap((it2) => [it2.x, it2.y])
+        );
+        format.mean = Math.sqrt(perViewSumSquareReprojectionError.reduce((a, b) => a + b, 0));
 
-        format.horizontalFOV = 2 * Math.atan2(format.resolution.width / 2, calib.cameraIntrinsics.data[0]) * (180 / Math.PI);
-        format.verticalFOV = 2 * Math.atan2(format.resolution.height / 2, calib.cameraIntrinsics.data[4]) * (180 / Math.PI);
+        format.horizontalFOV =
+          2 * Math.atan2(format.resolution.width / 2, calib.cameraIntrinsics.data[0]) * (180 / Math.PI);
+        format.verticalFOV =
+          2 * Math.atan2(format.resolution.height / 2, calib.cameraIntrinsics.data[4]) * (180 / Math.PI);
         format.diagonalFOV =
           2 *
           Math.atan2(
@@ -219,70 +227,68 @@ const endCalibration = () => {
     });
 };
 
+const createSeries = (label, xData, yData, color, showLine = true, fill = false) => {
+  if (xData.length !== yData.length) {
+    return null;
+  }
 
-const createSeries = (
-      label,
-      xData,
-      yData,
-      color,
-      showLine = true,
-      fill = false,
-) => {
-      if (xData.length !== yData.length) {
-        return null;
-      }
+  if (xData == null || yData == null) {
+    console.log("Data was null. Skipping.");
+    return null;
+  }
 
-      if (xData == null || yData == null) {
-        console.log("Data was null. Skipping.");
-        return null;
-      }
-
-      // Convert data to list of x/y pairs
-      let data = [];
-      yData.forEach((y, idx) => {
-        if (!isNaN(y) || y != null) {
-          data.push({ x: xData[idx], y: y });
-        }
-      });
-      return {
-        backgroundColor: color,
-        borderColor: color,
-        label: label,
-        showLine: showLine,
-        fill: fill,
-        data: data,
-        lineTension: 0,
-      };
+  // Convert data to list of x/y pairs
+  let data = [];
+  yData.forEach((y, idx) => {
+    if (!isNaN(y) || y != null) {
+      data.push({ x: xData[idx], y: y });
+    }
+  });
+  return {
+    backgroundColor: color,
+    borderColor: color,
+    label: label,
+    showLine: showLine,
+    fill: fill,
+    data: data,
+    lineTension: 0
+  };
 };
 
 const reprojectionErrorSeries = () => {
   // HUGE hack!
   const calib = useCameraSettingsStore().currentCameraSettings.completeCalibrations[0];
 
-  const errorNorms = calib.observations.map(it2 => it2.reprojectionErrors).map(it2 => it2.map(it3 => Math.sqrt(it3.x * it3.x + it3.y * it3.y))).flat(1);
-  const xLocs = calib.observations.map(it => it.locationInImageSpace.map(it => it.x)).flat(1);
-  const yLocs = calib.observations.map(it => it.locationInImageSpace.map(it => it.y)).flat(1);
+  const errorNorms = calib.observations
+    .map((it2) => it2.reprojectionErrors)
+    .map((it2) => it2.map((it3) => Math.sqrt(it3.x * it3.x + it3.y * it3.y)))
+    .flat(1);
+  const xLocs = calib.observations.map((it) => it.locationInImageSpace.map((it) => it.x)).flat(1);
+  const yLocs = calib.observations.map((it) => it.locationInImageSpace.map((it) => it.y)).flat(1);
   console.log(errorNorms);
   console.log(xLocs);
   console.log(yLocs);
 
-  function rgb(r, g, b){
-    return "rgb("+r+","+g+","+b+")";
+  function rgb(r, g, b) {
+    return "rgb(" + r + "," + g + "," + b + ")";
   }
 
-  const colors = errorNorms.map(it => rgb(it * 200, 0, 0))
-  
-  return {
-    datasets: [
-      createSeries(
-        `Reprojection error`,
-        xLocs, yLocs, colors,
-        false
-      ),
-    ],
-  };
-}
+  const colors = errorNorms.map((it) => rgb(it * 200, 0, 0));
 
+  return {
+    datasets: [createSeries(`Reprojection error`, xLocs, yLocs, colors, false)]
+  };
+};
+
+let showCal = ref(false);
+let calibrationDetails: Ref<CameraCalibrationResult | undefined> = ref(undefined);
+
+const showThing = (value: VideoFormat) => {
+  console.log(value);
+  calibrationDetails.value = getCalibrationCoeffs(value.resolution);
+  console.log(calibrationDetails);
+  showCal.value = true;
+};
 </script>
 
 <template>
@@ -359,7 +365,7 @@ const reprojectionErrorSeries = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(value, index) in getUniqueVideoResolutions()" :key="index">
+                  <tr v-for="(value, index) in getUniqueVideoResolutions()" :key="index" @click="showThing(value)">
                     <td>{{ value.resolution.width }} X {{ value.resolution.height }}</td>
                     <td>{{ value.mean !== undefined ? value.mean.toFixed(2) + "px" : "-" }}</td>
                     <td>{{ value.horizontalFOV !== undefined ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
@@ -503,7 +509,6 @@ const reprojectionErrorSeries = () => {
           max="3500"
           ref="loadCell"
         /> -->
-
       </div>
     </v-card>
     <v-dialog v-model="showCalibEndDialog" width="500px" :persistent="true">
@@ -547,6 +552,57 @@ const reprojectionErrorSeries = () => {
           <v-spacer />
           <v-btn v-if="!isCalibrating" color="white" text @click="showCalibEndDialog = false"> OK </v-btn>
         </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="showCal">
+      <v-card color="primary" dark>
+        <v-card-title
+          >{{ useCameraSettingsStore().cameraNames[useStateStore().currentCameraIndex] }} -
+          {{ calibrationDetails?.resolution.width }} x {{ calibrationDetails?.resolution.height }}</v-card-title
+        >
+        <v-row>
+          <v-col cols="3">
+            <v-card-text>
+              <!-- Intrinsics: {{ calibrationDetails }} -->
+              <v-simple-table>
+                <tbody>
+                  <td>Fx:</td>
+                  <td>{{ calibrationDetails?.cameraIntrinsics.data[0].toFixed(2) }} mm</td>
+                </tbody>
+                <tbody>
+                  <td>Fy:</td>
+                  <td>{{ calibrationDetails?.cameraIntrinsics.data[4].toFixed(2) }} mm</td>
+                </tbody>
+                <tbody>
+                  <td>Cx:</td>
+                  <td>{{ calibrationDetails?.cameraIntrinsics.data[2].toFixed(2) }} px</td>
+                </tbody>
+                <tbody>
+                  <td>Cy:</td>
+                  <td>{{ calibrationDetails?.cameraIntrinsics.data[5].toFixed(2) }} px</td>
+                </tbody>
+                <tbody>
+                  <td>Distortion:</td>
+                  <td>[{{ calibrationDetails?.cameraExtrinsics.data.map((it) => it.toFixed(3)).join(", ") }}]</td>
+                </tbody>
+              </v-simple-table>
+
+              <v-divider />
+
+              <pv-select label="Inspect Observation" :items="[1, 2, 3]" :select-cols="8" />
+              <pv-select label="Visualization" :items="['RMS error']" :select-cols="8" />
+              <v-btn light> Show me! </v-btn>
+            </v-card-text>
+          </v-col>
+
+          <v-col>
+            <v-card-text>
+              <img crossorigin="anonymous" :src="loadingImage" />
+            </v-card-text>
+          </v-col>
+        </v-row>
+        <v-divider />
       </v-card>
     </v-dialog>
   </div>

@@ -19,25 +19,21 @@ package org.photonvision.vision.pipe.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import edu.wpi.first.math.geometry.Pose3d;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.calib3d.Calib3d;
+import org.opencv.core.*;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
 import org.opencv.core.Size;
-import org.opencv.core.*;
-import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
-import org.photonvision.vision.calibration.JsonMat;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients.BoardObservation;
+import org.photonvision.vision.calibration.JsonMat;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class Calibrate3dPipe
@@ -118,7 +114,7 @@ public class Calibrate3dPipe
 
         JsonMat cameraMatrixMat = JsonMat.fromMat(cameraMatrix);
         JsonMat distortionCoefficientsMat = JsonMat.fromMat(distortionCoefficients);
-        
+
         // For each observation, calc reprojection error
         Mat jac_temp = new Mat();
         List<BoardObservation> observations = new ArrayList<>();
@@ -126,11 +122,19 @@ public class Calibrate3dPipe
             MatOfPoint3f i_objPtsNative = new MatOfPoint3f();
             objPoints.get(i).copyTo(i_objPtsNative);
             var i_objPts = i_objPtsNative.toList();
-            var i_imgPts = ((MatOfPoint2f)imgPts.get(i)).toList();
-            
+            var i_imgPts = ((MatOfPoint2f) imgPts.get(i)).toList();
+
             var img_pts_reprojected = new MatOfPoint2f();
             try {
-                Calib3d.projectPoints(i_objPtsNative, rvecs.get(i), tvecs.get(i), cameraMatrix, distortionCoefficients, img_pts_reprojected, jac_temp, 0.0);
+                Calib3d.projectPoints(
+                        i_objPtsNative,
+                        rvecs.get(i),
+                        tvecs.get(i),
+                        cameraMatrix,
+                        distortionCoefficients,
+                        img_pts_reprojected,
+                        jac_temp,
+                        0.0);
             } catch (Exception e) {
                 e.printStackTrace();
                 continue;
@@ -151,7 +155,6 @@ public class Calibrate3dPipe
             observations.add(new BoardObservation(i_objPts, i_imgPts, reprojectionError, camToBoard));
         }
         jac_temp.release();
-         
 
         // Standard deviation of results
         try {

@@ -216,8 +216,9 @@ public class USBCameraSource extends VisionSource {
                     } else if (camera.getProperty("exposure_time_absolute").getKind() != Kind.kNone) {
                         // Seems like the name changed at some point in v4l? set it instead
                         var prop = camera.getProperty("exposure_time_absolute");
-                        var exposure_manual_val = MathUtils.map(Math.round(exposure), 0, 100, prop.getMin(), prop.getMax());
-                        prop.set((int)exposure_manual_val);
+                        var exposure_manual_val =
+                                MathUtils.map(Math.round(exposure), 0, 100, prop.getMin(), prop.getMax());
+                        prop.set((int) exposure_manual_val);
                     } else {
                         scaledExposure = (int) Math.round(exposure);
                         logger.debug("Setting camera exposure to " + scaledExposure);

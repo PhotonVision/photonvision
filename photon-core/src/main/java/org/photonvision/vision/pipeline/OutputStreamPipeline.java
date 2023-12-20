@@ -115,7 +115,8 @@ public class OutputStreamPipeline {
         resizeImagePipe.setParams(
                 new ResizeImagePipe.ResizeImageParams(settings.streamingFrameDivisor));
 
-        drawCalibrationPipe.setParams(new DrawCalibrationPipe.DrawCalibrationPipeParams(settings.streamingFrameDivisor));
+        drawCalibrationPipe.setParams(
+                new DrawCalibrationPipe.DrawCalibrationPipeParams(settings.streamingFrameDivisor));
     }
 
     public CVPipelineResult process(
@@ -177,13 +178,13 @@ public class OutputStreamPipeline {
                     pipeProfileNanos[8] = 0;
                 }
             } else if (settings instanceof Calibration3dPipelineSettings) {
-                    pipeProfileNanos[5] = 0;
-                    pipeProfileNanos[6] = 0;
+                pipeProfileNanos[5] = 0;
+                pipeProfileNanos[6] = 0;
 
-                    var drawOnInputResult = drawCalibrationPipe.run(Pair.of(outMat, targetsToDraw));
-                    sumPipeNanosElapsed += pipeProfileNanos[7] = drawOnInputResult.nanosElapsed;
+                var drawOnInputResult = drawCalibrationPipe.run(Pair.of(outMat, targetsToDraw));
+                sumPipeNanosElapsed += pipeProfileNanos[7] = drawOnInputResult.nanosElapsed;
 
-                    pipeProfileNanos[8] = 0;
+                pipeProfileNanos[8] = 0;
             } else if (settings instanceof AprilTagPipelineSettings) {
                 // If we are doing apriltags...
                 if (settings.solvePNPEnabled) {
