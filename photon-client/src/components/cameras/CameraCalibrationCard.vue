@@ -41,7 +41,8 @@ const getUniqueVideoResolutions = (): VideoFormat[] => {
         const perViewSumSquareReprojectionError = calib.observations.flatMap((it) =>
           it.reprojectionErrors.flatMap((it2) => [it2.x, it2.y])
         );
-        format.mean = Math.sqrt(perViewSumSquareReprojectionError.reduce((a, b) => a + b, 0));
+        // For each error, square it, sum the squares, and divide by total points N
+        format.mean = Math.sqrt(perViewSumSquareReprojectionError.map(it => Math.pow(it, 2)).reduce((a, b) => a + b, 0) / perViewSumSquareReprojectionError.length);
 
         format.horizontalFOV =
           2 * Math.atan2(format.resolution.width / 2, calib.cameraIntrinsics.data[0]) * (180 / Math.PI);
@@ -503,12 +504,12 @@ const showThing = (value: VideoFormat) => {
           </v-col>
         </v-row>
 
-        <!-- <LineChart
+        <LineChart
           :chartData="reprojectionErrorSeries"
           min="0"
           max="3500"
           ref="loadCell"
-        /> -->
+        />
       </div>
     </v-card>
     <v-dialog v-model="showCalibEndDialog" width="500px" :persistent="true">
