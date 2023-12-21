@@ -61,14 +61,24 @@ public class SqlConfigProvider extends ConfigProvider {
     }
 
     private static final String dbName = "photon.sqlite";
+    // private final File rootFolder;
     private final String dbPath;
+    private final String url;
 
     private final Object m_mutex = new Object();
-    private final File rootFolder;
 
-    public SqlConfigProvider(Path rootFolder) {
-        this.rootFolder = rootFolder.toFile();
+    public SqlConfigProvider(Path rootPath) {
+        File rootFolder = rootPath.toFile();
+        // Make sure root dir exists
+        if (!rootFolder.exists()) {
+            if (rootFolder.mkdirs()) {
+                logger.debug("Root config folder did not exist. Created!");
+            } else {
+                logger.error("Failed to create root config folder!");
+            }
+        }
         dbPath = Path.of(rootFolder.toString(), dbName).toAbsolutePath().toString();
+        url = "jdbc:sqlite:" + dbPath;
         logger.debug("Using database " + dbPath);
         initDatabase();
     }
@@ -107,16 +117,6 @@ public class SqlConfigProvider extends ConfigProvider {
     }
 
     private void initDatabase() {
-        // Make sure root dir exists
-
-        if (!rootFolder.exists()) {
-            if (rootFolder.mkdirs()) {
-                logger.debug("Root config folder did not exist. Created!");
-            } else {
-                logger.error("Failed to create root config folder!");
-            }
-        }
-
         Connection conn = null;
         Statement createGlobalTableStatement = null;
         Statement createCameraTableStatement = null;
