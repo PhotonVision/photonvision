@@ -104,12 +104,12 @@ public class SqlConfigProvider extends ConfigProvider {
     private void tryCommit(Connection conn) {
         try {
             conn.commit();
-        } catch (SQLException e) {
-            logger.error("Err committing changes: ", e);
+        } catch (SQLException e1) {
+            logger.error("Err committing changes: ", e1);
             try {
                 conn.rollback();
-            } catch (SQLException e1) {
-                logger.error("Err rolling back changes: ", e);
+            } catch (SQLException e2) {
+                logger.error("Err rolling back changes: ", e2);
             }
         }
     }
