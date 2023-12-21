@@ -14,16 +14,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 package org.photonvision.common.configuration;
 
-/*
-Add migrations by adding the SQL commands for each migration sequentially to this array.
-DO NOT edit or delete existing SQL commands. That will lead to producing an icompatible
-database.
-
-You can use multiple SQL statements in one migration step as long as you separate them
-with a semicolon (;).
-*/
+/**
+ * Add migrations by adding the SQL commands for each migration sequentially to this array.
+ * DO NOT edit or delete existing SQL commands. That will lead to producing an icompatible
+ * database.
+ *
+ * You can use multiple SQL statements in one migration step as long as you separate them
+ * with a semicolon (;).
+ */
 public final class SqlMigrations {
     public static final String[] SQL = {
         // #1 - initial schema
