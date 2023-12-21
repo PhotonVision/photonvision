@@ -1,5 +1,6 @@
 <script>
 import { Scatter } from "vue-chartjs";
+import chartJsPluginAnnotation from "chartjs-plugin-annotation";
 
 export default {
   extends: Scatter,
@@ -8,8 +9,10 @@ export default {
       type: Object,
       default: null
     },
-    min: String,
-    max: String,
+    xmin: Number,
+    xmax: Number,
+    ymin: Number,
+    ymax: Number,
     options: {
       animation: false,
       spanGaps: true,
@@ -27,26 +30,33 @@ export default {
           },
           scales: {
             yAxes: [
-              //     {
-              //   ticks: {
-              //     fontColor: "white",
-              //     fontSize: 12,
-              //   }
-              // }
+              {
+                ticks: {
+                  fontColor: "white"
+                }
+              }
             ],
             xAxes: [
-              //     {
-              //   type: "time",
-              //   time: {
-              //     unit: 'second',
-              //     unitStepSize: 10,
-              //   },
-              //   ticks: {
-              //     fontColor: "white",
-              //     fontSize: 12,
-              //   }
-              // }
+              {
+                ticks: {
+                  fontColor: "white"
+                }
+              }
             ]
+          },
+          plugins: {
+            annotation: {
+              annotations: {
+                box1: {
+                  type: "box",
+                  xMin: 0,
+                  xMax: 100,
+                  yMin: 0,
+                  yMax: 100,
+                  backgroundColor: "rgba(255, 128, 100, 0.5)"
+                }
+              }
+            }
           }
         };
       }
@@ -57,19 +67,22 @@ export default {
       get() {
         const opts = this.options;
 
-        if (this.min) {
-          opts.scales.yAxes.forEach((it) => (it.ticks.suggestedMin = parseFloat(this.min)));
-        }
-        if (this.max) {
-          opts.scales.yAxes.forEach((it) => (it.ticks.suggestedMax = parseFloat(this.max)));
-        }
+        opts.scales.xAxes.forEach((it) => (it.ticks.min = (this.xmin)));
+        opts.scales.xAxes.forEach((it) => (it.ticks.max = (this.xmax)));
+        opts.scales.yAxes.forEach((it) => (it.ticks.min = (this.ymin)));
+        opts.scales.yAxes.forEach((it) => (it.ticks.max = (this.ymax)));
 
         return opts;
       }
     }
   },
   mounted() {
-    this.renderChart(this.chartData, this.chartOptions);
+    this.addPlugin(chartJsPluginAnnotation);
+    // this.renderChart(this.chartData, this.chartOptions);
+    this.renderChart(this.chartData, { 
+      ...this.chartOptions, 
+      annotation: Object.assign({}, this.chartOptions.annotation)
+    })
   },
   // watch: {
   //   chartData() {
@@ -78,7 +91,11 @@ export default {
   // }
   methods: {
     update() {
-      this.renderChart(this.chartData, this.chartOptions);
+      // this.renderChart(this.chartData, this.chartOptions);
+      this.renderChart(this.chartData, { 
+        ...this.chartOptions, 
+        annotation: Object.assign({}, this.chartOptions.annotation)
+      })
     }
   }
 };

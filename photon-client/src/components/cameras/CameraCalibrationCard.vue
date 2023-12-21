@@ -20,7 +20,7 @@ import loadingImage from "@/assets/images/loading.svg";
 
 const settingsValid = ref(true);
 
-const getCalibrationCoeffs = (resolution: Resolution) => {
+const getCalibrationCoeffs = (resolution: Resolution): CameraCalibrationResult | undefined => {
   return useCameraSettingsStore().currentCameraSettings.completeCalibrations.find(
     (cal) => cal.resolution.width === resolution.width && cal.resolution.height === resolution.height
   );
@@ -42,7 +42,10 @@ const getUniqueVideoResolutions = (): VideoFormat[] => {
           it.reprojectionErrors.flatMap((it2) => [it2.x, it2.y])
         );
         // For each error, square it, sum the squares, and divide by total points N
-        format.mean = Math.sqrt(perViewSumSquareReprojectionError.map(it => Math.pow(it, 2)).reduce((a, b) => a + b, 0) / perViewSumSquareReprojectionError.length);
+        format.mean = Math.sqrt(
+          perViewSumSquareReprojectionError.map((it) => Math.pow(it, 2)).reduce((a, b) => a + b, 0) /
+            perViewSumSquareReprojectionError.length
+        );
 
         format.horizontalFOV =
           2 * Math.atan2(format.resolution.width / 2, calib.cameraIntrinsics.data[0]) * (180 / Math.PI);
@@ -266,15 +269,17 @@ const reprojectionErrorSeries = () => {
     .flat(1);
   const xLocs = calib.observations.map((it) => it.locationInImageSpace.map((it) => it.x)).flat(1);
   const yLocs = calib.observations.map((it) => it.locationInImageSpace.map((it) => it.y)).flat(1);
-  console.log(errorNorms);
-  console.log(xLocs);
-  console.log(yLocs);
+  // console.log(errorNorms);
+  // console.log(xLocs);
+  // console.log(yLocs);
 
   function rgb(r, g, b) {
     return "rgb(" + r + "," + g + "," + b + ")";
   }
 
-  const colors = errorNorms.map((it) => rgb(it * 200, 0, 0));
+  const scale = 255.0 / Math.max(...errorNorms);
+  const colors = errorNorms.map(it => it * scale).map((it) => rgb(it, 0, 0));
+  console.log(colors)
 
   return {
     datasets: [createSeries(`Reprojection error`, xLocs, yLocs, colors, false)]
@@ -285,11 +290,13 @@ let showCal = ref(false);
 let calibrationDetails: Ref<CameraCalibrationResult | undefined> = ref(undefined);
 
 const showThing = (value: VideoFormat) => {
-  console.log(value);
   calibrationDetails.value = getCalibrationCoeffs(value.resolution);
-  console.log(calibrationDetails);
   showCal.value = true;
 };
+
+let visShown = ref(0)
+let observationIdx = ref(0)
+
 </script>
 
 <template>
@@ -504,12 +511,7 @@ const showThing = (value: VideoFormat) => {
           </v-col>
         </v-row>
 
-        <LineChart
-          :chartData="reprojectionErrorSeries"
-          min="0"
-          max="3500"
-          ref="loadCell"
-        />
+        <LineChart :chartData="reprojectionErrorSeries()" :xmin="0" :xmax="640" :ymin="0" :ymax="480" ref="loadCell" />
       </div>
     </v-card>
     <v-dialog v-model="showCalibEndDialog" width="500px" :persistent="true">
@@ -556,16 +558,15 @@ const showThing = (value: VideoFormat) => {
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="showCal">
+    <v-dialog v-model="showCal" width="90%">
       <v-card color="primary" dark>
         <v-card-title
           >{{ useCameraSettingsStore().cameraNames[useStateStore().currentCameraIndex] }} -
           {{ calibrationDetails?.resolution.width }} x {{ calibrationDetails?.resolution.height }}</v-card-title
         >
         <v-row>
-          <v-col cols="3">
+          <v-col cols="4">
             <v-card-text>
-              <!-- Intrinsics: {{ calibrationDetails }} -->
               <v-simple-table>
                 <tbody>
                   <td>Fx:</td>
@@ -591,21 +592,61 @@ const showThing = (value: VideoFormat) => {
 
               <v-divider />
 
-              <pv-select label="Inspect Observation" :items="[1, 2, 3]" :select-cols="8" />
-              <pv-select label="Visualization" :items="['RMS error']" :select-cols="8" />
-              <v-btn light> Show me! </v-btn>
+              <span class="text-center">Observations:</span>
+              <v-simple-table>
+                <thead>
+                  <tr>
+                    <th class="text-center">ID</th>
+                    <th class="text-center">Mean Err, px</th>
+                    <th class="text-center">Used</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>0</td>
+                    <td>1.23</td>
+                    <td> <v-switch dark color="#ffd843"/> </td>
+                  </tr>
+                  <tr>
+                    <td>1</td>
+                    <td>3.33</td>
+                    <td> <v-switch dark color="#ffd843"/> </td>
+                  </tr>
+                </tbody>
+              </v-simple-table>
+
             </v-card-text>
           </v-col>
 
-          <v-col>
+          <v-col cols="8">
             <v-card-text>
-              <img crossorigin="anonymous" :src="loadingImage" />
+              <pv-select v-model="visShown" label="Visualization" :items="['All Points', 'Detected Corners', 'Residuals, px', 'Observation with Error', 'Residual XY plot']" :select-cols="8" />
+              <v-img v-if="visShown == 0" src="https://mrcal.secretsauce.net/external/figures/calibration/mrgingham-coverage.png" />
+              <div v-if="visShown == 1">
+                <pv-select v-model="observationIdx" label="Inspect Observation" :items="[1, 2, 3]" :select-cols="8" />
+                <v-img src="https://mrcal.secretsauce.net/external/figures/calibration/mrgingham-results.png" />
+              </div>
+              <div v-if="visShown == 2">
+                <pv-select v-model="observationIdx" label="Inspect Observation" :items="['All', '1', '2', '3']" :select-cols="8" />
+                <v-img src="https://mrcal.secretsauce.net/external/figures/calibration/residuals-histogram-opencv8.svg" />
+              </div>
+              <div v-if="visShown == 3">
+                <pv-select v-model="observationIdx" label="Inspect Observation" :items="[1, 2, 3]" :select-cols="8" />
+                <v-img src="https://mrcal.secretsauce.net/external/figures/calibration/worst-opencv8.png" />
+              </div>
+              <div v-if="visShown == 4">
+                <pv-select v-model="observationIdx" label="Graph" :items="['Norm', 'Direction']" :select-cols="8" />
+                <v-img v-if="observationIdx == 0" src="https://mrcal.secretsauce.net/external/figures/calibration/residual-magnitudes-opencv8.png" />
+                <v-img v-if="observationIdx == 1" src="https://mrcal.secretsauce.net/external/figures/calibration/directions-opencv8.png" />
+              </div>
             </v-card-text>
           </v-col>
         </v-row>
         <v-divider />
       </v-card>
     </v-dialog>
+
+    <v-card> </v-card>
   </div>
 </template>
 

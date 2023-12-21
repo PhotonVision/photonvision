@@ -185,13 +185,21 @@ export const PlaceholderCameraSettings: CameraSettings = {
       },
       observations: [
         {
-          locationInImageSpace: [{ x: 123, y: 456 }],
+          locationInImageSpace: [
+            { x: 100, y: 100 },
+            { x: 210, y: 100 },
+            { x: 320, y: 101 },
+          ],
           locationInObjectSpace: [{ x: 0, y: 0, z: 0 }],
           optimisedCameraToObject: {
             translation: { x: 1, y: 2, z: 3 },
             rotation: { quaternion: { W: 1, X: 0, Y: 0, Z: 0 } }
           },
-          reprojectionErrors: [{ x: 1, y: 1 }]
+          reprojectionErrors: [
+            { x: 1, y: 1 },
+            { x: 2, y: 1 },
+            { x: 3, y: 1 },
+          ]
         }
       ]
     }
