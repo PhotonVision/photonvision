@@ -91,16 +91,14 @@ public class SqlConfigProvider extends ConfigProvider {
     }
 
     private Connection createConn() {
-        String url = "jdbc:sqlite:" + dbPath;
-
+        Connection conn = null;
         try {
-            var conn = DriverManager.getConnection(url);
+            conn = DriverManager.getConnection(url);
             conn.setAutoCommit(false);
-            return conn;
         } catch (SQLException e) {
             logger.error("Error creating connection", e);
-            return null;
         }
+        return conn;
     }
 
     private void tryCommit(Connection conn) {
