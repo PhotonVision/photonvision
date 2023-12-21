@@ -90,15 +90,19 @@ public class SqlConfigProvider extends ConfigProvider {
         return config;
     }
 
-    private Connection createConn() {
+    private Connection createConn(boolean autoCommit) {
         Connection conn = null;
         try {
             conn = DriverManager.getConnection(url);
-            conn.setAutoCommit(false);
+            conn.setAutoCommit(autoCommit);
         } catch (SQLException e) {
             logger.error("Error creating connection", e);
         }
         return conn;
+    }
+
+    private Connection createConn() {
+        return createConn(false);
     }
 
     private void tryCommit(Connection conn) {
@@ -114,89 +118,59 @@ public class SqlConfigProvider extends ConfigProvider {
         }
     }
 
+    private int getIntPragma(String pragma) {
+        int retval = 0;
+        try (Connection conn = createConn(true);
+                Statement stmt = conn.createStatement()) {
+            ResultSet rs = stmt.executeQuery("PRAGMA " + pragma + ";");
+            retval = rs.getInt(1);
+        } catch (SQLException e) {
+            logger.error("Error querying " + pragma, e);
+        }
+        return retval;
+    }
+
+    private int getSchemaVersion() {
+        return getIntPragma("schema_version");
+    }
+
+    private int getUserVersion() {
+        return getIntPragma("user_version");
+    }
+
+    private void setUserVersion(Connection conn, int value) {
+        try (Statement stmt = conn.createStatement()) {
+            stmt.execute("PRAGMA user_version = " + value + ";");
+        } catch (SQLException e) {
+            logger.error("Error setting user_version to ", e);
+        }
+    }
+
+    private void doMigration(int index) throws SQLException {
+        try (Connection conn = createConn();
+                Statement stmt = conn.createStatement()) {
+            stmt.execute(SqlMigrations.SQL[index]);
+            setUserVersion(conn, index);
+            tryCommit(conn);
+        } catch (SQLException e) {
+            logger.error("Err with migration step" + index, e);
+            throw e;
+        }
+    }
+
     private void initDatabase() {
-        Connection conn = null;
-        Statement createGlobalTableStatement = null;
-        Statement createCameraTableStatement = null;
-        Statement oldCameraTableStatement = null;
-        Statement updateCameraTableStatement = null;
+        int currentSchema = getUserVersion();
 
-        try {
-            conn = createConn();
-            if (conn == null) {
-                logger.error("No connection, cannot init db");
-                return;
-            }
-
-            // Create global settings table. Just a dumb table with list of jsons and their
-            // name
-            try {
-                createGlobalTableStatement = conn.createStatement();
-                String sql =
-                        "CREATE TABLE IF NOT EXISTS global (\n"
-                                + " filename TINYTEXT PRIMARY KEY,\n"
-                                + " contents mediumtext NOT NULL\n"
-                                + ");";
-                createGlobalTableStatement.execute(sql);
-            } catch (SQLException e) {
-                logger.error("Err creating global table", e);
-            }
-
-            // Create cameras table, key is the camera unique name
-            try {
-                createCameraTableStatement = conn.createStatement();
-                var sql =
-                        "CREATE TABLE IF NOT EXISTS cameras (\n"
-                                + " unique_name TINYTEXT PRIMARY KEY,\n"
-                                + " config_json text NOT NULL,\n"
-                                + " drivermode_json text NOT NULL,\n"
-                                + " otherpaths_json text NOT NULL,\n"
-                                + " pipeline_jsons mediumtext NOT NULL\n"
-                                + ");";
-                createCameraTableStatement.execute(sql);
-            } catch (SQLException e) {
-                logger.error("Err creating cameras table", e);
-            }
-
-            boolean oldTable = false;
-
-            try {
-                oldCameraTableStatement = conn.createStatement();
-                var sql =
-                        "SELECT COUNT(*) AS CNTREC FROM pragma_table_info('cameras') WHERE name='otherpaths_json';";
-                var result = oldCameraTableStatement.executeQuery(sql);
-                // logger.debug("otherpaths_json: " + String.valueOf(result.getInt("CNTREC")));
-                if (result.getInt("CNTREC") == 0) {
-                    // This is an older table, need to migrate to the new format
-                    oldTable = true;
-                }
-            } catch (SQLException e) {
-                logger.error("Err checking for missing otherpaths_json column in cameras table", e);
-            }
-
-            // logger.debug("otherpaths_json missing: " + String.valueOf(oldTable));
-
-            if (oldTable == true) {
+        if (currentSchema > SqlMigrations.SQL.length) {
+            // database must be from a newer version, so warn
+        } else if (currentSchema < SqlMigrations.SQL.length) {
+            // older database, run migrations
+            for (int index = currentSchema; index < SqlMigrations.SQL.length; index++) {
                 try {
-                    updateCameraTableStatement = conn.createStatement();
-                    var sql = "ALTER TABLE cameras ADD COLUMN otherpaths_json TEXT NOT NULL DEFAULT '[]'";
-                    updateCameraTableStatement.execute(sql);
-                    logger.info("Added column otherpaths_json to cameras table");
+                    doMigration(index);
                 } catch (SQLException e) {
-                    logger.error("Err adding otherpaths_json column to cameras table", e);
+                    logger.error("Err with migration", e);
                 }
-            }
-
-            this.tryCommit(conn);
-        } finally {
-            try {
-                if (createGlobalTableStatement != null) createGlobalTableStatement.close();
-                if (createCameraTableStatement != null) createCameraTableStatement.close();
-                if (oldCameraTableStatement != null) oldCameraTableStatement.close();
-                if (updateCameraTableStatement != null) updateCameraTableStatement.close();
-                if (conn != null) conn.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
             }
         }
     }
