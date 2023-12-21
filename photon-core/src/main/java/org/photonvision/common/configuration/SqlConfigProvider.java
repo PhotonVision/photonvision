@@ -118,7 +118,11 @@ public class SqlConfigProvider extends ConfigProvider {
         }
 
         Connection conn = null;
-        Statement createGlobalTableStatement = null, createCameraTableStatement = null;
+        Statement createGlobalTableStatement = null;
+        Statement createCameraTableStatement = null;
+        Statement oldCameraTableStatement = null;
+        Statement updateCameraTableStatement = null;
+
         try {
             conn = createConn();
             if (conn == null) {
@@ -156,11 +160,42 @@ public class SqlConfigProvider extends ConfigProvider {
                 logger.error("Err creating cameras table", e);
             }
 
+            boolean oldTable = false;
+
+            try {
+                oldCameraTableStatement = conn.createStatement();
+                var sql =
+                        "SELECT COUNT(*) AS CNTREC FROM pragma_table_info('cameras') WHERE name='otherpaths_json';";
+                var result = oldCameraTableStatement.executeQuery(sql);
+                // logger.debug("otherpaths_json: " + String.valueOf(result.getInt("CNTREC")));
+                if (result.getInt("CNTREC") == 0) {
+                    // This is an older table, need to migrate to the new format
+                    oldTable = true;
+                }
+            } catch (SQLException e) {
+                logger.error("Err checking for missing otherpaths_json column in cameras table", e);
+            }
+
+            // logger.debug("otherpaths_json missing: " + String.valueOf(oldTable));
+
+            if (oldTable == true) {
+                try {
+                    updateCameraTableStatement = conn.createStatement();
+                    var sql = "ALTER TABLE cameras ADD COLUMN otherpaths_json TEXT NOT NULL DEFAULT '[]'";
+                    updateCameraTableStatement.execute(sql);
+                    logger.info("Added column otherpaths_json to cameras table");
+                } catch (SQLException e) {
+                    logger.error("Err adding otherpaths_json column to cameras table", e);
+                }
+            }
+
             this.tryCommit(conn);
         } finally {
             try {
                 if (createGlobalTableStatement != null) createGlobalTableStatement.close();
                 if (createCameraTableStatement != null) createCameraTableStatement.close();
+                if (oldCameraTableStatement != null) oldCameraTableStatement.close();
+                if (updateCameraTableStatement != null) updateCameraTableStatement.close();
                 if (conn != null) conn.close();
             } catch (SQLException e) {
                 e.printStackTrace();
