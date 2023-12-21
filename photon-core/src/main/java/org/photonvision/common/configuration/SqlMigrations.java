@@ -18,12 +18,11 @@
 package org.photonvision.common.configuration;
 
 /**
- * Add migrations by adding the SQL commands for each migration sequentially to this array.
- * DO NOT edit or delete existing SQL commands. That will lead to producing an icompatible
- * database.
+ * Add migrations by adding the SQL commands for each migration sequentially to this array. DO NOT
+ * edit or delete existing SQL commands. That will lead to producing an icompatible database.
  *
- * You can use multiple SQL statements in one migration step as long as you separate them
- * with a semicolon (;).
+ * <p>You can use multiple SQL statements in one migration step as long as you separate them with a
+ * semicolon (;).
  */
 public final class SqlMigrations {
     public static final String[] SQL = {
