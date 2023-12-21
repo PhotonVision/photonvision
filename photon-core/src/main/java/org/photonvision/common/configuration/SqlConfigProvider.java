@@ -147,13 +147,17 @@ public class SqlConfigProvider extends ConfigProvider {
     }
 
     private void doMigration(int index) throws SQLException {
+        logger.debug("Running migration step " + index);
         try (Connection conn = createConn();
                 Statement stmt = conn.createStatement()) {
-            stmt.execute(SqlMigrations.SQL[index]);
+            for (String sql : SqlMigrations.SQL[index].split(";")) {
+                stmt.addBatch(sql);
+            }
+            stmt.executeBatch();
             setUserVersion(conn, index);
             tryCommit(conn);
         } catch (SQLException e) {
-            logger.error("Err with migration step" + index, e);
+            logger.error("Err with migration step " + index, e);
             throw e;
         }
     }
@@ -165,6 +169,7 @@ public class SqlConfigProvider extends ConfigProvider {
             // database must be from a newer version, so warn
         } else if (currentSchema < SqlMigrations.SQL.length) {
             // older database, run migrations
+            logger.debug("Older database version. Updating schema ... ");
             for (int index = currentSchema; index < SqlMigrations.SQL.length; index++) {
                 try {
                     doMigration(index);
