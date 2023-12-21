@@ -154,7 +154,8 @@ public class SqlConfigProvider extends ConfigProvider {
                 stmt.addBatch(sql);
             }
             stmt.executeBatch();
-            setUserVersion(conn, index);
+            // stmt.execute(SqlMigrations.SQL[index]);
+            setUserVersion(conn, index + 1);
             tryCommit(conn);
         } catch (SQLException e) {
             logger.error("Err with migration step " + index, e);
@@ -163,19 +164,46 @@ public class SqlConfigProvider extends ConfigProvider {
     }
 
     private void initDatabase() {
-        int currentSchema = getUserVersion();
+        int userVersion = getUserVersion();
 
-        if (currentSchema > SqlMigrations.SQL.length) {
+        if (userVersion > SqlMigrations.SQL.length) {
             // database must be from a newer version, so warn
-        } else if (currentSchema < SqlMigrations.SQL.length) {
+            logger.warn(
+                    "This database is from a newer version of PhotonVision. Check that you are running the right version.");
+        } else if (userVersion < SqlMigrations.SQL.length) {
             // older database, run migrations
-            logger.debug("Older database version. Updating schema ... ");
-            for (int index = currentSchema; index < SqlMigrations.SQL.length; index++) {
-                try {
-                    doMigration(index);
+            // first, check to see if this is one of the ones from 2024 beta that need special handling
+            if (userVersion == 0 && getSchemaVersion() > 0) {
+                String sql =
+                        "SELECT COUNT(*) AS CNTREC FROM pragma_table_info('cameras') WHERE name='otherpaths_json';";
+                try (Connection conn = createConn(true);
+                        Statement stmt = conn.createStatement();
+                        ResultSet rs = stmt.executeQuery(sql); ) {
+                    if (rs.getInt("CNTREC") == 0) {
+                        // need to add otherpaths_json
+                        userVersion = 1;
+                    } else {
+                        // already there, no need to add the column
+                        userVersion = 2;
+                    }
+                    setUserVersion(conn, userVersion);
                 } catch (SQLException e) {
-                    logger.error("Err with migration", e);
+                    logger.error(
+                            "Could not determine the version of the database. Delete "
+                                    + dbName
+                                    + "and restart photonvision.",
+                            e);
                 }
+            }
+
+            logger.debug("Older database version. Updating schema ... ");
+            try {
+                for (int index = userVersion; index < SqlMigrations.SQL.length; index++) {
+                    doMigration(index);
+                }
+                logger.debug("Database migration succeded. Now on version: " + getUserVersion());
+            } catch (SQLException e) {
+                logger.error("Err with migration", e);
             }
         }
     }
