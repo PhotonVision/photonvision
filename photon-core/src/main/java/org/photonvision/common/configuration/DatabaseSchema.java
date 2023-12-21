@@ -25,7 +25,6 @@ package org.photonvision.common.configuration;
  * semicolon (;).
  */
 public final class DatabaseSchema {
-
     public static final String[] migrations = {
         // #1 - initial schema
         "CREATE TABLE IF NOT EXISTS global (\n"
