@@ -46,6 +46,10 @@ echo "Installing cpufrequtils..."
 apt-get install --yes cpufrequtils
 echo "cpufrequtils installation complete."
 
+echo "Installing network-manager..."
+apt-get install network-manager
+echo "network-manager installation complete."
+
 echo "Setting cpufrequtils to performance mode"
 if [ -f /etc/default/cpufrequtils ]; then
     sed -i -e 's/^#\?GOVERNOR=.*$/GOVERNOR=performance/' /etc/default/cpufrequtils
