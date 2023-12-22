@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import type { LogMessage } from "@/types/SettingTypes";
 import type { AutoReconnectingWebsocket } from "@/lib/AutoReconnectingWebsocket";
-import type { PipelineResult } from "@/types/PhotonTrackingTypes";
+import type { MultitagResult, PipelineResult } from "@/types/PhotonTrackingTypes";
 import type {
   WebsocketCalibrationData,
   WebsocketLogMessage,
@@ -25,6 +25,7 @@ interface StateStore {
   currentCameraIndex: number;
 
   backendResults: Record<string, PipelineResult>;
+  multitagResultBuffer: Record<string, MultitagResult[]>;
 
   colorPickingMode: boolean;
 
@@ -59,6 +60,7 @@ export const useStateStore = defineStore("state", {
       currentCameraIndex: 0,
 
       backendResults: {},
+      multitagResultBuffer: {},
 
       colorPickingMode: false,
 
@@ -80,6 +82,9 @@ export const useStateStore = defineStore("state", {
   getters: {
     currentPipelineResults(): PipelineResult | undefined {
       return this.backendResults[this.currentCameraIndex.toString()];
+    },
+    currentMultitagBuffer(): MultitagResult[] | undefined {
+      return this.multitagResultBuffer[this.currentCameraIndex.toString()];
     }
   },
   actions: {
@@ -105,6 +110,21 @@ export const useStateStore = defineStore("state", {
         ...this.backendResults,
         ...data
       };
+
+      for (const key in data) {
+        const multitagRes = data[key].multitagResult;
+
+        if (multitagRes) {
+          if (!this.multitagResultBuffer[key]) {
+            this.multitagResultBuffer[key] = [];
+          }
+
+          this.multitagResultBuffer[key].push(multitagRes);
+          if (this.multitagResultBuffer[key].length > 100) {
+            this.multitagResultBuffer[key].shift();
+          }
+        }
+      }
     },
     updateCalibrationStateValuesFromWebsocket(data: WebsocketCalibrationData) {
       this.calibrationData = {

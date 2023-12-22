@@ -6,6 +6,8 @@ export interface Transform3d {
   qx: number;
   qy: number;
   qz: number;
+  angle_x: number;
+  angle_y: number;
   angle_z: number;
 }
 
