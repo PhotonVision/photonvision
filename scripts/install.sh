@@ -107,7 +107,7 @@ WorkingDirectory=/opt/photonvision
 Nice=-10
 # for non-uniform CPUs, like big.LITTLE, you want to select the big cores
 # look up the right values for your CPU
-# AllowCPUs=4-7
+# AllowedCPUs=4-7
 
 ExecStart=/usr/bin/java -Xmx512m -jar /opt/photonvision/photonvision.jar
 ExecStop=/bin/systemctl kill photonvision
