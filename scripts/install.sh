@@ -85,7 +85,10 @@ echo "Downloaded latest stable release of PhotonVision."
 
 echo "Creating the PhotonVision systemd service..."
 
-if service --status-all | grep -Fq 'photonvision'; then
+# service --status-all doesn't list photonvision on OrangePi use systemctl instead: 
+#if service --status-all | grep -Fq 'photonvision'; then
+if systemctl --quiet is-active photonvision; then
+  echo "PhotonVision is already running. Stopping service."
   systemctl stop photonvision
   systemctl disable photonvision
   rm /lib/systemd/system/photonvision.service
