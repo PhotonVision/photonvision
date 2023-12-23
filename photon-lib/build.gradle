@@ -11,6 +11,21 @@ ext {
     includePhotonTargeting = true
     // Include the generated Version file
     generatedHeaders = "src/generate/native/include"
+
+    test_native_libs = [
+        "cscore_shared",
+        "cameraserver_shared",
+        "wpilib_executable_shared",
+        "googletest_static",
+        "apriltag_shared",
+        "opencv_shared",
+    ]
+
+    main_native_libs = [
+        "wpilib_shared", "apriltag_shared", "opencv_shared"
+    ]
+
+    dev_native_libs = []
 }
 
 apply from: "${rootDir}/shared/javacpp/setupBuild.gradle"
