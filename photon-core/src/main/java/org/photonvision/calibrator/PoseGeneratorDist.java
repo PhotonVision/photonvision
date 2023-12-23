@@ -624,7 +624,7 @@ public class PoseGeneratorDist {
      * @return rotation vector and translation vector
      * @throws Exception
      */
-    List<Mat> get_pose(Mat bbox, int nk, int tgt_param, Mat K, Mat cdist) throws Exception {
+    List<Mat> get_pose(Mat bbox, int nk, int tgt_param, Mat K, Mat cdist) {
         // logger.debug("method entered  . . . . . . . . . . . . . . . . . . . . . . . .");
         // logger.debug("bbox " + bbox + "\n" + bbox.dump());
         // logger.debug("nk " + nk);

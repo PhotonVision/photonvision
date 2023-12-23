@@ -137,7 +137,7 @@ public class UserGuidance {
         return pose_close_to_tgt;
     }
 
-    UserGuidance(ChArucoDetector tracker, double var_terminate)
+    public UserGuidance(ChArucoDetector tracker, double var_terminate)
             throws Exception // force use of var_terminate=0.1 instead of defaulting
             {
         logger.debug("Starting ----------------------------------------");
@@ -179,7 +179,7 @@ public class UserGuidance {
     /*                                                                                                 */
     /*-------------------------------------------------------------------------------------------------*/
     /*-------------------------------------------------------------------------------------------------*/
-    private void calibrate() throws Exception {
+    private void calibrate() {
         // logger.debug("method entered  . . . . . . . . . . . . . . . . . . . . . . . .");
 
         if (this.calib.keyframes.size() < 2) // need at least 2 keyframes
@@ -272,7 +272,7 @@ public class UserGuidance {
     /*                                                                                                 */
     /*-------------------------------------------------------------------------------------------------*/
     /*-------------------------------------------------------------------------------------------------*/
-    private void set_next_pose() throws Exception {
+    private void set_next_pose() {
         // logger.debug("method entered  . . . . . . . . . . . . . . . . . . . . . . . .");
 
         int nk = this.calib.keyframes.size();
@@ -414,7 +414,7 @@ public class UserGuidance {
      * @return true if a new pose was captured
      * @throws Exception
      */
-    boolean update(boolean force) throws Exception {
+    public boolean update(boolean force) {
         // logger.debug("method entered  . . . . . . . . . . . . . . . . . . . . . . . .");
 
         // first time need to see at least half of the interior corners or force
@@ -429,7 +429,11 @@ public class UserGuidance {
             // for nan but it never was
             {
                 // logger.debug("initial set_next_pose and intrinsics");
-                this.set_next_pose(); // update target pose
+                try {
+                    this.set_next_pose();
+                } catch (Exception e) {
+                    logger.error("asdf", e);
+                } // update target pose
                 this.tracker.set_intrinsics(this.calib);
                 this.min_reperr_init = this.calib.reperr();
             }
@@ -563,8 +567,8 @@ public class UserGuidance {
      * @param mirror
      * @throws Exception
      */
-    void draw(Mat img, boolean mirror)
-            throws Exception // force users to specify mirror false instead of defaulting
+    public void draw(Mat img, boolean mirror)
+                // force users to specify mirror false instead of defaulting
             {
         // logger.debug("method entered  . . . . . . . . . . . . . . . . . . . . . . . .");
 
@@ -576,7 +580,10 @@ public class UserGuidance {
                     new byte
                             [this.board_warped.rows() * this.board_warped.cols() * this.board_warped.channels()];
 
-            if (imgBuff.length != board_warpedBuff.length) throw new Exception("major trouble here");
+            if (imgBuff.length != board_warpedBuff.length) {
+                logger.error("Wtf, i guess, guh");
+                return;
+            }
 
             img.get(0, 0, imgBuff); // get the Mat
             this.board_warped.get(0, 0, board_warpedBuff); // get the Mat

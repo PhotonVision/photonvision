@@ -126,7 +126,7 @@ public class ChArucoDetector {
         return N_pts;
     }
 
-    Size board_sz() {
+    public Size board_sz() {
         return board_sz;
     }
 
@@ -564,13 +564,17 @@ public class ChArucoDetector {
     /*                                                                                                 */
     /*-------------------------------------------------------------------------------------------------*/
     /*-------------------------------------------------------------------------------------------------*/
-    public void detect(Mat img) throws Exception {
-        // logger.debug("method entered  . . . . . . . . . . . . . . . . . . . . . . . .");
-        // raw_img never used - not converted
-        this.detect_pts(img);
+    public void detect(Mat img) {
+        try {
+            // logger.debug("method entered  . . . . . . . . . . . . . . . . . . . . . . . .");
+            // raw_img never used - not converted
+            this.detect_pts(img);
 
-        if (this.intrinsic_valid) {
-            this.update_pose();
+            if (this.intrinsic_valid) {
+                this.update_pose();
+            }
+        } catch (Exception e) {
+            logger.error("WTF", e);
         }
     }
 

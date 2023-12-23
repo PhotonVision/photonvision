@@ -69,8 +69,8 @@ public class Cfg {
 
     // a few icky int-float-double conversion scattered throughout the program.
     // camera image size and thus user display screen size
-    static int image_width = 1280;
-    static int image_height = 720;
+    public static int image_width = 1280;
+    public static int image_height = 720;
     /////////////////////////////
 
     // ALL THE FOLLOWING STUFF MIGHT NEVER NEED TO BE CHANGED
@@ -113,7 +113,7 @@ public class Cfg {
     static final double minCorners =
             6; // min for solvePnP (original needed 4 (or 5 w/o solvePnP)) but another place requires many
     // more
-    static final double var_terminate =
+    public static final double var_terminate =
             0.1; // min variance to terminate an intrinsic's iterations [mm is whatever unit of measure?]
 
     static final double DBL_EPSILON = Math.ulp(1.);

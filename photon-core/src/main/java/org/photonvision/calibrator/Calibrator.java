@@ -165,7 +165,7 @@ class Calibrator {
     /*-------------------------------------------------------------------------------------------------*/
     /*-------------------------------------------------------------------------------------------------*/
     double[] calibrate(List<keyframe> keyframes)
-            throws Exception // force use of keyframes instead of default None
+                // force use of keyframes instead of default None
             {
         // logger.debug("method entered  . . . . . . . . . . . . . . . . . . . . . . . .");
 
@@ -179,7 +179,7 @@ class Calibrator {
         }
 
         if (keyframes.isEmpty()) {
-            throw new Exception("keyframes is empty");
+            logger.error("keyframes empty?");
         }
 
         int nkeyframes = keyframes.size();
@@ -405,8 +405,7 @@ class Calibrator {
      * @return
      * @throws Exception
      */
-    calibrateCameraReturn calibrateCamera(List<keyframe> keyframes, Size img_size, int flags, Mat K)
-            throws Exception {
+    calibrateCameraReturn calibrateCamera(List<keyframe> keyframes, Size img_size, int flags, Mat K) {
         // logger.debug("method entered  . . . . . . . . . . . . . . . . . . . . . . . .");
 
         // split keyframes into its two separate components, image points and object points, for OpenCV
@@ -426,7 +425,10 @@ class Calibrator {
                             .rows(); // total points - all frames (poses/views) and all points in those poses
         }
 
-        if (N <= 4) throw new Exception("not enough total points");
+        if (N <= 4) {
+            logger.error("not enough total points");
+            return new calibrateCameraReturn();
+        }
 
         Mat cdist = new Mat();
         List<Mat> rvecs = new ArrayList<>();
@@ -478,6 +480,8 @@ class Calibrator {
         List<Mat> rvecsList;
         List<Mat> tvecsList;
         Mat varianceIntrinsics;
+
+        calibrateCameraReturn() {}
 
         calibrateCameraReturn(
                 double reperr, Mat K, Mat cdist, List<Mat> rvecs, List<Mat> tvecs, Mat varianceIntrinsics) {
