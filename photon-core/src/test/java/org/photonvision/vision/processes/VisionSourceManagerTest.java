@@ -20,21 +20,20 @@ package org.photonvision.vision.processes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import edu.wpi.first.cscore.UsbCameraInfo;
 import java.util.ArrayList;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.vision.camera.CameraInfo;
 
 public class VisionSourceManagerTest {
     @Test
     public void visionSourceTest() {
         var inst = new VisionSourceManager();
-        var infoList = new ArrayList<UsbCameraInfo>();
-        inst.cameraInfoSupplier = () -> infoList;
+        var cameraInfos = new ArrayList<CameraInfo>();
         ConfigManager.getInstance().load();
 
-        inst.tryMatchUSBCamImpl();
+        inst.tryMatchCamImpl(cameraInfos);
 
         var config3 =
                 new CameraConfiguration(
@@ -51,40 +50,40 @@ public class VisionSourceManagerTest {
                         "dev/video2",
                         new String[] {"by-id/321"});
 
-        UsbCameraInfo info1 = new UsbCameraInfo(0, "dev/video0", "testVideo", new String[0], 1, 2);
+        CameraInfo info1 = new CameraInfo(0, "dev/video0", "testVideo", new String[0], 1, 2);
 
-        infoList.add(info1);
+        cameraInfos.add(info1);
 
         inst.registerLoadedConfigs(config3, config4);
 
-        inst.tryMatchUSBCamImpl(false);
+        inst.tryMatchCamImpl(cameraInfos);
 
-        assertTrue(inst.knownUsbCameras.contains(info1));
+        assertTrue(inst.knownCameras.contains(info1));
         assertEquals(2, inst.unmatchedLoadedConfigs.size());
 
-        UsbCameraInfo info2 =
-                new UsbCameraInfo(0, "dev/video1", "secondTestVideo", new String[0], 2, 3);
+        CameraInfo info2 =
+                new CameraInfo(0, "dev/video1", "secondTestVideo", new String[0], 2, 3);
 
-        infoList.add(info2);
+        cameraInfos.add(info2);
 
-        var cams = inst.matchUSBCameras(infoList, inst.unmatchedLoadedConfigs);
+        var cams = inst.matchCameras(cameraInfos, inst.unmatchedLoadedConfigs);
 
         // assertEquals("testVideo (1)", cams.get(0).uniqueName); // Proper suffixing
 
-        inst.tryMatchUSBCamImpl(false);
+        inst.tryMatchCamImpl(cameraInfos);
 
-        assertTrue(inst.knownUsbCameras.contains(info2));
+        assertTrue(inst.knownCameras.contains(info2));
         assertEquals(2, inst.unmatchedLoadedConfigs.size());
 
-        UsbCameraInfo info3 =
-                new UsbCameraInfo(0, "dev/video2", "thirdTestVideo", new String[] {"by-id/123"}, 3, 4);
+        CameraInfo info3 =
+                new CameraInfo(0, "dev/video2", "thirdTestVideo", new String[] {"by-id/123"}, 3, 4);
 
-        UsbCameraInfo info4 =
-                new UsbCameraInfo(0, "dev/video3", "fourthTestVideo", new String[] {"by-id/321"}, 5, 6);
+        CameraInfo info4 =
+                new CameraInfo(0, "dev/video3", "fourthTestVideo", new String[] {"by-id/321"}, 5, 6);
 
-        infoList.add(info4);
+        cameraInfos.add(info4);
 
-        cams = inst.matchUSBCameras(infoList, inst.unmatchedLoadedConfigs);
+        cams = inst.matchCameras(cameraInfos, inst.unmatchedLoadedConfigs);
 
         var cam4 =
                 cams.stream()
@@ -96,14 +95,14 @@ public class VisionSourceManagerTest {
 
         assertEquals(cam4.nickname, config4.nickname);
 
-        infoList.add(info3);
+        cameraInfos.add(info3);
 
-        cams = inst.matchUSBCameras(infoList, inst.unmatchedLoadedConfigs);
+        cams = inst.matchCameras(cameraInfos, inst.unmatchedLoadedConfigs);
 
-        inst.tryMatchUSBCamImpl(false);
+        inst.tryMatchCamImpl(cameraInfos);
 
-        assertTrue(inst.knownUsbCameras.contains(info2));
-        assertTrue(inst.knownUsbCameras.contains(info3));
+        assertTrue(inst.knownCameras.contains(info2));
+        assertTrue(inst.knownCameras.contains(info3));
 
         var cam3 =
                 cams.stream()
@@ -121,8 +120,8 @@ public class VisionSourceManagerTest {
         assertEquals(cam3.nickname, config3.nickname);
         assertEquals(cam4.nickname, config4.nickname);
 
-        UsbCameraInfo info5 =
-                new UsbCameraInfo(
+        CameraInfo info5 =
+                new CameraInfo(
                         2,
                         "/dev/video2",
                         "Left Camera",
@@ -132,13 +131,13 @@ public class VisionSourceManagerTest {
                         },
                         7,
                         8);
-        infoList.add(info5);
-        inst.tryMatchUSBCamImpl(false);
+        cameraInfos.add(info5);
+        inst.tryMatchCamImpl(cameraInfos);
 
-        assertTrue(inst.knownUsbCameras.contains(info5));
+        assertTrue(inst.knownCameras.contains(info5));
 
-        UsbCameraInfo info6 =
-                new UsbCameraInfo(
+        CameraInfo info6 =
+                new CameraInfo(
                         3,
                         "dev/video3",
                         "Right Camera",
@@ -148,52 +147,87 @@ public class VisionSourceManagerTest {
                         },
                         9,
                         10);
-        infoList.add(info6);
-        inst.tryMatchUSBCamImpl(false);
+        cameraInfos.add(info6);
+        inst.tryMatchCamImpl(cameraInfos);
 
-        assertTrue(inst.knownUsbCameras.contains(info6));
+        assertTrue(inst.knownCameras.contains(info6));
 
         // RPI 5 CSI Tests
 
-        UsbCameraInfo info7 =
-                new UsbCameraInfo(
+
+        //CSI CAMERAS SHOULD NOT BE LOADED LIKE THIS THEY SHOULD GO THROUGH LIBCAM.
+        CameraInfo info7 =
+                new CameraInfo(
                         4,
                         "dev/video4",
                         "CSICAM-DEV", // Typically rp1-cfe for unit test changed to CSICAM-DEV
                         new String[] {"/dev/v4l/by-path/platform-1f00110000.csi-video-index0"},
                         11,
                         12);
-        infoList.add(info7);
-        inst.tryMatchUSBCamImpl(false);
+        cameraInfos.add(info7);
+        inst.tryMatchCamImpl(cameraInfos);
 
-        assertTrue(inst.knownUsbCameras.contains(info7));
+        assertTrue(!inst.knownCameras.contains(info7)); // This camera should not be recognized/used.
 
-        UsbCameraInfo info8 =
-                new UsbCameraInfo(
+        CameraInfo info8 =
+                new CameraInfo(
                         5,
                         "dev/video8",
                         "CSICAM-DEV", // Typically rp1-cfe for unit test changed to CSICAM-DEV
                         new String[] {"/dev/v4l/by-path/platform-1f00110000.csi-video-index4"},
                         13,
                         14);
-        infoList.add(info8);
-        inst.tryMatchUSBCamImpl(false);
+        cameraInfos.add(info8);
+        inst.tryMatchCamImpl(cameraInfos);
 
-        assertTrue(!inst.knownUsbCameras.contains(info8)); // This camera should not be recognized/used.
+        assertTrue(!inst.knownCameras.contains(info8)); // This camera should not be recognized/used.
 
-        UsbCameraInfo info9 =
-                new UsbCameraInfo(
+        CameraInfo info9 =
+                new CameraInfo(
                         6,
                         "dev/video9",
                         "CSICAM-DEV", // Typically rp1-cfe for unit test changed to CSICAM-DEV
                         new String[] {"/dev/v4l/by-path/platform-1f00110000.csi-video-index5"},
                         15,
                         16);
-        infoList.add(info9);
-        inst.tryMatchUSBCamImpl(false);
+        cameraInfos.add(info9);
+        inst.tryMatchCamImpl(cameraInfos);
 
-        assertTrue(!inst.knownUsbCameras.contains(info9)); // This camera should not be recognized/used.
-        assertEquals(7, inst.knownUsbCameras.size());
+        assertTrue(!inst.knownCameras.contains(info9)); // This camera should not be recognized/used.
+        assertEquals(6, inst.knownCameras.size());
         assertEquals(0, inst.unmatchedLoadedConfigs.size());
+
+        //RPI LIBCAMERA CSI CAMERA TESTS
+        CameraInfo info10 =
+                new CameraInfo(
+                        -1,
+                        "/base/soc/i2c0mux/i2c@0/ov9281@60",
+                        "OV9281", // Typically rp1-cfe for unit test changed to CSICAM-DEV
+                        null,
+                        -1,
+                        -1);
+        cameraInfos.add(info10);
+        inst.tryMatchCamImpl(cameraInfos);
+
+        assertTrue(inst.knownCameras.contains(info10));
+        assertEquals(7, inst.knownCameras.size());
+        assertEquals(0, inst.unmatchedLoadedConfigs.size());
+
+        CameraInfo info11 =
+                new CameraInfo(
+                        -1,
+                        "/base/soc/i2c0mux/i2c@1/ov9281@60",
+                        "OV9281", // Typically rp1-cfe for unit test changed to CSICAM-DEV
+                        null,
+                        -1,
+                        -1);
+        cameraInfos.add(info11);
+        inst.tryMatchCamImpl(cameraInfos);
+
+        assertTrue(inst.knownCameras.contains(info11));
+        assertEquals(8, inst.knownCameras.size());
+        assertEquals(0, inst.unmatchedLoadedConfigs.size());
+
+ 
     }
 }

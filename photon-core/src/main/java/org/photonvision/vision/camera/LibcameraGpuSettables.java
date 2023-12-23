@@ -34,7 +34,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     private boolean lastAutoExposureActive;
     private int lastGain = 50;
     private Pair<Integer, Integer> lastAwbGains = new Pair<>(18, 18);
-    private boolean m_initialized = false;
+    public long r_ptr = 0;
 
     private final LibCameraJNI.SensorModel sensorModel;
 
@@ -53,7 +53,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
         videoModes = new HashMap<>();
 
-        sensorModel = LibCameraJNI.getSensorModel();
+        sensorModel = LibCameraJNI.getSensorModel(configuration.path);
 
         if (sensorModel == LibCameraJNI.SensorModel.IMX219) {
             // Settings for the IMX219 sensor, which is used on the Pi Camera Module v2
@@ -121,7 +121,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     @Override
     public void setAutoExposure(boolean cameraAutoExposure) {
         lastAutoExposureActive = cameraAutoExposure;
-        LibCameraJNI.setAutoExposure(cameraAutoExposure);
+        LibCameraJNI.setAutoExposure(r_ptr, cameraAutoExposure);
     }
 
     @Override
@@ -147,7 +147,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         }
 
         lastManualExposure = exposure;
-        var success = LibCameraJNI.setExposure((int) Math.round(exposure) * 800);
+        var success = LibCameraJNI.setExposure(r_ptr,(int) Math.round(exposure) * 800);
         if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera exposure");
     }
 
@@ -155,7 +155,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     public void setBrightness(int brightness) {
         lastBrightness = brightness;
         double realBrightness = MathUtils.map(brightness, 0.0, 100.0, -1.0, 1.0);
-        var success = LibCameraJNI.setBrightness(realBrightness);
+        var success = LibCameraJNI.setBrightness(r_ptr,realBrightness);
         if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera brightness");
     }
 
@@ -163,7 +163,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     public void setGain(int gain) {
         lastGain = gain;
         // TODO units here seem odd -- 5ish seems legit? So divide by 10
-        var success = LibCameraJNI.setAnalogGain(gain / 10.0);
+        var success = LibCameraJNI.setAnalogGain(r_ptr, gain / 10.0);
         if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera gain");
     }
 
@@ -185,7 +185,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
     public void setAwbGain(int red, int blue) {
         if (sensorModel != LibCameraJNI.SensorModel.OV9281) {
-            var success = LibCameraJNI.setAwbGain(red / 10.0, blue / 10.0);
+            var success = LibCameraJNI.setAwbGain(r_ptr, red / 10.0, blue / 10.0);
             if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera AWB gains");
         }
     }
@@ -202,28 +202,27 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         // We need to make sure that other threads don't try to do anything funny while we're recreating
         // the camera
         synchronized (LibCameraJNI.CAMERA_LOCK) {
-            if (m_initialized) {
+            if (r_ptr!=0) {
                 logger.debug("Stopping libcamera");
-                if (!LibCameraJNI.stopCamera()) {
+                if (!LibCameraJNI.stopCamera(r_ptr)) {
                     logger.error("Couldn't stop a zero copy Pi Camera while switching video modes");
                 }
                 logger.debug("Destroying libcamera");
-                if (!LibCameraJNI.destroyCamera()) {
+                if (!LibCameraJNI.destroyCamera(r_ptr)) {
                     logger.error("Couldn't destroy a zero copy Pi Camera while switching video modes");
                 }
             }
 
             logger.debug("Creating libcamera");
-            if (!LibCameraJNI.createCamera(
-                    mode.width, mode.height, (m_rotationMode == ImageRotationMode.DEG_180 ? 180 : 0))) {
+            r_ptr = LibCameraJNI.createCamera(
+                    getConfiguration().path, mode.width, mode.height, (m_rotationMode == ImageRotationMode.DEG_180 ? 180 : 0));
+            if (r_ptr==0) {
                 logger.error("Couldn't create a zero copy Pi Camera while switching video modes");
             }
             logger.debug("Starting libcamera");
-            if (!LibCameraJNI.startCamera()) {
+            if (!LibCameraJNI.startCamera(r_ptr)) {
                 logger.error("Couldn't start a zero copy Pi Camera while switching video modes");
             }
-
-            m_initialized = true;
         }
 
         // We don't store last settings on the native side, and when you change video mode these get
@@ -234,7 +233,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         setGain(lastGain);
         setAwbGain(lastAwbGains.getFirst(), lastAwbGains.getSecond());
 
-        LibCameraJNI.setFramesToCopy(true, true);
+        LibCameraJNI.setFramesToCopy(r_ptr,true, true);
 
         currentVideoMode = mode;
     }

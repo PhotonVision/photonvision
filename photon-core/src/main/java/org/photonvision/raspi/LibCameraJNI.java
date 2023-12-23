@@ -93,8 +93,13 @@ public class LibCameraJNI {
         }
     }
 
-    public static SensorModel getSensorModel() {
-        int model = getSensorModelRaw();
+    public static SensorModel getSensorModel(long r_ptr) {
+        int model = getSensorModelRaw(r_ptr);
+        return SensorModel.values()[model];
+    }
+
+    public static SensorModel getSensorModel(String name) {
+        int model = getSensorModelRaw(name);
         return SensorModel.values()[model];
     }
 
@@ -107,54 +112,57 @@ public class LibCameraJNI {
 
     private static native boolean isLibraryWorking();
 
-    public static native int getSensorModelRaw();
+    public static native int getSensorModelRaw(long r_ptr);
+
+    public static native int getSensorModelRaw(String name);
 
     // ======================================================== //
 
     /**
      * Creates a new runner with a given width/height/fps
      *
+     * @param the path / name of the camera as given from libcamera.
      * @param width Camera video mode width in pixels
      * @param height Camera video mode height in pixels
      * @param fps Camera video mode FPS
-     * @return success of creating a camera object
+     * @return the runner pointer for the camera.
      */
-    public static native boolean createCamera(int width, int height, int rotation);
+    public static native long createCamera(String name, int width, int height, int rotation);
 
     /**
      * Starts the camera thresholder and display threads running. Make sure that this function is
      * called synchronously with stopCamera and returnFrame!
      */
-    public static native boolean startCamera();
+    public static native boolean startCamera(long r_ptr);
 
     /** Stops the camera runner. Make sure to call prior to destroying the camera! */
-    public static native boolean stopCamera();
+    public static native boolean stopCamera(long r_ptr);
 
     // Destroy all native resources associated with a camera. Ensure stop is called prior!
-    public static native boolean destroyCamera();
+    public static native boolean destroyCamera(long r_ptr);
 
     // ======================================================== //
 
     // Set thresholds on [0..1]
     public static native boolean setThresholds(
-            double hl, double sl, double vl, double hu, double su, double vu, boolean hueInverted);
+            long r_ptr, double hl, double sl, double vl, double hu, double su, double vu, boolean hueInverted);
 
-    public static native boolean setAutoExposure(boolean doAutoExposure);
+    public static native boolean setAutoExposure(long r_ptr, boolean doAutoExposure);
 
     // Exposure time, in microseconds
-    public static native boolean setExposure(int exposureUs);
+    public static native boolean setExposure(long r_ptr, int exposureUs);
 
     // Set brightness on [-1, 1]
-    public static native boolean setBrightness(double brightness);
+    public static native boolean setBrightness(long r_ptr, double brightness);
 
     // Unknown ranges for red and blue AWB gain
-    public static native boolean setAwbGain(double red, double blue);
+    public static native boolean setAwbGain(long r_ptr, double red, double blue);
 
     /**
      * Get the time when the first pixel exposure was started, in the same timebase as libcamera gives
      * the frame capture time. Units are nanoseconds.
      */
-    public static native long getFrameCaptureTime();
+    public static native long getFrameCaptureTime(long r_ptr);
 
     /**
      * Get the current time, in the same timebase as libcamera gives the frame capture time. Units are
@@ -162,25 +170,25 @@ public class LibCameraJNI {
      */
     public static native long getLibcameraTimestamp();
 
-    public static native long setFramesToCopy(boolean copyIn, boolean copyOut);
+    public static native long setFramesToCopy(long r_ptr, boolean copyIn, boolean copyOut);
 
     // Analog gain multiplier to apply to all color channels, on [1, Big Number]
-    public static native boolean setAnalogGain(double analog);
+    public static native boolean setAnalogGain(long r_ptr, double analog);
 
     /** Block until a new frame is available from native code. */
-    public static native boolean awaitNewFrame();
+    public static native long awaitNewFrame(long r_ptr);
 
     /**
      * Get a pointer to the most recent color mat generated. Call this immediately after
      * awaitNewFrame, and call only once per new frame!
      */
-    public static native long takeColorFrame();
+    public static native long takeColorFrame(long pair_ptr);
 
     /**
      * Get a pointer to the most recent processed mat generated. Call this immediately after
      * awaitNewFrame, and call only once per new frame!
      */
-    public static native long takeProcessedFrame();
+    public static native long takeProcessedFrame(long pair_ptr);
 
     /**
      * Set the GPU processing type we should do. Enum of [none, HSV, greyscale, adaptive threshold].
@@ -189,6 +197,13 @@ public class LibCameraJNI {
 
     public static native int getGpuProcessType();
 
-    // Release a frame pointer back to the libcamera driver code to be filled again */
-    // public static native long returnFrame(long frame);
+    /**
+     * Release a pair pointer back to the libcamera driver code to be filled again 
+     */
+    public static native boolean releasePair(long p_ptr);
+
+    /**
+     * Get an array containing the names/ids/paths of all connected CSI cameras from libcamera.
+     */
+    public static native String[] getCameraNames(); 
 }

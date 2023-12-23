@@ -47,19 +47,20 @@ public class LibcameraGpuFrameProvider implements FrameProvider {
 
     @Override
     public Frame get() {
-        // We need to make sure that other threads don't try to change video modes while we're waiting
+        // We need to make sure that other threads don't try to change video modes while
+        // we're waiting
         // for a frame
         // System.out.println("GET!");
         synchronized (LibCameraJNI.CAMERA_LOCK) {
-            var success = LibCameraJNI.awaitNewFrame();
+            var p_ptr = LibCameraJNI.awaitNewFrame(settables.r_ptr);
 
-            if (!success) {
+            if (p_ptr == 0) {
                 System.out.println("No new frame");
                 return new Frame();
             }
 
-            var colorMat = new CVMat(new Mat(LibCameraJNI.takeColorFrame()));
-            var processedMat = new CVMat(new Mat(LibCameraJNI.takeProcessedFrame()));
+            var colorMat = new CVMat(new Mat(LibCameraJNI.takeColorFrame(p_ptr)));
+            var processedMat = new CVMat(new Mat(LibCameraJNI.takeProcessedFrame(p_ptr)));
 
             // System.out.println("Color mat: " + colorMat.getMat().size());
 
@@ -73,7 +74,7 @@ public class LibcameraGpuFrameProvider implements FrameProvider {
             }
 
             var now = LibCameraJNI.getLibcameraTimestamp();
-            var capture = LibCameraJNI.getFrameCaptureTime();
+            var capture = LibCameraJNI.getFrameCaptureTime(settables.r_ptr);
             var latency = (now - capture);
 
             return new Frame(
@@ -97,7 +98,7 @@ public class LibcameraGpuFrameProvider implements FrameProvider {
 
     @Override
     public void requestHsvSettings(HSVParams params) {
-        LibCameraJNI.setThresholds(
+        LibCameraJNI.setThresholds(settables.r_ptr,
                 params.getHsvLower().val[0] / 180.0,
                 params.getHsvLower().val[1] / 255.0,
                 params.getHsvLower().val[2] / 255.0,
@@ -109,6 +110,6 @@ public class LibcameraGpuFrameProvider implements FrameProvider {
 
     @Override
     public void requestFrameCopies(boolean copyInput, boolean copyOutput) {
-        LibCameraJNI.setFramesToCopy(copyInput, copyOutput);
+        LibCameraJNI.setFramesToCopy(settables.r_ptr, copyInput, copyOutput);
     }
 }
