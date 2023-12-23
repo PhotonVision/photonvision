@@ -27,6 +27,9 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.photonvision.calibrator.Cfg;
+import org.photonvision.calibrator.ChArucoDetector;
+import org.photonvision.calibrator.UserGuidance;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
@@ -77,11 +80,22 @@ public class Calibrate3dPipeline
         this(12);
     }
 
+    ChArucoDetector tracker;
+    UserGuidance ugui;
+
     public Calibrate3dPipeline(int minSnapshots) {
         super(PROCESSING_TYPE);
         this.settings = new Calibration3dPipelineSettings();
         this.foundCornersList = new ArrayList<>();
         this.minSnapshots = minSnapshots;
+
+        try {
+            tracker = new ChArucoDetector();
+            ugui = new UserGuidance(tracker, Cfg.var_terminate);
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -106,10 +120,6 @@ public class Calibrate3dPipeline
         // }
     }
 
-
-    ChArucoDetector tracker = new ChArucoDetector();
-    UserGuidance ugui = new UserGuidance(tracker, Cfg.var_terminate);
-
     @Override
     protected CVPipelineResult process(Frame frame, Calibration3dPipelineSettings settings) {
         Mat inputColorMat = frame.colorImage.getMat();
@@ -120,11 +130,26 @@ public class Calibrate3dPipeline
 
         long sumPipeNanosElapsed = 0L;
 
-
-
         // Check if the frame has chessboard corners
         var outputColorCVMat = new CVMat();
         inputColorMat.copyTo(outputColorCVMat.getMat());
+
+        if (inputColorMat.height() != Cfg.image_height || inputColorMat.width() != Cfg.image_width) {
+            try {
+                Cfg.image_width = inputColorMat.width();
+                Cfg.image_height = inputColorMat.height();
+                tracker = new ChArucoDetector();
+                ugui = new UserGuidance(tracker, Cfg.var_terminate);
+            } catch (Exception e) {
+            }
+        }
+
+        tracker.detect(inputColorMat);
+        ugui.draw(outputColorCVMat.getMat(), true);
+        // displayOverlay(out, ugui);
+
+        ugui.update(false); // calibrate
+
         var findBoardResult =
                 findBoardCornersPipe.run(Pair.of(inputColorMat, outputColorCVMat.getMat())).output;
 
