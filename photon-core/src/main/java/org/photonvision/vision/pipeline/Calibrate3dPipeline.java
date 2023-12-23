@@ -106,6 +106,10 @@ public class Calibrate3dPipeline
         // }
     }
 
+
+    ChArucoDetector tracker = new ChArucoDetector();
+    UserGuidance ugui = new UserGuidance(tracker, Cfg.var_terminate);
+
     @Override
     protected CVPipelineResult process(Frame frame, Calibration3dPipelineSettings settings) {
         Mat inputColorMat = frame.colorImage.getMat();
@@ -115,6 +119,8 @@ public class Calibrate3dPipeline
         }
 
         long sumPipeNanosElapsed = 0L;
+
+
 
         // Check if the frame has chessboard corners
         var outputColorCVMat = new CVMat();
