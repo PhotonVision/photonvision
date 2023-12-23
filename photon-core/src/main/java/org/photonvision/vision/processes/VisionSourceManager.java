@@ -98,10 +98,11 @@ public class VisionSourceManager {
      */
     protected List<CameraInfo> getConnectedCSICameras() {
         List<CameraInfo> cameraInfos = new ArrayList<CameraInfo>();
-        for (String path : LibCameraJNI.getCameraNames()) {
-            String name = LibCameraJNI.getSensorModel(path).getFriendlyName();
-            cameraInfos.add(new CameraInfo(-1, path, name, null, -1, -1, CameraType.ZeroCopyPicam));
-        }
+        if(LibCameraJNI.isSupported())
+            for (String path : LibCameraJNI.getCameraNames()) {
+                String name = LibCameraJNI.getSensorModel(path).getFriendlyName();
+                cameraInfos.add(new CameraInfo(-1, path, name, null, -1, -1, CameraType.ZeroCopyPicam));
+            }
         return cameraInfos;
     }
 
