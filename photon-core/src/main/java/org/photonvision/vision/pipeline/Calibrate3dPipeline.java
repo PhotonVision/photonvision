@@ -61,7 +61,8 @@ public class Calibrate3dPipeline
     // Getter methods have been set for calibrate and takeSnapshot
     private boolean takeSnapshot = false;
 
-    // Output of the corners
+    // Detected corners
+    // Frame resolution, object points, board corners
     final List<Triple<Size, Mat, Mat>> foundCornersList;
 
     /// Output of the calibration, getter method is set for this.
