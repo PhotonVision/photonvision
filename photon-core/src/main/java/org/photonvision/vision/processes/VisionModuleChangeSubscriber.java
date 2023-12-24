@@ -51,7 +51,6 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
     @Override
     public void onDataChangeEvent(DataChangeEvent<?> event) {
         if (event instanceof IncomingWebSocketEvent<?> wsEvent) {
-
             // Camera index -1 means a "multicast event" (i.e. the event is received by all cameras)
             if (wsEvent.cameraIndex != null
                     && (wsEvent.cameraIndex == parentModule.moduleIndex || wsEvent.cameraIndex == -1)) {
