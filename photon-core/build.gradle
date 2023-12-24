@@ -131,7 +131,7 @@ model {
                 sharedLibs.each { so ->
                     def arch = so.targetPlatform.architecture.name
                     def os = so.targetPlatform.operatingSystem.name
-                    
+
                     copy {
                         from so.sharedLibraryFile
                         // We know all should be shared libs only at this point
