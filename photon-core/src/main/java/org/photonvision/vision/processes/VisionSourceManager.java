@@ -47,6 +47,7 @@ public class VisionSourceManager {
 
     final List<CameraConfiguration> unmatchedLoadedConfigs = new CopyOnWriteArrayList<>();
     private boolean hasWarned;
+    private boolean hasWarnedNoCameras = false;
     private String ignoredCamerasRegex = "";
 
     private static class SingletonHolder {
@@ -138,16 +139,21 @@ public class VisionSourceManager {
             connectedCameras.addAll(new ArrayList<>(filterAllowedDevices(getConnectedCSICameras())));
         } else {
             connectedCameras = new ArrayList<>(filterAllowedDevices(cameraInfos));
-            createSources = false;
+            createSources =
+                    false; // Dont create sources if we are using supplied camerainfo for unit tests.
         }
 
         // Return no new sources because there are no new sources
         if (connectedCameras.isEmpty() && !cameraInfos.isEmpty()) {
-            logger.warn(
-                    "No cameras were detected! Check that all cameras are connected, and that the path is correct.");
+            if (hasWarnedNoCameras) {
+                logger.warn(
+                        "No cameras were detected! Check that all cameras are connected, and that the path is correct.");
+                hasWarnedNoCameras = true;
+            }
             return null;
-        }
+        } else hasWarnedNoCameras = false;
 
+        // Remove any known cameras.
         connectedCameras.removeIf(c -> knownCameras.contains(c));
 
         // All cameras are already loaded return no new sources.
@@ -458,6 +464,7 @@ public class VisionSourceManager {
             boolean is_pi = Platform.isRaspberryPi();
 
             if (configuration.cameraType == CameraType.ZeroCopyPicam && is_pi) {
+                // If the camera was loaded from libcamera then create its source using libcamera.
                 var piCamSrc = new LibcameraGpuSource(configuration);
                 cameraSources.add(piCamSrc);
             } else {
