@@ -9,16 +9,12 @@ apply from: "${rootDir}/shared/common.gradle"
 ext {
     nativeName = "photoncore"
 
-    main_native_libs = [
-        "opencv_shared"
-    ]
+    main_native_libs = ["opencv_shared"]
 
-    test_native_libs = [
-        "opencv_static"
-    ]
+    test_native_libs = ["opencv_shared"]
 
     dev_native_libs = [
-        "opencv_static",
+        "opencv_shared",
     ]
 }
 
@@ -64,11 +60,11 @@ model {
             sources {
                 cpp {
                     source {
-                        srcDirs 'src/main/native/cpp'
+                        srcDirs 'src/main/native/jni'
                         if (project.hasProperty('generatedSources')) {
                             srcDir generatedSources
                         }
-                        include '**/jni/**/*.cpp'
+                        include '**/*.cpp'
                     }
                     exportedHeaders {
                         srcDir 'src/main/native/include'
@@ -86,9 +82,6 @@ model {
                     return
                 }
                 lib library: "${nativeName}", linkage: 'shared'
-                if (!project.hasProperty('noWpiutil')) {
-                    lib project: ':wpiutil', library: 'wpiutil', linkage: 'shared'
-                }
                 if (project.hasProperty('jniSplitSetup')) {
                     jniSplitSetup(it)
                 }
