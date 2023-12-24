@@ -33,7 +33,7 @@ import org.photonvision.common.logging.Logger;
  * DO NOT use logging in this class. If you do, the logs will recurse forever!
  */
 class UIOutboundSubscriber extends DataChangeSubscriber {
-    Logger logger = new Logger(UIOutboundSubscriber.class, LogGroup.WebServer);
+    final Logger logger = new Logger(UIOutboundSubscriber.class, LogGroup.WebServer);
 
     private final DataSocketHandler socketHandler;
 
@@ -44,11 +44,9 @@ class UIOutboundSubscriber extends DataChangeSubscriber {
 
     @Override
     public void onDataChangeEvent(DataChangeEvent event) {
-        if (event instanceof OutgoingUIEvent) {
-            var thisEvent = (OutgoingUIEvent) event;
+        if (event instanceof OutgoingUIEvent thisEvent) {
             try {
-                if (event.data instanceof HashMap) {
-                    var data = (HashMap) event.data;
+                if (event.data instanceof HashMap data) {
                     socketHandler.broadcastMessage(data, thisEvent.originContext);
                 } else {
                     socketHandler.broadcastMessage(event.data, thisEvent.originContext);

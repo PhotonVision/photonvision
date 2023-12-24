@@ -51,8 +51,8 @@ public class FindBoardCornersPipe
     private final MatOfPoint2f boardCorners = new MatOfPoint2f();
 
     // Intermediate result mat's
-    Mat smallerInFrame = new Mat();
-    MatOfPoint2f smallerBoardCorners = new MatOfPoint2f();
+    final Mat smallerInFrame = new Mat();
+    final MatOfPoint2f smallerBoardCorners = new MatOfPoint2f();
 
     // SubCornerPix params
     private final Size zeroZone = new Size(-1, -1);

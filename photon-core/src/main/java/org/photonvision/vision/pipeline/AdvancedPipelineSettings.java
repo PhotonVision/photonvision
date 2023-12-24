@@ -38,30 +38,30 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
     public IntegerCouple hsvHue = new IntegerCouple(50, 180);
     public IntegerCouple hsvSaturation = new IntegerCouple(50, 255);
     public IntegerCouple hsvValue = new IntegerCouple(50, 255);
-    public boolean hueInverted = false;
+    public final boolean hueInverted = false;
 
     public boolean outputShouldDraw = true;
     public boolean outputShowMultipleTargets = false;
 
-    public DoubleCouple contourArea = new DoubleCouple(0.0, 100.0);
-    public DoubleCouple contourRatio = new DoubleCouple(0.0, 20.0);
-    public DoubleCouple contourFullness = new DoubleCouple(0.0, 100.0);
-    public int contourSpecklePercentage = 5;
+    public final DoubleCouple contourArea = new DoubleCouple(0.0, 100.0);
+    public final DoubleCouple contourRatio = new DoubleCouple(0.0, 20.0);
+    public final DoubleCouple contourFullness = new DoubleCouple(0.0, 100.0);
+    public final int contourSpecklePercentage = 5;
 
     // the order in which to sort contours to find the most desirable
-    public ContourSortMode contourSortMode = ContourSortMode.Largest;
+    public final ContourSortMode contourSortMode = ContourSortMode.Largest;
 
     // the edge (or not) of the target to consider the center point (Top, Bottom, Left, Right,
     // Center)
-    public TargetOffsetPointEdge contourTargetOffsetPointEdge = TargetOffsetPointEdge.Center;
+    public final TargetOffsetPointEdge contourTargetOffsetPointEdge = TargetOffsetPointEdge.Center;
 
     // orientation of the target in terms of aspect ratio
-    public TargetOrientation contourTargetOrientation = TargetOrientation.Landscape;
+    public final TargetOrientation contourTargetOrientation = TargetOrientation.Landscape;
 
     // the mode in which to offset target center point based on the camera being offset on the
     // robot
     // (None, Single Point, Dual Point)
-    public RobotOffsetPointMode offsetRobotOffsetMode = RobotOffsetPointMode.None;
+    public final RobotOffsetPointMode offsetRobotOffsetMode = RobotOffsetPointMode.None;
 
     // the point set by the user in Single Point Offset mode (maybe double too? idr)
     public Point offsetSinglePoint = new Point();
@@ -83,19 +83,18 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
     public TargetModel targetModel = TargetModel.k2020HighGoalOuter;
 
     // Corner detection settings
-    public CornerDetectionPipe.DetectionStrategy cornerDetectionStrategy =
+    public final CornerDetectionPipe.DetectionStrategy cornerDetectionStrategy =
             CornerDetectionPipe.DetectionStrategy.APPROX_POLY_DP_AND_EXTREME_CORNERS;
     public boolean cornerDetectionUseConvexHulls = true;
-    public boolean cornerDetectionExactSideCount = false;
-    public int cornerDetectionSideCount = 4;
+    public final boolean cornerDetectionExactSideCount = false;
+    public final int cornerDetectionSideCount = 4;
     public double cornerDetectionAccuracyPercentage = 10;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof AdvancedPipelineSettings)) return false;
+        if (!(o instanceof AdvancedPipelineSettings that)) return false;
         if (!super.equals(o)) return false;
-        AdvancedPipelineSettings that = (AdvancedPipelineSettings) o;
         return outputShouldDraw == that.outputShouldDraw
                 && outputShowMultipleTargets == that.outputShowMultipleTargets
                 && contourSpecklePercentage == that.contourSpecklePercentage

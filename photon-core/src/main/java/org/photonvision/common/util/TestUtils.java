@@ -84,7 +84,7 @@ public class TestUtils {
         kRocketPanelAngleDark48in(1.2192),
         kRocketPanelAngleDark60in(1.524);
 
-        public static double FOV = 68.5;
+        public static final double FOV = 68.5;
 
         public final double distanceMeters;
         public final Path path;
@@ -122,7 +122,7 @@ public class TestUtils {
         kRedLoading_084in(2.1336),
         kRedLoading_108in(2.7432);
 
-        public static double FOV = 68.5;
+        public static final double FOV = 68.5;
 
         public final double distanceMeters;
         public final Path path;
@@ -143,7 +143,7 @@ public class TestUtils {
         k162_36_Straight,
         k383_60_Angle2;
 
-        public static double FOV = 68.5;
+        public static final double FOV = 68.5;
 
         public final Translation2d approxPose;
         public final Path path;
@@ -170,7 +170,7 @@ public class TestUtils {
         kTerminal12ft6in(Units.feetToMeters(12.5)),
         kTerminal22ft6in(Units.feetToMeters(22.5));
 
-        public static double FOV = 68.5;
+        public static final double FOV = 68.5;
 
         public final double distanceMeters;
         public final Path path;

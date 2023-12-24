@@ -45,9 +45,9 @@ public class RotateImagePipe extends MutatingPipe<Mat, RotateImagePipe.RotateIma
     }
 
     public static class RotateImageParams {
-        public static RotateImageParams DEFAULT = new RotateImageParams(ImageRotationMode.DEG_0);
+        public static final RotateImageParams DEFAULT = new RotateImageParams(ImageRotationMode.DEG_0);
 
-        public ImageRotationMode rotation;
+        public final ImageRotationMode rotation;
 
         public RotateImageParams() {
             rotation = DEFAULT.rotation;

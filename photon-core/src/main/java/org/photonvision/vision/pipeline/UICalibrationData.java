@@ -21,7 +21,7 @@ import java.util.Map;
 
 public class UICalibrationData {
     public final int videoModeIndex;
-    public int count;
+    public final int count;
     public final int minCount;
     public final boolean hasEnough;
     public final double squareSizeIn;

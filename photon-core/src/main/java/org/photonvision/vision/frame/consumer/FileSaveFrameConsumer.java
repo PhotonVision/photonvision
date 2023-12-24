@@ -39,8 +39,8 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
     private static final String FILE_EXTENSION = ".jpg";
     private static final String NT_SUFFIX = "SaveImgCmd";
 
-    DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-    DateFormat tf = new SimpleDateFormat("hhmmssSS");
+    final DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+    final DateFormat tf = new SimpleDateFormat("hhmmssSS");
 
     private final NetworkTable rootTable;
     private NetworkTable subTable;

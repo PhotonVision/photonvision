@@ -34,9 +34,7 @@ public class Server {
                             javalinConfig.showJavalinBanner = false;
                             javalinConfig.staticFiles.add("web");
                             javalinConfig.plugins.enableCors(
-                                    corsContainer -> {
-                                        corsContainer.add(CorsPluginConfig::anyHost);
-                                    });
+                                    corsContainer -> corsContainer.add(CorsPluginConfig::anyHost));
 
                             javalinConfig.requestLogger.http(
                                     (ctx, ms) -> {

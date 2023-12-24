@@ -34,7 +34,7 @@ import org.photonvision.vision.target.TrackedTarget;
 
 public class Draw2dTargetsPipe
         extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, Draw2dTargetsPipe.Draw2dTargetsParams> {
-    MatOfPoint tempMat = new MatOfPoint();
+    final MatOfPoint tempMat = new MatOfPoint();
     private static final Logger logger = new Logger(Draw2dTargetsPipe.class, LogGroup.General);
 
     @Override
@@ -217,22 +217,22 @@ public class Draw2dTargetsPipe
     }
 
     public static class Draw2dTargetsParams {
-        public double kPixelsToText = 0.0025;
-        public double kPixelsToThickness = 0.008;
-        public double kPixelsToOffset = 0.04;
-        public double kPixelsToBoxThickness = 0.007;
-        public double kPixelsToCentroidRadius = 0.03;
-        public boolean showCentroid = true;
+        public final double kPixelsToText = 0.0025;
+        public final double kPixelsToThickness = 0.008;
+        public final double kPixelsToOffset = 0.04;
+        public final double kPixelsToBoxThickness = 0.007;
+        public final double kPixelsToCentroidRadius = 0.03;
+        public final boolean showCentroid = true;
         public boolean showRotatedBox = true;
         public boolean showShape = false;
         public boolean showMaximumBox = true;
-        public boolean showContourNumber = true;
-        public Color centroidColor = Color.GREEN; // Color.decode("#ff5ebf");
+        public final boolean showContourNumber = true;
+        public final Color centroidColor = Color.GREEN; // Color.decode("#ff5ebf");
         public Color rotatedBoxColor = Color.BLUE;
-        public Color maximumBoxColor = Color.RED;
-        public Color shapeOutlineColour = Color.MAGENTA;
-        public Color textColor = Color.GREEN;
-        public Color circleColor = Color.RED;
+        public final Color maximumBoxColor = Color.RED;
+        public final Color shapeOutlineColour = Color.MAGENTA;
+        public final Color textColor = Color.GREEN;
+        public final Color circleColor = Color.RED;
 
         public final boolean showMultipleTargets;
         public final boolean shouldDraw;

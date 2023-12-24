@@ -106,7 +106,7 @@ public class Main {
 
                 if (cmd.hasOption("path")) {
                     Path p = Path.of(System.getProperty("PATH_PREFIX", "") + cmd.getOptionValue("path"));
-                    logger.info("Loading from Path " + p.toAbsolutePath().toString());
+                    logger.info("Loading from Path " + p.toAbsolutePath());
                     testModeFolder = p;
                 }
             }

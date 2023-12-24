@@ -31,7 +31,7 @@ public class CVPipelineResult implements Releasable {
     public final double fps;
     public final List<TrackedTarget> targets;
     public final Frame inputAndOutputFrame;
-    public MultiTargetPNPResult multiTagResult;
+    public final MultiTargetPNPResult multiTagResult;
 
     public CVPipelineResult(
             double processingNanos, double fps, List<TrackedTarget> targets, Frame inputFrame) {

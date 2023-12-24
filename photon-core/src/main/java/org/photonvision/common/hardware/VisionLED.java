@@ -134,25 +134,17 @@ public class VisionLED {
         var newLedModeRaw = (int) entryNotification.valueData.value.getInteger();
         logger.debug("Got LED mode " + newLedModeRaw);
         if (newLedModeRaw != currentLedMode.value) {
-            VisionLEDMode newLedMode;
-            switch (newLedModeRaw) {
-                case -1:
-                    newLedMode = VisionLEDMode.kDefault;
-                    break;
-                case 0:
-                    newLedMode = VisionLEDMode.kOff;
-                    break;
-                case 1:
-                    newLedMode = VisionLEDMode.kOn;
-                    break;
-                case 2:
-                    newLedMode = VisionLEDMode.kBlink;
-                    break;
-                default:
-                    logger.warn("User supplied invalid LED mode, falling back to Default");
-                    newLedMode = VisionLEDMode.kDefault;
-                    break;
-            }
+            VisionLEDMode newLedMode =
+                    switch (newLedModeRaw) {
+                        case -1 -> VisionLEDMode.kDefault;
+                        case 0 -> VisionLEDMode.kOff;
+                        case 1 -> VisionLEDMode.kOn;
+                        case 2 -> VisionLEDMode.kBlink;
+                        default -> {
+                            logger.warn("User supplied invalid LED mode, falling back to Default");
+                            yield VisionLEDMode.kDefault;
+                        }
+                    };
             setInternal(newLedMode, true);
 
             if (modeConsumer != null) modeConsumer.accept(newLedMode.value);

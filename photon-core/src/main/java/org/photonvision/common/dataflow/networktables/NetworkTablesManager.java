@@ -49,7 +49,7 @@ public class NetworkTablesManager {
 
     private boolean m_isRetryingConnection = false;
 
-    private StringSubscriber m_fieldLayoutSubscriber =
+    private final StringSubscriber m_fieldLayoutSubscriber =
             kRootTable.getStringTopic(kFieldLayoutName).subscribe("");
 
     private NetworkTablesManager() {

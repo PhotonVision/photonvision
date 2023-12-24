@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import static com.jogamp.opengl.GL.*;
 import static com.jogamp.opengl.GL2ES2.*;
 
 import com.jogamp.opengl.*;

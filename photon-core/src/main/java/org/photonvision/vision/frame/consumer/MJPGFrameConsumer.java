@@ -228,20 +228,14 @@ public class MJPGFrameConsumer implements AutoCloseable {
     }
 
     private static String pixelFormatToString(VideoMode.PixelFormat pixelFormat) {
-        switch (pixelFormat) {
-            case kMJPEG:
-                return "MJPEG";
-            case kYUYV:
-                return "YUYV";
-            case kRGB565:
-                return "RGB565";
-            case kBGR:
-                return "BGR";
-            case kGray:
-                return "Gray";
-            default:
-                return "Unknown";
-        }
+        return switch (pixelFormat) {
+            case kMJPEG -> "MJPEG";
+            case kYUYV -> "YUYV";
+            case kRGB565 -> "RGB565";
+            case kBGR -> "BGR";
+            case kGray -> "Gray";
+            default -> "Unknown";
+        };
     }
 
     @Override

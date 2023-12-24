@@ -131,10 +131,11 @@ public class SqlConfigProvider extends ConfigProvider {
             try {
                 createGlobalTableStatement = conn.createStatement();
                 String sql =
-                        "CREATE TABLE IF NOT EXISTS global (\n"
-                                + " filename TINYTEXT PRIMARY KEY,\n"
-                                + " contents mediumtext NOT NULL\n"
-                                + ");";
+                        """
+                                CREATE TABLE IF NOT EXISTS global (
+                                 filename TINYTEXT PRIMARY KEY,
+                                 contents mediumtext NOT NULL
+                                );""";
                 createGlobalTableStatement.execute(sql);
             } catch (SQLException e) {
                 logger.error("Err creating global table", e);
@@ -144,13 +145,14 @@ public class SqlConfigProvider extends ConfigProvider {
             try {
                 createCameraTableStatement = conn.createStatement();
                 var sql =
-                        "CREATE TABLE IF NOT EXISTS cameras (\n"
-                                + " unique_name TINYTEXT PRIMARY KEY,\n"
-                                + " config_json text NOT NULL,\n"
-                                + " drivermode_json text NOT NULL,\n"
-                                + " otherpaths_json text NOT NULL,\n"
-                                + " pipeline_jsons mediumtext NOT NULL\n"
-                                + ");";
+                        """
+                                CREATE TABLE IF NOT EXISTS cameras (
+                                 unique_name TINYTEXT PRIMARY KEY,
+                                 config_json text NOT NULL,
+                                 drivermode_json text NOT NULL,
+                                 otherpaths_json text NOT NULL,
+                                 pipeline_jsons mediumtext NOT NULL
+                                );""";
                 createCameraTableStatement.execute(sql);
             } catch (SQLException e) {
                 logger.error("Err creating cameras table", e);

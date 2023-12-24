@@ -50,8 +50,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
 
     @Override
     public void onDataChangeEvent(DataChangeEvent<?> event) {
-        if (event instanceof IncomingWebSocketEvent) {
-            var wsEvent = (IncomingWebSocketEvent<?>) event;
+        if (event instanceof IncomingWebSocketEvent<?> wsEvent) {
 
             // Camera index -1 means a "multicast event" (i.e. the event is received by all cameras)
             if (wsEvent.cameraIndex != null
@@ -126,8 +125,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                             parentModule.addCalibrationToConfig((CameraCalibrationCoefficients) newPropValue);
                         return;
                     case "robotOffsetPoint":
-                        if (currentSettings instanceof AdvancedPipelineSettings) {
-                            var curAdvSettings = (AdvancedPipelineSettings) currentSettings;
+                        if (currentSettings instanceof AdvancedPipelineSettings curAdvSettings) {
                             var offsetOperation = RobotOffsetPointOperation.fromIndex((int) newPropValue);
                             var latestTarget = parentModule.lastPipelineResultBestTarget;
 
