@@ -143,7 +143,14 @@ public class LibCameraJNI {
 
     // Set thresholds on [0..1]
     public static native boolean setThresholds(
-            long r_ptr, double hl, double sl, double vl, double hu, double su, double vu, boolean hueInverted);
+            long r_ptr,
+            double hl,
+            double sl,
+            double vl,
+            double hu,
+            double su,
+            double vu,
+            boolean hueInverted);
 
     public static native boolean setAutoExposure(long r_ptr, boolean doAutoExposure);
 
@@ -195,13 +202,9 @@ public class LibCameraJNI {
 
     public static native int getGpuProcessType(long p_ptr);
 
-    /**
-     * Release a pair pointer back to the libcamera driver code to be filled again 
-     */
+    /** Release a pair pointer back to the libcamera driver code to be filled again */
     public static native boolean releasePair(long p_ptr);
 
-    /**
-     * Get an array containing the names/ids/paths of all connected CSI cameras from libcamera.
-     */
-    public static native String[] getCameraNames(); 
+    /** Get an array containing the names/ids/paths of all connected CSI cameras from libcamera. */
+    public static native String[] getCameraNames();
 }

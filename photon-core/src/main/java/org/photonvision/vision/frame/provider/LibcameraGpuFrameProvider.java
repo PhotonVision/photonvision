@@ -62,7 +62,6 @@ public class LibcameraGpuFrameProvider implements FrameProvider {
 
             var colorMat = new CVMat(new Mat(LibCameraJNI.takeColorFrame(p_ptr)));
             var processedMat = new CVMat(new Mat(LibCameraJNI.takeProcessedFrame(p_ptr)));
-            
 
             // System.out.println("Color mat: " + colorMat.getMat().size());
 
@@ -81,7 +80,6 @@ public class LibcameraGpuFrameProvider implements FrameProvider {
 
             LibCameraJNI.releasePair(p_ptr);
 
-
             return new Frame(
                     colorMat,
                     processedMat,
@@ -93,10 +91,9 @@ public class LibcameraGpuFrameProvider implements FrameProvider {
 
     @Override
     public void requestFrameThresholdType(FrameThresholdType type) {
-        if(settables.getModel() == SensorModel.OV9281 && type.equals(FrameThresholdType.GREYSCALE))
-            LibCameraJNI.setGpuProcessType(settables.r_ptr,4); // 4 = Grayscale pass through.
-        else
-            LibCameraJNI.setGpuProcessType(settables.r_ptr,type.ordinal());
+        if (settables.getModel() == SensorModel.OV9281 && type.equals(FrameThresholdType.GREYSCALE))
+            LibCameraJNI.setGpuProcessType(settables.r_ptr, 4); // 4 = Grayscale pass through.
+        else LibCameraJNI.setGpuProcessType(settables.r_ptr, type.ordinal());
     }
 
     @Override
@@ -106,7 +103,8 @@ public class LibcameraGpuFrameProvider implements FrameProvider {
 
     @Override
     public void requestHsvSettings(HSVParams params) {
-        LibCameraJNI.setThresholds(settables.r_ptr,
+        LibCameraJNI.setThresholds(
+                settables.r_ptr,
                 params.getHsvLower().val[0] / 180.0,
                 params.getHsvLower().val[1] / 255.0,
                 params.getHsvLower().val[2] / 255.0,

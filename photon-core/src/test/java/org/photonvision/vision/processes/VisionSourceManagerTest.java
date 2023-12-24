@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.vision.camera.CameraInfo;
+import org.photonvision.vision.camera.CameraType;
 
 public class VisionSourceManagerTest {
     @Test
@@ -61,8 +62,7 @@ public class VisionSourceManagerTest {
         assertTrue(inst.knownCameras.contains(info1));
         assertEquals(2, inst.unmatchedLoadedConfigs.size());
 
-        CameraInfo info2 =
-                new CameraInfo(0, "dev/video1", "secondTestVideo", new String[0], 2, 3);
+        CameraInfo info2 = new CameraInfo(0, "dev/video1", "secondTestVideo", new String[0], 2, 3);
 
         cameraInfos.add(info2);
 
@@ -154,8 +154,7 @@ public class VisionSourceManagerTest {
 
         // RPI 5 CSI Tests
 
-
-        //CSI CAMERAS SHOULD NOT BE LOADED LIKE THIS THEY SHOULD GO THROUGH LIBCAM.
+        // CSI CAMERAS SHOULD NOT BE LOADED LIKE THIS THEY SHOULD GO THROUGH LIBCAM.
         CameraInfo info7 =
                 new CameraInfo(
                         4,
@@ -197,15 +196,16 @@ public class VisionSourceManagerTest {
         assertEquals(6, inst.knownCameras.size());
         assertEquals(0, inst.unmatchedLoadedConfigs.size());
 
-        //RPI LIBCAMERA CSI CAMERA TESTS
+        // RPI LIBCAMERA CSI CAMERA TESTS
         CameraInfo info10 =
                 new CameraInfo(
                         -1,
                         "/base/soc/i2c0mux/i2c@0/ov9281@60",
                         "OV9281", // Typically rp1-cfe for unit test changed to CSICAM-DEV
-                        new String[]{},
+                        new String[] {},
                         -1,
-                        -1);
+                        -1,
+                        CameraType.ZeroCopyPicam);
         cameraInfos.add(info10);
         inst.tryMatchCamImpl(cameraInfos);
 
@@ -218,9 +218,10 @@ public class VisionSourceManagerTest {
                         -1,
                         "/base/soc/i2c0mux/i2c@1/ov9281@60",
                         "OV9281", // Typically rp1-cfe for unit test changed to CSICAM-DEV
-                        new String[]{},
+                        new String[] {},
                         -1,
-                        -1);
+                        -1,
+                        CameraType.ZeroCopyPicam);
         cameraInfos.add(info11);
         inst.tryMatchCamImpl(cameraInfos);
 
@@ -228,6 +229,36 @@ public class VisionSourceManagerTest {
         assertEquals(8, inst.knownCameras.size());
         assertEquals(0, inst.unmatchedLoadedConfigs.size());
 
- 
+        CameraInfo info12 =
+                new CameraInfo(
+                        -1,
+                        " /base/axi/pcie@120000/rp1/i2c@80000/ov5647@36",
+                        "Camera Module v1",
+                        new String[] {},
+                        -1,
+                        -1,
+                        CameraType.ZeroCopyPicam);
+        cameraInfos.add(info12);
+        inst.tryMatchCamImpl(cameraInfos);
+
+        assertTrue(inst.knownCameras.contains(info12));
+        assertEquals(9, inst.knownCameras.size());
+        assertEquals(0, inst.unmatchedLoadedConfigs.size());
+
+        CameraInfo info13 =
+                new CameraInfo(
+                        -1,
+                        "/base/axi/pcie@120000/rp1/i2c@88000/imx708@1a",
+                        "Camera Module v3",
+                        new String[] {},
+                        -1,
+                        -1,
+                        CameraType.ZeroCopyPicam);
+        cameraInfos.add(info13);
+        inst.tryMatchCamImpl(cameraInfos);
+
+        assertTrue(inst.knownCameras.contains(info13));
+        assertEquals(10, inst.knownCameras.size());
+        assertEquals(0, inst.unmatchedLoadedConfigs.size());
     }
 }

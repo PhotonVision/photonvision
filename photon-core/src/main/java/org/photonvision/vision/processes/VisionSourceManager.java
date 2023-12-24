@@ -57,8 +57,7 @@ public class VisionSourceManager {
         return SingletonHolder.INSTANCE;
     }
 
-    VisionSourceManager() {
-    }
+    VisionSourceManager() {}
 
     public void registerTimedTask() {
         TimedTaskManager.getInstance().addTask("VisionSourceManager", this::tryMatchCams, 3000);
@@ -69,8 +68,7 @@ public class VisionSourceManager {
     }
 
     /**
-     * Register new camera configs loaded from disk. This will add them to the list
-     * of configs to try
+     * Register new camera configs loaded from disk. This will add them to the list of configs to try
      * to match, and also automatically spawn new vision processes as necessary.
      *
      * @param configs The loaded camera configs.
@@ -80,36 +78,37 @@ public class VisionSourceManager {
     }
 
     /**
-     * Pre filter out any csi cameras to return just USB Cameras. Allow defining the
-     * camerainfo.
-     * 
+     * Pre filter out any csi cameras to return just USB Cameras. Allow defining the camerainfo.
+     *
      * @return a list containing usbcamerainfo.
      */
     protected List<CameraInfo> getConnectedUSBCameras() {
-        List<CameraInfo> cameraInfos = List.of(UsbCamera.enumerateUsbCameras()).stream().map(c -> new CameraInfo(c))
-                .collect(Collectors.toList());
+        List<CameraInfo> cameraInfos =
+                List.of(UsbCamera.enumerateUsbCameras()).stream()
+                        .map(c -> new CameraInfo(c))
+                        .collect(Collectors.toList());
         return cameraInfos;
     }
 
     /**
      * Retrieve the list of csi cameras from libcamera.
-     * 
+     *
      * @return a list containing csicamerainfo.
      */
     protected List<CameraInfo> getConnectedCSICameras() {
         List<CameraInfo> cameraInfos = new ArrayList<CameraInfo>();
-        if(LibCameraJNI.isSupported())
+        if (LibCameraJNI.isSupported())
             for (String path : LibCameraJNI.getCameraNames()) {
                 String name = LibCameraJNI.getSensorModel(path).getFriendlyName();
-                cameraInfos.add(new CameraInfo(-1, path, name, new String[]{}, -1, -1, CameraType.ZeroCopyPicam));
+                cameraInfos.add(
+                        new CameraInfo(-1, path, name, new String[] {}, -1, -1, CameraType.ZeroCopyPicam));
             }
         return cameraInfos;
     }
 
     protected void tryMatchCams() {
         var visionSourceList = tryMatchCamImpl();
-        if (visionSourceList == null)
-            return;
+        if (visionSourceList == null) return;
 
         logger.info("Adding " + visionSourceList.size() + " configs to VMM.");
         ConfigManager.getInstance().addCameraConfigurations(visionSourceList);
@@ -126,7 +125,7 @@ public class VisionSourceManager {
     }
 
     /**
-     * @param cameraInfos   Used to feed camera info for unit tests.
+     * @param cameraInfos Used to feed camera info for unit tests.
      * @return New VisionSources.
      */
     protected List<VisionSource> tryMatchCamImpl(ArrayList<CameraInfo> cameraInfos) {
@@ -137,8 +136,7 @@ public class VisionSourceManager {
             connectedCameras = new ArrayList<>(filterAllowedDevices(getConnectedUSBCameras()));
             // Detect CSI cameras using libcamera
             connectedCameras.addAll(new ArrayList<>(filterAllowedDevices(getConnectedCSICameras())));
-        }
-        else{
+        } else {
             connectedCameras = new ArrayList<>(filterAllowedDevices(cameraInfos));
             createSources = false;
         }
@@ -153,8 +151,7 @@ public class VisionSourceManager {
         connectedCameras.removeIf(c -> knownCameras.contains(c));
 
         // All cameras are already loaded return no new sources.
-        if (connectedCameras.isEmpty())
-            return null;
+        if (connectedCameras.isEmpty()) return null;
 
         logger.debug("Matching " + connectedCameras.size() + " new cameras!");
 
@@ -167,14 +164,16 @@ public class VisionSourceManager {
             logger.debug("Trying to match " + unmatchedLoadedConfigs.size() + " unmatched configs...");
 
         // Match camera configs to physical cameras
-        List<CameraConfiguration> matchedCameras = matchCameras(connectedCameras, unmatchedLoadedConfigs);
+        List<CameraConfiguration> matchedCameras =
+                matchCameras(connectedCameras, unmatchedLoadedConfigs);
 
         unmatchedLoadedConfigs.removeAll(matchedCameras);
         if (!unmatchedLoadedConfigs.isEmpty() && !hasWarned) {
             logger.warn(
-                    () -> "After matching, "
-                            + unmatchedLoadedConfigs.size()
-                            + " configs remained unmatched. Is your camera disconnected?");
+                    () ->
+                            "After matching, "
+                                    + unmatchedLoadedConfigs.size()
+                                    + " configs remained unmatched. Is your camera disconnected?");
             logger.warn(
                     "Unloaded configs: "
                             + unmatchedLoadedConfigs.stream()
@@ -186,8 +185,7 @@ public class VisionSourceManager {
         // We add the matched cameras to the known camera list
         this.knownCameras.addAll(connectedCameras);
 
-        if (matchedCameras.isEmpty())
-            return null;
+        if (matchedCameras.isEmpty()) return null;
 
         // for unit tests only!
         if (!createSources) {
@@ -200,51 +198,62 @@ public class VisionSourceManager {
         // Print info about each vision source
         for (var src : sources) {
             logger.debug(
-                    () -> "Matched config for camera \""
-                            + src.getFrameProvider().getName()
-                            + "\" and loaded "
-                            + src.getCameraConfiguration().pipelineSettings.size()
-                            + " pipelines");
+                    () ->
+                            "Matched config for camera \""
+                                    + src.getFrameProvider().getName()
+                                    + "\" and loaded "
+                                    + src.getCameraConfiguration().pipelineSettings.size()
+                                    + " pipelines");
         }
 
         return sources;
     }
 
     /**
-     * Create {@link CameraConfiguration}s based on a list of detected USB cameras
-     * and the configs on
+     * Create {@link CameraConfiguration}s based on a list of detected USB cameras and the configs on
      * disk.
      *
-     * @param detectedCamInfos    Information about currently connected USB cameras.
-     * @param loadedUsbCamConfigs The USB {@link CameraConfiguration}s loaded from
-     *                            disk.
+     * @param detectedCamInfos Information about currently connected USB cameras.
+     * @param loadedCamConfigs The USB {@link CameraConfiguration}s loaded from disk.
      * @return the matched configurations.
      */
     public List<CameraConfiguration> matchCameras(
-            List<CameraInfo> detectedCamInfos,
-            List<CameraConfiguration> loadedUsbCamConfigs) {
-
+            List<CameraInfo> detectedCamInfos, List<CameraConfiguration> loadedCamConfigs) {
         var detectedCameraList = new ArrayList<>(detectedCamInfos);
-        ArrayList<CameraConfiguration> cameraConfigurations = new ArrayList<>();
+        ArrayList<CameraConfiguration> cameraConfigurations = new ArrayList<CameraConfiguration>();
+        ArrayList<CameraConfiguration> unloadedConfigs =
+                new ArrayList<CameraConfiguration>(loadedCamConfigs);
 
-        cameraConfigurations.addAll(matchByPathByID(detectedCameraList, loadedUsbCamConfigs));
-        cameraConfigurations.addAll(matchByPath(detectedCameraList, loadedUsbCamConfigs));
-        cameraConfigurations.addAll(matchByName(detectedCameraList, loadedUsbCamConfigs));
-        cameraConfigurations.addAll(
-                createConfigsForCameras(detectedCameraList, loadedUsbCamConfigs, cameraConfigurations));
+        if (detectedCameraList.size() > 0 || unloadedConfigs.size() > 0)
+            cameraConfigurations.addAll(matchByPathByID(detectedCameraList, unloadedConfigs));
+        else logger.debug("Skipping matchByPath no configs or cameras left to match");
+
+        if (detectedCameraList.size() > 0 || unloadedConfigs.size() > 0)
+            cameraConfigurations.addAll(matchByPath(detectedCameraList, unloadedConfigs));
+        else logger.debug("Skipping matchByPath no configs or cameras left to match");
+
+        if (detectedCameraList.size() > 0 || unloadedConfigs.size() > 0)
+            cameraConfigurations.addAll(matchByName(detectedCameraList, unloadedConfigs));
+        else logger.debug("Skipping matchByName no configs or cameras left to match");
+
+        if (detectedCameraList.size() > 0)
+            cameraConfigurations.addAll(
+                    createConfigsForCameras(detectedCameraList, unloadedConfigs, cameraConfigurations));
 
         logger.debug("Matched or created " + cameraConfigurations.size() + " camera configs!");
         return cameraConfigurations;
-
     }
 
     // loop over all the configs loaded from disk, attempting to match each camera
     // to a config by path-by-id on linux
-    private List<CameraConfiguration> matchByPathByID(List<CameraInfo> detectedCamInfos,
-            List<CameraConfiguration> loadedCamConfigs) {
+    private List<CameraConfiguration> matchByPathByID(
+            List<CameraInfo> detectedCamInfos, List<CameraConfiguration> unloadedConfigs) {
         List<CameraConfiguration> ret = new ArrayList<CameraConfiguration>();
-        for (CameraConfiguration config : loadedCamConfigs) {
-            //Only run match path by id if the camera is not a CSI camera.
+        List<CameraConfiguration> unloadedConfigsCopy =
+                new ArrayList<CameraConfiguration>(unloadedConfigs);
+
+        for (CameraConfiguration config : unloadedConfigsCopy) {
+            // Only run match path by id if the camera is not a CSI camera.
             if (config.cameraType != CameraType.ZeroCopyPicam) {
                 CameraInfo cameraInfo;
                 if (config.otherPaths.length == 0) {
@@ -256,13 +265,15 @@ public class VisionSourceManager {
                                     + config.baseName
                                     + " with path-by-id "
                                     + config.otherPaths[0]);
-                    cameraInfo = detectedCamInfos.stream()
-                            .filter(
-                                    usbCameraInfo -> usbCameraInfo.otherPaths.length != 0
-                                            && usbCameraInfo.otherPaths[0].equals(config.otherPaths[0])
-                                            && usbCameraInfo.getBaseName().equals(config.baseName))
-                            .findFirst()
-                            .orElse(null);
+                    cameraInfo =
+                            detectedCamInfos.stream()
+                                    .filter(
+                                            usbCameraInfo ->
+                                                    usbCameraInfo.otherPaths.length != 0
+                                                            && usbCameraInfo.otherPaths[0].equals(config.otherPaths[0])
+                                                            && usbCameraInfo.getBaseName().equals(config.baseName))
+                                    .findFirst()
+                                    .orElse(null);
 
                     // If we actually matched a camera to a config, remove that camera from the list
                     // and add it to the output
@@ -270,6 +281,7 @@ public class VisionSourceManager {
                         logger.debug("Matched the config for " + config.baseName + " to a physical camera!");
                         ret.add(mergeInfoIntoConfig(config, cameraInfo));
                         detectedCamInfos.remove(cameraInfo);
+                        unloadedConfigs.remove(config);
                     }
                 }
             }
@@ -277,11 +289,13 @@ public class VisionSourceManager {
         return ret;
     }
 
-    private List<CameraConfiguration> matchByPath(List<CameraInfo> detectedCamInfos,
-            List<CameraConfiguration> loadedUsbCamConfigs) {
+    private List<CameraConfiguration> matchByPath(
+            List<CameraInfo> detectedCamInfos, List<CameraConfiguration> unloadedConfigs) {
         List<CameraConfiguration> ret = new ArrayList<CameraConfiguration>();
+        List<CameraConfiguration> unloadedConfigsCopy =
+                new ArrayList<CameraConfiguration>(unloadedConfigs);
         // now attempt to match the cameras and configs remaining by normal path
-        for (CameraConfiguration config : loadedUsbCamConfigs) {
+        for (CameraConfiguration config : unloadedConfigsCopy) {
             CameraInfo cameraInfo;
 
             // attempt matching by path and basename
@@ -290,12 +304,14 @@ public class VisionSourceManager {
                             + config.baseName
                             + " with path "
                             + config.path);
-            cameraInfo = detectedCamInfos.stream()
-                    .filter(
-                            usbCameraInfo -> usbCameraInfo.path.equals(config.path)
-                                    && usbCameraInfo.getBaseName().equals(config.baseName))
-                    .findFirst()
-                    .orElse(null);
+            cameraInfo =
+                    detectedCamInfos.stream()
+                            .filter(
+                                    usbCameraInfo ->
+                                            usbCameraInfo.path.equals(config.path)
+                                                    && usbCameraInfo.getBaseName().equals(config.baseName))
+                            .findFirst()
+                            .orElse(null);
 
             // If we actually matched a camera to a config, remove that camera from the list
             // and add it to the output
@@ -303,27 +319,29 @@ public class VisionSourceManager {
                 logger.debug("Matched the config for " + config.baseName + " to a physical camera!");
                 ret.add(mergeInfoIntoConfig(config, cameraInfo));
                 detectedCamInfos.remove(cameraInfo);
+                unloadedConfigs.remove(config);
             }
         }
         return ret;
-
     }
 
-    //Try matching cameras to configs by name.
-    private List<CameraConfiguration> matchByName(List<CameraInfo> detectedCamInfos,
-            List<CameraConfiguration> loadedCamConfigs) {
+    // Try matching cameras to configs by name.
+    private List<CameraConfiguration> matchByName(
+            List<CameraInfo> detectedCamInfos, List<CameraConfiguration> unloadedConfigs) {
         List<CameraConfiguration> ret = new ArrayList<CameraConfiguration>();
+        List<CameraConfiguration> unloadedConfigsCopy =
+                new ArrayList<CameraConfiguration>(unloadedConfigs);
         // if both path and ID based matching fails, attempt basename only match
-        for (CameraConfiguration config : loadedCamConfigs) {
+        for (CameraConfiguration config : unloadedConfigsCopy) {
             CameraInfo cameraInfo;
 
             logger.debug("Trying to find a match for loaded camera with name " + config.baseName);
 
-            cameraInfo = detectedCamInfos.stream()
-                    .filter(
-                            CameraInfo -> CameraInfo.getBaseName().equals(config.baseName))
-                    .findFirst()
-                    .orElse(null);
+            cameraInfo =
+                    detectedCamInfos.stream()
+                            .filter(CameraInfo -> CameraInfo.getBaseName().equals(config.baseName))
+                            .findFirst()
+                            .orElse(null);
 
             // If we actually matched a camera to a config, remove that camera from the list
             // and add it to the output
@@ -331,6 +349,7 @@ public class VisionSourceManager {
                 logger.debug("Matched the config for " + config.baseName + " to a physical camera!");
                 ret.add(mergeInfoIntoConfig(config, cameraInfo));
                 detectedCamInfos.remove(cameraInfo);
+                unloadedConfigs.remove(config);
             }
         }
         return ret;
@@ -338,8 +357,10 @@ public class VisionSourceManager {
 
     // If we have any unmatched cameras left, create a new CameraConfiguration for
     // them here.
-    private List<CameraConfiguration> createConfigsForCameras(List<CameraInfo> detectedCameraList,
-            List<CameraConfiguration> loadedCamConfigs, List<CameraConfiguration> loadedConfigs) {
+    private List<CameraConfiguration> createConfigsForCameras(
+            List<CameraInfo> detectedCameraList,
+            List<CameraConfiguration> loadedCamConfigs,
+            List<CameraConfiguration> loadedConfigs) {
         List<CameraConfiguration> ret = new ArrayList<CameraConfiguration>();
         logger.debug(
                 "After matching loaded configs " + detectedCameraList.size() + " cameras were unmatched.");
@@ -358,8 +379,8 @@ public class VisionSourceManager {
 
             String nickname = uniqueName;
 
-            CameraConfiguration configuration = new CameraConfiguration(baseName, uniqueName, nickname, info.path,
-                    info.otherPaths);
+            CameraConfiguration configuration =
+                    new CameraConfiguration(baseName, uniqueName, nickname, info.path, info.otherPaths);
 
             configuration.cameraType = info.cameraType;
 
@@ -406,12 +427,11 @@ public class VisionSourceManager {
 
     /**
      * Filter out any blacklisted or ignored devices.
-     * 
+     *
      * @param allDevices
      * @return list of devices with blacklisted or ingore devices removed.
      */
     private List<CameraInfo> filterAllowedDevices(List<CameraInfo> allDevices) {
-
         List<CameraInfo> filteredDevices = new ArrayList<>();
         for (var device : allDevices) {
             if (deviceBlacklist.contains(device.name)) {
@@ -437,7 +457,7 @@ public class VisionSourceManager {
 
             boolean is_pi = Platform.isRaspberryPi();
 
-            if (configuration.cameraType==CameraType.ZeroCopyPicam && is_pi) {
+            if (configuration.cameraType == CameraType.ZeroCopyPicam && is_pi) {
                 var piCamSrc = new LibcameraGpuSource(configuration);
                 cameraSources.add(piCamSrc);
             } else {
