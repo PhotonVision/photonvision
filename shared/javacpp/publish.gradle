@@ -1,3 +1,5 @@
+import java.security.MessageDigest
+
 apply plugin: 'maven-publish'
 
 def outputsFolder = file("$buildDir/outputs")
@@ -5,6 +7,7 @@ def outputsFolder = file("$buildDir/outputs")
 def baseArtifactId = nativeName
 def artifactGroupId = 'org.photonvision'
 def zipBaseName = "_GROUP_org_photonvision_${baseArtifactId}_ID_${baseArtifactId}-cpp_CLS"
+def jniBaseName = "_GROUP_org_photonvision_${nativeName}_ID_${nativeName}-jni_CLS"
 
 def licenseFile = file("$rootDir/LICENCE")
 
@@ -52,7 +55,32 @@ addTaskToCopyAllOutputs(cppHeadersZip)
 
 model {
     publishing {
-        def taskList = createComponentZipTasks($.components, [nativeName], zipBaseName, Zip, project, includeStandardZipFormat)
+        def taskList = createComponentZipTasks($.components, [
+            nativeName,
+            "${nativeName}JNI"
+        ], zipBaseName, Zip, project, includeStandardZipFormat)
+
+        def jniTaskList = createComponentZipTasks($.components, ["${nativeName}JNI"], jniBaseName, Jar, project, { task, value ->
+            value.each { binary ->
+                if (binary.buildable) {
+                    if (binary instanceof SharedLibraryBinarySpec) {
+                        task.dependsOn binary.tasks.link
+                        def hashFile = new File(binary.sharedLibraryFile.parentFile.absolutePath, "${binary.component.baseName}.hash")
+                        task.outputs.file(hashFile)
+                        task.inputs.file(binary.sharedLibraryFile)
+                        task.from(hashFile) {
+                            into nativeUtils.getPlatformPath(binary)
+                        }
+                        task.doFirst {
+                            hashFile.text = MessageDigest.getInstance("MD5").digest(binary.sharedLibraryFile.bytes).encodeHex().toString()
+                        }
+                        task.from(binary.sharedLibraryFile) {
+                            into nativeUtils.getPlatformPath(binary)
+                        }
+                    }
+                }
+            }
+        })
 
         publications {
             cpp(MavenPublication) {
@@ -63,6 +91,15 @@ model {
                 artifact cppSourcesZip
 
                 artifactId = "${baseArtifactId}-cpp"
+                groupId artifactGroupId
+                version pubVersion
+            }
+            jni(MavenPublication) {
+                jniTaskList.each {
+                    artifact it
+                }
+
+                artifactId = "${baseArtifactId}-jni"
                 groupId artifactGroupId
                 version pubVersion
             }

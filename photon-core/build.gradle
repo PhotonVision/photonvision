@@ -1,6 +1,26 @@
+plugins {
+    id 'edu.wpi.first.WpilibTools' version '1.3.0'
+}
+
 import java.nio.file.Path
 
 apply from: "${rootDir}/shared/common.gradle"
+
+ext {
+    nativeName = "photoncore"
+
+    main_native_libs = ["opencv_shared"]
+
+    test_native_libs = ["opencv_shared"]
+
+    dev_native_libs = [
+        "opencv_shared",
+    ]
+}
+
+def sharedCvConfigs = [photoncore: []]
+def staticCvConfigs = [:]
+
 
 dependencies {
     // JOGL stuff (currently we only distribute for aarch64, which is Pi 4)
@@ -22,3 +42,119 @@ task writeCurrentVersion {
 }
 
 build.dependsOn writeCurrentVersion
+
+apply from: "${rootDir}/shared/javacpp/setupBuild.gradle"
+
+apply plugin: 'edu.wpi.first.GradleJni'
+
+def nativeOutputDir = file("$buildDir/${nativeName}_outs")
+println("Saving to $nativeOutputDir")
+
+model {
+    components {
+        "${nativeName}JNI"(JniNativeLibrarySpec) {
+            baseName = nativeName + 'jni'
+
+            enableCheckTask project.hasProperty('doJniCheck')
+            javaCompileTasks << compileJava
+            jniCrossCompileOptions << JniCrossCompileOptions(nativeUtils.wpi.platforms.roborio)
+            jniCrossCompileOptions << JniCrossCompileOptions(nativeUtils.wpi.platforms.linuxarm32)
+            jniCrossCompileOptions << JniCrossCompileOptions(nativeUtils.wpi.platforms.linuxarm64)
+
+            sources {
+                cpp {
+                    source {
+                        srcDirs 'src/main/native/jni'
+                        if (project.hasProperty('generatedSources')) {
+                            srcDir generatedSources
+                        }
+                        include '**/*.cpp'
+                    }
+                    exportedHeaders {
+                        srcDir 'src/main/native/include'
+                        if (project.hasProperty('generatedHeaders')) {
+                            srcDir generatedHeaders
+                        }
+                        include '**/*.h'
+                    }
+                }
+            }
+
+            binaries.all {
+                if (it instanceof StaticLibraryBinarySpec) {
+                    it.buildable = false
+                    return
+                }
+                lib library: "${nativeName}", linkage: 'shared'
+                if (project.hasProperty('jniSplitSetup')) {
+                    jniSplitSetup(it)
+                }
+            }
+
+            if(project.hasProperty("jni_native_libs")) jni_native_libs.each { name ->
+                nativeUtils.useRequiredLibrary(it, name)
+            }
+
+            appendDebugPathToBinaries(binaries)
+        }
+    }
+
+    tasks {
+        def ts = $.components
+        project.tasks.register('copyPhotonCoreNative') { testTask->
+            // println("Hello!")
+            def systemArch = wpilibTools.getCurrentPlatform().platformName
+            def sharedLibs = []
+            ts.each {
+                // println("=========")
+                // println it.baseName
+                it.binaries.each {
+                    def arch = it.targetPlatform.name
+                    // println("checking $arch against $systemArch")
+                    if (arch == systemArch && it.buildType.name == 'release' && it instanceof SharedLibraryBinarySpec) {
+                        testTask.dependsOn it.tasks.build
+
+                        println "Selecting ${it}"
+                        // println it.tasks
+                        // println it.getSharedLibraryFile()
+                        // println it.tasks.build.class
+                        // def f = it.sharedLibraryFile.parentFile;
+
+
+                        sharedLibs << it
+                        testTask.dependsOn it
+                    }
+                }
+            }
+
+            doLast {
+                sharedLibs.each { so ->
+                    def arch = so.targetPlatform.architecture.name
+                    def os = so.targetPlatform.operatingSystem.name
+
+                    copy {
+                        from so.sharedLibraryFile
+                        // We know all should be shared libs only at this point
+                        into file(nativeOutputDir.path + "/${nativeUtils.getPlatformPath(so)}/shared")
+                    }
+                }
+            }
+        }
+    }
+}
+
+// yay misdirection
+tasks.register('testDesktop') {
+    dependsOn copyPhotonCoreNative
+}
+jar.dependsOn tasks.named('testDesktop')
+
+jar {
+    from nativeOutputDir
+    println("Adding to JAR $nativeOutputDir")
+}
+
+
+// Make sure our files get added to resources, and that build happens before JAR does
+// sourceSets.main.resources.srcDirs += nativeOutputDir
+// println sourceSets.main.resources.srcDirs

@@ -28,6 +28,7 @@ Note that these are case sensitive!
     * x86
 - `-PtgtIp`: Specifies where `./gradlew deploy` should try to copy the fat JAR to
 - `-Pprofile`: enables JVM profiling
+- `doJniCheck`: Enables checking JNI symbol matching between Java/C++
 
 ## Building
 
@@ -58,6 +59,10 @@ To run them, use the commands listed below. Photonlib must first be published to
 ~/photonvision/photonlib-cpp-examples$ ./gradlew copyPhotonlib
 ~/photonvision/photonlib-cpp-examples$ ./gradlew <example-name>:simulateNative
 ```
+
+## Installing cross-toolchains
+
+Install cross toolchains using `./gradlew installArm64Toolchain`/`./gradlew installRoboRioToolchain`. Needed for building for arm64 or rio targets.
 
 
 ## Acknowledgments

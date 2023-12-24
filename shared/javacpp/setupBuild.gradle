@@ -57,9 +57,45 @@ model {
                 }
             }
 
-            nativeUtils.useRequiredLibrary(it, "wpilib_shared")
-            nativeUtils.useRequiredLibrary(it, "apriltag_shared")
-            nativeUtils.useRequiredLibrary(it, "opencv_shared")
+            main_native_libs.each { name ->
+                nativeUtils.useRequiredLibrary(it, name)
+            }
+
+            appendDebugPathToBinaries(binaries)
+        }
+        // By default, a development executable will be generated. This is to help the case of
+        // testing specific functionality of the library.
+        "${nativeName}Dev"(NativeExecutableSpec) {
+            targetBuildTypes 'debug'
+            sources {
+                cpp {
+                    source {
+                        srcDirs 'src/dev/native/cpp'
+                        include '**/*.cpp'
+                    }
+                    exportedHeaders {
+                        srcDir 'src/main/native/include'
+                        if (project.hasProperty('generatedHeaders')) {
+                            srcDir generatedHeaders
+                        }
+                    }
+                }
+            }
+            binaries.all {
+                lib library: nativeName, linkage: 'shared'
+                it.tasks.withType(CppCompile) {
+                    // it.dependsOn generateProto
+                }
+                if (project.hasProperty('exeSplitSetup')) {
+                    exeSplitSetup(it)
+                }
+            }
+
+            dev_native_libs.each { name ->
+                nativeUtils.useRequiredLibrary(it, name)
+            }
+
+            appendDebugPathToBinaries(binaries)
         }
     }
     testSuites {
@@ -88,12 +124,9 @@ model {
                 }
             }
 
-            nativeUtils.useRequiredLibrary(it, "cscore_shared")
-            nativeUtils.useRequiredLibrary(it, "cameraserver_shared")
-            nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared")
-            nativeUtils.useRequiredLibrary(it, "googletest_static")
-            nativeUtils.useRequiredLibrary(it, "apriltag_shared")
-            nativeUtils.useRequiredLibrary(it, "opencv_shared")
+            test_native_libs.each { name ->
+                nativeUtils.useRequiredLibrary(it, name)
+            }
         }
     }
 }

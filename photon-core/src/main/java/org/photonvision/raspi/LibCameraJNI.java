@@ -116,7 +116,7 @@ public class LibCameraJNI {
      *
      * @param width Camera video mode width in pixels
      * @param height Camera video mode height in pixels
-     * @param fps Camera video mode FPS
+     * @param rotation Asdf
      * @return success of creating a camera object
      */
     public static native boolean createCamera(int width, int height, int rotation);
