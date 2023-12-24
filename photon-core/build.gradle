@@ -48,7 +48,6 @@ apply from: "${rootDir}/shared/javacpp/setupBuild.gradle"
 apply plugin: 'edu.wpi.first.GradleJni'
 
 def nativeOutputDir = file("$buildDir/${nativeName}_outs")
-def taskFoo = null;
 println("Saving to $nativeOutputDir")
 
 model {
@@ -133,18 +132,29 @@ model {
                     copy {
                         from so.sharedLibraryFile
                         // We know all should be shared libs only at this point
-                        into file("$buildDir/${nativeName}_outs/${nativeUtils.getPlatformPath(so)}/shared")
+                        into file(nativeOutputDir.path + "/${nativeUtils.getPlatformPath(so)}/shared")
                     }
                 }
             }
         
-            $.tasks.jar.dependsOn testTask
+            // $.tasks.jar.dependsOn testTask
             // taskFoo = testTask;
         }
     }
 }
 
+// yay misdirection
+tasks.register('testDesktop') {
+    dependsOn copyPhotonCoreNative
+}
+jar.dependsOn tasks.named('testDesktop')
+
+jar {
+    from nativeOutputDir
+    println("Adding to JAR $nativeOutputDir")
+}
+
+
 // Make sure our files get added to resources, and that build happens before JAR does
-// println taskFoo
-sourceSets.main.resources.srcDirs += nativeOutputDir
-// jar.dependsOn { taskFoo }
+// sourceSets.main.resources.srcDirs += nativeOutputDir
+// println sourceSets.main.resources.srcDirs
