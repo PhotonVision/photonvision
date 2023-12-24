@@ -48,3 +48,55 @@ task writeCurrentVersion {
 build.dependsOn writeCurrentVersion
 
 apply from: "${rootDir}/shared/javacpp/setupBuild.gradle"
+
+apply plugin: 'edu.wpi.first.GradleJni'
+model {
+    components {
+        "${nativeName}JNI"(JniNativeLibrarySpec) {
+            baseName = nativeName + 'jni'
+
+            enableCheckTask !project.hasProperty('skipJniCheck')
+            javaCompileTasks << compileJava
+            jniCrossCompileOptions << JniCrossCompileOptions(nativeUtils.wpi.platforms.roborio)
+            jniCrossCompileOptions << JniCrossCompileOptions(nativeUtils.wpi.platforms.linuxarm32)
+            jniCrossCompileOptions << JniCrossCompileOptions(nativeUtils.wpi.platforms.linuxarm64)
+
+            sources {
+                cpp {
+                    source {
+                        srcDirs 'src/main/native/cpp'
+                        if (project.hasProperty('generatedSources')) {
+                            srcDir generatedSources
+                        }
+                        include '**/jni/**/*.cpp'
+                    }
+                    exportedHeaders {
+                        srcDir 'src/main/native/include'
+                        if (project.hasProperty('generatedHeaders')) {
+                            srcDir generatedHeaders
+                        }
+                        include '**/*.h'
+                    }
+                }
+            }
+
+            binaries.all {
+                if (it instanceof StaticLibraryBinarySpec) {
+                    it.buildable = false
+                    return
+                }
+                lib library: "${nativeName}", linkage: 'shared'
+                if (!project.hasProperty('noWpiutil')) {
+                    lib project: ':wpiutil', library: 'wpiutil', linkage: 'shared'
+                }
+                if (project.hasProperty('jniSplitSetup')) {
+                    jniSplitSetup(it)
+                }
+            }
+
+            if(project.hasProperty("jni_native_libs")) jni_native_libs.each { name ->
+                nativeUtils.useRequiredLibrary(it, name)
+            }
+        }
+    }
+}
