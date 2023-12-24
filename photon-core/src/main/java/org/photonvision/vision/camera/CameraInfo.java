@@ -14,13 +14,17 @@ public class CameraInfo extends UsbCameraInfo {
         super(dev, path, name, otherPaths, vendorId, productId);
         this.cameraType = cameraType;
     }
+    public CameraInfo(UsbCameraInfo info)
+    {
+        super(info.dev, info.path, info.name, info.otherPaths, info.vendorId, info.productId);
+        cameraType = CameraType.UsbCamera;
+    }
 
     /**
      * 
      * @return True, if this camera is reported from V4L and is a CSI camera.
      */
     public boolean getIsV4lCsiCamera() {
-        if(otherPaths == null) return false;
         return (Arrays.stream(otherPaths).anyMatch(it -> it.contains("csi-video"))
                 || getBaseName().equals("unicam"));
     }
@@ -42,10 +46,11 @@ public class CameraInfo extends UsbCameraInfo {
         return getBaseName().replaceAll(" ", "_");
     }
 
-    public boolean Equals(Object o) {
+    @Override
+    public boolean equals(Object o) {
         if (o == this)
             return true;
-        if (!(o instanceof UsbCameraInfo))
+        if (!(o instanceof UsbCameraInfo || o instanceof CameraInfo))
             return false;
         UsbCameraInfo other = (UsbCameraInfo) o;
         return path.equals(other.path)

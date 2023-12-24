@@ -86,7 +86,7 @@ public class VisionSourceManager {
      * @return a list containing usbcamerainfo.
      */
     protected List<CameraInfo> getConnectedUSBCameras() {
-        List<CameraInfo> cameraInfos = List.of(UsbCamera.enumerateUsbCameras()).stream().map(c -> (CameraInfo) c)
+        List<CameraInfo> cameraInfos = List.of(UsbCamera.enumerateUsbCameras()).stream().map(c -> new CameraInfo(c))
                 .collect(Collectors.toList());
         return cameraInfos;
     }
@@ -101,7 +101,7 @@ public class VisionSourceManager {
         if(LibCameraJNI.isSupported())
             for (String path : LibCameraJNI.getCameraNames()) {
                 String name = LibCameraJNI.getSensorModel(path).getFriendlyName();
-                cameraInfos.add(new CameraInfo(-1, path, name, null, -1, -1, CameraType.ZeroCopyPicam));
+                cameraInfos.add(new CameraInfo(-1, path, name, new String[]{}, -1, -1, CameraType.ZeroCopyPicam));
             }
         return cameraInfos;
     }
@@ -269,6 +269,7 @@ public class VisionSourceManager {
                     if (cameraInfo != null) {
                         logger.debug("Matched the config for " + config.baseName + " to a physical camera!");
                         ret.add(mergeInfoIntoConfig(config, cameraInfo));
+                        detectedCamInfos.remove(cameraInfo);
                     }
                 }
             }
@@ -300,8 +301,8 @@ public class VisionSourceManager {
             // and add it to the output
             if (cameraInfo != null) {
                 logger.debug("Matched the config for " + config.baseName + " to a physical camera!");
-                detectedCamInfos.remove(cameraInfo);
                 ret.add(mergeInfoIntoConfig(config, cameraInfo));
+                detectedCamInfos.remove(cameraInfo);
             }
         }
         return ret;
@@ -329,6 +330,7 @@ public class VisionSourceManager {
             if (cameraInfo != null) {
                 logger.debug("Matched the config for " + config.baseName + " to a physical camera!");
                 ret.add(mergeInfoIntoConfig(config, cameraInfo));
+                detectedCamInfos.remove(cameraInfo);
             }
         }
         return ret;

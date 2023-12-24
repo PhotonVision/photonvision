@@ -38,7 +38,9 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
     private final LibCameraJNI.SensorModel sensorModel;
 
-    private ImageRotationMode m_rotationMode;
+    private ImageRotationMode m_rotationMode = ImageRotationMode.DEG_0;
+
+    public final Object CAMERA_LOCK = new Object();
 
     public void setRotation(ImageRotationMode rotationMode) {
         if (rotationMode != m_rotationMode) {
@@ -201,7 +203,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
         // We need to make sure that other threads don't try to do anything funny while we're recreating
         // the camera
-        synchronized (LibCameraJNI.CAMERA_LOCK) {
+        synchronized (CAMERA_LOCK) {
             if (r_ptr!=0) {
                 logger.debug("Stopping libcamera");
                 if (!LibCameraJNI.stopCamera(r_ptr)) {
@@ -218,6 +220,9 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
                     getConfiguration().path, mode.width, mode.height, (m_rotationMode == ImageRotationMode.DEG_180 ? 180 : 0));
             if (r_ptr==0) {
                 logger.error("Couldn't create a zero copy Pi Camera while switching video modes");
+                if (!LibCameraJNI.destroyCamera(r_ptr)) {
+                    logger.error("Couldn't destroy a zero copy Pi Camera while switching video modes");
+                }
             }
             logger.debug("Starting libcamera");
             if (!LibCameraJNI.startCamera(r_ptr)) {
@@ -241,5 +246,10 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     @Override
     public HashMap<Integer, VideoMode> getAllVideoModes() {
         return videoModes;
+    }
+
+    public LibCameraJNI.SensorModel getModel()
+    {
+        return sensorModel;
     }
 }

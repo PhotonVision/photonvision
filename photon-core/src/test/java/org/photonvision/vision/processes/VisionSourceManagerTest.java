@@ -203,7 +203,7 @@ public class VisionSourceManagerTest {
                         -1,
                         "/base/soc/i2c0mux/i2c@0/ov9281@60",
                         "OV9281", // Typically rp1-cfe for unit test changed to CSICAM-DEV
-                        null,
+                        new String[]{},
                         -1,
                         -1);
         cameraInfos.add(info10);
@@ -218,7 +218,7 @@ public class VisionSourceManagerTest {
                         -1,
                         "/base/soc/i2c0mux/i2c@1/ov9281@60",
                         "OV9281", // Typically rp1-cfe for unit test changed to CSICAM-DEV
-                        null,
+                        new String[]{},
                         -1,
                         -1);
         cameraInfos.add(info11);

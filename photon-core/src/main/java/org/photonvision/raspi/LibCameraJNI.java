@@ -30,8 +30,6 @@ public class LibCameraJNI {
     private static boolean libraryLoaded = false;
     private static final Logger logger = new Logger(LibCameraJNI.class, LogGroup.Camera);
 
-    public static final Object CAMERA_LOCK = new Object();
-
     public static synchronized void forceLoad() throws IOException {
         if (libraryLoaded) return;
 
@@ -162,7 +160,7 @@ public class LibCameraJNI {
      * Get the time when the first pixel exposure was started, in the same timebase as libcamera gives
      * the frame capture time. Units are nanoseconds.
      */
-    public static native long getFrameCaptureTime(long r_ptr);
+    public static native long getFrameCaptureTime(long p_ptr);
 
     /**
      * Get the current time, in the same timebase as libcamera gives the frame capture time. Units are
@@ -193,9 +191,9 @@ public class LibCameraJNI {
     /**
      * Set the GPU processing type we should do. Enum of [none, HSV, greyscale, adaptive threshold].
      */
-    public static native boolean setGpuProcessType(int type);
+    public static native boolean setGpuProcessType(long r_ptr, int type);
 
-    public static native int getGpuProcessType();
+    public static native int getGpuProcessType(long p_ptr);
 
     /**
      * Release a pair pointer back to the libcamera driver code to be filled again 
