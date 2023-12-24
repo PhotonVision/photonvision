@@ -46,9 +46,11 @@ echo "Installing cpufrequtils..."
 apt-get install --yes cpufrequtils
 echo "cpufrequtils installation complete."
 
-echo "Installing network-manager..."
-apt-get install network-manager
-echo "network-manager installation complete."
+if [ "$(lsb_release -is)" == "Ubuntu" ]; then
+  echo "Installing network-manager..."
+  snap install network-manager
+  echo "network-manager installation complete."
+fi
 
 echo "Setting cpufrequtils to performance mode"
 if [ -f /etc/default/cpufrequtils ]; then
