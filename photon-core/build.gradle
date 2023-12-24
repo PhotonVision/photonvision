@@ -46,12 +46,17 @@ build.dependsOn writeCurrentVersion
 apply from: "${rootDir}/shared/javacpp/setupBuild.gradle"
 
 apply plugin: 'edu.wpi.first.GradleJni'
+
+def nativeOutputDir = file("$buildDir/${nativeName}_outs")
+def taskFoo = null;
+println("Saving to $nativeOutputDir")
+
 model {
     components {
         "${nativeName}JNI"(JniNativeLibrarySpec) {
             baseName = nativeName + 'jni'
 
-            enableCheckTask !project.hasProperty('skipJniCheck')
+            enableCheckTask project.hasProperty('doJniCheck')
             javaCompileTasks << compileJava
             jniCrossCompileOptions << JniCrossCompileOptions(nativeUtils.wpi.platforms.roborio)
             jniCrossCompileOptions << JniCrossCompileOptions(nativeUtils.wpi.platforms.linuxarm32)
@@ -90,6 +95,56 @@ model {
             if(project.hasProperty("jni_native_libs")) jni_native_libs.each { name ->
                 nativeUtils.useRequiredLibrary(it, name)
             }
+
+            appendDebugPathToBinaries(binaries)
+        }
+    }
+
+    tasks {
+        def ts = $.components
+        project.tasks.register('copyPhotonCoreNative') { testTask->
+            // println("Hello!")
+            def systemArch = getCurrentArch()
+            def sharedLibs = []
+            ts.each {
+                // println("=========")
+                // println it.baseName
+                it.binaries.each {
+                    def arch = it.targetPlatform.name
+                    if (arch == systemArch && it.buildType.name == 'release' && it instanceof SharedLibraryBinarySpec) {
+                        testTask.dependsOn it.tasks.build
+
+                        // println it.tasks
+                        // println it.getSharedLibraryFile()
+                        // println it.tasks.build.class
+                        // def f = it.sharedLibraryFile.parentFile;
+
+
+                        sharedLibs << it
+                    }
+                }
+            }
+
+            doLast {
+                sharedLibs.each { so ->
+                    def arch = so.targetPlatform.architecture.name
+                    def os = so.targetPlatform.operatingSystem.name
+                    
+                    copy {
+                        from so.sharedLibraryFile
+                        // We know all should be shared libs only at this point
+                        into file("$buildDir/${nativeName}_outs/${nativeUtils.getPlatformPath(so)}/shared")
+                    }
+                }
+            }
+        
+            $.tasks.jar.dependsOn testTask
+            // taskFoo = testTask;
         }
     }
 }
+
+// Make sure our files get added to resources, and that build happens before JAR does
+// println taskFoo
+sourceSets.main.resources.srcDirs += nativeOutputDir
+// jar.dependsOn { taskFoo }

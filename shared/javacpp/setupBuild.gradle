@@ -57,12 +57,11 @@ model {
                 }
             }
 
-            nativeUtils.useRequiredLibrary(it, "wpilib_shared")
-            nativeUtils.useRequiredLibrary(it, "apriltag_shared")
-            nativeUtils.useRequiredLibrary(it, "opencv_shared")
             main_native_libs.each { name ->
                 nativeUtils.useRequiredLibrary(it, name)
             }
+
+            appendDebugPathToBinaries(binaries)
         }
         // By default, a development executable will be generated. This is to help the case of
         // testing specific functionality of the library.
@@ -91,9 +90,12 @@ model {
                     exeSplitSetup(it)
                 }
             }
+
             dev_native_libs.each { name ->
                 nativeUtils.useRequiredLibrary(it, name)
             }
+
+            appendDebugPathToBinaries(binaries)
         }
     }
     testSuites {
