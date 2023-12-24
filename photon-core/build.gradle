@@ -103,16 +103,18 @@ model {
         def ts = $.components
         project.tasks.register('copyPhotonCoreNative') { testTask->
             // println("Hello!")
-            def systemArch = getCurrentArch()
+            def systemArch = wpilibTools.getCurrentPlatform().platformName
             def sharedLibs = []
             ts.each {
                 // println("=========")
                 // println it.baseName
                 it.binaries.each {
                     def arch = it.targetPlatform.name
+                    // println("checking $arch against $systemArch")
                     if (arch == systemArch && it.buildType.name == 'release' && it instanceof SharedLibraryBinarySpec) {
                         testTask.dependsOn it.tasks.build
 
+                        println "Selecting ${it}"
                         // println it.tasks
                         // println it.getSharedLibraryFile()
                         // println it.tasks.build.class
@@ -120,6 +122,7 @@ model {
 
 
                         sharedLibs << it
+                        testTask.dependsOn it
                     }
                 }
             }
@@ -136,9 +139,6 @@ model {
                     }
                 }
             }
-        
-            // $.tasks.jar.dependsOn testTask
-            // taskFoo = testTask;
         }
     }
 }
