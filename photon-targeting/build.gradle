@@ -6,7 +6,9 @@ ext {
     nativeName = "photontargeting"
 
     main_native_libs = [
-        "wpilib_shared", "apriltag_shared", "opencv_shared"
+        "wpilib_shared",
+        "apriltag_shared",
+        "opencv_shared"
     ]
 
     test_native_libs = [

@@ -22,7 +22,9 @@ ext {
     ]
 
     main_native_libs = [
-        "wpilib_shared", "apriltag_shared", "opencv_shared"
+        "wpilib_shared",
+        "apriltag_shared",
+        "opencv_shared"
     ]
 
     dev_native_libs = []
