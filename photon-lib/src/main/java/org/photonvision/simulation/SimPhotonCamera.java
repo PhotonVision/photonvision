@@ -33,7 +33,6 @@ import java.util.Arrays;
 import java.util.List;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonTargetSortMode;
-import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.networktables.NTTopicSet;
 import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -143,9 +142,8 @@ public class SimPhotonCamera {
 
         PhotonPipelineResult newResult =
                 new PhotonPipelineResult(latencyMillis, targetList, new MultiTargetPNPResult());
-        var newPacket = new Packet(newResult.getPacketSize());
-        newResult.populatePacket(newPacket);
-        ts.rawBytesEntry.set(newPacket.getData());
+
+        ts.resultPublisher.accept(newResult, newResult.getPacketSize());
 
         boolean hasTargets = newResult.hasTargets();
         ts.hasTargetEntry.set(hasTargets);
