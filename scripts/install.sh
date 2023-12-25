@@ -48,7 +48,11 @@ echo "cpufrequtils installation complete."
 
 if [ "$(lsb_release -is)" == "Ubuntu" ]; then
   echo "Installing network-manager..."
-  snap install network-manager
+  apt-get install --yes network-manager
+  cat > /etc/netplan/00-default-nm-renderer.yaml <<EOF
+network:
+  renderer: NetworkManager
+EOF
   echo "network-manager installation complete."
 fi
 
