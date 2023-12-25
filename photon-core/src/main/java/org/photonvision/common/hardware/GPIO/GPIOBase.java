@@ -27,7 +27,7 @@ public abstract class GPIOBase {
     private static final Logger logger = new Logger(GPIOBase.class, LogGroup.General);
     private static final ShellExec runCommand = new ShellExec(true, true);
 
-    protected static HashMap<String, String> commands =
+    protected static final HashMap<String, String> commands =
             new HashMap<>() {
                 {
                     put("setState", "");

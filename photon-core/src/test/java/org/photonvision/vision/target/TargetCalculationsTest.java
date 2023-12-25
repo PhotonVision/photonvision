@@ -38,8 +38,8 @@ import org.photonvision.vision.opencv.DualOffsetValues;
 
 public class TargetCalculationsTest {
 
-    private static Size imageSize = new Size(800, 600);
-    private static Point imageCenterPoint =
+    private static final Size imageSize = new Size(800, 600);
+    private static final Point imageCenterPoint =
             new Point(imageSize.width / 2.0 - 0.5, imageSize.height / 2.0 - 0.5);
     private static final double diagFOV = Math.toRadians(70.0);
 
@@ -116,7 +116,7 @@ public class TargetCalculationsTest {
                 Arguments.of(-45, -20));
     }
 
-    private static double[] testCameraMatrix = {240, 0, 320, 0, 240, 320, 0, 0, 1};
+    private static final double[] testCameraMatrix = {240, 0, 320, 0, 240, 320, 0, 0, 1};
 
     @ParameterizedTest
     @MethodSource("testYawPitchCalcArgs")

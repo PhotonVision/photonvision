@@ -35,7 +35,7 @@ public class ArucoDetectionPipeParams {
      *
      * <p>E.g. 36h11 -> 11 * errorCorrectionRate = Max error bits
      */
-    public double errorCorrectionRate = 0;
+    public final double errorCorrectionRate = 0;
 
     /**
      * If obtained corners should be iteratively refined. This should always be on for 3D estimation.
@@ -51,7 +51,7 @@ public class ArucoDetectionPipeParams {
      */
     public double refinementMinErrorPx = 0.005;
 
-    public boolean debugRefineWindow = false;
+    public final boolean debugRefineWindow = false;
 
     /**
      * If the 'Aruco3' speedup should be used. This is similar to AprilTag's 'decimate' value, but

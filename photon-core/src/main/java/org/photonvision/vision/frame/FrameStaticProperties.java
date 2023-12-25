@@ -33,7 +33,7 @@ public class FrameStaticProperties {
     public final Point centerPoint;
     public final double horizontalFocalLength;
     public final double verticalFocalLength;
-    public CameraCalibrationCoefficients cameraCalibration;
+    public final CameraCalibrationCoefficients cameraCalibration;
 
     /**
      * Instantiates a new Frame static properties.

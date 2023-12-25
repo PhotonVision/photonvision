@@ -25,10 +25,8 @@ import org.photonvision.vision.processes.VisionSourceSettables;
 public class USBFrameProvider extends CpuImageProcessor {
     private final CvSink cvSink;
 
-    @SuppressWarnings("SpellCheckingInspection")
     private final VisionSourceSettables settables;
 
-    @SuppressWarnings("SpellCheckingInspection")
     public USBFrameProvider(CvSink sink, VisionSourceSettables visionSettables) {
         cvSink = sink;
         cvSink.setEnabled(true);

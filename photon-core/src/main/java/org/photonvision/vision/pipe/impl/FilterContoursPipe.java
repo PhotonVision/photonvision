@@ -28,7 +28,7 @@ import org.photonvision.vision.target.TargetCalculations;
 
 public class FilterContoursPipe
         extends CVPipe<List<Contour>, List<Contour>, FilterContoursPipe.FilterContoursParams> {
-    List<Contour> m_filteredContours = new ArrayList<>();
+    final List<Contour> m_filteredContours = new ArrayList<>();
 
     @Override
     protected List<Contour> process(List<Contour> in) {

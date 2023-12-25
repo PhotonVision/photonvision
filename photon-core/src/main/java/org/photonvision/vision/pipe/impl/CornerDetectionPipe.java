@@ -33,9 +33,9 @@ public class CornerDetectionPipe
                 List<TrackedTarget>,
                 List<TrackedTarget>,
                 CornerDetectionPipe.CornerDetectionPipeParameters> {
-    Comparator<Point> leftRightComparator = Comparator.comparingDouble(point -> point.x);
-    Comparator<Point> verticalComparator = Comparator.comparingDouble(point -> point.y);
-    MatOfPoint2f polyOutput = new MatOfPoint2f();
+    final Comparator<Point> leftRightComparator = Comparator.comparingDouble(point -> point.x);
+    final Comparator<Point> verticalComparator = Comparator.comparingDouble(point -> point.y);
+    final MatOfPoint2f polyOutput = new MatOfPoint2f();
 
     @Override
     protected List<TrackedTarget> process(List<TrackedTarget> targetList) {

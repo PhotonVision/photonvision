@@ -37,12 +37,12 @@ import org.photonvision.vision.opencv.ImageRotationMode;
 public class CVPipelineSettings implements Cloneable {
     public int pipelineIndex = 0;
     public PipelineType pipelineType = PipelineType.DriverMode;
-    public ImageRotationMode inputImageRotationMode = ImageRotationMode.DEG_0;
+    public final ImageRotationMode inputImageRotationMode = ImageRotationMode.DEG_0;
     public String pipelineNickname = "New Pipeline";
     public boolean cameraAutoExposure = false;
     // manual exposure only used if cameraAutoExposure is false
     public double cameraExposure = 20;
-    public int cameraBrightness = 50;
+    public final int cameraBrightness = 50;
     // Currently only used by a few cameras (notably the zero-copy Pi Camera driver) with the Gain
     // quirk
     public int cameraGain = 75;

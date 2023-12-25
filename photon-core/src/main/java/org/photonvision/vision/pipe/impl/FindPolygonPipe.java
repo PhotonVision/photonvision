@@ -57,16 +57,12 @@ public class FindPolygonPipe
         if (ContourShape.fromSides(corners) == null) {
             return new CVShape(in, ContourShape.Custom);
         }
-        switch (ContourShape.fromSides(corners)) {
-            case Circle:
-                return new CVShape(in, ContourShape.Circle);
-            case Triangle:
-                return new CVShape(in, ContourShape.Triangle);
-            case Quadrilateral:
-                return new CVShape(in, ContourShape.Quadrilateral);
-        }
-
-        return new CVShape(in, ContourShape.Custom);
+        return switch (ContourShape.fromSides(corners)) {
+            case Circle -> new CVShape(in, ContourShape.Circle);
+            case Triangle -> new CVShape(in, ContourShape.Triangle);
+            case Quadrilateral -> new CVShape(in, ContourShape.Quadrilateral);
+            default -> new CVShape(in, ContourShape.Custom);
+        };
     }
 
     private int getCorners(Contour contour) {

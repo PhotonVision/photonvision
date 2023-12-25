@@ -71,25 +71,16 @@ public class LibCameraJNI {
         Unknown;
 
         public String getFriendlyName() {
-            switch (this) {
-                case Disconnected:
-                    return "Disconnected Camera";
-                case OV5647:
-                    return "Camera Module v1";
-                case IMX219:
-                    return "Camera Module v2";
-                case IMX708:
-                    return "Camera Module v3";
-                case IMX477:
-                    return "HQ Camera";
-                case OV9281:
-                    return "OV9281";
-                case OV7251:
-                    return "OV7251";
-                case Unknown:
-                default:
-                    return "Unknown Camera";
-            }
+            return switch (this) {
+                case Disconnected -> "Disconnected Camera";
+                case OV5647 -> "Camera Module v1";
+                case IMX219 -> "Camera Module v2";
+                case IMX708 -> "Camera Module v3";
+                case IMX477 -> "HQ Camera";
+                case OV9281 -> "OV9281";
+                case OV7251 -> "OV7251";
+                default -> "Unknown Camera";
+            };
         }
     }
 

@@ -36,7 +36,7 @@ import org.photonvision.vision.target.TrackedTarget;
 
 public class Draw3dTargetsPipe
         extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, Draw3dTargetsPipe.Draw3dContoursParams> {
-    Logger logger = new Logger(Draw3dTargetsPipe.class, LogGroup.VisionModule);
+    final Logger logger = new Logger(Draw3dTargetsPipe.class, LogGroup.VisionModule);
 
     @Override
     protected Void process(Pair<Mat, List<TrackedTarget>> in) {
@@ -283,12 +283,12 @@ public class Draw3dTargetsPipe
     }
 
     public static class Draw3dContoursParams {
-        public int radius = 2;
-        public Color color = Color.RED;
+        public final int radius = 2;
+        public final Color color = Color.RED;
 
         public final boolean shouldDraw;
         public boolean shouldDrawHull = true;
-        public boolean shouldDrawBox = true;
+        public final boolean shouldDrawBox = true;
         public final TargetModel targetModel;
         public final CameraCalibrationCoefficients cameraCalibrationCoefficients;
         public final FrameDivisor divisor;

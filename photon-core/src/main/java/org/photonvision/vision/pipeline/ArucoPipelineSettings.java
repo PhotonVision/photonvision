@@ -26,21 +26,21 @@ import org.photonvision.vision.target.TargetModel;
 public class ArucoPipelineSettings extends AdvancedPipelineSettings {
     public AprilTagFamily tagFamily = AprilTagFamily.kTag16h5;
 
-    public IntegerCouple threshWinSizes = new IntegerCouple(11, 91);
+    public final IntegerCouple threshWinSizes = new IntegerCouple(11, 91);
     public int threshStepSize = 40;
-    public double threshConstant = 10;
-    public boolean debugThreshold = false;
+    public final double threshConstant = 10;
+    public final boolean debugThreshold = false;
 
-    public boolean useCornerRefinement = true;
-    public int refineNumIterations = 30;
-    public double refineMinErrorPx = 0.005;
+    public final boolean useCornerRefinement = true;
+    public final int refineNumIterations = 30;
+    public final double refineMinErrorPx = 0.005;
 
-    public boolean useAruco3 = false;
-    public double aruco3MinMarkerSideRatio = 0.02;
-    public int aruco3MinCanonicalImgSide = 32;
+    public final boolean useAruco3 = false;
+    public final double aruco3MinMarkerSideRatio = 0.02;
+    public final int aruco3MinCanonicalImgSide = 32;
 
-    public boolean doMultiTarget = false;
-    public boolean doSingleTargetAlways = false;
+    public final boolean doMultiTarget = false;
+    public final boolean doSingleTargetAlways = false;
 
     public ArucoPipelineSettings() {
         super();

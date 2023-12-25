@@ -26,7 +26,7 @@ package org.photonvision.vision.pipe;
  * @param <P> Parameters type for the pipe
  */
 public abstract class CVPipe<I, O, P> {
-    protected CVPipeResult<O> result = new CVPipeResult<>();
+    protected final CVPipeResult<O> result = new CVPipeResult<>();
     protected P params;
 
     public void setParams(P params) {

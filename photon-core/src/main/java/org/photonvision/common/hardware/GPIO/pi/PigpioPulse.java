@@ -18,9 +18,9 @@
 package org.photonvision.common.hardware.GPIO.pi;
 
 public class PigpioPulse {
-    int gpioOn;
-    int gpioOff;
-    int delayMicros;
+    final int gpioOn;
+    final int gpioOff;
+    final int delayMicros;
 
     /**
      * Initialises a pulse.

@@ -31,9 +31,9 @@ import org.photonvision.vision.pipe.impl.RotateImagePipe;
 
 public abstract class CpuImageProcessor implements FrameProvider {
     protected static class CapturedFrame {
-        CVMat colorImage;
-        FrameStaticProperties staticProps;
-        long captureTimestamp;
+        final CVMat colorImage;
+        final FrameStaticProperties staticProps;
+        final long captureTimestamp;
 
         public CapturedFrame(
                 CVMat colorImage, FrameStaticProperties staticProps, long captureTimestampNanos) {

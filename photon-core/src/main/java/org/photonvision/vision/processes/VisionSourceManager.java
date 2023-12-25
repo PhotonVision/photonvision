@@ -22,6 +22,7 @@ import edu.wpi.first.cscore.UsbCameraInfo;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
@@ -429,7 +430,7 @@ public class VisionSourceManager {
                     for (String p : otherDevice.otherPaths) {
                         otherPaths.add(p.split("index")[0]);
                     }
-                    if (paths.containsAll(otherPaths)) {
+                    if (new HashSet<>(paths).containsAll(otherPaths)) {
                         if (otherDevice.dev >= device.dev) {
                             badDevices.add(otherDevice);
                         } else {

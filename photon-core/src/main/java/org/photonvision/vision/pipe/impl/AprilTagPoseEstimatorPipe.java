@@ -39,7 +39,7 @@ public class AprilTagPoseEstimatorPipe
         super();
     }
 
-    MatOfPoint2f temp = new MatOfPoint2f();
+    final MatOfPoint2f temp = new MatOfPoint2f();
 
     @Override
     protected AprilTagPoseEstimate process(AprilTagDetection in) {

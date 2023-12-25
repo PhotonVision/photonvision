@@ -27,12 +27,12 @@ import org.photonvision.vision.opencv.ContourShape;
 @JsonTypeName("ColoredShapePipelineSettings")
 public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
     public ContourShape contourShape = ContourShape.Triangle;
-    public DoubleCouple contourPerimeter = new DoubleCouple(0, Double.MAX_VALUE);
+    public final DoubleCouple contourPerimeter = new DoubleCouple(0, Double.MAX_VALUE);
     public double accuracyPercentage = 10.0;
     // Circle detection
     public int circleDetectThreshold = 5;
-    public IntegerCouple contourRadius = new IntegerCouple(0, 100);
-    public int minDist = 20;
+    public final IntegerCouple contourRadius = new IntegerCouple(0, 100);
+    public final int minDist = 20;
     public int maxCannyThresh = 90;
     public int circleAccuracy = 20;
 

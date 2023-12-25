@@ -113,7 +113,7 @@ public class QuirkyCamera {
             // If we have a quirkycamera we need to copy the quirks from our predefined object and create
             // a quirkycamera object with the baseName.
             if (qc.usbVid == usbVid && qc.usbPid == usbPid && matchesBaseName) {
-                List<CameraQuirk> quirks = new ArrayList<CameraQuirk>();
+                List<CameraQuirk> quirks = new ArrayList<>();
                 for (var q : CameraQuirk.values()) {
                     if (qc.hasQuirk(q)) quirks.add(q);
                 }

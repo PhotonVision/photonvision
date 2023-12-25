@@ -24,16 +24,16 @@ import org.photonvision.vision.target.TargetModel;
 @JsonTypeName("AprilTagPipelineSettings")
 public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public AprilTagFamily tagFamily = AprilTagFamily.kTag16h5;
-    public int decimate = 1;
-    public double blur = 0;
+    public final int decimate = 1;
+    public final double blur = 0;
     public int threads = 4; // Multiple threads seems to be better performance on most platforms
-    public boolean debug = false;
-    public boolean refineEdges = true;
-    public int numIterations = 40;
-    public int hammingDist = 0;
-    public int decisionMargin = 35;
-    public boolean doMultiTarget = false;
-    public boolean doSingleTargetAlways = false;
+    public final boolean debug = false;
+    public final boolean refineEdges = true;
+    public final int numIterations = 40;
+    public final int hammingDist = 0;
+    public final int decisionMargin = 35;
+    public final boolean doMultiTarget = false;
+    public final boolean doSingleTargetAlways = false;
 
     // 3d settings
 
