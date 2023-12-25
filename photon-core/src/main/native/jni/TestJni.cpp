@@ -16,7 +16,8 @@
  */
 
 #include <jni.h>
+#include "test.h"
 
 extern "C" {
-JNIEXPORT jint JNICALL some_native_function(void) { return 0; }
+JNIEXPORT jint JNICALL some_native_function(void) { return some_test(); }
 }  // extern "C"

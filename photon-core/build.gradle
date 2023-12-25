@@ -85,7 +85,7 @@ model {
                     it.buildable = false
                     return
                 }
-                lib library: "${nativeName}", linkage: 'shared'
+                lib library: "${nativeName}", linkage: 'static'
                 if (project.hasProperty('jniSplitSetup')) {
                     jniSplitSetup(it)
                 }
@@ -144,15 +144,15 @@ model {
 }
 
 // yay misdirection
-tasks.register('testDesktop') {
-    dependsOn copyPhotonCoreNative
-}
-jar.dependsOn tasks.named('testDesktop')
+// tasks.register('testDesktop') {
+//     dependsOn copyPhotonCoreNative
+// }
+// jar.dependsOn tasks.named('testDesktop')
 
-jar {
-    from nativeOutputDir
-    println("Adding to JAR $nativeOutputDir")
-}
+// jar {
+//     from nativeOutputDir
+//     println("Adding to JAR $nativeOutputDir")
+// }
 
 
 // Make sure our files get added to resources, and that build happens before JAR does
