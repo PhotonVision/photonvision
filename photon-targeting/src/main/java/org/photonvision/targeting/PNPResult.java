@@ -19,6 +19,7 @@ package org.photonvision.targeting;
 
 import edu.wpi.first.math.geometry.Transform3d;
 import org.photonvision.common.dataflow.structures.Packet;
+import org.photonvision.common.dataflow.structures.PacketSerde;
 import org.photonvision.utils.PacketUtils;
 
 /**
@@ -86,31 +87,6 @@ public class PNPResult {
         this.altReprojErr = altReprojErr;
     }
 
-    public static final int PACK_SIZE_BYTES = 1 + (Double.BYTES * 7 * 2) + (Double.BYTES * 3);
-
-    public static PNPResult createFromPacket(Packet packet) {
-        var present = packet.decodeBoolean();
-        var best = PacketUtils.decodeTransform(packet);
-        var alt = PacketUtils.decodeTransform(packet);
-        var bestEr = packet.decodeDouble();
-        var altEr = packet.decodeDouble();
-        var ambiguity = packet.decodeDouble();
-        if (present) {
-            return new PNPResult(best, alt, ambiguity, bestEr, altEr);
-        } else {
-            return new PNPResult();
-        }
-    }
-
-    public void populatePacket(Packet packet) {
-        packet.encode(isPresent);
-        PacketUtils.encodeTransform(packet, best);
-        PacketUtils.encodeTransform(packet, alt);
-        packet.encode(bestReprojErr);
-        packet.encode(altReprojErr);
-        packet.encode(ambiguity);
-    }
-
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -166,4 +142,42 @@ public class PNPResult {
                 + ambiguity
                 + "]";
     }
+
+    public static final class APacketSerde implements PacketSerde<PNPResult> {
+        @Override
+        public int getMaxByteSize() {
+            return 1 + (Double.BYTES * 7 * 2) + (Double.BYTES * 3);
+        }
+
+        @Override
+        public void pack(Packet packet, PNPResult value) {
+            packet.encode(value.isPresent);
+
+            if (value.isPresent) {
+                PacketUtils.packTransform3d(packet, value.best);
+                PacketUtils.packTransform3d(packet, value.alt);
+                packet.encode(value.bestReprojErr);
+                packet.encode(value.altReprojErr);
+                packet.encode(value.ambiguity);
+            }
+        }
+
+        @Override
+        public PNPResult unpack(Packet packet) {
+            var present = packet.decodeBoolean();
+
+            if (!present) {
+                return new PNPResult();
+            }
+
+            var best = PacketUtils.unpackTransform3d(packet);
+            var alt = PacketUtils.unpackTransform3d(packet);
+            var bestEr = packet.decodeDouble();
+            var altEr = packet.decodeDouble();
+            var ambiguity = packet.decodeDouble();
+            return new PNPResult(best, alt, ambiguity, bestEr, altEr);
+        }
+    }
+
+    public static final APacketSerde serde = new APacketSerde();
 }
