@@ -130,7 +130,7 @@ public class SqlConfigProvider extends ConfigProvider {
         return getIntPragma("schema_version");
     }
 
-    private int getUserVersion() {
+    public int getUserVersion() {
         return getIntPragma("user_version");
     }
 
