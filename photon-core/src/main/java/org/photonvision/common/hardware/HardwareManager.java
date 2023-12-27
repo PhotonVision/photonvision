@@ -160,23 +160,6 @@ public class HardwareManager {
         }
     }
 
-    public void setStatus(ProgramStatus status) {
-        switch (status) {
-            case UHOH:
-                // red flashing, green off
-                break;
-            case RUNNING:
-                // red solid, green off
-                break;
-            case RUNNING_NT:
-                // red off, green solid
-                break;
-            case RUNNING_NT_TARGET:
-                // red off, green flashing
-                break;
-        }
-    }
-
     public HardwareConfig getConfig() {
         return hardwareConfig;
     }
