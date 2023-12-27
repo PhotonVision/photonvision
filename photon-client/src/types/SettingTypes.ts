@@ -79,19 +79,30 @@ export interface VideoFormat {
   mean?: number;
 }
 
+export enum CvType {
+  CV_8U = 0,
+  CV_8S = 1,
+  CV_16U = 2,
+  CV_16S = 3,
+  CV_32S = 4,
+  CV_32F = 5,
+  CV_64F = 6,
+  CV_16F = 7
+}
+
 export interface JsonMat {
   rows: number;
   cols: number;
-  type: number;
+  type: CvType;
   data: number[];
 }
 
-export interface Point3 {
+export interface CvPoint3 {
   x: number;
   y: number;
   z: number;
 }
-export interface Point2 {
+export interface CvPoint {
   x: number;
   y: number;
 }
@@ -102,9 +113,9 @@ export interface Pose3d {
 }
 
 export interface BoardObservation {
-  locationInObjectSpace: Point3[];
-  locationInImageSpace: Point2[];
-  reprojectionErrors: Point2[];
+  locationInObjectSpace: CvPoint3[];
+  locationInImageSpace: CvPoint[];
+  reprojectionErrors: CvPoint[];
   optimisedCameraToObject: Pose3d;
 }
 
