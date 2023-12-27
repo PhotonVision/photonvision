@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.dataflow.structures.PacketSerde;
+import org.photonvision.targeting.proto.PhotonTrackedTargetProto;
 import org.photonvision.utils.PacketUtils;
 
 public class PhotonTrackedTarget {
@@ -289,4 +290,5 @@ public class PhotonTrackedTarget {
     }
 
     public static final APacketSerde serde = new APacketSerde();
+    public static final PhotonTrackedTargetProto proto = new PhotonTrackedTargetProto();
 }
