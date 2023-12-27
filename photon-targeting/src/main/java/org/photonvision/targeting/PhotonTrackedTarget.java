@@ -228,11 +228,9 @@ public class PhotonTrackedTarget {
             packet.encode(value.area);
             packet.encode(value.skew);
             packet.encode(value.fiducialId);
-            if (value.fiducialId != -1) {
-                PacketUtils.packTransform3d(packet, value.bestCameraToTarget);
-                PacketUtils.packTransform3d(packet, value.altCameraToTarget);
-                packet.encode(value.poseAmbiguity);
-            }
+            PacketUtils.packTransform3d(packet, value.bestCameraToTarget);
+            PacketUtils.packTransform3d(packet, value.altCameraToTarget);
+            packet.encode(value.poseAmbiguity);
 
             for (int i = 0; i < 4; i++) {
                 TargetCorner.serde.pack(packet, value.minAreaRectCorners.get(i));
@@ -251,18 +249,9 @@ public class PhotonTrackedTarget {
             var area = packet.decodeDouble();
             var skew = packet.decodeDouble();
             var fiducialId = packet.decodeInt();
-            Transform3d best;
-            Transform3d alt;
-            double ambiguity;
-            if (fiducialId != -1.0) {
-                best = PacketUtils.unpackTransform3d(packet);
-                alt = PacketUtils.unpackTransform3d(packet);
-                ambiguity = packet.decodeDouble();
-            } else {
-                best = new Transform3d();
-                alt = new Transform3d();
-                ambiguity = -1.0;
-            }
+            Transform3d best = PacketUtils.unpackTransform3d(packet);
+            Transform3d alt = PacketUtils.unpackTransform3d(packet);
+            double ambiguity = packet.decodeDouble();
 
             var minAreaRectCorners = new ArrayList<TargetCorner>(4);
             for (int i = 0; i < 4; i++) {
