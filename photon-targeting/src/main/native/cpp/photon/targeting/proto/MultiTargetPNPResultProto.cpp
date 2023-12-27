@@ -18,6 +18,7 @@
 #include "photon/targeting/proto/MultiTargetPNPResultProto.h"
 
 #include "photon.pb.h"
+#include "photon/targeting/proto/PNPResultProto.h"
 
 google::protobuf::Message* wpi::Protobuf<photon::MultiTargetPNPResult>::New(
     google::protobuf::Arena* arena) {

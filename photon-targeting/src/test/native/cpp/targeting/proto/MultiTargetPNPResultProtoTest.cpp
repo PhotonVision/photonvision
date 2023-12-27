@@ -18,6 +18,7 @@
 #include "gtest/gtest.h"
 #include "photon.pb.h"
 #include "photon/targeting/MultiTargetPNPResult.h"
+#include "photon/targeting/proto/MultiTargetPNPResultProto.h"
 
 TEST(MultiTargetPNPResultTest, Roundtrip) {
   photon::MultiTargetPNPResult result;
@@ -33,12 +34,14 @@ TEST(MultiTargetPNPResultTest, Roundtrip) {
   EXPECT_EQ(result, unpacked_data);
 
   photon::PNPResult pnpRes{
+      true,
       frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
                        frc::Rotation3d(1_rad, 2_rad, 3_rad)),
       0.1,
       frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
                        frc::Rotation3d(1_rad, 2_rad, 3_rad)),
-      0.1, 0};
+      0.1,
+      0};
 
   photon::MultiTargetPNPResult result1{pnpRes, {1, 2, 3, 4}};
 

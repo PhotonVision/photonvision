@@ -18,6 +18,7 @@
 #include "gtest/gtest.h"
 #include "photon.pb.h"
 #include "photon/targeting/PhotonTrackedTarget.h"
+#include "photon/targeting/proto/PhotonTrackedTargetProto.h"
 
 TEST(PhotonTrackedTargetTest, Roundtrip) {
   photon::PhotonTrackedTarget target{

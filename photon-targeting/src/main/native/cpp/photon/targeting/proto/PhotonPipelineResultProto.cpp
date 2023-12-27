@@ -18,6 +18,8 @@
 #include "photon/targeting/proto/PhotonPipelineResultProto.h"
 
 #include "photon.pb.h"
+#include "photon/targeting/proto/MultiTargetPNPResultProto.h"
+#include "photon/targeting/proto/PhotonTrackedTargetProto.h"
 
 google::protobuf::Message* wpi::Protobuf<photon::PhotonPipelineResult>::New(
     google::protobuf::Arena* arena) {

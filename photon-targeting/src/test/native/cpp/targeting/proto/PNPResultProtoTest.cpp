@@ -18,6 +18,7 @@
 #include "gtest/gtest.h"
 #include "photon.pb.h"
 #include "photon/targeting/PNPResult.h"
+#include "photon/targeting/proto/PNPResultProto.h"
 
 TEST(PNPResultTest, Roundtrip) {
   photon::PNPResult result;
@@ -33,12 +34,14 @@ TEST(PNPResultTest, Roundtrip) {
   EXPECT_EQ(result, unpacked_data);
 
   photon::PNPResult result1{
+      true,
       frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
                        frc::Rotation3d(1_rad, 2_rad, 3_rad)),
       0.1,
       frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
                        frc::Rotation3d(1_rad, 2_rad, 3_rad)),
-      0.1, 0};
+      0.1,
+      0};
 
   proto = wpi::Protobuf<photon::PNPResult>::New(&arena);
   wpi::Protobuf<photon::PNPResult>::Pack(proto, result1);

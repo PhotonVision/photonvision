@@ -18,6 +18,7 @@
 #include "gtest/gtest.h"
 #include "photon.pb.h"
 #include "photon/targeting/PhotonPipelineResult.h"
+#include "photon/targeting/proto/PhotonPipelineResultProto.h"
 
 TEST(PhotonPipelineResultTest, Roundtrip) {
   photon::PhotonPipelineResult result{12_ms, {}};
@@ -72,12 +73,14 @@ TEST(PhotonPipelineResultTest, Roundtrip) {
   EXPECT_EQ(result2, unpacked_data2);
 
   photon::PNPResult pnpRes{
+      true,
       frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
                        frc::Rotation3d(1_rad, 2_rad, 3_rad)),
       0.1,
       frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
                        frc::Rotation3d(1_rad, 2_rad, 3_rad)),
-      0.1, 0};
+      0.1,
+      0};
 
   photon::MultiTargetPNPResult multitagRes{pnpRes, {1, 2, 3, 4}};
 

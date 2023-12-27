@@ -33,10 +33,12 @@ photon::PNPResult wpi::Protobuf<photon::PNPResult>::Unpack(
     return photon::PNPResult();
   }
 
-  return photon::PNPResult{wpi::UnpackProtobuf<frc::Transform3d>(m->best()),
+  return photon::PNPResult{true,
+                           wpi::UnpackProtobuf<frc::Transform3d>(m->best()),
                            m->best_reproj_err(),
                            wpi::UnpackProtobuf<frc::Transform3d>(m->alt()),
-                           m->alt_reproj_err(), m->ambiguity()};
+                           m->alt_reproj_err(),
+                           m->ambiguity()};
 }
 
 void wpi::Protobuf<photon::PNPResult>::Pack(google::protobuf::Message* msg,
