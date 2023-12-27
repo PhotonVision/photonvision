@@ -72,19 +72,20 @@ public class Calibrate3dPipeline
     private boolean calibrating = false;
 
     // Path to save images
-    private final Path imageDir = ConfigManager.getInstance().getCalibDir();
+    private final Path imageDir;
 
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
-    public Calibrate3dPipeline() {
-        this(12);
+    public Calibrate3dPipeline(Path imgDir) {
+        this(imgDir, 12);
     }
 
-    public Calibrate3dPipeline(int minSnapshots) {
+    public Calibrate3dPipeline(Path imgDir, int minSnapshots) {
         super(PROCESSING_TYPE);
         this.settings = new Calibration3dPipelineSettings();
         this.foundCornersList = new ArrayList<>();
         this.minSnapshots = minSnapshots;
+        this.imageDir = imgDir;
     }
 
     @Override
@@ -137,7 +138,7 @@ public class Calibrate3dPipeline
                 foundCornersList.add(findBoardResult);
                 imageDir.toFile().mkdirs();
                 Imgcodecs.imwrite(
-                        Path.of(imageDir.toString(), "img" + foundCornersList.size() + ".jpg").toString(),
+                        Path.of(imageDir.toString(), Integer.toString(settings.cameraVideoModeIndex), "img" + foundCornersList.size() + ".jpg").toString(),
                         inputColorMat);
 
                 // update the UI

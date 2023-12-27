@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.processes;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -36,8 +37,10 @@ public class PipelineManager {
     public static final int DRIVERMODE_INDEX = -1;
     public static final int CAL_3D_INDEX = -2;
 
+    private final int streamIndex;
+
     protected final List<CVPipelineSettings> userPipelineSettings;
-    protected final Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline();
+    protected final Calibrate3dPipeline calibration3dPipeline;
     protected final DriverModePipeline driverModePipeline = new DriverModePipeline();
 
     /** Index of the currently active pipeline. Defaults to 0. */
@@ -60,17 +63,22 @@ public class PipelineManager {
      * @param userPipelines Pipelines to add to the manager.
      */
     public PipelineManager(
-            DriverModePipelineSettings driverSettings, List<CVPipelineSettings> userPipelines) {
+            DriverModePipelineSettings driverSettings, List<CVPipelineSettings> userPipelines, int streamIndex) {
         this.userPipelineSettings = new ArrayList<>(userPipelines);
         // This is to respect the default res idx for vendor cameras
 
+        this.streamIndex = streamIndex;
+
         this.driverModePipeline.setSettings(driverSettings);
+
+        var calibSavePath = Path.of(ConfigManager.getInstance().getCalibDir().toString(), Integer.toString(streamIndex));
+        this.calibration3dPipeline = new Calibrate3dPipeline(calibSavePath);
 
         if (userPipelines.isEmpty()) addPipeline(PipelineType.Reflective);
     }
 
     public PipelineManager(CameraConfiguration config) {
-        this(config.driveModeSettings, config.pipelineSettings);
+        this(config.driveModeSettings, config.pipelineSettings, config.streamIndex);
     }
 
     /**
