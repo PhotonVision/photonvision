@@ -14,7 +14,7 @@ public class StatusLEDConsumer implements CVPipelineResultConsumer{
 
     @Override
     public void accept(CVPipelineResult t) {
-        HardwareManager.getInstance().setStatus()
+        HardwareManager.getInstance().setTargetsVisibleStatus(this.index, t.hasTargets());
     }
     
 }
