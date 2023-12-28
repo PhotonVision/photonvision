@@ -137,7 +137,7 @@ public class PhotonConfiguration {
         generalSubmap.put(
                 "gpuAcceleration",
                 LibCameraJNI.isSupported()
-                        ? "Zerocopy Libcamera on " + LibCameraJNI.getSensorModel().getFriendlyName()
+                        ? "Zerocopy Libcamera Working"
                         : ""); // TODO add support for other types of GPU accel
         generalSubmap.put("hardwareModel", hardwareConfig.deviceName);
         generalSubmap.put("hardwarePlatform", Platform.getPlatformName());

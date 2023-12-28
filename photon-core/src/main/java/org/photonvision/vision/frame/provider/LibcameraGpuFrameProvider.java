@@ -20,6 +20,7 @@ package org.photonvision.vision.frame.provider;
 import org.opencv.core.Mat;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.LibCameraJNI;
+import org.photonvision.raspi.LibCameraJNI.SensorModel;
 import org.photonvision.vision.camera.LibcameraGpuSettables;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
@@ -47,34 +48,37 @@ public class LibcameraGpuFrameProvider implements FrameProvider {
 
     @Override
     public Frame get() {
-        // We need to make sure that other threads don't try to change video modes while we're waiting
+        // We need to make sure that other threads don't try to change video modes while
+        // we're waiting
         // for a frame
         // System.out.println("GET!");
-        synchronized (LibCameraJNI.CAMERA_LOCK) {
-            var success = LibCameraJNI.awaitNewFrame();
+        synchronized (settables.CAMERA_LOCK) {
+            var p_ptr = LibCameraJNI.awaitNewFrame(settables.r_ptr);
 
-            if (!success) {
+            if (p_ptr == 0) {
                 System.out.println("No new frame");
                 return new Frame();
             }
 
-            var colorMat = new CVMat(new Mat(LibCameraJNI.takeColorFrame()));
-            var processedMat = new CVMat(new Mat(LibCameraJNI.takeProcessedFrame()));
+            var colorMat = new CVMat(new Mat(LibCameraJNI.takeColorFrame(p_ptr)));
+            var processedMat = new CVMat(new Mat(LibCameraJNI.takeProcessedFrame(p_ptr)));
 
             // System.out.println("Color mat: " + colorMat.getMat().size());
 
             // Imgcodecs.imwrite("color" + i + ".jpg", colorMat.getMat());
             // Imgcodecs.imwrite("processed" + (i) + ".jpg", processedMat.getMat());
 
-            int itype = LibCameraJNI.getGpuProcessType();
+            int itype = LibCameraJNI.getGpuProcessType(p_ptr);
             FrameThresholdType type = FrameThresholdType.NONE;
             if (itype < FrameThresholdType.values().length && itype >= 0) {
                 type = FrameThresholdType.values()[itype];
             }
 
             var now = LibCameraJNI.getLibcameraTimestamp();
-            var capture = LibCameraJNI.getFrameCaptureTime();
+            var capture = LibCameraJNI.getFrameCaptureTime(p_ptr);
             var latency = (now - capture);
+
+            LibCameraJNI.releasePair(p_ptr);
 
             return new Frame(
                     colorMat,
@@ -87,7 +91,9 @@ public class LibcameraGpuFrameProvider implements FrameProvider {
 
     @Override
     public void requestFrameThresholdType(FrameThresholdType type) {
-        LibCameraJNI.setGpuProcessType(type.ordinal());
+        if (settables.getModel() == SensorModel.OV9281 && type.equals(FrameThresholdType.GREYSCALE))
+            LibCameraJNI.setGpuProcessType(settables.r_ptr, 4); // 4 = Grayscale pass through.
+        else LibCameraJNI.setGpuProcessType(settables.r_ptr, type.ordinal());
     }
 
     @Override
@@ -98,6 +104,7 @@ public class LibcameraGpuFrameProvider implements FrameProvider {
     @Override
     public void requestHsvSettings(HSVParams params) {
         LibCameraJNI.setThresholds(
+                settables.r_ptr,
                 params.getHsvLower().val[0] / 180.0,
                 params.getHsvLower().val[1] / 255.0,
                 params.getHsvLower().val[2] / 255.0,
@@ -109,6 +116,6 @@ public class LibcameraGpuFrameProvider implements FrameProvider {
 
     @Override
     public void requestFrameCopies(boolean copyInput, boolean copyOutput) {
-        LibCameraJNI.setFramesToCopy(copyInput, copyOutput);
+        LibCameraJNI.setFramesToCopy(settables.r_ptr, copyInput, copyOutput);
     }
 }

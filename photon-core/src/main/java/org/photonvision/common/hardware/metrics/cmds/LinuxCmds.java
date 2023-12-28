@@ -22,7 +22,7 @@ import org.photonvision.common.configuration.HardwareConfig;
 public class LinuxCmds extends CmdBase {
     public void initCmds(HardwareConfig config) {
         // CPU
-        cpuMemoryCommand = "awk '/MemTotal:/ {print int($2 / 1000);}' /proc/meminfo";
+        cpuMemoryCommand = "free -m | awk 'FNR == 2 {print $3}'";
 
         // TODO: boards have lots of thermal devices. Hard to pick the CPU
 
@@ -32,7 +32,7 @@ public class LinuxCmds extends CmdBase {
         cpuUptimeCommand = "uptime -p | cut -c 4-";
 
         // RAM
-        ramUsageCommand = "awk '/MemAvailable:/ {print int($2 / 1000);}' /proc/meminfo";
+        ramUsageCommand = "free -m | awk 'FNR == 2 {print $3}'";
 
         // Disk
         diskUsageCommand = "df ./ --output=pcent | tail -n +2";
