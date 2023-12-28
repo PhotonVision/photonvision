@@ -20,7 +20,8 @@ package org.photonvision.common.hardware;
 import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.IntegerSubscriber;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.configuration.HardwareSettings;
@@ -165,6 +166,17 @@ public class HardwareManager {
         }
     }
 
+    // API's supporting status LEDs
+
+    private Map<Integer, Boolean> pipelineTargets = new HashMap<Integer, Boolean>();
+    private boolean ntConnected = false;
+    private boolean systemRunning = false;
+    private int blinkCounter = 0;
+
+    public void setTargetsVisibleStatus(int pipelineIdx, boolean hasTargets) {
+        pipelineTargets.put(pipelineIdx, hasTargets);
+    }
+
     public void setNTConnected(boolean isConnected) {
         this.ntConnected = isConnected;
     }
@@ -173,13 +185,13 @@ public class HardwareManager {
         this.systemRunning = isRunning;
     }
 
-    public void statusLEDUpdate() {
+    private void statusLEDUpdate() {
         // make blinky
         boolean blinky = ((blinkCounter % 2) == 0);
 
         // check if any pipeline has a visible target
         boolean anyTarget = false;
-        for (var t : this.pipelineTargets) {
+        for (var t : this.pipelineTargets.values()) {
             if (t) {
                 anyTarget = true;
             }
@@ -209,16 +221,6 @@ public class HardwareManager {
         }
 
         blinkCounter++;
-    }
-
-    private ArrayList<Boolean> pipelineTargets = new ArrayList<Boolean>();
-    private boolean ntConnected = false;
-    private boolean systemRunning = false;
-    int blinkCounter = 0;
-
-    public void setTargetsVisibleStatus(int pipelineIdx, boolean hasTargets) {
-        pipelineTargets.ensureCapacity(pipelineIdx);
-        pipelineTargets.add(pipelineIdx, hasTargets);
     }
 
     public HardwareConfig getConfig() {

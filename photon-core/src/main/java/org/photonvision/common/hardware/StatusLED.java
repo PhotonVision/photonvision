@@ -47,7 +47,7 @@ public class StatusLED {
     }
 
     public void setRGB(boolean r, boolean g, boolean b) {
-        // System.out.printf("DEBUG setting LED's to %b %b %b\n", r, g, b);
+        // Outputs are active-low, so invert the level applied
         redLED.setState(!r);
         redLED.setBrightness(r ? 0 : 100);
         greenLED.setState(!g);
