@@ -20,12 +20,11 @@ package org.photonvision.targeting;
 import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.common.dataflow.structures.Packet;
+import org.photonvision.common.dataflow.structures.PacketSerde;
 
 public class MultiTargetPNPResult {
     // Seeing 32 apriltags at once seems like a sane limit
     private static final int MAX_IDS = 32;
-    // pnpresult + MAX_IDS possible targets (arbitrary upper limit that should never be hit, ideally)
-    public static final int PACK_SIZE_BYTES = PNPResult.PACK_SIZE_BYTES + (Short.BYTES * MAX_IDS);
 
     public PNPResult estimatedPose = new PNPResult();
     public List<Integer> fiducialIDsUsed = List.of();
@@ -35,27 +34,6 @@ public class MultiTargetPNPResult {
     public MultiTargetPNPResult(PNPResult results, List<Integer> ids) {
         estimatedPose = results;
         fiducialIDsUsed = ids;
-    }
-
-    public static MultiTargetPNPResult createFromPacket(Packet packet) {
-        var results = PNPResult.createFromPacket(packet);
-        var ids = new ArrayList<Integer>(MAX_IDS);
-        for (int i = 0; i < MAX_IDS; i++) {
-            int targetId = packet.decodeShort();
-            if (targetId > -1) ids.add(targetId);
-        }
-        return new MultiTargetPNPResult(results, ids);
-    }
-
-    public void populatePacket(Packet packet) {
-        estimatedPose.populatePacket(packet);
-        for (int i = 0; i < MAX_IDS; i++) {
-            if (i < fiducialIDsUsed.size()) {
-                packet.encode((short) fiducialIDsUsed.get(i).byteValue());
-            } else {
-                packet.encode((short) -1);
-            }
-        }
     }
 
     @Override
@@ -90,4 +68,39 @@ public class MultiTargetPNPResult {
                 + fiducialIDsUsed
                 + "]";
     }
+
+    public static final class APacketSerde implements PacketSerde<MultiTargetPNPResult> {
+        @Override
+        public int getMaxByteSize() {
+            // PNPResult + MAX_IDS possible targets (arbitrary upper limit that should never be hit,
+            // ideally)
+            return PNPResult.serde.getMaxByteSize() + (Short.BYTES * MAX_IDS);
+        }
+
+        @Override
+        public void pack(Packet packet, MultiTargetPNPResult result) {
+            PNPResult.serde.pack(packet, result.estimatedPose);
+
+            for (int i = 0; i < MAX_IDS; i++) {
+                if (i < result.fiducialIDsUsed.size()) {
+                    packet.encode((short) result.fiducialIDsUsed.get(i).byteValue());
+                } else {
+                    packet.encode((short) -1);
+                }
+            }
+        }
+
+        @Override
+        public MultiTargetPNPResult unpack(Packet packet) {
+            var results = PNPResult.serde.unpack(packet);
+            var ids = new ArrayList<Integer>(MAX_IDS);
+            for (int i = 0; i < MAX_IDS; i++) {
+                int targetId = packet.decodeShort();
+                if (targetId > -1) ids.add(targetId);
+            }
+            return new MultiTargetPNPResult(results, ids);
+        }
+    }
+
+    public static final APacketSerde serde = new APacketSerde();
 }
