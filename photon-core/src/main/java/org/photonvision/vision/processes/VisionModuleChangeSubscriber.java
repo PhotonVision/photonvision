@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.processes;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 import org.apache.commons.lang3.tuple.Pair;
@@ -107,7 +106,9 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                     case "startCalibration":
                         // var data = UICalibrationData.fromMap((Map<String, Object>) newPropValue);
                         try {
-                            var data = JacksonUtils.deserialize((Map<String, Object>)newPropValue, UICalibrationData.class);
+                            var data =
+                                    JacksonUtils.deserialize(
+                                            (Map<String, Object>) newPropValue, UICalibrationData.class);
                             parentModule.startCalibration(data);
                             parentModule.saveAndBroadcastAll();
                         } catch (Exception e) {

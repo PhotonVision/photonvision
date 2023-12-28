@@ -30,7 +30,7 @@ const getCalibrationCoeffs = (resolution: Resolution): CameraCalibrationResult |
 const getMeanFromView = (o: BoardObservation) => {
   // Is this the right formula for RMS error? who knows! not me!
   const perViewSumSquareReprojectionError = o.reprojectionErrors.flatMap((it2) => [it2.x, it2.y]);
-  
+
   // For each error, square it, sum the squares, and divide by total points N
   return Math.sqrt(
     perViewSumSquareReprojectionError.map((it) => Math.pow(it, 2)).reduce((a, b) => a + b, 0) /

@@ -17,10 +17,6 @@
 
 package org.photonvision.vision.pipeline;
 
-import java.util.Map;
-
-import org.opencv.core.Size;
-
 public class UICalibrationData {
     public int videoModeIndex;
     public int count;
