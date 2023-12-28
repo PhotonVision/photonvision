@@ -170,15 +170,37 @@ public class USBCameraSource extends VisionSource {
                 if (!cameraAutoExposure) {
                     // Pick a bunch of reasonable setting defaults for vision processing retroreflective
                     if (canSetWhiteBalance) {
-                        camera.setWhiteBalanceManual(4000); // Auto white-balance disabled, 4000K preset
+                        // Linux kernel bump changed names -- now called white_balance_automatic and
+                        // white_balance_temperature
+                        if (camera.getProperty("white_balance_automatic").getKind() != Kind.kNone) {
+                            // 1=auto, 0=manual
+                            camera.getProperty("white_balance_automatic").set(0);
+                            camera.getProperty("white_balance_temperature").set(4000);
+                        } else {
+                            camera.setWhiteBalanceManual(4000); // Auto white-balance disabled, 4000K preset
+                        }
                     }
                 } else {
                     // Pick a bunch of reasonable setting defaults for driver, fiducials, or otherwise
                     // nice-for-humans
                     if (canSetWhiteBalance) {
-                        camera.setWhiteBalanceAuto(); // Auto white-balance enabled
+                        // Linux kernel bump changed names -- now called white_balance_automatic
+                        if (camera.getProperty("white_balance_automatic").getKind() != Kind.kNone) {
+                            // 1=auto, 0=manual
+                            camera.getProperty("white_balance_automatic").set(1);
+                        } else {
+                            camera.setWhiteBalanceAuto(); // Auto white-balance enabled
+                        }
                     }
-                    camera.setExposureAuto(); // auto exposure enabled
+
+                    // Linux kernel bump changed names -- exposure_auto is now called auto_exposure
+                    if (camera.getProperty("auto_exposure").getKind() != Kind.kNone) {
+                        var prop = camera.getProperty("auto_exposure");
+                        // 3=auto-aperature
+                        prop.set((int) 3);
+                    } else {
+                        camera.setExposureAuto(); // auto exposure enabled
+                    }
                 }
             }
         }
@@ -212,8 +234,13 @@ public class USBCameraSource extends VisionSource {
                         camera.getProperty("raw_exposure_time_absolute").set(scaledExposure);
                         camera.getProperty("raw_exposure_time_absolute").set(scaledExposure);
 
-                    } else if (camera.getProperty("exposure_time_absolute").getKind() != Kind.kNone) {
-                        // Seems like the name changed at some point in v4l? set it instead
+                        // Yay thanks v4l for changing names randomly
+                    } else if (camera.getProperty("exposure_time_absolute").getKind() != Kind.kNone
+                            && camera.getProperty("auto_exposure").getKind() != Kind.kNone) {
+                        // 1=manual-aperature
+                        camera.getProperty("auto_exposure").set(1);
+
+                        // Seems like the name changed at some point in v4l? set it ouyrselves too
                         var prop = camera.getProperty("exposure_time_absolute");
                         var exposure_manual_val =
                                 MathUtils.map(Math.round(exposure), 0, 100, prop.getMin(), prop.getMax());
