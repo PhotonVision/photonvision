@@ -19,12 +19,8 @@ package org.photonvision.common.hardware;
 
 import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.IntegerSubscriber;
-import org.apache.commons.lang3.time.StopWatch;
-
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
-
 import org.photonvision.common.ProgramStatus;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
@@ -102,7 +98,7 @@ public class HardwareManager {
                         ? new StatusLED(hardwareConfig.statusRGBPins)
                         : null;
 
-        if(statusLED != null){
+        if (statusLED != null) {
             TimedTaskManager.getInstance().addTask("StatusLEDUpdate", this::statusLEDUpdate, 200);
         }
 
@@ -170,8 +166,12 @@ public class HardwareManager {
         }
     }
 
-    public void setStatus(ProgramStatus status) {
-        this.curStatus = status;
+    public void setNTConnected(boolean isConnected) {
+        this.ntConnected = isConnected;
+    }
+
+    public void setRunning(boolean isRunning) {
+        this.systemRunning = isRunning;
     }
 
     public void statusLEDUpdate() {
@@ -180,46 +180,44 @@ public class HardwareManager {
 
         // check if any pipeline has a visible target
         boolean anyTarget = false;
-        for(var t : this.pipelineTargets){
-            if(t){
+        for (var t : this.pipelineTargets) {
+            if (t) {
                 anyTarget = true;
             }
         }
 
-        switch (this.curStatus) {
-            case UHOH:
-                // red flashing
-                statusLED.setRGB(blinky, false, false);
-                break;
-            case RUNNING:
-                if(anyTarget){
+        if(this.systemRunning){
+            if(!this.ntConnected){
+                if (anyTarget) {
                     // alternate blue/yellow
                     statusLED.setRGB(blinky, blinky, !blinky);
                 } else {
                     // Yellow flashing
                     statusLED.setRGB(blinky, blinky, false);
                 }
-                break;
-            case RUNNING_NT:
-                if(anyTarget){
+            } else {
+                if (anyTarget) {
                     // alternate blue/green
                     statusLED.setRGB(false, blinky, !blinky);
                 } else {
                     // blinky green
                     statusLED.setRGB(false, blinky, false);
                 }
-                break;
+            }
+        } else {
+            //Faulted, not running... blinky red
+            statusLED.setRGB(blinky, false, false);
         }
 
         blinkCounter++;
     }
 
     private ArrayList<Boolean> pipelineTargets = new ArrayList<Boolean>();
-    private ProgramStatus curStatus = ProgramStatus.UHOH;
+    private boolean ntConnected = false;
+    private boolean systemRunning = false;
     int blinkCounter = 0;
 
-
-    public void setTargetsVisibleStatus(int pipelineIdx, boolean hasTargets){
+    public void setTargetsVisibleStatus(int pipelineIdx, boolean hasTargets) {
         pipelineTargets.ensureCapacity(pipelineIdx);
         pipelineTargets.add(pipelineIdx, hasTargets);
     }
