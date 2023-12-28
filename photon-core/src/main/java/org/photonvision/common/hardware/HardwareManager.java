@@ -175,7 +175,6 @@ public class HardwareManager {
     }
 
     public void statusLEDUpdate() {
-
         // make blinky
         boolean blinky = ((blinkCounter % 2) == 0);
 
@@ -198,8 +197,8 @@ public class HardwareManager {
                     statusLED.setRGB(blinky, blinky, !blinky);
                 } else {
                     // Yellow flashing
-                    statusLED.setRGB(blinky, blinky, false); 
-                }            
+                    statusLED.setRGB(blinky, blinky, false);
+                }
                 break;
             case RUNNING_NT:
                 if(anyTarget){
