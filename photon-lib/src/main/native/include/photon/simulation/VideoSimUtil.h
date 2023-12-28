@@ -57,9 +57,10 @@ static constexpr units::meter_t fieldLength{16.54175_m};
 static constexpr units::meter_t fieldWidth{8.0137_m};
 
 static cv::Mat Get36h11TagImage(int id) {
-  wpi::RawFrame frame = frc::AprilTag::Generate36h11AprilTagImage(id);
+  wpi::RawFrame frame;
+  frc::AprilTag::Generate36h11AprilTagImage(&frame, id);
   cv::Mat markerImage{frame.height, frame.width, CV_8UC1, frame.data};
-  cv::Mat markerClone = markerImage.colRange(0, frame.dataLength).clone();
+  cv::Mat markerClone = markerImage.clone();
   return markerClone;
 }
 
