@@ -32,6 +32,7 @@ import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
+import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.scripting.ScriptEventType;
@@ -91,6 +92,7 @@ public class NetworkTablesManager {
                                 event.connInfo.remote_port,
                                 event.connInfo.protocol_version);
                 logger.error(msg);
+                HardwareManager.getInstance().setNTConnected(false);
 
                 hasReportedConnectionFailure = true;
                 getInstance().broadcastConnectedStatus();
@@ -102,6 +104,7 @@ public class NetworkTablesManager {
                                 event.connInfo.remote_port,
                                 event.connInfo.protocol_version);
                 logger.info(msg);
+                HardwareManager.getInstance().setNTConnected(true);
 
                 hasReportedConnectionFailure = false;
                 ScriptManager.queueEvent(ScriptEventType.kNTConnected);
