@@ -101,7 +101,7 @@ public class VideoSimUtil {
      */
     public static Mat get36h11TagImage(int id) {
         RawFrame frame = AprilTag.generate36h11AprilTagImage(id);
-        Mat result = new Mat(10, 10, CvType.CV_8UC1, frame.getData());
+        Mat result = new Mat(10, 10, CvType.CV_8UC1, frame.getData(), frame.getStride());
         return result;
     }
 
