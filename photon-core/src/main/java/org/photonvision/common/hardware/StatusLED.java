@@ -47,7 +47,7 @@ public class StatusLED {
     }
 
     public void setRGB(boolean r, boolean g, boolean b) {
-        //System.out.printf("DEBUG setting LED's to %b %b %b\n", r, g, b);
+        // System.out.printf("DEBUG setting LED's to %b %b %b\n", r, g, b);
         redLED.setState(!r);
         redLED.setBrightness(r ? 0 : 100);
         greenLED.setState(!g);

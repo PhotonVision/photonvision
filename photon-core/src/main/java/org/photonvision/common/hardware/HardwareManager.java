@@ -21,7 +21,6 @@ import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.IntegerSubscriber;
 import java.io.IOException;
 import java.util.ArrayList;
-import org.photonvision.common.ProgramStatus;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.configuration.HardwareSettings;
@@ -186,8 +185,8 @@ public class HardwareManager {
             }
         }
 
-        if(this.systemRunning){
-            if(!this.ntConnected){
+        if (this.systemRunning) {
+            if (!this.ntConnected) {
                 if (anyTarget) {
                     // alternate blue/yellow
                     statusLED.setRGB(blinky, blinky, !blinky);
@@ -205,7 +204,7 @@ public class HardwareManager {
                 }
             }
         } else {
-            //Faulted, not running... blinky red
+            // Faulted, not running... blinky red
             statusLED.setRGB(blinky, false, false);
         }
 
