@@ -99,7 +99,7 @@ public class HardwareManager {
                         : null;
 
         if (statusLED != null) {
-            TimedTaskManager.getInstance().addTask("StatusLEDUpdate", this::statusLEDUpdate, 200);
+            TimedTaskManager.getInstance().addTask("StatusLEDUpdate", this::statusLEDUpdate, 150);
         }
 
         var hasBrightnessRange = hardwareConfig.ledBrightnessRange.size() == 2;
@@ -187,7 +187,7 @@ public class HardwareManager {
 
     private void statusLEDUpdate() {
         // make blinky
-        boolean blinky = ((blinkCounter % 2) == 0);
+        boolean blinky = ((blinkCounter % 3) > 0);
 
         // check if any pipeline has a visible target
         boolean anyTarget = false;
@@ -200,16 +200,16 @@ public class HardwareManager {
         if (this.systemRunning) {
             if (!this.ntConnected) {
                 if (anyTarget) {
-                    // alternate blue/yellow
-                    statusLED.setRGB(blinky, blinky, !blinky);
+                    // Blue Flashing
+                    statusLED.setRGB(false, false, blinky);
                 } else {
                     // Yellow flashing
                     statusLED.setRGB(blinky, blinky, false);
                 }
             } else {
                 if (anyTarget) {
-                    // alternate blue/green
-                    statusLED.setRGB(false, blinky, !blinky);
+                    // Blue
+                    statusLED.setRGB(false, false, blinky);
                 } else {
                     // blinky green
                     statusLED.setRGB(false, blinky, false);
