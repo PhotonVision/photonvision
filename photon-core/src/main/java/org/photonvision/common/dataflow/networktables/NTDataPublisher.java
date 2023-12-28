@@ -180,7 +180,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
                 && result.inputAndOutputFrame.frameStaticProperties.cameraCalibration != null) {
             var fsp = result.inputAndOutputFrame.frameStaticProperties;
             ts.cameraIntrinsicsPublisher.accept(fsp.cameraCalibration.getIntrinsicsArr());
-            ts.cameraDistortionPublisher.accept(fsp.cameraCalibration.getExtrinsicsArr());
+            ts.cameraDistortionPublisher.accept(fsp.cameraCalibration.getDistCoeffsArr());
         } else {
             ts.cameraIntrinsicsPublisher.accept(new double[] {});
             ts.cameraDistortionPublisher.accept(new double[] {});

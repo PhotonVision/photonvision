@@ -1,7 +1,13 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import Vue, { computed, ref, type Ref } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { CalibrationBoardTypes, type Resolution, type VideoFormat } from "@/types/SettingTypes";
+import {
+  CalibrationBoardTypes,
+  type BoardObservation,
+  type CameraCalibrationResult,
+  type Resolution,
+  type VideoFormat
+} from "@/types/SettingTypes";
 import JsPDF from "jspdf";
 import { font as PromptRegular } from "@/assets/fonts/PromptRegular";
 import MonoLogo from "@/assets/images/logoMono.png";
@@ -11,14 +17,27 @@ import PvSwitch from "@/components/common/pv-switch.vue";
 import PvSelect from "@/components/common/pv-select.vue";
 import PvNumberInput from "@/components/common/pv-number-input.vue";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
+import loadingImage from "@/assets/images/loading.svg";
 
 const settingsValid = ref(true);
 
-const getCalibrationCoeffs = (resolution: Resolution) => {
+const getCalibrationCoeffs = (resolution: Resolution): CameraCalibrationResult | undefined => {
   return useCameraSettingsStore().currentCameraSettings.completeCalibrations.find(
     (cal) => cal.resolution.width === resolution.width && cal.resolution.height === resolution.height
   );
 };
+
+const getMeanFromView = (o: BoardObservation) => {
+  // Is this the right formula for RMS error? who knows! not me!
+  const perViewSumSquareReprojectionError = o.reprojectionErrors.flatMap((it2) => [it2.x, it2.y]);
+  
+  // For each error, square it, sum the squares, and divide by total points N
+  return Math.sqrt(
+    perViewSumSquareReprojectionError.map((it) => Math.pow(it, 2)).reduce((a, b) => a + b, 0) /
+      perViewSumSquareReprojectionError.length
+  );
+}
+
 const getUniqueVideoResolutions = (): VideoFormat[] => {
   const uniqueResolutions: VideoFormat[] = [];
   useCameraSettingsStore().currentCameraSettings.validVideoFormats.forEach((format, index) => {
@@ -31,18 +50,28 @@ const getUniqueVideoResolutions = (): VideoFormat[] => {
 
       const calib = getCalibrationCoeffs(format.resolution);
       if (calib !== undefined) {
-        format.standardDeviation = calib.standardDeviation;
-        format.mean = calib.perViewErrors.reduce((a, b) => a + b) / calib.perViewErrors.length;
-        format.horizontalFOV = 2 * Math.atan2(format.resolution.width / 2, calib.intrinsics[0]) * (180 / Math.PI);
-        format.verticalFOV = 2 * Math.atan2(format.resolution.height / 2, calib.intrinsics[4]) * (180 / Math.PI);
+        // Is this the right formula for RMS error? who knows! not me!
+        const perViewSumSquareReprojectionError = calib.observations.flatMap((it) =>
+          it.reprojectionErrors.flatMap((it2) => [it2.x, it2.y])
+        );
+        // For each error, square it, sum the squares, and divide by total points N
+        format.mean = Math.sqrt(
+          perViewSumSquareReprojectionError.map((it) => Math.pow(it, 2)).reduce((a, b) => a + b, 0) /
+            perViewSumSquareReprojectionError.length
+        );
+
+        format.horizontalFOV =
+          2 * Math.atan2(format.resolution.width / 2, calib.cameraIntrinsics.data[0]) * (180 / Math.PI);
+        format.verticalFOV =
+          2 * Math.atan2(format.resolution.height / 2, calib.cameraIntrinsics.data[4]) * (180 / Math.PI);
         format.diagonalFOV =
           2 *
           Math.atan2(
             Math.sqrt(
               format.resolution.width ** 2 +
-                (format.resolution.height / (calib.intrinsics[4] / calib.intrinsics[0])) ** 2
+                (format.resolution.height / (calib.cameraIntrinsics.data[4] / calib.cameraIntrinsics.data[0])) ** 2
             ) / 2,
-            calib.intrinsics[0]
+            calib.cameraIntrinsics.data[0]
           ) *
           (180 / Math.PI);
       }
@@ -214,6 +243,94 @@ const endCalibration = () => {
       isCalibrating.value = false;
     });
 };
+
+const createSeries = (label, xData, yData, color, showLine = true, fill = false) => {
+  if (xData.length !== yData.length) {
+    return null;
+  }
+
+  if (xData == null || yData == null) {
+    console.log("Data was null. Skipping.");
+    return null;
+  }
+
+  // Convert data to list of x/y pairs
+  let data = [];
+  yData.forEach((y, idx) => {
+    if (!isNaN(y) || y != null) {
+      data.push({ x: xData[idx], y: y });
+    }
+  });
+  return {
+    backgroundColor: color,
+    borderColor: color,
+    label: label,
+    showLine: showLine,
+    fill: fill,
+    data: data,
+    lineTension: 0
+  };
+};
+
+const reprojectionErrorSeries = () => {
+  // HUGE hack!
+  const calib = useCameraSettingsStore().currentCameraSettings.completeCalibrations[0];
+
+  const errorNorms = calib.observations
+    .map((it2) => it2.reprojectionErrors)
+    .map((it2) => it2.map((it3) => Math.sqrt(it3.x * it3.x + it3.y * it3.y)))
+    .flat(1);
+  const xLocs = calib.observations.map((it) => it.locationInImageSpace.map((it) => it.x)).flat(1);
+  const yLocs = calib.observations.map((it) => it.locationInImageSpace.map((it) => it.y)).flat(1);
+  // console.log(errorNorms);
+  // console.log(xLocs);
+  // console.log(yLocs);
+
+  function rgb(r, g, b) {
+    return "rgb(" + r + "," + g + "," + b + ")";
+  }
+
+  const scale = 255.0 / Math.max(...errorNorms);
+  const colors = errorNorms.map(it => it * scale).map((it) => rgb(it, 0, 0));
+  console.log(colors)
+
+  return {
+    datasets: [createSeries(`Reprojection error`, xLocs, yLocs, colors, false)]
+  };
+};
+
+function download_cal_data() {
+  const camName = useCameraSettingsStore().currentCameraSettings.uniqueName;
+
+  if (calibrationDetails.value === undefined) return;
+  const cal: CameraCalibrationResult = calibrationDetails.value as CameraCalibrationResult; // ew
+
+  const filename=`photon_calibration_${camName}_${cal.resolution.width}x${cal.resolution.height}.json`
+  const text = JSON.stringify(cal);
+
+  var element = document.createElement('a');
+  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+  element.setAttribute('download', filename);
+
+  element.style.display = 'none';
+  document.body.appendChild(element);
+
+  element.click();
+
+  document.body.removeChild(element);
+}
+
+let showCal = ref(false);
+let calibrationDetails: Ref<CameraCalibrationResult | undefined> = ref(undefined);
+
+const showThing = (value: VideoFormat) => {
+  calibrationDetails.value = getCalibrationCoeffs(value.resolution);
+  showCal.value = true;
+};
+
+let visShown = ref(0)
+let observationIdx = ref(0)
+
 </script>
 
 <template>
@@ -284,19 +401,15 @@ const endCalibration = () => {
                   <tr>
                     <th>Resolution</th>
                     <th>Mean Error</th>
-                    <th>Standard Deviation</th>
                     <th>Horizontal FOV</th>
                     <th>Vertical FOV</th>
                     <th>Diagonal FOV</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(value, index) in getUniqueVideoResolutions()" :key="index">
+                  <tr v-for="(value, index) in getUniqueVideoResolutions()" :key="index" @click="showThing(value)">
                     <td>{{ value.resolution.width }} X {{ value.resolution.height }}</td>
                     <td>{{ value.mean !== undefined ? value.mean.toFixed(2) + "px" : "-" }}</td>
-                    <td>
-                      {{ value.standardDeviation !== undefined ? value.standardDeviation.toFixed(2) + "px" : "-" }}
-                    </td>
                     <td>{{ value.horizontalFOV !== undefined ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
                     <td>{{ value.verticalFOV !== undefined ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
                     <td>{{ value.diagonalFOV !== undefined ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
@@ -476,6 +589,69 @@ const endCalibration = () => {
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <v-dialog v-model="showCal" width="80em">
+      <v-card color="primary" dark>
+        <v-card-title
+          >{{ useCameraSettingsStore().cameraNames[useStateStore().currentCameraIndex] }} -
+          {{ calibrationDetails?.resolution.width }} x {{ calibrationDetails?.resolution.height }}</v-card-title
+        >
+            <v-card-text>
+              <v-simple-table>
+                <tbody>
+                  <td>Fx:</td>
+                  <td>{{ calibrationDetails?.cameraIntrinsics.data[0].toFixed(2) }} mm</td>
+                  <td/>
+                </tbody>
+                <tbody>
+                  <td>Fy:</td>
+                  <td>{{ calibrationDetails?.cameraIntrinsics.data[4].toFixed(2) }} mm</td>
+                  <td/>
+                </tbody>
+                <tbody>
+                  <td>Cx:</td>
+                  <td>{{ calibrationDetails?.cameraIntrinsics.data[2].toFixed(2) }} px </td>
+                  <td> (expected ~{{ (calibrationDetails?.resolution.width || 0) / 2 }})</td>
+                </tbody>
+                <tbody>
+                  <td>Cy:</td>
+                  <td>{{ calibrationDetails?.cameraIntrinsics.data[5].toFixed(2) }} px </td>
+                  <td> (expected ~{{ (calibrationDetails?.resolution.height || 0) / 2 }})</td>
+                </tbody>
+                <tbody>
+                  <td>Distortion:</td>
+                  <td>[{{ calibrationDetails?.cameraExtrinsics.data.map((it) => it.toFixed(3)).join(", ") }}]</td>
+                  <td/>
+                </tbody>
+              </v-simple-table>
+
+              <v-divider class="mt-3 mb-3" />
+
+              <span class="text-center align-center white--text">Observations:</span>
+              <v-simple-table>
+                <thead>
+                  <tr>
+                    <th class="text-center">ID</th>
+                    <th class="text-center">Mean Reprojection Error</th>
+                    <th class="text-center">Used</th>
+                  </tr>
+                </thead>
+                <tbody style="height:20em;overflow:scroll">
+                  <tr v-for="(value, index) in calibrationDetails?.observations">
+                    <td>{{ index }}</td>
+                    <td> {{ getMeanFromView(value).toFixed(2) }} px </td>
+                    <td> <v-switch disabled dark color="#ffd843"/> </td>
+                  </tr>
+                </tbody>
+              </v-simple-table>
+              <v-btn @click="download_cal_data">Download</v-btn>
+              <!-- <v-btn class="ml-5">Upload</v-btn> -->
+            </v-card-text>
+        <v-divider />
+      </v-card>
+    </v-dialog>
+
+    <v-card> </v-card>
   </div>
 </template>
 

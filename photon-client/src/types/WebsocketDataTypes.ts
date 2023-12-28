@@ -1,4 +1,11 @@
-import type { GeneralSettings, LightingSettings, LogLevel, MetricData, NetworkSettings } from "@/types/SettingTypes";
+import type {
+  CameraCalibrationResult,
+  GeneralSettings,
+  LightingSettings,
+  LogLevel,
+  MetricData,
+  NetworkSettings
+} from "@/types/SettingTypes";
 import type { ActivePipelineSettings } from "@/types/PipelineTypes";
 import type { AprilTagFieldLayout, PipelineResult } from "@/types/PhotonTrackingTypes";
 
@@ -46,13 +53,14 @@ export type WebsocketVideoFormat = Record<
 >;
 
 export interface WebsocketCameraSettingsUpdate {
-  calibrations: WebsocketCompleteCalib[];
+  calibrations: CameraCalibrationResult[];
   currentPipelineIndex: number;
   currentPipelineSettings: ActivePipelineSettings;
   fov: number;
   inputStreamPort: number;
   isFovConfigurable: boolean;
   nickname: string;
+  uniqueName: string;
   outputStreamPort: number;
   pipelineNicknames: string[];
   videoFormatList: WebsocketVideoFormat;

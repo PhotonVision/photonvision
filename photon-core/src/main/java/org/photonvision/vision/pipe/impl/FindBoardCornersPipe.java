@@ -113,9 +113,6 @@ public class FindBoardCornersPipe
      */
     @Override
     protected Triple<Size, Mat, Mat> process(Pair<Mat, Mat> in) {
-        // Create the object points
-        createObjectPoints();
-
         return findBoardCorners(in);
     }
 
@@ -228,10 +225,12 @@ public class FindBoardCornersPipe
         boolean boardFound = false;
 
         if (params.type == UICalibrationData.BoardType.CHESSBOARD) {
-            // This is for chessboards
-
             // Reduce the image size to be much more manageable
-            Imgproc.resize(inFrame, smallerInFrame, getFindCornersImgSize(inFrame));
+            if (params.divisor != FrameDivisor.NONE) {
+                Imgproc.resize(inFrame, smallerInFrame, getFindCornersImgSize(inFrame));
+            } else {
+                smallerInFrame = inFrame;
+            }
 
             // Run the chessboard corner finder on the smaller image
             boardFound =
@@ -244,14 +243,13 @@ public class FindBoardCornersPipe
             }
 
         } else if (params.type == UICalibrationData.BoardType.DOTBOARD) {
-            // For dot boards
             boardFound =
                     Calib3d.findCirclesGrid(
                             inFrame, patternSize, boardCorners, Calib3d.CALIB_CB_ASYMMETRIC_GRID);
         }
 
         if (!boardFound) {
-            // If we can't find a chessboard/dot board, just return
+            // If we can't find a chessboard/dot board, give up
             return null;
         }
 
@@ -264,31 +262,25 @@ public class FindBoardCornersPipe
         // Get the size of the inFrame
         this.imageSize = new Size(inFrame.width(), inFrame.height());
 
-        // Do sub corner pix for drawing chessboard
-        Imgproc.cornerSubPix(
-                inFrame, outBoardCorners, getWindowSize(outBoardCorners), zeroZone, criteria);
+        // Do sub corner pix for drawing chessboard when using OpenCV
+        if (params.divisor != FrameDivisor.NONE) {
+            Imgproc.cornerSubPix(
+                    inFrame, outBoardCorners, getWindowSize(outBoardCorners), zeroZone, criteria);
+        }
 
-        // convert back to BGR
-        //        Imgproc.cvtColor(inFrame, inFrame, Imgproc.COLOR_GRAY2BGR);
         // draw the chessboard, doesn't have to be different for a dot board since it just re projects
         // the corners we found
         Calib3d.drawChessboardCorners(outFrame, patternSize, outBoardCorners, true);
-
-        //        // Add the 3D points and the points of the corners found
-        //        if (addToSnapList) {
-        //            this.listOfObjectPoints.add(objectPoints);
-        //            this.listOfImagePoints.add(boardCorners);
-        //        }
 
         return Triple.of(inFrame.size(), objPts, outBoardCorners);
     }
 
     public static class FindCornersPipeParams {
-        private final int boardHeight;
-        private final int boardWidth;
-        private final UICalibrationData.BoardType type;
-        private final double gridSize;
-        private final FrameDivisor divisor;
+        final int boardHeight;
+        final int boardWidth;
+        final UICalibrationData.BoardType type;
+        final double gridSize;
+        final FrameDivisor divisor;
 
         public FindCornersPipeParams(
                 int boardHeight,

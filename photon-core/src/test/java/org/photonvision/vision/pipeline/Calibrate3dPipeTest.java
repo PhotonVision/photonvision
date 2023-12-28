@@ -24,7 +24,6 @@ import edu.wpi.first.math.util.Units;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -78,9 +77,9 @@ public class Calibrate3dPipeTest {
         calibrate3dPipe.setParams(new Calibrate3dPipe.CalibratePipeParams(new Size(640, 480)));
 
         var calibrate3dPipeOutput = calibrate3dPipe.run(foundCornersList);
-        assertTrue(calibrate3dPipeOutput.output.perViewErrors.length > 0);
-        System.out.println(
-                "Per View Errors: " + Arrays.toString(calibrate3dPipeOutput.output.perViewErrors));
+        assertTrue(calibrate3dPipeOutput.output.observations.size() > 0);
+        // System.out.println("Per View Errors: " +
+        // Arrays.toString(calibrate3dPipeOutput.output.perViewErrors));
 
         for (var f : frames) {
             f.release();
@@ -94,7 +93,7 @@ public class Calibrate3dPipeTest {
         File dir = new File(TestUtils.getDotBoardImagesPath().toAbsolutePath().toString());
         File[] directoryListing = dir.listFiles();
 
-        Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline(20);
+        Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline(20, "unique_name_lol");
         calibration3dPipeline.getSettings().boardHeight = 11;
         calibration3dPipeline.getSettings().boardWidth = 4;
         calibration3dPipeline.getSettings().boardType = UICalibrationData.BoardType.DOTBOARD;
@@ -139,13 +138,13 @@ public class Calibrate3dPipeTest {
         calibration3dPipeline.finishCalibration();
 
         assertNotNull(cal);
-        assertNotNull(cal.perViewErrors);
-        System.out.println("Per View Errors: " + Arrays.toString(cal.perViewErrors));
+        assertNotNull(cal.observations);
+        // System.out.println("Per View Errors: " + Arrays.toString(cal.perViewErrors));
         System.out.println("Camera Intrinsics: " + cal.cameraIntrinsics.toString());
         System.out.println("Dist Coeffs: " + cal.distCoeffs.toString());
-        System.out.println("Standard Deviation: " + cal.standardDeviation);
-        System.out.println(
-                "Mean: " + Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
+        // System.out.println("Standard Deviation: " + cal.standardDeviation);
+        // System.out.println("Mean: " +
+        // Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
 
         // Confirm we didn't get leaky on our mat usage
         // assertTrue(CVMat.getMatCount() == startMatCount); // TODO Figure out why this doesn't work in
@@ -260,7 +259,7 @@ public class Calibrate3dPipeTest {
 
         assertTrue(directoryListing.length >= 25);
 
-        Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline(20);
+        Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline(20, "test_squares_common");
         calibration3dPipeline.getSettings().boardType = UICalibrationData.BoardType.CHESSBOARD;
         calibration3dPipeline.getSettings().resolution = imgRes;
         calibration3dPipeline.getSettings().boardHeight = (int) Math.round(boardDim.height);
@@ -298,7 +297,7 @@ public class Calibrate3dPipeTest {
 
         // Confirm we have indeed gotten valid calibration objects
         assertNotNull(cal);
-        assertNotNull(cal.perViewErrors);
+        assertNotNull(cal.observations);
 
         // Confirm the calibrated center pixel is fairly close to of the "expected" location at the
         // center of the sensor.
@@ -310,12 +309,12 @@ public class Calibrate3dPipeTest {
         assertTrue(centerXErrPct < 10.0);
         assertTrue(centerYErrPct < 10.0);
 
-        System.out.println("Per View Errors: " + Arrays.toString(cal.perViewErrors));
-        System.out.println("Camera Intrinsics: " + cal.cameraIntrinsics);
+        // System.out.println("Per View Errors: " + Arrays.toString(cal.perViewErrors));
+        System.out.println("Camera Intrinsics: " + cal.cameraIntrinsics.toString());
         System.out.println("Dist Coeffs: " + cal.distCoeffs.toString());
-        System.out.println("Standard Deviation: " + cal.standardDeviation);
-        System.out.println(
-                "Mean: " + Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
+        // System.out.println("Standard Deviation: " + cal.standardDeviation);
+        // System.out.println("Mean: " +
+        // Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
 
         // Confirm we didn't get leaky on our mat usage
         // assertEquals(startMatCount, CVMat.getMatCount()); // TODO Figure out why this doesn't
