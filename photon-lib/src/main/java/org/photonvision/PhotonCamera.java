@@ -374,13 +374,37 @@ public class PhotonCamera implements AutoCloseable {
         if (!versionString.isEmpty() && !PhotonVersion.versionMatches(versionString)) {
             // Error on a verified version mismatch
             // But stay silent otherwise
-            DriverStation.reportWarning(
+
+            String bfw = "";
+            bfw += ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
+            bfw += ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
+            bfw += ">>>    ____  _________    ____     ________  ___________    __   \n";
+            bfw += ">>>   / __ \\/ ____/   |  / __ \\   /_  __/ / / /  _/ ___/   / / \n";
+            bfw += ">>>  / /_/ / __/ / /| | / / / /    / / / /_/ // / \\__ \\   / /  \n";
+            bfw += ">>> / _, _/ /___/ ___ |/ /_/ /    / / / __  // / ___/ /  /_/     \n";
+            bfw += ">>>/_/ |_/_____/_/  |_/_____/    /_/ /_/ /_/___//____/  (_)      \n";
+            bfw += ">>>                                                              \n";
+            bfw += ">>> You are running an incompatible version                      \n";
+            bfw += ">>> of PhotonVision on your coprocessor!                         \n";
+            bfw += ">>>                                                              \n";
+            bfw += ">>> This is neither tested nor supported.                        \n";
+            bfw += ">>> You MUST update either PhotonVision, PhotonLib, or both.     \n";
+            bfw += ">>>                                                              \n";
+            bfw += ">>> Your code will now crash. We hope your day gets better.      \n";
+            bfw += ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
+            bfw += ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
+
+            DriverStation.reportWarning("\n\n\n\n", false);
+            DriverStation.reportWarning(bfw, false);
+            DriverStation.reportWarning("\n\n", false);
+            var versionMismatchMessage =
                     "Photon version "
                             + PhotonVersion.versionString
                             + " does not match coprocessor version "
                             + versionString
-                            + "!",
-                    true);
+                            + "!";
+            DriverStation.reportError(versionMismatchMessage, false);
+            throw new UnsupportedOperationException(versionMismatchMessage);
         }
     }
 }
