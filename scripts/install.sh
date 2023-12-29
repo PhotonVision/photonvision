@@ -39,7 +39,7 @@ INSTALL_NETWORK_MANAGER="false"
 if [ "$DISTRO" = "Ubuntu" ]; then
   echo ""
   echo "Photonvision uses NetworkManager to control networking on your device."
-  read -p "Do you want this script to install and configure NetworkManager? [Y/n]" response
+  read -p "Do you want this script to install and configure NetworkManager? [y/N]" response
   if [[ $response == [yY] || $response == [yY][eE][sS] ]]; then
     INSTALL_NETWORK_MANAGER="true"
 fi
