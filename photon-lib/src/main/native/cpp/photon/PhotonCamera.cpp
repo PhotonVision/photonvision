@@ -200,27 +200,27 @@ void PhotonCamera::VerifyVersion() {
           cameraNameOutString);
     }
   } else if (!VersionMatches(versionString)) {
-    std::string bfw = "";
-    bfw += ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
-    bfw += ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
-    bfw += ">>>    ____  _________    ____     ________  ___________    __  \n";
-    bfw += ">>>   / __ \\/ ____/   |  / __ \\   /_  __/ / / /  _/ ___/   / /\n";
-    bfw += ">>>  / /_/ / __/ / /| | / / / /    / / / /_/ // / \\__ \\   / / \n";
-    bfw += ">>> / _, _/ /___/ ___ |/ /_/ /    / / / __  // / ___/ /  /_/    \n";
-    bfw += ">>>/_/ |_/_____/_/  |_/_____/    /_/ /_/ /_/___//____/  (_)     \n";
-    bfw += ">>>                                                             \n";
-    bfw += ">>> You are running an incompatible version                     \n";
-    bfw += ">>> of PhotonVision on your coprocessor!                        \n";
-    bfw += ">>>                                                             \n";
-    bfw += ">>> This is neither tested nor supported.                       \n";
-    bfw += ">>> You MUST update either PhotonVision, PhotonLib, or both.    \n";
-    bfw += ">>>                                                             \n";
-    bfw += ">>> Your code will now crash. We hope your day gets better.     \n";
-    bfw += ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
-    bfw += ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
 
     FRC_ReportError(frc::warn::Warning, "\n\n\n\n");
-    FRC_ReportError(frc::warn::Warning, bfw);
+    FRC_ReportError(frc::warn::Warning, 
+        ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n" +
+        ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n" +
+        ">>>    ____  _________    ____     ________  ___________    __   \n" +
+        ">>>   / __ \\/ ____/   |  / __ \\   /_  __/ / / /  _/ ___/   / / \n" +
+        ">>>  / /_/ / __/ / /| | / / / /    / / / /_/ // / \\__ \\   / /  \n" +
+        ">>> / _, _/ /___/ ___ |/ /_/ /    / / / __  // / ___/ /  /_/     \n" +
+        ">>>/_/ |_/_____/_/  |_/_____/    /_/ /_/ /_/___//____/  (_)      \n" +
+        ">>>                                                              \n" +
+        ">>> You are running an incompatible version                      \n" +
+        ">>> of PhotonVision on your coprocessor!                         \n" +
+        ">>>                                                              \n" +
+        ">>> This is neither tested nor supported.                        \n" +
+        ">>> You MUST update either PhotonVision, PhotonLib, or both.     \n" +
+        ">>>                                                              \n" +
+        ">>> Your code will now crash. We hope your day gets better.      \n" +
+        ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n" +
+        ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n" 
+    );
     FRC_ReportError(frc::warn::Warning, "\n\n");
     FRC_ReportError(frc::err::Error,
                     "Photon version {} does not match coprocessor version {}!",
