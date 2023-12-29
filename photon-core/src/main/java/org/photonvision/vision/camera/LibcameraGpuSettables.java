@@ -132,7 +132,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
             // Auto-exposure is active right now, don't set anything.
             return;
         }
-         MathUtils.map(exposure, 0.0, 100.0, 0.1, 100);
+        MathUtils.map(exposure, 0.0, 100.0, 0.1, 100);
 
         // HACKS!
         // If we set exposure too low, libcamera crashes or slows down
