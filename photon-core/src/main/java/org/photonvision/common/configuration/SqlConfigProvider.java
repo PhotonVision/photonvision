@@ -343,6 +343,11 @@ public class SqlConfigProvider extends ConfigProvider {
         ps.setString(2, value);
     }
 
+    private boolean skipSavingHWCfg = false;
+    private boolean skipSavingHWSet = false;
+    private boolean skipSavingNWCfg = false;
+    private boolean skipSavingAPRTG = false;
+
     private void saveGlobal(Connection conn) {
         PreparedStatement statement1 = null;
         PreparedStatement statement2 = null;
@@ -351,28 +356,34 @@ public class SqlConfigProvider extends ConfigProvider {
             // Replace this camera's row with the new settings
             var sqlString = "REPLACE INTO global (filename, contents) VALUES " + "(?,?);";
 
-            statement1 = conn.prepareStatement(sqlString);
-            addFile(
-                    statement1,
-                    TableKeys.HARDWARE_SETTINGS,
-                    JacksonUtils.serializeToString(config.getHardwareSettings()));
-            statement1.executeUpdate();
+            if (!skipSavingHWSet) {
+                statement1 = conn.prepareStatement(sqlString);
+                addFile(
+                        statement1,
+                        TableKeys.HARDWARE_SETTINGS,
+                        JacksonUtils.serializeToString(config.getHardwareSettings()));
+                statement1.executeUpdate();
+            }
 
-            statement2 = conn.prepareStatement(sqlString);
-            addFile(
-                    statement2,
-                    TableKeys.NETWORK_CONFIG,
-                    JacksonUtils.serializeToString(config.getNetworkConfig()));
-            statement2.executeUpdate();
-            statement2.close();
+            if (!skipSavingNWCfg) {
+                statement2 = conn.prepareStatement(sqlString);
+                addFile(
+                        statement2,
+                        TableKeys.NETWORK_CONFIG,
+                        JacksonUtils.serializeToString(config.getNetworkConfig()));
+                statement2.executeUpdate();
+                statement2.close();
+            }
 
-            statement3 = conn.prepareStatement(sqlString);
-            addFile(
-                    statement3,
-                    TableKeys.HARDWARE_CONFIG,
-                    JacksonUtils.serializeToString(config.getHardwareConfig()));
-            statement3.executeUpdate();
-            statement3.close();
+            if (!skipSavingHWCfg) {
+                statement3 = conn.prepareStatement(sqlString);
+                addFile(
+                        statement3,
+                        TableKeys.HARDWARE_CONFIG,
+                        JacksonUtils.serializeToString(config.getHardwareConfig()));
+                statement3.executeUpdate();
+                statement3.close();
+            }
 
         } catch (SQLException | IOException e) {
             logger.error("Err saving global", e);
@@ -431,21 +442,25 @@ public class SqlConfigProvider extends ConfigProvider {
 
     @Override
     public boolean saveUploadedHardwareConfig(Path uploadPath) {
+        skipSavingHWCfg = true;
         return saveOneFile(TableKeys.HARDWARE_CONFIG, uploadPath);
     }
 
     @Override
     public boolean saveUploadedHardwareSettings(Path uploadPath) {
+        skipSavingHWSet = true;
         return saveOneFile(TableKeys.HARDWARE_SETTINGS, uploadPath);
     }
 
     @Override
     public boolean saveUploadedNetworkConfig(Path uploadPath) {
+        skipSavingNWCfg = true;
         return saveOneFile(TableKeys.NETWORK_CONFIG, uploadPath);
     }
 
     @Override
     public boolean saveUploadedAprilTagFieldLayout(Path uploadPath) {
+        skipSavingAPRTG = true;
         return saveOneFile(TableKeys.ATFL_CONFIG_FILE, uploadPath);
     }
 
