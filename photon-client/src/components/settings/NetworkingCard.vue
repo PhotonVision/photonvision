@@ -9,7 +9,7 @@ import { NetworkConnectionType, type NetworkSettings } from "@/types/SettingType
 import { useStateStore } from "@/stores/StateStore";
 
 const settingsValid = ref(true);
-// Copy object to remove refrence to store
+// Copy object to remove reference to store
 const tempSettingsStruct = ref<NetworkSettings>(Object.assign({}, useSettingsStore().network));
 const isValidNetworkTablesIP = (v: string | undefined): boolean => {
   // Check if it is a valid team number between 1-9999
