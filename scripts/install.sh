@@ -34,6 +34,16 @@ fi
 echo "This is the installation script for PhotonVision."
 echo "Installing for platform $ARCH_NAME"
 
+DISTRO=$(lsb_release -is)
+INSTALL_NETWORK_MANAGER="false"
+if [ "$DISTRO" = "Ubuntu" ]; then
+  echo ""
+  echo "Photonvision uses NetworkManager to control networking on your device."
+  read -p "Do you want this script to install and configure NetworkManager? [Y/n]" response
+  if [[ $response == [yY] || $response == [yY][eE][sS] ]]; then
+    INSTALL_NETWORK_MANAGER="true"
+fi
+
 echo "Installing curl..."
 apt-get install --yes curl
 echo "curl installation complete."
@@ -46,7 +56,14 @@ echo "Installing cpufrequtils..."
 apt-get install --yes cpufrequtils
 echo "cpufrequtils installation complete."
 
-if [ "$(lsb_release -is)" == "Ubuntu" ]; then
+echo "Setting cpufrequtils to performance mode"
+if [ -f /etc/default/cpufrequtils ]; then
+    sed -i -e 's/^#\?GOVERNOR=.*$/GOVERNOR=performance/' /etc/default/cpufrequtils
+else
+    echo 'GOVERNOR=performance' > /etc/default/cpufrequtils
+fi
+
+if [[ "$INSTALL_NETWORK_MANAGER" == "true" ]]; then
   echo "Installing network-manager..."
   apt-get install --yes network-manager
   cat > /etc/netplan/00-default-nm-renderer.yaml <<EOF
@@ -54,13 +71,6 @@ network:
   renderer: NetworkManager
 EOF
   echo "network-manager installation complete."
-fi
-
-echo "Setting cpufrequtils to performance mode"
-if [ -f /etc/default/cpufrequtils ]; then
-    sed -i -e 's/^#\?GOVERNOR=.*$/GOVERNOR=performance/' /etc/default/cpufrequtils
-else
-    echo 'GOVERNOR=performance' > /etc/default/cpufrequtils
 fi
 
 echo "Installing the JRE..."
