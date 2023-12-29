@@ -62,6 +62,9 @@ const settingsHaveChanged = (): boolean => {
 const saveGeneralSettings = () => {
   const changingStaticIp = useSettingsStore().network.connectionType === NetworkConnectionType.Static;
 
+  // Update with new values
+  Object.assign(useSettingsStore().network, tempSettingsStruct.value);
+
   useSettingsStore()
     .saveGeneralSettings()
     .then((response) => {
@@ -69,7 +72,6 @@ const saveGeneralSettings = () => {
         message: response.data.text || response.data,
         color: "success"
       });
-      Object.assign(useSettingsStore().network, tempSettingsStruct.value);
     })
     .catch((error) => {
       if (error.response) {
