@@ -37,6 +37,8 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
     private final NTTopicSet ts = new NTTopicSet();
 
+    private boolean shouldPublishProto;
+
     NTDataChangeListener pipelineIndexListener;
     private final Supplier<Integer> pipelineIndexSupplier;
     private final Consumer<Integer> pipelineIndexConsumer;
@@ -126,6 +128,10 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         updateEntries();
     }
 
+    public void setShouldPublishProto(boolean shouldPublishProto) {
+        this.shouldPublishProto = shouldPublishProto;
+    }
+
     @Override
     public void accept(CVPipelineResult result) {
         var simplified =
@@ -135,6 +141,9 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
                         result.multiTagResult);
 
         ts.resultPublisher.accept(simplified, simplified.getPacketSize());
+        if (shouldPublishProto) {
+            ts.protoResultPublisher.set(simplified);
+        }
 
         ts.pipelineIndexPublisher.set(pipelineIndexSupplier.get());
         ts.driverModePublisher.set(driverModeSupplier.getAsBoolean());
