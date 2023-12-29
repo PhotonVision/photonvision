@@ -167,23 +167,28 @@ class PhotonCamera:
         if len(versionString) > 0 and versionString != PHOTONVISION_VERSION:
             # Verified version mismatch
 
-            wpilib.reportWarning(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-            wpilib.reportWarning(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-            wpilib.reportWarning(">>>    ____  _________    ____     ________  ___________    __   ")
-            wpilib.reportWarning(">>>   / __ \\/ ____/   |  / __ \\   /_  __/ / / /  _/ ___/   / / ")
-            wpilib.reportWarning(">>>  / /_/ / __/ / /| | / / / /    / / / /_/ // / \\__ \\   / /  ")
-            wpilib.reportWarning(">>> / _, _/ /___/ ___ |/ /_/ /    / / / __  // / ___/ /  /_/     ")
-            wpilib.reportWarning(">>>/_/ |_/_____/_/  |_/_____/    /_/ /_/ /_/___//____/  (_)      ")
-            wpilib.reportWarning(">>>                                                              ")
-            wpilib.reportWarning(">>> You are running an incompatible version                      ")
-            wpilib.reportWarning(">>> of PhotonVision on your coprocessor!                         ")
-            wpilib.reportWarning(">>>                                                              ")
-            wpilib.reportWarning(">>> This is neither tested nor supported.                        ")
-            wpilib.reportWarning(">>> You MUST update either PhotonVision, PhotonLib, or both.     ")
-            wpilib.reportWarning(">>>                                                              ")
-            wpilib.reportWarning(">>> Your code will now crash. We hope your day gets better.      ")
-            wpilib.reportWarning(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-            wpilib.reportWarning(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+            bfw = ""
+            bfw += ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+            bfw += ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+            bfw += ">>>    ____  _________    ____     ________  ___________    __   \n"
+            bfw += ">>>   / __ \\/ ____/   |  / __ \\   /_  __/ / / /  _/ ___/   / / \n"
+            bfw += ">>>  / /_/ / __/ / /| | / / / /    / / / /_/ // / \\__ \\   / /  \n"
+            bfw += ">>> / _, _/ /___/ ___ |/ /_/ /    / / / __  // / ___/ /  /_/     \n"
+            bfw += ">>>/_/ |_/_____/_/  |_/_____/    /_/ /_/ /_/___//____/  (_)      \n"
+            bfw += ">>>                                                              \n"
+            bfw += ">>> You are running an incompatible version                      \n"
+            bfw += ">>> of PhotonVision on your coprocessor!                         \n"
+            bfw += ">>>                                                              \n"
+            bfw += ">>> This is neither tested nor supported.                        \n"
+            bfw += ">>> You MUST update either PhotonVision, PhotonLib, or both.     \n"
+            bfw += ">>>                                                              \n"
+            bfw += ">>> Your code will now crash. We hope your day gets better.      \n"
+            bfw += ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+            bfw += ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+
+            wpilib.reportWarning("\n\n\n\n")
+            wpilib.reportWarning(bfw)
+            wpilib.reportWarning("\n\n")
 
             errText = f"Photon version {PHOTONLIB_VERSION} does not match coprocessor version {versionString}. Please install photonlibpy version {PHOTONLIB_VERSION}."
             wpilib.reportError(errText, True)
