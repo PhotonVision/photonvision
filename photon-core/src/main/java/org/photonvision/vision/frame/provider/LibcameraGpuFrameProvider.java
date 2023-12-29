@@ -20,7 +20,6 @@ package org.photonvision.vision.frame.provider;
 import org.opencv.core.Mat;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.LibCameraJNI;
-import org.photonvision.raspi.LibCameraJNI.SensorModel;
 import org.photonvision.vision.camera.LibcameraGpuSettables;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
