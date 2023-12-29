@@ -29,7 +29,7 @@ export const useSettingsStore = defineStore("settings", {
       hardwarePlatform: undefined
     },
     network: {
-      ntServerAddress: "10.5.40.65",
+      ntServerAddress: "",
       shouldManage: true,
       canManage: true,
       connectionType: NetworkConnectionType.DHCP,
