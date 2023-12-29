@@ -343,6 +343,24 @@ public class SqlConfigProvider extends ConfigProvider {
         ps.setString(2, value);
     }
 
+    // NOTE to Future Developers:
+    // These booleans form a mechanism to prevent saveGlobal() and
+    // saveOneFile() from stepping on each other's toes. Both write
+    // to the database on disk, and both write to the same keys, but
+    // they use different sources. Generally, if the user has done something
+    // to trigger saveOneFile() to get called, it implies they want that
+    // configuration, and not whatever is in RAM right now (which is what
+    // saveGlobal() uses to write). Therefor, once saveOneFile() is invoked,
+    // we record which entry was overwritten in the database and prevent
+    // overwriting it when saveGlobal() is invoked (likely by the shutdown
+    // that should almost almost almost happen right after saveOneFile() is
+    // invoked).
+    //
+    // In the future, this may not be needed. A better architecture would involve
+    // manipulating the RAM representation of configuration when new .json files
+    // are uploaded in the UI, and eliminate all other usages of saveOneFile().
+    // But, seeing as it's Dec 28 and kickoff is nigh, we put this here and moved on.
+    // Thank you for coming to my TED talk.
     private boolean skipSavingHWCfg = false;
     private boolean skipSavingHWSet = false;
     private boolean skipSavingNWCfg = false;
