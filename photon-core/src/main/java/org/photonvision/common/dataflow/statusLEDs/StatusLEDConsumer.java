@@ -15,10 +15,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.common;
+package org.photonvision.common.dataflow.statusLEDs;
 
-public enum ProgramStatus {
-    UHOH,
-    RUNNING,
-    RUNNING_NT
+import org.photonvision.common.dataflow.CVPipelineResultConsumer;
+import org.photonvision.common.hardware.HardwareManager;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
+
+public class StatusLEDConsumer implements CVPipelineResultConsumer {
+    private final int index;
+
+    public StatusLEDConsumer(int index) {
+        this.index = index;
+    }
+
+    @Override
+    public void accept(CVPipelineResult t) {
+        HardwareManager.getInstance().setTargetsVisibleStatus(this.index, t.hasTargets());
+    }
 }

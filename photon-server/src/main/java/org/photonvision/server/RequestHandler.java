@@ -89,8 +89,8 @@ public class RequestHandler {
 
         if (ConfigManager.saveUploadedSettingsZip(tempFilePath.get())) {
             ctx.status(200);
-            ctx.result("Successfully saved the uploaded settings zip, rebooting");
-            logger.info("Successfully saved the uploaded settings zip, rebooting");
+            ctx.result("Successfully saved the uploaded settings zip, rebooting...");
+            logger.info("Successfully saved the uploaded settings zip, rebooting...");
             restartProgram();
         } else {
             ctx.status(500);
@@ -153,8 +153,9 @@ public class RequestHandler {
 
         if (ConfigManager.getInstance().saveUploadedHardwareConfig(tempFilePath.get().toPath())) {
             ctx.status(200);
-            ctx.result("Successfully saved the uploaded hardware config");
-            logger.info("Successfully saved the uploaded hardware config");
+            ctx.result("Successfully saved the uploaded hardware config, rebooting...");
+            logger.info("Successfully saved the uploaded hardware config, rebooting...");
+            restartProgram();
         } else {
             ctx.status(500);
             ctx.result("There was an error while saving the uploaded hardware config");
@@ -195,8 +196,9 @@ public class RequestHandler {
 
         if (ConfigManager.getInstance().saveUploadedHardwareSettings(tempFilePath.get().toPath())) {
             ctx.status(200);
-            ctx.result("Successfully saved the uploaded hardware settings");
-            logger.info("Successfully saved the uploaded hardware settings");
+            ctx.result("Successfully saved the uploaded hardware settings, rebooting...");
+            logger.info("Successfully saved the uploaded hardware settings, rebooting...");
+            restartProgram();
         } else {
             ctx.status(500);
             ctx.result("There was an error while saving the uploaded hardware settings");
@@ -237,8 +239,9 @@ public class RequestHandler {
 
         if (ConfigManager.getInstance().saveUploadedNetworkConfig(tempFilePath.get().toPath())) {
             ctx.status(200);
-            ctx.result("Successfully saved the uploaded network config");
-            logger.info("Successfully saved the uploaded network config");
+            ctx.result("Successfully saved the uploaded network config, rebooting...");
+            logger.info("Successfully saved the uploaded network config, rebooting...");
+            restartProgram();
         } else {
             ctx.status(500);
             ctx.result("There was an error while saving the uploaded network config");
@@ -279,8 +282,9 @@ public class RequestHandler {
 
         if (ConfigManager.getInstance().saveUploadedAprilTagFieldLayout(tempFilePath.get().toPath())) {
             ctx.status(200);
-            ctx.result("Successfully saved the uploaded AprilTagFieldLayout");
-            logger.info("Successfully saved the uploaded AprilTagFieldLayout");
+            ctx.result("Successfully saved the uploaded AprilTagFieldLayout, rebooting...");
+            logger.info("Successfully saved the uploaded AprilTagFieldLayout, rebooting...");
+            restartProgram();
         } else {
             ctx.status(500);
             ctx.result("There was an error while saving the uploaded AprilTagFieldLayout");
