@@ -4,10 +4,46 @@ package_is_installed(){
     dpkg-query -W -f='${Status}' "$1" 2>/dev/null | grep -q "ok installed"
 }
 
+help() {
+  echo "This script installs Photonvision."
+  echo "It must be run as root."
+  echo
+  echo "Syntax: sudo ./install.sh [-h|m|n|q]"
+  echo "  options:"
+  echo "  -h        Display this help message."
+  echo "  -m        Install and configure NetworkManager (Ubuntu only)"
+  echo "  -n        Diable networking."
+  echo "  -q        Silent install, automatically accepts all defaults. For non-interactive use"
+  echo
+}
+
 if [ "$(id -u)" != "0" ]; then
    echo "This script must be run as root" 1>&2
    exit 1
 fi
+
+INSTALL_NETWORK_MANAGER="false"
+
+while getopts ":hmnq" name; do
+  case "$name" in
+    h)
+      help
+      exit 0
+      ;;
+    m) INSTALL_NETWORK_MANAGER="true"
+      ;;
+    n) DISABLE_NETWORKING="true"
+      ;;
+    q) QUIET="true"
+      ;;
+    \?)
+      echo "Error: Invalid option -- '$OPTARG'"
+      echo "Try './install.sh -h' for more information."
+      exit 1
+  esac
+done
+
+shift $(($OPTIND -1))
 
 ARCH=$(uname -m)
 ARCH_NAME=""
@@ -35,8 +71,7 @@ echo "This is the installation script for PhotonVision."
 echo "Installing for platform $ARCH_NAME"
 
 DISTRO=$(lsb_release -is)
-INSTALL_NETWORK_MANAGER="false"
-if [ "$DISTRO" = "Ubuntu" ]; then
+if [[ "$DISTRO" = "Ubuntu" && "$INSTALL_NETWORK_MANAGER" != "true" && -z "$QUIET"]]; then
   echo ""
   echo "Photonvision uses NetworkManager to control networking on your device."
   read -p "Do you want this script to install and configure NetworkManager? [y/N]: " response
@@ -139,6 +174,10 @@ RestartSec=1
 [Install]
 WantedBy=multi-user.target
 EOF
+
+if [ "$DISABLE_NETWORKING" = "true" ]; then
+  sed -i "s/photonvision.jar/photonvision.jar -n" /lib/systemd/system/photonvision.service
+fi
 
 cp /lib/systemd/system/photonvision.service /etc/systemd/system/photonvision.service
 chmod 644 /etc/systemd/system/photonvision.service
