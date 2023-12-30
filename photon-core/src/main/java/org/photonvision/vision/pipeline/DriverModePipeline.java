@@ -21,6 +21,7 @@ import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.LibCameraJNI;
+import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
@@ -72,7 +73,7 @@ public class DriverModePipeline
     @Override
     public DriverModePipelineResult process(Frame frame, DriverModePipelineSettings settings) {
         long totalNanos = 0;
-        boolean accelerated = LibCameraJNI.isSupported() && cameraQuirks.hasQuirk(CameraQuirk.PiCam);
+        boolean accelerated = LibCameraJNILoader.isSupported() && cameraQuirks.hasQuirk(CameraQuirk.PiCam);
 
         // apply pipes
         var inputMat = frame.colorImage.getMat();
