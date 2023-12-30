@@ -11,9 +11,9 @@ help() {
   echo "Syntax: sudo ./install.sh [-h|m|n|q]"
   echo "  options:"
   echo "  -h        Display this help message."
-  echo "  -m        Install and configure NetworkManager (Ubuntu only)"
-  echo "  -n        Diable networking."
-  echo "  -q        Silent install, automatically accepts all defaults. For non-interactive use"
+  echo "  -m        Install and configure NetworkManager (Ubuntu only)."
+  echo "  -n        Disable networking. This will also prevent installation of NetworkManager."
+  echo "  -q        Silent install, automatically accepts all defaults. For non-interactive use."
   echo
 }
 
@@ -71,7 +71,7 @@ echo "This is the installation script for PhotonVision."
 echo "Installing for platform $ARCH_NAME"
 
 DISTRO=$(lsb_release -is)
-if [[ "$DISTRO" = "Ubuntu" && "$INSTALL_NETWORK_MANAGER" != "true" && -z "$QUIET"]]; then
+if [[ "$DISTRO" = "Ubuntu" && "$INSTALL_NETWORK_MANAGER" != "true" && -z "$QUIET" && -z "$DISABLE_NETWORKING" ]]; then
   echo ""
   echo "Photonvision uses NetworkManager to control networking on your device."
   read -p "Do you want this script to install and configure NetworkManager? [y/N]: " response
@@ -176,7 +176,7 @@ WantedBy=multi-user.target
 EOF
 
 if [ "$DISABLE_NETWORKING" = "true" ]; then
-  sed -i "s/photonvision.jar/photonvision.jar -n" /lib/systemd/system/photonvision.service
+  sed -i "s/photonvision.jar/photonvision.jar -n/" /lib/systemd/system/photonvision.service
 fi
 
 cp /lib/systemd/system/photonvision.service /etc/systemd/system/photonvision.service
