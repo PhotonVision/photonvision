@@ -49,8 +49,14 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     cameraNames(): string[] {
       return this.cameras.map((c) => c.nickname);
     },
+    currentCameraName(): string {
+      return this.cameraNames[useStateStore().currentCameraIndex];
+    },
     pipelineNames(): string[] {
       return this.currentCameraSettings.pipelineNicknames;
+    },
+    currentPipelineName(): string {
+      return this.pipelineNames[useStateStore().currentCameraIndex];
     },
     isDriverMode(): boolean {
       return this.currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.DriverMode;

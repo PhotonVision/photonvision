@@ -197,7 +197,7 @@ export const PlaceholderCameraSettings: CameraSettings = {
           locationInImageSpace: [
             { x: 100, y: 100 },
             { x: 210, y: 100 },
-            { x: 320, y: 101 },
+            { x: 320, y: 101 }
           ],
           locationInObjectSpace: [{ x: 0, y: 0, z: 0 }],
           optimisedCameraToObject: {
@@ -207,7 +207,7 @@ export const PlaceholderCameraSettings: CameraSettings = {
           reprojectionErrors: [
             { x: 1, y: 1 },
             { x: 2, y: 1 },
-            { x: 3, y: 1 },
+            { x: 3, y: 1 }
           ]
         }
       ]

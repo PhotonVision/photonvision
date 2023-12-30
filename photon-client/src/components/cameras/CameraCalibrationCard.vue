@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Vue, { computed, ref, type Ref } from "vue";
+import { computed, ref } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import {
   CalibrationBoardTypes,
@@ -17,7 +17,8 @@ import PvSwitch from "@/components/common/pv-switch.vue";
 import PvSelect from "@/components/common/pv-select.vue";
 import PvNumberInput from "@/components/common/pv-number-input.vue";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
-import loadingImage from "@/assets/images/loading.svg";
+
+type JSONFileUploadEvent = Event & { target: HTMLInputElement | null };
 
 const settingsValid = ref(true);
 
@@ -26,7 +27,6 @@ const getCalibrationCoeffs = (resolution: Resolution): CameraCalibrationResult |
     (cal) => cal.resolution.width === resolution.width && cal.resolution.height === resolution.height
   );
 };
-
 const getMeanFromView = (o: BoardObservation) => {
   // Is this the right formula for RMS error? who knows! not me!
   const perViewSumSquareReprojectionError = o.reprojectionErrors.flatMap((it2) => [it2.x, it2.y]);
@@ -36,9 +36,9 @@ const getMeanFromView = (o: BoardObservation) => {
     perViewSumSquareReprojectionError.map((it) => Math.pow(it, 2)).reduce((a, b) => a + b, 0) /
       perViewSumSquareReprojectionError.length
   );
-}
+};
 
-const getUniqueVideoResolutions = (): VideoFormat[] => {
+const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
   const uniqueResolutions: VideoFormat[] = [];
   useCameraSettingsStore().currentCameraSettings.validVideoFormats.forEach((format, index) => {
     if (
@@ -84,7 +84,7 @@ const getUniqueVideoResolutions = (): VideoFormat[] => {
   return uniqueResolutions;
 };
 const getUniqueVideoResolutionStrings = () =>
-  getUniqueVideoResolutions().map<{ name: string; value: number }>((f) => ({
+  getUniqueVideoFormatsByResolution().map<{ name: string; value: number }>((f) => ({
     name: `${f.resolution.width} X ${f.resolution.height}`,
     // Index won't ever be undefined
     value: f.index || 0
@@ -179,7 +179,7 @@ const importCalibrationFromCalibDB = ref();
 const openCalibUploadPrompt = () => {
   importCalibrationFromCalibDB.value.click();
 };
-const readImportedCalibration = (payload: Event) => {
+const readImportedCalibrationFromCalibDB = (payload: JSONFileUploadEvent) => {
   if (payload.target == null || !payload.target?.files) return;
   const files: FileList = payload.target.files as FileList;
 
@@ -244,93 +244,66 @@ const endCalibration = () => {
     });
 };
 
-const createSeries = (label, xData, yData, color, showLine = true, fill = false) => {
-  if (xData.length !== yData.length) {
-    return null;
+const exportAndDownloadCalibrationData = () => {
+  const calibData = calibrationDetails.value;
+  if (calibData === undefined) {
+    useStateStore().showSnackbarMessage({
+      color: "error",
+      message:
+        "Calibration data isn't available for the requested resolution, please calibrate the requested resolution first"
+    });
+    return;
   }
 
-  if (xData == null || yData == null) {
-    console.log("Data was null. Skipping.");
-    return null;
-  }
+  const camUniqueName = useCameraSettingsStore().currentCameraSettings.uniqueName;
+  const filename = `photon_calibration_${camUniqueName}_${calibData.resolution.width}x${calibData.resolution.height}.json`;
+  const fileData = JSON.stringify(calibData);
 
-  // Convert data to list of x/y pairs
-  let data = [];
-  yData.forEach((y, idx) => {
-    if (!isNaN(y) || y != null) {
-      data.push({ x: xData[idx], y: y });
-    }
-  });
-  return {
-    backgroundColor: color,
-    borderColor: color,
-    label: label,
-    showLine: showLine,
-    fill: fill,
-    data: data,
-    lineTension: 0
-  };
-};
+  const element = document.createElement("a");
+  element.style.display = "none";
+  element.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(fileData));
+  element.setAttribute("download", filename);
 
-const reprojectionErrorSeries = () => {
-  // HUGE hack!
-  const calib = useCameraSettingsStore().currentCameraSettings.completeCalibrations[0];
-
-  const errorNorms = calib.observations
-    .map((it2) => it2.reprojectionErrors)
-    .map((it2) => it2.map((it3) => Math.sqrt(it3.x * it3.x + it3.y * it3.y)))
-    .flat(1);
-  const xLocs = calib.observations.map((it) => it.locationInImageSpace.map((it) => it.x)).flat(1);
-  const yLocs = calib.observations.map((it) => it.locationInImageSpace.map((it) => it.y)).flat(1);
-  // console.log(errorNorms);
-  // console.log(xLocs);
-  // console.log(yLocs);
-
-  function rgb(r, g, b) {
-    return "rgb(" + r + "," + g + "," + b + ")";
-  }
-
-  const scale = 255.0 / Math.max(...errorNorms);
-  const colors = errorNorms.map(it => it * scale).map((it) => rgb(it, 0, 0));
-  console.log(colors)
-
-  return {
-    datasets: [createSeries(`Reprojection error`, xLocs, yLocs, colors, false)]
-  };
-};
-
-function download_cal_data() {
-  const camName = useCameraSettingsStore().currentCameraSettings.uniqueName;
-
-  if (calibrationDetails.value === undefined) return;
-  const cal: CameraCalibrationResult = calibrationDetails.value as CameraCalibrationResult; // ew
-
-  const filename=`photon_calibration_${camName}_${cal.resolution.width}x${cal.resolution.height}.json`
-  const text = JSON.stringify(cal);
-
-  var element = document.createElement('a');
-  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-  element.setAttribute('download', filename);
-
-  element.style.display = 'none';
   document.body.appendChild(element);
-
   element.click();
-
   document.body.removeChild(element);
-}
-
-let showCal = ref(false);
-let calibrationDetails: Ref<CameraCalibrationResult | undefined> = ref(undefined);
-
-const showThing = (value: VideoFormat) => {
-  calibrationDetails.value = getCalibrationCoeffs(value.resolution);
-  showCal.value = true;
+};
+const importCalibrationFromPhotonJson = ref();
+const openUploadPhotonCalibJsonPrompt = () => {
+  importCalibrationFromPhotonJson.value.click();
 };
 
-let visShown = ref(0)
-let observationIdx = ref(0)
+const parseJsonFile = async (file: File): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    const fileReader = new FileReader();
+    fileReader.onload = (event) => {
+      const target: FileReader | null = event.target;
+      if (target === null) reject();
+      else resolve(JSON.parse(target.result as string));
+    };
+    fileReader.onerror = (error) => reject(error);
+    fileReader.readAsText(file);
+  });
+};
 
+const readImportedCalibrationFromPhotonJson = async (payload: JSONFileUploadEvent) => {
+  if (payload.target == null || !payload.target?.files) return;
+  const files: FileList = payload.target.files as FileList;
+  const uploadedJson = files[0];
+
+  const data: CameraCalibrationResult = await parseJsonFile(uploadedJson);
+
+  console.log(data);
+
+  // TODO
+};
+
+let showCalDialog = ref(false);
+let calibrationDetails = ref<CameraCalibrationResult | undefined>(undefined);
+const showCalibDialogForFormat = (format: VideoFormat) => {
+  calibrationDetails.value = getCalibrationCoeffs(format.resolution);
+  showCalDialog.value = true;
+};
 </script>
 
 <template>
@@ -407,7 +380,11 @@ let observationIdx = ref(0)
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(value, index) in getUniqueVideoResolutions()" :key="index" @click="showThing(value)">
+                  <tr
+                    v-for="(value, index) in getUniqueVideoFormatsByResolution()"
+                    :key="index"
+                    @click="showCalibDialogForFormat(value)"
+                  >
                     <td>{{ value.resolution.width }} X {{ value.resolution.height }}</td>
                     <td>{{ value.mean !== undefined ? value.mean.toFixed(2) + "px" : "-" }}</td>
                     <td>{{ value.horizontalFOV !== undefined ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
@@ -540,7 +517,7 @@ let observationIdx = ref(0)
               type="file"
               accept=".json"
               style="display: none"
-              @change="readImportedCalibration"
+              @change="readImportedCalibrationFromCalibDB"
             />
           </v-col>
         </v-row>
@@ -589,64 +566,73 @@ let observationIdx = ref(0)
         </v-card-actions>
       </v-card>
     </v-dialog>
-
-    <v-dialog v-model="showCal" width="80em">
+    <v-dialog v-model="showCalDialog" width="80em">
       <v-card color="primary" dark>
         <v-card-title
-          >{{ useCameraSettingsStore().cameraNames[useStateStore().currentCameraIndex] }} -
-          {{ calibrationDetails?.resolution.width }} x {{ calibrationDetails?.resolution.height }}</v-card-title
+          >{{ useCameraSettingsStore().currentCameraName }} - {{ calibrationDetails?.resolution.width }} x
+          {{ calibrationDetails?.resolution.height }}</v-card-title
         >
-            <v-card-text>
-              <v-simple-table>
-                <tbody>
-                  <td>Fx:</td>
-                  <td>{{ calibrationDetails?.cameraIntrinsics.data[0].toFixed(2) }} mm</td>
-                  <td/>
-                </tbody>
-                <tbody>
-                  <td>Fy:</td>
-                  <td>{{ calibrationDetails?.cameraIntrinsics.data[4].toFixed(2) }} mm</td>
-                  <td/>
-                </tbody>
-                <tbody>
-                  <td>Cx:</td>
-                  <td>{{ calibrationDetails?.cameraIntrinsics.data[2].toFixed(2) }} px </td>
-                  <td> (expected ~{{ (calibrationDetails?.resolution.width || 0) / 2 }})</td>
-                </tbody>
-                <tbody>
-                  <td>Cy:</td>
-                  <td>{{ calibrationDetails?.cameraIntrinsics.data[5].toFixed(2) }} px </td>
-                  <td> (expected ~{{ (calibrationDetails?.resolution.height || 0) / 2 }})</td>
-                </tbody>
-                <tbody>
-                  <td>Distortion:</td>
-                  <td>[{{ calibrationDetails?.cameraExtrinsics.data.map((it) => it.toFixed(3)).join(", ") }}]</td>
-                  <td/>
-                </tbody>
-              </v-simple-table>
+        <v-card-text>
+          <v-simple-table>
+            <tbody>
+              <td>Fx:</td>
+              <td>{{ calibrationDetails?.cameraIntrinsics.data[0].toFixed(2) }} mm</td>
+              <td />
+            </tbody>
+            <tbody>
+              <td>Fy:</td>
+              <td>{{ calibrationDetails?.cameraIntrinsics.data[4].toFixed(2) }} mm</td>
+              <td />
+            </tbody>
+            <tbody>
+              <td>Cx:</td>
+              <td>{{ calibrationDetails?.cameraIntrinsics.data[2].toFixed(2) }} px</td>
+              <td>(expected ~{{ (calibrationDetails?.resolution.width || 0) / 2 }})</td>
+            </tbody>
+            <tbody>
+              <td>Cy:</td>
+              <td>{{ calibrationDetails?.cameraIntrinsics.data[5].toFixed(2) }} px</td>
+              <td>(expected ~{{ (calibrationDetails?.resolution.height || 0) / 2 }})</td>
+            </tbody>
+            <tbody>
+              <td>Distortion:</td>
+              <td>[{{ calibrationDetails?.cameraExtrinsics.data.map((it) => it.toFixed(3)).join(", ") }}]</td>
+              <td />
+            </tbody>
+          </v-simple-table>
 
-              <v-divider class="mt-3 mb-3" />
+          <v-divider class="mt-3 mb-3" />
 
-              <span class="text-center align-center white--text">Observations:</span>
-              <v-simple-table>
-                <thead>
-                  <tr>
-                    <th class="text-center">ID</th>
-                    <th class="text-center">Mean Reprojection Error</th>
-                    <th class="text-center">Used</th>
-                  </tr>
-                </thead>
-                <tbody style="height:20em;overflow:scroll">
-                  <tr v-for="(value, index) in calibrationDetails?.observations">
-                    <td>{{ index }}</td>
-                    <td> {{ getMeanFromView(value).toFixed(2) }} px </td>
-                    <td> <v-switch disabled dark color="#ffd843"/> </td>
-                  </tr>
-                </tbody>
-              </v-simple-table>
-              <v-btn @click="download_cal_data">Download</v-btn>
-              <!-- <v-btn class="ml-5">Upload</v-btn> -->
-            </v-card-text>
+          <span class="text-center align-center white--text">Observations:</span>
+          <v-simple-table>
+            <thead>
+              <tr>
+                <th class="text-center">ID</th>
+                <th class="text-center">Mean Reprojection Error</th>
+                <th class="text-center">Used</th>
+              </tr>
+            </thead>
+            <tbody style="height: 20em; overflow: scroll">
+              <tr v-for="(value, index) in calibrationDetails?.observations" :key="index">
+                <td>{{ index }}</td>
+                <td>{{ getMeanFromView(value).toFixed(2) }} px</td>
+                <td><v-switch disabled dark color="#ffd843" /></td>
+              </tr>
+            </tbody>
+          </v-simple-table>
+          <v-btn color="secondary" @click="exportAndDownloadCalibrationData">Download</v-btn>
+          <v-btn color="secondary" @click="openUploadPhotonCalibJsonPrompt">
+            <v-icon left> mdi-upload </v-icon>
+            Import From PhotonJson
+          </v-btn>
+          <input
+            ref="importCalibrationFromPhotonJson"
+            type="file"
+            accept=".json"
+            style="display: none"
+            @change="readImportedCalibrationFromPhotonJson"
+          />
+        </v-card-text>
         <v-divider />
       </v-card>
     </v-dialog>
@@ -683,6 +669,11 @@ let observationIdx = ref(0)
   ::-webkit-scrollbar-thumb {
     background-color: #ffd843;
     border-radius: 10px;
+  }
+}
+@media only screen and (max-width: 960px) {
+  .v-data-table {
+    width: 100%;
   }
 }
 </style>

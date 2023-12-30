@@ -6,18 +6,18 @@ export interface Quaternion {
 }
 
 export interface Translation3d {
-  x: number
-  y: number
-  z: number
+  x: number;
+  y: number;
+  z: number;
 }
 
 export interface Rotation3d {
-  quaternion: Quaternion
+  quaternion: Quaternion;
 }
 
 export interface Pose3d {
-  translation: Translation3d,
-  rotation: Rotation3d
+  translation: Translation3d;
+  rotation: Rotation3d;
 }
 
 // TODO update backend to serialize this using correct layout
