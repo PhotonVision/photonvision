@@ -220,6 +220,9 @@ const startCalibration = () => {
   useCameraSettingsStore().currentCameraSettings.currentPipelineIndex = WebsocketPipelineType.Calib3d;
   isCalibrating.value = true;
   calibCanceled.value = false;
+
+  const camView: HTMLElement | null = document.getElementById("camera-settings-camera-view-card");
+  if (camView !== null) camView.classList.add("fixed-right");
 };
 const showCalibEndDialog = ref(false);
 const calibCanceled = ref(false);
@@ -242,6 +245,9 @@ const endCalibration = () => {
     .finally(() => {
       isCalibrating.value = false;
     });
+
+  const camView: HTMLElement | null = document.getElementById("camera-settings-camera-view-card");
+  if (camView !== null) camView.classList.remove("fixed-right");
 };
 
 const exportAndDownloadCalibrationData = () => {

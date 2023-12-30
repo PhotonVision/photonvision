@@ -41,7 +41,12 @@ const fpsTooLow = computed<boolean>(() => {
 </script>
 
 <template>
-  <v-card class="mb-3 pb-3 pa-4" color="primary" dark>
+  <v-card
+    id="camera-settings-camera-view-card"
+    class="camera-settings-camera-view-card mb-3 pb-3 pa-4"
+    color="primary"
+    dark
+  >
     <v-card-title
       class="pb-0 mb-2 pl-4 pt-1"
       style="min-height: 50px; justify-content: space-between; align-content: center"
@@ -144,6 +149,18 @@ th {
 .stream {
   display: flex;
   justify-content: center;
+}
+
+@media only screen and (min-width: 960px) {
+  .fixed-right {
+    position: fixed;
+    top: 50%;
+    transform: translate(0, -50%);
+    overflow-y: auto;
+    max-height: 100%;
+    margin-top: 12px;
+    margin-bottom: 12px;
+  }
 }
 
 @media only screen and (min-width: 512px) and (max-width: 960px) {
