@@ -563,6 +563,50 @@ public class RequestHandler {
         ctx.json(snapshots);
     }
 
+    public static void onCameraCalibImagesRequest(Context ctx) {
+        try {
+            HashMap<String, HashMap<String, ArrayList<HashMap<String, Object>>>> snapshots =
+                    new HashMap<>();
+
+            var cameraDirs = ConfigManager.getInstance().getCalibDir().toFile().listFiles();
+            if (cameraDirs != null) {
+                var camData = new HashMap<String, ArrayList<HashMap<String, Object>>>();
+                for (var cameraDir : cameraDirs) {
+                    var resolutionDirs = cameraDir.listFiles();
+                    if (resolutionDirs == null) continue;
+                    for (var resolutionDir : resolutionDirs) {
+                        var calibImages = resolutionDir.listFiles();
+                        if (calibImages == null) continue;
+                        var resolutionImages = new ArrayList<HashMap<String, Object>>();
+                        for (var calibImg : calibImages) {
+                            var snapshotData = new HashMap<String, Object>();
+
+                            var bufferedImage = ImageIO.read(calibImg);
+                            var buffer = new ByteArrayOutputStream();
+                            ImageIO.write(bufferedImage, "jpg", buffer);
+                            byte[] data = buffer.toByteArray();
+
+                            snapshotData.put("snapshotData", data);
+                            snapshotData.put("snapshotFilename", calibImg.getName());
+
+                            resolutionImages.add(snapshotData);
+                        }
+                        camData.put(resolutionDir.getName(), resolutionImages);
+                    }
+
+                    var cameraName = cameraDir.getName();
+                    snapshots.put(cameraName, camData);
+                }
+            }
+
+            ctx.json(snapshots);
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.result("An error occurred while getting calib data");
+            logger.error("An error occurred while getting calib data", e);
+        }
+    }
+
     /**
      * Create a temporary file using the UploadedFile from Javalin.
      *
