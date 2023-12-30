@@ -3,7 +3,6 @@ import type {
   CalibrationBoardTypes,
   CameraSettings,
   ConfigurableCameraSettings,
-  Resolution,
   RobotOffsetType,
   VideoFormat
 } from "@/types/SettingTypes";

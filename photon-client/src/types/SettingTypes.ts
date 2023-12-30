@@ -1,4 +1,5 @@
 import { type ActivePipelineSettings, DefaultAprilTagPipelineSettings } from "@/types/PipelineTypes";
+import type { Pose3d } from "@/types/PhotonTrackingTypes";
 
 export interface GeneralSettings {
   version?: string;
@@ -105,11 +106,6 @@ export interface CvPoint3 {
 export interface CvPoint {
   x: number;
   y: number;
-}
-
-export interface Pose3d {
-  translation: { x: number; y: number; z: number };
-  rotation: { quaternion: { W: number; X: number; Y: number; Z: number } };
 }
 
 export interface BoardObservation {
