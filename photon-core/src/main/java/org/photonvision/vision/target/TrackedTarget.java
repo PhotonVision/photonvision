@@ -146,6 +146,15 @@ public class TrackedTarget implements Releasable {
         m_skew = 0;
     }
 
+    public TrackedTarget(List<Point> corners) {
+        m_mainContour = new Contour(new MatOfPoint());
+        m_mainContour.mat.fromList(List.of(new Point(0, 0), new Point(0, 1), new Point(1, 0)));
+        ;
+        this.setTargetCorners(corners);
+        m_targetOffsetPoint = new Point();
+        m_robotOffsetPoint = new Point();
+    }
+
     public TrackedTarget(
             ArucoDetectionResult result,
             AprilTagPoseEstimate tagPose,

@@ -1,7 +1,6 @@
 import { defineStore } from "pinia";
 import type {
   CalibrationBoardTypes,
-  CameraCalibrationResult,
   CameraSettings,
   ConfigurableCameraSettings,
   RobotOffsetType,
@@ -89,16 +88,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
             standardDeviation: v.standardDeviation,
             mean: v.mean
           })),
-        completeCalibrations: d.calibrations.map<CameraCalibrationResult>((calib) => ({
-          resolution: {
-            height: calib.height,
-            width: calib.width
-          },
-          distCoeffs: calib.distCoeffs,
-          standardDeviation: calib.standardDeviation,
-          perViewErrors: calib.perViewErrors,
-          intrinsics: calib.intrinsics
-        })),
+        completeCalibrations: d.calibrations,
         pipelineNicknames: d.pipelineNicknames,
         currentPipelineIndex: d.currentPipelineIndex,
         pipelineSettings: d.currentPipelineSettings

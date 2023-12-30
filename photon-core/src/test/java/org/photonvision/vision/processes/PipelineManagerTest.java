@@ -29,7 +29,7 @@ public class PipelineManagerTest {
     @Test
     public void testUniqueName() {
         TestUtils.loadLibraries();
-        PipelineManager manager = new PipelineManager(new DriverModePipelineSettings(), List.of());
+        PipelineManager manager = new PipelineManager(new DriverModePipelineSettings(), List.of(), 0);
         manager.addPipeline(PipelineType.Reflective, "Another");
 
         // We now have ["New Pipeline", "Another"]

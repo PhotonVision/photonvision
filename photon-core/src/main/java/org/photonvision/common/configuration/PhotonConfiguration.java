@@ -172,7 +172,7 @@ public class PhotonConfiguration {
         public HashMap<Integer, HashMap<String, Object>> videoFormatList;
         public int outputStreamPort;
         public int inputStreamPort;
-        public List<HashMap<String, Object>> calibrations;
+        public List<Object> calibrations;
         public boolean isFovConfigurable = true;
     }
 }

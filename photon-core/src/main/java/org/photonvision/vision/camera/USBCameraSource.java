@@ -172,6 +172,7 @@ public class USBCameraSource extends VisionSource {
                     if (canSetWhiteBalance) {
                         camera.setWhiteBalanceManual(4000); // Auto white-balance disabled, 4000K preset
                     }
+                    camera.setExposureAuto(); // auto exposure enabled
                 } else {
                     // Pick a bunch of reasonable setting defaults for driver, fiducials, or otherwise
                     // nice-for-humans

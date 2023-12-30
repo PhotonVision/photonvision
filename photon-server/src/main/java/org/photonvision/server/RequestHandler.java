@@ -567,6 +567,46 @@ public class RequestHandler {
         ctx.json(snapshots);
     }
 
+    public static void onCameraCalibImagesRequest(Context ctx) {
+        try {
+            var data = kObjectMapper.readTree(ctx.body());
+
+            int cameraIndex = data.get("cameraIndex").asInt();
+            int videoModeIndex = data.get("videoModeIndex").asInt();
+
+            var calibImages = Path.of(ConfigManager.getInstance().getCalibDir().toString(), Integer.toString(cameraIndex), Integer.toString(videoModeIndex)).toFile().listFiles();
+            var images = new ArrayList<>();
+
+            try {
+                if (calibImages != null) {
+                    for (File calibImg : calibImages) {
+                        var bufferedImage = ImageIO.read(calibImg);
+                        var buffer = new ByteArrayOutputStream();
+                        ImageIO.write(bufferedImage, "jpg", buffer);
+                        byte[] imgData = buffer.toByteArray();
+
+                        images.add(imgData);
+                    }
+                }
+                
+            } catch (IOException e) {
+                ctx.status(500);
+                ctx.result("Unable to read saved images");
+            }
+
+            ctx.json(images);
+
+        } catch (JsonProcessingException e) {
+            ctx.status(400);
+            ctx.result("The provided camera data was malformed");
+            logger.error("The provided camera data was malformed", e);
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.result("An error occurred while getting calib data");
+            logger.error("An error occurred while getting calib data", e);
+        }
+    }
+
     /**
      * Create a temporary file using the UploadedFile from Javalin.
      *

@@ -15,17 +15,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.common.util;
+package org.photonvision.vision.pipeline.result;
 
-import java.awt.*;
-import org.opencv.core.Scalar;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.opencv.core.Point;
+import org.photonvision.vision.frame.Frame;
+import org.photonvision.vision.target.TrackedTarget;
 
-public class ColorHelper {
-    public static Scalar colorToScalar(Color color) {
-        return new Scalar(color.getBlue(), color.getGreen(), color.getRed());
+public class CalibrationPipelineResult extends CVPipelineResult {
+    private static List<TrackedTarget> cornersToTarget(List<List<Point>> corners) {
+        return corners.stream().map(TrackedTarget::new).collect(Collectors.toList());
     }
 
-    public static Scalar colorToScalar(Color color, double alpha) {
-        return new Scalar(color.getBlue(), color.getGreen(), color.getRed(), alpha);
+    public CalibrationPipelineResult(
+            double latencyNanos, double fps, Frame outputFrame, List<List<Point>> corners) {
+        super(latencyNanos, fps, cornersToTarget(corners), outputFrame);
     }
 }
