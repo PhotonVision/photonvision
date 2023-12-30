@@ -26,6 +26,8 @@
 
 #include <hal/FRCUsageReporting.h>
 
+#include <string_view>
+
 #include <frc/Errors.h>
 #include <frc/Timer.h>
 #include <opencv2/core.hpp>
@@ -33,6 +35,29 @@
 
 #include "PhotonVersion.h"
 #include "photon/dataflow/structures/Packet.h"
+
+namespace {
+static constexpr const std::string_view bfw =
+    "\n\n\n\n"
+    ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+    ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+    ">>>    ____  _________    ____     ________  ___________    __   \n"
+    ">>>   / __ \\/ ____/   |  / __ \\   /_  __/ / / /  _/ ___/   / / \n"
+    ">>>  / /_/ / __/ / /| | / / / /    / / / /_/ // / \\__ \\   / /  \n"
+    ">>> / _, _/ /___/ ___ |/ /_/ /    / / / __  // / ___/ /  /_/     \n"
+    ">>>/_/ |_/_____/_/  |_/_____/    /_/ /_/ /_/___//____/  (_)      \n"
+    ">>>                                                              \n"
+    ">>> You are running an incompatible version                      \n"
+    ">>> of PhotonVision on your coprocessor!                         \n"
+    ">>>                                                              \n"
+    ">>> This is neither tested nor supported.                        \n"
+    ">>> You MUST update either PhotonVision, PhotonLib, or both.     \n"
+    ">>>                                                              \n"
+    ">>> Your code will now crash. We hope your day gets better.      \n"
+    ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+    ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+    "\n\n";
+}  // namespace
 
 namespace photon {
 
@@ -200,33 +225,12 @@ void PhotonCamera::VerifyVersion() {
           cameraNameOutString);
     }
   } else if (!VersionMatches(versionString)) {
-    std::string bfw =
-        "\n\n\n\n"
-        ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
-        ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
-        ">>>    ____  _________    ____     ________  ___________    __   \n"
-        ">>>   / __ \\/ ____/   |  / __ \\   /_  __/ / / /  _/ ___/   / / \n"
-        ">>>  / /_/ / __/ / /| | / / / /    / / / /_/ // / \\__ \\   / /  \n"
-        ">>> / _, _/ /___/ ___ |/ /_/ /    / / / __  // / ___/ /  /_/     \n"
-        ">>>/_/ |_/_____/_/  |_/_____/    /_/ /_/ /_/___//____/  (_)      \n"
-        ">>>                                                              \n"
-        ">>> You are running an incompatible version                      \n"
-        ">>> of PhotonVision on your coprocessor!                         \n"
-        ">>>                                                              \n"
-        ">>> This is neither tested nor supported.                        \n"
-        ">>> You MUST update either PhotonVision, PhotonLib, or both.     \n"
-        ">>>                                                              \n"
-        ">>> Your code will now crash. We hope your day gets better.      \n"
-        ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
-        ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
-        "\n\n";
-
     FRC_ReportError(frc::warn::Warning, bfw);
-    FRC_ReportError(frc::err::Error,
-                    "Photon version {} does not match coprocessor version {}!",
-                    PhotonVersion::versionString, versionString);
-    throw std::runtime_error(
-        "PhotonVision Coprocessor and PhotonLib Version Mismatch!");
+    std::string error_str = fmt::format(
+        "Photonlib version {} does not match coprocessor version {}!",
+        PhotonVersion::versionString, versionString);
+    FRC_ReportError(frc::err::Error, "{}", error_str);
+    throw std::runtime_error(error_str);
   }
 }
 
