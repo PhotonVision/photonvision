@@ -164,7 +164,6 @@ public class NetworkTablesManager {
         } else {
             setClientMode(config.ntServerAddress);
         }
-
         broadcastVersion();
     }
 
