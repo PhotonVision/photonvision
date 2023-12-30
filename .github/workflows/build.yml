@@ -81,7 +81,7 @@ jobs:
       - name: Gradle Build
         run: |
           chmod +x gradlew
-          ./gradlew photon-server:build photon-lib:build -x check --max-workers 2
+          ./gradlew build -x check --max-workers 2
       - name: Gradle Tests
         run: ./gradlew testHeadless -i --max-workers 1 --stacktrace
       - name: Gradle Coverage

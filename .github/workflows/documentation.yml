@@ -1,0 +1,56 @@
+name: Documentation
+
+on:
+  push:
+    branches: [ master ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ master ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  run_docs:
+    runs-on: "ubuntu-22.04"
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Fetch tags
+      run: git fetch --tags --force
+    - name: Install Java 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: 17
+        distribution: temurin
+
+    - name: Set environment variables (Development)
+      run: |
+        echo "BRANCH=development" >> $GITHUB_ENV
+      # if: github.ref == 'refs/heads/master'
+    - name: Set environment variables (Tag)
+      run: |
+        echo "BRANCH=beta" >> $GITHUB_ENV
+      if: startsWith(github.ref, 'refs/tags/v')
+    - name: Set environment variables (Release)
+      run: |
+        echo "BRANCH=release" >> $GITHUB_ENV
+      if: startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, 'alpha') && !contains(github.ref, 'beta')
+
+    - name: Gradle Build
+      run: |
+        chmod +x gradlew
+        ./gradlew docs:generateJavaDocs docs:doxygen
+    - name: Deploy 🚀
+      uses: JamesIves/github-pages-deploy-action@v4.4.1
+      with:
+        ssh-key: ${{ secrets.DOCS_DEPLOY_KEY }}
+        repository-name: photonvision/photonvision.github.io
+        branch: photonvision-${{ env.BRANCH }}
+        clean: true
+        single-commit: true
+        folder: docs/build/docs
