@@ -22,6 +22,7 @@ import edu.wpi.first.networktables.NetworkTableEvent;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -36,8 +37,6 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     private final NetworkTable rootTable = NetworkTablesManager.getInstance().kRootTable;
 
     private final NTTopicSet ts = new NTTopicSet();
-
-    private boolean shouldPublishProto;
 
     NTDataChangeListener pipelineIndexListener;
     private final Supplier<Integer> pipelineIndexSupplier;
@@ -128,10 +127,6 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         updateEntries();
     }
 
-    public void setShouldPublishProto(boolean shouldPublishProto) {
-        this.shouldPublishProto = shouldPublishProto;
-    }
-
     @Override
     public void accept(CVPipelineResult result) {
         var simplified =
@@ -141,7 +136,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
                         result.multiTagResult);
 
         ts.resultPublisher.accept(simplified, simplified.getPacketSize());
-        if (shouldPublishProto) {
+        if (ConfigManager.getInstance().getConfig().getNetworkConfig().shouldPublishProto) {
             ts.protoResultPublisher.set(simplified);
         }
 

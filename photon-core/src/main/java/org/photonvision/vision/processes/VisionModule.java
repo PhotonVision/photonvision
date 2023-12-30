@@ -312,10 +312,6 @@ public class VisionModule {
         }
     }
 
-    public void setShouldPublishProto(boolean shouldPublishProto) {
-        this.ntConsumer.setShouldPublishProto(shouldPublishProto);
-    }
-
     private boolean isVendorCamera() {
         return visionSource.isVendorCamera();
     }

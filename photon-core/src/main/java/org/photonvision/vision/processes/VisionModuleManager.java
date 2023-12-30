@@ -71,12 +71,6 @@ public class VisionModuleManager {
                 .collect(Collectors.toList()); // collect in a List
     }
 
-    public void setShouldPublishProto(boolean shouldPublishProto) {
-        for (var module : visionModules) {
-            module.setShouldPublishProto(shouldPublishProto);
-        }
-    }
-
     private void assignCameraIndex(List<VisionSource> config) {
         // We won't necessarily have already added all the cameras we need to at this point
         // But by operating on the list, we have a fairly good idea of which we need to change,

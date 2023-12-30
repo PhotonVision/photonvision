@@ -39,7 +39,6 @@ import org.photonvision.common.scripting.ScriptEventType;
 import org.photonvision.common.scripting.ScriptManager;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.JacksonUtils;
-import org.photonvision.vision.processes.VisionModuleManager;
 
 public class NetworkTablesManager {
     private final NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
@@ -165,8 +164,6 @@ public class NetworkTablesManager {
         } else {
             setClientMode(config.ntServerAddress);
         }
-
-        VisionModuleManager.getInstance().setShouldPublishProto(config.shouldPublishProto);
 
         broadcastVersion();
     }
