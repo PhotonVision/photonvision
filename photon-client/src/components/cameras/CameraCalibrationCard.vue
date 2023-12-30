@@ -3,7 +3,6 @@ import { computed, ref } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import {
   CalibrationBoardTypes,
-  type BoardObservation,
   type CameraCalibrationResult,
   type Resolution,
   type VideoFormat
@@ -17,6 +16,7 @@ import PvSwitch from "@/components/common/pv-switch.vue";
 import PvSelect from "@/components/common/pv-select.vue";
 import PvNumberInput from "@/components/common/pv-number-input.vue";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
+import CameraCalibrationInfoCard from "@/components/cameras/CameraCalibrationInfoCard.vue";
 
 type JSONFileUploadEvent = Event & { target: HTMLInputElement | null };
 
@@ -27,17 +27,6 @@ const getCalibrationCoeffs = (resolution: Resolution): CameraCalibrationResult |
     (cal) => cal.resolution.width === resolution.width && cal.resolution.height === resolution.height
   );
 };
-const getMeanFromView = (o: BoardObservation) => {
-  // Is this the right formula for RMS error? who knows! not me!
-  const perViewSumSquareReprojectionError = o.reprojectionErrors.flatMap((it2) => [it2.x, it2.y]);
-
-  // For each error, square it, sum the squares, and divide by total points N
-  return Math.sqrt(
-    perViewSumSquareReprojectionError.map((it) => Math.pow(it, 2)).reduce((a, b) => a + b, 0) /
-      perViewSumSquareReprojectionError.length
-  );
-};
-
 const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
   const uniqueResolutions: VideoFormat[] = [];
   useCameraSettingsStore().currentCameraSettings.validVideoFormats.forEach((format, index) => {
@@ -250,64 +239,10 @@ const endCalibration = () => {
   if (camView !== null) camView.classList.remove("fixed-right");
 };
 
-const exportAndDownloadCalibrationData = () => {
-  const calibData = calibrationDetails.value;
-  if (calibData === undefined) {
-    useStateStore().showSnackbarMessage({
-      color: "error",
-      message:
-        "Calibration data isn't available for the requested resolution, please calibrate the requested resolution first"
-    });
-    return;
-  }
-
-  const camUniqueName = useCameraSettingsStore().currentCameraSettings.uniqueName;
-  const filename = `photon_calibration_${camUniqueName}_${calibData.resolution.width}x${calibData.resolution.height}.json`;
-  const fileData = JSON.stringify(calibData);
-
-  const element = document.createElement("a");
-  element.style.display = "none";
-  element.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(fileData));
-  element.setAttribute("download", filename);
-
-  document.body.appendChild(element);
-  element.click();
-  document.body.removeChild(element);
-};
-const importCalibrationFromPhotonJson = ref();
-const openUploadPhotonCalibJsonPrompt = () => {
-  importCalibrationFromPhotonJson.value.click();
-};
-
-const parseJsonFile = async (file: File): Promise<any> => {
-  return new Promise((resolve, reject) => {
-    const fileReader = new FileReader();
-    fileReader.onload = (event) => {
-      const target: FileReader | null = event.target;
-      if (target === null) reject();
-      else resolve(JSON.parse(target.result as string));
-    };
-    fileReader.onerror = (error) => reject(error);
-    fileReader.readAsText(file);
-  });
-};
-
-const readImportedCalibrationFromPhotonJson = async (payload: JSONFileUploadEvent) => {
-  if (payload.target == null || !payload.target?.files) return;
-  const files: FileList = payload.target.files as FileList;
-  const uploadedJson = files[0];
-
-  const data: CameraCalibrationResult = await parseJsonFile(uploadedJson);
-
-  console.log(data);
-
-  // TODO
-};
-
 let showCalDialog = ref(false);
-let calibrationDetails = ref<CameraCalibrationResult | undefined>(undefined);
-const showCalibDialogForFormat = (format: VideoFormat) => {
-  calibrationDetails.value = getCalibrationCoeffs(format.resolution);
+let selectedVideoFormat = ref<VideoFormat | undefined>(undefined);
+const setSelectedVideoFormat = (format: VideoFormat) => {
+  selectedVideoFormat.value = format;
   showCalDialog.value = true;
 };
 </script>
@@ -333,10 +268,11 @@ const showCalibDialogForFormat = (format: VideoFormat) => {
               <tr
                 v-for="(value, index) in getUniqueVideoFormatsByResolution()"
                 :key="index"
-                @click="showCalibDialogForFormat(value)"
+                title="Click to get calibration specific information"
+                @click="setSelectedVideoFormat(value)"
               >
                 <td>{{ value.resolution.width }} X {{ value.resolution.height }}</td>
-                <td>{{ value.mean !== undefined ? value.mean.toFixed(2) + "px" : "-" }}</td>
+                <td>{{value.mean !== undefined ? isNaN(value.mean) ? "NaN" : value.mean.toFixed(2) + "px" : "-"}}</td>
                 <td>{{ value.horizontalFOV !== undefined ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
                 <td>{{ value.verticalFOV !== undefined ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
                 <td>{{ value.diagonalFOV !== undefined ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
@@ -571,77 +507,8 @@ const showCalibDialogForFormat = (format: VideoFormat) => {
       </v-card>
     </v-dialog>
     <v-dialog v-model="showCalDialog" width="80em">
-      <v-card color="primary" dark>
-        <v-card-title
-          >{{ useCameraSettingsStore().currentCameraName }} - {{ calibrationDetails?.resolution.width }} x
-          {{ calibrationDetails?.resolution.height }}</v-card-title
-        >
-        <v-card-text>
-          <v-simple-table>
-            <tbody>
-              <td>Fx:</td>
-              <td>{{ calibrationDetails?.cameraIntrinsics.data[0].toFixed(2) }} mm</td>
-              <td />
-            </tbody>
-            <tbody>
-              <td>Fy:</td>
-              <td>{{ calibrationDetails?.cameraIntrinsics.data[4].toFixed(2) }} mm</td>
-              <td />
-            </tbody>
-            <tbody>
-              <td>Cx:</td>
-              <td>{{ calibrationDetails?.cameraIntrinsics.data[2].toFixed(2) }} px</td>
-              <td>(expected ~{{ (calibrationDetails?.resolution.width || 0) / 2 }})</td>
-            </tbody>
-            <tbody>
-              <td>Cy:</td>
-              <td>{{ calibrationDetails?.cameraIntrinsics.data[5].toFixed(2) }} px</td>
-              <td>(expected ~{{ (calibrationDetails?.resolution.height || 0) / 2 }})</td>
-            </tbody>
-            <tbody>
-              <td>Distortion:</td>
-              <td>[{{ calibrationDetails?.cameraExtrinsics.data.map((it) => it.toFixed(3)).join(", ") }}]</td>
-              <td />
-            </tbody>
-          </v-simple-table>
-
-          <v-divider class="mt-3 mb-3" />
-
-          <span class="text-center align-center white--text">Observations:</span>
-          <v-simple-table>
-            <thead>
-              <tr>
-                <th class="text-center">ID</th>
-                <th class="text-center">Mean Reprojection Error</th>
-                <th class="text-center">Used</th>
-              </tr>
-            </thead>
-            <tbody style="height: 20em; overflow: scroll">
-              <tr v-for="(value, index) in calibrationDetails?.observations" :key="index">
-                <td>{{ index }}</td>
-                <td>{{ getMeanFromView(value).toFixed(2) }} px</td>
-                <td><v-switch disabled dark color="#ffd843" /></td>
-              </tr>
-            </tbody>
-          </v-simple-table>
-          <v-btn color="secondary" @click="exportAndDownloadCalibrationData">Download</v-btn>
-          <v-btn color="secondary" @click="openUploadPhotonCalibJsonPrompt">
-            <v-icon left> mdi-upload </v-icon>
-            Import From PhotonJson
-          </v-btn>
-          <input
-            ref="importCalibrationFromPhotonJson"
-            type="file"
-            accept=".json"
-            style="display: none"
-            @change="readImportedCalibrationFromPhotonJson"
-          />
-        </v-card-text>
-        <v-divider />
-      </v-card>
+      <CameraCalibrationInfoCard :video-format="selectedVideoFormat" />
     </v-dialog>
-
-    <v-card> </v-card>
   </div>
 </template>
 
@@ -658,6 +525,7 @@ const showCalibDialogForFormat = (format: VideoFormat) => {
 
   tbody :hover td {
     background-color: #005281 !important;
+    cursor: pointer;
   }
 
   ::-webkit-scrollbar {
