@@ -18,8 +18,7 @@
 package org.photonvision.targeting.proto;
 
 import edu.wpi.first.util.protobuf.Protobuf;
-import java.util.Arrays;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
 import org.photonvision.proto.Photon.ProtobufMultiTargetPNPResult;
 import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.targeting.PNPResult;
@@ -50,10 +49,12 @@ public class MultiTargetPNPResultProto
 
     @Override
     public MultiTargetPNPResult unpack(ProtobufMultiTargetPNPResult msg) {
-        return new MultiTargetPNPResult(
-                PNPResult.proto.unpack(msg.getEstimatedPose()),
-                // TODO better way of doing this
-                Arrays.stream(msg.getFiducialIdsUsed().array()).boxed().collect(Collectors.toList()));
+        ArrayList<Integer> fidIdsUsed = new ArrayList<>(msg.getFiducialIdsUsed().length());
+        for (var packedFidId : msg.getFiducialIdsUsed()) {
+            fidIdsUsed.add(packedFidId);
+        }
+
+        return new MultiTargetPNPResult(PNPResult.proto.unpack(msg.getEstimatedPose()), fidIdsUsed);
     }
 
     @Override
