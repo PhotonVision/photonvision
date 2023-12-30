@@ -17,11 +17,6 @@ help() {
   echo
 }
 
-if [ "$(id -u)" != "0" ]; then
-   echo "This script must be run as root" 1>&2
-   exit 1
-fi
-
 INSTALL_NETWORK_MANAGER="false"
 
 while getopts ":hmnq" name; do
@@ -44,6 +39,11 @@ while getopts ":hmnq" name; do
 done
 
 shift $(($OPTIND -1))
+
+if [ "$(id -u)" != "0" ]; then
+   echo "This script must be run as root" 1>&2
+   exit 1
+fi
 
 ARCH=$(uname -m)
 ARCH_NAME=""
