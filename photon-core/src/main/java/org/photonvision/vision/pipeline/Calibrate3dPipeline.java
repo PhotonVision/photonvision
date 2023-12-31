@@ -41,6 +41,7 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
+import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
 import org.photonvision.vision.pipe.impl.Calibrate3dPipe;
@@ -112,6 +113,15 @@ public class Calibrate3dPipeline
 
         if (this.calibrating || inputColorMat.empty()) {
             return new CVPipelineResult(0, 0, null, frame);
+        }
+
+        if (getSettings().inputImageRotationMode != ImageRotationMode.DEG_0) {
+            // All this calibration assumes zero rotation. If we want a rotation, it should be applied at
+            // the output
+            logger.error(
+                    "Input image rotation was non-zero! Calibration wasn't designed to deal with this. Attempting to manually change back to zero");
+            getSettings().inputImageRotationMode = ImageRotationMode.DEG_0;
+            return new CVPipelineResult(0, 0, List.of(), frame);
         }
 
         long sumPipeNanosElapsed = 0L;

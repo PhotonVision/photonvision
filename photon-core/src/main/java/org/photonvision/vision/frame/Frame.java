@@ -19,6 +19,7 @@ package org.photonvision.vision.frame;
 
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.opencv.CVMat;
+import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.opencv.Releasable;
 
 public class Frame implements Releasable {

@@ -152,7 +152,9 @@ public class Calibrate3dPipe
 
             var camToBoard = MathUtils.opencvRTtoPose3d(rvecs.get(i), tvecs.get(i));
 
-            observations.add(new BoardObservation(i_objPts, i_imgPts, reprojectionError, camToBoard, true));
+            // TODO -- this magical file name just happens to match the one from Calibrate3dpipeline. We should figure out how to better sepreate concerns
+            observations.add(
+                    new BoardObservation(i_objPts, i_imgPts, reprojectionError, camToBoard, true, "img" + i + ".png"));
         }
         jac_temp.release();
 
