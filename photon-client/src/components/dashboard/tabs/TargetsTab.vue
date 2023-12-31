@@ -3,12 +3,32 @@ import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { PipelineType } from "@/types/PipelineTypes";
 import { useStateStore } from "@/stores/StateStore";
 
+const wrapToPi = (delta: number): number => {
+  let ret = delta;
+  while (ret < -Math.PI) ret += Math.PI * 2;
+  while (ret > Math.PI) ret -= Math.PI * 2;
+  return ret;
+};
+
 const calculateStdDev = (values: number[]): number => {
   if (values.length < 2) return 0;
 
-  const mean = values.reduce((sum, number) => sum + number, 0) / values.length;
+  // Use mean of cosine/sine components to handle angle wrapping
+  const cosines = values.map((it) => Math.cos(it));
+  const sines = values.map((it) => Math.sin(it));
+  const cosmean = cosines.reduce((sum, number) => sum + number, 0) / values.length;
+  const sinmean = sines.reduce((sum, number) => sum + number, 0) / values.length;
 
-  return Math.sqrt(values.map((x) => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / values.length);
+  // Borrowed from WPILib's Rotation2d
+  const hypot = Math.hypot(cosmean, sinmean);
+  let mean;
+  if (hypot > 1e-6) {
+    mean = Math.atan2(sinmean / hypot, cosmean / hypot);
+  } else {
+    mean = 0;
+  }
+
+  return Math.sqrt(values.map((x) => Math.pow(wrapToPi(x - mean), 2)).reduce((a, b) => a + b) / values.length);
 };
 const resetCurrentBuffer = () => {
   // Need to clear the array in place
@@ -119,7 +139,7 @@ const resetCurrentBuffer = () => {
             <td>
               {{
                 (
-                  useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_x *
+                  (useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_x || 0) *
                   (180.0 / Math.PI)
                 ).toFixed(2)
               }}&deg;
@@ -127,7 +147,7 @@ const resetCurrentBuffer = () => {
             <td>
               {{
                 (
-                  useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_y *
+                  (useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_y || 0) *
                   (180.0 / Math.PI)
                 ).toFixed(2)
               }}&deg;
@@ -135,7 +155,7 @@ const resetCurrentBuffer = () => {
             <td>
               {{
                 (
-                  useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_z *
+                  (useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_z || 0) *
                   (180.0 / Math.PI)
                 ).toFixed(2)
               }}&deg;
@@ -146,8 +166,8 @@ const resetCurrentBuffer = () => {
       </v-row>
       <v-row class="pb-4 white--text" style="display: flex; flex-direction: column">
         <v-card-subtitle class="ma-0 pa-0 pb-4 pr-4" style="font-size: 16px"
-          >Multi-tag pose standard deviation over the last {{ useStateStore().currentMultitagBuffer.length }}/100
-          samples
+          >Multi-tag pose standard deviation over the last
+          {{ useStateStore().currentMultitagBuffer?.length || "NaN" }}/100 samples
         </v-card-subtitle>
         <v-btn color="secondary" class="mb-4 mt-1" style="width: min-content" depressed @click="resetCurrentBuffer"
           >Reset Samples</v-btn
@@ -164,37 +184,37 @@ const resetCurrentBuffer = () => {
           <tbody v-show="useStateStore().currentPipelineResults?.multitagResult">
             <td>
               {{
-                calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.x)).toFixed(5)
+                calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.x) || []).toFixed(5)
               }}&nbsp;m
             </td>
             <td>
               {{
-                calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.y)).toFixed(5)
+                calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.y) || []).toFixed(5)
               }}&nbsp;m
             </td>
             <td>
               {{
-                calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.z)).toFixed(5)
+                calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.z) || []).toFixed(5)
               }}&nbsp;m
             </td>
             <td>
               {{
                 calculateStdDev(
-                  useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.angle_x * (180.0 / Math.PI))
+                  useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.angle_x * (180.0 / Math.PI)) || []
                 ).toFixed(5)
               }}&deg;
             </td>
             <td>
               {{
                 calculateStdDev(
-                  useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.angle_y * (180.0 / Math.PI))
+                  useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.angle_y * (180.0 / Math.PI)) || []
                 ).toFixed(5)
               }}&deg;
             </td>
             <td>
               {{
                 calculateStdDev(
-                  useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.angle_z * (180.0 / Math.PI))
+                  useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.angle_z * (180.0 / Math.PI)) || []
                 ).toFixed(5)
               }}&deg;
             </td>

@@ -34,6 +34,7 @@ import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NTDataPublisher;
+import org.photonvision.common.dataflow.statusLEDs.StatusLEDConsumer;
 import org.photonvision.common.dataflow.websocket.UIDataPublisher;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
@@ -73,6 +74,7 @@ public class VisionModule {
             new LinkedList<>();
     private final NTDataPublisher ntConsumer;
     private final UIDataPublisher uiDataConsumer;
+    private final StatusLEDConsumer statusLEDsConsumer;
     protected final int moduleIndex;
     protected final QuirkyCamera cameraQuirks;
 
@@ -144,8 +146,10 @@ public class VisionModule {
                         pipelineManager::getDriverMode,
                         this::setDriverMode);
         uiDataConsumer = new UIDataPublisher(index);
+        statusLEDsConsumer = new StatusLEDConsumer(index);
         addResultConsumer(ntConsumer);
         addResultConsumer(uiDataConsumer);
+        addResultConsumer(statusLEDsConsumer);
         addResultConsumer(
                 (result) ->
                         lastPipelineResultBestTarget = result.hasTargets() ? result.targets.get(0) : null);

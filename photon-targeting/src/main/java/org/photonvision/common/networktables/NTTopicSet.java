@@ -26,6 +26,7 @@ import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.IntegerTopic;
 import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.ProtobufPublisher;
 import edu.wpi.first.networktables.PubSubOption;
 import org.photonvision.targeting.PhotonPipelineResult;
 
@@ -41,6 +42,7 @@ public class NTTopicSet {
     public NetworkTable subTable;
 
     public PacketPublisher<PhotonPipelineResult> resultPublisher;
+    public ProtobufPublisher<PhotonPipelineResult> protoResultPublisher;
 
     public IntegerPublisher pipelineIndexPublisher;
     public IntegerSubscriber pipelineIndexRequestSub;
@@ -76,6 +78,10 @@ public class NTTopicSet {
                         .publish("rawBytes", PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
 
         resultPublisher = new PacketPublisher<>(rawBytesEntry, PhotonPipelineResult.serde);
+        protoResultPublisher =
+                subTable
+                        .getProtobufTopic("result_proto", PhotonPipelineResult.proto)
+                        .publish(PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
 
         pipelineIndexPublisher = subTable.getIntegerTopic("pipelineIndexState").publish();
         pipelineIndexRequestSub = subTable.getIntegerTopic("pipelineIndexRequest").subscribe(0);

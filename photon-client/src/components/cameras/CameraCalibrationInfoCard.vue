@@ -166,9 +166,41 @@ onBeforeMount(() => {
 
 <template>
   <v-card color="primary" class="pa-6" dark>
-    <v-card-title class="pl-0 ml-0"
-      >Calibration Details: {{ useCameraSettingsStore().currentCameraName }}@{{ getResolutionString() }}</v-card-title
-    >
+    <v-row>
+      <v-col cols="12" md="5">
+        <v-card-title class="pl-0 ml-0"
+          ><span class="text-no-wrap" style="white-space: pre !important">Calibration Details: </span
+          ><span class="text-no-wrap"
+            >{{ useCameraSettingsStore().currentCameraName }}@{{ getResolutionString() }}</span
+          ></v-card-title
+        >
+      </v-col>
+      <v-col>
+        <v-btn color="secondary" class="mt-4" style="width: 100%" @click="openUploadPhotonCalibJsonPrompt">
+          <v-icon left> mdi-import</v-icon>
+          <span>Import</span>
+        </v-btn>
+        <input
+          ref="importCalibrationFromPhotonJson"
+          type="file"
+          accept=".json"
+          style="display: none"
+          @change="importCalibration"
+        />
+      </v-col>
+      <v-col>
+        <v-btn
+          color="secondary"
+          class="mt-4"
+          :disabled="getCalibrationCoeffs() === undefined"
+          style="width: 100%"
+          @click="downloadCalibration"
+        >
+          <v-icon>mdi-export</v-icon>
+          <span>Export</span>
+        </v-btn>
+      </v-col>
+    </v-row>
     <v-row v-if="getCalibrationCoeffs() !== undefined" class="pt-2">
       <v-card-subtitle>Calibration Details</v-card-subtitle>
       <v-simple-table dense style="width: 100%" class="pl-2 pr-2">
@@ -253,32 +285,6 @@ onBeforeMount(() => {
     </v-row>
     <v-row v-else class="pt-2 mb-0 pb-0">
       The selected video format doesn't have any additional information as it has yet to be calibrated.
-    </v-row>
-    <v-row class="pt-8">
-      <v-col>
-        <v-btn color="secondary" style="width: 100%" @click="openUploadPhotonCalibJsonPrompt">
-          <v-icon left> mdi-import</v-icon>
-          <span>Import</span>
-        </v-btn>
-        <input
-          ref="importCalibrationFromPhotonJson"
-          type="file"
-          accept=".json"
-          style="display: none"
-          @change="importCalibration"
-        />
-      </v-col>
-      <v-col>
-        <v-btn
-          color="secondary"
-          :disabled="getCalibrationCoeffs() === undefined"
-          style="width: 100%"
-          @click="downloadCalibration"
-        >
-          <v-icon>mdi-export</v-icon>
-          <span>Export</span>
-        </v-btn>
-      </v-col>
     </v-row>
   </v-card>
 </template>

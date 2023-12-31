@@ -1,0 +1,63 @@
+/*
+ * Copyright (C) Photon Vision.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+syntax = "proto3";
+
+package photonvision.proto;
+
+import "geometry3d.proto";
+
+option java_package = "org.photonvision.proto";
+
+message ProtobufTargetCorner {
+  double x = 1;
+  double y = 2;
+}
+
+message ProtobufPNPResult {
+  bool is_present = 1;
+  wpi.proto.ProtobufTransform3d best = 2;
+  double best_reproj_err = 3;
+  optional wpi.proto.ProtobufTransform3d alt = 4;
+  optional double alt_reproj_err = 5;
+  double ambiguity = 6;
+}
+
+message ProtobufMultiTargetPNPResult {
+  ProtobufPNPResult estimated_pose = 1;
+  repeated int32 fiducial_ids_used = 2;
+}
+
+message ProtobufPhotonTrackedTarget {
+  double yaw = 1;
+  double pitch = 2;
+  double area = 3;
+  double skew = 4;
+  int32 fiducial_id = 5;
+  wpi.proto.ProtobufTransform3d best_camera_to_target = 6;
+  wpi.proto.ProtobufTransform3d alt_camera_to_target = 7;
+  double pose_ambiguity = 8;
+  repeated ProtobufTargetCorner min_area_rect_corners = 9;
+  repeated ProtobufTargetCorner detected_corners = 10;
+}
+
+message ProtobufPhotonPipelineResult {
+  double latency_ms = 1;
+
+  repeated ProtobufPhotonTrackedTarget targets = 2;
+  ProtobufMultiTargetPNPResult multi_target_result = 3;
+}
