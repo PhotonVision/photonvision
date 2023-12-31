@@ -155,7 +155,7 @@ const importCalibration = async (payload: JSONFileUploadEvent) => {
               <td>{{ getCalibrationCoeffs().cameraExtrinsics.data.map((it) => parseFloat(it.toFixed(3))) }}</td>
             </tr>
             <tr>
-              <td>Mean Err</td>
+              <td>Mean Reprojection Err</td>
               <td>
                 {{
                   videoFormat.mean !== undefined
