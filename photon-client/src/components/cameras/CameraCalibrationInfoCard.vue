@@ -188,13 +188,13 @@ const importCalibration = async (payload: JSONFileUploadEvent) => {
           <thead>
             <tr>
               <th class="text-left">Observation Id</th>
-              <th class="text-left">Mean Reprojection Error</th>
+              <th class="text-left">Mean Reprojection Error, px</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(observation, index) of getCalibrationCoeffs()?.observations" :key="index">
               <td>{{ index }}</td>
-              <td>{{ getMeanFromView(observation) }}</td>
+              <td>{{ getMeanFromView(observation).toFixed(3) }}</td>
             </tr>
           </tbody>
         </template>
