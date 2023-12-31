@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import type {
   CalibrationBoardTypes,
+  CameraCalibrationResult,
   CameraSettings,
   ConfigurableCameraSettings,
   RobotOffsetType,
@@ -352,6 +353,16 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         cameraIndex: cameraIndex
       };
       return axios.post("/calibration/importFromCalibDB", payload, { headers: { "Content-Type": "text/plain" } });
+    },
+    importCalibrationFromData(
+      data: { calibration: CameraCalibrationResult },
+      cameraIndex: number = useStateStore().currentCameraIndex
+    ) {
+      const payload = {
+        ...data,
+        cameraIndex: cameraIndex
+      };
+      return axios.post("/calibration/importFromData", payload);
     },
     /**
      * Take a snapshot for the calibration processes

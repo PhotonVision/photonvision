@@ -456,7 +456,7 @@ public class RequestHandler {
         }
     }
 
-    public static void onCalibrationImportRequest(Context ctx) {
+    public static void onCalibDBCalibrationImportRequest(Context ctx) {
         var data = ctx.body();
 
         try {
@@ -485,6 +485,39 @@ public class RequestHandler {
             logger.error(
                     "The Provided CalibDB data is malformed and cannot be parsed for the required fields.",
                     e);
+        }
+    }
+
+    public static void onDataCalibrationImportRequest(Context ctx) {
+        try {
+            var data = kObjectMapper.readTree(ctx.body());
+
+            int cameraIndex = data.get("cameraIndex").asInt();
+            var coeffs =
+                    kObjectMapper.readValue(
+                            data.get("calibration").toString(), CameraCalibrationCoefficients.class);
+
+            var uploadCalibrationEvent =
+                    new IncomingWebSocketEvent<>(
+                            DataChangeDestination.DCD_ACTIVEMODULE,
+                            "calibrationUploaded",
+                            coeffs,
+                            cameraIndex,
+                            null);
+            DataChangeService.getInstance().publishEvent(uploadCalibrationEvent);
+
+            ctx.status(200);
+            ctx.result("Calibration imported successfully from imported data!");
+            logger.info("Calibration imported successfully from imported data!");
+        } catch (JsonProcessingException e) {
+            ctx.status(400);
+            ctx.result("The provided calibration data was malformed");
+            logger.error("The provided calibration data was malformed", e);
+
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.result("An error occurred while uploading calibration data");
+            logger.error("An error occurred while uploading calibration data", e);
         }
     }
 

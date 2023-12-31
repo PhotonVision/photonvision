@@ -272,7 +272,9 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 @click="setSelectedVideoFormat(value)"
               >
                 <td>{{ value.resolution.width }} X {{ value.resolution.height }}</td>
-                <td>{{value.mean !== undefined ? isNaN(value.mean) ? "NaN" : value.mean.toFixed(2) + "px" : "-"}}</td>
+                <td>
+                  {{ value.mean !== undefined ? (isNaN(value.mean) ? "NaN" : value.mean.toFixed(2) + "px") : "-" }}
+                </td>
                 <td>{{ value.horizontalFOV !== undefined ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
                 <td>{{ value.verticalFOV !== undefined ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
                 <td>{{ value.diagonalFOV !== undefined ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>

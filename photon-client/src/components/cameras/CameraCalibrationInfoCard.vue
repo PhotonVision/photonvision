@@ -3,8 +3,6 @@ import type { BoardObservation, CameraCalibrationResult, VideoFormat } from "@/t
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { ref } from "vue";
-import loadingImage from "@/assets/images/loading.svg";
-import axios from "axios";
 
 type JSONFileUploadEvent = Event & { target: HTMLInputElement | null };
 
@@ -78,68 +76,50 @@ const importCalibration = async (payload: JSONFileUploadEvent) => {
 
   const data: CameraCalibrationResult = await parseJsonFile(uploadedJson);
 
-  // TODO
-};
+  if (
+    data.resolution.height != props.videoFormat.resolution.height ||
+    data.resolution.width != props.videoFormat.resolution.width
+  ) {
+    useStateStore().showSnackbarMessage({
+      color: "error",
+      message: `The resolution of the calibration export doesn't match the current resolution ${props.videoFormat.resolution.height}x${props.videoFormat.resolution.width}`
+    });
+  }
 
-// Fx, Fy, Cx, Cy, Distortion, Mean Err, Horizontal FOV, Vertical FOV, Diagonal FOV
-// Per Observation Mean Err
+  console.log(data);
 
-interface SnapshotInfo {
-  snapshotData: string, snapshotFilename: string
-}
-
-const fetchSnapshots = (): SnapshotInfo[] => {
-  let data = [];
-  axios
-      .get("/settings/camera/getCalibImages")
-      .then((response) => {
-        data = response.data.map((snapshotData: Record<string, Record<string, SnapshotInfo[]>>) => {
-
-        });
-      })
-      .catch((error) => {
-        if (error.response) {
-          useStateStore().showSnackbarMessage({
-            color: "error",
-            message: error.response.data.text || error.response.data
-          });
-        } else if (error.request) {
-          useStateStore().showSnackbarMessage({
-            color: "error",
-            message: "Error while trying to process the request! The backend didn't respond."
-          });
-        } else {
-          useStateStore().showSnackbarMessage({
-            color: "error",
-            message: "An error occurred while trying to process the request."
-          });
-        }
+  useCameraSettingsStore()
+    .importCalibrationFromData({ calibration: data })
+    .then((response) => {
+      useStateStore().showSnackbarMessage({
+        color: "success",
+        message: response.data.text || response.data
       });
-
-  return data;
-};
-
-
-type ObservationDetails = (BoardObservation & {snapshotSrc: string, mean: number, index: number})[]
-const getObservationDetails = (): ObservationDetails => {
-  const calib = getCalibrationCoeffs();
-  if(calib === undefined) return [];
-
-  const snapshotData = fetchSnapshots();
-
-  return calib.observations.map((o, i) => ({
-    ...o,
-    snapshotSrc: snapshotData[i].snapshotData || loadingImage,
-    mean: parseFloat(getMeanFromView(o).toFixed(2)),
-    index: i
-  }));
+    })
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: error.response.data.text || error.response.data
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "Error while trying to process the request! The backend didn't respond."
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "An error occurred while trying to process the request."
+        });
+      }
+    });
 };
 </script>
 
 <template>
   <v-card color="primary" class="pa-6" dark>
-    <v-card-title
-        class="pl-0 ml-0"
+    <v-card-title class="pl-0 ml-0"
       >Calibration Details: {{ useCameraSettingsStore().currentCameraName }}@{{ videoFormat.resolution.width }} x
       {{ videoFormat.resolution.height }}</v-card-title
     >
@@ -149,77 +129,76 @@ const getObservationDetails = (): ObservationDetails => {
         <template #default>
           <thead>
             <tr>
-              <th class="text-left">
-                Name
-              </th>
-              <th class="text-left">
-                Value
-              </th>
+              <th class="text-left">Name</th>
+              <th class="text-left">Value</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td>Fx</td>
-              <td>{{getCalibrationCoeffs().cameraIntrinsics.data[0].toFixed(2)}} mm</td>
+              <td>{{ getCalibrationCoeffs().cameraIntrinsics.data[0].toFixed(2) }} mm</td>
             </tr>
             <tr>
               <td>Fy</td>
-              <td>{{getCalibrationCoeffs().cameraIntrinsics.data[4].toFixed(2)}} mm</td>
+              <td>{{ getCalibrationCoeffs().cameraIntrinsics.data[4].toFixed(2) }} mm</td>
             </tr>
             <tr>
               <td>Cx</td>
-              <td>{{getCalibrationCoeffs().cameraIntrinsics.data[2].toFixed(2)}} px</td>
+              <td>{{ getCalibrationCoeffs().cameraIntrinsics.data[2].toFixed(2) }} px</td>
             </tr>
             <tr>
               <td>Cy</td>
-              <td>{{getCalibrationCoeffs().cameraIntrinsics.data[5].toFixed(2)}} px</td>
+              <td>{{ getCalibrationCoeffs().cameraIntrinsics.data[5].toFixed(2) }} px</td>
             </tr>
             <tr>
               <td>Distortion</td>
-              <td>{{getCalibrationCoeffs().cameraExtrinsics.data.map((it) => parseFloat(it.toFixed(3)))}}</td>
+              <td>{{ getCalibrationCoeffs().cameraExtrinsics.data.map((it) => parseFloat(it.toFixed(3))) }}</td>
             </tr>
             <tr>
               <td>Mean Err</td>
-              <td>{{videoFormat.mean !== undefined ? isNaN(videoFormat.mean) ? "NaN" : videoFormat.mean.toFixed(2) + "px" : "-"}}</td>
+              <td>
+                {{
+                  videoFormat.mean !== undefined
+                    ? isNaN(videoFormat.mean)
+                      ? "NaN"
+                      : videoFormat.mean.toFixed(2) + "px"
+                    : "-"
+                }}
+              </td>
             </tr>
             <tr>
               <td>Horizontal FOV</td>
-              <td>{{videoFormat.horizontalFOV !== undefined ? videoFormat.horizontalFOV.toFixed(2) + "°" : "-"}}</td>
+              <td>{{ videoFormat.horizontalFOV !== undefined ? videoFormat.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
             </tr>
             <tr>
               <td>Vertical FOV</td>
-              <td>{{videoFormat.verticalFOV !== undefined ? videoFormat.verticalFOV.toFixed(2) + "°" : "-"}}</td>
+              <td>{{ videoFormat.verticalFOV !== undefined ? videoFormat.verticalFOV.toFixed(2) + "°" : "-" }}</td>
             </tr>
             <tr>
               <td>Diagonal FOV</td>
-              <td>{{videoFormat.diagonalFOV !== undefined ? videoFormat.diagonalFOV.toFixed(2) + "°" : "-"}}</td>
+              <td>{{ videoFormat.diagonalFOV !== undefined ? videoFormat.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
             </tr>
           </tbody>
         </template>
       </v-simple-table>
-      <hr style="width: 100%" class="ma-6">
+      <hr style="width: 100%" class="ma-6" />
       <v-card-subtitle>Per Observation Details</v-card-subtitle>
-      <v-data-table
-          dense
-          style="width: 100%;"
-          class="pl-2 pr-2"
-          :headers="[
-              { text: 'Observation Id', value: 'index' },
-              { text: 'Mean Reprojection Error', value: 'mean' }
-          ]"
-          :items="getObservationDetails()"
-          item-key="index"
-          show-expand
-          expand-icon="mdi-eye"
-      >
-        <template #expanded-item="{ headers, item }">
-          <td :colspan="headers.length">
-            <div style="display: flex; justify-content: center; width: 100%">
-              <img :src="item.snapshotSrc" alt="observation image" class="snapshot-preview pt-2 pb-2" />
-            </div>
-          </td>
+      <v-simple-table dense style="width: 100%" class="pl-2 pr-2">
+        <template #default>
+          <thead>
+            <tr>
+              <th class="text-left">Observation Id</th>
+              <th class="text-left">Mean Reprojection Error</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(observation, index) of getCalibrationCoeffs()?.observations" :key="index">
+              <td>{{ index }}</td>
+              <td>{{ getMeanFromView(observation) }}</td>
+            </tr>
+          </tbody>
         </template>
-      </v-data-table>
+      </v-simple-table>
     </v-row>
     <v-row v-else class="pt-2 mb-0 pb-0">
       The selected video format doesn't have any additional information as it has yet to be calibrated.
