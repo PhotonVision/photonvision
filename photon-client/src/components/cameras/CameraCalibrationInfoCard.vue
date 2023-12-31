@@ -2,7 +2,9 @@
 import type { BoardObservation, CameraCalibrationResult, VideoFormat } from "@/types/SettingTypes";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
-import { ref } from "vue";
+import { onBeforeMount, ref } from "vue";
+import axios from "axios";
+import loadingImage from "@/assets/images/loading.svg";
 
 type JSONFileUploadEvent = Event & { target: HTMLInputElement | null };
 
@@ -27,6 +29,8 @@ const getMeanFromView = (o: BoardObservation) => {
       perViewSumSquareReprojectionError.length
   );
 };
+const getResolutionString = (): string =>
+  `${props.videoFormat.resolution.width}x${props.videoFormat.resolution.height}`;
 
 // Import and export functions
 const downloadCalibration = () => {
@@ -115,13 +119,56 @@ const importCalibration = async (payload: JSONFileUploadEvent) => {
       }
     });
 };
+
+interface ObservationDetails {
+  snapshotSrc: any;
+  mean: number;
+  index: number;
+}
+const getObservationDetails = (): ObservationDetails[] | undefined => {
+  return getCalibrationCoeffs()?.observations.map((o, i) => ({
+    index: i,
+    mean: getMeanFromView(o),
+    snapshotSrc: observationImgData.value[i] || loadingImage
+  }));
+};
+
+const observationImgData = ref<string[]>([]);
+onBeforeMount(() => {
+  axios
+    .get("/settings/camera/getCalibImages")
+    .then(
+      (response: { data: Record<string, Record<string, { snapshotData: string; snapshotFilename: string }[]>> }) => {
+        observationImgData.value = response.data[useCameraSettingsStore().currentCameraName][getResolutionString()].map(
+          (r) => "data:image/jpg;base64," + r.snapshotData
+        );
+      }
+    )
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: error.response.data.text || error.response.data
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "Error while trying to process the request! The backend didn't respond."
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "An error occurred while trying to process the request."
+        });
+      }
+    });
+});
 </script>
 
 <template>
   <v-card color="primary" class="pa-6" dark>
     <v-card-title class="pl-0 ml-0"
-      >Calibration Details: {{ useCameraSettingsStore().currentCameraName }}@{{ videoFormat.resolution.width }} x
-      {{ videoFormat.resolution.height }}</v-card-title
+      >Calibration Details: {{ useCameraSettingsStore().currentCameraName }}@{{ getResolutionString() }}</v-card-title
     >
     <v-row v-if="getCalibrationCoeffs() !== undefined" class="pt-2">
       <v-card-subtitle>Calibration Details</v-card-subtitle>
@@ -183,22 +230,27 @@ const importCalibration = async (payload: JSONFileUploadEvent) => {
       </v-simple-table>
       <hr style="width: 100%" class="ma-6" />
       <v-card-subtitle>Per Observation Details</v-card-subtitle>
-      <v-simple-table dense style="width: 100%" class="pl-2 pr-2">
-        <template #default>
-          <thead>
-            <tr>
-              <th class="text-left">Observation Id</th>
-              <th class="text-left">Mean Reprojection Error</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(observation, index) of getCalibrationCoeffs()?.observations" :key="index">
-              <td>{{ index }}</td>
-              <td>{{ getMeanFromView(observation) }}</td>
-            </tr>
-          </tbody>
+      <v-data-table
+        dense
+        style="width: 100%"
+        class="pl-2 pr-2"
+        :headers="[
+          { text: 'Observation Id', value: 'index' },
+          { text: 'Mean Reprojection Error', value: 'mean' }
+        ]"
+        :items="getObservationDetails()"
+        item-key="index"
+        show-expand
+        expand-icon="mdi-eye"
+      >
+        <template #expanded-item="{ headers, item }">
+          <td :colspan="headers.length">
+            <div style="display: flex; justify-content: center; width: 100%">
+              <img :src="item.snapshotSrc" alt="observation image" class="snapshot-preview pt-2 pb-2" />
+            </div>
+          </td>
         </template>
-      </v-simple-table>
+      </v-data-table>
     </v-row>
     <v-row v-else class="pt-2 mb-0 pb-0">
       The selected video format doesn't have any additional information as it has yet to be calibrated.
