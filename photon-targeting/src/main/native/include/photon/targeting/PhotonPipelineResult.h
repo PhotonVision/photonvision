@@ -44,7 +44,7 @@ class PhotonPipelineResult {
    * @param latency The latency in the pipeline.
    * @param targets The list of targets identified by the pipeline.
    */
-  PhotonPipelineResult(units::second_t latency,
+  PhotonPipelineResult(units::millisecond_t latency,
                        std::span<const PhotonTrackedTarget> targets);
 
   /**
@@ -53,7 +53,7 @@ class PhotonPipelineResult {
    * @param targets The list of targets identified by the pipeline.
    * @param multitagResult The multitarget result
    */
-  PhotonPipelineResult(units::second_t latency,
+  PhotonPipelineResult(units::millisecond_t latency,
                        std::span<const PhotonTrackedTarget> targets,
                        MultiTargetPNPResult multitagResult);
 
@@ -81,7 +81,7 @@ class PhotonPipelineResult {
    * Returns the latency in the pipeline.
    * @return The latency in the pipeline.
    */
-  units::second_t GetLatency() const { return latency; }
+  units::millisecond_t GetLatency() const { return latency; }
 
   /**
    * Returns the estimated time the frame was taken,
@@ -125,7 +125,7 @@ class PhotonPipelineResult {
   friend Packet& operator<<(Packet& packet, const PhotonPipelineResult& result);
   friend Packet& operator>>(Packet& packet, PhotonPipelineResult& result);
 
-  units::second_t latency = 0_s;
+  units::millisecond_t latency = 0_s;
   units::second_t timestamp = -1_s;
   wpi::SmallVector<PhotonTrackedTarget, 10> targets;
   MultiTargetPNPResult multitagResult;
