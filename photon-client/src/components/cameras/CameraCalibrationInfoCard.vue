@@ -88,9 +88,8 @@ const importCalibration = async (payload: JSONFileUploadEvent) => {
       color: "error",
       message: `The resolution of the calibration export doesn't match the current resolution ${props.videoFormat.resolution.height}x${props.videoFormat.resolution.width}`
     });
+    return;
   }
-
-  console.log(data);
 
   useCameraSettingsStore()
     .importCalibrationFromData({ calibration: data })
