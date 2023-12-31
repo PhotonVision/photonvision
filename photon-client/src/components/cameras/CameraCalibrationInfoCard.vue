@@ -128,7 +128,7 @@ interface ObservationDetails {
 const getObservationDetails = (): ObservationDetails[] | undefined => {
   return getCalibrationCoeffs()?.observations.map((o, i) => ({
     index: i,
-    mean: getMeanFromView(o),
+    mean: parseFloat(getMeanFromView(o).toFixed(2)),
     snapshotSrc: observationImgData.value[i] || loadingImage
   }));
 };
