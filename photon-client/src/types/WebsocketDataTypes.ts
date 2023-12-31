@@ -27,15 +27,6 @@ export interface WebsocketNumberPair {
   second: number;
 }
 
-export interface WebsocketCompleteCalib {
-  distCoeffs: number[];
-  height: number;
-  width: number;
-  standardDeviation: number;
-  perViewErrors: number[];
-  intrinsics: number[];
-}
-
 export type WebsocketVideoFormat = Record<
   number,
   {
