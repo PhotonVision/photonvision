@@ -75,6 +75,7 @@ public class VisionRunner {
             // (pipeline-dependent). I kinda hate how much leak this has...
             // TODO would a callback object be a better fit?
             var wantedProcessType = pipeline.getThresholdType();
+            
             frameSupplier.requestFrameThresholdType(wantedProcessType);
             var settings = pipeline.getSettings();
             if (settings instanceof AdvancedPipelineSettings) {

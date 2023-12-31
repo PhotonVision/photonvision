@@ -47,7 +47,6 @@ public class DriverModePipeline
 
     @Override
     protected void setPipeParamsImpl() {
-
         Draw2dCrosshairPipe.Draw2dCrosshairParams draw2dCrosshairParams =
                 new Draw2dCrosshairPipe.Draw2dCrosshairParams(
                         frameStaticProperties, settings.streamingFrameDivisor, settings.inputImageRotationMode);
