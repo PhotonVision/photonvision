@@ -45,4 +45,14 @@ public class StatusLED {
             blueLED = new CustomGPIO(statusLedPins.get(2));
         }
     }
+
+    public void setRGB(boolean r, boolean g, boolean b) {
+        // Outputs are active-low, so invert the level applied
+        redLED.setState(!r);
+        redLED.setBrightness(r ? 0 : 100);
+        greenLED.setState(!g);
+        greenLED.setBrightness(g ? 0 : 100);
+        blueLED.setState(!b);
+        blueLED.setBrightness(b ? 0 : 100);
+    }
 }

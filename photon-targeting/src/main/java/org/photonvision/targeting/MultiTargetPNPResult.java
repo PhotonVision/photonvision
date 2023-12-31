@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.dataflow.structures.PacketSerde;
+import org.photonvision.targeting.proto.MultiTargetPNPResultProto;
 
 public class MultiTargetPNPResult {
     // Seeing 32 apriltags at once seems like a sane limit
@@ -103,4 +104,5 @@ public class MultiTargetPNPResult {
     }
 
     public static final APacketSerde serde = new APacketSerde();
+    public static final MultiTargetPNPResultProto proto = new MultiTargetPNPResultProto();
 }

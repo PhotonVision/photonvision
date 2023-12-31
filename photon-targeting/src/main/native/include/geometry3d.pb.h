@@ -15,10 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.common;
-
-public enum ProgramStatus {
-    UHOH,
-    RUNNING,
-    RUNNING_NT
-}
+#pragma once
+// So wpilib publishes protbufs here at wpimath/protobuf. but generated code
+// assumes that the protobuf includes are on your include path. So we need this
+// stupid shim
+#include "wpimath/protobuf/geometry3d.pb.h"

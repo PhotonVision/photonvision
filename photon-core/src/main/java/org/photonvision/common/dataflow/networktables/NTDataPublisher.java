@@ -22,6 +22,7 @@ import edu.wpi.first.networktables.NetworkTableEvent;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -135,6 +136,9 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
                         result.multiTagResult);
 
         ts.resultPublisher.accept(simplified, simplified.getPacketSize());
+        if (ConfigManager.getInstance().getConfig().getNetworkConfig().shouldPublishProto) {
+            ts.protoResultPublisher.set(simplified);
+        }
 
         ts.pipelineIndexPublisher.set(pipelineIndexSupplier.get());
         ts.driverModePublisher.set(driverModeSupplier.getAsBoolean());

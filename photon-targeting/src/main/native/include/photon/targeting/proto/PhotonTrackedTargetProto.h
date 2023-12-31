@@ -15,10 +15,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.common;
+#pragma once
 
-public enum ProgramStatus {
-    UHOH,
-    RUNNING,
-    RUNNING_NT
-}
+#include <wpi/protobuf/Protobuf.h>
+
+#include "photon/targeting/PhotonTrackedTarget.h"
+
+template <>
+struct wpi::Protobuf<photon::PhotonTrackedTarget> {
+  static google::protobuf::Message* New(google::protobuf::Arena* arena);
+  static photon::PhotonTrackedTarget Unpack(
+      const google::protobuf::Message& msg);
+  static void Pack(google::protobuf::Message* msg,
+                   const photon::PhotonTrackedTarget& value);
+};

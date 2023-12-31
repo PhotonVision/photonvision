@@ -19,12 +19,12 @@
 
 namespace photon {
 PhotonPipelineResult::PhotonPipelineResult(
-    units::second_t latency, std::span<const PhotonTrackedTarget> targets)
+    units::millisecond_t latency, std::span<const PhotonTrackedTarget> targets)
     : latency(latency),
       targets(targets.data(), targets.data() + targets.size()) {}
 
 PhotonPipelineResult::PhotonPipelineResult(
-    units::second_t latency, std::span<const PhotonTrackedTarget> targets,
+    units::millisecond_t latency, std::span<const PhotonTrackedTarget> targets,
     MultiTargetPNPResult multitagResult)
     : latency(latency),
       targets(targets.data(), targets.data() + targets.size()),
@@ -37,7 +37,7 @@ bool PhotonPipelineResult::operator==(const PhotonPipelineResult& other) const {
 
 Packet& operator<<(Packet& packet, const PhotonPipelineResult& result) {
   // Encode latency and number of targets.
-  packet << result.latency.value() * 1000 << result.multitagResult
+  packet << result.latency.value() << result.multitagResult
          << static_cast<int8_t>(result.targets.size());
 
   // Encode the information of each target.
@@ -52,7 +52,7 @@ Packet& operator>>(Packet& packet, PhotonPipelineResult& result) {
   double latencyMillis = 0;
   int8_t targetCount = 0;
   packet >> latencyMillis >> result.multitagResult >> targetCount;
-  result.latency = units::second_t(latencyMillis / 1000.0);
+  result.latency = units::millisecond_t(latencyMillis);
 
   result.targets.clear();
 

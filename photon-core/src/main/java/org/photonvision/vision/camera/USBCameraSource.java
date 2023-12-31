@@ -22,6 +22,7 @@ import edu.wpi.first.cscore.CvSink;
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.cscore.VideoException;
 import edu.wpi.first.cscore.VideoMode;
+import edu.wpi.first.cscore.VideoProperty.Kind;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -29,6 +30,7 @@ import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TestUtils;
+import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.frame.provider.USBFrameProvider;
@@ -210,6 +212,12 @@ public class USBCameraSource extends VisionSource {
                         camera.getProperty("raw_exposure_time_absolute").set(scaledExposure);
                         camera.getProperty("raw_exposure_time_absolute").set(scaledExposure);
 
+                    } else if (camera.getProperty("exposure_time_absolute").getKind() != Kind.kNone) {
+                        // Seems like the name changed at some point in v4l? set it instead
+                        var prop = camera.getProperty("exposure_time_absolute");
+                        var exposure_manual_val =
+                                MathUtils.map(Math.round(exposure), 0, 100, prop.getMin(), prop.getMax());
+                        prop.set((int) exposure_manual_val);
                     } else {
                         scaledExposure = (int) Math.round(exposure);
                         logger.debug("Setting camera exposure to " + scaledExposure);
