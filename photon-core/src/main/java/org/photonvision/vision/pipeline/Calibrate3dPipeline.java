@@ -161,7 +161,7 @@ public class Calibrate3dPipeline
             logger.error("Could not create save folder! " + folder);
         }
         Imgcodecs.imwrite(
-                Path.of(folder.toAbsolutePath().toString(), "img" + foundCornersList.size() + ".jpg")
+                Path.of(folder.toAbsolutePath().toString(), "img" + foundCornersList.size() + ".png")
                         .toString(),
                 img);
     }

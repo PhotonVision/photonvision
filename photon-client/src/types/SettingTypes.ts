@@ -113,6 +113,7 @@ export interface BoardObservation {
   locationInImageSpace: CvPoint[];
   reprojectionErrors: CvPoint[];
   optimisedCameraToObject: Pose3d;
+  includeObservationInCalibration: boolean;
 }
 
 export interface CameraCalibrationResult {

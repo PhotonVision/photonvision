@@ -40,15 +40,20 @@ public final class BoardObservation {
     // Solver optimized board poses
     public Pose3d optimisedCameraToObject;
 
+    // If we should use this observation when re-calculating camera calibration
+    public boolean includeObservationInCalibration;
+
     @JsonCreator
     public BoardObservation(
             @JsonProperty("locationInObjectSpace") List<Point3> locationInObjectSpace,
             @JsonProperty("locationInImageSpace") List<Point> locationInImageSpace,
             @JsonProperty("reprojectionErrors") List<Point> reprojectionErrors,
-            @JsonProperty("optimisedCameraToObject") Pose3d optimisedCameraToObject) {
+            @JsonProperty("optimisedCameraToObject") Pose3d optimisedCameraToObject,
+            @JsonProperty("includeObservationInCalibration") boolean includeObservationInCalibration) {
         this.locationInObjectSpace = locationInObjectSpace;
         this.locationInImageSpace = locationInImageSpace;
         this.reprojectionErrors = reprojectionErrors;
         this.optimisedCameraToObject = optimisedCameraToObject;
+        this.includeObservationInCalibration = includeObservationInCalibration;
     }
 }

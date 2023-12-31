@@ -152,7 +152,7 @@ public class Calibrate3dPipe
 
             var camToBoard = MathUtils.opencvRTtoPose3d(rvecs.get(i), tvecs.get(i));
 
-            observations.add(new BoardObservation(i_objPts, i_imgPts, reprojectionError, camToBoard));
+            observations.add(new BoardObservation(i_objPts, i_imgPts, reprojectionError, camToBoard, true));
         }
         jac_temp.release();
 

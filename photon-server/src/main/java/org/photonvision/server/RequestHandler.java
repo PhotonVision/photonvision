@@ -615,7 +615,7 @@ public class RequestHandler {
 
                             var bufferedImage = ImageIO.read(calibImg);
                             var buffer = new ByteArrayOutputStream();
-                            ImageIO.write(bufferedImage, "jpg", buffer);
+                            ImageIO.write(bufferedImage, "png", buffer);
                             byte[] data = buffer.toByteArray();
 
                             snapshotData.put("snapshotData", data);
