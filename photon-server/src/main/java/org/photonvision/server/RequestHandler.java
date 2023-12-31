@@ -494,8 +494,7 @@ public class RequestHandler {
 
             int cameraIndex = data.get("cameraIndex").asInt();
             var coeffs =
-                    kObjectMapper.readValue(
-                            data.get("calibration").toString(), CameraCalibrationCoefficients.class);
+                    kObjectMapper.convertValue(data.get("calibration"), CameraCalibrationCoefficients.class);
 
             var uploadCalibrationEvent =
                     new IncomingWebSocketEvent<>(
