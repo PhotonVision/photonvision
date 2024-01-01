@@ -81,7 +81,7 @@ public class Calibrate3dPipe
                                         it != null
                                                 && it.imagePoints != null
                                                 && it.objectPoints != null
-                                                && it.inputImage != null)
+                                                && it.size != null)
                         .collect(Collectors.toList());
 
         List<Mat> objPoints = in.stream().map(it -> it.objectPoints).collect(Collectors.toList());
@@ -99,7 +99,7 @@ public class Calibrate3dPipe
                     Calib3d.calibrateCameraExtended(
                             objPoints,
                             imgPts,
-                            new Size(in.get(0).inputImage.width(), in.get(0).inputImage.height()),
+                            new Size(in.get(0).size.width, in.get(0).size.height),
                             cameraMatrix,
                             distortionCoefficients,
                             rvecs,
@@ -153,7 +153,11 @@ public class Calibrate3dPipe
 
             var camToBoard = MathUtils.opencvRTtoPose3d(rvecs.get(i), tvecs.get(i));
 
-            var image = new JsonMat(in.get(i).inputImage);
+            JsonMat image = null;
+            var inputImage = in.get(i).inputImage;
+            if (inputImage != null) {
+                image = new JsonMat(inputImage);
+            }
             observations.add(
                     new BoardObservation(
                             i_objPts, i_imgPts, reprojectionError, camToBoard, true, "img" + i + ".png", image));
