@@ -262,7 +262,7 @@ jobs:
     needs: [build-package]
 
     # Commented out for testing
-    # if: ${{ github.event_name != 'pull_request' }} 
+    # if: ${{ github.event_name != 'pull_request' }}
 
     strategy:
       fail-fast: false
