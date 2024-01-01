@@ -123,6 +123,10 @@ public class USBCameraSource extends VisionSource {
     }
 
     public class USBCameraSettables extends VisionSourceSettables {
+        // We need to remember the last exposure set when exiting auto exposure mode so we can restore
+        // it
+        private double last_exposure = -1;
+
         protected USBCameraSettables(CameraConfiguration configuration) {
             super(configuration);
             getAllVideoModes();
@@ -179,6 +183,10 @@ public class USBCameraSource extends VisionSource {
                         } else {
                             camera.setWhiteBalanceManual(4000); // Auto white-balance disabled, 4000K preset
                         }
+
+                        // Most cameras leave exposure time absolute at the last value from their AE algorithm.
+                        // Set it back to the exposure slider value
+                        setExposure(this.last_exposure);
                     }
                 } else {
                     // Pick a bunch of reasonable setting defaults for driver, fiducials, or otherwise
@@ -254,6 +262,7 @@ public class USBCameraSource extends VisionSource {
                 } catch (VideoException e) {
                     logger.error("Failed to set camera exposure!", e);
                 }
+                this.last_exposure = exposure;
             }
         }
 
