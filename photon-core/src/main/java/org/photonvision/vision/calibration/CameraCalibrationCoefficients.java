@@ -35,11 +35,11 @@ public class CameraCalibrationCoefficients implements Releasable {
     public final Size resolution;
 
     @JsonProperty("cameraIntrinsics")
-    public final JsonMat cameraIntrinsics;
+    public final JsonMatOfDouble cameraIntrinsics;
 
     @JsonProperty("cameraExtrinsics")
     @JsonAlias({"cameraExtrinsics", "distCoeffs"})
-    public final JsonMat distCoeffs;
+    public final JsonMatOfDouble distCoeffs;
 
     @JsonProperty("observations")
     public final List<BoardObservation> observations;
@@ -50,8 +50,8 @@ public class CameraCalibrationCoefficients implements Releasable {
     @JsonCreator
     public CameraCalibrationCoefficients(
             @JsonProperty("resolution") Size resolution,
-            @JsonProperty("cameraIntrinsics") JsonMat cameraIntrinsics,
-            @JsonProperty("cameraExtrinsics") JsonMat distCoeffs,
+            @JsonProperty("cameraIntrinsics") JsonMatOfDouble cameraIntrinsics,
+            @JsonProperty("cameraExtrinsics") JsonMatOfDouble distCoeffs,
             @JsonProperty("observations") List<BoardObservation> observations) {
         this.resolution = resolution;
         this.cameraIntrinsics = cameraIntrinsics;
@@ -127,8 +127,8 @@ public class CameraCalibrationCoefficients implements Releasable {
                     dist_coefs.get(4).doubleValue(),
                 };
 
-        var cam_jsonmat = new JsonMat(3, 3, cam_arr);
-        var distortion_jsonmat = new JsonMat(1, 5, dist_array);
+        var cam_jsonmat = new JsonMatOfDouble(3, 3, cam_arr);
+        var distortion_jsonmat = new JsonMatOfDouble(1, 5, dist_array);
 
         var error = json.get("avg_reprojection_error").asDouble();
         var width = json.get("img_size").get(0).doubleValue();

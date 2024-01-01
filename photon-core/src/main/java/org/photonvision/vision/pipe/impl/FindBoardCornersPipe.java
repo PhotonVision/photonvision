@@ -18,19 +18,19 @@
 package org.photonvision.vision.pipe.impl;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.frame.FrameDivisor;
+import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.pipeline.UICalibrationData;
 
 public class FindBoardCornersPipe
         extends CVPipe<
-                Pair<Mat, Mat>, Triple<Size, Mat, Mat>, FindBoardCornersPipe.FindCornersPipeParams> {
+                Pair<Mat, Mat>, FindBoardCornersPipe.FindBoardCornersPipeResult, FindBoardCornersPipe.FindCornersPipeParams> {
     private static final Logger logger =
             new Logger(FindBoardCornersPipe.class, LogGroup.VisionModule);
 
@@ -112,7 +112,7 @@ public class FindBoardCornersPipe
      * @return All valid Mats for camera calibration
      */
     @Override
-    protected Triple<Size, Mat, Mat> process(Pair<Mat, Mat> in) {
+    protected FindBoardCornersPipeResult process(Pair<Mat, Mat> in) {
         return findBoardCorners(in);
     }
 
@@ -214,7 +214,7 @@ public class FindBoardCornersPipe
      *
      * @return Frame resolution, object points, board corners
      */
-    private Triple<Size, Mat, Mat> findBoardCorners(Pair<Mat, Mat> in) {
+    private FindBoardCornersPipeResult findBoardCorners(Pair<Mat, Mat> in) {
         createObjectPoints();
 
         var inFrame = in.getLeft();
@@ -272,7 +272,7 @@ public class FindBoardCornersPipe
         // the corners we found
         Calib3d.drawChessboardCorners(outFrame, patternSize, outBoardCorners, true);
 
-        return Triple.of(inFrame.size(), objPts, outBoardCorners);
+        return new FindBoardCornersPipeResult(inFrame.size(), objPts, outBoardCorners);
     }
 
     public static class FindCornersPipeParams {
@@ -321,6 +321,28 @@ public class FindBoardCornersPipe
             if (Double.doubleToLongBits(gridSize) != Double.doubleToLongBits(other.gridSize))
                 return false;
             return divisor == other.divisor;
+        }
+    }
+
+    public static class FindBoardCornersPipeResult implements Releasable {
+        public Size size;
+        public MatOfPoint2f objectPoints;
+        public MatOfPoint2f imagePoints;
+
+        // Set later only if we need it
+        public Mat inputImage = null;
+
+        public FindBoardCornersPipeResult(Size size, MatOfPoint2f objectPoints, MatOfPoint2f imagePoints) {
+            this.size = size;
+            this.objectPoints = objectPoints;
+            this.imagePoints = imagePoints;
+        }
+
+        @Override
+        public void release() {
+            objectPoints.release();
+            imagePoints.release();
+            if (inputImage != null) inputImage.release();
         }
     }
 }

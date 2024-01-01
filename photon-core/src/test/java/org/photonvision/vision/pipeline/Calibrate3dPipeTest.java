@@ -43,6 +43,7 @@ import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.impl.Calibrate3dPipe;
 import org.photonvision.vision.pipe.impl.FindBoardCornersPipe;
+import org.photonvision.vision.pipe.impl.FindBoardCornersPipe.FindBoardCornersPipeResult;
 
 public class Calibrate3dPipeTest {
     @BeforeAll
@@ -65,7 +66,7 @@ public class Calibrate3dPipeTest {
                 new FindBoardCornersPipe.FindCornersPipeParams(
                         11, 4, UICalibrationData.BoardType.DOTBOARD, 15, FrameDivisor.NONE));
 
-        List<Triple<Size, Mat, Mat>> foundCornersList = new ArrayList<>();
+        List<FindBoardCornersPipeResult> foundCornersList = new ArrayList<>();
 
         for (var f : frames) {
             var copy = new Mat();
@@ -116,7 +117,7 @@ public class Calibrate3dPipeTest {
 
         assertTrue(
                 calibration3dPipeline.foundCornersList.stream()
-                        .map(Triple::getRight)
+                        .map(it -> it.imagePoints)
                         .allMatch(it -> it.width() > 0 && it.height() > 0));
 
         calibration3dPipeline.removeSnapshot(0);
@@ -131,7 +132,7 @@ public class Calibrate3dPipeTest {
 
         assertTrue(
                 calibration3dPipeline.foundCornersList.stream()
-                        .map(Triple::getRight)
+                        .map(it -> it.imagePoints)
                         .allMatch(it -> it.width() > 0 && it.height() > 0));
 
         var cal = calibration3dPipeline.tryCalibration();
@@ -287,7 +288,7 @@ public class Calibrate3dPipeTest {
 
         assertTrue(
                 calibration3dPipeline.foundCornersList.stream()
-                        .map(Triple::getRight)
+                        .map(it -> it.imagePoints)
                         .allMatch(it -> it.width() > 0 && it.height() > 0));
 
         var cal = calibration3dPipeline.tryCalibration();

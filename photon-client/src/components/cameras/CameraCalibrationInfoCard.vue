@@ -139,7 +139,7 @@ onBeforeMount(() => {
     .then(
       (response: { data: Record<string, Record<string, { snapshotData: string; snapshotFilename: string }[]>> }) => {
         observationImgData.value = response.data[useCameraSettingsStore().currentCameraName][getResolutionString()].map(
-          (r) => "data:image/jpg;base64," + r.snapshotData
+          (r) => "data:image/png;base64," + r.snapshotData
         );
       }
     )

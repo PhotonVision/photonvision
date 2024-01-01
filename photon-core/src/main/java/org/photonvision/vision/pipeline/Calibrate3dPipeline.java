@@ -46,6 +46,7 @@ import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
 import org.photonvision.vision.pipe.impl.Calibrate3dPipe;
 import org.photonvision.vision.pipe.impl.FindBoardCornersPipe;
+import org.photonvision.vision.pipe.impl.FindBoardCornersPipe.FindBoardCornersPipeResult;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.pipeline.result.CalibrationPipelineResult;
 
@@ -63,7 +64,7 @@ public class Calibrate3dPipeline
     private boolean takeSnapshot = false;
 
     // Output of the corners
-    final List<Triple<Size, Mat, Mat>> foundCornersList;
+    final List<FindBoardCornersPipeResult> foundCornersList;
 
     /// Output of the calibration, getter method is set for this.
     private CVPipeResult<CameraCalibrationCoefficients> calibrationOutput;
@@ -130,7 +131,7 @@ public class Calibrate3dPipeline
         var outputColorCVMat = new CVMat();
         inputColorMat.copyTo(outputColorCVMat.getMat());
 
-        Triple<Size, Mat, Mat> findBoardResult =
+       FindBoardCornersPipeResult findBoardResult =
                 findBoardCornersPipe.run(Pair.of(inputColorMat, outputColorCVMat.getMat())).output;
 
         var fpsResult = calculateFPSPipe.run(null);
@@ -141,6 +142,9 @@ public class Calibrate3dPipeline
             takeSnapshot = false;
 
             if (findBoardResult != null) {
+                // Only copy the image into the result when we absolutely must
+                findBoardResult.inputImage = inputColorMat.clone();
+
                 foundCornersList.add(findBoardResult);
                 saveCalImage(inputColorMat);
 
@@ -178,7 +182,7 @@ public class Calibrate3dPipeline
 
     List<List<Point>> getCornersList() {
         return foundCornersList.stream()
-                .map(it -> ((MatOfPoint2f) it.getRight()).toList())
+                .map(it -> it.imagePoints.toList())
                 .collect(Collectors.toList());
     }
 
@@ -224,10 +228,7 @@ public class Calibrate3dPipeline
 
     public void finishCalibration() {
         foundCornersList.forEach(
-                it -> {
-                    it.getMiddle().release();
-                    it.getRight().release();
-                });
+                it -> it.release());
         foundCornersList.clear();
 
         broadcastState();

@@ -19,9 +19,14 @@ package org.photonvision.vision.pipe.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import javax.imageio.ImageIO;
+
 import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
@@ -31,14 +36,16 @@ import org.opencv.core.Size;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
+import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.vision.calibration.BoardObservation;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.calibration.JsonMat;
+import org.photonvision.vision.calibration.JsonMatOfDouble;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class Calibrate3dPipe
         extends CVPipe<
-                List<Triple<Size, Mat, Mat>>,
+                List<FindBoardCornersPipe.FindBoardCornersPipeResult>,
                 CameraCalibrationCoefficients,
                 Calibrate3dPipe.CalibratePipeParams> {
     // Camera matrix stores the center of the image and focal length across the x and y-axis in a 3x3
@@ -72,19 +79,19 @@ public class Calibrate3dPipe
      * @return Result of processing.
      */
     @Override
-    protected CameraCalibrationCoefficients process(List<Triple<Size, Mat, Mat>> in) {
+    protected CameraCalibrationCoefficients process(List<FindBoardCornersPipe.FindBoardCornersPipeResult> in) {
         in =
                 in.stream()
                         .filter(
                                 it ->
                                         it != null
-                                                && it.getLeft() != null
-                                                && it.getMiddle() != null
-                                                && it.getRight() != null)
+                                                && it.imagePoints != null
+                                                && it.objectPoints != null
+                                                && it.inputImage != null)
                         .collect(Collectors.toList());
 
-        List<Mat> objPoints = in.stream().map(Triple::getMiddle).collect(Collectors.toList());
-        List<Mat> imgPts = in.stream().map(Triple::getRight).collect(Collectors.toList());
+        List<Mat> objPoints = in.stream().map(it->it.objectPoints).collect(Collectors.toList());
+        List<Mat> imgPts = in.stream().map(it->it.imagePoints).collect(Collectors.toList());
         if (objPoints.size() != imgPts.size()) {
             logger.error("objpts.size != imgpts.size");
             return null;
@@ -98,7 +105,7 @@ public class Calibrate3dPipe
                     Calib3d.calibrateCameraExtended(
                             objPoints,
                             imgPts,
-                            new Size(in.get(0).getLeft().width, in.get(0).getLeft().height),
+                            new Size(in.get(0).inputImage.width(), in.get(0).inputImage.height()),
                             cameraMatrix,
                             distortionCoefficients,
                             rvecs,
@@ -112,8 +119,8 @@ public class Calibrate3dPipe
             return null;
         }
 
-        JsonMat cameraMatrixMat = JsonMat.fromMat(cameraMatrix);
-        JsonMat distortionCoefficientsMat = JsonMat.fromMat(distortionCoefficients);
+        JsonMatOfDouble cameraMatrixMat = JsonMatOfDouble.fromMat(cameraMatrix);
+        JsonMatOfDouble distortionCoefficientsMat = JsonMatOfDouble.fromMat(distortionCoefficients);
 
         // For each observation, calc reprojection error
         Mat jac_temp = new Mat();
@@ -152,9 +159,9 @@ public class Calibrate3dPipe
 
             var camToBoard = MathUtils.opencvRTtoPose3d(rvecs.get(i), tvecs.get(i));
 
-            // TODO -- this magical file name just happens to match the one from Calibrate3dpipeline. We should figure out how to better sepreate concerns
+            var image = new JsonMat(in.get(i).inputImage);
             observations.add(
-                    new BoardObservation(i_objPts, i_imgPts, reprojectionError, camToBoard, true, "img" + i + ".png"));
+                    new BoardObservation(i_objPts, i_imgPts, reprojectionError, camToBoard, true, "img" + i + ".png", image));
         }
         jac_temp.release();
 

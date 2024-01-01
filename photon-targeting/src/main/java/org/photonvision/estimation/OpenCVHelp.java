@@ -28,14 +28,23 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.*;
+
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+
+import javax.imageio.ImageIO;
+
 import org.ejml.simple.SimpleMatrix;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfDouble;
 import org.opencv.core.MatOfInt;
 import org.opencv.core.MatOfPoint;
@@ -45,6 +54,7 @@ import org.opencv.core.Point;
 import org.opencv.core.Point3;
 import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.targeting.PNPResult;
 import org.photonvision.targeting.TargetCorner;
@@ -563,6 +573,26 @@ public final class OpenCVHelp {
             System.err.println("SolvePNP_SQPNP failed!");
             e.printStackTrace();
             return new PNPResult();
+        }
+    }
+
+    /**
+     * Convert a image to a BufferedImage
+     * @param input input Mat as bgr/8uc3
+     * @return The same data but as a BufferedImage
+     */
+    public static Optional<BufferedImage> matToImage(Mat bgr) {
+        MatOfByte outputBuffer = new MatOfByte();
+        Imgcodecs.imencode(".jpg", bgr, outputBuffer);
+        byte ba[]=outputBuffer.toArray();
+
+        BufferedImage bi;
+        try {
+            bi = ImageIO.read(new ByteArrayInputStream(ba));
+            return Optional.of(bi);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return Optional.empty();
         }
     }
 }

@@ -22,10 +22,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Num;
 import java.util.Arrays;
+import java.util.Base64;
+
+import javax.imageio.ImageIO;
+
 import org.ejml.simple.SimpleMatrix;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfDouble;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.vision.opencv.Releasable;
 
@@ -33,97 +40,47 @@ public class JsonMat implements Releasable {
     public final int rows;
     public final int cols;
     public final int type;
-    public final double[] data;
+    public final String data;
 
     // Cached matrices to avoid object recreation
     @JsonIgnore private Mat wrappedMat = null;
-    @JsonIgnore private Matrix wpilibMat = null;
 
-    private MatOfDouble wrappedMatOfDouble;
+    public JsonMat(Mat mat) {
+        this.rows = mat.rows();
+        this.cols = mat.cols();
+        this.type = mat.type();
+        // this.data = new byte[(int) (mat.total() * mat.channels())];
+        // mat.get(0, 0, this.data);
 
-    public JsonMat(int rows, int cols, double[] data) {
-        this(rows, cols, CvType.CV_64FC1, data);
+        var buf = new MatOfByte();
+        Imgcodecs.imencode(".png", mat, buf);
+        data = Base64.getEncoder().encodeToString(buf.toArray());
+        buf.release();
     }
 
     public JsonMat(
             @JsonProperty("rows") int rows,
             @JsonProperty("cols") int cols,
             @JsonProperty("type") int type,
-            @JsonProperty("data") double[] data) {
+            @JsonProperty("data") String data) {
         this.rows = rows;
         this.cols = cols;
         this.type = type;
         this.data = data;
     }
 
-    private static boolean isCameraMatrixMat(Mat mat) {
-        return mat.type() == CvType.CV_64FC1 && mat.cols() == 3 && mat.rows() == 3;
-    }
-
-    private static boolean isDistortionCoeffsMat(Mat mat) {
-        return mat.type() == CvType.CV_64FC1 && mat.cols() == 5 && mat.rows() == 1;
-    }
-
-    private static boolean isCalibrationMat(Mat mat) {
-        return isDistortionCoeffsMat(mat) || isCameraMatrixMat(mat);
-    }
-
-    @JsonIgnore
-    public static double[] getDataFromMat(Mat mat) {
-        if (!isCalibrationMat(mat)) return null;
-
-        double[] data = new double[(int) (mat.total() * mat.elemSize())];
-        mat.get(0, 0, data);
-
-        int dataLen = -1;
-
-        if (isCameraMatrixMat(mat)) dataLen = 9;
-        if (isDistortionCoeffsMat(mat)) dataLen = 5;
-
-        // truncate Mat data to correct number data points.
-        return Arrays.copyOfRange(data, 0, dataLen);
-    }
-
-    public static JsonMat fromMat(Mat mat) {
-        if (!isCalibrationMat(mat)) return null;
-        return new JsonMat(mat.rows(), mat.cols(), getDataFromMat(mat));
-    }
-
     @JsonIgnore
     public Mat getAsMat() {
-        if (this.type != CvType.CV_64FC1) return null;
-
         if (wrappedMat == null) {
-            this.wrappedMat = new Mat(this.rows, this.cols, this.type);
-            this.wrappedMat.put(0, 0, this.data);
+            var bytes = Base64.getDecoder().decode(data);
+            var pngData = new MatOfByte(bytes);
+            this.wrappedMat = Imgcodecs.imdecode(pngData, Imgcodecs.IMREAD_COLOR);
         }
         return this.wrappedMat;
     }
 
-    @JsonIgnore
-    public MatOfDouble getAsMatOfDouble() {
-        if (this.wrappedMatOfDouble == null) {
-            this.wrappedMatOfDouble = new MatOfDouble();
-            getAsMat().convertTo(wrappedMatOfDouble, CvType.CV_64F);
-        }
-        return this.wrappedMatOfDouble;
-    }
-
-    @JsonIgnore
-    public <R extends Num, C extends Num> Matrix<R, C> getAsWpilibMat() {
-        if (wpilibMat == null) {
-            wpilibMat = new Matrix<R, C>(new SimpleMatrix(rows, cols, true, data));
-        }
-        return (Matrix<R, C>) wpilibMat;
-    }
-
     @Override
     public void release() {
-        getAsMat().release();
-    }
-
-    public Packet populatePacket(Packet packet) {
-        packet.encode(this.data);
-        return packet;
+        if (wrappedMat != null) wrappedMat.release();
     }
 }

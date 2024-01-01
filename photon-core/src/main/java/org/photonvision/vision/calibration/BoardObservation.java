@@ -23,6 +23,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import java.util.List;
 import org.opencv.core.Point;
 import org.opencv.core.Point3;
+import java.awt.image.BufferedImage;
 
 public final class BoardObservation {
     // Expected feature 3d location in the camera frame
@@ -48,6 +49,9 @@ public final class BoardObservation {
     @JsonProperty("snapshotName")
     public String snapshotName;
 
+    @JsonProperty("snapshotData")
+    public JsonMat snapshotData;
+
     @JsonCreator
     public BoardObservation(
             @JsonProperty("locationInObjectSpace") List<Point3> locationInObjectSpace,
@@ -55,12 +59,14 @@ public final class BoardObservation {
             @JsonProperty("reprojectionErrors") List<Point> reprojectionErrors,
             @JsonProperty("optimisedCameraToObject") Pose3d optimisedCameraToObject,
             @JsonProperty("includeObservationInCalibration") boolean includeObservationInCalibration,
-            @JsonProperty("snapshotName") String snapshotName) {
+            @JsonProperty("snapshotName") String snapshotName,
+            @JsonProperty("snapshotData") JsonMat snapshotData) {
         this.locationInObjectSpace = locationInObjectSpace;
         this.locationInImageSpace = locationInImageSpace;
         this.reprojectionErrors = reprojectionErrors;
         this.optimisedCameraToObject = optimisedCameraToObject;
         this.includeObservationInCalibration = includeObservationInCalibration;
         this.snapshotName = snapshotName;
+        this.snapshotData = snapshotData;
     }
 }
