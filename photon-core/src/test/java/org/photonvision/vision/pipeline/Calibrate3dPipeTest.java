@@ -78,8 +78,6 @@ public class Calibrate3dPipeTest {
 
         var calibrate3dPipeOutput = calibrate3dPipe.run(foundCornersList);
         assertTrue(calibrate3dPipeOutput.output.observations.size() > 0);
-        // System.out.println("Per View Errors: " +
-        // Arrays.toString(calibrate3dPipeOutput.output.perViewErrors));
 
         for (var f : frames) {
             f.release();
@@ -139,12 +137,8 @@ public class Calibrate3dPipeTest {
 
         assertNotNull(cal);
         assertNotNull(cal.observations);
-        // System.out.println("Per View Errors: " + Arrays.toString(cal.perViewErrors));
         System.out.println("Camera Intrinsics: " + cal.cameraIntrinsics.toString());
         System.out.println("Dist Coeffs: " + cal.distCoeffs.toString());
-        // System.out.println("Standard Deviation: " + cal.standardDeviation);
-        // System.out.println("Mean: " +
-        // Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
 
         // Confirm we didn't get leaky on our mat usage
         // assertTrue(CVMat.getMatCount() == startMatCount); // TODO Figure out why this doesn't work in
@@ -309,12 +303,8 @@ public class Calibrate3dPipeTest {
         assertTrue(centerXErrPct < 10.0);
         assertTrue(centerYErrPct < 10.0);
 
-        // System.out.println("Per View Errors: " + Arrays.toString(cal.perViewErrors));
         System.out.println("Camera Intrinsics: " + cal.cameraIntrinsics.toString());
         System.out.println("Dist Coeffs: " + cal.distCoeffs.toString());
-        // System.out.println("Standard Deviation: " + cal.standardDeviation);
-        // System.out.println("Mean: " +
-        // Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
 
         // Confirm we didn't get leaky on our mat usage
         // assertEquals(startMatCount, CVMat.getMatCount()); // TODO Figure out why this doesn't

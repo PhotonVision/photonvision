@@ -228,6 +228,9 @@ public class FindBoardCornersPipe
 
         if (params.type == UICalibrationData.BoardType.CHESSBOARD) {
             // Reduce the image size to be much more manageable
+            // Note that opencv will copy the frame if no resize is requested; we can skip this since we
+            // don't need that copy. See:
+            // https://github.com/opencv/opencv/blob/a8ec6586118c3f8e8f48549a85f2da7a5b78bcc9/modules/imgproc/src/resize.cpp#L4185
             if (params.divisor != FrameDivisor.NONE) {
                 Imgproc.resize(inFrame, smallerInFrame, getFindCornersImgSize(inFrame));
             } else {

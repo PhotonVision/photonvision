@@ -29,6 +29,9 @@ public class JsonMat implements Releasable {
     public final int rows;
     public final int cols;
     public final int type;
+
+    // We store image data as a base64-encoded PNG inside a Java string. This lets us serialize it
+    // without too much overhead and still use JSON.
     public final String data;
 
     // Cached matrices to avoid object recreation
@@ -38,9 +41,8 @@ public class JsonMat implements Releasable {
         this.rows = mat.rows();
         this.cols = mat.cols();
         this.type = mat.type();
-        // this.data = new byte[(int) (mat.total() * mat.channels())];
-        // mat.get(0, 0, this.data);
 
+        // Convert from Mat -> png byte array -> base64
         var buf = new MatOfByte();
         Imgcodecs.imencode(".png", mat, buf);
         data = Base64.getEncoder().encodeToString(buf.toArray());
@@ -61,6 +63,7 @@ public class JsonMat implements Releasable {
     @JsonIgnore
     public Mat getAsMat() {
         if (wrappedMat == null) {
+            // Convert back from base64 string -> png -> Mat
             var bytes = Base64.getDecoder().decode(data);
             var pngData = new MatOfByte(bytes);
             this.wrappedMat = Imgcodecs.imdecode(pngData, Imgcodecs.IMREAD_COLOR);

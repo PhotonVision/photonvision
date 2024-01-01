@@ -104,7 +104,6 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         parentModule.saveAndBroadcastAll();
                         return;
                     case "startCalibration":
-                        // var data = UICalibrationData.fromMap((Map<String, Object>) newPropValue);
                         try {
                             var data =
                                     JacksonUtils.deserialize(

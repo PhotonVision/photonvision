@@ -157,8 +157,6 @@ public class Calibrate3dPipeline
         return new CalibrationPipelineResult(
                 sumPipeNanosElapsed,
                 fps, // Unused but here in case
-                // Collections.emptyList(),
-                // new MultiTargetPNPResult(),
                 new Frame(
                         new CVMat(), outputColorCVMat, FrameThresholdType.NONE, frame.frameStaticProperties),
                 getCornersList());
