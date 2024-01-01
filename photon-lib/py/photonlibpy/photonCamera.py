@@ -165,11 +165,30 @@ class PhotonCamera:
 
         versionString = self.versionEntry.get(defaultValue="")
         if len(versionString) > 0 and versionString != PHOTONVISION_VERSION:
-            wpilib.reportWarning(
-                "Photon version "
-                + PHOTONVISION_VERSION
-                + " does not match coprocessor version "
-                + versionString
-                + f"! Please install photonlibpy version {PHOTONLIB_VERSION}",
-                True,
-            )
+            # Verified version mismatch
+
+            bfw = """
+            \n\n\n
+            >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+            >>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            >>>
+            >>> You are running an incompatible version
+            >>> of PhotonVision on your coprocessor!
+            >>>
+            >>> This is neither tested nor supported.
+            >>> You MUST update PhotonVision,
+            >>> PhotonLib, or both.
+            >>>
+            >>> Your code will now crash.
+            >>> We hope your day gets better.
+            >>>
+            >>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+            \n\n
+            """
+
+            wpilib.reportWarning(bfw)
+
+            errText = f"Photon version {PHOTONLIB_VERSION} does not match coprocessor version {versionString}. Please install photonlibpy version {PHOTONLIB_VERSION}."
+            wpilib.reportError(errText, True)
+            raise Exception(errText)

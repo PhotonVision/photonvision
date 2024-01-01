@@ -20,6 +20,7 @@ package org.photonvision.targeting;
 import java.util.Objects;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.dataflow.structures.PacketSerde;
+import org.photonvision.targeting.proto.TargetCornerProto;
 
 /**
  * Represents a point in an image at the corner of the minimum-area bounding rectangle, in pixels.
@@ -71,4 +72,5 @@ public class TargetCorner {
     }
 
     public static final APacketSerde serde = new APacketSerde();
+    public static final TargetCornerProto proto = new TargetCornerProto();
 }

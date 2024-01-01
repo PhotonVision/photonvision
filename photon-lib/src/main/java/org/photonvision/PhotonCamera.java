@@ -374,13 +374,34 @@ public class PhotonCamera implements AutoCloseable {
         if (!versionString.isEmpty() && !PhotonVersion.versionMatches(versionString)) {
             // Error on a verified version mismatch
             // But stay silent otherwise
-            DriverStation.reportWarning(
+
+            String bfw =
+                    "\n\n\n\n\n"
+                            + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+                            + ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+                            + ">>>                                          \n"
+                            + ">>> You are running an incompatible version  \n"
+                            + ">>> of PhotonVision on your coprocessor!     \n"
+                            + ">>>                                          \n"
+                            + ">>> This is neither tested nor supported.    \n"
+                            + ">>> You MUST update PhotonVision,            \n"
+                            + ">>> PhotonLib, or both.                      \n"
+                            + ">>>                                          \n"
+                            + ">>> Your code will now crash.                \n"
+                            + ">>> We hope your day gets better.            \n"
+                            + ">>>                                          \n"
+                            + ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+                            + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
+
+            DriverStation.reportWarning(bfw, false);
+            var versionMismatchMessage =
                     "Photon version "
                             + PhotonVersion.versionString
                             + " does not match coprocessor version "
                             + versionString
-                            + "!",
-                    true);
+                            + "!";
+            DriverStation.reportError(versionMismatchMessage, false);
+            throw new UnsupportedOperationException(versionMismatchMessage);
         }
     }
 }
