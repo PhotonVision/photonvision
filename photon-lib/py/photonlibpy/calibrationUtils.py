@@ -7,6 +7,7 @@ from typing import List, TypedDict
 import cv2
 import numpy as np
 
+
 @dataclass
 class Resolution:
     width: int
@@ -99,7 +100,6 @@ def convert_photon_to_mrcal(photon_cal_json_path: str, output_folder: str):
     the output_folder directory with images and corners.vnl file for use with mrcal.
     """
     with open(photon_cal_json_path, "r") as cal_json:
-
         # Convert to nested objects instead of nameddicts on json-loads
         class Generic:
             @classmethod
@@ -108,7 +108,9 @@ def convert_photon_to_mrcal(photon_cal_json_path: str, output_folder: str):
                 obj.__dict__.update(dict)
                 return obj
 
-        camera_cal_data: CameraCalibration = json.loads(cal_json.read(), object_hook=Generic.from_dict)
+        camera_cal_data: CameraCalibration = json.loads(
+            cal_json.read(), object_hook=Generic.from_dict
+        )
 
         # Create output_folder if not exists
         if not os.path.exists(output_folder):
@@ -118,8 +120,8 @@ def convert_photon_to_mrcal(photon_cal_json_path: str, output_folder: str):
         for obs in camera_cal_data.observations:
             image = obs.snapshotData.data
             decoded_data = base64.b64decode(image)
-            np_data = np.frombuffer(decoded_data,np.uint8)
-            img = cv2.imdecode(np_data,cv2.IMREAD_UNCHANGED)
+            np_data = np.frombuffer(decoded_data, np.uint8)
+            img = cv2.imdecode(np_data, cv2.IMREAD_UNCHANGED)
             cv2.imwrite(f"{output_folder}/{obs.snapshotName}", img)
 
         # And create a VNL file for use with mrcal
