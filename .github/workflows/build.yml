@@ -261,7 +261,9 @@ jobs:
   build-image:
     needs: [build-package]
 
-    if: ${{ github.event_name != 'pull_request' }}
+    # Commented out for testing
+    # if: ${{ github.event_name != 'pull_request' }} 
+
     strategy:
       fail-fast: false
       matrix:
