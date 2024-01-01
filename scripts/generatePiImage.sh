@@ -10,7 +10,7 @@ NEW_JAR=$(realpath $(find . -name photonvision\*-linuxarm64.jar))
 echo "Using jar: " $NEW_JAR
 echo "Downloading image from" $1
 sudo apt-get install -y xz-utils
-wget $1
+wget -q $1
 ls
 FILE_NAME=$(ls | grep *.xz)
 
