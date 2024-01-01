@@ -125,43 +125,14 @@ interface ObservationDetails {
   index: number;
 }
 const getObservationDetails = (): ObservationDetails[] | undefined => {
-  return getCalibrationCoeffs()?.observations.map((o, i) => ({
+  const ret = getCalibrationCoeffs()?.observations.map((o, i) => ({
     index: i,
     mean: parseFloat(getMeanFromView(o).toFixed(2)),
-    snapshotSrc: observationImgData.value[i] || loadingImage
+    snapshotSrc: "data:image/png;base64," + o.snapshotData.data || loadingImage
   }));
+  console.log(ret)
+  return ret
 };
-
-const observationImgData = ref<string[]>([]);
-onBeforeMount(() => {
-  axios
-    .get("/settings/camera/getCalibImages")
-    .then(
-      (response: { data: Record<string, Record<string, { snapshotData: string; snapshotFilename: string }[]>> }) => {
-        observationImgData.value = response.data[useCameraSettingsStore().currentCameraName][getResolutionString()].map(
-          (r) => "data:image/png;base64," + r.snapshotData
-        );
-      }
-    )
-    .catch((error) => {
-      if (error.response) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: error.response.data.text || error.response.data
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "Error while trying to process the request! The backend didn't respond."
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "An error occurred while trying to process the request."
-        });
-      }
-    });
-});
 </script>
 
 <template>
