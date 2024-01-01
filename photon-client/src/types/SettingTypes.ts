@@ -92,11 +92,18 @@ export enum CvType {
   CV_16F = 7
 }
 
-export interface JsonMat {
+export interface JsonMatOfDouble {
   rows: number;
   cols: number;
   type: CvType;
   data: number[];
+}
+
+export interface JsonImage {
+  rows: number;
+  cols: number;
+  type: CvType;
+  data: string; // base64 encoded
 }
 
 export interface CvPoint3 {
@@ -115,13 +122,15 @@ export interface BoardObservation {
   reprojectionErrors: CvPoint[];
   optimisedCameraToObject: Pose3d;
   includeObservationInCalibration: boolean;
+  snapshotName: string;
+  snapshotData: JsonImage;
 }
 
 export interface CameraCalibrationResult {
   resolution: Resolution;
-  cameraIntrinsics: JsonMat;
+  cameraIntrinsics: JsonMatOfDouble;
   // TODO rename to be Right
-  cameraExtrinsics: JsonMat;
+  cameraExtrinsics: JsonMatOfDouble;
   observations: BoardObservation[];
 }
 
