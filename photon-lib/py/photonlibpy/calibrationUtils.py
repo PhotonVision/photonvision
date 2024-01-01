@@ -93,37 +93,42 @@ class CameraCalibration:
     observations: List[Observation]
 
 
-filename = "/home/matt/Downloads/photon_calibration_Microsoft_LifeCam_HD-3000_800x600.json"
-output_folder = "photon_calibration_Microsoft_LifeCam_HD-3000_800x600"
+def convert_photon_to_mrcal(photon_cal_json_path: str, output_folder: str):
+    """
+    Unpack a Photon calibration JSON (eg, photon_calibration_Microsoft_LifeCam_HD-3000_800x600.json) into
+    the output_folder directory with images and corners.vnl file for use with mrcal.
+    """
+    with open(photon_cal_json_path, "r") as cal_json:
 
-with open(filename, "r") as cal_json:
+        # Convert to nested objects instead of nameddicts on json-loads
+        class Generic:
+            @classmethod
+            def from_dict(cls, dict):
+                obj = cls()
+                obj.__dict__.update(dict)
+                return obj
 
-    class Generic:
-        @classmethod
-        def from_dict(cls, dict):
-            obj = cls()
-            obj.__dict__.update(dict)
-            return obj
+        camera_cal_data: CameraCalibration = json.loads(cal_json.read(), object_hook=Generic.from_dict)
 
-    camera_cal_data: CameraCalibration = json.loads(cal_json.read(), object_hook=Generic.from_dict)
+        # Create output_folder if not exists
+        if not os.path.exists(output_folder):
+            os.makedirs(output_folder)
 
-    out_dir = f"{output_folder}"
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
-
-    for obs in camera_cal_data.observations:
-        image = obs.snapshotData.data
-        decoded_data = base64.b64decode(image)
-        np_data = np.frombuffer(decoded_data,np.uint8)
-        img = cv2.imdecode(np_data,cv2.IMREAD_UNCHANGED)
-        cv2.imwrite(f"{out_dir}/{obs.snapshotName}", img)
-
-    with open(f"{out_dir}/corners.vnl", "w+") as vnl_file:
-        vnl_file.write("# filename x y level\n")
-
+        # Decode each image and save it as a png
         for obs in camera_cal_data.observations:
-            for corner in obs.locationInImageSpace:
-                # Always level zero
-                vnl_file.write(f"{obs.snapshotName} {corner.x} {corner.y} 0\n")
+            image = obs.snapshotData.data
+            decoded_data = base64.b64decode(image)
+            np_data = np.frombuffer(decoded_data,np.uint8)
+            img = cv2.imdecode(np_data,cv2.IMREAD_UNCHANGED)
+            cv2.imwrite(f"{output_folder}/{obs.snapshotName}", img)
 
-        vnl_file.flush()
+        # And create a VNL file for use with mrcal
+        with open(f"{output_folder}/corners.vnl", "w+") as vnl_file:
+            vnl_file.write("# filename x y level\n")
+
+            for obs in camera_cal_data.observations:
+                for corner in obs.locationInImageSpace:
+                    # Always level zero
+                    vnl_file.write(f"{obs.snapshotName} {corner.x} {corner.y} 0\n")
+
+            vnl_file.flush()
