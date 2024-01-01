@@ -36,8 +36,7 @@
 #include "PhotonVersion.h"
 #include "photon/dataflow/structures/Packet.h"
 
-namespace {
-static constexpr const std::string_view bfw =
+inline constexpr std::string_view bfw =
     "\n\n\n\n"
     ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
     ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
@@ -57,7 +56,6 @@ static constexpr const std::string_view bfw =
     ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
     ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
     "\n\n";
-}  // namespace
 
 namespace photon {
 
