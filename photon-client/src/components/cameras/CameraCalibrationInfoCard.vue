@@ -2,8 +2,7 @@
 import type { BoardObservation, CameraCalibrationResult, VideoFormat } from "@/types/SettingTypes";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
-import { onBeforeMount, ref } from "vue";
-import axios from "axios";
+import { ref } from "vue";
 import loadingImage from "@/assets/images/loading.svg";
 
 type JSONFileUploadEvent = Event & { target: HTMLInputElement | null };
@@ -130,8 +129,7 @@ const getObservationDetails = (): ObservationDetails[] | undefined => {
     mean: parseFloat(getMeanFromView(o).toFixed(2)),
     snapshotSrc: "data:image/png;base64," + o.snapshotData.data || loadingImage
   }));
-  console.log(ret)
-  return ret
+  return ret;
 };
 </script>
 
