@@ -572,25 +572,4 @@ public final class OpenCVHelp {
             return new PNPResult();
         }
     }
-
-    /**
-     * Convert a image to a BufferedImage
-     *
-     * @param input input Mat as bgr/8uc3
-     * @return The same data but as a BufferedImage
-     */
-    public static Optional<BufferedImage> matToImage(Mat bgr) {
-        MatOfByte outputBuffer = new MatOfByte();
-        Imgcodecs.imencode(".jpg", bgr, outputBuffer);
-        byte ba[] = outputBuffer.toArray();
-
-        BufferedImage bi;
-        try {
-            bi = ImageIO.read(new ByteArrayInputStream(ba));
-            return Optional.of(bi);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return Optional.empty();
-        }
-    }
 }
