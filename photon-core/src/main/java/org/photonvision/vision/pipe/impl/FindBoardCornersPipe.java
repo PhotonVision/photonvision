@@ -265,10 +265,8 @@ public class FindBoardCornersPipe
         this.imageSize = new Size(inFrame.width(), inFrame.height());
 
         // Do sub corner pix for drawing chessboard when using OpenCV
-        if (params.divisor != FrameDivisor.NONE) {
-            Imgproc.cornerSubPix(
-                    inFrame, outBoardCorners, getWindowSize(outBoardCorners), zeroZone, criteria);
-        }
+        Imgproc.cornerSubPix(
+                inFrame, outBoardCorners, getWindowSize(outBoardCorners), zeroZone, criteria);
 
         // draw the chessboard, doesn't have to be different for a dot board since it just re projects
         // the corners we found
