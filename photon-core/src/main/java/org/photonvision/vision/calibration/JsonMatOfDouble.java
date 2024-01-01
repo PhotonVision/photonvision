@@ -29,6 +29,7 @@ import org.opencv.core.MatOfDouble;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.vision.opencv.Releasable;
 
+/** JSON-serializable image. Data is stored as a raw JSON array. */
 public class JsonMatOfDouble implements Releasable {
     public final int rows;
     public final int cols;

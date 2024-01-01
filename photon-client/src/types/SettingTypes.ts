@@ -99,7 +99,7 @@ export interface JsonMatOfDouble {
   data: number[];
 }
 
-export interface JsonImage {
+export interface JsonImageMat {
   rows: number;
   cols: number;
   type: CvType;
@@ -123,7 +123,7 @@ export interface BoardObservation {
   optimisedCameraToObject: Pose3d;
   includeObservationInCalibration: boolean;
   snapshotName: string;
-  snapshotData: JsonImage;
+  snapshotData: JsonImageMat;
 }
 
 export interface CameraCalibrationResult {

@@ -32,7 +32,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.calibration.BoardObservation;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
-import org.photonvision.vision.calibration.JsonMat;
+import org.photonvision.vision.calibration.JsonImageMat;
 import org.photonvision.vision.calibration.JsonMatOfDouble;
 import org.photonvision.vision.pipe.CVPipe;
 
@@ -153,10 +153,10 @@ public class Calibrate3dPipe
 
             var camToBoard = MathUtils.opencvRTtoPose3d(rvecs.get(i), tvecs.get(i));
 
-            JsonMat image = null;
+            JsonImageMat image = null;
             var inputImage = in.get(i).inputImage;
             if (inputImage != null) {
-                image = new JsonMat(inputImage);
+                image = new JsonImageMat(inputImage);
             }
             observations.add(
                     new BoardObservation(
@@ -181,7 +181,7 @@ public class Calibrate3dPipe
             logger.error("Failed to parse calibration data to json!", e);
         }
         return new CameraCalibrationCoefficients(
-                params.resolution, cameraMatrixMat, distortionCoefficientsMat, observations);
+                params.resolution, cameraMatrixMat, distortionCoefficientsMat, new double[0], observations);
     }
 
     public static class CalibratePipeParams {

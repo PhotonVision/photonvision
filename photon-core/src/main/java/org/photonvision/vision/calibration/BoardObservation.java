@@ -49,7 +49,7 @@ public final class BoardObservation {
     public String snapshotName;
 
     @JsonProperty("snapshotData")
-    public JsonMat snapshotData;
+    public JsonImageMat snapshotData;
 
     @JsonCreator
     public BoardObservation(
@@ -59,7 +59,7 @@ public final class BoardObservation {
             @JsonProperty("optimisedCameraToObject") Pose3d optimisedCameraToObject,
             @JsonProperty("includeObservationInCalibration") boolean includeObservationInCalibration,
             @JsonProperty("snapshotName") String snapshotName,
-            @JsonProperty("snapshotData") JsonMat snapshotData) {
+            @JsonProperty("snapshotData") JsonImageMat snapshotData) {
         this.locationInObjectSpace = locationInObjectSpace;
         this.locationInImageSpace = locationInImageSpace;
         this.reprojectionErrors = reprojectionErrors;

@@ -44,18 +44,38 @@ public class CameraCalibrationCoefficients implements Releasable {
     @JsonProperty("observations")
     public final List<BoardObservation> observations;
 
+    @JsonProperty("calobjectWarp")
+    public final double[] calobjectWarp;
+
     @JsonIgnore private final double[] intrinsicsArr = new double[9];
     @JsonIgnore private final double[] distCoeffsArr = new double[5];
 
+    /**
+     * Contains all camera calibration data for a particular resolution of a camera. Designed for use
+     * with standard opencv camera calibration matrices. For details on the layout of camera
+     * intrinsics/distortion matrices, see:
+     * https://docs.opencv.org/4.x/d9/d0c/group__calib3d.html#ga3207604e4b1a1758aa66acb6ed5aa65d
+     *
+     * @param resolution The resolution this applies to. We don't assume camera binning or try
+     *     rescaling calibration
+     * @param cameraIntrinsics Camera intrinsics parameters matrix, in the standard opencv form.
+     * @param distCoeffs Camera distortion coefficients array. Variable length depending on order of
+     *     distortion model
+     * @param calobjectWarp Board deformation parameters, for calibrators that can estimate that. See:
+     *     https://mrcal.secretsauce.net/formulation.html#board-deformation
+     * @param observations List of snapshots used to construct this calibration
+     */
     @JsonCreator
     public CameraCalibrationCoefficients(
             @JsonProperty("resolution") Size resolution,
             @JsonProperty("cameraIntrinsics") JsonMatOfDouble cameraIntrinsics,
             @JsonProperty("cameraExtrinsics") JsonMatOfDouble distCoeffs,
+            @JsonProperty("calobjectWarp") double[] calobjectWarp,
             @JsonProperty("observations") List<BoardObservation> observations) {
         this.resolution = resolution;
         this.cameraIntrinsics = cameraIntrinsics;
         this.distCoeffs = distCoeffs;
+        this.calobjectWarp = calobjectWarp;
 
         // Legacy migration just to make sure that observations is at worst empty and never null
         if (observations == null) {
@@ -135,6 +155,6 @@ public class CameraCalibrationCoefficients implements Releasable {
         var height = json.get("img_size").get(1).doubleValue();
 
         return new CameraCalibrationCoefficients(
-                new Size(width, height), cam_jsonmat, distortion_jsonmat, List.of());
+                new Size(width, height), cam_jsonmat, distortion_jsonmat, new double[0], List.of());
     }
 }

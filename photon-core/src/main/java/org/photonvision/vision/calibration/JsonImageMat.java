@@ -25,7 +25,8 @@ import org.opencv.core.MatOfByte;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.vision.opencv.Releasable;
 
-public class JsonMat implements Releasable {
+/** JSON-serializable image. Data is stored as base64-encoded PNG data. */
+public class JsonImageMat implements Releasable {
     public final int rows;
     public final int cols;
     public final int type;
@@ -37,7 +38,7 @@ public class JsonMat implements Releasable {
     // Cached matrices to avoid object recreation
     @JsonIgnore private Mat wrappedMat = null;
 
-    public JsonMat(Mat mat) {
+    public JsonImageMat(Mat mat) {
         this.rows = mat.rows();
         this.cols = mat.cols();
         this.type = mat.type();
@@ -49,7 +50,7 @@ public class JsonMat implements Releasable {
         buf.release();
     }
 
-    public JsonMat(
+    public JsonImageMat(
             @JsonProperty("rows") int rows,
             @JsonProperty("cols") int cols,
             @JsonProperty("type") int type,
