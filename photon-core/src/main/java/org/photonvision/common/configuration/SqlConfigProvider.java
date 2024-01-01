@@ -30,8 +30,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
-import org.opencv.highgui.HighGui;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.JacksonUtils;

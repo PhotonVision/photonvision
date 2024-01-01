@@ -355,7 +355,7 @@ public class TestUtils {
     public static CameraCalibrationCoefficients get2020LifeCamCoeffs(boolean testMode) {
         return getCoeffs(LIFECAM_480P_CAL_FILE, testMode);
     }
-    
+
     public static CameraCalibrationCoefficients get2023LifeCamCoeffs(boolean testMode) {
         return getCoeffs(LIFECAM_1280P_CAL_FILE, testMode);
     }

@@ -27,7 +27,6 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
-import org.photonvision.vision.opencv.ImageRotationMode;
 
 /**
  * A {@link FrameProvider} that will read and provide an image from a {@link java.nio.file.Path

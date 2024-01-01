@@ -19,21 +19,10 @@ package org.photonvision.vision.calibration;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Num;
-import java.util.Arrays;
 import java.util.Base64;
-
-import javax.imageio.ImageIO;
-
-import org.ejml.simple.SimpleMatrix;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
-import org.opencv.core.MatOfDouble;
 import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
-import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.vision.opencv.Releasable;
 
 public class JsonMat implements Releasable {

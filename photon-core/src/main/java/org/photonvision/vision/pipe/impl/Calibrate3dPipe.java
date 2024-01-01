@@ -19,15 +19,9 @@ package org.photonvision.vision.pipe.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import javax.imageio.ImageIO;
-
-import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
 import org.opencv.core.Mat;
@@ -36,7 +30,6 @@ import org.opencv.core.Size;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
-import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.vision.calibration.BoardObservation;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.calibration.JsonMat;
@@ -79,7 +72,8 @@ public class Calibrate3dPipe
      * @return Result of processing.
      */
     @Override
-    protected CameraCalibrationCoefficients process(List<FindBoardCornersPipe.FindBoardCornersPipeResult> in) {
+    protected CameraCalibrationCoefficients process(
+            List<FindBoardCornersPipe.FindBoardCornersPipeResult> in) {
         in =
                 in.stream()
                         .filter(
@@ -90,8 +84,8 @@ public class Calibrate3dPipe
                                                 && it.inputImage != null)
                         .collect(Collectors.toList());
 
-        List<Mat> objPoints = in.stream().map(it->it.objectPoints).collect(Collectors.toList());
-        List<Mat> imgPts = in.stream().map(it->it.imagePoints).collect(Collectors.toList());
+        List<Mat> objPoints = in.stream().map(it -> it.objectPoints).collect(Collectors.toList());
+        List<Mat> imgPts = in.stream().map(it -> it.imagePoints).collect(Collectors.toList());
         if (objPoints.size() != imgPts.size()) {
             logger.error("objpts.size != imgpts.size");
             return null;
@@ -161,7 +155,8 @@ public class Calibrate3dPipe
 
             var image = new JsonMat(in.get(i).inputImage);
             observations.add(
-                    new BoardObservation(i_objPts, i_imgPts, reprojectionError, camToBoard, true, "img" + i + ".png", image));
+                    new BoardObservation(
+                            i_objPts, i_imgPts, reprojectionError, camToBoard, true, "img" + i + ".png", image));
         }
         jac_temp.release();
 

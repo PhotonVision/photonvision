@@ -30,7 +30,9 @@ import org.photonvision.vision.pipeline.UICalibrationData;
 
 public class FindBoardCornersPipe
         extends CVPipe<
-                Pair<Mat, Mat>, FindBoardCornersPipe.FindBoardCornersPipeResult, FindBoardCornersPipe.FindCornersPipeParams> {
+                Pair<Mat, Mat>,
+                FindBoardCornersPipe.FindBoardCornersPipeResult,
+                FindBoardCornersPipe.FindCornersPipeParams> {
     private static final Logger logger =
             new Logger(FindBoardCornersPipe.class, LogGroup.VisionModule);
 
@@ -332,7 +334,8 @@ public class FindBoardCornersPipe
         // Set later only if we need it
         public Mat inputImage = null;
 
-        public FindBoardCornersPipeResult(Size size, MatOfPoint2f objectPoints, MatOfPoint2f imagePoints) {
+        public FindBoardCornersPipeResult(
+                Size size, MatOfPoint2f objectPoints, MatOfPoint2f imagePoints) {
             this.size = size;
             this.objectPoints = objectPoints;
             this.imagePoints = imagePoints;

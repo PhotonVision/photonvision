@@ -23,9 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -131,7 +129,7 @@ public class Calibrate3dPipeline
         var outputColorCVMat = new CVMat();
         inputColorMat.copyTo(outputColorCVMat.getMat());
 
-       FindBoardCornersPipeResult findBoardResult =
+        FindBoardCornersPipeResult findBoardResult =
                 findBoardCornersPipe.run(Pair.of(inputColorMat, outputColorCVMat.getMat())).output;
 
         var fpsResult = calculateFPSPipe.run(null);
@@ -227,8 +225,7 @@ public class Calibrate3dPipeline
     }
 
     public void finishCalibration() {
-        foundCornersList.forEach(
-                it -> it.release());
+        foundCornersList.forEach(it -> it.release());
         foundCornersList.clear();
 
         broadcastState();

@@ -23,7 +23,6 @@ import edu.wpi.first.math.geometry.Pose3d;
 import java.util.List;
 import org.opencv.core.Point;
 import org.opencv.core.Point3;
-import java.awt.image.BufferedImage;
 
 public final class BoardObservation {
     // Expected feature 3d location in the camera frame
