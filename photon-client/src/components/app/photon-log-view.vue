@@ -47,25 +47,33 @@ document.addEventListener("keydown", (e) => {
 <template>
   <v-dialog v-model="useStateStore().showLogModal" width="1500" dark>
     <v-card dark class="pt-3" color="primary" flat>
-      <v-card-title>
-        View Program Logs
-        <v-btn color="secondary" style="margin-left: auto" depressed @click="handleLogExport">
-          <v-icon left> mdi-download </v-icon>
-          Download Current Log
+      <v-row class="heading-container pl-6 pr-6">
+        <v-col>
+          <v-card-title>View Program Logs</v-card-title>
+        </v-col>
+        <v-col class="align-self-center">
+          <v-btn
+            color="secondary"
+            style="margin-left: auto; max-width: 500px; width: 100%"
+            depressed
+            @click="handleLogExport"
+          >
+            <v-icon left class="open-icon"> mdi-download </v-icon>
+            <span class="open-label">Download Current Log</span>
 
-          <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
-          <a
-            ref="exportLogFile"
-            style="color: black; text-decoration: none; display: none"
-            :href="`http://${backendHost}/api/utils/photonvision-journalctl.txt`"
-            download="photonvision-journalctl.txt"
-            target="_blank"
-          />
-        </v-btn>
-      </v-card-title>
-
+            <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
+            <a
+              ref="exportLogFile"
+              style="color: black; text-decoration: none; display: none"
+              :href="`http://${backendHost}/api/utils/photonvision-journalctl.txt`"
+              download="photonvision-journalctl.txt"
+              target="_blank"
+            />
+          </v-btn>
+        </v-col>
+      </v-row>
       <div class="pr-6 pl-6">
-        <v-btn-toggle v-model="selectedLogLevels" dark multiple class="fill mb-4">
+        <v-btn-toggle v-model="selectedLogLevels" dark multiple class="fill mb-4 overflow-x-auto">
           <v-btn v-for="level in [0, 1, 2, 3]" :key="level" color="secondary" class="fill">
             {{ getLogLevelFromIndex(level) }}
           </v-btn>
@@ -101,5 +109,19 @@ document.addEventListener("keydown", (e) => {
 .v-btn-toggle.fill > .v-btn {
   width: 25%;
   height: 100%;
+}
+@media only screen and (max-width: 512px) {
+  .heading-container {
+    flex-direction: column;
+    padding-bottom: 14px;
+  }
+}
+@media only screen and (max-width: 312px) {
+  .open-icon {
+    margin: 0 !important;
+  }
+  .open-label {
+    display: none;
+  }
 }
 </style>

@@ -39,11 +39,11 @@ const processingMode = computed<number>({
         <p style="color: white">Processing Mode</p>
         <v-btn-toggle v-model="processingMode" mandatory dark class="fill">
           <v-btn color="secondary">
-            <v-icon>mdi-square-outline</v-icon>
+            <v-icon left>mdi-square-outline</v-icon>
             <span>2D</span>
           </v-btn>
           <v-btn color="secondary" :disabled="!useCameraSettingsStore().isCurrentVideoFormatCalibrated">
-            <v-icon>mdi-cube-outline</v-icon>
+            <v-icon left>mdi-cube-outline</v-icon>
             <span>3D</span>
           </v-btn>
         </v-btn-toggle>
@@ -54,12 +54,12 @@ const processingMode = computed<number>({
         <p style="color: white">Stream Display</p>
         <v-btn-toggle v-model="localValue" :multiple="true" mandatory dark class="fill">
           <v-btn color="secondary" class="fill">
-            <v-icon>mdi-import</v-icon>
-            <span>Raw</span>
+            <v-icon left class="mode-btn-icon">mdi-import</v-icon>
+            <span class="mode-btn-label">Raw</span>
           </v-btn>
           <v-btn color="secondary" class="fill">
-            <v-icon>mdi-export</v-icon>
-            <span>Processed</span>
+            <v-icon left class="mode-btn-icon">mdi-export</v-icon>
+            <span class="mode-btn-label">Processed</span>
           </v-btn>
         </v-btn-toggle>
       </v-col>
@@ -81,5 +81,14 @@ const processingMode = computed<number>({
 th {
   width: 80px;
   text-align: center;
+}
+
+@media only screen and (max-width: 351px) {
+  .mode-btn-icon {
+    margin: 0 !important;
+  }
+  .mode-btn-label {
+    display: none;
+  }
 }
 </style>
