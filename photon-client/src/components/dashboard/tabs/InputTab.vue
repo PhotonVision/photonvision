@@ -12,7 +12,7 @@ const cameraRotations = computed(() =>
   ["Normal", "90° CW", "180°", "90° CCW"].map((v, i) => ({
     name: v,
     value: i,
-    disabled: useSettingsStore().gpuAccelerationEnabled ? [1, 3].includes(i) : false
+    disabled: useCameraSettingsStore().isCSICamera ? [1, 3].includes(i) : false
   }))
 );
 
