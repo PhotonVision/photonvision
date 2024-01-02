@@ -101,7 +101,9 @@ public class LibcameraGpuFrameProvider implements FrameProvider {
 
     @Override
     public void requestFrameThresholdType(FrameThresholdType type) {
-        LibCameraJNI.setGpuProcessType(settables.r_ptr, type.ordinal());
+        if (settables.getModel() == SensorModel.OV9281 && type.equals(FrameThresholdType.GREYSCALE))
+            LibCameraJNI.setGpuProcessType(settables.r_ptr, 4); // 4 = Grayscale pass through.
+        else LibCameraJNI.setGpuProcessType(settables.r_ptr, type.ordinal());
     }
 
     @Override
