@@ -383,7 +383,8 @@ const endCalibration = () => {
               :disabled="!settingsValid"
               @click="isCalibrating ? useCameraSettingsStore().takeCalibrationSnapshot() : startCalibration()"
             >
-              {{ isCalibrating ? "Take Snapshot" : "Start Calibration" }}
+              <v-icon left class="calib-btn-icon"> {{ isCalibrating ? "mdi-camera" : "mdi-flag-outline" }} </v-icon>
+              <span class="calib-btn-label">{{ isCalibrating ? "Take Snapshot" : "Start Calibration" }}</span>
             </v-btn>
           </v-col>
           <v-col :cols="6">
@@ -395,7 +396,12 @@ const endCalibration = () => {
               :disabled="!isCalibrating || !settingsValid"
               @click="endCalibration"
             >
-              {{ useStateStore().calibrationData.hasEnoughImages ? "Finish Calibration" : "Cancel Calibration" }}
+              <v-icon left class="calib-btn-icon">
+                {{ useStateStore().calibrationData.hasEnoughImages ? "mdi-flag-checkered" : "mdi-flag-off-outline" }}
+              </v-icon>
+              <span class="calib-btn-label">{{
+                useStateStore().calibrationData.hasEnoughImages ? "Finish Calibration" : "Cancel Calibration"
+              }}</span>
             </v-btn>
           </v-col>
         </v-row>
@@ -409,14 +415,14 @@ const endCalibration = () => {
               :disabled="!settingsValid"
               @click="downloadCalibBoard"
             >
-              <v-icon left> mdi-download </v-icon>
-              Generate Board
+              <v-icon left class="calib-btn-icon"> mdi-download </v-icon>
+              <span class="calib-btn-label">Generate Board</span>
             </v-btn>
           </v-col>
           <v-col :cols="6">
             <v-btn color="secondary" :disabled="isCalibrating" small style="width: 100%" @click="openCalibUploadPrompt">
-              <v-icon left> mdi-upload </v-icon>
-              Import From CalibDB
+              <v-icon left class="calib-btn-icon"> mdi-upload </v-icon>
+              <span class="calib-btn-label">Import From CalibDB</span>
             </v-btn>
             <input
               ref="importCalibrationFromCalibDB"
@@ -504,6 +510,15 @@ const endCalibration = () => {
   ::-webkit-scrollbar-thumb {
     background-color: #ffd843;
     border-radius: 10px;
+  }
+}
+
+@media only screen and (max-width: 512px) {
+  .calib-btn-icon {
+    margin: 0 !important;
+  }
+  .calib-btn-label {
+    display: none;
   }
 }
 </style>

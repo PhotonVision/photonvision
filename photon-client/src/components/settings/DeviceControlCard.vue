@@ -210,20 +210,20 @@ const handleSettingsImport = () => {
       <v-row>
         <v-col cols="12" lg="4" md="6">
           <v-btn color="red" @click="restartProgram">
-            <v-icon left> mdi-restart </v-icon>
-            Restart PhotonVision
+            <v-icon left class="open-icon"> mdi-restart </v-icon>
+            <span class="open-label">Restart PhotonVision</span>
           </v-btn>
         </v-col>
         <v-col cols="12" lg="4" md="6">
           <v-btn color="red" @click="restartDevice">
-            <v-icon left> mdi-restart-alert </v-icon>
-            Restart Device
+            <v-icon left class="open-icon"> mdi-restart-alert </v-icon>
+            <span class="open-label">Restart Device</span>
           </v-btn>
         </v-col>
         <v-col cols="12" lg="4">
           <v-btn color="secondary" @click="openOfflineUpdatePrompt">
-            <v-icon left> mdi-upload </v-icon>
-            Offline Update
+            <v-icon left class="open-icon"> mdi-upload </v-icon>
+            <span class="open-label">Offline Update</span>
           </v-btn>
           <input ref="offlineUpdate" type="file" accept=".jar" style="display: none" @change="handleOfflineUpdate" />
         </v-col>
@@ -232,8 +232,8 @@ const handleSettingsImport = () => {
       <v-row>
         <v-col cols="12" sm="6">
           <v-btn color="secondary" @click="() => (showImportDialog = true)">
-            <v-icon left> mdi-import </v-icon>
-            Import Settings
+            <v-icon left class="open-icon"> mdi-import </v-icon>
+            <span class="open-label">Import Settings</span>
           </v-btn>
           <v-dialog
             v-model="showImportDialog"
@@ -279,8 +279,8 @@ const handleSettingsImport = () => {
                   align="center"
                 >
                   <v-btn color="secondary" :disabled="importFile === null" @click="handleSettingsImport">
-                    <v-icon left> mdi-import </v-icon>
-                    Import Settings
+                    <v-icon left class="open-icon"> mdi-import </v-icon>
+                    <span class="open-label">Import Settings</span>
                   </v-btn>
                 </v-row>
               </v-card-text>
@@ -289,8 +289,8 @@ const handleSettingsImport = () => {
         </v-col>
         <v-col cols="12" sm="6">
           <v-btn color="secondary" @click="openExportSettingsPrompt">
-            <v-icon left> mdi-export </v-icon>
-            Export Settings
+            <v-icon left class="open-icon"> mdi-export </v-icon>
+            <span class="open-label">Export Settings</span>
           </v-btn>
           <a
             ref="exportSettings"
@@ -302,8 +302,8 @@ const handleSettingsImport = () => {
         </v-col>
         <v-col cols="12" sm="6">
           <v-btn color="secondary" @click="openExportLogsPrompt">
-            <v-icon left> mdi-download </v-icon>
-            Download Current Log
+            <v-icon left class="open-icon"> mdi-download </v-icon>
+            <span class="open-label">Download Current Log</span>
 
             <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
             <a
@@ -317,8 +317,8 @@ const handleSettingsImport = () => {
         </v-col>
         <v-col cols="12" sm="6">
           <v-btn color="secondary" @click="useStateStore().showLogModal = true">
-            <v-icon left> mdi-eye </v-icon>
-            Show log viewer
+            <v-icon left class="open-icon"> mdi-eye </v-icon>
+            <span class="open-label">Show log viewer</span>
           </v-btn>
         </v-col>
       </v-row>
@@ -332,5 +332,13 @@ const handleSettingsImport = () => {
 }
 .v-btn {
   width: 100%;
+}
+@media only screen and (max-width: 351px) {
+  .open-icon {
+    margin: 0 !important;
+  }
+  .open-label {
+    display: none;
+  }
 }
 </style>
