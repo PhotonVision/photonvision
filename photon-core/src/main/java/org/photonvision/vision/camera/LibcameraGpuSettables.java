@@ -133,6 +133,9 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
             // Auto-exposure is active right now, don't set anything.
             return;
         }
+
+        // Map exposure from 0 to 100 (UI Values) to 0.1 to 100 since 0 in libcamera is auto exposure.
+        // 0.1 since it is the next lowest value available through the UI.
         MathUtils.map(exposure, 0.0, 100.0, 0.1, 100);
 
         // HACKS!
@@ -141,9 +144,13 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         // For now, band-aid this by just not setting it lower than the "it breaks" limit
         // is different depending on camera.
         if (sensorModel == LibCameraJNI.SensorModel.OV9281) {
+            // Map and clamp exposure to 6 to 100 since setting exposure on ov9281 lower
+            // than 6 will crash libcamera at resolutions lower than max.
             exposure = MathUtils.map(exposure, 0.1, 100.0, 6.0, 100);
             exposure = MathUtil.clamp(exposure, 0.1, 100.0);
         } else if (sensorModel == LibCameraJNI.SensorModel.OV5647) {
+            // Map and clamp exposure to 0.7 to 100 since setting exposure on ov5647 lower
+            // than 0.7 will crash libcamera at resolutions lower than max.
             exposure = MathUtils.map(exposure, 0.1, 100.0, 0.7, 100);
             exposure = MathUtil.clamp(exposure, 0.1, 100.0);
         }
@@ -165,6 +172,8 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     public void setGain(int gain) {
         lastGain = gain;
 
+        // Map and clamp gain to values between 1 and 10 (libcamera min and gain that just seems higher
+        // than ever needed) from 0 to 100 (UI values).
         var success =
                 LibCameraJNI.setAnalogGain(
                         r_ptr, MathUtil.clamp(MathUtils.map(gain, 0.0, 100.0, 1.0, 10.0), 1.0, 10.0));
