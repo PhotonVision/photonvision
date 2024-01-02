@@ -20,6 +20,7 @@ package org.photonvision.targeting;
 import edu.wpi.first.math.geometry.Transform3d;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.dataflow.structures.PacketSerde;
+import org.photonvision.targeting.proto.PNPResultProto;
 import org.photonvision.utils.PacketUtils;
 
 /**
@@ -180,4 +181,5 @@ public class PNPResult {
     }
 
     public static final APacketSerde serde = new APacketSerde();
+    public static final PNPResultProto proto = new PNPResultProto();
 }

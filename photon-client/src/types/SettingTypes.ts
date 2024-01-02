@@ -36,6 +36,7 @@ export interface NetworkSettings {
   hostname: string;
   runNTServer: boolean;
   shouldManage: boolean;
+  shouldPublishProto: boolean;
   canManage: boolean;
   networkManagerIface?: string;
   setStaticCommand?: string;
