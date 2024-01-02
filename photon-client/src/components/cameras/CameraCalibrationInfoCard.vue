@@ -4,16 +4,15 @@ import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { ref } from "vue";
 import loadingImage from "@/assets/images/loading.svg";
+import { getResolutionString, parseJsonFile, resolutionsAreEqual } from "@/lib/PhotonUtils";
 
 const props = defineProps<{
   videoFormat: VideoFormat;
 }>();
 
-const getCalibrationCoeffs = (): CameraCalibrationResult | undefined => {
-  return useCameraSettingsStore().currentCameraSettings.completeCalibrations.find(
-    (cal) =>
-      cal.resolution.width === props.videoFormat.resolution.width &&
-      cal.resolution.height === props.videoFormat.resolution.height
+const getCalibrationCoeffs = () => {
+  return useCameraSettingsStore().currentCameraSettings.completeCalibrations.find((cal) =>
+    resolutionsAreEqual(cal.resolution, props.videoFormat.resolution)
   );
 };
 const getMeanFromView = (o: BoardObservation) => {
@@ -26,8 +25,6 @@ const getMeanFromView = (o: BoardObservation) => {
       perViewSumSquareReprojectionError.length
   );
 };
-const getResolutionString = (): string =>
-  `${props.videoFormat.resolution.width}x${props.videoFormat.resolution.height}`;
 
 // Import and export functions
 const downloadCalibration = () => {
@@ -54,18 +51,6 @@ const downloadCalibration = () => {
   element.click();
   document.body.removeChild(element);
 };
-const parseJsonFile = async (file: File): Promise<any> => {
-  return new Promise((resolve, reject) => {
-    const fileReader = new FileReader();
-    fileReader.onload = (event) => {
-      const target: FileReader | null = event.target;
-      if (target === null) reject();
-      else resolve(JSON.parse(target.result as string));
-    };
-    fileReader.onerror = (error) => reject(error);
-    fileReader.readAsText(file);
-  });
-};
 const importCalibrationFromPhotonJson = ref();
 const openUploadPhotonCalibJsonPrompt = () => {
   importCalibrationFromPhotonJson.value.click();
@@ -75,7 +60,7 @@ const importCalibration = async () => {
   if (files.length === 0) return;
   const uploadedJson = files[0];
 
-  const data: CameraCalibrationResult = await parseJsonFile(uploadedJson);
+  const data = await parseJsonFile<CameraCalibrationResult>(uploadedJson);
 
   if (
     data.resolution.height != props.videoFormat.resolution.height ||
@@ -122,12 +107,11 @@ interface ObservationDetails {
   index: number;
 }
 const getObservationDetails = (): ObservationDetails[] | undefined => {
-  const ret = getCalibrationCoeffs()?.observations.map((o, i) => ({
+  return getCalibrationCoeffs()?.observations.map((o, i) => ({
     index: i,
     mean: parseFloat(getMeanFromView(o).toFixed(2)),
-    snapshotSrc: "data:image/png;base64," + o.snapshotData.data || loadingImage
+    snapshotSrc: o.includeObservationInCalibration ? "data:image/png;base64," + o.snapshotData.data : loadingImage
   }));
-  return ret;
 };
 </script>
 
@@ -138,7 +122,7 @@ const getObservationDetails = (): ObservationDetails[] | undefined => {
         <v-card-title class="pl-0 ml-0"
           ><span class="text-no-wrap" style="white-space: pre !important">Calibration Details: </span
           ><span class="text-no-wrap"
-            >{{ useCameraSettingsStore().currentCameraName }}@{{ getResolutionString() }}</span
+            >{{ useCameraSettingsStore().currentCameraName }}@{{ getResolutionString(videoFormat.resolution) }}</span
           ></v-card-title
         >
       </v-col>

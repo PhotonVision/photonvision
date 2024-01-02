@@ -13,6 +13,7 @@ import type { WebsocketCameraSettingsUpdate } from "@/types/WebsocketDataTypes";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import type { ActiveConfigurablePipelineSettings, ActivePipelineSettings, PipelineType } from "@/types/PipelineTypes";
 import axios from "axios";
+import { resolutionsAreEqual } from "@/lib/PhotonUtils";
 
 interface CameraSettingsStore {
   cameras: CameraSettings[];
@@ -41,11 +42,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       return this.currentCameraSettings.validVideoFormats[this.currentPipelineSettings.cameraVideoModeIndex];
     },
     isCurrentVideoFormatCalibrated(): boolean {
-      return this.currentCameraSettings.completeCalibrations.some(
-        (v) =>
-          v.resolution.width === this.currentVideoFormat.resolution.width &&
-          v.resolution.height === this.currentVideoFormat.resolution.height
-      );
+      return this.currentCameraSettings.completeCalibrations.some((v) => resolutionsAreEqual(v.resolution, this.currentVideoFormat.resolution));
     },
     cameraNames(): string[] {
       return this.cameras.map((c) => c.nickname);
