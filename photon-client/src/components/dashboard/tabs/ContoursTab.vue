@@ -103,8 +103,8 @@ const interactiveCols = computed(
       v-model="contourPerimeter"
       label="Perimeter"
       tooltip="Min and max perimeter of the shape, in pixels"
-      min="0"
-      max="4000"
+      :min="0"
+      :max="4000"
       :slider-cols="interactiveCols"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourPerimeter: value }, false)"
     />
