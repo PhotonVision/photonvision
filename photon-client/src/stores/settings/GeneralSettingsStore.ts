@@ -36,6 +36,7 @@ export const useSettingsStore = defineStore("settings", {
       staticIp: "",
       hostname: "photonvision",
       runNTServer: false,
+      shouldPublishProto: false,
       networkInterfaceNames: [
         {
           connName: "Example Wired Connection",
@@ -112,6 +113,7 @@ export const useSettingsStore = defineStore("settings", {
         setDHCPcommand: this.network.setDHCPcommand || "",
         setStaticCommand: this.network.setStaticCommand || "",
         shouldManage: this.network.shouldManage,
+        shouldPublishProto: this.network.shouldPublishProto,
         staticIp: this.network.staticIp
       };
       return axios.post("/settings/general", payload);
