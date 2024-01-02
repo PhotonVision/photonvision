@@ -18,3 +18,7 @@ $heading-font-family: $default-font;
   > tr:hover:not(.v-data-table__expanded__content):not(.v-data-table__empty-wrapper) {
   background: #005281 !important;
 }
+
+.v-card__title {
+  word-break: break-word !important;
+}

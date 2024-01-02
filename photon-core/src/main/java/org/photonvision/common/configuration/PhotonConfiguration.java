@@ -27,8 +27,8 @@ import org.photonvision.PhotonVersion;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.SerializationUtils;
-import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.processes.VisionSource;
@@ -137,7 +137,7 @@ public class PhotonConfiguration {
         generalSubmap.put("version", PhotonVersion.versionString);
         generalSubmap.put(
                 "gpuAcceleration",
-                LibCameraJNI.isSupported()
+                LibCameraJNILoader.isSupported()
                         ? "Zerocopy Libcamera Working"
                         : ""); // TODO add support for other types of GPU accel
         generalSubmap.put("hardwareModel", hardwareConfig.deviceName);
@@ -176,5 +176,6 @@ public class PhotonConfiguration {
         public int inputStreamPort;
         public List<CameraCalibrationCoefficients> calibrations;
         public boolean isFovConfigurable = true;
+        public boolean isCSICamera;
     }
 }

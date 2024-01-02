@@ -108,16 +108,16 @@ const fpsTooLow = computed<boolean>(() => {
           class="fill"
           :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode"
         >
-          <v-icon>mdi-import</v-icon>
-          <span>Raw</span>
+          <v-icon left class="mode-btn-icon">mdi-import</v-icon>
+          <span class="mode-btn-label">Raw</span>
         </v-btn>
         <v-btn
           color="secondary"
           class="fill"
           :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode"
         >
-          <v-icon>mdi-export</v-icon>
-          <span>Processed</span>
+          <v-icon left class="mode-btn-icon">mdi-export</v-icon>
+          <span class="mode-btn-label">Processed</span>
         </v-btn>
       </v-btn-toggle>
     </div>
@@ -171,6 +171,14 @@ th {
 
   .stream {
     max-width: 50%;
+  }
+}
+@media only screen and (max-width: 351px) {
+  .mode-btn-icon {
+    margin: 0 !important;
+  }
+  .mode-btn-label {
+    display: none;
   }
 }
 </style>

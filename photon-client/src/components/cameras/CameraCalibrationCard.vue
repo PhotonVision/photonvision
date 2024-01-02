@@ -3,7 +3,6 @@ import { computed, ref } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import {
   CalibrationBoardTypes,
-  type CameraCalibrationResult,
   type Resolution,
   type VideoFormat
 } from "@/types/SettingTypes";
@@ -16,25 +15,20 @@ import PvSwitch from "@/components/common/pv-switch.vue";
 import PvSelect from "@/components/common/pv-select.vue";
 import PvNumberInput from "@/components/common/pv-number-input.vue";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
+import { getResolutionString, resolutionsAreEqual } from "@/lib/PhotonUtils";
 import CameraCalibrationInfoCard from "@/components/cameras/CameraCalibrationInfoCard.vue";
-
-type JSONFileUploadEvent = Event & { target: HTMLInputElement | null };
 
 const settingsValid = ref(true);
 
-const getCalibrationCoeffs = (resolution: Resolution): CameraCalibrationResult | undefined => {
-  return useCameraSettingsStore().currentCameraSettings.completeCalibrations.find(
-    (cal) => cal.resolution.width === resolution.width && cal.resolution.height === resolution.height
+const getCalibrationCoeffs = (resolution: Resolution) => {
+  return useCameraSettingsStore().currentCameraSettings.completeCalibrations.find((cal) =>
+    resolutionsAreEqual(cal.resolution, resolution)
   );
 };
 const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
   const uniqueResolutions: VideoFormat[] = [];
   useCameraSettingsStore().currentCameraSettings.validVideoFormats.forEach((format, index) => {
-    if (
-      !uniqueResolutions.some(
-        (v) => v.resolution.width === format.resolution.width && v.resolution.height === format.resolution.height
-      )
-    ) {
+    if (!uniqueResolutions.some((v) => resolutionsAreEqual(v.resolution, format.resolution))) {
       format.index = index;
 
       const calib = getCalibrationCoeffs(format.resolution);
@@ -72,9 +66,9 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
   );
   return uniqueResolutions;
 };
-const getUniqueVideoResolutionStrings = () =>
+const getUniqueVideoResolutionStrings = (): { name: string; value: number }[] =>
   getUniqueVideoFormatsByResolution().map<{ name: string; value: number }>((f) => ({
-    name: `${f.resolution.width} X ${f.resolution.height}`,
+    name: `${getResolutionString(f.resolution)}`,
     // Index won't ever be undefined
     value: f.index || 0
   }));
@@ -168,9 +162,9 @@ const importCalibrationFromCalibDB = ref();
 const openCalibUploadPrompt = () => {
   importCalibrationFromCalibDB.value.click();
 };
-const readImportedCalibrationFromCalibDB = (payload: JSONFileUploadEvent) => {
-  if (payload.target == null || !payload.target?.files) return;
-  const files: FileList = payload.target.files as FileList;
+const readImportedCalibrationFromCalibDB = () => {
+  const files = importCalibrationFromCalibDB.value.files;
+  if (files.length === 0) return;
 
   files[0].text().then((text) => {
     useCameraSettingsStore()
@@ -271,7 +265,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 title="Click to get calibration specific information"
                 @click="setSelectedVideoFormat(value)"
               >
-                <td>{{ value.resolution.width }} X {{ value.resolution.height }}</td>
+                <td>{{ getResolutionString(value.resolution) }}</td>
                 <td>
                   {{ value.mean !== undefined ? (isNaN(value.mean) ? "NaN" : value.mean.toFixed(2) + "px") : "-" }}
                 </td>
@@ -419,7 +413,8 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :disabled="!settingsValid"
               @click="isCalibrating ? useCameraSettingsStore().takeCalibrationSnapshot() : startCalibration()"
             >
-              {{ isCalibrating ? "Take Snapshot" : "Start Calibration" }}
+              <v-icon left class="calib-btn-icon"> {{ isCalibrating ? "mdi-camera" : "mdi-flag-outline" }} </v-icon>
+              <span class="calib-btn-label">{{ isCalibrating ? "Take Snapshot" : "Start Calibration" }}</span>
             </v-btn>
           </v-col>
           <v-col :cols="6">
@@ -431,7 +426,12 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :disabled="!isCalibrating || !settingsValid"
               @click="endCalibration"
             >
-              {{ useStateStore().calibrationData.hasEnoughImages ? "Finish Calibration" : "Cancel Calibration" }}
+              <v-icon left class="calib-btn-icon">
+                {{ useStateStore().calibrationData.hasEnoughImages ? "mdi-flag-checkered" : "mdi-flag-off-outline" }}
+              </v-icon>
+              <span class="calib-btn-label">{{
+                useStateStore().calibrationData.hasEnoughImages ? "Finish Calibration" : "Cancel Calibration"
+              }}</span>
             </v-btn>
           </v-col>
         </v-row>
@@ -445,14 +445,14 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :disabled="!settingsValid"
               @click="downloadCalibBoard"
             >
-              <v-icon left> mdi-download </v-icon>
-              Generate Board
+              <v-icon left class="calib-btn-icon"> mdi-download </v-icon>
+              <span class="calib-btn-label">Generate Board</span>
             </v-btn>
           </v-col>
           <v-col :cols="6">
             <v-btn color="secondary" :disabled="isCalibrating" small style="width: 100%" @click="openCalibUploadPrompt">
-              <v-icon left> mdi-upload </v-icon>
-              Import From CalibDB
+              <v-icon left class="calib-btn-icon"> mdi-upload </v-icon>
+              <span class="calib-btn-label">Import From CalibDB</span>
             </v-btn>
             <input
               ref="importCalibrationFromCalibDB"
@@ -488,7 +488,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 {{
                   getUniqueVideoResolutionStrings().find(
                     (v) => v.value === useStateStore().calibrationData.videoFormatIndex
-                  ).name
+                  )?.name
                 }}!
               </v-card-text>
             </template>
@@ -544,6 +544,15 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
   ::-webkit-scrollbar-thumb {
     background-color: #ffd843;
     border-radius: 10px;
+  }
+}
+
+@media only screen and (max-width: 512px) {
+  .calib-btn-icon {
+    margin: 0 !important;
+  }
+  .calib-btn-label {
+    display: none;
   }
 }
 </style>

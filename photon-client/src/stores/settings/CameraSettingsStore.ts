@@ -64,6 +64,9 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     },
     isCalibrationMode(): boolean {
       return this.currentCameraSettings.currentPipelineIndex == WebsocketPipelineType.Calib3d;
+    },
+    isCSICamera(): boolean {
+      return this.currentCameraSettings.isCSICamera;
     }
   },
   actions: {
@@ -97,6 +100,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
             mean: v.mean
           })),
         completeCalibrations: d.calibrations,
+        isCSICamera: d.isCSICamera,
         pipelineNicknames: d.pipelineNicknames,
         currentPipelineIndex: d.currentPipelineIndex,
         pipelineSettings: d.currentPipelineSettings

@@ -122,14 +122,13 @@ export interface BoardObservation {
   reprojectionErrors: CvPoint[];
   optimisedCameraToObject: Pose3d;
   includeObservationInCalibration: boolean;
-  snapshotName: string;
-  snapshotData: JsonImageMat;
+  snapshotName?: string;
+  snapshotData?: JsonImageMat;
 }
 
 export interface CameraCalibrationResult {
   resolution: Resolution;
   cameraIntrinsics: JsonMatOfDouble;
-  // TODO rename to be Right
   distCoeffs: JsonMatOfDouble;
   observations: BoardObservation[];
 }
@@ -158,6 +157,7 @@ export interface CameraSettings {
   currentPipelineIndex: number;
   pipelineNicknames: string[];
   pipelineSettings: ActivePipelineSettings;
+  isCSICamera: boolean;
 }
 
 export const PlaceholderCameraSettings: CameraSettings = {
@@ -219,7 +219,8 @@ export const PlaceholderCameraSettings: CameraSettings = {
             { x: 1, y: 1 },
             { x: 2, y: 1 },
             { x: 3, y: 1 }
-          ]
+          ],
+          includeObservationInCalibration: false
         }
       ]
     }
@@ -227,7 +228,8 @@ export const PlaceholderCameraSettings: CameraSettings = {
   pipelineNicknames: ["Placeholder Pipeline"],
   lastPipelineIndex: 0,
   currentPipelineIndex: 0,
-  pipelineSettings: DefaultAprilTagPipelineSettings
+  pipelineSettings: DefaultAprilTagPipelineSettings,
+  isCSICamera: false
 };
 
 export enum CalibrationBoardTypes {
