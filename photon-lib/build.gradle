@@ -60,6 +60,35 @@ task writeCurrentVersion {
 }
 
 build.mustRunAfter writeCurrentVersion
+cppHeadersZip.dependsOn writeCurrentVersion
+
+// Building photon-lib requires photon-targeting to generate its proto files. This technically shouldn't be required but is needed for it to build.
+model {
+    components {
+        all {
+            it.sources.each {
+                it.exportedHeaders {
+                    srcDirs "src/main/native/include"
+                    srcDirs "src/generate/native/include"
+                }
+            }
+            it.binaries.all {
+                it.tasks.withType(CppCompile) {
+                    it.dependsOn ":photon-targeting:generateProto"
+                }
+            }
+        }
+    }
+    testSuites {
+        all {
+            it.binaries.all {
+                it.tasks.withType(CppCompile) {
+                    it.dependsOn ":photon-targeting:generateProto"
+                }
+            }
+        }
+    }
+}
 
 def vendorJson = artifacts.add('archives', file("$photonlibFileOutput"))
 

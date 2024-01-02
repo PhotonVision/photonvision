@@ -4,6 +4,7 @@ plugins {
     id "edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin" version "2020.2"
     id "edu.wpi.first.GradleRIO" version "2024.1.1-beta-4"
     id 'edu.wpi.first.WpilibTools' version '1.3.0'
+    id 'com.google.protobuf' version '0.9.4' apply false
 }
 
 allprojects {
