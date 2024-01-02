@@ -5,8 +5,6 @@ import { useStateStore } from "@/stores/StateStore";
 import { ref } from "vue";
 import loadingImage from "@/assets/images/loading.svg";
 
-type JSONFileUploadEvent = Event & { target: HTMLInputElement | null };
-
 const props = defineProps<{
   videoFormat: VideoFormat;
 }>();
@@ -72,9 +70,9 @@ const importCalibrationFromPhotonJson = ref();
 const openUploadPhotonCalibJsonPrompt = () => {
   importCalibrationFromPhotonJson.value.click();
 };
-const importCalibration = async (payload: JSONFileUploadEvent) => {
-  if (payload.target == null || !payload.target?.files) return;
-  const files: FileList = payload.target.files as FileList;
+const importCalibration = async () => {
+  const files = importCalibrationFromPhotonJson.value.files;
+  if (files.length === 0) return;
   const uploadedJson = files[0];
 
   const data: CameraCalibrationResult = await parseJsonFile(uploadedJson);
@@ -183,23 +181,23 @@ const getObservationDetails = (): ObservationDetails[] | undefined => {
           <tbody>
             <tr>
               <td>Fx</td>
-              <td>{{ getCalibrationCoeffs().cameraIntrinsics.data[0].toFixed(2) }} mm</td>
+              <td>{{ getCalibrationCoeffs()?.cameraIntrinsics.data[0].toFixed(2) || 0.0 }} mm</td>
             </tr>
             <tr>
               <td>Fy</td>
-              <td>{{ getCalibrationCoeffs().cameraIntrinsics.data[4].toFixed(2) }} mm</td>
+              <td>{{ getCalibrationCoeffs()?.cameraIntrinsics.data[4].toFixed(2) || 0.0 }} mm</td>
             </tr>
             <tr>
               <td>Cx</td>
-              <td>{{ getCalibrationCoeffs().cameraIntrinsics.data[2].toFixed(2) }} px</td>
+              <td>{{ getCalibrationCoeffs()?.cameraIntrinsics.data[2].toFixed(2) || 0.0 }} px</td>
             </tr>
             <tr>
               <td>Cy</td>
-              <td>{{ getCalibrationCoeffs().cameraIntrinsics.data[5].toFixed(2) }} px</td>
+              <td>{{ getCalibrationCoeffs()?.cameraIntrinsics.data[5].toFixed(2) || 0.0 }} px</td>
             </tr>
             <tr>
               <td>Distortion</td>
-              <td>{{ getCalibrationCoeffs().distCoeffs.data.map((it) => parseFloat(it.toFixed(3))) }}</td>
+              <td>{{ getCalibrationCoeffs()?.distCoeffs.data.map((it) => parseFloat(it.toFixed(3))) || [] }}</td>
             </tr>
             <tr>
               <td>Mean Err</td>
