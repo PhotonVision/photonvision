@@ -1,8 +1,15 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { PipelineType } from "@/types/PipelineTypes";
+import { type ActivePipelineSettings, PipelineType } from "@/types/PipelineTypes";
 import { useStateStore } from "@/stores/StateStore";
 import { angleModulus, toDeg } from "@/lib/MathUtils";
+import { computed } from "vue";
+
+// TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
+// Defer reference to store access method
+const currentPipelineSettings = computed<ActivePipelineSettings>(
+  () => useCameraSettingsStore().currentPipelineSettings
+);
 
 const calculateStdDev = (values: number[]): number => {
   if (values.length < 2) return 0;
@@ -34,8 +41,8 @@ const resetCurrentBuffer = () => {
             <tr>
               <th
                 v-if="
-                  useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
-                  useCameraSettingsStore().currentPipelineType === PipelineType.Aruco
+                  currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
+                  currentPipelineSettings.pipelineType === PipelineType.Aruco
                 "
                 class="text-center white--text"
               >
@@ -54,8 +61,8 @@ const resetCurrentBuffer = () => {
               </template>
               <template
                 v-if="
-                  (useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
-                    useCameraSettingsStore().currentPipelineType === PipelineType.Aruco) &&
+                  (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
+                    currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
                   useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
                 "
               >
@@ -64,12 +71,17 @@ const resetCurrentBuffer = () => {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(target, index) in useStateStore().currentPipelineResults?.targets" :key="index" class="white--text">
+            <tr
+              v-for="(target, index) in useStateStore().currentPipelineResults?.targets"
+              :key="index"
+              class="white--text"
+            >
               <td
                 v-if="
-                  useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
-                  useCameraSettingsStore().currentPipelineType === PipelineType.Aruco
-                " class="text-center"
+                  currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
+                  currentPipelineSettings.pipelineType === PipelineType.Aruco
+                "
+                class="text-center"
               >
                 {{ target.fiducialId }}
               </td>
@@ -86,12 +98,14 @@ const resetCurrentBuffer = () => {
               </template>
               <template
                 v-if="
-                  (useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
-                    useCameraSettingsStore().currentPipelineType === PipelineType.Aruco) &&
+                  (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
+                    currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
                   useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
                 "
               >
-                <td class="text-center">{{ target.ambiguity >= 0 ? target.ambiguity.toFixed(2) : "(In Multi-Target)" }}</td>
+                <td class="text-center">
+                  {{ target.ambiguity >= 0 ? target.ambiguity.toFixed(2) : "(In Multi-Target)" }}
+                </td>
               </template>
             </tr>
           </tbody>
@@ -100,9 +114,9 @@ const resetCurrentBuffer = () => {
     </v-row>
     <v-container
       v-if="
-        (useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
-          useCameraSettingsStore().currentPipelineType === PipelineType.Aruco) &&
-        useCameraSettingsStore().currentPipelineSettings.doMultiTarget &&
+        (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
+          currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
+        currentPipelineSettings.doMultiTarget &&
         useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
         useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "
@@ -126,9 +140,15 @@ const resetCurrentBuffer = () => {
             </thead>
             <tbody v-show="useStateStore().currentPipelineResults?.multitagResult">
               <tr>
-                <td class="text-center white--text">{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.x.toFixed(2) }}&nbsp;m</td>
-                <td class="text-center white--text">{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.y.toFixed(2) }}&nbsp;m</td>
-                <td class="text-center white--text">{{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.z.toFixed(2) }}&nbsp;m</td>
+                <td class="text-center white--text">
+                  {{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.x.toFixed(2) }}&nbsp;m
+                </td>
+                <td class="text-center white--text">
+                  {{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.y.toFixed(2) }}&nbsp;m
+                </td>
+                <td class="text-center white--text">
+                  {{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.z.toFixed(2) }}&nbsp;m
+                </td>
                 <td class="text-center white--text">
                   {{
                     toDeg(useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_x || 0).toFixed(
@@ -150,7 +170,9 @@ const resetCurrentBuffer = () => {
                     )
                   }}&deg;
                 </td>
-                <td class="text-center white--text">{{ useStateStore().currentPipelineResults?.multitagResult?.fiducialIDsUsed }}</td>
+                <td class="text-center white--text">
+                  {{ useStateStore().currentPipelineResults?.multitagResult?.fiducialIDsUsed }}
+                </td>
               </tr>
             </tbody>
           </template>
