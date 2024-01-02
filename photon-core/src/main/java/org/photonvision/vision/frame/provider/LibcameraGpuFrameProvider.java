@@ -32,7 +32,7 @@ import org.photonvision.vision.pipe.impl.HSVPipe.HSVParams;
 
 public class LibcameraGpuFrameProvider implements FrameProvider {
     private final LibcameraGpuSettables settables;
-    
+
     static final Logger logger = new Logger(LibcameraGpuFrameProvider.class, LogGroup.Camera);
 
     public LibcameraGpuFrameProvider(LibcameraGpuSettables visionSettables) {
@@ -60,9 +60,11 @@ public class LibcameraGpuFrameProvider implements FrameProvider {
             if (p_ptr == 0) {
                 logger.error("No new frame from " + settables.getConfiguration().nickname);
                 badFrameCounter++;
-                if(badFrameCounter > 3)
-                {
-                    logger.error("No new frame from " + settables.getConfiguration().nickname + " for 3 seconds attempting recreate!");
+                if (badFrameCounter > 3) {
+                    logger.error(
+                            "No new frame from "
+                                    + settables.getConfiguration().nickname
+                                    + " for 3 seconds attempting recreate!");
                     settables.setVideoMode(settables.getCurrentVideoMode());
                     badFrameCounter = 0;
                 }
