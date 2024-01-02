@@ -16,6 +16,11 @@ dependencies {
 
     implementation "org.photonvision:photon-libcamera-gl-driver-jni:$photonGlDriverLibVersion:linuxarm64"
     implementation "org.photonvision:photon-libcamera-gl-driver-java:$photonGlDriverLibVersion"
+
+    implementation "org.photonvision:photon-mrcal-java:$mrcalVersion"
+    implementation "org.photonvision:photon-mrcal-jni:$mrcalVersion:$wpilibNativeName"
+
+    testImplementation group: 'org.junit-pioneer' , name: 'junit-pioneer', version: '2.2.0'
 }
 
 task writeCurrentVersion {

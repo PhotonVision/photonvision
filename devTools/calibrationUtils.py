@@ -132,3 +132,10 @@ def convert_photon_to_mrcal(photon_cal_json_path: str, output_folder: str):
                     vnl_file.write(f"{obs.snapshotName} {corner.x} {corner.y} 0\n")
 
             vnl_file.flush()
+
+
+if __name__ == "__main__":
+    convert_photon_to_mrcal(
+        "test-resources/calibration/lifecam480p.json",
+        "~/Downloads/2024-01-02_lifecam_480",
+    )

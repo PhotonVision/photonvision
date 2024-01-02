@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
-import org.opencv.core.Size;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.logging.LogGroup;
@@ -58,7 +57,7 @@ public class Calibrate3dPipeline
     private boolean takeSnapshot = false;
 
     // Output of the corners
-    final List<FindBoardCornersPipeResult> foundCornersList;
+    public final List<FindBoardCornersPipeResult> foundCornersList;
 
     /// Output of the calibration, getter method is set for this.
     private CVPipeResult<CameraCalibrationCoefficients> calibrationOutput;
@@ -93,7 +92,7 @@ public class Calibrate3dPipeline
 
         Calibrate3dPipe.CalibratePipeParams calibratePipeParams =
                 new Calibrate3dPipe.CalibratePipeParams(
-                        new Size(frameStaticProperties.imageWidth, frameStaticProperties.imageHeight));
+                        settings.boardHeight, settings.boardWidth, settings.gridSize, settings.useMrCal);
         calibrate3dPipe.setParams(calibratePipeParams);
     }
 
@@ -210,7 +209,8 @@ public class Calibrate3dPipeline
                                 Units.metersToInches(settings.gridSize),
                                 settings.boardWidth,
                                 settings.boardHeight,
-                                settings.boardType));
+                                settings.boardType,
+                                settings.useMrCal));
 
         DataChangeService.getInstance()
                 .publishEvent(OutgoingUIEvent.wrappedOf("calibrationData", state));

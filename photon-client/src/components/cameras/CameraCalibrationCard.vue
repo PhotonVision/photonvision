@@ -13,6 +13,7 @@ import PvNumberInput from "@/components/common/pv-number-input.vue";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import { getResolutionString, resolutionsAreEqual } from "@/lib/PhotonUtils";
 import CameraCalibrationInfoCard from "@/components/cameras/CameraCalibrationInfoCard.vue";
+import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
 const settingsValid = ref(true);
 
@@ -74,6 +75,15 @@ const squareSizeIn = ref(1);
 const patternWidth = ref(8);
 const patternHeight = ref(8);
 const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.Chessboard);
+const useMrCalRef = ref(true);
+const useMrCal = computed<boolean>({
+  get() {
+    return useMrCalRef.value && useSettingsStore().general.mrCalWorking;
+  },
+  set(value) {
+    useMrCalRef.value = value && useSettingsStore().general.mrCalWorking;
+  }
+});
 
 const downloadCalibBoard = () => {
   const doc = new JsPDF({ unit: "in", format: "letter" });
@@ -188,7 +198,8 @@ const startCalibration = () => {
     squareSizeIn: squareSizeIn.value,
     patternHeight: patternHeight.value,
     patternWidth: patternWidth.value,
-    boardType: boardType.value
+    boardType: boardType.value,
+    useMrCal: useMrCal.value
   });
   // The Start PnP method already handles updating the backend so only a store update is required
   useCameraSettingsStore().currentCameraSettings.currentPipelineIndex = WebsocketPipelineType.Calib3d;
@@ -314,6 +325,23 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :rules="[(v) => v >= 4 || 'Height must be at least 4']"
               :label-cols="5"
             />
+            <pv-switch
+              v-model="useMrCal"
+              label="Try using MrCal over OpenCV"
+              :disabled="!useSettingsStore().general.mrCalWorking || isCalibrating"
+              tooltip="If enabled, Photon will (try to) use MrCal instead of OpenCV for camera calibration."
+              :label-cols="5"
+            />
+            <v-banner
+              v-show="!useSettingsStore().general.mrCalWorking"
+              rounded
+              color="red"
+              text-color="white"
+              style="margin: 10px 0"
+              icon="mdi-alert-circle-outline"
+            >
+              MrCal JNI could not be loaded! Consult journalctl logs for additional details.
+            </v-banner>
           </v-form>
           <v-row justify="center">
             <v-chip

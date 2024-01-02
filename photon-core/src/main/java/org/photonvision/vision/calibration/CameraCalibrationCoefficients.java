@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+import java.util.Arrays;
 import java.util.List;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
@@ -156,5 +157,24 @@ public class CameraCalibrationCoefficients implements Releasable {
 
         return new CameraCalibrationCoefficients(
                 new Size(width, height), cam_jsonmat, distortion_jsonmat, new double[0], List.of());
+    }
+
+    @Override
+    public String toString() {
+        return "CameraCalibrationCoefficients [resolution="
+                + resolution
+                + ", cameraIntrinsics="
+                + cameraIntrinsics
+                + ", distCoeffs="
+                + distCoeffs
+                + ", observations="
+                + observations
+                + ", calobjectWarp="
+                + Arrays.toString(calobjectWarp)
+                + ", intrinsicsArr="
+                + Arrays.toString(intrinsicsArr)
+                + ", distCoeffsArr="
+                + Arrays.toString(distCoeffsArr)
+                + "]";
     }
 }

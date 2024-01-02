@@ -6,6 +6,7 @@ export interface GeneralSettings {
   gpuAcceleration?: string;
   hardwareModel?: string;
   hardwarePlatform?: string;
+  mrCalWorking: boolean;
 }
 
 export interface MetricData {
