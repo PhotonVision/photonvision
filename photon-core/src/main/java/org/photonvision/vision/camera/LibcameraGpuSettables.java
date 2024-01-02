@@ -132,21 +132,24 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
             // Auto-exposure is active right now, don't set anything.
             return;
         }
-        MathUtils.map(exposure, 0.0, 100.0, 0.1, 100);
 
         // HACKS!
         // If we set exposure too low, libcamera crashes or slows down
         // Very weird and smelly
         // For now, band-aid this by just not setting it lower than the "it breaks" limit
-        // is different depending on camera.
+        //  is different depending on camera.
         if (sensorModel == LibCameraJNI.SensorModel.OV9281) {
-            exposure = MathUtils.map(exposure, 0.1, 100.0, 6.0, 100);
+            if (exposure < 6.0) {
+                exposure = 6.0;
+            }
         } else if (sensorModel == LibCameraJNI.SensorModel.OV5647) {
-            exposure = MathUtils.map(exposure, 0.1, 100.0, 0.7, 100);
+            if (exposure < 0.7) {
+                exposure = 0.7;
+            }
         }
 
         lastManualExposure = exposure;
-        var success = LibCameraJNI.setExposure(r_ptr, (int) (exposure * 800));
+        var success = LibCameraJNI.setExposure(r_ptr, (int) Math.round(exposure) * 800);
         if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera exposure");
     }
 
@@ -161,7 +164,8 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     @Override
     public void setGain(int gain) {
         lastGain = gain;
-        var success = LibCameraJNI.setAnalogGain(r_ptr, MathUtils.map(gain, 0.0, 100.0, 1, 10));
+        // TODO units here seem odd -- 5ish seems legit? So divide by 10
+        var success = LibCameraJNI.setAnalogGain(r_ptr, gain / 10.0);
         if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera gain");
     }
 
