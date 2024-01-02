@@ -147,7 +147,7 @@ const getObservationDetails = (): ObservationDetails[] | undefined => {
           style="width: 100%"
           @click="downloadCalibration"
         >
-          <v-icon>mdi-export</v-icon>
+          <v-icon left>mdi-export</v-icon>
           <span>Export</span>
         </v-btn>
       </v-col>
