@@ -90,7 +90,7 @@ class Observation:
 class CameraCalibration:
     resolution: Resolution
     cameraIntrinsics: JsonMatOfDoubles
-    cameraExtrinsics: JsonMatOfDoubles
+    distCoeffs: JsonMatOfDoubles
     observations: List[Observation]
 
 

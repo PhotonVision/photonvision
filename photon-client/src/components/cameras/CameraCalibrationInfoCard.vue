@@ -199,7 +199,7 @@ const getObservationDetails = (): ObservationDetails[] | undefined => {
             </tr>
             <tr>
               <td>Distortion</td>
-              <td>{{ getCalibrationCoeffs().cameraExtrinsics.data.map((it) => parseFloat(it.toFixed(3))) }}</td>
+              <td>{{ getCalibrationCoeffs().distCoeffs.data.map((it) => parseFloat(it.toFixed(3))) }}</td>
             </tr>
             <tr>
               <td>Mean Err</td>

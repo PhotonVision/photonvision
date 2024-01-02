@@ -130,7 +130,7 @@ export interface CameraCalibrationResult {
   resolution: Resolution;
   cameraIntrinsics: JsonMatOfDouble;
   // TODO rename to be Right
-  cameraExtrinsics: JsonMatOfDouble;
+  distCoeffs: JsonMatOfDouble;
   observations: BoardObservation[];
 }
 
@@ -197,7 +197,7 @@ export const PlaceholderCameraSettings: CameraSettings = {
         type: 1,
         data: [1, 2, 3, 4, 5, 6, 7, 8, 9]
       },
-      cameraExtrinsics: {
+      distCoeffs: {
         rows: 1,
         cols: 1,
         type: 1,
