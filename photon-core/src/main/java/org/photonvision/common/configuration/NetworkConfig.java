@@ -37,6 +37,7 @@ public class NetworkConfig {
     public String hostname = "photonvision";
     public boolean runNTServer = false;
     public boolean shouldManage;
+    public boolean shouldPublishProto = false;
 
     @JsonIgnore public static final String NM_IFACE_STRING = "${interface}";
     @JsonIgnore public static final String NM_IP_STRING = "${ipaddr}";
@@ -72,6 +73,7 @@ public class NetworkConfig {
             @JsonProperty("hostname") String hostname,
             @JsonProperty("runNTServer") boolean runNTServer,
             @JsonProperty("shouldManage") boolean shouldManage,
+            @JsonProperty("shouldPublishProto") boolean shouldPublishProto,
             @JsonProperty("networkManagerIface") String networkManagerIface,
             @JsonProperty("setStaticCommand") String setStaticCommand,
             @JsonProperty("setDHCPcommand") String setDHCPcommand) {
@@ -80,6 +82,7 @@ public class NetworkConfig {
         this.staticIp = staticIp;
         this.hostname = hostname;
         this.runNTServer = runNTServer;
+        this.shouldPublishProto = shouldPublishProto;
         this.networkManagerIface = networkManagerIface;
         this.setStaticCommand = setStaticCommand;
         this.setDHCPcommand = setDHCPcommand;

@@ -26,6 +26,8 @@
 
 #include <hal/FRCUsageReporting.h>
 
+#include <string_view>
+
 #include <frc/Errors.h>
 #include <frc/Timer.h>
 #include <opencv2/core.hpp>
@@ -33,6 +35,25 @@
 
 #include "PhotonVersion.h"
 #include "photon/dataflow/structures/Packet.h"
+
+inline constexpr std::string_view bfw =
+    "\n\n\n\n"
+    ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+    ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+    ">>>                                          \n"
+    ">>> You are running an incompatible version  \n"
+    ">>> of PhotonVision on your coprocessor!     \n"
+    ">>>                                          \n"
+    ">>> This is neither tested nor supported.    \n"
+    ">>> You MUST update PhotonVision,            \n"
+    ">>> PhotonLib, or both.                      \n"
+    ">>>                                          \n"
+    ">>> Your code will now crash.                \n"
+    ">>> We hope your day gets better.            \n"
+    ">>>                                          \n"
+    ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+    ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+    "\n\n";
 
 namespace photon {
 
@@ -200,9 +221,12 @@ void PhotonCamera::VerifyVersion() {
           cameraNameOutString);
     }
   } else if (!VersionMatches(versionString)) {
-    FRC_ReportError(frc::warn::Warning,
-                    "Photon version {} does not match coprocessor version {}!",
-                    PhotonVersion::versionString, versionString);
+    FRC_ReportError(frc::warn::Warning, bfw);
+    std::string error_str = fmt::format(
+        "Photonlib version {} does not match coprocessor version {}!",
+        PhotonVersion::versionString, versionString);
+    FRC_ReportError(frc::err::Error, "{}", error_str);
+    throw std::runtime_error(error_str);
   }
 }
 
