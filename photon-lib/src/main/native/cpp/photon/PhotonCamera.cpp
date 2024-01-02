@@ -36,28 +36,24 @@
 #include "PhotonVersion.h"
 #include "photon/dataflow/structures/Packet.h"
 
-namespace {
-static constexpr const std::string_view bfw =
+inline constexpr std::string_view bfw =
     "\n\n\n\n"
-    ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
-    ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
-    ">>>    ____  _________    ____     ________  ___________    __   \n"
-    ">>>   / __ \\/ ____/   |  / __ \\   /_  __/ / / /  _/ ___/   / / \n"
-    ">>>  / /_/ / __/ / /| | / / / /    / / / /_/ // / \\__ \\   / /  \n"
-    ">>> / _, _/ /___/ ___ |/ /_/ /    / / / __  // / ___/ /  /_/     \n"
-    ">>>/_/ |_/_____/_/  |_/_____/    /_/ /_/ /_/___//____/  (_)      \n"
-    ">>>                                                              \n"
-    ">>> You are running an incompatible version                      \n"
-    ">>> of PhotonVision on your coprocessor!                         \n"
-    ">>>                                                              \n"
-    ">>> This is neither tested nor supported.                        \n"
-    ">>> You MUST update either PhotonVision, PhotonLib, or both.     \n"
-    ">>>                                                              \n"
-    ">>> Your code will now crash. We hope your day gets better.      \n"
-    ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
-    ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+    ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+    ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+    ">>>                                          \n"
+    ">>> You are running an incompatible version  \n"
+    ">>> of PhotonVision on your coprocessor!     \n"
+    ">>>                                          \n"
+    ">>> This is neither tested nor supported.    \n"
+    ">>> You MUST update PhotonVision,            \n"
+    ">>> PhotonLib, or both.                      \n"
+    ">>>                                          \n"
+    ">>> Your code will now crash.                \n"
+    ">>> We hope your day gets better.            \n"
+    ">>>                                          \n"
+    ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+    ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
     "\n\n";
-}  // namespace
 
 namespace photon {
 
