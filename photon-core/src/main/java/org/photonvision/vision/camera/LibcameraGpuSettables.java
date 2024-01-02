@@ -133,30 +133,26 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
             // Auto-exposure is active right now, don't set anything.
             return;
         }
-
-        // Map exposure from 0 to 100 (UI Values) to 0.1 to 100 since 0 in libcamera is auto exposure.
-        // 0.1 since it is the next lowest value available through the UI.
-        MathUtils.map(exposure, 0.0, 100.0, 0.1, 100);
+        // Minimum exposure can't be below 1uS cause otherwise it would be 0 and 0 is auto exposure.
+        double minExposure = 1;
 
         // HACKS!
         // If we set exposure too low, libcamera crashes or slows down
         // Very weird and smelly
         // For now, band-aid this by just not setting it lower than the "it breaks" limit
         // is different depending on camera.
+        // All units are uS.
         if (sensorModel == LibCameraJNI.SensorModel.OV9281) {
-            // Map and clamp exposure to 6 to 100 since setting exposure on ov9281 lower
-            // than 6 will crash libcamera at resolutions lower than max.
-            exposure = MathUtils.map(exposure, 0.1, 100.0, 6.0, 100);
-            exposure = MathUtil.clamp(exposure, 0.1, 100.0);
+            minExposure = 4800;
         } else if (sensorModel == LibCameraJNI.SensorModel.OV5647) {
-            // Map and clamp exposure to 0.7 to 100 since setting exposure on ov5647 lower
-            // than 0.7 will crash libcamera at resolutions lower than max.
-            exposure = MathUtils.map(exposure, 0.1, 100.0, 0.7, 100);
-            exposure = MathUtil.clamp(exposure, 0.1, 100.0);
+            minExposure = 560;
         }
+        // 80,000 uS seems like an exposure value that will be greater than ever needed while giving
+        // enough control over exposure.
+        exposure = MathUtils.map(exposure, 0, 100, minExposure, 80000);
 
         lastManualExposure = exposure;
-        var success = LibCameraJNI.setExposure(r_ptr, (int) (exposure * 800));
+        var success = LibCameraJNI.setExposure(r_ptr, (int) exposure);
         if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera exposure");
     }
 
