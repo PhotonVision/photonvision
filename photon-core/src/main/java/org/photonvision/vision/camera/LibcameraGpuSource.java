@@ -18,6 +18,7 @@
 package org.photonvision.vision.camera;
 
 import edu.wpi.first.cscore.VideoMode;
+import edu.wpi.first.util.PixelFormat;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
