@@ -18,7 +18,9 @@
 package org.photonvision.vision.camera;
 
 import edu.wpi.first.cscore.VideoMode;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
+
 import java.util.HashMap;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.util.math.MathUtils;
@@ -141,8 +143,10 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         // is different depending on camera.
         if (sensorModel == LibCameraJNI.SensorModel.OV9281) {
             exposure = MathUtils.map(exposure, 0.1, 100.0, 6.0, 100);
+            exposure = MathUtil.clamp(exposure, 0.1, 100.0);
         } else if (sensorModel == LibCameraJNI.SensorModel.OV5647) {
             exposure = MathUtils.map(exposure, 0.1, 100.0, 0.7, 100);
+            exposure = MathUtil.clamp(exposure, 0.1, 100.0);
         }
 
         lastManualExposure = exposure;
@@ -161,7 +165,8 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     @Override
     public void setGain(int gain) {
         lastGain = gain;
-        var success = LibCameraJNI.setAnalogGain(r_ptr, MathUtils.map(gain, 0.0, 100.0, 1, 10));
+
+        var success = LibCameraJNI.setAnalogGain(r_ptr,  MathUtil.clamp(MathUtils.map(gain, 0.0, 100.0, 1.0, 10.0), 1.0, 10.0));
         if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera gain");
     }
 
