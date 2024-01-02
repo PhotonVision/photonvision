@@ -133,6 +133,10 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
             // Auto-exposure is active right now, don't set anything.
             return;
         }
+
+        // Store the exposure for use when we need to recreate the camera.
+        lastManualExposure = exposure;
+
         // Minimum exposure can't be below 1uS cause otherwise it would be 0 and 0 is auto exposure.
         double minExposure = 1;
 
@@ -151,7 +155,6 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         // enough control over exposure.
         exposure = MathUtils.map(exposure, 0, 100, minExposure, 80000);
 
-        lastManualExposure = exposure;
         var success = LibCameraJNI.setExposure(r_ptr, (int) exposure);
         if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera exposure");
     }
