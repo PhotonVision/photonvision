@@ -32,7 +32,10 @@ const getUniqueVideoResolutions = (): VideoFormat[] => {
       const calib = getCalibrationCoeffs(format.resolution);
       if (calib !== undefined) {
         format.standardDeviation = calib.standardDeviation;
-        format.mean = calib.perViewErrors.reduce((a, b) => a + b) / calib.perViewErrors.length;
+        format.mean =
+          calib.perViewErrors === null
+            ? Number.NaN
+            : calib.perViewErrors.reduce((a, b) => a + b) / calib.perViewErrors.length;
         format.horizontalFOV = 2 * Math.atan2(format.resolution.width / 2, calib.intrinsics[0]) * (180 / Math.PI);
         format.verticalFOV = 2 * Math.atan2(format.resolution.height / 2, calib.intrinsics[4]) * (180 / Math.PI);
         format.diagonalFOV =
@@ -54,7 +57,7 @@ const getUniqueVideoResolutions = (): VideoFormat[] => {
   );
   return uniqueResolutions;
 };
-const getUniqueVideoResolutionStrings = () =>
+const getUniqueVideoResolutionStrings = (): { name: string; value: number }[] =>
   getUniqueVideoResolutions().map<{ name: string; value: number }>((f) => ({
     name: `${f.resolution.width} X ${f.resolution.height}`,
     // Index won't ever be undefined
@@ -221,100 +224,96 @@ const endCalibration = () => {
     <v-card class="mb-3 pr-6 pb-3" color="primary" dark>
       <v-card-title>Camera Calibration</v-card-title>
       <div class="ml-5">
-        <v-row>
-          <v-col cols="12" md="6">
-            <v-form ref="form" v-model="settingsValid">
-              <pv-select
-                v-model="useStateStore().calibrationData.videoFormatIndex"
-                label="Resolution"
-                :select-cols="7"
-                :disabled="isCalibrating"
-                tooltip="Resolution to calibrate at (you will have to calibrate every resolution you use 3D mode on)"
-                :items="getUniqueVideoResolutionStrings()"
-              />
-              <pv-select
-                v-show="isCalibrating"
-                v-model="useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor"
-                label="Decimation"
-                tooltip="Resolution to which camera frames are downscaled for detection. Calibration still uses full-res"
-                :items="calibrationDivisors"
-                :select-cols="7"
-                @input="
-                  (v) => useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: v }, false)
-                "
-              />
-              <pv-select
-                v-model="boardType"
-                label="Board Type"
-                tooltip="Calibration board pattern to use"
-                :select-cols="7"
-                :items="['Chessboard', 'Dotboard']"
-                :disabled="isCalibrating"
-              />
-              <pv-number-input
-                v-model="squareSizeIn"
-                label="Pattern Spacing (in)"
-                tooltip="Spacing between pattern features in inches"
-                :disabled="isCalibrating"
-                :rules="[(v) => v > 0 || 'Size must be positive']"
-                :label-cols="5"
-              />
-              <pv-number-input
-                v-model="patternWidth"
-                label="Board Width (in)"
-                tooltip="Width of the board in dots or chessboard squares"
-                :disabled="isCalibrating"
-                :rules="[(v) => v >= 4 || 'Width must be at least 4']"
-                :label-cols="5"
-              />
-              <pv-number-input
-                v-model="patternHeight"
-                label="Board Height (in)"
-                tooltip="Height of the board in dots or chessboard squares"
-                :disabled="isCalibrating"
-                :rules="[(v) => v >= 4 || 'Height must be at least 4']"
-                :label-cols="5"
-              />
-            </v-form>
-          </v-col>
-          <v-col cols="12" md="6">
-            <v-row align="start" class="pb-4 pt-2">
-              <v-simple-table fixed-header height="100%" dense>
-                <thead>
-                  <tr>
-                    <th>Resolution</th>
-                    <th>Mean Error</th>
-                    <th>Standard Deviation</th>
-                    <th>Horizontal FOV</th>
-                    <th>Vertical FOV</th>
-                    <th>Diagonal FOV</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(value, index) in getUniqueVideoResolutions()" :key="index">
-                    <td>{{ value.resolution.width }} X {{ value.resolution.height }}</td>
-                    <td>{{ value.mean !== undefined ? value.mean.toFixed(2) + "px" : "-" }}</td>
-                    <td>
-                      {{ value.standardDeviation !== undefined ? value.standardDeviation.toFixed(2) + "px" : "-" }}
-                    </td>
-                    <td>{{ value.horizontalFOV !== undefined ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
-                    <td>{{ value.verticalFOV !== undefined ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
-                    <td>{{ value.diagonalFOV !== undefined ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
-                  </tr>
-                </tbody>
-              </v-simple-table>
-            </v-row>
-            <v-row justify="center">
-              <v-chip
-                v-show="isCalibrating"
-                label
-                :color="useStateStore().calibrationData.hasEnoughImages ? 'secondary' : 'gray'"
-              >
-                Snapshots: {{ useStateStore().calibrationData.imageCount }} of at least
-                {{ useStateStore().calibrationData.minimumImageCount }}
-              </v-chip>
-            </v-row>
-          </v-col>
+        <v-row v-show="!isCalibrating" class="pb-12">
+          <v-card-subtitle class="pb-0 mb-0 pl-3">Complete Calibrations</v-card-subtitle>
+          <v-simple-table fixed-header height="100%" dense class="mt-2">
+            <thead>
+              <tr>
+                <th>Resolution</th>
+                <th>Mean Error</th>
+                <th>Horizontal FOV</th>
+                <th>Vertical FOV</th>
+                <th>Diagonal FOV</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(value, index) in getUniqueVideoResolutions()" :key="index">
+                <td>{{ value.resolution.width }} X {{ value.resolution.height }}</td>
+                <td>
+                  {{ value.mean !== undefined ? (isNaN(value.mean) ? "NaN" : value.mean.toFixed(2) + "px") : "-" }}
+                </td>
+                <td>{{ value.horizontalFOV !== undefined ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
+                <td>{{ value.verticalFOV !== undefined ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
+                <td>{{ value.diagonalFOV !== undefined ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
+              </tr>
+            </tbody>
+          </v-simple-table>
+        </v-row>
+        <v-divider />
+        <v-row style="display: flex; flex-direction: column" class="mt-4">
+          <v-card-subtitle v-show="!isCalibrating" class="pl-3 pa-0 ma-0"> Configure New Calibration</v-card-subtitle>
+          <v-form ref="form" v-model="settingsValid" class="pl-4 mb-10 pr-5">
+            <pv-select
+              v-model="useStateStore().calibrationData.videoFormatIndex"
+              label="Resolution"
+              :select-cols="7"
+              :disabled="isCalibrating"
+              tooltip="Resolution to calibrate at (you will have to calibrate every resolution you use 3D mode on)"
+              :items="getUniqueVideoResolutionStrings()"
+            />
+            <pv-select
+              v-show="isCalibrating"
+              v-model="useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor"
+              label="Decimation"
+              tooltip="Resolution to which camera frames are downscaled for detection. Calibration still uses full-res"
+              :items="calibrationDivisors"
+              :select-cols="7"
+              @input="(v) => useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: v }, false)"
+            />
+            <pv-select
+              v-model="boardType"
+              label="Board Type"
+              tooltip="Calibration board pattern to use"
+              :select-cols="7"
+              :items="['Chessboard', 'Dotboard']"
+              :disabled="isCalibrating"
+            />
+            <pv-number-input
+              v-model="squareSizeIn"
+              label="Pattern Spacing (in)"
+              tooltip="Spacing between pattern features in inches"
+              :disabled="isCalibrating"
+              :rules="[(v) => v > 0 || 'Size must be positive']"
+              :label-cols="5"
+            />
+            <pv-number-input
+              v-model="patternWidth"
+              label="Board Width (in)"
+              tooltip="Width of the board in dots or chessboard squares"
+              :disabled="isCalibrating"
+              :rules="[(v) => v >= 4 || 'Width must be at least 4']"
+              :label-cols="5"
+            />
+            <pv-number-input
+              v-model="patternHeight"
+              label="Board Height (in)"
+              tooltip="Height of the board in dots or chessboard squares"
+              :disabled="isCalibrating"
+              :rules="[(v) => v >= 4 || 'Height must be at least 4']"
+              :label-cols="5"
+            />
+          </v-form>
+          <v-row justify="center">
+            <v-chip
+              v-show="isCalibrating"
+              label
+              :color="useStateStore().calibrationData.hasEnoughImages ? 'secondary' : 'gray'"
+              class="mb-6"
+            >
+              Snapshots: {{ useStateStore().calibrationData.imageCount }} of at least
+              {{ useStateStore().calibrationData.minimumImageCount }}
+            </v-chip>
+          </v-row>
         </v-row>
         <v-row v-if="isCalibrating">
           <v-col cols="12" class="pt-0">
@@ -454,9 +453,7 @@ const endCalibration = () => {
               <v-card-text>
                 Camera has been successfully calibrated for
                 {{
-                  getUniqueVideoResolutionStrings().find(
-                    (v) => v.value === useStateStore().calibrationData.videoFormatIndex
-                  ).name
+                  getUniqueVideoResolutionStrings().find(v => v.value === useStateStore().calibrationData.videoFormatIndex)?.name
                 }}!
               </v-card-text>
             </template>
@@ -482,6 +479,7 @@ const endCalibration = () => {
 <style scoped lang="scss">
 .v-data-table {
   text-align: center;
+  width: 100%;
 
   th,
   td {

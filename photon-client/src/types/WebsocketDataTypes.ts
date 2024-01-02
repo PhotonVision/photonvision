@@ -25,7 +25,8 @@ export interface WebsocketCompleteCalib {
   height: number;
   width: number;
   standardDeviation: number;
-  perViewErrors: number[];
+  // perViewErrors not set in test mode
+  perViewErrors: number[] | null;
   intrinsics: number[];
 }
 
