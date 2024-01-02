@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { PipelineType } from "@/types/PipelineTypes";
+import { type ActivePipelineSettings, PipelineType } from "@/types/PipelineTypes";
 import PvRangeSlider from "@/components/common/pv-range-slider.vue";
 import PvSelect from "@/components/common/pv-select.vue";
 import PvSlider from "@/components/common/pv-slider.vue";
@@ -9,7 +9,9 @@ import { useStateStore } from "@/stores/StateStore";
 
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
 // Defer reference to store access method
-const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings;
+const currentPipelineSettings = computed<ActivePipelineSettings>(
+  () => useCameraSettingsStore().currentPipelineSettings
+);
 
 // TODO fix pv-range-slider so that store access doesn't need to be deferred
 const contourArea = computed<[number, number]>({
@@ -26,23 +28,23 @@ const contourFullness = computed<[number, number]>({
 });
 const contourPerimeter = computed<[number, number]>({
   get: () =>
-    currentPipelineSettings.pipelineType === PipelineType.ColoredShape
-      ? (Object.values(currentPipelineSettings.contourPerimeter) as [number, number])
+    currentPipelineSettings.value.pipelineType === PipelineType.ColoredShape
+      ? (Object.values(currentPipelineSettings.value.contourPerimeter) as [number, number])
       : ([0, 0] as [number, number]),
   set: (v) => {
-    if (currentPipelineSettings.pipelineType === PipelineType.ColoredShape) {
-      currentPipelineSettings.contourPerimeter = v;
+    if (currentPipelineSettings.value.pipelineType === PipelineType.ColoredShape) {
+      currentPipelineSettings.value.contourPerimeter = v;
     }
   }
 });
 const contourRadius = computed<[number, number]>({
   get: () =>
-    currentPipelineSettings.pipelineType === PipelineType.ColoredShape
-      ? (Object.values(currentPipelineSettings.contourRadius) as [number, number])
+    currentPipelineSettings.value.pipelineType === PipelineType.ColoredShape
+      ? (Object.values(currentPipelineSettings.value.contourRadius) as [number, number])
       : ([0, 0] as [number, number]),
   set: (v) => {
-    if (currentPipelineSettings.pipelineType === PipelineType.ColoredShape) {
-      currentPipelineSettings.contourRadius = v;
+    if (currentPipelineSettings.value.pipelineType === PipelineType.ColoredShape) {
+      currentPipelineSettings.value.contourRadius = v;
     }
   }
 });
@@ -103,8 +105,8 @@ const interactiveCols = computed(
       v-model="contourPerimeter"
       label="Perimeter"
       tooltip="Min and max perimeter of the shape, in pixels"
-      min="0"
-      max="4000"
+      :min="0"
+      :max="4000"
       :slider-cols="interactiveCols"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourPerimeter: value }, false)"
     />

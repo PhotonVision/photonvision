@@ -174,5 +174,6 @@ public class PhotonConfiguration {
         public int inputStreamPort;
         public List<HashMap<String, Object>> calibrations;
         public boolean isFovConfigurable = true;
+        public boolean isCSICamera;
     }
 }

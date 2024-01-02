@@ -85,7 +85,7 @@ export interface CameraCalibrationResult {
   resolution: Resolution;
   distCoeffs: number[];
   standardDeviation: number;
-  perViewErrors: number[];
+  perViewErrors: number[] | null;
   intrinsics: number[];
 }
 
@@ -112,6 +112,7 @@ export interface CameraSettings {
   currentPipelineIndex: number;
   pipelineNicknames: string[];
   pipelineSettings: ActivePipelineSettings;
+  isCSICamera: boolean;
 }
 
 export const PlaceholderCameraSettings: CameraSettings = {
@@ -145,7 +146,8 @@ export const PlaceholderCameraSettings: CameraSettings = {
   pipelineNicknames: ["Placeholder Pipeline"],
   lastPipelineIndex: 0,
   currentPipelineIndex: 0,
-  pipelineSettings: DefaultAprilTagPipelineSettings
+  pipelineSettings: DefaultAprilTagPipelineSettings,
+  isCSICamera: false
 };
 
 export enum CalibrationBoardTypes {
