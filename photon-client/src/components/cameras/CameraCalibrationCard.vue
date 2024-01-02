@@ -11,22 +11,19 @@ import PvSwitch from "@/components/common/pv-switch.vue";
 import PvSelect from "@/components/common/pv-select.vue";
 import PvNumberInput from "@/components/common/pv-number-input.vue";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
+import { getResolutionString, resolutionsAreEqual } from "@/lib/PhotonUtils";
 
 const settingsValid = ref(true);
 
 const getCalibrationCoeffs = (resolution: Resolution) => {
-  return useCameraSettingsStore().currentCameraSettings.completeCalibrations.find(
-    (cal) => cal.resolution.width === resolution.width && cal.resolution.height === resolution.height
+  return useCameraSettingsStore().currentCameraSettings.completeCalibrations.find((cal) =>
+    resolutionsAreEqual(cal.resolution, resolution)
   );
 };
 const getUniqueVideoResolutions = (): VideoFormat[] => {
   const uniqueResolutions: VideoFormat[] = [];
   useCameraSettingsStore().currentCameraSettings.validVideoFormats.forEach((format, index) => {
-    if (
-      !uniqueResolutions.some(
-        (v) => v.resolution.width === format.resolution.width && v.resolution.height === format.resolution.height
-      )
-    ) {
+    if (!uniqueResolutions.some((v) => resolutionsAreEqual(v.resolution, format.resolution))) {
       format.index = index;
 
       const calib = getCalibrationCoeffs(format.resolution);
@@ -59,7 +56,7 @@ const getUniqueVideoResolutions = (): VideoFormat[] => {
 };
 const getUniqueVideoResolutionStrings = (): { name: string; value: number }[] =>
   getUniqueVideoResolutions().map<{ name: string; value: number }>((f) => ({
-    name: `${f.resolution.width} X ${f.resolution.height}`,
+    name: `${getResolutionString(f.resolution)}`,
     // Index won't ever be undefined
     value: f.index || 0
   }));
@@ -155,7 +152,7 @@ const openCalibUploadPrompt = () => {
 };
 const readImportedCalibration = () => {
   const files = importCalibrationFromCalibDB.value.files;
-  if(files.length === 0) return;
+  if (files.length === 0) return;
 
   files[0].text().then((text) => {
     useCameraSettingsStore()
@@ -238,7 +235,7 @@ const endCalibration = () => {
             </thead>
             <tbody>
               <tr v-for="(value, index) in getUniqueVideoResolutions()" :key="index">
-                <td>{{ value.resolution.width }} X {{ value.resolution.height }}</td>
+                <td>{{ getResolutionString(value.resolution) }}</td>
                 <td>
                   {{ value.mean !== undefined ? (isNaN(value.mean) ? "NaN" : value.mean.toFixed(2) + "px") : "-" }}
                 </td>
@@ -453,7 +450,9 @@ const endCalibration = () => {
               <v-card-text>
                 Camera has been successfully calibrated for
                 {{
-                  getUniqueVideoResolutionStrings().find(v => v.value === useStateStore().calibrationData.videoFormatIndex)?.name
+                  getUniqueVideoResolutionStrings().find(
+                    (v) => v.value === useStateStore().calibrationData.videoFormatIndex
+                  )?.name
                 }}!
               </v-card-text>
             </template>

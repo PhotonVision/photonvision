@@ -65,7 +65,7 @@ const openOfflineUpdatePrompt = () => {
 };
 const handleOfflineUpdate = () => {
   const files = offlineUpdate.value.files;
-  if(files.length === 0) return;
+  if (files.length === 0) return;
 
   const formData = new FormData();
   formData.append("jarData", files[0]);
