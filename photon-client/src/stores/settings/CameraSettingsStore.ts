@@ -42,7 +42,9 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       return this.currentCameraSettings.validVideoFormats[this.currentPipelineSettings.cameraVideoModeIndex];
     },
     isCurrentVideoFormatCalibrated(): boolean {
-      return this.currentCameraSettings.completeCalibrations.some((v) => resolutionsAreEqual(v.resolution, this.currentVideoFormat.resolution));
+      return this.currentCameraSettings.completeCalibrations.some((v) =>
+        resolutionsAreEqual(v.resolution, this.currentVideoFormat.resolution)
+      );
     },
     cameraNames(): string[] {
       return this.cameras.map((c) => c.nickname);
