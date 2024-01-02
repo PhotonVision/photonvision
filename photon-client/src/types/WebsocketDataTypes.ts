@@ -25,7 +25,8 @@ export interface WebsocketCompleteCalib {
   height: number;
   width: number;
   standardDeviation: number;
-  perViewErrors: number[];
+  // perViewErrors not set in test mode
+  perViewErrors: number[] | null;
   intrinsics: number[];
 }
 
@@ -52,6 +53,7 @@ export interface WebsocketCameraSettingsUpdate {
   fov: number;
   inputStreamPort: number;
   isFovConfigurable: boolean;
+  isCSICamera: boolean;
   nickname: string;
   outputStreamPort: number;
   pipelineNicknames: string[];
