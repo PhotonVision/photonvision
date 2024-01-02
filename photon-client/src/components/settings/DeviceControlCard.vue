@@ -63,11 +63,12 @@ const offlineUpdate = ref();
 const openOfflineUpdatePrompt = () => {
   offlineUpdate.value.click();
 };
-const handleOfflineUpdate = (payload: Event & { target: (EventTarget & HTMLInputElement) | null }) => {
-  if (payload.target === null || !payload.target.files) return;
+const handleOfflineUpdate = () => {
+  const files = offlineUpdate.value.files;
+  if(files.length === 0) return;
 
   const formData = new FormData();
-  formData.append("jarData", payload.target.files[0]);
+  formData.append("jarData", files[0]);
 
   useStateStore().showSnackbarMessage({
     message: "New Software Upload in Progress...",
