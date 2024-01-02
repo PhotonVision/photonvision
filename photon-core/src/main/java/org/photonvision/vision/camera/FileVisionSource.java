@@ -18,7 +18,7 @@
 package org.photonvision.vision.camera;
 
 import edu.wpi.first.cscore.VideoMode;
-import edu.wpi.first.cscore.VideoMode.PixelFormat;
+import edu.wpi.first.util.PixelFormat;
 import java.nio.file.Path;
 import java.util.HashMap;
 import org.photonvision.common.configuration.CameraConfiguration;

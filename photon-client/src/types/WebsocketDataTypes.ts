@@ -53,6 +53,7 @@ export interface WebsocketCameraSettingsUpdate {
   fov: number;
   inputStreamPort: number;
   isFovConfigurable: boolean;
+  isCSICamera: boolean;
   nickname: string;
   outputStreamPort: number;
   pipelineNicknames: string[];
