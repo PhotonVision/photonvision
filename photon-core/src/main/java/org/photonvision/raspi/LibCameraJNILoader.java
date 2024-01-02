@@ -68,9 +68,8 @@ public class LibCameraJNILoader {
         }
         libraryLoaded = true;
     }
-    public static boolean isSupported()
-    {
+
+    public static boolean isSupported() {
         return libraryLoaded && LibCameraJNI.isSupported();
     }
-
 }
