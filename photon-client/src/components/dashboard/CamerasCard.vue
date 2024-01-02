@@ -51,10 +51,7 @@ const performanceRecommendation = computed<string>(() => {
       <v-col class="align-self-center text-no-wrap">
         <v-card-title>Cameras</v-card-title>
       </v-col>
-      <v-col
-        class="align-self-center"
-        style="text-align: right; margin-right: 12px; padding-left: 24px"
-      >
+      <v-col class="align-self-center" style="text-align: right; margin-right: 12px; padding-left: 24px">
         <v-chip
           label
           :color="fpsTooLow ? 'error' : 'transparent'"
@@ -66,7 +63,17 @@ const performanceRecommendation = computed<string>(() => {
           ><span>{{ performanceRecommendation }}</span>
         </v-chip>
       </v-col>
-      <v-col class="align-self-center" style="width: min-content; flex-grow: 0; display: flex; justify-content: flex-end; margin-right: 24px; padding: 0">
+      <v-col
+        class="align-self-center"
+        style="
+          width: min-content;
+          flex-grow: 0;
+          display: flex;
+          justify-content: flex-end;
+          margin-right: 24px;
+          padding: 0;
+        "
+      >
         <v-switch
           v-model="driverMode"
           :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
