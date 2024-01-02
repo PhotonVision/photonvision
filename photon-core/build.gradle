@@ -14,7 +14,6 @@ dependencies {
 
     implementation "org.xerial:sqlite-jdbc:3.41.0.0"
 
-    def photonGlDriverLibVersion = "dev-v2023.1.0-6-g5e6f7fa"
     implementation "org.photonvision:photon-libcamera-gl-driver-jni:$photonGlDriverLibVersion:linuxarm64"
     implementation "org.photonvision:photon-libcamera-gl-driver-java:$photonGlDriverLibVersion"
 }
