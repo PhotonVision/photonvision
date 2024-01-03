@@ -1,9 +1,7 @@
 import base64
 from dataclasses import dataclass
-import io
 import json
 import os
-from typing import List, TypedDict
 import cv2
 import numpy as np
 
@@ -19,7 +17,7 @@ class JsonMatOfDoubles:
     rows: int
     cols: int
     type: int
-    data: List[float]
+    data: list[float]
 
 
 @dataclass
@@ -72,11 +70,11 @@ class Point3:
 @dataclass
 class Observation:
     # Expected feature 3d location in the camera frame
-    locationInObjectSpace: List[Point3]
+    locationInObjectSpace: list[Point3]
     # Observed location in pixel space
-    locationInImageSpace: List[Point2]
+    locationInImageSpace: list[Point2]
     # (measured location in pixels) - (expected from FK)
-    reprojectionErrors: List[Point2]
+    reprojectionErrors: list[Point2]
     # Solver optimized board poses
     optimisedCameraToObject: Pose3d
     # If we should use this observation when re-calculating camera calibration
@@ -91,7 +89,7 @@ class CameraCalibration:
     resolution: Resolution
     cameraIntrinsics: JsonMatOfDoubles
     distCoeffs: JsonMatOfDoubles
-    observations: List[Observation]
+    observations: list[Observation]
 
 
 def convert_photon_to_mrcal(photon_cal_json_path: str, output_folder: str):
