@@ -1,3 +1,4 @@
+import argparse
 import base64
 from dataclasses import dataclass
 import json
@@ -134,8 +135,21 @@ def convert_photon_to_mrcal(photon_cal_json_path: str, output_folder: str):
             vnl_file.flush()
 
 
-if __name__ == "__main__":
-    convert_photon_to_mrcal(
-        "test-resources/calibration/lifecam480p.json",
-        "~/Downloads/2024-01-02_lifecam_480",
+def main():
+    parser = argparse.ArgumentParser(
+        description="Convert Photon calibration JSON for use with mrcal"
     )
+    parser.add_argument(
+        "input", type=str, help="Path to Photon calibration JSON file"
+    )
+    parser.add_argument(
+        "output_folder", type=str, help="Output folder for mrcal VNL file + images"
+    )
+
+    args = parser.parse_args()
+
+    convert_photon_to_mrcal(args.input, args.output_folder)
+
+
+if __name__ == "__main__":
+    main()
