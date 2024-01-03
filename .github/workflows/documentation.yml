@@ -87,7 +87,6 @@ jobs:
 
     runs-on: ubuntu-22.04
     steps:
-      - run: mkdir output && cd output
 
       # Download literally every single artifact. 
       - uses: actions/download-artifact@v4
