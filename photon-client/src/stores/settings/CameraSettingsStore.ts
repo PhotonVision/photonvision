@@ -4,6 +4,7 @@ import type {
   CameraCalibrationResult,
   CameraSettings,
   ConfigurableCameraSettings,
+  Resolution,
   RobotOffsetType,
   VideoFormat
 } from "@/types/SettingTypes";
@@ -415,6 +416,12 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         cameraIndex: cameraIndex
       };
       useStateStore().websocket?.send(payload, true);
+    },
+    getCalibrationCoeffs(
+      resolution: Resolution,
+      cameraIndex: number = useStateStore().currentCameraIndex
+    ): CameraCalibrationResult | undefined {
+      return this.cameras[cameraIndex].completeCalibrations.find((v) => resolutionsAreEqual(v.resolution, resolution));
     }
   }
 });

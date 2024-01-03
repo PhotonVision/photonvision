@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { CalibrationBoardTypes, type Resolution, type VideoFormat } from "@/types/SettingTypes";
+import { CalibrationBoardTypes, type VideoFormat } from "@/types/SettingTypes";
 import JsPDF from "jspdf";
 import { font as PromptRegular } from "@/assets/fonts/PromptRegular";
 import MonoLogo from "@/assets/images/logoMono.png";
@@ -16,18 +16,13 @@ import CameraCalibrationInfoCard from "@/components/cameras/CameraCalibrationInf
 
 const settingsValid = ref(true);
 
-const getCalibrationCoeffs = (resolution: Resolution) => {
-  return useCameraSettingsStore().currentCameraSettings.completeCalibrations.find((cal) =>
-    resolutionsAreEqual(cal.resolution, resolution)
-  );
-};
 const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
   const uniqueResolutions: VideoFormat[] = [];
   useCameraSettingsStore().currentCameraSettings.validVideoFormats.forEach((format, index) => {
     if (!uniqueResolutions.some((v) => resolutionsAreEqual(v.resolution, format.resolution))) {
       format.index = index;
 
-      const calib = getCalibrationCoeffs(format.resolution);
+      const calib = useCameraSettingsStore().getCalibrationCoeffs(format.resolution);
       if (calib !== undefined) {
         // Is this the right formula for RMS error? who knows! not me!
         const perViewSumSquareReprojectionError = calib.observations.flatMap((it) =>

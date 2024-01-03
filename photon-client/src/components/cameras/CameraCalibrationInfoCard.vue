@@ -4,17 +4,12 @@ import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { ref } from "vue";
 import loadingImage from "@/assets/images/loading.svg";
-import { getResolutionString, parseJsonFile, resolutionsAreEqual } from "@/lib/PhotonUtils";
+import { getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
 
 const props = defineProps<{
   videoFormat: VideoFormat;
 }>();
 
-const getCalibrationCoeffs = () => {
-  return useCameraSettingsStore().currentCameraSettings.completeCalibrations.find((cal) =>
-    resolutionsAreEqual(cal.resolution, props.videoFormat.resolution)
-  );
-};
 const getMeanFromView = (o: BoardObservation) => {
   // Is this the right formula for RMS error? who knows! not me!
   const perViewSumSquareReprojectionError = o.reprojectionErrors.flatMap((it2) => [it2.x, it2.y]);
@@ -28,7 +23,7 @@ const getMeanFromView = (o: BoardObservation) => {
 
 // Import and export functions
 const downloadCalibration = () => {
-  const calibData = getCalibrationCoeffs();
+  const calibData = useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution);
   if (calibData === undefined) {
     useStateStore().showSnackbarMessage({
       color: "error",
