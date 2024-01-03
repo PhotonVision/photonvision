@@ -2,11 +2,11 @@ name: Documentation
 
 on:
   push:
+    # For now, run on all commits to master
     branches: [ master ]
+    # Only run on tagged releases to master
     tags:
       - 'v*'
-  pull_request:
-    branches: [ master ]
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
@@ -55,19 +55,6 @@ jobs:
         java-version: 17
         distribution: temurin
 
-    - name: Set environment variables (Development)
-      run: |
-        echo "BRANCH=development" >> $GITHUB_ENV
-      # if: github.ref == 'refs/heads/master'
-    - name: Set environment variables (Tag)
-      run: |
-        echo "BRANCH=beta" >> $GITHUB_ENV
-      if: startsWith(github.ref, 'refs/tags/v')
-    - name: Set environment variables (Release)
-      run: |
-        echo "BRANCH=release" >> $GITHUB_ENV
-      if: startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, 'alpha') && !contains(github.ref, 'beta')
-
     - name: Build javadocs/doxygen
       run: |
         chmod +x gradlew
@@ -77,7 +64,7 @@ jobs:
       with:
         name: built-docs
         path: docs/build/docs
- 
+
   release:
     needs: [build-client, run_docs]
 
@@ -88,7 +75,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
 
-      # Download literally every single artifact. 
+      # Download literally every single artifact.
       - uses: actions/download-artifact@v4
 
       - run: find .

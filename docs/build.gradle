@@ -206,10 +206,15 @@ ext {
 }
 
 task generateJavaDocs(type: Javadoc) {
-    def exportedProjects = [':photon-core',':photon-server',':photon-targeting',':photon-lib']
+    def exportedProjects = [
+        ':photon-core',
+        ':photon-server',
+        ':photon-targeting',
+        ':photon-lib'
+    ]
 
-    source exportedProjects.collect { project(it).sourceSets.main.allJava }    											  
-    classpath = files(exportedProjects.collect { project(it).sourceSets.main.compileClasspath })    
+    source exportedProjects.collect { project(it).sourceSets.main.allJava }
+    classpath = files(exportedProjects.collect { project(it).sourceSets.main.compileClasspath })
     dependsOn project(':photon-core').writeCurrentVersion
 
     options.links("https://docs.oracle.com/en/java/javase/17/docs/api/")
