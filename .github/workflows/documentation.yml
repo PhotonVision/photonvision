@@ -8,11 +8,38 @@ on:
   pull_request:
     branches: [ master ]
 
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  build-client:
+    name: "PhotonClient Build"
+    defaults:
+      run:
+        working-directory: photon-client
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - name: Install Dependencies
+        run: npm ci
+      - name: Build Production Client
+        run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: built-client
+          path: photon-client/dist/
+
   run_docs:
     runs-on: "ubuntu-22.04"
     steps:
@@ -41,16 +68,39 @@ jobs:
         echo "BRANCH=release" >> $GITHUB_ENV
       if: startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, 'alpha') && !contains(github.ref, 'beta')
 
-    - name: Gradle Build
+    - name: Build javadocs/doxygen
       run: |
         chmod +x gradlew
         ./gradlew docs:generateJavaDocs docs:doxygen
-    - name: Deploy 🚀
-      uses: JamesIves/github-pages-deploy-action@v4.4.1
+
+    - uses: actions/upload-artifact@v4
       with:
-        ssh-key: ${{ secrets.DOCS_DEPLOY_KEY }}
-        repository-name: photonvision/photonvision.github.io
-        branch: photonvision-${{ env.BRANCH }}
-        clean: true
-        single-commit: true
-        folder: docs/build/docs
+        name: built-docs
+        path: docs/build/docs
+ 
+  release:
+    needs: [build-client, run_docs]
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-22.04
+    steps:
+      - run: mkdir output && cd output
+
+      # Download literally every single artifact. 
+      - uses: actions/download-artifact@v4
+
+      - run: find .
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload entire repository
+          path: '.'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
