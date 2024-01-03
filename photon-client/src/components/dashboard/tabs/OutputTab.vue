@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import PvSelect from "@/components/common/pv-select.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { PipelineType, RobotOffsetPointMode } from "@/types/PipelineTypes";
+import { type ActivePipelineSettings, PipelineType, RobotOffsetPointMode } from "@/types/PipelineTypes";
 import PvSwitch from "@/components/common/pv-switch.vue";
 import { computed, getCurrentInstance } from "vue";
 import { RobotOffsetType } from "@/types/SettingTypes";
@@ -40,7 +40,11 @@ const offsetPoints = computed<MetricItem[]>(() => {
   }
 });
 
-const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings;
+// TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
+// Defer reference to store access method
+const currentPipelineSettings = computed<ActivePipelineSettings>(
+  () => useCameraSettingsStore().currentPipelineSettings
+);
 
 const interactiveCols = computed(
   () =>

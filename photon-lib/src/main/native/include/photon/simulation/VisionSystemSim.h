@@ -173,7 +173,7 @@ class VisionSystemSim {
     std::vector<VisionTargetSim> targets;
     for (const frc::AprilTag& tag : layout.GetTags()) {
       targets.emplace_back(VisionTargetSim{layout.GetTagPose(tag.ID).value(),
-                                           photon::kAprilTag16h5, tag.ID});
+                                           photon::kAprilTag36h11, tag.ID});
     }
     AddVisionTargets("apriltag", targets);
   }
