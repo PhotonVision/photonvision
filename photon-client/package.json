@@ -7,6 +7,7 @@
     "build": "run-p build-only",
     "preview": "vite preview --port 4173",
     "build-only": "vite build",
+    "build-demo": "vite build --mode demo",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "format": "prettier --write src/",
     "lint-ci": "eslint . --max-warnings 0 --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
