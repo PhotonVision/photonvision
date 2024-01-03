@@ -270,15 +270,15 @@ jobs:
           - os: ubuntu-latest
             artifact-name: LinuxArm64
             image_suffix: RaspberryPi
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.3/photonvision_raspi.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.4/photonvision_raspi.img.xz
           - os: ubuntu-latest
             artifact-name: LinuxArm64
             image_suffix: limelight2
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.3/photonvision_limelight.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.4/photonvision_limelight.img.xz
           - os: ubuntu-latest
             artifact-name: LinuxArm64
             image_suffix: orangepi5
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.3/photonvision_opi5.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.4/photonvision_opi5.img.xz
 
     runs-on: ${{ matrix.os }}
     name: "Build image - ${{ matrix.image_url }}"
