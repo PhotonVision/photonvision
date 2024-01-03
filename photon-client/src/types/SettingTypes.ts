@@ -1,4 +1,5 @@
 import { type ActivePipelineSettings, DefaultAprilTagPipelineSettings } from "@/types/PipelineTypes";
+import type { Pose3d } from "@/types/PhotonTrackingTypes";
 
 export interface GeneralSettings {
   version?: string;
@@ -77,16 +78,59 @@ export interface VideoFormat {
   diagonalFOV?: number;
   horizontalFOV?: number;
   verticalFOV?: number;
-  standardDeviation?: number;
   mean?: number;
+}
+
+export enum CvType {
+  CV_8U = 0,
+  CV_8S = 1,
+  CV_16U = 2,
+  CV_16S = 3,
+  CV_32S = 4,
+  CV_32F = 5,
+  CV_64F = 6,
+  CV_16F = 7
+}
+
+export interface JsonMatOfDouble {
+  rows: number;
+  cols: number;
+  type: CvType;
+  data: number[];
+}
+
+export interface JsonImageMat {
+  rows: number;
+  cols: number;
+  type: CvType;
+  data: string; // base64 encoded
+}
+
+export interface CvPoint3 {
+  x: number;
+  y: number;
+  z: number;
+}
+export interface CvPoint {
+  x: number;
+  y: number;
+}
+
+export interface BoardObservation {
+  locationInObjectSpace: CvPoint3[];
+  locationInImageSpace: CvPoint[];
+  reprojectionErrors: CvPoint[];
+  optimisedCameraToObject: Pose3d;
+  includeObservationInCalibration: boolean;
+  snapshotName: string;
+  snapshotData: JsonImageMat;
 }
 
 export interface CameraCalibrationResult {
   resolution: Resolution;
-  distCoeffs: number[];
-  standardDeviation: number;
-  perViewErrors: number[] | null;
-  intrinsics: number[];
+  cameraIntrinsics: JsonMatOfDouble;
+  distCoeffs: JsonMatOfDouble;
+  observations: BoardObservation[];
 }
 
 export interface ConfigurableCameraSettings {
@@ -95,6 +139,7 @@ export interface ConfigurableCameraSettings {
 
 export interface CameraSettings {
   nickname: string;
+  uniqueName: string;
 
   fov: {
     value: number;
@@ -117,6 +162,7 @@ export interface CameraSettings {
 
 export const PlaceholderCameraSettings: CameraSettings = {
   nickname: "Placeholder Camera",
+  uniqueName: "Placeholder Name",
   fov: {
     value: 70,
     managedByVendor: true
@@ -142,7 +188,45 @@ export const PlaceholderCameraSettings: CameraSettings = {
       pixelFormat: "RGB"
     }
   ],
-  completeCalibrations: [],
+  completeCalibrations: [
+    {
+      resolution: { width: 1920, height: 1080 },
+      cameraIntrinsics: {
+        rows: 1,
+        cols: 1,
+        type: 1,
+        data: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+      },
+      distCoeffs: {
+        rows: 1,
+        cols: 1,
+        type: 1,
+        data: [10, 11, 12, 13]
+      },
+      observations: [
+        {
+          locationInImageSpace: [
+            { x: 100, y: 100 },
+            { x: 210, y: 100 },
+            { x: 320, y: 101 }
+          ],
+          locationInObjectSpace: [{ x: 0, y: 0, z: 0 }],
+          optimisedCameraToObject: {
+            translation: { x: 1, y: 2, z: 3 },
+            rotation: { quaternion: { W: 1, X: 0, Y: 0, Z: 0 } }
+          },
+          reprojectionErrors: [
+            { x: 1, y: 1 },
+            { x: 2, y: 1 },
+            { x: 3, y: 1 }
+          ],
+          includeObservationInCalibration: false,
+          snapshotName: "img0.png",
+          snapshotData: { rows: 480, cols: 640, type: CvType.CV_8U, data: "" }
+        }
+      ]
+    }
+  ],
   pipelineNicknames: ["Placeholder Pipeline"],
   lastPipelineIndex: 0,
   currentPipelineIndex: 0,
