@@ -80,5 +80,4 @@ PhotonVision is licensed under the [GNU General Public License](https://www.gnu.
 ## Meeting Notes
 Our meeting notes can be found in the wiki section of this repository.
 
-* [2020 Meeting Notes](https://github.com/PhotonVision/photonvision/wiki/2020-Meeting-Notes)
-* [2021 Meeting Notes](https://github.com/PhotonVision/photonvision/wiki/2021-Meeting-Notes)
+* [Meeting Notes](https://github.com/PhotonVision/photonvision/wiki/PhotonVision-Meeting-Notes)
