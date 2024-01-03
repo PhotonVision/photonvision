@@ -102,11 +102,13 @@ interface ObservationDetails {
   index: number;
 }
 const getObservationDetails = (): ObservationDetails[] | undefined => {
-  return getCalibrationCoeffs()?.observations.map((o, i) => ({
-    index: i,
-    mean: parseFloat(getMeanFromView(o).toFixed(2)),
-    snapshotSrc: o.includeObservationInCalibration ? "data:image/png;base64," + o.snapshotData.data : loadingImage
-  }));
+  return useCameraSettingsStore()
+    .getCalibrationCoeffs(props.videoFormat.resolution)
+    ?.observations.map((o, i) => ({
+      index: i,
+      mean: parseFloat(getMeanFromView(o).toFixed(2)),
+      snapshotSrc: o.includeObservationInCalibration ? "data:image/png;base64," + o.snapshotData.data : loadingImage
+    }));
 };
 </script>
 
@@ -138,7 +140,7 @@ const getObservationDetails = (): ObservationDetails[] | undefined => {
         <v-btn
           color="secondary"
           class="mt-4"
-          :disabled="getCalibrationCoeffs() === undefined"
+          :disabled="useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution) === undefined"
           style="width: 100%"
           @click="downloadCalibration"
         >
@@ -147,7 +149,10 @@ const getObservationDetails = (): ObservationDetails[] | undefined => {
         </v-btn>
       </v-col>
     </v-row>
-    <v-row v-if="getCalibrationCoeffs() !== undefined" class="pt-2">
+    <v-row
+      v-if="useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution) !== undefined"
+      class="pt-2"
+    >
       <v-card-subtitle>Calibration Details</v-card-subtitle>
       <v-simple-table dense style="width: 100%" class="pl-2 pr-2">
         <template #default>
@@ -160,23 +165,57 @@ const getObservationDetails = (): ObservationDetails[] | undefined => {
           <tbody>
             <tr>
               <td>Fx</td>
-              <td>{{ getCalibrationCoeffs()?.cameraIntrinsics.data[0].toFixed(2) || 0.0 }} mm</td>
+              <td>
+                {{
+                  useCameraSettingsStore()
+                    .getCalibrationCoeffs(props.videoFormat.resolution)
+                    ?.cameraIntrinsics.data[0].toFixed(2) || 0.0
+                }}
+                mm
+              </td>
             </tr>
             <tr>
               <td>Fy</td>
-              <td>{{ getCalibrationCoeffs()?.cameraIntrinsics.data[4].toFixed(2) || 0.0 }} mm</td>
+              <td>
+                {{
+                  useCameraSettingsStore()
+                    .getCalibrationCoeffs(props.videoFormat.resolution)
+                    ?.cameraIntrinsics.data[4].toFixed(2) || 0.0
+                }}
+                mm
+              </td>
             </tr>
             <tr>
               <td>Cx</td>
-              <td>{{ getCalibrationCoeffs()?.cameraIntrinsics.data[2].toFixed(2) || 0.0 }} px</td>
+              <td>
+                {{
+                  useCameraSettingsStore()
+                    .getCalibrationCoeffs(props.videoFormat.resolution)
+                    ?.cameraIntrinsics.data[2].toFixed(2) || 0.0
+                }}
+                px
+              </td>
             </tr>
             <tr>
               <td>Cy</td>
-              <td>{{ getCalibrationCoeffs()?.cameraIntrinsics.data[5].toFixed(2) || 0.0 }} px</td>
+              <td>
+                {{
+                  useCameraSettingsStore()
+                    .getCalibrationCoeffs(props.videoFormat.resolution)
+                    ?.cameraIntrinsics.data[5].toFixed(2) || 0.0
+                }}
+                px
+              </td>
             </tr>
             <tr>
               <td>Distortion</td>
-              <td>{{ getCalibrationCoeffs()?.distCoeffs.data.map((it) => parseFloat(it.toFixed(3))) || [] }}</td>
+              <td>
+                {{
+                  useCameraSettingsStore()
+                    .getCalibrationCoeffs(props.videoFormat.resolution)
+                    ?.distCoeffs.data.map((it) => parseFloat(it.toFixed(3))) || []
+                }}
+              </td>
             </tr>
             <tr>
               <td>Mean Err</td>
