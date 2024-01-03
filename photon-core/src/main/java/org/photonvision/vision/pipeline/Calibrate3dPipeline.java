@@ -18,7 +18,6 @@
 package org.photonvision.vision.pipeline;
 
 import edu.wpi.first.math.util.Units;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,14 +25,11 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Size;
-import org.opencv.imgcodecs.Imgcodecs;
-import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
-import org.photonvision.common.util.file.FileUtils;
 import org.photonvision.vision.calibration.BoardObservation;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.Frame;
@@ -71,9 +67,6 @@ public class Calibrate3dPipeline
 
     private boolean calibrating = false;
 
-    // Path to save images
-    private final Path imageDir;
-
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
     public Calibrate3dPipeline(String uniqueName) {
@@ -85,8 +78,6 @@ public class Calibrate3dPipeline
         this.settings = new Calibration3dPipelineSettings();
         this.foundCornersList = new ArrayList<>();
         this.minSnapshots = minSnapshots;
-        this.imageDir =
-                Path.of(ConfigManager.getInstance().getCalibDir().toAbsolutePath().toString(), uniqueName);
     }
 
     @Override
@@ -144,7 +135,6 @@ public class Calibrate3dPipeline
                 findBoardResult.inputImage = inputColorMat.clone();
 
                 foundCornersList.add(findBoardResult);
-                saveCalImage(inputColorMat);
 
                 // update the UI
                 broadcastState();
@@ -162,30 +152,10 @@ public class Calibrate3dPipeline
                 getCornersList());
     }
 
-    private void saveCalImage(Mat img) {
-        var folder = Path.of(imageDir.toString(), img.size().toString());
-        if (!folder.toFile().exists()) {
-            folder.toFile().mkdirs();
-        }
-        if (!folder.toFile().exists()) {
-            logger.error("Could not create save folder! " + folder);
-        }
-        Imgcodecs.imwrite(
-                Path.of(folder.toAbsolutePath().toString(), "img" + foundCornersList.size() + ".png")
-                        .toString(),
-                img);
-    }
-
     List<List<Point>> getCornersList() {
         return foundCornersList.stream()
                 .map(it -> it.imagePoints.toList())
                 .collect(Collectors.toList());
-    }
-
-    public void deleteSavedImages(Size resolution) {
-        var folder = Path.of(imageDir.toString(), resolution.toString());
-        folder.toFile().mkdirs();
-        FileUtils.deleteDirectory(folder);
     }
 
     public boolean hasEnough() {

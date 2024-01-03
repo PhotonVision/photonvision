@@ -340,7 +340,6 @@ public class VisionModule {
         var videoMode = visionSource.getSettables().getAllVideoModes().get(data.videoModeIndex);
         var resolution = new Size(videoMode.width, videoMode.height);
 
-        pipelineManager.calibration3dPipeline.deleteSavedImages(resolution);
         settings.cameraVideoModeIndex = data.videoModeIndex;
         visionSource.getSettables().setVideoModeIndex(data.videoModeIndex);
         logger.info(
