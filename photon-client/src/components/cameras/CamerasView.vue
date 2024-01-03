@@ -151,18 +151,6 @@ th {
   justify-content: center;
 }
 
-@media only screen and (min-width: 960px) {
-  .fixed-right {
-    position: fixed;
-    top: 50%;
-    transform: translate(0, -50%);
-    overflow-y: auto;
-    max-height: 100%;
-    margin-top: 12px;
-    margin-bottom: 12px;
-  }
-}
-
 @media only screen and (min-width: 512px) and (max-width: 960px) {
   .stream-container {
     flex-wrap: nowrap;
