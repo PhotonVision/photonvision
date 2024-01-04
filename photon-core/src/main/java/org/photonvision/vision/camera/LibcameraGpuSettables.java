@@ -18,6 +18,7 @@
 package org.photonvision.vision.camera;
 
 import edu.wpi.first.cscore.VideoMode;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.util.PixelFormat;
 import java.util.HashMap;
@@ -119,23 +120,28 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
             return;
         }
 
+        // Store the exposure for use when we need to recreate the camera.
+        lastManualExposure = exposure;
+
+        // Minimum exposure can't be below 1uS cause otherwise it would be 0 and 0 is auto exposure.
+        double minExposure = 1;
+
         // HACKS!
         // If we set exposure too low, libcamera crashes or slows down
         // Very weird and smelly
         // For now, band-aid this by just not setting it lower than the "it breaks" limit
-        //  is different depending on camera.
+        // is different depending on camera.
+        // All units are uS.
         if (sensorModel == LibCameraJNI.SensorModel.OV9281) {
-            if (exposure < 6.0) {
-                exposure = 6.0;
-            }
+            minExposure = 4800;
         } else if (sensorModel == LibCameraJNI.SensorModel.OV5647) {
-            if (exposure < 0.7) {
-                exposure = 0.7;
-            }
+            minExposure = 560;
         }
+        // 80,000 uS seems like an exposure value that will be greater than ever needed while giving
+        // enough control over exposure.
+        exposure = MathUtils.map(exposure, 0, 100, minExposure, 80000);
 
-        lastManualExposure = exposure;
-        var success = LibCameraJNI.setExposure(r_ptr, (int) Math.round(exposure) * 800);
+        var success = LibCameraJNI.setExposure(r_ptr, (int) exposure);
         if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera exposure");
     }
 
@@ -150,8 +156,12 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     @Override
     public void setGain(int gain) {
         lastGain = gain;
-        // TODO units here seem odd -- 5ish seems legit? So divide by 10
-        var success = LibCameraJNI.setAnalogGain(r_ptr, gain / 10.0);
+
+        // Map and clamp gain to values between 1 and 10 (libcamera min and gain that just seems higher
+        // than ever needed) from 0 to 100 (UI values).
+        var success =
+                LibCameraJNI.setAnalogGain(
+                        r_ptr, MathUtil.clamp(MathUtils.map(gain, 0.0, 100.0, 1.0, 10.0), 1.0, 10.0));
         if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera gain");
     }
 

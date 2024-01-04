@@ -30,14 +30,14 @@ public class PacketPublisher<T> implements AutoCloseable {
         this.serde = serde;
     }
 
-    public void accept(T value, int byteSize) {
+    public void set(T value, int byteSize) {
         var packet = new Packet(byteSize);
         serde.pack(packet, value);
         publisher.set(packet.getData());
     }
 
-    public void accept(T value) {
-        accept(value, serde.getMaxByteSize());
+    public void set(T value) {
+        set(value, serde.getMaxByteSize());
     }
 
     @Override

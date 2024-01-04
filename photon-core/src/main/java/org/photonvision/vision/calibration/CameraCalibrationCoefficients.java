@@ -20,50 +20,72 @@ package org.photonvision.vision.calibration;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+import java.util.List;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
 import org.opencv.core.Size;
 import org.photonvision.vision.opencv.Releasable;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CameraCalibrationCoefficients implements Releasable {
     @JsonProperty("resolution")
     public final Size resolution;
 
     @JsonProperty("cameraIntrinsics")
-    public final JsonMat cameraIntrinsics;
+    public final JsonMatOfDouble cameraIntrinsics;
 
-    @JsonProperty("cameraExtrinsics")
-    @JsonAlias({"cameraExtrinsics", "distCoeffs"})
-    public final JsonMat distCoeffs;
+    @JsonProperty("distCoeffs")
+    @JsonAlias({"distCoeffs", "distCoeffs"})
+    public final JsonMatOfDouble distCoeffs;
 
-    @JsonProperty("perViewErrors")
-    public final double[] perViewErrors;
+    @JsonProperty("observations")
+    public final List<BoardObservation> observations;
 
-    @JsonProperty("standardDeviation")
-    public final double standardDeviation;
+    @JsonProperty("calobjectWarp")
+    public final double[] calobjectWarp;
 
     @JsonIgnore private final double[] intrinsicsArr = new double[9];
+    @JsonIgnore private final double[] distCoeffsArr = new double[5];
 
-    @JsonIgnore private final double[] extrinsicsArr = new double[5];
-
+    /**
+     * Contains all camera calibration data for a particular resolution of a camera. Designed for use
+     * with standard opencv camera calibration matrices. For details on the layout of camera
+     * intrinsics/distortion matrices, see:
+     * https://docs.opencv.org/4.x/d9/d0c/group__calib3d.html#ga3207604e4b1a1758aa66acb6ed5aa65d
+     *
+     * @param resolution The resolution this applies to. We don't assume camera binning or try
+     *     rescaling calibration
+     * @param cameraIntrinsics Camera intrinsics parameters matrix, in the standard opencv form.
+     * @param distCoeffs Camera distortion coefficients array. Variable length depending on order of
+     *     distortion model
+     * @param calobjectWarp Board deformation parameters, for calibrators that can estimate that. See:
+     *     https://mrcal.secretsauce.net/formulation.html#board-deformation
+     * @param observations List of snapshots used to construct this calibration
+     */
     @JsonCreator
     public CameraCalibrationCoefficients(
             @JsonProperty("resolution") Size resolution,
-            @JsonProperty("cameraIntrinsics") JsonMat cameraIntrinsics,
-            @JsonProperty("cameraExtrinsics") JsonMat distCoeffs,
-            @JsonProperty("perViewErrors") double[] perViewErrors,
-            @JsonProperty("standardDeviation") double standardDeviation) {
+            @JsonProperty("cameraIntrinsics") JsonMatOfDouble cameraIntrinsics,
+            @JsonProperty("distCoeffs") JsonMatOfDouble distCoeffs,
+            @JsonProperty("calobjectWarp") double[] calobjectWarp,
+            @JsonProperty("observations") List<BoardObservation> observations) {
         this.resolution = resolution;
         this.cameraIntrinsics = cameraIntrinsics;
         this.distCoeffs = distCoeffs;
-        this.perViewErrors = perViewErrors;
-        this.standardDeviation = standardDeviation;
+        this.calobjectWarp = calobjectWarp;
+
+        // Legacy migration just to make sure that observations is at worst empty and never null
+        if (observations == null) {
+            observations = List.of();
+        }
+        this.observations = observations;
 
         // do this once so gets are quick
         getCameraIntrinsicsMat().get(0, 0, intrinsicsArr);
-        getDistCoeffsMat().get(0, 0, extrinsicsArr);
+        getDistCoeffsMat().get(0, 0, distCoeffsArr);
     }
 
     @JsonIgnore
@@ -82,18 +104,13 @@ public class CameraCalibrationCoefficients implements Releasable {
     }
 
     @JsonIgnore
-    public double[] getExtrinsicsArr() {
-        return extrinsicsArr;
+    public double[] getDistCoeffsArr() {
+        return distCoeffsArr;
     }
 
     @JsonIgnore
-    public double[] getPerViewErrors() {
-        return perViewErrors;
-    }
-
-    @JsonIgnore
-    public double getStandardDeviation() {
-        return standardDeviation;
+    public List<BoardObservation> getPerViewErrors() {
+        return observations;
     }
 
     @Override
@@ -130,14 +147,14 @@ public class CameraCalibrationCoefficients implements Releasable {
                     dist_coefs.get(4).doubleValue(),
                 };
 
-        var cam_jsonmat = new JsonMat(3, 3, cam_arr);
-        var distortion_jsonmat = new JsonMat(1, 5, dist_array);
+        var cam_jsonmat = new JsonMatOfDouble(3, 3, cam_arr);
+        var distortion_jsonmat = new JsonMatOfDouble(1, 5, dist_array);
 
         var error = json.get("avg_reprojection_error").asDouble();
         var width = json.get("img_size").get(0).doubleValue();
         var height = json.get("img_size").get(1).doubleValue();
 
         return new CameraCalibrationCoefficients(
-                new Size(width, height), cam_jsonmat, distortion_jsonmat, new double[] {error}, 0);
+                new Size(width, height), cam_jsonmat, distortion_jsonmat, new double[0], List.of());
     }
 }

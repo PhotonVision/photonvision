@@ -356,6 +356,10 @@ public class TestUtils {
         return getCoeffs(LIFECAM_480P_CAL_FILE, testMode);
     }
 
+    public static CameraCalibrationCoefficients get2023LifeCamCoeffs(boolean testMode) {
+        return getCoeffs(LIFECAM_1280P_CAL_FILE, testMode);
+    }
+
     public static CameraCalibrationCoefficients getLaptop() {
         return getCoeffs("laptop.json", true);
     }
@@ -388,9 +392,5 @@ public class TestUtils {
         return getResourcesFolderPath(true)
                 .resolve("testimages")
                 .resolve(WPI2022Image.kTerminal22ft6in.path);
-    }
-
-    public static CameraCalibrationCoefficients get2023LifeCamCoeffs(boolean testMode) {
-        return getCoeffs(LIFECAM_1280P_CAL_FILE, testMode);
     }
 }

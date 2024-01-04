@@ -166,6 +166,8 @@ public enum Platform {
             } else if (RuntimeDetector.isArm64()) {
                 // TODO - os detection needed?
                 return LINUX_AARCH64;
+            } else if (RuntimeDetector.isArm32()) {
+                return LINUX_ARM32;
             } else {
                 // Unknown or otherwise unsupported platform
                 return Platform.UNKNOWN;

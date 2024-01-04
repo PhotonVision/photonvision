@@ -1,3 +1,26 @@
+export interface Quaternion {
+  X: number;
+  Y: number;
+  Z: number;
+  W: number;
+}
+
+export interface Translation3d {
+  x: number;
+  y: number;
+  z: number;
+}
+
+export interface Rotation3d {
+  quaternion: Quaternion;
+}
+
+export interface Pose3d {
+  translation: Translation3d;
+  rotation: Rotation3d;
+}
+
+// TODO update backend to serialize this using correct layout
 export interface Transform3d {
   x: number;
   y: number;
@@ -11,13 +34,6 @@ export interface Transform3d {
   angle_z: number;
 }
 
-export interface Quaternion {
-  X: number;
-  Y: number;
-  Z: number;
-  W: number;
-}
-
 export interface AprilTagFieldLayout {
   field: {
     length: number;
@@ -25,16 +41,7 @@ export interface AprilTagFieldLayout {
   };
   tags: {
     ID: number;
-    pose: {
-      translation: {
-        x: number;
-        y: number;
-        z: number;
-      };
-      rotation: {
-        quaternion: Quaternion;
-      };
-    };
+    pose: Pose3d;
   }[];
 }
 
