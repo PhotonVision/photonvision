@@ -243,7 +243,9 @@ const getObservationDetails = (): ObservationDetails[] | undefined => {
             </tr>
             <!-- Board warp, only shown for mrcal-calibrated cameras -->
             <tr
-              v-if="useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution)?.calobjectWarp.length === 2"
+              v-if="
+                useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution)?.calobjectWarp.length === 2
+              "
             >
               <td>Board warp, X/Y</td>
               <td>
