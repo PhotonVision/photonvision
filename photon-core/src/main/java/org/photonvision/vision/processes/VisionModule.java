@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.BiConsumer;
+import org.opencv.core.Size;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.PhotonConfiguration;
@@ -41,6 +42,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
+import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.LibcameraGpuSource;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.USBCameraSource;
@@ -334,7 +336,10 @@ public class VisionModule {
 
     public void startCalibration(UICalibrationData data) {
         var settings = pipelineManager.calibration3dPipeline.getSettings();
-        pipelineManager.calibration3dPipeline.deleteSavedImages();
+
+        var videoMode = visionSource.getSettables().getAllVideoModes().get(data.videoModeIndex);
+        var resolution = new Size(videoMode.width, videoMode.height);
+
         settings.cameraVideoModeIndex = data.videoModeIndex;
         visionSource.getSettables().setVideoModeIndex(data.videoModeIndex);
         logger.info(
@@ -346,6 +351,7 @@ public class VisionModule {
         settings.boardHeight = data.patternHeight;
         settings.boardWidth = data.patternWidth;
         settings.boardType = data.boardType;
+        settings.resolution = resolution;
 
         // Disable gain if not applicable
         if (!cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
@@ -498,7 +504,9 @@ public class VisionModule {
         var ret = new PhotonConfiguration.UICameraConfiguration();
 
         ret.fov = visionSource.getSettables().getFOV();
+        ret.isCSICamera = visionSource.getCameraConfiguration().cameraType == CameraType.ZeroCopyPicam;
         ret.nickname = visionSource.getSettables().getConfiguration().nickname;
+        ret.uniqueName = visionSource.getSettables().getConfiguration().uniqueName;
         ret.currentPipelineSettings =
                 SerializationUtils.objectToHashMap(pipelineManager.getCurrentPipelineSettings());
         ret.currentPipelineIndex = pipelineManager.getCurrentPipelineIndex();
@@ -526,20 +534,7 @@ public class VisionModule {
         ret.outputStreamPort = this.outputStreamPort;
         ret.inputStreamPort = this.inputStreamPort;
 
-        var calList = new ArrayList<HashMap<String, Object>>();
-        for (var c : visionSource.getSettables().getConfiguration().calibrations) {
-            var internalMap = new HashMap<String, Object>();
-
-            internalMap.put("perViewErrors", c.perViewErrors);
-            internalMap.put("standardDeviation", c.standardDeviation);
-            internalMap.put("width", c.resolution.width);
-            internalMap.put("height", c.resolution.height);
-            internalMap.put("intrinsics", c.cameraIntrinsics.data);
-            internalMap.put("distCoeffs", c.distCoeffs.data);
-
-            calList.add(internalMap);
-        }
-        ret.calibrations = calList;
+        ret.calibrations = visionSource.getSettables().getConfiguration().calibrations;
 
         ret.isFovConfigurable =
                 !(ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV()

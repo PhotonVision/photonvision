@@ -96,8 +96,8 @@ const expanded = ref([]);
     <v-row class="pl-6">
       <v-col>
         <v-btn color="secondary" @click="fetchSnapshots">
-          <v-icon left> mdi-folder </v-icon>
-          Show Saved Snapshots
+          <v-icon left class="open-icon"> mdi-folder </v-icon>
+          <span class="open-label">Show Saved Snapshots</span>
         </v-btn>
       </v-col>
     </v-row>
@@ -197,6 +197,14 @@ const expanded = ref([]);
 @media only screen and (max-width: 512px) {
   .snapshot-preview {
     max-width: 100%;
+  }
+}
+@media only screen and (max-width: 351px) {
+  .open-icon {
+    margin: 0 !important;
+  }
+  .open-label {
+    display: none;
   }
 }
 </style>

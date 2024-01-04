@@ -93,7 +93,11 @@ export type ConfigurablePipelineSettings = Partial<
     | "cornerDetectionStrategy"
   >
 >;
-export const DefaultPipelineSettings: PipelineSettings = {
+// Omitted settings are changed for all pipeline types
+export const DefaultPipelineSettings: Omit<
+  PipelineSettings,
+  "cameraGain" | "targetModel" | "ledMode" | "outputShowMultipleTargets" | "cameraExposure" | "pipelineType"
+> = {
   offsetRobotOffsetMode: RobotOffsetPointMode.None,
   streamingFrameDivisor: 0,
   offsetDualPointBArea: 0,
@@ -130,15 +134,7 @@ export const DefaultPipelineSettings: PipelineSettings = {
   cornerDetectionStrategy: 0,
   cornerDetectionAccuracyPercentage: 10,
   hsvSaturation: { first: 50, second: 255 },
-  contourIntersection: 1,
-
-  // These settings will be overridden by different pipeline types
-  cameraGain: -1,
-  targetModel: -1,
-  ledMode: false,
-  outputShowMultipleTargets: false,
-  cameraExposure: -1,
-  pipelineType: -1
+  contourIntersection: 1
 };
 
 export interface ReflectivePipelineSettings extends PipelineSettings {
@@ -264,6 +260,7 @@ export type ConfigurableArucoPipelineSettings = Partial<Omit<ArucoPipelineSettin
   ConfigurablePipelineSettings;
 export const DefaultArucoPipelineSettings: ArucoPipelineSettings = {
   ...DefaultPipelineSettings,
+  cameraGain: 75,
   outputShowMultipleTargets: true,
   targetModel: TargetModel.AprilTag6in_16h5,
   cameraExposure: -1,
