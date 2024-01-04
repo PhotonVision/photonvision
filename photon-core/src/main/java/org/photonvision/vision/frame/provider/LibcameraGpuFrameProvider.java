@@ -22,7 +22,6 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.LibCameraJNI;
-import org.photonvision.raspi.LibCameraJNI.SensorModel;
 import org.photonvision.vision.camera.LibcameraGpuSettables;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
@@ -104,9 +103,7 @@ public class LibcameraGpuFrameProvider implements FrameProvider {
 
     @Override
     public void requestFrameThresholdType(FrameThresholdType type) {
-        if (settables.getModel() == SensorModel.OV9281 && type.equals(FrameThresholdType.GREYSCALE))
-            LibCameraJNI.setGpuProcessType(settables.r_ptr, 4); // 4 = Grayscale pass through.
-        else LibCameraJNI.setGpuProcessType(settables.r_ptr, type.ordinal());
+        LibCameraJNI.setGpuProcessType(settables.r_ptr, type.ordinal());
     }
 
     @Override

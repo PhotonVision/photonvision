@@ -460,7 +460,7 @@ public class RequestHandler {
         }
     }
 
-    public static void onCalibrationImportRequest(Context ctx) {
+    public static void onCalibDBCalibrationImportRequest(Context ctx) {
         var data = ctx.body();
 
         try {
@@ -489,6 +489,38 @@ public class RequestHandler {
             logger.error(
                     "The Provided CalibDB data is malformed and cannot be parsed for the required fields.",
                     e);
+        }
+    }
+
+    public static void onDataCalibrationImportRequest(Context ctx) {
+        try {
+            var data = kObjectMapper.readTree(ctx.body());
+
+            int cameraIndex = data.get("cameraIndex").asInt();
+            var coeffs =
+                    kObjectMapper.convertValue(data.get("calibration"), CameraCalibrationCoefficients.class);
+
+            var uploadCalibrationEvent =
+                    new IncomingWebSocketEvent<>(
+                            DataChangeDestination.DCD_ACTIVEMODULE,
+                            "calibrationUploaded",
+                            coeffs,
+                            cameraIndex,
+                            null);
+            DataChangeService.getInstance().publishEvent(uploadCalibrationEvent);
+
+            ctx.status(200);
+            ctx.result("Calibration imported successfully from imported data!");
+            logger.info("Calibration imported successfully from imported data!");
+        } catch (JsonProcessingException e) {
+            ctx.status(400);
+            ctx.result("The provided calibration data was malformed");
+            logger.error("The provided calibration data was malformed", e);
+
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.result("An error occurred while uploading calibration data");
+            logger.error("An error occurred while uploading calibration data", e);
         }
     }
 
@@ -565,6 +597,50 @@ public class RequestHandler {
 
         ctx.status(200);
         ctx.json(snapshots);
+    }
+
+    public static void onCameraCalibImagesRequest(Context ctx) {
+        try {
+            HashMap<String, HashMap<String, ArrayList<HashMap<String, Object>>>> snapshots =
+                    new HashMap<>();
+
+            var cameraDirs = ConfigManager.getInstance().getCalibDir().toFile().listFiles();
+            if (cameraDirs != null) {
+                var camData = new HashMap<String, ArrayList<HashMap<String, Object>>>();
+                for (var cameraDir : cameraDirs) {
+                    var resolutionDirs = cameraDir.listFiles();
+                    if (resolutionDirs == null) continue;
+                    for (var resolutionDir : resolutionDirs) {
+                        var calibImages = resolutionDir.listFiles();
+                        if (calibImages == null) continue;
+                        var resolutionImages = new ArrayList<HashMap<String, Object>>();
+                        for (var calibImg : calibImages) {
+                            var snapshotData = new HashMap<String, Object>();
+
+                            var bufferedImage = ImageIO.read(calibImg);
+                            var buffer = new ByteArrayOutputStream();
+                            ImageIO.write(bufferedImage, "png", buffer);
+                            byte[] data = buffer.toByteArray();
+
+                            snapshotData.put("snapshotData", data);
+                            snapshotData.put("snapshotFilename", calibImg.getName());
+
+                            resolutionImages.add(snapshotData);
+                        }
+                        camData.put(resolutionDir.getName(), resolutionImages);
+                    }
+
+                    var cameraName = cameraDir.getName();
+                    snapshots.put(cameraName, camData);
+                }
+            }
+
+            ctx.json(snapshots);
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.result("An error occurred while getting calib data");
+            logger.error("An error occurred while getting calib data", e);
+        }
     }
 
     /**
