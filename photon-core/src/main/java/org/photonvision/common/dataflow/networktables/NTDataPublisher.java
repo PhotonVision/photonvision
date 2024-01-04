@@ -135,7 +135,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
                         TrackedTarget.simpleFromTrackedTargets(result.targets),
                         result.multiTagResult);
 
-        ts.resultPublisher.accept(simplified, simplified.getPacketSize());
+        ts.resultPublisher.set(simplified, simplified.getPacketSize());
         if (ConfigManager.getInstance().getConfig().getNetworkConfig().shouldPublishProto) {
             ts.protoResultPublisher.set(simplified);
         }
