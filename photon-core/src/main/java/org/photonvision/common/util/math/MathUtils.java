@@ -23,10 +23,12 @@ import edu.wpi.first.math.geometry.CoordinateSystem;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.WPIUtilJNI;
 import java.util.Arrays;
 import java.util.List;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
 
 public class MathUtils {
@@ -197,5 +199,24 @@ public class MathUtils {
         var angle = rotation.getAngle();
         var axis = rotation.getAxis().times(angle);
         rvecOutput.put(0, 0, axis.getData());
+    }
+
+    /**
+     * Convert an Opencv rvec+tvec pair to a Pose3d.
+     *
+     * @param rVec Axis-angle rotation vector, where norm(rVec) is the angle about a unit vector in
+     *     the direction of rVec
+     * @param tVec 3D translation
+     * @return Pose3d representing the same rigid transform
+     */
+    public static Pose3d opencvRTtoPose3d(Mat rVec, Mat tVec) {
+        Translation3d translation =
+                new Translation3d(tVec.get(0, 0)[0], tVec.get(1, 0)[0], tVec.get(2, 0)[0]);
+        Rotation3d rotation =
+                new Rotation3d(
+                        VecBuilder.fill(rVec.get(0, 0)[0], rVec.get(1, 0)[0], rVec.get(2, 0)[0]),
+                        Core.norm(rVec));
+
+        return new Pose3d(translation, rotation);
     }
 }

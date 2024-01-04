@@ -59,6 +59,16 @@ To run them, use the commands listed below. Photonlib must first be published to
 ~/photonvision/photonlib-cpp-examples$ ./gradlew <example-name>:simulateNative
 ```
 
+## Out-of-Source Dependencies
+
+PhotonVision uses the following additonal out-of-source repositories for building code.
+
+- Base system images for Raspberry Pi & Orange Pi: https://github.com/PhotonVision/photon-image-modifier
+- C++ driver for Raspberry Pi CSI cameras: https://github.com/PhotonVision/photon-libcamera-gl-driver
+- JNI code for [mrcal](https://mrcal.secretsauce.net/): https://github.com/PhotonVision/mrcal-java
+- Custom build of OpenCV with GStreamer/Protobuf/other custom flags: https://github.com/PhotonVision/thirdparty-opencv
+- JNI code for aruco-nano: https://github.com/PhotonVision/aruconano-jni
+
 
 ## Acknowledgments
 PhotonVision was forked from [Chameleon Vision](https://github.com/Chameleon-Vision/chameleon-vision/). Thank you to everyone who worked on the original project.

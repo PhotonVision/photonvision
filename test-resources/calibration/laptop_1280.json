@@ -12,7 +12,7 @@
       382.51346080446376, 0.0, 0.0, 1.0
     ]
   },
-  "cameraExtrinsics": {
+  "distCoeffs": {
     "rows": 1,
     "cols": 5,
     "type": 6,
