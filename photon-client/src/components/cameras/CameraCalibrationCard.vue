@@ -337,7 +337,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               rounded
               color="red"
               text-color="white"
-              style="margin: 10px 0"
+              class="mt-3"
               icon="mdi-alert-circle-outline"
             >
               MrCal JNI could not be loaded! Consult journalctl logs for additional details.

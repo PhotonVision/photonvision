@@ -32,9 +32,9 @@ import org.opencv.core.Size;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
-import org.photonvision.mrcal.MrCal;
 import org.photonvision.mrcal.MrCalJNI;
 import org.photonvision.mrcal.MrCalJNI.MrCalResult;
+import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.vision.calibration.BoardObservation;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.calibration.JsonImageMat;
@@ -79,7 +79,7 @@ public class Calibrate3dPipe
                                                 && it.size != null)
                         .collect(Collectors.toList());
 
-        if (MrCal.isWorking() && params.useMrCal) {
+        if (MrCalJNILoader.isWorking() && params.useMrCal) {
             logger.debug("Calibrating with mrcal!");
             return process_mrcal(in);
         } else {

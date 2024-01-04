@@ -23,7 +23,7 @@ import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.jni.PhotonJniCommon;
 
-public class MrCal extends PhotonJniCommon {
+public class MrCalJNILoader extends PhotonJniCommon {
     public static synchronized void forceLoad() throws IOException {
         // Force load opencv
         TestUtils.loadLibraries();
@@ -32,7 +32,7 @@ public class MrCal extends PhotonJniCommon {
         if (Platform.isWindows()) {
             // Order is correct to match dependencies of libraries
             forceLoad(
-                    MrCal.class,
+                    MrCalJNILoader.class,
                     List.of(
                             "libamd",
                             "libcamd",
@@ -46,10 +46,10 @@ public class MrCal extends PhotonJniCommon {
                             "mrcal_jni"));
         } else {
             // Nothing else to do on linux
-            forceLoad(MrCal.class, List.of("mrcal_jni"));
+            forceLoad(MrCalJNILoader.class, List.of("mrcal_jni"));
         }
 
-        if (!MrCal.isWorking()) {
+        if (!MrCalJNILoader.isWorking()) {
             throw new IOException("Can't load mrcal?");
         }
     }

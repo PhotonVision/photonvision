@@ -139,9 +139,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Convert Photon calibration JSON for use with mrcal"
     )
-    parser.add_argument(
-        "input", type=str, help="Path to Photon calibration JSON file"
-    )
+    parser.add_argument("input", type=str, help="Path to Photon calibration JSON file")
     parser.add_argument(
         "output_folder", type=str, help="Output folder for mrcal VNL file + images"
     )
