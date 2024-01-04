@@ -321,7 +321,9 @@ public class Main {
         try {
             MrCalJNILoader.forceLoad();
         } catch (IOException e) {
-            logger.error("Failed to load mrcal-JNI! Camera calibration will fall back to opencv", e);
+            logger.warn(
+                    "Failed to load mrcal-JNI! Camera calibration will fall back to opencv\n"
+                            + e.getMessage());
         }
 
         try {

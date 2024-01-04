@@ -25,7 +25,7 @@ import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
-public abstract class PhotonJniCommon {
+public abstract class PhotonJNICommon {
     static boolean libraryLoaded = false;
     protected static Logger logger = null;
 

@@ -106,7 +106,7 @@ public enum Platform {
         }
     }
 
-    public static final String getNativeLibraryFolderName() {
+    public static String getNativeLibraryFolderName() {
         return currentPlatform.nativeLibraryFolderName;
     }
 

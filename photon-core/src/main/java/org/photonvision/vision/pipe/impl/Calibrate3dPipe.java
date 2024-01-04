@@ -17,8 +17,6 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -57,9 +55,6 @@ public class Calibrate3dPipe
     // finding the Euclidean distance between the actual corners.
     private final Mat perViewErrors = new Mat();
 
-    // RMS of the calibration
-    private double calibrationAccuracy;
-
     /**
      * Runs the process for the pipe.
      *
@@ -79,16 +74,30 @@ public class Calibrate3dPipe
                                                 && it.size != null)
                         .collect(Collectors.toList());
 
+        CameraCalibrationCoefficients ret;
         if (MrCalJNILoader.isWorking() && params.useMrCal) {
             logger.debug("Calibrating with mrcal!");
-            return process_mrcal(in);
+            ret = calibrateMrcal(in);
         } else {
             logger.debug("Calibrating with opencv!");
-            return process_opencv(in);
+            ret = calibrateOpenCV(in);
         }
+
+        if (ret != null)
+            logger.info(
+                    "CALIBRATION SUCCESS for res "
+                            + in.get(0).size
+                            + "! camMatrix: \n"
+                            + ret.cameraIntrinsics.data
+                            + "\ndistortionCoeffs:\n"
+                            + ret.distCoeffs.data
+                            + "\n");
+        else logger.info("Calibration failed! Review log for more details");
+
+        return ret;
     }
 
-    protected CameraCalibrationCoefficients process_opencv(
+    protected CameraCalibrationCoefficients calibrateOpenCV(
             List<FindBoardCornersPipe.FindBoardCornersPipeResult> in) {
         List<Mat> objPoints = in.stream().map(it -> it.objectPoints).collect(Collectors.toList());
         List<Mat> imgPts = in.stream().map(it -> it.imagePoints).collect(Collectors.toList());
@@ -101,6 +110,9 @@ public class Calibrate3dPipe
         MatOfDouble distortionCoefficients = new MatOfDouble();
         List<Mat> rvecs = new ArrayList<>();
         List<Mat> tvecs = new ArrayList<>();
+
+        // RMS of the calibration
+        double calibrationAccuracy;
 
         try {
             // FindBoardCorners pipe outputs all the image points, object points, and frames to calculate
@@ -124,51 +136,40 @@ public class Calibrate3dPipe
             return null;
         }
 
-        for (int i = 0; i < rvecs.size(); i++) {
-            // logger.info("OpenCV found board at R="+rvecs.get(i).dump()+"t="+tvecs.get(i).dump());
-        }
-
         JsonMatOfDouble cameraMatrixMat = JsonMatOfDouble.fromMat(cameraMatrix);
         JsonMatOfDouble distortionCoefficientsMat = JsonMatOfDouble.fromMat(distortionCoefficients);
 
         var observations =
                 createObservations(in, cameraMatrix, distortionCoefficients, rvecs, tvecs, null);
 
-        // Standard deviation of results
-        try {
-            // Print calibration successful
-            logger.info(
-                    "CALIBRATION SUCCESS for res "
-                            + in.get(0).size
-                            + " (with accuracy "
-                            + calibrationAccuracy
-                            + ")! camMatrix: \n"
-                            + new ObjectMapper().writeValueAsString(cameraMatrixMat)
-                            + "\ndistortionCoeffs:\n"
-                            + new ObjectMapper().writeValueAsString(distortionCoefficientsMat)
-                            + "\n");
-        } catch (JsonProcessingException e) {
-            logger.error("Failed to parse calibration data to json!", e);
-        }
-
         cameraMatrix.release();
         distortionCoefficients.release();
-        rvecs.stream().forEach(Mat::release);
-        tvecs.stream().forEach(Mat::release);
+        rvecs.forEach(Mat::release);
+        tvecs.forEach(Mat::release);
 
         return new CameraCalibrationCoefficients(
                 in.get(0).size, cameraMatrixMat, distortionCoefficientsMat, new double[0], observations);
     }
 
-    protected CameraCalibrationCoefficients process_mrcal(
+    protected CameraCalibrationCoefficients calibrateMrcal(
             List<FindBoardCornersPipe.FindBoardCornersPipeResult> in) {
         List<MatOfPoint2f> corner_locations =
                 in.stream().map(it -> it.imagePoints).map(MatOfPoint2f::new).collect(Collectors.toList());
 
+        int imageWidth = (int) in.get(0).size.width;
+        int imageHeight = (int) in.get(0).size.height;
+        final double FOCAL_LENGTH_GUESS = 1200;
+
         var start = System.nanoTime();
         MrCalResult result =
                 MrCalJNI.calibrateCamera(
-                        corner_locations, params.boardWidth, params.boardHeight, 0.0254, 640, 480, 1200);
+                        corner_locations,
+                        params.boardWidth,
+                        params.boardHeight,
+                        params.squareSize,
+                        imageWidth,
+                        imageHeight,
+                        FOCAL_LENGTH_GUESS);
         var dt = System.nanoTime() - start;
         System.out.printf("Calibrated in %f ms!\n", dt / 1e6);
         System.out.printf("stats:\n" + result + "\n");
@@ -212,8 +213,6 @@ public class Calibrate3dPipe
                     tvec);
             rvecs.add(rvec);
             tvecs.add(tvec);
-
-            // logger.info("MrCal found board at R="+rvec.dump()+"t="+tvec.dump());
         }
 
         List<BoardObservation> observations =
@@ -225,8 +224,8 @@ public class Calibrate3dPipe
                         tvecs,
                         new double[] {result.warp_x, result.warp_y});
 
-        rvecs.stream().forEach(Mat::release);
-        tvecs.stream().forEach(Mat::release);
+        rvecs.forEach(Mat::release);
+        tvecs.forEach(Mat::release);
 
         return new CameraCalibrationCoefficients(
                 in.get(0).size,

@@ -21,9 +21,9 @@ import java.io.IOException;
 import java.util.List;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.util.TestUtils;
-import org.photonvision.jni.PhotonJniCommon;
+import org.photonvision.jni.PhotonJNICommon;
 
-public class MrCalJNILoader extends PhotonJniCommon {
+public class MrCalJNILoader extends PhotonJNICommon {
     public static synchronized void forceLoad() throws IOException {
         // Force load opencv
         TestUtils.loadLibraries();
@@ -50,7 +50,7 @@ public class MrCalJNILoader extends PhotonJniCommon {
         }
 
         if (!MrCalJNILoader.isWorking()) {
-            throw new IOException("Can't load mrcal?");
+            throw new IOException("Unable to load mrcal JNI!");
         }
     }
 }
