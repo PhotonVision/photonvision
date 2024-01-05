@@ -100,3 +100,10 @@ For now, using mrcal requires installing these additional packages on Linux syst
 ```
 sudo apt install libcholmod3 liblapack3 libsuitesparseconfig5
 ```
+
+## Documentation
+
+- Our main documentation page: [docs.photonvision.org](https://docs.photonvision.org)
+- Photon UI demo: [demo.photonvision.org](https://demo.photonvision.org) (or [manual link](https://photonvision.github.io/photonvision/built-client/))
+- Javadocs: [javadocs.photonvision.org](https://javadocs.photonvision.org) (or [manual link](https://photonvision.github.io/photonvision/built-docs/javadoc/))
+- C++ Doxygen  [cppdocs.photonvision.org](https://cppdocs.photonvision.org) (or [manual link](https://photonvision.github.io/photonvision/built-docs/doxygen/html/))

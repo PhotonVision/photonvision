@@ -62,7 +62,6 @@ public class CameraInfo extends UsbCameraInfo {
     }
 
     /**
-     * @param baseName
      * @return Returns a human readable name
      */
     public String getHumanReadableName() {
