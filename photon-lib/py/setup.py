@@ -52,5 +52,5 @@ setup(
     url="https://photonvision.org",
     author="Photonvision Development Team",
     long_description="A Pure-python implementation of PhotonLib",
-    long_description_content_type='text/markdown',
+    long_description_content_type="text/markdown",
 )
