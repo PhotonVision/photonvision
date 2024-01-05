@@ -8,43 +8,45 @@ import PhotonSidebar from "@/components/app/photon-sidebar.vue";
 import PhotonLogView from "@/components/app/photon-log-view.vue";
 import PhotonErrorSnackbar from "@/components/app/photon-error-snackbar.vue";
 
-const websocket = new AutoReconnectingWebsocket(
-  `ws://${inject("backendHost")}/websocket_data`,
-  () => {
-    useStateStore().$patch({ backendConnected: true });
-  },
-  (data) => {
-    if (data.log !== undefined) {
-      useStateStore().addLogFromWebsocket(data.log);
+const is_demo = import.meta.env.MODE === "demo";
+if (!is_demo) {
+  const websocket = new AutoReconnectingWebsocket(
+    `ws://${inject("backendHost")}/websocket_data`,
+    () => {
+      useStateStore().$patch({ backendConnected: true });
+    },
+    (data) => {
+      if (data.log !== undefined) {
+        useStateStore().addLogFromWebsocket(data.log);
+      }
+      if (data.settings !== undefined) {
+        useSettingsStore().updateGeneralSettingsFromWebsocket(data.settings);
+      }
+      if (data.cameraSettings !== undefined) {
+        useCameraSettingsStore().updateCameraSettingsFromWebsocket(data.cameraSettings);
+      }
+      if (data.ntConnectionInfo !== undefined) {
+        useStateStore().updateNTConnectionStatusFromWebsocket(data.ntConnectionInfo);
+      }
+      if (data.metrics !== undefined) {
+        useSettingsStore().updateMetricsFromWebsocket(data.metrics);
+      }
+      if (data.updatePipelineResult !== undefined) {
+        useStateStore().updateBackendResultsFromWebsocket(data.updatePipelineResult);
+      }
+      if (data.mutatePipelineSettings !== undefined && data.cameraIndex !== undefined) {
+        useCameraSettingsStore().changePipelineSettingsInStore(data.mutatePipelineSettings, data.cameraIndex);
+      }
+      if (data.calibrationData !== undefined) {
+        useStateStore().updateCalibrationStateValuesFromWebsocket(data.calibrationData);
+      }
+    },
+    () => {
+      useStateStore().$patch({ backendConnected: false });
     }
-    if (data.settings !== undefined) {
-      useSettingsStore().updateGeneralSettingsFromWebsocket(data.settings);
-    }
-    if (data.cameraSettings !== undefined) {
-      useCameraSettingsStore().updateCameraSettingsFromWebsocket(data.cameraSettings);
-    }
-    if (data.ntConnectionInfo !== undefined) {
-      useStateStore().updateNTConnectionStatusFromWebsocket(data.ntConnectionInfo);
-    }
-    if (data.metrics !== undefined) {
-      useSettingsStore().updateMetricsFromWebsocket(data.metrics);
-    }
-    if (data.updatePipelineResult !== undefined) {
-      useStateStore().updateBackendResultsFromWebsocket(data.updatePipelineResult);
-    }
-    if (data.mutatePipelineSettings !== undefined && data.cameraIndex !== undefined) {
-      useCameraSettingsStore().changePipelineSettingsInStore(data.mutatePipelineSettings, data.cameraIndex);
-    }
-    if (data.calibrationData !== undefined) {
-      useStateStore().updateCalibrationStateValuesFromWebsocket(data.calibrationData);
-    }
-  },
-  () => {
-    useStateStore().$patch({ backendConnected: false });
-  }
-);
-
-useStateStore().$patch({ websocket: websocket });
+  );
+  useStateStore().$patch({ websocket: websocket });
+}
 </script>
 
 <template>

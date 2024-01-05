@@ -33,7 +33,7 @@ public class ArucoDetectionPipeParams {
     /**
      * Bits allowed to be corrected, expressed as a ratio of the tag families theoretical maximum.
      *
-     * <p>E.g. 36h11 -> 11 * errorCorrectionRate = Max error bits
+     * <p>E.g. 36h11 = 11 * errorCorrectionRate = Max error bits
      */
     public double errorCorrectionRate = 0;
 
