@@ -18,6 +18,8 @@
 package org.photonvision.vision.frame.provider;
 
 import org.opencv.core.Mat;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.vision.camera.LibcameraGpuSettables;
@@ -31,6 +33,8 @@ import org.photonvision.vision.pipe.impl.HSVPipe.HSVParams;
 public class LibcameraGpuFrameProvider implements FrameProvider {
     private final LibcameraGpuSettables settables;
 
+    static final Logger logger = new Logger(LibcameraGpuFrameProvider.class, LogGroup.Camera);
+
     public LibcameraGpuFrameProvider(LibcameraGpuSettables visionSettables) {
         this.settables = visionSettables;
 
@@ -43,21 +47,30 @@ public class LibcameraGpuFrameProvider implements FrameProvider {
         return "AcceleratedPicamFrameProvider";
     }
 
-    int i = 0;
+    int badFrameCounter = 0;
 
     @Override
     public Frame get() {
         // We need to make sure that other threads don't try to change video modes while
-        // we're waiting
-        // for a frame
+        // we're waiting for a frame
         // System.out.println("GET!");
         synchronized (settables.CAMERA_LOCK) {
             var p_ptr = LibCameraJNI.awaitNewFrame(settables.r_ptr);
 
             if (p_ptr == 0) {
-                System.out.println("No new frame");
+                logger.error("No new frame from " + settables.getConfiguration().nickname);
+                badFrameCounter++;
+                if (badFrameCounter > 3) {
+                    logger.error(
+                            "No new frame from "
+                                    + settables.getConfiguration().nickname
+                                    + " for 3 seconds attempting recreate!");
+                    settables.setVideoMode(settables.getCurrentVideoMode());
+                    badFrameCounter = 0;
+                }
                 return new Frame();
             }
+            badFrameCounter = 0;
 
             var colorMat = new CVMat(new Mat(LibCameraJNI.takeColorFrame(p_ptr)));
             var processedMat = new CVMat(new Mat(LibCameraJNI.takeProcessedFrame(p_ptr)));
