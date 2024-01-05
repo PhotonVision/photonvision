@@ -132,7 +132,7 @@ export interface CameraCalibrationResult {
   cameraIntrinsics: JsonMatOfDouble;
   distCoeffs: JsonMatOfDouble;
   observations: BoardObservation[];
-  calobjectWarp: number[];
+  calobjectWarp?: number[];
 }
 
 export interface ConfigurableCameraSettings {
