@@ -6,6 +6,8 @@ import os
 from typing import Union
 import cv2
 import numpy as np
+import mrcal
+from wpimath.geometry import Quaternion as _Quat
 
 
 @dataclass
@@ -97,13 +99,9 @@ class CameraCalibration:
     calobjectSpacing: float
 
 
-import mrcal
-from wpimath.geometry import Quaternion as _Quat
-
-
 def __convert_cal_to_mrcal_cameramodel(
     cal: CameraCalibration,
-) -> Union[mrcal.cameramodel, None]:
+) -> mrcal.cameramodel | None:
     if len(cal.distCoeffs.data) == 5:
         model = "LENSMODEL_OPENCV5"
     elif len(cal.distCoeffs.data) == 8:
@@ -130,10 +128,6 @@ def __convert_cal_to_mrcal_cameramodel(
         return np.concatenate((r, t))
 
     imagersize = (cal.resolution.width, cal.resolution.height)
-    intrinsics = (
-        model,
-        opencv_to_mrcal_intrinsics(cal.cameraIntrinsics.data) + cal.distCoeffs.data,
-    )
 
     # Always weight=1 for Photon data
     WEIGHT = 1
