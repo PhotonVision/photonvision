@@ -44,8 +44,6 @@ public class USBCameraSource extends VisionSource {
     private FrameProvider usbFrameProvider;
     private final CvSink cvSink;
 
-    private QuirkyCamera cameraQuirks;
-
     public USBCameraSource(CameraConfiguration config) {
         super(config);
 
@@ -53,17 +51,21 @@ public class USBCameraSource extends VisionSource {
         camera = new UsbCamera(config.nickname, config.path);
         cvSink = CameraServer.getVideo(this.camera);
 
-        cameraQuirks =
-                QuirkyCamera.getQuirkyCamera(
-                        camera.getInfo().productId, camera.getInfo().vendorId, config.baseName);
+        if (getCameraConfiguration().cameraQuirks == null)
+            getCameraConfiguration().cameraQuirks =
+                    QuirkyCamera.getQuirkyCamera(
+                            camera.getInfo().vendorId, camera.getInfo().productId, config.baseName);
 
-        if (cameraQuirks.hasQuirks()) {
-            logger.info("Quirky camera detected: " + cameraQuirks.baseName);
+        if (getCameraConfiguration().cameraQuirks.hasQuirks()) {
+            logger.info("Quirky camera detected: " + getCameraConfiguration().cameraQuirks.baseName);
         }
 
-        if (cameraQuirks.hasQuirk(CameraQuirk.CompletelyBroken)) {
+        if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.CompletelyBroken)) {
             // set some defaults, as these should never be used.
-            logger.info("Camera " + cameraQuirks.baseName + " is not supported for PhotonVision");
+            logger.info(
+                    "Camera "
+                            + getCameraConfiguration().cameraQuirks.baseName
+                            + " is not supported for PhotonVision");
             usbCameraSettables = null;
             usbFrameProvider = null;
         } else {
@@ -87,7 +89,9 @@ public class USBCameraSource extends VisionSource {
     public USBCameraSource(CameraConfiguration config, int pid, int vid, boolean unitTest) {
         this(config);
 
-        cameraQuirks = QuirkyCamera.getQuirkyCamera(pid, vid, config.baseName);
+        if (getCameraConfiguration().cameraQuirks == null)
+            getCameraConfiguration().cameraQuirks =
+                    QuirkyCamera.getQuirkyCamera(pid, vid, config.baseName);
 
         if (unitTest)
             usbFrameProvider =
@@ -98,7 +102,7 @@ public class USBCameraSource extends VisionSource {
     }
 
     void disableAutoFocus() {
-        if (cameraQuirks.hasQuirk(CameraQuirk.AdjustableFocus)) {
+        if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.AdjustableFocus)) {
             try {
                 camera.getProperty("focus_auto").set(0);
                 camera.getProperty("focus_absolute").set(0); // Focus into infinity
@@ -109,7 +113,7 @@ public class USBCameraSource extends VisionSource {
     }
 
     public QuirkyCamera getCameraQuirks() {
-        return this.cameraQuirks;
+        return getCameraConfiguration().cameraQuirks;
     }
 
     @Override
@@ -130,14 +134,14 @@ public class USBCameraSource extends VisionSource {
         protected USBCameraSettables(CameraConfiguration configuration) {
             super(configuration);
             getAllVideoModes();
-            if (!cameraQuirks.hasQuirk(CameraQuirk.StickyFPS))
+            if (!configuration.cameraQuirks.hasQuirk(CameraQuirk.StickyFPS))
                 if (!videoModes.isEmpty()) setVideoMode(videoModes.get(0)); // fixes double FPS set
         }
 
         public void setAutoExposure(boolean cameraAutoExposure) {
             logger.debug("Setting auto exposure to " + cameraAutoExposure);
 
-            if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+            if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
                 // Case, we know this is a picam. Go through v4l2-ctl interface directly
 
                 // Common settings
@@ -169,7 +173,7 @@ public class USBCameraSource extends VisionSource {
             } else {
                 // Case - this is some other USB cam. Default to wpilib's implementation
 
-                var canSetWhiteBalance = !cameraQuirks.hasQuirk(CameraQuirk.Gain);
+                var canSetWhiteBalance = !getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.Gain);
 
                 if (!cameraAutoExposure) {
                     // Pick a bunch of reasonable setting defaults for vision processing retroreflective
@@ -213,6 +217,7 @@ public class USBCameraSource extends VisionSource {
             }
         }
 
+
         private int timeToPiCamRawExposure(double time_us) {
             int retVal =
                     (int)
@@ -236,7 +241,7 @@ public class USBCameraSource extends VisionSource {
             if (exposure >= 0.0) {
                 try {
                     int scaledExposure = 1;
-                    if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+                    if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
                         scaledExposure = Math.round(timeToPiCamRawExposure(pctToExposureTimeUs(exposure)));
                         logger.debug("Setting camera raw exposure to " + scaledExposure);
                         camera.getProperty("raw_exposure_time_absolute").set(scaledExposure);
@@ -249,9 +254,19 @@ public class USBCameraSource extends VisionSource {
                         camera.getProperty("auto_exposure").set(1);
 
                         // Seems like the name changed at some point in v4l? set it ouyrselves too
-                        var prop = camera.getProperty("exposure_time_absolute");
+                        var prop = camera.getProperty("raw_exposure_time_absolute");
+
+                        var propMin = prop.getMin();
+                        var propMax = prop.getMax();
+
+                        if(getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.ArduOV9281))
+                        {
+                            propMin = 1;
+                            propMax = 75;
+                        }
+
                         var exposure_manual_val =
-                                MathUtils.map(Math.round(exposure), 0, 100, prop.getMin(), prop.getMax());
+                                MathUtils.map(Math.round(exposure), 0, 100, propMin, propMax);
                         prop.set((int) exposure_manual_val);
                     } else {
                         scaledExposure = (int) Math.round(exposure);
@@ -279,7 +294,7 @@ public class USBCameraSource extends VisionSource {
         @Override
         public void setGain(int gain) {
             try {
-                if (cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
+                if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
                     camera.getProperty("gain_automatic").set(0);
                     camera.getProperty("gain").set(gain);
                 }
@@ -313,7 +328,7 @@ public class USBCameraSource extends VisionSource {
                 List<VideoMode> videoModesList = new ArrayList<>();
                 try {
                     VideoMode[] modes;
-                    if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+                    if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
                         modes =
                                 new VideoMode[] {
                                     new VideoMode(VideoMode.PixelFormat.kBGR, 320, 240, 90),
@@ -341,13 +356,13 @@ public class USBCameraSource extends VisionSource {
                         }
 
                         // On picam, filter non-bgr modes for performance
-                        if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+                        if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
                             if (videoMode.pixelFormat != VideoMode.PixelFormat.kBGR) {
                                 continue;
                             }
                         }
 
-                        if (cameraQuirks.hasQuirk(CameraQuirk.FPSCap100)) {
+                        if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.FPSCap100)) {
                             if (videoMode.fps > 100) {
                                 continue;
                             }
@@ -405,7 +420,7 @@ public class USBCameraSource extends VisionSource {
     @Override
     public boolean isVendorCamera() {
         return ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV()
-                && cameraQuirks.hasQuirk(CameraQuirk.PiCam);
+                && getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.PiCam);
     }
 
     @Override
@@ -426,15 +441,22 @@ public class USBCameraSource extends VisionSource {
         if (cvSink == null) {
             if (other.cvSink != null) return false;
         } else if (!cvSink.equals(other.cvSink)) return false;
-        if (cameraQuirks == null) {
-            if (other.cameraQuirks != null) return false;
-        } else if (!cameraQuirks.equals(other.cameraQuirks)) return false;
+        if (getCameraConfiguration().cameraQuirks == null) {
+            if (other.getCameraConfiguration().cameraQuirks != null) return false;
+        } else if (!getCameraConfiguration()
+                .cameraQuirks
+                .equals(other.getCameraConfiguration().cameraQuirks)) return false;
         return true;
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(
-                camera, usbCameraSettables, usbFrameProvider, cameraConfiguration, cvSink, cameraQuirks);
+                camera,
+                usbCameraSettables,
+                usbFrameProvider,
+                cameraConfiguration,
+                cvSink,
+                getCameraConfiguration().cameraQuirks);
     }
 }

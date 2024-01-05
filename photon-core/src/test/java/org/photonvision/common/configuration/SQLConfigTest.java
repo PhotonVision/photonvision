@@ -25,6 +25,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.CameraType;
+import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
@@ -49,6 +50,7 @@ public class SQLConfigTest {
                         69,
                         "a/path/idk",
                         CameraType.UsbCamera,
+                        QuirkyCamera.getQuirkyCamera(-1, -1),
                         List.of(),
                         0);
         testcamcfg.pipelineSettings =

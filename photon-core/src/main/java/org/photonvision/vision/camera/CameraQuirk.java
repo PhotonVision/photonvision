@@ -32,4 +32,9 @@ public enum CameraQuirk {
     AdjustableFocus,
     /** Changing FPS repeatedly with small delay does not work correctly */
     StickyFPS,
+    /**
+     * Camera is an arducam ov9281 which has a funky exposure issue where it is defined in v4l as
+     * 1-5000 instead of 1-75
+     */
+    ArduOV9281,
 }
