@@ -75,6 +75,7 @@ public class Calibrate3dPipe
                         .collect(Collectors.toList());
 
         CameraCalibrationCoefficients ret;
+        var start = System.nanoTime();
         if (MrCalJNILoader.isWorking() && params.useMrCal) {
             logger.debug("Calibrating with mrcal!");
             ret = calibrateMrcal(in);
@@ -82,15 +83,18 @@ public class Calibrate3dPipe
             logger.debug("Calibrating with opencv!");
             ret = calibrateOpenCV(in);
         }
+        var dt = System.nanoTime() - start;
 
         if (ret != null)
             logger.info(
                     "CALIBRATION SUCCESS for res "
                             + in.get(0).size
-                            + "! camMatrix: \n"
-                            + ret.cameraIntrinsics.data
+                            + " in "
+                            + dt / 1e6
+                            + "ms! camMatrix: \n"
+                            + Arrays.toString(ret.cameraIntrinsics.data)
                             + "\ndistortionCoeffs:\n"
-                            + ret.distCoeffs.data
+                            + Arrays.toString(ret.distCoeffs.data)
                             + "\n");
         else logger.info("Calibration failed! Review log for more details");
 
@@ -148,7 +152,13 @@ public class Calibrate3dPipe
         tvecs.forEach(Mat::release);
 
         return new CameraCalibrationCoefficients(
-                in.get(0).size, cameraMatrixMat, distortionCoefficientsMat, new double[0], observations);
+                in.get(0).size,
+                cameraMatrixMat,
+                distortionCoefficientsMat,
+                new double[0],
+                observations,
+                new Size(params.boardWidth, params.boardHeight),
+                params.squareSize);
     }
 
     protected CameraCalibrationCoefficients calibrateMrcal(
@@ -160,7 +170,6 @@ public class Calibrate3dPipe
         int imageHeight = (int) in.get(0).size.height;
         final double FOCAL_LENGTH_GUESS = 1200;
 
-        var start = System.nanoTime();
         MrCalResult result =
                 MrCalJNI.calibrateCamera(
                         corner_locations,
@@ -170,9 +179,6 @@ public class Calibrate3dPipe
                         imageWidth,
                         imageHeight,
                         FOCAL_LENGTH_GUESS);
-        var dt = System.nanoTime() - start;
-        System.out.printf("Calibrated in %f ms!\n", dt / 1e6);
-        System.out.printf("stats:\n" + result + "\n");
 
         // intrinsics are fx fy cx cy from mrcal
         JsonMatOfDouble cameraMatrixMat =
@@ -232,7 +238,9 @@ public class Calibrate3dPipe
                 cameraMatrixMat,
                 distortionCoefficientsMat,
                 new double[] {result.warp_x, result.warp_y},
-                observations);
+                observations,
+                new Size(params.boardWidth, params.boardHeight),
+                params.squareSize);
     }
 
     private List<BoardObservation> createObservations(
