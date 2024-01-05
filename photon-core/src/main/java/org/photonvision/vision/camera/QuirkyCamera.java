@@ -49,8 +49,10 @@ public class QuirkyCamera {
                             -1, -1, "mmal service 16.1", CameraQuirk.PiCam), // PiCam (via V4L2, not zerocopy)
                     new QuirkyCamera(-1, -1, "unicam", CameraQuirk.PiCam), // PiCam (via V4L2, not zerocopy)
                     new QuirkyCamera(0x85B, 0x46D, CameraQuirk.AdjustableFocus), // Logitech C925-e
-                    new QuirkyCamera(0x6366, 0x0c45, CameraQuirk.StickyFPS), // Arducam OV2311
-                    new QuirkyCamera(0x6366, 0x0c45, "OV9281",CameraQuirk.ArduOV9281) // Arducam OV9281
+                    new QuirkyCamera(
+                            0x6366, 0x0c45, "OV2311", "OV2311", CameraQuirk.StickyFPS), // Arducam OV2311
+                    new QuirkyCamera(
+                            0x6366, 0x0c45, "OV9281", "OV9281", CameraQuirk.ArduOV9281) // Arducam OV9281
                     );
 
     public static final QuirkyCamera DefaultCamera = new QuirkyCamera(0, 0, "");
@@ -66,6 +68,7 @@ public class QuirkyCamera {
     public final String baseName;
     public final int usbVid;
     public final int usbPid;
+    public final String displayName;
     public final HashMap<CameraQuirk, Boolean> quirks;
 
     /**
@@ -88,9 +91,23 @@ public class QuirkyCamera {
      * @param quirks Camera quirks
      */
     private QuirkyCamera(int usbVid, int usbPid, String baseName, CameraQuirk... quirks) {
+        this(usbVid, usbPid, baseName, "", quirks);
+    }
+
+    /**
+     * Creates a QuirkyCamera that matches by USB VID/PID and name
+     *
+     * @param usbVid USB VID of camera
+     * @param usbPid USB PID of camera
+     * @param baseName CSCore name of camera
+     * @param quirks Camera quirks
+     */
+    private QuirkyCamera(
+            int usbVid, int usbPid, String baseName, String displayName, CameraQuirk... quirks) {
         this.usbVid = usbVid;
         this.usbPid = usbPid;
         this.baseName = baseName;
+        this.displayName = displayName;
 
         this.quirks = new HashMap<>();
         for (var q : quirks) {
@@ -106,11 +123,13 @@ public class QuirkyCamera {
             @JsonProperty("baseName") String baseName,
             @JsonProperty("usbVid") int usbVid,
             @JsonProperty("usbPid") int usbPid,
+            @JsonProperty("usbPid") String displayName,
             @JsonProperty("quirks") HashMap<CameraQuirk, Boolean> quirks) {
         this.baseName = baseName;
         this.usbPid = usbPid;
         this.usbVid = usbVid;
         this.quirks = quirks;
+        this.displayName = displayName;
     }
 
     public boolean hasQuirk(CameraQuirk quirk) {
@@ -164,6 +183,8 @@ public class QuirkyCamera {
         String ret =
                 "QuirkyCamera [baseName="
                         + baseName
+                        + ", displayName="
+                        + displayName
                         + ", usbVid="
                         + usbVid
                         + ", usbPid="
