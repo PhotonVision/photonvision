@@ -10,9 +10,9 @@ NEW_JAR=$(realpath $(find . -name photonvision\*-linuxarm64.jar))
 echo "Using jar: " $NEW_JAR
 echo "Downloading image from" $1
 sudo apt-get install -y xz-utils
-curl -sk $1 | grep "browser_download_url.*xz" | cut -d : -f 2,3 | tr -d '"' | wget -qi -
+wget -q $1
 ls
-FILE_NAME=$(ls | grep image_*.xz)
+FILE_NAME=$(ls | grep *.xz)
 
 if [ -z "$FILE_NAME" ]
 then
