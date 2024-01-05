@@ -4,11 +4,9 @@ on:
   push:
     # For now, run on all commits to master
     branches: [ master ]
-    # Only run on tagged releases to master
+    # and also all tags starting with v
     tags:
       - 'v*'
-  pull_request:
-    branches: [ master ]
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
