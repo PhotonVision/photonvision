@@ -217,7 +217,6 @@ public class USBCameraSource extends VisionSource {
             }
         }
 
-
         private int timeToPiCamRawExposure(double time_us) {
             int retVal =
                     (int)
@@ -259,14 +258,12 @@ public class USBCameraSource extends VisionSource {
                         var propMin = prop.getMin();
                         var propMax = prop.getMax();
 
-                        if(getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.ArduOV9281))
-                        {
+                        if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.ArduOV9281)) {
                             propMin = 1;
                             propMax = 75;
                         }
 
-                        var exposure_manual_val =
-                                MathUtils.map(Math.round(exposure), 0, 100, propMin, propMax);
+                        var exposure_manual_val = MathUtils.map(Math.round(exposure), 0, 100, propMin, propMax);
                         prop.set((int) exposure_manual_val);
                     } else {
                         scaledExposure = (int) Math.round(exposure);
