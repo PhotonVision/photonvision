@@ -49,7 +49,8 @@ public class QuirkyCamera {
                             -1, -1, "mmal service 16.1", CameraQuirk.PiCam), // PiCam (via V4L2, not zerocopy)
                     new QuirkyCamera(-1, -1, "unicam", CameraQuirk.PiCam), // PiCam (via V4L2, not zerocopy)
                     new QuirkyCamera(0x85B, 0x46D, CameraQuirk.AdjustableFocus), // Logitech C925-e
-                    new QuirkyCamera(0x6366, 0x0c45, CameraQuirk.StickyFPS) // Arducam OV2311
+                    new QuirkyCamera(0x6366, 0x0c45, CameraQuirk.StickyFPS), // Arducam OV2311
+                    new QuirkyCamera(0x6366, 0x0c45, "OV9281",CameraQuirk.ArduOV9281) // Arducam OV9281
                     );
 
     public static final QuirkyCamera DefaultCamera = new QuirkyCamera(0, 0, "");
