@@ -233,7 +233,7 @@ def convert_photon_to_mrcal(photon_cal_json_path: str, output_folder: str):
 
         mrcal_model = __convert_cal_to_mrcal_cameramodel(camera_cal_data)
 
-        with open(f"{output_folder}/cameramodel_0.cameramodel", "w+") as mrcal_file:
+        with open(f"{output_folder}/camera-0.cameramodel", "w+") as mrcal_file:
             mrcal_model.write(
                 mrcal_file,
                 note="Generated from PhotonVision calibration file: "
