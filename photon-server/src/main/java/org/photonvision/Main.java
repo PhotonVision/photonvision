@@ -37,6 +37,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.numbers.IntegerCouple;
+import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.server.Server;
 import org.photonvision.vision.camera.FileVisionSource;
@@ -315,6 +316,14 @@ public class Main {
             }
         } catch (IOException e) {
             logger.error("Failed to load libcamera-JNI!", e);
+        }
+
+        try {
+            MrCalJNILoader.forceLoad();
+        } catch (IOException e) {
+            logger.warn(
+                    "Failed to load mrcal-JNI! Camera calibration will fall back to opencv\n"
+                            + e.getMessage());
         }
 
         try {

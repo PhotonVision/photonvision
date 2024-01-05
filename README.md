@@ -93,6 +93,14 @@ Our meeting notes can be found in the wiki section of this repository.
 * [2020 Meeting Notes](https://github.com/PhotonVision/photonvision/wiki/2020-Meeting-Notes)
 * [2021 Meeting Notes](https://github.com/PhotonVision/photonvision/wiki/2021-Meeting-Notes)
 
+## Additional packages
+
+For now, using mrcal requires installing these additional packages on Linux systems:
+
+```
+sudo apt install libcholmod3 liblapack3 libsuitesparseconfig5
+```
+
 ## Documentation
 
 - Our main documentation page: [docs.photonvision.org](https://docs.photonvision.org)

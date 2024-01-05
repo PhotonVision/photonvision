@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+import java.util.Arrays;
 import java.util.List;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
@@ -47,6 +48,12 @@ public class CameraCalibrationCoefficients implements Releasable {
     @JsonProperty("calobjectWarp")
     public final double[] calobjectWarp;
 
+    @JsonProperty("calobjectSize")
+    public final Size calobjectSize;
+
+    @JsonProperty("calobjectSpacing")
+    public final double calobjectSpacing;
+
     @JsonIgnore private final double[] intrinsicsArr = new double[9];
     @JsonIgnore private final double[] distCoeffsArr = new double[5];
 
@@ -64,6 +71,9 @@ public class CameraCalibrationCoefficients implements Releasable {
      * @param calobjectWarp Board deformation parameters, for calibrators that can estimate that. See:
      *     https://mrcal.secretsauce.net/formulation.html#board-deformation
      * @param observations List of snapshots used to construct this calibration
+     * @param calobjectSize Dimensions of the object used to calibrate, in # of squares in
+     *     width/height
+     * @param calobjectSpacing Spacing between adjacent squares, in meters
      */
     @JsonCreator
     public CameraCalibrationCoefficients(
@@ -71,11 +81,15 @@ public class CameraCalibrationCoefficients implements Releasable {
             @JsonProperty("cameraIntrinsics") JsonMatOfDouble cameraIntrinsics,
             @JsonProperty("distCoeffs") JsonMatOfDouble distCoeffs,
             @JsonProperty("calobjectWarp") double[] calobjectWarp,
-            @JsonProperty("observations") List<BoardObservation> observations) {
+            @JsonProperty("observations") List<BoardObservation> observations,
+            @JsonProperty("calobjectSize") Size calobjectSize,
+            @JsonProperty("calobjectSpacing") double calobjectSpacing) {
         this.resolution = resolution;
         this.cameraIntrinsics = cameraIntrinsics;
         this.distCoeffs = distCoeffs;
         this.calobjectWarp = calobjectWarp;
+        this.calobjectSize = calobjectSize;
+        this.calobjectSpacing = calobjectSpacing;
 
         // Legacy migration just to make sure that observations is at worst empty and never null
         if (observations == null) {
@@ -150,11 +164,35 @@ public class CameraCalibrationCoefficients implements Releasable {
         var cam_jsonmat = new JsonMatOfDouble(3, 3, cam_arr);
         var distortion_jsonmat = new JsonMatOfDouble(1, 5, dist_array);
 
-        var error = json.get("avg_reprojection_error").asDouble();
         var width = json.get("img_size").get(0).doubleValue();
         var height = json.get("img_size").get(1).doubleValue();
 
         return new CameraCalibrationCoefficients(
-                new Size(width, height), cam_jsonmat, distortion_jsonmat, new double[0], List.of());
+                new Size(width, height),
+                cam_jsonmat,
+                distortion_jsonmat,
+                new double[0],
+                List.of(),
+                new Size(0, 0),
+                0);
+    }
+
+    @Override
+    public String toString() {
+        return "CameraCalibrationCoefficients [resolution="
+                + resolution
+                + ", cameraIntrinsics="
+                + cameraIntrinsics
+                + ", distCoeffs="
+                + distCoeffs
+                + ", observations="
+                + observations
+                + ", calobjectWarp="
+                + Arrays.toString(calobjectWarp)
+                + ", intrinsicsArr="
+                + Arrays.toString(intrinsicsArr)
+                + ", distCoeffsArr="
+                + Arrays.toString(distCoeffsArr)
+                + "]";
     }
 }

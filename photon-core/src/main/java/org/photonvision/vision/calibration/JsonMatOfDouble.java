@@ -127,4 +127,23 @@ public class JsonMatOfDouble implements Releasable {
         packet.encode(this.data);
         return packet;
     }
+
+    @Override
+    public String toString() {
+        return "JsonMat [rows="
+                + rows
+                + ", cols="
+                + cols
+                + ", type="
+                + type
+                + ", data="
+                + Arrays.toString(data)
+                + ", wrappedMat="
+                + wrappedMat
+                + ", wpilibMat="
+                + wpilibMat
+                + ", wrappedMatOfDouble="
+                + wrappedMatOfDouble
+                + "]";
+    }
 }

@@ -241,6 +241,22 @@ const getObservationDetails = (): ObservationDetails[] | undefined => {
               <td>Diagonal FOV</td>
               <td>{{ videoFormat.diagonalFOV !== undefined ? videoFormat.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
             </tr>
+            <!-- Board warp, only shown for mrcal-calibrated cameras -->
+            <tr
+              v-if="
+                useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution)?.calobjectWarp?.length === 2
+              "
+            >
+              <td>Board warp, X/Y</td>
+              <td>
+                {{
+                  useCameraSettingsStore()
+                    .getCalibrationCoeffs(props.videoFormat.resolution)
+                    ?.calobjectWarp?.map((it) => (it * 1000).toFixed(2) + " mm")
+                    .join(" / ")
+                }}
+              </td>
+            </tr>
           </tbody>
         </template>
       </v-simple-table>

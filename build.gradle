@@ -29,18 +29,21 @@ ext {
     javalinVersion = "5.6.2"
     photonGlDriverLibVersion = "dev-v2023.1.0-9-g75fc678"
     frcYear = "2024"
+    mrcalVersion = "dev-v2024.0.0-7-gc976aaa";
 
     pubVersion = versionString
     isDev = pubVersion.startsWith("dev")
 
     // A list, for legacy reasons, with only the current platform contained
-    String nativeName = wpilibTools.platformMapper.currentPlatform.platformName;
-    if (nativeName == "linuxx64") nativeName = "linuxx86-64";
-    if (nativeName == "winx64") nativeName = "windowsx86-64";
-    if (nativeName == "macx64") nativeName = "osxx86-64";
-    if (nativeName == "macarm64") nativeName = "osxarm64";
+    wpilibNativeName = wpilibTools.platformMapper.currentPlatform.platformName;
+    def nativeName = wpilibNativeName
+    if (wpilibNativeName == "linuxx64") nativeName = "linuxx86-64";
+    if (wpilibNativeName == "winx64") nativeName = "windowsx86-64";
+    if (wpilibNativeName == "macx64") nativeName = "osxx86-64";
+    if (wpilibNativeName == "macarm64") nativeName = "osxarm64";
     jniPlatform = nativeName
-    println("Building for platform: " + jniPlatform)
+
+    println("Building for platform " + jniPlatform + " wpilib: " + wpilibNativeName)
     println("Using Wpilib: " + wpilibVersion)
     println("Using OpenCV: " + openCVversion)
 }

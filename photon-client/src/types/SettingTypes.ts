@@ -6,6 +6,7 @@ export interface GeneralSettings {
   gpuAcceleration?: string;
   hardwareModel?: string;
   hardwarePlatform?: string;
+  mrCalWorking: boolean;
 }
 
 export interface MetricData {
@@ -131,6 +132,7 @@ export interface CameraCalibrationResult {
   cameraIntrinsics: JsonMatOfDouble;
   distCoeffs: JsonMatOfDouble;
   observations: BoardObservation[];
+  calobjectWarp?: number[];
 }
 
 export interface ConfigurableCameraSettings {

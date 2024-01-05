@@ -261,7 +261,7 @@ public class FindBoardCornersPipe
         var outBoardCorners = new MatOfPoint2f();
         boardCorners.copyTo(outBoardCorners);
 
-        var objPts = new MatOfPoint2f();
+        var objPts = new MatOfPoint3f();
         objectPoints.copyTo(objPts);
 
         // Get the size of the inFrame
@@ -329,14 +329,14 @@ public class FindBoardCornersPipe
 
     public static class FindBoardCornersPipeResult implements Releasable {
         public Size size;
-        public MatOfPoint2f objectPoints;
+        public MatOfPoint3f objectPoints;
         public MatOfPoint2f imagePoints;
 
         // Set later only if we need it
         public Mat inputImage = null;
 
         public FindBoardCornersPipeResult(
-                Size size, MatOfPoint2f objectPoints, MatOfPoint2f imagePoints) {
+                Size size, MatOfPoint3f objectPoints, MatOfPoint2f imagePoints) {
             this.size = size;
             this.objectPoints = objectPoints;
             this.imagePoints = imagePoints;

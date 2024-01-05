@@ -23,6 +23,10 @@ import java.io.IOException;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
+/**
+ * Helper for extracting photon-libcamera-gl-driver shared library files. TODO: Refactor to use
+ * PhotonJNICommon
+ */
 public class LibCameraJNILoader {
     private static boolean libraryLoaded = false;
     private static final Logger logger = new Logger(LibCameraJNILoader.class, LogGroup.Camera);

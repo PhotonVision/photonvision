@@ -39,7 +39,11 @@ import org.opencv.highgui.HighGui;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 
 public class TestUtils {
+    private static boolean has_loaded = false;
+
     public static boolean loadLibraries() {
+        if (has_loaded) return true;
+
         NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
         WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
         WPIMathJNI.Helper.setExtractOnStaticLoad(false);
@@ -61,11 +65,13 @@ public class TestUtils {
                     "cscorejni",
                     "apriltagjni");
 
-            return true;
+            has_loaded = true;
         } catch (IOException e) {
             e.printStackTrace();
-            return false;
+            has_loaded = false;
         }
+
+        return has_loaded;
     }
 
     @SuppressWarnings("unused")
