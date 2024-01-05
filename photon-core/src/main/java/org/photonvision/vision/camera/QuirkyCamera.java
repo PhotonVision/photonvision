@@ -17,16 +17,13 @@
 
 package org.photonvision.vision.camera;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-
-import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class QuirkyCamera {
     private static final List<QuirkyCamera> quirkyCameras =
@@ -115,7 +112,6 @@ public class QuirkyCamera {
         this.quirks = quirks;
     }
 
-
     public boolean hasQuirk(CameraQuirk quirk) {
         return quirks.get(quirk);
     }
@@ -160,6 +156,21 @@ public class QuirkyCamera {
                 && usbPid == that.usbPid
                 && Objects.equals(baseName, that.baseName)
                 && Objects.equals(quirks, that.quirks);
+    }
+
+    @Override
+    public String toString() {
+        String ret =
+                "QuirkyCamera [baseName="
+                        + baseName
+                        + ", usbVid="
+                        + usbVid
+                        + ", usbPid="
+                        + usbPid
+                        + ", quirks="
+                        + quirks.toString()
+                        + "]";
+        return ret;
     }
 
     @Override
