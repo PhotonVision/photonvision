@@ -23,6 +23,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class QuirkyCamera {
     private static final List<QuirkyCamera> quirkyCameras =
             List.of(
@@ -97,6 +102,19 @@ public class QuirkyCamera {
             this.quirks.putIfAbsent(q, false);
         }
     }
+
+    @JsonCreator
+    public QuirkyCamera(
+            @JsonProperty("baseName") String baseName,
+            @JsonProperty("usbVid") int usbVid,
+            @JsonProperty("usbPid") int usbPid,
+            @JsonProperty("quirks") HashMap<CameraQuirk, Boolean> quirks) {
+        this.baseName = baseName;
+        this.usbPid = usbPid;
+        this.usbVid = usbVid;
+        this.quirks = quirks;
+    }
+
 
     public boolean hasQuirk(CameraQuirk quirk) {
         return quirks.get(quirk);
