@@ -92,7 +92,7 @@ export interface CameraCalibrationResult {
 export interface ConfigurableCameraSettings {
   fov: number;
   // Need map of (quirk name string) -> boolean
-  quirksToChange: object
+  quirksToChange: object;
 }
 
 export interface QuirkyCamera {

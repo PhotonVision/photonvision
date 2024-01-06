@@ -1,4 +1,11 @@
-import type { GeneralSettings, LightingSettings, LogLevel, MetricData, NetworkSettings, QuirkyCamera } from "@/types/SettingTypes";
+import type {
+  GeneralSettings,
+  LightingSettings,
+  LogLevel,
+  MetricData,
+  NetworkSettings,
+  QuirkyCamera
+} from "@/types/SettingTypes";
 import type { ActivePipelineSettings } from "@/types/PipelineTypes";
 import type { AprilTagFieldLayout, PipelineResult } from "@/types/PhotonTrackingTypes";
 

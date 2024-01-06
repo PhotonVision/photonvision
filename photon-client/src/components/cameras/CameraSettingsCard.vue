@@ -45,10 +45,10 @@ watchEffect(() => {
 
 const quirksToChange = ref({
   ArduOV9281: false,
-  ArduOV2311: false,
-})
+  ArduOV2311: false
+});
 
-let arducams = ["N/A", "OV9281", "OV2311"]
+let arducams = ["N/A", "OV9281", "OV2311"];
 
 const arducamModel = computed({
   get() {
@@ -62,9 +62,6 @@ const arducamModel = computed({
     return 0;
   },
   set(value) {
-    console.log("hi")
-    console.log(value)
-
     if (value === 1) {
       quirksToChange.value.ArduOV9281 = true;
       quirksToChange.value.ArduOV2311 = false;
@@ -76,16 +73,12 @@ const arducamModel = computed({
       quirksToChange.value.ArduOV2311 = false;
     }
   }
-})
-
+});
 
 const isArducam = () => {
   const settings = useCameraSettingsStore().currentCameraSettings;
-  // console.log("Is arducam?")
-  // console.log(settings.cameraQuirks.quirks.ArudcamCamera)
   return settings.cameraQuirks.quirks.ArudcamCamera;
-}
-
+};
 </script>
 
 <template>
@@ -123,12 +116,7 @@ const isArducam = () => {
         :select-cols="8"
       />
       <br />
-      <v-btn
-        style="margin-top: 10px"
-        small
-        color="secondary"
-        @click="saveCameraSettings"
-      >
+      <v-btn style="margin-top: 10px" small color="secondary" @click="saveCameraSettings">
         <v-icon left> mdi-content-save </v-icon>
         Save Changes
       </v-btn>
