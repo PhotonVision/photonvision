@@ -4,6 +4,7 @@ import type {
   CameraCalibrationResult,
   CameraSettings,
   ConfigurableCameraSettings,
+  Resolution,
   RobotOffsetType,
   VideoFormat
 } from "@/types/SettingTypes";
@@ -13,6 +14,7 @@ import type { WebsocketCameraSettingsUpdate } from "@/types/WebsocketDataTypes";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import type { ActiveConfigurablePipelineSettings, ActivePipelineSettings, PipelineType } from "@/types/PipelineTypes";
 import axios from "axios";
+import { resolutionsAreEqual } from "@/lib/PhotonUtils";
 
 interface CameraSettingsStore {
   cameras: CameraSettings[];
@@ -41,29 +43,37 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       return this.currentCameraSettings.validVideoFormats[this.currentPipelineSettings.cameraVideoModeIndex];
     },
     isCurrentVideoFormatCalibrated(): boolean {
-      return this.currentCameraSettings.completeCalibrations.some(
-        (v) =>
-          v.resolution.width === this.currentVideoFormat.resolution.width &&
-          v.resolution.height === this.currentVideoFormat.resolution.height
+      return this.currentCameraSettings.completeCalibrations.some((v) =>
+        resolutionsAreEqual(v.resolution, this.currentVideoFormat.resolution)
       );
     },
     cameraNames(): string[] {
       return this.cameras.map((c) => c.nickname);
     },
+    currentCameraName(): string {
+      return this.cameraNames[useStateStore().currentCameraIndex];
+    },
     pipelineNames(): string[] {
       return this.currentCameraSettings.pipelineNicknames;
+    },
+    currentPipelineName(): string {
+      return this.pipelineNames[useStateStore().currentCameraIndex];
     },
     isDriverMode(): boolean {
       return this.currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.DriverMode;
     },
     isCalibrationMode(): boolean {
       return this.currentCameraSettings.currentPipelineIndex == WebsocketPipelineType.Calib3d;
+    },
+    isCSICamera(): boolean {
+      return this.currentCameraSettings.isCSICamera;
     }
   },
   actions: {
     updateCameraSettingsFromWebsocket(data: WebsocketCameraSettingsUpdate[]) {
       this.cameras = data.map<CameraSettings>((d) => ({
         nickname: d.nickname,
+        uniqueName: d.uniqueName,
         fov: {
           value: d.fov,
           managedByVendor: !d.isFovConfigurable
@@ -89,16 +99,8 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
             standardDeviation: v.standardDeviation,
             mean: v.mean
           })),
-        completeCalibrations: d.calibrations.map<CameraCalibrationResult>((calib) => ({
-          resolution: {
-            height: calib.height,
-            width: calib.width
-          },
-          distCoeffs: calib.distCoeffs,
-          standardDeviation: calib.standardDeviation,
-          perViewErrors: calib.perViewErrors,
-          intrinsics: calib.intrinsics
-        })),
+        completeCalibrations: d.calibrations,
+        isCSICamera: d.isCSICamera,
         pipelineNicknames: d.pipelineNicknames,
         currentPipelineIndex: d.currentPipelineIndex,
         pipelineSettings: d.currentPipelineSettings,
@@ -316,6 +318,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         patternWidth: number;
         patternHeight: number;
         boardType: CalibrationBoardTypes;
+        useMrCal: boolean;
       },
       cameraIndex: number = useStateStore().currentCameraIndex
     ) {
@@ -356,6 +359,16 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         cameraIndex: cameraIndex
       };
       return axios.post("/calibration/importFromCalibDB", payload, { headers: { "Content-Type": "text/plain" } });
+    },
+    importCalibrationFromData(
+      data: { calibration: CameraCalibrationResult },
+      cameraIndex: number = useStateStore().currentCameraIndex
+    ) {
+      const payload = {
+        ...data,
+        cameraIndex: cameraIndex
+      };
+      return axios.post("/calibration/importFromData", payload);
     },
     /**
      * Take a snapshot for the calibration processes
@@ -405,6 +418,12 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         cameraIndex: cameraIndex
       };
       useStateStore().websocket?.send(payload, true);
+    },
+    getCalibrationCoeffs(
+      resolution: Resolution,
+      cameraIndex: number = useStateStore().currentCameraIndex
+    ): CameraCalibrationResult | undefined {
+      return this.cameras[cameraIndex].completeCalibrations.find((v) => resolutionsAreEqual(v.resolution, resolution));
     }
   }
 });

@@ -23,6 +23,7 @@ import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.cscore.VideoException;
 import edu.wpi.first.cscore.VideoMode;
 import edu.wpi.first.cscore.VideoProperty.Kind;
+import edu.wpi.first.util.PixelFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -328,33 +329,33 @@ public class USBCameraSource extends VisionSource {
                     if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
                         modes =
                                 new VideoMode[] {
-                                    new VideoMode(VideoMode.PixelFormat.kBGR, 320, 240, 90),
-                                    new VideoMode(VideoMode.PixelFormat.kBGR, 320, 240, 30),
-                                    new VideoMode(VideoMode.PixelFormat.kBGR, 320, 240, 15),
-                                    new VideoMode(VideoMode.PixelFormat.kBGR, 320, 240, 10),
-                                    new VideoMode(VideoMode.PixelFormat.kBGR, 640, 480, 90),
-                                    new VideoMode(VideoMode.PixelFormat.kBGR, 640, 480, 45),
-                                    new VideoMode(VideoMode.PixelFormat.kBGR, 640, 480, 30),
-                                    new VideoMode(VideoMode.PixelFormat.kBGR, 640, 480, 15),
-                                    new VideoMode(VideoMode.PixelFormat.kBGR, 640, 480, 10),
-                                    new VideoMode(VideoMode.PixelFormat.kBGR, 960, 720, 60),
-                                    new VideoMode(VideoMode.PixelFormat.kBGR, 960, 720, 10),
-                                    new VideoMode(VideoMode.PixelFormat.kBGR, 1280, 720, 45),
-                                    new VideoMode(VideoMode.PixelFormat.kBGR, 1920, 1080, 20),
+                                    new VideoMode(PixelFormat.kBGR, 320, 240, 90),
+                                    new VideoMode(PixelFormat.kBGR, 320, 240, 30),
+                                    new VideoMode(PixelFormat.kBGR, 320, 240, 15),
+                                    new VideoMode(PixelFormat.kBGR, 320, 240, 10),
+                                    new VideoMode(PixelFormat.kBGR, 640, 480, 90),
+                                    new VideoMode(PixelFormat.kBGR, 640, 480, 45),
+                                    new VideoMode(PixelFormat.kBGR, 640, 480, 30),
+                                    new VideoMode(PixelFormat.kBGR, 640, 480, 15),
+                                    new VideoMode(PixelFormat.kBGR, 640, 480, 10),
+                                    new VideoMode(PixelFormat.kBGR, 960, 720, 60),
+                                    new VideoMode(PixelFormat.kBGR, 960, 720, 10),
+                                    new VideoMode(PixelFormat.kBGR, 1280, 720, 45),
+                                    new VideoMode(PixelFormat.kBGR, 1920, 1080, 20),
                                 };
                     } else {
                         modes = camera.enumerateVideoModes();
                     }
                     for (VideoMode videoMode : modes) {
                         // Filter grey modes
-                        if (videoMode.pixelFormat == VideoMode.PixelFormat.kGray
-                                || videoMode.pixelFormat == VideoMode.PixelFormat.kUnknown) {
+                        if (videoMode.pixelFormat == PixelFormat.kGray
+                                || videoMode.pixelFormat == PixelFormat.kUnknown) {
                             continue;
                         }
 
                         // On picam, filter non-bgr modes for performance
                         if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-                            if (videoMode.pixelFormat != VideoMode.PixelFormat.kBGR) {
+                            if (videoMode.pixelFormat != PixelFormat.kBGR) {
                                 continue;
                             }
                         }

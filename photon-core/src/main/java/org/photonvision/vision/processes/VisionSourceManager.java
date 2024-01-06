@@ -33,6 +33,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.raspi.LibCameraJNI;
+import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.vision.camera.CameraInfo;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
@@ -98,7 +99,7 @@ public class VisionSourceManager {
      */
     protected List<CameraInfo> getConnectedCSICameras() {
         List<CameraInfo> cameraInfos = new ArrayList<CameraInfo>();
-        if (LibCameraJNI.isSupported())
+        if (LibCameraJNILoader.isSupported())
             for (String path : LibCameraJNI.getCameraNames()) {
                 String name = LibCameraJNI.getSensorModel(path).getFriendlyName();
                 cameraInfos.add(

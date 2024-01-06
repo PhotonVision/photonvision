@@ -256,7 +256,7 @@ public class VisionSystemSim {
                     "apriltag",
                     new VisionTargetSim(
                             tagLayout.getTagPose(tag.ID).get(), // preserve alliance rotation
-                            TargetModel.kAprilTag16h5,
+                            TargetModel.kAprilTag36h11,
                             tag.ID));
         }
     }

@@ -2,15 +2,16 @@
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { Euler, Quaternion as ThreeQuat } from "three";
 import type { Quaternion } from "@/types/PhotonTrackingTypes";
+import { toDeg } from "@/lib/MathUtils";
 
 const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: number } => {
   const quat = new ThreeQuat(rot_quat.X, rot_quat.Y, rot_quat.Z, rot_quat.W);
   const euler = new Euler().setFromQuaternion(quat, "ZYX");
 
   return {
-    x: euler.x * (180.0 / Math.PI),
-    y: euler.y * (180.0 / Math.PI),
-    z: euler.z * (180.0 / Math.PI)
+    x: toDeg(euler.x),
+    y: toDeg(euler.y),
+    z: toDeg(euler.z)
   };
 };
 </script>
@@ -62,6 +63,7 @@ const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: num
   td {
     background-color: #006492 !important;
     font-size: 1rem !important;
+    color: white !important;
   }
 
   td {

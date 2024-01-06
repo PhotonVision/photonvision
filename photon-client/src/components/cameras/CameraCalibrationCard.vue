@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { CalibrationBoardTypes, type Resolution, type VideoFormat } from "@/types/SettingTypes";
+import { CalibrationBoardTypes, type VideoFormat } from "@/types/SettingTypes";
 import JsPDF from "jspdf";
 import { font as PromptRegular } from "@/assets/fonts/PromptRegular";
 import MonoLogo from "@/assets/images/logoMono.png";
@@ -11,38 +11,42 @@ import PvSwitch from "@/components/common/pv-switch.vue";
 import PvSelect from "@/components/common/pv-select.vue";
 import PvNumberInput from "@/components/common/pv-number-input.vue";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
+import { getResolutionString, resolutionsAreEqual } from "@/lib/PhotonUtils";
+import CameraCalibrationInfoCard from "@/components/cameras/CameraCalibrationInfoCard.vue";
+import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
 const settingsValid = ref(true);
 
-const getCalibrationCoeffs = (resolution: Resolution) => {
-  return useCameraSettingsStore().currentCameraSettings.completeCalibrations.find(
-    (cal) => cal.resolution.width === resolution.width && cal.resolution.height === resolution.height
-  );
-};
-const getUniqueVideoResolutions = (): VideoFormat[] => {
+const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
   const uniqueResolutions: VideoFormat[] = [];
   useCameraSettingsStore().currentCameraSettings.validVideoFormats.forEach((format, index) => {
-    if (
-      !uniqueResolutions.some(
-        (v) => v.resolution.width === format.resolution.width && v.resolution.height === format.resolution.height
-      )
-    ) {
+    if (!uniqueResolutions.some((v) => resolutionsAreEqual(v.resolution, format.resolution))) {
       format.index = index;
 
-      const calib = getCalibrationCoeffs(format.resolution);
+      const calib = useCameraSettingsStore().getCalibrationCoeffs(format.resolution);
       if (calib !== undefined) {
-        format.standardDeviation = calib.standardDeviation;
-        format.mean = calib.perViewErrors.reduce((a, b) => a + b) / calib.perViewErrors.length;
-        format.horizontalFOV = 2 * Math.atan2(format.resolution.width / 2, calib.intrinsics[0]) * (180 / Math.PI);
-        format.verticalFOV = 2 * Math.atan2(format.resolution.height / 2, calib.intrinsics[4]) * (180 / Math.PI);
+        // Is this the right formula for RMS error? who knows! not me!
+        const perViewSumSquareReprojectionError = calib.observations.flatMap((it) =>
+          it.reprojectionErrors.flatMap((it2) => [it2.x, it2.y])
+        );
+        // For each error, square it, sum the squares, and divide by total points N
+        format.mean = Math.sqrt(
+          perViewSumSquareReprojectionError.map((it) => Math.pow(it, 2)).reduce((a, b) => a + b, 0) /
+            perViewSumSquareReprojectionError.length
+        );
+
+        format.horizontalFOV =
+          2 * Math.atan2(format.resolution.width / 2, calib.cameraIntrinsics.data[0]) * (180 / Math.PI);
+        format.verticalFOV =
+          2 * Math.atan2(format.resolution.height / 2, calib.cameraIntrinsics.data[4]) * (180 / Math.PI);
         format.diagonalFOV =
           2 *
           Math.atan2(
             Math.sqrt(
               format.resolution.width ** 2 +
-                (format.resolution.height / (calib.intrinsics[4] / calib.intrinsics[0])) ** 2
+                (format.resolution.height / (calib.cameraIntrinsics.data[4] / calib.cameraIntrinsics.data[0])) ** 2
             ) / 2,
-            calib.intrinsics[0]
+            calib.cameraIntrinsics.data[0]
           ) *
           (180 / Math.PI);
       }
@@ -54,9 +58,9 @@ const getUniqueVideoResolutions = (): VideoFormat[] => {
   );
   return uniqueResolutions;
 };
-const getUniqueVideoResolutionStrings = () =>
-  getUniqueVideoResolutions().map<{ name: string; value: number }>((f) => ({
-    name: `${f.resolution.width} X ${f.resolution.height}`,
+const getUniqueVideoResolutionStrings = (): { name: string; value: number }[] =>
+  getUniqueVideoFormatsByResolution().map<{ name: string; value: number }>((f) => ({
+    name: `${getResolutionString(f.resolution)}`,
     // Index won't ever be undefined
     value: f.index || 0
   }));
@@ -71,6 +75,15 @@ const squareSizeIn = ref(1);
 const patternWidth = ref(8);
 const patternHeight = ref(8);
 const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.Chessboard);
+const useMrCalRef = ref(true);
+const useMrCal = computed<boolean>({
+  get() {
+    return useMrCalRef.value && useSettingsStore().general.mrCalWorking;
+  },
+  set(value) {
+    useMrCalRef.value = value && useSettingsStore().general.mrCalWorking;
+  }
+});
 
 const downloadCalibBoard = () => {
   const doc = new JsPDF({ unit: "in", format: "letter" });
@@ -150,9 +163,9 @@ const importCalibrationFromCalibDB = ref();
 const openCalibUploadPrompt = () => {
   importCalibrationFromCalibDB.value.click();
 };
-const readImportedCalibration = (payload: Event) => {
-  if (payload.target == null || !payload.target?.files) return;
-  const files: FileList = payload.target.files as FileList;
+const readImportedCalibrationFromCalibDB = () => {
+  const files = importCalibrationFromCalibDB.value.files;
+  if (files.length === 0) return;
 
   files[0].text().then((text) => {
     useCameraSettingsStore()
@@ -185,7 +198,8 @@ const startCalibration = () => {
     squareSizeIn: squareSizeIn.value,
     patternHeight: patternHeight.value,
     patternWidth: patternWidth.value,
-    boardType: boardType.value
+    boardType: boardType.value,
+    useMrCal: useMrCal.value
   });
   // The Start PnP method already handles updating the backend so only a store update is required
   useCameraSettingsStore().currentCameraSettings.currentPipelineIndex = WebsocketPipelineType.Calib3d;
@@ -214,6 +228,13 @@ const endCalibration = () => {
       isCalibrating.value = false;
     });
 };
+
+let showCalDialog = ref(false);
+let selectedVideoFormat = ref<VideoFormat | undefined>(undefined);
+const setSelectedVideoFormat = (format: VideoFormat) => {
+  selectedVideoFormat.value = format;
+  showCalDialog.value = true;
+};
 </script>
 
 <template>
@@ -221,100 +242,118 @@ const endCalibration = () => {
     <v-card class="mb-3 pr-6 pb-3" color="primary" dark>
       <v-card-title>Camera Calibration</v-card-title>
       <div class="ml-5">
-        <v-row>
-          <v-col cols="12" md="6">
-            <v-form ref="form" v-model="settingsValid">
-              <pv-select
-                v-model="useStateStore().calibrationData.videoFormatIndex"
-                label="Resolution"
-                :select-cols="7"
-                :disabled="isCalibrating"
-                tooltip="Resolution to calibrate at (you will have to calibrate every resolution you use 3D mode on)"
-                :items="getUniqueVideoResolutionStrings()"
-              />
-              <pv-select
-                v-show="isCalibrating"
-                v-model="useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor"
-                label="Decimation"
-                tooltip="Resolution to which camera frames are downscaled for detection. Calibration still uses full-res"
-                :items="calibrationDivisors"
-                :select-cols="7"
-                @input="
-                  (v) => useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: v }, false)
-                "
-              />
-              <pv-select
-                v-model="boardType"
-                label="Board Type"
-                tooltip="Calibration board pattern to use"
-                :select-cols="7"
-                :items="['Chessboard', 'Dotboard']"
-                :disabled="isCalibrating"
-              />
-              <pv-number-input
-                v-model="squareSizeIn"
-                label="Pattern Spacing (in)"
-                tooltip="Spacing between pattern features in inches"
-                :disabled="isCalibrating"
-                :rules="[(v) => v > 0 || 'Size must be positive']"
-                :label-cols="5"
-              />
-              <pv-number-input
-                v-model="patternWidth"
-                label="Board Width (in)"
-                tooltip="Width of the board in dots or chessboard squares"
-                :disabled="isCalibrating"
-                :rules="[(v) => v >= 4 || 'Width must be at least 4']"
-                :label-cols="5"
-              />
-              <pv-number-input
-                v-model="patternHeight"
-                label="Board Height (in)"
-                tooltip="Height of the board in dots or chessboard squares"
-                :disabled="isCalibrating"
-                :rules="[(v) => v >= 4 || 'Height must be at least 4']"
-                :label-cols="5"
-              />
-            </v-form>
-          </v-col>
-          <v-col cols="12" md="6">
-            <v-row align="start" class="pb-4 pt-2">
-              <v-simple-table fixed-header height="100%" dense>
-                <thead>
-                  <tr>
-                    <th>Resolution</th>
-                    <th>Mean Error</th>
-                    <th>Standard Deviation</th>
-                    <th>Horizontal FOV</th>
-                    <th>Vertical FOV</th>
-                    <th>Diagonal FOV</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(value, index) in getUniqueVideoResolutions()" :key="index">
-                    <td>{{ value.resolution.width }} X {{ value.resolution.height }}</td>
-                    <td>{{ value.mean !== undefined ? value.mean.toFixed(2) + "px" : "-" }}</td>
-                    <td>
-                      {{ value.standardDeviation !== undefined ? value.standardDeviation.toFixed(2) + "px" : "-" }}
-                    </td>
-                    <td>{{ value.horizontalFOV !== undefined ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
-                    <td>{{ value.verticalFOV !== undefined ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
-                    <td>{{ value.diagonalFOV !== undefined ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
-                  </tr>
-                </tbody>
-              </v-simple-table>
-            </v-row>
-            <v-row justify="center">
-              <v-chip
-                v-show="isCalibrating"
-                label
-                :color="useStateStore().calibrationData.hasEnoughImages ? 'secondary' : 'gray'"
+        <v-row v-show="!isCalibrating" class="pb-12">
+          <v-card-subtitle class="pb-0 mb-0 pl-3">Complete Calibrations</v-card-subtitle>
+          <v-simple-table fixed-header height="100%" dense class="mt-2">
+            <thead>
+              <tr>
+                <th>Resolution</th>
+                <th>Mean Error</th>
+                <th>Horizontal FOV</th>
+                <th>Vertical FOV</th>
+                <th>Diagonal FOV</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(value, index) in getUniqueVideoFormatsByResolution()"
+                :key="index"
+                title="Click to get calibration specific information"
+                @click="setSelectedVideoFormat(value)"
               >
-                Snapshots: {{ useStateStore().calibrationData.imageCount }} of at least
-                {{ useStateStore().calibrationData.minimumImageCount }}
-              </v-chip>
-            </v-row>
-          </v-col>
+                <td>{{ getResolutionString(value.resolution) }}</td>
+                <td>
+                  {{ value.mean !== undefined ? (isNaN(value.mean) ? "NaN" : value.mean.toFixed(2) + "px") : "-" }}
+                </td>
+                <td>{{ value.horizontalFOV !== undefined ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
+                <td>{{ value.verticalFOV !== undefined ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
+                <td>{{ value.diagonalFOV !== undefined ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
+              </tr>
+            </tbody>
+          </v-simple-table>
+        </v-row>
+        <v-divider />
+        <v-row style="display: flex; flex-direction: column" class="mt-4">
+          <v-card-subtitle v-show="!isCalibrating" class="pl-3 pa-0 ma-0"> Configure New Calibration</v-card-subtitle>
+          <v-form ref="form" v-model="settingsValid" class="pl-4 mb-10 pr-5">
+            <pv-select
+              v-model="useStateStore().calibrationData.videoFormatIndex"
+              label="Resolution"
+              :select-cols="7"
+              :disabled="isCalibrating"
+              tooltip="Resolution to calibrate at (you will have to calibrate every resolution you use 3D mode on)"
+              :items="getUniqueVideoResolutionStrings()"
+            />
+            <pv-select
+              v-show="isCalibrating"
+              v-model="useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor"
+              label="Decimation"
+              tooltip="Resolution to which camera frames are downscaled for detection. Calibration still uses full-res"
+              :items="calibrationDivisors"
+              :select-cols="7"
+              @input="(v) => useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: v }, false)"
+            />
+            <pv-select
+              v-model="boardType"
+              label="Board Type"
+              tooltip="Calibration board pattern to use"
+              :select-cols="7"
+              :items="['Chessboard', 'Dotboard']"
+              :disabled="isCalibrating"
+            />
+            <pv-number-input
+              v-model="squareSizeIn"
+              label="Pattern Spacing (in)"
+              tooltip="Spacing between pattern features in inches"
+              :disabled="isCalibrating"
+              :rules="[(v) => v > 0 || 'Size must be positive']"
+              :label-cols="5"
+            />
+            <pv-number-input
+              v-model="patternWidth"
+              label="Board Width (in)"
+              tooltip="Width of the board in dots or chessboard squares"
+              :disabled="isCalibrating"
+              :rules="[(v) => v >= 4 || 'Width must be at least 4']"
+              :label-cols="5"
+            />
+            <pv-number-input
+              v-model="patternHeight"
+              label="Board Height (in)"
+              tooltip="Height of the board in dots or chessboard squares"
+              :disabled="isCalibrating"
+              :rules="[(v) => v >= 4 || 'Height must be at least 4']"
+              :label-cols="5"
+            />
+            <pv-switch
+              v-model="useMrCal"
+              label="Try using MrCal over OpenCV"
+              :disabled="!useSettingsStore().general.mrCalWorking || isCalibrating"
+              tooltip="If enabled, Photon will (try to) use MrCal instead of OpenCV for camera calibration."
+              :label-cols="5"
+            />
+            <v-banner
+              v-show="!useSettingsStore().general.mrCalWorking"
+              rounded
+              color="red"
+              text-color="white"
+              class="mt-3"
+              icon="mdi-alert-circle-outline"
+            >
+              MrCal JNI could not be loaded! Consult journalctl logs for additional details.
+            </v-banner>
+          </v-form>
+          <v-row justify="center">
+            <v-chip
+              v-show="isCalibrating"
+              label
+              :color="useStateStore().calibrationData.hasEnoughImages ? 'secondary' : 'gray'"
+              class="mb-6"
+            >
+              Snapshots: {{ useStateStore().calibrationData.imageCount }} of at least
+              {{ useStateStore().calibrationData.minimumImageCount }}
+            </v-chip>
+          </v-row>
         </v-row>
         <v-row v-if="isCalibrating">
           <v-col cols="12" class="pt-0">
@@ -387,7 +426,8 @@ const endCalibration = () => {
               :disabled="!settingsValid"
               @click="isCalibrating ? useCameraSettingsStore().takeCalibrationSnapshot() : startCalibration()"
             >
-              {{ isCalibrating ? "Take Snapshot" : "Start Calibration" }}
+              <v-icon left class="calib-btn-icon"> {{ isCalibrating ? "mdi-camera" : "mdi-flag-outline" }} </v-icon>
+              <span class="calib-btn-label">{{ isCalibrating ? "Take Snapshot" : "Start Calibration" }}</span>
             </v-btn>
           </v-col>
           <v-col :cols="6">
@@ -399,7 +439,12 @@ const endCalibration = () => {
               :disabled="!isCalibrating || !settingsValid"
               @click="endCalibration"
             >
-              {{ useStateStore().calibrationData.hasEnoughImages ? "Finish Calibration" : "Cancel Calibration" }}
+              <v-icon left class="calib-btn-icon">
+                {{ useStateStore().calibrationData.hasEnoughImages ? "mdi-flag-checkered" : "mdi-flag-off-outline" }}
+              </v-icon>
+              <span class="calib-btn-label">{{
+                useStateStore().calibrationData.hasEnoughImages ? "Finish Calibration" : "Cancel Calibration"
+              }}</span>
             </v-btn>
           </v-col>
         </v-row>
@@ -413,21 +458,21 @@ const endCalibration = () => {
               :disabled="!settingsValid"
               @click="downloadCalibBoard"
             >
-              <v-icon left> mdi-download </v-icon>
-              Generate Board
+              <v-icon left class="calib-btn-icon"> mdi-download </v-icon>
+              <span class="calib-btn-label">Generate Board</span>
             </v-btn>
           </v-col>
           <v-col :cols="6">
             <v-btn color="secondary" :disabled="isCalibrating" small style="width: 100%" @click="openCalibUploadPrompt">
-              <v-icon left> mdi-upload </v-icon>
-              Import From CalibDB
+              <v-icon left class="calib-btn-icon"> mdi-upload </v-icon>
+              <span class="calib-btn-label">Import From CalibDB</span>
             </v-btn>
             <input
               ref="importCalibrationFromCalibDB"
               type="file"
               accept=".json"
               style="display: none"
-              @change="readImportedCalibration"
+              @change="readImportedCalibrationFromCalibDB"
             />
           </v-col>
         </v-row>
@@ -456,7 +501,7 @@ const endCalibration = () => {
                 {{
                   getUniqueVideoResolutionStrings().find(
                     (v) => v.value === useStateStore().calibrationData.videoFormatIndex
-                  ).name
+                  )?.name
                 }}!
               </v-card-text>
             </template>
@@ -476,12 +521,16 @@ const endCalibration = () => {
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-dialog v-model="showCalDialog" width="80em">
+      <CameraCalibrationInfoCard v-if="selectedVideoFormat" :video-format="selectedVideoFormat" />
+    </v-dialog>
   </div>
 </template>
 
 <style scoped lang="scss">
 .v-data-table {
   text-align: center;
+  width: 100%;
 
   th,
   td {
@@ -491,6 +540,7 @@ const endCalibration = () => {
 
   tbody :hover td {
     background-color: #005281 !important;
+    cursor: pointer;
   }
 
   ::-webkit-scrollbar {
@@ -507,6 +557,15 @@ const endCalibration = () => {
   ::-webkit-scrollbar-thumb {
     background-color: #ffd843;
     border-radius: 10px;
+  }
+}
+
+@media only screen and (max-width: 512px) {
+  .calib-btn-icon {
+    margin: 0 !important;
+  }
+  .calib-btn-label {
+    display: none;
   }
 }
 </style>

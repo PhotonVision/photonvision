@@ -131,7 +131,7 @@ public class SimCameraProperties {
                 for (int j = 0; j < jsonIntrinsicsNode.size(); j++) {
                     jsonIntrinsics[j] = jsonIntrinsicsNode.get(j).asDouble();
                 }
-                var jsonDistortNode = calib.get("cameraExtrinsics").get("data");
+                var jsonDistortNode = calib.get("distCoeffs").get("data");
                 double[] jsonDistortion = new double[jsonDistortNode.size()];
                 for (int j = 0; j < jsonDistortNode.size(); j++) {
                     jsonDistortion[j] = jsonDistortNode.get(j).asDouble();

@@ -59,6 +59,16 @@ To run them, use the commands listed below. Photonlib must first be published to
 ~/photonvision/photonlib-cpp-examples$ ./gradlew <example-name>:simulateNative
 ```
 
+## Out-of-Source Dependencies
+
+PhotonVision uses the following additonal out-of-source repositories for building code.
+
+- Base system images for Raspberry Pi & Orange Pi: https://github.com/PhotonVision/photon-image-modifier
+- C++ driver for Raspberry Pi CSI cameras: https://github.com/PhotonVision/photon-libcamera-gl-driver
+- JNI code for [mrcal](https://mrcal.secretsauce.net/): https://github.com/PhotonVision/mrcal-java
+- Custom build of OpenCV with GStreamer/Protobuf/other custom flags: https://github.com/PhotonVision/thirdparty-opencv
+- JNI code for aruco-nano: https://github.com/PhotonVision/aruconano-jni
+
 
 ## Acknowledgments
 PhotonVision was forked from [Chameleon Vision](https://github.com/Chameleon-Vision/chameleon-vision/). Thank you to everyone who worked on the original project.
@@ -82,3 +92,18 @@ Our meeting notes can be found in the wiki section of this repository.
 
 * [2020 Meeting Notes](https://github.com/PhotonVision/photonvision/wiki/2020-Meeting-Notes)
 * [2021 Meeting Notes](https://github.com/PhotonVision/photonvision/wiki/2021-Meeting-Notes)
+
+## Additional packages
+
+For now, using mrcal requires installing these additional packages on Linux systems:
+
+```
+sudo apt install libcholmod3 liblapack3 libsuitesparseconfig5
+```
+
+## Documentation
+
+- Our main documentation page: [docs.photonvision.org](https://docs.photonvision.org)
+- Photon UI demo: [demo.photonvision.org](https://demo.photonvision.org) (or [manual link](https://photonvision.github.io/photonvision/built-client/))
+- Javadocs: [javadocs.photonvision.org](https://javadocs.photonvision.org) (or [manual link](https://photonvision.github.io/photonvision/built-docs/javadoc/))
+- C++ Doxygen  [cppdocs.photonvision.org](https://cppdocs.photonvision.org) (or [manual link](https://photonvision.github.io/photonvision/built-docs/doxygen/html/))
