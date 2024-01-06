@@ -35,6 +35,7 @@ import org.photonvision.mrcal.MrCalJNI.MrCalResult;
 import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.vision.calibration.BoardObservation;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.calibration.CameraLensModel;
 import org.photonvision.vision.calibration.JsonImageMat;
 import org.photonvision.vision.calibration.JsonMatOfDouble;
 import org.photonvision.vision.pipe.CVPipe;
@@ -158,7 +159,8 @@ public class Calibrate3dPipe
                 new double[0],
                 observations,
                 new Size(params.boardWidth, params.boardHeight),
-                params.squareSize);
+                params.squareSize,
+                CameraLensModel.LENSMODEL_OPENCV);
     }
 
     protected CameraCalibrationCoefficients calibrateMrcal(
@@ -240,7 +242,8 @@ public class Calibrate3dPipe
                 new double[] {result.warp_x, result.warp_y},
                 observations,
                 new Size(params.boardWidth, params.boardHeight),
-                params.squareSize);
+                params.squareSize,
+                CameraLensModel.LENSMODEL_OPENCV);
     }
 
     private List<BoardObservation> createObservations(
