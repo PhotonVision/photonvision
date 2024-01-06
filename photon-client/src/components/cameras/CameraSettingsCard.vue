@@ -4,7 +4,6 @@ import PvNumberInput from "@/components/common/pv-number-input.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { computed, ref, watchEffect } from "vue";
-import { CameraSettings } from "@/types/SettingTypes";
 
 const currentFov = ref();
 
