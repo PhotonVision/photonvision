@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.photonvision.PhotonVersion;
 import org.photonvision.common.hardware.Platform;
+import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.mrcal.MrCalJNILoader;
@@ -119,6 +120,7 @@ public class PhotonConfiguration {
         // Hack active interfaces into networkSettings
         var netConfigMap = networkConfig.toHashMap();
         netConfigMap.put("networkInterfaceNames", NetworkUtils.getAllWiredInterfaces());
+        netConfigMap.put("networkingDisabled", NetworkManager.getInstance().networkingIsDisabled);
 
         settingsSubmap.put("networkSettings", netConfigMap);
 

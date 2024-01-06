@@ -44,9 +44,13 @@ export interface NetworkSettings {
   setStaticCommand?: string;
   setDHCPcommand?: string;
   networkInterfaceNames: NetworkInterfaceType[];
+  networkingDisabled: boolean;
 }
 
-export type ConfigurableNetworkSettings = Omit<NetworkSettings, "canManage" | "networkInterfaceNames">;
+export type ConfigurableNetworkSettings = Omit<
+  NetworkSettings,
+  "canManage" | "networkInterfaceNames" | "networkingDisabled"
+>;
 
 export interface LightingSettings {
   supported: boolean;
