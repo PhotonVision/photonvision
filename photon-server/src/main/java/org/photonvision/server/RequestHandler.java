@@ -19,7 +19,6 @@ package org.photonvision.server;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.http.Context;
 import io.javalin.http.UploadedFile;
@@ -32,7 +31,6 @@ import java.util.HashMap;
 import java.util.Optional;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
-import org.eclipse.jetty.util.VirtualThreads.Configurable;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.dataflow.DataChangeDestination;
@@ -372,6 +370,7 @@ public class RequestHandler {
     public static class UICameraSettingsRequest {
         @JsonProperty("fov")
         double fov;
+
         @JsonProperty("quirksToChange")
         HashMap<CameraQuirk, Boolean> quirksToChange;
     }
@@ -382,8 +381,12 @@ public class RequestHandler {
 
             int index = data.get("index").asInt();
             // double fov = data.get("settings").get("fov").asDouble();
-            var settings = JacksonUtils.deserialize(data.get("settings").toString(), UICameraSettingsRequest.class);
+            var settings =
+                    JacksonUtils.deserialize(data.get("settings").toString(), UICameraSettingsRequest.class);
             var fov = settings.fov;
+
+            logger.info("Changing camera FOV to: " + fov);
+            logger.info("Changing quirks to: " + settings.quirksToChange.toString());
 
             var module = VisionModuleManager.getInstance().getModule(index);
             module.setFov(fov);

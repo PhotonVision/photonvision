@@ -617,6 +617,7 @@ public class VisionModule {
 
     /**
      * Add/remove quirks from the camera we're controlling
+     *
      * @param quirksToChange map of true/false for quirks we should change
      */
     public void changeCameraQuirks(HashMap<CameraQuirk, Boolean> quirksToChange) {

@@ -49,16 +49,32 @@ public class QuirkyCamera {
                             -1, -1, "mmal service 16.1", CameraQuirk.PiCam), // PiCam (via V4L2, not zerocopy)
                     new QuirkyCamera(-1, -1, "unicam", CameraQuirk.PiCam), // PiCam (via V4L2, not zerocopy)
                     new QuirkyCamera(0x85B, 0x46D, CameraQuirk.AdjustableFocus), // Logitech C925-e
-                    // Generic arducam. Since OV2311 can't be differentiated at first boot, apply stickyFPS to the generic case, too
+                    // Generic arducam. Since OV2311 can't be differentiated at first boot, apply stickyFPS to
+                    // the generic case, too
                     new QuirkyCamera(
-                            0x6366, 0x0c45, "", "Arducam Generic", CameraQuirk.ArudcamCamera, CameraQuirk.StickyFPS),
-                            // Arducam OV2311
+                            0x6366,
+                            0x0c45,
+                            "",
+                            "Arducam Generic",
+                            CameraQuirk.ArudcamCamera,
+                            CameraQuirk.StickyFPS),
+                    // Arducam OV2311
                     new QuirkyCamera(
-                            0x6366, 0x0c45, "OV2311", "OV2311", CameraQuirk.ArudcamCamera, CameraQuirk.ArduOV2311, CameraQuirk.StickyFPS), 
-                             // Arducam OV9281
+                            0x6366,
+                            0x0c45,
+                            "OV2311",
+                            "OV2311",
+                            CameraQuirk.ArudcamCamera,
+                            CameraQuirk.ArduOV2311,
+                            CameraQuirk.StickyFPS),
+                    // Arducam OV9281
                     new QuirkyCamera(
-                            0x6366, 0x0c45, "OV9281", "OV9281", CameraQuirk.ArudcamCamera, CameraQuirk.ArduOV9281)
-                    );
+                            0x6366,
+                            0x0c45,
+                            "OV9281",
+                            "OV9281",
+                            CameraQuirk.ArudcamCamera,
+                            CameraQuirk.ArduOV9281));
 
     public static final QuirkyCamera DefaultCamera = new QuirkyCamera(0, 0, "");
     public static final QuirkyCamera ZeroCopyPiCamera =
@@ -72,12 +88,16 @@ public class QuirkyCamera {
 
     @JsonProperty("baseName")
     public final String baseName;
+
     @JsonProperty("usbVid")
     public final int usbVid;
+
     @JsonProperty("usbPid")
     public final int usbPid;
+
     @JsonProperty("displayName")
     public final String displayName;
+
     @JsonProperty("quirks")
     public final HashMap<CameraQuirk, Boolean> quirks;
 
@@ -213,6 +233,7 @@ public class QuirkyCamera {
 
     /**
      * Add/remove quirks from the camera we're controlling
+     *
      * @param quirksToChange map of true/false for quirks we should change
      */
     public void updateQuirks(HashMap<CameraQuirk, Boolean> quirksToChange) {
