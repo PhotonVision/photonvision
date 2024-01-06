@@ -140,6 +140,7 @@ watchEffect(() => {
           The NetworkTables Server Address is not set or is invalid. NetworkTables is unable to connect.
         </v-banner>
         <pv-radio
+          v-show="!useSettingsStore().network.networkingDisabled"
           v-model="tempSettingsStruct.connectionType"
           label="IP Assignment Mode"
           tooltip="DHCP will make the radio (router) automatically assign an IP address; this may result in an IP address that changes across reboots. Static IP assignment means that you pick the IP address and it won't change."
@@ -152,6 +153,7 @@ watchEffect(() => {
           "
         />
         <pv-input
+          v-show="!useSettingsStore().network.networkingDisabled"
           v-if="tempSettingsStruct.connectionType === NetworkConnectionType.Static"
           v-model="tempSettingsStruct.staticIp"
           :input-cols="12 - 4"
@@ -164,6 +166,7 @@ watchEffect(() => {
           "
         />
         <pv-input
+          v-show="!useSettingsStore().network.networkingDisabled"
           v-model="tempSettingsStruct.hostname"
           label="Hostname"
           :input-cols="12 - 4"
@@ -177,6 +180,7 @@ watchEffect(() => {
         <v-divider class="pb-3" />
         <span style="font-weight: 700">Advanced Networking</span>
         <pv-switch
+          v-show="!useSettingsStore().network.networkingDisabled"
           v-model="tempSettingsStruct.shouldManage"
           :disabled="!useSettingsStore().network.canManage || useSettingsStore().network.networkingDisabled"
           label="Manage Device Networking"
@@ -185,6 +189,7 @@ watchEffect(() => {
           class="pt-2"
         />
         <pv-select
+          v-show="!useSettingsStore().network.networkingDisabled"
           v-model="currentNetworkInterfaceIndex"
           label="NetworkManager interface"
           :disabled="
