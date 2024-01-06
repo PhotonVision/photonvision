@@ -380,7 +380,6 @@ public class RequestHandler {
             var data = kObjectMapper.readTree(ctx.body());
 
             int index = data.get("index").asInt();
-            // double fov = data.get("settings").get("fov").asDouble();
             var settings =
                     JacksonUtils.deserialize(data.get("settings").toString(), UICameraSettingsRequest.class);
             var fov = settings.fov;
