@@ -14,7 +14,7 @@ class VisionLEDMode(Enum):
     kBlink = 2
 
 
-lastVersionTimeCheck = 0.0
+_lastVersionTimeCheck = 0.0
 _VERSION_CHECK_ENABLED = True
 
 
@@ -26,41 +26,41 @@ def setVersionCheckEnabled(enabled: bool):
 class PhotonCamera:
     def __init__(self, cameraName: str):
         instance = ntcore.NetworkTableInstance.getDefault()
-        self.name = cameraName
+        self._name = cameraName
         self._tableName = "photonvision"
         photonvision_root_table = instance.getTable(self._tableName)
-        self.cameraTable = photonvision_root_table.getSubTable(cameraName)
-        self.path = self.cameraTable.getPath()
-        self.rawBytesEntry = self.cameraTable.getRawTopic("rawBytes").subscribe(
+        self._cameraTable = photonvision_root_table.getSubTable(cameraName)
+        self._path = self._cameraTable.getPath()
+        self._rawBytesEntry = self._cameraTable.getRawTopic("rawBytes").subscribe(
             "rawBytes", bytes([]), ntcore.PubSubOptions(periodic=0.01, sendAll=True)
         )
 
-        self.driverModePublisher = self.cameraTable.getBooleanTopic(
+        self._driverModePublisher = self._cameraTable.getBooleanTopic(
             "driverModeRequest"
         ).publish()
-        self.driverModeSubscriber = self.cameraTable.getBooleanTopic(
+        self._driverModeSubscriber = self._cameraTable.getBooleanTopic(
             "driverMode"
         ).subscribe(False)
-        self.inputSaveImgEntry = self.cameraTable.getIntegerTopic(
+        self._inputSaveImgEntry = self._cameraTable.getIntegerTopic(
             "inputSaveImgCmd"
         ).getEntry(0)
-        self.outputSaveImgEntry = self.cameraTable.getIntegerTopic(
+        self._outputSaveImgEntry = self._cameraTable.getIntegerTopic(
             "outputSaveImgCmd"
         ).getEntry(0)
-        self.pipelineIndexRequest = self.cameraTable.getIntegerTopic(
+        self._pipelineIndexRequest = self._cameraTable.getIntegerTopic(
             "pipelineIndexRequest"
         ).publish()
-        self.pipelineIndexState = self.cameraTable.getIntegerTopic(
+        self._pipelineIndexState = self._cameraTable.getIntegerTopic(
             "pipelineIndexState"
         ).subscribe(0)
-        self.heartbeatEntry = self.cameraTable.getIntegerTopic("heartbeat").subscribe(
+        self._heartbeatEntry = self._cameraTable.getIntegerTopic("heartbeat").subscribe(
             -1
         )
 
-        self.ledModeRequest = photonvision_root_table.getIntegerTopic(
+        self._ledModeRequest = photonvision_root_table.getIntegerTopic(
             "ledModeRequest"
         ).publish()
-        self.ledModeState = photonvision_root_table.getIntegerTopic(
+        self._ledModeState = photonvision_root_table.getIntegerTopic(
             "ledModeState"
         ).subscribe(-1)
         self.versionEntry = photonvision_root_table.getStringTopic("version").subscribe(
@@ -72,14 +72,14 @@ class PhotonCamera:
             instance, ["/photonvision/"], ntcore.PubSubOptions(topicsOnly=True)
         )
 
-        self.prevHeartbeat = 0
-        self.prevHeartbeatChangeTime = Timer.getFPGATimestamp()
+        self._prevHeartbeat = 0
+        self._prevHeartbeatChangeTime = Timer.getFPGATimestamp()
 
     def getLatestResult(self) -> PhotonPipelineResult:
         self._versionCheck()
 
         retVal = PhotonPipelineResult()
-        packetWithTimestamp = self.rawBytesEntry.getAtomic()
+        packetWithTimestamp = self._rawBytesEntry.getAtomic()
         byteList = packetWithTimestamp.value
         timestamp = packetWithTimestamp.time
 
@@ -94,57 +94,57 @@ class PhotonCamera:
             return retVal
 
     def getDriverMode(self) -> bool:
-        return self.driverModeSubscriber.get()
+        return self._driverModeSubscriber.get()
 
     def setDriverMode(self, driverMode: bool) -> None:
-        self.driverModePublisher.set(driverMode)
+        self._driverModePublisher.set(driverMode)
 
     def takeInputSnapshot(self) -> None:
-        self.inputSaveImgEntry.set(self.inputSaveImgEntry.get() + 1)
+        self._inputSaveImgEntry.set(self._inputSaveImgEntry.get() + 1)
 
     def takeOutputSnapshot(self) -> None:
-        self.outputSaveImgEntry.set(self.outputSaveImgEntry.get() + 1)
+        self._outputSaveImgEntry.set(self._outputSaveImgEntry.get() + 1)
 
     def getPipelineIndex(self) -> int:
-        return self.pipelineIndexState.get(0)
+        return self._pipelineIndexState.get(0)
 
     def setPipelineIndex(self, index: int) -> None:
-        self.pipelineIndexRequest.set(index)
+        self._pipelineIndexRequest.set(index)
 
     def getLEDMode(self) -> VisionLEDMode:
-        mode = self.ledModeState.get()
+        mode = self._ledModeState.get()
         return VisionLEDMode(mode)
 
     def setLEDMode(self, led: VisionLEDMode) -> None:
-        self.ledModeRequest.set(led.value)
+        self._ledModeRequest.set(led.value)
 
     def getName(self) -> str:
-        return self.name
+        return self._name
 
     def isConnected(self) -> bool:
-        curHeartbeat = self.heartbeatEntry.get()
+        curHeartbeat = self._heartbeatEntry.get()
         now = Timer.getFPGATimestamp()
 
-        if curHeartbeat != self.prevHeartbeat:
-            self.prevHeartbeat = curHeartbeat
-            self.prevHeartbeatChangeTime = now
+        if curHeartbeat != self._prevHeartbeat:
+            self._prevHeartbeat = curHeartbeat
+            self._prevHeartbeatChangeTime = now
 
-        return (now - self.prevHeartbeatChangeTime) < 0.5
+        return (now - self._prevHeartbeatChangeTime) < 0.5
 
     def _versionCheck(self) -> None:
-        global lastVersionTimeCheck
+        global _lastVersionTimeCheck
 
         if not _VERSION_CHECK_ENABLED:
             return
 
-        if (Timer.getFPGATimestamp() - lastVersionTimeCheck) < 5.0:
+        if (Timer.getFPGATimestamp() - _lastVersionTimeCheck) < 5.0:
             return
 
-        lastVersionTimeCheck = Timer.getFPGATimestamp()
+        _lastVersionTimeCheck = Timer.getFPGATimestamp()
 
-        if not self.heartbeatEntry.exists():
+        if not self._heartbeatEntry.exists():
             cameraNames = (
-                self.cameraTable.getInstance().getTable(self._tableName).getSubTables()
+                self._cameraTable.getInstance().getTable(self._tableName).getSubTables()
             )
             if len(cameraNames) == 0:
                 wpilib.reportError(
@@ -153,13 +153,13 @@ class PhotonCamera:
                 )
             else:
                 wpilib.reportError(
-                    f"PhotonVision coprocessor at path {self.path} not found in Network Tables. Double check that your camera names match! Only the following camera names were found: { ''.join(cameraNames)}",
+                    f"PhotonVision coprocessor at path {self._path} not found in Network Tables. Double check that your camera names match! Only the following camera names were found: { ''.join(cameraNames)}",
                     True,
                 )
 
         elif not self.isConnected():
             wpilib.reportWarning(
-                f"PhotonVision coprocessor at path {self.path} is not sending new data.",
+                f"PhotonVision coprocessor at path {self._path} is not sending new data.",
                 True,
             )
 
