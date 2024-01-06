@@ -438,33 +438,32 @@ public class SqlConfigProvider extends ConfigProvider {
                             Tables.GLOBAL, Columns.GLB_FILENAME, Columns.GLB_CONTENTS);
 
             if (!skipSavingHWSet) {
-            statement1 = conn.prepareStatement(sqlString);
-            addFile(
-                    statement1,
-                    GlobalKeys.HARDWARE_SETTINGS,
-                    JacksonUtils.serializeToString(config.getHardwareSettings()));
-            statement1.executeUpdate();
+                statement1 = conn.prepareStatement(sqlString);
+                addFile(
+                        statement1,
+                        GlobalKeys.HARDWARE_SETTINGS,
+                        JacksonUtils.serializeToString(config.getHardwareSettings()));
+                statement1.executeUpdate();
             }
 
-
             if (!skipSavingNWCfg) {
-            statement2 = conn.prepareStatement(sqlString);
-            addFile(
-                    statement2,
-                    GlobalKeys.NETWORK_CONFIG,
-                    JacksonUtils.serializeToString(config.getNetworkConfig()));
-            statement2.executeUpdate();
-            statement2.close();
+                statement2 = conn.prepareStatement(sqlString);
+                addFile(
+                        statement2,
+                        GlobalKeys.NETWORK_CONFIG,
+                        JacksonUtils.serializeToString(config.getNetworkConfig()));
+                statement2.executeUpdate();
+                statement2.close();
             }
 
             if (!skipSavingHWCfg) {
-            statement3 = conn.prepareStatement(sqlString);
-            addFile(
-                    statement3,
-                    GlobalKeys.HARDWARE_CONFIG,
-                    JacksonUtils.serializeToString(config.getHardwareConfig()));
-            statement3.executeUpdate();
-            statement3.close();
+                statement3 = conn.prepareStatement(sqlString);
+                addFile(
+                        statement3,
+                        GlobalKeys.HARDWARE_CONFIG,
+                        JacksonUtils.serializeToString(config.getHardwareConfig()));
+                statement3.executeUpdate();
+                statement3.close();
             }
 
         } catch (SQLException | IOException e) {
