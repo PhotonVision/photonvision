@@ -17,6 +17,7 @@
 
 package org.photonvision.server;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.http.Context;
@@ -43,8 +44,10 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.ShellExec;
 import org.photonvision.common.util.TimedTaskManager;
+import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.common.util.file.ProgramDirectoryUtilities;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.processes.VisionModuleManager;
 
 public class RequestHandler {
@@ -364,22 +367,37 @@ public class RequestHandler {
         NetworkTablesManager.getInstance().setConfig(config);
     }
 
+    public static class UICameraSettingsRequest {
+        @JsonProperty("fov")
+        double fov;
+
+        @JsonProperty("quirksToChange")
+        HashMap<CameraQuirk, Boolean> quirksToChange;
+    }
+
     public static void onCameraSettingsRequest(Context ctx) {
         try {
             var data = kObjectMapper.readTree(ctx.body());
 
             int index = data.get("index").asInt();
-            double fov = data.get("settings").get("fov").asDouble();
+            // double fov = data.get("settings").get("fov").asDouble();
+            var settings =
+                    JacksonUtils.deserialize(data.get("settings").toString(), UICameraSettingsRequest.class);
+            var fov = settings.fov;
+
+            logger.info("Changing camera FOV to: " + fov);
+            logger.info("Changing quirks to: " + settings.quirksToChange.toString());
 
             var module = VisionModuleManager.getInstance().getModule(index);
             module.setFov(fov);
+            module.changeCameraQuirks(settings.quirksToChange);
 
             module.saveModule();
 
             ctx.status(200);
             ctx.result("Successfully saved camera settings");
             logger.info("Successfully saved camera settings");
-        } catch (JsonProcessingException | NullPointerException e) {
+        } catch (NullPointerException | IOException e) {
             ctx.status(400);
             ctx.result("The provided camera settings were malformed");
             logger.error("The provided camera settings were malformed", e);

@@ -31,6 +31,7 @@ import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.processes.VisionSource;
@@ -180,6 +181,7 @@ public class PhotonConfiguration {
         public int inputStreamPort;
         public List<CameraCalibrationCoefficients> calibrations;
         public boolean isFovConfigurable = true;
+        public QuirkyCamera cameraQuirks;
         public boolean isCSICamera;
     }
 }
