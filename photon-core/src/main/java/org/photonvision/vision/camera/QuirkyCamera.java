@@ -52,16 +52,16 @@ public class QuirkyCamera {
                     // Generic arducam. Since OV2311 can't be differentiated at first boot, apply stickyFPS to
                     // the generic case, too
                     new QuirkyCamera(
-                            0x6366,
                             0x0c45,
+                            0x6366,
                             "",
                             "Arducam Generic",
                             CameraQuirk.ArudcamCamera,
                             CameraQuirk.StickyFPS),
                     // Arducam OV2311
                     new QuirkyCamera(
-                            0x6366,
                             0x0c45,
+                            0x6366,
                             "OV2311",
                             "OV2311",
                             CameraQuirk.ArudcamCamera,
@@ -69,8 +69,8 @@ public class QuirkyCamera {
                             CameraQuirk.StickyFPS),
                     // Arducam OV9281
                     new QuirkyCamera(
-                            0x6366,
                             0x0c45,
+                            0x6366,
                             "OV9281",
                             "OV9281",
                             CameraQuirk.ArudcamCamera,
