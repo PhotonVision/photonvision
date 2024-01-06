@@ -3,7 +3,7 @@ import type {
   CalibrationBoardTypes,
   CameraCalibrationResult,
   CameraSettings,
-  ConfigurableCameraSettings,
+  CameraSettingsChangeRequest,
   Resolution,
   RobotOffsetType,
   VideoFormat
@@ -111,14 +111,9 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      * Update the configurable camera settings.
      *
      * @param data camera settings to save.
-     * @param updateStore whether or not to update the store. This is useful if the input field already models the store reference.
      * @param cameraIndex the index of the camera.
      */
-    updateCameraSettings(
-      data: ConfigurableCameraSettings,
-      updateStore = true,
-      cameraIndex: number = useStateStore().currentCameraIndex
-    ) {
+    updateCameraSettings(data: CameraSettingsChangeRequest, cameraIndex: number = useStateStore().currentCameraIndex) {
       // The camera settings endpoint doesn't actually require all data, instead, it needs key data such as the FOV
       const payload = {
         settings: {
@@ -126,9 +121,6 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         },
         index: cameraIndex
       };
-      if (updateStore) {
-        this.currentCameraSettings.fov.value = data.fov;
-      }
       return axios.post("/settings/camera", payload);
     },
     /**
