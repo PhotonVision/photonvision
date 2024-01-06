@@ -148,7 +148,7 @@ export enum ValidQuirks {
   StickyFPS = "StickyFPS"
 }
 
-export interface CameraQuirks {
+export interface QuirkyCamera {
   baseName: string;
   usbVid: number;
   usbPid: number;
@@ -177,7 +177,7 @@ export interface CameraSettings {
   pipelineNicknames: string[];
   pipelineSettings: ActivePipelineSettings;
 
-  cameraQuirks: CameraQuirks;
+  cameraQuirks: QuirkyCamera;
   isCSICamera: boolean;
 }
 

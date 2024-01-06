@@ -5,7 +5,7 @@ import type {
   LogLevel,
   MetricData,
   NetworkSettings,
-  CameraQuirks
+  QuirkyCamera
 } from "@/types/SettingTypes";
 import type { ActivePipelineSettings } from "@/types/PipelineTypes";
 import type { AprilTagFieldLayout, PipelineResult } from "@/types/PhotonTrackingTypes";
@@ -57,7 +57,7 @@ export interface WebsocketCameraSettingsUpdate {
   outputStreamPort: number;
   pipelineNicknames: string[];
   videoFormatList: WebsocketVideoFormat;
-  cameraQuirks: CameraQuirks;
+  cameraQuirks: QuirkyCamera;
 }
 export interface WebsocketNTUpdate {
   connected: boolean;
