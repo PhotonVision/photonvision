@@ -173,7 +173,7 @@ const currentNetworkInterfaceIndex = computed<number>({
         <span style="font-weight: 700">Advanced Networking</span>
         <pv-switch
           v-model="tempSettingsStruct.shouldManage"
-          :disabled="!useSettingsStore().network.canManage || !useSettingsStore().network.networkingDisabled"
+          :disabled="!useSettingsStore().network.canManage || useSettingsStore().network.networkingDisabled"
           label="Manage Device Networking"
           tooltip="If enabled, Photon will manage device hostname and network settings."
           :label-cols="4"
