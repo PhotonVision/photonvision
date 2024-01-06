@@ -18,6 +18,7 @@ class PhotonPipelineResult:
         self.multiTagResult = MultiTargetPNPResult()
         self.multiTagResult.createFromPacket(packet)
         targetCount = packet.decode8()
+        print(f"targetCount = {targetCount}")
         for _ in range(targetCount):
             target = PhotonTrackedTarget()
             target.createFromPacket(packet)
