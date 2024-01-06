@@ -67,7 +67,7 @@ const saveCameraSettings = () => {
         message: response.data.text || response.data
       });
 
-      // Update the local settings cause the backend checked their validity
+      // Update the local settings cause the backend checked their validity. Assign is to deref value
       useCameraSettingsStore().currentCameraSettings.fov.value = tempSettingsStruct.value.fov;
       useCameraSettingsStore().currentCameraSettings.cameraQuirks.quirks = Object.assign(
         {},
