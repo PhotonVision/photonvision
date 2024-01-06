@@ -17,6 +17,10 @@ class PNPResult:
 
     def createFromPacket(self, packet: Packet) -> Packet:
         self.isPresent = packet.decodeBoolean()
+
+        if not self.isPresent:
+            return packet
+
         self.best = packet.decodeTransform()
         self.alt = packet.decodeTransform()
         self.bestReprojError = packet.decodeDouble()
