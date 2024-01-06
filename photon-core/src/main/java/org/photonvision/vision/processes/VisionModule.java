@@ -512,6 +512,7 @@ public class VisionModule {
                 SerializationUtils.objectToHashMap(pipelineManager.getCurrentPipelineSettings());
         ret.currentPipelineIndex = pipelineManager.getCurrentPipelineIndex();
         ret.pipelineNicknames = pipelineManager.getPipelineNicknames();
+        ret.cameraQuirks = visionSource.getSettables().getConfiguration().cameraQuirks;
 
         // TODO refactor into helper method
         var temp = new HashMap<Integer, HashMap<String, Object>>();
@@ -607,6 +608,16 @@ public class VisionModule {
             logger.error("Got null calibration?");
         }
 
+        saveAndBroadcastAll();
+    }
+
+    /**
+     * Add/remove quirks from the camera we're controlling
+     *
+     * @param quirksToChange map of true/false for quirks we should change
+     */
+    public void changeCameraQuirks(HashMap<CameraQuirk, Boolean> quirksToChange) {
+        visionSource.getCameraConfiguration().cameraQuirks.updateQuirks(quirksToChange);
         saveAndBroadcastAll();
     }
 }

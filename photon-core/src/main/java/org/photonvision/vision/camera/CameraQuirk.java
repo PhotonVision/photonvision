@@ -32,4 +32,13 @@ public enum CameraQuirk {
     AdjustableFocus,
     /** Changing FPS repeatedly with small delay does not work correctly */
     StickyFPS,
+    /** Camera is an arducam. This means it shares VID/PID with other arducams (ew) */
+    ArduCamCamera,
+    /**
+     * Camera is an arducam ov9281 which has a funky exposure issue where it is defined in v4l as
+     * 1-5000 instead of 1-75
+     */
+    ArduOV9281,
+    /** Dummy quirk to tell OV2311 from OV9281 */
+    ArduOV2311,
 }

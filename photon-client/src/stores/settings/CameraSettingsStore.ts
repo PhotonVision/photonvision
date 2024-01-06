@@ -103,7 +103,8 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         isCSICamera: d.isCSICamera,
         pipelineNicknames: d.pipelineNicknames,
         currentPipelineIndex: d.currentPipelineIndex,
-        pipelineSettings: d.currentPipelineSettings
+        pipelineSettings: d.currentPipelineSettings,
+        cameraQuirks: d.cameraQuirks
       }));
     },
     /**

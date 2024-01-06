@@ -137,6 +137,27 @@ export interface CameraCalibrationResult {
 
 export interface ConfigurableCameraSettings {
   fov: number;
+  // Need map of (quirk name string) -> boolean
+  quirksToChange: object;
+}
+
+export interface QuirkyCamera {
+  baseName: string;
+  usbVid: number;
+  usbPid: number;
+  displayName: string;
+  quirks: {
+    AWBGain: boolean;
+    AdjustableFocus: boolean;
+    ArduOV9281: boolean;
+    ArduOV2311: boolean;
+    ArduCamCamera: boolean;
+    CompletelyBroken: boolean;
+    FPSCap100: boolean;
+    Gain: boolean;
+    PiCam: boolean;
+    StickyFPS: boolean;
+  };
 }
 
 export interface CameraSettings {
@@ -159,6 +180,8 @@ export interface CameraSettings {
   currentPipelineIndex: number;
   pipelineNicknames: string[];
   pipelineSettings: ActivePipelineSettings;
+
+  cameraQuirks: QuirkyCamera;
   isCSICamera: boolean;
 }
 
@@ -233,7 +256,25 @@ export const PlaceholderCameraSettings: CameraSettings = {
   lastPipelineIndex: 0,
   currentPipelineIndex: 0,
   pipelineSettings: DefaultAprilTagPipelineSettings,
-  isCSICamera: false
+  cameraQuirks: {
+    displayName: "Blank 1",
+    baseName: "Blank 2",
+    usbVid: -1,
+    usbPid: -1,
+    quirks: {
+      AWBGain: false,
+      AdjustableFocus: false,
+      ArduOV9281: false,
+      ArduOV2311: false,
+      ArduCamCamera: false,
+      CompletelyBroken: false,
+      FPSCap100: false,
+      Gain: false,
+      PiCam: false,
+      StickyFPS: false,
+    },
+  },
+  isCSICamera: false,
 };
 
 export enum CalibrationBoardTypes {

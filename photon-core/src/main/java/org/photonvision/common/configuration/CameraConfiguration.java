@@ -27,6 +27,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraType;
+import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.DriverModePipelineSettings;
 import org.photonvision.vision.processes.PipelineManager;
@@ -45,6 +46,8 @@ public class CameraConfiguration {
 
     /** Can be either path (ex /dev/videoX) or index (ex 1). */
     public String path = "";
+
+    public QuirkyCamera cameraQuirks;
 
     @JsonIgnore public String[] otherPaths = {};
 
@@ -93,6 +96,7 @@ public class CameraConfiguration {
             @JsonProperty("FOV") double FOV,
             @JsonProperty("path") String path,
             @JsonProperty("cameraType") CameraType cameraType,
+            @JsonProperty("cameraQuirks") QuirkyCamera cameraQuirks,
             @JsonProperty("calibration") List<CameraCalibrationCoefficients> calibrations,
             @JsonProperty("currentPipelineIndex") int currentPipelineIndex) {
         this.baseName = baseName;
@@ -101,6 +105,7 @@ public class CameraConfiguration {
         this.FOV = FOV;
         this.path = path;
         this.cameraType = cameraType;
+        this.cameraQuirks = cameraQuirks;
         this.calibrations = calibrations != null ? calibrations : new ArrayList<>();
         this.currentPipelineIndex = currentPipelineIndex;
 
@@ -165,6 +170,8 @@ public class CameraConfiguration {
                 + Arrays.toString(otherPaths)
                 + ", cameraType="
                 + cameraType
+                + ", cameraQuirks="
+                + cameraQuirks
                 + ", FOV="
                 + FOV
                 + ", calibrations="
