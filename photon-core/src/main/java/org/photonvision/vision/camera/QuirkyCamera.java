@@ -56,7 +56,7 @@ public class QuirkyCamera {
                             0x6366,
                             "",
                             "Arducam Generic",
-                            CameraQuirk.ArudcamCamera,
+                            CameraQuirk.ArduCamCamera,
                             CameraQuirk.StickyFPS),
                     // Arducam OV2311
                     new QuirkyCamera(
@@ -64,7 +64,7 @@ public class QuirkyCamera {
                             0x6366,
                             "OV2311",
                             "OV2311",
-                            CameraQuirk.ArudcamCamera,
+                            CameraQuirk.ArduCamCamera,
                             CameraQuirk.ArduOV2311,
                             CameraQuirk.StickyFPS),
                     // Arducam OV9281
@@ -73,7 +73,7 @@ public class QuirkyCamera {
                             0x6366,
                             "OV9281",
                             "OV9281",
-                            CameraQuirk.ArudcamCamera,
+                            CameraQuirk.ArduCamCamera,
                             CameraQuirk.ArduOV9281));
 
     public static final QuirkyCamera DefaultCamera = new QuirkyCamera(0, 0, "");

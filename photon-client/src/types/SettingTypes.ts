@@ -151,7 +151,7 @@ export interface QuirkyCamera {
     AdjustableFocus: boolean;
     ArduOV9281: boolean;
     ArduOV2311: boolean;
-    ArudcamCamera: boolean;
+    ArduCamCamera: boolean;
     CompletelyBroken: boolean;
     FPSCap100: boolean;
     Gain: boolean;
@@ -266,7 +266,7 @@ export const PlaceholderCameraSettings: CameraSettings = {
       AdjustableFocus: false,
       ArduOV9281: false,
       ArduOV2311: false,
-      ArudcamCamera: false,
+      ArduCamCamera: false,
       CompletelyBroken: false,
       FPSCap100: false,
       Gain: false,

@@ -76,7 +76,7 @@ const arducamModel = computed({
 
 const isArducam = () => {
   const settings = useCameraSettingsStore().currentCameraSettings;
-  return settings.cameraQuirks.quirks.ArudcamCamera;
+  return settings.cameraQuirks.quirks.ArduCamCamera;
 };
 </script>
 
