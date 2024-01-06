@@ -150,7 +150,6 @@ public class SqlConfigProvider extends ConfigProvider {
                 stmt.addBatch(sql);
             }
             stmt.executeBatch();
-            // stmt.execute(SqlMigrations.SQL[index]);
             setUserVersion(conn, index + 1);
             tryCommit(conn);
         } catch (SQLException e) {
