@@ -20,6 +20,7 @@ package org.photonvision.vision.frame.consumer;
 import edu.wpi.first.cscore.*;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.util.PixelFormat;
 import java.awt.*;
 import java.util.ArrayList;
 import org.opencv.core.CvType;
@@ -118,7 +119,7 @@ public class MJPGFrameConsumer implements AutoCloseable {
     boolean isDisabled = false;
 
     public MJPGFrameConsumer(String sourceName, int width, int height, int port) {
-        this.cvSource = new CvSource(sourceName, VideoMode.PixelFormat.kMJPEG, width, height, 30);
+        this.cvSource = new CvSource(sourceName, PixelFormat.kMJPEG, width, height, 30);
         this.table =
                 NetworkTableInstance.getDefault().getTable("/CameraPublisher").getSubTable(sourceName);
 
@@ -188,7 +189,7 @@ public class MJPGFrameConsumer implements AutoCloseable {
 
     public void disabledTick() {
         if (!isDisabled) {
-            cvSource.setVideoMode(VideoMode.PixelFormat.kMJPEG, EMPTY_MAT.width(), EMPTY_MAT.height(), 0);
+            cvSource.setVideoMode(PixelFormat.kMJPEG, EMPTY_MAT.width(), EMPTY_MAT.height(), 0);
             isDisabled = true;
         }
 
@@ -227,7 +228,7 @@ public class MJPGFrameConsumer implements AutoCloseable {
                 + " fps";
     }
 
-    private static String pixelFormatToString(VideoMode.PixelFormat pixelFormat) {
+    private static String pixelFormatToString(PixelFormat pixelFormat) {
         switch (pixelFormat) {
             case kMJPEG:
                 return "MJPEG";

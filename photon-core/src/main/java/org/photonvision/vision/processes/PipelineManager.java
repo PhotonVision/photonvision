@@ -37,7 +37,7 @@ public class PipelineManager {
     public static final int CAL_3D_INDEX = -2;
 
     protected final List<CVPipelineSettings> userPipelineSettings;
-    protected final Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline();
+    protected final Calibrate3dPipeline calibration3dPipeline;
     protected final DriverModePipeline driverModePipeline = new DriverModePipeline();
 
     /** Index of the currently active pipeline. Defaults to 0. */
@@ -56,21 +56,23 @@ public class PipelineManager {
     /**
      * Creates a PipelineManager with a DriverModePipeline, a Calibration3dPipeline, and all provided
      * pipelines.
-     *
-     * @param userPipelines Pipelines to add to the manager.
      */
-    public PipelineManager(
-            DriverModePipelineSettings driverSettings, List<CVPipelineSettings> userPipelines) {
+    PipelineManager(
+            DriverModePipelineSettings driverSettings,
+            List<CVPipelineSettings> userPipelines,
+            String uniqueName) {
         this.userPipelineSettings = new ArrayList<>(userPipelines);
         // This is to respect the default res idx for vendor cameras
 
         this.driverModePipeline.setSettings(driverSettings);
 
         if (userPipelines.isEmpty()) addPipeline(PipelineType.Reflective);
+
+        calibration3dPipeline = new Calibrate3dPipeline(uniqueName);
     }
 
     public PipelineManager(CameraConfiguration config) {
-        this(config.driveModeSettings, config.pipelineSettings);
+        this(config.driveModeSettings, config.pipelineSettings, config.uniqueName);
     }
 
     /**

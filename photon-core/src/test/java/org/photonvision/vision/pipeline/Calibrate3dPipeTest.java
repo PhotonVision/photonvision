@@ -22,19 +22,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.math.util.Units;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.cartesian.CartesianTest;
+import org.junitpioneer.jupiter.cartesian.CartesianTest.Enum;
+import org.junitpioneer.jupiter.cartesian.CartesianTest.Values;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.LogLevel;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TestUtils;
+import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
@@ -42,231 +44,104 @@ import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
-import org.photonvision.vision.pipe.impl.Calibrate3dPipe;
-import org.photonvision.vision.pipe.impl.FindBoardCornersPipe;
 
 public class Calibrate3dPipeTest {
     @BeforeAll
-    public static void init() {
+    public static void init() throws IOException {
         TestUtils.loadLibraries();
+        MrCalJNILoader.forceLoad();
+
+        var logLevel = LogLevel.DEBUG;
+        Logger.setLevel(LogGroup.Camera, logLevel);
+        Logger.setLevel(LogGroup.WebServer, logLevel);
+        Logger.setLevel(LogGroup.VisionModule, logLevel);
+        Logger.setLevel(LogGroup.Data, logLevel);
+        Logger.setLevel(LogGroup.Config, logLevel);
+        Logger.setLevel(LogGroup.General, logLevel);
     }
 
-    @Test
-    public void perViewErrorsTest() {
-        List<Mat> frames = new ArrayList<>();
+    enum CalibrationDatasets {
+        LIFECAM_480("lifecam/2024-01-02_lifecam_480", new Size(640, 480), new Size(11, 11)),
+        LIFECAM_1280("lifecam/2024-01-02_lifecam_1280", new Size(1280, 720), new Size(11, 11));
 
-        File dir = new File(TestUtils.getDotBoardImagesPath().toAbsolutePath().toString());
-        File[] directoryListing = dir.listFiles();
-        for (var file : directoryListing) {
-            frames.add(Imgcodecs.imread(file.getAbsolutePath()));
-        }
+        final String path;
+        final Size size;
+        final Size boardSize;
 
-        FindBoardCornersPipe findBoardCornersPipe = new FindBoardCornersPipe();
-        findBoardCornersPipe.setParams(
-                new FindBoardCornersPipe.FindCornersPipeParams(
-                        11, 4, UICalibrationData.BoardType.DOTBOARD, 15, FrameDivisor.NONE));
-
-        List<Triple<Size, Mat, Mat>> foundCornersList = new ArrayList<>();
-
-        for (var f : frames) {
-            var copy = new Mat();
-            f.copyTo(copy);
-            foundCornersList.add(findBoardCornersPipe.run(Pair.of(f, copy)).output);
-        }
-
-        Calibrate3dPipe calibrate3dPipe = new Calibrate3dPipe();
-        calibrate3dPipe.setParams(new Calibrate3dPipe.CalibratePipeParams(new Size(640, 480)));
-
-        var calibrate3dPipeOutput = calibrate3dPipe.run(foundCornersList);
-        assertTrue(calibrate3dPipeOutput.output.perViewErrors.length > 0);
-        System.out.println(
-                "Per View Errors: " + Arrays.toString(calibrate3dPipeOutput.output.perViewErrors));
-
-        for (var f : frames) {
-            f.release();
+        private CalibrationDatasets(String path, Size image, Size chessboard) {
+            this.path = path;
+            this.size = image;
+            this.boardSize = chessboard;
         }
     }
 
-    @Test
-    public void calibrationPipelineTest() {
-        int startMatCount = CVMat.getMatCount();
-
-        File dir = new File(TestUtils.getDotBoardImagesPath().toAbsolutePath().toString());
-        File[] directoryListing = dir.listFiles();
-
-        Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline(20);
-        calibration3dPipeline.getSettings().boardHeight = 11;
-        calibration3dPipeline.getSettings().boardWidth = 4;
-        calibration3dPipeline.getSettings().boardType = UICalibrationData.BoardType.DOTBOARD;
-        calibration3dPipeline.getSettings().gridSize = 15;
-        calibration3dPipeline.getSettings().resolution = new Size(640, 480);
-
-        for (var file : directoryListing) {
-            calibration3dPipeline.takeSnapshot();
-            var frame =
-                    new Frame(
-                            new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
-                            new CVMat(),
-                            FrameThresholdType.NONE,
-                            new FrameStaticProperties(640, 480, 60, null));
-            var output = calibration3dPipeline.run(frame, QuirkyCamera.DefaultCamera);
-            // TestUtils.showImage(output.inputAndOutputFrame.processedImage.getMat());
-            output.release();
-            frame.release();
-        }
-
-        assertTrue(
-                calibration3dPipeline.foundCornersList.stream()
-                        .map(Triple::getRight)
-                        .allMatch(it -> it.width() > 0 && it.height() > 0));
-
-        calibration3dPipeline.removeSnapshot(0);
-        var frame =
-                new Frame(
-                        new CVMat(Imgcodecs.imread(directoryListing[0].getAbsolutePath())),
-                        new CVMat(),
-                        FrameThresholdType.NONE,
-                        new FrameStaticProperties(640, 480, 60, null));
-        calibration3dPipeline.run(frame, QuirkyCamera.DefaultCamera).release();
-        frame.release();
-
-        assertTrue(
-                calibration3dPipeline.foundCornersList.stream()
-                        .map(Triple::getRight)
-                        .allMatch(it -> it.width() > 0 && it.height() > 0));
-
-        var cal = calibration3dPipeline.tryCalibration();
-        calibration3dPipeline.finishCalibration();
-
-        assertNotNull(cal);
-        assertNotNull(cal.perViewErrors);
-        System.out.println("Per View Errors: " + Arrays.toString(cal.perViewErrors));
-        System.out.println("Camera Intrinsics: " + cal.cameraIntrinsics.toString());
-        System.out.println("Dist Coeffs: " + cal.distCoeffs.toString());
-        System.out.println("Standard Deviation: " + cal.standardDeviation);
-        System.out.println(
-                "Mean: " + Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
-
-        // Confirm we didn't get leaky on our mat usage
-        // assertTrue(CVMat.getMatCount() == startMatCount); // TODO Figure out why this doesn't work in
-        // CI
-        System.out.println("CVMats left: " + CVMat.getMatCount() + " Start: " + startMatCount);
-    }
-
-    @Test
-    public void calibrateSquares320x240_pi() {
+    /**
+     * Run camera calibration on a given dataset
+     *
+     * @param dataset Location of images and their size
+     * @param useMrCal If we should use mrcal or opencv for camera calibration
+     */
+    @CartesianTest
+    public void calibrateTestMatrix(
+            @Enum(CalibrationDatasets.class) CalibrationDatasets dataset,
+            @Values(booleans = {true, false}) boolean useMrCal) {
         // Pi3 and V1.3 camera
         String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
-        File dir = Path.of(base, "piCam", "320_240_1").toFile();
-        Size sz = new Size(320, 240);
-        calibrateSquaresCommon(sz, dir);
+        File dir = Path.of(base, dataset.path).toFile();
+        calibrateSquaresCommon(dataset.size, dir, dataset.boardSize, useMrCal);
     }
 
-    @Test
-    public void calibrateSquares640x480_pi() {
-        // Pi3 and V1.3 camera
-        String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
-        File dir = Path.of(base, "piCam", "640_480_1").toFile();
-        Size sz = new Size(640, 480);
-        calibrateSquaresCommon(sz, dir);
-    }
-
-    @Test
-    public void calibrateSquares960x720_pi() {
-        // Pi3 and V1.3 camera
-        String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
-        File dir = Path.of(base, "piCam", "960_720_1").toFile();
-        Size sz = new Size(960, 720);
-        calibrateSquaresCommon(sz, dir);
-    }
-
-    @Test
-    public void calibrateSquares1920x1080_pi() {
-        // Pi3 and V1.3 camera
-        String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
-        File dir = Path.of(base, "piCam", "1920_1080_1").toFile();
-        Size sz = new Size(1920, 1080);
-        calibrateSquaresCommon(sz, dir);
-    }
-
-    @Test
-    public void calibrateSquares320x240_gloworm() {
-        // Gloworm Beta
-        String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
-        File dir = Path.of(base, "gloworm", "320_240_1").toFile();
-        Size sz = new Size(320, 240);
-        Size boardDim = new Size(9, 7);
-        calibrateSquaresCommon(sz, dir, boardDim);
-    }
-
-    @Test
-    public void calibrateSquares_960_720_gloworm() {
-        // Gloworm Beta
-        String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
-        File dir = Path.of(base, "gloworm", "960_720_1").toFile();
-        Size sz = new Size(960, 720);
-        Size boardDim = new Size(9, 7);
-        calibrateSquaresCommon(sz, dir, boardDim);
-    }
-
-    @Test
-    public void calibrateSquares_1280_720_gloworm() {
-        // Gloworm Beta
-        // This image set will return a fairly offset Y-pixel for the optical center point
-        String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
-        File dir = Path.of(base, "gloworm", "1280_720_1").toFile();
-        Size sz = new Size(1280, 720);
-        Size boardDim = new Size(9, 7);
-        calibrateSquaresCommon(sz, dir, boardDim, 640, 192);
-    }
-
-    @Test
-    public void calibrateSquares_1920_1080_gloworm() {
-        // Gloworm Beta
-        // This image set has most samples on the right, and is expected to return a slightly
-        // wonky calibration.
-        String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
-        File dir = Path.of(base, "gloworm", "1920_1080_1").toFile();
-        Size sz = new Size(1920, 1080);
-        Size boardDim = new Size(9, 7);
-        calibrateSquaresCommon(sz, dir, boardDim, 1311, 540);
-    }
-
-    public void calibrateSquaresCommon(Size imgRes, File rootFolder) {
-        calibrateSquaresCommon(imgRes, rootFolder, new Size(8, 8));
-    }
-
-    public void calibrateSquaresCommon(Size imgRes, File rootFolder, Size boardDim) {
+    public static void calibrateSquaresCommon(
+            Size imgRes, File rootFolder, Size boardDim, boolean useMrCal) {
         calibrateSquaresCommon(
-                imgRes, rootFolder, boardDim, Units.inchesToMeters(1), imgRes.width / 2, imgRes.height / 2);
+                imgRes,
+                rootFolder,
+                boardDim,
+                Units.inchesToMeters(1),
+                imgRes.width / 2,
+                imgRes.height / 2,
+                useMrCal);
     }
 
-    public void calibrateSquaresCommon(
-            Size imgRes, File rootFolder, Size boardDim, double expectedXCenter, double expectedYCenter) {
+    public static void calibrateSquaresCommon(
+            Size imgRes,
+            File rootFolder,
+            Size boardDim,
+            double expectedXCenter,
+            double expectedYCenter,
+            boolean useMrCal) {
         calibrateSquaresCommon(
-                imgRes, rootFolder, boardDim, Units.inchesToMeters(1), expectedXCenter, expectedYCenter);
+                imgRes,
+                rootFolder,
+                boardDim,
+                Units.inchesToMeters(1),
+                expectedXCenter,
+                expectedYCenter,
+                useMrCal);
     }
 
-    public void calibrateSquaresCommon(
+    public static void calibrateSquaresCommon(
             Size imgRes,
             File rootFolder,
             Size boardDim,
             double boardGridSize_m,
             double expectedXCenter,
-            double expectedYCenter) {
+            double expectedYCenter,
+            boolean useMrCal) {
         int startMatCount = CVMat.getMatCount();
 
         File[] directoryListing = rootFolder.listFiles();
 
-        assertTrue(directoryListing.length >= 25);
+        assertTrue(directoryListing.length >= 12);
 
-        Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline(20);
+        Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline(10, "test_squares_common");
         calibration3dPipeline.getSettings().boardType = UICalibrationData.BoardType.CHESSBOARD;
         calibration3dPipeline.getSettings().resolution = imgRes;
         calibration3dPipeline.getSettings().boardHeight = (int) Math.round(boardDim.height);
         calibration3dPipeline.getSettings().boardWidth = (int) Math.round(boardDim.width);
         calibration3dPipeline.getSettings().gridSize = boardGridSize_m;
         calibration3dPipeline.getSettings().streamingFrameDivisor = FrameDivisor.NONE;
+        calibration3dPipeline.getSettings().useMrCal = useMrCal;
 
         for (var file : directoryListing) {
             if (file.isFile()) {
@@ -288,7 +163,7 @@ public class Calibrate3dPipeTest {
 
         assertTrue(
                 calibration3dPipeline.foundCornersList.stream()
-                        .map(Triple::getRight)
+                        .map(it -> it.imagePoints)
                         .allMatch(it -> it.width() > 0 && it.height() > 0));
 
         var cal = calibration3dPipeline.tryCalibration();
@@ -298,7 +173,7 @@ public class Calibrate3dPipeTest {
 
         // Confirm we have indeed gotten valid calibration objects
         assertNotNull(cal);
-        assertNotNull(cal.perViewErrors);
+        assertNotNull(cal.observations);
 
         // Confirm the calibrated center pixel is fairly close to of the "expected" location at the
         // center of the sensor.
@@ -310,12 +185,8 @@ public class Calibrate3dPipeTest {
         assertTrue(centerXErrPct < 10.0);
         assertTrue(centerYErrPct < 10.0);
 
-        System.out.println("Per View Errors: " + Arrays.toString(cal.perViewErrors));
-        System.out.println("Camera Intrinsics: " + cal.cameraIntrinsics);
+        System.out.println("Camera Intrinsics: " + cal.cameraIntrinsics.toString());
         System.out.println("Dist Coeffs: " + cal.distCoeffs.toString());
-        System.out.println("Standard Deviation: " + cal.standardDeviation);
-        System.out.println(
-                "Mean: " + Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
 
         // Confirm we didn't get leaky on our mat usage
         // assertEquals(startMatCount, CVMat.getMatCount()); // TODO Figure out why this doesn't

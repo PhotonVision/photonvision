@@ -18,7 +18,9 @@
 package org.photonvision.vision.camera;
 
 import edu.wpi.first.cscore.VideoMode;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
+import edu.wpi.first.util.PixelFormat;
 import java.util.HashMap;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.util.math.MathUtils;
@@ -34,11 +36,13 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     private boolean lastAutoExposureActive;
     private int lastGain = 50;
     private Pair<Integer, Integer> lastAwbGains = new Pair<>(18, 18);
-    private boolean m_initialized = false;
+    public long r_ptr = 0;
 
     private final LibCameraJNI.SensorModel sensorModel;
 
-    private ImageRotationMode m_rotationMode;
+    private ImageRotationMode m_rotationMode = ImageRotationMode.DEG_0;
+
+    public final Object CAMERA_LOCK = new Object();
 
     public void setRotation(ImageRotationMode rotationMode) {
         if (rotationMode != m_rotationMode) {
@@ -53,34 +57,23 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
         videoModes = new HashMap<>();
 
-        sensorModel = LibCameraJNI.getSensorModel();
+        sensorModel = LibCameraJNI.getSensorModel(configuration.path);
 
         if (sensorModel == LibCameraJNI.SensorModel.IMX219) {
             // Settings for the IMX219 sensor, which is used on the Pi Camera Module v2
-            videoModes.put(
-                    0, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 320, 240, 120, 120, .39));
-            videoModes.put(
-                    1, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 320, 240, 30, 30, .39));
-            videoModes.put(
-                    2, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 640, 480, 65, 90, .39));
-            videoModes.put(
-                    3, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 640, 480, 30, 30, .39));
+            videoModes.put(0, new FPSRatedVideoMode(PixelFormat.kUnknown, 320, 240, 120, 120, .39));
+            videoModes.put(1, new FPSRatedVideoMode(PixelFormat.kUnknown, 320, 240, 30, 30, .39));
+            videoModes.put(2, new FPSRatedVideoMode(PixelFormat.kUnknown, 640, 480, 65, 90, .39));
+            videoModes.put(3, new FPSRatedVideoMode(PixelFormat.kUnknown, 640, 480, 30, 30, .39));
             // TODO: fix 1280x720 in the native code and re-add it
-            videoModes.put(
-                    4, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1920, 1080, 15, 20, .53));
-            videoModes.put(
-                    5, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 3280 / 2, 2464 / 2, 15, 20, 1));
-            videoModes.put(
-                    6, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 3280 / 4, 2464 / 4, 15, 20, 1));
+            videoModes.put(4, new FPSRatedVideoMode(PixelFormat.kUnknown, 1920, 1080, 15, 20, .53));
+            videoModes.put(5, new FPSRatedVideoMode(PixelFormat.kUnknown, 3280 / 2, 2464 / 2, 15, 20, 1));
+            videoModes.put(6, new FPSRatedVideoMode(PixelFormat.kUnknown, 3280 / 4, 2464 / 4, 15, 20, 1));
         } else if (sensorModel == LibCameraJNI.SensorModel.OV9281) {
-            videoModes.put(
-                    0, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 320, 240, 30, 30, .39));
-            videoModes.put(
-                    1, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1280 / 2, 800 / 2, 60, 60, 1));
-            videoModes.put(
-                    2, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 640, 480, 65, 90, .39));
-            videoModes.put(
-                    3, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1280, 800, 60, 60, 1));
+            videoModes.put(0, new FPSRatedVideoMode(PixelFormat.kUnknown, 320, 240, 30, 30, .39));
+            videoModes.put(1, new FPSRatedVideoMode(PixelFormat.kUnknown, 1280 / 2, 800 / 2, 60, 60, 1));
+            videoModes.put(2, new FPSRatedVideoMode(PixelFormat.kUnknown, 640, 480, 65, 90, .39));
+            videoModes.put(3, new FPSRatedVideoMode(PixelFormat.kUnknown, 1280, 800, 60, 60, 1));
 
         } else {
             if (sensorModel == LibCameraJNI.SensorModel.IMX477) {
@@ -95,17 +88,13 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
             }
 
             // Settings for the OV5647 sensor, which is used by the Pi Camera Module v1
-            videoModes.put(0, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 320, 240, 90, 90, 1));
-            videoModes.put(1, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 640, 480, 85, 90, 1));
-            videoModes.put(
-                    2, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 960, 720, 45, 49, 0.74));
+            videoModes.put(0, new FPSRatedVideoMode(PixelFormat.kUnknown, 320, 240, 90, 90, 1));
+            videoModes.put(1, new FPSRatedVideoMode(PixelFormat.kUnknown, 640, 480, 85, 90, 1));
+            videoModes.put(2, new FPSRatedVideoMode(PixelFormat.kUnknown, 960, 720, 45, 49, 0.74));
             // Half the size of the active areas on the OV5647
-            videoModes.put(
-                    3, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 2592 / 2, 1944 / 2, 20, 20, 1));
-            videoModes.put(
-                    4, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1280, 720, 30, 45, 0.91));
-            videoModes.put(
-                    5, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1920, 1080, 15, 20, 0.72));
+            videoModes.put(3, new FPSRatedVideoMode(PixelFormat.kUnknown, 2592 / 2, 1944 / 2, 20, 20, 1));
+            videoModes.put(4, new FPSRatedVideoMode(PixelFormat.kUnknown, 1280, 720, 30, 45, 0.91));
+            videoModes.put(5, new FPSRatedVideoMode(PixelFormat.kUnknown, 1920, 1080, 15, 20, 0.72));
         }
 
         // TODO need to add more video modes for new sensors here
@@ -121,7 +110,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     @Override
     public void setAutoExposure(boolean cameraAutoExposure) {
         lastAutoExposureActive = cameraAutoExposure;
-        LibCameraJNI.setAutoExposure(cameraAutoExposure);
+        LibCameraJNI.setAutoExposure(r_ptr, cameraAutoExposure);
     }
 
     @Override
@@ -131,23 +120,28 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
             return;
         }
 
+        // Store the exposure for use when we need to recreate the camera.
+        lastManualExposure = exposure;
+
+        // Minimum exposure can't be below 1uS cause otherwise it would be 0 and 0 is auto exposure.
+        double minExposure = 1;
+
         // HACKS!
         // If we set exposure too low, libcamera crashes or slows down
         // Very weird and smelly
         // For now, band-aid this by just not setting it lower than the "it breaks" limit
-        //  is different depending on camera.
+        // is different depending on camera.
+        // All units are uS.
         if (sensorModel == LibCameraJNI.SensorModel.OV9281) {
-            if (exposure < 6.0) {
-                exposure = 6.0;
-            }
+            minExposure = 4800;
         } else if (sensorModel == LibCameraJNI.SensorModel.OV5647) {
-            if (exposure < 0.7) {
-                exposure = 0.7;
-            }
+            minExposure = 560;
         }
+        // 80,000 uS seems like an exposure value that will be greater than ever needed while giving
+        // enough control over exposure.
+        exposure = MathUtils.map(exposure, 0, 100, minExposure, 80000);
 
-        lastManualExposure = exposure;
-        var success = LibCameraJNI.setExposure((int) Math.round(exposure) * 800);
+        var success = LibCameraJNI.setExposure(r_ptr, (int) exposure);
         if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera exposure");
     }
 
@@ -155,15 +149,19 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     public void setBrightness(int brightness) {
         lastBrightness = brightness;
         double realBrightness = MathUtils.map(brightness, 0.0, 100.0, -1.0, 1.0);
-        var success = LibCameraJNI.setBrightness(realBrightness);
+        var success = LibCameraJNI.setBrightness(r_ptr, realBrightness);
         if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera brightness");
     }
 
     @Override
     public void setGain(int gain) {
         lastGain = gain;
-        // TODO units here seem odd -- 5ish seems legit? So divide by 10
-        var success = LibCameraJNI.setAnalogGain(gain / 10.0);
+
+        // Map and clamp gain to values between 1 and 10 (libcamera min and gain that just seems higher
+        // than ever needed) from 0 to 100 (UI values).
+        var success =
+                LibCameraJNI.setAnalogGain(
+                        r_ptr, MathUtil.clamp(MathUtils.map(gain, 0.0, 100.0, 1.0, 10.0), 1.0, 10.0));
         if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera gain");
     }
 
@@ -185,7 +183,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
     public void setAwbGain(int red, int blue) {
         if (sensorModel != LibCameraJNI.SensorModel.OV9281) {
-            var success = LibCameraJNI.setAwbGain(red / 10.0, blue / 10.0);
+            var success = LibCameraJNI.setAwbGain(r_ptr, red / 10.0, blue / 10.0);
             if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera AWB gains");
         }
     }
@@ -201,29 +199,35 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
         // We need to make sure that other threads don't try to do anything funny while we're recreating
         // the camera
-        synchronized (LibCameraJNI.CAMERA_LOCK) {
-            if (m_initialized) {
+        synchronized (CAMERA_LOCK) {
+            if (r_ptr != 0) {
                 logger.debug("Stopping libcamera");
-                if (!LibCameraJNI.stopCamera()) {
+                if (!LibCameraJNI.stopCamera(r_ptr)) {
                     logger.error("Couldn't stop a zero copy Pi Camera while switching video modes");
                 }
                 logger.debug("Destroying libcamera");
-                if (!LibCameraJNI.destroyCamera()) {
+                if (!LibCameraJNI.destroyCamera(r_ptr)) {
                     logger.error("Couldn't destroy a zero copy Pi Camera while switching video modes");
                 }
             }
 
             logger.debug("Creating libcamera");
-            if (!LibCameraJNI.createCamera(
-                    mode.width, mode.height, (m_rotationMode == ImageRotationMode.DEG_180 ? 180 : 0))) {
+            r_ptr =
+                    LibCameraJNI.createCamera(
+                            getConfiguration().path,
+                            mode.width,
+                            mode.height,
+                            (m_rotationMode == ImageRotationMode.DEG_180 ? 180 : 0));
+            if (r_ptr == 0) {
                 logger.error("Couldn't create a zero copy Pi Camera while switching video modes");
+                if (!LibCameraJNI.destroyCamera(r_ptr)) {
+                    logger.error("Couldn't destroy a zero copy Pi Camera while switching video modes");
+                }
             }
             logger.debug("Starting libcamera");
-            if (!LibCameraJNI.startCamera()) {
+            if (!LibCameraJNI.startCamera(r_ptr)) {
                 logger.error("Couldn't start a zero copy Pi Camera while switching video modes");
             }
-
-            m_initialized = true;
         }
 
         // We don't store last settings on the native side, and when you change video mode these get
@@ -234,7 +238,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         setGain(lastGain);
         setAwbGain(lastAwbGains.getFirst(), lastAwbGains.getSecond());
 
-        LibCameraJNI.setFramesToCopy(true, true);
+        LibCameraJNI.setFramesToCopy(r_ptr, true, true);
 
         currentVideoMode = mode;
     }
@@ -242,5 +246,9 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     @Override
     public HashMap<Integer, VideoMode> getAllVideoModes() {
         return videoModes;
+    }
+
+    public LibCameraJNI.SensorModel getModel() {
+        return sensorModel;
     }
 }

@@ -41,7 +41,12 @@ const fpsTooLow = computed<boolean>(() => {
 </script>
 
 <template>
-  <v-card class="mb-3 pb-3 pa-4" color="primary" dark>
+  <v-card
+    id="camera-settings-camera-view-card"
+    class="camera-settings-camera-view-card mb-3 pb-3 pa-4"
+    color="primary"
+    dark
+  >
     <v-card-title
       class="pb-0 mb-2 pl-4 pt-1"
       style="min-height: 50px; justify-content: space-between; align-content: center"
@@ -103,16 +108,16 @@ const fpsTooLow = computed<boolean>(() => {
           class="fill"
           :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode"
         >
-          <v-icon>mdi-import</v-icon>
-          <span>Raw</span>
+          <v-icon left class="mode-btn-icon">mdi-import</v-icon>
+          <span class="mode-btn-label">Raw</span>
         </v-btn>
         <v-btn
           color="secondary"
           class="fill"
           :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode"
         >
-          <v-icon>mdi-export</v-icon>
-          <span>Processed</span>
+          <v-icon left class="mode-btn-icon">mdi-export</v-icon>
+          <span class="mode-btn-label">Processed</span>
         </v-btn>
       </v-btn-toggle>
     </div>
@@ -154,6 +159,14 @@ th {
 
   .stream {
     max-width: 50%;
+  }
+}
+@media only screen and (max-width: 351px) {
+  .mode-btn-icon {
+    margin: 0 !important;
+  }
+  .mode-btn-label {
+    display: none;
   }
 }
 </style>

@@ -28,11 +28,11 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.CvSource;
-import edu.wpi.first.cscore.VideoMode.PixelFormat;
 import edu.wpi.first.cscore.VideoSource.ConnectionStrategy;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.util.PixelFormat;
 import edu.wpi.first.util.WPIUtilJNI;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +47,6 @@ import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonTargetSortMode;
-import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.networktables.NTTopicSet;
 import org.photonvision.estimation.CameraTargetRelation;
 import org.photonvision.estimation.OpenCVHelp;
@@ -465,7 +464,7 @@ public class PhotonCameraSim implements AutoCloseable {
                 var corn = pair.getSecond();
 
                 if (tgt.fiducialID >= 0) { // apriltags
-                    VideoSimUtil.warp16h5TagImage(tgt.fiducialID, corn, true, videoSimFrameRaw);
+                    VideoSimUtil.warp36h11TagImage(tgt.fiducialID, corn, true, videoSimFrameRaw);
                 } else if (!tgt.getModel().isSpherical) { // non-spherical targets
                     var contour = corn;
                     if (!tgt.getModel()
@@ -530,7 +529,7 @@ public class PhotonCameraSim implements AutoCloseable {
                             prop.getDistCoeffs(),
                             detectableTgts,
                             tagLayout,
-                            TargetModel.kAprilTag16h5);
+                            TargetModel.kAprilTag36h11);
             multitagResult = new MultiTargetPNPResult(pnpResult, usedIDs);
         }
 
@@ -564,9 +563,7 @@ public class PhotonCameraSim implements AutoCloseable {
     public void submitProcessedFrame(PhotonPipelineResult result, long receiveTimestamp) {
         ts.latencyMillisEntry.set(result.getLatencyMillis(), receiveTimestamp);
 
-        var newPacket = new Packet(result.getPacketSize());
-        result.populatePacket(newPacket);
-        ts.rawBytesEntry.set(newPacket.getData(), receiveTimestamp);
+        ts.resultPublisher.set(result, result.getPacketSize());
 
         boolean hasTargets = result.hasTargets();
         ts.hasTargetEntry.set(hasTargets, receiveTimestamp);

@@ -6,13 +6,14 @@ import PvSelect from "@/components/common/pv-select.vue";
 import { computed, getCurrentInstance } from "vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
+import { getResolutionString } from "@/lib/PhotonUtils";
 
 // Due to something with libcamera or something else IDK much about, the 90° rotations need to be disabled if the libcamera drivers are being used.
 const cameraRotations = computed(() =>
   ["Normal", "90° CW", "180°", "90° CCW"].map((v, i) => ({
     name: v,
     value: i,
-    disabled: useSettingsStore().gpuAccelerationEnabled ? [1, 3].includes(i) : false
+    disabled: useCameraSettingsStore().isCSICamera ? [1, 3].includes(i) : false
   }))
 );
 
@@ -30,7 +31,7 @@ const getNumberOfSkippedDivisors = () => streamDivisors.length - getFilteredStre
 
 const cameraResolutions = computed(() =>
   useCameraSettingsStore().currentCameraSettings.validVideoFormats.map(
-    (f) => `${f.resolution.width} X ${f.resolution.height} at ${f.fps} FPS, ${f.pixelFormat}`
+    (f) => `${getResolutionString(f.resolution)} at ${f.fps} FPS, ${f.pixelFormat}`
   )
 );
 const handleResolutionChange = (value: number) => {
@@ -48,7 +49,11 @@ const streamResolutions = computed(() => {
   const streamDivisors = getFilteredStreamDivisors();
   const currentResolution = useCameraSettingsStore().currentVideoFormat.resolution;
   return streamDivisors.map(
-    (x) => `${Math.floor(currentResolution.width / x)} X ${Math.floor(currentResolution.height / x)}`
+    (x) =>
+      `${getResolutionString({
+        width: Math.floor(currentResolution.width / x),
+        height: Math.floor(currentResolution.height / x)
+      })}`
   );
 });
 const handleStreamResolutionChange = (value: number) => {

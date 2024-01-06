@@ -20,6 +20,8 @@ package org.photonvision.targeting;
 import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.common.dataflow.structures.Packet;
+import org.photonvision.common.dataflow.structures.PacketSerde;
+import org.photonvision.targeting.proto.PhotonPipelineResultProto;
 
 /** Represents a pipeline result from a PhotonCamera. */
 public class PhotonPipelineResult {
@@ -71,10 +73,10 @@ public class PhotonPipelineResult {
      * @return The size of the packet needed to store this pipeline result.
      */
     public int getPacketSize() {
-        return targets.size() * PhotonTrackedTarget.PACK_SIZE_BYTES
-                + 8 // latency
-                + MultiTargetPNPResult.PACK_SIZE_BYTES
-                + 1; // target count
+        return Double.BYTES // latency
+                + 1 // target count
+                + targets.size() * PhotonTrackedTarget.serde.getMaxByteSize()
+                + MultiTargetPNPResult.serde.getMaxByteSize();
     }
 
     /**
@@ -150,49 +152,6 @@ public class PhotonPipelineResult {
         return multiTagResult;
     }
 
-    /**
-     * Populates the fields of the pipeline result from the packet.
-     *
-     * @param packet The incoming packet.
-     * @return The incoming packet.
-     */
-    public Packet createFromPacket(Packet packet) {
-        // Decode latency, existence of targets, and number of targets.
-        latencyMillis = packet.decodeDouble();
-        this.multiTagResult = MultiTargetPNPResult.createFromPacket(packet);
-        byte targetCount = packet.decodeByte();
-
-        targets.clear();
-
-        // Decode the information of each target.
-        for (int i = 0; i < (int) targetCount; ++i) {
-            var target = new PhotonTrackedTarget();
-            target.createFromPacket(packet);
-            targets.add(target);
-        }
-
-        return packet;
-    }
-
-    /**
-     * Populates the outgoing packet with information from this pipeline result.
-     *
-     * @param packet The outgoing packet.
-     * @return The outgoing packet.
-     */
-    public Packet populatePacket(Packet packet) {
-        // Encode latency, existence of targets, and number of targets.
-        packet.encode(latencyMillis);
-        multiTagResult.populatePacket(packet);
-        packet.encode((byte) targets.size());
-
-        // Encode the information of each target.
-        for (var target : targets) target.populatePacket(packet);
-
-        // Return the packet.
-        return packet;
-    }
-
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -236,4 +195,36 @@ public class PhotonPipelineResult {
                 + multiTagResult
                 + "]";
     }
+
+    public static final class APacketSerde implements PacketSerde<PhotonPipelineResult> {
+        @Override
+        public int getMaxByteSize() {
+            // This uses dynamic packets so it doesn't matter
+            return -1;
+        }
+
+        @Override
+        public void pack(Packet packet, PhotonPipelineResult value) {
+            packet.encode(value.latencyMillis);
+            packet.encode((byte) value.targets.size());
+            for (var target : value.targets) PhotonTrackedTarget.serde.pack(packet, target);
+            MultiTargetPNPResult.serde.pack(packet, value.multiTagResult);
+        }
+
+        @Override
+        public PhotonPipelineResult unpack(Packet packet) {
+            var latency = packet.decodeDouble();
+            var len = packet.decodeByte();
+            var targets = new ArrayList<PhotonTrackedTarget>(len);
+            for (int i = 0; i < len; i++) {
+                targets.add(PhotonTrackedTarget.serde.unpack(packet));
+            }
+            var result = MultiTargetPNPResult.serde.unpack(packet);
+
+            return new PhotonPipelineResult(latency, targets, result);
+        }
+    }
+
+    public static final APacketSerde serde = new APacketSerde();
+    public static final PhotonPipelineResultProto proto = new PhotonPipelineResultProto();
 }
