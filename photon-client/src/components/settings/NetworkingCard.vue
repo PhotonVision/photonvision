@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
-import { computed, ref } from "vue";
+import { computed, ref, watchEffect } from "vue";
 import PvInput from "@/components/common/pv-input.vue";
 import PvRadio from "@/components/common/pv-radio.vue";
 import PvSwitch from "@/components/common/pv-switch.vue";
@@ -8,9 +8,15 @@ import PvSelect from "@/components/common/pv-select.vue";
 import { NetworkConnectionType, type NetworkSettings } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 
-const settingsValid = ref(true);
 // Copy object to remove reference to store
 const tempSettingsStruct = ref<NetworkSettings>(Object.assign({}, useSettingsStore().network));
+
+const resetTempSettingsStruct = () => {
+  tempSettingsStruct.value = Object.assign({}, useSettingsStore().network);
+};
+
+const settingsValid = ref(true);
+
 const isValidNetworkTablesIP = (v: string | undefined): boolean => {
   // Check if it is a valid team number between 1-9999
   const teamNumberRegex = /^[1-9][0-9]{0,3}$/;
@@ -62,9 +68,6 @@ const settingsHaveChanged = (): boolean => {
 const saveGeneralSettings = () => {
   const changingStaticIp = useSettingsStore().network.connectionType === NetworkConnectionType.Static;
 
-  // Update with new values
-  Object.assign(useSettingsStore().network, tempSettingsStruct.value);
-
   useSettingsStore()
     .saveGeneralSettings()
     .then((response) => {
@@ -72,8 +75,12 @@ const saveGeneralSettings = () => {
         message: response.data.text || response.data,
         color: "success"
       });
+
+      // Update the local settings cause the backend checked their validity. Assign is to deref value
+      useSettingsStore().network = Object.assign({}, tempSettingsStruct.value);
     })
     .catch((error) => {
+      resetTempSettingsStruct();
       if (error.response) {
         if (error.status === 504 || changingStaticIp) {
           useStateStore().showSnackbarMessage({
@@ -105,6 +112,11 @@ const saveGeneralSettings = () => {
 const currentNetworkInterfaceIndex = computed<number>({
   get: () => useSettingsStore().networkInterfaceNames.indexOf(useSettingsStore().network.networkManagerIface || ""),
   set: (v) => (tempSettingsStruct.value.networkManagerIface = useSettingsStore().networkInterfaceNames[v])
+});
+
+watchEffect(() => {
+  // Reset temp settings on remote network settings change
+  resetTempSettingsStruct();
 });
 </script>
 

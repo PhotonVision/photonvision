@@ -135,10 +135,17 @@ export interface CameraCalibrationResult {
   calobjectWarp?: number[];
 }
 
-export interface ConfigurableCameraSettings {
-  fov: number;
-  // Need map of (quirk name string) -> boolean
-  quirksToChange: object;
+export enum ValidQuirks {
+  AWBGain = "AWBGain",
+  AdjustableFocus = "AdjustableFocus",
+  ArduOV9281 = "ArduOV9281",
+  ArduOV2311 = "ArduOV2311",
+  ArduCamCamera = "ArduCamCamera",
+  CompletelyBroken = "CompletelyBroken",
+  FPSCap100 = "FPSCap100",
+  Gain = "Gain",
+  PiCam = "PiCam",
+  StickyFPS = "StickyFPS"
 }
 
 export interface QuirkyCamera {
@@ -146,18 +153,7 @@ export interface QuirkyCamera {
   usbVid: number;
   usbPid: number;
   displayName: string;
-  quirks: {
-    AWBGain: boolean;
-    AdjustableFocus: boolean;
-    ArduOV9281: boolean;
-    ArduOV2311: boolean;
-    ArduCamCamera: boolean;
-    CompletelyBroken: boolean;
-    FPSCap100: boolean;
-    Gain: boolean;
-    PiCam: boolean;
-    StickyFPS: boolean;
-  };
+  quirks: Record<ValidQuirks, boolean>;
 }
 
 export interface CameraSettings {
@@ -185,12 +181,17 @@ export interface CameraSettings {
   isCSICamera: boolean;
 }
 
+export interface CameraSettingsChangeRequest {
+  fov: number;
+  quirksToChange: Record<ValidQuirks, boolean>;
+}
+
 export const PlaceholderCameraSettings: CameraSettings = {
   nickname: "Placeholder Camera",
   uniqueName: "Placeholder Name",
   fov: {
     value: 70,
-    managedByVendor: true
+    managedByVendor: false
   },
   stream: {
     inputPort: 0,
@@ -271,10 +272,10 @@ export const PlaceholderCameraSettings: CameraSettings = {
       FPSCap100: false,
       Gain: false,
       PiCam: false,
-      StickyFPS: false,
-    },
+      StickyFPS: false
+    }
   },
-  isCSICamera: false,
+  isCSICamera: false
 };
 
 export enum CalibrationBoardTypes {
