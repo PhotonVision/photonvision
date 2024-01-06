@@ -135,6 +135,7 @@ const currentNetworkInterfaceIndex = computed<number>({
         >
           The NetworkTables Server Address is not set or is invalid. NetworkTables is unable to connect.
         </v-banner>
+        <!-- :disabled should also depend on value of NetworkManager.networkingIsDisabled -->
         <pv-radio
           v-model="tempSettingsStruct.connectionType"
           label="IP Assignment Mode"
@@ -143,6 +144,7 @@ const currentNetworkInterfaceIndex = computed<number>({
           :list="['DHCP', 'Static']"
           :disabled="!(tempSettingsStruct.shouldManage && tempSettingsStruct.canManage)"
         />
+        <!-- :disabled should also depend on value of NetworkManager.networkingIsDisabled -->
         <pv-input
           v-if="tempSettingsStruct.connectionType === NetworkConnectionType.Static"
           v-model="tempSettingsStruct.staticIp"
@@ -151,6 +153,7 @@ const currentNetworkInterfaceIndex = computed<number>({
           :rules="[(v) => isValidIPv4(v) || 'Invalid IPv4 address']"
           :disabled="!(tempSettingsStruct.shouldManage && tempSettingsStruct.canManage)"
         />
+        <!-- :disabled should also depend on value of NetworkManager.networkingIsDisabled -->
         <pv-input
           v-model="tempSettingsStruct.hostname"
           label="Hostname"
@@ -160,6 +163,7 @@ const currentNetworkInterfaceIndex = computed<number>({
         />
         <v-divider class="pb-3" />
         <span style="font-weight: 700">Advanced Networking</span>
+        <!-- This setting should be disabled if NetworkManager.networkingIsDisabled is true -->
         <pv-switch
           v-model="tempSettingsStruct.shouldManage"
           :disabled="!tempSettingsStruct.canManage"
@@ -168,6 +172,7 @@ const currentNetworkInterfaceIndex = computed<number>({
           :label-cols="4"
           class="pt-2"
         />
+        <!-- :disabled should also depend on value of NetworkManager.networkingIsDisabled -->
         <pv-select
           v-model="currentNetworkInterfaceIndex"
           label="NetworkManager interface"
@@ -176,6 +181,7 @@ const currentNetworkInterfaceIndex = computed<number>({
           tooltip="Name of the interface PhotonVision should manage the IP address of"
           :items="useSettingsStore().networkInterfaceNames"
         />
+        <!-- This message should not show if NetworkManager.networkingIsDisabled is true -->
         <v-banner
           v-show="
             !useSettingsStore().networkInterfaceNames.length &&
