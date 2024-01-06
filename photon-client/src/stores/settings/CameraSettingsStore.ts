@@ -101,7 +101,8 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         })),
         pipelineNicknames: d.pipelineNicknames,
         currentPipelineIndex: d.currentPipelineIndex,
-        pipelineSettings: d.currentPipelineSettings
+        pipelineSettings: d.currentPipelineSettings,
+        cameraQuirks: d.cameraQuirks
       }));
     },
     /**

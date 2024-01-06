@@ -28,6 +28,7 @@ import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.raspi.LibCameraJNI;
+import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.processes.VisionSource;
@@ -174,5 +175,6 @@ public class PhotonConfiguration {
         public int inputStreamPort;
         public List<HashMap<String, Object>> calibrations;
         public boolean isFovConfigurable = true;
+        public QuirkyCamera cameraQuirks;
     }
 }
