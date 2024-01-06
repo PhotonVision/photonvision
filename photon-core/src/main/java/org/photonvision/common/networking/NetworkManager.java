@@ -43,6 +43,7 @@ public class NetworkManager {
     public void initialize(boolean shouldManage) {
         isManaged = shouldManage && !networkingIsDisabled;
         if (!isManaged) {
+            logger.info("Network management is disabled.");
             return;
         }
 
