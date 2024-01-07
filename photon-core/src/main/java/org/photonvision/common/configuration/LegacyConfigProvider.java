@@ -196,7 +196,7 @@ class LegacyConfigProvider extends ConfigProvider {
             }
         }
         if (atfl == null) {
-            logger.info("Loading default apriltags for 2023 field...");
+            logger.info("Loading default apriltags for 2024 field...");
             try {
                 atfl = AprilTagFields.kDefaultField.loadAprilTagLayoutField();
             } catch (UncheckedIOException e) {
