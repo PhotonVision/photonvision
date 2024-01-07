@@ -54,6 +54,9 @@ public class CameraCalibrationCoefficients implements Releasable {
     @JsonProperty("calobjectSpacing")
     public final double calobjectSpacing;
 
+    @JsonProperty("lensmodel")
+    public final CameraLensModel lensmodel;
+
     @JsonIgnore private final double[] intrinsicsArr = new double[9];
     @JsonIgnore private final double[] distCoeffsArr = new double[5];
 
@@ -83,13 +86,15 @@ public class CameraCalibrationCoefficients implements Releasable {
             @JsonProperty("calobjectWarp") double[] calobjectWarp,
             @JsonProperty("observations") List<BoardObservation> observations,
             @JsonProperty("calobjectSize") Size calobjectSize,
-            @JsonProperty("calobjectSpacing") double calobjectSpacing) {
+            @JsonProperty("calobjectSpacing") double calobjectSpacing,
+            @JsonProperty("lensmodel") CameraLensModel lensmodel) {
         this.resolution = resolution;
         this.cameraIntrinsics = cameraIntrinsics;
         this.distCoeffs = distCoeffs;
         this.calobjectWarp = calobjectWarp;
         this.calobjectSize = calobjectSize;
         this.calobjectSpacing = calobjectSpacing;
+        this.lensmodel = lensmodel;
 
         // Legacy migration just to make sure that observations is at worst empty and never null
         if (observations == null) {
@@ -174,7 +179,8 @@ public class CameraCalibrationCoefficients implements Releasable {
                 new double[0],
                 List.of(),
                 new Size(0, 0),
-                0);
+                0,
+                CameraLensModel.LENSMODEL_OPENCV);
     }
 
     @Override
