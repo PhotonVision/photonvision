@@ -59,9 +59,9 @@ const settingsHaveChanged = (): boolean => {
     a.shouldManage !== b.shouldManage ||
     a.shouldPublishProto !== b.shouldPublishProto ||
     a.canManage !== b.canManage ||
-    a.networkManagerIface !== b.networkManagerIface ||
+    a.networkManagerInterface !== b.networkManagerInterface ||
     a.setStaticCommand !== b.setStaticCommand ||
-    a.setDHCPcommand !== b.setDHCPcommand
+    a.setDHCPCommand !== b.setDHCPCommand
   );
 };
 
@@ -110,8 +110,8 @@ const saveGeneralSettings = () => {
 };
 
 const currentNetworkInterfaceIndex = computed<number>({
-  get: () => useSettingsStore().networkInterfaceNames.indexOf(useSettingsStore().network.networkManagerIface || ""),
-  set: (v) => (tempSettingsStruct.value.networkManagerIface = useSettingsStore().networkInterfaceNames[v])
+  get: () => useSettingsStore().networkInterfaceNames.indexOf(useSettingsStore().network.networkManagerInterface || ""),
+  set: (v) => (tempSettingsStruct.value.networkManagerInterface = useSettingsStore().networkInterfaceNames[v])
 });
 
 watchEffect(() => {

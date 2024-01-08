@@ -40,9 +40,9 @@ export interface NetworkSettings {
   shouldManage: boolean;
   shouldPublishProto: boolean;
   canManage: boolean;
-  networkManagerIface?: string;
+  networkManagerInterface?: string;
   setStaticCommand?: string;
-  setDHCPcommand?: string;
+  setDHCPCommand?: string;
   networkInterfaceNames: NetworkInterfaceType[];
 }
 
