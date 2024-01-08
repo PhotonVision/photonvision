@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-import org.photonvision.RknnJNI;
+import org.photonvision.rknn.RknnJNI;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.opencv.CVMat;
