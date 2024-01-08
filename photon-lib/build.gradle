@@ -23,7 +23,7 @@ cppHeadersZip {
     }
 }
 
-def photonlibFileInput = file("src/generate/photonlib.json.in")
+def photonlibFileInput = file("src/generate/Photonlib.json.in")
 ext.photonlibFileOutput = file("$buildDir/generated/vendordeps/photonlib.json")
 
 task generateVendorJson() {
