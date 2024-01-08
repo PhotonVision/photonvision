@@ -128,7 +128,7 @@ watchEffect(() => {
         label="Arducam Model"
         :items="[
           { name: 'None', value: 0, disabled: true },
-          { name: 'OV9821', value: 1 },
+          { name: 'OV9281', value: 1 },
           { name: 'OV2311', value: 2 }
         ]"
         :select-cols="8"
