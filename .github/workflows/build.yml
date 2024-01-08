@@ -320,6 +320,7 @@ jobs:
           files: |
             **/*.xz
             **/*.jar
+            photonlib*/*.json
         if: github.event_name == 'push'
       # Upload all jars and xz archives
       - uses: softprops/action-gh-release@v1
@@ -327,6 +328,7 @@ jobs:
           files: |
             **/*.xz
             **/*.jar
+            photonlib*/*.json
         if: startsWith(github.ref, 'refs/tags/v')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
