@@ -53,7 +53,7 @@ const changeFromSlot = (v: string, i: number) => {
 
 const checkNumberRange = (v: string): boolean => {
   const val: number = parseFloat(v);
-  return Boolean(isFinite(val) && val >= props.min && val <= props.max);
+  return isFinite(val) && val >= props.min && val <= props.max;
 };
 </script>
 
