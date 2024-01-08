@@ -184,7 +184,7 @@ jobs:
       - name: Publish
         run: |
           chmod +x gradlew
-          ./gradlew photon-lib:publish
+          ./gradlew photon-lib:publish photon-targeting:publish
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
         if: github.event_name == 'push'
