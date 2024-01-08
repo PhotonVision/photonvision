@@ -68,8 +68,22 @@ const settingsHaveChanged = (): boolean => {
 const saveGeneralSettings = () => {
   const changingStaticIp = useSettingsStore().network.connectionType === NetworkConnectionType.Static;
 
+  //
+  const payload = {
+    connectionType: tempSettingsStruct.value.connectionType,
+    hostname: tempSettingsStruct.value.hostname,
+    networkManagerInterface: tempSettingsStruct.value.networkManagerInterface || "",
+    ntServerAddress: tempSettingsStruct.value.ntServerAddress,
+    runNTServer: tempSettingsStruct.value.runNTServer,
+    setDHCPCommand: tempSettingsStruct.value.setDHCPCommand || "",
+    setStaticCommand: tempSettingsStruct.value.setStaticCommand || "",
+    shouldManage: tempSettingsStruct.value.shouldManage,
+    shouldPublishProto: tempSettingsStruct.value.shouldPublishProto,
+    staticIp: tempSettingsStruct.value.staticIp
+  };
+
   useSettingsStore()
-    .saveGeneralSettings()
+    .updateGeneralSettings(payload)
     .then((response) => {
       useStateStore().showSnackbarMessage({
         message: response.data.text || response.data,
