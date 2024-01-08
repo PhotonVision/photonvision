@@ -13,6 +13,7 @@ const tempSettingsStruct = ref<ConfigurableNetworkSettings>(Object.assign({}, us
 const resetTempSettingsStruct = () => {
   tempSettingsStruct.value = Object.assign({}, useSettingsStore().network);
 };
+
 const settingsValid = ref(true);
 
 const isValidNetworkTablesIP = (v: string | undefined): boolean => {
