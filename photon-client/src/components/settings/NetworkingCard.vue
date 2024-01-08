@@ -10,6 +10,11 @@ import { useStateStore } from "@/stores/StateStore";
 
 // Copy object to remove reference to store
 const tempSettingsStruct = ref<ConfigurableNetworkSettings>(Object.assign({}, useSettingsStore().network));
+const resetTempSettingsStruct = () => {
+  tempSettingsStruct.value = Object.assign({}, useSettingsStore().network);
+};
+const settingsValid = ref(true);
+
 const isValidNetworkTablesIP = (v: string | undefined): boolean => {
   // Check if it is a valid team number between 1-9999
   const teamNumberRegex = /^[1-9][0-9]{0,3}$/;
@@ -83,7 +88,10 @@ const saveGeneralSettings = () => {
       });
 
       // Update the local settings cause the backend checked their validity. Assign is to deref value
-      useSettingsStore().network = Object.assign({}, tempSettingsStruct.value);
+      useSettingsStore().network = {
+        ...useSettingsStore().network,
+        ...Object.assign({}, tempSettingsStruct.value)
+      };
     })
     .catch((error) => {
       resetTempSettingsStruct();
