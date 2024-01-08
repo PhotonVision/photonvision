@@ -27,6 +27,7 @@ import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.vision.pipe.impl.Calibrate3dPipeline;
 import org.photonvision.vision.pipeline.*;
 
 @SuppressWarnings({"rawtypes", "unused"})
@@ -212,6 +213,9 @@ public class PipelineManager {
                     logger.debug("Creating Aruco Pipeline");
                     currentUserPipeline = new ArucoPipeline((ArucoPipelineSettings) desiredPipelineSettings);
                     break;
+                case Rknn:
+                    logger.debug("Creating Rknn Pipeline");
+                    //currentUserPipeline = new RknnPipeline();
                 default:
                     // Can be calib3d or drivermode, both of which are special cases
                     break;
@@ -310,6 +314,12 @@ public class PipelineManager {
             case Aruco:
                 {
                     var added = new ArucoPipelineSettings();
+                    added.pipelineNickname = nickname;
+                    return added;
+                }
+            case Rknn:
+                {
+                    var added = new RknnPipelineSettings();
                     added.pipelineNickname = nickname;
                     return added;
                 }

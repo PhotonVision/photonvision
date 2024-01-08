@@ -5,7 +5,8 @@ export enum PipelineType {
   Reflective = 2,
   ColoredShape = 3,
   AprilTag = 4,
-  Aruco = 5
+  Aruco = 5,
+  Rknn = 6
 }
 
 export enum AprilTagFamily {
@@ -281,14 +282,31 @@ export const DefaultArucoPipelineSettings: ArucoPipelineSettings = {
   doSingleTargetAlways: false
 };
 
+export interface RknnPipelineSettings extends PipelineSettings {
+  pipelineType: PipelineType.Rknn;
+}
+export type ConfigurableRknnPipelineSettings = Partial<Omit<RknnPipelineSettings, "pipelineType">> &
+  ConfigurablePipelineSettings;
+export const DefaultRknnPipelineSettings: RknnPipelineSettings = {
+  ...DefaultPipelineSettings,
+  pipelineType: PipelineType.Rknn,
+  cameraGain: 20,
+  targetModel: TargetModel.InfiniteRechargeHighGoalOuter,
+  ledMode: true,
+  outputShowMultipleTargets: false,
+  cameraExposure: 6,
+};
+
 export type ActivePipelineSettings =
   | ReflectivePipelineSettings
   | ColoredShapePipelineSettings
   | AprilTagPipelineSettings
-  | ArucoPipelineSettings;
+  | ArucoPipelineSettings
+  | RknnPipelineSettings;
 
 export type ActiveConfigurablePipelineSettings =
   | ConfigurableReflectivePipelineSettings
   | ConfigurableColoredShapePipelineSettings
   | ConfigurableAprilTagPipelineSettings
-  | ConfigurableArucoPipelineSettings;
+  | ConfigurableArucoPipelineSettings
+  | ConfigurableRknnPipelineSettings;

@@ -24,6 +24,8 @@ const changeCurrentCameraIndex = (index: number) => {
     case PipelineType.Aruco:
       pipelineType.value = WebsocketPipelineType.Aruco;
       break;
+    case PipelineType.Rknn:
+      pipelineType.value = WebsocketPipelineType.Rknn;
   }
 };
 
@@ -152,7 +154,8 @@ const pipelineTypesWrapper = computed<{ name: string; value: number }[]>(() => {
     { name: "Reflective", value: WebsocketPipelineType.Reflective },
     { name: "Colored Shape", value: WebsocketPipelineType.ColoredShape },
     { name: "AprilTag", value: WebsocketPipelineType.AprilTag },
-    { name: "Aruco", value: WebsocketPipelineType.Aruco }
+    { name: "Aruco", value: WebsocketPipelineType.Aruco },
+    { name: "RKNN", value: WebsocketPipelineType.Rknn}
   ];
 
   if (useCameraSettingsStore().isDriverMode) {
@@ -207,6 +210,9 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
       break;
     case PipelineType.Aruco:
       pipelineType.value = WebsocketPipelineType.Aruco;
+      break;
+    case PipelineType.Rknn:
+      pipelineType.value = WebsocketPipelineType.Rknn;
       break;
   }
 });
@@ -354,7 +360,8 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
               { name: 'Reflective', value: WebsocketPipelineType.Reflective },
               { name: 'Colored Shape', value: WebsocketPipelineType.ColoredShape },
               { name: 'AprilTag', value: WebsocketPipelineType.AprilTag },
-              { name: 'Aruco', value: WebsocketPipelineType.Aruco }
+              { name: 'Aruco', value: WebsocketPipelineType.Aruco },
+              { name: 'Rknn', value: WebsocketPipelineType.Rknn}
             ]"
           />
         </v-card-text>
