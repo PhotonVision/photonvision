@@ -56,7 +56,7 @@ model {
                     it.dependsOn generateProto
                 }
                 if(project.hasProperty('includePhotonTargeting')) {
-                    lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
+                    lib project: ':photon-targeting', library: 'PhotonTargeting', linkage: 'shared'
                 }
             }
 
@@ -90,7 +90,7 @@ model {
                     it.dependsOn generateProto
                 }
                 if(project.hasProperty('includePhotonTargeting')) {
-                    lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
+                    lib project: ':photon-targeting', library: 'PhotonTargeting', linkage: 'shared'
                 }
             }
 
