@@ -100,7 +100,7 @@ public class NetworkManager {
                 try {
                     // set nmcli back to DHCP, and re-run dhclient -- this ought to grab a new IP address
                     shell.executeBashCommand(
-                            config.setDHCPCommand.replace(
+                            config.setDHCPcommand.replace(
                                     NetworkConfig.NM_IFACE_STRING, config.getEscapedInterfaceName()));
                     shell.executeBashCommand("dhclient " + config.getPhysicalInterfaceName(), false);
                 } catch (Exception e) {

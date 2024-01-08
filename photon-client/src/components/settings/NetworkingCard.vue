@@ -59,9 +59,9 @@ const settingsHaveChanged = (): boolean => {
     a.shouldManage !== b.shouldManage ||
     a.shouldPublishProto !== b.shouldPublishProto ||
     a.canManage !== b.canManage ||
-    a.networkManagerInterface !== b.networkManagerInterface ||
+    a.networkManagerIface !== b.networkManagerIface ||
     a.setStaticCommand !== b.setStaticCommand ||
-    a.setDHCPCommand !== b.setDHCPCommand
+    a.setDHCPcommand !== b.setDHCPcommand
   );
 };
 
@@ -72,10 +72,10 @@ const saveGeneralSettings = () => {
   const payload = {
     connectionType: tempSettingsStruct.value.connectionType,
     hostname: tempSettingsStruct.value.hostname,
-    networkManagerInterface: tempSettingsStruct.value.networkManagerInterface || "",
+    networkManagerIface: tempSettingsStruct.value.networkManagerIface || "",
     ntServerAddress: tempSettingsStruct.value.ntServerAddress,
     runNTServer: tempSettingsStruct.value.runNTServer,
-    setDHCPCommand: tempSettingsStruct.value.setDHCPCommand || "",
+    setDHCPcommand: tempSettingsStruct.value.setDHCPcommand || "",
     setStaticCommand: tempSettingsStruct.value.setStaticCommand || "",
     shouldManage: tempSettingsStruct.value.shouldManage,
     shouldPublishProto: tempSettingsStruct.value.shouldPublishProto,
@@ -124,8 +124,8 @@ const saveGeneralSettings = () => {
 };
 
 const currentNetworkInterfaceIndex = computed<number>({
-  get: () => useSettingsStore().networkInterfaceNames.indexOf(useSettingsStore().network.networkManagerInterface || ""),
-  set: (v) => (tempSettingsStruct.value.networkManagerInterface = useSettingsStore().networkInterfaceNames[v])
+  get: () => useSettingsStore().networkInterfaceNames.indexOf(useSettingsStore().network.networkManagerIface || ""),
+  set: (v) => (tempSettingsStruct.value.networkManagerIface = useSettingsStore().networkInterfaceNames[v])
 });
 
 watchEffect(() => {

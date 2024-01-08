@@ -42,17 +42,17 @@ public class NetworkConfig {
     @JsonIgnore public static final String NM_IFACE_STRING = "${interface}";
     @JsonIgnore public static final String NM_IP_STRING = "${ipaddr}";
 
-    public String networkManagerInterface;
+    public String networkManagerIface;
     public String setStaticCommand =
             "nmcli con mod ${interface} ipv4.addresses ${ipaddr}/8 ipv4.method \"manual\" ipv6.method \"disabled\"";
-    public String setDHCPCommand =
+    public String setDHCPcommand =
             "nmcli con mod ${interface} ipv4.method \"auto\" ipv6.method \"disabled\"";
 
     public NetworkConfig() {
         if (Platform.isLinux()) {
             // Default to the name of the first Ethernet connection. Otherwise, "Wired connection 1" is a
             // reasonable guess
-            this.networkManagerInterface =
+            this.networkManagerIface =
                     NetworkUtils.getAllWiredInterfaces().stream()
                             .map(it -> it.connName)
                             .findFirst()
@@ -74,18 +74,18 @@ public class NetworkConfig {
             @JsonProperty("runNTServer") boolean runNTServer,
             @JsonProperty("shouldManage") boolean shouldManage,
             @JsonProperty("shouldPublishProto") boolean shouldPublishProto,
-            @JsonProperty("networkManagerInterface") String networkManagerInterface,
+            @JsonProperty("networkManagerIface") String networkManagerIface,
             @JsonProperty("setStaticCommand") String setStaticCommand,
-            @JsonProperty("setDHCPCommand") String setDHCPCommand) {
+            @JsonProperty("setDHCPcommand") String setDHCPcommand) {
         this.ntServerAddress = ntServerAddress;
         this.connectionType = connectionType;
         this.staticIp = staticIp;
         this.hostname = hostname;
         this.runNTServer = runNTServer;
         this.shouldPublishProto = shouldPublishProto;
-        this.networkManagerInterface = networkManagerInterface;
+        this.networkManagerIface = networkManagerIface;
         this.setStaticCommand = setStaticCommand;
-        this.setDHCPCommand = setDHCPCommand;
+        this.setDHCPcommand = setDHCPcommand;
         setShouldManage(shouldManage);
     }
 
@@ -102,12 +102,12 @@ public class NetworkConfig {
 
     @JsonIgnore
     public String getPhysicalInterfaceName() {
-        return NetworkUtils.getNMinfoForConnName(this.networkManagerInterface).devName;
+        return NetworkUtils.getNMinfoForConnName(this.networkManagerIface).devName;
     }
 
     @JsonIgnore
     public String getEscapedInterfaceName() {
-        return "\"" + networkManagerInterface + "\"";
+        return "\"" + networkManagerIface + "\"";
     }
 
     @JsonIgnore
@@ -137,12 +137,12 @@ public class NetworkConfig {
                 + hostname
                 + ", runNTServer="
                 + runNTServer
-                + ", networkManagerInterface="
-                + networkManagerInterface
+                + ", networkManagerIface="
+                + networkManagerIface
                 + ", setStaticCommand="
                 + setStaticCommand
-                + ", setDHCPCommand="
-                + setDHCPCommand
+                + ", setDHCPcommand="
+                + setDHCPcommand
                 + ", shouldManage="
                 + shouldManage
                 + "]";
