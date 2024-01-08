@@ -11,8 +11,8 @@ apply from: "${rootDir}/../shared/examples_common.gradle"
 def ROBOT_MAIN_CLASS = "frc.robot.Main"
 
 wpi.maven.useDevelopment = true
-wpi.versions.wpilibVersion = "2024.1.1-beta-4-35-g141241d"
-wpi.versions.wpimathVersion = "2024.1.1-beta-4-35-g141241d"
+wpi.versions.wpilibVersion = "2024.1.1"
+wpi.versions.wpimathVersion = "2024.1.1"
 
 
 // Define my targets (RoboRIO) and artifacts (deployable files)

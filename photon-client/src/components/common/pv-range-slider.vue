@@ -40,11 +40,20 @@ const localValue = computed<[number, number]>({
   }
 });
 
-const changeFromSlot = (v: number, i: number) => {
+const changeFromSlot = (v: string, i: number) => {
+  // v comes in as a string, not a number, for some reason
+  // if v is undefined, take a guess and set it to 0
+  const val = Math.max(props.min, Math.min(parseFloat(v) || 0, props.max));
+
   // localValue.value must be replaced for a reactive change to take place
   const temp = localValue.value;
-  temp[i] = v;
+  temp[i] = val;
   localValue.value = temp;
+};
+
+const checkNumberRange = (v: string): boolean => {
+  const val: number = parseFloat(v);
+  return isFinite(val) && val >= props.min && val <= props.max;
 };
 </script>
 
@@ -79,6 +88,7 @@ const changeFromSlot = (v: number, i: number) => {
               :max="max"
               :min="min"
               :step="step"
+              :rules="[checkNumberRange]"
               type="number"
               style="width: 60px"
               @input="(v) => changeFromSlot(v, 0)"
@@ -95,6 +105,7 @@ const changeFromSlot = (v: number, i: number) => {
               :max="max"
               :min="min"
               :step="step"
+              :rules="[checkNumberRange]"
               type="number"
               style="width: 60px"
               @input="(v) => changeFromSlot(v, 1)"
