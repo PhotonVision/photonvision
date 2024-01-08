@@ -105,19 +105,7 @@ export const useSettingsStore = defineStore("settings", {
       this.network = data.networkSettings;
       this.currentFieldLayout = data.atfl;
     },
-    saveGeneralSettings() {
-      const payload: Required<ConfigurableNetworkSettings> = {
-        connectionType: this.network.connectionType,
-        hostname: this.network.hostname,
-        networkManagerIface: this.network.networkManagerIface || "",
-        ntServerAddress: this.network.ntServerAddress,
-        runNTServer: this.network.runNTServer,
-        setDHCPcommand: this.network.setDHCPcommand || "",
-        setStaticCommand: this.network.setStaticCommand || "",
-        shouldManage: this.network.shouldManage,
-        shouldPublishProto: this.network.shouldPublishProto,
-        staticIp: this.network.staticIp
-      };
+    updateGeneralSettings(payload: Required<ConfigurableNetworkSettings>) {
       return axios.post("/settings/general", payload);
     },
     /**

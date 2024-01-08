@@ -119,15 +119,18 @@ echo "JRE installation complete."
 
 if [ "$ARCH" == "aarch64" ]
 then
-    if package_is_installed libopencv-core4.5
+    if package_is_installed libopencv-core4.6
     then
-        echo "libopencv-core4.5 already installed"
+        echo "libopencv-core4.6 already installed"
     else
         # libphotonlibcamera.so on raspberry pi has dep on libopencv_core
-        echo "Installing libopencv-core4.5 on aarch64"
-        apt-get install --yes libopencv-core4.5
+        echo "Installing libopencv-core4.6 on aarch64"
+        apt-get install --yes libopencv-core4.6
     fi
 fi
+
+echo "Installing additional math packages"
+apt-get install --yes libcholmod3 liblapack3 libsuitesparseconfig5
 
 echo "Downloading latest stable release of PhotonVision..."
 mkdir -p /opt/photonvision
