@@ -26,6 +26,7 @@ public enum DataChangeDestination {
     DCD_ACTIVEPIPELINESETTINGS,
     DCD_GENSETTINGS,
     DCD_UI,
+    DCD_WEBSERVER,
     DCD_OTHER;
 
     public static final List<DataChangeDestination> AllDestinations =
