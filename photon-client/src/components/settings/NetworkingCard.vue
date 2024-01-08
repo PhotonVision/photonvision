@@ -68,7 +68,7 @@ const settingsHaveChanged = (): boolean => {
 const saveGeneralSettings = () => {
   const changingStaticIp = useSettingsStore().network.connectionType === NetworkConnectionType.Static;
 
-  //
+  // replace undefined members with empty strings for backend
   const payload = {
     connectionType: tempSettingsStruct.value.connectionType,
     hostname: tempSettingsStruct.value.hostname,
