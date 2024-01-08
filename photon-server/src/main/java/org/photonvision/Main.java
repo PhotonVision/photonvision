@@ -385,6 +385,6 @@ public class Main {
 
         logger.info("Starting server...");
         HardwareManager.getInstance().setRunning(true);
-        Server.start(DEFAULT_WEBPORT);
+        Server.initialize(DEFAULT_WEBPORT);
     }
 }
