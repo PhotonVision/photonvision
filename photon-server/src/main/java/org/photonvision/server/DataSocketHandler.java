@@ -82,9 +82,14 @@ public class DataSocketHandler {
     protected void onClose(WsCloseContext context) {
         users.remove(context);
         var remote = (InetSocketAddress) context.session.getRemoteAddress();
-        var host = remote.getAddress().toString() + ":" + remote.getPort();
-        var reason = context.reason() != null ? context.reason() : "Connection closed by client";
-        logger.info("Closing websocket connection from " + host + " for reason: " + reason);
+        // Remote can be null if server is being closed for restart
+        if (remote != null) {
+            var host = remote.getAddress().toString() + ":" + remote.getPort();
+            var reason = context.reason() != null ? context.reason() : "Connection closed by client";
+            logger.info("Closing websocket connection from " + host + " for reason: " + reason);
+        } else {
+            logger.info("Closing websockets for user " + context.getSessionId());
+        }
     }
 
     @SuppressWarnings({"unchecked"})

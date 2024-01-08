@@ -20,15 +20,42 @@ package org.photonvision.server;
 import io.javalin.Javalin;
 import io.javalin.plugin.bundled.CorsPluginConfig;
 import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.StringJoiner;
+import org.photonvision.common.dataflow.DataChangeDestination;
+import org.photonvision.common.dataflow.DataChangeService;
+import org.photonvision.common.dataflow.DataChangeSource;
+import org.photonvision.common.dataflow.DataChangeSubscriber;
+import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public class Server {
     private static final Logger logger = new Logger(Server.class, LogGroup.WebServer);
 
-    public static void start(int port) {
-        var app =
+    private static Javalin app = null;
+
+    static class RestartSubscriber extends DataChangeSubscriber {
+        private RestartSubscriber() {
+            super(DataChangeSource.AllSources, List.of(DataChangeDestination.DCD_WEBSERVER));
+        }
+
+        @Override
+        public void onDataChangeEvent(DataChangeEvent<?> event) {
+            if (event.propertyName.equals("restartServer")) {
+                Server.restart();
+            }
+        }
+    }
+
+    public static void initialize(int port) {
+        DataChangeService.getInstance().addSubscriber(new RestartSubscriber());
+
+        start(port);
+    }
+
+    private static void start(int port) {
+        app =
                 Javalin.create(
                         javalinConfig -> {
                             javalinConfig.showJavalinBanner = false;
@@ -111,5 +138,17 @@ public class Server {
         app.post("/api/calibration/importFromData", RequestHandler::onDataCalibrationImportRequest);
 
         app.start(port);
+        System.out.println("hi");
+    }
+
+    /**
+     * Seems like if we change the static IP of this device, Javalin refuses to tell us when new
+     * Websocket clients connect. As a hack, we can restart the server every time we change static IPs
+     */
+    public static void restart() {
+        logger.info("Web server going down for restart");
+        int oldPort = app.port();
+        app.stop();
+        start(oldPort);
     }
 }
