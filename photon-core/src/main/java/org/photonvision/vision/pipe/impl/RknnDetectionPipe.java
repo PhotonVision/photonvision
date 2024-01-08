@@ -1,12 +1,10 @@
 package org.photonvision.vision.pipe.impl;
-
 import java.util.List;
 
-import org.opencv.dnn.Net;
 import org.photonvision.vision.opencv.CVMat;
+import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.target.TrackedTarget;
-
 public class RknnDetectionPipe extends CVPipe<CVMat, List<TrackedTarget>, RknnDetectionPipe.RknnDetectionPipeParams> {
 
     @Override
@@ -15,7 +13,13 @@ public class RknnDetectionPipe extends CVPipe<CVMat, List<TrackedTarget>, RknnDe
         throw new UnsupportedOperationException("Unimplemented method 'process'");
     }
 
-    public static class RknnDetectionPipeParams {
+    public static class RknnDetectionPipeParams implements Releasable{
+
+        @Override
+        public void release() {
+            // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("Unimplemented method 'release'");
+        }
         
     }
     

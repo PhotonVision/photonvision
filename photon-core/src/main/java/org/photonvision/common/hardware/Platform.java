@@ -19,6 +19,8 @@ package org.photonvision.common.hardware;
 
 import com.jogamp.common.os.Platform.OSType;
 import edu.wpi.first.util.RuntimeDetector;
+import kotlin.io.path.OnErrorResult;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -43,6 +45,13 @@ public enum Platform {
             true,
             OSType.LINUX,
             true), // Raspberry Pi 3/4 with a 64-bit image
+    LINUX_RK3588_64(
+        "Linux Armbian 64-bit with RK388",
+        "linuxarm64",
+        false,
+        OSType.LINUX,
+        true
+    ),
     LINUX_AARCH64(
             "Linux AARCH64", "linuxarm64", false, OSType.LINUX, true), // Jetson Nano, Jetson TX2
 
