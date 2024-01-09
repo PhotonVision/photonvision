@@ -302,7 +302,7 @@ jobs:
         id: generate_image
         with: 
           base_image: ${{ matrix.image_url }}
-          image_additional_mb: 8196
+          optimize_image: yes
           cpu: ${{ matrix.cpu }}
           commands: |
             chmod +x scripts/arm_runner_installer.sh
@@ -312,7 +312,8 @@ jobs:
       - name: Compress image
         run: |
           new_jar=$(realpath $(find . -name photonvision\*-linuxarm64.jar))
-          new_image_name=$(basename "${new_jar/.jar/_$2.img}")
+          new_image_name=$(basename "${new_jar/.jar/_${{ matrix.image_suffix }}.img}")
+          echo "[INFO] installed the following version :: $new_jar"
           mv ${{ steps.generate_image.outputs.image }} $new_image_name
           sudo xz -T 0 -v $new_image_name
       - uses: actions/upload-artifact@v4
