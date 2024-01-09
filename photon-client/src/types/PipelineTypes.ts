@@ -284,12 +284,14 @@ export const DefaultArucoPipelineSettings: ArucoPipelineSettings = {
 
 export interface RknnPipelineSettings extends PipelineSettings {
   pipelineType: PipelineType.Rknn;
+  confidence: number;
 }
 export type ConfigurableRknnPipelineSettings = Partial<Omit<RknnPipelineSettings, "pipelineType">> &
   ConfigurablePipelineSettings;
 export const DefaultRknnPipelineSettings: RknnPipelineSettings = {
   ...DefaultPipelineSettings,
   pipelineType: PipelineType.Rknn,
+  confidence: 90,
   cameraGain: 20,
   targetModel: TargetModel.InfiniteRechargeHighGoalOuter,
   ledMode: true,

@@ -215,7 +215,7 @@ public class PipelineManager {
                     break;
                 case Rknn:
                     logger.debug("Creating Rknn Pipeline");
-                    //currentUserPipeline = new RknnPipeline();
+                    currentUserPipeline = new RknnPipeline((RknnPipelineSettings) desiredPipelineSettings);
                 default:
                     // Can be calib3d or drivermode, both of which are special cases
                     break;

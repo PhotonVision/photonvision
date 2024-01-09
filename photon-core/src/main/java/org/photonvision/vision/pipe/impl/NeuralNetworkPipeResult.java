@@ -3,10 +3,10 @@ package org.photonvision.vision.pipe.impl;
 import org.opencv.core.Rect2d;
 
 public class NeuralNetworkPipeResult {
-    public NeuralNetworkPipeResult(Rect2d box2, Integer integer, Float float1) {
+    public NeuralNetworkPipeResult(Rect2d box2, Integer classIdx, Float confidence) {
         box = box2;
-        classIdx = integer;
-        confidence = float1;
+        this.classIdx = classIdx;
+        this.confidence = confidence;
     }
     public final int classIdx;
     public final Rect2d box;

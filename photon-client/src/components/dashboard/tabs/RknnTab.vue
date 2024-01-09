@@ -18,24 +18,20 @@ const interactiveCols = computed(
 )
   ? 9
   : 8;
-
-const models = () => {
-  return ["a", "bcd"]
-}
 </script>
 
 <template>
   <div v-if="currentPipelineSettings.pipelineType === PipelineType.Rknn">
     <pv-slider
-      v-model="currentPipelineSettings.cameraBrightness"
+      v-model="currentPipelineSettings.confidence"
       class="pt-2"
       :slider-cols="interactiveCols"
       label="Confidence"
       tooltip="asdf"
       :min="0"
       :max="1"
-      :step="-1"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraExposure: value }, false)"
+      :step=".01"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ confidence: value }, false)"
     />
   </div>
 </template>
