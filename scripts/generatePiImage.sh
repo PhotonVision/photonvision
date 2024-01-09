@@ -34,8 +34,29 @@ fi
 echo "Unziped image: " $IMAGE_FILE " -- mounting"
 TMP=$(mktemp -d)
 LOOP=$(sudo losetup --show -fP "${IMAGE_FILE}")
+PARTITION="${LOOP}p2"
+
+echo "Confirming that loop partition exists"
+if ! lsblk | grep -q "$(basename $PARTITION)"; then
+    echo "Loop device was not found in lsblk output."
+    sudo parted $LOOP mklabel msdos
+
+    sudo parted $LOOP mkpart primary ext4 0% 50%
+    sudo mkfs.ext4 "${LOOP}p1"
+
+    sudo parted $LOOP mkpart primary ext4 50% 100%
+    sudo mkfs.ext4 $PARTITION
+
+    if ! lsblk | grep -q "$(basename $PARTITION)"; then
+        echo "Failed to create partition. Exiting."
+	    exit 1
+    fi
+
+    echo "Created loop device partition"
+fi
+
 echo "Image mounted! Copying jar..."
-sudo mount ${LOOP}p2 $TMP
+sudo mount $PARTITION $TMP
 pushd .
 cd $TMP/opt/photonvision
 sudo cp $NEW_JAR photonvision.jar
