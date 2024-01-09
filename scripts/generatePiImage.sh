@@ -6,6 +6,32 @@ fi
 # 1st arg should be the release to download the image template from. The release ought to only have one
 # artifact for a "xz" image.
 
+# These are workarounds for the OrangePi. The current image does not use `pushd`, `popd` or `dirs`.
+DIR_STACK=""
+
+opi_pushd() {
+    if [ $# -eq 0 ]; then
+        echo "Directory stack:"
+	    for dir in ${DIR_STACK[@]}; do
+	        echo "- $dir"
+	    done
+    else
+        DIR_STACK="$DIR_STACK $PWD"
+	    cd "$1"
+    fi
+}
+
+opi_popd() {
+    if [ -z $DIR_STACK ]; then
+        echo "No directories"
+    else
+        LAST_ITEM=$(echo "$my_list" | awk '{print $NF}')
+	    POPPED_LIST="${DIR_STACK% *}"
+        cd "$LAST_ITEM"
+	    DIR_STACK=$POPPED_LIST
+    fi
+}
+
 NEW_JAR=$(realpath $(find . -name photonvision\*-linuxarm64.jar))
 echo "Using jar: " $NEW_JAR
 echo "Downloading image from" $1
@@ -41,15 +67,15 @@ if ! lsblk | grep -q "$(basename $PARTITION)"; then
     echo "Loop device was not found in lsblk output."
     sudo parted $LOOP mklabel msdos
 
-    sudo parted $LOOP mkpart primary ext4 0% 50%
-    sudo mkfs.ext4 "${LOOP}p1"
+    sudo parted $LOOP mkpart primary ext4 0% 50% > /dev/null 2>&1
+    sudo mkfs.ext4 "${LOOP}p1" > /dev/null 2>&1
 
-    sudo parted $LOOP mkpart primary ext4 50% 100%
-    sudo mkfs.ext4 $PARTITION
+    sudo parted $LOOP mkpart primary ext4 50% 100% > /dev/null 2>&1
+    sudo mkfs.ext4 $PARTITION > /dev/null 2>&1
 
     if ! lsblk | grep -q "$(basename $PARTITION)"; then
         echo "Failed to create partition. Exiting."
-	    exit 1
+        exit 1
     fi
 
     echo "Created loop device partition"
@@ -57,13 +83,30 @@ fi
 
 echo "Image mounted! Copying jar..."
 sudo mount $PARTITION $TMP
+
+
+DIR_STACK=""
+if ! command -v pushd > /dev/null 2>&1; then
+    alias pushd='opi_pushd'
+fi
+
+if ! command -v popd > /dev/null 2>&1; then
+    alias popd='opi_popd'
+fi
+
 pushd .
-cd $TMP/opt/photonvision
+
+DEST_PV_LOCATION=$TMP/opt/photonvision
+
+sudo mkdir -p $DEST_PV_LOCATION
+cd $DEST_PV_LOCATION
 sudo cp $NEW_JAR photonvision.jar
 
 echo "Jar updated! Creating service..."
 
-cd $TMP/etc/systemd/system/multi-user.target.wants
+DEST_TARGET_WANTS=$TMP/etc/systemd/system/multi-user.target.wants
+sudo mkdir -p $DEST_TARGET_WANTS
+cd $DEST_TARGET_WANTS
 sudo bash -c "printf \
 \"[Unit]
 Description=Service that runs PhotonVision
