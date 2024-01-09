@@ -1,8 +1,7 @@
 ###
-# Alternative ARM Runner installer to setup PhotonVision service files and JAR.
+# Alternative ARM Runner installer to setup PhotonVision service files and JAR
+# for ARM based builds such as Raspberry Pi, Orange Pi, etc.
 ###
-echo "[INFO] Using ARM Runner minimal instruction set"
-
 NEW_JAR=$(realpath $(find . -name photonvision\*-linuxarm64.jar))
 echo "Using jar: " $(basename $NEW_JAR)
 
