@@ -4,9 +4,9 @@
 echo "[INFO] Using ARM Runner minimal instruction set"
 
 NEW_JAR=$(realpath $(find . -name photonvision\*-linuxarm64.jar))
-echo "Using jar: " $NEW_JAR
+echo "Using jar: " $(basename $NEW_JAR)
 
-DEST_PV_LOCATION=/etc/photonvision
+DEST_PV_LOCATION=/opt/photonvision
 sudo mkdir -p $DEST_PV_LOCATION
 sudo cp $NEW_JAR ${DEST_PV_LOCATION}/photonvision.jar
 
