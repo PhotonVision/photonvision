@@ -302,7 +302,7 @@ jobs:
       - uses: pguyot/arm-runner-action@v2
         name: Generate image
         id: generate_image
-        with: 
+        with:
           base_image: ${{ matrix.image_url }}
           image_additional_mb: 4096
           optimize_image: yes
