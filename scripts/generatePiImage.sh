@@ -92,15 +92,15 @@ echo "Image mounted! Copying jar..."
 sudo mount $PARTITION $TMP
 
 
-# if ! command -v pushd > /dev/null 2>&1; then
-#     echo "Overwriting pushd because it doesn't exist."
-#     alias pushd='opi_pushd'
-# fi
+if ! command -v pushd > /dev/null 2>&1; then
+    echo "Overwriting pushd because it doesn't exist."
+    alias pushd='opi_pushd'
+fi
 
-# if ! command -v popd > /dev/null 2>&1; then
-#     echo "Overwriting popd because it doesn't exist."
-#     alias popd='opi_popd'
-# fi
+if ! command -v popd > /dev/null 2>&1; then
+    echo "Overwriting popd because it doesn't exist."
+    alias popd='opi_popd'
+fi
 
 pushd .
 

@@ -1,6 +1,7 @@
 ###
 # Alternative ARM Runner installer to setup PhotonVision service files and JAR.
 ###
+echo "[INFO] Using ARM Runner minimal instruction set"
 
 NEW_JAR=$(realpath $(find . -name photonvision\*-linuxarm64.jar))
 echo "Using jar: " $NEW_JAR
