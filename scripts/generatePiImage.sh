@@ -27,7 +27,7 @@ opi_popd() {
     if [ -z $DIR_STACK ]; then
         echo "No directories"
     else
-        LAST_ITEM=$(echo "$my_list" | awk '{print $NF}')
+        LAST_ITEM=$(echo "$DIR_STACK" | awk '{print $NF}')
 	    POPPED_LIST="${DIR_STACK% *}"
 
         # debugging only
