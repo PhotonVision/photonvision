@@ -12,12 +12,14 @@ DIR_STACK=""
 opi_pushd() {
     if [ $# -eq 0 ]; then
         echo "Directory stack:"
-	    for dir in ${DIR_STACK[@]}; do
+	    for dir in $DIR_STACK; do
 	        echo "- $dir"
 	    done
     else
         DIR_STACK="$DIR_STACK $PWD"
-	    cd "$1"
+	    cd "$1" || return
+        # debugging only
+        echo "Added ${1} to the directory stack"
     fi
 }
 
@@ -27,6 +29,11 @@ opi_popd() {
     else
         LAST_ITEM=$(echo "$my_list" | awk '{print $NF}')
 	    POPPED_LIST="${DIR_STACK% *}"
+
+        # debugging only
+        echo "Removed ${LAST_ITEM} from the directory stack."
+        echo "Reassigning the DIR_STACK to `$POPPED_LIST`"
+
         cd "$LAST_ITEM"
 	    DIR_STACK=$POPPED_LIST
     fi
@@ -64,7 +71,7 @@ PARTITION="${LOOP}p2"
 
 echo "Confirming that loop partition exists"
 if ! lsblk | grep -q "$(basename $PARTITION)"; then
-    echo "Loop device was not found in lsblk output."
+    echo "Loop device was not found in lsblk output. Creating it now."
     sudo parted $LOOP mklabel msdos
 
     sudo parted $LOOP mkpart primary ext4 0% 50% > /dev/null 2>&1
