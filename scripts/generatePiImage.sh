@@ -69,38 +69,38 @@ TMP=$(mktemp -d)
 LOOP=$(sudo losetup --show -fP "${IMAGE_FILE}")
 PARTITION="${LOOP}p2"
 
-echo "Confirming that loop partition exists"
-if ! lsblk | grep -q "$(basename $PARTITION)"; then
-    echo "Loop device was not found in lsblk output. Creating it now."
-    sudo parted $LOOP mklabel msdos
+# echo "Confirming that loop partition exists"
+# if ! lsblk | grep -q "$(basename $PARTITION)"; then
+#     echo "Loop device was not found in lsblk output. Creating it now."
+#     sudo parted $LOOP mklabel msdos
 
-    sudo parted $LOOP mkpart primary ext4 0% 50% > /dev/null 2>&1
-    sudo mkfs.ext4 "${LOOP}p1" > /dev/null 2>&1
+#     sudo parted $LOOP mkpart primary ext4 0% 50% > /dev/null 2>&1
+#     sudo mkfs.ext4 "${LOOP}p1" > /dev/null 2>&1
 
-    sudo parted $LOOP mkpart primary ext4 50% 100% > /dev/null 2>&1
-    sudo mkfs.ext4 $PARTITION > /dev/null 2>&1
+#     sudo parted $LOOP mkpart primary ext4 50% 100% > /dev/null 2>&1
+#     sudo mkfs.ext4 $PARTITION > /dev/null 2>&1
 
-    if ! lsblk | grep -q "$(basename $PARTITION)"; then
-        echo "Failed to create partition. Exiting."
-        exit 1
-    fi
+#     if ! lsblk | grep -q "$(basename $PARTITION)"; then
+#         echo "Failed to create partition. Exiting."
+#         exit 1
+#     fi
 
-    echo "Created loop device partition"
-fi
+#     echo "Created loop device partition"
+# fi
 
 echo "Image mounted! Copying jar..."
 sudo mount $PARTITION $TMP
 
 
-if ! command -v pushd > /dev/null 2>&1; then
-    echo "Overwriting pushd because it doesn't exist."
-    alias pushd='opi_pushd'
-fi
+# if ! command -v pushd > /dev/null 2>&1; then
+#     echo "Overwriting pushd because it doesn't exist."
+#     alias pushd='opi_pushd'
+# fi
 
-if ! command -v popd > /dev/null 2>&1; then
-    echo "Overwriting popd because it doesn't exist."
-    alias popd='opi_popd'
-fi
+# if ! command -v popd > /dev/null 2>&1; then
+#     echo "Overwriting popd because it doesn't exist."
+#     alias popd='opi_popd'
+# fi
 
 pushd .
 
