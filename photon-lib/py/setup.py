@@ -18,7 +18,7 @@ if m:
     versionString = m.group(0)
     print(len(m.group(2)))
     # Hack -- for strings like v2024.1.1, do NOT add matruity/suffix
-    if len(m.group(2)) >= 0:
+    if len(m.group(2)) > 0:
         print("using beta group matcher")
         prefix = m.group(1)
         maturity = m.group(2)
