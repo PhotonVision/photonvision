@@ -25,7 +25,7 @@ if m:
         versionString = f"{prefix}.{maturity}.{suffix}"
     else:
         split = gitDescribeResult.split("-")
-        if (len(split) == 3):
+        if len(split) == 3:
             year, commits, sha = split
             # Chop off leading v from "v2024.1.2", and use "post" for commits to master since
             versionString = f"{year[1:]}post{commits}"
@@ -34,7 +34,6 @@ if m:
             year = gitDescribeResult
             versionString = year[1:]
             print("using full release " + versionString)
-
 
 
 else:
