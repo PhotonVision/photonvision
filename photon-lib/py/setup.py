@@ -16,7 +16,6 @@ m = re.search(
 # which should be PEP440 compliant
 if m:
     versionString = m.group(0)
-    print(len(m.group(2)))
     # Hack -- for strings like v2024.1.1, do NOT add matruity/suffix
     if len(m.group(2)) > 0:
         print("using beta group matcher")
@@ -24,6 +23,18 @@ if m:
         maturity = m.group(2)
         suffix = m.group(3).replace(".", "")
         versionString = f"{prefix}.{maturity}.{suffix}"
+    else:
+        split = gitDescribeResult.split("-")
+        if (len(split) == 3):
+            year, commits, sha = split
+            # Chop off leading v from "v2024.1.2", and use "post" for commits to master since
+            versionString = f"{year[1:]}post{commits}"
+            print("using dev release " + versionString)
+        else:
+            year = gitDescribeResult
+            versionString = year[1:]
+            print("using full release " + versionString)
+
 
 
 else:
