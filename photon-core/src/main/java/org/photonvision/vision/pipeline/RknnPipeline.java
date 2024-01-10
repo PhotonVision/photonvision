@@ -82,17 +82,17 @@ public class RknnPipeline extends CVPipeline<CVPipelineResult, RknnPipelineSetti
 
         // This belongs in a collect & draw pipe but I'm lazy
         for (var t : targetList) {
-            Imgproc.rectangle(input_frame.processedImage.getMat(), t.box.tl(), t.box.br(), new Scalar(0, 0, 255), 2);
+            //Imgproc.rectangle(input_frame.processedImage.getMat(), t.box.tl(), t.box.br(), new Scalar(0, 0, 255), 2);
 
-            var name = String.format("%s (%f)", names.get(t.classIdx), t.confidence);
+            var name = String.format("%s (%.1f%%)", names.get(t.classIdx), t.confidence*100);
 
             Imgproc.putText(
                     input_frame.processedImage.getMat(),
                     name,
-                    new Point(t.box.x + t.box.width / 2.0, t.box.y + t.box.height / 2.0),
+                    new Point(t.box.x + t.box.width / 2.5, t.box.y + t.box.height / 2.0),
                     0,
-                    0.6,
-                    ColorHelper.colorToScalar(java.awt.Color.white),
+                    1,
+                    ColorHelper.colorToScalar(java.awt.Color.green),
                     2);
 
             targets.add(

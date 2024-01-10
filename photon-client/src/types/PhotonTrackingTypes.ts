@@ -54,6 +54,8 @@ export interface PhotonTarget {
   ambiguity: number;
   // -1 if not set
   fiducialId: number;
+  name: Text;
+  confidence: number;
   // undefined if 3d isn't enabled
   pose?: Transform3d;
 }

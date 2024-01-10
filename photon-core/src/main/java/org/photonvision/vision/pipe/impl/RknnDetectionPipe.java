@@ -16,6 +16,9 @@ public class RknnDetectionPipe extends CVPipe<CVMat, List<NeuralNetworkPipeResul
         }
         double confThreshold = params.confidence;
         List<NeuralNetworkPipeResult> result = RknnDetector.detect(in);
+        if(result.isEmpty()) {
+            return List.of();
+        }
         Iterator<NeuralNetworkPipeResult> itr = result.iterator();
         while(itr.hasNext()) {
             NeuralNetworkPipeResult res = itr.next();

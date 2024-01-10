@@ -326,6 +326,7 @@ public class Main {
                 logger.debug("LOADING RK3588");
                 logger.debug("LOADING RK3588");
                 RknnDetector.forceLoad();
+                 logger.warn("LOADING RK3588");
         } catch (IOException e) {
             logger.error("Failed to load rknn-JNI!", e);
         }
