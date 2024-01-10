@@ -16,10 +16,14 @@ m = re.search(
 # which should be PEP440 compliant
 if m:
     versionString = m.group(0)
-    prefix = m.group(1)
-    maturity = m.group(2)
-    suffix = m.group(3).replace(".", "")
-    versionString = f"{prefix}.{maturity}.{suffix}"
+    print(len(m.group(2)))
+    # Hack -- for strings like v2024.1.1, do NOT add matruity/suffix
+    if len(m.group(2)) >= 0:
+        print("using beta group matcher")
+        prefix = m.group(1)
+        maturity = m.group(2)
+        suffix = m.group(3).replace(".", "")
+        versionString = f"{prefix}.{maturity}.{suffix}"
 
 
 else:
