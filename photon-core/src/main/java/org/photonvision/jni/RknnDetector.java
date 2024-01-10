@@ -5,20 +5,39 @@ import java.util.List;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.TestUtils;
+import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.rknn.RknnJNI;
 import org.photonvision.rknn.RknnJNI.RknnResult;
 import org.opencv.core.Rect2d;
-import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
 
 public class RknnDetector extends PhotonJNICommon {
-    static long objPointer = 0;
+    private static final Logger logger = new Logger(RknnDetector.class, LogGroup.General);
+    static long objPointer = -1;
     static boolean hasBeenDestroyed = false;
-    public static synchronized void forceLoad() throws IOException {
-        forceLoad(RknnDetector.class, List.of("rknn_jni", "rga", "rknnrt"));
+    private boolean isLoaded;
+    private static RknnDetector instance = null;
+    private RknnDetector() {
+        isLoaded = false;
+        objPointer = RknnJNI.create("null");
     }
-    
+    public static RknnDetector getRknnDetector() {
+        if (instance == null)
+            instance = new RknnDetector();
+ 
+        return instance;
+    }
+
+    public static synchronized void forceLoad() throws IOException {
+        TestUtils.loadLibraries();
+        
+        forceLoad(getRknnDetector(), RknnDetector.class, List.of("rknn_jni", "rga", "rknnrt"));
+        logger.debug("HEY");
+    }
     public static List<NeuralNetworkPipeResult> detect(CVMat in) {
         RknnResult[] ret = RknnJNI.detect(objPointer, in.getMat().getNativeObjAddr());
 
@@ -36,10 +55,13 @@ public class RknnDetector extends PhotonJNICommon {
         }
         
     }
-    
-    public static void main(String[] args) throws IOException {
-        TestUtils.loadLibraries();
-        forceLoad();
-        objPointer = RknnJNI.create("null");
+    @Override
+    public boolean isLoaded() {
+        return isLoaded;
     }
+    @Override
+    public void setLoaded(boolean state) {
+        isLoaded = state;
+    }
+    
 }

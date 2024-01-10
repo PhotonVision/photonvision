@@ -38,6 +38,7 @@ import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.mrcal.MrCalJNILoader;
+import org.photonvision.jni.RknnDetector;
 import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.server.Server;
 import org.photonvision.vision.camera.FileVisionSource;
@@ -317,7 +318,17 @@ public class Main {
         } catch (IOException e) {
             logger.error("Failed to load libcamera-JNI!", e);
         }
-
+        try {
+            
+                logger.warn("LOADING RK3588");
+                logger.debug("LOADING RK3588");
+                logger.debug("LOADING RK3588");
+                logger.debug("LOADING RK3588");
+                logger.debug("LOADING RK3588");
+                RknnDetector.forceLoad();
+        } catch (IOException e) {
+            logger.error("Failed to load rknn-JNI!", e);
+        }
         try {
             MrCalJNILoader.forceLoad();
         } catch (IOException e) {
