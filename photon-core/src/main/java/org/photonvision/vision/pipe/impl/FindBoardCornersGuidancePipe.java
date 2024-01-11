@@ -33,6 +33,7 @@ import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.calib3d.Calib3d;
+
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfInt;
@@ -53,7 +54,6 @@ import org.photonvision.vision.pipe.impl.Calibrate3dPoseGuidance.ChArucoDetector
 import org.photonvision.vision.pipe.impl.Calibrate3dPoseGuidance.UserGuidance;
 import org.photonvision.vision.pipeline.Calibrate3dPipeline;
 import org.photonvision.vision.pipeline.UICalibrationData;
-import org.photonvision.vision.pipeline.result.FindBoardGuidanceResult;
 
 /*-------------------------------------------------------------------------------------------------*/
 /*-------------------------------------------------------------------------------------------------*/
@@ -66,7 +66,7 @@ import org.photonvision.vision.pipeline.result.FindBoardGuidanceResult;
 /*-------------------------------------------------------------------------------------------------*/
 public class FindBoardCornersGuidancePipe
                 extends CVPipe<
-                Pair<Mat, Mat>, FindBoardGuidanceResult, FindBoardCornersGuidancePipe.FindCornersGuidancePipeParams> {
+                Pair<Mat, Mat>, FindBoardCornersGuidancePipe.FindBoardGuidanceResult, FindBoardCornersGuidancePipe.FindCornersGuidancePipeParams> {
     private static final String VERSION = "beta 12.12"; // change this
 
     static final Logger logger = new Logger(FindBoardCornersGuidancePipe.class, LogGroup.General);
@@ -506,6 +506,15 @@ public class FindBoardCornersGuidancePipe
             if (resolution.width != other.resolution.width) return false;
             return true;
         }
+    }
+
+    public class FindBoardGuidanceResult {
+        public Size imgSize; // camera resolution or camera image size
+        public Mat objCorners; // locations of undistorted board corners
+        public Mat imgCorners; // locations of detected perspective distorted board corners as seen by the camera
+        public boolean takeSnapshot; // good to capture this image for final calibration
+        public boolean haveEnough; // converged and completed all guidance poses
+        public boolean cancelCalibration; // image size error or other fatal error
     }
 }
 /*-------------------------------------------------------------------------------------------------*/
