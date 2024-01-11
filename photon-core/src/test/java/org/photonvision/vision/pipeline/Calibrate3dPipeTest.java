@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.pipeline;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -25,17 +26,24 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.cartesian.CartesianTest;
 import org.junitpioneer.jupiter.cartesian.CartesianTest.Enum;
 import org.junitpioneer.jupiter.cartesian.CartesianTest.Values;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfDouble;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2d;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TestUtils;
+import org.photonvision.mrcal.MrCalJNI;
 import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.QuirkyCamera;
@@ -73,6 +81,43 @@ public class Calibrate3dPipeTest {
             this.size = image;
             this.boardSize = chessboard;
         }
+    }
+
+    @Test
+    public void testMeme() {
+        Point[] inputData = {
+            new Point(0, 0),
+            new Point(1, 0),
+            new Point(0, 1)
+        };
+        var src = new MatOfPoint2d(inputData);
+
+        var dst = new MatOfPoint2d();
+        dst.alloc(src.rows());
+        
+        
+        var cameraMat = new MatOfDouble(
+            100, 0, 50,
+            0, 100, 20,
+            0, 0, 1
+        ).reshape(0, 3);
+        var distCoeffs = new MatOfDouble(0.17802570252202954,-1.461379065131586,0.001019661566461145,0.0003215220840230439,2.7249642067580533).reshape(0, 1);
+
+        for (int i = 0; i < 100; i++) {
+            var start = System.nanoTime();
+            var ret = MrCalJNI.undistort_mrcal(src.nativeObj, dst.nativeObj, cameraMat.nativeObj, distCoeffs.nativeObj, 0, -1, -1, -1, -1);
+            var end = System.nanoTime();
+
+            System.out.println("dt: " + (end - start)/1e-6+"ms!");
+            assertTrue(ret);
+        }
+        System.out.println(src.dump());
+        System.out.println(dst.dump());
+        
+        var pts = dst.toList();
+        assertEquals(-0.2848261640274217, pts.get(0).x, 0.001);
+        assertEquals(-0.1402225466498805, pts.get(0).y, 0.001);
+
     }
 
     /**

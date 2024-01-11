@@ -29,7 +29,7 @@ ext {
     javalinVersion = "5.6.2"
     photonGlDriverLibVersion = "dev-v2023.1.0-9-g75fc678"
     frcYear = "2024"
-    mrcalVersion = "dev-v2024.0.0-7-gc976aaa";
+    mrcalVersion = "dev-v2024.0.0-14-g2dc249f";
 
     pubVersion = versionString
     isDev = pubVersion.startsWith("dev")

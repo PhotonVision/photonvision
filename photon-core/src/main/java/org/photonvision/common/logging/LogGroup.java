@@ -23,5 +23,6 @@ public enum LogGroup {
     VisionModule,
     Data,
     General,
-    Config
+    Config,
+    Vision
 }
