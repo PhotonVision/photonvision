@@ -4,7 +4,7 @@ import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { ref } from "vue";
 import loadingImage from "@/assets/images/loading.svg";
-import { getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
+import { getResolutionString, parseJsonFile, parseTextFile } from "@/lib/PhotonUtils";
 
 const props = defineProps<{
   videoFormat: VideoFormat;
@@ -53,7 +53,35 @@ const openUploadPhotonCalibJsonPrompt = () => {
 const importCalibration = async () => {
   const files = importCalibrationFromPhotonJson.value.files;
   if (files.length === 0) return;
-  const uploadedJson = files[0];
+  const uploadedJson: File = files[0];
+
+  if (uploadedJson.name.endsWith(".cameramodel")) {
+    // Parsing a mrcal cameramodel -- punt all validation to the backend
+    const data = await parseTextFile(uploadedJson);
+
+    const lensmodelMatch = data.match(".*lensmodel':\\ *'(.*)'.*");
+    if (lensmodelMatch?.length === 2) {
+      console.log(lensmodelMatch[1])
+    } else {
+      console.log("No lensmodel")
+    }
+
+    const intrinsicsMatch = data.match(".*intrinsics':(.*),");
+    if (intrinsicsMatch?.length === 2) {
+      // console.log(intrinsicsMatch[1])
+      const m = JSON.parse(intrinsicsMatch[1]
+        // Trin illegal end?
+        .replace(",]", "]")  
+      );
+      console.log(m)
+    } else {
+      console.log("No intrinsics")
+    }
+
+    // TODO hot replace the camera cal results!
+
+    return;
+  }
 
   const data = await parseJsonFile<CameraCalibrationResult>(uploadedJson);
 
@@ -131,7 +159,7 @@ const getObservationDetails = (): ObservationDetails[] | undefined => {
         <input
           ref="importCalibrationFromPhotonJson"
           type="file"
-          accept=".json"
+          accept=".json, .cameramodel"
           style="display: none"
           @change="importCalibration"
         />
