@@ -308,8 +308,8 @@ jobs:
           optimize_image: yes
           cpu: ${{ matrix.cpu }}
           commands: |
-            chmod +x scripts/arm_runner_installer.sh
-            ./scripts/arm_runner_installer.sh
+            chmod +x scripts/armrunner.sh
+            ./scripts/armrunner.sh
       - name: Compress image
         run: |
           new_jar=$(realpath $(find . -name photonvision\*-linuxarm64.jar))
