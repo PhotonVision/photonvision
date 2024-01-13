@@ -273,14 +273,20 @@ jobs:
             artifact-name: LinuxArm64
             image_suffix: RaspberryPi
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.4/photonvision_raspi.img.xz
+            cpu: cortex-a7
+            image_additional_mb: 0
           - os: ubuntu-latest
             artifact-name: LinuxArm64
             image_suffix: limelight2
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.4/photonvision_limelight.img.xz
+            cpu: cortex-a7
+            image_additional_mb: 0
           - os: ubuntu-latest
             artifact-name: LinuxArm64
             image_suffix: orangepi5
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.4/photonvision_opi5.img.xz
+            cpu: cortex-a8
+            image_additional_mb: 4096
 
     runs-on: ${{ matrix.os }}
     name: "Build image - ${{ matrix.image_url }}"
@@ -293,11 +299,23 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: jar-${{ matrix.artifact-name }}
-      # TODO- replace with the arm-runner action and run this inside of the chroot. but this works for now.
-      - name: Generate image
+      - uses: pguyot/arm-runner-action@v2
+        name: Generate image
+        id: generate_image
+        with:
+          base_image: ${{ matrix.image_url }}
+          image_additional_mb: ${{ matrix.image_additional_mb }}
+          optimize_image: yes
+          cpu: ${{ matrix.cpu }}
+          commands: |
+            chmod +x scripts/arm_runner_installer.sh
+            ./scripts/arm_runner_installer.sh
+      - name: Compress image
         run: |
-          chmod +x scripts/generatePiImage.sh
-          ./scripts/generatePiImage.sh ${{ matrix.image_url }} ${{ matrix.image_suffix }}
+          new_jar=$(realpath $(find . -name photonvision\*-linuxarm64.jar))
+          new_image_name=$(basename "${new_jar/.jar/_${{ matrix.image_suffix }}.img}")
+          mv ${{ steps.generate_image.outputs.image }} $new_image_name
+          sudo xz -T 0 -v $new_image_name
       - uses: actions/upload-artifact@v4
         name: Upload image
         with:
