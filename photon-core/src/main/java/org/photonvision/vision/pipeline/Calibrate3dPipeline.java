@@ -70,10 +70,14 @@ public class Calibrate3dPipeline
 
     public Calibrate3dPipeline(String uniqueName) {
         this(12, uniqueName);
+        // logger.debug("RKT in Calibrate3dPipeline constructor 1 arg");
+        // runs once when PV starts
     }
 
     public Calibrate3dPipeline(int minSnapshots, String uniqueName) {
         super(PROCESSING_TYPE);
+        // logger.debug("RKT in Calibration3dPipeline constructor 2 args");
+        // runs once when PV starts
         this.settings = new Calibration3dPipelineSettings();
         this.foundCornersList = new ArrayList<>();
         this.minSnapshots = minSnapshots;
@@ -81,6 +85,8 @@ public class Calibrate3dPipeline
 
     @Override
     protected void setPipeParamsImpl() {
+        // logger.debug("RKT in Calibrate3dPipeline setPipeParamsImpl");
+        // runs once per frame after calibration has started until calibration ends/canceled
         FindBoardCornersPipe.FindCornersPipeParams findCornersPipeParams =
                 new FindBoardCornersPipe.FindCornersPipeParams(
                         settings.boardHeight,
@@ -98,6 +104,8 @@ public class Calibrate3dPipeline
 
     @Override
     protected CVPipelineResult process(Frame frame, Calibration3dPipelineSettings settings) {
+        // logger.debug("RKT in Calibrate3dPipeline process");
+        // runs once per frame after calibration has started until calibration ends/canceled
         Mat inputColorMat = frame.colorImage.getMat();
 
         if (this.calibrating || inputColorMat.empty()) {
@@ -152,16 +160,19 @@ public class Calibrate3dPipeline
     }
 
     List<List<Point>> getCornersList() {
+        // logger.debug(this.getClass().getEnclosingMethod().getName());
         return foundCornersList.stream()
                 .map(it -> it.imagePoints.toList())
                 .collect(Collectors.toList());
     }
 
     public boolean hasEnough() {
+        // logger.debug(this.getClass().getEnclosingMethod().getName());
         return foundCornersList.size() >= minSnapshots;
     }
 
     public CameraCalibrationCoefficients tryCalibration() {
+        // logger.debug(this.getClass().getEnclosingMethod().getName());
         if (!hasEnough()) {
             logger.info(
                     "Not enough snapshots! Only got "
@@ -184,14 +195,17 @@ public class Calibrate3dPipeline
     }
 
     public void takeSnapshot() {
+        // logger.debug(this.getClass().getEnclosingMethod().getName());
         takeSnapshot = true;
     }
 
     public List<BoardObservation> perViewErrors() {
+        // logger.debug(this.getClass().getEnclosingMethod().getName());
         return calibrationOutput.output.observations;
     }
 
     public void finishCalibration() {
+        // logger.debug(this.getClass().getEnclosingMethod().getName());
         foundCornersList.forEach(it -> it.release());
         foundCornersList.clear();
 
@@ -199,6 +213,7 @@ public class Calibrate3dPipeline
     }
 
     private void broadcastState() {
+        // logger.debug(this.getClass().getEnclosingMethod().getName());
         var state =
                 SerializationUtils.objectToHashMap(
                         new UICalibrationData(
@@ -217,6 +232,7 @@ public class Calibrate3dPipeline
     }
 
     public boolean removeSnapshot(int index) {
+        // logger.debug(this.getClass().getEnclosingMethod().getName());
         try {
             foundCornersList.remove(index);
             return true;
@@ -227,6 +243,7 @@ public class Calibrate3dPipeline
     }
 
     public CameraCalibrationCoefficients cameraCalibrationCoefficients() {
+        // logger.debug(this.getClass().getEnclosingMethod().getName());
         return calibrationOutput.output;
     }
 }

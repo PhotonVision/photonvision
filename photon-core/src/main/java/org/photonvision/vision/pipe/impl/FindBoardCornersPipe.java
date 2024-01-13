@@ -62,7 +62,15 @@ public class FindBoardCornersPipe
 
     private FindCornersPipeParams lastParams = null;
 
+    public FindBoardCornersPipe() {
+        super();
+        logger.debug("RKT in RKT FindBoardCornersPipe constructor");
+        // runs twice at startup - once for each camera????
+    }
+
     public void createObjectPoints() {
+        // logger.debug("RKT in FindBoardCornersPipe createobjectPoints");
+        // run every frame during calibration
         if (this.lastParams != null && this.lastParams.equals(this.params)) return;
         this.lastParams = this.params;
 
@@ -115,6 +123,8 @@ public class FindBoardCornersPipe
      */
     @Override
     protected FindBoardCornersPipeResult process(Pair<Mat, Mat> in) {
+        // logger.debug("RKT in FindBoardCornersPipe process");params
+        // run eery frame during calibration
         return findBoardCorners(in);
     }
 
@@ -126,6 +136,7 @@ public class FindBoardCornersPipe
      * @return
      */
     private double getFindCornersScaleFactor(Mat inFrame) {
+        // logger.debug(this.getClass().getEnclosingMethod().getName());
         return 1.0 / params.divisor.value;
     }
 
@@ -146,6 +157,7 @@ public class FindBoardCornersPipe
      * @return min spacing between neighbors
      */
     private double getApproxMinSpacing(MatOfPoint2f inPoints) {
+        // logger.debug(this.getClass().getEnclosingMethod().getName());
         double minSpacing = Double.MAX_VALUE;
         for (int pointIdx = 0; pointIdx < inPoints.height() - 1; pointIdx += 2) {
             // +1 idx Neighbor distance
@@ -166,8 +178,12 @@ public class FindBoardCornersPipe
      * @return the size to scale the input mat to
      */
     private Size getFindCornersImgSize(Mat in) {
+        // logger.debug("RKT in findBoardCornersPipe getFindCornersImgSize");
+        // we downscale so that finding chessboard corners is faster.
+        // But we do sub pixel corner detection on the full resolution image
         int width = in.cols() / params.divisor.value;
         int height = in.rows() / params.divisor.value;
+        logger.debug("getFindCorenersImgSize scaled to " + width + "x" + height + " from " + in.cols() + "x" + in.rows());
         return new Size(width, height);
     }
 
@@ -181,7 +197,8 @@ public class FindBoardCornersPipe
      * @param outPoints mat into which the output rescaled points get placed
      */
     private void rescalePointsToOrigFrame(
-            MatOfPoint2f inPoints, Mat origFrame, MatOfPoint2f outPoints) {
+        MatOfPoint2f inPoints, Mat origFrame, MatOfPoint2f outPoints) {
+        // logger.debug(this.getClass().getEnclosingMethod().getName());
         // Rescale boardCorners back up to the inproc image size
         Point[] outPointsArr = new Point[inPoints.height()];
         double sf = getFindCornersScaleFactor(origFrame);
@@ -202,6 +219,7 @@ public class FindBoardCornersPipe
      * @return
      */
     private Size getWindowSize(MatOfPoint2f inPoints) {
+        // logger.debug(this.getClass().getEnclosingMethod().getName());
         double windowHalfWidth = 11; // Dot board uses fixed-size window half-width
         if (params.type == UICalibrationData.BoardType.CHESSBOARD) {
             // Chessboard uses a dynamic sized window based on how far apart the corners are
@@ -217,6 +235,8 @@ public class FindBoardCornersPipe
      * @return Frame resolution, object points, board corners
      */
     private FindBoardCornersPipeResult findBoardCorners(Pair<Mat, Mat> in) {
+        // logger.debug("RKT in FindBoardCornersPipe findBoardCorners");
+        // run every frame during calibration
         createObjectPoints();
 
         var inFrame = in.getLeft();
@@ -286,7 +306,8 @@ public class FindBoardCornersPipe
         final FrameDivisor divisor;
 
         public FindCornersPipeParams(
-                int boardHeight,
+
+            int boardHeight,
                 int boardWidth,
                 UICalibrationData.BoardType type,
                 double gridSize,
@@ -314,6 +335,7 @@ public class FindBoardCornersPipe
 
         @Override
         public boolean equals(Object obj) {
+            // logger.debug(this.getClass().getEnclosingMethod().getName());
             if (this == obj) return true;
             if (obj == null) return false;
             if (getClass() != obj.getClass()) return false;
@@ -337,7 +359,7 @@ public class FindBoardCornersPipe
 
         public FindBoardCornersPipeResult(
                 Size size, MatOfPoint3f objectPoints, MatOfPoint2f imagePoints) {
-            this.size = size;
+                    this.size = size;
             this.objectPoints = objectPoints;
             this.imagePoints = imagePoints;
         }
