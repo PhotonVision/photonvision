@@ -27,6 +27,7 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.opencv.core.Rect2d;
 import org.opencv.core.RotatedRect;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.common.util.math.MathUtils;
@@ -38,6 +39,7 @@ import org.photonvision.vision.opencv.CVShape;
 import org.photonvision.vision.opencv.Contour;
 import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.opencv.Releasable;
+import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
 
 public class TrackedTarget implements Releasable {
     public final Contour m_mainContour;
@@ -64,6 +66,10 @@ public class TrackedTarget implements Releasable {
     private double m_poseAmbiguity = -1;
 
     private Mat m_cameraRelativeTvec, m_cameraRelativeRvec;
+
+    // ML specific params
+    private int m_classId = -1;
+    private double m_confidence = -1;
 
     public TrackedTarget(
             PotentialTarget origTarget, TargetCalculationParameters params, CVShape shape) {
@@ -223,6 +229,50 @@ public class TrackedTarget implements Releasable {
             MathUtils.rotationToOpencvRvec(bestPose.getRotation(), rvec);
             setCameraRelativeRvec(rvec);
         }
+    }
+
+    public TrackedTarget(
+            Rect2d box, int class_id, double confidence, TargetCalculationParameters params) {
+        var centerX = box.x + box.width / 2.0;
+        var centerY = box.y + box.height / 2.0;
+
+        m_targetOffsetPoint = new Point(centerX, centerY);
+        m_robotOffsetPoint = new Point();
+
+        var yawPitch =
+                TargetCalculations.calculateYawPitch(
+                        params.cameraCenterPoint.x,
+                        centerX,
+                        params.horizontalFocalLength,
+                        params.cameraCenterPoint.y,
+                        centerY,
+                        params.verticalFocalLength);
+        m_yaw = yawPitch.getFirst();
+        m_pitch = yawPitch.getSecond();
+
+        Point[] cornerPoints =
+                new Point[] {
+                    // Box.x/y is the top-left corner, not the center
+                    new Point(box.x, box.y), // tl
+                    new Point(box.x + box.width, box.y), // tr
+                    new Point(box.x + box.width, box.y + box.height), // br
+                    new Point(box.x, box.y + box.height), // bl
+                };
+
+        m_targetCorners = List.of(cornerPoints);
+        MatOfPoint contourMat = new MatOfPoint(cornerPoints);
+        m_approximateBoundingPolygon = new MatOfPoint2f(cornerPoints);
+
+        m_mainContour = new Contour(contourMat);
+        m_area = m_mainContour.getArea() / params.imageArea * 100;
+
+        m_classId = class_id;
+        m_confidence = confidence;
+    }
+
+    public TrackedTarget(
+            NeuralNetworkPipeResult t, TargetCalculationParameters targetCalculationParameters) {
+        this(t.box, t.classIdx, t.confidence, targetCalculationParameters);
     }
 
     public void setFiducialId(int id) {
@@ -394,6 +444,10 @@ public class TrackedTarget implements Releasable {
             ret.put("pose", SerializationUtils.transformToHashMap(bestCameraToTarget3d));
         }
         ret.put("fiducialId", getFiducialId());
+
+        ret.put("confidence", m_confidence);
+        ret.put("classId", m_classId);
+
         return ret;
     }
 

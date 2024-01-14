@@ -48,6 +48,10 @@ const resetCurrentBuffer = () => {
               >
                 Fiducial ID
               </th>
+              <template v-if="currentPipelineSettings.pipelineType === PipelineType.Dnn">
+                <th class="text-center white--text">Class ID</th>
+                <th class="text-center white--text">Confidence</th>
+              </template>
               <template v-if="!useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled">
                 <th class="text-center white--text">Pitch &theta;&deg;</th>
                 <th class="text-center white--text">Yaw &theta;&deg;</th>
@@ -84,6 +88,12 @@ const resetCurrentBuffer = () => {
                 class="text-center"
               >
                 {{ target.fiducialId }}
+              </td>
+              <td v-if="currentPipelineSettings.pipelineType === PipelineType.Dnn" class="text-center white--text">
+                {{ target.classId }}
+              </td>
+              <td v-if="currentPipelineSettings.pipelineType === PipelineType.Dnn" class="text-center white--text">
+                {{ target.confidence.toFixed(2) }}
               </td>
               <template v-if="!useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled">
                 <td class="text-center">{{ target.pitch.toFixed(2) }}&deg;</td>

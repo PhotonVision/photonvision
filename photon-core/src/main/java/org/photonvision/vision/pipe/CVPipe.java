@@ -33,6 +33,10 @@ public abstract class CVPipe<I, O, P> {
         this.params = params;
     }
 
+    public P getParams() {
+        return this.params;
+    }
+
     /**
      * Runs the process for the pipe.
      *

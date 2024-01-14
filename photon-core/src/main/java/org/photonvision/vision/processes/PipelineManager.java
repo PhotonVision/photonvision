@@ -207,10 +207,14 @@ public class PipelineManager {
                     currentUserPipeline =
                             new AprilTagPipeline((AprilTagPipelineSettings) desiredPipelineSettings);
                     break;
-
                 case Aruco:
                     logger.debug("Creating Aruco Pipeline");
                     currentUserPipeline = new ArucoPipeline((ArucoPipelineSettings) desiredPipelineSettings);
+                    break;
+                case Dnn:
+                    logger.debug("Creating DNN Pipeline");
+                    currentUserPipeline =
+                            new OpencvDnnPipeline((DnnPipelineSettings) desiredPipelineSettings);
                     break;
                 default:
                     // Can be calib3d or drivermode, both of which are special cases
@@ -310,6 +314,12 @@ public class PipelineManager {
             case Aruco:
                 {
                     var added = new ArucoPipelineSettings();
+                    added.pipelineNickname = nickname;
+                    return added;
+                }
+            case Dnn:
+                {
+                    var added = new DnnPipelineSettings();
                     added.pipelineNickname = nickname;
                     return added;
                 }
