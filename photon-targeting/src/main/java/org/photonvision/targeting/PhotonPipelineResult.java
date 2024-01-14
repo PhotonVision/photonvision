@@ -17,6 +17,7 @@
 
 package org.photonvision.targeting;
 
+import edu.wpi.first.util.protobuf.ProtobufSerializable;
 import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.common.dataflow.structures.Packet;
@@ -24,7 +25,7 @@ import org.photonvision.common.dataflow.structures.PacketSerde;
 import org.photonvision.targeting.proto.PhotonPipelineResultProto;
 
 /** Represents a pipeline result from a PhotonCamera. */
-public class PhotonPipelineResult {
+public class PhotonPipelineResult implements ProtobufSerializable {
     private static boolean HAS_WARNED = false;
 
     // Targets to store.
