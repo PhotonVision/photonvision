@@ -7,6 +7,7 @@ import { computed, ref } from "vue";
 import PvIcon from "@/components/common/pv-icon.vue";
 import PvInput from "@/components/common/pv-input.vue";
 import { PipelineType } from "@/types/PipelineTypes";
+import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
 const changeCurrentCameraIndex = (index: number) => {
   useCameraSettingsStore().setCurrentCameraIndex(index, true);
@@ -154,9 +155,11 @@ const pipelineTypesWrapper = computed<{ name: string; value: number }[]>(() => {
     { name: "Reflective", value: WebsocketPipelineType.Reflective },
     { name: "Colored Shape", value: WebsocketPipelineType.ColoredShape },
     { name: "AprilTag", value: WebsocketPipelineType.AprilTag },
-    { name: "Aruco", value: WebsocketPipelineType.Aruco },
-    { name: "RKNN", value: WebsocketPipelineType.Rknn}
+    { name: "Aruco", value: WebsocketPipelineType.Aruco }
   ];
+  if(useSettingsStore().general.rknnSupported) {
+    pipelineTypes.push({name: "RKNN", value: WebsocketPipelineType.Rknn});
+  }
 
   if (useCameraSettingsStore().isDriverMode) {
     pipelineTypes.push({ name: "Driver Mode", value: WebsocketPipelineType.DriverMode });

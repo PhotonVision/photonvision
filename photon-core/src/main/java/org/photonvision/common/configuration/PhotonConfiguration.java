@@ -145,7 +145,7 @@ public class PhotonConfiguration {
                         ? "Zerocopy Libcamera Working"
                         : ""); // TODO add support for other types of GPU accel
         generalSubmap.put("mrCalWorking", MrCalJNILoader.getInstance().isLoaded());
-        generalSubmap.put("rknnJNIWorking", RknnDetector.getInstance().isLoaded());
+        generalSubmap.put("rknnSupported", RknnDetector.getInstance().isLoaded());
         generalSubmap.put("hardwareModel", hardwareConfig.deviceName);
         generalSubmap.put("hardwarePlatform", Platform.getPlatformName());
         settingsSubmap.put("general", generalSubmap);
