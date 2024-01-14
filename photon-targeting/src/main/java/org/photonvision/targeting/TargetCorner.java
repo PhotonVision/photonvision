@@ -17,8 +17,8 @@
 
 package org.photonvision.targeting;
 
-import java.util.Objects;
 import edu.wpi.first.util.protobuf.ProtobufSerializable;
+import java.util.Objects;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.dataflow.structures.PacketSerde;
 import org.photonvision.targeting.proto.TargetCornerProto;
