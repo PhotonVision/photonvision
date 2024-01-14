@@ -40,8 +40,6 @@ import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.jni.RknnDetectorJNI;
-import org.photonvision.jni.RknnDetector;
-import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.server.Server;
 import org.photonvision.vision.apriltag.AprilTagFamily;

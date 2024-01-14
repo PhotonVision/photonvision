@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TestUtils;
@@ -19,7 +20,6 @@ public class RknnDetectorJNI extends PhotonJNICommon {
     static boolean hasBeenDestroyed = false;
     private boolean isLoaded;
     private static RknnDetectorJNI instance = null;
-    private static String modelPath = "/home/mdurrani808/photon-testing/photonvision/photon-core/src/main/java/org/photonvision/jni/yolov5s-640-640.rknn";
     private static List<String> classNames = List.of(
                 "person",
                 "bicycle",
@@ -112,7 +112,7 @@ public class RknnDetectorJNI extends PhotonJNICommon {
         return instance;
     }
     public static void createRknnDetectorJNI() {
-        objPointer = RknnJNI.create(modelPath);
+        objPointer = RknnJNI.create(NeuralNetworkModelManager.getInstance().getDefaultRknnModel().getAbsolutePath().toString());
     }
     public static synchronized void forceLoad() throws IOException {
         TestUtils.loadLibraries();
