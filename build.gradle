@@ -1,3 +1,5 @@
+import edu.wpi.first.toolchain.*
+
 plugins {
     id "com.diffplug.spotless" version "6.22.0"
     id "edu.wpi.first.NativeUtils" version "2024.6.1" apply false
@@ -95,4 +97,8 @@ spotless {
 
 wrapper {
     gradleVersion '8.4'
+}
+
+ext.getCurrentArch = {
+    return NativePlatforms.desktop
 }
