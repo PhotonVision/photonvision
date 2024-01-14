@@ -33,5 +33,27 @@ const interactiveCols = computed(
       :step=".01"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ confidence: value }, false)"
     />
+    <pv-slider
+      v-model="currentPipelineSettings.box_thresh"
+      class="pt-2"
+      :slider-cols="interactiveCols"
+      label="Box Threshold"
+      tooltip="No clue what this actually does"
+      :min="0"
+      :max="1"
+      :step=".01"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ confidence: value }, false)"
+    />
+    <pv-slider
+      v-model="currentPipelineSettings.nms"
+      class="pt-2"
+      :slider-cols="interactiveCols"
+      label="Non-Maximum Suppression"
+      tooltip="Prune overlapping bounding boxes, increasing the value improves presciscion of detection but reduces total detections."
+      :min="0"
+      :max="1"
+      :step=".01"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ confidence: value }, false)"
+    />
   </div>
 </template>

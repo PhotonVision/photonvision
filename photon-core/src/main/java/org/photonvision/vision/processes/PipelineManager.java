@@ -215,7 +215,9 @@ public class PipelineManager {
                     break;
                 case ObjectDetection:
                     logger.debug("Creating ObjectDetection Pipeline");
-                    currentUserPipeline = new ObjectDetectionPipeline((ObjectDetectionPipelineSettings) desiredPipelineSettings);
+                    currentUserPipeline =
+                            new ObjectDetectionPipeline(
+                                    (ObjectDetectionPipelineSettings) desiredPipelineSettings);
                 default:
                     // Can be calib3d or drivermode, both of which are special cases
                     break;

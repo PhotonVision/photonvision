@@ -32,6 +32,7 @@ public abstract class CVPipe<I, O, P> {
     public void setParams(P params) {
         this.params = params;
     }
+
     public P getParams() {
         return this.params;
     }

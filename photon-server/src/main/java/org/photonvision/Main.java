@@ -38,8 +38,8 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.numbers.IntegerCouple;
-import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.jni.RknnDetectorJNI;
+import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.server.Server;
 import org.photonvision.vision.apriltag.AprilTagFamily;
@@ -353,8 +353,7 @@ public class Main {
         try {
             if (Platform.isRK3588()) {
                 RknnDetectorJNI.forceLoad();
-            }
-            else {
+            } else {
                 logger.error("Platform does not support RKNN based machine learning!");
             }
         } catch (IOException e) {

@@ -32,7 +32,8 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 
-public class ObjectDetectionPipeline extends CVPipeline<CVPipelineResult, ObjectDetectionPipelineSettings> {
+public class ObjectDetectionPipeline
+        extends CVPipeline<CVPipelineResult, ObjectDetectionPipelineSettings> {
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
     private final RknnDetectionPipe rknnPipe = new RknnDetectionPipe();
 
@@ -51,7 +52,7 @@ public class ObjectDetectionPipeline extends CVPipeline<CVPipelineResult, Object
     @Override
     protected void setPipeParamsImpl() {
 
-        //this needs to be based off of the current backend selected!!
+        // this needs to be based off of the current backend selected!!
         var params = new RknnDetectionPipeParams();
         params.confidence = settings.confidence;
         params.box_thresh = settings.box_thresh;
@@ -62,7 +63,7 @@ public class ObjectDetectionPipeline extends CVPipeline<CVPipelineResult, Object
     @Override
     protected CVPipelineResult process(Frame input_frame, ObjectDetectionPipelineSettings settings) {
         long sumPipeNanosElapsed = 0;
-        
+
         // ***************** change based on backend ***********************
         CVPipeResult<List<NeuralNetworkPipeResult>> ret = rknnPipe.run(input_frame.colorImage);
         sumPipeNanosElapsed += ret.nanosElapsed;
@@ -84,26 +85,21 @@ public class ObjectDetectionPipeline extends CVPipeline<CVPipelineResult, Object
 
             // Create a rectangle for the small box with a red background
             Imgproc.rectangle(
-                input_frame.processedImage.getMat(),
-                new Point(t.box.x + 2, t.box.y + 2),
-                new Point(t.box.x + textSize.width + 2, t.box.y + textSize.height + 2),
-                ColorHelper.colorToScalar(java.awt.Color.red),
-                -1
-            );
+                    input_frame.processedImage.getMat(),
+                    new Point(t.box.x + 2, t.box.y + 2),
+                    new Point(t.box.x + textSize.width + 2, t.box.y + textSize.height + 2),
+                    ColorHelper.colorToScalar(java.awt.Color.red),
+                    -1);
 
             // Put the class name in white text at the top left of the bounding box
             Imgproc.putText(
-                input_frame.processedImage.getMat(),
-                name,
-                new Point(t.box.x + 2, t.box.y + textSize.height),
-                0,
-                1,
-                ColorHelper.colorToScalar(java.awt.Color.white),
-                2
-            );
-
-
-            
+                    input_frame.processedImage.getMat(),
+                    name,
+                    new Point(t.box.x + 2, t.box.y + textSize.height),
+                    0,
+                    1,
+                    ColorHelper.colorToScalar(java.awt.Color.white),
+                    2);
 
             targets.add(
                     new TrackedTarget(

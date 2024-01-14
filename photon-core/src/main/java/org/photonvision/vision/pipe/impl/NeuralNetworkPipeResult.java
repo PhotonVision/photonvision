@@ -8,6 +8,7 @@ public class NeuralNetworkPipeResult {
         this.classIdx = classIdx;
         this.confidence = confidence;
     }
+
     public final int classIdx;
     public final Rect2d box;
     public final double confidence;

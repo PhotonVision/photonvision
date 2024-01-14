@@ -67,7 +67,6 @@ public class TrackedTarget implements Releasable {
 
     private Mat m_cameraRelativeTvec, m_cameraRelativeRvec;
 
-
     private int m_classId = -1;
     private double m_confidence = -1;
 
@@ -160,7 +159,7 @@ public class TrackedTarget implements Releasable {
         m_robotOffsetPoint = new Point();
     }
 
-       public TrackedTarget(
+    public TrackedTarget(
             Rect2d box, int class_id, double confidence, TargetCalculationParameters params) {
         m_targetOffsetPoint = new Point(box.x + box.width / 2.0, box.y + box.height / 2.0);
         m_robotOffsetPoint = new Point();
@@ -196,7 +195,8 @@ public class TrackedTarget implements Releasable {
         m_confidence = confidence;
     }
 
-    public TrackedTarget(NeuralNetworkPipeResult t, TargetCalculationParameters targetCalculationParameters) {
+    public TrackedTarget(
+            NeuralNetworkPipeResult t, TargetCalculationParameters targetCalculationParameters) {
         this(t.box, t.classIdx, t.confidence, targetCalculationParameters);
     }
 
@@ -208,13 +208,11 @@ public class TrackedTarget implements Releasable {
     }
 
     /**
-
      * @return O-indexed class index for the detected object.
      */
     public double getClassID() {
         return m_classId;
     }
-
 
     public TrackedTarget(
             ArucoDetectionResult result,

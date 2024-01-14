@@ -26,24 +26,26 @@ import org.photonvision.jni.PhotonJNICommon;
 public class MrCalJNILoader extends PhotonJNICommon {
     private boolean isLoaded;
     private static MrCalJNILoader instance = null;
+
     private MrCalJNILoader() {
         isLoaded = false;
     }
-    public static synchronized MrCalJNILoader getInstance()
-    {
-        if (instance == null)
-            instance = new MrCalJNILoader();
- 
+
+    public static synchronized MrCalJNILoader getInstance() {
+        if (instance == null) instance = new MrCalJNILoader();
+
         return instance;
     }
+
     public static synchronized void forceLoad() throws IOException {
         // Force load opencv
         TestUtils.loadLibraries();
-        
+
         // Library naming is dumb and has "lib" appended for Windows when it ought not to
         if (Platform.isWindows()) {
             // Order is correct to match dependencies of libraries
-            forceLoad(MrCalJNILoader.getInstance(),
+            forceLoad(
+                    MrCalJNILoader.getInstance(),
                     MrCalJNILoader.class,
                     List.of(
                             "libamd",
@@ -58,7 +60,7 @@ public class MrCalJNILoader extends PhotonJNICommon {
                             "mrcal_jni"));
         } else {
             // Nothing else to do on linux
-            forceLoad(MrCalJNILoader.getInstance(),MrCalJNILoader.class, List.of("mrcal_jni"));
+            forceLoad(MrCalJNILoader.getInstance(), MrCalJNILoader.class, List.of("mrcal_jni"));
         }
 
         if (!MrCalJNILoader.getInstance().isLoaded()) {

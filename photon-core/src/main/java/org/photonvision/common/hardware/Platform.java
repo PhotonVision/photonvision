@@ -19,8 +19,6 @@ package org.photonvision.common.hardware;
 
 import com.jogamp.common.os.Platform.OSType;
 import edu.wpi.first.util.RuntimeDetector;
-import kotlin.io.path.OnErrorResult;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -45,13 +43,7 @@ public enum Platform {
             true,
             OSType.LINUX,
             true), // Raspberry Pi 3/4 with a 64-bit image
-    LINUX_RK3588_64(
-        "Linux AARCH 64-bit with RK388",
-        "linuxarm64",
-        false,
-        OSType.LINUX,
-        true
-    ),
+    LINUX_RK3588_64("Linux AARCH 64-bit with RK388", "linuxarm64", false, OSType.LINUX, true),
     LINUX_AARCH64(
             "Linux AARCH64", "linuxarm64", false, OSType.LINUX, true), // Jetson Nano, Jetson TX2
 
@@ -102,6 +94,7 @@ public enum Platform {
     public static boolean isLinux() {
         return currentPlatform.osType == OSType.LINUX;
     }
+
     public static boolean isRK3588() {
         return Platform.isOrangePi();
     }
@@ -198,12 +191,11 @@ public enum Platform {
                 return LINUX_32;
             } else if (RuntimeDetector.isArm64()) {
                 // TODO - os detection needed?
-                if(isOrangePi()) {
+                if (isOrangePi()) {
                     return LINUX_RK3588_64;
-                }
-                else {
+                } else {
                     return LINUX_AARCH64;
-                }     
+                }
             } else if (RuntimeDetector.isArm32()) {
                 return LINUX_ARM32;
             } else {
@@ -220,6 +212,7 @@ public enum Platform {
     private static boolean isPiSBC() {
         return fileHasText("/proc/cpuinfo", "Raspberry Pi");
     }
+
     private static boolean isOrangePi() {
         return fileHasText("/proc/device-tree/model", "Orange Pi 5");
     }

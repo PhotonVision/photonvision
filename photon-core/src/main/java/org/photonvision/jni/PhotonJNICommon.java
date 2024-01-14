@@ -27,11 +27,13 @@ import org.photonvision.common.logging.Logger;
 
 public abstract class PhotonJNICommon {
     public abstract boolean isLoaded();
+
     public abstract void setLoaded(boolean state);
+
     protected static Logger logger = null;
 
-    protected static synchronized void forceLoad(PhotonJNICommon instance, Class<?> clazz, List<String> libraries)
-            throws IOException {
+    protected static synchronized void forceLoad(
+            PhotonJNICommon instance, Class<?> clazz, List<String> libraries) throws IOException {
         if (instance.isLoaded()) return;
         if (logger == null) logger = new Logger(clazz, LogGroup.Camera);
 
@@ -73,8 +75,8 @@ public abstract class PhotonJNICommon {
         instance.setLoaded(true);
     }
 
-    protected static synchronized void forceLoad(PhotonJNICommon instance, Class<?> clazz, String libraryName)
-            throws IOException {
+    protected static synchronized void forceLoad(
+            PhotonJNICommon instance, Class<?> clazz, String libraryName) throws IOException {
         forceLoad(instance, clazz, List.of(libraryName));
     }
 }
