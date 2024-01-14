@@ -1,14 +1,14 @@
 
 package org.photonvision.vision.pipeline;
 
-public class RknnPipelineSettings extends AdvancedPipelineSettings {
+public class ObjectDetectionPipelineSettings extends AdvancedPipelineSettings {
     public double confidence;
     public double nms; //non maximal suppression
     public double max_detections;
 
-    public RknnPipelineSettings() {
+    public ObjectDetectionPipelineSettings() {
         super();
-        this.pipelineType = PipelineType.Rknn;
+        this.pipelineType = PipelineType.ObjectDetection; //TODO: FIX this 
         this.outputShowMultipleTargets = true;
         cameraExposure = 20;
         cameraAutoExposure = false;

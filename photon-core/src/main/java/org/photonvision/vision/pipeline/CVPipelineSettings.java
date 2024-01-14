@@ -33,7 +33,7 @@ import org.photonvision.vision.opencv.ImageRotationMode;
     @JsonSubTypes.Type(value = DriverModePipelineSettings.class),
     @JsonSubTypes.Type(value = AprilTagPipelineSettings.class),
     @JsonSubTypes.Type(value = ArucoPipelineSettings.class),
-    @JsonSubTypes.Type(value = RknnPipelineSettings.class)
+    @JsonSubTypes.Type(value = ObjectDetectionPipelineSettings.class)
 })
 public class CVPipelineSettings implements Cloneable {
     public int pipelineIndex = 0;

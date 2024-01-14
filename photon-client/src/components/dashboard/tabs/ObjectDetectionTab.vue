@@ -21,13 +21,13 @@ const interactiveCols = computed(
 </script>
 
 <template>
-  <div v-if="currentPipelineSettings.pipelineType === PipelineType.Rknn">
+  <div v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection">
     <pv-slider
       v-model="currentPipelineSettings.confidence"
       class="pt-2"
       :slider-cols="interactiveCols"
       label="Confidence"
-      tooltip="asdf"
+      tooltip="Minimum detection confidence"
       :min="0"
       :max="1"
       :step=".01"

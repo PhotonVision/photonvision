@@ -48,7 +48,7 @@ const resetCurrentBuffer = () => {
               >
                 Fiducial ID
               </th>
-              <template v-if="currentPipelineSettings.pipelineType === PipelineType.Rknn">
+              <template v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection">
                 <th class="text-center white--text">Class ID</th>
                 <th class="text-center white--text">Confidence</th>
               </template>
@@ -89,10 +89,10 @@ const resetCurrentBuffer = () => {
               >
                 {{ target.fiducialId }}
               </td>
-              <td v-if="currentPipelineSettings.pipelineType === PipelineType.Dnn" class="text-center white--text">
+              <td v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection" class="text-center white--text">
                 {{ target.classId }}
               </td>
-              <td v-if="currentPipelineSettings.pipelineType === PipelineType.Dnn" class="text-center white--text">
+              <td v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection" class="text-center white--text">
                 {{ target.confidence.toFixed(2) }}
               </td>
               <template v-if="!useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled">

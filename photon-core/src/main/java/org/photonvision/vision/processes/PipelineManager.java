@@ -213,9 +213,9 @@ public class PipelineManager {
                     logger.debug("Creating Aruco Pipeline");
                     currentUserPipeline = new ArucoPipeline((ArucoPipelineSettings) desiredPipelineSettings);
                     break;
-                case Rknn:
-                    logger.debug("Creating Rknn Pipeline");
-                    currentUserPipeline = new RknnPipeline((RknnPipelineSettings) desiredPipelineSettings);
+                case ObjectDetection:
+                    logger.debug("Creating ObjectDetection Pipeline");
+                    currentUserPipeline = new ObjectDetectionPipeline((ObjectDetectionPipelineSettings) desiredPipelineSettings);
                 default:
                     // Can be calib3d or drivermode, both of which are special cases
                     break;
@@ -317,9 +317,9 @@ public class PipelineManager {
                     added.pipelineNickname = nickname;
                     return added;
                 }
-            case Rknn:
+            case ObjectDetection:
                 {
-                    var added = new RknnPipelineSettings();
+                    var added = new ObjectDetectionPipelineSettings();
                     added.pipelineNickname = nickname;
                     return added;
                 }

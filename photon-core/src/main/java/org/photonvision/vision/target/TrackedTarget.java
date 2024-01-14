@@ -162,7 +162,7 @@ public class TrackedTarget implements Releasable {
 
        public TrackedTarget(
             Rect2d box, int class_id, double confidence, TargetCalculationParameters params) {
-        m_targetOffsetPoint = new Point(box.x, box.y);
+        m_targetOffsetPoint = new Point(box.x + box.width / 2.0, box.y + box.height / 2.0);
         m_robotOffsetPoint = new Point();
 
         var yawPitch =
@@ -192,7 +192,8 @@ public class TrackedTarget implements Releasable {
         m_mainContour = new Contour(contourMat);
         m_area = m_mainContour.getArea() / params.imageArea * 100;
 
-        m_fiducialId = class_id;
+        m_classId = class_id;
+        m_confidence = confidence;
     }
 
     public TrackedTarget(NeuralNetworkPipeResult t, TargetCalculationParameters targetCalculationParameters) {

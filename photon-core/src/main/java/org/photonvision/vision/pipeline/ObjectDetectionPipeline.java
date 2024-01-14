@@ -19,19 +19,9 @@ package org.photonvision.vision.pipeline;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfFloat;
-import org.opencv.core.MatOfInt;
-import org.opencv.core.MatOfRect2d;
 import org.opencv.core.Point;
-import org.opencv.core.Rect2d;
-import org.opencv.core.Scalar;
 import org.opencv.core.Size;
-import org.opencv.dnn.Dnn;
-import org.opencv.dnn.Net;
 import org.opencv.imgproc.Imgproc;
-import org.opencv.utils.Converters;
 import org.photonvision.common.util.ColorHelper;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
@@ -42,33 +32,36 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 
-public class RknnPipeline extends CVPipeline<CVPipelineResult, RknnPipelineSettings> {
+public class ObjectDetectionPipeline extends CVPipeline<CVPipelineResult, ObjectDetectionPipelineSettings> {
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
     private final RknnDetectionPipe rknnPipe = new RknnDetectionPipe();
 
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
-    public RknnPipeline() {
+    public ObjectDetectionPipeline() {
         super(PROCESSING_TYPE);
-        settings = new RknnPipelineSettings();
+        settings = new ObjectDetectionPipelineSettings();
     }
 
-    public RknnPipeline(RknnPipelineSettings settings) {
+    public ObjectDetectionPipeline(ObjectDetectionPipelineSettings settings) {
         super(PROCESSING_TYPE);
         this.settings = settings;
     }
 
     @Override
     protected void setPipeParamsImpl() {
+
+        //this needs to be based off of the current backend selected!!
         var params = new RknnDetectionPipeParams();
         params.confidence = settings.confidence;
         rknnPipe.setParams(params);
     }
 
     @Override
-    protected CVPipelineResult process(Frame input_frame, RknnPipelineSettings settings) {
+    protected CVPipelineResult process(Frame input_frame, ObjectDetectionPipelineSettings settings) {
         long sumPipeNanosElapsed = 0;
-
+        
+        // ***************** change based on backend ***********************
         CVPipeResult<List<NeuralNetworkPipeResult>> ret = rknnPipe.run(input_frame.colorImage);
         sumPipeNanosElapsed += ret.nanosElapsed;
         List<NeuralNetworkPipeResult> targetList;
@@ -78,22 +71,37 @@ public class RknnPipeline extends CVPipeline<CVPipelineResult, RknnPipelineSetti
 
         input_frame.colorImage.getMat().copyTo(input_frame.processedImage.getMat());
 
+        // ***************** change based on backend ***********************
         List<TrackedTarget> targets = new ArrayList<>();
 
-        // This belongs in a collect & draw pipe but I'm lazy
         for (var t : targetList) {
-            //Imgproc.rectangle(input_frame.processedImage.getMat(), t.box.tl(), t.box.br(), new Scalar(0, 0, 255), 2);
 
-            var name = String.format("%s (%.1f%%)", names.get(t.classIdx), t.confidence*100);
+            var name = String.format("%s", names.get(t.classIdx));
 
+            Size textSize = Imgproc.getTextSize(name, 0, 1, 2, null);
+
+            // Create a rectangle for the small box with a red background
+            Imgproc.rectangle(
+                input_frame.processedImage.getMat(),
+                new Point(t.box.x + 2, t.box.y + 2),
+                new Point(t.box.x + textSize.width + 2, t.box.y + textSize.height + 2),
+                ColorHelper.colorToScalar(java.awt.Color.red),
+                -1
+            );
+
+            // Put the class name in white text at the top left of the bounding box
             Imgproc.putText(
-                    input_frame.processedImage.getMat(),
-                    name,
-                    new Point(t.box.x + t.box.width / 2.5, t.box.y + t.box.height / 2.0),
-                    0,
-                    1,
-                    ColorHelper.colorToScalar(java.awt.Color.green),
-                    2);
+                input_frame.processedImage.getMat(),
+                name,
+                new Point(t.box.x + 2, t.box.y + textSize.height),
+                0,
+                1,
+                ColorHelper.colorToScalar(java.awt.Color.white),
+                2
+            );
+
+
+            
 
             targets.add(
                     new TrackedTarget(

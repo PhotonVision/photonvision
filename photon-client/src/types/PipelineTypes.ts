@@ -6,7 +6,7 @@ export enum PipelineType {
   ColoredShape = 3,
   AprilTag = 4,
   Aruco = 5,
-  Rknn = 6
+  ObjectDetection = 6
 }
 
 export enum AprilTagFamily {
@@ -282,21 +282,25 @@ export const DefaultArucoPipelineSettings: ArucoPipelineSettings = {
   doSingleTargetAlways: false
 };
 
-export interface RknnPipelineSettings extends PipelineSettings {
-  pipelineType: PipelineType.Rknn;
+export interface ObjectDetectionPipelineSettings extends PipelineSettings {
+  pipelineType: PipelineType.ObjectDetection;
   confidence: number;
+  nms: number;
+  max_detections: number;
 }
-export type ConfigurableRknnPipelineSettings = Partial<Omit<RknnPipelineSettings, "pipelineType">> &
+export type ConfigurableObjectDetectionPipelineSettings = Partial<Omit<ObjectDetectionPipelineSettings, "pipelineType">> &
   ConfigurablePipelineSettings;
-export const DefaultRknnPipelineSettings: RknnPipelineSettings = {
+export const DefaultObjectDetectionPipelineSettings: ObjectDetectionPipelineSettings = {
   ...DefaultPipelineSettings,
-  pipelineType: PipelineType.Rknn,
-  confidence: .9,
+  pipelineType: PipelineType.ObjectDetection,
   cameraGain: 20,
   targetModel: TargetModel.InfiniteRechargeHighGoalOuter,
   ledMode: true,
   outputShowMultipleTargets: false,
   cameraExposure: 6,
+  confidence: .9,
+  nms: .45,
+  max_detections: 10,
 };
 
 export type ActivePipelineSettings =
@@ -304,11 +308,11 @@ export type ActivePipelineSettings =
   | ColoredShapePipelineSettings
   | AprilTagPipelineSettings
   | ArucoPipelineSettings
-  | RknnPipelineSettings;
+  | ObjectDetectionPipelineSettings;
 
 export type ActiveConfigurablePipelineSettings =
   | ConfigurableReflectivePipelineSettings
   | ConfigurableColoredShapePipelineSettings
   | ConfigurableAprilTagPipelineSettings
   | ConfigurableArucoPipelineSettings
-  | ConfigurableRknnPipelineSettings;
+  | ConfigurableObjectDetectionPipelineSettings;

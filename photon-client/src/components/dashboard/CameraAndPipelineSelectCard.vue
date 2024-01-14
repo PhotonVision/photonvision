@@ -25,8 +25,8 @@ const changeCurrentCameraIndex = (index: number) => {
     case PipelineType.Aruco:
       pipelineType.value = WebsocketPipelineType.Aruco;
       break;
-    case PipelineType.Rknn:
-      pipelineType.value = WebsocketPipelineType.Rknn;
+    case PipelineType.ObjectDetection:
+      pipelineType.value = WebsocketPipelineType.ObjectDetection;
   }
 };
 
@@ -158,7 +158,7 @@ const pipelineTypesWrapper = computed<{ name: string; value: number }[]>(() => {
     { name: "Aruco", value: WebsocketPipelineType.Aruco }
   ];
   if(useSettingsStore().general.rknnSupported) {
-    pipelineTypes.push({name: "RKNN", value: WebsocketPipelineType.Rknn});
+    pipelineTypes.push({name: "Object Detection", value: WebsocketPipelineType.ObjectDetection});
   }
 
   if (useCameraSettingsStore().isDriverMode) {
@@ -214,8 +214,8 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
     case PipelineType.Aruco:
       pipelineType.value = WebsocketPipelineType.Aruco;
       break;
-    case PipelineType.Rknn:
-      pipelineType.value = WebsocketPipelineType.Rknn;
+    case PipelineType.ObjectDetection:
+      pipelineType.value = WebsocketPipelineType.ObjectDetection;
       break;
   }
 });
@@ -364,7 +364,7 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
               { name: 'Colored Shape', value: WebsocketPipelineType.ColoredShape },
               { name: 'AprilTag', value: WebsocketPipelineType.AprilTag },
               { name: 'Aruco', value: WebsocketPipelineType.Aruco },
-              { name: 'Rknn', value: WebsocketPipelineType.Rknn}
+              { name: 'Object Detection', value: WebsocketPipelineType.ObjectDetection} //TODO: How do i make it so only Opi users see that object detection is an option
             ]"
           />
         </v-card-text>

@@ -8,7 +8,7 @@ import ThresholdTab from "@/components/dashboard/tabs/ThresholdTab.vue";
 import ContoursTab from "@/components/dashboard/tabs/ContoursTab.vue";
 import AprilTagTab from "@/components/dashboard/tabs/AprilTagTab.vue";
 import ArucoTab from "@/components/dashboard/tabs/ArucoTab.vue";
-import RknnTab from "@/components/dashboard/tabs/RknnTab.vue"
+import ObjectDetectionTab from "@/components/dashboard/tabs/ObjectDetectionTab.vue"
 import OutputTab from "@/components/dashboard/tabs/OutputTab.vue";
 import TargetsTab from "@/components/dashboard/tabs/TargetsTab.vue";
 import PnPTab from "@/components/dashboard/tabs/PnPTab.vue";
@@ -41,9 +41,9 @@ const allTabs = Object.freeze({
     tabName: "Aruco",
     component: ArucoTab
   },
-  rknnTab: {
-    tabName: "Rknn",
-    component: RknnTab
+  objectDetectionTab: {
+    tabName: "Object Detection",
+    component: ObjectDetectionTab
   },
   outputTab: {
     tabName: "Output",
@@ -80,7 +80,7 @@ const getTabGroups = (): ConfigOption[][] => {
         allTabs.contoursTab,
         allTabs.apriltagTab,
         allTabs.arucoTab,
-        allTabs.rknnTab,
+        allTabs.objectDetectionTab,
         allTabs.outputTab
       ],
       [allTabs.targetsTab, allTabs.pnpTab, allTabs.map3dTab]
@@ -88,14 +88,14 @@ const getTabGroups = (): ConfigOption[][] => {
   } else if (lgAndDown) {
     return [
       [allTabs.inputTab],
-      [allTabs.thresholdTab, allTabs.contoursTab, allTabs.apriltagTab, allTabs.arucoTab,allTabs.rknnTab, allTabs.outputTab],
+      [allTabs.thresholdTab, allTabs.contoursTab, allTabs.apriltagTab, allTabs.arucoTab,allTabs.objectDetectionTab, allTabs.outputTab],
       [allTabs.targetsTab, allTabs.pnpTab, allTabs.map3dTab]
     ];
   } else if (xl) {
     return [
       [allTabs.inputTab],
       [allTabs.thresholdTab],
-      [allTabs.contoursTab, allTabs.apriltagTab, allTabs.arucoTab,allTabs.rknnTab, allTabs.outputTab],
+      [allTabs.contoursTab, allTabs.apriltagTab, allTabs.arucoTab,allTabs.objectDetectionTab, allTabs.outputTab],
       [allTabs.targetsTab, allTabs.pnpTab, allTabs.map3dTab]
     ];
   }
@@ -109,19 +109,19 @@ const tabGroups = computed<ConfigOption[][]>(() => {
   const allow3d = useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled;
   const isAprilTag = useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.AprilTag;
   const isAruco = useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.Aruco;
-  const isRknn = useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.Rknn;
+  const isObjectDetection = useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.ObjectDetection;
 
   return getTabGroups()
     .map((tabGroup) =>
       tabGroup.filter(
         (tabConfig) =>
           !(!allow3d && tabConfig.tabName === "3D") && //Filter out 3D tab any time 3D isn't calibrated
-          !((!allow3d || isAprilTag || isAruco ||isRknn) && tabConfig.tabName === "PnP") && //Filter out the PnP config tab if 3D isn't available, or we're doing AprilTags
-          !((isAprilTag || isAruco || isRknn) && tabConfig.tabName === "Threshold") && //Filter out threshold tab if we're doing AprilTags
-          !((isAprilTag || isAruco || isRknn) && tabConfig.tabName === "Contours") && //Filter out contours if we're doing AprilTags 
+          !((!allow3d || isAprilTag || isAruco ||isObjectDetection) && tabConfig.tabName === "PnP") && //Filter out the PnP config tab if 3D isn't available, or we're doing AprilTags
+          !((isAprilTag || isAruco || isObjectDetection) && tabConfig.tabName === "Threshold") && //Filter out threshold tab if we're doing AprilTags
+          !((isAprilTag || isAruco || isObjectDetection) && tabConfig.tabName === "Contours") && //Filter out contours if we're doing AprilTags 
           !(!isAprilTag && tabConfig.tabName === "AprilTag") && //Filter out apriltag unless we actually are doing AprilTags
           !(!isAruco && tabConfig.tabName === "Aruco") &&
-          !(!isRknn && tabConfig.tabName === "Rknn") //Filter out aruco unless we actually are doing Aruco
+          !(!isObjectDetection && tabConfig.tabName === "Object Detection") //Filter out aruco unless we actually are doing Aruco
       )
     )
     .filter((it) => it.length); // Remove empty tab groups
