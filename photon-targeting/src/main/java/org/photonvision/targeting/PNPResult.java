@@ -18,6 +18,7 @@
 package org.photonvision.targeting;
 
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.util.protobuf.ProtobufSerializable;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.dataflow.structures.PacketSerde;
 import org.photonvision.targeting.proto.PNPResultProto;
@@ -32,7 +33,7 @@ import org.photonvision.utils.PacketUtils;
  * <p>Note that the coordinate frame of these transforms depends on the implementing solvePnP
  * method.
  */
-public class PNPResult {
+public class PNPResult implements ProtobufSerializable {
     /**
      * If this result is valid. A false value indicates there was an error in estimation, and this
      * result should not be used.
