@@ -42,6 +42,7 @@ import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
 import java.util.List;
+import java.io.IOException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opencv.core.Core;
@@ -84,28 +85,8 @@ public class OpenCVTest {
     private static final SimCameraProperties prop = new SimCameraProperties();
 
     @BeforeAll
-    public static void setUp() {
-        JNIWrapper.Helper.setExtractOnStaticLoad(false);
-        WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
-        NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
-        WPINetJNI.Helper.setExtractOnStaticLoad(false);
-        CameraServerJNI.Helper.setExtractOnStaticLoad(false);
-        CameraServerCvJNI.Helper.setExtractOnStaticLoad(false);
-        AprilTagJNI.Helper.setExtractOnStaticLoad(false);
-
-        try {
-            CombinedRuntimeLoader.loadLibraries(
-                    VisionSystemSim.class,
-                    "wpiutiljni",
-                    "ntcorejni",
-                    "wpinetjni",
-                    "wpiHaljni",
-                    Core.NATIVE_LIBRARY_NAME,
-                    "cscorejni",
-                    "apriltagjni");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public static void setUp() throws IOException {
+        CameraServerCvJNI.forceLoad();
 
         // NT live for debug purposes
         NetworkTableInstance.getDefault().startServer();

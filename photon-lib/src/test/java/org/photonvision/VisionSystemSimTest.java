@@ -85,28 +85,6 @@ class VisionSystemSimTest {
 
     @BeforeAll
     public static void setUp() {
-        JNIWrapper.Helper.setExtractOnStaticLoad(false);
-        WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
-        NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
-        WPINetJNI.Helper.setExtractOnStaticLoad(false);
-        CameraServerJNI.Helper.setExtractOnStaticLoad(false);
-        CameraServerCvJNI.Helper.setExtractOnStaticLoad(false);
-        AprilTagJNI.Helper.setExtractOnStaticLoad(false);
-
-        try {
-            CombinedRuntimeLoader.loadLibraries(
-                    VisionSystemSim.class,
-                    "wpiutiljni",
-                    "ntcorejni",
-                    "wpinetjni",
-                    "wpiHaljni",
-                    Core.NATIVE_LIBRARY_NAME,
-                    "cscorejni",
-                    "apriltagjni");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         // NT live for debug purposes
         NetworkTableInstance.getDefault().startServer();
 

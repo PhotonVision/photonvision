@@ -44,25 +44,6 @@ import org.photonvision.PhotonPoseEstimator;
 public class ApriltagWorkbenchTest {
     @BeforeAll
     public static void setUp() {
-        JNIWrapper.Helper.setExtractOnStaticLoad(false);
-        WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
-        NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
-        WPINetJNI.Helper.setExtractOnStaticLoad(false);
-        CameraServerCvJNI.Helper.setExtractOnStaticLoad(false);
-
-        try {
-            CombinedRuntimeLoader.loadLibraries(
-                    ApriltagWorkbenchTest.class,
-                    "wpiutiljni",
-                    "ntcorejni",
-                    "wpinetjni",
-                    "wpiHaljni",
-                    "cscorejnicvstatic");
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
         // No version check for testing
         PhotonCamera.setVersionCheckEnabled(false);
     }

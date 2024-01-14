@@ -92,6 +92,36 @@ model {
             nativeUtils.useRequiredLibrary(it, "opencv_shared")
         }
     }
+
+    tasks {
+        def c = $.testSuites
+        project.tasks.create('runCpp', Exec) {
+            description = "Run the photon-lib executable"
+            def found = false
+            def systemArch = getCurrentArch()
+            c.each {
+                if (it in GoogleTestTestSuiteSpec && it.name == "${nativeName}Test") {
+                    it.binaries.each {
+                        if (!found) {
+                            def arch = it.targetPlatform.name
+                            if (arch == systemArch) {
+                                dependsOn it.tasks.install
+                                commandLine it.tasks.install.runScriptFile.get().asFile.toString()
+                                def filePath = it.tasks.install.installDirectory.get().toString() + File.separatorChar + 'lib'
+                                test.dependsOn it.tasks.install
+                                test.systemProperty 'java.library.path', filePath
+                                test.environment 'LD_LIBRARY_PATH', filePath
+                                test.environment 'DYLD_LIBRARY_PATH', filePath
+                                test.workingDir filePath
+
+                                found = true
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 apply from: "${rootDir}/shared/javacpp/publish.gradle"
