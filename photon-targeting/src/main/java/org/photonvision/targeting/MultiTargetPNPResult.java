@@ -19,11 +19,12 @@ package org.photonvision.targeting;
 
 import java.util.ArrayList;
 import java.util.List;
+import edu.wpi.first.util.protobuf.ProtobufSerializable;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.dataflow.structures.PacketSerde;
 import org.photonvision.targeting.proto.MultiTargetPNPResultProto;
 
-public class MultiTargetPNPResult {
+public class MultiTargetPNPResult implements ProtobufSerializable {
     // Seeing 32 apriltags at once seems like a sane limit
     private static final int MAX_IDS = 32;
 
