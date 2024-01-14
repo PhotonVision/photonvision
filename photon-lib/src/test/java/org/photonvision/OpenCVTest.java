@@ -26,32 +26,23 @@ package org.photonvision;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import edu.wpi.first.apriltag.jni.AprilTagJNI;
 import edu.wpi.first.cscore.CameraServerCvJNI;
-import edu.wpi.first.cscore.CameraServerJNI;
-import edu.wpi.first.hal.JNIWrapper;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.net.WPINetJNI;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.NetworkTablesJNI;
-import edu.wpi.first.util.CombinedRuntimeLoader;
-import edu.wpi.first.util.WPIUtilJNI;
-import java.util.List;
 import java.io.IOException;
+import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.opencv.core.Core;
 import org.photonvision.estimation.CameraTargetRelation;
 import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.RotTrlTransform3d;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.simulation.SimCameraProperties;
-import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
 
 public class OpenCVTest {
