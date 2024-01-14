@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.cli.*;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.PiVersion;
@@ -39,6 +40,8 @@ import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.jni.RknnDetectorJNI;
+import org.photonvision.jni.RknnDetector;
+import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.server.Server;
 import org.photonvision.vision.apriltag.AprilTagFamily;
@@ -408,6 +411,10 @@ public class Main {
         logger.debug("Loading NetworkTablesManager...");
         NetworkTablesManager.getInstance()
                 .setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
+
+        logger.debug("Loading ML models");
+        NeuralNetworkModelManager.getInstance()
+                .initialize(ConfigManager.getInstance().getModelsDirectory());
 
         if (!isTestMode) {
             logger.debug("Loading VisionSourceManager...");
