@@ -41,6 +41,7 @@ import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.jni.RknnDetector;
 import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.server.Server;
+import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ContourGroupingMode;
@@ -262,6 +263,34 @@ public class Main {
             camConf2023.pipelineSettings = psList2023;
         }
 
+        CameraConfiguration camConf2024 =
+                ConfigManager.getInstance().getConfig().getCameraConfigurations().get("WPI2024");
+        if (camConf2024 == null || true) {
+            camConf2024 =
+                    new CameraConfiguration(
+                            "WPI2024",
+                            TestUtils.getResourcesFolderPath(true)
+                                    .resolve("testimages")
+                                    .resolve(TestUtils.WPI2024Images.kSpeakerCenter_143in.path)
+                                    .toString());
+
+            camConf2024.FOV = TestUtils.WPI2024Images.FOV;
+            // same camera as 2023
+            camConf2024.calibrations.add(TestUtils.get2023LifeCamCoeffs(true));
+
+            var pipeline2024 = new AprilTagPipelineSettings();
+            var path_split = Path.of(camConf2024.path).getFileName().toString();
+            pipeline2024.pipelineNickname = path_split.replace(".jpg", "");
+            pipeline2024.targetModel = TargetModel.kAprilTag6p5in_36h11;
+            pipeline2024.tagFamily = AprilTagFamily.kTag36h11;
+            pipeline2024.inputShouldShow = true;
+            pipeline2024.solvePNPEnabled = true;
+
+            var psList2024 = new ArrayList<CVPipelineSettings>();
+            psList2024.add(pipeline2024);
+            camConf2024.pipelineSettings = psList2024;
+        }
+
         // Colored shape testing
         var camConfShape =
                 ConfigManager.getInstance().getConfig().getCameraConfigurations().get("Shape");
@@ -291,12 +320,14 @@ public class Main {
         var fvs2020 = new FileVisionSource(camConf2020);
         var fvs2022 = new FileVisionSource(camConf2022);
         var fvs2023 = new FileVisionSource(camConf2023);
+        var fvs2024 = new FileVisionSource(camConf2024);
 
-        collectedSources.add(fvs2023);
-        collectedSources.add(fvs2022);
-        collectedSources.add(fvsShape);
-        collectedSources.add(fvs2020);
-        collectedSources.add(fvs2019);
+        collectedSources.add(fvs2024);
+        // collectedSources.add(fvs2023);
+        // collectedSources.add(fvs2022);
+        // collectedSources.add(fvsShape);
+        // collectedSources.add(fvs2020);
+        // collectedSources.add(fvs2019);
 
         ConfigManager.getInstance().unloadCameraConfigs();
         VisionModuleManager.getInstance().addSources(collectedSources).forEach(VisionModule::start);
@@ -395,6 +426,6 @@ public class Main {
 
         logger.info("Starting server...");
         HardwareManager.getInstance().setRunning(true);
-        Server.start(DEFAULT_WEBPORT);
+        Server.initialize(DEFAULT_WEBPORT);
     }
 }

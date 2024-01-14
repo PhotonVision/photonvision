@@ -144,6 +144,24 @@ public class TestUtils {
         }
     }
 
+    public enum WPI2024Images {
+        kBackAmpZone_117in,
+        kSpeakerCenter_143in;
+
+        public static double FOV = 68.5;
+
+        public final Path path;
+
+        Path getPath() {
+            var filename = this.toString().substring(1);
+            return Path.of("2024", filename + ".jpg");
+        }
+
+        WPI2024Images() {
+            this.path = getPath();
+        }
+    }
+
     public enum WPI2023Apriltags {
         k162_36_Angle,
         k162_36_Straight,

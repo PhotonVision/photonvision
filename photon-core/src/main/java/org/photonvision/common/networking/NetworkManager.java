@@ -19,6 +19,10 @@ package org.photonvision.common.networking;
 
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
+import org.photonvision.common.dataflow.DataChangeDestination;
+import org.photonvision.common.dataflow.DataChangeService;
+import org.photonvision.common.dataflow.DataChangeSource;
+import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -148,5 +152,13 @@ public class NetworkManager {
 
     public void reinitialize() {
         initialize(ConfigManager.getInstance().getConfig().getNetworkConfig().shouldManage());
+
+        DataChangeService.getInstance()
+                .publishEvent(
+                        new DataChangeEvent<Boolean>(
+                                DataChangeSource.DCS_OTHER,
+                                DataChangeDestination.DCD_WEBSERVER,
+                                "restartServer",
+                                true));
     }
 }
