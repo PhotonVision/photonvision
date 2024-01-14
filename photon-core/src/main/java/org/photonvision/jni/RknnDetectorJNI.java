@@ -111,14 +111,13 @@ public class RknnDetectorJNI extends PhotonJNICommon {
  
         return instance;
     }
-    public static void createRknnDetectorJNI() {
+    public static void createRknnDetector() {
         objPointer = RknnJNI.create(NeuralNetworkModelManager.getInstance().getDefaultRknnModel().getAbsolutePath().toString());
     }
     public static synchronized void forceLoad() throws IOException {
         TestUtils.loadLibraries();
         
         forceLoad(getInstance(), RknnDetectorJNI.class, List.of("rga", "rknnrt", "rknn_jni"));
-        createRknnDetectorJNI();
     }
     public static List<NeuralNetworkPipeResult> detect(CVMat in) {
         RknnResult[] ret = RknnJNI.detect(objPointer, in.getMat().getNativeObjAddr());

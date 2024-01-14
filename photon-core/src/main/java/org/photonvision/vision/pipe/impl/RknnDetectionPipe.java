@@ -7,7 +7,9 @@ import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.jni.RknnDetectorJNI;
 public class RknnDetectionPipe extends CVPipe<CVMat, List<NeuralNetworkPipeResult>, RknnDetectionPipe.RknnDetectionPipeParams> {
-
+    public RknnDetectionPipe() {
+        RknnDetectorJNI.createRknnDetector();
+    }
     @Override
     protected List<NeuralNetworkPipeResult> process(CVMat in) {
         var frame = in.getMat();

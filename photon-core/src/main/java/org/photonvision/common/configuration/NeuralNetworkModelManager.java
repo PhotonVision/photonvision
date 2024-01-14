@@ -50,7 +50,7 @@ public class NeuralNetworkModelManager {
                 logger.error("Failed to find jar resource at " + resourcePath);
                 return;
             }
-
+            
             this.defaultModelFile = new File(modelsFolder, MODEL_NAME);
             try (FileOutputStream fos = new FileOutputStream(defaultModelFile)) {
                 int read = -1;

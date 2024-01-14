@@ -375,7 +375,6 @@ public class Main {
         } catch (ParseException e) {
             logger.error("Failed to parse command-line options!", e);
         }
-
         CVMat.enablePrint(false);
         PipelineProfiler.enablePrint(false);
 
@@ -410,7 +409,7 @@ public class Main {
         NetworkTablesManager.getInstance()
                 .setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
 
-        logger.debug("Loading ML models");
+        logger.info("Loading ML models");
         NeuralNetworkModelManager.getInstance()
                 .initialize(ConfigManager.getInstance().getModelsDirectory());
 
