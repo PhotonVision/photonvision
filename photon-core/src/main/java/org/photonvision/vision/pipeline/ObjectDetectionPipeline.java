@@ -51,7 +51,6 @@ public class ObjectDetectionPipeline
 
     @Override
     protected void setPipeParamsImpl() {
-
         // this needs to be based off of the current backend selected!!
         var params = new RknnDetectionPipeParams();
         params.confidence = settings.confidence;
@@ -78,7 +77,6 @@ public class ObjectDetectionPipeline
         List<TrackedTarget> targets = new ArrayList<>();
 
         for (var t : targetList) {
-
             var name = String.format("%s", names.get(t.classIdx));
 
             Size textSize = Imgproc.getTextSize(name, 0, 1, 2, null);
