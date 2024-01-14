@@ -27,8 +27,10 @@ import org.photonvision.PhotonVersion;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.SerializationUtils;
+import org.photonvision.jni.RknnDetector;
 import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.raspi.LibCameraJNILoader;
+import org.photonvision.rknn.RknnJNI;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.processes.VisionModule;
@@ -143,6 +145,7 @@ public class PhotonConfiguration {
                         ? "Zerocopy Libcamera Working"
                         : ""); // TODO add support for other types of GPU accel
         generalSubmap.put("mrCalWorking", MrCalJNILoader.getInstance().isLoaded());
+        generalSubmap.put("rknnJNIWorking", RknnDetector.getInstance().isLoaded());
         generalSubmap.put("hardwareModel", hardwareConfig.deviceName);
         generalSubmap.put("hardwarePlatform", Platform.getPlatformName());
         settingsSubmap.put("general", generalSubmap);

@@ -67,6 +67,10 @@ public class TrackedTarget implements Releasable {
 
     private Mat m_cameraRelativeTvec, m_cameraRelativeRvec;
 
+
+    private int m_classId = -1;
+    private double m_confidence = -1;
+
     public TrackedTarget(
             PotentialTarget origTarget, TargetCalculationParameters params, CVShape shape) {
         this.m_mainContour = origTarget.m_mainContour;
@@ -193,6 +197,21 @@ public class TrackedTarget implements Releasable {
 
     public TrackedTarget(NeuralNetworkPipeResult t, TargetCalculationParameters targetCalculationParameters) {
         this(t.box, t.classIdx, t.confidence, targetCalculationParameters);
+    }
+
+    /**
+     * @return Returns the confidence of the detection ranging from 0 - 1.
+     */
+    public double getConfidence() {
+        return m_confidence;
+    }
+
+    /**
+
+     * @return O-indexed class index for the detected object.
+     */
+    public double getClassID() {
+        return m_classId;
     }
 
 
@@ -430,6 +449,8 @@ public class TrackedTarget implements Releasable {
         ret.put("skew", getSkew());
         ret.put("area", getArea());
         ret.put("ambiguity", getPoseAmbiguity());
+        ret.put("confidence", m_confidence);
+        ret.put("classId", m_classId);
 
         var bestCameraToTarget3d = getBestCameraToTarget3d();
         if (bestCameraToTarget3d != null) {

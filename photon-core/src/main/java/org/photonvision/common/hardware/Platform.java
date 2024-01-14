@@ -221,7 +221,7 @@ public enum Platform {
         return fileHasText("/proc/cpuinfo", "Raspberry Pi");
     }
     private static boolean isOrangePi() {
-        return fileHasText("/proc/cpuinfo", "Orange Pi 5");
+        return fileHasText("/proc/device-tree/model", "Orange Pi 5");
     }
 
     private static boolean isJetsonSBC() {

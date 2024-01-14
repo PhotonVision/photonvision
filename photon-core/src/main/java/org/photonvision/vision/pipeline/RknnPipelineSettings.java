@@ -2,7 +2,9 @@
 package org.photonvision.vision.pipeline;
 
 public class RknnPipelineSettings extends AdvancedPipelineSettings {
-    public double confidence = 90.0;
+    public double confidence;
+    public double nms; //non maximal suppression
+    public double max_detections;
 
     public RknnPipelineSettings() {
         super();
@@ -11,6 +13,8 @@ public class RknnPipelineSettings extends AdvancedPipelineSettings {
         cameraExposure = 20;
         cameraAutoExposure = false;
         ledMode = false;
-        double confidence = 90.0;
+        confidence = 90.0;
+        nms = .45;
+        max_detections = 10;
     }
 }

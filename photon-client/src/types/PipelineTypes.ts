@@ -291,7 +291,7 @@ export type ConfigurableRknnPipelineSettings = Partial<Omit<RknnPipelineSettings
 export const DefaultRknnPipelineSettings: RknnPipelineSettings = {
   ...DefaultPipelineSettings,
   pipelineType: PipelineType.Rknn,
-  confidence: 90,
+  confidence: .9,
   cameraGain: 20,
   targetModel: TargetModel.InfiniteRechargeHighGoalOuter,
   ledMode: true,

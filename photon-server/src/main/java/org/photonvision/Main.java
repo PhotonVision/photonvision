@@ -319,14 +319,12 @@ public class Main {
             logger.error("Failed to load libcamera-JNI!", e);
         }
         try {
-            
-                logger.warn("LOADING RK3588");
-                logger.debug("LOADING RK3588");
-                logger.debug("LOADING RK3588");
-                logger.debug("LOADING RK3588");
-                logger.debug("LOADING RK3588");
+            if (Platform.isRK3588()) {
                 RknnDetector.forceLoad();
-                 logger.warn("LOADING RK3588");
+            }
+            else {
+                logger.error("Platform does not support RKNN based machine learning!");
+            }
         } catch (IOException e) {
             logger.error("Failed to load rknn-JNI!", e);
         }
