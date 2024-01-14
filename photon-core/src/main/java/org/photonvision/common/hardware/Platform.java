@@ -43,7 +43,7 @@ public enum Platform {
             true,
             OSType.LINUX,
             true), // Raspberry Pi 3/4 with a 64-bit image
-    LINUX_RK3588_64("Linux AARCH 64-bit with RK388", "linuxarm64", false, OSType.LINUX, true),
+    LINUX_RK3588_64("Linux AARCH 64-bit with RK3588", "linuxarm64", false, OSType.LINUX, true),
     LINUX_AARCH64(
             "Linux AARCH64", "linuxarm64", false, OSType.LINUX, true), // Jetson Nano, Jetson TX2
 
