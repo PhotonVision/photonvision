@@ -31,7 +31,7 @@ public class RknnDetectorJNI extends PhotonJNICommon {
         return instance;
     }
     public static void createRknnDetector() {
-        objPointer = RknnJNI.create(NeuralNetworkModelManager.getInstance().getDefaultRknnModel().getAbsolutePath().toString());
+        objPointer = RknnJNI.create(NeuralNetworkModelManager.getInstance().getDefaultRknnModel().getAbsolutePath().toString(), NeuralNetworkModelManager.getInstance().getLabels().size());
     }
     public static synchronized void forceLoad() throws IOException {
         TestUtils.loadLibraries();
@@ -39,8 +39,8 @@ public class RknnDetectorJNI extends PhotonJNICommon {
         forceLoad(getInstance(), RknnDetectorJNI.class, List.of("rga", "rknnrt", "rknn_jni"));
     }
     public static List<NeuralNetworkPipeResult> detect(CVMat in) {
-        RknnResult[] ret = RknnJNI.detect(objPointer, in.getMat().getNativeObjAddr());
-        if(ret == null) { // this is yucky,,,why no return just 0?
+        RknnResult[] ret = RknnJNI.detect(objPointer, in.getMat().getNativeObjAddr(), .45, .25, 20);
+        if(ret == null) {
             return List.of();
         }
         return List.of(ret).stream().map(it->new NeuralNetworkPipeResult(

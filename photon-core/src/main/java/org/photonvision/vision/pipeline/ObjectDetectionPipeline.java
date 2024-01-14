@@ -54,6 +54,8 @@ public class ObjectDetectionPipeline extends CVPipeline<CVPipelineResult, Object
         //this needs to be based off of the current backend selected!!
         var params = new RknnDetectionPipeParams();
         params.confidence = settings.confidence;
+        params.box_thresh = settings.box_thresh;
+        params.nms = settings.nms;
         rknnPipe.setParams(params);
     }
 

@@ -46,71 +46,45 @@
       * @param modelsFolder Where models live
       */
      public void initialize(File modelsFolder) {
-         // We always extract the shared object (we could hash each so, but that's a lot of work)
-         var modelResourcePath = "/models/" + MODEL_NAME;
- 
-         try (var in = NeuralNetworkModelManager.class.getResourceAsStream(modelResourcePath)) {
-             if (in == null) {
-                 logger.error("Failed to find jar resource at " + modelResourcePath);
-                 return;
-             }
-             
-             this.defaultModelFile = new File(modelsFolder, MODEL_NAME);
-             if (!defaultModelFile.exists()) {
-                 try (FileOutputStream fos = new FileOutputStream(defaultModelFile)) {
-                     int read = -1;
-                     byte[] buffer = new byte[1024];
-                     while ((read = in.read(buffer)) != -1) {
-                         fos.write(buffer, 0, read);
-                     }
-                 } catch (IOException e) {
-                     logger.error("Error extracting model to " + defaultModelFile.toPath().toString(), e);
-                 }
-             } else {
-                 logger.info("File " + defaultModelFile.toPath().toString() + " already exists. Skipping extraction.");
-             }
-             
- 
-         } catch (IOException e) {
-             logger.error("Error finding jar resource " + modelResourcePath, e);
-         }
-         
-         File labelsFile = new File(modelsFolder, "labels.txt");
-         if (!labelsFile.exists()) {
-             var labelResourcePath = "/models/" + labelsFile.getName();
-     
-             try (var in = NeuralNetworkModelManager.class.getResourceAsStream(labelResourcePath)) {
-                 if (in == null) {
-                     logger.error("Failed to find jar resource at " + labelResourcePath);
-                     return;
-                 }
-     
-                 try (FileOutputStream fos = new FileOutputStream(labelsFile)) {
-                     int read = -1;
-                     byte[] buffer = new byte[1024];
-                     while ((read = in.read(buffer)) != -1) {
-                         fos.write(buffer, 0, read);
-                     }
-                 } catch (IOException e) {
-                     logger.error("Error extracting labels to " + labelsFile.toPath().toString(), e);
-                 }
-     
-             } catch (IOException e) {
-                 logger.error("Error finding jar resource " + labelResourcePath, e);
-             }
-         } else {
-             logger.info("Labels.txt already exists!");
-         }
-     
-         try {
-             labels = Files.readAllLines(Paths.get(labelsFile.getPath()));
-         } catch (IOException e) {
-             logger.error("Error reading labels.txt", e);
-         }
-         
-         
+        var modelResourcePath = "/models/" + MODEL_NAME;
+        this.defaultModelFile = new File(modelsFolder, MODEL_NAME);
+        extractResource(modelResourcePath, defaultModelFile);
+        
+        File labelsFile = new File(modelsFolder, "labels.txt");
+        var labelResourcePath = "/models/" + labelsFile.getName();
+        extractResource(labelResourcePath, labelsFile);
+        
+        try {
+            labels = Files.readAllLines(Paths.get(labelsFile.getPath()));
+        } catch (IOException e) {
+            logger.error("Error reading labels.txt", e);
+        }
      }
- 
+
+     private void extractResource(String resourcePath, File outputFile) {
+        try (var in = NeuralNetworkModelManager.class.getResourceAsStream(resourcePath)) {
+            if (in == null) {
+                logger.error("Failed to find jar resource at " + resourcePath);
+                return;
+            }
+    
+            if (!outputFile.exists()) {
+                try (FileOutputStream fos = new FileOutputStream(outputFile)) {
+                    int read = -1;
+                    byte[] buffer = new byte[1024];
+                    while ((read = in.read(buffer)) != -1) {
+                        fos.write(buffer, 0, read);
+                    }
+                } catch (IOException e) {
+                    logger.error("Error extracting resource to " + outputFile.toPath().toString(), e);
+                }
+            } else {
+                logger.info("File " + outputFile.toPath().toString() + " already exists. Skipping extraction.");
+            }
+        } catch (IOException e) {
+            logger.error("Error finding jar resource " + resourcePath, e);
+        }
+    }    
      public File getDefaultRknnModel() {
          return defaultModelFile;
      }

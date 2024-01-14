@@ -34,6 +34,9 @@ public class RknnDetectionPipe extends CVPipe<CVMat, List<NeuralNetworkPipeResul
 
     public static class RknnDetectionPipeParams implements Releasable{
         public double confidence;
+        public double nms;
+        public double box_thresh;
+        public double max_detections;
         public RknnDetectionPipeParams() {
         }
         @Override
