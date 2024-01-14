@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { PipelineType } from "@/types/PipelineTypes";
-import PvSelect from "@/components/common/pv-select.vue";
 import PvSlider from "@/components/common/pv-slider.vue";
-import PvSwitch from "@/components/common/pv-switch.vue";
 import { computed, getCurrentInstance } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 
