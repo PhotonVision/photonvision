@@ -280,7 +280,7 @@ jobs:
             image_suffix: limelight2
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.4/photonvision_limelight.img.xz
             cpu: cortex-a7
-            image_additional_mb: 0
+            image_additional_mb: 4096
           - os: ubuntu-latest
             artifact-name: LinuxArm64
             image_suffix: orangepi5
