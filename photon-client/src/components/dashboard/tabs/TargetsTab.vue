@@ -89,10 +89,16 @@ const resetCurrentBuffer = () => {
               >
                 {{ target.fiducialId }}
               </td>
-              <td v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection" class="text-center white--text">
+              <td
+                v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection"
+                class="text-center white--text"
+              >
                 {{ target.classId }}
               </td>
-              <td v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection" class="text-center white--text">
+              <td
+                v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection"
+                class="text-center white--text"
+              >
                 {{ target.confidence.toFixed(2) }}
               </td>
               <template v-if="!useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled">

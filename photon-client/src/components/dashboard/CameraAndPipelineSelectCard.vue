@@ -157,8 +157,8 @@ const pipelineTypesWrapper = computed<{ name: string; value: number }[]>(() => {
     { name: "AprilTag", value: WebsocketPipelineType.AprilTag },
     { name: "Aruco", value: WebsocketPipelineType.Aruco }
   ];
-  if(useSettingsStore().general.rknnSupported) {
-    pipelineTypes.push({name: "Object Detection", value: WebsocketPipelineType.ObjectDetection});
+  if (useSettingsStore().general.rknnSupported) {
+    pipelineTypes.push({ name: "Object Detection", value: WebsocketPipelineType.ObjectDetection });
   }
 
   if (useCameraSettingsStore().isDriverMode) {
@@ -364,7 +364,7 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
               { name: 'Colored Shape', value: WebsocketPipelineType.ColoredShape },
               { name: 'AprilTag', value: WebsocketPipelineType.AprilTag },
               { name: 'Aruco', value: WebsocketPipelineType.Aruco },
-              { name: 'Object Detection', value: WebsocketPipelineType.ObjectDetection} //TODO: How do i make it so only Opi users see that object detection is an option
+              { name: 'Object Detection', value: WebsocketPipelineType.ObjectDetection } //TODO: How do i make it so only Opi users see that object detection is an option
             ]"
           />
         </v-card-text>

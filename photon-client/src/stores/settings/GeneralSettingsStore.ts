@@ -28,7 +28,7 @@ export const useSettingsStore = defineStore("settings", {
       hardwareModel: undefined,
       hardwarePlatform: undefined,
       mrCalWorking: true,
-      rknnSupported: false,
+      rknnSupported: false
     },
     network: {
       ntServerAddress: "",

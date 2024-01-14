@@ -10,25 +10,22 @@ export default defineConfig({
   plugins: [
     Vue2(),
     Components({
-      resolvers: [
-          VuetifyResolver()
-      ],
+      resolvers: [VuetifyResolver()],
       dts: true,
       transformer: "vue2",
-      types: [{
-        from: "vue-router",
-        names: ["RouterLink", "RouterView"]
-      }],
+      types: [
+        {
+          from: "vue-router",
+          names: ["RouterLink", "RouterView"]
+        }
+      ],
       version: 2.7
     })
   ],
   css: {
     preprocessorOptions: {
       sass: {
-        additionalData: [
-          "@import \"@/assets/styles/variables.scss\"",
-          ""
-        ].join("\n")
+        additionalData: ['@import "@/assets/styles/variables.scss"', ""].join("\n")
       }
     }
   },

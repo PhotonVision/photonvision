@@ -28,7 +28,7 @@ const interactiveCols = computed(
       tooltip="Minimum detection confidence"
       :min="0"
       :max="1"
-      :step=".01"
+      :step="0.01"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ confidence: value }, false)"
     />
     <pv-slider
@@ -39,7 +39,7 @@ const interactiveCols = computed(
       tooltip="No clue what this actually does"
       :min="0"
       :max="1"
-      :step=".01"
+      :step="0.01"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ confidence: value }, false)"
     />
     <pv-slider
@@ -50,7 +50,7 @@ const interactiveCols = computed(
       tooltip="Prune overlapping bounding boxes, increasing the value improves presciscion of detection but reduces total detections."
       :min="0"
       :max="1"
-      :step=".01"
+      :step="0.01"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ confidence: value }, false)"
     />
   </div>

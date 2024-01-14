@@ -288,7 +288,9 @@ export interface ObjectDetectionPipelineSettings extends PipelineSettings {
   nms: number;
   box_thresh: number;
 }
-export type ConfigurableObjectDetectionPipelineSettings = Partial<Omit<ObjectDetectionPipelineSettings, "pipelineType">> &
+export type ConfigurableObjectDetectionPipelineSettings = Partial<
+  Omit<ObjectDetectionPipelineSettings, "pipelineType">
+> &
   ConfigurablePipelineSettings;
 export const DefaultObjectDetectionPipelineSettings: ObjectDetectionPipelineSettings = {
   ...DefaultPipelineSettings,
@@ -298,9 +300,9 @@ export const DefaultObjectDetectionPipelineSettings: ObjectDetectionPipelineSett
   ledMode: true,
   outputShowMultipleTargets: false,
   cameraExposure: 6,
-  confidence: .9,
-  nms: .45,
-  box_thresh: .25,
+  confidence: 0.9,
+  nms: 0.45,
+  box_thresh: 0.25
 };
 
 export type ActivePipelineSettings =
