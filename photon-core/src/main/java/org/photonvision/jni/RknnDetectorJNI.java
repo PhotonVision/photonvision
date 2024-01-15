@@ -62,6 +62,13 @@ public class RknnDetectorJNI extends PhotonJNICommon {
         forceLoad(getInstance(), RknnDetectorJNI.class, List.of("rga", "rknnrt", "rknn_jni"));
     }
 
+    /**
+     * Detect forwards using this model
+     *
+     * @param in The image to process
+     * @param nmsThresh Non-maximum supression threshold. Probably should not change
+     * @param boxThresh Minimum confidence for a box to be added. Basically just confidence threshold
+     */
     public static List<NeuralNetworkPipeResult> detect(CVMat in, double nmsThresh, double boxThresh) {
         RknnResult[] ret =
                 RknnJNI.detect(objPointer, in.getMat().getNativeObjAddr(), nmsThresh, boxThresh);
