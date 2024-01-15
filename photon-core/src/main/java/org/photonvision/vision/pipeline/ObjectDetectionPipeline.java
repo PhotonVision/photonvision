@@ -19,10 +19,6 @@ package org.photonvision.vision.pipeline;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.opencv.core.Point;
-import org.opencv.core.Size;
-import org.opencv.imgproc.Imgproc;
-import org.photonvision.common.util.ColorHelper;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
@@ -64,6 +60,7 @@ public class ObjectDetectionPipeline
         long sumPipeNanosElapsed = 0;
 
         // ***************** change based on backend ***********************
+
         CVPipeResult<List<NeuralNetworkPipeResult>> ret = rknnPipe.run(input_frame.colorImage);
         sumPipeNanosElapsed += ret.nanosElapsed;
         List<NeuralNetworkPipeResult> targetList;
@@ -74,31 +71,10 @@ public class ObjectDetectionPipeline
         input_frame.colorImage.getMat().copyTo(input_frame.processedImage.getMat());
 
         // ***************** change based on backend ***********************
+
         List<TrackedTarget> targets = new ArrayList<>();
 
         for (var t : targetList) {
-            var name = String.format("%s", names.get(t.classIdx));
-
-            Size textSize = Imgproc.getTextSize(name, 0, 1, 2, null);
-
-            // Create a rectangle for the small box with a red background
-            Imgproc.rectangle(
-                    input_frame.processedImage.getMat(),
-                    new Point(t.box.x + 2, t.box.y + 2),
-                    new Point(t.box.x + textSize.width + 2, t.box.y + textSize.height + 2),
-                    ColorHelper.colorToScalar(java.awt.Color.red),
-                    -1);
-
-            // Put the class name in white text at the top left of the bounding box
-            Imgproc.putText(
-                    input_frame.processedImage.getMat(),
-                    name,
-                    new Point(t.box.x + 2, t.box.y + textSize.height),
-                    0,
-                    1,
-                    ColorHelper.colorToScalar(java.awt.Color.white),
-                    2);
-
             targets.add(
                     new TrackedTarget(
                             t,
@@ -109,6 +85,6 @@ public class ObjectDetectionPipeline
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
-        return new CVPipelineResult(sumPipeNanosElapsed, fps, targets, input_frame);
+        return new CVPipelineResult(sumPipeNanosElapsed, fps, targets, input_frame, names);
     }
 }

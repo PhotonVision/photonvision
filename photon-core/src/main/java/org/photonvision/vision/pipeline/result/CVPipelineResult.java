@@ -32,10 +32,20 @@ public class CVPipelineResult implements Releasable {
     public final List<TrackedTarget> targets;
     public final Frame inputAndOutputFrame;
     public MultiTargetPNPResult multiTagResult;
+    public final List<String> objectDetectionClassNames;
 
     public CVPipelineResult(
             double processingNanos, double fps, List<TrackedTarget> targets, Frame inputFrame) {
-        this(processingNanos, fps, targets, new MultiTargetPNPResult(), inputFrame);
+        this(processingNanos, fps, targets, new MultiTargetPNPResult(), inputFrame, List.of());
+    }
+
+    public CVPipelineResult(
+            double processingNanos,
+            double fps,
+            List<TrackedTarget> targets,
+            Frame inputFrame,
+            List<String> classNames) {
+        this(processingNanos, fps, targets, new MultiTargetPNPResult(), inputFrame, classNames);
     }
 
     public CVPipelineResult(
@@ -44,10 +54,21 @@ public class CVPipelineResult implements Releasable {
             List<TrackedTarget> targets,
             MultiTargetPNPResult multiTagResult,
             Frame inputFrame) {
+        this(processingNanos, fps, targets, multiTagResult, inputFrame, List.of());
+    }
+
+    public CVPipelineResult(
+            double processingNanos,
+            double fps,
+            List<TrackedTarget> targets,
+            MultiTargetPNPResult multiTagResult,
+            Frame inputFrame,
+            List<String> classNames) {
         this.processingNanos = processingNanos;
         this.fps = fps;
         this.targets = targets != null ? targets : Collections.emptyList();
         this.multiTagResult = multiTagResult;
+        this.objectDetectionClassNames = classNames;
 
         this.inputAndOutputFrame = inputFrame;
     }
@@ -57,7 +78,7 @@ public class CVPipelineResult implements Releasable {
             double fps,
             List<TrackedTarget> targets,
             MultiTargetPNPResult multiTagResult) {
-        this(processingNanos, fps, targets, multiTagResult, null);
+        this(processingNanos, fps, targets, multiTagResult, null, List.of());
     }
 
     public boolean hasTargets() {

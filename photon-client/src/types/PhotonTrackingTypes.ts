@@ -72,4 +72,6 @@ export interface PipelineResult {
   targets: PhotonTarget[];
   // undefined if multitag failed or non-tag pipeline
   multitagResult?: MultitagResult;
+  // Object detection class names -- empty if not doing object detection
+  classNames: string[];
 }
