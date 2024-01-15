@@ -20,7 +20,6 @@ package org.photonvision.vision.pipeline;
 public class ObjectDetectionPipelineSettings extends AdvancedPipelineSettings {
     public double confidence;
     public double nms; // non maximal suppression
-    public double box_thresh;
 
     public ObjectDetectionPipelineSettings() {
         super();
@@ -31,6 +30,5 @@ public class ObjectDetectionPipelineSettings extends AdvancedPipelineSettings {
         ledMode = false;
         confidence = .9;
         nms = .45;
-        box_thresh = .25;
     }
 }

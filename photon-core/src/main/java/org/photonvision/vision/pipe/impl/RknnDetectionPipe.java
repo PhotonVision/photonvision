@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import java.util.Iterator;
 import java.util.List;
 import org.photonvision.jni.RknnDetectorJNI;
 import org.photonvision.vision.opencv.CVMat;
@@ -34,29 +33,18 @@ public class RknnDetectionPipe
     @Override
     protected List<NeuralNetworkPipeResult> process(CVMat in) {
         var frame = in.getMat();
+
+        // Make sure we don't get a weird empty frame
         if (frame.empty()) {
             return List.of();
         }
-        double confThreshold = params.confidence;
-        List<NeuralNetworkPipeResult> result =
-                RknnDetectorJNI.detect(in, params.nms, params.box_thresh);
-        if (result.isEmpty()) {
-            return List.of();
-        }
-        Iterator<NeuralNetworkPipeResult> itr = result.iterator();
-        while (itr.hasNext()) {
-            NeuralNetworkPipeResult res = itr.next();
-            if (res.confidence < confThreshold) {
-                itr.remove();
-            }
-        }
-        return result;
+
+        return RknnDetectorJNI.detect(in, params.nms, params.confidence);
     }
 
     public static class RknnDetectionPipeParams implements Releasable {
         public double confidence;
         public double nms;
-        public double box_thresh;
         public int max_detections;
 
         public RknnDetectionPipeParams() {}
