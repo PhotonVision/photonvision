@@ -179,6 +179,8 @@ export interface CameraSettings {
 
   cameraQuirks: QuirkyCamera;
   isCSICamera: boolean;
+
+  availableModels?: string[];
 }
 
 export interface CameraSettingsChangeRequest {

@@ -67,6 +67,9 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     },
     isCSICamera(): boolean {
       return this.currentCameraSettings.isCSICamera;
+    },
+    availableModels(): string[] {
+      return this.currentCameraSettings.availableModels || [];
     }
   },
   actions: {
@@ -104,7 +107,8 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         pipelineNicknames: d.pipelineNicknames,
         currentPipelineIndex: d.currentPipelineIndex,
         pipelineSettings: d.currentPipelineSettings,
-        cameraQuirks: d.cameraQuirks
+        cameraQuirks: d.cameraQuirks,
+        availableModels: d.availableModels
       }));
     },
     /**

@@ -19,65 +19,87 @@ package org.photonvision.jni;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public abstract class PhotonJNICommon {
-    static boolean libraryLoaded = false;
     protected static Logger logger = null;
 
-    protected static synchronized void forceLoad(Class<?> clazz, List<String> libraries)
-            throws IOException {
-        if (libraryLoaded) return;
+    protected static Set<String> loadedLibraries = new HashSet<>();
+
+    protected static synchronized void forceLoad(Class<?> clazz, List<String> libraries) {
         if (logger == null) logger = new Logger(clazz, LogGroup.Camera);
 
         for (var libraryName : libraries) {
+            if (loadedLibraries.contains(clazz.getName() + ":" + libraryName)) {
+                logger.info("Library " + libraryName + " already loaded");
+                continue;
+            }
             try {
                 // We always extract the shared object (we could hash each so, but that's a lot of work)
-                var arch_name = Platform.getNativeLibraryFolderName();
-                var nativeLibName = System.mapLibraryName(libraryName);
-                var in = clazz.getResourceAsStream("/nativelibraries/" + arch_name + "/" + nativeLibName);
-
-                if (in == null) {
-                    libraryLoaded = false;
-                    return;
-                }
-
-                // It's important that we don't mangle the names of these files on Windows at least
-                File temp = new File(System.getProperty("java.io.tmpdir"), nativeLibName);
-                FileOutputStream fos = new FileOutputStream(temp);
-
-                int read = -1;
-                byte[] buffer = new byte[1024];
-                while ((read = in.read(buffer)) != -1) {
-                    fos.write(buffer, 0, read);
-                }
-                fos.close();
-                in.close();
-
-                System.load(temp.getAbsolutePath());
-
-                logger.info("Successfully loaded shared object " + temp.getName());
-
-            } catch (UnsatisfiedLinkError e) {
+                var lib = unpack(clazz, libraryName);
+                System.load(lib);
+                loadedLibraries.add(clazz.getName() + ":" + libraryName);
+            } catch (Exception e) {
                 logger.error("Couldn't load shared object " + libraryName, e);
                 e.printStackTrace();
-                // logger.error(System.getProperty("java.library.path"));
                 break;
             }
         }
-        libraryLoaded = true;
     }
 
-    protected static synchronized void forceLoad(Class<?> clazz, String libraryName)
-            throws IOException {
+    protected static synchronized void forceLoad(Class<?> clazz, String libraryName) {
         forceLoad(clazz, List.of(libraryName));
     }
 
-    public static boolean isWorking() {
-        return libraryLoaded;
+    protected static synchronized String unpack(Class<?> clazz, String libraryName, String unpackTo) {
+        System.out.println("Unpacking library " + libraryName);
+        var arch_name = Platform.getNativeLibraryFolderName();
+        var nativeLibName = System.mapLibraryName(libraryName);
+        var in = clazz.getResourceAsStream("/nativelibraries/" + arch_name + "/" + nativeLibName);
+
+        if (in == null) {
+            System.out.println("Couldn't find library " + arch_name + "/" + nativeLibName);
+            return null;
+        }
+        String res = null;
+        try {
+            // It's important that we don't mangle the names of these files on Windows at least
+            File temp = new File(unpackTo, nativeLibName);
+            if (temp.exists()) temp.delete();
+            FileOutputStream fos = new FileOutputStream(temp);
+
+            int read = -1;
+            byte[] buffer = new byte[1024];
+            while ((read = in.read(buffer)) != -1) {
+                fos.write(buffer, 0, read);
+            }
+            fos.close();
+            in.close();
+            res = temp.getAbsolutePath();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("Unpacked library " + libraryName + " to " + res);
+        return res;
+    }
+
+    protected static synchronized String unpack(Class<?> clazz, String libraryName) {
+        return unpack(clazz, libraryName, System.getProperty("java.io.tmpdir"));
+    }
+
+    public static boolean isWorking(Class<? extends PhotonJNICommon> clazz) {
+        boolean working = false;
+        for (var lib : loadedLibraries) {
+            if (lib.contains(clazz.getName())) {
+                working = true;
+                break;
+            }
+        }
+        return working;
     }
 }

@@ -53,4 +53,8 @@ public class MrCalJNILoader extends PhotonJNICommon {
             throw new IOException("Unable to load mrcal JNI!");
         }
     }
+
+    public static boolean isWorking() {
+        return MrCalJNILoader.isWorking(MrCalJNILoader.class);
+    }
 }

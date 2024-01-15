@@ -58,6 +58,7 @@ export interface WebsocketCameraSettingsUpdate {
   pipelineNicknames: string[];
   videoFormatList: WebsocketVideoFormat;
   cameraQuirks: QuirkyCamera;
+  availableModels?: string[];
 }
 export interface WebsocketNTUpdate {
   connected: boolean;
@@ -101,5 +102,6 @@ export enum WebsocketPipelineType {
   Reflective = 0,
   ColoredShape = 1,
   AprilTag = 2,
-  Aruco = 3
+  Aruco = 3,
+  RKNN = 4
 }

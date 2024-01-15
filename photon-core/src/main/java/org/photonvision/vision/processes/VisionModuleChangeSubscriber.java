@@ -223,6 +223,8 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         } else {
                             propField.setBoolean(currentSettings, (Boolean) newPropValue);
                         }
+                    } else if (propType.equals(String.class)) {
+                        propField.set(currentSettings, newPropValue);
                     } else {
                         propField.set(newPropValue, newPropValue);
                     }

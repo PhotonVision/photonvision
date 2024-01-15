@@ -21,11 +21,15 @@ import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.cscore.VideoException;
 import edu.wpi.first.math.util.Units;
 import io.javalin.websocket.WsContext;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.zip.ZipInputStream;
 import org.opencv.core.Size;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
@@ -501,6 +505,59 @@ public class VisionModule {
         saveAndBroadcastAll();
     }
 
+    void unpackModelsIfNeeded() {
+        var modelsPath = ConfigManager.getInstance().getRKNNModelsPath();
+        if (!modelsPath.toFile().exists()) {
+            logger.info("Unpacking RKNN models...");
+            var stream = getClass().getResourceAsStream("/models.zip");
+            if (stream == null) {
+                logger.error("Failed to find models.zip in jar");
+                return;
+            }
+            try {
+                Files.createDirectories(modelsPath);
+                var zip = new ZipInputStream(stream);
+                var entry = zip.getNextEntry();
+                while (entry != null) {
+                    var filePath = modelsPath.resolve(entry.getName());
+                    if (entry.isDirectory()) {
+                        Files.createDirectories(filePath);
+                    } else {
+                        Files.copy(zip, filePath);
+                    }
+                    entry = zip.getNextEntry();
+                }
+                zip.close();
+            } catch (IOException e) {
+                logger.error("Failed to unpack models.zip");
+                e.printStackTrace();
+            }
+        }
+    }
+
+    String[] getAvailableModels() {
+        unpackModelsIfNeeded();
+        var modelsPath = ConfigManager.getInstance().getRKNNModelsPath();
+        var models = modelsPath.toFile().listFiles();
+        String[] res;
+        if (models == null) {
+            res = new String[0];
+        } else {
+            res =
+                    Arrays.stream(models)
+                            .filter(f -> f.getName().endsWith(".rknn"))
+                            .map(f -> f.getName().substring(0, f.getName().length() - 5))
+                            .toArray(String[]::new);
+        }
+
+        if (res.length == 0) {
+            logger.warn("No models found in " + modelsPath);
+        }
+
+        logger.debug("Found models: " + Arrays.toString(res));
+        return res;
+    }
+
     public PhotonConfiguration.UICameraConfiguration toUICameraConfig() {
         var ret = new PhotonConfiguration.UICameraConfiguration();
 
@@ -513,6 +570,7 @@ public class VisionModule {
         ret.currentPipelineIndex = pipelineManager.getCurrentPipelineIndex();
         ret.pipelineNicknames = pipelineManager.getPipelineNicknames();
         ret.cameraQuirks = visionSource.getSettables().getConfiguration().cameraQuirks;
+        ret.availableModels = getAvailableModels();
 
         // TODO refactor into helper method
         var temp = new HashMap<Integer, HashMap<String, Object>>();

@@ -295,6 +295,49 @@ public class RequestHandler {
         }
     }
 
+    public static void onRKNNModelRequest(Context ctx) {
+        var file = ctx.uploadedFile("data");
+
+        if (file == null) {
+            ctx.status(400);
+            ctx.result(
+                    "No File was sent with the request. Make sure that the RKNN model is sent at the key 'data'");
+            logger.error(
+                    "No File was sent with the request. Make sure that the RKNN model is sent at the key 'data'");
+            return;
+        }
+
+        if (!file.extension().contains("rknn")) {
+            ctx.status(400);
+            ctx.result(
+                    "The uploaded file was not of type 'rknn'. The uploaded file should be a .rknn file.");
+            logger.error(
+                    "The uploaded file was not of type 'rknn'. The uploaded file should be a .rknn file.");
+            return;
+        }
+
+        // Create a temp file
+        var tempFilePath = handleTempFileCreation(file);
+
+        if (tempFilePath.isEmpty()) {
+            ctx.status(500);
+            ctx.result("There was an error while creating a temporary copy of the file");
+            logger.error("There was an error while creating a temporary copy of the file");
+            return;
+        }
+
+        if (ConfigManager.getInstance().saveUploadedRKNNModel(tempFilePath.get().toPath())) {
+            ctx.status(200);
+            ctx.result("Successfully saved the uploaded RKNN model, rebooting...");
+            logger.info("Successfully saved the uploaded RKNN model, rebooting...");
+            restartProgram();
+        } else {
+            ctx.status(500);
+            ctx.result("There was an error while saving the uploaded RKNN model");
+            logger.error("There was an error while saving the uploaded RKNN model");
+        }
+    }
+
     public static void onOfflineUpdateRequest(Context ctx) {
         var file = ctx.uploadedFile("jarData");
 

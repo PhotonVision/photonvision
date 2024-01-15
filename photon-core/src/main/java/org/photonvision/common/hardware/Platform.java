@@ -51,9 +51,9 @@ public enum Platform {
     LINUX_ARM64("Linux ARM64", "linuxarm64", false, OSType.LINUX, true), // ODROID C2, N2
 
     // Completely unsupported
-    WINDOWS_32("Windows x86", "windowsx64", false, OSType.WINDOWS, false),
+    WINDOWS_32("Windows x86", "winx64", false, OSType.WINDOWS, false),
     MACOS("Mac OS", "osxuniversal", false, OSType.MACOS, false),
-    UNKNOWN("Unsupported Platform", "", false, OSType.UNKNOWN, false);
+    UNKNOWN("Unsupported Platform", "any", false, OSType.UNKNOWN, false);
 
     private enum OSType {
         WINDOWS,
@@ -220,6 +220,11 @@ public enum Platform {
         return fileHasText("/etc/os-release", "Buster");
     }
 
+    public static boolean isWindows() {
+        var p = getCurrentPlatform();
+        return (p == WINDOWS_32 || p == WINDOWS_64);
+    }
+
     private static boolean fileHasText(String filename, String text) {
         try (BufferedReader reader = Files.newBufferedReader(Paths.get(filename))) {
             while (true) {
@@ -234,10 +239,5 @@ public enum Platform {
         } catch (IOException ex) {
             return false;
         }
-    }
-
-    public static boolean isWindows() {
-        var p = getCurrentPlatform();
-        return (p == WINDOWS_32 || p == WINDOWS_64);
     }
 }

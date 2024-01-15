@@ -137,7 +137,8 @@ enum ImportType {
   HardwareConfig,
   HardwareSettings,
   NetworkConfig,
-  ApriltagFieldLayout
+  ApriltagFieldLayout,
+  RKNNModel
 }
 const showImportDialog = ref(false);
 const importType = ref<ImportType | number>(-1);
@@ -161,6 +162,9 @@ const handleSettingsImport = () => {
       break;
     case ImportType.ApriltagFieldLayout:
       settingsEndpoint = "/aprilTagFieldLayout";
+      break;
+    case ImportType.RKNNModel:
+      settingsEndpoint = "/rknnModel";
       break;
     default:
     case ImportType.AllSettings:
@@ -259,7 +263,8 @@ const handleSettingsImport = () => {
                       'Hardware Config',
                       'Hardware Settings',
                       'Network Config',
-                      'Apriltag Layout'
+                      'Apriltag Layout',
+                      'RKNN Model'
                     ]"
                     :select-cols="10"
                     style="width: 100%"
@@ -270,7 +275,13 @@ const handleSettingsImport = () => {
                     v-model="importFile"
                     :disabled="importType === -1"
                     :error-messages="importType === -1 ? 'Settings type not selected' : ''"
-                    :accept="importType === ImportType.AllSettings ? '.zip' : '.json'"
+                    :accept="
+                      importType === ImportType.AllSettings
+                        ? '.zip'
+                        : importType === ImportType.RKNNModel
+                          ? '.rknn'
+                          : '.json'
+                    "
                   />
                 </v-row>
                 <v-row

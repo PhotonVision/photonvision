@@ -164,3 +164,5 @@ photonlib-java-examples/*/networktables.json.bck
 photon-server/src/main/resources/web/index.html
 
 venv
+
+!photon-core/src/main/resources/models.zip

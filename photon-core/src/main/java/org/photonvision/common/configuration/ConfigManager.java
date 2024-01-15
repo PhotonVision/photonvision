@@ -217,6 +217,10 @@ public class ConfigManager {
         return Path.of(configDirectoryFile.toString(), "calibImgs");
     }
 
+    public Path getRKNNModelsPath() {
+        return Path.of(configDirectoryFile.toString() + "/models");
+    }
+
     public static final String LOG_PREFIX = "photonvision-";
     public static final String LOG_EXT = ".log";
     public static final String LOG_DATE_TIME_FORMAT = "yyyy-M-d_hh-mm-ss";
@@ -259,6 +263,17 @@ public class ConfigManager {
 
     public boolean saveUploadedAprilTagFieldLayout(Path uploadPath) {
         return m_provider.saveUploadedAprilTagFieldLayout(uploadPath);
+    }
+
+    public boolean saveUploadedRKNNModel(Path uploadPath) {
+        var modelPath = Path.of(getRKNNModelsPath().toString(), uploadPath.getFileName().toString());
+        try {
+            Files.copy(uploadPath, modelPath, StandardCopyOption.REPLACE_EXISTING);
+            return true;
+        } catch (IOException e) {
+            logger.error("Exception copying uploaded RKNN model!", e);
+            return false;
+        }
     }
 
     public void requestSave() {

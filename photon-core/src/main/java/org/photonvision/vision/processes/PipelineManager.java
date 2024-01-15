@@ -212,6 +212,10 @@ public class PipelineManager {
                     logger.debug("Creating Aruco Pipeline");
                     currentUserPipeline = new ArucoPipeline((ArucoPipelineSettings) desiredPipelineSettings);
                     break;
+                case RKNN:
+                    logger.debug("Creating RKNN Pipeline");
+                    currentUserPipeline = new RKNNPipeline((RKNNPipelineSettings) desiredPipelineSettings);
+                    break;
                 default:
                     // Can be calib3d or drivermode, both of which are special cases
                     break;
@@ -310,6 +314,12 @@ public class PipelineManager {
             case Aruco:
                 {
                     var added = new ArucoPipelineSettings();
+                    added.pipelineNickname = nickname;
+                    return added;
+                }
+            case RKNN:
+                {
+                    var added = new RKNNPipelineSettings();
                     added.pipelineNickname = nickname;
                     return added;
                 }
