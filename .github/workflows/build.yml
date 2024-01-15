@@ -307,6 +307,8 @@ jobs:
           image_additional_mb: ${{ matrix.image_additional_mb }}
           optimize_image: yes
           cpu: ${{ matrix.cpu }}
+          # We do _not_ wanna copy photon into the image. Bind mount instead
+          bind_mount_repository: true
           commands: |
             chmod +x scripts/armrunner.sh
             ./scripts/armrunner.sh
