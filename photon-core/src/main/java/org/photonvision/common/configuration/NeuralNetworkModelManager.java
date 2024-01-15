@@ -30,7 +30,7 @@ public class NeuralNetworkModelManager {
     private static NeuralNetworkModelManager INSTANCE;
     private static final Logger logger = new Logger(NeuralNetworkModelManager.class, LogGroup.Config);
 
-    private final String MODEL_NAME = "yolov5s-640-640.rknn";
+    private final String MODEL_NAME = "note-640-640-yolov5s.rknn";
     private File defaultModelFile;
     private List<String> labels;
 
