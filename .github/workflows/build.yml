@@ -150,11 +150,11 @@ jobs:
       - run: |
           chmod +x gradlew
           ./gradlew photon-lib:build --max-workers 1
-      - run: ./gradlew photon-lib:publish photon-targeting:publish
-        name: Publish
-        env:
-          ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
-        if: github.event_name == 'push'
+      # - run: ./gradlew photon-lib:publish photon-targeting:publish
+      #   name: Publish
+      #   env:
+      #     ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
+      #   if: github.event_name == 'push'
   build-photonlib-docker:
     strategy:
       fail-fast: false
@@ -181,10 +181,10 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew photon-lib:build --max-workers 1
-      - name: Publish
-        run: |
-          chmod +x gradlew
-          ./gradlew photon-lib:publish photon-targeting:publish
+      # - name: Publish
+      #   run: |
+      #     chmod +x gradlew
+      #     ./gradlew photon-lib:publish photon-targeting:publish
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
         if: github.event_name == 'push'
