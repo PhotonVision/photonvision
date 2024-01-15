@@ -25,7 +25,6 @@ public class PiCmds extends LinuxCmds {
         super.initCmds(config);
 
         // CPU
-        cpuMemoryCommand = "free -m | awk 'FNR == 2 {print $2}'";
         cpuTemperatureCommand = "sed 's/.\\{3\\}$/.&/' /sys/class/thermal/thermal_zone0/temp";
         cpuThrottleReasonCmd =
                 "if   ((  $(( $(vcgencmd get_throttled | grep -Eo 0x[0-9a-fA-F]*) & 0x01 )) != 0x00 )); then echo \"LOW VOLTAGE\"; "
