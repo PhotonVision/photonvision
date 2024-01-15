@@ -75,9 +75,9 @@ public class FindBoardCornersGuidancePipe
 
     Mat progressInsert = new Mat();
     
-    static Size img_size = new Size(1280, 720); //FIXME patch - info must come from pipeline
-    static int image_width = 1280; //FIXME patch - info must come from pipeline
-    static int image_height = 720; //FIXME patch - info must come from pipeline
+    static Size img_size = new Size(1280, 720); //FIXME patch - info must come from frame
+    static int image_width = 1280; //FIXME patch - info must come from first frame
+    static int image_height = 720; //FIXME patch - info must come from frame
 
     ChArucoDetector tracker;
 
