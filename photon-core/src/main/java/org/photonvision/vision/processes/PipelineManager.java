@@ -189,6 +189,11 @@ public class PipelineManager {
             return;
         }
 
+        // Cleanup potential old native resources before swapping over
+        if (currentUserPipeline != null) {
+            currentUserPipeline.release();
+        }
+
         currentPipelineIndex = newIndex;
         if (newIndex >= 0) {
             var desiredPipelineSettings = userPipelineSettings.get(currentPipelineIndex);

@@ -18,16 +18,24 @@
 package org.photonvision.vision.pipe.impl;
 
 import java.util.List;
-import org.photonvision.jni.RknnDetectorJNI;
+import org.photonvision.common.configuration.NeuralNetworkModelManager;
+import org.photonvision.jni.RknnDetectorJNI.RknnObjectDetector;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class RknnDetectionPipe
         extends CVPipe<
-                CVMat, List<NeuralNetworkPipeResult>, RknnDetectionPipe.RknnDetectionPipeParams> {
+                CVMat, List<NeuralNetworkPipeResult>, RknnDetectionPipe.RknnDetectionPipeParams> implements Releasable {
+    private RknnObjectDetector detector;
+
     public RknnDetectionPipe() {
-        RknnDetectorJNI.createRknnDetector();
+        // For now this is hard-coded to defaults. Should be refactored into set pipe params, though.
+        // And ideally a little wrapper helper for only changing native stuff on content change created.
+        this.detector =
+                new RknnObjectDetector(
+                        NeuralNetworkModelManager.getInstance().getDefaultRknnModel().getAbsolutePath(),
+                        NeuralNetworkModelManager.getInstance().getLabels());
     }
 
     @Override
@@ -39,23 +47,23 @@ public class RknnDetectionPipe
             return List.of();
         }
 
-        return RknnDetectorJNI.detect(in, params.nms, params.confidence);
+        return detector.detect(in, params.nms, params.confidence);
     }
 
-    public static class RknnDetectionPipeParams implements Releasable {
+    public static class RknnDetectionPipeParams {
         public double confidence;
         public double nms;
         public int max_detections;
 
         public RknnDetectionPipeParams() {}
+    }
 
-        @Override
-        public void release() {
-            RknnDetectorJNI.release();
-        }
+    public List<String> getClassNames() {
+        return detector.getClasses();
+    }
 
-        public List<String> getClassNames() {
-            return RknnDetectorJNI.getClasses();
-        }
+    @Override
+    public void release() {
+        detector.release();
     }
 }

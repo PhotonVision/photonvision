@@ -65,7 +65,7 @@ public class ObjectDetectionPipeline
         List<NeuralNetworkPipeResult> targetList;
 
         targetList = ret.output;
-        var names = rknnPipe.getParams().getClassNames();
+        var names = rknnPipe.getClassNames();
 
         input_frame.colorImage.getMat().copyTo(input_frame.processedImage.getMat());
 
@@ -85,5 +85,10 @@ public class ObjectDetectionPipeline
         var fps = fpsResult.output;
 
         return new CVPipelineResult(sumPipeNanosElapsed, fps, targets, input_frame, names);
+    }
+
+    @Override
+    public void release() {
+        rknnPipe.release();
     }
 }
