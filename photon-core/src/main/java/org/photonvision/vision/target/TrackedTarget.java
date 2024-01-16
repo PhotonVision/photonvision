@@ -285,42 +285,6 @@ public class TrackedTarget implements Releasable {
         }
     }
 
-    public TrackedTarget(
-            Rect2d box, int class_id, double confidence, TargetCalculationParameters params) {
-        m_targetOffsetPoint = new Point(box.x, box.y);
-        m_robotOffsetPoint = new Point();
-
-        var yawPitch =
-                TargetCalculations.calculateYawPitch(
-                        params.cameraCenterPoint.x,
-                        box.x + box.width / 2.0,
-                        params.horizontalFocalLength,
-                        params.cameraCenterPoint.y,
-                        box.y + box.height / 2.0,
-                        params.verticalFocalLength);
-
-        m_yaw = yawPitch.getFirst();
-        m_pitch = yawPitch.getSecond();
-        Point[] cornerPoints =
-                new Point[] {
-                    // Box.x/y is the top-left corner, not the center
-                    new Point(box.x, box.y), // tl
-                    new Point(box.x + box.width, box.y), // tr
-                    new Point(box.x + box.width, box.y + box.height), // br
-                    new Point(box.x, box.y + box.height), // bl
-                };
-
-        m_targetCorners = List.of(cornerPoints);
-        MatOfPoint contourMat = new MatOfPoint(cornerPoints);
-        m_approximateBoundingPolygon = new MatOfPoint2f(cornerPoints);
-
-        m_mainContour = new Contour(contourMat);
-        m_area = m_mainContour.getArea() / params.imageArea * 100;
-
-        m_fiducialId = class_id;
-        m_poseAmbiguity = confidence;
-    }
-
     public void setFiducialId(int id) {
         m_fiducialId = id;
     }

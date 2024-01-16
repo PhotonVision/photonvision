@@ -32,11 +32,9 @@ import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
 
 public class RknnDetectorJNI extends PhotonJNICommon {
     private static final Logger logger = new Logger(RknnDetectorJNI.class, LogGroup.General);
-    private boolean isLoaded;
     private static RknnDetectorJNI instance = null;
 
     private RknnDetectorJNI() {
-        isLoaded = false;
     }
 
     public static RknnDetectorJNI getInstance() {
@@ -51,14 +49,8 @@ public class RknnDetectorJNI extends PhotonJNICommon {
         forceLoad(getInstance(), RknnDetectorJNI.class, List.of("rga", "rknnrt", "rknn_jni"));
     }
 
-    @Override
-    public boolean isLoaded() {
-        return isLoaded;
-    }
-
-    @Override
-    public void setLoaded(boolean state) {
-        isLoaded = state;
+    public static boolean isLoaded() {
+        return RknnDetectorJNI.isWorking(RknnDetectorJNI.class);
     }
 
     public static class RknnObjectDetector {

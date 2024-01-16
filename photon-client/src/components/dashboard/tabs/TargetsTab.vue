@@ -48,7 +48,12 @@ const resetCurrentBuffer = () => {
               >
                 Fiducial ID
               </th>
-              <template v-if="currentPipelineSettings.pipelineType === PipelineType.RKNN || currentPipelineSettings.pipelineType === PipelineType.ObjectDetection">
+              <template
+                v-if="
+                  currentPipelineSettings.pipelineType === PipelineType.RKNN ||
+                  currentPipelineSettings.pipelineType === PipelineType.ObjectDetection
+                "
+              >
                 <th class="text-center white--text">Class</th>
                 <th class="text-center white--text">Confidence</th>
               </template>

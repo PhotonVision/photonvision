@@ -24,11 +24,9 @@ import org.photonvision.common.util.TestUtils;
 import org.photonvision.jni.PhotonJNICommon;
 
 public class MrCalJNILoader extends PhotonJNICommon {
-    private boolean isLoaded;
     private static MrCalJNILoader instance = null;
 
     private MrCalJNILoader() {
-        isLoaded = false;
     }
 
     public static synchronized MrCalJNILoader getInstance() {

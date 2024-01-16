@@ -109,7 +109,14 @@ const getTabGroups = (): ConfigOption[][] => {
     return [
       [allTabs.inputTab],
       [allTabs.thresholdTab],
-      [allTabs.contoursTab, allTabs.apriltagTab, allTabs.arucoTab, allTabs.rknnTab, allTabs.objectDetectionTab, allTabs.outputTab],
+      [
+        allTabs.contoursTab,
+        allTabs.apriltagTab,
+        allTabs.arucoTab,
+        allTabs.rknnTab,
+        allTabs.objectDetectionTab,
+        allTabs.outputTab
+      ],
       [allTabs.targetsTab, allTabs.pnpTab, allTabs.map3dTab]
     ];
   }
