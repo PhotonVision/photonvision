@@ -38,18 +38,30 @@ import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
 import org.photonvision.vision.pipe.impl.Calibrate3dPipe;
+import org.photonvision.vision.pipe.impl.FindBoardCornersGuidancePipe;
 import org.photonvision.vision.pipe.impl.FindBoardCornersPipe;
+import org.photonvision.vision.pipe.impl.FindBoardCornersGuidancePipe.FindBoardCornersGuidancePipeResult;
 import org.photonvision.vision.pipe.impl.FindBoardCornersPipe.FindBoardCornersPipeResult;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.pipeline.result.CalibrationPipelineResult;
+
+//FIXME TBD - MrCal requirements and change Calibrate3dPipe.CalibratePipeParams as needed for ChArUcoBoard properties
+//FIXME WIP - calling find cormers guidance instead of find corners
+// FindBoardCornersGuidancePipeResults is different than FindBoardCornersResults
+// for now FindBoardCornersParams used by FindBoardCornersPipe is okay (ignored) for FindBoardCornersGuidancePipe
 
 public class Calibrate3dPipeline
         extends CVPipeline<CVPipelineResult, Calibration3dPipelineSettings> {
     // For logging
     private static final Logger logger = new Logger(Calibrate3dPipeline.class, LogGroup.General);
 
+    //TODO make providePoseGuidance a user input button
+    private static final boolean providePoseGuidance = true; // true suppresses legacy manual pose determination
+
     // Find board corners decides internally between opencv and mrgingham
     private FindBoardCornersPipe findBoardCornersPipe;
+    private FindBoardCornersGuidancePipe findBoardCornersGuidancePipe;
+
     private final Calibrate3dPipe calibrate3dPipe = new Calibrate3dPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
@@ -62,7 +74,7 @@ public class Calibrate3dPipeline
     /// Output of the calibration, getter method is set for this.
     private CVPipeResult<CameraCalibrationCoefficients> calibrationOutput;
 
-    private final int minSnapshots;
+    private int minSnapshots;
 
     private boolean calibrating = false;
 
@@ -89,9 +101,21 @@ public class Calibrate3dPipeline
         logger.debug("RKT in Calibrate3dPipeline setPipeParamsImpl");
 
         // first time through check for this calibration session
-        if (findBoardCornersPipe == null) {
-            findBoardCornersPipe = new FindBoardCornersPipe();
+        if (providePoseGuidance) {
+            if (findBoardCornersGuidancePipe == null) {
+                findBoardCornersGuidancePipe = new FindBoardCornersGuidancePipe();
+            }            
         }
+        else {
+            if (findBoardCornersPipe == null) {
+                findBoardCornersPipe = new FindBoardCornersPipe();
+            }
+        }
+
+        // findCornersPipeParams for findCornersPipe but findCornersGuidancePipe doesn't need them but
+        // make them to prevent an exception.
+        //TODO make guidance its own params
+
         FindBoardCornersPipe.FindCornersPipeParams findCornersPipeParams =
                 new FindBoardCornersPipe.FindCornersPipeParams(
                         settings.boardHeight,
@@ -101,6 +125,7 @@ public class Calibrate3dPipeline
                         settings.streamingFrameDivisor);
         findBoardCornersPipe.setParams(findCornersPipeParams);
 
+        //TODO what does MrCal need to process theChArUcoBoard?
         Calibrate3dPipe.CalibratePipeParams calibratePipeParams =
                 new Calibrate3dPipe.CalibratePipeParams(
                         settings.boardHeight, settings.boardWidth, settings.gridSize, settings.useMrCal);
@@ -132,10 +157,41 @@ public class Calibrate3dPipeline
         // Check if the frame has chessboard corners
         var outputColorCVMat = new CVMat();
         inputColorMat.copyTo(outputColorCVMat.getMat());
+        
+        FindBoardCornersPipeResult findBoardResult = null;
 
-        FindBoardCornersPipeResult findBoardResult =
+        if (providePoseGuidance) {
+            FindBoardCornersGuidancePipeResult findBoardGuidanceResult =
+                findBoardCornersGuidancePipe.run(Pair.of(inputColorMat, outputColorCVMat.getMat())).output;
+            //FIXME interpret the guidance results for calibration done enough, etc.
+            logger.debug("guidance result snapshot enough cancel "
+                + findBoardGuidanceResult.takeSnapshot
+                + findBoardGuidanceResult.haveEnough
+                + findBoardGuidanceResult.cancelCalibration);
+
+            if (findBoardGuidanceResult.haveEnough) {
+                minSnapshots = 0;
+            }
+            // findBoardGuidanceResult.takeSnapshot frame captured; maybe we don't care since it'll come back at us at the end when calibrated
+            // findBoardGuidanceResult.haveEnough calibrated; done; null the guidance for fresh start next time
+            // findBoardGuidanceResult.cancelCalibration no data; null the guidance for fresh start next frame
+
+            takeSnapshot = findBoardGuidanceResult.takeSnapshot;
+
+            if (takeSnapshot) {
+                // convert guidance result to non-guidance results
+                findBoardResult =
+                    new FindBoardCornersPipeResult(
+                        findBoardGuidanceResult.imgSize,
+                        findBoardGuidanceResult.objCorners,
+                        findBoardGuidanceResult.imgCorners);
+            }    
+        }
+        else {    
+            findBoardResult =
                 findBoardCornersPipe.run(Pair.of(inputColorMat, outputColorCVMat.getMat())).output;
-
+        }
+ 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
@@ -196,6 +252,10 @@ public class Calibrate3dPipeline
         calibrationOutput = calibrate3dPipe.run(foundCornersList);
 
         this.calibrating = false;
+
+        if ( providePoseGuidance) {
+            findBoardCornersGuidancePipe = null; // this calibration session done so reset guidance to start afresh next frame        
+        }
 
         return calibrationOutput.output;
     }

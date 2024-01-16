@@ -27,16 +27,15 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.calib3d.Calib3d;
-
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfInt;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point;
 import org.opencv.core.Point3;
 import org.opencv.core.Scalar;
@@ -47,13 +46,11 @@ import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.pipe.CVPipe;
+import org.photonvision.vision.pipe.impl.FindBoardCornersPipe.FindCornersPipeParams;
 import org.photonvision.vision.pipe.impl.Calibrate3dPoseGuidance.Cfg;
 import org.photonvision.vision.pipe.impl.Calibrate3dPoseGuidance.ChArucoDetector;
 import org.photonvision.vision.pipe.impl.Calibrate3dPoseGuidance.UserGuidance;
-import org.photonvision.vision.pipeline.Calibrate3dPipeline;
-import org.photonvision.vision.pipeline.UICalibrationData;
 
 /*-------------------------------------------------------------------------------------------------*/
 /*-------------------------------------------------------------------------------------------------*/
@@ -65,12 +62,16 @@ import org.photonvision.vision.pipeline.UICalibrationData;
 /*-------------------------------------------------------------------------------------------------*/
 /*-------------------------------------------------------------------------------------------------*/
 public class FindBoardCornersGuidancePipe
-                extends CVPipe<
-                Pair<Mat, Mat>, FindBoardCornersGuidancePipe.FindBoardGuidanceResult, FindBoardCornersGuidancePipe.FindCornersGuidancePipeParams> {
+        extends CVPipe<
+                Pair<Mat, Mat>,
+                FindBoardCornersGuidancePipe.FindBoardCornersGuidancePipeResult,
+                FindBoardCornersPipe.FindCornersPipeParams> {
+
     private static final String VERSION = "beta 12.12"; // change this
 
     static final Logger logger = new Logger(FindBoardCornersGuidancePipe.class, LogGroup.General);
 
+    //FIXME alll this "constructor" stuff has to be put into createGuidance becasue that's now the effective constructor
     private static PrintWriter vnlog = null;
 
     Mat progressInsert = new Mat();
@@ -90,9 +91,11 @@ public class FindBoardCornersGuidancePipe
 
     int frameNumber = 0;
 
-    FindBoardGuidanceResult findBoardGuidanceResult = new FindBoardGuidanceResult();
+    FindBoardCornersGuidancePipeResult findBoardCornersGuidancePipeResult = new FindBoardCornersGuidancePipeResult();
 
-    private FindCornersGuidancePipeParams lastParams = null;
+    //FIXME need to add the size, object points and image points to the result when there is a capture
+
+    private FindCornersPipeParams lastParams = null;
 
     public boolean createGuidance() { // first time through processing and verify resolution
         if (this.lastParams != null &&  ! this.lastParams.equals(this.params)) return false;// if params changed that's bad so cancel the calibration
@@ -100,7 +103,7 @@ public class FindBoardCornersGuidancePipe
 
         this.lastParams = this.params; // set no longer first time
 
-        this.img_size = this.params.resolution; // nothing but a name change for the same data
+        //FIXME this.img_size = this.params.resolution; // nothing but a name change for the same data
 
         tracker = new ChArucoDetector(img_size);
         ugui = new UserGuidance(tracker, Cfg.var_terminate, img_size);
@@ -129,12 +132,12 @@ public class FindBoardCornersGuidancePipe
      * @return All valid Mats for camera calibration
      */
     @Override
-    protected FindBoardGuidanceResult process(Pair<Mat, Mat> in) {
+    protected FindBoardCornersGuidancePipeResult process(Pair<Mat, Mat> in) {
         if ( ! createGuidance()) { // first time through processing and verify resolution
-            findBoardGuidanceResult.takeSnapshot = false;
-            findBoardGuidanceResult.haveEnough = false;
-            findBoardGuidanceResult.cancelCalibration = true;
-            return findBoardGuidanceResult;
+            findBoardCornersGuidancePipeResult.takeSnapshot = false;
+            findBoardCornersGuidancePipeResult.haveEnough = false;
+            findBoardCornersGuidancePipeResult.cancelCalibration = true;
+            return findBoardCornersGuidancePipeResult;
         }
 
         return findBoardCornersGuidance(in);
@@ -149,7 +152,7 @@ public class FindBoardCornersGuidancePipe
 /*                                                                                                 */
 /*-------------------------------------------------------------------------------------------------*/
 /*-------------------------------------------------------------------------------------------------*/
-    public  FindBoardGuidanceResult findBoardCornersGuidance(Pair<Mat, Mat> in)
+    public  FindBoardCornersGuidancePipeResult findBoardCornersGuidance(Pair<Mat, Mat> in)
     {
         Logger.setLevel(LogGroup.General, LogLevel.DEBUG);
         logger.info("Pose Guidance Camera Calibration version " + VERSION);
@@ -181,10 +184,10 @@ public class FindBoardCornersGuidancePipe
         {
             logger.warn("changing image size to " + img_size + " from " + img_size_start + ", canceling calibration");
             // quit this calibration and start anew
-            findBoardGuidanceResult.takeSnapshot = false;
-            findBoardGuidanceResult.haveEnough = false;
-            findBoardGuidanceResult.cancelCalibration = true;
-            return findBoardGuidanceResult;
+            findBoardCornersGuidancePipeResult.takeSnapshot = false;
+            findBoardCornersGuidancePipeResult.haveEnough = false;
+            findBoardCornersGuidancePipeResult.cancelCalibration = true;
+            return findBoardCornersGuidancePipeResult;
         }
 
         boolean fewCorners = tracker.detect(img); // detect the board
@@ -267,31 +270,31 @@ public class FindBoardCornersGuidancePipe
 // isCalibrating ? "Take Snapshot" : "Start Calibration" 
 // at end "Finish Calibration"
         // most frames will return falses
-        findBoardGuidanceResult.takeSnapshot = false;
-        findBoardGuidanceResult.haveEnough = false;
-        findBoardGuidanceResult.cancelCalibration = false;
+        findBoardCornersGuidancePipeResult.takeSnapshot = false;
+        findBoardCornersGuidancePipeResult.haveEnough = false;
+        findBoardCornersGuidancePipeResult.cancelCalibration = false;
 
         if (endMessage.equals("CALIBRATED"))
         {
-            findBoardGuidanceResult.takeSnapshot = true;
-            findBoardGuidanceResult.haveEnough = true;
+            findBoardCornersGuidancePipeResult.takeSnapshot = true;
+            findBoardCornersGuidancePipeResult.haveEnough = true;
         }
         else    
         if (endMessage.equals("CAPTURED"))
         {
-            findBoardGuidanceResult.takeSnapshot = true;
+            findBoardCornersGuidancePipeResult.takeSnapshot = true;
         }
         else
         if (endMessage.equals("CANCELLED"))
         {
-            findBoardGuidanceResult.cancelCalibration = true;
+            findBoardCornersGuidancePipeResult.cancelCalibration = true;
         }
 
         //FIXME copy the obj points and img points to the result return
 
         out.copyTo(outPV);
 
-        return findBoardGuidanceResult;
+        return findBoardCornersGuidancePipeResult;
     }   
 /*-------------------------------------------------------------------------------------------------*/
 /*-------------------------------------------------------------------------------------------------*/
@@ -477,41 +480,10 @@ public class FindBoardCornersGuidancePipe
         }
     }
 
-        public static class FindCornersGuidancePipeParams {
-            // Only needs resolution to pass onto FindCornersGuidancePipe object.
-         private final Size resolution;
- 
-         public FindCornersGuidancePipeParams(Size resolution) {
-             //            logger.info("res: " + resolution.toString());
-             this.resolution = resolution;
-             System.out.println("FindCornersGuidancePipeParams"); // camera frame loop from Calibrate3dPipeline
-         }
-
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + (int)resolution.height;
-            result = prime * result + (int)resolution.width;
-            return result;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null) return false;
-            if (getClass() != obj.getClass()) return false;
-            FindCornersGuidancePipeParams other = (FindCornersGuidancePipeParams) obj;
-            if (resolution.height != other.resolution.height) return false;
-            if (resolution.width != other.resolution.width) return false;
-            return true;
-        }
-    }
-
-    public class FindBoardGuidanceResult {
+    public class FindBoardCornersGuidancePipeResult {
         public Size imgSize; // camera resolution or camera image size
-        public Mat objCorners; // locations of undistorted board corners
-        public Mat imgCorners; // locations of detected perspective distorted board corners as seen by the camera
+        public MatOfPoint3f objCorners; // locations of undistorted board corners
+        public MatOfPoint2f imgCorners; // locations of detected perspective distorted board corners as seen by the camera
         public boolean takeSnapshot; // good to capture this image for final calibration
         public boolean haveEnough; // converged and completed all guidance poses
         public boolean cancelCalibration; // image size error or other fatal error
