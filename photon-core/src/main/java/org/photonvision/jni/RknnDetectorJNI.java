@@ -62,9 +62,12 @@ public class RknnDetectorJNI extends PhotonJNICommon {
     public static class RknnObjectDetector {
         long objPointer = -1;
         private List<String> labels;
+        private final Object lock = new Object();
 
         public RknnObjectDetector(String modelPath, List<String> labels) {
-            objPointer = RknnJNI.create(modelPath, labels.size());
+            synchronized(lock) {
+                objPointer = RknnJNI.create(modelPath, labels.size());
+            }
             this.labels = labels;
         }
 
@@ -81,8 +84,10 @@ public class RknnDetectorJNI extends PhotonJNICommon {
          *     threshold
          */
         public List<NeuralNetworkPipeResult> detect(CVMat in, double nmsThresh, double boxThresh) {
-            RknnResult[] ret =
-                    RknnJNI.detect(objPointer, in.getMat().getNativeObjAddr(), nmsThresh, boxThresh);
+            RknnResult[] ret;
+            synchronized(lock) {
+                ret = RknnJNI.detect(objPointer, in.getMat().getNativeObjAddr(), nmsThresh, boxThresh);
+            }
             if (ret == null) {
                 return List.of();
             }
@@ -92,11 +97,13 @@ public class RknnDetectorJNI extends PhotonJNICommon {
         }
 
         public void release() {
-            if (objPointer > 0) {
-                RknnJNI.destroy(objPointer);
-                objPointer = -1;
-            } else {
-                logger.error("RKNN Detector has already been destroyed!");
+            synchronized(lock) {
+                if (objPointer > 0) {
+                    RknnJNI.destroy(objPointer);
+                    objPointer = -1;
+                } else {
+                    logger.error("RKNN Detector has already been destroyed!");
+                }
             }
         }
     }

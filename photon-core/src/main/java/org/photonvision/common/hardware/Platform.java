@@ -96,7 +96,7 @@ public enum Platform {
     }
 
     public static boolean isRK3588() {
-        return Platform.isOrangePi();
+        return Platform.isOrangePi() || Platform.isCoolPi4b();
     }
 
     public static boolean isRaspberryPi() {
@@ -215,6 +215,10 @@ public enum Platform {
 
     private static boolean isOrangePi() {
         return fileHasText("/proc/device-tree/model", "Orange Pi 5");
+    }
+
+    private static boolean isCoolPi4b() {
+        return fileHasText("/proc/device-tree/model", "CoolPi 4B");
     }
 
     private static boolean isJetsonSBC() {
