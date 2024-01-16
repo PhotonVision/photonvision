@@ -95,8 +95,8 @@ const resetCurrentBuffer = () => {
                 {{ target.fiducialId }}
               </td>
               <template v-if="currentPipelineSettings.pipelineType === PipelineType.RKNN">
-                <td class="text-center">{{ target.fiducialId }}</td>
-                <td class="text-center">{{ target.ambiguity.toFixed(2) }}</td>
+                <td class="text-center">{{ target.classId }}</td>
+                <td class="text-center">{{ target.confidence.toFixed(2) }}</td>
               </template>
               <td
                 v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection"
