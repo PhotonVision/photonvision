@@ -283,6 +283,12 @@ jobs:
             image_additional_mb: 0
           - os: ubuntu-latest
             artifact-name: LinuxArm64
+            image_suffix: limelight3
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.5/photonvision_limelight3.img.xz
+            cpu: cortex-a7
+            image_additional_mb: 0
+          - os: ubuntu-latest
+            artifact-name: LinuxArm64
             image_suffix: orangepi5
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.4/photonvision_opi5.img.xz
             cpu: cortex-a8
