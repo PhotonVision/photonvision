@@ -18,7 +18,9 @@
 package org.photonvision.jni;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -64,9 +66,14 @@ public class RknnDetectorJNI extends PhotonJNICommon {
         private List<String> labels;
         private final Object lock = new Object();
 
+        private static final CopyOnWriteArrayList<Long> detectors = new CopyOnWriteArrayList<>();
+
         public RknnObjectDetector(String modelPath, List<String> labels) {
-            synchronized(lock) {
+            synchronized (lock) {
                 objPointer = RknnJNI.create(modelPath, labels.size());
+                detectors.add(objPointer);
+                System.out.println(
+                        "Created " + objPointer + "! Detectors: " + Arrays.toString(detectors.toArray()));
             }
             this.labels = labels;
         }
@@ -85,8 +92,16 @@ public class RknnDetectorJNI extends PhotonJNICommon {
          */
         public List<NeuralNetworkPipeResult> detect(CVMat in, double nmsThresh, double boxThresh) {
             RknnResult[] ret;
-            synchronized(lock) {
-                ret = RknnJNI.detect(objPointer, in.getMat().getNativeObjAddr(), nmsThresh, boxThresh);
+            synchronized (lock) {
+                // We can technically be asked to detect and the lock might be acquired _after_ release has
+                // been called. This would mean objPointer would be invalid which would call everything to
+                // explode.
+                if (objPointer > 0) {
+                    ret = RknnJNI.detect(objPointer, in.getMat().getNativeObjAddr(), nmsThresh, boxThresh);
+                } else {
+                    logger.warn("Detect called after destroy -- giving up");
+                    return List.of();
+                }
             }
             if (ret == null) {
                 return List.of();
@@ -97,9 +112,12 @@ public class RknnDetectorJNI extends PhotonJNICommon {
         }
 
         public void release() {
-            synchronized(lock) {
+            synchronized (lock) {
                 if (objPointer > 0) {
                     RknnJNI.destroy(objPointer);
+                    detectors.remove(objPointer);
+                    System.out.println(
+                            "Killed " + objPointer + "! Detectors: " + Arrays.toString(detectors.toArray()));
                     objPointer = -1;
                 } else {
                     logger.error("RKNN Detector has already been destroyed!");

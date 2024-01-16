@@ -42,7 +42,7 @@ public class PipelineManager {
     protected final DriverModePipeline driverModePipeline = new DriverModePipeline();
 
     /** Index of the currently active pipeline. Defaults to 0. */
-    private int currentPipelineIndex = 0;
+    private int currentPipelineIndex = DRIVERMODE_INDEX;
 
     /** The currently active pipeline. */
     private CVPipeline currentUserPipeline = driverModePipeline;

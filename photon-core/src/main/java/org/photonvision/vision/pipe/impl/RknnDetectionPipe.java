@@ -25,8 +25,8 @@ import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class RknnDetectionPipe
-        extends CVPipe<
-                CVMat, List<NeuralNetworkPipeResult>, RknnDetectionPipe.RknnDetectionPipeParams> implements Releasable {
+        extends CVPipe<CVMat, List<NeuralNetworkPipeResult>, RknnDetectionPipe.RknnDetectionPipeParams>
+        implements Releasable {
     private RknnObjectDetector detector;
 
     public RknnDetectionPipe() {
