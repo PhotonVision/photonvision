@@ -22,7 +22,7 @@ import org.photonvision.common.configuration.HardwareConfig;
 public class LinuxCmds extends CmdBase {
     public void initCmds(HardwareConfig config) {
         // CPU
-        cpuMemoryCommand = "free -m | awk 'FNR == 2 {print $3}'";
+        cpuMemoryCommand = "free -m | awk 'FNR == 2 {print $2}'";
 
         // TODO: boards have lots of thermal devices. Hard to pick the CPU
 
