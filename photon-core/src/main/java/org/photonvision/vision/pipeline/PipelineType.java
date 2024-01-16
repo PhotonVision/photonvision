@@ -17,6 +17,8 @@
 
 package org.photonvision.vision.pipeline;
 
+import org.photonvision.vision.pipe.impl.Calibrate3dPipeline;
+
 @SuppressWarnings("rawtypes")
 public enum PipelineType {
     Calib3d(-2, Calibrate3dPipeline.class),
@@ -25,7 +27,8 @@ public enum PipelineType {
     ColoredShape(1, ColoredShapePipeline.class),
     AprilTag(2, AprilTagPipeline.class),
     Aruco(3, ArucoPipeline.class),
-    RKNN(4, RKNNPipeline.class);
+    ObjectDetection(4, ObjectDetectionPipeline.class),
+    RKNN(5, RKNNPipeline.class);
 
     public final int baseIndex;
     public final Class clazz;

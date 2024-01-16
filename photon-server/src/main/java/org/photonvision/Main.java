@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.cli.*;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.PiVersion;
@@ -37,6 +38,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.numbers.IntegerCouple;
+import org.photonvision.jni.RknnDetectorJNI;
 import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.server.Server;
@@ -348,7 +350,15 @@ public class Main {
         } catch (IOException e) {
             logger.error("Failed to load libcamera-JNI!", e);
         }
-
+        try {
+            if (Platform.isRK3588()) {
+                RknnDetectorJNI.forceLoad();
+            } else {
+                logger.error("Platform does not support RKNN based machine learning!");
+            }
+        } catch (IOException e) {
+            logger.error("Failed to load rknn-JNI!", e);
+        }
         try {
             MrCalJNILoader.forceLoad();
         } catch (IOException e) {
@@ -364,7 +374,6 @@ public class Main {
         } catch (ParseException e) {
             logger.error("Failed to parse command-line options!", e);
         }
-
         CVMat.enablePrint(false);
         PipelineProfiler.enablePrint(false);
 
@@ -398,6 +407,10 @@ public class Main {
         logger.debug("Loading NetworkTablesManager...");
         NetworkTablesManager.getInstance()
                 .setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
+
+        logger.info("Loading ML models");
+        NeuralNetworkModelManager.getInstance()
+                .initialize(ConfigManager.getInstance().getModelsDirectory());
 
         if (!isTestMode) {
             logger.debug("Loading VisionSourceManager...");

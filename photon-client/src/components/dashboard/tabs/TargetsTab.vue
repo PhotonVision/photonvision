@@ -48,7 +48,7 @@ const resetCurrentBuffer = () => {
               >
                 Fiducial ID
               </th>
-              <template v-if="currentPipelineSettings.pipelineType === PipelineType.RKNN">
+              <template v-if="currentPipelineSettings.pipelineType === PipelineType.RKNN || currentPipelineSettings.pipelineType === PipelineType.ObjectDetection">
                 <th class="text-center white--text">Class</th>
                 <th class="text-center white--text">Confidence</th>
               </template>
@@ -93,6 +93,18 @@ const resetCurrentBuffer = () => {
                 <td class="text-center">{{ target.fiducialId }}</td>
                 <td class="text-center">{{ target.ambiguity.toFixed(2) }}</td>
               </template>
+              <td
+                v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection"
+                class="text-center white--text"
+              >
+                {{ useStateStore().currentPipelineResults?.classNames[target.classId] }}
+              </td>
+              <td
+                v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection"
+                class="text-center white--text"
+              >
+                {{ target.confidence.toFixed(2) }}
+              </td>
               <template v-if="!useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled">
                 <td class="text-center">{{ target.pitch.toFixed(2) }}&deg;</td>
                 <td class="text-center">{{ target.yaw.toFixed(2) }}&deg;</td>

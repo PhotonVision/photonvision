@@ -24,6 +24,19 @@ import org.photonvision.common.util.TestUtils;
 import org.photonvision.jni.PhotonJNICommon;
 
 public class MrCalJNILoader extends PhotonJNICommon {
+    private boolean isLoaded;
+    private static MrCalJNILoader instance = null;
+
+    private MrCalJNILoader() {
+        isLoaded = false;
+    }
+
+    public static synchronized MrCalJNILoader getInstance() {
+        if (instance == null) instance = new MrCalJNILoader();
+
+        return instance;
+    }
+
     public static synchronized void forceLoad() throws IOException {
         // Force load opencv
         TestUtils.loadLibraries();
@@ -32,6 +45,7 @@ public class MrCalJNILoader extends PhotonJNICommon {
         if (Platform.isWindows()) {
             // Order is correct to match dependencies of libraries
             forceLoad(
+                    MrCalJNILoader.getInstance(),
                     MrCalJNILoader.class,
                     List.of(
                             "libamd",
@@ -40,21 +54,22 @@ public class MrCalJNILoader extends PhotonJNICommon {
                             "libccolamd",
                             "openblas",
                             "libgcc_s_seh-1",
+                            "libquadmath-0",
                             "libgfortran-5",
                             "liblapack",
                             "libcholmod",
                             "mrcal_jni"));
         } else {
             // Nothing else to do on linux
-            forceLoad(MrCalJNILoader.class, List.of("mrcal_jni"));
+            forceLoad(MrCalJNILoader.getInstance(), MrCalJNILoader.class, List.of("mrcal_jni"));
         }
 
-        if (!MrCalJNILoader.isWorking()) {
+        if (!MrCalJNILoader.getInstance().isLoaded()) {
             throw new IOException("Unable to load mrcal JNI!");
         }
     }
 
-    public static boolean isWorking() {
+    public static boolean isLoaded() {
         return MrCalJNILoader.isWorking(MrCalJNILoader.class);
     }
 }
