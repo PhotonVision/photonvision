@@ -54,6 +54,8 @@ export interface PhotonTarget {
   ambiguity: number;
   // -1 if not set
   fiducialId: number;
+  confidence: number;
+  classId: number;
   // undefined if 3d isn't enabled
   pose?: Transform3d;
 }
@@ -70,4 +72,6 @@ export interface PipelineResult {
   targets: PhotonTarget[];
   // undefined if multitag failed or non-tag pipeline
   multitagResult?: MultitagResult;
+  // Object detection class names -- empty if not doing object detection
+  classNames: string[];
 }

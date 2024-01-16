@@ -56,6 +56,15 @@ public abstract class PhotonJNICommon {
         forceLoad(clazz, List.of(libraryName));
     }
 
+    protected static synchronized void forceLoad(Object dummy, Class<?> clazz, String libraryName) {
+        forceLoad(clazz, List.of(libraryName));
+    }
+
+    protected static synchronized void forceLoad(
+            Object dummy, Class<?> clazz, List<String> libraries) {
+        forceLoad(clazz, libraries);
+    }
+
     protected static synchronized String unpack(Class<?> clazz, String libraryName, String unpackTo) {
         System.out.println("Unpacking library " + libraryName);
         var arch_name = Platform.getNativeLibraryFolderName();

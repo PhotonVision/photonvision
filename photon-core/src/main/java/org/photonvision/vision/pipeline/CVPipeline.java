@@ -21,9 +21,11 @@ import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.FrameThresholdType;
+import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
-public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelineSettings> {
+public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelineSettings>
+        implements Releasable {
     protected S settings;
     protected FrameStaticProperties frameStaticProperties;
     protected QuirkyCamera cameraQuirks;
@@ -75,4 +77,11 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
 
         return result;
     }
+
+    /**
+     * Release any native memory associated with this pipeline. Called by pipelinemanager at pipeline
+     * switch. Stubbed out, but override if needed.
+     */
+    @Override
+    public void release() {}
 }

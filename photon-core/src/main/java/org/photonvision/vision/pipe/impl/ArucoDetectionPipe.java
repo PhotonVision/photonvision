@@ -44,6 +44,13 @@ public class ArucoDetectionPipe
     @Override
     protected List<ArucoDetectionResult> process(CVMat in) {
         var imgMat = in.getMat();
+
+        // Sanity check -- image should not be empty
+        if (imgMat.empty()) {
+            // give up is best we can do here
+            return List.of();
+        }
+
         var detections = photonDetector.detect(imgMat);
         // manually do corner refinement ourselves
         if (params.useCornerRefinement) {

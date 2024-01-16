@@ -77,7 +77,7 @@ public class Calibrate3dPipe
 
         CameraCalibrationCoefficients ret;
         var start = System.nanoTime();
-        if (MrCalJNILoader.isWorking() && params.useMrCal) {
+        if (MrCalJNILoader.getInstance().isLoaded() && params.useMrCal) {
             logger.debug("Calibrating with mrcal!");
             ret = calibrateMrcal(in);
         } else {
