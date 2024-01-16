@@ -43,6 +43,7 @@ public enum Platform {
             true,
             OSType.LINUX,
             true), // Raspberry Pi 3/4 with a 64-bit image
+    LINUX_RK3588_64("Linux AARCH 64-bit with RK3588", "linuxarm64", false, OSType.LINUX, true),
     LINUX_AARCH64(
             "Linux AARCH64", "linuxarm64", false, OSType.LINUX, true), // Jetson Nano, Jetson TX2
 
@@ -92,6 +93,10 @@ public enum Platform {
     // Checks specifically if unix shell and API are supported
     public static boolean isLinux() {
         return currentPlatform.osType == OSType.LINUX;
+    }
+
+    public static boolean isRK3588() {
+        return Platform.isOrangePi() || Platform.isCoolPi4b();
     }
 
     public static boolean isRaspberryPi() {
@@ -186,7 +191,11 @@ public enum Platform {
                 return LINUX_32;
             } else if (RuntimeDetector.isArm64()) {
                 // TODO - os detection needed?
-                return LINUX_AARCH64;
+                if (isOrangePi()) {
+                    return LINUX_RK3588_64;
+                } else {
+                    return LINUX_AARCH64;
+                }
             } else if (RuntimeDetector.isArm32()) {
                 return LINUX_ARM32;
             } else {
@@ -202,6 +211,14 @@ public enum Platform {
     // Check for various known SBC types
     private static boolean isPiSBC() {
         return fileHasText("/proc/cpuinfo", "Raspberry Pi");
+    }
+
+    private static boolean isOrangePi() {
+        return fileHasText("/proc/device-tree/model", "Orange Pi 5");
+    }
+
+    private static boolean isCoolPi4b() {
+        return fileHasText("/proc/device-tree/model", "CoolPi 4B");
     }
 
     private static boolean isJetsonSBC() {

@@ -52,6 +52,7 @@ public class UIDataPublisher implements CVPipelineResultConsumer {
             uiTargets.add(t.toHashMap());
         }
         dataMap.put("targets", uiTargets);
+        dataMap.put("classNames", result.objectDetectionClassNames);
 
         // Only send Multitag Results if they are present, similar to 3d pose
         if (result.multiTagResult.estimatedPose.isPresent) {

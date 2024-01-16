@@ -44,6 +44,7 @@ import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
+import org.photonvision.vision.pipe.impl.Calibrate3dPipeline;
 
 public class Calibrate3dPipeTest {
     @BeforeAll

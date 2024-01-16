@@ -7,6 +7,7 @@ import { computed, ref } from "vue";
 import PvIcon from "@/components/common/pv-icon.vue";
 import PvInput from "@/components/common/pv-input.vue";
 import { PipelineType } from "@/types/PipelineTypes";
+import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
 const changeCurrentCameraIndex = (index: number) => {
   useCameraSettingsStore().setCurrentCameraIndex(index, true);
@@ -24,6 +25,8 @@ const changeCurrentCameraIndex = (index: number) => {
     case PipelineType.Aruco:
       pipelineType.value = WebsocketPipelineType.Aruco;
       break;
+    case PipelineType.ObjectDetection:
+      pipelineType.value = WebsocketPipelineType.ObjectDetection;
   }
 };
 
@@ -154,6 +157,9 @@ const pipelineTypesWrapper = computed<{ name: string; value: number }[]>(() => {
     { name: "AprilTag", value: WebsocketPipelineType.AprilTag },
     { name: "Aruco", value: WebsocketPipelineType.Aruco }
   ];
+  if (useSettingsStore().general.rknnSupported) {
+    pipelineTypes.push({ name: "Object Detection", value: WebsocketPipelineType.ObjectDetection });
+  }
 
   if (useCameraSettingsStore().isDriverMode) {
     pipelineTypes.push({ name: "Driver Mode", value: WebsocketPipelineType.DriverMode });
@@ -207,6 +213,9 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
       break;
     case PipelineType.Aruco:
       pipelineType.value = WebsocketPipelineType.Aruco;
+      break;
+    case PipelineType.ObjectDetection:
+      pipelineType.value = WebsocketPipelineType.ObjectDetection;
       break;
   }
 });
@@ -354,7 +363,8 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
               { name: 'Reflective', value: WebsocketPipelineType.Reflective },
               { name: 'Colored Shape', value: WebsocketPipelineType.ColoredShape },
               { name: 'AprilTag', value: WebsocketPipelineType.AprilTag },
-              { name: 'Aruco', value: WebsocketPipelineType.Aruco }
+              { name: 'Aruco', value: WebsocketPipelineType.Aruco },
+              { name: 'Object Detection', value: WebsocketPipelineType.ObjectDetection }
             ]"
           />
         </v-card-text>

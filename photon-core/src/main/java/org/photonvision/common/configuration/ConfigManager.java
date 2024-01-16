@@ -296,4 +296,11 @@ public class ConfigManager {
             }
         }
     }
+
+    /** Get (and create if not present) the subfolder where ML models are stored */
+    public File getModelsDirectory() {
+        var ret = new File(configDirectoryFile, "models");
+        if (!ret.exists()) ret.mkdirs();
+        return ret;
+    }
 }

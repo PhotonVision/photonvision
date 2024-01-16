@@ -7,6 +7,7 @@ export interface GeneralSettings {
   hardwareModel?: string;
   hardwarePlatform?: string;
   mrCalWorking: boolean;
+  rknnSupported: boolean;
 }
 
 export interface MetricData {

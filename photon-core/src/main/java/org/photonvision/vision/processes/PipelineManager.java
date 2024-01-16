@@ -27,6 +27,7 @@ import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.vision.pipe.impl.Calibrate3dPipeline;
 import org.photonvision.vision.pipeline.*;
 
 @SuppressWarnings({"rawtypes", "unused"})
@@ -41,7 +42,7 @@ public class PipelineManager {
     protected final DriverModePipeline driverModePipeline = new DriverModePipeline();
 
     /** Index of the currently active pipeline. Defaults to 0. */
-    private int currentPipelineIndex = 0;
+    private int currentPipelineIndex = DRIVERMODE_INDEX;
 
     /** The currently active pipeline. */
     private CVPipeline currentUserPipeline = driverModePipeline;
@@ -188,6 +189,11 @@ public class PipelineManager {
             return;
         }
 
+        // Cleanup potential old native resources before swapping over
+        if (currentUserPipeline != null) {
+            currentUserPipeline.release();
+        }
+
         currentPipelineIndex = newIndex;
         if (newIndex >= 0) {
             var desiredPipelineSettings = userPipelineSettings.get(currentPipelineIndex);
@@ -212,6 +218,11 @@ public class PipelineManager {
                     logger.debug("Creating Aruco Pipeline");
                     currentUserPipeline = new ArucoPipeline((ArucoPipelineSettings) desiredPipelineSettings);
                     break;
+                case ObjectDetection:
+                    logger.debug("Creating ObjectDetection Pipeline");
+                    currentUserPipeline =
+                            new ObjectDetectionPipeline(
+                                    (ObjectDetectionPipelineSettings) desiredPipelineSettings);
                 default:
                     // Can be calib3d or drivermode, both of which are special cases
                     break;
@@ -310,6 +321,12 @@ public class PipelineManager {
             case Aruco:
                 {
                     var added = new ArucoPipelineSettings();
+                    added.pipelineNickname = nickname;
+                    return added;
+                }
+            case ObjectDetection:
+                {
+                    var added = new ObjectDetectionPipelineSettings();
                     added.pipelineNickname = nickname;
                     return added;
                 }
