@@ -174,7 +174,7 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
 
     void unpackModelsIfNeeded() {
         var modelsPath = ConfigManager.getInstance().getRKNNModelsPath();
-        if (!modelsPath.toFile().exists()) {
+        if (!(modelsPath.resolve("unpacked").toFile().exists())) {
             logger.info("Unpacking RKNN models...");
             var stream = getClass().getResourceAsStream("/models.zip");
             if (stream == null) {
@@ -195,6 +195,7 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
                     entry = zip.getNextEntry();
                 }
                 zip.close();
+                Files.createFile(modelsPath.resolve("unpacked"));
             } catch (IOException e) {
                 logger.error("Failed to unpack models.zip");
                 e.printStackTrace();
