@@ -60,7 +60,8 @@ public abstract class PhotonJNICommon {
         forceLoad(clazz, List.of(libraryName));
     }
 
-    protected static synchronized void forceLoad(Object dummy, Class<?> clazz, List<String> libraries) {
+    protected static synchronized void forceLoad(
+            Object dummy, Class<?> clazz, List<String> libraries) {
         forceLoad(clazz, libraries);
     }
 

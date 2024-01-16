@@ -34,8 +34,7 @@ public class RknnDetectorJNI extends PhotonJNICommon {
     private static final Logger logger = new Logger(RknnDetectorJNI.class, LogGroup.General);
     private static RknnDetectorJNI instance = null;
 
-    private RknnDetectorJNI() {
-    }
+    private RknnDetectorJNI() {}
 
     public static RknnDetectorJNI getInstance() {
         if (instance == null) instance = new RknnDetectorJNI();

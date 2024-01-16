@@ -26,8 +26,7 @@ import org.photonvision.jni.PhotonJNICommon;
 public class MrCalJNILoader extends PhotonJNICommon {
     private static MrCalJNILoader instance = null;
 
-    private MrCalJNILoader() {
-    }
+    private MrCalJNILoader() {}
 
     public static synchronized MrCalJNILoader getInstance() {
         if (instance == null) instance = new MrCalJNILoader();
