@@ -25,7 +25,7 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       sass: {
-        additionalData: ['@import "@/assets/styles/variables.scss"', ""].join("\n")
+        additionalData: ["@import \"@/assets/styles/variables.scss\"", ""].join("\n")
       }
     }
   },

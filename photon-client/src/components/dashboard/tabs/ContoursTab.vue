@@ -49,13 +49,12 @@ const contourRadius = computed<[number, number]>({
   }
 });
 
-const interactiveCols = computed(
-  () =>
-    (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) &&
-    (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)
-)
-  ? 9
-  : 8;
+const interactiveCols = computed(() =>
+  (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) &&
+  (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)
+    ? 9
+    : 8
+);
 </script>
 
 <template>
