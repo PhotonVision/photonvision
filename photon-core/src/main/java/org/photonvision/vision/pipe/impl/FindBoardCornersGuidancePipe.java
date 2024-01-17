@@ -47,7 +47,6 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipe.CVPipe;
-import org.photonvision.vision.pipe.impl.FindBoardCornersPipe.FindCornersPipeParams;
 import org.photonvision.vision.pipe.impl.Calibrate3dPoseGuidance.Cfg;
 import org.photonvision.vision.pipe.impl.Calibrate3dPoseGuidance.ChArucoDetector;
 import org.photonvision.vision.pipe.impl.Calibrate3dPoseGuidance.UserGuidance;
@@ -71,15 +70,12 @@ public class FindBoardCornersGuidancePipe
 
     static final Logger logger = new Logger(FindBoardCornersGuidancePipe.class, LogGroup.General);
 
-    //FIXME alll this "constructor" stuff has to be put into createGuidance becasue that's now the effective constructor
     private static PrintWriter vnlog = null;
 
     Mat progressInsert = new Mat();
     
-    static Size img_size = new Size(1280, 720); //FIXME patch - info must come from frame
-    static int image_width = 1280; //FIXME patch - info must come from first frame
-    static int image_height = 720; //FIXME patch - info must come from frame
-
+    Size img_size;
+    Size img_size_start = null;
     ChArucoDetector tracker;
 
     UserGuidance ugui;
@@ -92,25 +88,6 @@ public class FindBoardCornersGuidancePipe
     int frameNumber = 0;
 
     FindBoardCornersGuidancePipeResult findBoardCornersGuidancePipeResult = new FindBoardCornersGuidancePipeResult();
-
-    //FIXME need to add the size, object points and image points to the result when there is a capture
-
-    private FindCornersPipeParams lastParams = null;
-
-    public boolean createGuidance() { // first time through processing and verify resolution
-        if (this.lastParams != null &&  ! this.lastParams.equals(this.params)) return false;// if params changed that's bad so cancel the calibration
-        if (this.lastParams != null) return true; // leave if not the first time     
-
-        this.lastParams = this.params; // set no longer first time
-
-        //FIXME this.img_size = this.params.resolution; // nothing but a name change for the same data
-
-        tracker = new ChArucoDetector(img_size);
-        ugui = new UserGuidance(tracker, Cfg.var_terminate, img_size);
-        return true;
-    }
-
-
 /*-------------------------------------------------------------------------------------------------*/
 /*-------------------------------------------------------------------------------------------------*/
 /*                                                                                                 */
@@ -120,10 +97,10 @@ public class FindBoardCornersGuidancePipe
 /*                                                                                                 */
 /*-------------------------------------------------------------------------------------------------*/
 /*-------------------------------------------------------------------------------------------------*/
-    public FindBoardCornersGuidancePipe()
-    {
+    // public FindBoardCornersGuidancePipe()
+    // {
 
-    }
+    // }
 
     /**
      * Finds the corners in a given image and returns them
@@ -133,6 +110,9 @@ public class FindBoardCornersGuidancePipe
      */
     @Override
     protected FindBoardCornersGuidancePipeResult process(Pair<Mat, Mat> in) {
+
+        this.img_size = new Size(in.getLeft().width(), in.getLeft().height());
+
         if ( ! createGuidance()) { // first time through processing and verify resolution
             findBoardCornersGuidancePipeResult.takeSnapshot = false;
             findBoardCornersGuidancePipeResult.haveEnough = false;
@@ -142,7 +122,30 @@ public class FindBoardCornersGuidancePipe
 
         return findBoardCornersGuidance(in);
     }
+/*-------------------------------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------------------------------*/
+/*                                                                                                 */
+/*                                     createGuidance                                              */
+/*                                     createGuidance                                              */
+/*                                     createGuidance                                              */
+/*                                                                                                 */
+/*-------------------------------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------------------------------*/
+    public boolean createGuidance() { // first time through processing and verify resolution
+  
+        if (this.img_size_start == null) { // first time switch and resolution
+            img_size_start = img_size.clone(); // set resolution; all frames must match this first
+            tracker = new ChArucoDetector(this.img_size);
+            ugui = new UserGuidance(tracker, Cfg.var_terminate, this.img_size);
+        }
+        // check all future frames against this first frame size
+        if ( ! img_size_start.equals(this.img_size)) {
+            logger.warn("changing image size to " + this.img_size + " from " + img_size_start + ", canceling calibration");
+            return false; // resolution changed during calibration; that's bad
+        }
 
+        return true;
+    }
 /*-------------------------------------------------------------------------------------------------*/
 /*-------------------------------------------------------------------------------------------------*/
 /*                                                                                                 */
@@ -166,8 +169,6 @@ public class FindBoardCornersGuidancePipe
         Mat img = new Mat();
         imgPV.copyTo(img);
 
-        Size img_size = new Size(img.width(), img.height());
-        Size img_size_start = img_size.clone();        
         Mat out = new Mat(); // user display Mat
 
         frameNumber++;
@@ -177,18 +178,6 @@ public class FindBoardCornersGuidancePipe
             System.gc();
         }
         boolean force = false;  // force add frame to calibration (no support yet still images else (force = !live)
-
-        img_size = new Size(img.width(), img.height());
-        // if image size changes during calibration bail out and get ready to calibrate again with new size
-        if ( ! img_size_start.equals(img_size))               
-        {
-            logger.warn("changing image size to " + img_size + " from " + img_size_start + ", canceling calibration");
-            // quit this calibration and start anew
-            findBoardCornersGuidancePipeResult.takeSnapshot = false;
-            findBoardCornersGuidancePipeResult.haveEnough = false;
-            findBoardCornersGuidancePipeResult.cancelCalibration = true;
-            return findBoardCornersGuidancePipeResult;
-        }
 
         boolean fewCorners = tracker.detect(img); // detect the board
 
@@ -290,7 +279,7 @@ public class FindBoardCornersGuidancePipe
             findBoardCornersGuidancePipeResult.cancelCalibration = true;
         }
 
-        //FIXME copy the obj points and img points to the result return
+        //FIXME copy the obj points and img points to the result return when there is a capture
 
         out.copyTo(outPV);
 
@@ -305,7 +294,7 @@ public class FindBoardCornersGuidancePipe
 /*                                                                                                 */
 /*-------------------------------------------------------------------------------------------------*/
 /*-------------------------------------------------------------------------------------------------*/
-    public static void displayOverlay(Mat out, UserGuidance ugui, boolean fewCorners, int frameNumber, Mat progressInsert)
+    public void displayOverlay(Mat out, UserGuidance ugui, boolean fewCorners, int frameNumber, Mat progressInsert)
     {
         String frame = String.format("%05d ", frameNumber);
         Imgproc.putText(out, frame, new Point(0, 20), Imgproc.FONT_HERSHEY_SIMPLEX, .8, new Scalar(0, 0, 0), 2);
@@ -379,7 +368,7 @@ public class FindBoardCornersGuidancePipe
         if ( ! progressInsert.empty())
         {
             // add to the display the board/camera overlap image
-            Imgproc.resize(progressInsert, progressInsert, new Size(image_width*0.1, image_height*0.1), 0, 0, Imgproc.INTER_CUBIC);
+            Imgproc.resize(progressInsert, progressInsert, new Size(this.img_size.width*0.1, this.img_size.height*0.1), 0, 0, Imgproc.INTER_CUBIC);
             List<Mat> temp1 = new ArrayList<>(3); // make the 1 b&w channel into 3 channels
             temp1.add(progressInsert);
             temp1.add(progressInsert);
@@ -390,12 +379,12 @@ public class FindBoardCornersGuidancePipe
                 new Point(0, 0),
                 new Point(progressInsert.cols()-1., progressInsert.rows()-1.),
                 new Scalar(255., 255., 0.), 1);
-            temp2.copyTo(out.submat((int)(image_height*0.45), (int)(image_height*0.45)+progressInsert.rows(), 0,progressInsert.cols()));
+            temp2.copyTo(out.submat((int)(this.img_size.height*0.45), (int)(this.img_size.height*0.45)+progressInsert.rows(), 0,progressInsert.cols()));
             temp2.release();
 
             Imgproc.putText(out,
                 String.format("similar%5.2f/%4.2f", ugui.pose_close_to_tgt_get(), Cfg.pose_close_to_tgt_min),
-                new Point(0,(int)(image_height*0.45)+progressInsert.rows()+20) , Imgproc.FONT_HERSHEY_SIMPLEX, 0.6, new Scalar(255, 255, 255), 1);
+                new Point(0,(int)(this.img_size.height*0.45)+progressInsert.rows()+20) , Imgproc.FONT_HERSHEY_SIMPLEX, 0.6, new Scalar(255, 255, 255), 1);
         }  
 
         // display intrinsics convergence
@@ -410,9 +399,9 @@ public class FindBoardCornersGuidancePipe
             {
                 color = new Scalar(0, 0, 255);
             }
-            Imgproc.rectangle(out, new Point((double)i*20,image_height*0.4), new Point((double)(i+1)*20, image_height*0.4+20), color, Imgproc.FILLED);
+            Imgproc.rectangle(out, new Point((double)i*20,this.img_size.height*0.4), new Point((double)(i+1)*20, this.img_size.height*0.4+20), color, Imgproc.FILLED);
             Imgproc.putText(out, ugui.INTRINSICS()[i],
-                new Point((double)i*20, image_height*0.4+15),
+                new Point((double)i*20, this.img_size.height*0.4+15),
                 Imgproc.FONT_HERSHEY_SIMPLEX, .4, new Scalar(255, 255, 255), 1);
         }
     }
