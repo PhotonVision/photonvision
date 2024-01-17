@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
@@ -46,7 +48,7 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.pipeline.result.CalibrationPipelineResult;
 
 //FIXME TBD - MrCal requirements and change Calibrate3dPipe.CalibratePipeParams as needed for ChArUcoBoard properties
-//FIXME WIP - calling find cormers guidance instead of find corners
+//FIXME WIP - calling find corners guidance instead of find corners
 // FindBoardCornersGuidancePipeResults is different than FindBoardCornersResults
 // for now FindBoardCornersParams used by FindBoardCornersPipe is okay (ignored) for FindBoardCornersGuidancePipe
 
@@ -163,8 +165,10 @@ public class Calibrate3dPipeline
         if (providePoseGuidance) {
             FindBoardCornersGuidancePipeResult findBoardGuidanceResult =
                 findBoardCornersGuidancePipe.run(Pair.of(inputColorMat, outputColorCVMat.getMat())).output;
-            //FIXME interpret the guidance results for calibration done enough, etc.
-            logger.debug("guidance result snapshot enough cancel "
+
+            //FIXME need to handle CANCEL to bail out and ENOUGH needs to run calibrate after taking the snapshot
+
+            logger.debug("guidance result for variables 'snapshot', 'enough', and 'cancel':"
                 + findBoardGuidanceResult.takeSnapshot
                 + findBoardGuidanceResult.haveEnough
                 + findBoardGuidanceResult.cancelCalibration);
@@ -180,11 +184,16 @@ public class Calibrate3dPipeline
 
             if (takeSnapshot) {
                 // convert guidance result to non-guidance results
+                //FIXME will need the corner ids, too, when ChArUcoBoard added to calibrate for MrCal
+                MatOfPoint3f temp1 = new MatOfPoint3f();
+                MatOfPoint2f temp2 = new MatOfPoint2f();
+                findBoardGuidanceResult.objCorners.copyTo(temp1);
+                findBoardGuidanceResult.imgCorners.copyTo(temp2);
                 findBoardResult =
                     new FindBoardCornersPipeResult(
                         findBoardGuidanceResult.imgSize,
-                        findBoardGuidanceResult.objCorners,
-                        findBoardGuidanceResult.imgCorners);
+                        temp1,
+                        temp2);
             }    
         }
         else {    

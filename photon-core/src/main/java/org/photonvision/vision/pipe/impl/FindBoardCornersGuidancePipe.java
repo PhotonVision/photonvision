@@ -34,8 +34,6 @@ import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfInt;
-import org.opencv.core.MatOfPoint2f;
-import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point;
 import org.opencv.core.Point3;
 import org.opencv.core.Scalar;
@@ -50,6 +48,7 @@ import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.pipe.impl.Calibrate3dPoseGuidance.Cfg;
 import org.photonvision.vision.pipe.impl.Calibrate3dPoseGuidance.ChArucoDetector;
 import org.photonvision.vision.pipe.impl.Calibrate3dPoseGuidance.UserGuidance;
+import org.photonvision.vision.pipe.impl.Calibrate3dPoseGuidance.keyframe;
 
 /*-------------------------------------------------------------------------------------------------*/
 /*-------------------------------------------------------------------------------------------------*/
@@ -193,7 +192,7 @@ public class FindBoardCornersGuidancePipe
             ugui.draw(out, mirror); // this adds the guidance board to the camera image (out) to make the new out
         } catch (Exception e) {
             e.printStackTrace();
-            //FIXME return skip this image
+            endMessage = "CANCELLED";
         }
 
         boolean capturedPose = ugui.update(force, progressInsert); // calibrate
@@ -210,7 +209,7 @@ public class FindBoardCornersGuidancePipe
 
         if (ugui.converged()) // are we there yet?
         {
-            ugui.calib.calibrate(new ArrayList<>(1)); // final, maybe more accurate calibration; dummy arg to use all captures
+            ugui.calib.calibrate(new ArrayList<>(1)); // final, dummy arg to use all captures
 
             ugui.write(); // write all the calibration data
 
@@ -263,6 +262,8 @@ public class FindBoardCornersGuidancePipe
         findBoardCornersGuidancePipeResult.haveEnough = false;
         findBoardCornersGuidancePipeResult.cancelCalibration = false;
 
+        // copy last detected points to return in case they will be used for capture
+
         if (endMessage.equals("CALIBRATED"))
         {
             findBoardCornersGuidancePipeResult.takeSnapshot = true;
@@ -279,7 +280,19 @@ public class FindBoardCornersGuidancePipe
             findBoardCornersGuidancePipeResult.cancelCalibration = true;
         }
 
-        //FIXME copy the obj points and img points to the result return when there is a capture
+        if (findBoardCornersGuidancePipeResult.takeSnapshot == true)
+        {
+            keyframe snapshot = tracker.get_calib_pts();
+            findBoardCornersGuidancePipeResult.objCorners = snapshot.p3d().clone();
+            findBoardCornersGuidancePipeResult.imgCorners = snapshot.p2d().clone();
+            findBoardCornersGuidancePipeResult.idCorners = snapshot.pid().clone();
+        }
+        else
+        {
+            findBoardCornersGuidancePipeResult.objCorners = null;
+            findBoardCornersGuidancePipeResult.imgCorners = null;
+            findBoardCornersGuidancePipeResult.idCorners = null;
+        }
 
         out.copyTo(outPV);
 
@@ -468,11 +481,20 @@ public class FindBoardCornersGuidancePipe
             vnlog.println(logLine.toString());                    
         }
     }
-
+/*-------------------------------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------------------------------*/
+/*                                                                                                 */
+/*                                     FindBoardCornersGuidancePipeResult class                    */
+/*                                     FindBoardCornersGuidancePipeResult class                    */
+/*                                     FindBoardCornersGuidancePipeResult class                    */
+/*                                                                                                 */
+/*-------------------------------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------------------------------*/
     public class FindBoardCornersGuidancePipeResult {
         public Size imgSize; // camera resolution or camera image size
-        public MatOfPoint3f objCorners; // locations of undistorted board corners
-        public MatOfPoint2f imgCorners; // locations of detected perspective distorted board corners as seen by the camera
+        public Mat objCorners; // locations of detected undistorted object board corners
+        public Mat imgCorners; // locations of detected perspective distorted board corners as seen by the camera image
+        public Mat idCorners; // ids of the detected corners
         public boolean takeSnapshot; // good to capture this image for final calibration
         public boolean haveEnough; // converged and completed all guidance poses
         public boolean cancelCalibration; // image size error or other fatal error
@@ -487,21 +509,3 @@ public class FindBoardCornersGuidancePipe
 /*                                                                                                 */
 /*-------------------------------------------------------------------------------------------------*/
 /*-------------------------------------------------------------------------------------------------*/
-
-//  https://github.com/mcm001/photonvision/tree/2023-10-30_pose_calib_integration
-//  I made this by running 
-// gradlew clean
-//  then for RPi
-// gradlew shadowjar -PArchOverride=linuxarm64
-//  or for Windows
-// gradlew shadowjar
-
-//  inside the photonvision project's root directory
-//  that spits the jar out into photon-server/build/libs
-//  you should be able to stop the RPi photonvision service with 
-// sudo service photonvision stop
-//  and then 
-// java -jar photonvision-dev-v2024.1.1-beta-3.1-5-ga99e85a8-linuxarm64.jar
-//  is all you should need
-
-// Disable spotless in VSCode extensions or Append "-x spotlessapply" to the commands you run to disable it

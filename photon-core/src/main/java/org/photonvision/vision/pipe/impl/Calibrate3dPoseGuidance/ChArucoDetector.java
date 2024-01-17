@@ -420,7 +420,7 @@ public class ChArucoDetector {
     {
         // logger.debug("method entered  . . . . . . . . . . . . . . . . . . . . . . . .");
 
-        return new keyframe(this.img_size, this.get_pts3d().clone(), this.ccorners.clone());
+        return new keyframe(this.img_size, this.get_pts3d().clone(), this.ccorners.clone(), this.cids.clone());
     }
 /*-------------------------------------------------------------------------------------------------*/
 /*-------------------------------------------------------------------------------------------------*/
