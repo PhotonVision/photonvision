@@ -9,13 +9,12 @@ import { useStateStore } from "@/stores/StateStore";
 // Defer reference to store access method
 const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings;
 
-const interactiveCols = computed(
-  () =>
-    (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) &&
-    (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)
-)
-  ? 9
-  : 8;
+const interactiveCols = computed(() =>
+  (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) &&
+  (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)
+    ? 9
+    : 8
+);
 </script>
 
 <template>
