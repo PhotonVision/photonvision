@@ -27,6 +27,7 @@ const changeCurrentCameraIndex = (index: number) => {
       break;
     case PipelineType.ObjectDetection:
       pipelineType.value = WebsocketPipelineType.ObjectDetection;
+      break;
   }
 };
 
@@ -124,6 +125,18 @@ const cancelPipelineNameEdit = () => {
 const showPipelineCreationDialog = ref(false);
 const newPipelineName = ref("");
 const newPipelineType = ref<WebsocketPipelineType>(useCameraSettingsStore().currentWebsocketPipelineType);
+const validNewPipelineTypes = computed(() => {
+  const pipelineTypes = [
+    { name: "Reflective", value: WebsocketPipelineType.Reflective },
+    { name: "Colored Shape", value: WebsocketPipelineType.ColoredShape },
+    { name: "AprilTag", value: WebsocketPipelineType.AprilTag },
+    { name: "Aruco", value: WebsocketPipelineType.Aruco }
+  ];
+  if (useSettingsStore().general.rknnSupported) {
+    pipelineTypes.push({ name: "Object Detection", value: WebsocketPipelineType.ObjectDetection });
+  }
+  return pipelineTypes;
+});
 const showCreatePipelineDialog = () => {
   newPipelineName.value = "";
   newPipelineType.value = useCameraSettingsStore().currentWebsocketPipelineType;
@@ -359,13 +372,7 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
             :select-cols="12 - 3"
             label="Tracking Type"
             tooltip="Pipeline type, which changes the type of processing that will happen on input frames"
-            :items="[
-              { name: 'Reflective', value: WebsocketPipelineType.Reflective },
-              { name: 'Colored Shape', value: WebsocketPipelineType.ColoredShape },
-              { name: 'AprilTag', value: WebsocketPipelineType.AprilTag },
-              { name: 'Aruco', value: WebsocketPipelineType.Aruco },
-              { name: 'Object Detection', value: WebsocketPipelineType.ObjectDetection }
-            ]"
+            :items="validNewPipelineTypes"
           />
         </v-card-text>
         <v-divider />
