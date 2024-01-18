@@ -32,5 +32,13 @@ const interactiveCols = computed(() =>
       :step="0.01"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ confidence: value }, false)"
     />
+    <pv-select
+      v-model="currentPipelineSettings.contourSortMode"
+      label="Target Sort"
+      tooltip="Chooses the sorting mode used to determine the 'best' targets to provide to user code"
+      :select-cols="interactiveCols"
+      :items="['Largest', 'Smallest', 'Highest', 'Lowest', 'Rightmost', 'Leftmost', 'Centermost']"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourSortMode: value }, false)"
+    />
   </div>
 </template>

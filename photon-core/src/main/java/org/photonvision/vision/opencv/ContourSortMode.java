@@ -25,15 +25,15 @@ public enum ContourSortMode {
             Comparator.comparingDouble(PotentialTarget::getArea)
                     .reversed()), // reversed so that zero index has the largest size
     Smallest(Largest.getComparator().reversed()),
-    Highest(Comparator.comparingDouble(rect -> rect.getMinAreaRect().center.y)),
+    Highest(Comparator.comparingDouble(tgt -> tgt.getMinAreaRect().center.y)),
     Lowest(Highest.getComparator().reversed()),
-    Leftmost(Comparator.comparingDouble(target -> target.getMinAreaRect().center.x * -1)),
+    Leftmost(Comparator.comparingDouble(tgt -> tgt.getMinAreaRect().center.x * -1)),
     Rightmost(Leftmost.getComparator().reversed()),
     Centermost(
             Comparator.comparingDouble(
-                    rect ->
-                            (Math.pow(rect.getMinAreaRect().center.y, 2)
-                                    + Math.pow(rect.getMinAreaRect().center.x, 2))));
+                    tgt ->
+                            (Math.pow(tgt.getMinAreaRect().center.y, 2)
+                                    + Math.pow(tgt.getMinAreaRect().center.x, 2))));
 
     private final Comparator<PotentialTarget> m_comparator;
 

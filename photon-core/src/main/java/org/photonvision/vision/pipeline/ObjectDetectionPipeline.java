@@ -17,21 +17,24 @@
 
 package org.photonvision.vision.pipeline;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
+import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.*;
 import org.photonvision.vision.pipe.impl.RknnDetectionPipe.RknnDetectionPipeParams;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.photonvision.vision.target.PotentialTarget;
 import org.photonvision.vision.target.TrackedTarget;
-import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 
 public class ObjectDetectionPipeline
         extends CVPipeline<CVPipelineResult, ObjectDetectionPipelineSettings> {
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
     private final RknnDetectionPipe rknnPipe = new RknnDetectionPipe();
+    private final SortContoursPipe sortContoursPipe = new SortContoursPipe();
+    private final Collect2dTargetsPipe collect2dTargetsPipe = new Collect2dTargetsPipe();
 
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
@@ -52,6 +55,30 @@ public class ObjectDetectionPipeline
         params.confidence = settings.confidence;
         params.nms = settings.nms;
         rknnPipe.setParams(params);
+
+        DualOffsetValues dualOffsetValues =
+                new DualOffsetValues(
+                        settings.offsetDualPointA,
+                        settings.offsetDualPointAArea,
+                        settings.offsetDualPointB,
+                        settings.offsetDualPointBArea);
+
+        SortContoursPipe.SortContoursParams sortContoursParams =
+                new SortContoursPipe.SortContoursParams(
+                        settings.contourSortMode,
+                        settings.outputShowMultipleTargets ? 5 : 1,
+                        frameStaticProperties); // TODO don't hardcode?
+        sortContoursPipe.setParams(sortContoursParams);
+
+        Collect2dTargetsPipe.Collect2dTargetsParams collect2dTargetsParams =
+                new Collect2dTargetsPipe.Collect2dTargetsParams(
+                        settings.offsetRobotOffsetMode,
+                        settings.offsetSinglePoint,
+                        dualOffsetValues,
+                        settings.contourTargetOffsetPointEdge,
+                        settings.contourTargetOrientation,
+                        frameStaticProperties);
+        collect2dTargetsPipe.setParams(collect2dTargetsParams);
     }
 
     @Override
@@ -60,31 +87,33 @@ public class ObjectDetectionPipeline
 
         // ***************** change based on backend ***********************
 
-        CVPipeResult<List<NeuralNetworkPipeResult>> ret = rknnPipe.run(input_frame.colorImage);
-        sumPipeNanosElapsed += ret.nanosElapsed;
+        CVPipeResult<List<NeuralNetworkPipeResult>> rknnResult = rknnPipe.run(input_frame.colorImage);
+        sumPipeNanosElapsed += rknnResult.nanosElapsed;
         List<NeuralNetworkPipeResult> targetList;
 
-        targetList = ret.output;
+        targetList = rknnResult.output;
         var names = rknnPipe.getClassNames();
 
         input_frame.colorImage.getMat().copyTo(input_frame.processedImage.getMat());
 
         // ***************** change based on backend ***********************
 
-        List<TrackedTarget> targets = new ArrayList<>();
+        CVPipeResult<List<PotentialTarget>> sortContoursResult =
+                sortContoursPipe.run(
+                        targetList.stream()
+                                .map(shape -> new PotentialTarget(shape))
+                                .collect(Collectors.toList()));
+        sumPipeNanosElapsed += sortContoursResult.nanosElapsed;
 
-        for (var t : targetList) {
-            targets.add(
-                    new TrackedTarget(
-                            t,
-                            new TargetCalculationParameters(
-                                    false, null, null, null, null, frameStaticProperties)));
-        }
+        CVPipeResult<List<TrackedTarget>> collect2dTargetsResult =
+                collect2dTargetsPipe.run(sortContoursResult.output);
+        sumPipeNanosElapsed += collect2dTargetsResult.nanosElapsed;
 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
-        return new CVPipelineResult(sumPipeNanosElapsed, fps, targets, input_frame, names);
+        return new CVPipelineResult(
+                sumPipeNanosElapsed, fps, collect2dTargetsResult.output, input_frame, names);
     }
 
     @Override
