@@ -311,7 +311,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             />
             <pv-number-input
               v-model="patternWidth"
-              label="Board Width (in)"
+              label="Board Width (squares)"
               tooltip="Width of the board in dots or chessboard squares"
               :disabled="isCalibrating"
               :rules="[(v) => v >= 4 || 'Width must be at least 4']"
@@ -319,7 +319,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             />
             <pv-number-input
               v-model="patternHeight"
-              label="Board Height (in)"
+              label="Board Height (squares)"
               tooltip="Height of the board in dots or chessboard squares"
               :disabled="isCalibrating"
               :rules="[(v) => v >= 4 || 'Height must be at least 4']"
