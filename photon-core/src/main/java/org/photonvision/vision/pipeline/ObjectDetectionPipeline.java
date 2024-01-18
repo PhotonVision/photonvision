@@ -27,6 +27,7 @@ import org.photonvision.vision.pipe.impl.*;
 import org.photonvision.vision.pipe.impl.RknnDetectionPipe.RknnDetectionPipeParams;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.PotentialTarget;
+import org.photonvision.vision.target.TargetOrientation;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class ObjectDetectionPipeline
@@ -35,6 +36,7 @@ public class ObjectDetectionPipeline
     private final RknnDetectionPipe rknnPipe = new RknnDetectionPipe();
     private final SortContoursPipe sortContoursPipe = new SortContoursPipe();
     private final Collect2dTargetsPipe collect2dTargetsPipe = new Collect2dTargetsPipe();
+    private final FilterObjectDetectionsPipe filterContoursPipe = new FilterObjectDetectionsPipe();
 
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
@@ -70,6 +72,14 @@ public class ObjectDetectionPipeline
                         frameStaticProperties); // TODO don't hardcode?
         sortContoursPipe.setParams(sortContoursParams);
 
+        var filterContoursParams =
+                new FilterObjectDetectionsPipe.FilterContoursParams(
+                        settings.contourArea,
+                        settings.contourRatio,
+                        frameStaticProperties,
+                        settings.contourTargetOrientation == TargetOrientation.Landscape);
+        filterContoursPipe.setParams(filterContoursParams);
+
         Collect2dTargetsPipe.Collect2dTargetsParams collect2dTargetsParams =
                 new Collect2dTargetsPipe.Collect2dTargetsParams(
                         settings.offsetRobotOffsetMode,
@@ -91,16 +101,18 @@ public class ObjectDetectionPipeline
         sumPipeNanosElapsed += rknnResult.nanosElapsed;
         List<NeuralNetworkPipeResult> targetList;
 
-        targetList = rknnResult.output;
         var names = rknnPipe.getClassNames();
 
         input_frame.colorImage.getMat().copyTo(input_frame.processedImage.getMat());
 
         // ***************** change based on backend ***********************
 
+        var filterContoursResult = filterContoursPipe.run(rknnResult.output);
+        sumPipeNanosElapsed += filterContoursResult.nanosElapsed;
+
         CVPipeResult<List<PotentialTarget>> sortContoursResult =
                 sortContoursPipe.run(
-                        targetList.stream()
+                        filterContoursResult.output.stream()
                                 .map(shape -> new PotentialTarget(shape))
                                 .collect(Collectors.toList()));
         sumPipeNanosElapsed += sortContoursResult.nanosElapsed;
