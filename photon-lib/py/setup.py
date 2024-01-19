@@ -2,9 +2,7 @@ from setuptools import setup, find_packages
 import subprocess, re
 
 gitDescribeResult = (
-    subprocess.check_output(["git", "describe", "--tags", "--match=v*", "--always"])
-    .decode("utf-8")
-    .strip()
+    subprocess.check_output(["git", "describe", "--tags", "--match=v*", "--always"]).decode("utf-8").strip()
 )
 
 m = re.search(
@@ -60,6 +58,7 @@ setup(
     install_requires=[
         "wpilib<2025,>=2024.0.0b2",
         "robotpy-wpimath<2025,>=2024.0.0b2",
+        "robotpy-apriltag<2025,>=2024.0.0b2",
         "pyntcore<2025,>=2024.0.0b2",
     ],
     description=descriptionStr,
