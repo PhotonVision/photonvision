@@ -212,11 +212,13 @@ class PhotonPoseEstimator:
         return self._update(cameraResult, self._primaryStrategy)
 
     def _update(self, cameraResult: PhotonPipelineResult, strat: PoseStrategy) -> Optional[EstimatedRobotPose]:
-        estimatedPose = None
         if strat is PoseStrategy.LOWEST_AMBIGUITY:
             estimatedPose = self._lowestAmbiguityStrategy(cameraResult)
         elif strat is PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR:
             estimatedPose = self._multiTagOnCoprocStrategy(cameraResult)
+        else:
+            wpilib.reportError("[PhotonPoseEstimator] Unknown Position Estimation Strategy!", False)
+            return
 
         if not estimatedPose:
             self._lastPose = None
