@@ -90,7 +90,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
         var sortContoursParams =
                 new SortContoursPipe.SortContoursParams(
                         settings.contourSortMode,
-                        settings.outputShowMultipleTargets ? 8 : 1, // TODO don't hardcode?
+                        settings.outputShowMultipleTargets ? MAX_MULTI_TARGET_RESULTS : 1,
                         frameStaticProperties);
         sortContoursPipe.setParams(sortContoursParams);
 

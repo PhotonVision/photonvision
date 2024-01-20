@@ -58,7 +58,7 @@ const interactiveCols = computed(() =>
       :min="0"
       :max="100"
       :slider-cols="interactiveCols"
-      :step="0.1"
+      :step="0.01"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourRatio: value }, false)"
     />
     <pv-select

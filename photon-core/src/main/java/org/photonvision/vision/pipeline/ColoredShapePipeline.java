@@ -109,7 +109,7 @@ public class ColoredShapePipeline
         SortContoursPipe.SortContoursParams sortContoursParams =
                 new SortContoursPipe.SortContoursParams(
                         settings.contourSortMode,
-                        settings.outputShowMultipleTargets ? 5 : 1,
+                        settings.outputShowMultipleTargets ? MAX_MULTI_TARGET_RESULTS : 1,
                         frameStaticProperties); // TODO don't hardcode?
         sortContoursPipe.setParams(sortContoursParams);
 
