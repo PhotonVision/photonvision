@@ -123,8 +123,14 @@ class PhotonPoseEstimator:
         :param strategy: the strategy to set
         """
         self._checkUpdate(self._multiTagFallbackStrategy, strategy)
-        if strategy is PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR or strategy is PoseStrategy.MULTI_TAG_PNP_ON_RIO:
-            wpilib.reportWarning("Fallback cannot be set to MULTI_TAG_PNP! Setting to lowest ambiguity", False)
+        if (
+            strategy is PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR
+            or strategy is PoseStrategy.MULTI_TAG_PNP_ON_RIO
+        ):
+            wpilib.reportWarning(
+                "Fallback cannot be set to MULTI_TAG_PNP! Setting to lowest ambiguity",
+                False,
+            )
             strategy = PoseStrategy.LOWEST_AMBIGUITY
         self._multiTagFallbackStrategy = strategy
 
@@ -171,7 +177,9 @@ class PhotonPoseEstimator:
         if oldObj != newObj and oldObj is not None and oldObj is not newObj:
             self._invalidatePoseCache()
 
-    def update(self, cameraResult: Optional[PhotonPipelineResult] = None) -> Optional[EstimatedRobotPose]:
+    def update(
+        self, cameraResult: Optional[PhotonPipelineResult] = None
+    ) -> Optional[EstimatedRobotPose]:
         """
         Updates the estimated position of the robot. Returns empty if:
 
@@ -211,13 +219,17 @@ class PhotonPoseEstimator:
 
         return self._update(cameraResult, self._primaryStrategy)
 
-    def _update(self, cameraResult: PhotonPipelineResult, strat: PoseStrategy) -> Optional[EstimatedRobotPose]:
+    def _update(
+        self, cameraResult: PhotonPipelineResult, strat: PoseStrategy
+    ) -> Optional[EstimatedRobotPose]:
         if strat is PoseStrategy.LOWEST_AMBIGUITY:
             estimatedPose = self._lowestAmbiguityStrategy(cameraResult)
         elif strat is PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR:
             estimatedPose = self._multiTagOnCoprocStrategy(cameraResult)
         else:
-            wpilib.reportError("[PhotonPoseEstimator] Unknown Position Estimation Strategy!", False)
+            wpilib.reportError(
+                "[PhotonPoseEstimator] Unknown Position Estimation Strategy!", False
+            )
             return
 
         if not estimatedPose:
@@ -225,7 +237,9 @@ class PhotonPoseEstimator:
 
         return estimatedPose
 
-    def _multiTagOnCoprocStrategy(self, result: PhotonPipelineResult) -> Optional[EstimatedRobotPose]:
+    def _multiTagOnCoprocStrategy(
+        self, result: PhotonPipelineResult
+    ) -> Optional[EstimatedRobotPose]:
         if result.multiTagResult.estimatedPose.isPresent:
             best_tf = result.multiTagResult.estimatedPose.best
             best = (
@@ -243,7 +257,9 @@ class PhotonPoseEstimator:
         else:
             return self._update(result, self._multiTagFallbackStrategy)
 
-    def _lowestAmbiguityStrategy(self, result: PhotonPipelineResult) -> Optional[EstimatedRobotPose]:
+    def _lowestAmbiguityStrategy(
+        self, result: PhotonPipelineResult
+    ) -> Optional[EstimatedRobotPose]:
         """
         Return the estimated position of the robot with the lowest position ambiguity from a List of
         pipeline results.
@@ -279,9 +295,9 @@ class PhotonPoseEstimator:
             return
 
         return EstimatedRobotPose(
-            targetPosition.transformBy(lowestAmbiguityTarget.getBestCameraToTarget().inverse()).transformBy(
-                self.robotToCamera.inverse()
-            ),
+            targetPosition.transformBy(
+                lowestAmbiguityTarget.getBestCameraToTarget().inverse()
+            ).transformBy(self.robotToCamera.inverse()),
             result.timestampSec,
             result.targets,
             PoseStrategy.LOWEST_AMBIGUITY,

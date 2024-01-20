@@ -2,7 +2,9 @@ from setuptools import setup, find_packages
 import subprocess, re
 
 gitDescribeResult = (
-    subprocess.check_output(["git", "describe", "--tags", "--match=v*", "--always"]).decode("utf-8").strip()
+    subprocess.check_output(["git", "describe", "--tags", "--match=v*", "--always"])
+    .decode("utf-8")
+    .strip()
 )
 
 m = re.search(
