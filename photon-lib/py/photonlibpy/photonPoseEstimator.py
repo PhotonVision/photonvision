@@ -104,10 +104,18 @@ class PhotonPoseEstimator:
 
     @property
     def primaryStrategy(self) -> PoseStrategy:
+        """Get the Position Estimation Strategy being used by the Position Estimator.
+
+        :returns: the strategy
+        """
         return self._primaryStrategy
 
     @primaryStrategy.setter
     def primaryStrategy(self, strategy: PoseStrategy):
+        """Set the Position Estimation Strategy used by the Position Estimator.
+
+        :param strategy: the strategy to set
+        """
         self._checkUpdate(self._primaryStrategy, strategy)
         self._primaryStrategy = strategy
 
@@ -185,11 +193,12 @@ class PhotonPoseEstimator:
 
          - The timestamp of the provided pipeline result is the same as in the previous call to
          ``update()``.
+
          - No targets were found in the pipeline results.
 
         :param cameraResult: The latest pipeline result from the camera
 
-        :returns: an :class:`.EstimatedRobotPose` with an estimated pose, timestamp, and targets used to
+        :returns: an :class:`EstimatedRobotPose` with an estimated pose, timestamp, and targets used to
                    create the estimate.
         """
         if not cameraResult:

@@ -11,6 +11,8 @@ if TYPE_CHECKING:
 
 @dataclass
 class EstimatedRobotPose:
+    """An estimated pose based on pipeline result"""
+
     estimatedPose: Pose3d
     """The estimated pose"""
 
