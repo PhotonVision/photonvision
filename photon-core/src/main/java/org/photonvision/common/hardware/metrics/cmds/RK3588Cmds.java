@@ -19,7 +19,7 @@ package org.photonvision.common.hardware.metrics.cmds;
 
 import org.photonvision.common.configuration.HardwareConfig;
 
-public class OrangePiCmds extends LinuxCmds {
+public class RK3588Cmds extends LinuxCmds {
     /** Applies pi-specific commands, ignoring any input configuration */
     public void initCmds(HardwareConfig config) {
         super.initCmds(config);
