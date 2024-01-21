@@ -17,10 +17,10 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint2f;
@@ -38,10 +38,6 @@ import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
-import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
-import org.photonvision.vision.pipe.impl.Calibrate3dPipe;
-import org.photonvision.vision.pipe.impl.FindBoardCornersGuidancePipe;
-import org.photonvision.vision.pipe.impl.FindBoardCornersPipe;
 import org.photonvision.vision.pipe.impl.FindBoardCornersGuidancePipe.FindBoardCornersGuidancePipeResult;
 import org.photonvision.vision.pipe.impl.FindBoardCornersPipe.FindBoardCornersPipeResult;
 import org.photonvision.vision.pipeline.CVPipeline;
@@ -49,6 +45,8 @@ import org.photonvision.vision.pipeline.Calibration3dPipelineSettings;
 import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.pipeline.result.CalibrationPipelineResult;
+
+import edu.wpi.first.math.util.Units;
 
 //FIXME TBD - MrCal requirements and change Calibrate3dPipe.CalibratePipeParams as needed for ChArUcoBoard properties
 //FIXME WIP - calling find corners guidance instead of find corners
@@ -93,7 +91,7 @@ public class Calibrate3dPipeline
 
     public Calibrate3dPipeline(int minSnapshots, String uniqueName) { // runs once when PV starts
         super(PROCESSING_TYPE);
-        logger.debug("RKT in Calibration3dPipeline constructor 2 args");
+        logger.debug("RKT in Calibrate3dPipeline constructor 2 args");
         this.settings = new Calibration3dPipelineSettings();
         this.foundCornersList = new ArrayList<>();
         this.minSnapshots = minSnapshots;
@@ -109,28 +107,33 @@ public class Calibrate3dPipeline
         if (providePoseGuidance) {
             if (findBoardCornersGuidancePipe == null) {
                 findBoardCornersGuidancePipe = new FindBoardCornersGuidancePipe();
-            }            
+                //TODO make guidance its own params (not needed now) instead of copying unneeded stuff from FindCornersPipeParams
+                FindBoardCornersGuidancePipe.FindCornersGuidancePipeParams findCornersGuidancePipeParams =
+                        new FindBoardCornersGuidancePipe.FindCornersGuidancePipeParams(
+                                settings.boardHeight,
+                                settings.boardWidth,
+                                settings.boardType,
+                                settings.gridSize,
+                                settings.streamingFrameDivisor);
+                findBoardCornersGuidancePipe.setParams(findCornersGuidancePipeParams);
+            }
         }
         else {
             if (findBoardCornersPipe == null) {
                 findBoardCornersPipe = new FindBoardCornersPipe();
+                FindBoardCornersPipe.FindCornersPipeParams findCornersPipeParams =
+                        new FindBoardCornersPipe.FindCornersPipeParams(
+                                settings.boardHeight,
+                                settings.boardWidth,
+                                settings.boardType,
+                                settings.gridSize,
+                                settings.streamingFrameDivisor);
+                findBoardCornersPipe.setParams(findCornersPipeParams);
             }
         }
 
-        // findCornersPipeParams for findCornersPipe but findCornersGuidancePipe doesn't need them but
-        // make them to prevent an exception.
-        //TODO make guidance its own params
+        //TODO what does MrCal need to process the ChArUcoBoard?
 
-        FindBoardCornersPipe.FindCornersPipeParams findCornersPipeParams =
-                new FindBoardCornersPipe.FindCornersPipeParams(
-                        settings.boardHeight,
-                        settings.boardWidth,
-                        settings.boardType,
-                        settings.gridSize,
-                        settings.streamingFrameDivisor);
-        findBoardCornersPipe.setParams(findCornersPipeParams);
-
-        //TODO what does MrCal need to process theChArUcoBoard?
         Calibrate3dPipe.CalibratePipeParams calibratePipeParams =
                 new Calibrate3dPipe.CalibratePipeParams(
                         settings.boardHeight, settings.boardWidth, settings.gridSize, settings.useMrCal);

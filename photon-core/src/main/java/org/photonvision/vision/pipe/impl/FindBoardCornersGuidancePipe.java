@@ -25,7 +25,6 @@ package org.photonvision.vision.pipe.impl;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,15 +39,16 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
-import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.pipe.impl.Calibrate3dPoseGuidance.Cfg;
 import org.photonvision.vision.pipe.impl.Calibrate3dPoseGuidance.ChArucoDetector;
 import org.photonvision.vision.pipe.impl.Calibrate3dPoseGuidance.UserGuidance;
 import org.photonvision.vision.pipe.impl.Calibrate3dPoseGuidance.keyframe;
+import org.photonvision.vision.pipeline.UICalibrationData;
 
 /*-------------------------------------------------------------------------------------------------*/
 /*-------------------------------------------------------------------------------------------------*/
@@ -63,30 +63,37 @@ public class FindBoardCornersGuidancePipe
         extends CVPipe<
                 Pair<Mat, Mat>,
                 FindBoardCornersGuidancePipe.FindBoardCornersGuidancePipeResult,
-                FindBoardCornersPipe.FindCornersPipeParams> {
+                FindBoardCornersGuidancePipe.FindCornersGuidancePipeParams> {
 
     private static final String VERSION = "beta 12.12"; // change this
 
     static final Logger logger = new Logger(FindBoardCornersGuidancePipe.class, LogGroup.General);
 
-    private static PrintWriter vnlog = null;
+    {
+        Logger.setLevel(LogGroup.General, LogLevel.DEBUG);
+        logger.info("Pose Guidance Camera Calibration version " + VERSION);
 
-    Mat progressInsert = new Mat();
+        // Path to save images
+        // final Path imageDir = ConfigManager.getInstance().getCalibDir();
+    }
+    private static PrintWriter vnlog;
+
+    Mat progressInsert;
     
     Size img_size;
-    Size img_size_start = null;
+    Size img_size_start;
     ChArucoDetector tracker;
 
     UserGuidance ugui;
 
     // runtime variables
-    boolean mirror = false;
-    boolean save = false; // indicator for user pressed the "c" key to capture (save) manually
-    String endMessage = "logic error"; // status of calibration at the end - if this initial value isn't reset, indicates a screw-up in the code
+    boolean mirror;
+    boolean save; // indicator for user pressed the "c" key to capture (save) manually
+    String endMessage; // status of calibration at the end
 
-    int frameNumber = 0;
+    int frameNumber;
 
-    FindBoardCornersGuidancePipeResult findBoardCornersGuidancePipeResult = new FindBoardCornersGuidancePipeResult();
+    FindBoardCornersGuidancePipeResult findBoardCornersGuidancePipeResult;
 /*-------------------------------------------------------------------------------------------------*/
 /*-------------------------------------------------------------------------------------------------*/
 /*                                                                                                 */
@@ -130,14 +137,21 @@ public class FindBoardCornersGuidancePipe
 /*                                                                                                 */
 /*-------------------------------------------------------------------------------------------------*/
 /*-------------------------------------------------------------------------------------------------*/
-    public boolean createGuidance() { // first time through processing and verify resolution
+    public boolean createGuidance() { // first time through processing and verify resolution; effectively the constructor for a calibration
   
         if (this.img_size_start == null) { // first time switch and resolution
             img_size_start = img_size.clone(); // set resolution; all frames must match this first
             tracker = new ChArucoDetector(this.img_size);
             ugui = new UserGuidance(tracker, Cfg.var_terminate, this.img_size);
+            vnlog = null;
+            progressInsert = new Mat();
+            mirror = false;
+            save = false; // indicator for user pressed the "c" key to capture (save) manually
+            endMessage = "not the end"; // status of calibration at the end
+            frameNumber = 0;
+            findBoardCornersGuidancePipeResult = new FindBoardCornersGuidancePipeResult();
         }
-        // check all future frames against this first frame size
+        // check all future frames against the first frame size
         if ( ! img_size_start.equals(this.img_size)) {
             logger.warn("changing image size to " + this.img_size + " from " + img_size_start + ", canceling calibration");
             return false; // resolution changed during calibration; that's bad
@@ -156,12 +170,6 @@ public class FindBoardCornersGuidancePipe
 /*-------------------------------------------------------------------------------------------------*/
     public  FindBoardCornersGuidancePipeResult findBoardCornersGuidance(Pair<Mat, Mat> in)
     {
-        Logger.setLevel(LogGroup.General, LogLevel.DEBUG);
-        logger.info("Pose Guidance Camera Calibration version " + VERSION);
-
-        // Path to save images
-        final Path imageDir = ConfigManager.getInstance().getCalibDir();
-
         Mat imgPV = in.getLeft();
         Mat outPV = in.getRight();
 
@@ -216,9 +224,12 @@ public class FindBoardCornersGuidancePipe
             endMessage = "CALIBRATED";
         }
 
-        Imgproc.putText(out, endMessage, new Point(50, 250), Imgproc.FONT_HERSHEY_SIMPLEX, 2.8, new Scalar(0, 0, 0), 5);
-        Imgproc.putText(out, endMessage, new Point(50, 250), Imgproc.FONT_HERSHEY_SIMPLEX, 2.8, new Scalar(255, 255, 255), 3);
-        Imgproc.putText(out, endMessage, new Point(50, 250), Imgproc.FONT_HERSHEY_SIMPLEX, 2.8, new Scalar(255, 255, 0), 2);
+        if ( ! endMessage.equals("not the end"))
+        {
+            Imgproc.putText(out, endMessage, new Point(50, 250), Imgproc.FONT_HERSHEY_SIMPLEX, 2.8, new Scalar(0, 0, 0), 5);
+            Imgproc.putText(out, endMessage, new Point(50, 250), Imgproc.FONT_HERSHEY_SIMPLEX, 2.8, new Scalar(255, 255, 255), 3);
+            Imgproc.putText(out, endMessage, new Point(50, 250), Imgproc.FONT_HERSHEY_SIMPLEX, 2.8, new Scalar(255, 255, 0), 2);
+        }
 
         out.copyTo(outPV);
 
@@ -268,6 +279,7 @@ public class FindBoardCornersGuidancePipe
         {
             findBoardCornersGuidancePipeResult.takeSnapshot = true;
             findBoardCornersGuidancePipeResult.haveEnough = true;
+            img_size_start = null; // set first time switch for any following calibration
         }
         else    
         if (endMessage.equals("CAPTURED"))
@@ -278,6 +290,7 @@ public class FindBoardCornersGuidancePipe
         if (endMessage.equals("CANCELLED"))
         {
             findBoardCornersGuidancePipeResult.cancelCalibration = true;
+            img_size_start = null; // set first time switch for any following calibration
         }
 
         if (findBoardCornersGuidancePipeResult.takeSnapshot == true)
@@ -481,6 +494,56 @@ public class FindBoardCornersGuidancePipe
             vnlog.println(logLine.toString());                    
         }
     }
+
+    public static class FindCornersGuidancePipeParams {
+        final int boardHeight;
+        final int boardWidth;
+        final UICalibrationData.BoardType type;
+        final double gridSize;
+        final FrameDivisor divisor;
+
+        public FindCornersGuidancePipeParams(
+                int boardHeight,
+                int boardWidth,
+                UICalibrationData.BoardType type,
+                double gridSize,
+                FrameDivisor divisor) {
+            this.boardHeight = boardHeight;
+            this.boardWidth = boardWidth;
+            this.type = type;
+            this.gridSize = gridSize; // mm
+            this.divisor = divisor;
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + boardHeight;
+            result = prime * result + boardWidth;
+            result = prime * result + ((type == null) ? 0 : type.hashCode());
+            long temp;
+            temp = Double.doubleToLongBits(gridSize);
+            result = prime * result + (int) (temp ^ (temp >>> 32));
+            result = prime * result + ((divisor == null) ? 0 : divisor.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (obj == null) return false;
+            if (getClass() != obj.getClass()) return false;
+            FindCornersGuidancePipeParams other = (FindCornersGuidancePipeParams) obj;
+            if (boardHeight != other.boardHeight) return false;
+            if (boardWidth != other.boardWidth) return false;
+            if (type != other.type) return false;
+            if (Double.doubleToLongBits(gridSize) != Double.doubleToLongBits(other.gridSize))
+                return false;
+            return divisor == other.divisor;
+        }
+    }
+
 /*-------------------------------------------------------------------------------------------------*/
 /*-------------------------------------------------------------------------------------------------*/
 /*                                                                                                 */
