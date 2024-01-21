@@ -5,12 +5,11 @@ import PvInput from "@/components/common/pv-input.vue";
 import PvRadio from "@/components/common/pv-radio.vue";
 import PvSwitch from "@/components/common/pv-switch.vue";
 import PvSelect from "@/components/common/pv-select.vue";
-import { NetworkConnectionType, type NetworkSettings } from "@/types/SettingTypes";
+import { type ConfigurableNetworkSettings, NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 
 // Copy object to remove reference to store
-const tempSettingsStruct = ref<NetworkSettings>(Object.assign({}, useSettingsStore().network));
-
+const tempSettingsStruct = ref<ConfigurableNetworkSettings>(Object.assign({}, useSettingsStore().network));
 const resetTempSettingsStruct = () => {
   tempSettingsStruct.value = Object.assign({}, useSettingsStore().network);
 };
@@ -58,7 +57,6 @@ const settingsHaveChanged = (): boolean => {
     a.runNTServer !== b.runNTServer ||
     a.shouldManage !== b.shouldManage ||
     a.shouldPublishProto !== b.shouldPublishProto ||
-    a.canManage !== b.canManage ||
     a.networkManagerIface !== b.networkManagerIface ||
     a.setStaticCommand !== b.setStaticCommand ||
     a.setDHCPcommand !== b.setDHCPcommand
@@ -91,7 +89,10 @@ const saveGeneralSettings = () => {
       });
 
       // Update the local settings cause the backend checked their validity. Assign is to deref value
-      useSettingsStore().network = Object.assign({}, tempSettingsStruct.value);
+      useSettingsStore().network = {
+        ...useSettingsStore().network,
+        ...Object.assign({}, tempSettingsStruct.value)
+      };
     })
     .catch((error) => {
       resetTempSettingsStruct();
@@ -162,42 +163,63 @@ watchEffect(() => {
           The NetworkTables Server Address is not set or is invalid. NetworkTables is unable to connect.
         </v-banner>
         <pv-radio
+          v-show="!useSettingsStore().network.networkingDisabled"
           v-model="tempSettingsStruct.connectionType"
           label="IP Assignment Mode"
           tooltip="DHCP will make the radio (router) automatically assign an IP address; this may result in an IP address that changes across reboots. Static IP assignment means that you pick the IP address and it won't change."
           :input-cols="12 - 4"
           :list="['DHCP', 'Static']"
-          :disabled="!(tempSettingsStruct.shouldManage && tempSettingsStruct.canManage)"
+          :disabled="
+            !tempSettingsStruct.shouldManage ||
+            !useSettingsStore().network.canManage ||
+            useSettingsStore().network.networkingDisabled
+          "
         />
         <pv-input
+          v-show="!useSettingsStore().network.networkingDisabled"
           v-if="tempSettingsStruct.connectionType === NetworkConnectionType.Static"
           v-model="tempSettingsStruct.staticIp"
           :input-cols="12 - 4"
           label="Static IP"
           :rules="[(v) => isValidIPv4(v) || 'Invalid IPv4 address']"
-          :disabled="!(tempSettingsStruct.shouldManage && tempSettingsStruct.canManage)"
+          :disabled="
+            !tempSettingsStruct.shouldManage ||
+            !useSettingsStore().network.canManage ||
+            useSettingsStore().network.networkingDisabled
+          "
         />
         <pv-input
+          v-show="!useSettingsStore().network.networkingDisabled"
           v-model="tempSettingsStruct.hostname"
           label="Hostname"
           :input-cols="12 - 4"
           :rules="[(v) => isValidHostname(v) || 'Invalid hostname']"
-          :disabled="!(tempSettingsStruct.shouldManage && tempSettingsStruct.canManage)"
+          :disabled="
+            !tempSettingsStruct.shouldManage ||
+            !useSettingsStore().network.canManage ||
+            useSettingsStore().network.networkingDisabled
+          "
         />
         <v-divider class="pb-3" />
         <span style="font-weight: 700">Advanced Networking</span>
         <pv-switch
+          v-show="!useSettingsStore().network.networkingDisabled"
           v-model="tempSettingsStruct.shouldManage"
-          :disabled="!tempSettingsStruct.canManage"
+          :disabled="!useSettingsStore().network.canManage || useSettingsStore().network.networkingDisabled"
           label="Manage Device Networking"
           tooltip="If enabled, Photon will manage device hostname and network settings."
           :label-cols="4"
           class="pt-2"
         />
         <pv-select
+          v-show="!useSettingsStore().network.networkingDisabled"
           v-model="currentNetworkInterfaceIndex"
           label="NetworkManager interface"
-          :disabled="!(tempSettingsStruct.shouldManage && tempSettingsStruct.canManage)"
+          :disabled="
+            !tempSettingsStruct.shouldManage ||
+            !useSettingsStore().network.canManage ||
+            useSettingsStore().network.networkingDisabled
+          "
           :select-cols="12 - 4"
           tooltip="Name of the interface PhotonVision should manage the IP address of"
           :items="useSettingsStore().networkInterfaceNames"
@@ -206,7 +228,8 @@ watchEffect(() => {
           v-show="
             !useSettingsStore().networkInterfaceNames.length &&
             tempSettingsStruct.shouldManage &&
-            tempSettingsStruct.canManage
+            useSettingsStore().network.canManage &&
+            !useSettingsStore().network.networkingDisabled
           "
           rounded
           color="red"

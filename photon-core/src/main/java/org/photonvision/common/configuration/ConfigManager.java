@@ -50,6 +50,10 @@ public class ConfigManager {
     private final Thread settingsSaveThread;
     private long saveRequestTimestamp = -1;
 
+    // special case flag to disable flushing settings to disk at shutdown. Avoids the jvm shutdown
+    // hook overwriting the settings we just uploaded
+    private boolean flushOnShutdown = true;
+
     enum ConfigSaveStrategy {
         SQL,
         LEGACY,
@@ -302,5 +306,20 @@ public class ConfigManager {
         var ret = new File(configDirectoryFile, "models");
         if (!ret.exists()) ret.mkdirs();
         return ret;
+    }
+
+    /**
+     * Disable flushing settings to disk as part of our JVM exit hook. Used to prevent uploading all
+     * settings from getting its new configs overwritten at program exit and before theyre all loaded.
+     */
+    public void disableFlushOnShutdown() {
+        this.flushOnShutdown = false;
+    }
+
+    public void onJvmExit() {
+        if (flushOnShutdown) {
+            logger.info("Force-flushing settings...");
+            saveToDisk();
+        }
     }
 }
