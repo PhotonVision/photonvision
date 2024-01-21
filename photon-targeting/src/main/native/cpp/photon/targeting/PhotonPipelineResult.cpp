@@ -37,12 +37,13 @@ bool PhotonPipelineResult::operator==(const PhotonPipelineResult& other) const {
 
 Packet& operator<<(Packet& packet, const PhotonPipelineResult& result) {
   // Encode latency and number of targets.
-  packet << result.latency.value() << result.multitagResult
+  packet << result.latency.value()
          << static_cast<int8_t>(result.targets.size());
 
   // Encode the information of each target.
   for (auto& target : result.targets) packet << target;
 
+  packet << result.multitagResult;
   // Return the packet
   return packet;
 }
