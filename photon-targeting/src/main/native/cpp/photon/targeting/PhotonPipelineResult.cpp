@@ -51,7 +51,7 @@ Packet& operator>>(Packet& packet, PhotonPipelineResult& result) {
   // Decode latency, existence of targets, and number of targets.
   double latencyMillis = 0;
   int8_t targetCount = 0;
-  packet >> latencyMillis >> result.multitagResult >> targetCount;
+  packet >> latencyMillis >> targetCount;
   result.latency = units::millisecond_t(latencyMillis);
 
   result.targets.clear();
@@ -62,6 +62,8 @@ Packet& operator>>(Packet& packet, PhotonPipelineResult& result) {
     packet >> target;
     result.targets.push_back(target);
   }
+
+  packet >> result.multitagResult;
   return packet;
 }
 }  // namespace photon
