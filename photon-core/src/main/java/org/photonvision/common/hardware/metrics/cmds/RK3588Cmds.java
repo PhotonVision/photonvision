@@ -44,16 +44,5 @@ public class RK3588Cmds extends LinuxCmds {
          */
         cpuTemperatureCommand =
                 "cat /sys/class/thermal/thermal_zone1/temp | awk '{printf \"%.1f\", $1/1000}'";
-
-        // cpuThrottleReasonCmd =
-        //         "if   ((  $(( $(vcgencmd get_throttled | grep -Eo 0x[0-9a-fA-F]*) & 0x01 )) != 0x00 )); then echo \"LOW VOLTAGE\"; "
-        //                 + " elif ((  $(( $(vcgencmd get_throttled | grep -Eo 0x[0-9a-fA-F]*) & 0x08 )) != 0x00 )); then echo \"HIGH TEMP\"; "
-        //                 + " elif ((  $(( $(vcgencmd get_throttled | grep -Eo 0x[0-9a-fA-F]*) & 0x10000 )) != 0x00 )); then echo \"Prev. Low Voltage\"; "
-        //                 + " elif ((  $(( $(vcgencmd get_throttled | grep -Eo 0x[0-9a-fA-F]*) & 0x80000 )) != 0x00 )); then echo \"Prev. High Temp\"; "
-        //                 + " else echo \"None\"; fi";
-
-        // // GPU
-        // gpuMemoryCommand = "vcgencmd get_mem gpu | grep -Eo '[0-9]+'";
-        // gpuMemUsageCommand = "vcgencmd get_mem malloc | grep -Eo '[0-9]+'";
     }
 }
