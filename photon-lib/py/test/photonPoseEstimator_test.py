@@ -126,32 +126,7 @@ def test_multiTagOnCoprocStrategy():
     cameraOne.result = PhotonPipelineResult(
         2,
         11,
-        # There needs to be at least one target present for pose estimation to work
-        # Doesn't matter which/how many targets for this test
-        [
-            PhotonTrackedTarget(
-                3.0,
-                -4.0,
-                9.0,
-                4.0,
-                0,
-                Transform3d(Translation3d(1, 2, 3), Rotation3d(1, 2, 3)),
-                Transform3d(Translation3d(1, 2, 3), Rotation3d(1, 2, 3)),
-                [
-                    TargetCorner(1, 2),
-                    TargetCorner(3, 4),
-                    TargetCorner(5, 6),
-                    TargetCorner(7, 8),
-                ],
-                [
-                    TargetCorner(1, 2),
-                    TargetCorner(3, 4),
-                    TargetCorner(5, 6),
-                    TargetCorner(7, 8),
-                ],
-                0.7,
-            )
-        ],
+        # On-coprocessor multi-tag shouldn't require the targets list to be populated
         multiTagResult=MultiTargetPNPResult(
             PNPResult(True, Transform3d(1, 3, 2, Rotation3d()))
         ),

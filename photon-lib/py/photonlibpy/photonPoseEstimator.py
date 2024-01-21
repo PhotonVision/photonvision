@@ -223,7 +223,11 @@ class PhotonPoseEstimator:
         self._poseCacheTimestampSeconds = cameraResult.timestampSec
 
         # If no targets seen, trivial case -- return empty result
-        if not cameraResult.targets:
+        # On-coprocessor multi-tag doesn't need any targets
+        if (
+            not cameraResult.targets
+            and self._primaryStrategy is not PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR
+        ):
             return
 
         return self._update(cameraResult, self._primaryStrategy)
