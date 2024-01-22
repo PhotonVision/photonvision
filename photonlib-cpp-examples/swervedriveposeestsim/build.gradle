@@ -1,7 +1,7 @@
 plugins {
     id "cpp"
     id "google-test-test-suite"
-    id "edu.wpi.first.GradleRIO"
+    id "edu.wpi.first.GradleRIO" version "2024.2.1"
 
     id "com.dorongold.task-tree" version "2.1.0"
 }
@@ -12,8 +12,8 @@ repositories {
 }
 
 wpi.maven.useDevelopment = true
-wpi.versions.wpilibVersion = "2024.1.1"
-wpi.versions.wpimathVersion = "2024.1.1"
+wpi.versions.wpilibVersion = "2024.2.1"
+wpi.versions.wpimathVersion = "2024.2.1"
 
 apply from: "${rootDir}/../shared/examples_common.gradle"
 
