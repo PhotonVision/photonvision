@@ -82,6 +82,7 @@ public class FindBoardCornersGuidancePipe
     
     Size img_size;
     Size img_size_start;
+    boolean firstFrame = true; // must be managed at the end of each calibration session
     ChArucoDetector tracker;
 
     UserGuidance ugui;
@@ -89,7 +90,7 @@ public class FindBoardCornersGuidancePipe
     // runtime variables
     boolean mirror;
     boolean save; // indicator for user pressed the "c" key to capture (save) manually
-    String endMessage; // status of calibration at the end
+    String endMessage; // status of calibration at the end of a frame
 
     int frameNumber;
 
@@ -119,10 +120,11 @@ public class FindBoardCornersGuidancePipe
 
         this.img_size = new Size(in.getLeft().width(), in.getLeft().height());
 
-        if ( ! createGuidance()) { // first time through processing and verify resolution
+        if ( ! createGuidance()) {
             findBoardCornersGuidancePipeResult.takeSnapshot = false;
             findBoardCornersGuidancePipeResult.haveEnough = false;
             findBoardCornersGuidancePipeResult.cancelCalibration = true;
+            // detected corners are irrelevant and should be ignored but could be emptied here if desired
             return findBoardCornersGuidancePipeResult;
         }
 
@@ -137,20 +139,21 @@ public class FindBoardCornersGuidancePipe
 /*                                                                                                 */
 /*-------------------------------------------------------------------------------------------------*/
 /*-------------------------------------------------------------------------------------------------*/
-    public boolean createGuidance() { // first time through processing and verify resolution; effectively the constructor for a calibration
-  
-        if (this.img_size_start == null) { // first time switch and resolution
+    public boolean createGuidance() {
+
+        // first time through processing and verify resolution; effectively the constructor for a calibration
+   
+        if (this.firstFrame) {
             img_size_start = img_size.clone(); // set resolution; all frames must match this first
             tracker = new ChArucoDetector(this.img_size);
             ugui = new UserGuidance(tracker, Cfg.var_terminate, this.img_size);
             vnlog = null;
-            progressInsert = new Mat();
-            mirror = false;
-            save = false; // indicator for user pressed the "c" key to capture (save) manually
-            endMessage = "not the end"; // status of calibration at the end
+            mirror = false; // indicator for user pressed the "m" key to present mirrored view
             frameNumber = 0;
             findBoardCornersGuidancePipeResult = new FindBoardCornersGuidancePipeResult();
+            firstFrame = false;
         }
+
         // check all future frames against the first frame size
         if ( ! img_size_start.equals(this.img_size)) {
             logger.warn("changing image size to " + this.img_size + " from " + img_size_start + ", canceling calibration");
@@ -170,6 +173,10 @@ public class FindBoardCornersGuidancePipe
 /*-------------------------------------------------------------------------------------------------*/
     public  FindBoardCornersGuidancePipeResult findBoardCornersGuidance(Pair<Mat, Mat> in)
     {
+        // resets for every frame
+        endMessage = "not the end";
+        progressInsert = new Mat();
+        save = false; // indicator for user pressed the "c" key to capture (save) manually
         Mat imgPV = in.getLeft();
         Mat outPV = in.getRight();
 
@@ -239,47 +246,16 @@ public class FindBoardCornersGuidancePipe
             vnlog = null;
         }
 
-// DONE HERE
-// WHAT DOES PV WANT?
-
-// findBoardCornersPipe.findBoardCorners returns the corners detected in the image
-// I assume it is run when the take snapshot button is pressed
-//  and loops repeatedly until the done calibration button is pressed
-// then this happens:
-// Calibrate3dPipe has the calibrateCameraExtended with this comment:
-// first it has these parameters
-// CameraCalibrationCoefficients process(List<Triple<Size, Mat, Mat>> in) 
-// so I need to make a list of the Triple (keyframes)
-// then call the calibratecameraExtended
-// FindBoardCorners pipe outputs all the image points, object points, and frames to calculate
-// imageSize from, other parameters are output Mats
-
-// thus all this autocalibration stuff has all the data at this point and it's time to run
-// the final calibration in PV
-
-// click button to end calibration goes to requestHandler.java onCalibrationEndRequestonCalibrationEndRequest()
-//goes to VisionModule.java endCalibration()
-// which runs         var ret = pipelineManager.calibration3dPipeline.tryCalibration();
-// which returns the ret type CameraCalibrationCoefficients
-
-// when we like the frame could tap into PV here:
-// public void takeSnapshot() {
-//     takeSnapshot = true;
-// }
-// isCalibrating ? "Take Snapshot" : "Start Calibration" 
-// at end "Finish Calibration"
-        // most frames will return falses
+        // most frames will return falses since nothing special happened
         findBoardCornersGuidancePipeResult.takeSnapshot = false;
         findBoardCornersGuidancePipeResult.haveEnough = false;
         findBoardCornersGuidancePipeResult.cancelCalibration = false;
-
-        // copy last detected points to return in case they will be used for capture
 
         if (endMessage.equals("CALIBRATED"))
         {
             findBoardCornersGuidancePipeResult.takeSnapshot = true;
             findBoardCornersGuidancePipeResult.haveEnough = true;
-            img_size_start = null; // set first time switch for any following calibration
+            firstFrame = true; // reset first time switch for a following calibration
         }
         else    
         if (endMessage.equals("CAPTURED"))
@@ -290,7 +266,7 @@ public class FindBoardCornersGuidancePipe
         if (endMessage.equals("CANCELLED"))
         {
             findBoardCornersGuidancePipeResult.cancelCalibration = true;
-            img_size_start = null; // set first time switch for any following calibration
+            firstFrame = true; // reset first time switch for a following calibration
         }
 
         if (findBoardCornersGuidancePipeResult.takeSnapshot == true)

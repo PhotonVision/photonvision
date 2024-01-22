@@ -85,13 +85,11 @@ public class Calibrate3dPipeline
 
     public Calibrate3dPipeline(String uniqueName) {
         this(12, uniqueName);
-        logger.debug("RKT ending Calibrate3dPipeline constructor 1 arg");
         // runs once when PV starts
     }
 
     public Calibrate3dPipeline(int minSnapshots, String uniqueName) { // runs once when PV starts
         super(PROCESSING_TYPE);
-        logger.debug("RKT in Calibrate3dPipeline constructor 2 args");
         this.settings = new Calibration3dPipelineSettings();
         this.foundCornersList = new ArrayList<>();
         this.minSnapshots = minSnapshots;
@@ -100,9 +98,6 @@ public class Calibrate3dPipeline
     @Override
     protected void setPipeParamsImpl() {
         // runs first once per frame after calibration has started until calibration ends/canceled
-        // FindBoardCornersPipe has to be instantiated here
-        logger.debug("RKT in Calibrate3dPipeline setPipeParamsImpl");
-
         // first time through check for this calibration session
         if (providePoseGuidance) {
             if (findBoardCornersGuidancePipe == null) {
@@ -132,7 +127,7 @@ public class Calibrate3dPipeline
             }
         }
 
-        //TODO what does MrCal need to process the ChArUcoBoard?
+        //TODO MrCal needs the ChArUcoBoard parameters similar to other boards
 
         Calibrate3dPipe.CalibratePipeParams calibratePipeParams =
                 new Calibrate3dPipe.CalibratePipeParams(
@@ -143,7 +138,6 @@ public class Calibrate3dPipeline
     @Override
     protected CVPipelineResult process(Frame frame, Calibration3dPipelineSettings settings) {
         // runs second once per frame after calibration has started until calibration ends/canceled
-        logger.debug("RKT in Calibrate3dPipeline process");
 
         Mat inputColorMat = frame.colorImage.getMat();
 
@@ -174,10 +168,12 @@ public class Calibrate3dPipeline
 
             //FIXME need to handle CANCEL to bail out and ENOUGH needs to run calibrate after taking the snapshot
 
-            logger.debug("guidance result for variables 'snapshot', 'enough', and 'cancel':"
-                + findBoardGuidanceResult.takeSnapshot
-                + findBoardGuidanceResult.haveEnough
-                + findBoardGuidanceResult.cancelCalibration);
+            if (findBoardGuidanceResult.takeSnapshot || findBoardGuidanceResult.haveEnough || findBoardGuidanceResult.cancelCalibration) {
+                logger.debug("guidance result for variables 'snapshot', 'enough', and 'cancel':"
+                    + findBoardGuidanceResult.takeSnapshot
+                    + findBoardGuidanceResult.haveEnough
+                    + findBoardGuidanceResult.cancelCalibration);
+            }
 
             if (findBoardGuidanceResult.haveEnough) {
                 minSnapshots = 0;
@@ -237,14 +233,12 @@ public class Calibrate3dPipeline
     }
 
     List<List<Point>> getCornersList() {
-        logger.debug("RKT getCornersList");
         return foundCornersList.stream()
                 .map(it -> it.imagePoints.toList())
                 .collect(Collectors.toList());
     }
 
     public boolean hasEnough() {
-        logger.debug("RKT hasEnough");
         return foundCornersList.size() >= minSnapshots;
     }
 
