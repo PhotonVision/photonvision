@@ -49,8 +49,6 @@ public class Cfg
     static final String boardFile = "ChArUcoBoard";
     static int resXDPM = 9843; // board printing pixels per meter 9843 = 250 DPI
     static int resYDPM = 9843; // board printing pixels per meter 9843 = 250 DPI
-    // static boolean logDetectedCorners = false; // save to files captured images and detected corners
-    public static String cornersLog = "corners.vnl";
 ///////////////////////////
 
 // ALL THE FOLLOWING STUFF MIGHT NEVER NEED TO BE CHANGED

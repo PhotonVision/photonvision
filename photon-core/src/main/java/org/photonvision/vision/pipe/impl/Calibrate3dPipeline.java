@@ -49,7 +49,6 @@ import org.photonvision.vision.pipeline.result.CalibrationPipelineResult;
 import edu.wpi.first.math.util.Units;
 
 //FIXME TBD - MrCal requirements and change Calibrate3dPipe.CalibratePipeParams as needed for ChArUcoBoard properties
-//FIXME WIP - calling find corners guidance instead of find corners
 // FindBoardCornersGuidancePipeResults is different than FindBoardCornersResults
 // for now FindBoardCornersParams used by FindBoardCornersPipe is okay (ignored) for FindBoardCornersGuidancePipe
 

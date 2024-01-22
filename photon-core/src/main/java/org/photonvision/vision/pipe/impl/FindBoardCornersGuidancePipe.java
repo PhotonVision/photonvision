@@ -23,8 +23,6 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,12 +30,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfInt;
 import org.opencv.core.Point;
-import org.opencv.core.Point3;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
@@ -76,8 +71,6 @@ public class FindBoardCornersGuidancePipe
         // Path to save images
         // final Path imageDir = ConfigManager.getInstance().getCalibDir();
     }
-    private static PrintWriter vnlog;
-
     Mat progressInsert;
     
     Size img_size;
@@ -147,7 +140,6 @@ public class FindBoardCornersGuidancePipe
             img_size_start = img_size.clone(); // set resolution; all frames must match this first
             tracker = new ChArucoDetector(this.img_size);
             ugui = new UserGuidance(tracker, Cfg.var_terminate, this.img_size);
-            vnlog = null;
             mirror = false; // indicator for user pressed the "m" key to present mirrored view
             frameNumber = 0;
             findBoardCornersGuidancePipeResult = new FindBoardCornersGuidancePipeResult();
@@ -212,10 +204,9 @@ public class FindBoardCornersGuidancePipe
 
         boolean capturedPose = ugui.update(force, progressInsert); // calibrate
         
-        if (capturedPose /*&& Cfg.logDetectedCorners*/)
+        if (capturedPose)
         {
             endMessage = "CAPTURED";
-            logDetectedCorners(img, ugui);
         }
 
         displayOverlay(out, ugui, fewCorners, frameNumber, progressInsert);
@@ -233,18 +224,10 @@ public class FindBoardCornersGuidancePipe
 
         if ( ! endMessage.equals("not the end"))
         {
-            Imgproc.putText(out, endMessage, new Point(50, 250), Imgproc.FONT_HERSHEY_SIMPLEX, 2.8, new Scalar(0, 0, 0), 5);
-            Imgproc.putText(out, endMessage, new Point(50, 250), Imgproc.FONT_HERSHEY_SIMPLEX, 2.8, new Scalar(255, 255, 255), 3);
-            Imgproc.putText(out, endMessage, new Point(50, 250), Imgproc.FONT_HERSHEY_SIMPLEX, 2.8, new Scalar(255, 255, 0), 2);
+            logger.info("Pose Guidance Camera action " + endMessage);
         }
 
         out.copyTo(outPV);
-
-        if (vnlog != null)
-        {
-            vnlog.close(); // user has to grab this file before the next capture otherwise it's gone and starting over
-            vnlog = null;
-        }
 
         // most frames will return falses since nothing special happened
         findBoardCornersGuidancePipeResult.takeSnapshot = false;
@@ -405,69 +388,6 @@ public class FindBoardCornersGuidancePipe
             Imgproc.putText(out, ugui.INTRINSICS()[i],
                 new Point((double)i*20, this.img_size.height*0.4+15),
                 Imgproc.FONT_HERSHEY_SIMPLEX, .4, new Scalar(255, 255, 255), 1);
-        }
-    }
-/*-------------------------------------------------------------------------------------------------*/
-/*-------------------------------------------------------------------------------------------------*/
-/*                                                                                                 */
-/*                                     logDetectedCorners                                          */
-/*                                     logDetectedCorners                                          */
-/*                                     logDetectedCorners                                          */
-/*                                                                                                 */
-/*-------------------------------------------------------------------------------------------------*/
-/*-------------------------------------------------------------------------------------------------*/
-    /**
-     * Detected Board data in mrgingham format plus the board info
-     * @param img Camera image
-     * @param ugui User Guidance Class
-     * @throws FileNotFoundException
-     */
-    public static void logDetectedCorners(Mat img, UserGuidance ugui)// throws FileNotFoundException
-    {
-        if (vnlog == null) // first time switch
-        {
-            try {
-                vnlog = new PrintWriter(Cfg.cornersLog);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-            vnlog.println("## produced by pose guidance calibration program");
-            vnlog.println("# filename x y level cid boardX boardY");
-        }
-
-        // write the captured frame to a file name
-        int captureCount = ugui.calib.keyframes.size();
-
-        String filename = String.format("img%02d.jpg", captureCount);
-        final MatOfInt writeBoardParams = new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 100); // pair-wise; param1, value1, ...
-        Imgcodecs.imwrite(filename, img, writeBoardParams); // save camera image
-
-        // for efficiency put Mat data in arrays
-        Point3[] ChessboardCorners = ugui.tracker.board().getChessboardCorners().toArray(); // 1 col 3 channels x, y, z in a Point3 (float)
-
-        int[] DetectedCIDs = new int[ugui.tracker.cids().rows()]; // get detected corners - assume captured image does have corners
-        ugui.tracker.cids().get(0, 0, DetectedCIDs);
-
-        float[] DetectedCorners = new float[ugui.tracker.ccorners().rows()*ugui.tracker.ccorners().cols()*ugui.tracker.ccorners().channels()]; // below assumes x and y in a row
-        ugui.tracker.ccorners().get(0, 0, DetectedCorners);
-
-        // save vnlog     
-        for (int detectedCornerIndex = 0; detectedCornerIndex < DetectedCIDs.length; detectedCornerIndex++)
-        {
-            int boardCornerId = DetectedCIDs[detectedCornerIndex]; // get board corner that is detected
-            StringBuilder logLine = new StringBuilder();
-            logLine.append(filename);
-            logLine.append(" ");
-            logLine.append(DetectedCorners[detectedCornerIndex*2]); // x
-            logLine.append(" ");
-            logLine.append(DetectedCorners[detectedCornerIndex*2+1]); // y
-            logLine.append(" 0 "); // intended to be decimations always 0
-            logLine.append(boardCornerId);
-            logLine.append(" ");
-            logLine.append(ChessboardCorners[boardCornerId].x); // x
-            logLine.append(" ");
-            logLine.append(ChessboardCorners[boardCornerId].y); // y
-            vnlog.println(logLine.toString());                    
         }
     }
 

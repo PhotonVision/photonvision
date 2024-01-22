@@ -25,24 +25,15 @@ import static org.photonvision.vision.pipe.impl.Calibrate3dPoseGuidance.ArrayUti
 import static org.photonvision.vision.pipe.impl.Calibrate3dPoseGuidance.ArrayUtils.argmin;
 import static org.photonvision.vision.pipe.impl.Calibrate3dPoseGuidance.ArrayUtils.isAllTrue;
 
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
-
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
@@ -600,7 +591,7 @@ public class UserGuidance {
  *    seed NOT USED -- NOT CONVERTED
 */
 
-public /*-------------------------------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------------------------------*/
 /*-------------------------------------------------------------------------------------------------*/
 /*                                                                                                 */
 /*                                     write                                                       */
@@ -609,104 +600,21 @@ public /*-----------------------------------------------------------------------
 /*                                                                                                 */
 /*-------------------------------------------------------------------------------------------------*/
 /*-------------------------------------------------------------------------------------------------*/
-void write()
-{
-    // logger.debug("method entered  . . . . . . . . . . . . . . . . . . . . . . . .");
-
-    String pattern = "yyyy-MM-dd-HH-mm-ss";
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-    
-    
-    //????????????????????????????????????????????
-    //FIXME use the PV way to format JSON from MAT
-    //????????????????????????????????????????????
-
-
-    String calibrationDataFile = "CameraCalibrationData_" + simpleDateFormat.format(new Date()) + ".json";
-    double[] cameraMatrix = new double[9];
-    this.calib.K().get(0, 0, cameraMatrix);
-    double[] distortionCoefficients = new double[5];
-    this.calib.cdist().get(0, 0, distortionCoefficients);
-
-    logger.debug("calibration data file " + calibrationDataFile);
-
-    try (PrintWriter pw = new PrintWriter(calibrationDataFile))
-    {
-        pw.println("{");
-        pw.println(" \"camera\": \"unknown\",");
-        pw.println(" \"platform\":  \"unknown\",");
-        pw.println(" \"avg_reprojection_error\": " + this.calib.reperr() + ",");
-        pw.format (" \"camera_matrix\": [%n" +
-                   "  [%f, %f, %f],%n  [%f, %f, %f],%n  [%f, %f, %f]%n" +
-                   "],%n",
-                   cameraMatrix[0],cameraMatrix[1],cameraMatrix[2],
-                   cameraMatrix[3],cameraMatrix[4],cameraMatrix[5],
-                   cameraMatrix[6],cameraMatrix[7],cameraMatrix[8]);
-        pw.format(" \"distortion_coefficients\":%n  [%f, %f, %f, %f, %f ],%n",
-                   distortionCoefficients[0], distortionCoefficients[1], distortionCoefficients[2], distortionCoefficients[3], distortionCoefficients[4]);
-        pw.println(" \"distortion_model\": \"rectilinear\",");
-        pw.format(" \"img_size\": [%.0f, %.0f],%n", this.calib.img_size().width, this.calib.img_size().height);
-        pw.format(" \"calibration_time\": \"%s\"%n", LocalDateTime.now());
-        pw.print("}");
-    } catch (FileNotFoundException e) {
-        e.printStackTrace();
-    }
-    logger.debug("calibration_time: " + LocalDateTime.now());
-    logger.debug("nr_of_frames: " + this.calib.keyframes.size());
-    logger.debug("image_width: " + this.calib.img_size().width);
-    logger.debug("image_height: " + this.calib.img_size().height);
-    logger.debug("board_width: " + this.tracker.board_sz().width);
-    logger.debug("board_height: " + this.tracker.board_sz().height);
-    logger.debug("square_size: " + this.square_len);
-    logger.debug("marker_size: " + this.marker_len);
-    // logger.debug(formatFlags(calib.flags())); seems irrelevant since the first few and last calibrations don't use calib.flags
-    logger.debug("fisheye_model: " + 0);
-    logger.debug("camera_matrix:\n" + this.calib.K().dump());
-    logger.debug("distortion_coefficients:\n" + this.calib.cdist().dump());
-    logger.debug("avg_reprojection_error: " + this.calib.reperr());
-}
-/*-------------------------------------------------------------------------------------------------*/
-/*-------------------------------------------------------------------------------------------------*/
-/*                                                                                                 */
-/*                                     formatFlags                                                 */
-/*                                     formatFlags                                                 */
-/*                                     formatFlags                                                 */
-/*                                                                                                 */
-/*-------------------------------------------------------------------------------------------------*/
-/*-------------------------------------------------------------------------------------------------*/
-    static String formatFlags(int flagsCalibration)
+    public void write()
     {
         // logger.debug("method entered  . . . . . . . . . . . . . . . . . . . . . . . .");
 
-        HashMap<Integer, String> flags = new HashMap<>(3);
-        flags.put(Calib3d.CALIB_FIX_PRINCIPAL_POINT, "+fix_principal_point");
-        flags.put(Calib3d.CALIB_ZERO_TANGENT_DIST, "+zero_tangent_dist");
-        flags.put(Calib3d.CALIB_USE_LU, "+use_lu");
-        flags.put(Calib3d.CALIB_FIX_ASPECT_RATIO, "+fix aspect ratio");
-        flags.put(Calib3d.CALIB_FIX_PRINCIPAL_POINT, "+fix principal point");
-        flags.put(Calib3d.CALIB_ZERO_TANGENT_DIST, "+zero tangent dist");
-        flags.put(Calib3d.CALIB_FIX_K1, "+fix k1");
-        flags.put(Calib3d.CALIB_FIX_K2, "+fix k2");
-        flags.put(Calib3d.CALIB_FIX_K3, "+fix k3");
-       
-        StringBuilder flags_str = new StringBuilder("flags: ");
-        int unknownFlags = flagsCalibration; // initially assume all flags are unknown to the hashmap
-
-        for (Map.Entry<Integer, String> flag : flags.entrySet())
-        {
-            if ((flagsCalibration & flag.getKey()) == flag.getKey())
-            {
-                flags_str.append(flag.getValue());
-                unknownFlags -= flag.getKey(); // this flag is known so un-mark unknown flags
-            }                       
-        }
-
-        flags_str.append(String.format("\nflags: %08x", flagsCalibration));
-        if (unknownFlags != 0)
-        {
-            flags_str.append(String.format("; unknown flag usage = %08x", unknownFlags));          
-        }
-        return flags_str.toString();
+        logger.debug("nr_of_frames: " + this.calib.keyframes.size());
+        logger.debug("image_width: " + this.calib.img_size().width);
+        logger.debug("image_height: " + this.calib.img_size().height);
+        logger.debug("board_width: " + this.tracker.board_sz().width);
+        logger.debug("board_height: " + this.tracker.board_sz().height);
+        logger.debug("square_size: " + this.square_len);
+        logger.debug("marker_size: " + this.marker_len);
+        logger.debug("fisheye_model: " + 0);
+        logger.debug("camera_matrix:\n" + this.calib.K().dump());
+        logger.debug("distortion_coefficients:\n" + this.calib.cdist().dump());
+        logger.debug("avg_reprojection_error: " + this.calib.reperr());
     }
 }
 /*-------------------------------------------------------------------------------------------------*/
