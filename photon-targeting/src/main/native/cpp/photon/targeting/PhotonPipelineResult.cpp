@@ -37,12 +37,13 @@ bool PhotonPipelineResult::operator==(const PhotonPipelineResult& other) const {
 
 Packet& operator<<(Packet& packet, const PhotonPipelineResult& result) {
   // Encode latency and number of targets.
-  packet << result.latency.value() << result.multitagResult
+  packet << result.latency.value()
          << static_cast<int8_t>(result.targets.size());
 
   // Encode the information of each target.
   for (auto& target : result.targets) packet << target;
 
+  packet << result.multitagResult;
   // Return the packet
   return packet;
 }
@@ -51,7 +52,7 @@ Packet& operator>>(Packet& packet, PhotonPipelineResult& result) {
   // Decode latency, existence of targets, and number of targets.
   double latencyMillis = 0;
   int8_t targetCount = 0;
-  packet >> latencyMillis >> result.multitagResult >> targetCount;
+  packet >> latencyMillis >> targetCount;
   result.latency = units::millisecond_t(latencyMillis);
 
   result.targets.clear();
@@ -62,6 +63,8 @@ Packet& operator>>(Packet& packet, PhotonPipelineResult& result) {
     packet >> target;
     result.targets.push_back(target);
   }
+
+  packet >> result.multitagResult;
   return packet;
 }
 }  // namespace photon
