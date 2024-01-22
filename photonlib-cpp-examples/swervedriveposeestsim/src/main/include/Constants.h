@@ -35,48 +35,48 @@
 
 namespace constants {
 namespace Vision {
-static constexpr std::string_view kCameraName{"YOUR CAMERA NAME"};
-static const frc::Transform3d kRobotToCam{
+inline constexpr std::string_view kCameraName{"YOUR CAMERA NAME"};
+inline const frc::Transform3d kRobotToCam{
     frc::Translation3d{0.5_m, 0.0_m, 0.5_m},
     frc::Rotation3d{0_rad, 0_rad, 0_rad}};
-static const frc::AprilTagFieldLayout kTagLayout{
-    frc::LoadAprilTagLayoutField(frc::AprilTagField::k2023ChargedUp)};
+inline const frc::AprilTagFieldLayout kTagLayout{
+    frc::LoadAprilTagLayoutField(frc::AprilTagField::k2024Crescendo)};
 
-static const Eigen::Matrix<double, 3, 1> kSingleTagStdDevs{4, 4, 8};
-static const Eigen::Matrix<double, 3, 1> kMultiTagStdDevs{0.5, 0.5, 1};
+inline const Eigen::Matrix<double, 3, 1> kSingleTagStdDevs{4, 4, 8};
+inline const Eigen::Matrix<double, 3, 1> kMultiTagStdDevs{0.5, 0.5, 1};
 }  // namespace Vision
 namespace Swerve {
 
-static constexpr units::meter_t kTrackWidth{18.5_in};
-static constexpr units::meter_t kTrackLength{18.5_in};
-static constexpr units::meter_t kRobotWidth{25_in + 3.25_in * 2};
-static constexpr units::meter_t kRobotLength{25_in + 3.25_in * 2};
-static constexpr units::meters_per_second_t kMaxLinearSpeed{15.5_fps};
-static constexpr units::radians_per_second_t kMaxAngularSpeed{720_deg_per_s};
-static constexpr units::meter_t kWheelDiameter{4_in};
-static constexpr units::meter_t kWheelCircumference{kWheelDiameter *
+inline constexpr units::meter_t kTrackWidth{18.5_in};
+inline constexpr units::meter_t kTrackLength{18.5_in};
+inline constexpr units::meter_t kRobotWidth{25_in + 3.25_in * 2};
+inline constexpr units::meter_t kRobotLength{25_in + 3.25_in * 2};
+inline constexpr units::meters_per_second_t kMaxLinearSpeed{15.5_fps};
+inline constexpr units::radians_per_second_t kMaxAngularSpeed{720_deg_per_s};
+inline constexpr units::meter_t kWheelDiameter{4_in};
+inline constexpr units::meter_t kWheelCircumference{kWheelDiameter *
                                                     std::numbers::pi};
 
-static constexpr double kDriveGearRatio = 6.75;
-static constexpr double kSteerGearRatio = 12.8;
+inline constexpr double kDriveGearRatio = 6.75;
+inline constexpr double kSteerGearRatio = 12.8;
 
-static constexpr units::meter_t kDriveDistPerPulse =
+inline constexpr units::meter_t kDriveDistPerPulse =
     kWheelCircumference / 1024.0 / kDriveGearRatio;
-static constexpr units::radian_t kSteerRadPerPulse =
+inline constexpr units::radian_t kSteerRadPerPulse =
     units::radian_t{2 * std::numbers::pi} / 1024.0;
 
-static constexpr double kDriveKP = 1.0;
-static constexpr double kDriveKI = 0.0;
-static constexpr double kDriveKD = 0.0;
+inline constexpr double kDriveKP = 1.0;
+inline constexpr double kDriveKI = 0.0;
+inline constexpr double kDriveKD = 0.0;
 
-static constexpr double kSteerKP = 20.0;
-static constexpr double kSteerKI = 0.0;
-static constexpr double kSteerKD = 0.25;
+inline constexpr double kSteerKP = 20.0;
+inline constexpr double kSteerKI = 0.0;
+inline constexpr double kSteerKD = 0.25;
 
-static const frc::SimpleMotorFeedforward<units::meters> kDriveFF{
+inline const frc::SimpleMotorFeedforward<units::meters> kDriveFF{
     0.25_V, 2.5_V / 1_mps, 0.3_V / 1_mps_sq};
 
-static const frc::SimpleMotorFeedforward<units::radians> kSteerFF{
+inline const frc::SimpleMotorFeedforward<units::radians> kSteerFF{
     0.5_V, 0.25_V / 1_rad_per_s, 0.01_V / 1_rad_per_s_sq};
 
 struct ModuleConstants {
@@ -106,13 +106,13 @@ struct ModuleConstants {
         centerOffset(frc::Translation2d{xOffset, yOffset}) {}
 };
 
-static const ModuleConstants FL_CONSTANTS{
+inline const ModuleConstants FL_CONSTANTS{
     1, 0, 0, 1, 1, 2, 3, 0, kTrackLength / 2, kTrackWidth / 2};
-static const ModuleConstants FR_CONSTANTS{
+inline const ModuleConstants FR_CONSTANTS{
     2, 2, 4, 5, 3, 6, 7, 0, kTrackLength / 2, -kTrackWidth / 2};
-static const ModuleConstants BL_CONSTANTS{
+inline const ModuleConstants BL_CONSTANTS{
     3, 4, 8, 9, 5, 10, 11, 0, -kTrackLength / 2, kTrackWidth / 2};
-static const ModuleConstants BR_CONSTANTS{
+inline const ModuleConstants BR_CONSTANTS{
     4, 6, 12, 13, 7, 14, 15, 0, -kTrackLength / 2, -kTrackWidth / 2};
 }  // namespace Swerve
 }  // namespace constants
