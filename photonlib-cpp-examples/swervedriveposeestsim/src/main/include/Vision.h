@@ -61,7 +61,7 @@ class Vision {
       cameraSim = std::make_shared<photon::PhotonCameraSim>(camera.get(),
                                                             *cameraProp.get());
 
-      visionSim->AddCamera(cameraSim.get(), robotToCam);
+      visionSim->AddCamera(cameraSim.get(), constants::Vision::kRobotToCam);
       cameraSim->EnableDrawWireframe(true);
     }
   }
@@ -138,12 +138,10 @@ class Vision {
   frc::Field2d& GetSimDebugField() { return visionSim->GetDebugField(); }
 
  private:
-  frc::Transform3d robotToCam{frc::Translation3d{0.5_m, 0.5_m, 0.5_m},
-                              frc::Rotation3d{}};
   photon::PhotonPoseEstimator photonEstimator{
-      LoadAprilTagLayoutField(frc::AprilTagField::k2023ChargedUp),
+      constants::Vision::kTagLayout,
       photon::PoseStrategy::MULTI_TAG_PNP_ON_COPROCESSOR,
-      photon::PhotonCamera{"photonvision"}, robotToCam};
+      photon::PhotonCamera{"photonvision"}, constants::Vision::kRobotToCam};
   std::shared_ptr<photon::PhotonCamera> camera{photonEstimator.GetCamera()};
   std::unique_ptr<photon::VisionSystemSim> visionSim;
   std::unique_ptr<photon::SimCameraProperties> cameraProp;
