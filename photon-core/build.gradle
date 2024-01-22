@@ -55,6 +55,10 @@ dependencies {
     }
 
     testImplementation group: 'org.junit-pioneer' , name: 'junit-pioneer', version: '2.2.0'
+
+    def arucoVer = "dev-v2024.0.1-15-g0d7210c"
+    implementation "org.photonvision:photonaruconano-jni:$arucoVer:$jniPlatform"
+    implementation "org.photonvision:photonaruconano-java:$arucoVer"
 }
 
 task writeCurrentVersion {
