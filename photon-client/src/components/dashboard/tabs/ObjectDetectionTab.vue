@@ -11,6 +11,16 @@ const currentPipelineSettings = computed<ActivePipelineSettings>(
   () => useCameraSettingsStore().currentPipelineSettings
 );
 
+// TODO fix pv-range-slider so that store access doesn't need to be deferred
+const contourArea = computed<[number, number]>({
+  get: () => Object.values(useCameraSettingsStore().currentPipelineSettings.contourArea) as [number, number],
+  set: (v) => (useCameraSettingsStore().currentPipelineSettings.contourArea = v)
+});
+const contourRatio = computed<[number, number]>({
+  get: () => Object.values(useCameraSettingsStore().currentPipelineSettings.contourRatio) as [number, number],
+  set: (v) => (useCameraSettingsStore().currentPipelineSettings.contourRatio = v)
+});
+
 const interactiveCols = computed(() =>
   (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) &&
   (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)
@@ -31,6 +41,43 @@ const interactiveCols = computed(() =>
       :max="1"
       :step="0.01"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ confidence: value }, false)"
+    />
+    <pv-range-slider
+      v-model="contourArea"
+      label="Area"
+      :min="0"
+      :max="100"
+      :slider-cols="interactiveCols"
+      :step="0.01"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourArea: value }, false)"
+    />
+    <pv-range-slider
+      v-model="contourRatio"
+      label="Ratio (W/H)"
+      tooltip="Min and max ratio between the width and height of a contour's bounding rectangle"
+      :min="0"
+      :max="100"
+      :slider-cols="interactiveCols"
+      :step="0.01"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourRatio: value }, false)"
+    />
+    <pv-select
+      v-model="useCameraSettingsStore().currentPipelineSettings.contourTargetOrientation"
+      label="Target Orientation"
+      tooltip="Used to determine how to calculate target landmarks, as well as aspect ratio"
+      :items="['Portrait', 'Landscape']"
+      :select-cols="interactiveCols"
+      @input="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOrientation: value }, false)
+      "
+    />
+    <pv-select
+      v-model="currentPipelineSettings.contourSortMode"
+      label="Target Sort"
+      tooltip="Chooses the sorting mode used to determine the 'best' targets to provide to user code"
+      :select-cols="interactiveCols"
+      :items="['Largest', 'Smallest', 'Highest', 'Lowest', 'Rightmost', 'Leftmost', 'Centermost']"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourSortMode: value }, false)"
     />
   </div>
 </template>
