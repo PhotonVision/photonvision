@@ -168,7 +168,7 @@ public class FindBoardCornersGuidancePipe
         // resets for every frame
         endMessage = "not the end";
         progressInsert = new Mat();
-        save = false; // indicator for user pressed the "c" key to capture (save) manually
+        save = this.params.save; // indicator for user pressed the "c" key to capture (save) manually
         Mat imgPV = in.getLeft();
         Mat outPV = in.getRight();
 
@@ -392,6 +392,7 @@ public class FindBoardCornersGuidancePipe
     }
 
     public static class FindCornersGuidancePipeParams {
+        final boolean save;
         final int boardHeight;
         final int boardWidth;
         final UICalibrationData.BoardType type;
@@ -399,11 +400,13 @@ public class FindBoardCornersGuidancePipe
         final FrameDivisor divisor;
 
         public FindCornersGuidancePipeParams(
+                boolean save,
                 int boardHeight,
                 int boardWidth,
                 UICalibrationData.BoardType type,
                 double gridSize,
                 FrameDivisor divisor) {
+            this.save = save;
             this.boardHeight = boardHeight;
             this.boardWidth = boardWidth;
             this.type = type;
@@ -415,6 +418,7 @@ public class FindBoardCornersGuidancePipe
         public int hashCode() {
             final int prime = 31;
             int result = 1;
+            result = prime * result + (save ? 1 : 0);
             result = prime * result + boardHeight;
             result = prime * result + boardWidth;
             result = prime * result + ((type == null) ? 0 : type.hashCode());
@@ -431,6 +435,7 @@ public class FindBoardCornersGuidancePipe
             if (obj == null) return false;
             if (getClass() != obj.getClass()) return false;
             FindCornersGuidancePipeParams other = (FindCornersGuidancePipeParams) obj;
+            if (save != other.save) return false;
             if (boardHeight != other.boardHeight) return false;
             if (boardWidth != other.boardWidth) return false;
             if (type != other.type) return false;

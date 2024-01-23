@@ -104,6 +104,7 @@ public class Calibrate3dPipeline
                 //TODO make guidance its own params (not needed now) instead of copying unneeded stuff from FindCornersPipeParams
                 FindBoardCornersGuidancePipe.FindCornersGuidancePipeParams findCornersGuidancePipeParams =
                         new FindBoardCornersGuidancePipe.FindCornersGuidancePipeParams(
+                                takeSnapshot,
                                 settings.boardHeight,
                                 settings.boardWidth,
                                 settings.boardType,
@@ -162,10 +163,11 @@ public class Calibrate3dPipeline
         FindBoardCornersPipeResult findBoardResult = null;
 
         if (providePoseGuidance) {
+            minSnapshots = 999; // Guidance will tell us how many at the end so it's undefined for now
             FindBoardCornersGuidancePipeResult findBoardGuidanceResult =
                 findBoardCornersGuidancePipe.run(Pair.of(inputColorMat, outputColorCVMat.getMat())).output;
 
-            //FIXME need to handle CANCEL to bail out and ENOUGH needs to run calibrate after taking the snapshot
+            //FIXME need to handle CANCEL to bail out
 
             if (findBoardGuidanceResult.takeSnapshot || findBoardGuidanceResult.haveEnough || findBoardGuidanceResult.cancelCalibration) {
                 logger.debug("guidance result for variables 'snapshot', 'enough', and 'cancel':"
@@ -175,7 +177,7 @@ public class Calibrate3dPipeline
             }
 
             if (findBoardGuidanceResult.haveEnough) {
-                minSnapshots = 0;
+                minSnapshots = 0; // 0 is a safe small number to trigger final calibration; could get the size of the saved list of captures + 1 since there's one more snapshot to save
             }
             // findBoardGuidanceResult.takeSnapshot frame captured; maybe we don't care since it'll come back at us at the end when calibrated
             // findBoardGuidanceResult.haveEnough calibrated; done; null the guidance for fresh start next time
@@ -185,17 +187,19 @@ public class Calibrate3dPipeline
 
             if (takeSnapshot) {
                 // convert guidance result to non-guidance results
-                //FIXME will need the corner ids, too, when ChArUcoBoard added to calibrate for MrCal
-                MatOfPoint3f temp1 = new MatOfPoint3f();
-                MatOfPoint2f temp2 = new MatOfPoint2f();
-                findBoardGuidanceResult.objCorners.copyTo(temp1);
-                findBoardGuidanceResult.imgCorners.copyTo(temp2);
+                MatOfPoint3f objCornersT = new MatOfPoint3f();
+                MatOfPoint2f imgCornersT = new MatOfPoint2f();
+                Mat idCornersT = new Mat();
+                findBoardGuidanceResult.objCorners.copyTo(objCornersT);
+                findBoardGuidanceResult.imgCorners.copyTo(imgCornersT);
+                findBoardGuidanceResult.idCorners.copyTo(idCornersT);
                 findBoardResult =
                     new FindBoardCornersPipeResult(
                         findBoardGuidanceResult.imgSize,
-                        temp1,
-                        temp2);
-            }    
+                        objCornersT,
+                        imgCornersT);
+                        //FIXME add idCornersT for inlier corners for MrCal usage
+            }
         }
         else {    
             findBoardResult =
@@ -221,6 +225,16 @@ public class Calibrate3dPipeline
         }
 
         frame.release();
+
+        //FIXME takeSnapshot may work okay but it isn't exactly the same as if the button was pressed.
+        //FIXME need to handle enpough captures and calibration can occur like pressing the button.
+        //FIXME need to handle cancel calibration like pressing the button.
+        //FIXME need to suppress drawing the corners. A trick would be not to save the individual snapshots but
+        //FIXME accumulate them all for the end only. Maybe better is define a ChArUcoBoard pose mode that doesn't
+        //FIXME need the corners drawn
+
+        //FIXME maybe somewhere around here (maybe after the new CalibrationPipelineResult) call or simulate 
+        // if (providePoseGuidance && hasEnough) VisionModule.endcalibration();
 
         // Return the drawn chessboard if corners are found, if not, then return the input image.
         return new CalibrationPipelineResult(
