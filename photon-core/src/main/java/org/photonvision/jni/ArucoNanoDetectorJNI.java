@@ -41,7 +41,8 @@ public class ArucoNanoDetectorJNI extends PhotonJNICommon {
     }
 
     public static synchronized void forceLoad() throws IOException {
-        forceLoad(getInstance(), ArucoNanoDetectorJNI.class, List.of("photonmiscjnijni"));
+        var nativeLibName = System.mapLibraryName("photonaruconanojni");
+        extractAndLoad(ArucoNanoDetectorJNI.class, "/windows/x86-64/"+nativeLibName,nativeLibName);
     }
 
     @Override

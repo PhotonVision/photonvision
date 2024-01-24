@@ -346,7 +346,7 @@ public class Main {
 
         try {
             ArucoNanoDetectorJNI.forceLoad();
-            logger.info("Native libraries loaded.");
+            logger.info("Loaded aruco nano JNI");
         } catch (Exception e) {
             logger.error("Failed to load native libraries!", e);
         }
