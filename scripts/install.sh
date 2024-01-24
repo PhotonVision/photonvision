@@ -162,11 +162,13 @@ Description=Service that runs PhotonVision
 
 [Service]
 WorkingDirectory=/opt/photonvision
+# Optionally use: Environment=PATH=/path/to/java, generally this will be in /usr/bin/java. 
 # Run photonvision at "nice" -10, which is higher priority than standard
 Nice=-10
 # for non-uniform CPUs, like big.LITTLE, you want to select the big cores
 # look up the right values for your CPU
 # AllowedCPUs=4-7
+
 
 ExecStart=/usr/bin/java -Xmx512m -jar /opt/photonvision/photonvision.jar
 ExecStop=/bin/systemctl kill photonvision
