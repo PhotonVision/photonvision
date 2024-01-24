@@ -169,7 +169,6 @@ Nice=-10
 # look up the right values for your CPU
 # AllowedCPUs=4-7
 
-
 ExecStart=/usr/bin/java -Xmx512m -jar /opt/photonvision/photonvision.jar
 ExecStop=/bin/systemctl kill photonvision
 Type=simple
