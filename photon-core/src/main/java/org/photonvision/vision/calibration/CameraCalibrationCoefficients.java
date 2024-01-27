@@ -191,8 +191,8 @@ public class CameraCalibrationCoefficients implements Releasable {
                 + cameraIntrinsics
                 + ", distCoeffs="
                 + distCoeffs
-                + ", observations="
-                + observations
+                + ", observationslen="
+                + observations.size()
                 + ", calobjectWarp="
                 + Arrays.toString(calobjectWarp)
                 + ", intrinsicsArr="
@@ -200,5 +200,17 @@ public class CameraCalibrationCoefficients implements Releasable {
                 + ", distCoeffsArr="
                 + Arrays.toString(distCoeffsArr)
                 + "]";
+    }
+
+    public UICameraCalibrationCoefficients cloneWithoutObservations() {
+        return new UICameraCalibrationCoefficients(
+                resolution,
+                cameraIntrinsics,
+                distCoeffs,
+                calobjectWarp,
+                observations,
+                calobjectSize,
+                calobjectSpacing,
+                lensmodel);
     }
 }

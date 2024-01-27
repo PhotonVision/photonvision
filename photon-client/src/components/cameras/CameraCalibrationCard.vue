@@ -30,10 +30,7 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
           it.reprojectionErrors.flatMap((it2) => [it2.x, it2.y])
         );
         // For each error, square it, sum the squares, and divide by total points N
-        format.mean = Math.sqrt(
-          perViewSumSquareReprojectionError.map((it) => Math.pow(it, 2)).reduce((a, b) => a + b, 0) /
-            perViewSumSquareReprojectionError.length
-        );
+        format.mean = calib.meanErrors.reduce((a, b) => a + b) / calib.meanErrors.length;
 
         format.horizontalFOV =
           2 * Math.atan2(format.resolution.width / 2, calib.cameraIntrinsics.data[0]) * (180 / Math.PI);

@@ -2,49 +2,44 @@
 import type { BoardObservation, CameraCalibrationResult, VideoFormat } from "@/types/SettingTypes";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
-import { ref } from "vue";
+import { inject, ref } from "vue";
 import loadingImage from "@/assets/images/loading.svg";
 import { getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
+import axios from "axios";
 
 const props = defineProps<{
   videoFormat: VideoFormat;
 }>();
 
-const getMeanFromView = (o: BoardObservation) => {
-  // Is this the right formula for RMS error? who knows! not me!
-  const perViewSumSquareReprojectionError = o.reprojectionErrors.flatMap((it2) => [it2.x, it2.y]);
-
-  // For each error, square it, sum the squares, and divide by total points N
-  return Math.sqrt(
-    perViewSumSquareReprojectionError.map((it) => Math.pow(it, 2)).reduce((a, b) => a + b, 0) /
-      perViewSumSquareReprojectionError.length
-  );
-};
-
 // Import and export functions
-const downloadCalibration = () => {
-  const calibData = useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution);
-  if (calibData === undefined) {
-    useStateStore().showSnackbarMessage({
-      color: "error",
-      message:
-        "Calibration data isn't available for the requested resolution, please calibrate the requested resolution first"
+const downloadCalibration = async () => {
+  axios
+    .get(
+      `http://${address}/api/settings/camera/getFullCalibration?width=${props.videoFormat.resolution.width}&height=${props.videoFormat.resolution.height}&cameraIdx=${useStateStore().currentCameraIndex}`
+    )
+    .then((resp) => {
+      const calibData = resp.data;
+
+      const camUniqueName = useCameraSettingsStore().currentCameraSettings.uniqueName;
+      const filename = `photon_calibration_${camUniqueName}_${calibData.resolution.width}x${calibData.resolution.height}.json`;
+      const fileData = JSON.stringify(calibData);
+
+      const element = document.createElement("a");
+      element.style.display = "none";
+      element.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(fileData));
+      element.setAttribute("download", filename);
+
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    })
+    .catch((e) => {
+      useStateStore().showSnackbarMessage({
+        color: "error",
+        message:
+          "Calibration data isn't available for the requested resolution, please calibrate the requested resolution first"
+      });
     });
-    return;
-  }
-
-  const camUniqueName = useCameraSettingsStore().currentCameraSettings.uniqueName;
-  const filename = `photon_calibration_${camUniqueName}_${calibData.resolution.width}x${calibData.resolution.height}.json`;
-  const fileData = JSON.stringify(calibData);
-
-  const element = document.createElement("a");
-  element.style.display = "none";
-  element.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(fileData));
-  element.setAttribute("download", filename);
-
-  document.body.appendChild(element);
-  element.click();
-  document.body.removeChild(element);
 };
 const importCalibrationFromPhotonJson = ref();
 const openUploadPhotonCalibJsonPrompt = () => {
@@ -97,19 +92,47 @@ const importCalibration = async () => {
 };
 
 interface ObservationDetails {
-  snapshotSrc: any;
   mean: number;
   index: number;
 }
 const getObservationDetails = (): ObservationDetails[] | undefined => {
-  return useCameraSettingsStore()
-    .getCalibrationCoeffs(props.videoFormat.resolution)
-    ?.observations.map((o, i) => ({
-      index: i,
-      mean: parseFloat(getMeanFromView(o).toFixed(2)),
-      snapshotSrc: o.includeObservationInCalibration ? "data:image/png;base64," + o.snapshotData.data : loadingImage
-    }));
+  const coefficients = useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution);
+
+  return coefficients?.meanErrors.map((m, i) => ({
+    index: i,
+    mean: parseFloat(m.toFixed(2))
+  }));
 };
+
+const fetchSnapshot = async (res, idx): string | undefined => {
+  var promise = axios
+    .get("/utils/getImageSnapshots")
+    .then((response) => {
+      return "data:image/jpg;base64," + response.data;
+    })
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: error.response.data.text || error.response.data
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "Error while trying to process the request! The backend didn't respond."
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "An error occurred while trying to process the request."
+        });
+      }
+    });
+
+  return (await promise) as string | undefined;
+};
+
+const address = inject<string>("backendHost");
 </script>
 
 <template>
@@ -278,7 +301,11 @@ const getObservationDetails = (): ObservationDetails[] | undefined => {
         <template #expanded-item="{ headers, item }">
           <td :colspan="headers.length">
             <div style="display: flex; justify-content: center; width: 100%">
-              <img :src="item.snapshotSrc" alt="observation image" class="snapshot-preview pt-2 pb-2" />
+              <img
+                :src="`http://${address}/api/utils/getCalSnapshot?width=${props.videoFormat.resolution.width}&height=${props.videoFormat.resolution.height}&snapshotIdx=${item.index}&cameraIdx=${useStateStore().currentCameraIndex}`"
+                alt="observation image"
+                class="snapshot-preview pt-2 pb-2"
+              />
             </div>
           </td>
         </template>
