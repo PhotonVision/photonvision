@@ -25,10 +25,6 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
 
       const calib = useCameraSettingsStore().getCalibrationCoeffs(format.resolution);
       if (calib !== undefined) {
-        // Is this the right formula for RMS error? who knows! not me!
-        const perViewSumSquareReprojectionError = calib.observations.flatMap((it) =>
-          it.reprojectionErrors.flatMap((it2) => [it2.x, it2.y])
-        );
         // For each error, square it, sum the squares, and divide by total points N
         format.mean = calib.meanErrors.reduce((a, b) => a + b) / calib.meanErrors.length;
 

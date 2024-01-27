@@ -148,7 +148,7 @@ const openExportSettingsPrompt = () => {
       element.click();
       document.body.removeChild(element);
     })
-    .catch((e) => {
+    .catch(() => {
       useStateStore().showSnackbarMessage({
         color: "error",
         message:

@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import type { BoardObservation, CameraCalibrationResult, VideoFormat } from "@/types/SettingTypes";
+import type { CameraCalibrationResult, VideoFormat } from "@/types/SettingTypes";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { inject, ref } from "vue";
-import loadingImage from "@/assets/images/loading.svg";
 import { getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
 import axios from "axios";
 
@@ -36,7 +35,7 @@ const downloadCalibration = async () => {
       element.click();
       document.body.removeChild(element);
     })
-    .catch((e) => {
+    .catch(() => {
       useStateStore().showSnackbarMessage({
         color: "error",
         message:
@@ -106,34 +105,6 @@ const getObservationDetails = (): ObservationDetails[] | undefined => {
     index: i,
     mean: parseFloat(m.toFixed(2))
   }));
-};
-
-const fetchSnapshot = async (res, idx): string | undefined => {
-  var promise = axios
-    .get("/utils/getImageSnapshots")
-    .then((response) => {
-      return "data:image/jpg;base64," + response.data;
-    })
-    .catch((error) => {
-      if (error.response) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: error.response.data.text || error.response.data
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "Error while trying to process the request! The backend didn't respond."
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "An error occurred while trying to process the request."
-        });
-      }
-    });
-
-  return (await promise) as string | undefined;
 };
 
 const address = inject<string>("backendHost");
