@@ -132,6 +132,7 @@ public class Server {
         app.post("/api/utils/publishMetrics", RequestHandler::onMetricsPublishRequest);
         app.get("/api/utils/getImageSnapshots", RequestHandler::onImageSnapshotsRequest);
         app.get("/api/utils/getCalSnapshot", RequestHandler::onCalibrationSnapshotRequest);
+        app.get("/api/utils/getCalibrationJSON", RequestHandler::onCalibrationJSONRequest);
 
         // Calibration
         app.post("/api/calibration/end", RequestHandler::onCalibrationEndRequest);

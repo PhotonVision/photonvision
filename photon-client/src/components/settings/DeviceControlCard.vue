@@ -127,35 +127,9 @@ const openExportLogsPrompt = () => {
   exportLogFile.value.click();
 };
 
-const exportInProgress = ref<boolean>(false);
+const exportSettings = ref();
 const openExportSettingsPrompt = () => {
-  exportInProgress.value = true;
-  axios
-    .get(`http://${address}/api/settings/photonvision_config.zip`, {
-      responseType: "blob"
-    })
-    .then((resp) => {
-      const element = document.createElement("a");
-      element.style.display = "none";
-
-      // var blob = new Blob([resp.data], {type: "application/zip"});
-      const blob = resp.data;
-      element.href = window.URL.createObjectURL(blob);
-
-      element.setAttribute("download", "photonvision_config.zip");
-
-      document.body.appendChild(element);
-      element.click();
-      document.body.removeChild(element);
-    })
-    .catch(() => {
-      useStateStore().showSnackbarMessage({
-        color: "error",
-        message:
-          "Calibration data isn't available for the requested resolution, please calibrate the requested resolution first"
-      });
-    })
-    .finally(() => (exportInProgress.value = false));
+  exportSettings.value.click();
 };
 
 enum ImportType {
@@ -230,136 +204,126 @@ const handleSettingsImport = () => {
 </script>
 
 <template>
-  <div>
-    <v-card dark class="mb-3 pr-6 pb-3" style="background-color: #006492">
-      <v-card-title>Device Control</v-card-title>
-      <div class="ml-5">
-        <v-row>
-          <v-col cols="12" lg="4" md="6">
-            <v-btn color="red" @click="restartProgram">
-              <v-icon left class="open-icon"> mdi-restart </v-icon>
-              <span class="open-label">Restart PhotonVision</span>
-            </v-btn>
-          </v-col>
-          <v-col cols="12" lg="4" md="6">
-            <v-btn color="red" @click="restartDevice">
-              <v-icon left class="open-icon"> mdi-restart-alert </v-icon>
-              <span class="open-label">Restart Device</span>
-            </v-btn>
-          </v-col>
-          <v-col cols="12" lg="4">
-            <v-btn color="secondary" @click="openOfflineUpdatePrompt">
-              <v-icon left class="open-icon"> mdi-upload </v-icon>
-              <span class="open-label">Offline Update</span>
-            </v-btn>
-            <input ref="offlineUpdate" type="file" accept=".jar" style="display: none" @change="handleOfflineUpdate" />
-          </v-col>
-        </v-row>
-        <v-divider style="margin: 12px 0" />
-        <v-row>
-          <v-col cols="12" sm="6">
-            <v-btn color="secondary" @click="() => (showImportDialog = true)">
-              <v-icon left class="open-icon"> mdi-import </v-icon>
-              <span class="open-label">Import Settings</span>
-            </v-btn>
-            <v-dialog
-              v-model="showImportDialog"
-              width="600"
-              @input="
-                () => {
-                  importType = -1;
-                  importFile = null;
-                }
-              "
-            >
-              <v-card color="primary" dark>
-                <v-card-title>Import Settings</v-card-title>
-                <v-card-text>
-                  Upload and apply previously saved or exported PhotonVision settings to this device
-                  <v-row class="mt-6 ml-4">
-                    <pv-select
-                      v-model="importType"
-                      label="Type"
-                      tooltip="Select the type of settings file you are trying to upload"
-                      :items="[
-                        'All Settings',
-                        'Hardware Config',
-                        'Hardware Settings',
-                        'Network Config',
-                        'Apriltag Layout'
-                      ]"
-                      :select-cols="10"
-                      style="width: 100%"
-                    />
-                  </v-row>
-                  <v-row class="mt-6 ml-4 mr-8">
-                    <v-file-input
-                      v-model="importFile"
-                      :disabled="importType === -1"
-                      :error-messages="importType === -1 ? 'Settings type not selected' : ''"
-                      :accept="importType === ImportType.AllSettings ? '.zip' : '.json'"
-                    />
-                  </v-row>
-                  <v-row
-                    class="mt-12 ml-8 mr-8 mb-1"
-                    style="display: flex; align-items: center; justify-content: center"
-                    align="center"
-                  >
-                    <v-btn color="secondary" :disabled="importFile === null" @click="handleSettingsImport">
-                      <v-icon left class="open-icon"> mdi-import </v-icon>
-                      <span class="open-label">Import Settings</span>
-                    </v-btn>
-                  </v-row>
-                </v-card-text>
-              </v-card>
-            </v-dialog>
-          </v-col>
-          <v-col cols="12" sm="6">
-            <v-btn color="secondary" @click="openExportSettingsPrompt">
-              <v-icon left class="open-icon"> mdi-export </v-icon>
-              <span class="open-label">Export Settings</span>
-            </v-btn>
-          </v-col>
-          <v-col cols="12" sm="6">
-            <v-btn color="secondary" @click="openExportLogsPrompt">
-              <v-icon left class="open-icon"> mdi-download </v-icon>
-              <span class="open-label">Download Current Log</span>
+  <v-card dark class="mb-3 pr-6 pb-3" style="background-color: #006492">
+    <v-card-title>Device Control</v-card-title>
+    <div class="ml-5">
+      <v-row>
+        <v-col cols="12" lg="4" md="6">
+          <v-btn color="red" @click="restartProgram">
+            <v-icon left class="open-icon"> mdi-restart </v-icon>
+            <span class="open-label">Restart PhotonVision</span>
+          </v-btn>
+        </v-col>
+        <v-col cols="12" lg="4" md="6">
+          <v-btn color="red" @click="restartDevice">
+            <v-icon left class="open-icon"> mdi-restart-alert </v-icon>
+            <span class="open-label">Restart Device</span>
+          </v-btn>
+        </v-col>
+        <v-col cols="12" lg="4">
+          <v-btn color="secondary" @click="openOfflineUpdatePrompt">
+            <v-icon left class="open-icon"> mdi-upload </v-icon>
+            <span class="open-label">Offline Update</span>
+          </v-btn>
+          <input ref="offlineUpdate" type="file" accept=".jar" style="display: none" @change="handleOfflineUpdate" />
+        </v-col>
+      </v-row>
+      <v-divider style="margin: 12px 0" />
+      <v-row>
+        <v-col cols="12" sm="6">
+          <v-btn color="secondary" @click="() => (showImportDialog = true)">
+            <v-icon left class="open-icon"> mdi-import </v-icon>
+            <span class="open-label">Import Settings</span>
+          </v-btn>
+          <v-dialog
+            v-model="showImportDialog"
+            width="600"
+            @input="
+              () => {
+                importType = -1;
+                importFile = null;
+              }
+            "
+          >
+            <v-card color="primary" dark>
+              <v-card-title>Import Settings</v-card-title>
+              <v-card-text>
+                Upload and apply previously saved or exported PhotonVision settings to this device
+                <v-row class="mt-6 ml-4">
+                  <pv-select
+                    v-model="importType"
+                    label="Type"
+                    tooltip="Select the type of settings file you are trying to upload"
+                    :items="[
+                      'All Settings',
+                      'Hardware Config',
+                      'Hardware Settings',
+                      'Network Config',
+                      'Apriltag Layout'
+                    ]"
+                    :select-cols="10"
+                    style="width: 100%"
+                  />
+                </v-row>
+                <v-row class="mt-6 ml-4 mr-8">
+                  <v-file-input
+                    v-model="importFile"
+                    :disabled="importType === -1"
+                    :error-messages="importType === -1 ? 'Settings type not selected' : ''"
+                    :accept="importType === ImportType.AllSettings ? '.zip' : '.json'"
+                  />
+                </v-row>
+                <v-row
+                  class="mt-12 ml-8 mr-8 mb-1"
+                  style="display: flex; align-items: center; justify-content: center"
+                  align="center"
+                >
+                  <v-btn color="secondary" :disabled="importFile === null" @click="handleSettingsImport">
+                    <v-icon left class="open-icon"> mdi-import </v-icon>
+                    <span class="open-label">Import Settings</span>
+                  </v-btn>
+                </v-row>
+              </v-card-text>
+            </v-card>
+          </v-dialog>
+        </v-col>
+        <v-col cols="12" sm="6">
+          <v-btn color="secondary" @click="openExportSettingsPrompt">
+            <v-icon left class="open-icon"> mdi-export </v-icon>
+            <span class="open-label">Export Settings</span>
+          </v-btn>
+          <a
+            ref="exportSettings"
+            style="color: black; text-decoration: none; display: none"
+            :href="`http://${address}/api/settings/photonvision_config.zip`"
+            download="photonvision-settings.zip"
+            target="_blank"
+          />
+        </v-col>
+        <v-col cols="12" sm="6">
+          <v-btn color="secondary" @click="openExportLogsPrompt">
+            <v-icon left class="open-icon"> mdi-download </v-icon>
+            <span class="open-label">Download Current Log</span>
 
-              <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
-              <a
-                ref="exportLogFile"
-                style="color: black; text-decoration: none; display: none"
-                :href="`http://${address}/api/utils/photonvision-journalctl.txt`"
-                download="photonvision-journalctl.txt"
-                target="_blank"
-              />
-            </v-btn>
-          </v-col>
-          <v-col cols="12" sm="6">
-            <v-btn color="secondary" @click="useStateStore().showLogModal = true">
-              <v-icon left class="open-icon"> mdi-eye </v-icon>
-              <span class="open-label">Show log viewer</span>
-            </v-btn>
-          </v-col>
-        </v-row>
-      </div>
-    </v-card>
-
-    <v-dialog v-model="exportInProgress" width="500px" :persistent="true">
-      <v-card color="primary" dark>
-        <v-card-title class="pb-8"> Export All Settings </v-card-title>
-        <div class="ml-3">
-          <v-col style="text-align: center">
-            <v-progress-circular indeterminate :size="70" :width="8" color="accent" />
-            <v-card-text
-              >Exporting camera calibration. On a robot via WiFi, this may take more than a minute; connecting directly
-              via Ethernet will make this go up to 200x faster :)
-            </v-card-text>
-          </v-col>
-        </div>
-      </v-card>
-    </v-dialog>
-  </div>
+            <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
+            <a
+              ref="exportLogFile"
+              style="color: black; text-decoration: none; display: none"
+              :href="`http://${address}/api/utils/photonvision-journalctl.txt`"
+              download="photonvision-journalctl.txt"
+              target="_blank"
+            />
+          </v-btn>
+        </v-col>
+        <v-col cols="12" sm="6">
+          <v-btn color="secondary" @click="useStateStore().showLogModal = true">
+            <v-icon left class="open-icon"> mdi-eye </v-icon>
+            <span class="open-label">Show log viewer</span>
+          </v-btn>
+        </v-col>
+      </v-row>
+    </div>
+  </v-card>
 </template>
 
 <style scoped>

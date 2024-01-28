@@ -657,6 +657,37 @@ public class RequestHandler {
         ctx.status(200);
     }
 
+    public static void onCalibrationJSONRequest(Context ctx) {
+        logger.info(ctx.queryString().toString());
+
+        int idx = Integer.parseInt(ctx.queryParam("cameraIdx"));
+        var width = Integer.parseInt(ctx.queryParam("width"));
+        var height = Integer.parseInt(ctx.queryParam("height"));
+
+        var cc = VisionModuleManager.getInstance().getModule(idx).getStateAsCameraConfig();
+
+        CameraCalibrationCoefficients calList =
+                cc.calibrations.stream()
+                        .filter(
+                                it ->
+                                        Math.abs(it.resolution.width - width) < 1e-4
+                                                && Math.abs(it.resolution.height - height) < 1e-4)
+                        .findFirst()
+                        .orElse(null);
+
+        if (calList == null) {
+            ctx.status(404);
+            return;
+        }
+
+        var filename = "photon_calibration_" + cc.uniqueName + "_" + width + "x" + height + ".json";
+        ctx.contentType("application/zip");
+        ctx.header("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+        ctx.json(calList);
+
+        ctx.status(200);
+    }
+
     public static void onImageSnapshotsRequest(Context ctx) {
         var snapshots = new ArrayList<HashMap<String, Object>>();
         var cameraDirs = ConfigManager.getInstance().getImageSavePath().toFile().listFiles();
