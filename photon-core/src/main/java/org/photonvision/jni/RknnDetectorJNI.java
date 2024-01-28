@@ -35,6 +35,8 @@ public class RknnDetectorJNI extends PhotonJNICommon {
     private boolean isLoaded;
     private static RknnDetectorJNI instance = null;
 
+    private static final int RKNN_CORE_COUNT = 2;
+
     private RknnDetectorJNI() {
         isLoaded = false;
     }
@@ -65,15 +67,18 @@ public class RknnDetectorJNI extends PhotonJNICommon {
         long objPointer = -1;
         private List<String> labels;
         private final Object lock = new Object();
-
+        private static int coreId = 0;
         private static final CopyOnWriteArrayList<Long> detectors = new CopyOnWriteArrayList<>();
 
         public RknnObjectDetector(String modelPath, List<String> labels, RknnJNI.ModelVersion version) {
             synchronized (lock) {
-                objPointer = RknnJNI.create(modelPath, labels.size(), version.ordinal(), 0);
+                objPointer = RknnJNI.create(modelPath, labels.size(), version.ordinal(), coreId);
                 detectors.add(objPointer);
                 System.out.println(
                         "Created " + objPointer + "! Detectors: " + Arrays.toString(detectors.toArray()));
+                if (++coreId > RKNN_CORE_COUNT) {
+                    coreId = 0;
+                }
             }
             this.labels = labels;
         }

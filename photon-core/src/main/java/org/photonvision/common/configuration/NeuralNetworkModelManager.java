@@ -53,7 +53,7 @@ public class NeuralNetworkModelManager {
         this.defaultModelFile = new File(modelsFolder, MODEL_NAME);
         extractResource(modelResourcePath, defaultModelFile);
 
-        File labelsFile = new File(modelsFolder, "labels.txt");
+        File labelsFile = new File(modelsFolder, "labels_v5.txt");
         var labelResourcePath = "/models/" + labelsFile.getName();
         extractResource(labelResourcePath, labelsFile);
 
