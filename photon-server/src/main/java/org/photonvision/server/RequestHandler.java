@@ -583,40 +583,6 @@ public class RequestHandler {
         ctx.status(204);
     }
 
-    public static void onCalibrationExportRequest(Context ctx) {
-        logger.info(ctx.queryString().toString());
-
-        int idx = Integer.parseInt(ctx.queryParam("cameraIdx"));
-        var width = Integer.parseInt(ctx.queryParam("width"));
-        var height = Integer.parseInt(ctx.queryParam("height"));
-
-        CameraCalibrationCoefficients calList =
-                VisionModuleManager.getInstance()
-                        .getModule(idx)
-                        .getStateAsCameraConfig()
-                        .calibrations
-                        .stream()
-                        .filter(
-                                it ->
-                                        Math.abs(it.resolution.width - width) < 1e-4
-                                                && Math.abs(it.resolution.height - height) < 1e-4)
-                        .findFirst()
-                        .orElse(null);
-
-        if (calList == null) {
-            ctx.status(404);
-            return;
-        }
-
-        try {
-            ctx.json(kObjectMapper.writeValueAsString(calList));
-            ctx.status(200);
-        } catch (JsonProcessingException e) {
-            logger.error("Exception serializing camera cal for idx " + idx, e);
-            ctx.status(404);
-        }
-    }
-
     public static void onCalibrationSnapshotRequest(Context ctx) {
         logger.info(ctx.queryString().toString());
 
@@ -657,7 +623,7 @@ public class RequestHandler {
         ctx.status(200);
     }
 
-    public static void onCalibrationJSONRequest(Context ctx) {
+    public static void onCalibrationExportRequest(Context ctx) {
         logger.info(ctx.queryString().toString());
 
         int idx = Integer.parseInt(ctx.queryParam("cameraIdx"));
