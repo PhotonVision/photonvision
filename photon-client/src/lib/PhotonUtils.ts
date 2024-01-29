@@ -18,3 +18,16 @@ export const parseJsonFile = async <T extends Record<string, any>>(file: File): 
     fileReader.readAsText(file);
   });
 };
+
+export const parseTextFile = async (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const fileReader = new FileReader();
+    fileReader.onload = (event) => {
+      const target: FileReader | null = event.target;
+      if (target === null) reject();
+      else resolve(target.result as string);
+    };
+    fileReader.onerror = (error) => reject(error);
+    fileReader.readAsText(file);
+  });
+};
