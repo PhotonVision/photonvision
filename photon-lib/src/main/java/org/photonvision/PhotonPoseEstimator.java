@@ -410,6 +410,8 @@ public class PhotonPoseEstimator {
 
         if (estimatedPose.isEmpty()) {
             lastPose = null;
+        } else {
+            lastPose = estimatedPose.get().estimatedPose;
         }
 
         return estimatedPose;

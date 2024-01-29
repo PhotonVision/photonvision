@@ -186,6 +186,9 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
       ret = std::nullopt;
   }
 
+  if (ret) {
+    lastPose = ret.value().estimatedPose;
+  }
   return ret;
 }
 
