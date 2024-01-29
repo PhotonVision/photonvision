@@ -9,8 +9,6 @@ const props = defineProps<{
   videoFormat: VideoFormat;
 }>();
 
-const backendHost = inject<string>("backendHost") as string;
-
 const exportCalibration = ref();
 const openExportCalibrationPrompt = () => {
   exportCalibration.value.click();
@@ -83,6 +81,12 @@ const getObservationDetails = (): ObservationDetails[] | undefined => {
     mean: parseFloat(m.toFixed(2))
   }));
 };
+
+const exportCalibrationURL = computed<string>(() =>
+  useCameraSettingsStore().getCalJSONUrl(inject<string>("backendHost") as string, props.videoFormat.resolution)
+);
+const calibrationImageURL = (index: number) =>
+  useCameraSettingsStore().getCalImageUrl(inject<string>("backendHost") as string, props.videoFormat.resolution, index);
 </script>
 
 <template>
@@ -113,7 +117,7 @@ const getObservationDetails = (): ObservationDetails[] | undefined => {
         <v-btn
           color="secondary"
           class="mt-4"
-          :disabled="currentCalibrationCoeffs === undefined"
+          :disabled="!currentCalibrationCoeffs"
           style="width: 100%"
           @click="openExportCalibrationPrompt"
         >
@@ -123,13 +127,12 @@ const getObservationDetails = (): ObservationDetails[] | undefined => {
         <a
           ref="exportCalibration"
           style="color: black; text-decoration: none; display: none"
-          :href="useCameraSettingsStore().getCalJSONUrl(backendHost, props.videoFormat.resolution)"
+          :href="exportCalibrationURL"
           target="_blank"
         />
-        <!-- :download="`photon_calibration_${useCameraSettingsStore().currentCameraSettings.uniqueName}_${props.videoFormat.resolution.width}x${props.videoFormat.resolution.height}.json`" -->
       </v-col>
     </v-row>
-    <v-row v-if="currentCalibrationCoeffs !== undefined" class="pt-2">
+    <v-row v-if="!currentCalibrationCoeffs" class="pt-2">
       <v-card-subtitle>Calibration Details</v-card-subtitle>
       <v-simple-table dense style="width: 100%" class="pl-2 pr-2">
         <template #default>
@@ -253,11 +256,7 @@ const getObservationDetails = (): ObservationDetails[] | undefined => {
         <template #expanded-item="{ headers, item }">
           <td :colspan="headers.length">
             <div style="display: flex; justify-content: center; width: 100%">
-              <img
-                :src="useCameraSettingsStore().getCalImageUrl(backendHost, props.videoFormat.resolution, item.index)"
-                alt="observation image"
-                class="snapshot-preview pt-2 pb-2"
-              />
+              <img :src="calibrationImageURL(item.index)" alt="observation image" class="snapshot-preview pt-2 pb-2" />
             </div>
           </td>
         </template>
