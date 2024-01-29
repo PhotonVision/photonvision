@@ -139,7 +139,6 @@ public class Server {
         app.post("/api/calibration/importFromData", RequestHandler::onDataCalibrationImportRequest);
 
         app.start(port);
-        System.out.println("hi");
     }
 
     /**

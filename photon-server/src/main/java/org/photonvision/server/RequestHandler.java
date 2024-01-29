@@ -94,6 +94,7 @@ public class RequestHandler {
             ctx.status(200);
             ctx.result("Successfully saved the uploaded settings zip, rebooting...");
             logger.info("Successfully saved the uploaded settings zip, rebooting...");
+            ConfigManager.getInstance().disableFlushOnShutdown();
             restartProgram();
         } else {
             ctx.status(500);
