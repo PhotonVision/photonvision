@@ -217,7 +217,7 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
                     if (entry.isDirectory()) {
                         Files.createDirectories(filePath);
                     } else {
-                        if(Files.exists(filePath)){
+                        if (Files.exists(filePath)) {
                             Files.delete(filePath);
                         }
                         Files.copy(zip, filePath);
