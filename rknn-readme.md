@@ -11,14 +11,12 @@ The expected performance is 60 FPS with a 640x640 model.
 ### Option 2: Install PhotonVision on an fresh Ubuntu 22.04 installation:
 1. Install Ubuntu 22.04 on the board. I recommend [this unofficial project](https://github.com/Joshua-Riek/ubuntu-rockchip/releases/latest). The default username and password for that image is ubuntu:ubuntu. Make sure to use an Ubuntu 22.04 (Jammy) server image.
 2. Install PhotonVision using the [official instructions](https://docs.photonvision.org/en/latest/getting-started/installation.html). This requires you to ssh into the board, which requires you to have the board's IP address. You can do this by connecting the board to a monitor and keyboard and run the `ifconfig` command, or by using a tool like [Angry IP Scanner](https://angryip.org/) and be connected to the same network as the board, such as the robot's network.
-3. This gets you to a "stock" PhotonVision installation. In order to get the object detection working, download the latest linuxarm64 jar from the [releases page](https://github.com/lavirz/photonvision/releases/latest) and upload it using the "offline update" button in the setings page:
-<img src="https://i.postimg.cc/50sHKZbk/pvss-offline-update.png" width="800"/>
+3. This gets you to a "stock" PhotonVision installation. In order to get the object detection working, download the latest linuxarm64 jar from the [releases page](https://github.com/lavirz/photonvision/releases/latest) and upload it using the "offline update" button in the setings page:<img src="https://i.postimg.cc/50sHKZbk/pvss-offline-update.png" width="800"/>
 1. That's it! after uploading the jar, PhotonVision will restart automatically, and the RKNN pipeline should be available.
 
 ## Usage
 1. Go to the "Vision" tab, and click "Add Pipeline". Select "RKNN" as the pipeline type. Alternatively, you can edit an existing pipeline and change the type to "RKNN".
-2. The default model is YOLOv5n, at 640x640 resolution, detecting notes. You can change the model by going to the RKNN Tab and choosing another model from the dropdown. There, you can also change the confidence threshold.
-<img src="https://i.postimg.cc/sXhRLLF4/pvss-rknn-tab.png" width="400"/>
+2. The default model is YOLOv5n, at 640x640 resolution, detecting notes. You can change the model by going to the RKNN Tab and choosing another model from the dropdown. There, you can also change the confidence threshold.<img src="https://i.postimg.cc/sXhRLLF4/pvss-rknn-tab.png" width="400"/>
 3. To upload a model of your own, head to the settings page, click the "Import Settings" button, and choose "RKNN Model". Choose a model from your computer, and it should upload and restart PhotonVision automatically, and the model should be available in the RKNN tab.
 4. To use the detection in the robot code, you can use the regular methods to retrieve the target. The get the class and confidence, use the `fiducialId` and `poseAmbiguity` fields respectively.
 
