@@ -19,33 +19,33 @@ package org.photonvision.vision.pipeline;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.zip.ZipInputStream;
 import org.opencv.core.*;
-import org.opencv.imgproc.Imgproc;
+import org.photonvision.PhotonVersion;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.common.util.ColorHelper;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
+import org.photonvision.vision.opencv.DualOffsetValues;
+import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.*;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
-import org.photonvision.vision.rknn.RKNNJNI;
+import org.photonvision.vision.target.PotentialTarget;
+import org.photonvision.vision.target.TargetOrientation;
 import org.photonvision.vision.target.TrackedTarget;
-import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 
 public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSettings> {
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
-    private Mat processed;
-    List<TrackedTarget> targetList = new ArrayList<TrackedTarget>();
-    List<Long> times = new ArrayList<>();
+    private final RKNNPipe rknnPipe = new RKNNPipe();
+    private final SortContoursPipe sortContoursPipe = new SortContoursPipe();
+    private final Collect2dTargetsPipe collect2dTargetsPipe = new Collect2dTargetsPipe();
+    private final FilterObjectDetectionsPipe filterContoursPipe = new FilterObjectDetectionsPipe();
+
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
-    private Map<String, RKNNJNI> models = new HashMap<>();
     private Logger logger;
 
     public RKNNPipeline() {
@@ -60,81 +60,74 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
         logger =
                 new Logger(this.getClass(), "RKNNPipeline " + settings.pipelineNickname, LogGroup.Camera);
         unpackModelsIfNeeded();
-
-        addModel(settings.selectedModel);
-    }
-
-    private void addModel(String name) {
-        var rj = new RKNNJNI();
-        rj.init(ConfigManager.getInstance().getRKNNModelsPath() + "/" + name + ".rknn");
-        models.put(name, rj);
-    }
-
-    private RKNNJNI getModel(String name) {
-        if (!models.containsKey(name)) {
-            addModel(name);
-        }
-        return models.get(name);
     }
 
     @Override
-    protected void setPipeParamsImpl() {}
+    protected void setPipeParamsImpl() {
+        var params = new RKNNPipe.RKNNPipeParams();
+        params.confidenceThreshold = settings.confidenceThreshold;
+        params.modelPath = settings.selectedModel;
+        rknnPipe.setParams(params);
+
+        DualOffsetValues dualOffsetValues =
+                new DualOffsetValues(
+                        settings.offsetDualPointA,
+                        settings.offsetDualPointAArea,
+                        settings.offsetDualPointB,
+                        settings.offsetDualPointBArea);
+
+        SortContoursPipe.SortContoursParams sortContoursParams =
+                new SortContoursPipe.SortContoursParams(
+                        settings.contourSortMode,
+                        settings.outputShowMultipleTargets ? MAX_MULTI_TARGET_RESULTS : 1,
+                        frameStaticProperties);
+        sortContoursPipe.setParams(sortContoursParams);
+
+        var filterContoursParams =
+                new FilterObjectDetectionsPipe.FilterContoursParams(
+                        settings.contourArea,
+                        settings.contourRatio,
+                        frameStaticProperties,
+                        settings.contourTargetOrientation == TargetOrientation.Landscape);
+        filterContoursPipe.setParams(filterContoursParams);
+
+        Collect2dTargetsPipe.Collect2dTargetsParams collect2dTargetsParams =
+                new Collect2dTargetsPipe.Collect2dTargetsParams(
+                        settings.offsetRobotOffsetMode,
+                        settings.offsetSinglePoint,
+                        dualOffsetValues,
+                        settings.contourTargetOffsetPointEdge,
+                        settings.contourTargetOrientation,
+                        frameStaticProperties);
+        collect2dTargetsPipe.setParams(collect2dTargetsParams);
+    }
 
     @Override
     protected CVPipelineResult process(Frame input_frame, RKNNPipelineSettings settings) {
-        long sumPipeNanosElapsed = System.nanoTime();
-        times.clear();
-        times.add(System.nanoTime());
-        if (input_frame.colorImage.getMat().empty()) {
-            System.out.println("frame is empty");
-            return new CVPipelineResult(0, 0, List.of(), input_frame);
-        }
-        times.add(System.nanoTime());
-        targetList.clear();
-        times.add(System.nanoTime());
+        long timeStarted = System.nanoTime();
+        long sumPipeNanosElapsed = 0;
 
         input_frame.processedImage.copyTo(input_frame.colorImage);
-        times.add(System.nanoTime());
-        processed = input_frame.processedImage.getMat();
+        var processed = input_frame.processedImage.getMat();
 
-        times.add(System.nanoTime());
-        var results =
-                getModel(settings.selectedModel)
-                        .detectAndDisplay(input_frame.colorImage.getMat().getNativeObjAddr());
-        times.add(System.nanoTime());
-        for (int i = 0; results != null && i < results.count; i++) {
-            var detection = results.results[i];
-            if (detection.conf < settings.confidenceThreshold) continue;
+        CVPipeResult<List<NeuralNetworkPipeResult>> rknnResult = rknnPipe.run(input_frame.colorImage);
+        sumPipeNanosElapsed += rknnResult.nanosElapsed;
 
-            var box = detection.box;
-            targetList.add(
-                    new TrackedTarget(
-                            new Rect2d(box.left, box.top, box.right - box.left, box.bottom - box.top),
-                            detection.cls,
-                            detection.conf,
-                            new TargetCalculationParameters(
-                                    false, null, null, null, null, this.frameStaticProperties)));
-            if (settings.outputShouldShow) {
-                Imgproc.rectangle(
-                        processed,
-                        new Point(box.left, box.top),
-                        new Point(box.right, box.bottom),
-                        new Scalar(0, 0, 255),
-                        2);
+        if (rknnResult.output.size() == 0) return new CVPipelineResult(0, 0, List.of(), input_frame);
 
-                var name = String.format("%s (%f)", Short.toString(detection.cls), detection.conf);
+        var filterContoursResult = filterContoursPipe.run(rknnResult.output);
+        sumPipeNanosElapsed += filterContoursResult.nanosElapsed;
 
-                Imgproc.putText(
-                        processed,
-                        name,
-                        new Point(box.left, box.top + 12),
-                        0,
-                        0.6,
-                        ColorHelper.colorToScalar(java.awt.Color.white),
-                        2);
-            }
-        }
-        times.add(System.nanoTime());
+        CVPipeResult<List<PotentialTarget>> sortContoursResult =
+                sortContoursPipe.run(
+                        filterContoursResult.output.stream()
+                                .map(shape -> new PotentialTarget(shape))
+                                .collect(Collectors.toList()));
+        sumPipeNanosElapsed += sortContoursResult.nanosElapsed;
+
+        CVPipeResult<List<TrackedTarget>> collect2dTargetsResult =
+                collect2dTargetsPipe.run(sortContoursResult.output);
+        sumPipeNanosElapsed += collect2dTargetsResult.nanosElapsed;
 
         Size size = null;
         switch (settings.streamingFrameDivisor) {
@@ -152,36 +145,70 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
             default:
                 break;
         }
-        if (size != null) {
-            Imgproc.resize(processed, processed, size);
-            Imgproc.resize(input_frame.colorImage.getMat(), input_frame.colorImage.getMat(), size);
+
+        if (settings.outputShouldShow) {
+            // for (var target : rknnResult.output) {
+            // Imgproc.rectangle(
+            // processed,
+            // new Point(target.box.x, target.box.y),
+            // new Point(target.box.x + target.box.width, target.box.y + target.box.height),
+            // isIn(filterContoursResult.output, target) ? new Scalar(0, 255, 0) : new
+            // Scalar(0, 0, 255),
+            // 2 * processed.width() / 640);
+            // var label = String.format("%s (%f)", target.classIdx, target.confidence);
+            // Imgproc.putText(
+            // processed,
+            // label,
+            // new Point(target.box.x, target.box.y + 12),
+            // 0,
+            // 0.6 * processed.width() / 640,
+            // ColorHelper.colorToScalar(java.awt.Color.white),
+            // 2 * processed.width() / 640);
+            // }
+            // Imgproc.resize(processed, processed, size);
         }
-        times.add(System.nanoTime());
+        // Imgproc.resize(input_frame.colorImage.getMat(),
+        // input_frame.colorImage.getMat(), size);
 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
-        // print times
-        for (int i = 0; i < times.size() - 1; i++) {
-            // System.out.print((times.get(i + 1) - times.get(i)) / 1000000.0 + " ");
-        }
-        // System.out.print((System.nanoTime() - sumPipeNanosElapsed) / 1000000.0 + " ");
-        // System.out.println((times.get(times.size() - 1) - times.get(0)) / 1000000.0);
-
         return new CVPipelineResult(
-                System.nanoTime() - sumPipeNanosElapsed, fps, targetList, input_frame);
+                (System.nanoTime() - timeStarted) * 1e-6, fps, collect2dTargetsResult.output, input_frame);
+    }
+
+    boolean isIn(List<NeuralNetworkPipeResult> list, NeuralNetworkPipeResult target) {
+        for (var item : list)
+            if (item.box.equals(target.box)
+                    && item.classIdx == target.classIdx
+                    && item.confidence == target.confidence) return true;
+        return false;
+    }
+
+    boolean shouldUnpackModels() throws IOException {
+        var unpacked = ConfigManager.getInstance().getRKNNModelsPath().resolve("unpacked").toFile();
+        if (!unpacked.exists()) {
+            logger.info("RKNN models not unpacked");
+            return true;
+        }
+        var lines = Files.readAllLines(unpacked.toPath());
+        if (lines.size() == 0 || !PhotonVersion.versionMatches(lines.get(0))) {
+            logger.info("RKNN models version mismatch");
+            return true;
+        }
+        return false;
     }
 
     void unpackModelsIfNeeded() {
         var modelsPath = ConfigManager.getInstance().getRKNNModelsPath();
-        if (!(modelsPath.resolve("unpacked").toFile().exists())) {
-            logger.info("Unpacking RKNN models...");
-            var stream = getClass().getResourceAsStream("/models.zip");
-            if (stream == null) {
-                logger.error("Failed to find models.zip in jar");
-                return;
-            }
-            try {
+        try {
+            if (shouldUnpackModels()) {
+                logger.info("Unpacking RKNN models...");
+                var stream = getClass().getResourceAsStream("/models.zip");
+                if (stream == null) {
+                    logger.error("Failed to find models.zip in jar");
+                    return;
+                }
                 Files.createDirectories(modelsPath);
                 var zip = new ZipInputStream(stream);
                 var entry = zip.getNextEntry();
@@ -190,16 +217,19 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
                     if (entry.isDirectory()) {
                         Files.createDirectories(filePath);
                     } else {
+                        if (Files.exists(filePath)) {
+                            Files.delete(filePath);
+                        }
                         Files.copy(zip, filePath);
                     }
                     entry = zip.getNextEntry();
                 }
                 zip.close();
-                Files.createFile(modelsPath.resolve("unpacked"));
-            } catch (IOException e) {
-                logger.error("Failed to unpack models.zip");
-                e.printStackTrace();
+                Files.write(modelsPath.resolve("unpacked"), PhotonVersion.versionString.getBytes());
             }
+        } catch (IOException e) {
+            logger.error("Failed to unpack models.zip");
+            e.printStackTrace();
         }
     }
 }
