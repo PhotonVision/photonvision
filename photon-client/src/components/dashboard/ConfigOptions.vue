@@ -13,8 +13,8 @@ import OutputTab from "@/components/dashboard/tabs/OutputTab.vue";
 import TargetsTab from "@/components/dashboard/tabs/TargetsTab.vue";
 import PnPTab from "@/components/dashboard/tabs/PnPTab.vue";
 import Map3DTab from "@/components/dashboard/tabs/Map3DTab.vue";
-import RKNNTab from "@/components/dashboard/tabs/RKNNTab.vue";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
+import RKNNTab from "./tabs/RKNNTab.vue";
 
 interface ConfigOption {
   tabName: string;
@@ -42,6 +42,10 @@ const allTabs = Object.freeze({
     tabName: "Aruco",
     component: ArucoTab
   },
+  rknnTab: {
+    tabName: "RKNN",
+    component: RKNNTab
+  },
   objectDetectionTab: {
     tabName: "Object Detection",
     component: ObjectDetectionTab
@@ -61,10 +65,6 @@ const allTabs = Object.freeze({
   map3dTab: {
     tabName: "3D",
     component: Map3DTab
-  },
-  rknnTab: {
-    tabName: "RKNN",
-    component: RKNNTab
   }
 });
 
@@ -145,7 +145,7 @@ const tabGroups = computed<ConfigOption[][]>(() => {
           !(!isAprilTag && tabConfig.tabName === "AprilTag") && //Filter out apriltag unless we actually are doing AprilTags
           !(!isAruco && tabConfig.tabName === "Aruco") && //Filter out aruco unless we actually are doing Aruco
           !(!isRKNN && tabConfig.tabName === "RKNN") && //Filter out RKNN unless we actually are doing RKNN
-          !(!isRKNN && tabConfig.tabName === "Output") && //Filter out output tab if we're doing RKNN
+          !(isRKNN && tabConfig.tabName === "Output") && //Filter out output tab if we're doing RKNN
           !(!isObjectDetection && tabConfig.tabName === "Object Detection") //Filter out aruco unless we actually are doing Aruco
       )
     )

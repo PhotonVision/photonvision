@@ -25,6 +25,15 @@ const getModelName = (index: number) => {
   return cps.pipelineType === PipelineType.RKNN ? useCameraSettingsStore().availableModels[index] : "";
 };
 
+const contourArea = computed<[number, number]>({
+  get: () => Object.values(useCameraSettingsStore().currentPipelineSettings.contourArea) as [number, number],
+  set: (v) => (useCameraSettingsStore().currentPipelineSettings.contourArea = v)
+});
+const contourRatio = computed<[number, number]>({
+  get: () => Object.values(useCameraSettingsStore().currentPipelineSettings.contourRatio) as [number, number],
+  set: (v) => (useCameraSettingsStore().currentPipelineSettings.contourRatio = v)
+});
+
 console.log("available: " + useCameraSettingsStore().availableModels);
 const interactiveCols = computed(
   () =>
@@ -56,6 +65,53 @@ const interactiveCols = computed(
       :items="useCameraSettingsStore().availableModels"
       @input="
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ selectedModel: getModelName(value) }, false)
+      "
+    />
+    <pv-range-slider
+      v-model="contourArea"
+      label="Area"
+      :min="0"
+      :max="100"
+      :slider-cols="interactiveCols"
+      :step="0.01"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourArea: value }, false)"
+    />
+    <pv-range-slider
+      v-model="contourRatio"
+      label="Ratio (W/H)"
+      tooltip="Min and max ratio between the width and height of a contour's bounding rectangle"
+      :min="0"
+      :max="100"
+      :slider-cols="interactiveCols"
+      :step="0.01"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourRatio: value }, false)"
+    />
+    <pv-select
+      v-model="useCameraSettingsStore().currentPipelineSettings.contourTargetOrientation"
+      label="Target Orientation"
+      tooltip="Used to determine how to calculate target landmarks, as well as aspect ratio"
+      :items="['Portrait', 'Landscape']"
+      :select-cols="interactiveCols"
+      @input="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOrientation: value }, false)
+      "
+    />
+    <pv-select
+      v-model="currentPipelineSettings.contourSortMode"
+      label="Target Sort"
+      tooltip="Chooses the sorting mode used to determine the 'best' targets to provide to user code"
+      :select-cols="interactiveCols"
+      :items="['Largest', 'Smallest', 'Highest', 'Lowest', 'Rightmost', 'Leftmost', 'Centermost']"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourSortMode: value }, false)"
+    />
+    <!-- TODO: confident -->
+    <pv-switch
+      v-model="useCameraSettingsStore().currentPipelineSettings.outputShowMultipleTargets"
+      label="Show Multiple Targets"
+      tooltip="If enabled, up to five targets will be displayed and sent via PhotonLib, instead of just one"
+      :switch-cols="interactiveCols"
+      @input="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ outputShowMultipleTargets: value }, false)
       "
     />
   </div>
