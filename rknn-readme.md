@@ -30,6 +30,6 @@ The expected performance is 60 FPS with a 640x640 model.
 ## Custom models
 If you want to use your own model YOLOv5/8, you can train one and export it to the RKNN format using these Kaggle notebooks. Kaggle is a free service that allows you to train models on the cloud, and it's very easy to use. You can also use your own computer to train the model, but it's recommended to use a GPU, and it's much easier to use Kaggle. Kaggle gives you 30 hours of free GPU time per week, which is more than enough to train a model. You can also use Google Colab, but it's a bit more complicated to use, and offers slower hardware.
 - YOLOv5 <a href="https://www.kaggle.com/lavirz/yolov5-to-rknn"><img src="https://kaggle.com/static/images/open-in-kaggle.svg" alt="Open In Kaggle"></a>
-<a href="https://colab.research.google.com/github/lavirz/photonvision/devTools/yolov5-to-rknn.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
+<a href="https://colab.research.google.com/github/lavirz/photonvision/blob/master/devTools/yolov5-to-rknn.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
 - YOLOv8 <a href="https://www.kaggle.com/lavirz/yolov8-to-rknn"><img src="https://kaggle.com/static/images/open-in-kaggle.svg" alt="Open In Kaggle"></a>
-<a href="https://colab.research.google.com/github/lavirz/photonvision/devTools/yolov8-to-rknn.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
+<a href="https://colab.research.google.com/github/lavirz/photonvision/blob/master/devTools/yolov8-to-rknn.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
