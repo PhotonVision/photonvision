@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.zip.ZipInputStream;
 import org.opencv.core.*;
+import org.photonvision.PhotonVersion;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -147,26 +148,27 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
 
         if (settings.outputShouldShow) {
             // for (var target : rknnResult.output) {
-            //     Imgproc.rectangle(
-            //             processed,
-            //             new Point(target.box.x, target.box.y),
-            //             new Point(target.box.x + target.box.width, target.box.y + target.box.height),
-            //             isIn(filterContoursResult.output, target) ? new Scalar(0, 255, 0) : new
+            // Imgproc.rectangle(
+            // processed,
+            // new Point(target.box.x, target.box.y),
+            // new Point(target.box.x + target.box.width, target.box.y + target.box.height),
+            // isIn(filterContoursResult.output, target) ? new Scalar(0, 255, 0) : new
             // Scalar(0, 0, 255),
-            //             2 * processed.width() / 640);
-            //     var label = String.format("%s (%f)", target.classIdx, target.confidence);
-            //     Imgproc.putText(
-            //             processed,
-            //             label,
-            //             new Point(target.box.x, target.box.y + 12),
-            //             0,
-            //             0.6 * processed.width() / 640,
-            //             ColorHelper.colorToScalar(java.awt.Color.white),
-            //             2 * processed.width() / 640);
+            // 2 * processed.width() / 640);
+            // var label = String.format("%s (%f)", target.classIdx, target.confidence);
+            // Imgproc.putText(
+            // processed,
+            // label,
+            // new Point(target.box.x, target.box.y + 12),
+            // 0,
+            // 0.6 * processed.width() / 640,
+            // ColorHelper.colorToScalar(java.awt.Color.white),
+            // 2 * processed.width() / 640);
             // }
             // Imgproc.resize(processed, processed, size);
         }
-        // Imgproc.resize(input_frame.colorImage.getMat(), input_frame.colorImage.getMat(), size);
+        // Imgproc.resize(input_frame.colorImage.getMat(),
+        // input_frame.colorImage.getMat(), size);
 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
@@ -183,16 +185,30 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
         return false;
     }
 
+    boolean shouldUnpackModels() throws IOException {
+        var unpacked = ConfigManager.getInstance().getRKNNModelsPath().resolve("unpacked").toFile();
+        if (!unpacked.exists()) {
+            logger.info("RKNN models not unpacked");
+            return true;
+        }
+        var lines = Files.readAllLines(unpacked.toPath());
+        if (lines.size() == 0 || !PhotonVersion.versionMatches(lines.get(0))) {
+            logger.info("RKNN models version mismatch");
+            return true;
+        }
+        return false;
+    }
+
     void unpackModelsIfNeeded() {
         var modelsPath = ConfigManager.getInstance().getRKNNModelsPath();
-        if (!(modelsPath.resolve("unpacked").toFile().exists())) {
-            logger.info("Unpacking RKNN models...");
-            var stream = getClass().getResourceAsStream("/models.zip");
-            if (stream == null) {
-                logger.error("Failed to find models.zip in jar");
-                return;
-            }
-            try {
+        try {
+            if (shouldUnpackModels()) {
+                logger.info("Unpacking RKNN models...");
+                var stream = getClass().getResourceAsStream("/models.zip");
+                if (stream == null) {
+                    logger.error("Failed to find models.zip in jar");
+                    return;
+                }
                 Files.createDirectories(modelsPath);
                 var zip = new ZipInputStream(stream);
                 var entry = zip.getNextEntry();
@@ -201,16 +217,19 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
                     if (entry.isDirectory()) {
                         Files.createDirectories(filePath);
                     } else {
+                        if(Files.exists(filePath)){
+                            Files.delete(filePath);
+                        }
                         Files.copy(zip, filePath);
                     }
                     entry = zip.getNextEntry();
                 }
                 zip.close();
-                Files.createFile(modelsPath.resolve("unpacked"));
-            } catch (IOException e) {
-                logger.error("Failed to unpack models.zip");
-                e.printStackTrace();
+                Files.write(modelsPath.resolve("unpacked"), PhotonVersion.versionString.getBytes());
             }
+        } catch (IOException e) {
+            logger.error("Failed to unpack models.zip");
+            e.printStackTrace();
         }
     }
 }
