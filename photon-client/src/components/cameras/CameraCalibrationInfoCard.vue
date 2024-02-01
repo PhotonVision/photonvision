@@ -83,7 +83,7 @@ const getObservationDetails = (): ObservationDetails[] | undefined => {
 };
 
 const exportCalibrationURL = computed<string>(() =>
-  useCameraSettingsStore().getCalJSONUrl(inject<string>("backendHost") as string, props.videoFormat.resolution)
+  useCameraSettingsStore().getCalJSONUrl(inject("backendHost") as string, props.videoFormat.resolution)
 );
 const calibrationImageURL = (index: number) =>
   useCameraSettingsStore().getCalImageUrl(inject<string>("backendHost") as string, props.videoFormat.resolution, index);
