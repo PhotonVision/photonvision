@@ -65,12 +65,11 @@ public class RknnDetectorJNI extends PhotonJNICommon {
         long objPointer = -1;
         private List<String> labels;
         private final Object lock = new Object();
-
         private static final CopyOnWriteArrayList<Long> detectors = new CopyOnWriteArrayList<>();
 
-        public RknnObjectDetector(String modelPath, List<String> labels) {
+        public RknnObjectDetector(String modelPath, List<String> labels, RknnJNI.ModelVersion version) {
             synchronized (lock) {
-                objPointer = RknnJNI.create(modelPath, labels.size());
+                objPointer = RknnJNI.create(modelPath, labels.size(), version.ordinal(), -1);
                 detectors.add(objPointer);
                 System.out.println(
                         "Created " + objPointer + "! Detectors: " + Arrays.toString(detectors.toArray()));

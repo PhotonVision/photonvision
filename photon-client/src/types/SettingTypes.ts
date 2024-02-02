@@ -138,6 +138,9 @@ export interface CameraCalibrationResult {
   distCoeffs: JsonMatOfDouble;
   observations: BoardObservation[];
   calobjectWarp?: number[];
+  // We might have to omit observations for bandwith, so backend will send us this
+  numSnapshots: number;
+  meanErrors: number[];
 }
 
 export enum ValidQuirks {
@@ -255,7 +258,9 @@ export const PlaceholderCameraSettings: CameraSettings = {
           snapshotName: "img0.png",
           snapshotData: { rows: 480, cols: 640, type: CvType.CV_8U, data: "" }
         }
-      ]
+      ],
+      numSnapshots: 1,
+      meanErrors: [123.45]
     }
   ],
   pipelineNicknames: ["Placeholder Pipeline"],
