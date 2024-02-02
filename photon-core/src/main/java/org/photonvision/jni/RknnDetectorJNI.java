@@ -67,38 +67,11 @@ public class RknnDetectorJNI extends PhotonJNICommon {
         long objPointer = -1;
         private List<String> labels;
         private final Object lock = new Object();
-        private static int desiredCore = -1;
         private static final CopyOnWriteArrayList<Long> detectors = new CopyOnWriteArrayList<>();
-        private static short[] coreCounter = {0, 0, 0};
 
         public RknnObjectDetector(String modelPath, List<String> labels, RknnJNI.ModelVersion version) {
             synchronized (lock) {
-                switch (detectors.size()) {
-                    case 0:
-                        desiredCore = 210;
-                        // until more than 3 detectors are made, all 3 cores are used
-                        coreCounter[0]++;
-                        coreCounter[1]++;
-                        coreCounter[2]++;
-                        break;
-                    case 1:
-                        desiredCore = 2;
-                        RknnJNI.setCoreMask(detectors.get(0), 10);
-                        break;
-                    case 2:
-                        desiredCore = 2;
-                        RknnJNI.setCoreMask(detectors.get(0), 0);
-                        RknnJNI.setCoreMask(detectors.get(1), 1);
-                        break;
-                    default:
-                        for (int i = 0; i < 3; i++) {
-                            if (coreCounter[i] < coreCounter[desiredCore]) {
-                                desiredCore = i;
-                            }
-                        }
-                        break;
-                }
-                objPointer = RknnJNI.create(modelPath, labels.size(), version.ordinal(), desiredCore);
+                objPointer = RknnJNI.create(modelPath, labels.size(), version.ordinal(), -1);
                 detectors.add(objPointer);
                 System.out.println(
                         "Created " + objPointer + "! Detectors: " + Arrays.toString(detectors.toArray()));
