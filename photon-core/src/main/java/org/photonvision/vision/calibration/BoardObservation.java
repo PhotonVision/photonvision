@@ -24,7 +24,7 @@ import java.util.List;
 import org.opencv.core.Point;
 import org.opencv.core.Point3;
 
-public final class BoardObservation {
+public final class BoardObservation implements Cloneable {
     // Expected feature 3d location in the camera frame
     @JsonProperty("locationInObjectSpace")
     public List<Point3> locationInObjectSpace;
@@ -67,5 +67,34 @@ public final class BoardObservation {
         this.includeObservationInCalibration = includeObservationInCalibration;
         this.snapshotName = snapshotName;
         this.snapshotData = snapshotData;
+    }
+
+    @Override
+    public String toString() {
+        return "BoardObservation [locationInObjectSpace="
+                + locationInObjectSpace
+                + ", locationInImageSpace="
+                + locationInImageSpace
+                + ", reprojectionErrors="
+                + reprojectionErrors
+                + ", optimisedCameraToObject="
+                + optimisedCameraToObject
+                + ", includeObservationInCalibration="
+                + includeObservationInCalibration
+                + ", snapshotName="
+                + snapshotName
+                + ", snapshotData="
+                + snapshotData
+                + "]";
+    }
+
+    @Override
+    public BoardObservation clone() {
+        try {
+            return (BoardObservation) super.clone();
+        } catch (CloneNotSupportedException e) {
+            System.err.println("Guhhh clone buh");
+            return null;
+        }
     }
 }

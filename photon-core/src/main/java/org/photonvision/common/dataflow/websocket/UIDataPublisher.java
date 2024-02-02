@@ -26,6 +26,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.photonvision.vision.pipeline.result.CalibrationPipelineResult;
 
 public class UIDataPublisher implements CVPipelineResultConsumer {
     private static final Logger logger = new Logger(UIDataPublisher.class, LogGroup.VisionModule);
@@ -41,16 +42,22 @@ public class UIDataPublisher implements CVPipelineResultConsumer {
     public void accept(CVPipelineResult result) {
         long now = System.currentTimeMillis();
 
-        // only update the UI at 15hz
+        // only update the UI at 10hz
         if (lastUIResultUpdateTime + 1000.0 / 10.0 > now) return;
 
         var dataMap = new HashMap<String, Object>();
         dataMap.put("fps", result.fps);
         dataMap.put("latency", result.getLatencyMillis());
         var uiTargets = new ArrayList<HashMap<String, Object>>(result.targets.size());
-        for (var t : result.targets) {
-            uiTargets.add(t.toHashMap());
+
+        // We don't actually need to send targets during calibration and it can take up a lot (up to
+        // 1.2Mbps for 60 snapshots) of target results with no pitch/yaw/etc set
+        if (!(result instanceof CalibrationPipelineResult)) {
+            for (var t : result.targets) {
+                uiTargets.add(t.toHashMap());
+            }
         }
+
         dataMap.put("targets", uiTargets);
         dataMap.put("classNames", result.objectDetectionClassNames);
 
