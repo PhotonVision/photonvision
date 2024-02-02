@@ -4,7 +4,7 @@ from wpilib import Timer
 import wpilib
 from photonlibpy.packet import Packet
 from photonlibpy.photonPipelineResult import PhotonPipelineResult
-from photonlibpy.version import PHOTONVISION_VERSION, PHOTONLIB_VERSION
+from photonlibpy.version import PHOTONVISION_VERSION, PHOTONLIB_VERSION #type: ignore[import-untyped]
 
 
 class VisionLEDMode(Enum):
@@ -86,7 +86,8 @@ class PhotonCamera:
         if len(byteList) < 1:
             return retVal
         else:
-            retVal.populateFromPacket(Packet(byteList))
+            pkt = Packet(byteList) 
+            retVal.populateFromPacket(pkt) 
             # NT4 allows us to correct the timestamp based on when the message was sent
             retVal.setTimestampSeconds(
                 timestamp / 1e-6 - retVal.getLatencyMillis() / 1e-3

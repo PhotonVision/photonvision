@@ -75,7 +75,7 @@ class PhotonPoseEstimator:
 
         self._multiTagFallbackStrategy = PoseStrategy.LOWEST_AMBIGUITY
         self._reportedErrors: set[int] = set()
-        self._poseCacheTimestampSeconds = -1
+        self._poseCacheTimestampSeconds = -1.0
         self._lastPose: Optional[Pose3d] = None
         self._referencePose: Optional[Pose3d] = None
 
@@ -143,7 +143,7 @@ class PhotonPoseEstimator:
         self._multiTagFallbackStrategy = strategy
 
     @property
-    def referencePose(self) -> Pose3d:
+    def referencePose(self) -> Optional[Pose3d]:
         """Return the reference position that is being used by the estimator.
 
         :returns: the referencePose
@@ -163,7 +163,7 @@ class PhotonPoseEstimator:
         self._referencePose = referencePose
 
     @property
-    def lastPose(self) -> Pose3d:
+    def lastPose(self) -> Optional[Pose3d]:
         return self._lastPose
 
     @lastPose.setter
@@ -178,10 +178,10 @@ class PhotonPoseEstimator:
         self._checkUpdate(self._lastPose, lastPose)
         self._lastPose = lastPose
 
-    def _invalidatePoseCache(self):
-        self._poseCacheTimestampSeconds = -1
+    def _invalidatePoseCache(self) -> None:
+        self._poseCacheTimestampSeconds = -1.0
 
-    def _checkUpdate(self, oldObj, newObj):
+    def _checkUpdate(self, oldObj, newObj) -> None:
         if oldObj != newObj and oldObj is not None and oldObj is not newObj:
             self._invalidatePoseCache()
 
@@ -204,27 +204,27 @@ class PhotonPoseEstimator:
         if not cameraResult:
             if not self._camera:
                 wpilib.reportError("[PhotonPoseEstimator] Missing camera!", False)
-                return
+                return None
             cameraResult = self._camera.getLatestResult()
 
         if cameraResult.timestampSec < 0:
-            return
+            return None
 
         # If the pose cache timestamp was set, and the result is from the same
         # timestamp, return an
         # empty result
         if (
-            self._poseCacheTimestampSeconds > 0
+            self._poseCacheTimestampSeconds > 0.0
             and abs(self._poseCacheTimestampSeconds - cameraResult.timestampSec) < 1e-6
         ):
-            return
+            return None
 
         # Remember the timestamp of the current result used
         self._poseCacheTimestampSeconds = cameraResult.timestampSec
 
         # If no targets seen, trivial case -- return empty result
         if not cameraResult.targets:
-            return
+            return None
 
         return self._update(cameraResult, self._primaryStrategy)
 
@@ -239,7 +239,7 @@ class PhotonPoseEstimator:
             wpilib.reportError(
                 "[PhotonPoseEstimator] Unknown Position Estimation Strategy!", False
             )
-            return
+            return None
 
         if not estimatedPose:
             self._lastPose = None
@@ -280,7 +280,7 @@ class PhotonPoseEstimator:
         """
         lowestAmbiguityTarget = None
 
-        lowestAmbiguityScore = 10
+        lowestAmbiguityScore = 10.0
 
         for target in result.targets:
             targetPoseAmbiguity = target.poseAmbiguity
@@ -293,7 +293,7 @@ class PhotonPoseEstimator:
         # Although there are confirmed to be targets, none of them may be fiducial
         # targets.
         if not lowestAmbiguityTarget:
-            return
+            return None
 
         targetFiducialId = lowestAmbiguityTarget.fiducialId
 
@@ -301,7 +301,7 @@ class PhotonPoseEstimator:
 
         if not targetPosition:
             self._reportFiducialPoseError(targetFiducialId)
-            return
+            return None
 
         return EstimatedRobotPose(
             targetPosition.transformBy(
