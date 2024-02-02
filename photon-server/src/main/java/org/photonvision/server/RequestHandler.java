@@ -31,6 +31,9 @@ import java.util.HashMap;
 import java.util.Optional;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
+import org.opencv.core.MatOfByte;
+import org.opencv.core.MatOfInt;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.dataflow.DataChangeDestination;
@@ -578,6 +581,77 @@ public class RequestHandler {
     public static void onMetricsPublishRequest(Context ctx) {
         HardwareManager.getInstance().publishMetrics();
         ctx.status(204);
+    }
+
+    public static void onCalibrationSnapshotRequest(Context ctx) {
+        logger.info(ctx.queryString().toString());
+
+        int idx = Integer.parseInt(ctx.queryParam("cameraIdx"));
+        var width = Integer.parseInt(ctx.queryParam("width"));
+        var height = Integer.parseInt(ctx.queryParam("height"));
+        var observationIdx = Integer.parseInt(ctx.queryParam("snapshotIdx"));
+
+        CameraCalibrationCoefficients calList =
+                VisionModuleManager.getInstance()
+                        .getModule(idx)
+                        .getStateAsCameraConfig()
+                        .calibrations
+                        .stream()
+                        .filter(
+                                it ->
+                                        Math.abs(it.resolution.width - width) < 1e-4
+                                                && Math.abs(it.resolution.height - height) < 1e-4)
+                        .findFirst()
+                        .orElse(null);
+
+        if (calList == null || calList.observations.size() < observationIdx) {
+            ctx.status(404);
+            return;
+        }
+
+        // encode as jpeg to save even more space. reduces size of a 1280p image from 300k to 25k
+        var jpegBytes = new MatOfByte();
+        Imgcodecs.imencode(
+                ".jpg",
+                calList.observations.get(observationIdx).snapshotData.getAsMat(),
+                jpegBytes,
+                new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 60));
+
+        ctx.result(jpegBytes.toArray());
+        jpegBytes.release();
+
+        ctx.status(200);
+    }
+
+    public static void onCalibrationExportRequest(Context ctx) {
+        logger.info(ctx.queryString().toString());
+
+        int idx = Integer.parseInt(ctx.queryParam("cameraIdx"));
+        var width = Integer.parseInt(ctx.queryParam("width"));
+        var height = Integer.parseInt(ctx.queryParam("height"));
+
+        var cc = VisionModuleManager.getInstance().getModule(idx).getStateAsCameraConfig();
+
+        CameraCalibrationCoefficients calList =
+                cc.calibrations.stream()
+                        .filter(
+                                it ->
+                                        Math.abs(it.resolution.width - width) < 1e-4
+                                                && Math.abs(it.resolution.height - height) < 1e-4)
+                        .findFirst()
+                        .orElse(null);
+
+        if (calList == null) {
+            ctx.status(404);
+            return;
+        }
+
+        var filename = "photon_calibration_" + cc.uniqueName + "_" + width + "x" + height + ".json";
+        ctx.contentType("application/zip");
+        ctx.header("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+        ctx.json(calList);
+
+        ctx.status(200);
     }
 
     public static void onImageSnapshotsRequest(Context ctx) {
