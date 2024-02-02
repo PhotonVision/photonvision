@@ -35,8 +35,6 @@ public class RknnDetectorJNI extends PhotonJNICommon {
     private boolean isLoaded;
     private static RknnDetectorJNI instance = null;
 
-    private static final int RKNN_CORE_COUNT = 2;
-
     private RknnDetectorJNI() {
         isLoaded = false;
     }
