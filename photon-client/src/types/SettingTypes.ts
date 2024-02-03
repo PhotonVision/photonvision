@@ -20,6 +20,7 @@ export interface MetricData {
   cpuThr?: string;
   cpuUptime?: string;
   diskUtilPct?: string;
+  npuUsage?: string;
 }
 
 export enum NetworkConnectionType {
