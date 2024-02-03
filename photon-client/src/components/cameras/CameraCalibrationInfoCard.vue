@@ -132,7 +132,7 @@ const calibrationImageURL = (index: number) =>
         />
       </v-col>
     </v-row>
-    <v-row v-if="!currentCalibrationCoeffs" class="pt-2">
+    <v-row v-if="currentCalibrationCoeffs" class="pt-2">
       <v-card-subtitle>Calibration Details</v-card-subtitle>
       <v-simple-table dense style="width: 100%" class="pl-2 pr-2">
         <template #default>
