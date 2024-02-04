@@ -35,7 +35,10 @@ const cameraResolutions = computed(() =>
   )
 );
 const handleResolutionChange = (value: number) => {
-  useCameraSettingsStore().changeCurrentPipelineSetting({ cameraVideoModeIndex: value }, false);
+  // we get back an index in the camera resolution list, which may not necessarily match the backend
+  const resolutionSelected = useCameraSettingsStore().currentCameraSettings.validVideoFormats[value];
+
+  useCameraSettingsStore().changeCurrentPipelineSetting({ cameraVideoModeIndex: resolutionSelected.index }, false);
 
   useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: getNumberOfSkippedDivisors() }, false);
   useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor = 0;
