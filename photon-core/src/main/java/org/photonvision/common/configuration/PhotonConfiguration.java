@@ -31,7 +31,7 @@ import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.jni.RknnDetectorJNI;
 import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.raspi.LibCameraJNILoader;
-import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.calibration.UICameraCalibrationCoefficients;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionModuleManager;
@@ -126,13 +126,6 @@ public class PhotonConfiguration {
 
         settingsSubmap.put("networkSettings", netConfigMap);
 
-        map.put(
-                "cameraSettings",
-                VisionModuleManager.getInstance().getModules().stream()
-                        .map(VisionModule::toUICameraConfig)
-                        .map(SerializationUtils::objectToHashMap)
-                        .collect(Collectors.toList()));
-
         var lightingConfig = new UILightingConfig();
         lightingConfig.brightness = hardwareSettings.ledBrightnessPercentage;
         lightingConfig.supported = !hardwareConfig.ledPins.isEmpty();
@@ -181,7 +174,7 @@ public class PhotonConfiguration {
         public HashMap<Integer, HashMap<String, Object>> videoFormatList;
         public int outputStreamPort;
         public int inputStreamPort;
-        public List<CameraCalibrationCoefficients> calibrations;
+        public List<UICameraCalibrationCoefficients> calibrations;
         public boolean isFovConfigurable = true;
         public QuirkyCamera cameraQuirks;
         public boolean isCSICamera;

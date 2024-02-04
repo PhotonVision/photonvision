@@ -19,7 +19,7 @@ class EstimatedRobotPose:
     timestampSeconds: float
     """The estimated time the frame used to derive the robot pose was taken"""
 
-    targetsUsed: [PhotonTrackedTarget]
+    targetsUsed: list[PhotonTrackedTarget]
     """A list of the targets used to compute this pose"""
 
     strategy: "PoseStrategy"

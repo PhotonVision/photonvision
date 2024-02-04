@@ -44,5 +44,7 @@ public class RK3588Cmds extends LinuxCmds {
          */
         cpuTemperatureCommand =
                 "cat /sys/class/thermal/thermal_zone1/temp | awk '{printf \"%.1f\", $1/1000}'";
+
+        npuUsageCommand = "cat /sys/kernel/debug/rknpu/load | sed 's/NPU load://; s/^ *//; s/ *$//'";
     }
 }

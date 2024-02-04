@@ -29,6 +29,8 @@ public class CmdBase {
     // GPU
     public String gpuMemoryCommand = "";
     public String gpuMemUsageCommand = "";
+    // NPU
+    public String npuUsageCommand = "";
     // RAM
     public String ramUsageCommand = "";
     // Disk
