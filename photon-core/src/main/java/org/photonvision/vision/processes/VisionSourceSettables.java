@@ -81,7 +81,7 @@ public abstract class VisionSourceSettables {
 
     @SuppressWarnings("unused")
     public void setVideoModeIndex(int index) {
-        setVideoMode((VideoMode) videoModes.values().toArray()[index]);
+        setVideoMode(videoModes.get(index));
     }
 
     public abstract HashMap<Integer, VideoMode> getAllVideoModes();
