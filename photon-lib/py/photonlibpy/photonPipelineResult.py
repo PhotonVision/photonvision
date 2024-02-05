@@ -39,5 +39,10 @@ class PhotonPipelineResult:
     def getTargets(self) -> list[PhotonTrackedTarget]:
         return self.targets
 
+    def getBestTarget(self) -> PhotonTrackedTarget:
+        if not self.hasTargets():
+            return None
+        return self.getTargets()[0]
+
     def hasTargets(self) -> bool:
         return len(self.targets) > 0
