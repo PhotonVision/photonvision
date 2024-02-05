@@ -395,6 +395,7 @@ public class USBCameraSource extends VisionSource {
                 // Sort by resolution
                 var sortedList =
                         videoModesList.stream()
+                                .distinct() // remove redundant video mode entries
                                 .sorted(((a, b) -> (b.width + b.height) - (a.width + a.height)))
                                 .collect(Collectors.toList());
                 Collections.reverse(sortedList);

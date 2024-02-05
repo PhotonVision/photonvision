@@ -102,7 +102,7 @@ const downloadCalibBoard = () => {
           const yPos = chessboardStartY + squareY * squareSizeIn.value;
 
           // Only draw the odd squares to create the chessboard pattern
-          if ((xPos + yPos + 0.25) % 2 === 0) {
+          if (squareY % 2 != squareX % 2) {
             doc.rect(xPos, yPos, squareSizeIn.value, squareSizeIn.value, "F");
           }
         }
