@@ -86,7 +86,7 @@ PhotonVision was forked from [Chameleon Vision](https://github.com/Chameleon-Vis
 
 ## License
 PhotonVision is licensed under the [GNU General Public License](https://www.gnu.org/licenses/gpl-3.0.html)
-
+Source code for jnish will be sent to those who want it. If you're interested, contact me at laviarzi@gmail.com.
 ## Meeting Notes
 Our meeting notes can be found in the wiki section of this repository.
 
