@@ -1,51 +1,19 @@
 <script setup lang="ts">
-import type { BoardObservation, CameraCalibrationResult, VideoFormat } from "@/types/SettingTypes";
+import type { CameraCalibrationResult, VideoFormat } from "@/types/SettingTypes";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
-import { ref } from "vue";
-import loadingImage from "@/assets/images/loading.svg";
+import { computed, inject, ref } from "vue";
 import { getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
 
 const props = defineProps<{
   videoFormat: VideoFormat;
 }>();
 
-const getMeanFromView = (o: BoardObservation) => {
-  // Is this the right formula for RMS error? who knows! not me!
-  const perViewSumSquareReprojectionError = o.reprojectionErrors.flatMap((it2) => [it2.x, it2.y]);
-
-  // For each error, square it, sum the squares, and divide by total points N
-  return Math.sqrt(
-    perViewSumSquareReprojectionError.map((it) => Math.pow(it, 2)).reduce((a, b) => a + b, 0) /
-      perViewSumSquareReprojectionError.length
-  );
+const exportCalibration = ref();
+const openExportCalibrationPrompt = () => {
+  exportCalibration.value.click();
 };
 
-// Import and export functions
-const downloadCalibration = () => {
-  const calibData = useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution);
-  if (calibData === undefined) {
-    useStateStore().showSnackbarMessage({
-      color: "error",
-      message:
-        "Calibration data isn't available for the requested resolution, please calibrate the requested resolution first"
-    });
-    return;
-  }
-
-  const camUniqueName = useCameraSettingsStore().currentCameraSettings.uniqueName;
-  const filename = `photon_calibration_${camUniqueName}_${calibData.resolution.width}x${calibData.resolution.height}.json`;
-  const fileData = JSON.stringify(calibData);
-
-  const element = document.createElement("a");
-  element.style.display = "none";
-  element.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(fileData));
-  element.setAttribute("download", filename);
-
-  document.body.appendChild(element);
-  element.click();
-  document.body.removeChild(element);
-};
 const importCalibrationFromPhotonJson = ref();
 const openUploadPhotonCalibJsonPrompt = () => {
   importCalibrationFromPhotonJson.value.click();
@@ -97,19 +65,28 @@ const importCalibration = async () => {
 };
 
 interface ObservationDetails {
-  snapshotSrc: any;
   mean: number;
   index: number;
 }
+
+const currentCalibrationCoeffs = computed<CameraCalibrationResult | undefined>(() =>
+  useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution)
+);
+
 const getObservationDetails = (): ObservationDetails[] | undefined => {
-  return useCameraSettingsStore()
-    .getCalibrationCoeffs(props.videoFormat.resolution)
-    ?.observations.map((o, i) => ({
-      index: i,
-      mean: parseFloat(getMeanFromView(o).toFixed(2)),
-      snapshotSrc: o.includeObservationInCalibration ? "data:image/png;base64," + o.snapshotData.data : loadingImage
-    }));
+  const coefficients = currentCalibrationCoeffs.value;
+
+  return coefficients?.meanErrors.map((m, i) => ({
+    index: i,
+    mean: parseFloat(m.toFixed(2))
+  }));
 };
+
+const exportCalibrationURL = computed<string>(() =>
+  useCameraSettingsStore().getCalJSONUrl(inject("backendHost") as string, props.videoFormat.resolution)
+);
+const calibrationImageURL = (index: number) =>
+  useCameraSettingsStore().getCalImageUrl(inject<string>("backendHost") as string, props.videoFormat.resolution, index);
 </script>
 
 <template>
@@ -140,19 +117,22 @@ const getObservationDetails = (): ObservationDetails[] | undefined => {
         <v-btn
           color="secondary"
           class="mt-4"
-          :disabled="useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution) === undefined"
+          :disabled="!currentCalibrationCoeffs"
           style="width: 100%"
-          @click="downloadCalibration"
+          @click="openExportCalibrationPrompt"
         >
           <v-icon left>mdi-export</v-icon>
           <span>Export</span>
         </v-btn>
+        <a
+          ref="exportCalibration"
+          style="color: black; text-decoration: none; display: none"
+          :href="exportCalibrationURL"
+          target="_blank"
+        />
       </v-col>
     </v-row>
-    <v-row
-      v-if="useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution) !== undefined"
-      class="pt-2"
-    >
+    <v-row v-if="currentCalibrationCoeffs" class="pt-2">
       <v-card-subtitle>Calibration Details</v-card-subtitle>
       <v-simple-table dense style="width: 100%" class="pl-2 pr-2">
         <template #default>
@@ -231,7 +211,9 @@ const getObservationDetails = (): ObservationDetails[] | undefined => {
             </tr>
             <tr>
               <td>Horizontal FOV</td>
-              <td>{{ videoFormat.horizontalFOV !== undefined ? videoFormat.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
+              <td>
+                {{ videoFormat.horizontalFOV !== undefined ? videoFormat.horizontalFOV.toFixed(2) + "°" : "-" }}
+              </td>
             </tr>
             <tr>
               <td>Vertical FOV</td>
@@ -242,11 +224,7 @@ const getObservationDetails = (): ObservationDetails[] | undefined => {
               <td>{{ videoFormat.diagonalFOV !== undefined ? videoFormat.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
             </tr>
             <!-- Board warp, only shown for mrcal-calibrated cameras -->
-            <tr
-              v-if="
-                useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution)?.calobjectWarp?.length === 2
-              "
-            >
+            <tr v-if="currentCalibrationCoeffs?.calobjectWarp?.length === 2">
               <td>Board warp, X/Y</td>
               <td>
                 {{
@@ -278,7 +256,7 @@ const getObservationDetails = (): ObservationDetails[] | undefined => {
         <template #expanded-item="{ headers, item }">
           <td :colspan="headers.length">
             <div style="display: flex; justify-content: center; width: 100%">
-              <img :src="item.snapshotSrc" alt="observation image" class="snapshot-preview pt-2 pb-2" />
+              <img :src="calibrationImageURL(item.index)" alt="observation image" class="snapshot-preview pt-2 pb-2" />
             </div>
           </td>
         </template>

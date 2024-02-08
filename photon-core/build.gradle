@@ -37,9 +37,8 @@ dependencies {
     implementation 'org.zeroturnaround:zt-zip:1.14'
 
     implementation "org.xerial:sqlite-jdbc:3.41.0.0"
-    def rknnjniversion = "dev-v2024.0.0-44-g8022c40"
-    implementation "org.photonvision:rknn_jni-jni:$rknnjniversion:linuxarm64"
-    implementation "org.photonvision:rknn_jni-java:$rknnjniversion"
+    implementation "org.photonvision:rknn_jni-jni:$rknnVersion:linuxarm64"
+    implementation "org.photonvision:rknn_jni-java:$rknnVersion"
     implementation "org.photonvision:photon-libcamera-gl-driver-jni:$photonGlDriverLibVersion:linuxarm64"
     implementation "org.photonvision:photon-libcamera-gl-driver-java:$photonGlDriverLibVersion"
 

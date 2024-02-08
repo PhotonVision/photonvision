@@ -35,7 +35,8 @@ public class RknnDetectionPipe
         this.detector =
                 new RknnObjectDetector(
                         NeuralNetworkModelManager.getInstance().getDefaultRknnModel().getAbsolutePath(),
-                        NeuralNetworkModelManager.getInstance().getLabels());
+                        NeuralNetworkModelManager.getInstance().getLabels(),
+                        NeuralNetworkModelManager.getInstance().getModelVersion());
     }
 
     @Override

@@ -40,7 +40,7 @@ public class JsonMatOfDouble implements Releasable {
     @JsonIgnore private Mat wrappedMat = null;
     @JsonIgnore private Matrix wpilibMat = null;
 
-    private MatOfDouble wrappedMatOfDouble;
+    @JsonIgnore private MatOfDouble wrappedMatOfDouble;
 
     public JsonMatOfDouble(int rows, int cols, double[] data) {
         this(rows, cols, CvType.CV_64FC1, data);

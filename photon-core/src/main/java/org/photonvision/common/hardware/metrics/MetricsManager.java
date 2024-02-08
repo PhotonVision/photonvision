@@ -92,6 +92,10 @@ public class MetricsManager {
         return safeExecute(cmds.cpuThrottleReasonCmd);
     }
 
+    public String getNpuUsage() {
+        return safeExecute(cmds.npuUsageCommand);
+    }
+
     private String gpuMemSave = null;
 
     public String getGPUMemorySplit() {
@@ -128,6 +132,7 @@ public class MetricsManager {
         metrics.put("ramUtil", this.getUsedRam());
         metrics.put("gpuMemUtil", this.getMallocedMemory());
         metrics.put("diskUtilPct", this.getUsedDiskPct());
+        metrics.put("npuUsage", this.getNpuUsage());
 
         DataChangeService.getInstance().publishEvent(OutgoingUIEvent.wrappedOf("metrics", metrics));
     }

@@ -25,12 +25,14 @@ import java.nio.file.Paths;
 import java.util.List;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.rknn.RknnJNI;
 
 public class NeuralNetworkModelManager {
     private static NeuralNetworkModelManager INSTANCE;
     private static final Logger logger = new Logger(NeuralNetworkModelManager.class, LogGroup.Config);
 
     private final String MODEL_NAME = "note-640-640-yolov5s.rknn";
+    private final RknnJNI.ModelVersion modelVersion = RknnJNI.ModelVersion.YOLO_V5;
     private File defaultModelFile;
     private List<String> labels;
 
@@ -51,7 +53,7 @@ public class NeuralNetworkModelManager {
         this.defaultModelFile = new File(modelsFolder, MODEL_NAME);
         extractResource(modelResourcePath, defaultModelFile);
 
-        File labelsFile = new File(modelsFolder, "labels.txt");
+        File labelsFile = new File(modelsFolder, "labels_v5.txt");
         var labelResourcePath = "/models/" + labelsFile.getName();
         extractResource(labelResourcePath, labelsFile);
 
@@ -94,5 +96,9 @@ public class NeuralNetworkModelManager {
 
     public List<String> getLabels() {
         return labels;
+    }
+
+    public RknnJNI.ModelVersion getModelVersion() {
+        return modelVersion;
     }
 }

@@ -416,6 +416,23 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       cameraIndex: number = useStateStore().currentCameraIndex
     ): CameraCalibrationResult | undefined {
       return this.cameras[cameraIndex].completeCalibrations.find((v) => resolutionsAreEqual(v.resolution, resolution));
+    },
+    getCalImageUrl(host: string, resolution: Resolution, idx: number, cameraIdx = useStateStore().currentCameraIndex) {
+      const url = new URL(`http://${host}/api/utils/getCalSnapshot`);
+      url.searchParams.set("width", Math.round(resolution.width).toFixed(0));
+      url.searchParams.set("height", Math.round(resolution.height).toFixed(0));
+      url.searchParams.set("snapshotIdx", Math.round(idx).toFixed(0));
+      url.searchParams.set("cameraIdx", Math.round(cameraIdx).toFixed(0));
+
+      return url.href;
+    },
+    getCalJSONUrl(host: string, resolution: Resolution, cameraIdx = useStateStore().currentCameraIndex) {
+      const url = new URL(`http://${host}/api/utils/getCalibrationJSON`);
+      url.searchParams.set("width", Math.round(resolution.width).toFixed(0));
+      url.searchParams.set("height", Math.round(resolution.height).toFixed(0));
+      url.searchParams.set("cameraIdx", Math.round(cameraIdx).toFixed(0));
+
+      return url.href;
     }
   }
 });
