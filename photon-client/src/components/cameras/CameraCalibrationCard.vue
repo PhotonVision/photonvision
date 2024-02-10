@@ -26,7 +26,9 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
       const calib = useCameraSettingsStore().getCalibrationCoeffs(format.resolution);
       if (calib !== undefined) {
         // For each error, square it, sum the squares, and divide by total points N
-        if (calib.meanErrors.length) format.mean = calib.meanErrors.reduce((a, b) => a + b, 0) / calib.meanErrors.length; else format.mean=-1;
+        if (calib.meanErrors.length)
+          format.mean = calib.meanErrors.reduce((a, b) => a + b, 0) / calib.meanErrors.length;
+        else format.mean = -1;
 
         format.horizontalFOV =
           2 * Math.atan2(format.resolution.width / 2, calib.cameraIntrinsics.data[0]) * (180 / Math.PI);
