@@ -90,7 +90,7 @@ class PhotonCamera:
             retVal.populateFromPacket(pkt)
             # NT4 allows us to correct the timestamp based on when the message was sent
             retVal.setTimestampSeconds(
-                timestamp / 1e-6 - retVal.getLatencyMillis() / 1e-3
+                timestamp / 1e6 - retVal.getLatencyMillis() / 1e3
             )
             return retVal
 
