@@ -25,7 +25,9 @@ import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsContext;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,8 +53,6 @@ public class DataSocketHandler {
     @SuppressWarnings("FieldCanBeLocal")
     private final UIOutboundSubscriber uiOutboundSubscriber = new UIOutboundSubscriber(this);
 
-    public static class UIMap extends HashMap<String, Object> {}
-
     private static class ThreadSafeSingleton {
         private static final DataSocketHandler INSTANCE = new DataSocketHandler();
     }
@@ -68,22 +68,28 @@ public class DataSocketHandler {
     }
 
     public void onConnect(WsConnectContext context) {
-        context.session.setIdleTimeout(Long.MAX_VALUE); // TODO: determine better value
-        var insa = context.session.getRemote().getInetSocketAddress();
-        var host = insa.getAddress().toString() + ":" + insa.getPort();
-        logger.info("New websocket connection from " + host);
         users.add(context);
+        context.session.setIdleTimeout(
+                Duration.ofMillis(Long.MAX_VALUE)); // TODO: determine better value
+        var remote = (InetSocketAddress) context.session.getRemoteAddress();
+        var host = remote.getAddress().toString() + ":" + remote.getPort();
+        logger.info("New websocket connection from " + host);
         dcService.publishEvent(
                 new IncomingWebSocketEvent<>(
                         DataChangeDestination.DCD_GENSETTINGS, "userConnected", context));
     }
 
     protected void onClose(WsCloseContext context) {
-        var insa = context.session.getRemote().getInetSocketAddress();
-        var host = insa.getAddress().toString() + ":" + insa.getPort();
-        var reason = context.reason() != null ? context.reason() : "Connection closed by client";
-        logger.info("Closing websocket connection from " + host + " for reason: " + reason);
         users.remove(context);
+        var remote = (InetSocketAddress) context.session.getRemoteAddress();
+        // Remote can be null if server is being closed for restart
+        if (remote != null) {
+            var host = remote.getAddress().toString() + ":" + remote.getPort();
+            var reason = context.reason() != null ? context.reason() : "Connection closed by client";
+            logger.info("Closing websocket connection from " + host + " for reason: " + reason);
+        } else {
+            logger.info("Closing websockets for user " + context.getSessionId());
+        }
     }
 
     @SuppressWarnings({"unchecked"})
@@ -262,6 +268,30 @@ public class DataSocketHandler {
                                 dcService.publishEvent(changePipelineEvent);
                                 break;
                             }
+                        case SMT_SAVEINPUTSNAPSHOT:
+                            {
+                                var takeInputSnapshotEvent =
+                                        new IncomingWebSocketEvent<>(
+                                                DataChangeDestination.DCD_ACTIVEMODULE,
+                                                "saveInputSnapshot",
+                                                0,
+                                                cameraIndex,
+                                                context);
+                                dcService.publishEvent(takeInputSnapshotEvent);
+                                break;
+                            }
+                        case SMT_SAVEOUTPUTSNAPSHOT:
+                            {
+                                var takeOutputSnapshotEvent =
+                                        new IncomingWebSocketEvent<>(
+                                                DataChangeDestination.DCD_ACTIVEMODULE,
+                                                "saveOutputSnapshot",
+                                                0,
+                                                cameraIndex,
+                                                context);
+                                dcService.publishEvent(takeOutputSnapshotEvent);
+                                break;
+                            }
                         case SMT_TAKECALIBRATIONSNAPSHOT:
                             {
                                 var takeCalSnapshotEvent =
@@ -320,23 +350,26 @@ public class DataSocketHandler {
         }
     }
 
-    private void sendMessage(Object message, WsContext user) throws JsonProcessingException {
-        ByteBuffer b = ByteBuffer.wrap(objectMapper.writeValueAsBytes(message));
-        user.send(b);
+    private void sendMessage(ByteBuffer b, WsContext user) throws JsonProcessingException {
+        if (user.session.isOpen()) {
+            user.send(b);
+        }
     }
 
     public void broadcastMessage(Object message, WsContext userToSkip)
             throws JsonProcessingException {
+        ByteBuffer b = ByteBuffer.wrap(objectMapper.writeValueAsBytes(message));
+
         if (userToSkip == null) {
             for (WsContext user : users) {
-                sendMessage(message, user);
+                sendMessage(b, user);
             }
         } else {
-            var skipUserPort = userToSkip.session.getRemote().getInetSocketAddress().getPort();
+            var skipUserPort = ((InetSocketAddress) userToSkip.session.getRemoteAddress()).getPort();
             for (WsContext user : users) {
-                var userPort = user.session.getRemote().getInetSocketAddress().getPort();
+                var userPort = ((InetSocketAddress) user.session.getRemoteAddress()).getPort();
                 if (userPort != skipUserPort) {
-                    sendMessage(message, user);
+                    sendMessage(b, user);
                 }
             }
         }

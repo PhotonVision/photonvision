@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022 PhotonVision
+ * Copyright (c) PhotonVision
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class PhotonVersionTest {
-    public static final boolean versionMatches(String versionString, String other) {
+    public static boolean versionMatches(String versionString, String other) {
         String c = versionString;
         Pattern p = Pattern.compile("v[0-9]+.[0-9]+.[0-9]+");
         Matcher m = p.matcher(c);

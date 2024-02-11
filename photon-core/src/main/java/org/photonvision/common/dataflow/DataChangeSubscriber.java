@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Objects;
 import org.photonvision.common.dataflow.events.DataChangeEvent;
 
-@SuppressWarnings("rawtypes")
 public abstract class DataChangeSubscriber {
     public final List<DataChangeSource> wantedSources;
     public final List<DataChangeDestination> wantedDestinations;

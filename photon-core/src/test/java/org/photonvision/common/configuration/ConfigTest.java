@@ -31,6 +31,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
+import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.target.TargetModel;
@@ -46,7 +47,8 @@ public class ConfigTest {
     @BeforeAll
     public static void init() {
         TestUtils.loadLibraries();
-        configMgr = new ConfigManager(Path.of("testconfigdir"));
+        var path = Path.of("testconfigdir");
+        configMgr = new ConfigManager(path, new LegacyConfigProvider(path));
         configMgr.load();
 
         Logger.setLevel(LogGroup.General, LogLevel.TRACE);
@@ -106,13 +108,13 @@ public class ConfigTest {
 
         Assertions.assertTrue(
                 reflectivePipelineSettings instanceof ReflectivePipelineSettings,
-                "Conig loaded pipeline settings for index 0 not of expected type ReflectivePipelineSettings!");
+                "Config loaded pipeline settings for index 0 not of expected type ReflectivePipelineSettings!");
         Assertions.assertTrue(
                 coloredShapePipelineSettings instanceof ColoredShapePipelineSettings,
-                "Conig loaded pipeline settings for index 1 not of expected type ColoredShapePipelineSettings!");
+                "Config loaded pipeline settings for index 1 not of expected type ColoredShapePipelineSettings!");
         Assertions.assertTrue(
                 apriltagPipelineSettings instanceof AprilTagPipelineSettings,
-                "Conig loaded pipeline settings for index 2 not of expected type AprilTagPipelineSettings!");
+                "Config loaded pipeline settings for index 2 not of expected type AprilTagPipelineSettings!");
     }
 
     @AfterAll
@@ -131,13 +133,34 @@ public class ConfigTest {
     public void testJacksonHandlesOldVersions() throws IOException {
         var str =
                 "{\"baseName\":\"aaaaaa\",\"uniqueName\":\"aaaaaa\",\"nickname\":\"aaaaaa\",\"FOV\":70.0,\"path\":\"dev/vid\",\"cameraType\":\"UsbCamera\",\"currentPipelineIndex\":0,\"camPitch\":{\"radians\":0.0},\"calibrations\":[], \"cameraLEDs\":[]}";
-        var writer = new FileWriter("test.json");
+        File tempFile = File.createTempFile("test", ".json");
+        tempFile.deleteOnExit();
+        var writer = new FileWriter(tempFile);
         writer.write(str);
         writer.flush();
         writer.close();
         Assertions.assertDoesNotThrow(
-                () -> JacksonUtils.deserialize(Path.of("test.json"), CameraConfiguration.class));
+                () -> JacksonUtils.deserialize(tempFile.toPath(), CameraConfiguration.class));
 
-        new File("test.json").delete();
+        tempFile.delete();
+    }
+
+    @Test
+    public void testJacksonHandlesOldTargetEnum() throws IOException {
+        var str = "[ \"AprilTagPipelineSettings\", {\n  \"targetModel\" : \"k6in_16h5\"\n} ]\n";
+
+        File tempFile = File.createTempFile("test", ".json");
+        tempFile.deleteOnExit();
+        var writer = new FileWriter(tempFile);
+        writer.write(str);
+        writer.flush();
+        writer.close();
+
+        AprilTagPipelineSettings settings =
+                (AprilTagPipelineSettings)
+                        JacksonUtils.deserialize(tempFile.toPath(), CVPipelineSettings.class);
+        Assertions.assertEquals(TargetModel.kAprilTag6in_16h5, settings.targetModel);
+
+        tempFile.delete();
     }
 }

@@ -26,6 +26,7 @@ import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ContourGroupingMode;
 import org.photonvision.vision.opencv.ContourIntersectionDirection;
+import org.photonvision.vision.pipe.impl.HSVPipe;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 public class ReflectivePipelineTest {
@@ -45,8 +46,16 @@ public class ReflectivePipelineTest {
                 new FileFrameProvider(
                         TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
                         TestUtils.WPI2019Image.FOV);
+        frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
+        var hsvParams =
+                new HSVPipe.HSVParams(
+                        pipeline.getSettings().hsvHue,
+                        pipeline.getSettings().hsvSaturation,
+                        pipeline.getSettings().hsvValue,
+                        pipeline.getSettings().hueInverted);
+        frameProvider.requestHsvSettings(hsvParams);
 
-        TestUtils.showImage(frameProvider.get().image.getMat(), "Pipeline input", 1);
+        TestUtils.showImage(frameProvider.get().colorImage.getMat(), "Pipeline input", 1);
 
         CVPipelineResult pipelineResult;
 
@@ -56,7 +65,7 @@ public class ReflectivePipelineTest {
         Assertions.assertTrue(pipelineResult.hasTargets());
         Assertions.assertEquals(2, pipelineResult.targets.size(), "Target count wrong!");
 
-        TestUtils.showImage(pipelineResult.outputFrame.image.getMat(), "Pipeline output");
+        TestUtils.showImage(pipelineResult.inputAndOutputFrame.colorImage.getMat(), "Pipeline output");
     }
 
     @Test
@@ -77,7 +86,8 @@ public class ReflectivePipelineTest {
         CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
         printTestResults(pipelineResult);
 
-        TestUtils.showImage(pipelineResult.outputFrame.image.getMat(), "Pipeline output");
+        TestUtils.showImage(
+                pipelineResult.inputAndOutputFrame.processedImage.getMat(), "Pipeline output");
     }
 
     private static void continuouslyRunPipeline(Frame frame, ReflectivePipelineSettings settings) {

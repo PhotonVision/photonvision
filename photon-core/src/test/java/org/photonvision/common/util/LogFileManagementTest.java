@@ -33,13 +33,13 @@ import org.photonvision.common.logging.Logger;
 
 public class LogFileManagementTest {
     @Test
-    public void fileCleanupTest() throws IOException {
+    public void fileCleanupTest() {
         // Ensure we instantiate the new log correctly
         ConfigManager.getInstance();
 
         String testDir = ConfigManager.getInstance().getLogsDir().toString() + "/test";
 
-        Files.createDirectories(Path.of(testDir));
+        Assertions.assertDoesNotThrow(() -> Files.createDirectories(Path.of(testDir)));
 
         // Create a bunch of log files with dummy contents.
         for (int fileIdx = 0; fileIdx < Logger.MAX_LOGS_TO_KEEP + 5; fileIdx++) {
@@ -57,21 +57,23 @@ public class LogFileManagementTest {
         }
 
         // Confirm new log files were created
-        Assertions.assertEquals(
-                true,
-                Logger.MAX_LOGS_TO_KEEP + 5 <= countLogFiles(testDir),
-                "Not enough log files discovered");
+        Assertions.assertTrue(
+                Logger.MAX_LOGS_TO_KEEP + 5 <= countLogFiles(testDir), "Not enough log files discovered");
 
         // Run the log cleanup routine
         Logger.cleanLogs(Path.of(testDir));
 
         // Confirm we deleted log files
         Assertions.assertEquals(
-                true, Logger.MAX_LOGS_TO_KEEP == countLogFiles(testDir), "Not enough log files deleted");
+                Logger.MAX_LOGS_TO_KEEP, countLogFiles(testDir), "Not enough log files deleted");
 
         // Clean uptest directory
         org.photonvision.common.util.file.FileUtils.deleteDirectory(Path.of(testDir));
-        Files.delete(Path.of(testDir));
+        try {
+            Files.delete(Path.of(testDir));
+        } catch (IOException e) {
+            // it's OK if this fails
+        }
     }
 
     private int countLogFiles(String testDir) {

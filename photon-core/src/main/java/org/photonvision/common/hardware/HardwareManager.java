@@ -17,9 +17,11 @@
 
 package org.photonvision.common.hardware;
 
-import edu.wpi.first.networktables.IntegerEntry;
+import edu.wpi.first.networktables.IntegerPublisher;
+import edu.wpi.first.networktables.IntegerSubscriber;
 import java.io.IOException;
-import org.photonvision.common.ProgramStatus;
+import java.util.HashMap;
+import java.util.Map;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.configuration.HardwareSettings;
@@ -27,10 +29,11 @@ import org.photonvision.common.dataflow.networktables.NTDataChangeListener;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.pi.PigpioSocket;
-import org.photonvision.common.hardware.metrics.MetricsBase;
+import org.photonvision.common.hardware.metrics.MetricsManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
+import org.photonvision.common.util.TimedTaskManager;
 
 public class HardwareManager {
     private static HardwareManager instance;
@@ -41,11 +44,15 @@ public class HardwareManager {
     private final HardwareConfig hardwareConfig;
     private final HardwareSettings hardwareSettings;
 
+    private final MetricsManager metricsManager;
+
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final StatusLED statusLED;
 
     @SuppressWarnings("FieldCanBeLocal")
-    private final IntegerEntry ledModeEntry;
+    private final IntegerSubscriber ledModeRequest;
+
+    private final IntegerPublisher ledModeState;
 
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final NTDataChangeListener ledModeListener;
@@ -65,8 +72,20 @@ public class HardwareManager {
     private HardwareManager(HardwareConfig hardwareConfig, HardwareSettings hardwareSettings) {
         this.hardwareConfig = hardwareConfig;
         this.hardwareSettings = hardwareSettings;
+
+        this.metricsManager = new MetricsManager();
+        this.metricsManager.setConfig(hardwareConfig);
+
+        ledModeRequest =
+                NetworkTablesManager.getInstance()
+                        .kRootTable
+                        .getIntegerTopic("ledModeRequest")
+                        .subscribe(-1);
+        ledModeState =
+                NetworkTablesManager.getInstance().kRootTable.getIntegerTopic("ledModeState").publish();
+        ledModeState.set(VisionLEDMode.kDefault.value);
+
         CustomGPIO.setConfig(hardwareConfig);
-        MetricsBase.setConfig(hardwareConfig);
 
         if (Platform.isRaspberryPi()) {
             pigpioSocket = new PigpioSocket();
@@ -79,6 +98,10 @@ public class HardwareManager {
                         ? new StatusLED(hardwareConfig.statusRGBPins)
                         : null;
 
+        if (statusLED != null) {
+            TimedTaskManager.getInstance().addTask("StatusLEDUpdate", this::statusLEDUpdate, 150);
+        }
+
         var hasBrightnessRange = hardwareConfig.ledBrightnessRange.size() == 2;
         visionLED =
                 hardwareConfig.ledPins.isEmpty()
@@ -87,17 +110,15 @@ public class HardwareManager {
                                 hardwareConfig.ledPins,
                                 hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(0) : 0,
                                 hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(1) : 100,
-                                pigpioSocket);
+                                pigpioSocket,
+                                ledModeState::set);
 
-        ledModeEntry =
-                NetworkTablesManager.getInstance().kRootTable.getIntegerTopic("ledMode").getEntry(0);
-        ledModeEntry.set(VisionLEDMode.kDefault.value);
         ledModeListener =
                 visionLED == null
                         ? null
                         : new NTDataChangeListener(
                                 NetworkTablesManager.getInstance().kRootTable.getInstance(),
-                                ledModeEntry,
+                                ledModeRequest,
                                 visionLED::onLedModeChange);
 
         Runtime.getRuntime().addShutdownHook(new Thread(this::onJvmExit));
@@ -123,10 +144,12 @@ public class HardwareManager {
     private void onJvmExit() {
         logger.info("Shutting down LEDs...");
         if (visionLED != null) visionLED.setState(false);
+
+        ConfigManager.getInstance().onJvmExit();
     }
 
     public boolean restartDevice() {
-        if (Platform.isRaspberryPi()) {
+        if (Platform.isLinux()) {
             try {
                 return shellExec.executeBashCommand("reboot now") == 0;
             } catch (IOException e) {
@@ -142,24 +165,68 @@ public class HardwareManager {
         }
     }
 
-    public void setStatus(ProgramStatus status) {
-        switch (status) {
-            case UHOH:
-                // red flashing, green off
-                break;
-            case RUNNING:
-                // red solid, green off
-                break;
-            case RUNNING_NT:
-                // red off, green solid
-                break;
-            case RUNNING_NT_TARGET:
-                // red off, green flashing
-                break;
+    // API's supporting status LEDs
+
+    private Map<Integer, Boolean> pipelineTargets = new HashMap<Integer, Boolean>();
+    private boolean ntConnected = false;
+    private boolean systemRunning = false;
+    private int blinkCounter = 0;
+
+    public void setTargetsVisibleStatus(int pipelineIdx, boolean hasTargets) {
+        pipelineTargets.put(pipelineIdx, hasTargets);
+    }
+
+    public void setNTConnected(boolean isConnected) {
+        this.ntConnected = isConnected;
+    }
+
+    public void setRunning(boolean isRunning) {
+        this.systemRunning = isRunning;
+    }
+
+    private void statusLEDUpdate() {
+        // make blinky
+        boolean blinky = ((blinkCounter % 3) > 0);
+
+        // check if any pipeline has a visible target
+        boolean anyTarget = false;
+        for (var t : this.pipelineTargets.values()) {
+            if (t) {
+                anyTarget = true;
+            }
         }
+
+        if (this.systemRunning) {
+            if (!this.ntConnected) {
+                if (anyTarget) {
+                    // Blue Flashing
+                    statusLED.setRGB(false, false, blinky);
+                } else {
+                    // Yellow flashing
+                    statusLED.setRGB(blinky, blinky, false);
+                }
+            } else {
+                if (anyTarget) {
+                    // Blue
+                    statusLED.setRGB(false, false, blinky);
+                } else {
+                    // blinky green
+                    statusLED.setRGB(false, blinky, false);
+                }
+            }
+        } else {
+            // Faulted, not running... blinky red
+            statusLED.setRGB(blinky, false, false);
+        }
+
+        blinkCounter++;
     }
 
     public HardwareConfig getConfig() {
         return hardwareConfig;
+    }
+
+    public void publishMetrics() {
+        metricsManager.publishMetrics();
     }
 }

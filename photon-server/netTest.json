@@ -1,1 +1,1 @@
-{"teamNumber":0,"connectionType":"DHCP","staticIp":"","hostname":"photonvision","runNTServer":false,"shouldManage":false}
+{"ntServerAddress":"","connectionType":"DHCP","staticIp":"","hostname":"photonvision","runNTServer":false,"shouldManage":false}

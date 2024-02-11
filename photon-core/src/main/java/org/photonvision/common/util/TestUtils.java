@@ -22,11 +22,12 @@ import edu.wpi.first.apriltag.jni.AprilTagJNI;
 import edu.wpi.first.cscore.CameraServerCvJNI;
 import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.hal.JNIWrapper;
+import edu.wpi.first.math.WPIMathJNI;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.net.WPINetJNI;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
-import edu.wpi.first.util.RuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
 import java.awt.*;
 import java.io.File;
@@ -38,35 +39,39 @@ import org.opencv.highgui.HighGui;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 
 public class TestUtils {
+    private static boolean has_loaded = false;
+
     public static boolean loadLibraries() {
-        JNIWrapper.Helper.setExtractOnStaticLoad(false);
-        WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
+        if (has_loaded) return true;
+
         NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
-        WPINetJNI.Helper.setExtractOnStaticLoad(false);
+        WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
+        WPIMathJNI.Helper.setExtractOnStaticLoad(false);
         CameraServerJNI.Helper.setExtractOnStaticLoad(false);
         CameraServerCvJNI.Helper.setExtractOnStaticLoad(false);
+        JNIWrapper.Helper.setExtractOnStaticLoad(false);
+        WPINetJNI.Helper.setExtractOnStaticLoad(false);
         AprilTagJNI.Helper.setExtractOnStaticLoad(false);
 
         try {
-            var loader =
-                    new RuntimeLoader<>(
-                            Core.NATIVE_LIBRARY_NAME, RuntimeLoader.getDefaultExtractionRoot(), Core.class);
-            loader.loadLibrary();
-
             CombinedRuntimeLoader.loadLibraries(
                     TestUtils.class,
                     "wpiutiljni",
+                    "wpimathjni",
                     "ntcorejni",
                     "wpinetjni",
                     "wpiHaljni",
+                    Core.NATIVE_LIBRARY_NAME,
                     "cscorejni",
-                    "cscorejnicvstatic",
                     "apriltagjni");
-            return true;
+
+            has_loaded = true;
         } catch (IOException e) {
             e.printStackTrace();
-            return false;
+            has_loaded = false;
         }
+
+        return has_loaded;
     }
 
     @SuppressWarnings("unused")
@@ -139,6 +144,52 @@ public class TestUtils {
         }
     }
 
+    public enum WPI2024Images {
+        kBackAmpZone_117in,
+        kSpeakerCenter_143in;
+
+        public static double FOV = 68.5;
+
+        public final Path path;
+
+        Path getPath() {
+            var filename = this.toString().substring(1);
+            return Path.of("2024", filename + ".jpg");
+        }
+
+        WPI2024Images() {
+            this.path = getPath();
+        }
+    }
+
+    public enum WPI2023Apriltags {
+        k162_36_Angle,
+        k162_36_Straight,
+        k383_60_Angle2;
+
+        public static double FOV = 68.5;
+
+        public final Translation2d approxPose;
+        public final Path path;
+
+        Path getPath() {
+            var filename = this.toString().substring(1);
+            return Path.of("2023", "AprilTags", filename + ".png");
+        }
+
+        Translation2d getPose() {
+            var names = this.toString().substring(1).split("_");
+            var x = Units.inchesToMeters(Integer.parseInt(names[0]));
+            var y = Units.inchesToMeters(Integer.parseInt(names[1]));
+            return new Translation2d(x, y);
+        }
+
+        WPI2023Apriltags() {
+            this.approxPose = getPose();
+            this.path = getPath();
+        }
+    }
+
     public enum WPI2022Image {
         kTerminal12ft6in(Units.feetToMeters(12.5)),
         kTerminal22ft6in(Units.feetToMeters(22.5));
@@ -196,14 +247,18 @@ public class TestUtils {
 
     public enum ApriltagTestImages {
         kRobots,
-        kTag1_640_480;
+        kTag1_640_480,
+        kTag1_16h5_1280,
+        kTag_corner_1280;
 
         public final Path path;
 
         Path getPath() {
             // Strip leading k
             var filename = this.toString().substring(1).toLowerCase();
-            return Path.of("apriltag", filename + ".jpg");
+            var extension = ".jpg";
+            if (filename.equals("tag1_16h5_1280")) extension = ".png";
+            return Path.of("apriltag", filename + extension);
         }
 
         ApriltagTestImages() {
@@ -211,8 +266,8 @@ public class TestUtils {
         }
     }
 
-    private static Path getResourcesFolderPath(boolean testMode) {
-        System.out.println("CWD: " + Path.of("").toAbsolutePath().toString());
+    public static Path getResourcesFolderPath(boolean testMode) {
+        System.out.println("CWD: " + Path.of("").toAbsolutePath());
 
         // VSCode likes to make this path relative to the wrong root directory, so a fun hack to tell
         // if it's wrong
@@ -302,6 +357,8 @@ public class TestUtils {
 
     private static final String LIFECAM_240P_CAL_FILE = "lifecam240p.json";
     private static final String LIFECAM_480P_CAL_FILE = "lifecam480p.json";
+    public static final String LIFECAM_1280P_CAL_FILE = "lifecam_1280.json";
+    public static final String LIMELIGHT_480P_CAL_FILE = "limelight_1280_720.json";
 
     public static CameraCalibrationCoefficients getCoeffs(String filename, boolean testMode) {
         try {
@@ -323,13 +380,18 @@ public class TestUtils {
         return getCoeffs(LIFECAM_480P_CAL_FILE, testMode);
     }
 
+    public static CameraCalibrationCoefficients get2023LifeCamCoeffs(boolean testMode) {
+        return getCoeffs(LIFECAM_1280P_CAL_FILE, testMode);
+    }
+
     public static CameraCalibrationCoefficients getLaptop() {
         return getCoeffs("laptop.json", true);
     }
 
-    private static int DefaultTimeoutMillis = 5000;
+    private static final int DefaultTimeoutMillis = 5000;
 
     public static void showImage(Mat frame, String title, int timeoutMs) {
+        if (frame.empty()) return;
         try {
             HighGui.imshow(title, frame);
             HighGui.waitKey(timeoutMs);
@@ -348,5 +410,11 @@ public class TestUtils {
 
     public static void showImage(Mat frame) {
         showImage(frame, DefaultTimeoutMillis);
+    }
+
+    public static Path getTestMode2023ImagePath() {
+        return getResourcesFolderPath(true)
+                .resolve("testimages")
+                .resolve(WPI2022Image.kTerminal22ft6in.path);
     }
 }

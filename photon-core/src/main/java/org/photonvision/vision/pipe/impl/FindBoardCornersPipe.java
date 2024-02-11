@@ -17,20 +17,22 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import java.util.Objects;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.vision.frame.FrameDivisor;
+import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.pipeline.UICalibrationData;
 
 public class FindBoardCornersPipe
         extends CVPipe<
-                Pair<Mat, Mat>, Triple<Size, Mat, Mat>, FindBoardCornersPipe.FindCornersPipeParams> {
+                Pair<Mat, Mat>,
+                FindBoardCornersPipe.FindBoardCornersPipeResult,
+                FindBoardCornersPipe.FindCornersPipeParams> {
     private static final Logger logger =
             new Logger(FindBoardCornersPipe.class, LogGroup.VisionModule);
 
@@ -39,12 +41,8 @@ public class FindBoardCornersPipe
     Size imageSize;
     Size patternSize;
 
-    // Tune to taste for a reasonable tradeoff between making
-    // the findCorners portion work hard, versus the subpixel refinement work hard.
-    final int FIND_CORNERS_WIDTH_PX = 320;
-
-    // Configure the optimizations used while using openCV's find corners algorithm
-    // Since we return results in real-time, we want ensure it goes as fast as possible
+    // Configure the optimizations used while using OpenCV's find corners algorithm
+    // Since we return results in real-time, we want to ensure it goes as fast as possible
     // and fails as fast as possible.
     final int findChessboardFlags =
             Calib3d.CALIB_CB_NORMALIZE_IMAGE
@@ -52,9 +50,9 @@ public class FindBoardCornersPipe
                     | Calib3d.CALIB_CB_FILTER_QUADS
                     | Calib3d.CALIB_CB_FAST_CHECK;
 
-    private MatOfPoint2f boardCorners = new MatOfPoint2f();
+    private final MatOfPoint2f boardCorners = new MatOfPoint2f();
 
-    // Intermedeate result mat's
+    // Intermediate result mat's
     Mat smallerInFrame = new Mat();
     MatOfPoint2f smallerBoardCorners = new MatOfPoint2f();
 
@@ -116,26 +114,19 @@ public class FindBoardCornersPipe
      * @return All valid Mats for camera calibration
      */
     @Override
-    protected Triple<Size, Mat, Mat> process(Pair<Mat, Mat> in) {
-        // Create the object points
-        createObjectPoints();
-
+    protected FindBoardCornersPipeResult process(Pair<Mat, Mat> in) {
         return findBoardCorners(in);
     }
 
     /**
      * Figures out how much a frame or point cloud must be scaled down by to match the desired size at
-     * which to run FindCorners
+     * which to run FindCorners. Should usually be > 1.
      *
      * @param inFrame
      * @return
      */
     private double getFindCornersScaleFactor(Mat inFrame) {
-        if (inFrame.width() > FIND_CORNERS_WIDTH_PX) {
-            return ((double) FIND_CORNERS_WIDTH_PX) / inFrame.width();
-        } else {
-            return 1.0;
-        }
+        return 1.0 / params.divisor.value;
     }
 
     /**
@@ -174,9 +165,10 @@ public class FindBoardCornersPipe
      *     findBoardCorners
      * @return the size to scale the input mat to
      */
-    private Size getFindCornersImgSize(Mat inFrame) {
-        var findcorners_height = Math.round(inFrame.height() * getFindCornersScaleFactor(inFrame));
-        return new Size(FIND_CORNERS_WIDTH_PX, findcorners_height);
+    private Size getFindCornersImgSize(Mat in) {
+        int width = in.cols() / params.divisor.value;
+        int height = in.rows() / params.divisor.value;
+        return new Size(width, height);
     }
 
     /**
@@ -220,25 +212,30 @@ public class FindBoardCornersPipe
     }
 
     /**
-     * Find chessboard corners given a input mat and output mat to draw on
+     * Find chessboard corners given an input mat and output mat to draw on
      *
      * @return Frame resolution, object points, board corners
      */
-    private Triple<Size, Mat, Mat> findBoardCorners(Pair<Mat, Mat> in) {
+    private FindBoardCornersPipeResult findBoardCorners(Pair<Mat, Mat> in) {
         createObjectPoints();
 
         var inFrame = in.getLeft();
         var outFrame = in.getRight();
 
-        // Convert the inFrame to grayscale to increase contrast
+        // Convert the inFrame too grayscale to increase contrast
         Imgproc.cvtColor(inFrame, inFrame, Imgproc.COLOR_BGR2GRAY);
         boolean boardFound = false;
 
         if (params.type == UICalibrationData.BoardType.CHESSBOARD) {
-            // This is for chessboards
-
             // Reduce the image size to be much more manageable
-            Imgproc.resize(inFrame, smallerInFrame, getFindCornersImgSize(inFrame));
+            // Note that opencv will copy the frame if no resize is requested; we can skip this since we
+            // don't need that copy. See:
+            // https://github.com/opencv/opencv/blob/a8ec6586118c3f8e8f48549a85f2da7a5b78bcc9/modules/imgproc/src/resize.cpp#L4185
+            if (params.divisor != FrameDivisor.NONE) {
+                Imgproc.resize(inFrame, smallerInFrame, getFindCornersImgSize(inFrame));
+            } else {
+                smallerInFrame = inFrame;
+            }
 
             // Run the chessboard corner finder on the smaller image
             boardFound =
@@ -251,73 +248,105 @@ public class FindBoardCornersPipe
             }
 
         } else if (params.type == UICalibrationData.BoardType.DOTBOARD) {
-            // For dot boards
             boardFound =
                     Calib3d.findCirclesGrid(
                             inFrame, patternSize, boardCorners, Calib3d.CALIB_CB_ASYMMETRIC_GRID);
         }
 
         if (!boardFound) {
-            // If we can't find a chessboard/dot board, just return
+            // If we can't find a chessboard/dot board, give up
             return null;
         }
 
         var outBoardCorners = new MatOfPoint2f();
         boardCorners.copyTo(outBoardCorners);
 
-        var objPts = new MatOfPoint2f();
+        var objPts = new MatOfPoint3f();
         objectPoints.copyTo(objPts);
 
         // Get the size of the inFrame
         this.imageSize = new Size(inFrame.width(), inFrame.height());
 
-        // Do sub corner pix for drawing chessboard
+        // Do sub corner pix for drawing chessboard when using OpenCV
         Imgproc.cornerSubPix(
                 inFrame, outBoardCorners, getWindowSize(outBoardCorners), zeroZone, criteria);
 
-        // convert back to BGR
-        //        Imgproc.cvtColor(inFrame, inFrame, Imgproc.COLOR_GRAY2BGR);
         // draw the chessboard, doesn't have to be different for a dot board since it just re projects
         // the corners we found
         Calib3d.drawChessboardCorners(outFrame, patternSize, outBoardCorners, true);
 
-        //        // Add the 3D points and the points of the corners found
-        //        if (addToSnapList) {
-        //            this.listOfObjectPoints.add(objectPoints);
-        //            this.listOfImagePoints.add(boardCorners);
-        //        }
-
-        return Triple.of(inFrame.size(), objPts, outBoardCorners);
+        return new FindBoardCornersPipeResult(inFrame.size(), objPts, outBoardCorners);
     }
 
     public static class FindCornersPipeParams {
-        private final int boardHeight;
-        private final int boardWidth;
-        private final UICalibrationData.BoardType type;
-        private final double gridSize;
+        final int boardHeight;
+        final int boardWidth;
+        final UICalibrationData.BoardType type;
+        final double gridSize;
+        final FrameDivisor divisor;
 
         public FindCornersPipeParams(
-                int boardHeight, int boardWidth, UICalibrationData.BoardType type, double gridSize) {
+                int boardHeight,
+                int boardWidth,
+                UICalibrationData.BoardType type,
+                double gridSize,
+                FrameDivisor divisor) {
             this.boardHeight = boardHeight;
             this.boardWidth = boardWidth;
             this.type = type;
             this.gridSize = gridSize; // mm
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            FindCornersPipeParams that = (FindCornersPipeParams) o;
-            return boardHeight == that.boardHeight
-                    && boardWidth == that.boardWidth
-                    && Double.compare(that.gridSize, gridSize) == 0
-                    && type == that.type;
+            this.divisor = divisor;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(boardHeight, boardWidth, type, gridSize);
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + boardHeight;
+            result = prime * result + boardWidth;
+            result = prime * result + ((type == null) ? 0 : type.hashCode());
+            long temp;
+            temp = Double.doubleToLongBits(gridSize);
+            result = prime * result + (int) (temp ^ (temp >>> 32));
+            result = prime * result + ((divisor == null) ? 0 : divisor.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (obj == null) return false;
+            if (getClass() != obj.getClass()) return false;
+            FindCornersPipeParams other = (FindCornersPipeParams) obj;
+            if (boardHeight != other.boardHeight) return false;
+            if (boardWidth != other.boardWidth) return false;
+            if (type != other.type) return false;
+            if (Double.doubleToLongBits(gridSize) != Double.doubleToLongBits(other.gridSize))
+                return false;
+            return divisor == other.divisor;
+        }
+    }
+
+    public static class FindBoardCornersPipeResult implements Releasable {
+        public Size size;
+        public MatOfPoint3f objectPoints;
+        public MatOfPoint2f imagePoints;
+
+        // Set later only if we need it
+        public Mat inputImage = null;
+
+        public FindBoardCornersPipeResult(
+                Size size, MatOfPoint3f objectPoints, MatOfPoint2f imagePoints) {
+            this.size = size;
+            this.objectPoints = objectPoints;
+            this.imagePoints = imagePoints;
+        }
+
+        @Override
+        public void release() {
+            objectPoints.release();
+            imagePoints.release();
+            if (inputImage != null) inputImage.release();
         }
     }
 }

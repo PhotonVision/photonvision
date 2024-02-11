@@ -1,1 +1,3 @@
-new File('examples.txt').eachLine { line -> include line }
+apply from: "examples.gradle"
+
+exampleFolderNames.each { line -> include line }

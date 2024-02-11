@@ -1,21 +1,20 @@
-plugins {
-    id "com.diffplug.spotless" version "6.1.2"
-    id "com.github.johnrengelman.shadow" version "7.1.2"
-    id "com.github.node-gradle.node" version "3.1.1" apply false
-    id "edu.wpi.first.GradleJni" version "1.0.0"
-    id "edu.wpi.first.GradleVsCode" version "1.1.0"
-    id "edu.wpi.first.NativeUtils" version "2023.10.0" apply false
-    id "edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin" version "2020.2"
-    id "org.hidetake.ssh" version "2.10.1"
-    id 'edu.wpi.first.WpilibTools' version '1.0.0'
-}
+import edu.wpi.first.toolchain.*
 
-import org.gradle.api.internal.artifacts.dependencies.DefaultExternalModuleDependency;
+plugins {
+    id "com.diffplug.spotless" version "6.24.0"
+    id "edu.wpi.first.NativeUtils" version "2024.6.1" apply false
+    id "edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin" version "2020.2"
+    id "edu.wpi.first.GradleRIO" version "2024.2.1"
+    id 'edu.wpi.first.WpilibTools' version '1.3.0'
+    id 'com.google.protobuf' version '0.9.4' apply false
+}
 
 allprojects {
     repositories {
         mavenCentral()
+        mavenLocal()
         maven { url = "https://maven.photonvision.org/repository/internal/" }
+        maven { url = "https://maven.photonvision.org/repository/snapshots/" }
     }
     wpilibRepositories.addAllReleaseRepositories(it)
     wpilibRepositories.addAllDevelopmentRepositories(it)
@@ -25,29 +24,40 @@ allprojects {
 apply from: "versioningHelper.gradle"
 
 ext {
-    wpilibVersion = "2023.1.1-beta-7"
-    opencvVersion = "4.6.0-4"
+    wpilibVersion = "2024.2.1"
+    wpimathVersion = wpilibVersion
+    openCVversion = "4.8.0-2"
     joglVersion = "2.4.0-rc-20200307"
+    javalinVersion = "5.6.2"
+    photonGlDriverLibVersion = "dev-v2023.1.0-9-g75fc678"
+    rknnVersion = "dev-v2024.0.0-64-gc0836a6"
+    frcYear = "2024"
+    mrcalVersion = "dev-v2024.0.0-7-gc976aaa";
+
+
     pubVersion = versionString
     isDev = pubVersion.startsWith("dev")
 
-    if(project.hasProperty('pionly')) {
-        jniPlatforms = ['linuxarm32']
-    } else if(project.hasProperty('winonly')) {
-        jniPlatforms = ['windowsx86-64']
-    } else {
-        jniPlatforms = ['linuxarm64', 'linuxarm32', 'linuxx86-64', 'osxuniversal', 'windowsx86-64']
+    // A list, for legacy reasons, with only the current platform contained
+    wpilibNativeName = wpilibTools.platformMapper.currentPlatform.platformName;
+    def nativeName = wpilibNativeName
+    if (wpilibNativeName == "linuxx64") nativeName = "linuxx86-64";
+    if (wpilibNativeName == "winx64") nativeName = "windowsx86-64";
+    if (wpilibNativeName == "macx64") nativeName = "osxx86-64";
+    if (wpilibNativeName == "macarm64") nativeName = "osxarm64";
+    jniPlatform = nativeName
 
-    }
-
-    println("Building for archs " + jniPlatforms)
-
+    println("Building for platform " + jniPlatform + " wpilib: " + wpilibNativeName)
+    println("Using Wpilib: " + wpilibVersion)
+    println("Using OpenCV: " + openCVversion)
 }
-
-wpilibTools.deps.wpilibVersion = wpilibVersion
 
 spotless {
     java {
+        target fileTree('.') {
+            include '**/*.java'
+            exclude '**/build/**', '**/build-*/**', "photon-core\\src\\main\\java\\org\\photonvision\\PhotonVersion.java", "photon-lib\\src\\main\\java\\org\\photonvision\\PhotonVersion.java"
+        }
         toggleOffOn()
         googleJavaFormat()
         indentWithTabs(2)
@@ -56,9 +66,41 @@ spotless {
         trimTrailingWhitespace()
         endWithNewline()
     }
-    java {
-        target "**/*.java"
-        targetExclude("photon-core/src/main/java/org/photonvision/PhotonVersion.java")
-        targetExclude("photon-lib/src/main/java/org/photonvision/PhotonVersion.java")
+    groovyGradle {
+        target fileTree('.') {
+            include '**/*.gradle'
+            exclude '**/build/**', '**/build-*/**'
+        }
+        greclipse()
+        indentWithSpaces(4)
+        trimTrailingWhitespace()
+        endWithNewline()
     }
+    format 'xml', {
+        target fileTree('.') {
+            include '**/*.xml'
+            exclude '**/build/**', '**/build-*/**', "**/.idea/**"
+        }
+        eclipseWtp('xml')
+        trimTrailingWhitespace()
+        indentWithSpaces(2)
+        endWithNewline()
+    }
+    format 'misc', {
+        target fileTree('.') {
+            include '**/*.md', '**/.gitignore'
+            exclude '**/build/**', '**/build-*/**'
+        }
+        trimTrailingWhitespace()
+        indentWithSpaces(2)
+        endWithNewline()
+    }
+}
+
+wrapper {
+    gradleVersion '8.4'
+}
+
+ext.getCurrentArch = {
+    return NativePlatforms.desktop
 }

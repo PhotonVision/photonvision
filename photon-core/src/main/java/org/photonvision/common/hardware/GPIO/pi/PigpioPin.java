@@ -17,8 +17,6 @@
 
 package org.photonvision.common.hardware.GPIO.pi;
 
-import static org.photonvision.common.hardware.GPIO.pi.PigpioException.*;
-
 import org.photonvision.common.hardware.GPIO.GPIOBase;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;

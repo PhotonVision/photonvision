@@ -1,3 +1,5 @@
+apply plugin: "edu.wpi.first.NativeUtils"
+
 // Configure Native-Utils WPI Plugin
 nativeUtils.addWpiNativeUtils()
 nativeUtils.withCrossRoboRIO()
@@ -7,16 +9,19 @@ nativeUtils.withCrossLinuxArm64()
 // Configure WPI dependencies.
 nativeUtils.wpi.configureDependencies {
     wpiVersion = wpilibVersion
-    wpimathVersion = wpilibVersion
-    niLibVersion = "2023.2.0"
-    opencvVersion = "4.6.0-3"
-    googleTestVersion = "1.11.0-4"
-    imguiVersion = "1.86-1"
+    wpimathVersion = wpimathVersion
+    opencvYear = 'frc2024'
+    opencvVersion = openCVversion
+    googleTestYear = "frc2024"
+    googleTestVersion = "1.14.0-1"
+    niLibVersion = "2024.2.1"
 }
 
 // Configure warnings and errors
 nativeUtils.wpi.addWarnings()
 nativeUtils.wpi.addWarningsAsErrors()
+
+nativeUtils.setSinglePrintPerPlatform()
 
 // Enable builds for all platforms.
 model {
@@ -30,6 +35,18 @@ model {
             nativeUtils.usePlatformArguments(it)
         }
     }
+}
+
+
+task copyAllOutputs(type: Copy) {
+    def outputsFolder = file("$project.buildDir/outputs")
+    destinationDir outputsFolder
+}
+
+ext.addTaskToCopyAllOutputs = { task ->
+    copyAllOutputs.dependsOn task
+    copyAllOutputs.inputs.file task.archiveFile
+    copyAllOutputs.from task.archiveFile
 }
 
 // Add debug path to binaries.
@@ -67,6 +84,8 @@ ext.appendDebugPathToBinaries = { binaries ->
     }
 }
 
+def licenseFile = file("$rootDir/LICENCE")
+
 // Create ZIP tasks for each component.
 ext.createComponentZipTasks = { components, names, base, type, project, func ->
     def stringNames = names.collect { it.toString() }
@@ -75,7 +94,7 @@ ext.createComponentZipTasks = { components, names, base, type, project, func ->
         if (it in NativeLibrarySpec && stringNames.contains(it.name)) {
             it.binaries.each {
                 if (!it.buildable) return
-                def target = nativeUtils.getPublishClassifier(it)
+                    def target = nativeUtils.getPublishClassifier(it)
                 if (configMap.containsKey(target)) {
                     configMap.get(target).add(it)
                 } else {
@@ -91,7 +110,7 @@ ext.createComponentZipTasks = { components, names, base, type, project, func ->
         def task = project.tasks.create(base + "-${key}", type) {
             description = 'Creates component archive for platform ' + key
             destinationDirectory = outputsFolder
-            classifier = key
+            archiveClassifier = key
             archiveBaseName = '_M_' + base
             duplicatesStrategy = 'exclude'
 
@@ -125,7 +144,7 @@ ext.createAllCombined = { list, name, base, type, project ->
 
         list.each {
             if (it.name.endsWith('debug')) return
-            from project.zipTree(it.archivePath)
+                from project.zipTree(it.archiveFile)
             dependsOn it
         }
     }
@@ -137,7 +156,6 @@ ext.createAllCombined = { list, name, base, type, project ->
     }
 
     return task
-
 }
 
 // Create the standard ZIP format for the dependencies.

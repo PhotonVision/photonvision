@@ -21,13 +21,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import org.jetbrains.annotations.Nullable;
-import org.opencv.core.CvType;
-import org.opencv.core.MatOfInt;
-import org.opencv.core.MatOfPoint;
-import org.opencv.core.MatOfPoint2f;
-import org.opencv.core.Point;
-import org.opencv.core.Rect;
-import org.opencv.core.RotatedRect;
+import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
 import org.photonvision.common.util.math.MathUtils;
@@ -51,6 +45,16 @@ public class Contour implements Releasable {
 
     public Contour(MatOfPoint mat) {
         this.mat = mat;
+    }
+
+    public Contour(Rect2d box) {
+        // no easy way to convert a Rect2d to Mat, diy it. Order is tl tr br bl
+        this.mat =
+                new MatOfPoint(
+                        box.tl(),
+                        new Point(box.x + box.width, box.y),
+                        box.br(),
+                        new Point(box.x, box.y + box.height));
     }
 
     public MatOfPoint2f getMat2f() {

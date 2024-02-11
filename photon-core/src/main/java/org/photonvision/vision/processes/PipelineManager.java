@@ -22,8 +22,12 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import org.photonvision.common.configuration.CameraConfiguration;
+import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.dataflow.DataChangeService;
+import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.vision.pipe.impl.Calibrate3dPipeline;
 import org.photonvision.vision.pipeline.*;
 
 @SuppressWarnings({"rawtypes", "unused"})
@@ -34,11 +38,11 @@ public class PipelineManager {
     public static final int CAL_3D_INDEX = -2;
 
     protected final List<CVPipelineSettings> userPipelineSettings;
-    protected final Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline();
+    protected final Calibrate3dPipeline calibration3dPipeline;
     protected final DriverModePipeline driverModePipeline = new DriverModePipeline();
 
     /** Index of the currently active pipeline. Defaults to 0. */
-    private int currentPipelineIndex = 0;
+    private int currentPipelineIndex = DRIVERMODE_INDEX;
 
     /** The currently active pipeline. */
     private CVPipeline currentUserPipeline = driverModePipeline;
@@ -48,26 +52,28 @@ public class PipelineManager {
      * <br>
      * Used only when switching from any of the built-in pipelines back to a user-created pipeline.
      */
-    private int lastPipelineIndex;
+    private int lastUserPipelineIdx;
 
     /**
      * Creates a PipelineManager with a DriverModePipeline, a Calibration3dPipeline, and all provided
      * pipelines.
-     *
-     * @param userPipelines Pipelines to add to the manager.
      */
-    public PipelineManager(
-            DriverModePipelineSettings driverSettings, List<CVPipelineSettings> userPipelines) {
+    PipelineManager(
+            DriverModePipelineSettings driverSettings,
+            List<CVPipelineSettings> userPipelines,
+            String uniqueName) {
         this.userPipelineSettings = new ArrayList<>(userPipelines);
         // This is to respect the default res idx for vendor cameras
 
         this.driverModePipeline.setSettings(driverSettings);
 
-        if (userPipelines.size() < 1) addPipeline(PipelineType.Reflective);
+        if (userPipelines.isEmpty()) addPipeline(PipelineType.Reflective);
+
+        calibration3dPipeline = new Calibrate3dPipeline(uniqueName);
     }
 
     public PipelineManager(CameraConfiguration config) {
-        this(config.driveModeSettings, config.pipelineSettings);
+        this(config.driveModeSettings, config.pipelineSettings, config.uniqueName);
     }
 
     /**
@@ -141,7 +147,7 @@ public class PipelineManager {
      *
      * @return The currently active pipeline.
      */
-    public CVPipeline getCurrentUserPipeline() {
+    public CVPipeline getCurrentPipeline() {
         if (currentPipelineIndex < 0) {
             switch (currentPipelineIndex) {
                 case CAL_3D_INDEX:
@@ -151,23 +157,7 @@ public class PipelineManager {
             }
         }
 
-        var desiredPipelineSettings = userPipelineSettings.get(currentPipelineIndex);
-        //        if (currentPipeline.getSettings().pipelineIndex !=
-        // desiredPipelineSettings.pipelineIndex) {
-        //            switch (desiredPipelineSettings.pipelineType) {
-        //                case Reflective:
-        //                    currentPipeline =
-        //                            new ReflectivePipeline((ReflectivePipelineSettings)
-        // desiredPipelineSettings);
-        //                    break;
-        //                case ColoredShape:
-        //                    currentPipeline =
-        //                            new ColoredShapePipeline((ColoredShapePipelineSettings)
-        // desiredPipelineSettings);
-        //                    break;
-        //            }
-        //        }
-
+        // Just return the current user pipeline, we're not on aa built-in one
         return currentUserPipeline;
     }
 
@@ -186,20 +176,26 @@ public class PipelineManager {
      * All externally accessible methods that intend to change the active pipeline MUST go through
      * here to ensure all proper steps are taken.
      *
-     * @param index Index of pipeline to be active
+     * @param newIndex Index of pipeline to be active
      */
-    private void setPipelineInternal(int index) {
-        if (index < 0) {
-            lastPipelineIndex = currentPipelineIndex;
+    private void setPipelineInternal(int newIndex) {
+        if (newIndex < 0 && currentPipelineIndex >= 0) {
+            // Transitioning to a built-in pipe, save off the current user one
+            lastUserPipelineIdx = currentPipelineIndex;
         }
 
-        if (userPipelineSettings.size() - 1 < index) {
+        if (userPipelineSettings.size() - 1 < newIndex) {
             logger.warn("User attempted to set index to non-existent pipeline!");
             return;
         }
 
-        currentPipelineIndex = index;
-        if (index >= 0) {
+        // Cleanup potential old native resources before swapping over
+        if (currentUserPipeline != null) {
+            currentUserPipeline.release();
+        }
+
+        currentPipelineIndex = newIndex;
+        if (newIndex >= 0) {
             var desiredPipelineSettings = userPipelineSettings.get(currentPipelineIndex);
             switch (desiredPipelineSettings.pipelineType) {
                 case Reflective:
@@ -217,11 +213,26 @@ public class PipelineManager {
                     currentUserPipeline =
                             new AprilTagPipeline((AprilTagPipelineSettings) desiredPipelineSettings);
                     break;
+
+                case Aruco:
+                    logger.debug("Creating Aruco Pipeline");
+                    currentUserPipeline = new ArucoPipeline((ArucoPipelineSettings) desiredPipelineSettings);
+                    break;
+                case ObjectDetection:
+                    logger.debug("Creating ObjectDetection Pipeline");
+                    currentUserPipeline =
+                            new ObjectDetectionPipeline(
+                                    (ObjectDetectionPipelineSettings) desiredPipelineSettings);
                 default:
                     // Can be calib3d or drivermode, both of which are special cases
                     break;
             }
         }
+
+        DataChangeService.getInstance()
+                .publishEvent(
+                        new OutgoingUIEvent<>(
+                                "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
     }
 
     /**
@@ -233,7 +244,7 @@ public class PipelineManager {
      */
     public void setCalibrationMode(boolean wantsCalibration) {
         if (!wantsCalibration) calibration3dPipeline.finishCalibration();
-        setPipelineInternal(wantsCalibration ? CAL_3D_INDEX : lastPipelineIndex);
+        setPipelineInternal(wantsCalibration ? CAL_3D_INDEX : lastUserPipelineIdx);
     }
 
     /**
@@ -244,13 +255,13 @@ public class PipelineManager {
      * @param state True to enter driver mode, false to exit driver mode.
      */
     public void setDriverMode(boolean state) {
-        setPipelineInternal(state ? DRIVERMODE_INDEX : lastPipelineIndex);
+        setPipelineInternal(state ? DRIVERMODE_INDEX : lastUserPipelineIdx);
     }
 
     /**
-     * Returns whether or not driver mode is active.
+     * Returns whether driver mode is active.
      *
-     * @return Whether or not driver mode is active.
+     * @return Whether driver mode is active.
      */
     public boolean getDriverMode() {
         return currentPipelineIndex == DRIVERMODE_INDEX;
@@ -262,7 +273,7 @@ public class PipelineManager {
     /**
      * Sorts the pipeline list by index, and reassigns their indexes to match the new order. <br>
      * <br>
-     * I don't like this but I have no other ideas, and it works so ¯\_(ツ)_/¯
+     * I don't like this, but I have no other ideas, and it works so
      */
     private void reassignIndexes() {
         userPipelineSettings.sort(PipelineSettingsIndexComparator);
@@ -307,9 +318,21 @@ public class PipelineManager {
                     added.pipelineNickname = nickname;
                     return added;
                 }
+            case Aruco:
+                {
+                    var added = new ArucoPipelineSettings();
+                    added.pipelineNickname = nickname;
+                    return added;
+                }
+            case ObjectDetection:
+                {
+                    var added = new ObjectDetectionPipelineSettings();
+                    added.pipelineNickname = nickname;
+                    return added;
+                }
             default:
                 {
-                    logger.error("Got invalid pipeline type: " + type.toString());
+                    logger.error("Got invalid pipeline type: " + type);
                     return null;
                 }
         }
@@ -371,31 +394,31 @@ public class PipelineManager {
 
     private static String createUniqueName(
             String nickname, List<CVPipelineSettings> existingSettings) {
-        String uniqueName = nickname;
+        StringBuilder uniqueName = new StringBuilder(nickname);
         while (true) {
-            String finalUniqueName = uniqueName; // To get around lambda capture
+            String finalUniqueName = uniqueName.toString(); // To get around lambda capture
             var conflictingName =
                     existingSettings.stream().anyMatch(it -> it.pipelineNickname.equals(finalUniqueName));
 
             if (!conflictingName) {
                 // If no conflict, we're done
-                return uniqueName;
+                return uniqueName.toString();
             } else {
                 // Otherwise, we need to add a suffix to the name
                 // If the string doesn't already end in "([0-9]*)", we'll add it
                 // If it does, we'll increment the number in the suffix
 
-                if (uniqueName.matches(".*\\([0-9]*\\)")) {
+                if (uniqueName.toString().matches(".*\\([0-9]*\\)")) {
                     // Because java strings are immutable, we have to do this curstedness
                     // This is like doing "New pipeline (" + 2 + ")"
 
-                    var parenStart = uniqueName.lastIndexOf('(');
+                    var parenStart = uniqueName.toString().lastIndexOf('(');
                     var parenEnd = uniqueName.length() - 1;
                     var number = Integer.parseInt(uniqueName.substring(parenStart + 1, parenEnd)) + 1;
 
-                    uniqueName = uniqueName.substring(0, parenStart + 1) + number + ")";
+                    uniqueName = new StringBuilder(uniqueName.substring(0, parenStart + 1) + number + ")");
                 } else {
-                    uniqueName += " (1)";
+                    uniqueName.append(" (1)");
                 }
             }
         }
@@ -437,7 +460,7 @@ public class PipelineManager {
             return;
         }
 
-        logger.info("Adding new pipe of type " + type.toString() + " at idx " + idx);
+        logger.info("Adding new pipe of type " + type + " at idx " + idx);
         newSettings.pipelineIndex = idx;
         userPipelineSettings.set(idx, newSettings);
         setPipelineInternal(idx);

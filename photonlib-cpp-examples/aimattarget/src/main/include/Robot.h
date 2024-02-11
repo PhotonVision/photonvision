@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022 PhotonVision
+ * Copyright (c) PhotonVision
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include <photonlib/PhotonCamera.h>
+#include <photon/PhotonCamera.h>
 
 #include <frc/TimedRobot.h>
 #include <frc/XboxController.h>
@@ -40,9 +40,9 @@ class Robot : public frc::TimedRobot {
 
  private:
   // Change this to match the name of your camera
-  photonlib::PhotonCamera camera{"photonvision"};
+  photon::PhotonCamera camera{"photonvision"};
   // PID constants should be tuned per robot
-  frc2::PIDController controller{.1, 0, 0};
+  frc::PIDController controller{.1, 0, 0};
 
   frc::XboxController xboxController{0};
 

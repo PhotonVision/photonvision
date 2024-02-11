@@ -19,7 +19,6 @@ package org.photonvision.vision.pipe.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.vision.opencv.CVShape;
 import org.photonvision.vision.opencv.Contour;
@@ -82,6 +81,7 @@ public class FindPolygonPipe
 
     public static class FindPolygonPipeParams {
         private final double accuracyPercentage;
+
         // Should be a value between 0-100
         public FindPolygonPipeParams(double accuracyPercentage) {
             this.accuracyPercentage = accuracyPercentage;

@@ -26,7 +26,9 @@ import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.IntegerTopic;
 import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.RawPublisher;
+import edu.wpi.first.networktables.ProtobufPublisher;
+import edu.wpi.first.networktables.PubSubOption;
+import org.photonvision.targeting.PhotonPipelineResult;
 
 /**
  * This class is a wrapper around all per-pipeline NT topics that PhotonVision should be publishing
@@ -38,11 +40,12 @@ import edu.wpi.first.networktables.RawPublisher;
  */
 public class NTTopicSet {
     public NetworkTable subTable;
-    public RawPublisher rawBytesEntry;
 
-    public IntegerTopic pipelineIndexTopic;
+    public PacketPublisher<PhotonPipelineResult> resultPublisher;
+    public ProtobufPublisher<PhotonPipelineResult> protoResultPublisher;
+
     public IntegerPublisher pipelineIndexPublisher;
-    public IntegerSubscriber pipelineIndexSubscriber;
+    public IntegerSubscriber pipelineIndexRequestSub;
 
     public BooleanTopic driverModeEntry;
     public BooleanPublisher driverModePublisher;
@@ -64,16 +67,30 @@ public class NTTopicSet {
     public IntegerTopic heartbeatTopic;
     public IntegerPublisher heartbeatPublisher;
 
+    // Camera Calibration
+    public DoubleArrayPublisher cameraIntrinsicsPublisher;
+    public DoubleArrayPublisher cameraDistortionPublisher;
+
     public void updateEntries() {
-        rawBytesEntry = subTable.getRawTopic("rawBytes").publish("rawBytes");
+        var rawBytesEntry =
+                subTable
+                        .getRawTopic("rawBytes")
+                        .publish("rawBytes", PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
 
-        pipelineIndexTopic = subTable.getIntegerTopic("pipelineIndex");
-        pipelineIndexPublisher = pipelineIndexTopic.publish();
-        pipelineIndexSubscriber = pipelineIndexTopic.subscribe(0);
+        resultPublisher = new PacketPublisher<>(rawBytesEntry, PhotonPipelineResult.serde);
+        protoResultPublisher =
+                subTable
+                        .getProtobufTopic("result_proto", PhotonPipelineResult.proto)
+                        .publish(PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
 
-        driverModeEntry = subTable.getBooleanTopic("driverMode");
-        driverModePublisher = driverModeEntry.publish();
-        driverModeSubscriber = driverModeEntry.subscribe(false);
+        pipelineIndexPublisher = subTable.getIntegerTopic("pipelineIndexState").publish();
+        pipelineIndexRequestSub = subTable.getIntegerTopic("pipelineIndexRequest").subscribe(0);
+
+        driverModePublisher = subTable.getBooleanTopic("driverMode").publish();
+        driverModeSubscriber = subTable.getBooleanTopic("driverModeRequest").subscribe(false);
+
+        // Fun little hack to make the request show up
+        driverModeSubscriber.getTopic().publish().setDefault(false);
 
         latencyMillisEntry = subTable.getDoubleTopic("latencyMillis").publish();
         hasTargetEntry = subTable.getBooleanTopic("hasTarget").publish();
@@ -89,13 +106,16 @@ public class NTTopicSet {
 
         heartbeatTopic = subTable.getIntegerTopic("heartbeat");
         heartbeatPublisher = heartbeatTopic.publish();
+
+        cameraIntrinsicsPublisher = subTable.getDoubleArrayTopic("cameraIntrinsics").publish();
+        cameraDistortionPublisher = subTable.getDoubleArrayTopic("cameraDistortion").publish();
     }
 
     @SuppressWarnings("DuplicatedCode")
     public void removeEntries() {
-        if (rawBytesEntry != null) rawBytesEntry.close();
+        if (resultPublisher != null) resultPublisher.close();
         if (pipelineIndexPublisher != null) pipelineIndexPublisher.close();
-        if (pipelineIndexSubscriber != null) pipelineIndexSubscriber.close();
+        if (pipelineIndexRequestSub != null) pipelineIndexRequestSub.close();
 
         if (driverModePublisher != null) driverModePublisher.close();
         if (driverModeSubscriber != null) driverModeSubscriber.close();
@@ -109,5 +129,10 @@ public class NTTopicSet {
         if (targetSkewEntry != null) targetSkewEntry.close();
         if (bestTargetPosX != null) bestTargetPosX.close();
         if (bestTargetPosY != null) bestTargetPosY.close();
+
+        if (heartbeatPublisher != null) heartbeatPublisher.close();
+
+        if (cameraIntrinsicsPublisher != null) cameraIntrinsicsPublisher.close();
+        if (cameraDistortionPublisher != null) cameraDistortionPublisher.close();
     }
 }

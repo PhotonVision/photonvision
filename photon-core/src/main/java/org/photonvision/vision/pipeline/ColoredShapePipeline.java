@@ -21,25 +21,21 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
-import org.opencv.core.Mat;
 import org.opencv.core.Point;
-import org.photonvision.common.util.math.MathUtils;
-import org.photonvision.raspi.PicamJNI;
-import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.frame.Frame;
-import org.photonvision.vision.opencv.*;
+import org.photonvision.vision.frame.FrameThresholdType;
+import org.photonvision.vision.opencv.CVShape;
+import org.photonvision.vision.opencv.Contour;
+import org.photonvision.vision.opencv.ContourShape;
+import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.*;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.PotentialTarget;
 import org.photonvision.vision.target.TrackedTarget;
 
-@SuppressWarnings({"DuplicatedCode"})
 public class ColoredShapePipeline
         extends CVPipeline<CVPipelineResult, ColoredShapePipelineSettings> {
-    private final RotateImagePipe rotateImagePipe = new RotateImagePipe();
-    private final ErodeDilatePipe erodeDilatePipe = new ErodeDilatePipe();
-    private final HSVPipe hsvPipe = new HSVPipe();
     private final SpeckleRejectPipe speckleRejectPipe = new SpeckleRejectPipe();
     private final FindContoursPipe findContoursPipe = new FindContoursPipe();
     private final FindPolygonPipe findPolygonPipe = new FindPolygonPipe();
@@ -56,11 +52,15 @@ public class ColoredShapePipeline
 
     private final Point[] rectPoints = new Point[4];
 
+    private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.HSV;
+
     public ColoredShapePipeline() {
+        super(PROCESSING_TYPE);
         settings = new ColoredShapePipelineSettings();
     }
 
     public ColoredShapePipeline(ColoredShapePipelineSettings settings) {
+        super(PROCESSING_TYPE);
         this.settings = settings;
     }
 
@@ -72,34 +72,6 @@ public class ColoredShapePipeline
                         settings.offsetDualPointAArea,
                         settings.offsetDualPointB,
                         settings.offsetDualPointBArea);
-
-        RotateImagePipe.RotateImageParams rotateImageParams =
-                new RotateImagePipe.RotateImageParams(settings.inputImageRotationMode);
-        rotateImagePipe.setParams(rotateImageParams);
-
-        if (cameraQuirks.hasQuirk(CameraQuirk.PiCam) && PicamJNI.isSupported()) {
-            PicamJNI.setThresholds(
-                    settings.hsvHue.getFirst() / 180d,
-                    settings.hsvSaturation.getFirst() / 255d,
-                    settings.hsvValue.getFirst() / 255d,
-                    settings.hsvHue.getSecond() / 180d,
-                    settings.hsvSaturation.getSecond() / 255d,
-                    settings.hsvValue.getSecond() / 255d);
-            PicamJNI.setInvertHue(settings.hueInverted);
-
-            PicamJNI.setRotation(settings.inputImageRotationMode.value);
-            PicamJNI.setShouldCopyColor(settings.inputShouldShow);
-        } else {
-            var hsvParams =
-                    new HSVPipe.HSVParams(
-                            settings.hsvHue, settings.hsvSaturation, settings.hsvValue, settings.hueInverted);
-            hsvPipe.setParams(hsvParams);
-        }
-
-        ErodeDilatePipe.ErodeDilateParams erodeDilateParams =
-                new ErodeDilatePipe.ErodeDilateParams(settings.erode, settings.dilate, 5);
-        // TODO: add kernel size to pipeline settings
-        erodeDilatePipe.setParams(erodeDilateParams);
 
         SpeckleRejectPipe.SpeckleRejectParams speckleRejectParams =
                 new SpeckleRejectPipe.SpeckleRejectParams(settings.contourSpecklePercentage);
@@ -137,7 +109,7 @@ public class ColoredShapePipeline
         SortContoursPipe.SortContoursParams sortContoursParams =
                 new SortContoursPipe.SortContoursParams(
                         settings.contourSortMode,
-                        settings.outputShowMultipleTargets ? 5 : 1,
+                        settings.outputShowMultipleTargets ? MAX_MULTI_TARGET_RESULTS : 1,
                         frameStaticProperties); // TODO don't hardcode?
         sortContoursPipe.setParams(sortContoursParams);
 
@@ -182,7 +154,8 @@ public class ColoredShapePipeline
                         settings.offsetSinglePoint,
                         dualOffsetValues,
                         frameStaticProperties,
-                        settings.streamingFrameDivisor);
+                        settings.streamingFrameDivisor,
+                        settings.inputImageRotationMode);
         draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
 
         var draw3dTargetsParams =
@@ -198,45 +171,8 @@ public class ColoredShapePipeline
     protected CVPipelineResult process(Frame frame, ColoredShapePipelineSettings settings) {
         long sumPipeNanosElapsed = 0L;
 
-        CVPipeResult<Mat> hsvPipeResult;
-        Mat rawInputMat;
-        if (frame.image.getMat().channels() != 1) {
-            var rotateImageResult = rotateImagePipe.run(frame.image.getMat());
-            sumPipeNanosElapsed = rotateImageResult.nanosElapsed;
-
-            rawInputMat = frame.image.getMat();
-
-            hsvPipeResult = hsvPipe.run(rawInputMat);
-            sumPipeNanosElapsed += hsvPipeResult.nanosElapsed;
-        } else {
-            // Try to copy the color frame.
-            long inputMatPtr = PicamJNI.grabFrame(true);
-            if (inputMatPtr != 0) {
-                // If we grabbed it (in color copy mode), make a new Mat of it
-                rawInputMat = new Mat(inputMatPtr);
-            } else {
-                //                // Otherwise, use a blank/empty mat as placeholder
-                //                rawInputMat = new Mat();
-                // Otherwise, the input mat is frame we got from the camera
-                rawInputMat = frame.image.getMat();
-            }
-
-            // We can skip a few steps if the image is single channel because we've already done them on
-            // the GPU
-            hsvPipeResult = new CVPipeResult<>();
-            hsvPipeResult.output = frame.image.getMat();
-            hsvPipeResult.nanosElapsed = MathUtils.wpiNanoTime() - frame.timestampNanos;
-
-            sumPipeNanosElapsed += hsvPipeResult.nanosElapsed;
-        }
-
-        //        var erodeDilateResult = erodeDilatePipe.run(rawInputMat);
-        //        sumPipeNanosElapsed += erodeDilateResult.nanosElapsed;
-        //
-        //        CVPipeResult<Mat> hsvPipeResult = hsvPipe.run(rawInputMat);
-        //        sumPipeNanosElapsed += hsvPipeResult.nanosElapsed;
-
-        CVPipeResult<List<Contour>> findContoursResult = findContoursPipe.run(hsvPipeResult.output);
+        CVPipeResult<List<Contour>> findContoursResult =
+                findContoursPipe.run(frame.processedImage.getMat());
         sumPipeNanosElapsed += findContoursResult.nanosElapsed;
 
         CVPipeResult<List<Contour>> speckleRejectResult =
@@ -246,7 +182,7 @@ public class ColoredShapePipeline
         List<CVShape> shapes = null;
         if (settings.contourShape == ContourShape.Circle) {
             CVPipeResult<List<CVShape>> findCirclesResult =
-                    findCirclesPipe.run(Pair.of(hsvPipeResult.output, speckleRejectResult.output));
+                    findCirclesPipe.run(Pair.of(frame.processedImage.getMat(), speckleRejectResult.output));
             sumPipeNanosElapsed += findCirclesResult.nanosElapsed;
             shapes = findCirclesResult.output;
         } else {
@@ -277,7 +213,7 @@ public class ColoredShapePipeline
             collect2dTargetsResult.output.forEach(
                     shape -> {
                         shape.getMinAreaRect().points(rectPoints);
-                        shape.setCorners(Arrays.asList(rectPoints));
+                        shape.setTargetCorners(Arrays.asList(rectPoints));
                     });
             sumPipeNanosElapsed += cornerDetectionResult.nanosElapsed;
 
@@ -292,11 +228,6 @@ public class ColoredShapePipeline
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
-        return new CVPipelineResult(
-                sumPipeNanosElapsed,
-                fps,
-                targetList,
-                new Frame(new CVMat(hsvPipeResult.output), frame.frameStaticProperties),
-                new Frame(new CVMat(rawInputMat), frame.frameStaticProperties));
+        return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, frame);
     }
 }

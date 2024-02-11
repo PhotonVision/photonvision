@@ -3,7 +3,8 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 gradle.allprojects {
-    ext.getCurrentVersion = { ->
+    ext.getCurrentVersion = {
+        ->
         def stdout = new ByteArrayOutputStream()
         String tagIsh
         try {

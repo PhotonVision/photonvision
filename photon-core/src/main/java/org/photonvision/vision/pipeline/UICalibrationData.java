@@ -17,17 +17,18 @@
 
 package org.photonvision.vision.pipeline;
 
-import java.util.Map;
-
 public class UICalibrationData {
-    public final int videoModeIndex;
+    public int videoModeIndex;
     public int count;
-    public final int minCount;
-    public final boolean hasEnough;
-    public final double squareSizeIn;
-    public final int patternWidth;
-    public final int patternHeight;
-    public final BoardType boardType; //
+    public int minCount;
+    public boolean hasEnough;
+    public double squareSizeIn;
+    public int patternWidth;
+    public int patternHeight;
+    public BoardType boardType;
+    public boolean useMrCal;
+
+    public UICalibrationData() {}
 
     public UICalibrationData(
             int count,
@@ -37,7 +38,8 @@ public class UICalibrationData {
             double squareSizeIn,
             int patternWidth,
             int patternHeight,
-            BoardType boardType) {
+            BoardType boardType,
+            boolean useMrCal) {
         this.count = count;
         this.minCount = minCount;
         this.videoModeIndex = videoModeIndex;
@@ -46,23 +48,12 @@ public class UICalibrationData {
         this.patternWidth = patternWidth;
         this.patternHeight = patternHeight;
         this.boardType = boardType;
+        this.useMrCal = useMrCal;
     }
 
     public enum BoardType {
         CHESSBOARD,
         DOTBOARD
-    }
-
-    public static UICalibrationData fromMap(Map<String, Object> map) {
-        return new UICalibrationData(
-                ((Number) map.get("count")).intValue(),
-                ((Number) map.get("videoModeIndex")).intValue(),
-                ((Number) map.get("minCount")).intValue(),
-                (boolean) map.get("hasEnough"),
-                ((Number) map.get("squareSizeIn")).doubleValue(),
-                ((Number) map.get("patternWidth")).intValue(),
-                ((Number) map.get("patternHeight")).intValue(),
-                BoardType.values()[(int) map.get("boardType")]);
     }
 
     @Override

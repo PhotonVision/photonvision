@@ -17,6 +17,10 @@
 
 package org.photonvision.vision.camera;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -44,8 +48,33 @@ public class QuirkyCamera {
                     new QuirkyCamera(
                             -1, -1, "mmal service 16.1", CameraQuirk.PiCam), // PiCam (via V4L2, not zerocopy)
                     new QuirkyCamera(-1, -1, "unicam", CameraQuirk.PiCam), // PiCam (via V4L2, not zerocopy)
-                    new QuirkyCamera(0x85B, 0x46D, CameraQuirk.AdjustableFocus) // Logitech C925-e
-                    );
+                    new QuirkyCamera(0x85B, 0x46D, CameraQuirk.AdjustableFocus), // Logitech C925-e
+                    // Generic arducam. Since OV2311 can't be differentiated at first boot, apply stickyFPS to
+                    // the generic case, too
+                    new QuirkyCamera(
+                            0x0c45,
+                            0x6366,
+                            "",
+                            "Arducam Generic",
+                            CameraQuirk.ArduCamCamera,
+                            CameraQuirk.StickyFPS),
+                    // Arducam OV2311
+                    new QuirkyCamera(
+                            0x0c45,
+                            0x6366,
+                            "OV2311",
+                            "OV2311",
+                            CameraQuirk.ArduCamCamera,
+                            CameraQuirk.ArduOV2311,
+                            CameraQuirk.StickyFPS),
+                    // Arducam OV9281
+                    new QuirkyCamera(
+                            0x0c45,
+                            0x6366,
+                            "OV9281",
+                            "OV9281",
+                            CameraQuirk.ArduCamCamera,
+                            CameraQuirk.ArduOV9281));
 
     public static final QuirkyCamera DefaultCamera = new QuirkyCamera(0, 0, "");
     public static final QuirkyCamera ZeroCopyPiCamera =
@@ -57,9 +86,19 @@ public class QuirkyCamera {
                     CameraQuirk.Gain,
                     CameraQuirk.AWBGain); // PiCam (special zerocopy version)
 
+    @JsonProperty("baseName")
     public final String baseName;
+
+    @JsonProperty("usbVid")
     public final int usbVid;
+
+    @JsonProperty("usbPid")
     public final int usbPid;
+
+    @JsonProperty("displayName")
+    public final String displayName;
+
+    @JsonProperty("quirks")
     public final HashMap<CameraQuirk, Boolean> quirks;
 
     /**
@@ -82,9 +121,24 @@ public class QuirkyCamera {
      * @param quirks Camera quirks
      */
     private QuirkyCamera(int usbVid, int usbPid, String baseName, CameraQuirk... quirks) {
+        this(usbVid, usbPid, baseName, "", quirks);
+    }
+
+    /**
+     * Creates a QuirkyCamera that matches by USB VID/PID and name
+     *
+     * @param usbVid USB VID of camera
+     * @param usbPid USB PID of camera
+     * @param baseName CSCore name of camera
+     * @param displayName Human-friendly quicky camera name
+     * @param quirks Camera quirks
+     */
+    private QuirkyCamera(
+            int usbVid, int usbPid, String baseName, String displayName, CameraQuirk... quirks) {
         this.usbVid = usbVid;
         this.usbPid = usbPid;
         this.baseName = baseName;
+        this.displayName = displayName;
 
         this.quirks = new HashMap<>();
         for (var q : quirks) {
@@ -93,6 +147,20 @@ public class QuirkyCamera {
         for (var q : CameraQuirk.values()) {
             this.quirks.putIfAbsent(q, false);
         }
+    }
+
+    @JsonCreator
+    public QuirkyCamera(
+            @JsonProperty("baseName") String baseName,
+            @JsonProperty("usbVid") int usbVid,
+            @JsonProperty("usbPid") int usbPid,
+            @JsonProperty("displayName") String displayName,
+            @JsonProperty("quirks") HashMap<CameraQuirk, Boolean> quirks) {
+        this.baseName = baseName;
+        this.usbPid = usbPid;
+        this.usbVid = usbVid;
+        this.quirks = quirks;
+        this.displayName = displayName;
     }
 
     public boolean hasQuirk(CameraQuirk quirk) {
@@ -105,10 +173,22 @@ public class QuirkyCamera {
 
     public static QuirkyCamera getQuirkyCamera(int usbVid, int usbPid, String baseName) {
         for (var qc : quirkyCameras) {
-            boolean hasBaseName = !qc.baseName.equals("");
+            boolean hasBaseName = !qc.baseName.isEmpty();
             boolean matchesBaseName = qc.baseName.equals(baseName) || !hasBaseName;
+            // If we have a quirkycamera we need to copy the quirks from our predefined object and create
+            // a quirkycamera object with the baseName.
             if (qc.usbVid == usbVid && qc.usbPid == usbPid && matchesBaseName) {
-                return qc;
+                List<CameraQuirk> quirks = new ArrayList<CameraQuirk>();
+                for (var q : CameraQuirk.values()) {
+                    if (qc.hasQuirk(q)) quirks.add(q);
+                }
+                QuirkyCamera c =
+                        new QuirkyCamera(
+                                usbVid,
+                                usbPid,
+                                baseName,
+                                Arrays.copyOf(quirks.toArray(), quirks.size(), CameraQuirk[].class));
+                return c;
             }
         }
         return new QuirkyCamera(usbVid, usbPid, baseName);
@@ -130,7 +210,38 @@ public class QuirkyCamera {
     }
 
     @Override
+    public String toString() {
+        String ret =
+                "QuirkyCamera [baseName="
+                        + baseName
+                        + ", displayName="
+                        + displayName
+                        + ", usbVid="
+                        + usbVid
+                        + ", usbPid="
+                        + usbPid
+                        + ", quirks="
+                        + quirks.toString()
+                        + "]";
+        return ret;
+    }
+
+    @Override
     public int hashCode() {
         return Objects.hash(usbVid, usbPid, baseName, quirks);
+    }
+
+    /**
+     * Add/remove quirks from the camera we're controlling
+     *
+     * @param quirksToChange map of true/false for quirks we should change
+     */
+    public void updateQuirks(HashMap<CameraQuirk, Boolean> quirksToChange) {
+        for (var q : quirksToChange.entrySet()) {
+            var quirk = q.getKey();
+            var hasQuirk = q.getValue();
+
+            this.quirks.put(quirk, hasQuirk);
+        }
     }
 }

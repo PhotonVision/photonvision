@@ -33,7 +33,8 @@ public class ColoredShapePipelineTest {
         pipeline.settings = settings;
         CVPipelineResult colouredShapePipelineResult = pipeline.run(frame, QuirkyCamera.DefaultCamera);
         TestUtils.showImage(
-                colouredShapePipelineResult.outputFrame.image.getMat(), "Pipeline output: Triangle.");
+                colouredShapePipelineResult.inputAndOutputFrame.processedImage.getMat(),
+                "Pipeline output: Triangle.");
         printTestResults(colouredShapePipelineResult);
     }
 
@@ -43,7 +44,8 @@ public class ColoredShapePipelineTest {
         pipeline.settings = settings;
         CVPipelineResult colouredShapePipelineResult = pipeline.run(frame, QuirkyCamera.DefaultCamera);
         TestUtils.showImage(
-                colouredShapePipelineResult.outputFrame.image.getMat(), "Pipeline output: Quadrilateral.");
+                colouredShapePipelineResult.inputAndOutputFrame.processedImage.getMat(),
+                "Pipeline output: Quadrilateral.");
         printTestResults(colouredShapePipelineResult);
     }
 
@@ -53,7 +55,8 @@ public class ColoredShapePipelineTest {
         pipeline.settings = settings;
         CVPipelineResult colouredShapePipelineResult = pipeline.run(frame, QuirkyCamera.DefaultCamera);
         TestUtils.showImage(
-                colouredShapePipelineResult.outputFrame.image.getMat(), "Pipeline output: Custom.");
+                colouredShapePipelineResult.inputAndOutputFrame.processedImage.getMat(),
+                "Pipeline output: Custom.");
         printTestResults(colouredShapePipelineResult);
     }
 
@@ -64,7 +67,8 @@ public class ColoredShapePipelineTest {
         pipeline.settings = settings;
         CVPipelineResult colouredShapePipelineResult = pipeline.run(frame, QuirkyCamera.DefaultCamera);
         TestUtils.showImage(
-                colouredShapePipelineResult.outputFrame.image.getMat(), "Pipeline output: Circle.");
+                colouredShapePipelineResult.inputAndOutputFrame.processedImage.getMat(),
+                "Pipeline output: Circle.");
         printTestResults(colouredShapePipelineResult);
     }
 

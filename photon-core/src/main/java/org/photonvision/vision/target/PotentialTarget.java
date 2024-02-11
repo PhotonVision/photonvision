@@ -21,13 +21,19 @@ import java.util.List;
 import org.opencv.core.RotatedRect;
 import org.photonvision.vision.opencv.CVShape;
 import org.photonvision.vision.opencv.Contour;
+import org.photonvision.vision.opencv.ContourShape;
 import org.photonvision.vision.opencv.Releasable;
+import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
 
 public class PotentialTarget implements Releasable {
 
     public final Contour m_mainContour;
     public final List<Contour> m_subContours;
     public final CVShape shape;
+
+    // additional metadata about object detections we need to keep around
+    public final double confidence;
+    public final int clsId;
 
     public PotentialTarget(Contour inputContour) {
         this(inputContour, List.of());
@@ -41,10 +47,24 @@ public class PotentialTarget implements Releasable {
         m_mainContour = inputContour;
         m_subContours = new ArrayList<>(subContours);
         this.shape = shape;
+        this.clsId = -1;
+        this.confidence = -1;
     }
 
     public PotentialTarget(Contour inputContour, CVShape shape) {
         this(inputContour, List.of(), shape);
+    }
+
+    public PotentialTarget(NeuralNetworkPipeResult det) {
+        this.shape = new CVShape(new Contour(det.box), ContourShape.Quadrilateral);
+        this.m_mainContour = this.shape.getContour();
+        m_subContours = List.of();
+        this.clsId = det.classIdx;
+        this.confidence = det.confidence;
+    }
+
+    public PotentialTarget(CVShape cvShape) {
+        this(cvShape.getContour(), cvShape);
     }
 
     public RotatedRect getMinAreaRect() {
@@ -61,7 +81,7 @@ public class PotentialTarget implements Releasable {
         for (var sc : m_subContours) {
             sc.release();
         }
-        m_subContours.clear();
+        if (!m_subContours.isEmpty()) m_subContours.clear();
         if (shape != null) shape.release();
     }
 }

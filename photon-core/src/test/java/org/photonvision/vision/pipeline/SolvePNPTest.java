@@ -19,11 +19,12 @@ package org.photonvision.vision.pipeline;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.util.TestUtils;
@@ -34,6 +35,7 @@ import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ContourGroupingMode;
 import org.photonvision.vision.opencv.ContourIntersectionDirection;
+import org.photonvision.vision.pipe.impl.HSVPipe;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
@@ -74,14 +76,14 @@ public class SolvePNPTest {
         assertEquals(3, cameraCalibration.cameraIntrinsics.getAsMatOfDouble().cols());
         assertEquals(3, cameraCalibration.getCameraIntrinsicsMat().rows());
         assertEquals(3, cameraCalibration.getCameraIntrinsicsMat().cols());
-        assertEquals(1, cameraCalibration.cameraExtrinsics.rows);
-        assertEquals(5, cameraCalibration.cameraExtrinsics.cols);
-        assertEquals(1, cameraCalibration.cameraExtrinsics.getAsMat().rows());
-        assertEquals(5, cameraCalibration.cameraExtrinsics.getAsMat().cols());
-        assertEquals(1, cameraCalibration.cameraExtrinsics.getAsMatOfDouble().rows());
-        assertEquals(5, cameraCalibration.cameraExtrinsics.getAsMatOfDouble().cols());
-        assertEquals(1, cameraCalibration.getCameraExtrinsicsMat().rows());
-        assertEquals(5, cameraCalibration.getCameraExtrinsicsMat().cols());
+        assertEquals(1, cameraCalibration.distCoeffs.rows);
+        assertEquals(5, cameraCalibration.distCoeffs.cols);
+        assertEquals(1, cameraCalibration.distCoeffs.getAsMat().rows());
+        assertEquals(5, cameraCalibration.distCoeffs.getAsMat().cols());
+        assertEquals(1, cameraCalibration.distCoeffs.getAsMatOfDouble().rows());
+        assertEquals(5, cameraCalibration.distCoeffs.getAsMatOfDouble().cols());
+        assertEquals(1, cameraCalibration.getDistCoeffsMat().rows());
+        assertEquals(5, cameraCalibration.getDistCoeffsMat().cols());
     }
 
     @Test
@@ -105,27 +107,40 @@ public class SolvePNPTest {
                         TestUtils.WPI2019Image.FOV,
                         TestUtils.get2019LifeCamCoeffs(false));
 
-        CVPipelineResult pipelineResult;
+        frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
+        var hsvParams =
+                new HSVPipe.HSVParams(
+                        pipeline.getSettings().hsvHue,
+                        pipeline.getSettings().hsvSaturation,
+                        pipeline.getSettings().hsvValue,
+                        pipeline.getSettings().hueInverted);
+        frameProvider.requestHsvSettings(hsvParams);
 
-        pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
+        CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
         printTestResults(pipelineResult);
 
-        // these numbers are not *accurate*, but they are known and expected
+        // Draw on input
+        var outputPipe = new OutputStreamPipeline();
+        outputPipe.process(
+                pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
+
+        TestUtils.showImage(
+                pipelineResult.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
+
         var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
-        Assertions.assertEquals(1.1, pose.getTranslation().getX(), 0.05);
-        Assertions.assertEquals(0.0, pose.getTranslation().getY(), 0.05);
-
-        // We expect the object X to be forward, or -X in world space
-        Assertions.assertEquals(
-                -1, new Translation3d(1, 0, 0).rotateBy(pose.getRotation()).getX(), 0.05);
-        // We expect the object Y axis to be right, or negative-Y in world space
-        Assertions.assertEquals(
-                -1, new Translation3d(0, 1, 0).rotateBy(pose.getRotation()).getY(), 0.05);
-        // We expect the object Z axis to be up, or +Z in world space
-        Assertions.assertEquals(
-                1, new Translation3d(0, 0, 1).rotateBy(pose.getRotation()).getZ(), 0.05);
-
-        TestUtils.showImage(pipelineResult.outputFrame.image.getMat(), "Pipeline output", 999999);
+        // these numbers are not *accurate*, but they are known and expected
+        var expectedTrl = new Translation3d(1.1, -0.05, -0.05);
+        assertTrue(
+                expectedTrl.getDistance(pose.getTranslation()) < 0.05,
+                "SolvePNP translation estimation failed");
+        // We expect the object axes to be in NWU, with the x-axis coming out of the tag
+        // This target is facing the camera almost parallel, so in world space:
+        // The object's X axis should be (-1, 0, 0)
+        assertEquals(-1, new Translation3d(1, 0, 0).rotateBy(pose.getRotation()).getX(), 0.05);
+        // The object's Y axis should be (0, -1, 0)
+        assertEquals(-1, new Translation3d(0, 1, 0).rotateBy(pose.getRotation()).getY(), 0.05);
+        // The object's Z axis should be (0, 0, 1)
+        assertEquals(1, new Translation3d(0, 0, 1).rotateBy(pose.getRotation()).getZ(), 0.05);
     }
 
     @Test
@@ -147,25 +162,44 @@ public class SolvePNPTest {
                         TestUtils.WPI2020Image.FOV,
                         TestUtils.get2020LifeCamCoeffs(false));
 
+        frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
+        var hsvParams =
+                new HSVPipe.HSVParams(
+                        pipeline.getSettings().hsvHue,
+                        pipeline.getSettings().hsvSaturation,
+                        pipeline.getSettings().hsvValue,
+                        pipeline.getSettings().hueInverted);
+        frameProvider.requestHsvSettings(hsvParams);
+
         CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
         printTestResults(pipelineResult);
 
         // Draw on input
         var outputPipe = new OutputStreamPipeline();
         outputPipe.process(
-                pipelineResult.inputFrame,
-                pipelineResult.outputFrame,
-                pipeline.getSettings(),
-                pipelineResult.targets);
+                pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
 
-        // these numbers are not *accurate*, but they are known and expected
+        TestUtils.showImage(
+                pipelineResult.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
+
         var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
-        Assertions.assertEquals(Units.inchesToMeters(240.26), pose.getTranslation().getX(), 0.05);
-        Assertions.assertEquals(Units.inchesToMeters(35), pose.getTranslation().getY(), 0.05);
-        // Z rotation should be mostly facing us
-        Assertions.assertEquals(Units.degreesToRadians(-140), pose.getRotation().getZ(), 1);
-
-        TestUtils.showImage(pipelineResult.inputFrame.image.getMat(), "Pipeline output", 999999);
+        // these numbers are not *accurate*, but they are known and expected
+        var expectedTrl =
+                new Translation3d(
+                        Units.inchesToMeters(236), Units.inchesToMeters(36), Units.inchesToMeters(-53));
+        assertTrue(
+                expectedTrl.getDistance(pose.getTranslation()) < 0.05,
+                "SolvePNP translation estimation failed");
+        // We expect the object axes to be in NWU, with the x-axis coming out of the tag
+        // Rotation around Z axis (yaw) should be mostly facing us
+        var xAxis = new Translation3d(1, 0, 0);
+        var yAxis = new Translation3d(0, 1, 0);
+        var zAxis = new Translation3d(0, 0, 1);
+        var expectedRot =
+                new Rotation3d(Math.toRadians(-20), Math.toRadians(-20), Math.toRadians(-120));
+        assertTrue(xAxis.rotateBy(expectedRot).getDistance(xAxis.rotateBy(pose.getRotation())) < 0.1);
+        assertTrue(yAxis.rotateBy(expectedRot).getDistance(yAxis.rotateBy(pose.getRotation())) < 0.1);
+        assertTrue(zAxis.rotateBy(expectedRot).getDistance(zAxis.rotateBy(pose.getRotation())) < 0.1);
     }
 
     private static void continuouslyRunPipeline(Frame frame, ReflectivePipelineSettings settings) {

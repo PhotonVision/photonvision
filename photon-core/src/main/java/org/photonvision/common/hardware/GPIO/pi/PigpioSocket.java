@@ -18,7 +18,6 @@
 package org.photonvision.common.hardware.GPIO.pi;
 
 import static org.photonvision.common.hardware.GPIO.pi.PigpioException.*;
-import static org.photonvision.common.hardware.GPIO.pi.PigpioException.PI_NO_WAVEFORM_ID;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -149,7 +148,7 @@ public class PigpioSocket {
         // ## extension ##
         // III on/off/delay * pulses
 
-        if (pulses == null || pulses.size() == 0) return 0;
+        if (pulses == null || pulses.isEmpty()) return 0;
 
         try {
             ByteBuffer bb = ByteBuffer.allocate(pulses.size() * 12);

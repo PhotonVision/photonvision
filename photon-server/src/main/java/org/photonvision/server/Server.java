@@ -18,50 +18,89 @@
 package org.photonvision.server;
 
 import io.javalin.Javalin;
-import io.javalin.http.staticfiles.Location;
+import io.javalin.plugin.bundled.CorsPluginConfig;
+import java.net.InetSocketAddress;
+import java.util.List;
+import java.util.StringJoiner;
+import org.photonvision.common.dataflow.DataChangeDestination;
+import org.photonvision.common.dataflow.DataChangeService;
+import org.photonvision.common.dataflow.DataChangeSource;
+import org.photonvision.common.dataflow.DataChangeSubscriber;
+import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public class Server {
     private static final Logger logger = new Logger(Server.class, LogGroup.WebServer);
 
-    public static void main(int port) {
-        Javalin app =
+    private static Javalin app = null;
+
+    static class RestartSubscriber extends DataChangeSubscriber {
+        private RestartSubscriber() {
+            super(DataChangeSource.AllSources, List.of(DataChangeDestination.DCD_WEBSERVER));
+        }
+
+        @Override
+        public void onDataChangeEvent(DataChangeEvent<?> event) {
+            if (event.propertyName.equals("restartServer")) {
+                Server.restart();
+            }
+        }
+    }
+
+    public static void initialize(int port) {
+        DataChangeService.getInstance().addSubscriber(new RestartSubscriber());
+
+        start(port);
+    }
+
+    private static void start(int port) {
+        app =
                 Javalin.create(
-                        config -> {
-                            config.showJavalinBanner = false;
-                            config.addStaticFiles("web", Location.CLASSPATH);
-                            config.enableCorsForAllOrigins();
+                        javalinConfig -> {
+                            javalinConfig.showJavalinBanner = false;
+                            javalinConfig.staticFiles.add("web");
+                            javalinConfig.plugins.enableCors(
+                                    corsContainer -> {
+                                        corsContainer.add(CorsPluginConfig::anyHost);
+                                    });
 
-                            config.requestLogger(
-                                    (ctx, ms) ->
-                                            logger.debug(
-                                                    "Handled HTTP "
-                                                            + ctx.req.getMethod()
-                                                            + " request from "
-                                                            + ctx.req.getRemoteHost()
-                                                            + " in "
-                                                            + ms.toString()
-                                                            + "ms"));
+                            // Increase the upload size limit (arbitrary, but need to be able to deal with large
+                            // calibration JSONs)
+                            javalinConfig.http.maxRequestSize = (long) (50 * 1e6);
 
-                            config.wsLogger(
-                                    ws ->
-                                            ws.onMessage(
-                                                    ctx -> logger.debug("Got WebSockets message: " + ctx.message())));
+                            javalinConfig.requestLogger.http(
+                                    (ctx, ms) -> {
+                                        StringJoiner joiner =
+                                                new StringJoiner(" ")
+                                                        .add("Handled HTTP request of type")
+                                                        .add(ctx.req().getMethod())
+                                                        .add("from endpoint")
+                                                        .add(ctx.path())
+                                                        .add("for host")
+                                                        .add(ctx.req().getRemoteHost())
+                                                        .add("in")
+                                                        .add(ms.toString())
+                                                        .add("ms");
 
-                            config.wsLogger(
-                                    ws ->
-                                            ws.onBinaryMessage(
-                                                    ctx ->
-                                                            logger.trace(
-                                                                    () -> {
-                                                                        var insa = ctx.session.getRemote().getInetSocketAddress();
-                                                                        var host = insa.getAddress().toString() + ":" + insa.getPort();
-                                                                        return "Got WebSockets binary message from host " + host;
-                                                                    })));
+                                        logger.debug(joiner.toString());
+                                    });
+                            javalinConfig.requestLogger.ws(
+                                    ws -> {
+                                        ws.onMessage(ctx -> logger.debug("Got WebSockets message: " + ctx.message()));
+                                        ws.onBinaryMessage(
+                                                ctx ->
+                                                        logger.trace(
+                                                                () -> {
+                                                                    var remote = (InetSocketAddress) ctx.session.getRemoteAddress();
+                                                                    var host =
+                                                                            remote.getAddress().toString() + ":" + remote.getPort();
+                                                                    return "Got WebSockets binary message from host: " + host;
+                                                                }));
+                                    });
                         });
 
-        /*Web Socket Events for Data Exchage */
+        /*Web Socket Events for Data Exchange */
         var dsHandler = DataSocketHandler.getInstance();
         app.ws(
                 "/websocket_data",
@@ -70,29 +109,47 @@ public class Server {
                     ws.onClose(dsHandler::onClose);
                     ws.onBinaryMessage(dsHandler::onBinaryMessage);
                 });
-        /*Web Socket Events for Camera Streaming */
-        var camDsHandler = CameraSocketHandler.getInstance();
-        app.ws(
-                "/websocket_cameras",
-                ws -> {
-                    ws.onConnect(camDsHandler::onConnect);
-                    ws.onClose(camDsHandler::onClose);
-                    ws.onBinaryMessage(camDsHandler::onBinaryMessage);
-                    ws.onMessage(camDsHandler::onMessage);
-                });
+
         /*API Events*/
-        app.post("/api/settings/import", RequestHandler::onSettingUpload);
-        app.post("/api/settings/offlineUpdate", RequestHandler::onOfflineUpdate);
-        app.get("/api/settings/photonvision_config.zip", RequestHandler::onSettingsDownload);
-        app.post("/api/settings/camera", RequestHandler::onCameraSettingsSave);
-        app.post("/api/settings/general", RequestHandler::onGeneralSettings);
-        app.post("/api/settings/endCalibration", RequestHandler::onCalibrationEnd);
-        app.post("/api/restartDevice", RequestHandler::restartDevice);
-        app.post("api/restartProgram", RequestHandler::restartProgram);
-        app.post("api/vision/pnpModel", RequestHandler::uploadPnpModel);
-        app.post("api/sendMetrics", RequestHandler::sendMetrics);
-        app.post("api/setCameraNickname", RequestHandler::setCameraNickname);
+        // Settings
+        app.post("/api/settings", RequestHandler::onSettingsImportRequest);
+        app.get("/api/settings/photonvision_config.zip", RequestHandler::onSettingsExportRequest);
+        app.post("/api/settings/hardwareConfig", RequestHandler::onHardwareConfigRequest);
+        app.post("/api/settings/hardwareSettings", RequestHandler::onHardwareSettingsRequest);
+        app.post("/api/settings/networkConfig", RequestHandler::onNetworkConfigRequest);
+        app.post("/api/settings/aprilTagFieldLayout", RequestHandler::onAprilTagFieldLayoutRequest);
+        app.post("/api/settings/general", RequestHandler::onGeneralSettingsRequest);
+        app.post("/api/settings/camera", RequestHandler::onCameraSettingsRequest);
+        app.post("/api/settings/camera/setNickname", RequestHandler::onCameraNicknameChangeRequest);
+        app.get("/api/settings/camera/getCalibImages", RequestHandler::onCameraCalibImagesRequest);
+
+        // Utilities
+        app.post("/api/utils/offlineUpdate", RequestHandler::onOfflineUpdateRequest);
+        app.get("/api/utils/photonvision-journalctl.txt", RequestHandler::onLogExportRequest);
+        app.post("/api/utils/restartProgram", RequestHandler::onProgramRestartRequest);
+        app.post("/api/utils/restartDevice", RequestHandler::onDeviceRestartRequest);
+        app.post("/api/utils/publishMetrics", RequestHandler::onMetricsPublishRequest);
+        app.get("/api/utils/getImageSnapshots", RequestHandler::onImageSnapshotsRequest);
+        app.get("/api/utils/getCalSnapshot", RequestHandler::onCalibrationSnapshotRequest);
+        app.get("/api/utils/getCalibrationJSON", RequestHandler::onCalibrationExportRequest);
+
+        // Calibration
+        app.post("/api/calibration/end", RequestHandler::onCalibrationEndRequest);
+        app.post(
+                "/api/calibration/importFromCalibDB", RequestHandler::onCalibDBCalibrationImportRequest);
+        app.post("/api/calibration/importFromData", RequestHandler::onDataCalibrationImportRequest);
 
         app.start(port);
+    }
+
+    /**
+     * Seems like if we change the static IP of this device, Javalin refuses to tell us when new
+     * Websocket clients connect. As a hack, we can restart the server every time we change static IPs
+     */
+    public static void restart() {
+        logger.info("Web server going down for restart");
+        int oldPort = app.port();
+        app.stop();
+        start(oldPort);
     }
 }

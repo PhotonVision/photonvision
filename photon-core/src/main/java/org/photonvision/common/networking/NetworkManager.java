@@ -18,6 +18,11 @@
 package org.photonvision.common.networking;
 
 import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.NetworkConfig;
+import org.photonvision.common.dataflow.DataChangeDestination;
+import org.photonvision.common.dataflow.DataChangeService;
+import org.photonvision.common.dataflow.DataChangeSource;
+import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -37,23 +42,24 @@ public class NetworkManager {
     }
 
     private boolean isManaged = false;
+    public boolean networkingIsDisabled = false; // Passed in via CLI
 
     public void initialize(boolean shouldManage) {
-        isManaged = shouldManage;
+        isManaged = shouldManage && !networkingIsDisabled;
         if (!isManaged) {
+            logger.info("Network management is disabled.");
             return;
         }
 
         var config = ConfigManager.getInstance().getConfig().getNetworkConfig();
-        logger.info("Setting " + config.connectionType + " with team team " + config.teamNumber);
-        if (Platform.isRaspberryPi()) {
-            if (!Platform.isRoot) {
-                logger.error("Cannot manage network without root!");
-                return;
+        logger.info("Setting " + config.connectionType + " with team " + config.ntServerAddress);
+        if (Platform.isLinux()) {
+            if (!Platform.isRoot()) {
+                logger.error("Cannot manage hostname without root!");
             }
 
             // always set hostname
-            if (config.hostname.length() > 0) {
+            if (!config.hostname.isEmpty()) {
                 try {
                     var shell = new ShellExec(true, false);
                     shell.executeBashCommand("cat /etc/hostname | tr -d \" \\t\\n\\r\"");
@@ -96,18 +102,42 @@ public class NetworkManager {
             if (config.connectionType == NetworkMode.DHCP) {
                 var shell = new ShellExec();
                 try {
-                    if (!config.staticIp.equals("")) {
-                        shell.executeBashCommand("ip addr del " + config.staticIp + "/8 dev eth0");
-                    }
-                    shell.executeBashCommand("dhclient eth0", false);
+                    // set nmcli back to DHCP, and re-run dhclient -- this ought to grab a new IP address
+                    shell.executeBashCommand(
+                            config.setDHCPcommand.replace(
+                                    NetworkConfig.NM_IFACE_STRING, config.getEscapedInterfaceName()));
+                    shell.executeBashCommand("dhclient " + config.getPhysicalInterfaceName(), false);
                 } catch (Exception e) {
                     logger.error("Exception while setting DHCP!");
                 }
             } else if (config.connectionType == NetworkMode.STATIC) {
                 var shell = new ShellExec();
-                if (config.staticIp.length() > 0) {
+                if (!config.staticIp.isEmpty()) {
                     try {
-                        shell.executeBashCommand("ip addr add " + config.staticIp + "/8" + " dev eth0");
+                        shell.executeBashCommand(
+                                config
+                                        .setStaticCommand
+                                        .replace(NetworkConfig.NM_IFACE_STRING, config.getEscapedInterfaceName())
+                                        .replace(NetworkConfig.NM_IP_STRING, config.staticIp));
+
+                        if (Platform.isRaspberryPi()) {
+                            // Pi's need to manually have their interface adjusted?? and the 5-second sleep is
+                            // integral in my testing (Matt)
+                            shell.executeBashCommand(
+                                    "sh -c 'nmcli con down "
+                                            + config.getEscapedInterfaceName()
+                                            + "; nmcli con up "
+                                            + config.getEscapedInterfaceName()
+                                            + "'");
+                        } else {
+                            // for now just bring down /up -- more testing needed on beelink et al.
+                            shell.executeBashCommand(
+                                    "sh -c 'nmcli con down "
+                                            + config.getEscapedInterfaceName()
+                                            + "; nmcli con up "
+                                            + config.getEscapedInterfaceName()
+                                            + "'");
+                        }
                     } catch (Exception e) {
                         logger.error("Error while setting static IP!", e);
                     }
@@ -122,5 +152,13 @@ public class NetworkManager {
 
     public void reinitialize() {
         initialize(ConfigManager.getInstance().getConfig().getNetworkConfig().shouldManage());
+
+        DataChangeService.getInstance()
+                .publishEvent(
+                        new DataChangeEvent<Boolean>(
+                                DataChangeSource.DCS_OTHER,
+                                DataChangeDestination.DCD_WEBSERVER,
+                                "restartServer",
+                                true));
     }
 }

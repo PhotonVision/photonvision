@@ -26,8 +26,10 @@ import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.PipelineType;
 import org.photonvision.vision.pipeline.UICalibrationData;
@@ -59,7 +61,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
 
                 var propName = wsEvent.propertyName;
                 var newPropValue = wsEvent.data;
-                var currentSettings = parentModule.pipelineManager.getCurrentUserPipeline().getSettings();
+                var currentSettings = parentModule.pipelineManager.getCurrentPipeline().getSettings();
 
                 // special case for non-PipelineSetting changes
                 switch (propName) {
@@ -102,9 +104,21 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         parentModule.saveAndBroadcastAll();
                         return;
                     case "startCalibration":
-                        var data = UICalibrationData.fromMap((Map<String, Object>) newPropValue);
-                        parentModule.startCalibration(data);
-                        parentModule.saveAndBroadcastAll();
+                        try {
+                            var data =
+                                    JacksonUtils.deserialize(
+                                            (Map<String, Object>) newPropValue, UICalibrationData.class);
+                            parentModule.startCalibration(data);
+                            parentModule.saveAndBroadcastAll();
+                        } catch (Exception e) {
+                            logger.error("Error deserailizing start-cal request", e);
+                        }
+                        return;
+                    case "saveInputSnapshot":
+                        parentModule.saveInputSnapshot();
+                        return;
+                    case "saveOutputSnapshot":
+                        parentModule.saveOutputSnapshot();
                         return;
                     case "takeCalSnapshot":
                         parentModule.takeCalibrationSnapshot();
@@ -113,6 +127,10 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         int idx = parentModule.pipelineManager.duplicatePipeline((Integer) newPropValue);
                         parentModule.setPipeline(idx);
                         parentModule.saveAndBroadcastAll();
+                        return;
+                    case "calibrationUploaded":
+                        if (newPropValue instanceof CameraCalibrationCoefficients)
+                            parentModule.addCalibrationToConfig((CameraCalibrationCoefficients) newPropValue);
                         return;
                     case "robotOffsetPoint":
                         if (currentSettings instanceof AdvancedPipelineSettings) {

@@ -31,5 +31,6 @@ public class DriverModePipelineSettings extends CVPipelineSettings {
         pipelineIndex = PipelineManager.DRIVERMODE_INDEX;
         pipelineType = PipelineType.DriverMode;
         inputShouldShow = true;
+        cameraAutoExposure = true;
     }
 }

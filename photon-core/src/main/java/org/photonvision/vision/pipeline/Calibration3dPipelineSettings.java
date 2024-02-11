@@ -19,6 +19,7 @@ package org.photonvision.vision.pipeline;
 
 import edu.wpi.first.math.util.Units;
 import org.opencv.core.Size;
+import org.photonvision.vision.frame.FrameDivisor;
 
 public class Calibration3dPipelineSettings extends AdvancedPipelineSettings {
     public int boardHeight = 8;
@@ -27,4 +28,13 @@ public class Calibration3dPipelineSettings extends AdvancedPipelineSettings {
     public double gridSize = Units.inchesToMeters(1.0);
 
     public Size resolution = new Size(640, 480);
+    public boolean useMrCal = true;
+
+    public Calibration3dPipelineSettings() {
+        super();
+        this.cameraAutoExposure = true;
+        this.inputShouldShow = true;
+        this.outputShouldShow = true;
+        this.streamingFrameDivisor = FrameDivisor.HALF;
+    }
 }

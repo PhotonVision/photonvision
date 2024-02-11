@@ -19,20 +19,15 @@ package org.photonvision.common.dataflow.networktables;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import org.opencv.core.Point;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
-import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networktables.NTTopicSet;
 import org.photonvision.targeting.PhotonPipelineResult;
-import org.photonvision.targeting.PhotonTrackedTarget;
-import org.photonvision.targeting.TargetCorner;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 
@@ -41,7 +36,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
     private final NetworkTable rootTable = NetworkTablesManager.getInstance().kRootTable;
 
-    private NTTopicSet ts = new NTTopicSet();
+    private final NTTopicSet ts = new NTTopicSet();
 
     NTDataChangeListener pipelineIndexListener;
     private final Supplier<Integer> pipelineIndexSupplier;
@@ -89,7 +84,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             ts.pipelineIndexPublisher.set(setIndex);
             // TODO: Log
         }
-        logger.debug("Successfully set pipeline index to " + newIndex);
+        logger.debug("Set pipeline index to " + newIndex);
     }
 
     private void onDriverModeChange(NetworkTableEvent entryNotification) {
@@ -102,7 +97,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         }
 
         driverModeConsumer.accept(newDriverMode);
-        logger.debug("Successfully set driver mode to " + newDriverMode);
+        logger.debug("Set driver mode to " + newDriverMode);
     }
 
     private void removeEntries() {
@@ -119,7 +114,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
         pipelineIndexListener =
                 new NTDataChangeListener(
-                        ts.subTable.getInstance(), ts.pipelineIndexSubscriber, this::onPipelineIndexChange);
+                        ts.subTable.getInstance(), ts.pipelineIndexRequestSub, this::onPipelineIndexChange);
 
         driverModeListener =
                 new NTDataChangeListener(
@@ -136,11 +131,14 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     public void accept(CVPipelineResult result) {
         var simplified =
                 new PhotonPipelineResult(
-                        result.getLatencyMillis(), simpleFromTrackedTargets(result.targets));
-        Packet packet = new Packet(simplified.getPacketSize());
-        simplified.populatePacket(packet);
+                        result.getLatencyMillis(),
+                        TrackedTarget.simpleFromTrackedTargets(result.targets),
+                        result.multiTagResult);
 
-        ts.rawBytesEntry.set(packet.getData());
+        ts.resultPublisher.set(simplified, simplified.getPacketSize());
+        if (ConfigManager.getInstance().getConfig().getNetworkConfig().shouldPublishProto) {
+            ts.protoResultPublisher.set(simplified);
+        }
 
         ts.pipelineIndexPublisher.set(pipelineIndexSupplier.get());
         ts.driverModePublisher.set(driverModeSupplier.getAsBoolean());
@@ -180,33 +178,21 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             ts.bestTargetPosY.set(0);
         }
 
+        // Something in the result can sometimes be null -- so check probably too many things
+        if (result.inputAndOutputFrame != null
+                && result.inputAndOutputFrame.frameStaticProperties != null
+                && result.inputAndOutputFrame.frameStaticProperties.cameraCalibration != null) {
+            var fsp = result.inputAndOutputFrame.frameStaticProperties;
+            ts.cameraIntrinsicsPublisher.accept(fsp.cameraCalibration.getIntrinsicsArr());
+            ts.cameraDistortionPublisher.accept(fsp.cameraCalibration.getDistCoeffsArr());
+        } else {
+            ts.cameraIntrinsicsPublisher.accept(new double[] {});
+            ts.cameraDistortionPublisher.accept(new double[] {});
+        }
+
         ts.heartbeatPublisher.set(heartbeatCounter++);
 
         // TODO...nt4... is this needed?
         rootTable.getInstance().flush();
-    }
-
-    public static List<PhotonTrackedTarget> simpleFromTrackedTargets(List<TrackedTarget> targets) {
-        var ret = new ArrayList<PhotonTrackedTarget>();
-        for (var t : targets) {
-            var points = new Point[4];
-            t.getMinAreaRect().points(points);
-            var cornerList = new ArrayList<TargetCorner>();
-
-            for (int i = 0; i < 4; i++) cornerList.add(new TargetCorner(points[i].x, points[i].y));
-
-            ret.add(
-                    new PhotonTrackedTarget(
-                            t.getYaw(),
-                            t.getPitch(),
-                            t.getArea(),
-                            t.getSkew(),
-                            t.getFiducialId(),
-                            t.getBestCameraToTarget3d(),
-                            t.getAltCameraToTarget3d(),
-                            t.getPoseAmbiguity(),
-                            cornerList));
-        }
-        return ret;
     }
 }

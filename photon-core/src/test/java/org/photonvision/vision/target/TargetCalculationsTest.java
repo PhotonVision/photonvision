@@ -17,12 +17,19 @@
 package org.photonvision.vision.target;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
-import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.numbers.DoubleCouple;
@@ -32,7 +39,8 @@ import org.photonvision.vision.opencv.DualOffsetValues;
 public class TargetCalculationsTest {
 
     private static Size imageSize = new Size(800, 600);
-    private static Point imageCenterPoint = new Point(imageSize.width / 2, imageSize.height / 2);
+    private static Point imageCenterPoint =
+            new Point(imageSize.width / 2.0 - 0.5, imageSize.height / 2.0 - 0.5);
     private static final double diagFOV = Math.toRadians(70.0);
 
     private static final FrameStaticProperties props =
@@ -49,43 +57,104 @@ public class TargetCalculationsTest {
                     props.verticalFocalLength,
                     imageSize.width * imageSize.height);
 
-    @BeforeEach
-    public void Init() {
+    @BeforeAll
+    public static void setup() {
         TestUtils.loadLibraries();
     }
 
     @Test
-    public void yawTest() {
-        var targetPixelOffsetX = 100;
-        var targetCenterPoint = new Point(imageCenterPoint.x + targetPixelOffsetX, imageCenterPoint.y);
+    public void testYawPitchBehavior() {
+        double targetPixelOffsetX = 100;
+        double targetPixelOffsetY = 100;
+        var targetCenterPoint =
+                new Point(imageCenterPoint.x + targetPixelOffsetX, imageCenterPoint.y + targetPixelOffsetY);
 
-        var trueYaw =
-                Math.atan((imageCenterPoint.x - targetCenterPoint.x) / params.horizontalFocalLength);
+        var targetYawPitch =
+                TargetCalculations.calculateYawPitch(
+                        imageCenterPoint.x,
+                        targetCenterPoint.x,
+                        params.horizontalFocalLength,
+                        imageCenterPoint.y,
+                        targetCenterPoint.y,
+                        params.verticalFocalLength);
 
-        var yaw =
-                TargetCalculations.calculateYaw(
-                        imageCenterPoint.x, targetCenterPoint.x, params.horizontalFocalLength);
+        assertTrue(targetYawPitch.getFirst() > 0, "Yaw is not positive right");
+        assertTrue(targetYawPitch.getSecond() < 0, "Pitch is not positive up");
 
-        assertEquals(Math.toDegrees(trueYaw), yaw, 0.025, "Yaw not as expected");
+        var fovs =
+                FrameStaticProperties.calculateHorizontalVerticalFoV(
+                        diagFOV, (int) imageSize.width, (int) imageSize.height);
+        var maxYaw =
+                TargetCalculations.calculateYawPitch(
+                        imageCenterPoint.x,
+                        2 * imageCenterPoint.x,
+                        params.horizontalFocalLength,
+                        imageCenterPoint.y,
+                        imageCenterPoint.y,
+                        params.verticalFocalLength);
+        assertEquals(fovs.getFirst() / 2.0, maxYaw.getFirst(), 0.025, "Horizontal FOV check failed");
+        var maxPitch =
+                TargetCalculations.calculateYawPitch(
+                        imageCenterPoint.x,
+                        imageCenterPoint.x,
+                        params.horizontalFocalLength,
+                        imageCenterPoint.y,
+                        0,
+                        params.verticalFocalLength);
+        assertEquals(fovs.getSecond() / 2.0, maxPitch.getSecond(), 0.025, "Vertical FOV check failed");
+    }
+
+    private static Stream<Arguments> testYawPitchCalcArgs() {
+        return Stream.of(
+                // (yaw, pitch) in degrees
+                Arguments.of(0, 0),
+                Arguments.of(10, 0),
+                Arguments.of(0, 10),
+                Arguments.of(10, 10),
+                Arguments.of(-10, -10),
+                Arguments.of(30, 45),
+                Arguments.of(-45, -20));
+    }
+
+    private static double[] testCameraMatrix = {240, 0, 320, 0, 240, 320, 0, 0, 1};
+
+    @ParameterizedTest
+    @MethodSource("testYawPitchCalcArgs")
+    public void testYawPitchCalc(double yawDeg, double pitchDeg) {
+        Mat testCameraMat = new Mat(3, 3, CvType.CV_64F);
+        testCameraMat.put(0, 0, testCameraMatrix);
+        // Since we create this translation using the given yaw/pitch, we should see the same angles
+        // calculated
+        var targetTrl =
+                new Translation3d(1, new Rotation3d(0, Math.toRadians(pitchDeg), Math.toRadians(yawDeg)));
+        // NWU to EDN
+        var objectPoints =
+                new MatOfPoint3f(new Point3(-targetTrl.getY(), -targetTrl.getZ(), targetTrl.getX()));
+        var imagePoints = new MatOfPoint2f();
+        // Project translation into camera image
+        Calib3d.projectPoints(
+                objectPoints,
+                new MatOfDouble(0, 0, 0),
+                new MatOfDouble(0, 0, 0),
+                testCameraMat,
+                new MatOfDouble(0, 0, 0, 0, 0),
+                imagePoints);
+        var point = imagePoints.toArray()[0];
+        // Test if the target yaw/pitch calculation matches what the target was created with
+        var yawPitch =
+                TargetCalculations.calculateYawPitch(
+                        point.x,
+                        testCameraMatrix[2],
+                        testCameraMatrix[0],
+                        point.y,
+                        testCameraMatrix[5],
+                        testCameraMatrix[4]);
+        assertEquals(yawDeg, yawPitch.getFirst(), 1e-3, "Yaw calculation incorrect");
+        assertEquals(pitchDeg, yawPitch.getSecond(), 1e-3, "Pitch calculation incorrect");
     }
 
     @Test
-    public void pitchTest() {
-        var targetPixelOffsetY = 100;
-        var targetCenterPoint = new Point(imageCenterPoint.x, imageCenterPoint.y + targetPixelOffsetY);
-
-        var truePitch =
-                Math.atan((imageCenterPoint.y - targetCenterPoint.y) / params.verticalFocalLength);
-
-        var pitch =
-                TargetCalculations.calculatePitch(
-                        imageCenterPoint.y, targetCenterPoint.y, params.verticalFocalLength);
-
-        assertEquals(Math.toDegrees(truePitch) * -1, pitch, 0.025, "Pitch not as expected");
-    }
-
-    @Test
-    public void targetOffsetTest() {
+    public void testTargetOffset() {
         Point center = new Point(0, 0);
         Size rectSize = new Size(10, 5);
         double angle = 30;
@@ -100,11 +169,6 @@ public class TargetCalculationsTest {
                 TargetCalculations.calculateTargetOffsetPoint(true, TargetOffsetPointEdge.Bottom, rect);
         assertEquals(-1.25, result.x, 0.1, "Target offset x not as expected");
         assertEquals(2.17, result.y, 0.1, "Target offset Y not as expected");
-    }
-
-    public static void main(String[] args) {
-        TestUtils.loadLibraries();
-        new TargetCalculationsTest().targetOffsetTest();
     }
 
     @Test
@@ -188,14 +252,14 @@ public class TargetCalculationsTest {
     public void testCameraFOVCalculation() {
         final DoubleCouple glowormHorizVert =
                 FrameStaticProperties.calculateHorizontalVerticalFoV(74.8, 640, 480);
-        var gwHorizDeg = Math.toDegrees(glowormHorizVert.getFirst());
-        var gwVertDeg = Math.toDegrees(glowormHorizVert.getSecond());
+        var gwHorizDeg = glowormHorizVert.getFirst();
+        var gwVertDeg = glowormHorizVert.getSecond();
         assertEquals(62.7, gwHorizDeg, .3);
         assertEquals(49, gwVertDeg, .3);
     }
 
     @Test
-    public void robotOffsetDualTest() {
+    public void testDualOffsetCrosshair() {
         final DualOffsetValues dualOffsetValues =
                 new DualOffsetValues(
                         new Point(400, 150), 10,

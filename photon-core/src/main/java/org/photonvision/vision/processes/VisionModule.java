@@ -17,10 +17,17 @@
 
 package org.photonvision.vision.processes;
 
+import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.cscore.VideoException;
 import edu.wpi.first.math.util.Units;
 import io.javalin.websocket.WsContext;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
+import org.opencv.core.Size;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.PhotonConfiguration;
@@ -28,19 +35,21 @@ import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NTDataPublisher;
+import org.photonvision.common.dataflow.statusLEDs.StatusLEDConsumer;
 import org.photonvision.common.dataflow.websocket.UIDataPublisher;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
-import org.photonvision.common.util.java.TriConsumer;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
+import org.photonvision.vision.camera.CameraType;
+import org.photonvision.vision.camera.LibcameraGpuSource;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.USBCameraSource;
-import org.photonvision.vision.camera.ZeroCopyPicamSource;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.consumer.FileSaveFrameConsumer;
+import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.OutputStreamPipeline;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
@@ -48,8 +57,6 @@ import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
-import org.photonvision.vision.videoStream.SocketVideoStream;
-import org.photonvision.vision.videoStream.SocketVideoStreamManager;
 
 /**
  * This is the God Class
@@ -65,10 +72,11 @@ public class VisionModule {
     private final StreamRunnable streamRunnable;
     private final LinkedList<CVPipelineResultConsumer> resultConsumers = new LinkedList<>();
     // Raw result consumers run before any drawing has been done by the OutputStreamPipeline
-    private final LinkedList<TriConsumer<Frame, Frame, List<TrackedTarget>>> streamResultConsumers =
+    private final LinkedList<BiConsumer<Frame, List<TrackedTarget>>> streamResultConsumers =
             new LinkedList<>();
     private final NTDataPublisher ntConsumer;
     private final UIDataPublisher uiDataConsumer;
+    private final StatusLEDConsumer statusLEDsConsumer;
     protected final int moduleIndex;
     protected final QuirkyCamera cameraQuirks;
 
@@ -80,8 +88,8 @@ public class VisionModule {
     FileSaveFrameConsumer inputFrameSaver;
     FileSaveFrameConsumer outputFrameSaver;
 
-    SocketVideoStream inputVideoStreamer;
-    SocketVideoStream outputVideoStreamer;
+    MJPGFrameConsumer inputVideoStreamer;
+    MJPGFrameConsumer outputVideoStreamer;
 
     public VisionModule(PipelineManager pipelineManager, VisionSource visionSource, int index) {
         logger =
@@ -92,8 +100,8 @@ public class VisionModule {
 
         // Find quirks for the current camera
         if (visionSource instanceof USBCameraSource) {
-            cameraQuirks = ((USBCameraSource) visionSource).cameraQuirks;
-        } else if (visionSource instanceof ZeroCopyPicamSource) {
+            cameraQuirks = ((USBCameraSource) visionSource).getCameraQuirks();
+        } else if (visionSource instanceof LibcameraGpuSource) {
             cameraQuirks = QuirkyCamera.ZeroCopyPiCamera;
         } else {
             cameraQuirks = QuirkyCamera.DefaultCamera;
@@ -104,14 +112,14 @@ public class VisionModule {
         if (cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
             pipelineManager.userPipelineSettings.forEach(
                     it -> {
-                        if (it.cameraGain == -1) it.cameraGain = 20; // Sane default
+                        if (it.cameraGain == -1) it.cameraGain = 75; // Sane default
                     });
         }
         if (cameraQuirks.hasQuirk(CameraQuirk.AWBGain)) {
             pipelineManager.userPipelineSettings.forEach(
                     it -> {
-                        if (it.cameraRedGain == -1) it.cameraRedGain = 16; // Sane defaults
-                        if (it.cameraBlueGain == -1) it.cameraBlueGain = 16;
+                        if (it.cameraRedGain == -1) it.cameraRedGain = 11; // Sane defaults
+                        if (it.cameraBlueGain == -1) it.cameraBlueGain = 20;
                     });
         }
 
@@ -120,7 +128,7 @@ public class VisionModule {
         this.visionRunner =
                 new VisionRunner(
                         this.visionSource.getFrameProvider(),
-                        this.pipelineManager::getCurrentUserPipeline,
+                        this.pipelineManager::getCurrentPipeline,
                         this::consumeResult,
                         this.cameraQuirks);
         this.streamRunnable = new StreamRunnable(new OutputStreamPipeline());
@@ -136,12 +144,14 @@ public class VisionModule {
                 new NTDataPublisher(
                         visionSource.getSettables().getConfiguration().nickname,
                         pipelineManager::getCurrentPipelineIndex,
-                        pipelineManager::setIndex,
+                        this::setPipeline,
                         pipelineManager::getDriverMode,
                         this::setDriverMode);
         uiDataConsumer = new UIDataPublisher(index);
+        statusLEDsConsumer = new StatusLEDConsumer(index);
         addResultConsumer(ntConsumer);
         addResultConsumer(uiDataConsumer);
+        addResultConsumer(statusLEDsConsumer);
         addResultConsumer(
                 (result) ->
                         lastPipelineResultBestTarget = result.hasTargets() ? result.targets.get(0) : null);
@@ -166,11 +176,6 @@ public class VisionModule {
         saveAndBroadcastAll();
     }
 
-    private void destroyStreams() {
-        SocketVideoStreamManager.getInstance().removeStream(inputVideoStreamer);
-        SocketVideoStreamManager.getInstance().removeStream(outputVideoStreamer);
-    }
-
     private void createStreams() {
         var camStreamIdx = visionSource.getSettables().getConfiguration().streamIndex;
         // to ensure we dont exceed the FMS camera ports, cap idx at 4
@@ -182,29 +187,49 @@ public class VisionModule {
         this.outputStreamPort = 1181 + (camStreamIdx * 2) + 1;
 
         inputFrameSaver =
-                new FileSaveFrameConsumer(visionSource.getSettables().getConfiguration().nickname, "input");
+                new FileSaveFrameConsumer(
+                        visionSource.getSettables().getConfiguration().nickname,
+                        visionSource.getSettables().getConfiguration().uniqueName,
+                        "input");
         outputFrameSaver =
                 new FileSaveFrameConsumer(
-                        visionSource.getSettables().getConfiguration().nickname, "output");
+                        visionSource.getSettables().getConfiguration().nickname,
+                        visionSource.getSettables().getConfiguration().uniqueName,
+                        "output");
 
-        inputVideoStreamer = new SocketVideoStream(this.inputStreamPort);
-        outputVideoStreamer = new SocketVideoStream(this.outputStreamPort);
-        SocketVideoStreamManager.getInstance().addStream(inputVideoStreamer);
-        SocketVideoStreamManager.getInstance().addStream(outputVideoStreamer);
+        String camHostname = CameraServerJNI.getHostname();
+        inputVideoStreamer =
+                new MJPGFrameConsumer(
+                        camHostname + "_Port_" + inputStreamPort + "_Input_MJPEG_Server", inputStreamPort);
+        outputVideoStreamer =
+                new MJPGFrameConsumer(
+                        camHostname + "_Port_" + outputStreamPort + "_Output_MJPEG_Server", outputStreamPort);
     }
 
     private void recreateStreamResultConsumers() {
-        streamResultConsumers.add((in, out, tgts) -> inputFrameSaver.accept(in));
-        streamResultConsumers.add((in, out, tgts) -> outputFrameSaver.accept(out));
-        streamResultConsumers.add((in, out, tgts) -> inputVideoStreamer.accept(in));
-        streamResultConsumers.add((in, out, tgts) -> outputVideoStreamer.accept(out));
+        streamResultConsumers.add(
+                (frame, tgts) -> {
+                    if (frame != null) inputFrameSaver.accept(frame.colorImage);
+                });
+        streamResultConsumers.add(
+                (frame, tgts) -> {
+                    if (frame != null) outputFrameSaver.accept(frame.processedImage);
+                });
+        streamResultConsumers.add(
+                (frame, tgts) -> {
+                    if (frame != null) inputVideoStreamer.accept(frame.colorImage);
+                });
+        streamResultConsumers.add(
+                (frame, tgts) -> {
+                    if (frame != null) outputVideoStreamer.accept(frame.processedImage);
+                });
     }
 
     private class StreamRunnable extends Thread {
         private final OutputStreamPipeline outputStreamPipeline;
 
         private final Object frameLock = new Object();
-        private Frame inputFrame, outputFrame;
+        private Frame latestFrame;
         private AdvancedPipelineSettings settings = new AdvancedPipelineSettings();
         private List<TrackedTarget> targets = new ArrayList<>();
 
@@ -215,42 +240,35 @@ public class VisionModule {
         }
 
         public void updateData(
-                Frame inputFrame,
-                Frame outputFrame,
-                AdvancedPipelineSettings settings,
-                List<TrackedTarget> targets) {
+                Frame inputOutputFrame, AdvancedPipelineSettings settings, List<TrackedTarget> targets) {
             synchronized (frameLock) {
-                if (shouldRun && this.inputFrame != null && this.outputFrame != null) {
+                if (shouldRun && this.latestFrame != null) {
                     logger.trace("Fell behind; releasing last unused Mats");
-                    this.inputFrame.release();
-                    this.outputFrame.release();
+                    this.latestFrame.release();
                 }
 
-                this.inputFrame = inputFrame;
-                this.outputFrame = outputFrame;
+                this.latestFrame = inputOutputFrame;
                 this.settings = settings;
                 this.targets = targets;
 
-                shouldRun =
-                        inputFrame != null
-                                && !inputFrame.image.getMat().empty()
-                                && outputFrame != null
-                                && !outputFrame.image.getMat().empty();
+                shouldRun = inputOutputFrame != null;
+                // && inputOutputFrame.colorImage != null
+                // && !inputOutputFrame.colorImage.getMat().empty()
+                // && inputOutputFrame.processedImage != null
+                // && !inputOutputFrame.processedImage.getMat().empty();
             }
         }
 
         @Override
         public void run() {
             while (true) {
-                final Frame inputFrame, outputFrame;
+                final Frame m_frame;
                 final AdvancedPipelineSettings settings;
                 final List<TrackedTarget> targets;
                 final boolean shouldRun;
                 synchronized (frameLock) {
-                    inputFrame = this.inputFrame;
-                    outputFrame = this.outputFrame;
-                    this.inputFrame = null;
-                    this.outputFrame = null;
+                    m_frame = this.latestFrame;
+                    this.latestFrame = null;
 
                     settings = this.settings;
                     targets = this.targets;
@@ -260,17 +278,15 @@ public class VisionModule {
                 }
                 if (shouldRun) {
                     try {
-                        CVPipelineResult osr =
-                                outputStreamPipeline.process(inputFrame, outputFrame, settings, targets);
-                        consumeResults(inputFrame, osr.outputFrame, targets);
+                        CVPipelineResult osr = outputStreamPipeline.process(m_frame, settings, targets);
+                        consumeResults(m_frame, targets);
 
                     } catch (Exception e) {
                         // Never die
                         logger.error("Exception while running stream runnable!", e);
                     }
                     try {
-                        inputFrame.release();
-                        outputFrame.release();
+                        m_frame.release();
                     } catch (Exception e) {
                         logger.error("Exception freeing frames", e);
                     }
@@ -295,7 +311,7 @@ public class VisionModule {
         var settables = visionSource.getSettables();
         logger.trace(() -> "Setting " + settables.getConfiguration().nickname + ") FOV (" + fov + ")");
 
-        // Only set FOV if we have no vendor JSON and we aren't using a PiCAM
+        // Only set FOV if we have no vendor JSON, and we aren't using a PiCAM
         if (isVendorCamera()) {
             logger.info("Cannot set FOV on a vendor device! Ignoring...");
         } else {
@@ -325,7 +341,10 @@ public class VisionModule {
 
     public void startCalibration(UICalibrationData data) {
         var settings = pipelineManager.calibration3dPipeline.getSettings();
-        pipelineManager.calibration3dPipeline.deleteSavedImages();
+
+        var videoMode = visionSource.getSettables().getAllVideoModes().get(data.videoModeIndex);
+        var resolution = new Size(videoMode.width, videoMode.height);
+
         settings.cameraVideoModeIndex = data.videoModeIndex;
         visionSource.getSettables().setVideoModeIndex(data.videoModeIndex);
         logger.info(
@@ -337,6 +356,8 @@ public class VisionModule {
         settings.boardHeight = data.patternHeight;
         settings.boardWidth = data.patternWidth;
         settings.boardType = data.boardType;
+        settings.useMrCal = data.useMrCal;
+        settings.resolution = resolution;
 
         // Disable gain if not applicable
         if (!cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
@@ -352,6 +373,14 @@ public class VisionModule {
         setPipeline(PipelineManager.CAL_3D_INDEX);
     }
 
+    public void saveInputSnapshot() {
+        inputFrameSaver.overrideTakeSnapshot();
+    }
+
+    public void saveOutputSnapshot() {
+        outputFrameSaver.overrideTakeSnapshot();
+    }
+
     public void takeCalibrationSnapshot() {
         pipelineManager.calibration3dPipeline.takeSnapshot();
     }
@@ -364,7 +393,7 @@ public class VisionModule {
 
         if (ret != null) {
             logger.debug("Saving calibration...");
-            visionSource.getSettables().getConfiguration().addCalibration(ret);
+            visionSource.getSettables().addCalibration(ret);
         } else {
             logger.error("Calibration failed...");
         }
@@ -372,15 +401,15 @@ public class VisionModule {
         return ret;
     }
 
-    void setPipeline(int index) {
+    boolean setPipeline(int index) {
         logger.info("Setting pipeline to " + index);
         logger.info("Pipeline name: " + pipelineManager.getPipelineNickname(index));
         pipelineManager.setIndex(index);
         var pipelineSettings = pipelineManager.getPipelineSettings(index);
 
         if (pipelineSettings == null) {
-            logger.error("Config for index " + index + " was null!");
-            return;
+            logger.error("Config for index " + index + " was null! Not changing pipelines");
+            return false;
         }
 
         visionSource.getSettables().setVideoModeInternal(pipelineSettings.cameraVideoModeIndex);
@@ -402,7 +431,7 @@ public class VisionModule {
         }
         if (cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
             // If the gain is disabled for some reason, re-enable it
-            if (pipelineSettings.cameraGain == -1) pipelineSettings.cameraGain = 20;
+            if (pipelineSettings.cameraGain == -1) pipelineSettings.cameraGain = 75;
             visionSource.getSettables().setGain(Math.max(0, pipelineSettings.cameraGain));
         } else {
             pipelineSettings.cameraGain = -1;
@@ -410,8 +439,8 @@ public class VisionModule {
 
         if (cameraQuirks.hasQuirk(CameraQuirk.AWBGain)) {
             // If the AWB gains are disabled for some reason, re-enable it
-            if (pipelineSettings.cameraRedGain == -1) pipelineSettings.cameraRedGain = 16;
-            if (pipelineSettings.cameraBlueGain == -1) pipelineSettings.cameraBlueGain = 16;
+            if (pipelineSettings.cameraRedGain == -1) pipelineSettings.cameraRedGain = 11;
+            if (pipelineSettings.cameraBlueGain == -1) pipelineSettings.cameraBlueGain = 20;
             visionSource.getSettables().setRedGain(Math.max(0, pipelineSettings.cameraRedGain));
             visionSource.getSettables().setBlueGain(Math.max(0, pipelineSettings.cameraBlueGain));
         } else {
@@ -423,6 +452,8 @@ public class VisionModule {
 
         visionSource.getSettables().getConfiguration().currentPipelineIndex =
                 pipelineManager.getCurrentPipelineIndex();
+
+        return true;
     }
 
     private boolean camShouldControlLEDs() {
@@ -454,9 +485,15 @@ public class VisionModule {
     void saveAndBroadcastSelective(WsContext originContext, String propertyName, Object value) {
         logger.trace("Broadcasting PSC mutation - " + propertyName + ": " + value);
         saveModule();
+
+        HashMap<String, Object> map = new HashMap<>();
+        HashMap<String, Object> subMap = new HashMap<>();
+        subMap.put(propertyName, value);
+        map.put("cameraIndex", this.moduleIndex);
+        map.put("mutatePipelineSettings", subMap);
+
         DataChangeService.getInstance()
-                .publishEvent(
-                        OutgoingUIEvent.wrappedOf("mutatePipeline", propertyName, value, originContext));
+                .publishEvent(new OutgoingUIEvent<>("mutatePipeline", map, originContext));
     }
 
     public void setCameraNickname(String newName) {
@@ -464,16 +501,6 @@ public class VisionModule {
         ntConsumer.updateCameraNickname(newName);
         inputFrameSaver.updateCameraNickname(newName);
         outputFrameSaver.updateCameraNickname(newName);
-
-        // Rename streams
-        streamResultConsumers.clear();
-
-        // Teardown and recreate streams
-        destroyStreams();
-        createStreams();
-
-        // Rebuild streamers
-        recreateStreamResultConsumers();
 
         // Push new data to the UI
         saveAndBroadcastAll();
@@ -483,11 +510,14 @@ public class VisionModule {
         var ret = new PhotonConfiguration.UICameraConfiguration();
 
         ret.fov = visionSource.getSettables().getFOV();
+        ret.isCSICamera = visionSource.getCameraConfiguration().cameraType == CameraType.ZeroCopyPicam;
         ret.nickname = visionSource.getSettables().getConfiguration().nickname;
+        ret.uniqueName = visionSource.getSettables().getConfiguration().uniqueName;
         ret.currentPipelineSettings =
                 SerializationUtils.objectToHashMap(pipelineManager.getCurrentPipelineSettings());
         ret.currentPipelineIndex = pipelineManager.getCurrentPipelineIndex();
         ret.pipelineNicknames = pipelineManager.getPipelineNicknames();
+        ret.cameraQuirks = visionSource.getSettables().getConfiguration().cameraQuirks;
 
         // TODO refactor into helper method
         var temp = new HashMap<Integer, HashMap<String, Object>>();
@@ -500,7 +530,7 @@ public class VisionModule {
             internalMap.put("fps", videoModes.get(k).fps);
             internalMap.put(
                     "pixelFormat",
-                    ((videoModes.get(k) instanceof ZeroCopyPicamSource.FPSRatedVideoMode)
+                    ((videoModes.get(k) instanceof LibcameraGpuSource.FPSRatedVideoMode)
                                     ? "kPicam"
                                     : videoModes.get(k).pixelFormat.toString())
                             .substring(1)); // Remove the k prefix
@@ -511,20 +541,10 @@ public class VisionModule {
         ret.outputStreamPort = this.outputStreamPort;
         ret.inputStreamPort = this.inputStreamPort;
 
-        var calList = new ArrayList<HashMap<String, Object>>();
-        for (var c : visionSource.getSettables().getConfiguration().calibrations) {
-            var internalMap = new HashMap<String, Object>();
-
-            internalMap.put("perViewErrors", c.perViewErrors);
-            internalMap.put("standardDeviation", c.standardDeviation);
-            internalMap.put("width", c.resolution.width);
-            internalMap.put("height", c.resolution.height);
-            internalMap.put("intrinsics", c.cameraIntrinsics.data);
-            internalMap.put("extrinsics", c.cameraExtrinsics.data);
-
-            calList.add(internalMap);
-        }
-        ret.calibrations = calList;
+        ret.calibrations =
+                visionSource.getSettables().getConfiguration().calibrations.stream()
+                        .map(CameraCalibrationCoefficients::cloneWithoutObservations)
+                        .collect(Collectors.toList());
 
         ret.isFovConfigurable =
                 !(ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV()
@@ -550,16 +570,15 @@ public class VisionModule {
         consumePipelineResult(result);
 
         // Pipelines like DriverMode and Calibrate3dPipeline have null output frames
-        if (result.inputFrame != null
+        if (result.inputAndOutputFrame != null
                 && (pipelineManager.getCurrentPipelineSettings() instanceof AdvancedPipelineSettings)) {
             streamRunnable.updateData(
-                    result.inputFrame,
-                    result.outputFrame,
+                    result.inputAndOutputFrame,
                     (AdvancedPipelineSettings) pipelineManager.getCurrentPipelineSettings(),
                     result.targets);
             // The streamRunnable manages releasing in this case
         } else {
-            consumeResults(result.inputFrame, result.outputFrame, result.targets);
+            consumeResults(result.inputAndOutputFrame, result.targets);
 
             result.release();
             // In this case we don't bother with a separate streaming thread and we release
@@ -573,19 +592,40 @@ public class VisionModule {
     }
 
     /** Consume stream/target results, no rate limiting applied */
-    private void consumeResults(Frame inputFrame, Frame outputFrame, List<TrackedTarget> targets) {
+    private void consumeResults(Frame frame, List<TrackedTarget> targets) {
         for (var c : streamResultConsumers) {
-            c.accept(inputFrame, outputFrame, targets);
+            c.accept(frame, targets);
         }
     }
 
     public void setTargetModel(TargetModel targetModel) {
-        var settings = pipelineManager.getCurrentUserPipeline().getSettings();
+        var settings = pipelineManager.getCurrentPipeline().getSettings();
         if (settings instanceof ReflectivePipelineSettings) {
             ((ReflectivePipelineSettings) settings).targetModel = targetModel;
             saveAndBroadcastAll();
         } else {
             logger.error("Cannot set target model of non-reflective pipe! Ignoring...");
         }
+    }
+
+    public void addCalibrationToConfig(CameraCalibrationCoefficients newCalibration) {
+        if (newCalibration != null) {
+            logger.info("Got new calibration for " + newCalibration.resolution);
+            visionSource.getSettables().getConfiguration().addCalibration(newCalibration);
+        } else {
+            logger.error("Got null calibration?");
+        }
+
+        saveAndBroadcastAll();
+    }
+
+    /**
+     * Add/remove quirks from the camera we're controlling
+     *
+     * @param quirksToChange map of true/false for quirks we should change
+     */
+    public void changeCameraQuirks(HashMap<CameraQuirk, Boolean> quirksToChange) {
+        visionSource.getCameraConfiguration().cameraQuirks.updateQuirks(quirksToChange);
+        saveAndBroadcastAll();
     }
 }

@@ -17,7 +17,14 @@
 
 package org.photonvision.common.networking;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public enum NetworkMode {
     DHCP,
-    STATIC
+    STATIC;
+
+    @JsonValue
+    public int toValue() {
+        return ordinal();
+    }
 }

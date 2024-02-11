@@ -19,7 +19,7 @@
       1.0
     ]
   },
-  "cameraExtrinsics": {
+  "distCoeffs": {
     "rows": 1,
     "cols": 5,
     "type": 6,

@@ -1,0 +1,14 @@
+// These should be the only 2 non-project subdirectories in the examples folder
+// I could check for (it)/build.gradle to exist, but w/e
+def EXCLUDED_DIRS = ["bin", "build"]
+
+// List all non-hidden directories not in EXCUDED_DIRS
+ext.exampleFolderNames = file("${rootDir}")
+        .listFiles()
+        .findAll {
+            return (it.isDirectory()
+                    && !it.isHidden()
+                    && !(it.name in EXCLUDED_DIRS) && !it.name.startsWith(".")
+                    && it.toPath().resolve("build.gradle").toFile().exists())
+        }
+        .collect { it.name }

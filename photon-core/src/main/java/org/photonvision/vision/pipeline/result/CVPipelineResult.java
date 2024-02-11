@@ -20,6 +20,7 @@ package org.photonvision.vision.pipeline.result;
 import java.util.Collections;
 import java.util.List;
 import org.photonvision.common.util.math.MathUtils;
+import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.target.TrackedTarget;
@@ -29,26 +30,55 @@ public class CVPipelineResult implements Releasable {
     public final double processingNanos;
     public final double fps;
     public final List<TrackedTarget> targets;
-    public final Frame outputFrame;
-    public final Frame inputFrame;
+    public final Frame inputAndOutputFrame;
+    public MultiTargetPNPResult multiTagResult;
+    public final List<String> objectDetectionClassNames;
+
+    public CVPipelineResult(
+            double processingNanos, double fps, List<TrackedTarget> targets, Frame inputFrame) {
+        this(processingNanos, fps, targets, new MultiTargetPNPResult(), inputFrame, List.of());
+    }
 
     public CVPipelineResult(
             double processingNanos,
             double fps,
             List<TrackedTarget> targets,
-            Frame outputFrame,
-            Frame inputFrame) {
-        this.processingNanos = processingNanos;
-        this.fps = fps;
-        this.targets = targets != null ? targets : Collections.emptyList();
-
-        this.outputFrame = outputFrame;
-        this.inputFrame = inputFrame;
+            Frame inputFrame,
+            List<String> classNames) {
+        this(processingNanos, fps, targets, new MultiTargetPNPResult(), inputFrame, classNames);
     }
 
     public CVPipelineResult(
-            double processingNanos, double fps, List<TrackedTarget> targets, Frame outputFrame) {
-        this(processingNanos, fps, targets, outputFrame, null);
+            double processingNanos,
+            double fps,
+            List<TrackedTarget> targets,
+            MultiTargetPNPResult multiTagResult,
+            Frame inputFrame) {
+        this(processingNanos, fps, targets, multiTagResult, inputFrame, List.of());
+    }
+
+    public CVPipelineResult(
+            double processingNanos,
+            double fps,
+            List<TrackedTarget> targets,
+            MultiTargetPNPResult multiTagResult,
+            Frame inputFrame,
+            List<String> classNames) {
+        this.processingNanos = processingNanos;
+        this.fps = fps;
+        this.targets = targets != null ? targets : Collections.emptyList();
+        this.multiTagResult = multiTagResult;
+        this.objectDetectionClassNames = classNames;
+
+        this.inputAndOutputFrame = inputFrame;
+    }
+
+    public CVPipelineResult(
+            double processingNanos,
+            double fps,
+            List<TrackedTarget> targets,
+            MultiTargetPNPResult multiTagResult) {
+        this(processingNanos, fps, targets, multiTagResult, null, List.of());
     }
 
     public boolean hasTargets() {
@@ -59,8 +89,7 @@ public class CVPipelineResult implements Releasable {
         for (TrackedTarget tt : targets) {
             tt.release();
         }
-        outputFrame.release();
-        if (inputFrame != null) inputFrame.release();
+        if (inputAndOutputFrame != null) inputAndOutputFrame.release();
     }
 
     /**
@@ -68,6 +97,7 @@ public class CVPipelineResult implements Releasable {
      * the latency is relative to the time at which this method is called. Waiting to call this method
      * will change the latency this method returns.
      */
+    @Deprecated
     public double getLatencyMillis() {
         var now = MathUtils.wpiNanoTime();
         return MathUtils.nanosToMillis(now - imageCaptureTimestampNanos);
