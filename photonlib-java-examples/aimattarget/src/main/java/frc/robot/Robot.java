@@ -48,8 +48,8 @@ public class Robot extends TimedRobot {
     // How far from the target we want to be
     final double GOAL_RANGE_METERS = Units.feetToMeters(3);
 
-    // Change this to match the name of your camera
-    PhotonCamera camera = new PhotonCamera("photonvision");
+    // Change this to match the name of your camera as shown in the web UI
+    PhotonCamera camera = new PhotonCamera("YOUR_CAMERA_NAME_HERE");
 
     // PID constants should be tuned per robot
     final double LINEAR_P = 0.1;
