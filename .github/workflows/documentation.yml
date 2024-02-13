@@ -8,6 +8,9 @@ on:
     tags:
       - 'v*'
 
+  pull_request:
+    branches: [ master ]
+
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
