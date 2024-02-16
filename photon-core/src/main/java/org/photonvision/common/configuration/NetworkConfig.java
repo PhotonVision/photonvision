@@ -40,7 +40,8 @@ public class NetworkConfig {
     public boolean shouldPublishProto = false;
 
     /**
-     * If we should ONLY match cameras by path, and NEVER only by base-name. For now default to false to preserve old matching logic
+     * If we should ONLY match cameras by path, and NEVER only by base-name. For now default to false
+     * to preserve old matching logic
      */
     public boolean matchCamerasOnlyByPath = false;
 

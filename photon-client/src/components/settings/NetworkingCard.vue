@@ -60,7 +60,7 @@ const settingsHaveChanged = (): boolean => {
     a.shouldPublishProto !== b.shouldPublishProto ||
     a.networkManagerIface !== b.networkManagerIface ||
     a.setStaticCommand !== b.setStaticCommand ||
-    a.setDHCPcommand !== b.setDHCPcommand  ||
+    a.setDHCPcommand !== b.setDHCPcommand ||
     a.matchCamerasOnlyByPath !== b.matchCamerasOnlyByPath
   );
 };
@@ -287,7 +287,7 @@ watchEffect(() => {
           class="mt-3 mb-2"
           :label-cols="4"
         />
-        <v-divider class="mb-3"/>
+        <v-divider class="mb-3" />
       </v-form>
       <v-btn
         color="accent"

@@ -139,7 +139,8 @@ public class ConfigTest {
         writer.write(str);
         writer.flush();
         writer.close();
-        CameraConfiguration result = JacksonUtils.deserialize(tempFile.toPath(), CameraConfiguration.class);
+        CameraConfiguration result =
+                JacksonUtils.deserialize(tempFile.toPath(), CameraConfiguration.class);
 
         tempFile.delete();
     }
@@ -154,13 +155,14 @@ public class ConfigTest {
         writer.write(str);
         writer.flush();
         writer.close();
-        
+
         try {
-                CameraConfiguration result = JacksonUtils.deserialize(tempFile.toPath(), CameraConfiguration.class);
-                String ser = JacksonUtils.serializeToString(result); 
-                System.out.println(ser);
+            CameraConfiguration result =
+                    JacksonUtils.deserialize(tempFile.toPath(), CameraConfiguration.class);
+            String ser = JacksonUtils.serializeToString(result);
+            System.out.println(ser);
         } catch (Exception e) {
-                e.printStackTrace();
+            e.printStackTrace();
         }
 
         tempFile.delete();

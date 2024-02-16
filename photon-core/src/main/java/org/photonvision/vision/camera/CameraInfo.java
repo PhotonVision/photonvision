@@ -70,13 +70,13 @@ public class CameraInfo extends UsbCameraInfo {
     }
 
     /**
-     * Get a unique descriptor of the USB port this camera is attached to. EG 
+     * Get a unique descriptor of the USB port this camera is attached to. EG
      * "/dev/v4l/by-path/platform-fc800000.usb-usb-0:1.3:1.0-video-index0"
+     *
      * @return
      */
     public Optional<String> getUSBPath() {
-        return Arrays.stream(otherPaths).filter(path -> path.contains("/by-path/"))
-            .findFirst(); 
+        return Arrays.stream(otherPaths).filter(path -> path.contains("/by-path/")).findFirst();
     }
 
     @Override
