@@ -28,7 +28,7 @@ export const useSettingsStore = defineStore("settings", {
       hardwareModel: undefined,
       hardwarePlatform: undefined,
       mrCalWorking: true,
-      rknnSupported: false
+      rknnSupported: false,
     },
     network: {
       ntServerAddress: "",
@@ -44,7 +44,9 @@ export const useSettingsStore = defineStore("settings", {
           connName: "Example Wired Connection",
           devName: "eth0"
         }
-      ]
+      ],
+      networkingDisabled: false,
+      matchCamerasOnlyByPath: false,
     },
     lighting: {
       supported: true,
@@ -103,7 +105,7 @@ export const useSettingsStore = defineStore("settings", {
         hardwarePlatform: data.general.hardwarePlatform || undefined,
         gpuAcceleration: data.general.gpuAcceleration || undefined,
         mrCalWorking: data.general.mrCalWorking,
-        rknnSupported: data.general.rknnSupported
+        rknnSupported: data.general.rknnSupported,
       };
       this.lighting = data.lighting;
       this.network = data.networkSettings;
