@@ -233,24 +233,35 @@ public class VisionSourceManager {
         ArrayList<CameraConfiguration> unloadedConfigs =
                 new ArrayList<CameraConfiguration>(loadedCamConfigs);
 
-        if (detectedCameraList.size() > 0 || unloadedConfigs.size() > 0)
+        if (detectedCameraList.size() > 0 || unloadedConfigs.size() > 0) 
+        {
+            logger.info("Matching by usb port & name...");
             cameraConfigurations.addAll(matchByPathAndName(detectedCameraList, unloadedConfigs));
-        else logger.debug("Skipping matchByPath no configs or cameras left to match");
+        }
+        else logger.debug("Skipping matchByPathAndName, no configs or cameras left to match");
 
         if (detectedCameraList.size() > 0 || unloadedConfigs.size() > 0)
+        {
+            logger.info("Matching by usb port & USB VID/PID...");
             cameraConfigurations.addAll(matchByPathAndVIDPID(detectedCameraList, unloadedConfigs));
-        else logger.debug("Skipping matchByPath no configs or cameras left to match");
+        }
+        else logger.debug("Skipping match by port/vid/pid, no configs or cameras left to match");
 
         // handle disabling only-by-base-name matching
         if (!ConfigManager.getInstance().getConfig().getNetworkConfig().matchCamerasOnlyByPath) {
             if (detectedCameraList.size() > 0 || unloadedConfigs.size() > 0)
+            {
+                logger.info("Matching by base-name ONLY...");
                 cameraConfigurations.addAll(matchByBaseName(detectedCameraList, unloadedConfigs));
-            else logger.debug("Skipping matchByName no configs or cameras left to match");
-        } else logger.debug("Skipping matchByName, disabled by user");
+            }
+            else logger.debug("Skipping matchByName, no configs or cameras left to match");
+        } else logger.info("Skipping matchByName, disabled by user");
 
         if (detectedCameraList.size() > 0)
+            {
             cameraConfigurations.addAll(
                     createConfigsForCameras(detectedCameraList, unloadedConfigs, cameraConfigurations));
+        }
 
         logger.debug("Matched or created " + cameraConfigurations.size() + " camera configs!");
         return cameraConfigurations;
