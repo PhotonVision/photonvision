@@ -68,10 +68,6 @@ jobs:
   release:
     needs: [build-client, run_docs]
 
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
     runs-on: ubuntu-22.04
     steps:
 
@@ -79,14 +75,12 @@ jobs:
       - uses: actions/download-artifact@v4
 
       - run: find .
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: copy file via ssh password
+        uses: appleboy/scp-action@v0.1.7
         with:
-          # Upload entire repository
-          path: '.'
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          host: ${{ secrets.WEBMASTER_SSH_HOST }}
+          username: ${{ secrets.WEBMASTER_SSH_USERNAME }}
+          password: ${{ secrets.WEBMASTER_SSH_KEY }}
+          port: ${{ secrets.WEBMASTER_SSH_PORT }}
+          source: "*"
+          target: /var/www/html/photonvision-docs/
