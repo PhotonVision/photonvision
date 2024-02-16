@@ -224,12 +224,16 @@ public class VisionSourceManager {
      * @param checkUSBPath If we should compare the USB port/bus IDs
      * @param checkVidPid If we should compare USB VID and PID
      * @param checkBaseName If we should compare {@link CameraInfo#getBaseName}
+     * @param checkPath If we should check {@link CameraInfo::path} (eg /dev/videoN on Linux, or
+     *     ?/usb#vid_05c8&pid_03df&mi_00#7&fa76035&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global
+     *     on Windows)
      */
     private final Predicate<CameraInfo> getCameraMatcher(
             final CameraConfiguration savedConfig,
             boolean checkUSBPath,
             boolean checkVidPid,
-            boolean checkBaseName) {
+            boolean checkBaseName,
+            boolean checkPath) {
 
         if (checkUSBPath && savedConfig.getUSBPath().isEmpty()) {
             logger.debug(
@@ -251,6 +255,9 @@ public class VisionSourceManager {
                 matches &=
                         (physicalCamera.vendorId == savedConfig.usbVID
                                 && physicalCamera.productId == savedConfig.usbPID);
+            }
+            if (checkPath) {
+                matches &= (physicalCamera.path.equals(savedConfig.path));
             }
 
             return matches;
@@ -274,7 +281,7 @@ public class VisionSourceManager {
                 ConfigManager.getInstance().getConfig().getNetworkConfig().matchCamerasOnlyByPath);
     }
 
-    private String camCfgToString(CameraConfiguration c) {
+    private static final String camCfgToString(CameraConfiguration c) {
         return new StringBuilder()
                 .append("[baseName=")
                 .append(c.baseName)
@@ -311,23 +318,30 @@ public class VisionSourceManager {
         if (detectedCameraList.size() > 0 || unloadedConfigs.size() > 0) {
             logger.info("Matching by usb port & name & USB VID/PID...");
             cameraConfigurations.addAll(
-                    matchCamerasByStrategy(detectedCameraList, unloadedConfigs, true, true, true));
+                    matchCamerasByStrategy(detectedCameraList, unloadedConfigs, true, true, true, false));
         } else logger.debug("Skipping matchByPathAndName, no configs or cameras left to match");
 
         if (detectedCameraList.size() > 0 || unloadedConfigs.size() > 0) {
             logger.info("Matching by usb port & USB VID/PID...");
             cameraConfigurations.addAll(
-                    matchCamerasByStrategy(detectedCameraList, unloadedConfigs, true, true, false));
+                    matchCamerasByStrategy(detectedCameraList, unloadedConfigs, true, true, false, false));
         } else logger.debug("Skipping match by port/vid/pid, no configs or cameras left to match");
 
         // handle disabling only-by-base-name matching
-        if (detectedCameraList.size() > 0 || unloadedConfigs.size() > 0) {
-            if (!matchCamerasOnlyByPath) {
+        if (!matchCamerasOnlyByPath) {
+            if (detectedCameraList.size() > 0 || unloadedConfigs.size() > 0) {
                 logger.info("Matching by base-name & USB VID/PID only...");
                 cameraConfigurations.addAll(
-                        matchCamerasByStrategy(detectedCameraList, unloadedConfigs, false, true, false));
-            } else logger.info("Skipping matchByName, disabled by user");
-        } else logger.debug("Skipping matchByName, no configs or cameras left to match");
+                        matchCamerasByStrategy(detectedCameraList, unloadedConfigs, false, true, true, false));
+            } else
+                logger.debug("Skipping match by base-name/viid/pid, no configs or cameras left to match");
+
+            if (detectedCameraList.size() > 0 || unloadedConfigs.size() > 0) {
+                logger.info("Matching by v4l-path & USB VID/PID only...");
+                cameraConfigurations.addAll(
+                        matchCamerasByStrategy(detectedCameraList, unloadedConfigs, false, true, false, true));
+            } else logger.debug("Skipping matchByName, no configs or cameras left to match");
+        } else logger.info("Skipping match by filepath/vid/pid, disabled by user");
 
         if (detectedCameraList.size() > 0) {
             cameraConfigurations.addAll(
@@ -346,14 +360,19 @@ public class VisionSourceManager {
      * @param checkUSBPath If we should compare the USB port/bus IDs
      * @param checkVidPid If we should compare USB VID and PID
      * @param checkBaseName If we should check {@link CameraInfo::getBaseName}
-     * @return
+     * @param checkPath If we should check {@link CameraInfo::path} (eg /dev/videoN on Linux, or
+     *     usb#vid_05c8&pid_03df&mi_00#7&fa76035&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global
+     *     on Windows). Note that path may change based on order cameras are plugged in/unplugged on
+     *     Linux, and should not be trusted to remain the same.
+     * @return All matched or created new configs
      */
     private List<CameraConfiguration> matchCamerasByStrategy(
             List<CameraInfo> detectedCamInfos,
             List<CameraConfiguration> unloadedConfigs,
             boolean checkUSBPath,
             boolean checkVidPid,
-            boolean checkBaseName) {
+            boolean checkBaseName,
+            boolean checkPath) {
 
         List<CameraConfiguration> ret = new ArrayList<CameraConfiguration>();
         List<CameraConfiguration> unloadedConfigsCopy =
@@ -364,12 +383,17 @@ public class VisionSourceManager {
             if (config.cameraType != CameraType.ZeroCopyPicam) {
                 logger.debug(
                         String.format(
-                                "Trying to find a match for loaded camera %s by strategy (path %s vid/pid %s basename %s) with camera config: %s",
-                                config.baseName, checkUSBPath, checkVidPid, checkBaseName, camCfgToString(config)));
+                                "Trying to find a match for loaded camera %s by strategy (path %s vid/pid %s basename %s path %s) with camera config: %s",
+                                config.baseName,
+                                checkUSBPath,
+                                checkVidPid,
+                                checkBaseName,
+                                checkPath,
+                                camCfgToString(config)));
 
                 // Get matcher and filter against it, picking out the first match
                 Predicate<CameraInfo> matches =
-                        getCameraMatcher(config, checkUSBPath, checkVidPid, checkBaseName);
+                        getCameraMatcher(config, checkUSBPath, checkVidPid, checkBaseName, checkPath);
                 var cameraInfo = detectedCamInfos.stream().filter(matches).findFirst().orElse(null);
 
                 // If we actually matched a camera to a config, remove that camera from the list
@@ -489,7 +513,7 @@ public class VisionSourceManager {
             List<CameraConfiguration> camConfigs) {
         var cameraSources = new ArrayList<VisionSource>();
         for (var configuration : camConfigs) {
-            logger.debug("Creating VisionSource for " + configuration);
+            logger.debug("Creating VisionSource for " + camCfgToString(configuration));
 
             boolean is_pi = Platform.isRaspberryPi();
 
