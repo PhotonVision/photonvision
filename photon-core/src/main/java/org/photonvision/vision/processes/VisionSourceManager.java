@@ -234,7 +234,6 @@ public class VisionSourceManager {
             boolean checkVidPid,
             boolean checkBaseName,
             boolean checkPath) {
-
         if (checkUSBPath && savedConfig.getUSBPath().isEmpty()) {
             logger.debug(
                     "WARN: Camera has empty USB path, but asked to match by name: "
@@ -319,7 +318,20 @@ public class VisionSourceManager {
             logger.info("Matching by usb port & name & USB VID/PID...");
             cameraConfigurations.addAll(
                     matchCamerasByStrategy(detectedCameraList, unloadedConfigs, true, true, true, false));
-        } else logger.debug("Skipping matchByPathAndName, no configs or cameras left to match");
+        } else
+            logger.debug("Skipping match by usb port/name/vid/pid, no configs or cameras left to match");
+
+        // On windows, the v4l path is actually useful and tells us the port the camera is physically
+        // connected to which is neat
+        if (Platform.isWindows()) {
+            if (detectedCameraList.size() > 0 || unloadedConfigs.size() > 0) {
+                logger.info("Matching by windows-path & USB VID/PID only...");
+                cameraConfigurations.addAll(
+                        matchCamerasByStrategy(detectedCameraList, unloadedConfigs, false, true, true, true));
+            } else
+                logger.debug(
+                        "Skipping matching by windiws-path/name/vid/pid, no configs or cameras left to match");
+        }
 
         if (detectedCameraList.size() > 0 || unloadedConfigs.size() > 0) {
             logger.info("Matching by usb port & USB VID/PID...");
@@ -335,12 +347,6 @@ public class VisionSourceManager {
                         matchCamerasByStrategy(detectedCameraList, unloadedConfigs, false, true, true, false));
             } else
                 logger.debug("Skipping match by base-name/viid/pid, no configs or cameras left to match");
-
-            if (detectedCameraList.size() > 0 || unloadedConfigs.size() > 0) {
-                logger.info("Matching by v4l-path & USB VID/PID only...");
-                cameraConfigurations.addAll(
-                        matchCamerasByStrategy(detectedCameraList, unloadedConfigs, false, true, false, true));
-            } else logger.debug("Skipping matchByName, no configs or cameras left to match");
         } else logger.info("Skipping match by filepath/vid/pid, disabled by user");
 
         if (detectedCameraList.size() > 0) {
@@ -373,7 +379,6 @@ public class VisionSourceManager {
             boolean checkVidPid,
             boolean checkBaseName,
             boolean checkPath) {
-
         List<CameraConfiguration> ret = new ArrayList<CameraConfiguration>();
         List<CameraConfiguration> unloadedConfigsCopy =
                 new ArrayList<CameraConfiguration>(unloadedConfigs);
