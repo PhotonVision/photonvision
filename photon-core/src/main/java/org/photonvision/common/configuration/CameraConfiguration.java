@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
@@ -50,6 +51,12 @@ public class CameraConfiguration {
     public QuirkyCamera cameraQuirks;
 
     @JsonIgnore public String[] otherPaths = {};
+
+    @JsonProperty("usbVID")
+    public int usbVID = -1;
+
+    @JsonProperty("usbPID")
+    public int usbPID = -1;
 
     public CameraType cameraType = CameraType.UsbCamera;
     public double FOV = 70;
@@ -98,7 +105,9 @@ public class CameraConfiguration {
             @JsonProperty("cameraType") CameraType cameraType,
             @JsonProperty("cameraQuirks") QuirkyCamera cameraQuirks,
             @JsonProperty("calibration") List<CameraCalibrationCoefficients> calibrations,
-            @JsonProperty("currentPipelineIndex") int currentPipelineIndex) {
+            @JsonProperty("currentPipelineIndex") int currentPipelineIndex,
+            @JsonProperty("usbVID") int usbVID,
+            @JsonProperty("usbPID") int usbPID) {
         this.baseName = baseName;
         this.uniqueName = uniqueName;
         this.nickname = nickname;
@@ -108,6 +117,8 @@ public class CameraConfiguration {
         this.cameraQuirks = cameraQuirks;
         this.calibrations = calibrations != null ? calibrations : new ArrayList<>();
         this.currentPipelineIndex = currentPipelineIndex;
+        this.usbPID = usbPID;
+        this.usbVID = usbVID;
 
         logger.debug(
                 "Creating camera configuration for "
@@ -154,6 +165,17 @@ public class CameraConfiguration {
                 .findAny()
                 .ifPresent(calibrations::remove);
         calibrations.add(calibration);
+    }
+
+    /**
+     * Get a unique descriptor of the USB port this camera is attached to. EG
+     * "/dev/v4l/by-path/platform-fc800000.usb-usb-0:1.3:1.0-video-index0"
+     *
+     * @return
+     */
+    @JsonIgnore
+    public Optional<String> getUSBPath() {
+        return Arrays.stream(otherPaths).filter(path -> path.contains("/by-path/")).findFirst();
     }
 
     @Override

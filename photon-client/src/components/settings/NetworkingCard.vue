@@ -59,7 +59,8 @@ const settingsHaveChanged = (): boolean => {
     a.shouldPublishProto !== b.shouldPublishProto ||
     a.networkManagerIface !== b.networkManagerIface ||
     a.setStaticCommand !== b.setStaticCommand ||
-    a.setDHCPcommand !== b.setDHCPcommand
+    a.setDHCPcommand !== b.setDHCPcommand ||
+    a.matchCamerasOnlyByPath !== b.matchCamerasOnlyByPath
   );
 };
 
@@ -77,6 +78,7 @@ const saveGeneralSettings = () => {
     setStaticCommand: tempSettingsStruct.value.setStaticCommand || "",
     shouldManage: tempSettingsStruct.value.shouldManage,
     shouldPublishProto: tempSettingsStruct.value.shouldPublishProto,
+    matchCamerasOnlyByPath: tempSettingsStruct.value.matchCamerasOnlyByPath,
     staticIp: tempSettingsStruct.value.staticIp
   };
 
@@ -137,6 +139,8 @@ watchEffect(() => {
 
 <template>
   <v-card dark class="mb-3 pr-6 pb-3" style="background-color: #006492">
+    <v-card-title>Global Settings</v-card-title>
+    <v-divider />
     <v-card-title>Networking</v-card-title>
     <div class="ml-5">
       <v-form ref="form" v-model="settingsValid">
@@ -254,6 +258,9 @@ watchEffect(() => {
         >
           This mode is intended for debugging; it should be off for proper usage. PhotonLib will NOT work!
         </v-banner>
+
+        <v-divider />
+        <v-card-title>Miscellaneous</v-card-title>
         <pv-switch
           v-model="tempSettingsStruct.shouldPublishProto"
           label="Also Publish Protobuf"
@@ -272,6 +279,14 @@ watchEffect(() => {
           This mode is intended for debugging; it should be off for field use. You may notice a performance hit by using
           this mode.
         </v-banner>
+        <pv-switch
+          v-model="tempSettingsStruct.matchCamerasOnlyByPath"
+          label="Match cameras by-path ONLY"
+          tooltip="ONLY match cameras by the USB port they're plugged into + (basename or USB VID/PID), and never only by the device product string"
+          class="mt-3 mb-2"
+          :label-cols="4"
+        />
+        <v-divider class="mb-3" />
       </v-form>
       <v-btn
         color="accent"

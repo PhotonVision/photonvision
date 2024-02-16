@@ -139,8 +139,31 @@ public class ConfigTest {
         writer.write(str);
         writer.flush();
         writer.close();
-        Assertions.assertDoesNotThrow(
-                () -> JacksonUtils.deserialize(tempFile.toPath(), CameraConfiguration.class));
+        CameraConfiguration result =
+                JacksonUtils.deserialize(tempFile.toPath(), CameraConfiguration.class);
+
+        tempFile.delete();
+    }
+
+    @Test
+    public void testJacksonAddUSBVIDPID() throws IOException {
+        var str =
+                "{\"baseName\":\"aaaaaa\",\"uniqueName\":\"aaaaaa\",\"nickname\":\"aaaaaa\",\"FOV\":70.0,\"path\":\"dev/vid\",\"cameraType\":\"UsbCamera\",\"currentPipelineIndex\":0,\"camPitch\":{\"radians\":0.0},\"calibrations\":[], \"usbVID\":3, \"usbPID\":4, \"cameraLEDs\":[]}";
+        File tempFile = File.createTempFile("test", ".json");
+        tempFile.deleteOnExit();
+        var writer = new FileWriter(tempFile);
+        writer.write(str);
+        writer.flush();
+        writer.close();
+
+        try {
+            CameraConfiguration result =
+                    JacksonUtils.deserialize(tempFile.toPath(), CameraConfiguration.class);
+            String ser = JacksonUtils.serializeToString(result);
+            System.out.println(ser);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         tempFile.delete();
     }
