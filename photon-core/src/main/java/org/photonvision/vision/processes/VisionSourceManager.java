@@ -420,7 +420,7 @@ public class VisionSourceManager {
     // them here.
     private List<CameraConfiguration> createConfigsForCameras(
             List<CameraInfo> detectedCameraList,
-            List<CameraConfiguration> loadedCamConfigs,
+            List<CameraConfiguration> unloadedCamConfigs,
             List<CameraConfiguration> loadedConfigs) {
         List<CameraConfiguration> ret = new ArrayList<CameraConfiguration>();
         logger.debug(
@@ -431,7 +431,7 @@ public class VisionSourceManager {
             String uniqueName = info.getHumanReadableName();
 
             int suffix = 0;
-            while (containsName(loadedConfigs, uniqueName) || containsName(uniqueName) || containsName(loadedCamConfigs, uniqueName)) {
+            while (containsName(loadedConfigs, uniqueName) || containsName(uniqueName) || containsName(unloadedCamConfigs, uniqueName)) {
                 suffix++;
                 uniqueName = String.format("%s (%d)", uniqueName, suffix);
             }
