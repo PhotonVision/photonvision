@@ -269,7 +269,6 @@ public class VisionSourceManager {
      *
      * @param detectedCamInfos Information about currently connected USB cameras.
      * @param loadedCamConfigs The USB {@link CameraConfiguration}s loaded from disk.
-     * @param matchCamerasOnlyByPath If we should never try to match only by (base name, vid, pid)
      * @return the matched configurations.
      */
     public List<CameraConfiguration> matchCameras(

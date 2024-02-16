@@ -97,11 +97,11 @@ public class CameraInfo extends UsbCameraInfo {
                 + cameraType
                 + "baseName="
                 + getBaseName()
-                + "vid="
+                + ", vid="
                 + vendorId
-                + "pid="
+                + ", pid="
                 + productId
-                + "otherPaths="
+                + ", otherPaths="
                 + Arrays.toString(otherPaths)
                 + "]";
     }
