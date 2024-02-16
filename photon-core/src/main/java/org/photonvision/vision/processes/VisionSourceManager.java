@@ -248,14 +248,15 @@ public class VisionSourceManager {
         else logger.debug("Skipping match by port/vid/pid, no configs or cameras left to match");
 
         // handle disabling only-by-base-name matching
-        if (!ConfigManager.getInstance().getConfig().getNetworkConfig().matchCamerasOnlyByPath) {
-            if (detectedCameraList.size() > 0 || unloadedConfigs.size() > 0)
-            {
+        if (detectedCameraList.size() > 0 || unloadedConfigs.size() > 0)
+        {
+            if (!ConfigManager.getInstance().getConfig().getNetworkConfig().matchCamerasOnlyByPath) {
                 logger.info("Matching by base-name ONLY...");
                 cameraConfigurations.addAll(matchByBaseName(detectedCameraList, unloadedConfigs));
             }
-            else logger.debug("Skipping matchByName, no configs or cameras left to match");
-        } else logger.info("Skipping matchByName, disabled by user");
+            else logger.info("Skipping matchByName, disabled by user");
+        } 
+        else logger.debug("Skipping matchByName, no configs or cameras left to match");
 
         if (detectedCameraList.size() > 0)
             {
@@ -317,6 +318,8 @@ public class VisionSourceManager {
                         ret.add(mergeInfoIntoConfig(config, cameraInfo));
                         detectedCamInfos.remove(cameraInfo);
                         unloadedConfigs.remove(config);
+                    } else {
+                        logger.debug("No camera found for the config " + config.baseName);
                     }
                 }
             }
@@ -372,6 +375,8 @@ public class VisionSourceManager {
                         ret.add(mergeInfoIntoConfig(config, cameraInfo));
                         detectedCamInfos.remove(cameraInfo);
                         unloadedConfigs.remove(config);
+                    } else {
+                        logger.debug("No camera found for the config " + config.baseName);
                     }
                 }
             }
@@ -404,6 +409,8 @@ public class VisionSourceManager {
                 ret.add(mergeInfoIntoConfig(config, cameraInfo));
                 detectedCamInfos.remove(cameraInfo);
                 unloadedConfigs.remove(config);
+            } else {
+                logger.debug("No camera found for the config " + config.baseName);
             }
         }
         return ret;
