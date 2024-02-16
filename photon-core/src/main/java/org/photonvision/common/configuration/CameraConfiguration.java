@@ -95,32 +95,6 @@ public class CameraConfiguration {
                         + path);
     }
 
-    // public CameraConfiguration(
-    //         @JsonProperty("baseName") String baseName,
-    //         @JsonProperty("uniqueName") String uniqueName,
-    //         @JsonProperty("nickname") String nickname,
-    //         @JsonProperty("FOV") double FOV,
-    //         @JsonProperty("path") String path,
-    //         @JsonProperty("cameraType") CameraType cameraType,
-    //         @JsonProperty("cameraQuirks") QuirkyCamera cameraQuirks,
-    //         @JsonProperty("calibration") List<CameraCalibrationCoefficients> calibrations,
-    //         @JsonProperty("currentPipelineIndex") int currentPipelineIndex
-    //         ) {
-    //             this(
-    //         baseName,
-    //         uniqueName,
-    //         nickname,
-    //         FOV,
-    //         path,
-    //         cameraType,
-    //         cameraQuirks,
-    //         calibrations,
-    //         currentPipelineIndex,
-    //         // no VID/PID set, try some invalid defaults
-    //         -1, -1
-    //             );
-    //         }
-
     @JsonCreator
     public CameraConfiguration(
             @JsonProperty("baseName") String baseName,

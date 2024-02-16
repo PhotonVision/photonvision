@@ -7,7 +7,6 @@ import PvSwitch from "@/components/common/pv-switch.vue";
 import PvSelect from "@/components/common/pv-select.vue";
 import { type ConfigurableNetworkSettings, NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
-import { VDivider } from "vuetify/lib";
 
 // Copy object to remove reference to store
 const tempSettingsStruct = ref<ConfigurableNetworkSettings>(Object.assign({}, useSettingsStore().network));
