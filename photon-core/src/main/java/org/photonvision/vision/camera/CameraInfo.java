@@ -90,4 +90,19 @@ public class CameraInfo extends UsbCameraInfo {
                 && productId == other.productId
                 && vendorId == other.vendorId;
     }
+
+    @Override
+    public String toString() {
+        return "CameraInfo [cameraType="
+                + cameraType
+                + "baseName="
+                + getBaseName()
+                + "vid="
+                + vendorId
+                + "pid="
+                + productId
+                + "otherPaths="
+                + Arrays.toString(otherPaths)
+                + "]";
+    }
 }
