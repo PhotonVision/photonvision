@@ -431,7 +431,7 @@ public class VisionSourceManager {
             String uniqueName = info.getHumanReadableName();
 
             int suffix = 0;
-            while (containsName(loadedConfigs, uniqueName) || containsName(uniqueName)) {
+            while (containsName(loadedConfigs, uniqueName) || containsName(uniqueName) || containsName(loadedCamConfigs, uniqueName)) {
                 suffix++;
                 uniqueName = String.format("%s (%d)", uniqueName, suffix);
             }
