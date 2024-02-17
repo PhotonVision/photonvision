@@ -345,7 +345,15 @@ public class VisionSourceManager {
                 cameraConfigurations.addAll(
                         matchCamerasByStrategy(detectedCameraList, unloadedConfigs, false, true, true, false));
             } else
-                logger.debug("Skipping match by base-name/viid/pid, no configs or cameras left to match");
+                logger.debug("Skipping match by base-name/vid/pid, no configs or cameras left to match");
+            
+            // Legacy migration -- VID/PID will be unset, so we have to try with our most relaxed strategy at least once
+            if (detectedCameraList.size() > 0 || unloadedConfigs.size() > 0) {
+                logger.info("Matching by base-name & USB VID/PID only...");
+                cameraConfigurations.addAll(
+                        matchCamerasByStrategy(detectedCameraList, unloadedConfigs, false, false, true, false));
+            } else
+                logger.debug("Skipping match by base-name ONLY, no configs or cameras left to match");
         } else logger.info("Skipping match by filepath/vid/pid, disabled by user");
 
         if (detectedCameraList.size() > 0) {
