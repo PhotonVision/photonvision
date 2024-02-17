@@ -317,8 +317,7 @@ public class VisionSourceManager {
             logger.info("Matching by usb port & name & USB VID/PID...");
             cameraConfigurations.addAll(
                     matchCamerasByStrategy(detectedCameraList, unloadedConfigs, true, true, true, false));
-        } else
-            logger.debug("Skipping match by usb port/name/vid/pid, no configs or cameras left to match");
+        }
 
         // On windows, the v4l path is actually useful and tells us the port the camera is physically
         // connected to which is neat
@@ -327,16 +326,22 @@ public class VisionSourceManager {
                 logger.info("Matching by windows-path & USB VID/PID only...");
                 cameraConfigurations.addAll(
                         matchCamerasByStrategy(detectedCameraList, unloadedConfigs, false, true, true, true));
-            } else
-                logger.debug(
-                        "Skipping matching by windiws-path/name/vid/pid, no configs or cameras left to match");
+            } 
         }
 
         if (detectedCameraList.size() > 0 || unloadedConfigs.size() > 0) {
             logger.info("Matching by usb port & USB VID/PID...");
             cameraConfigurations.addAll(
                     matchCamerasByStrategy(detectedCameraList, unloadedConfigs, true, true, false, false));
-        } else logger.debug("Skipping match by port/vid/pid, no configs or cameras left to match");
+        } 
+
+        // Legacy migration -- VID/PID will be unset, so we have to try with our most relaxed strategy
+        // at least once. We _should_ still have a valid USB path (assuming cameras have not moved), so try that first, then fallback to base name only beloow
+        if (detectedCameraList.size() > 0 || unloadedConfigs.size() > 0) {
+            logger.info("Matching by base-name & usb port...");
+            cameraConfigurations.addAll(
+                    matchCamerasByStrategy(detectedCameraList, unloadedConfigs, true, false, true, false));
+        }
 
         // handle disabling only-by-base-name matching
         if (!matchCamerasOnlyByPath) {
@@ -344,16 +349,14 @@ public class VisionSourceManager {
                 logger.info("Matching by base-name & USB VID/PID only...");
                 cameraConfigurations.addAll(
                         matchCamerasByStrategy(detectedCameraList, unloadedConfigs, false, true, true, false));
-            } else
-                logger.debug("Skipping match by base-name/vid/pid, no configs or cameras left to match");
+            } 
 
-            // Legacy migration -- VID/PID will be unset, so we have to try with our most relaxed strategy
-            // at least once
+            // Legacy migration for if no USB VID/PID set
             if (detectedCameraList.size() > 0 || unloadedConfigs.size() > 0) {
-                logger.info("Matching by base-name & USB VID/PID only...");
+                logger.info("Matching by base-name only...");
                 cameraConfigurations.addAll(
                         matchCamerasByStrategy(detectedCameraList, unloadedConfigs, false, false, true, false));
-            } else logger.debug("Skipping match by base-name ONLY, no configs or cameras left to match");
+            }
         } else logger.info("Skipping match by filepath/vid/pid, disabled by user");
 
         if (detectedCameraList.size() > 0) {
