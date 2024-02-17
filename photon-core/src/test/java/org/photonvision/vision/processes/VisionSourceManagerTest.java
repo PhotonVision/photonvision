@@ -24,14 +24,20 @@ import java.util.ArrayList;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.LogLevel;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.camera.CameraInfo;
 import org.photonvision.vision.camera.CameraType;
 
 public class VisionSourceManagerTest {
     @Test
     public void visionSourceTest() {
+        Logger.setLevel(LogGroup.Camera, LogLevel.DEBUG);
+
         var inst = new VisionSourceManager();
         var cameraInfos = new ArrayList<CameraInfo>();
+        ConfigManager.getInstance().clearConfig();
         ConfigManager.getInstance().load();
 
         inst.tryMatchCamImpl(cameraInfos);
@@ -43,6 +49,8 @@ public class VisionSourceManagerTest {
                         "thirdTestVideo",
                         "dev/video1",
                         new String[] {"by-id/123"});
+        config3.usbVID = 3;
+        config3.usbPID = 4;
         var config4 =
                 new CameraConfiguration(
                         "fourthTestVideo",
@@ -50,6 +58,8 @@ public class VisionSourceManagerTest {
                         "fourthTestVideo",
                         "dev/video2",
                         new String[] {"by-id/321"});
+        config4.usbVID = 5;
+        config4.usbPID = 6;
 
         CameraInfo info1 = new CameraInfo(0, "dev/video0", "testVideo", new String[0], 1, 2);
 

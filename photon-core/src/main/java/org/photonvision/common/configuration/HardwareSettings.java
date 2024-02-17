@@ -21,6 +21,24 @@ public class HardwareSettings {
     public int ledBrightnessPercentage = 100;
 
     @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ledBrightnessPercentage;
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        HardwareSettings other = (HardwareSettings) obj;
+        if (ledBrightnessPercentage != other.ledBrightnessPercentage) return false;
+        return true;
+    }
+
+    @Override
     public String toString() {
         return "HardwareSettings [ledBrightnessPercentage=" + ledBrightnessPercentage + "]";
     }

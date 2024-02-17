@@ -19,6 +19,7 @@ package org.photonvision.vision.camera;
 
 import edu.wpi.first.cscore.UsbCameraInfo;
 import java.util.Arrays;
+import java.util.Optional;
 
 public class CameraInfo extends UsbCameraInfo {
     public final CameraType cameraType;
@@ -68,6 +69,16 @@ public class CameraInfo extends UsbCameraInfo {
         return getBaseName().replaceAll(" ", "_");
     }
 
+    /**
+     * Get a unique descriptor of the USB port this camera is attached to. EG
+     * "/dev/v4l/by-path/platform-fc800000.usb-usb-0:1.3:1.0-video-index0"
+     *
+     * @return
+     */
+    public Optional<String> getUSBPath() {
+        return Arrays.stream(otherPaths).filter(path -> path.contains("/by-path/")).findFirst();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == this) return true;
@@ -78,5 +89,20 @@ public class CameraInfo extends UsbCameraInfo {
                 && name.equals(other.name)
                 && productId == other.productId
                 && vendorId == other.vendorId;
+    }
+
+    @Override
+    public String toString() {
+        return "CameraInfo [cameraType="
+                + cameraType
+                + "baseName="
+                + getBaseName()
+                + ", vid="
+                + vendorId
+                + ", pid="
+                + productId
+                + ", otherPaths="
+                + Arrays.toString(otherPaths)
+                + "]";
     }
 }
