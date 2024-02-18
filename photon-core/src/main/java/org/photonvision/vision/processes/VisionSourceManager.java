@@ -326,17 +326,18 @@ public class VisionSourceManager {
                 logger.info("Matching by windows-path & USB VID/PID only...");
                 cameraConfigurations.addAll(
                         matchCamerasByStrategy(detectedCameraList, unloadedConfigs, false, true, true, true));
-            } 
+            }
         }
 
         if (detectedCameraList.size() > 0 || unloadedConfigs.size() > 0) {
             logger.info("Matching by usb port & USB VID/PID...");
             cameraConfigurations.addAll(
                     matchCamerasByStrategy(detectedCameraList, unloadedConfigs, true, true, false, false));
-        } 
+        }
 
         // Legacy migration -- VID/PID will be unset, so we have to try with our most relaxed strategy
-        // at least once. We _should_ still have a valid USB path (assuming cameras have not moved), so try that first, then fallback to base name only beloow
+        // at least once. We _should_ still have a valid USB path (assuming cameras have not moved), so
+        // try that first, then fallback to base name only beloow
         if (detectedCameraList.size() > 0 || unloadedConfigs.size() > 0) {
             logger.info("Matching by base-name & usb port...");
             cameraConfigurations.addAll(
@@ -349,7 +350,7 @@ public class VisionSourceManager {
                 logger.info("Matching by base-name & USB VID/PID only...");
                 cameraConfigurations.addAll(
                         matchCamerasByStrategy(detectedCameraList, unloadedConfigs, false, true, true, false));
-            } 
+            }
 
             // Legacy migration for if no USB VID/PID set
             if (detectedCameraList.size() > 0 || unloadedConfigs.size() > 0) {
