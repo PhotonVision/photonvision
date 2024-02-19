@@ -281,11 +281,29 @@ watchEffect(() => {
         </v-banner>
         <pv-switch
           v-model="tempSettingsStruct.matchCamerasOnlyByPath"
-          label="Match cameras by-path ONLY"
-          tooltip="ONLY match cameras by the USB port they're plugged into + (basename or USB VID/PID), and never only by the device product string"
+          label="Strictly match ONLY known cameras"
+          tooltip="ONLY match cameras by the USB port they're plugged into + (basename or USB VID/PID), and never only by the device product string. Also disables automatic detection of new cameras."
           class="mt-3 mb-2"
           :label-cols="4"
         />
+        <v-banner
+          v-show="tempSettingsStruct.matchCamerasOnlyByPath"
+          rounded
+          color="red"
+          class="mb-3"
+          text-color="white"
+          icon="mdi-information-outline"
+        >
+          Physical cameras will be strictly matched to camera configurations using physical USB port they are plugged
+          into, in addition to device name and other USB metadata. Additionally, no new cameras are allowed to be added.
+          This setting is useful for guaranteeing that an already known and configured camera can never be matched as an
+          "unknown"/"new" camera, which resets pipelines and calibration data.
+          <p />
+          Cameras will NOT be matched if they change USB ports, and new cameras plugged into this coprocessor will NOT
+          be automatically recognized or configured for vision processing.
+          <p />
+          To add a new camera to this coprocessor, disable this setting, connect the camera, and re-enable.
+        </v-banner>
         <v-divider class="mb-3" />
       </v-form>
       <v-btn

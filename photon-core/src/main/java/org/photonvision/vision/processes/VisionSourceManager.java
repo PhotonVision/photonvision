@@ -361,8 +361,18 @@ public class VisionSourceManager {
         } else logger.info("Skipping match by filepath/vid/pid, disabled by user");
 
         if (detectedCameraList.size() > 0) {
-            cameraConfigurations.addAll(
-                    createConfigsForCameras(detectedCameraList, unloadedConfigs, cameraConfigurations));
+            // handle disabling only-by-base-name matching
+            if (!matchCamerasOnlyByPath) {
+                cameraConfigurations.addAll(
+                        createConfigsForCameras(detectedCameraList, unloadedConfigs, cameraConfigurations));
+            } else {
+                logger.warn(
+                        "Not creating 'new' Photon CameraConfigurations for ["
+                                + detectedCamInfos.stream()
+                                        .map(CameraInfo::toString)
+                                        .collect(Collectors.joining(";"))
+                                + "], disabled by user");
+            }
         }
 
         logger.debug("Matched or created " + cameraConfigurations.size() + " camera configs!");

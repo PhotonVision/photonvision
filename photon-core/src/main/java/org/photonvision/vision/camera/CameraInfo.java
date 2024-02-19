@@ -101,6 +101,8 @@ public class CameraInfo extends UsbCameraInfo {
                 + vendorId
                 + ", pid="
                 + productId
+                + ", path="
+                + path
                 + ", otherPaths="
                 + Arrays.toString(otherPaths)
                 + "]";
