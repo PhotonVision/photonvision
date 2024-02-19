@@ -431,7 +431,7 @@ public class PhotonCameraSim implements AutoCloseable {
 
             detectableTgts.add(
                     new PhotonTrackedTarget(
-                            Math.toDegrees(centerRot.getZ()),
+                            -Math.toDegrees(centerRot.getZ()),
                             -Math.toDegrees(centerRot.getY()),
                             areaPercent,
                             Math.toDegrees(centerRot.getX()),
