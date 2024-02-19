@@ -39,6 +39,7 @@ import org.photonvision.vision.camera.CameraInfo;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.LibcameraGpuSource;
+import org.photonvision.vision.camera.TestSource;
 import org.photonvision.vision.camera.USBCameraSource;
 
 public class VisionSourceManager {
@@ -146,8 +147,8 @@ public class VisionSourceManager {
         }
 
         // Return no new sources because there are no new sources
-        if (connectedCameras.isEmpty() && !cameraInfos.isEmpty()) {
-            if (hasWarnedNoCameras) {
+        if (connectedCameras.isEmpty()) {
+            if (!hasWarnedNoCameras) {
                 logger.warn(
                         "No cameras were detected! Check that all cameras are connected, and that the path is correct.");
                 hasWarnedNoCameras = true;
@@ -186,7 +187,7 @@ public class VisionSourceManager {
                     "Unloaded configs: "
                             + unmatchedLoadedConfigs.stream()
                                     .map(it -> it.nickname)
-                                    .collect(Collectors.joining()));
+                                    .collect(Collectors.joining(", ")));
             hasWarned = true;
         }
 
@@ -195,13 +196,8 @@ public class VisionSourceManager {
 
         if (matchedCameras.isEmpty()) return null;
 
-        // for unit tests only!
-        if (!createSources) {
-            return List.of();
-        }
-
         // Turn these camera configs into vision sources
-        var sources = loadVisionSourcesFromCamConfigs(matchedCameras);
+        var sources = loadVisionSourcesFromCamConfigs(matchedCameras, createSources);
 
         // Print info about each vision source
         for (var src : sources) {
@@ -321,7 +317,7 @@ public class VisionSourceManager {
 
         // On windows, the v4l path is actually useful and tells us the port the camera is physically
         // connected to which is neat
-        if (Platform.isWindows()) {
+        if (Platform.isWindows() && !matchCamerasOnlyByPath) {
             if (detectedCameraList.size() > 0 || unloadedConfigs.size() > 0) {
                 logger.info("Matching by windows-path & USB VID/PID only...");
                 cameraConfigurations.addAll(
@@ -456,7 +452,8 @@ public class VisionSourceManager {
             int suffix = 0;
             while (containsName(loadedConfigs, uniqueName)
                     || containsName(uniqueName)
-                    || containsName(unloadedCamConfigs, uniqueName)) {
+                    || containsName(unloadedCamConfigs, uniqueName)
+                    || containsName(ret, uniqueName)) {
                 suffix++;
                 uniqueName = String.format("%s (%d)", uniqueName, suffix);
             }
@@ -536,10 +533,16 @@ public class VisionSourceManager {
     }
 
     private static List<VisionSource> loadVisionSourcesFromCamConfigs(
-            List<CameraConfiguration> camConfigs) {
+            List<CameraConfiguration> camConfigs, boolean createSources) {
         var cameraSources = new ArrayList<VisionSource>();
         for (var configuration : camConfigs) {
             logger.debug("Creating VisionSource for " + camCfgToString(configuration));
+
+            // In unit tests, create dummy
+            if (!createSources) {
+                cameraSources.add(new TestSource(configuration));
+                continue;
+            }
 
             boolean is_pi = Platform.isRaspberryPi();
 
