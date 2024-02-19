@@ -14,7 +14,7 @@ nativeUtils.wpi.configureDependencies {
     opencvVersion = openCVversion
     googleTestYear = "frc2024"
     googleTestVersion = "1.14.0-1"
-    niLibVersion = "2024.3.1"
+    niLibVersion = "2024.2.1"
 }
 
 // Configure warnings and errors
