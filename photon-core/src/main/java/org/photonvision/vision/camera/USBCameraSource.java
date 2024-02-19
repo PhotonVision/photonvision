@@ -57,8 +57,8 @@ public class USBCameraSource extends VisionSource {
         cvSink = CameraServer.getVideo(this.camera);
 
         // set vid/pid if not done already for future matching
-        if (config.usbVID < 0) config.usbVID = this.camera.getInfo().vendorId;
-        if (config.usbPID < 0) config.usbPID = this.camera.getInfo().productId;
+        if (config.usbVID <= 0) config.usbVID = this.camera.getInfo().vendorId;
+        if (config.usbPID <= 0) config.usbPID = this.camera.getInfo().productId;
 
         if (getCameraConfiguration().cameraQuirks == null)
             getCameraConfiguration().cameraQuirks =
