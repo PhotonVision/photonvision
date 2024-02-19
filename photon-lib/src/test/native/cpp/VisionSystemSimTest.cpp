@@ -221,8 +221,8 @@ TEST_P(VisionSystemSimTestWithParamsTest, YawAngles) {
       targetPose, photon::TargetModel{0.5_m, 0.5_m}, 3}});
 
   // If the robot is rotated x deg (CCW+), the target yaw should be x deg (CW+)
-  robotPose = frc::Pose2d{frc::Translation2d{10_m, 0_m},
-                          frc::Rotation2d{GetParam()}};
+  robotPose =
+      frc::Pose2d{frc::Translation2d{10_m, 0_m}, frc::Rotation2d{GetParam()}};
   visionSysSim.Update(robotPose);
   ASSERT_TRUE(camera.GetLatestResult().HasTargets());
   ASSERT_NEAR(GetParam().to<double>(),
