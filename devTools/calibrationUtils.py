@@ -1,13 +1,15 @@
 import argparse
 import base64
-from dataclasses import dataclass
-import json
 import os
+import sys
 from typing import Union
 import cv2
 import numpy as np
 import mrcal
 from wpimath.geometry import Quaternion as _Quat
+
+from pydantic.dataclasses import dataclass
+from pydantic import TypeAdapter
 
 
 @dataclass
@@ -30,7 +32,6 @@ class JsonMat:
     cols: int
     type: int
     data: str  # Base64-encoded PNG data
-
 
 @dataclass
 class Point2:
@@ -97,7 +98,6 @@ class CameraCalibration:
     calobjectWarp: list[float]
     calobjectSize: Size
     calobjectSpacing: float
-
 
 def __convert_cal_to_mrcal_cameramodel(
     cal: CameraCalibration,
@@ -183,72 +183,146 @@ def __convert_cal_to_mrcal_cameramodel(
         icam_intrinsics=0,
     )
 
+def _photon_cal_from_json(photon_cal_json_path: str):
+    with open(photon_cal_json_path, "r") as cal_json:
+        return TypeAdapter(CameraCalibration).validate_json(cal_json.read())
+
+def _photon_cal_to_json(cal: CameraCalibration):
+    return TypeAdapter(CameraCalibration).dump_json(cal).decode("utf-8")
+
+def _observationJsonSize(obs: Observation):
+    return len(TypeAdapter(Observation).dump_json(obs).decode("utf-8"))
+
+def _calibrationJsonSize(cal: CameraCalibration):
+    return len(TypeAdapter(CameraCalibration).dump_json(cal).decode("utf-8"))
+
+def downscale_calibration(camera_cal_data: CameraCalibration, size_mb: int = 50) -> CameraCalibration:
+    """
+    Remove some image data to force the file size to be less than size_mb. This is the size
+    required by PV import.
+    """
+    original_observations = camera_cal_data.observations
+    trimmed_observations: list[Observation] = []
+    camera_cal_data.observations = trimmed_observations
+
+    # Use 1000 * 1000 instead of 1024 * 1024 as this makes PV happy when going to 50'MB'
+    bytes_remaining = size_mb * 1000 * 1000 - _calibrationJsonSize(camera_cal_data)
+
+    for obs in original_observations:
+        bytes_remaining -= _observationJsonSize(obs)
+        if bytes_remaining < 0:
+            break
+        trimmed_observations.append(obs)
+
+    camera_cal_data.observations = trimmed_observations
+    return camera_cal_data
+
+def upsert_mrcal_into_photon(photon_cal_json_path: str, mrcal_model_path: str) -> CameraCalibration:
+    """
+    Take intrinsics calculated my mrcal command line and insert them into an existing photon
+    calibration. Be sure to use the same calibration file that generated the mrcal data.
+    """
+    def mrcal_to_opencv_intrinsics(mrcal_model):
+        _, data = mrcal_model.intrinsics()
+        data = data.tolist()
+        intrinsics = data[0:4]
+        diffCoeff = data[4:]
+        return [intrinsics[0], 0.0, intrinsics[2], 0.0, intrinsics[1], intrinsics[3], 0.0, 0.0, 1.0], diffCoeff
+
+    camera_cal_data: CameraCalibration = _photon_cal_from_json(photon_cal_json_path)
+    model = mrcal.cameramodel(mrcal_model_path)
+    intrinsics, dist_coeffs = mrcal_to_opencv_intrinsics(model)
+    resolution = model.imagersize()
+
+    # Likely need more checks here, but at least have one...
+    assert camera_cal_data.resolution.width == resolution[0]
+    assert camera_cal_data.resolution.height == resolution[1]
+
+    camera_cal_data.distCoeffs.data = dist_coeffs
+    camera_cal_data.cameraIntrinsics.data = intrinsics
+    return camera_cal_data
 
 def convert_photon_to_mrcal(photon_cal_json_path: str, output_folder: str):
     """
     Unpack a Photon calibration JSON (eg, photon_calibration_Microsoft_LifeCam_HD-3000_800x600.json) into
     the output_folder directory with images and corners.vnl file for use with mrcal.
     """
-    with open(photon_cal_json_path, "r") as cal_json:
-        # Convert to nested objects instead of nameddicts on json-loads
-        class Generic:
-            @classmethod
-            def from_dict(cls, dict):
-                obj = cls()
-                obj.__dict__.update(dict)
-                return obj
+    camera_cal_data: CameraCalibration = _photon_cal_from_json(photon_cal_json_path)
 
-        camera_cal_data: CameraCalibration = json.loads(
-            cal_json.read(), object_hook=Generic.from_dict
-        )
+    # Create output_folder if not exists
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
 
-        # Create output_folder if not exists
-        if not os.path.exists(output_folder):
-            os.makedirs(output_folder)
+    # Decode each image and save it as a png
+    for obs in camera_cal_data.observations:
+        image = obs.snapshotData.data
+        decoded_data = base64.b64decode(image)
+        np_data = np.frombuffer(decoded_data, np.uint8)
+        img = cv2.imdecode(np_data, cv2.IMREAD_UNCHANGED)
+        cv2.imwrite(f"{output_folder}/{obs.snapshotName}", img)
 
-        # Decode each image and save it as a png
+    # And create a VNL file for use with mrcal
+    with open(f"{output_folder}/corners.vnl", "w+") as vnl_file:
+        vnl_file.write("# filename x y level\n")
+
         for obs in camera_cal_data.observations:
-            image = obs.snapshotData.data
-            decoded_data = base64.b64decode(image)
-            np_data = np.frombuffer(decoded_data, np.uint8)
-            img = cv2.imdecode(np_data, cv2.IMREAD_UNCHANGED)
-            cv2.imwrite(f"{output_folder}/{obs.snapshotName}", img)
+            for corner in obs.locationInImageSpace:
+                # Always level zero
+                vnl_file.write(f"{obs.snapshotName} {corner.x} {corner.y} 0\n")
 
-        # And create a VNL file for use with mrcal
-        with open(f"{output_folder}/corners.vnl", "w+") as vnl_file:
-            vnl_file.write("# filename x y level\n")
+        vnl_file.flush()
 
-            for obs in camera_cal_data.observations:
-                for corner in obs.locationInImageSpace:
-                    # Always level zero
-                    vnl_file.write(f"{obs.snapshotName} {corner.x} {corner.y} 0\n")
+    mrcal_model = __convert_cal_to_mrcal_cameramodel(camera_cal_data)
 
-            vnl_file.flush()
-
-        mrcal_model = __convert_cal_to_mrcal_cameramodel(camera_cal_data)
-
-        with open(f"{output_folder}/camera-0.cameramodel", "w+") as mrcal_file:
-            mrcal_model.write(
-                mrcal_file,
-                note="Generated from PhotonVision calibration file: "
-                + photon_cal_json_path
-                + "\nCalobject_warp (m): "
-                + str(camera_cal_data.calobjectWarp),
-            )
-
+    with open(f"{output_folder}/camera-0.cameramodel", "w+") as mrcal_file:
+        mrcal_model.write(
+            mrcal_file,
+            note="Generated from PhotonVision calibration file: "
+            + photon_cal_json_path
+            + "\nCalobject_warp (m): "
+            + str(camera_cal_data.calobjectWarp),
+        )
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Convert Photon calibration JSON for use with mrcal"
+        description="Developer tools to work with camera calibration in photonvision and mrcal"
     )
     parser.add_argument("input", type=str, help="Path to Photon calibration JSON file")
     parser.add_argument(
-        "output_folder", type=str, help="Output folder for mrcal VNL file + images"
+        "--mrcal-output", type=str, help="Output folder for mrcal VNL file + images"
+    )
+    parser.add_argument(
+        "--pv-output", type=str, help="Remove images to shrink the photonvision calibration size, output filename"
+    )
+    parser.add_argument(
+        "--shrink-size", type=int, help="Output folder for mrcal VNL file + images"
+    )
+    parser.add_argument(
+        "--merge-model", type=str, help="Camera model file from mrcal to merge into photonvision calibration"
     )
 
     args = parser.parse_args()
 
-    convert_photon_to_mrcal(args.input, args.output_folder)
+    if len(sys.argv) == 2:
+        parser.print_usage()
+
+    if args.mrcal_output:
+        convert_photon_to_mrcal(args.input, args.mrcal_output)
+
+    if args.pv_output:
+        if not (args.merge_model or args.shrink_size):
+            print("Must provide either --merge-model or --shrink-size with --pv-output")
+            return
+
+        camera_cal_data: CameraCalibration = _photon_cal_from_json(args.input)
+        if args.merge_model:
+            camera_cal_data = upsert_mrcal_into_photon(args.input, args.merge_model)
+
+        if args.shrink_size:
+            camera_cal_data = downscale_calibration(camera_cal_data, args.shrink_size)
+
+        with open(args.pv_output, "w") as f:
+            f.write(_photon_cal_to_json(camera_cal_data))
 
 
 if __name__ == "__main__":
