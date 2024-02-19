@@ -296,7 +296,7 @@ public class VisionSourceManagerTest {
         var camera1_saved_config =
                 new CameraConfiguration(
                         "Arducam OV2311 USB Camera",
-                        "Arducam OV2311 USB Camera (1)",
+                        "Arducam OV2311 USB Camera",
                         "fromt-left",
                         "/dev/video0",
                         CAM1_OLD_PATHS);
@@ -315,7 +315,7 @@ public class VisionSourceManagerTest {
         // And load our "old" configs
         inst.registerLoadedConfigs(camera1_saved_config, camera2_saved_config);
 
-        // Now move our camera back
+        // Camera attached to new port, but strict matching disabled
         {
             CameraInfo info1 =
                     new CameraInfo(
