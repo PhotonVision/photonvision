@@ -146,8 +146,8 @@ public class VisionSourceManager {
         }
 
         // Return no new sources because there are no new sources
-        if (connectedCameras.isEmpty() && !cameraInfos.isEmpty()) {
-            if (hasWarnedNoCameras) {
+        if (connectedCameras.isEmpty()) {
+            if (!hasWarnedNoCameras) {
                 logger.warn(
                         "No cameras were detected! Check that all cameras are connected, and that the path is correct.");
                 hasWarnedNoCameras = true;
@@ -186,7 +186,7 @@ public class VisionSourceManager {
                     "Unloaded configs: "
                             + unmatchedLoadedConfigs.stream()
                                     .map(it -> it.nickname)
-                                    .collect(Collectors.joining()));
+                                    .collect(Collectors.joining(", ")));
             hasWarned = true;
         }
 
