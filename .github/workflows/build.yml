@@ -290,13 +290,13 @@ jobs:
           - os: ubuntu-latest
             artifact-name: LinuxArm64
             image_suffix: orangepi5
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.6/photonvision_opi5.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.9/photonvision_opi5.img.xz
             cpu: cortex-a8
             image_additional_mb: 4096
           - os: ubuntu-latest
             artifact-name: LinuxArm64
             image_suffix: orangepi5plus
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.6/photonvision_opi5plus.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.9/photonvision_opi5plus.img.xz
             cpu: cortex-a8
             image_additional_mb: 4096
 
