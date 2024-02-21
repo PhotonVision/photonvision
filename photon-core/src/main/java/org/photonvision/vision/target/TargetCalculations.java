@@ -16,13 +16,19 @@
  */
 package org.photonvision.vision.target;
 
+import org.opencv.calib3d.Calib3d;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
+import org.opencv.core.TermCriteria;
+import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.opencv.DualOffsetValues;
 
 public class TargetCalculations {
+    
     /**
      * Calculates the yaw and pitch of a point in the image. Yaw and pitch must be calculated together
      * to account for perspective distortion. Yaw is positive right, and pitch is positive up.
@@ -42,6 +48,50 @@ public class TargetCalculations {
             double offsetCenterY,
             double targetCenterY,
             double verticalFocalLength) {
+        double yaw = Math.atan((targetCenterX - offsetCenterX) / horizontalFocalLength);
+        double pitch =
+                Math.atan((offsetCenterY - targetCenterY) / (verticalFocalLength / Math.cos(yaw)));
+        return new DoubleCouple(Math.toDegrees(yaw), Math.toDegrees(pitch));
+    }
+
+    /**
+     * Calculates the yaw and pitch of a point in the image. Yaw and pitch must be calculated together
+     * to account for perspective distortion. Yaw is positive right, and pitch is positive up.
+     *
+     * @param offsetCenterX The X value of the offset principal point (cx) in pixels
+     * @param targetCenterX The X value of the target's center point in pixels
+     * @param horizontalFocalLength The horizontal focal length (fx) in pixels
+     * @param offsetCenterY The Y value of the offset principal point (cy) in pixels
+     * @param targetCenterY The Y value of the target's center point in pixels
+     * @param verticalFocalLength The vertical focal length (fy) in pixels
+     * @return The yaw and pitch from the principal axis to the target center, in degrees.
+     */
+    public static DoubleCouple calculateYawPitch(
+            double offsetCenterX,
+            double targetCenterX,
+            double horizontalFocalLength,
+            double offsetCenterY,
+            double targetCenterY,
+            double verticalFocalLength, 
+            Mat cameraIntrinsicsMat,
+            Mat cameraDistortionCoeffs) {
+        
+        // undistort
+        MatOfPoint2f temp = new MatOfPoint2f();
+        temp.fromArray(new Point(targetCenterX, targetCenterY));
+        // Tighten up termination criteria
+        var termCriteria = new TermCriteria(
+            TermCriteria.COUNT + TermCriteria.EPS,
+            30,
+            1e-6
+        );
+        Calib3d.undistortImagePoints(temp, temp, cameraIntrinsicsMat, cameraDistortionCoeffs, termCriteria);
+        float buff[] = new float[2];
+        temp.get(0, 0, buff);
+        temp.release();
+        targetCenterX = buff[0];
+        targetCenterY = buff[1];
+
         double yaw = Math.atan((targetCenterX - offsetCenterX) / horizontalFocalLength);
         double pitch =
                 Math.atan((offsetCenterY - targetCenterY) / (verticalFocalLength / Math.cos(yaw)));

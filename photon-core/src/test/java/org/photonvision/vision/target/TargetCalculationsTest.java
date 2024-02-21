@@ -123,13 +123,15 @@ public class TargetCalculationsTest {
     public void testYawPitchCalc(double yawDeg, double pitchDeg) {
         Mat testCameraMat = new Mat(3, 3, CvType.CV_64F);
         testCameraMat.put(0, 0, testCameraMatrix);
+        MatOfDouble testDistortion = new MatOfDouble(0.186841202993646,-1.482894102216622,0.005692954661309707,0.0006757267756945662,2.8659664873321287);
+
         // Since we create this translation using the given yaw/pitch, we should see the same angles
         // calculated
         var targetTrl =
                 new Translation3d(1, new Rotation3d(0, Math.toRadians(pitchDeg), Math.toRadians(yawDeg)));
         // NWU to EDN
         var objectPoints =
-                new MatOfPoint3f(new Point3(-targetTrl.getY(), -targetTrl.getZ(), targetTrl.getX()));
+                new MatOfPoint3f(new Point3(targetTrl.getY(), targetTrl.getZ(), targetTrl.getX()));
         var imagePoints = new MatOfPoint2f();
         // Project translation into camera image
         Calib3d.projectPoints(
@@ -137,20 +139,24 @@ public class TargetCalculationsTest {
                 new MatOfDouble(0, 0, 0),
                 new MatOfDouble(0, 0, 0),
                 testCameraMat,
-                new MatOfDouble(0, 0, 0, 0, 0),
+                testDistortion,
                 imagePoints);
         var point = imagePoints.toArray()[0];
         // Test if the target yaw/pitch calculation matches what the target was created with
         var yawPitch =
                 TargetCalculations.calculateYawPitch(
-                        point.x,
                         testCameraMatrix[2],
+                        point.x,
                         testCameraMatrix[0],
-                        point.y,
                         testCameraMatrix[5],
-                        testCameraMatrix[4]);
+                        point.y,
+                        testCameraMatrix[4],
+                        testCameraMat, testDistortion);
         assertEquals(yawDeg, yawPitch.getFirst(), 1e-3, "Yaw calculation incorrect");
         assertEquals(pitchDeg, yawPitch.getSecond(), 1e-3, "Pitch calculation incorrect");
+
+        testCameraMat.release();
+        testDistortion.release();
     }
 
     @Test
