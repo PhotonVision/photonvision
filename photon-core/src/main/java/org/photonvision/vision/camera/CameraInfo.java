@@ -20,6 +20,7 @@ package org.photonvision.vision.camera;
 import edu.wpi.first.cscore.UsbCameraInfo;
 import java.util.Arrays;
 import java.util.Optional;
+import org.photonvision.common.hardware.Platform;
 
 public class CameraInfo extends UsbCameraInfo {
     public final CameraType cameraType;
@@ -80,15 +81,27 @@ public class CameraInfo extends UsbCameraInfo {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (o == this) return true;
-        if (!(o instanceof UsbCameraInfo || o instanceof CameraInfo)) return false;
-        UsbCameraInfo other = (UsbCameraInfo) o;
-        return path.equals(other.path)
-                // && a.dev == b.dev (dev is not constant in Windows)
-                && name.equals(other.name)
-                && productId == other.productId
-                && vendorId == other.vendorId;
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        CameraInfo other = (CameraInfo) obj;
+
+        // Windows device number is not significant. See
+        // https://github.com/wpilibsuite/allwpilib/blob/4b94a64b06057c723d6fcafeb1a45f55a70d179a/cscore/src/main/native/windows/UsbCameraImpl.cpp#L1128
+        if (!Platform.isWindows()) {
+            if (dev != other.dev) return false;
+        }
+
+        if (!path.equals(other.path)) return false;
+        if (!name.equals(other.name)) return false;
+        if (!Arrays.asList(this.otherPaths).containsAll(Arrays.asList(other.otherPaths))) return false;
+        if (vendorId != other.vendorId) return false;
+        if (productId != other.productId) return false;
+
+        // Don't trust super.equals, as it compares references. Should PR this to allwpilib at some
+        // point
+        return true;
     }
 
     @Override
@@ -101,6 +114,8 @@ public class CameraInfo extends UsbCameraInfo {
                 + vendorId
                 + ", pid="
                 + productId
+                + ", path="
+                + path
                 + ", otherPaths="
                 + Arrays.toString(otherPaths)
                 + "]";

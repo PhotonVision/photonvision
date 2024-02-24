@@ -41,7 +41,9 @@ public class NetworkConfig {
 
     /**
      * If we should ONLY match cameras by path, and NEVER only by base-name. For now default to false
-     * to preserve old matching logic
+     * to preserve old matching logic.
+     *
+     * <p>This also disables creating new CameraConfigurations for detected "new" cameras.
      */
     public boolean matchCamerasOnlyByPath = false;
 

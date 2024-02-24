@@ -256,7 +256,8 @@ class VisionSystemSimTest {
         cameraSim.setMinTargetAreaPixels(0.0);
         visionSysSim.addVisionTargets(new VisionTargetSim(targetPose, new TargetModel(0.5, 0.5), 3));
 
-        var robotPose = new Pose2d(new Translation2d(10, 0), Rotation2d.fromDegrees(-1.0 * testYaw));
+        // If the robot is rotated x deg (CCW+), the target yaw should be x deg (CW+)
+        var robotPose = new Pose2d(new Translation2d(10, 0), Rotation2d.fromDegrees(testYaw));
         visionSysSim.update(robotPose);
         var res = camera.getLatestResult();
         assertTrue(res.hasTargets());
