@@ -84,7 +84,9 @@ public class SQLConfigTest {
                         CameraType.UsbCamera,
                         QuirkyCamera.getQuirkyCamera(-1, -1),
                         List.of(),
-                        0);
+                        0,
+                        -1,
+                        -1);
         testcamcfg.pipelineSettings =
                 List.of(
                         new ReflectivePipelineSettings(),

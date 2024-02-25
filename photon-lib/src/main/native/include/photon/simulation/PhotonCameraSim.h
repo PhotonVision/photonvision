@@ -260,7 +260,7 @@ class PhotonCameraSim {
       std::vector<std::pair<double, double>> cornersDouble{cornersFloat.begin(),
                                                            cornersFloat.end()};
       detectableTgts.emplace_back(PhotonTrackedTarget{
-          centerRot.Z().convert<units::degrees>().to<double>(),
+          -centerRot.Z().convert<units::degrees>().to<double>(),
           -centerRot.Y().convert<units::degrees>().to<double>(), areaPercent,
           centerRot.X().convert<units::degrees>().to<double>(), tgt.fiducialId,
           pnpSim.best, pnpSim.alt, pnpSim.ambiguity, smallVec, cornersDouble});

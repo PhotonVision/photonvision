@@ -49,8 +49,16 @@ public class USBCameraSource extends VisionSource {
         super(config);
 
         logger = new Logger(USBCameraSource.class, config.nickname, LogGroup.Camera);
-        camera = new UsbCamera(config.nickname, config.path);
+        // cscore will auto-reconnect to the camera path we give it. v4l does not guarantee that if i
+        // swap cameras around, the same /dev/videoN ID will be assigned to that camera. So instead
+        // default to pinning to a particular USB port, or by "path" (appears to be a global identifier)
+        // on Windows.
+        camera = new UsbCamera(config.nickname, config.getUSBPath().orElse(config.path));
         cvSink = CameraServer.getVideo(this.camera);
+
+        // set vid/pid if not done already for future matching
+        if (config.usbVID <= 0) config.usbVID = this.camera.getInfo().vendorId;
+        if (config.usbPID <= 0) config.usbPID = this.camera.getInfo().productId;
 
         if (getCameraConfiguration().cameraQuirks == null)
             getCameraConfiguration().cameraQuirks =

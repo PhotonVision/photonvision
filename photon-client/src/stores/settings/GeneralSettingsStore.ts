@@ -44,7 +44,9 @@ export const useSettingsStore = defineStore("settings", {
           connName: "Example Wired Connection",
           devName: "eth0"
         }
-      ]
+      ],
+      networkingDisabled: false,
+      matchCamerasOnlyByPath: false
     },
     lighting: {
       supported: true,

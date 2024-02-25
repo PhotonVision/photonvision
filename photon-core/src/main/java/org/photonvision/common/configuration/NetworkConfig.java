@@ -39,6 +39,14 @@ public class NetworkConfig {
     public boolean shouldManage;
     public boolean shouldPublishProto = false;
 
+    /**
+     * If we should ONLY match cameras by path, and NEVER only by base-name. For now default to false
+     * to preserve old matching logic.
+     *
+     * <p>This also disables creating new CameraConfigurations for detected "new" cameras.
+     */
+    public boolean matchCamerasOnlyByPath = false;
+
     @JsonIgnore public static final String NM_IFACE_STRING = "${interface}";
     @JsonIgnore public static final String NM_IP_STRING = "${ipaddr}";
 
@@ -76,7 +84,8 @@ public class NetworkConfig {
             @JsonProperty("shouldPublishProto") boolean shouldPublishProto,
             @JsonProperty("networkManagerIface") String networkManagerIface,
             @JsonProperty("setStaticCommand") String setStaticCommand,
-            @JsonProperty("setDHCPcommand") String setDHCPcommand) {
+            @JsonProperty("setDHCPcommand") String setDHCPcommand,
+            @JsonProperty("matchCamerasOnlyByPath") boolean matchCamerasOnlyByPath) {
         this.ntServerAddress = ntServerAddress;
         this.connectionType = connectionType;
         this.staticIp = staticIp;
@@ -86,6 +95,7 @@ public class NetworkConfig {
         this.networkManagerIface = networkManagerIface;
         this.setStaticCommand = setStaticCommand;
         this.setDHCPcommand = setDHCPcommand;
+        this.matchCamerasOnlyByPath = matchCamerasOnlyByPath;
         setShouldManage(shouldManage);
     }
 
