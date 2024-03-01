@@ -162,9 +162,9 @@ def __convert_cal_to_mrcal_cameramodel(
         "indices_point_camintrinsics_camextrinsics": None,
         "lensmodel": model,
         "imagersizes": np.array([imagersize], dtype=np.int32),
-        "calobject_warp": np.array(cal.calobjectWarp)
-        if len(cal.calobjectWarp) > 0
-        else None,
+        "calobject_warp": (
+            np.array(cal.calobjectWarp) if len(cal.calobjectWarp) > 0 else None
+        ),
         # We always do all the things
         "do_optimize_intrinsics_core": True,
         "do_optimize_intrinsics_distortions": True,
