@@ -65,8 +65,13 @@ public class TargetCalculations {
             float buff[] = new float[2];
             temp.get(0, 0, buff);
             temp.release();
-            targetCenterX = buff[0];
-            targetCenterY = buff[1];
+
+            // if outside of the imager, convergence fails, or really really bad user camera cal, undistort will fail by giving us nans. at some point we should log this failure
+            // if we can't undistort, don't change the cnter location
+            if (Float.isFinite(buff[0]) && Float.isFinite(buff[1])) {
+                targetCenterX = buff[0];
+                targetCenterY = buff[1];
+            }
         }
 
         double yaw = Math.atan((targetCenterX - offsetCenterX) / horizontalFocalLength);
