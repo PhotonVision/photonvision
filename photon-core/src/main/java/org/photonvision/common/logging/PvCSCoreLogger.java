@@ -17,26 +17,34 @@ public class PvCSCoreLogger {
     private Logger logger;
 
     private PvCSCoreLogger() {
-        CameraServerJNI.setLogger(this::logMsg, 0);
+        CameraServerJNI.setLogger(this::logMsg, 7);
         this.logger = new Logger(getClass(), LogGroup.CSCore);
     }
 
     private void logMsg(int level, String file, int line, String msg) {
         if (level == 20) {
-            logger.error(msg);
+            logger.info(msg);
             return;
         }
 
         String levelmsg;
+        LogLevel pvlevel;
         if (level >= 50) {
             levelmsg = "CRITICAL";
+            pvlevel = LogLevel.ERROR;
         } else if (level >= 40) {
             levelmsg = "ERROR";
+            pvlevel = LogLevel.ERROR;
         } else if (level >= 30) {
             levelmsg = "WARNING";
+            pvlevel = LogLevel.WARN;
+        } else if (level >= 20) {
+            levelmsg = "INFO";
+            pvlevel = LogLevel.INFO;
         } else {
-            return;
+            levelmsg = "DEBUG";
+            pvlevel = LogLevel.DEBUG;
         }
-        logger.error("CS: " + levelmsg + ": " + msg + " (" + file + ":" + line + ")\n");
+        logger.log("CS: " + levelmsg + " " + level + ": " + msg + " (" + file + ":" + line + ")\n", pvlevel);
     }
 }
