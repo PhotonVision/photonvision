@@ -1,5 +1,8 @@
 package org.photonvision.common.logging;
 
+import java.io.File;
+import java.nio.file.Path;
+
 import edu.wpi.first.cscore.CameraServerJNI;
 
 /** Redirect cscore logs to our logger */
@@ -27,6 +30,8 @@ public class PvCSCoreLogger {
             return;
         }
 
+        file = Path.of(file).getFileName().toString();
+
         String levelmsg;
         LogLevel pvlevel;
         if (level >= 50) {
@@ -45,6 +50,6 @@ public class PvCSCoreLogger {
             levelmsg = "DEBUG";
             pvlevel = LogLevel.DEBUG;
         }
-        logger.log("CS: " + levelmsg + " " + level + ": " + msg + " (" + file + ":" + line + ")\n", pvlevel);
+        logger.log("CS: " + levelmsg + " " + level + ": " + msg + " (" + file + ":" + line + ")", pvlevel);
     }
 }
