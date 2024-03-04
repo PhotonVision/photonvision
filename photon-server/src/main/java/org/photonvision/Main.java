@@ -348,11 +348,17 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            TestUtils.loadLibraries();
-            logger.info("Native libraries loaded.");
+            boolean success = TestUtils.loadLibraries();
+
+            if (!success) {
+                logger.error("Failed to load native libraries! Giving up :(");
+                System.exit(1);
+            }
         } catch (Exception e) {
             logger.error("Failed to load native libraries!", e);
+            System.exit(1);
         }
+        logger.info("Native libraries loaded.");
 
         try {
             if (Platform.isRaspberryPi()) {

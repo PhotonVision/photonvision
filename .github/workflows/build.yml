@@ -261,7 +261,7 @@ jobs:
           name: jar-${{ matrix.artifact-name }}
           path: photon-server/build/libs
   
-  run-smoketest:
+  run-smoketest-native:
     needs: [build-package]
 
     strategy:
@@ -270,6 +270,8 @@ jobs:
         include:
           - os: ubuntu-latest
             artifact-name: jar-Linux
+          - os: windows-latest
+            artifact-name: Win64
 
     runs-on: ${{ matrix.os }}
 
@@ -282,7 +284,43 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: ${{ matrix.artifact-name }}
-      - run: java -jar *.jar
+      - run: java -jar *.jar --smoketest
+
+  run-smoketest-chroot:
+    needs: [build-package]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact-name: LinuxArm64
+            image_suffix: RaspberryPi
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.4/photonvision_raspi.img.xz
+            cpu: cortex-a7
+            image_additional_mb: 0
+
+    runs-on: ${{ matrix.os }}
+    name: smoketest-${{ matrix.image_suffix }}
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: jar-${{ matrix.artifact-name }}
+
+      - uses: pguyot/arm-runner-action@v2
+        name: Generate image
+        id: generate_image
+        with:
+          base_image: ${{ matrix.image_url }}
+          image_additional_mb: ${{ matrix.image_additional_mb }}
+          optimize_image: yes
+          cpu: ${{ matrix.cpu }}
+          # We do _not_ wanna copy photon into the image. Bind mount instead
+          bind_mount_repository: true
+          # our image better have java installed already
+          commands: |
+            java -jar *.jar --smoketest
 
   build-image:
     needs: [build-package]
