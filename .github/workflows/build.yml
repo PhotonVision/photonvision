@@ -260,7 +260,7 @@ jobs:
         with:
           name: jar-${{ matrix.artifact-name }}
           path: photon-server/build/libs
-  
+
   run-smoketest-native:
     needs: [build-package]
 
@@ -295,9 +295,9 @@ jobs:
           sudo apt-get install --yes libcholmod3 liblapack3 libsuitesparseconfig5
         if: ${{ (matrix.os) == 'ubuntu-latest' }}
       # and actually run the jar
-      - run: java -jar ${{ matrix.extraOpts }} *.jar --smoketest 
+      - run: java -jar ${{ matrix.extraOpts }} *.jar --smoketest
         if: ${{ (matrix.os) != 'windows-latest' }}
-      - run: ls *.jar | %{ Write-Host "Running $($_.Name)"; Start-Process "java" -ArgumentList "-jar `"$($_.FullName)`"" -NoNewWindow -Wait; break }
+      - run: ls *.jar | %{ Write-Host "Running $($_.Name)"; Start-Process "java" -ArgumentList "-jar `"$($_.FullName)`" --smoketest" -NoNewWindow -Wait; break }
         if: ${{ (matrix.os) == 'windows-latest' }}
 
   run-smoketest-chroot:

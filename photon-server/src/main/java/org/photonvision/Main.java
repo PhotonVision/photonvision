@@ -134,9 +134,8 @@ public class Main {
                 ConfigManager.getInstance().clearConfig();
             }
 
-
             if (cmd.hasOption("smoketest")) {
-                isSmoketest=true;
+                isSmoketest = true;
             }
         }
         return true;
