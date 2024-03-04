@@ -270,8 +270,10 @@ jobs:
         include:
           - os: ubuntu-latest
             artifact-name: jar-Linux
+            extraOpts: -Djdk.lang.Process.launchMechanism=vfork
           - os: windows-latest
-            artifact-name: Win64
+            artifact-name: jar-Win64
+            extraOpts: ""
 
     runs-on: ${{ matrix.os }}
 
@@ -284,7 +286,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: ${{ matrix.artifact-name }}
-      - run: java -jar *.jar --smoketest
+      - run: java -jar *.jar ${{ matrix.extraOpts }} --smoketest 
 
   run-smoketest-chroot:
     needs: [build-package]
