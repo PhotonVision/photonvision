@@ -65,6 +65,7 @@ public class Main {
     private static final boolean isRelease = PhotonVersion.isRelease;
 
     private static boolean isTestMode = false;
+    private static boolean isSmoketest = false;
     private static Path testModeFolder = null;
     private static boolean printDebugLogs;
 
@@ -90,6 +91,11 @@ public class Main {
                 "clear-config",
                 false,
                 "Clears PhotonVision pipeline and networking settings. Preserves log files");
+        options.addOption(
+                "s",
+                "smoketest",
+                false,
+                "Exit Photon after loading native libraries and camera configs, but before starting up camera runners");
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
@@ -126,6 +132,11 @@ public class Main {
 
             if (cmd.hasOption("clear-config")) {
                 ConfigManager.getInstance().clearConfig();
+            }
+
+
+            if (cmd.hasOption("smoketest")) {
+                isSmoketest=true;
             }
         }
         return true;
@@ -411,6 +422,11 @@ public class Main {
         logger.info("Loading ML models");
         NeuralNetworkModelManager.getInstance()
                 .initialize(ConfigManager.getInstance().getModelsDirectory());
+
+        if (isSmoketest) {
+            logger.info("PhotonVision base functionality loaded -- smoketest complete");
+            System.exit(0);
+        }
 
         if (!isTestMode) {
             logger.debug("Loading VisionSourceManager...");
