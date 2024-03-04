@@ -289,11 +289,16 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: ${{ matrix.artifact-name }}
+      # On linux, install mrcal packages
       - run: |
           sudo apt-get update
           sudo apt-get install --yes libcholmod3 liblapack3 libsuitesparseconfig5
         if: ${{ (matrix.os) == 'ubuntu-latest' }}
+      # and actually run the jar
       - run: java -jar ${{ matrix.extraOpts }} *.jar --smoketest 
+        if: ${{ (matrix.os) != 'windows-latest' }}
+      - run: for %i in (*.jar) do @echo Running %i && java -jar ${{ matrix.extraOpts }} "%i" && exit /b
+        if: ${{ (matrix.os) == 'windows-latest' }}
 
   run-smoketest-chroot:
     needs: [build-package]
@@ -308,6 +313,7 @@ jobs:
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.4/photonvision_raspi.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
+            extraOpts: -Djdk.lang.Process.launchMechanism=vfork
 
     runs-on: ${{ matrix.os }}
     name: smoketest-${{ matrix.image_suffix }}
@@ -329,7 +335,7 @@ jobs:
           bind_mount_repository: true
           # our image better have java installed already
           commands: |
-            java -jar *.jar --smoketest
+            java -jar ${{ matrix.extraOpts }} *.jar --smoketest
 
   build-image:
     needs: [build-package]
