@@ -274,6 +274,9 @@ jobs:
           - os: windows-latest
             artifact-name: jar-Win64
             extraOpts: ""
+          - os: macos-latest
+            artifact-name: jar-macOS
+            architecture: x64
 
     runs-on: ${{ matrix.os }}
 
@@ -286,7 +289,11 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: ${{ matrix.artifact-name }}
-      - run: java -jar *.jar ${{ matrix.extraOpts }} --smoketest 
+      - run: |
+          sudo apt-get update
+          sudo apt-get install --yes libcholmod3 liblapack3 libsuitesparseconfig5
+        if: ${{ (matrix.os) == 'ubuntu-latest' }}
+      - run: java -jar ${{ matrix.extraOpts }} *.jar --smoketest 
 
   run-smoketest-chroot:
     needs: [build-package]
