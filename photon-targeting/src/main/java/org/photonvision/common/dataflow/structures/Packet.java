@@ -181,6 +181,18 @@ public class Packet {
         return Double.longBitsToDouble(data);
     }
 
+    public float decodeFloat() {
+        if (packetData.length < (readPos + 3)) {
+            return 0;
+        }
+        int data =
+                (int) (0xff & packetData[readPos++]) << 24
+                        | (int) (0xff & packetData[readPos++]) << 16
+                        | (int) (0xff & packetData[readPos++]) << 8
+                        | (int) (0xff & packetData[readPos++]);
+        return Float.intBitsToFloat(data);
+    }
+
     /**
      * Returns a decoded boolean from the packet.
      *

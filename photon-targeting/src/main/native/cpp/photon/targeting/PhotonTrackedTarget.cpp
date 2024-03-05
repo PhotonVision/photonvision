@@ -28,9 +28,9 @@ static constexpr const uint8_t MAX_CORNERS = 8;
 namespace photon {
 
 PhotonTrackedTarget::PhotonTrackedTarget(
-    double yaw, double pitch, double area, double skew, int id,
-    const frc::Transform3d& pose, const frc::Transform3d& alternatePose,
-    double ambiguity,
+    double yaw, double pitch, double area, double skew, int id, int objdetid,
+    float objdetconf, const frc::Transform3d& pose,
+    const frc::Transform3d& alternatePose, double ambiguity,
     const wpi::SmallVector<std::pair<double, double>, 4> minAreaRectCorners,
     const std::vector<std::pair<double, double>> detectedCorners)
     : yaw(yaw),
@@ -38,6 +38,8 @@ PhotonTrackedTarget::PhotonTrackedTarget(
       area(area),
       skew(skew),
       fiducialId(id),
+      objDetectId(objdetid),
+      objDetectConf(objdetconf),
       bestCameraToTarget(pose),
       altCameraToTarget(alternatePose),
       poseAmbiguity(ambiguity),
@@ -47,12 +49,14 @@ PhotonTrackedTarget::PhotonTrackedTarget(
 bool PhotonTrackedTarget::operator==(const PhotonTrackedTarget& other) const {
   return other.yaw == yaw && other.pitch == pitch && other.area == area &&
          other.skew == skew && other.bestCameraToTarget == bestCameraToTarget &&
+         other.objDetectConf == objDetectConf &&
+         other.objDetectId == objDetectId &&
          other.minAreaRectCorners == minAreaRectCorners;
 }
 
 Packet& operator<<(Packet& packet, const PhotonTrackedTarget& target) {
   packet << target.yaw << target.pitch << target.area << target.skew
-         << target.fiducialId
+         << target.fiducialId << target.objDetectId << target.objDetectConf
          << target.bestCameraToTarget.Translation().X().value()
          << target.bestCameraToTarget.Translation().Y().value()
          << target.bestCameraToTarget.Translation().Z().value()
@@ -87,7 +91,7 @@ Packet& operator<<(Packet& packet, const PhotonTrackedTarget& target) {
 
 Packet& operator>>(Packet& packet, PhotonTrackedTarget& target) {
   packet >> target.yaw >> target.pitch >> target.area >> target.skew >>
-      target.fiducialId;
+      target.fiducialId >> target.objDetectId >> target.objDetectConf;
 
   // We use these for best and alt transforms below
   double x = 0;

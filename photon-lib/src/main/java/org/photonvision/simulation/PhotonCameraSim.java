@@ -436,6 +436,8 @@ public class PhotonCameraSim implements AutoCloseable {
                             areaPercent,
                             Math.toDegrees(centerRot.getX()),
                             tgt.fiducialID,
+                            -1,
+                            -1,
                             pnpSim.best,
                             pnpSim.alt,
                             pnpSim.ambiguity,
