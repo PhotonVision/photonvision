@@ -192,7 +192,9 @@ class SimVisionSystem {
                                 pitch.convert<units::degree>().to<double>(),
                                 areaPixels,
                                 0.0,
-                                target.targetId, -1, -1,
+                                target.targetId,
+                                -1,
+                                -1,
                                 camToTargetTransform,
                                 // TODO sim alternate pose
                                 camToTargetTransform,
