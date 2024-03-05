@@ -112,6 +112,19 @@ public class Packet {
      *
      * @param src The double to encode.
      */
+    public void encode(float src) {
+        int data = Float.floatToIntBits(src);
+        packetData[writePos++] = (byte) ((data >> 24) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 16) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 8) & 0xff);
+        packetData[writePos++] = (byte) (data & 0xff);
+    }
+
+    /**
+     * Encodes the double into the packet.
+     *
+     * @param src The double to encode.
+     */
     public void encode(double src) {
         long data = Double.doubleToRawLongBits(src);
         packetData[writePos++] = (byte) ((data >> 56) & 0xff);

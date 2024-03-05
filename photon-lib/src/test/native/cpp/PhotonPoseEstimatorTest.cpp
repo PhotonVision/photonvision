@@ -61,21 +61,21 @@ TEST(PhotonPoseEstimatorTest, LowestAmbiguityStrategy) {
 
   wpi::SmallVector<photon::PhotonTrackedTarget, 3> targets{
       photon::PhotonTrackedTarget{
-          3.0, -4.0, 9.0, 4.0, 0,
+          3.0, -4.0, 9.0, 4.0, 0, -1, -1,
           frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
                            frc::Rotation3d(1_rad, 2_rad, 3_rad)),
           frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
                            frc::Rotation3d(1_rad, 2_rad, 3_rad)),
           0.7, corners, detectedCorners},
       photon::PhotonTrackedTarget{
-          3.0, -4.0, 9.1, 6.7, 1,
+          3.0, -4.0, 9.1, 6.7, 1, -1, -1,
           frc::Transform3d(frc::Translation3d(4_m, 2_m, 3_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           frc::Transform3d(frc::Translation3d(4_m, 2_m, 3_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.3, corners, detectedCorners},
       photon::PhotonTrackedTarget{
-          9.0, -2.0, 19.0, 3.0, 0,
+          9.0, -2.0, 19.0, 3.0, 0, -1, -1,
           frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
                            frc::Rotation3d(1_rad, 2_rad, 3_rad)),
           frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
@@ -116,21 +116,21 @@ TEST(PhotonPoseEstimatorTest, ClosestToCameraHeightStrategy) {
 
   wpi::SmallVector<photon::PhotonTrackedTarget, 3> targets{
       photon::PhotonTrackedTarget{
-          3.0, -4.0, 9.0, 4.0, 1,
+          3.0, -4.0, 9.0, 4.0, 1, -1, -1,
           frc::Transform3d(frc::Translation3d(0_m, 0_m, 0_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           frc::Transform3d(frc::Translation3d(1_m, 1_m, 1_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.7, corners, detectedCorners},
       photon::PhotonTrackedTarget{
-          3.0, -4.0, 9.1, 6.7, 1,
+          3.0, -4.0, 9.1, 6.7, 1, -1, -1,
           frc::Transform3d(frc::Translation3d(2_m, 2_m, 2_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           frc::Transform3d(frc::Translation3d(3_m, 3_m, 3_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.3, corners, detectedCorners},
       photon::PhotonTrackedTarget{
-          9.0, -2.0, 19.0, 3.0, 0,
+          9.0, -2.0, 19.0, 3.0, 0, -1, -1,
           frc::Transform3d(frc::Translation3d(4_m, 4_m, 4_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           frc::Transform3d(frc::Translation3d(5_m, 5_m, 5_m),
@@ -159,21 +159,21 @@ TEST(PhotonPoseEstimatorTest, ClosestToReferencePoseStrategy) {
 
   wpi::SmallVector<photon::PhotonTrackedTarget, 3> targets{
       photon::PhotonTrackedTarget{
-          3.0, -4.0, 9.0, 4.0, 1,
+          3.0, -4.0, 9.0, 4.0, 1, -1, -1,
           frc::Transform3d(frc::Translation3d(0_m, 0_m, 0_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           frc::Transform3d(frc::Translation3d(1_m, 1_m, 1_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.7, corners, detectedCorners},
       photon::PhotonTrackedTarget{
-          3.0, -4.0, 9.1, 6.7, 1,
+          3.0, -4.0, 9.1, 6.7, 1, -1, -1,
           frc::Transform3d(frc::Translation3d(2_m, 2_m, 2_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           frc::Transform3d(frc::Translation3d(3_m, 3_m, 3_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.3, corners, detectedCorners},
       photon::PhotonTrackedTarget{
-          9.0, -2.0, 19.0, 3.0, 0,
+          9.0, -2.0, 19.0, 3.0, 0, -1, -1,
           frc::Transform3d(frc::Translation3d(2.2_m, 2.2_m, 2.2_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           frc::Transform3d(frc::Translation3d(2_m, 1.9_m, 2.1_m),
@@ -203,21 +203,21 @@ TEST(PhotonPoseEstimatorTest, ClosestToLastPose) {
 
   wpi::SmallVector<photon::PhotonTrackedTarget, 3> targets{
       photon::PhotonTrackedTarget{
-          3.0, -4.0, 9.0, 4.0, 1,
+          3.0, -4.0, 9.0, 4.0, 1, -1, -1,
           frc::Transform3d(frc::Translation3d(0_m, 0_m, 0_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           frc::Transform3d(frc::Translation3d(1_m, 1_m, 1_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.7, corners, detectedCorners},
       photon::PhotonTrackedTarget{
-          3.0, -4.0, 9.1, 6.7, 1,
+          3.0, -4.0, 9.1, 6.7, 1, -1, -1,
           frc::Transform3d(frc::Translation3d(2_m, 2_m, 2_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           frc::Transform3d(frc::Translation3d(3_m, 3_m, 3_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.3, corners, detectedCorners},
       photon::PhotonTrackedTarget{
-          9.0, -2.0, 19.0, 3.0, 0,
+          9.0, -2.0, 19.0, 3.0, 0, -1, -1,
           frc::Transform3d(frc::Translation3d(2.2_m, 2.2_m, 2.2_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           frc::Transform3d(frc::Translation3d(2_m, 1.9_m, 2.1_m),
@@ -238,21 +238,21 @@ TEST(PhotonPoseEstimatorTest, ClosestToLastPose) {
 
   wpi::SmallVector<photon::PhotonTrackedTarget, 3> targetsThree{
       photon::PhotonTrackedTarget{
-          3.0, -4.0, 9.0, 4.0, 1,
+          3.0, -4.0, 9.0, 4.0, 1, -1, -1,
           frc::Transform3d(frc::Translation3d(0_m, 0_m, 0_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           frc::Transform3d(frc::Translation3d(1_m, 1_m, 1_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.7, corners, detectedCorners},
       photon::PhotonTrackedTarget{
-          3.0, -4.0, 9.1, 6.7, 0,
+          3.0, -4.0, 9.1, 6.7, 0, -1, -1,
           frc::Transform3d(frc::Translation3d(2.1_m, 1.9_m, 2_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           frc::Transform3d(frc::Translation3d(3_m, 3_m, 3_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.3, corners, detectedCorners},
       photon::PhotonTrackedTarget{
-          9.0, -2.0, 19.0, 3.0, 0,
+          9.0, -2.0, 19.0, 3.0, 0, -1, -1,
           frc::Transform3d(frc::Translation3d(2.4_m, 2.4_m, 2.2_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           frc::Transform3d(frc::Translation3d(2_m, 1_m, 2_m),
@@ -278,21 +278,21 @@ TEST(PhotonPoseEstimatorTest, AverageBestPoses) {
 
   wpi::SmallVector<photon::PhotonTrackedTarget, 3> targets{
       photon::PhotonTrackedTarget{
-          3.0, -4.0, 9.0, 4.0, 0,
+          3.0, -4.0, 9.0, 4.0, 0, -1, -1,
           frc::Transform3d(frc::Translation3d(2_m, 2_m, 2_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           frc::Transform3d(frc::Translation3d(1_m, 1_m, 1_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.7, corners, detectedCorners},
       photon::PhotonTrackedTarget{
-          3.0, -4.0, 9.1, 6.7, 1,
+          3.0, -4.0, 9.1, 6.7, 1, -1, -1,
           frc::Transform3d(frc::Translation3d(3_m, 3_m, 3_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           frc::Transform3d(frc::Translation3d(3_m, 3_m, 3_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.3, corners, detectedCorners},
       photon::PhotonTrackedTarget{
-          9.0, -2.0, 19.0, 3.0, 0,
+          9.0, -2.0, 19.0, 3.0, 0, -1, -1,
           frc::Transform3d(frc::Translation3d(0_m, 0_m, 0_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           frc::Transform3d(frc::Translation3d(2_m, 1.9_m, 2.1_m),
@@ -320,21 +320,21 @@ TEST(PhotonPoseEstimatorTest, PoseCache) {
 
   wpi::SmallVector<photon::PhotonTrackedTarget, 3> targets{
       photon::PhotonTrackedTarget{
-          3.0, -4.0, 9.0, 4.0, 0,
+          3.0, -4.0, 9.0, 4.0, 0, -1, -1,
           frc::Transform3d(frc::Translation3d(2_m, 2_m, 2_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           frc::Transform3d(frc::Translation3d(1_m, 1_m, 1_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.7, corners, detectedCorners},
       photon::PhotonTrackedTarget{
-          3.0, -4.0, 9.1, 6.7, 1,
+          3.0, -4.0, 9.1, 6.7, 1, -1, -1,
           frc::Transform3d(frc::Translation3d(3_m, 3_m, 3_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           frc::Transform3d(frc::Translation3d(3_m, 3_m, 3_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.3, corners, detectedCorners},
       photon::PhotonTrackedTarget{
-          9.0, -2.0, 19.0, 3.0, 0,
+          9.0, -2.0, 19.0, 3.0, 0, -1, -1,
           frc::Transform3d(frc::Translation3d(0_m, 0_m, 0_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           frc::Transform3d(frc::Translation3d(2_m, 1.9_m, 2.1_m),

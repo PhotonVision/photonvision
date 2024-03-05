@@ -235,7 +235,7 @@ public class PhotonTrackedTarget implements ProtobufSerializable {
     public static final class APacketSerde implements PacketSerde<PhotonTrackedTarget> {
         @Override
         public int getMaxByteSize() {
-            return Double.BYTES * (5 + 7 + 2 * 4 + 1 + 7 + 2 * MAX_CORNERS);
+            return Double.BYTES * (5 + 7 + 2 * 4 + 1 + 1 + 4 + 7 + 2 * MAX_CORNERS);
         }
 
         @Override
