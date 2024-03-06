@@ -18,13 +18,19 @@
 package org.photonvision.vision.calibration;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.wpi.first.math.geometry.Pose3d;
+import java.awt.Color;
 import java.util.Arrays;
 import java.util.List;
+import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Point3;
+import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
+import org.photonvision.common.util.ColorHelper;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class BoardObservation implements Cloneable {
@@ -67,7 +73,6 @@ public final class BoardObservation implements Cloneable {
         this.locationInImageSpace = locationInImageSpace;
         this.reprojectionErrors = reprojectionErrors;
         this.optimisedCameraToObject = optimisedCameraToObject;
-        this.cornersUsed = cornersUsed;
         this.snapshotName = snapshotName;
         this.snapshotData = snapshotData;
 
@@ -76,6 +81,7 @@ public final class BoardObservation implements Cloneable {
             cornersUsed = new boolean[locationInObjectSpace.size()];
             Arrays.fill(cornersUsed, true);
         }
+        this.cornersUsed = cornersUsed;
     }
 
     @Override
@@ -105,5 +111,29 @@ public final class BoardObservation implements Cloneable {
             System.err.println("Guhhh clone buh");
             return null;
         }
+    }
+
+    @JsonIgnore
+    public Mat getAnnotatedImage() {
+        var image = snapshotData.getAsMat().clone();
+        var diag = Math.hypot(image.width(), image.height());
+        int thickness = (int) Math.max(diag * 1.0 / 600.0, 1);
+        int r = (int) Math.max(diag * 4.0 / 500.0, 3);
+        var r2 = r / Math.sqrt(2);
+        for (int i = 0; i < this.locationInImageSpace.size(); i++) {
+            Scalar color;
+            if (cornersUsed[i]) {
+                color = ColorHelper.colorToScalar(Color.green);
+            } else {
+                color = ColorHelper.colorToScalar(Color.red);
+            }
+            var c = locationInImageSpace.get(i);
+            Imgproc.circle(image, c, r, color, thickness);
+            Imgproc.line(
+                    image, new Point(c.x - r2, c.y - r2), new Point(c.x + r2, c.y + r2), color, thickness);
+            Imgproc.line(
+                    image, new Point(c.x + r2, c.y - r2), new Point(c.x - r2, c.y + r2), color, thickness);
+        }
+        return image;
     }
 }

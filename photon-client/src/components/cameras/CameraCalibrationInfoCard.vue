@@ -228,10 +228,7 @@ const calibrationImageURL = (index: number) =>
               <td>Board warp, X/Y</td>
               <td>
                 {{
-                  useCameraSettingsStore()
-                    .getCalibrationCoeffs(props.videoFormat.resolution)
-                    ?.calobjectWarp?.map((it) => (it * 1000).toFixed(2) + " mm")
-                    .join(" / ")
+                  currentCalibrationCoeffs?.calobjectWarp?.map((it) => (it * 1000).toFixed(2) + " mm").join(" / ")
                 }}
               </td>
             </tr>

@@ -609,16 +609,16 @@ public class RequestHandler {
             return;
         }
 
+        var mat = calList.observations.get(observationIdx).getAnnotatedImage();
+
         // encode as jpeg to save even more space. reduces size of a 1280p image from 300k to 25k
         var jpegBytes = new MatOfByte();
-        Imgcodecs.imencode(
-                ".jpg",
-                calList.observations.get(observationIdx).snapshotData.getAsMat(),
-                jpegBytes,
-                new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 60));
+        Imgcodecs.imencode(".jpg", mat, jpegBytes, new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 60));
 
         ctx.result(jpegBytes.toArray());
+
         jpegBytes.release();
+        mat.release();
 
         ctx.status(200);
     }
