@@ -17,12 +17,14 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
@@ -36,6 +38,7 @@ import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
+import org.photonvision.vision.pipe.impl.FindBoardCornersGuidancePipe.FindBoardCornersGuidancePipeResult;
 import org.photonvision.vision.pipe.impl.FindBoardCornersPipe.FindBoardCornersPipeResult;
 import org.photonvision.vision.pipeline.CVPipeline;
 import org.photonvision.vision.pipeline.Calibration3dPipelineSettings;
@@ -43,13 +46,24 @@ import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.pipeline.result.CalibrationPipelineResult;
 
+import edu.wpi.first.math.util.Units;
+
+//FIXME TBD - MrCal requirements and change Calibrate3dPipe.CalibratePipeParams as needed for ChArUcoBoard properties
+// FindBoardCornersGuidancePipeResults is different than FindBoardCornersResults
+// for now FindBoardCornersParams used by FindBoardCornersPipe is okay (ignored) for FindBoardCornersGuidancePipe
+
 public class Calibrate3dPipeline
         extends CVPipeline<CVPipelineResult, Calibration3dPipelineSettings> {
     // For logging
     private static final Logger logger = new Logger(Calibrate3dPipeline.class, LogGroup.General);
 
+    //TODO make providePoseGuidance a user input button
+    private static final boolean providePoseGuidance = true; // true suppresses legacy manual pose determination
+
     // Find board corners decides internally between opencv and mrgingham
-    private final FindBoardCornersPipe findBoardCornersPipe = new FindBoardCornersPipe();
+    private FindBoardCornersPipe findBoardCornersPipe;
+    private FindBoardCornersGuidancePipe findBoardCornersGuidancePipe;
+
     private final Calibrate3dPipe calibrate3dPipe = new Calibrate3dPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
@@ -62,7 +76,7 @@ public class Calibrate3dPipeline
     /// Output of the calibration, getter method is set for this.
     private CVPipeResult<CameraCalibrationCoefficients> calibrationOutput;
 
-    private final int minSnapshots;
+    private int minSnapshots;
 
     private boolean calibrating = false;
 
@@ -70,9 +84,10 @@ public class Calibrate3dPipeline
 
     public Calibrate3dPipeline(String uniqueName) {
         this(12, uniqueName);
+        // runs once when PV starts
     }
 
-    public Calibrate3dPipeline(int minSnapshots, String uniqueName) {
+    public Calibrate3dPipeline(int minSnapshots, String uniqueName) { // runs once when PV starts
         super(PROCESSING_TYPE);
         this.settings = new Calibration3dPipelineSettings();
         this.foundCornersList = new ArrayList<>();
@@ -81,14 +96,38 @@ public class Calibrate3dPipeline
 
     @Override
     protected void setPipeParamsImpl() {
-        FindBoardCornersPipe.FindCornersPipeParams findCornersPipeParams =
-                new FindBoardCornersPipe.FindCornersPipeParams(
-                        settings.boardHeight,
-                        settings.boardWidth,
-                        settings.boardType,
-                        settings.gridSize,
-                        settings.streamingFrameDivisor);
-        findBoardCornersPipe.setParams(findCornersPipeParams);
+        // runs first once per frame after calibration has started until calibration ends/canceled
+        // first time through check for this calibration session
+        if (providePoseGuidance) {
+            if (findBoardCornersGuidancePipe == null) {
+                findBoardCornersGuidancePipe = new FindBoardCornersGuidancePipe();
+                //TODO make guidance its own params (not needed now) instead of copying unneeded stuff from FindCornersPipeParams
+                FindBoardCornersGuidancePipe.FindCornersGuidancePipeParams findCornersGuidancePipeParams =
+                        new FindBoardCornersGuidancePipe.FindCornersGuidancePipeParams(
+                                takeSnapshot,
+                                settings.boardHeight,
+                                settings.boardWidth,
+                                settings.boardType,
+                                settings.gridSize,
+                                settings.streamingFrameDivisor);
+                findBoardCornersGuidancePipe.setParams(findCornersGuidancePipeParams);
+            }
+        }
+        else {
+            if (findBoardCornersPipe == null) {
+                findBoardCornersPipe = new FindBoardCornersPipe();
+                FindBoardCornersPipe.FindCornersPipeParams findCornersPipeParams =
+                        new FindBoardCornersPipe.FindCornersPipeParams(
+                                settings.boardHeight,
+                                settings.boardWidth,
+                                settings.boardType,
+                                settings.gridSize,
+                                settings.streamingFrameDivisor);
+                findBoardCornersPipe.setParams(findCornersPipeParams);
+            }
+        }
+
+        //TODO MrCal needs the ChArUcoBoard parameters similar to other boards
 
         Calibrate3dPipe.CalibratePipeParams calibratePipeParams =
                 new Calibrate3dPipe.CalibratePipeParams(
@@ -98,6 +137,8 @@ public class Calibrate3dPipeline
 
     @Override
     protected CVPipelineResult process(Frame frame, Calibration3dPipelineSettings settings) {
+        // runs second once per frame after calibration has started until calibration ends/canceled
+
         Mat inputColorMat = frame.colorImage.getMat();
 
         if (this.calibrating || inputColorMat.empty()) {
@@ -118,10 +159,53 @@ public class Calibrate3dPipeline
         // Check if the frame has chessboard corners
         var outputColorCVMat = new CVMat();
         inputColorMat.copyTo(outputColorCVMat.getMat());
+        
+        FindBoardCornersPipeResult findBoardResult = null;
 
-        FindBoardCornersPipeResult findBoardResult =
+        if (providePoseGuidance) {
+            minSnapshots = 999; // Guidance will tell us how many at the end so it's undefined for now
+            FindBoardCornersGuidancePipeResult findBoardGuidanceResult =
+                findBoardCornersGuidancePipe.run(Pair.of(inputColorMat, outputColorCVMat.getMat())).output;
+
+            //FIXME need to handle CANCEL to bail out
+
+            if (findBoardGuidanceResult.takeSnapshot || findBoardGuidanceResult.haveEnough || findBoardGuidanceResult.cancelCalibration) {
+                logger.debug("guidance result for variables 'snapshot', 'enough', and 'cancel':"
+                    + findBoardGuidanceResult.takeSnapshot
+                    + findBoardGuidanceResult.haveEnough
+                    + findBoardGuidanceResult.cancelCalibration);
+            }
+
+            if (findBoardGuidanceResult.haveEnough) {
+                minSnapshots = 0; // 0 is a safe small number to trigger final calibration; could get the size of the saved list of captures + 1 since there's one more snapshot to save
+            }
+            // findBoardGuidanceResult.takeSnapshot frame captured; maybe we don't care since it'll come back at us at the end when calibrated
+            // findBoardGuidanceResult.haveEnough calibrated; done; null the guidance for fresh start next time
+            // findBoardGuidanceResult.cancelCalibration no data; null the guidance for fresh start next frame
+
+            takeSnapshot = findBoardGuidanceResult.takeSnapshot;
+
+            if (takeSnapshot) {
+                // convert guidance result to non-guidance results
+                MatOfPoint3f objCornersT = new MatOfPoint3f();
+                MatOfPoint2f imgCornersT = new MatOfPoint2f();
+                Mat idCornersT = new Mat();
+                findBoardGuidanceResult.objCorners.copyTo(objCornersT);
+                findBoardGuidanceResult.imgCorners.copyTo(imgCornersT);
+                findBoardGuidanceResult.idCorners.copyTo(idCornersT);
+                findBoardResult =
+                    new FindBoardCornersPipeResult(
+                        findBoardGuidanceResult.imgSize,
+                        objCornersT,
+                        imgCornersT);
+                        //FIXME add idCornersT for inlier corners for MrCal usage
+            }
+        }
+        else {    
+            findBoardResult =
                 findBoardCornersPipe.run(Pair.of(inputColorMat, outputColorCVMat.getMat())).output;
-
+        }
+ 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
@@ -141,6 +225,16 @@ public class Calibrate3dPipeline
         }
 
         frame.release();
+
+        //FIXME takeSnapshot may work okay but it isn't exactly the same as if the button was pressed.
+        //FIXME need to handle enpough captures and calibration can occur like pressing the button.
+        //FIXME need to handle cancel calibration like pressing the button.
+        //FIXME need to suppress drawing the corners. A trick would be not to save the individual snapshots but
+        //FIXME accumulate them all for the end only. Maybe better is define a ChArUcoBoard pose mode that doesn't
+        //FIXME need the corners drawn
+
+        //FIXME maybe somewhere around here (maybe after the new CalibrationPipelineResult) call or simulate 
+        // if (providePoseGuidance && hasEnough) VisionModule.endcalibration();
 
         // Return the drawn chessboard if corners are found, if not, then return the input image.
         return new CalibrationPipelineResult(
@@ -162,6 +256,7 @@ public class Calibrate3dPipeline
     }
 
     public CameraCalibrationCoefficients tryCalibration() {
+        logger.debug("RKT tryCalibration");
         if (!hasEnough()) {
             logger.info(
                     "Not enough snapshots! Only got "
@@ -180,25 +275,33 @@ public class Calibrate3dPipeline
 
         this.calibrating = false;
 
+        if ( providePoseGuidance) {
+            findBoardCornersGuidancePipe = null; // this calibration session done so reset guidance to start afresh next frame        
+        }
+
         return calibrationOutput.output;
     }
 
     public void takeSnapshot() {
+        logger.debug("RKT takeSnapshot");
         takeSnapshot = true;
     }
 
     public List<BoardObservation> perViewErrors() {
+        logger.debug("RKT perViewErrors");
         return calibrationOutput.output.observations;
     }
 
     public void finishCalibration() {
+        logger.debug("RKT finishCalibraton");
         foundCornersList.forEach(it -> it.release());
         foundCornersList.clear();
-
+        findBoardCornersPipe = null;
         broadcastState();
     }
 
     private void broadcastState() {
+        logger.debug("RKT broadcastState");
         var state =
                 SerializationUtils.objectToHashMap(
                         new UICalibrationData(
@@ -217,6 +320,7 @@ public class Calibrate3dPipeline
     }
 
     public boolean removeSnapshot(int index) {
+        logger.debug("RKT removeSnapshot");
         try {
             foundCornersList.remove(index);
             return true;
@@ -227,6 +331,7 @@ public class Calibrate3dPipeline
     }
 
     public CameraCalibrationCoefficients cameraCalibrationCoefficients() {
+        logger.debug("RKT cameraCalibrationCoefficients");
         return calibrationOutput.output;
     }
 }
