@@ -129,7 +129,7 @@ export interface BoardObservation {
   locationInImageSpace: CvPoint[];
   reprojectionErrors: CvPoint[];
   optimisedCameraToObject: Pose3d;
-  includeObservationInCalibration: boolean;
+  cornersUsed: boolean[];
   snapshotName: string;
   snapshotData: JsonImageMat;
 }
@@ -256,7 +256,7 @@ export const PlaceholderCameraSettings: CameraSettings = {
             { x: 2, y: 1 },
             { x: 3, y: 1 }
           ],
-          includeObservationInCalibration: false,
+          cornersUsed: [true, true, true, false, false, true],
           snapshotName: "img0.png",
           snapshotData: { rows: 480, cols: 640, type: CvType.CV_8U, data: "" }
         }
