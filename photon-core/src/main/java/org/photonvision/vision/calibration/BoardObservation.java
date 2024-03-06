@@ -18,12 +18,15 @@
 package org.photonvision.vision.calibration;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.wpi.first.math.geometry.Pose3d;
+import java.util.Arrays;
 import java.util.List;
 import org.opencv.core.Point;
 import org.opencv.core.Point3;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public final class BoardObservation implements Cloneable {
     // Expected feature 3d location in the camera frame
     @JsonProperty("locationInObjectSpace")
@@ -42,8 +45,8 @@ public final class BoardObservation implements Cloneable {
     public Pose3d optimisedCameraToObject;
 
     // If we should use this observation when re-calculating camera calibration
-    @JsonProperty("includeObservationInCalibration")
-    public boolean includeObservationInCalibration;
+    @JsonProperty("cornersUsed")
+    public boolean[] cornersUsed;
 
     @JsonProperty("snapshotName")
     public String snapshotName;
@@ -57,16 +60,22 @@ public final class BoardObservation implements Cloneable {
             @JsonProperty("locationInImageSpace") List<Point> locationInImageSpace,
             @JsonProperty("reprojectionErrors") List<Point> reprojectionErrors,
             @JsonProperty("optimisedCameraToObject") Pose3d optimisedCameraToObject,
-            @JsonProperty("includeObservationInCalibration") boolean includeObservationInCalibration,
+            @JsonProperty("cornersUsed") boolean[] cornersUsed,
             @JsonProperty("snapshotName") String snapshotName,
             @JsonProperty("snapshotData") JsonImageMat snapshotData) {
         this.locationInObjectSpace = locationInObjectSpace;
         this.locationInImageSpace = locationInImageSpace;
         this.reprojectionErrors = reprojectionErrors;
         this.optimisedCameraToObject = optimisedCameraToObject;
-        this.includeObservationInCalibration = includeObservationInCalibration;
+        this.cornersUsed = cornersUsed;
         this.snapshotName = snapshotName;
         this.snapshotData = snapshotData;
+
+        // legacy migration -- we assume all points are inliers
+        if (cornersUsed == null) {
+            cornersUsed = new boolean[locationInObjectSpace.size()];
+            Arrays.fill(cornersUsed, true);
+        }
     }
 
     @Override
@@ -79,8 +88,8 @@ public final class BoardObservation implements Cloneable {
                 + reprojectionErrors
                 + ", optimisedCameraToObject="
                 + optimisedCameraToObject
-                + ", includeObservationInCalibration="
-                + includeObservationInCalibration
+                + ", cornersUsed="
+                + cornersUsed
                 + ", snapshotName="
                 + snapshotName
                 + ", snapshotData="
