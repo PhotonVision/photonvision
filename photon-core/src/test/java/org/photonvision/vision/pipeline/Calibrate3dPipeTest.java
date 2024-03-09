@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.cartesian.CartesianTest;
 import org.junitpioneer.jupiter.cartesian.CartesianTest.Enum;
 import org.junitpioneer.jupiter.cartesian.CartesianTest.Values;
@@ -90,6 +91,13 @@ public class Calibrate3dPipeTest {
         String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
         File dir = Path.of(base, dataset.path).toFile();
         calibrateSquaresCommon(dataset.size, dir, dataset.boardSize, useMrCal);
+    }
+
+    @Test
+    public void testWillBoard() throws IOException {
+        String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
+        File dir = Path.of("/home/matt/mrcal_will_debug/imgs/").toFile();
+        calibrateSquaresCommon(new Size(1600, 1200), dir, new Size(19, 14), true);
     }
 
     public static void calibrateSquaresCommon(
