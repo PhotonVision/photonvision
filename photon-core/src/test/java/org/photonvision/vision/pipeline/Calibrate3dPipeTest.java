@@ -93,13 +93,6 @@ public class Calibrate3dPipeTest {
         calibrateSquaresCommon(dataset.size, dir, dataset.boardSize, useMrCal);
     }
 
-    @Test
-    public void testWillBoard() throws IOException {
-        String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
-        File dir = Path.of("/home/matt/mrcal_will_debug/imgs/").toFile();
-        calibrateSquaresCommon(new Size(1600, 1200), dir, new Size(19, 14), true);
-    }
-
     public static void calibrateSquaresCommon(
             Size imgRes, File rootFolder, Size boardDim, boolean useMrCal) {
         calibrateSquaresCommon(
