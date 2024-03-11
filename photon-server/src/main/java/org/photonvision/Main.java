@@ -277,7 +277,7 @@ public class Main {
 
         CameraConfiguration camConf2024 =
                 ConfigManager.getInstance().getConfig().getCameraConfigurations().get("WPI2024");
-        if (camConf2024 == null || true) {
+        if (camConf2024 == null) {
             camConf2024 =
                     new CameraConfiguration(
                             "WPI2024",
