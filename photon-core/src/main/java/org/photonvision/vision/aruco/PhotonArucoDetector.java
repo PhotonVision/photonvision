@@ -23,16 +23,37 @@ import java.util.Comparator;
 import org.opencv.core.Mat;
 import org.opencv.objdetect.ArucoDetector;
 import org.opencv.objdetect.DetectorParameters;
+import org.opencv.objdetect.Dictionary;
 import org.opencv.objdetect.Objdetect;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.vision.opencv.Releasable;
 
 /** This class wraps an {@link ArucoDetector} for convenience. */
-public class PhotonArucoDetector {
+public class PhotonArucoDetector implements Releasable {
     private static final Logger logger = new Logger(PhotonArucoDetector.class, LogGroup.VisionModule);
 
-    private final ArucoDetector detector =
-            new ArucoDetector(Objdetect.getPredefinedDictionary(Objdetect.DICT_APRILTAG_16h5));
+    private static class ArucoDetectorHack extends ArucoDetector {
+        public ArucoDetectorHack(Dictionary predefinedDictionary) {
+            super(predefinedDictionary);
+        }
+
+        // avoid double-free by keeping track of this ourselves (ew)
+        private boolean freed = false;
+
+        @Override
+        public void finalize() throws Throwable {
+            if (freed) {
+                return;
+            }
+
+            super.finalize();
+            freed = true;
+        }
+    }
+
+    private final ArucoDetectorHack detector =
+            new ArucoDetectorHack(Objdetect.getPredefinedDictionary(Objdetect.DICT_APRILTAG_16h5));
 
     private final Mat ids = new Mat();
     private final ArrayList<Mat> cornerMats = new ArrayList<>();
@@ -94,5 +115,17 @@ public class PhotonArucoDetector {
         Arrays.sort(results, Comparator.comparingInt(ArucoDetectionResult::getId));
 
         return results;
+    }
+
+    @Override
+    public void release() {
+        try {
+            detector.finalize();
+        } catch (Throwable e) {
+            logger.error("Exception destroying PhotonArucoDetector", e);
+        }
+        ids.release();
+        for (var m : cornerMats) m.release();
+        cornerMats.clear();
     }
 }

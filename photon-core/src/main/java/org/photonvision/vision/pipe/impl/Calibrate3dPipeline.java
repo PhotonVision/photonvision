@@ -231,4 +231,9 @@ public class Calibrate3dPipeline
     public CameraCalibrationCoefficients cameraCalibrationCoefficients() {
         return calibrationOutput.output;
     }
+
+    @Override
+    public void release() {
+        // we never actually need to give resources up since pipelinemanager only makes one of us
+    }
 }

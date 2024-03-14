@@ -21,11 +21,13 @@ import edu.wpi.first.apriltag.AprilTagDetection;
 import edu.wpi.first.apriltag.AprilTagDetector;
 import java.util.List;
 import org.photonvision.vision.opencv.CVMat;
+import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class AprilTagDetectionPipe
-        extends CVPipe<CVMat, List<AprilTagDetection>, AprilTagDetectionPipeParams> {
-    private final AprilTagDetector m_detector = new AprilTagDetector();
+        extends CVPipe<CVMat, List<AprilTagDetection>, AprilTagDetectionPipeParams>
+        implements Releasable {
+    private AprilTagDetector m_detector = new AprilTagDetector();
 
     public AprilTagDetectionPipe() {
         super();
@@ -38,6 +40,10 @@ public class AprilTagDetectionPipe
     protected List<AprilTagDetection> process(CVMat in) {
         if (in.getMat().empty()) {
             return List.of();
+        }
+
+        if (m_detector == null) {
+            throw new RuntimeException("Apriltag detector was released!");
         }
 
         var ret = m_detector.detect(in.getMat());
@@ -59,5 +65,11 @@ public class AprilTagDetectionPipe
         }
 
         super.setParams(newParams);
+    }
+
+    @Override
+    public void release() {
+        m_detector.close();
+        m_detector = null;
     }
 }
