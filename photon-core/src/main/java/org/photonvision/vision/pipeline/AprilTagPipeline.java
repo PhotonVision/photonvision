@@ -221,4 +221,11 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
         return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, multiTagResult, frame);
     }
+
+    @Override
+    public void release() {
+        aprilTagDetectionPipe.release();
+        singleTagPoseEstimatorPipe.release();
+        super.release();
+    }
 }

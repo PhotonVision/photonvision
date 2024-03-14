@@ -148,6 +148,7 @@ public class PipelineManager {
      * @return The currently active pipeline.
      */
     public CVPipeline getCurrentPipeline() {
+        updatePipelineFromRequested();
         if (currentPipelineIndex < 0) {
             switch (currentPipelineIndex) {
                 case CAL_3D_INDEX:
@@ -170,6 +171,8 @@ public class PipelineManager {
         return getPipelineSettings(currentPipelineIndex);
     }
 
+    private volatile int requestedIndex = 0;
+
     /**
      * Internal method for setting the active pipeline. <br>
      * <br>
@@ -179,6 +182,22 @@ public class PipelineManager {
      * @param newIndex Index of pipeline to be active
      */
     private void setPipelineInternal(int newIndex) {
+        requestedIndex = newIndex;
+    }
+
+    /**
+     * Based on a requested pipeline index, create/destroy pipelines as necessary. We do this as a
+     * side effect of the main thread that calls getCurrentPipeline to avoid race conditions between
+     * server threads and the VisionRunner TODO: this should be refactored. Shame Java doesn't have
+     * RAII
+     */
+    private void updatePipelineFromRequested() {
+        int newIndex = requestedIndex;
+        if (newIndex == currentPipelineIndex) {
+            // nothing to do, probably no change -- give up
+            return;
+        }
+
         if (newIndex < 0 && currentPipelineIndex >= 0) {
             // Transitioning to a built-in pipe, save off the current user one
             lastUserPipelineIdx = currentPipelineIndex;
@@ -189,8 +208,8 @@ public class PipelineManager {
             return;
         }
 
-        // Cleanup potential old native resources before swapping over
-        if (currentUserPipeline != null) {
+        // Cleanup potential old native resources before swapping over for user pipelines
+        if (currentUserPipeline != null && !(newIndex < 0)) {
             currentUserPipeline.release();
         }
 
