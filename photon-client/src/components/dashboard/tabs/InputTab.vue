@@ -136,7 +136,7 @@ const interactiveCols = computed(() =>
       tooltip="Rotates the camera stream. Rotation not available when camera has been calibrated."
       :items="cameraRotations"
       :select-cols="interactiveCols"
-      :disabled="!useCameraSettingsStore().isCurrentVideoFormatCalibrated"
+      :disabled="useCameraSettingsStore().isCurrentVideoFormatCalibrated"
       @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ inputImageRotationMode: args }, false)"
     />
     <pv-select
