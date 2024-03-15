@@ -35,6 +35,7 @@ import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.logging.PvCSCoreLogger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.numbers.IntegerCouple;
@@ -65,6 +66,7 @@ public class Main {
     private static final boolean isRelease = PhotonVersion.isRelease;
 
     private static boolean isTestMode = false;
+    private static boolean isSmoketest = false;
     private static Path testModeFolder = null;
     private static boolean printDebugLogs;
 
@@ -90,6 +92,11 @@ public class Main {
                 "clear-config",
                 false,
                 "Clears PhotonVision pipeline and networking settings. Preserves log files");
+        options.addOption(
+                "s",
+                "smoketest",
+                false,
+                "Exit Photon after loading native libraries and camera configs, but before starting up camera runners");
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
@@ -126,6 +133,10 @@ public class Main {
 
             if (cmd.hasOption("clear-config")) {
                 ConfigManager.getInstance().clearConfig();
+            }
+
+            if (cmd.hasOption("smoketest")) {
+                isSmoketest = true;
             }
         }
         return true;
@@ -266,7 +277,7 @@ public class Main {
 
         CameraConfiguration camConf2024 =
                 ConfigManager.getInstance().getConfig().getCameraConfigurations().get("WPI2024");
-        if (camConf2024 == null || true) {
+        if (camConf2024 == null) {
             camConf2024 =
                     new CameraConfiguration(
                             "WPI2024",
@@ -337,11 +348,17 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            TestUtils.loadLibraries();
-            logger.info("Native libraries loaded.");
+            boolean success = TestUtils.loadLibraries();
+
+            if (!success) {
+                logger.error("Failed to load native libraries! Giving up :(");
+                System.exit(1);
+            }
         } catch (Exception e) {
             logger.error("Failed to load native libraries!", e);
+            System.exit(1);
         }
+        logger.info("Native libraries loaded.");
 
         try {
             if (Platform.isRaspberryPi()) {
@@ -393,6 +410,8 @@ public class Main {
                         + Platform.getPlatformName()
                         + (Platform.isRaspberryPi() ? (" (Pi " + PiVersion.getPiVersion() + ")") : ""));
 
+        PvCSCoreLogger.getInstance();
+
         logger.debug("Loading ConfigManager...");
         ConfigManager.getInstance().load(); // init config manager
         ConfigManager.getInstance().requestSave();
@@ -411,6 +430,11 @@ public class Main {
         logger.info("Loading ML models");
         NeuralNetworkModelManager.getInstance()
                 .initialize(ConfigManager.getInstance().getModelsDirectory());
+
+        if (isSmoketest) {
+            logger.info("PhotonVision base functionality loaded -- smoketest complete");
+            System.exit(0);
+        }
 
         if (!isTestMode) {
             logger.debug("Loading VisionSourceManager...");

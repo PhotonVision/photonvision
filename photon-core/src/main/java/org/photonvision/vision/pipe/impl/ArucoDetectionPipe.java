@@ -29,10 +29,12 @@ import org.opencv.objdetect.Objdetect;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.aruco.PhotonArucoDetector;
 import org.photonvision.vision.opencv.CVMat;
+import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class ArucoDetectionPipe
-        extends CVPipe<CVMat, List<ArucoDetectionResult>, ArucoDetectionPipeParams> {
+        extends CVPipe<CVMat, List<ArucoDetectionResult>, ArucoDetectionPipeParams>
+        implements Releasable {
     // ArucoDetector wrapper class
     private final PhotonArucoDetector photonDetector = new PhotonArucoDetector();
 
@@ -130,5 +132,10 @@ public class ArucoDetectionPipe
         var pt1 = new Point(corner.x - windowSize, corner.y - windowSize);
         var pt2 = new Point(corner.x + windowSize, corner.y + windowSize);
         Imgproc.rectangle(outputMat, pt1, pt2, new Scalar(0, 0, 255), thickness);
+    }
+
+    @Override
+    public void release() {
+        photonDetector.release();
     }
 }

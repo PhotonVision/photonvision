@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
@@ -270,5 +271,336 @@ public class VisionSourceManagerTest {
         assertTrue(inst.knownCameras.contains(info13));
         assertEquals(10, inst.knownCameras.size());
         assertEquals(0, inst.unmatchedLoadedConfigs.size());
+    }
+
+    @Test
+    public void testDisableInhibitPathChangeIdenticalCams() {
+        Logger.setLevel(LogGroup.Camera, LogLevel.DEBUG);
+
+        var inst = new VisionSourceManager();
+        ConfigManager.getInstance().clearConfig();
+        ConfigManager.getInstance().load();
+        ConfigManager.getInstance().getConfig().getNetworkConfig().matchCamerasOnlyByPath = false;
+
+        var CAM2_OLD_PATH =
+                new String[] {"/dev/v4l/by-path/platform-fc880000.usb-usb-0:1:1.0-video-index0"};
+        var CAM2_NEW_PATH =
+                new String[] {"/dev/v4l/by-path/platform-fc880080.usb-usb-0:1:1.3-video-index0"};
+
+        var CAM1_OLD_PATHS =
+                new String[] {
+                    "/dev/v4l/by-id/usb-Arducam_Technology_Co.__Ltd._Arducam_OV2311_USB_Camera_UC621-video-index0",
+                    "/dev/v4l/by-path/platform-fc800000.usb-usb-0:1:1.0-video-index0"
+                };
+
+        var camera1_saved_config =
+                new CameraConfiguration(
+                        "Arducam OV2311 USB Camera",
+                        "Arducam OV2311 USB Camera",
+                        "fromt-left",
+                        "/dev/video0",
+                        CAM1_OLD_PATHS);
+        camera1_saved_config.usbVID = 3141;
+        camera1_saved_config.usbPID = 25446;
+        var camera2_saved_config =
+                new CameraConfiguration(
+                        "Arducam OV2311 USB Camera",
+                        "Arducam OV2311 USB Camera (1)",
+                        "fromt-left",
+                        "/dev/video2",
+                        CAM2_OLD_PATH);
+        camera2_saved_config.usbVID = 3141;
+        camera2_saved_config.usbPID = 25446;
+
+        // And load our "old" configs
+        inst.registerLoadedConfigs(camera1_saved_config, camera2_saved_config);
+
+        // Camera attached to new port, but strict matching disabled
+        {
+            CameraInfo info1 =
+                    new CameraInfo(
+                            0, "/dev/video11", "Arducam OV2311 USB Camera", CAM1_OLD_PATHS, 3141, 25446);
+            CameraInfo info2 =
+                    new CameraInfo(
+                            0, "/dev/video12", "Arducam OV2311 USB Camera", CAM2_NEW_PATH, 3141, 25446);
+
+            var cameraInfos = new ArrayList<CameraInfo>();
+            cameraInfos.add(info1);
+            cameraInfos.add(info2);
+            List<VisionSource> ret1 = inst.tryMatchCamImpl(cameraInfos);
+
+            // and check the new one got matched got matched
+            assertEquals(2, ret1.size());
+            assertEquals(
+                    1, ret1.stream().filter(it -> it.cameraConfiguration.path.equals(info1.path)).count());
+            assertEquals(
+                    1, ret1.stream().filter(it -> it.cameraConfiguration.path.equals(info2.path)).count());
+        }
+    }
+
+    @Test
+    public void testInhibitPathChangeIdenticalCams() {
+        Logger.setLevel(LogGroup.Camera, LogLevel.DEBUG);
+
+        var inst = new VisionSourceManager();
+        ConfigManager.getInstance().clearConfig();
+        ConfigManager.getInstance().load();
+        ConfigManager.getInstance().getConfig().getNetworkConfig().matchCamerasOnlyByPath = true;
+
+        var CAM2_OLD_PATH =
+                new String[] {"/dev/v4l/by-path/platform-fc880000.usb-usb-0:1:1.0-video-index0"};
+        var CAM2_NEW_PATH =
+                new String[] {"/dev/v4l/by-path/platform-fc880080.usb-usb-0:1:1.3-video-index0"};
+
+        var CAM1_OLD_PATHS =
+                new String[] {
+                    "/dev/v4l/by-id/usb-Arducam_Technology_Co.__Ltd._Arducam_OV2311_USB_Camera_UC621-video-index0",
+                    "/dev/v4l/by-path/platform-fc800000.usb-usb-0:1:1.0-video-index0"
+                };
+
+        var camera1_saved_config =
+                new CameraConfiguration(
+                        "Arducam OV2311 USB Camera",
+                        "Arducam OV2311 USB Camera (1)",
+                        "fromt-left",
+                        "/dev/video0",
+                        CAM1_OLD_PATHS);
+        camera1_saved_config.usbVID = 3141;
+        camera1_saved_config.usbPID = 25446;
+        var camera2_saved_config =
+                new CameraConfiguration(
+                        "Arducam OV2311 USB Camera",
+                        "Arducam OV2311 USB Camera (1)",
+                        "fromt-left",
+                        "/dev/video2",
+                        CAM2_OLD_PATH);
+        camera2_saved_config.usbVID = 3141;
+        camera2_saved_config.usbPID = 25446;
+
+        // And load our "old" configs
+        inst.registerLoadedConfigs(camera1_saved_config, camera2_saved_config);
+
+        // initial pass with camera in the wrong spot
+        {
+            // Give our cameras new "paths" to fake the windows logic out. this should not
+            // affect strict matching
+            CameraInfo info1 =
+                    new CameraInfo(
+                            0, "/dev/video11", "Arducam OV2311 USB Camera", CAM1_OLD_PATHS, 3141, 25446);
+            CameraInfo info2 =
+                    new CameraInfo(
+                            0, "/dev/video12", "Arducam OV2311 USB Camera", CAM2_NEW_PATH, 3141, 25446);
+
+            var cameraInfos = new ArrayList<CameraInfo>();
+            cameraInfos.add(info1);
+            cameraInfos.add(info2);
+            List<VisionSource> ret1 = inst.tryMatchCamImpl(cameraInfos);
+
+            // Our cameras should be "known"
+            assertTrue(inst.knownCameras.contains(info1));
+            assertTrue(inst.knownCameras.contains(info2));
+            assertEquals(2, inst.knownCameras.size());
+
+            // And we should have matched one camera
+            assertEquals(1, ret1.size());
+            // and only matched camera1, not 2
+            assertEquals(
+                    1, ret1.stream().filter(it -> it.cameraConfiguration.path.equals(info1.path)).count());
+            assertEquals(
+                    0, ret1.stream().filter(it -> it.cameraConfiguration.path.equals(info2.path)).count());
+        }
+
+        // Now move our camera back
+        {
+            CameraInfo info1 =
+                    new CameraInfo(
+                            0, "/dev/video11", "Arducam OV2311 USB Camera", CAM1_OLD_PATHS, 3141, 25446);
+            CameraInfo info2 =
+                    new CameraInfo(
+                            0, "/dev/video12", "Arducam OV2311 USB Camera", CAM2_OLD_PATH, 3141, 25446);
+
+            var cameraInfos = new ArrayList<CameraInfo>();
+            cameraInfos.add(info1);
+            cameraInfos.add(info2);
+            List<VisionSource> ret1 = inst.tryMatchCamImpl(cameraInfos);
+
+            // and check the new one got matched got matched
+            assertEquals(1, ret1.size());
+            assertEquals(
+                    0, ret1.stream().filter(it -> it.cameraConfiguration.path.equals(info1.path)).count());
+            assertEquals(
+                    1, ret1.stream().filter(it -> it.cameraConfiguration.path.equals(info2.path)).count());
+        }
+    }
+
+    @Test
+    public void testCSICameraMatching() {
+        Logger.setLevel(LogGroup.Camera, LogLevel.DEBUG);
+
+        // List of known cameras
+        var cameraInfos = new ArrayList<CameraInfo>();
+
+        var inst = new VisionSourceManager();
+        ConfigManager.getInstance().clearConfig();
+        ConfigManager.getInstance().load();
+        ConfigManager.getInstance().getConfig().getNetworkConfig().matchCamerasOnlyByPath = false;
+
+        CameraInfo info1 =
+                new CameraInfo(
+                        -1,
+                        "/base/soc/i2c0mux/i2c@0/ov9281@60",
+                        "OV9281", // Typically rp1-cfe for unit test changed to CSICAM-DEV
+                        new String[] {},
+                        -1,
+                        -1,
+                        CameraType.ZeroCopyPicam);
+
+        CameraInfo info2 =
+                new CameraInfo(
+                        -1,
+                        "/base/soc/i2c0mux/i2c@1/ov9281@60",
+                        "OV9281", // Typically rp1-cfe for unit test changed to CSICAM-DEV
+                        new String[] {},
+                        -1,
+                        -1,
+                        CameraType.ZeroCopyPicam);
+
+        var camera1_saved_config =
+                new CameraConfiguration(
+                        "OV9281", "OV9281", "test-1", "/base/soc/i2c0mux/i2c@0/ov9281@60", new String[0]);
+        camera1_saved_config.cameraType = CameraType.ZeroCopyPicam;
+        camera1_saved_config.usbVID = -1;
+        camera1_saved_config.usbPID = -1;
+
+        var camera2_saved_config =
+                new CameraConfiguration(
+                        "OV9281", "OV9281 (1)", "test-2", "/base/soc/i2c0mux/i2c@1/ov9281@60", new String[0]);
+        camera2_saved_config.usbVID = -1;
+        camera2_saved_config.usbPID = -1;
+        camera2_saved_config.cameraType = CameraType.ZeroCopyPicam;
+
+        cameraInfos.add(info1);
+        cameraInfos.add(info2);
+
+        // Try matching with both cameras being "known"
+        inst.registerLoadedConfigs(camera1_saved_config, camera2_saved_config);
+        var ret1 = inst.tryMatchCamImpl(cameraInfos);
+
+        // Our cameras should be "known"
+        assertTrue(inst.knownCameras.contains(info1));
+        assertTrue(inst.knownCameras.contains(info2));
+        assertEquals(2, inst.knownCameras.size());
+        assertEquals(2, ret1.size());
+
+        // Exactly one camera should have the path we put in
+        for (int i = 0; i < cameraInfos.size(); i++) {
+            var testPath = cameraInfos.get(i).path;
+            assertEquals(
+                    1, ret1.stream().filter(it -> testPath.equals(it.cameraConfiguration.path)).count());
+        }
+    }
+
+    @Test
+    public void testIdenticalCameras() {
+        Logger.setLevel(LogGroup.Camera, LogLevel.DEBUG);
+
+        // List of known cameras
+        var cameraInfos = new ArrayList<CameraInfo>();
+
+        var inst = new VisionSourceManager();
+        ConfigManager.getInstance().clearConfig();
+        ConfigManager.getInstance().load();
+        ConfigManager.getInstance().getConfig().getNetworkConfig().matchCamerasOnlyByPath = false;
+
+        // Match empty camera infos
+        inst.tryMatchCamImpl(cameraInfos);
+
+        CameraInfo info1 =
+                new CameraInfo(
+                        0,
+                        "/dev/video0",
+                        "Arducam OV2311 USB Camera",
+                        new String[] {
+                            "/dev/v4l/by-id/usb-Arducam_Technology_Co.__Ltd._Arducam_OV2311_USB_Camera_UC621-video-index0",
+                            "/dev/v4l/by-path/platform-fc800000.usb-usb-0:1:1.0-video-index0"
+                        },
+                        3141,
+                        25446);
+        CameraInfo info2 =
+                new CameraInfo(
+                        0,
+                        "/dev/video2",
+                        "Arducam OV2311 USB Camera",
+                        new String[] {
+                            "/dev/v4l/by-id/usb-Arducam_Technology_Co.__Ltd._Arducam_OV2311_USB_Camera_UC621-video-index0",
+                            "/dev/v4l/by-path/platform-fc880000.usb-usb-0:1:1.0-video-index0"
+                        },
+                        3141,
+                        25446);
+
+        cameraInfos.add(info1);
+        cameraInfos.add(info2);
+
+        // Match two "new" cameras
+        var ret1 = inst.tryMatchCamImpl(cameraInfos);
+
+        // Our cameras should be "known"
+        assertTrue(inst.knownCameras.contains(info1));
+        assertTrue(inst.knownCameras.contains(info2));
+        assertEquals(2, inst.knownCameras.size());
+        assertEquals(2, ret1.size());
+
+        // Exactly one camera should have the path we put in
+        for (int i = 0; i < cameraInfos.size(); i++) {
+            var testPath = cameraInfos.get(i).getUSBPath().get();
+            assertEquals(
+                    1,
+                    ret1.stream()
+                            .filter(it -> testPath.equals(it.cameraConfiguration.getUSBPath().get()))
+                            .count());
+        }
+
+        // and the names should be unique
+        for (int i = 0; i < ret1.size(); i++) {
+            var thisName = ret1.get(i).cameraConfiguration.uniqueName;
+            assertEquals(
+                    1,
+                    ret1.stream().filter(it -> thisName.equals(it.cameraConfiguration.uniqueName)).count());
+        }
+
+        // duplciate cameras, same info, new ref
+        var duplicateCameraInfos = new ArrayList<CameraInfo>();
+        CameraInfo info1_dup =
+                new CameraInfo(
+                        0,
+                        "/dev/video0",
+                        "Arducam OV2311 USB Camera",
+                        new String[] {
+                            "/dev/v4l/by-id/usb-Arducam_Technology_Co.__Ltd._Arducam_OV2311_USB_Camera_UC621-video-index0",
+                            "/dev/v4l/by-path/platform-fc800000.usb-usb-0:1:1.0-video-index0"
+                        },
+                        3141,
+                        25446);
+        CameraInfo info2_dup =
+                new CameraInfo(
+                        0,
+                        "/dev/video2",
+                        "Arducam OV2311 USB Camera",
+                        new String[] {
+                            "/dev/v4l/by-id/usb-Arducam_Technology_Co.__Ltd._Arducam_OV2311_USB_Camera_UC621-video-index0",
+                            "/dev/v4l/by-path/platform-fc880000.usb-usb-0:1:1.0-video-index0"
+                        },
+                        3141,
+                        25446);
+
+        duplicateCameraInfos.add(info1_dup);
+        duplicateCameraInfos.add(info2_dup);
+
+        inst.tryMatchCamImpl(duplicateCameraInfos);
+
+        // Our cameras should be "known", and we should only "know" two cameras still
+        assertTrue(inst.knownCameras.contains(info1_dup));
+        assertTrue(inst.knownCameras.contains(info2_dup));
+        assertEquals(2, inst.knownCameras.size());
     }
 }

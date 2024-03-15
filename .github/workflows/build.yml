@@ -260,6 +260,83 @@ jobs:
         with:
           name: jar-${{ matrix.artifact-name }}
           path: photon-server/build/libs
+
+  run-smoketest-native:
+    needs: [build-package]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact-name: jar-Linux
+            extraOpts: -Djdk.lang.Process.launchMechanism=vfork
+          - os: windows-latest
+            artifact-name: jar-Win64
+            extraOpts: ""
+          - os: macos-latest
+            artifact-name: jar-macOS
+            architecture: x64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Install Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}
+      # On linux, install mrcal packages
+      - run: |
+          sudo apt-get update
+          sudo apt-get install --yes libcholmod3 liblapack3 libsuitesparseconfig5
+        if: ${{ (matrix.os) == 'ubuntu-latest' }}
+      # and actually run the jar
+      - run: java -jar ${{ matrix.extraOpts }} *.jar --smoketest
+        if: ${{ (matrix.os) != 'windows-latest' }}
+      - run: ls *.jar | %{ Write-Host "Running $($_.Name)"; Start-Process "java" -ArgumentList "-jar `"$($_.FullName)`" --smoketest" -NoNewWindow -Wait; break }
+        if: ${{ (matrix.os) == 'windows-latest' }}
+
+  run-smoketest-chroot:
+    needs: [build-package]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact-name: LinuxArm64
+            image_suffix: RaspberryPi
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.4/photonvision_raspi.img.xz
+            cpu: cortex-a7
+            image_additional_mb: 0
+            extraOpts: -Djdk.lang.Process.launchMechanism=vfork
+
+    runs-on: ${{ matrix.os }}
+    name: smoketest-${{ matrix.image_suffix }}
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: jar-${{ matrix.artifact-name }}
+
+      - uses: pguyot/arm-runner-action@v2
+        name: Run photon smoketest
+        id: generate_image
+        with:
+          base_image: ${{ matrix.image_url }}
+          image_additional_mb: ${{ matrix.image_additional_mb }}
+          optimize_image: yes
+          cpu: ${{ matrix.cpu }}
+          # We do _not_ wanna copy photon into the image. Bind mount instead
+          bind_mount_repository: true
+          # our image better have java installed already
+          commands: |
+            java -jar ${{ matrix.extraOpts }} *.jar --smoketest
+
   build-image:
     needs: [build-package]
 
@@ -290,13 +367,13 @@ jobs:
           - os: ubuntu-latest
             artifact-name: LinuxArm64
             image_suffix: orangepi5
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.6/photonvision_opi5.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.10/photonvision_opi5.img.xz
             cpu: cortex-a8
             image_additional_mb: 4096
           - os: ubuntu-latest
             artifact-name: LinuxArm64
             image_suffix: orangepi5plus
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.6/photonvision_opi5plus.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.10/photonvision_opi5plus.img.xz
             cpu: cortex-a8
             image_additional_mb: 4096
 
