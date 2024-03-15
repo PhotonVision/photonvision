@@ -131,13 +131,24 @@ const interactiveCols = computed(() =>
       @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBlueGain: args }, false)"
     />
      <!-- Disable camera orientation as stop gap for Issue 1084 until calibration data gets rotated. https://github.com/PhotonVision/photonvision/issues/1084 -->
+    <v-banner
+      v-show="useCameraSettingsStore().isCurrentVideoFormatCalibrated && useCameraSettingsStore().currentPipelineSettings.inputImageRotationMode != 0"
+      rounded
+      dark
+      color="red"
+      text-color="white"
+      class="mt-3"
+      icon="mdi-alert-circle-outline"
+    >
+      Warning! A known bug affects rotation of calibrated camera. Turn off rotation here and rotate using cameraToRobotTransform in your robot code.
+    </v-banner>
     <pv-select
       v-model="useCameraSettingsStore().currentPipelineSettings.inputImageRotationMode"
       label="Orientation"
       tooltip="Rotates the camera stream. Rotation not available when camera has been calibrated."
       :items="cameraRotations"
       :select-cols="interactiveCols"
-      :disabled="useCameraSettingsStore().isCurrentVideoFormatCalibrated" 
+      :disabled="useCameraSettingsStore().isCurrentVideoFormatCalibrated && useCameraSettingsStore().currentPipelineSettings.inputImageRotationMode == 0" 
       @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ inputImageRotationMode: args }, false)"
     />
     <pv-select
