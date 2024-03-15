@@ -25,13 +25,15 @@ import org.opencv.calib3d.Calib3d;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class AprilTagPoseEstimatorPipe
         extends CVPipe<
                 AprilTagDetection,
                 AprilTagPoseEstimate,
-                AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams> {
+                AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams>
+        implements Releasable {
     private final AprilTagPoseEstimator m_poseEstimator =
             new AprilTagPoseEstimator(new AprilTagPoseEstimator.Config(0, 0, 0, 0, 0));
 
@@ -90,6 +92,11 @@ public class AprilTagPoseEstimatorPipe
         }
 
         super.setParams(newParams);
+    }
+
+    @Override
+    public void release() {
+        temp.release();
     }
 
     public static class AprilTagPoseEstimatorPipeParams {

@@ -60,8 +60,8 @@ import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 
 public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSettings> {
-    private final ArucoDetectionPipe arucoDetectionPipe = new ArucoDetectionPipe();
-    private final ArucoPoseEstimatorPipe singleTagPoseEstimatorPipe = new ArucoPoseEstimatorPipe();
+    private ArucoDetectionPipe arucoDetectionPipe = new ArucoDetectionPipe();
+    private ArucoPoseEstimatorPipe singleTagPoseEstimatorPipe = new ArucoPoseEstimatorPipe();
     private final MultiTargetPNPPipe multiTagPNPPipe = new MultiTargetPNPPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
@@ -249,5 +249,14 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
                 Imgproc.THRESH_BINARY_INV,
                 windowSize,
                 constant);
+    }
+
+    @Override
+    public void release() {
+        arucoDetectionPipe.release();
+        singleTagPoseEstimatorPipe.release();
+        arucoDetectionPipe = null;
+        singleTagPoseEstimatorPipe = null;
+        super.release();
     }
 }

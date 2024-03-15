@@ -36,6 +36,7 @@ import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
+import org.photonvision.vision.pipe.impl.Calibrate3dPipe.CalibrationInput;
 import org.photonvision.vision.pipe.impl.FindBoardCornersPipe.FindBoardCornersPipeResult;
 import org.photonvision.vision.pipeline.CVPipeline;
 import org.photonvision.vision.pipeline.Calibration3dPipelineSettings;
@@ -176,7 +177,8 @@ public class Calibrate3dPipeline
 
         /*Pass the board corners to the pipe, which will check again to see if all boards are valid
         and returns the corresponding image and object points*/
-        calibrationOutput = calibrate3dPipe.run(foundCornersList);
+        calibrationOutput =
+                calibrate3dPipe.run(new CalibrationInput(foundCornersList, frameStaticProperties));
 
         this.calibrating = false;
 
@@ -228,5 +230,10 @@ public class Calibrate3dPipeline
 
     public CameraCalibrationCoefficients cameraCalibrationCoefficients() {
         return calibrationOutput.output;
+    }
+
+    @Override
+    public void release() {
+        // we never actually need to give resources up since pipelinemanager only makes one of us
     }
 }
