@@ -98,7 +98,8 @@ public class RknnDetectorJNI extends PhotonJNICommon {
                 if (objPointer > 0) {
                     CVMat inCopy = new CVMat();
                     inCopy.copyTo(in);
-                    ret = RknnJNI.detect(objPointer, inCopy.getMat().getNativeObjAddr(), nmsThresh, boxThresh);
+                    ret =
+                            RknnJNI.detect(objPointer, inCopy.getMat().getNativeObjAddr(), nmsThresh, boxThresh);
                     inCopy.release();
                 } else {
                     logger.warn("Detect called after destroy -- giving up");
