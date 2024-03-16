@@ -96,7 +96,10 @@ public class RknnDetectorJNI extends PhotonJNICommon {
                 // been called. This would mean objPointer would be invalid which would call everything to
                 // explode.
                 if (objPointer > 0) {
-                    ret = RknnJNI.detect(objPointer, in.getMat().getNativeObjAddr(), nmsThresh, boxThresh);
+                    CVMat inCopy = new CVMat();
+                    inCopy.copyTo(in);
+                    ret = RknnJNI.detect(objPointer, inCopy.getMat().getNativeObjAddr(), nmsThresh, boxThresh);
+                    inCopy.release();
                 } else {
                     logger.warn("Detect called after destroy -- giving up");
                     return List.of();
