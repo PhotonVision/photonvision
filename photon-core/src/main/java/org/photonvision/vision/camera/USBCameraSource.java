@@ -23,7 +23,6 @@ import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.cscore.VideoException;
 import edu.wpi.first.cscore.VideoMode;
 import edu.wpi.first.cscore.VideoProperty.Kind;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.util.PixelFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -297,8 +296,7 @@ public class USBCameraSource extends VisionSource {
                             propMax = 60;
                         }
 
-                        var exposure_manual_val = MathUtils.map(Math.round(exposure), 0, 100, propMin,
-                        propMax);
+                        var exposure_manual_val = MathUtils.map(Math.round(exposure), 0, 100, propMin, propMax);
                         logger.debug("Setting camera exposure to " + exposure_manual_val);
                         prop.set((int) exposure_manual_val);
                     } else {
