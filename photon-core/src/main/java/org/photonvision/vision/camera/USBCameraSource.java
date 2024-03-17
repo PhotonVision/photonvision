@@ -32,6 +32,7 @@ import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TestUtils;
+import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.frame.provider.USBFrameProvider;
@@ -70,11 +71,12 @@ public class USBCameraSource extends VisionSource {
         }
 
         if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.ArduOV9782)) {
-            logger.info(
-                    "Quirky camera detected "
-                            + getCameraConfiguration().cameraQuirks.baseName
-                            + ", setting new white balance temperature");
-            camera.getProperty("white_balance_temperature").set(3500);
+            try {
+                // Set white balance temperature to 3500 for OV9782 camera
+                camera.getProperty("white_balance_temperature").set(3500);
+            } catch (VideoException e) {
+                logger.error("Failed to set white balance temperature for OV9782 camera!", e);
+            }
         }
 
         if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.CompletelyBroken)) {
@@ -295,9 +297,8 @@ public class USBCameraSource extends VisionSource {
                             propMax = 60;
                         }
 
-                        // var exposure_manual_val = MathUtils.map(Math.round(exposure), 0, 100, propMin,
-                        // propMax);
-                        var exposure_manual_val = MathUtil.clamp(Math.round(exposure), propMin, propMax);
+                        var exposure_manual_val = MathUtils.map(Math.round(exposure), 0, 100, propMin,
+                        propMax);
                         logger.debug("Setting camera exposure to " + exposure_manual_val);
                         prop.set((int) exposure_manual_val);
                     } else {
