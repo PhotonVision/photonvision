@@ -32,7 +32,6 @@ import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TestUtils;
-import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.frame.provider.USBFrameProvider;
@@ -296,7 +295,8 @@ public class USBCameraSource extends VisionSource {
                             propMax = 60;
                         }
 
-                        // var exposure_manual_val = MathUtils.map(Math.round(exposure), 0, 100, propMin, propMax);
+                        // var exposure_manual_val = MathUtils.map(Math.round(exposure), 0, 100, propMin,
+                        // propMax);
                         var exposure_manual_val = MathUtil.clamp(Math.round(exposure), propMin, propMax);
                         logger.debug("Setting camera exposure to " + exposure_manual_val);
                         prop.set((int) exposure_manual_val);
