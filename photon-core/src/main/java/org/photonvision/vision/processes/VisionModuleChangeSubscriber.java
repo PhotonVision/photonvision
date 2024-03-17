@@ -88,7 +88,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         parentModule.saveAndBroadcastAll();
                         return;
                     case "deleteCurrPipeline":
-                        var indexToDelete = parentModule.pipelineManager.getCurrentPipelineIndex();
+                        var indexToDelete = parentModule.pipelineManager.getRequestedIndex();
                         logger.info("Deleting current pipe at index " + indexToDelete);
                         int newIndex = parentModule.pipelineManager.removePipeline(indexToDelete);
                         parentModule.setPipeline(newIndex);
@@ -96,7 +96,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         return;
                     case "changePipeline": // change active pipeline
                         var index = (Integer) newPropValue;
-                        if (index == parentModule.pipelineManager.getCurrentPipelineIndex()) {
+                        if (index == parentModule.pipelineManager.getRequestedIndex()) {
                             logger.debug("Skipping pipeline change, index " + index + " already active");
                             return;
                         }

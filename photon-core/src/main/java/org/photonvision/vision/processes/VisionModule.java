@@ -143,7 +143,7 @@ public class VisionModule {
         ntConsumer =
                 new NTDataPublisher(
                         visionSource.getSettables().getConfiguration().nickname,
-                        pipelineManager::getCurrentPipelineIndex,
+                        pipelineManager::getRequestedIndex,
                         this::setPipeline,
                         pipelineManager::getDriverMode,
                         this::setDriverMode);
@@ -321,7 +321,7 @@ public class VisionModule {
 
     void changePipelineType(int newType) {
         pipelineManager.changePipelineType(newType);
-        setPipeline(pipelineManager.getCurrentPipelineIndex());
+        setPipeline(pipelineManager.getRequestedIndex());
         saveAndBroadcastAll();
     }
 
@@ -329,9 +329,7 @@ public class VisionModule {
         pipelineManager.setDriverMode(isDriverMode);
         setVisionLEDs(!isDriverMode);
         setPipeline(
-                isDriverMode
-                        ? PipelineManager.DRIVERMODE_INDEX
-                        : pipelineManager.getCurrentPipelineIndex());
+                isDriverMode ? PipelineManager.DRIVERMODE_INDEX : pipelineManager.getRequestedIndex());
         saveAndBroadcastAll();
     }
 
@@ -385,7 +383,7 @@ public class VisionModule {
         var ret = pipelineManager.calibration3dPipeline.tryCalibration();
         pipelineManager.setCalibrationMode(false);
 
-        setPipeline(pipelineManager.getCurrentPipelineIndex());
+        setPipeline(pipelineManager.getRequestedIndex());
 
         if (ret != null) {
             logger.debug("Saving calibration...");
@@ -447,7 +445,7 @@ public class VisionModule {
         setVisionLEDs(pipelineSettings.ledMode);
 
         visionSource.getSettables().getConfiguration().currentPipelineIndex =
-                pipelineManager.getCurrentPipelineIndex();
+                pipelineManager.getRequestedIndex();
 
         return true;
     }
@@ -511,7 +509,7 @@ public class VisionModule {
         ret.uniqueName = visionSource.getSettables().getConfiguration().uniqueName;
         ret.currentPipelineSettings =
                 SerializationUtils.objectToHashMap(pipelineManager.getCurrentPipelineSettings());
-        ret.currentPipelineIndex = pipelineManager.getCurrentPipelineIndex();
+        ret.currentPipelineIndex = pipelineManager.getRequestedIndex();
         ret.pipelineNicknames = pipelineManager.getPipelineNicknames();
         ret.cameraQuirks = visionSource.getSettables().getConfiguration().cameraQuirks;
 
