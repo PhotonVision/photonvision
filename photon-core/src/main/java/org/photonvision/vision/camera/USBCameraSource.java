@@ -69,6 +69,11 @@ public class USBCameraSource extends VisionSource {
             logger.info("Quirky camera detected: " + getCameraConfiguration().cameraQuirks.baseName);
         }
 
+        if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.ArduOV9782)) {
+            logger.info("Quirky camera detected " + getCameraConfiguration().cameraQuirks.baseName + ", setting new white balance temperature");
+            camera.getProperty("white_balance_temperature").set(3500);
+        }
+
         if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.CompletelyBroken)) {
             // set some defaults, as these should never be used.
             logger.info(
