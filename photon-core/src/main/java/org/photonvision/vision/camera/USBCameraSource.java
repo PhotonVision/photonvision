@@ -200,7 +200,7 @@ public class USBCameraSource extends VisionSource {
                             } else {
                                 // 1=auto, 0=manual
                                 camera.getProperty("white_balance_automatic").set(0);
-                                camera.getProperty("white_balance_temperature").set(4000);                                
+                                camera.getProperty("white_balance_temperature").set(4000);
                             }
                         } else {
                             camera.setWhiteBalanceManual(4000); // Auto white-balance disabled, 4000K preset
