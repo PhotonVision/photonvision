@@ -65,16 +65,33 @@ public class RknnDetectorJNI extends PhotonJNICommon {
         long objPointer = -1;
         private List<String> labels;
         private final Object lock = new Object();
-        private static final CopyOnWriteArrayList<Long> detectors = new CopyOnWriteArrayList<>();
+        private static final CopyOnWriteArrayList<RknnObjectDetector> detectors =
+                new CopyOnWriteArrayList<>();
+
+        static volatile boolean hook = false;
 
         public RknnObjectDetector(String modelPath, List<String> labels, RknnJNI.ModelVersion version) {
             synchronized (lock) {
+                logger.error("Creating rknn jni", new RuntimeException());
                 objPointer = RknnJNI.create(modelPath, labels.size(), version.ordinal(), -1);
-                detectors.add(objPointer);
+                detectors.add(this);
                 System.out.println(
                         "Created " + objPointer + "! Detectors: " + Arrays.toString(detectors.toArray()));
             }
             this.labels = labels;
+
+            if (!hook) {
+                Runtime.getRuntime()
+                        .addShutdownHook(
+                                new Thread(
+                                        () -> {
+                                            System.err.println("Shutdown hook rknn");
+                                            for (var d : detectors) {
+                                                d.release();
+                                            }
+                                        }));
+                hook = true;
+            }
         }
 
         public List<String> getClasses() {
@@ -114,7 +131,7 @@ public class RknnDetectorJNI extends PhotonJNICommon {
             synchronized (lock) {
                 if (objPointer > 0) {
                     RknnJNI.destroy(objPointer);
-                    detectors.remove(objPointer);
+                    detectors.remove(this);
                     System.out.println(
                             "Killed " + objPointer + "! Detectors: " + Arrays.toString(detectors.toArray()));
                     objPointer = -1;
