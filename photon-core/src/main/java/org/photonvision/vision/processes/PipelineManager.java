@@ -177,6 +177,13 @@ public class PipelineManager {
 
     private volatile int requestedIndex = 0;
 
+    /** 
+     * Grab the currently requested pipeline index. The VisionRunner may not have changed over to this pipeline yet.
+     */
+    public int getRequestedIndex() {
+        return requestedIndex;
+    }
+
     /**
      * Internal method for setting the active pipeline. <br>
      * <br>

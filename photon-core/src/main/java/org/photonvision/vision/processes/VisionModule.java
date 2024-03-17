@@ -553,7 +553,7 @@ public class VisionModule {
         var config = visionSource.getSettables().getConfiguration();
         config.setPipelineSettings(pipelineManager.userPipelineSettings);
         config.driveModeSettings = pipelineManager.driverModePipeline.getSettings();
-        config.currentPipelineIndex = Math.max(pipelineManager.getCurrentPipelineIndex(), -1);
+        config.currentPipelineIndex = Math.max(pipelineManager.getRequestedIndex(), -1);
 
         return config;
     }
