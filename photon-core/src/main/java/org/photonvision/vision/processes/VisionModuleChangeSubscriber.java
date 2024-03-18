@@ -181,6 +181,9 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         parentModule.changePipelineType((Integer) newPropValue);
                         parentModule.saveAndBroadcastAll();
                         return;
+                    case "isDriverMode":
+                        parentModule.setDriverMode((Boolean)newPropValue);
+                        return;
                 }
 
                 // special case for camera settables

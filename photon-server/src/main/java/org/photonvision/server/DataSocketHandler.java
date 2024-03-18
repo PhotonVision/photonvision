@@ -131,18 +131,12 @@ public class DataSocketHandler {
                         case SMT_DRIVERMODE:
                             {
                                 // TODO: what is this event?
-                                var data = (HashMap<String, Object>) entryValue;
-                                var dmExpEvent =
-                                        new IncomingWebSocketEvent<Integer>(
-                                                DataChangeDestination.DCD_ACTIVEMODULE, "driverExposure", data);
-                                var dmBrightEvent =
-                                        new IncomingWebSocketEvent<Integer>(
-                                                DataChangeDestination.DCD_ACTIVEMODULE, "driverBrightness", data);
+                                var data = (Boolean) entryValue;
                                 var dmIsDriverEvent =
                                         new IncomingWebSocketEvent<Boolean>(
-                                                DataChangeDestination.DCD_ACTIVEMODULE, "isDriver", data);
+                                                DataChangeDestination.DCD_ACTIVEMODULE, "isDriverMode", data, cameraIndex, context);
 
-                                dcService.publishEvents(dmExpEvent, dmBrightEvent, dmIsDriverEvent);
+                                dcService.publishEvents(dmIsDriverEvent);
                                 break;
                             }
                         case SMT_CHANGECAMERANAME:
