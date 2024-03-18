@@ -61,7 +61,8 @@ public class PipelineManager {
     PipelineManager(
             DriverModePipelineSettings driverSettings,
             List<CVPipelineSettings> userPipelines,
-            String uniqueName) {
+            String uniqueName,
+            int defaultIndex) {
         this.userPipelineSettings = new ArrayList<>(userPipelines);
         // This is to respect the default res idx for vendor cameras
 
@@ -70,10 +71,19 @@ public class PipelineManager {
         if (userPipelines.isEmpty()) addPipeline(PipelineType.Reflective);
 
         calibration3dPipeline = new Calibrate3dPipeline(uniqueName);
+
+        // We know that at this stage, VisionRunner hasn't yet started so we're good to do this from
+        // this thread
+        this.setIndex(defaultIndex);
+        updatePipelineFromRequested();
     }
 
     public PipelineManager(CameraConfiguration config) {
-        this(config.driveModeSettings, config.pipelineSettings, config.uniqueName);
+        this(
+                config.driveModeSettings,
+                config.pipelineSettings,
+                config.uniqueName,
+                config.currentPipelineIndex);
     }
 
     /**
