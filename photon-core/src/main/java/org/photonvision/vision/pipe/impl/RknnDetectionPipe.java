@@ -81,6 +81,7 @@ public class RknnDetectionPipe
             throw new RuntimeException("RGA bugged but still wrong size");
         }
         var ret = detector.detect(letterboxed, params.nms, params.confidence);
+        letterboxed.release();
 
         return resizeDetections(ret, scale);
     }
