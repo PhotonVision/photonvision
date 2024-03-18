@@ -232,44 +232,48 @@ public class PipelineManager {
         }
 
         currentPipelineIndex = newIndex;
-        if (newIndex >= 0) {
-            var desiredPipelineSettings = userPipelineSettings.get(currentPipelineIndex);
-            switch (desiredPipelineSettings.pipelineType) {
-                case Reflective:
-                    logger.debug("Creating Reflective pipeline");
-                    currentUserPipeline =
-                            new ReflectivePipeline((ReflectivePipelineSettings) desiredPipelineSettings);
-                    break;
-                case ColoredShape:
-                    logger.debug("Creating ColoredShape pipeline");
-                    currentUserPipeline =
-                            new ColoredShapePipeline((ColoredShapePipelineSettings) desiredPipelineSettings);
-                    break;
-                case AprilTag:
-                    logger.debug("Creating AprilTag pipeline");
-                    currentUserPipeline =
-                            new AprilTagPipeline((AprilTagPipelineSettings) desiredPipelineSettings);
-                    break;
 
-                case Aruco:
-                    logger.debug("Creating Aruco Pipeline");
-                    currentUserPipeline = new ArucoPipeline((ArucoPipelineSettings) desiredPipelineSettings);
-                    break;
-                case ObjectDetection:
-                    logger.debug("Creating ObjectDetection Pipeline");
-                    currentUserPipeline =
-                            new ObjectDetectionPipeline(
-                                    (ObjectDetectionPipelineSettings) desiredPipelineSettings);
-                default:
-                    // Can be calib3d or drivermode, both of which are special cases
-                    break;
-            }
+        if (newIndex >= 0) {
+            recrateUserPipelineFromSettings();
         }
 
         DataChangeService.getInstance()
                 .publishEvent(
                         new OutgoingUIEvent<>(
                                 "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
+    }
+
+    private void recrateUserPipelineFromSettings() {
+        var desiredPipelineSettings = userPipelineSettings.get(currentPipelineIndex);
+        switch (desiredPipelineSettings.pipelineType) {
+            case Reflective:
+                logger.debug("Creating Reflective pipeline");
+                currentUserPipeline =
+                        new ReflectivePipeline((ReflectivePipelineSettings) desiredPipelineSettings);
+                break;
+            case ColoredShape:
+                logger.debug("Creating ColoredShape pipeline");
+                currentUserPipeline =
+                        new ColoredShapePipeline((ColoredShapePipelineSettings) desiredPipelineSettings);
+                break;
+            case AprilTag:
+                logger.debug("Creating AprilTag pipeline");
+                currentUserPipeline =
+                        new AprilTagPipeline((AprilTagPipelineSettings) desiredPipelineSettings);
+                break;
+
+            case Aruco:
+                logger.debug("Creating Aruco Pipeline");
+                currentUserPipeline = new ArucoPipeline((ArucoPipelineSettings) desiredPipelineSettings);
+                break;
+            case ObjectDetection:
+                logger.debug("Creating ObjectDetection Pipeline");
+                currentUserPipeline =
+                        new ObjectDetectionPipeline((ObjectDetectionPipelineSettings) desiredPipelineSettings);
+            default:
+                // Can be calib3d or drivermode, both of which are special cases
+                break;
+        }
     }
 
     /**
@@ -502,5 +506,6 @@ public class PipelineManager {
         userPipelineSettings.set(idx, newSettings);
         setPipelineInternal(idx);
         reassignIndexes();
+        recrateUserPipelineFromSettings();
     }
 }
