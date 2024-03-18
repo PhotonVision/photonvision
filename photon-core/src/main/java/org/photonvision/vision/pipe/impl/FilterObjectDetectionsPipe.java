@@ -41,7 +41,7 @@ public class FilterObjectDetectionsPipe
     }
 
     private void filterContour(NeuralNetworkPipeResult contour) {
-        var boc = contour.box;
+        var boc = contour.bbox;
 
         // Area filtering
         double areaPercentage = boc.area() / params.getFrameStaticProperties().imageArea * 100.0;
