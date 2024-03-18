@@ -18,12 +18,10 @@
 package org.photonvision.vision.pipe.impl;
 
 import java.awt.Color;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
-import org.opencv.core.Point;
 import org.opencv.core.Rect2d;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
@@ -52,6 +50,18 @@ public class RknnDetectionPipe
                         NeuralNetworkModelManager.getInstance().getModelVersion());
     }
 
+    private static class Letterbox {
+        double dx;
+        double dy;
+        double scale;
+
+        public Letterbox(double dx, double dy, double scale) {
+            this.dx = dx;
+            this.dy = dy;
+            this.scale = scale;
+        }
+    }
+
     @Override
     protected List<NeuralNetworkPipeResult> process(CVMat in) {
         var frame = in.getMat();
@@ -63,41 +73,46 @@ public class RknnDetectionPipe
 
         // letterbox
         var letterboxed = new Mat();
-        var scale = letterbox(frame, letterboxed, new Size(640, 640), ColorHelper.colorToScalar(Color.GRAY));
+        var scale =
+                letterbox(frame, letterboxed, new Size(640, 640), ColorHelper.colorToScalar(Color.GRAY));
 
-        var ret = detector.detect(in, params.nms, params.confidence);
+        if (letterboxed.width() != 640 || letterboxed.height() != 640) {
+            // huh whack give up lol
+            throw new RuntimeException("RGA bugged but still wrong size");
+        }
+        var ret = detector.detect(letterboxed, params.nms, params.confidence);
 
         return resizeDetections(ret, scale);
     }
 
-    private List<NeuralNetworkPipeResult> resizeDetections(List<NeuralNetworkPipeResult> unscaled, Point tlLetterboxed, double scale) {
+    private List<NeuralNetworkPipeResult> resizeDetections(
+            List<NeuralNetworkPipeResult> unscaled, Letterbox letterbox) {
         var ret = new ArrayList<NeuralNetworkPipeResult>();
 
         for (var t : unscaled) {
-            ret.add(new NeuralNetworkPipeResult(
-                new Rect2d(
-                    t.box.x - tlLetterboxed.x,
-                    t.box.y - tlLetterboxed.y,
-                    (t.box.width * scale),
-                    (t.box.height * scale)
-                ),
-                t.classIdx, 
-                t.confidence
-            ));
+            var scale = 1.0 / letterbox.scale;
+            var boundingBox = t.box;
+            double x = (boundingBox.x - letterbox.dx) * scale;
+            double y = (boundingBox.y - letterbox.dy) * scale;
+            double width = boundingBox.width * scale;
+            double height = boundingBox.height * scale;
+
+            ret.add(
+                    new NeuralNetworkPipeResult(new Rect2d(x, y, width, height), t.classIdx, t.confidence));
         }
 
         return ret;
     }
 
-    private static double letterbox(Mat frame, Mat letterboxed, Size newShape, Scalar color) {
+    private static Letterbox letterbox(Mat frame, Mat letterboxed, Size newShape, Scalar color) {
         // from https://github.com/ultralytics/yolov5/issues/8427#issuecomment-1172469631
         var frameSize = frame.size();
         var r = Math.min(newShape.height / frameSize.height, newShape.width / frameSize.width);
 
         var newUnpad = new Size(Math.round(frameSize.width * r), Math.round(frameSize.height * r));
 
-        if (frameSize != newUnpad) {
-            Imgproc.resize(frame, letterboxed, newShape, Imgproc.INTER_LINEAR);
+        if (!(frameSize.equals(newUnpad))) {
+            Imgproc.resize(frame, letterboxed, newUnpad, Imgproc.INTER_LINEAR);
         } else {
             frame.copyTo(letterboxed);
         }
@@ -108,14 +123,14 @@ public class RknnDetectionPipe
         dw /= 2;
         dh /= 2;
 
-        int top = (int)(Math.round(dh - 0.1f));
-        int bottom = (int)(Math.round(dh + 0.1f));
-        int left = (int)(Math.round(dw - 0.1f));
-        int right = (int)(Math.round(dw + 0.1f));
+        int top = (int) (Math.round(dh - 0.1f));
+        int bottom = (int) (Math.round(dh + 0.1f));
+        int left = (int) (Math.round(dw - 0.1f));
+        int right = (int) (Math.round(dw + 0.1f));
         Core.copyMakeBorder(
                 letterboxed, letterboxed, top, bottom, left, right, Core.BORDER_CONSTANT, color);
 
-        return 1.0 / r;
+        return new Letterbox(dw, dh, r);
     }
 
     public static class RknnDetectionPipeParams {

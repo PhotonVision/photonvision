@@ -23,14 +23,11 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 import org.opencv.core.Mat;
-import org.opencv.core.Size;
-import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.rknn.RknnJNI;
 import org.photonvision.rknn.RknnJNI.RknnResult;
-import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
 
 public class RknnDetectorJNI extends PhotonJNICommon {
@@ -109,18 +106,14 @@ public class RknnDetectorJNI extends PhotonJNICommon {
          * @param boxThresh Minimum confidence for a box to be added. Basically just confidence
          *     threshold
          */
-        public List<NeuralNetworkPipeResult> detect(CVMat in, double nmsThresh, double boxThresh) {
+        public List<NeuralNetworkPipeResult> detect(Mat in, double nmsThresh, double boxThresh) {
             RknnResult[] ret;
             synchronized (lock) {
                 // We can technically be asked to detect and the lock might be acquired _after_ release has
                 // been called. This would mean objPointer would be invalid which would call everything to
                 // explode.
                 if (objPointer > 0) {
-                    var mat = in.getMat();
-                    var resized = new Mat();
-                    Imgproc.resize(mat, resized, new Size(640, 640));
-                    ret = RknnJNI.detect(objPointer, resized.getNativeObjAddr(), nmsThresh, boxThresh);
-                    resized.release();
+                    ret = RknnJNI.detect(objPointer, in.getNativeObjAddr(), nmsThresh, boxThresh);
                 } else {
                     logger.warn("Detect called after destroy -- giving up");
                     return List.of();
