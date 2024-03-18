@@ -91,7 +91,7 @@ public class RknnDetectionPipe
 
         for (var t : unscaled) {
             var scale = 1.0 / letterbox.scale;
-            var boundingBox = t.box;
+            var boundingBox = t.bbox;
             double x = (boundingBox.x - letterbox.dx) * scale;
             double y = (boundingBox.y - letterbox.dy) * scale;
             double width = boundingBox.width * scale;
