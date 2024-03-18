@@ -182,7 +182,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         parentModule.saveAndBroadcastAll();
                         return;
                     case "isDriverMode":
-                        parentModule.setDriverMode((Boolean)newPropValue);
+                        parentModule.setDriverMode((Boolean) newPropValue);
                         return;
                 }
 

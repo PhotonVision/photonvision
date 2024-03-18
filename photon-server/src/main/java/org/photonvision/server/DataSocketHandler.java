@@ -134,7 +134,11 @@ public class DataSocketHandler {
                                 var data = (Boolean) entryValue;
                                 var dmIsDriverEvent =
                                         new IncomingWebSocketEvent<Boolean>(
-                                                DataChangeDestination.DCD_ACTIVEMODULE, "isDriverMode", data, cameraIndex, context);
+                                                DataChangeDestination.DCD_ACTIVEMODULE,
+                                                "isDriverMode",
+                                                data,
+                                                cameraIndex,
+                                                context);
 
                                 dcService.publishEvents(dmIsDriverEvent);
                                 break;
