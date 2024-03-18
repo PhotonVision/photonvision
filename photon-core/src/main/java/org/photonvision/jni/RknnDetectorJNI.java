@@ -72,14 +72,19 @@ public class RknnDetectorJNI extends PhotonJNICommon {
 
         public RknnObjectDetector(String modelPath, List<String> labels, RknnJNI.ModelVersion version) {
             synchronized (lock) {
-                logger.error("Creating rknn jni", new RuntimeException());
                 objPointer = RknnJNI.create(modelPath, labels.size(), version.ordinal(), -1);
                 detectors.add(this);
-                System.out.println(
-                        "Created " + objPointer + "! Detectors: " + Arrays.toString(detectors.toArray()));
+                logger.debug(
+                        "Created detector "
+                                + objPointer
+                                + " from path "
+                                + modelPath
+                                + "! Detectors: "
+                                + Arrays.toString(detectors.toArray()));
             }
             this.labels = labels;
 
+            // the kernel should probably alredy deal with this for us, but I'm gunna be paranoid anyways.
             if (!hook) {
                 Runtime.getRuntime()
                         .addShutdownHook(
@@ -141,14 +146,4 @@ public class RknnDetectorJNI extends PhotonJNICommon {
             }
         }
     }
-
-    // public static void createRknnDetector() {
-    //     objPointer =
-    //             RknnJNI.create(
-    //                     NeuralNetworkModelManager.getInstance()
-    //                             .getDefaultRknnModel()
-    //                             .getAbsolutePath()
-    //                             .toString(),
-    //                     NeuralNetworkModelManager.getInstance().getLabels().size());
-    // }
 }
