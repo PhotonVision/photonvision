@@ -22,6 +22,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
+
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.core.Size;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TestUtils;
@@ -113,7 +119,11 @@ public class RknnDetectorJNI extends PhotonJNICommon {
                 // been called. This would mean objPointer would be invalid which would call everything to
                 // explode.
                 if (objPointer > 0) {
-                    ret = RknnJNI.detect(objPointer, in.getMat().getNativeObjAddr(), nmsThresh, boxThresh);
+                    var mat = in.getMat();
+                    var resized = new Mat();
+                    Imgproc.resize(mat, resized, new Size(640, 640));
+                    ret = RknnJNI.detect(objPointer, resized.getNativeObjAddr(), nmsThresh, boxThresh);
+                    resized.release();
                 } else {
                     logger.warn("Detect called after destroy -- giving up");
                     return List.of();
