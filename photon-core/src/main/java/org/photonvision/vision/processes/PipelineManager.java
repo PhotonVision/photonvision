@@ -226,15 +226,10 @@ public class PipelineManager {
             return;
         }
 
-        // Cleanup potential old native resources before swapping over for user pipelines
-        if (currentUserPipeline != null && !(newIndex < 0)) {
-            currentUserPipeline.release();
-        }
-
         currentPipelineIndex = newIndex;
 
         if (newIndex >= 0) {
-            recrateUserPipelineFromSettings();
+            recreateUserPipeline();
         }
 
         DataChangeService.getInstance()
@@ -243,7 +238,16 @@ public class PipelineManager {
                                 "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
     }
 
-    private void recrateUserPipelineFromSettings() {
+    /**
+     * Recreate the current user pipeline with the current pipeline index. Useful to force a
+     * recreation after changing pipeline type
+     */
+    private void recreateUserPipeline() {
+        // Cleanup potential old native resources before swapping over from a user pipeline
+        if (currentUserPipeline != null && !(currentPipelineIndex < 0)) {
+            currentUserPipeline.release();
+        }
+
         var desiredPipelineSettings = userPipelineSettings.get(currentPipelineIndex);
         switch (desiredPipelineSettings.pipelineType) {
             case Reflective:
@@ -506,6 +510,6 @@ public class PipelineManager {
         userPipelineSettings.set(idx, newSettings);
         setPipelineInternal(idx);
         reassignIndexes();
-        recrateUserPipelineFromSettings();
+        recreateUserPipeline();
     }
 }
