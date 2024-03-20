@@ -56,21 +56,14 @@ const handleFullscreenRequest = () => {
 
 const mjpgStream: any = ref(null);
 onBeforeUnmount(() => {
-  if (!mjpgStream.value) return
+  if (!mjpgStream.value) return;
   mjpgStream.value["src"] = null;
 });
 </script>
 
 <template>
   <div class="stream-container">
-    <img
-      :id="id"
-      crossorigin="anonymous"
-      :src="streamSrc"
-      :alt="streamDesc"
-      :style="streamStyle"
-      ref="mjpgStream"
-    />
+    <img :id="id" crossorigin="anonymous" :src="streamSrc" :alt="streamDesc" :style="streamStyle" ref="mjpgStream" />
     <div class="stream-overlay" :style="overlayStyle">
       <pv-icon
         icon-name="mdi-camera-image"
