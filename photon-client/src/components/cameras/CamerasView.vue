@@ -157,7 +157,6 @@ th {
     top: 12px;
   }
 }
-
 @media only screen and (min-width: 512px) and (max-width: 960px) {
   .stream-container {
     flex-wrap: nowrap;
