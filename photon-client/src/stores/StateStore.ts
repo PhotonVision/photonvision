@@ -84,7 +84,7 @@ export const useStateStore = defineStore("state", {
       return this.backendResults[this.currentCameraIndex.toString()];
     },
     currentMultitagBuffer(): MultitagResult[] | undefined {
-      return this.multitagResultBuffer[this.currentCameraIndex.toString()];
+      return this.multitagResultBuffer[this.currentCameraIndex];
     }
   },
   actions: {
