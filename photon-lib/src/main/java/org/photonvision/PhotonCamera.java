@@ -158,10 +158,7 @@ public class PhotonCamera implements AutoCloseable {
         // Existing is enough to make this multisubscriber do its thing
         topicNameSubscriber =
                 new MultiSubscriber(
-                        instance,
-                        new String[] {"/photonvision/"},
-                        PubSubOption.topicsOnly(true),
-                        PubSubOption.disableLocal(true));
+                        instance, new String[] {"/photonvision/"}, PubSubOption.topicsOnly(true));
 
         HAL.report(tResourceType.kResourceType_PhotonCamera, InstanceCount);
         InstanceCount++;
