@@ -4,6 +4,8 @@ import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { computed, inject, ref } from "vue";
 import { getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
+import axios from "axios";
+import loadingImage from "@/assets/images/loading.svg";
 
 const props = defineProps<{
   videoFormat: VideoFormat;
@@ -36,13 +38,36 @@ const importCalibration = async () => {
     return;
   }
 
+  let message: any = undefined;
+
+  // check size and trim if we have to
+  let approxSizeMb = uploadedJson.size / 1e6;
+  if (approxSizeMb > 50) {
+    data.observations.map((it) => (it.snapshotData = undefined));
+
+    // so at this point the calibration is likely pretty small -- it's cheap enough to check though
+    approxSizeMb = JSON.stringify(data).length / 1e6;
+
+    if (approxSizeMb > 50) {
+      // Absolutely monster dataset, try trimming again
+      data.observations = [];
+    }
+
+    message = {
+      color: "warning",
+      message: `The calibration file was very large (~${approxSizeMb.toFixed(0)}MB) -- images were removed to save space!`,
+      timeout: 10000
+    };
+  }
+
   useCameraSettingsStore()
     .importCalibrationFromData({ calibration: data })
     .then((response) => {
-      useStateStore().showSnackbarMessage({
+      message = message || {
         color: "success",
         message: response.data.text || response.data
-      });
+      };
+      useStateStore().showSnackbarMessage(message);
     })
     .catch((error) => {
       if (error.response) {
@@ -256,7 +281,12 @@ const calibrationImageURL = (index: number) =>
         <template #expanded-item="{ headers, item }">
           <td :colspan="headers.length">
             <div style="display: flex; justify-content: center; width: 100%">
-              <img :src="calibrationImageURL(item.index)" alt="observation image" class="snapshot-preview pt-2 pb-2" />
+              <v-img
+                :src="calibrationImageURL(item.index)"
+                :lazy-src="loadingImage"
+                alt="observation image"
+                class="snapshot-preview pt-2 pb-2"
+              />
             </div>
           </td>
         </template>

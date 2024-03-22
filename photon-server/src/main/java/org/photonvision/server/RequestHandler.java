@@ -604,7 +604,9 @@ public class RequestHandler {
                         .findFirst()
                         .orElse(null);
 
-        if (calList == null || calList.observations.size() < observationIdx) {
+        if (calList == null
+                || calList.observations.size() < observationIdx
+                || calList.observations.get(observationIdx).snapshotData == null) {
             ctx.status(404);
             return;
         }
