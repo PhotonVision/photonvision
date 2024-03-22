@@ -92,6 +92,12 @@ public class VisionRunner {
             // Grab the new camera frame
             var frame = frameSupplier.get();
 
+            // Frame empty -- no point in trying to do anything more?
+            if (frame.processedImage.getMat().empty() && frame.colorImage.getMat().empty()) {
+                // give up without increasing loop count
+                continue;
+            }
+
             // There's no guarantee the processing type change will occur this tick, so pipelines should
             // check themselves
             try {
