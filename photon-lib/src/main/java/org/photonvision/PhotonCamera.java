@@ -75,7 +75,7 @@ public class PhotonCamera implements AutoCloseable {
     IntegerSubscriber heartbeatEntry;
     DoubleArraySubscriber cameraIntrinsicsSubscriber;
     DoubleArraySubscriber cameraDistortionSubscriber;
-    MultiSubscriber m_topicNameSubscriber;
+    MultiSubscriber topicNameSubscriber;
     NetworkTable rootPhotonTable;
 
     @Override
@@ -100,7 +100,7 @@ public class PhotonCamera implements AutoCloseable {
         pipelineIndexRequest.close();
         cameraIntrinsicsSubscriber.close();
         cameraDistortionSubscriber.close();
-        m_topicNameSubscriber.close();
+        topicNameSubscriber.close();
     }
 
     private final String path;
@@ -156,7 +156,7 @@ public class PhotonCamera implements AutoCloseable {
         versionEntry = rootPhotonTable.getStringTopic("version").subscribe("");
 
         // Existing is enough to make this multisubscriber do its thing
-        m_topicNameSubscriber =
+        topicNameSubscriber =
                 new MultiSubscriber(
                         instance,
                         new String[] {"/photonvision/"},
@@ -373,8 +373,8 @@ public class PhotonCamera implements AutoCloseable {
                 }
 
                 DriverStation.reportError(
-                        "Found the following PhotonVision cameras active on NetworkTables:\n"
-                                + String.join("\n", cameraNameStr),
+                        "Found the following PhotonVision cameras on NetworkTables:\n"
+                                + cameraNameStr.toString(),
                         false);
             }
         }
