@@ -4,7 +4,6 @@ import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { computed, inject, ref } from "vue";
 import { getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
-import axios from "axios";
 import loadingImage from "@/assets/images/loading.svg";
 
 const props = defineProps<{
