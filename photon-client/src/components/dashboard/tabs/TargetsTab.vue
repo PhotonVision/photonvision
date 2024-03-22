@@ -28,7 +28,7 @@ const calculateStdDev = (values: number[]): number => {
 };
 const resetCurrentBuffer = () => {
   // Need to clear the array in place
-  while (useStateStore().currentMultitagBuffer?.length ?? 0 > 0) {
+  while ((useStateStore().currentMultitagBuffer?.length ?? 0) > 0) {
     useStateStore().currentMultitagBuffer?.pop();
   }
 };
