@@ -358,6 +358,9 @@ public class Main {
             logger.error("Failed to load native libraries!", e);
             System.exit(1);
         }
+
+        Logger.addNtAppender();
+
         logger.info("Native libraries loaded.");
 
         try {
