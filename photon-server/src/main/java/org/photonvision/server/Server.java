@@ -65,10 +65,6 @@ public class Server {
                                         corsContainer.add(CorsPluginConfig::anyHost);
                                     });
 
-                            // Increase the upload size limit (arbitrary, but need to be able to deal with large
-                            // calibration JSONs)
-                            javalinConfig.http.maxRequestSize = (long) (50 * 1e6);
-
                             javalinConfig.requestLogger.http(
                                     (ctx, ms) -> {
                                         StringJoiner joiner =
@@ -77,6 +73,12 @@ public class Server {
                                                         .add(ctx.req().getMethod())
                                                         .add("from endpoint")
                                                         .add(ctx.path())
+                                                        .add("of req size")
+                                                        .add(Integer.toString(ctx.contentLength()))
+                                                        .add("bytes & type")
+                                                        .add(ctx.contentType())
+                                                        .add("with return code")
+                                                        .add(Integer.toString(ctx.res().getStatus()))
                                                         .add("for host")
                                                         .add(ctx.req().getRemoteHost())
                                                         .add("in")
