@@ -41,4 +41,8 @@ public enum CameraQuirk {
     ArduOV9281,
     /** Dummy quirk to tell OV2311 from OV9281 */
     ArduOV2311,
+    /*
+     * Camera is an arducam ov9782 which has specific exposure ranges and needs a specific white balance issue
+     */
+    ArduOV9782
 }
