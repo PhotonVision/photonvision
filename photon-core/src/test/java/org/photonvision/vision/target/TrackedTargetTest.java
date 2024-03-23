@@ -59,7 +59,8 @@ public class TrackedTargetTest {
                         new Point(imageSize.width / 2, imageSize.height / 2),
                         61,
                         34.3,
-                        imageSize.area());
+                        imageSize.area(),
+                        null);
 
         var trackedTarget = new TrackedTarget(pTarget, setting, null);
         // TODO change these hardcoded values
