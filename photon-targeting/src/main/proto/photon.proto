@@ -53,6 +53,9 @@ message ProtobufPhotonTrackedTarget {
   double pose_ambiguity = 8;
   repeated ProtobufTargetCorner min_area_rect_corners = 9;
   repeated ProtobufTargetCorner detected_corners = 10;
+
+  int32 obj_detection_id = 11;
+  float obj_detection_conf = 12;
 }
 
 message ProtobufPhotonPipelineResult {

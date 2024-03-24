@@ -238,6 +238,8 @@ public class SimVisionSystem {
                                         area_px,
                                         0.0,
                                         tgt.targetID,
+                                        -1,
+                                        -1,
                                         camToTargetTrans,
                                         camToTargetTransAlt,
                                         0.0, // TODO - simulate ambiguity when straight on?
