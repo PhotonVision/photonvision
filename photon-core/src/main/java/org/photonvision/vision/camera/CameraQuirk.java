@@ -41,4 +41,6 @@ public enum CameraQuirk {
     ArduOV9281,
     /** Dummy quirk to tell OV2311 from OV9281 */
     ArduOV2311,
+    /** Camera has odd exposure range, and supports gain control */
+    See3Cam_24CUG
 }

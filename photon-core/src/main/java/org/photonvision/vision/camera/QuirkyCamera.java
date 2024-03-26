@@ -29,6 +29,11 @@ public class QuirkyCamera {
     private static final List<QuirkyCamera> quirkyCameras =
             List.of(
                     new QuirkyCamera(
+                        0x2560, 0xc128, 
+                        "See3Cam_24CUG", 
+                        CameraQuirk.Gain, CameraQuirk.See3Cam_24CUG
+                    ),
+                    new QuirkyCamera(
                             0x9331,
                             0x5A3,
                             CameraQuirk.CompletelyBroken), // Chris's older generic "Logitec HD Webcam"
