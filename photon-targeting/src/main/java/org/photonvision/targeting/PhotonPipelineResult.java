@@ -52,8 +52,10 @@ public class PhotonPipelineResult implements ProtobufSerializable {
      * Constructs a pipeline result.
      *
      * @param sequenceID The number of frames processed by this camera since boot
-     * @param captureTimestamp The time, in uS in the coprocessor's timebase, that the coprocessor captured the image this result contains the targeting info of
-     * @param publishTimestamp The time, in uS in the coprocessor's timebase, that the coprocessor published targeting info
+     * @param captureTimestamp The time, in uS in the coprocessor's timebase, that the coprocessor
+     *     captured the image this result contains the targeting info of
+     * @param publishTimestamp The time, in uS in the coprocessor's timebase, that the coprocessor
+     *     published targeting info
      * @param targets The list of targets identified by the pipeline.
      */
     public PhotonPipelineResult(
@@ -71,8 +73,10 @@ public class PhotonPipelineResult implements ProtobufSerializable {
      * Constructs a pipeline result.
      *
      * @param sequenceID The number of frames processed by this camera since boot
-     * @param captureTimestamp The time, in uS in the coprocessor's timebase, that the coprocessor captured the image this result contains the targeting info of
-     * @param publishTimestamp The time, in uS in the coprocessor's timebase, that the coprocessor published targeting info
+     * @param captureTimestamp The time, in uS in the coprocessor's timebase, that the coprocessor
+     *     captured the image this result contains the targeting info of
+     * @param publishTimestamp The time, in uS in the coprocessor's timebase, that the coprocessor
+     *     published targeting info
      * @param targets The list of targets identified by the pipeline.
      * @param result Result from multi-target PNP.
      */
