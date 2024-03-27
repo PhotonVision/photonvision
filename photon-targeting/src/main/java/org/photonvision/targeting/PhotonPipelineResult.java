@@ -30,11 +30,11 @@ public class PhotonPipelineResult implements ProtobufSerializable {
 
     // Image capture and NT publish timestamp, in microseconds and in the coprocessor timebase. As
     // reported by WPIUtilJNI::now.
-    private final long captureTimestampMicros;
-    private final long publishTimestampMicros;
+    private long captureTimestampMicros = -1;
+    private long publishTimestampMicros = -1;
 
     // Mirror of the heartbeat entry -- monotonically increasing
-    private final long sequenceID;
+    private long sequenceID = -1;
 
     // Targets to store.
     public final List<PhotonTrackedTarget> targets = new ArrayList<>();
@@ -51,13 +51,15 @@ public class PhotonPipelineResult implements ProtobufSerializable {
     /**
      * Constructs a pipeline result.
      *
-     * @param latencyMillis The latency in the pipeline.
+     * @param sequenceID The number of frames processed by this camera since boot
+     * @param captureTimestamp The time, in uS in the coprocessor's timebase, that the coprocessor captured the image this result contains the targeting info of
+     * @param publishTimestamp The time, in uS in the coprocessor's timebase, that the coprocessor published targeting info
      * @param targets The list of targets identified by the pipeline.
      */
     public PhotonPipelineResult(
+            long sequenceID,
             long captureTimestamp,
             long publishTimestamp,
-            long sequenceID,
             List<PhotonTrackedTarget> targets) {
         this.captureTimestampMicros = captureTimestamp;
         this.publishTimestampMicros = publishTimestamp;
@@ -68,7 +70,9 @@ public class PhotonPipelineResult implements ProtobufSerializable {
     /**
      * Constructs a pipeline result.
      *
-     * @param latencyMillis The latency in the pipeline.
+     * @param sequenceID The number of frames processed by this camera since boot
+     * @param captureTimestamp The time, in uS in the coprocessor's timebase, that the coprocessor captured the image this result contains the targeting info of
+     * @param publishTimestamp The time, in uS in the coprocessor's timebase, that the coprocessor published targeting info
      * @param targets The list of targets identified by the pipeline.
      * @param result Result from multi-target PNP.
      */

@@ -110,7 +110,7 @@ public class Packet {
     /**
      * Encodes the double into the packet.
      *
-     * @param src The double to encode.
+     * @param data The double to encode.
      */
     public void encode(long data) {
         packetData[writePos++] = (byte) ((data >> 56) & 0xff);
