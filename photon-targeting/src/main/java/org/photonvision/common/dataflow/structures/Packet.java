@@ -112,6 +112,22 @@ public class Packet {
      *
      * @param src The double to encode.
      */
+    public void encode(long data) {
+        packetData[writePos++] = (byte) ((data >> 56) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 48) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 40) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 32) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 24) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 16) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 8) & 0xff);
+        packetData[writePos++] = (byte) (data & 0xff);
+    }
+
+    /**
+     * Encodes the double into the packet.
+     *
+     * @param src The double to encode.
+     */
     public void encode(double src) {
         long data = Double.doubleToRawLongBits(src);
         packetData[writePos++] = (byte) ((data >> 56) & 0xff);
@@ -158,6 +174,22 @@ public class Packet {
                 | (0xff & packetData[readPos++]) << 16
                 | (0xff & packetData[readPos++]) << 8
                 | (0xff & packetData[readPos++]);
+    }
+
+    public long decodeLong() {
+        if (packetData.length < (readPos + 7)) {
+            return 0;
+        }
+        long data =
+                (long) (0xff & packetData[readPos++]) << 56
+                        | (long) (0xff & packetData[readPos++]) << 48
+                        | (long) (0xff & packetData[readPos++]) << 40
+                        | (long) (0xff & packetData[readPos++]) << 32
+                        | (long) (0xff & packetData[readPos++]) << 24
+                        | (long) (0xff & packetData[readPos++]) << 16
+                        | (long) (0xff & packetData[readPos++]) << 8
+                        | (long) (0xff & packetData[readPos++]);
+        return data;
     }
 
     /**

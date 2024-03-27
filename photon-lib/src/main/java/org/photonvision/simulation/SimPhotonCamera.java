@@ -29,6 +29,7 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.numbers.N5;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.RobotController;
 import java.util.Arrays;
 import java.util.List;
 import org.photonvision.PhotonCamera;
@@ -140,8 +141,14 @@ public class SimPhotonCamera {
             targetList.sort(sortMode.getComparator());
         }
 
+        var now = RobotController.getFPGATime();
         PhotonPipelineResult newResult =
-                new PhotonPipelineResult(latencyMillis, targetList, new MultiTargetPNPResult());
+                new PhotonPipelineResult(
+                        heartbeatCounter,
+                        now - (long) (latencyMillis * 1000),
+                        now,
+                        targetList,
+                        new MultiTargetPNPResult());
 
         ts.resultPublisher.set(newResult, newResult.getPacketSize());
 

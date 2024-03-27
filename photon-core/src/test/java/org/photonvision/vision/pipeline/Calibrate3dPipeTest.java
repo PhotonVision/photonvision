@@ -149,6 +149,7 @@ public class Calibrate3dPipeTest {
                 calibration3dPipeline.takeSnapshot();
                 var frame =
                         new Frame(
+                                0,
                                 new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
                                 new CVMat(),
                                 FrameThresholdType.NONE,
