@@ -41,25 +41,20 @@ class PhotonPipelineResult {
 
   /**
    * Constructs a pipeline result.
-   * @param latency The latency in the pipeline.
+   * @param sequenceID The number of frames processed by this camera since boot
+   * @param captureTimestamp The time, in uS in the coprocessor's timebase, that
+   * the coprocessor captured the image this result contains the targeting info
+   * of
+   * @param publishTimestamp The time, in uS in the coprocessor's timebase, that
+   * the coprocessor published targeting info
    * @param targets The list of targets identified by the pipeline.
+   * @param multitagResult The multitarget result. Default to empty
    */
-  PhotonPipelineResult(units::millisecond_t latency,
-                       std::span<const PhotonTrackedTarget> targets);
-
-  /**
-   * Constructs a pipeline result.
-  * @param sequenceID The number of frames processed by this camera since boot
-  * @param captureTimestamp The time, in uS in the coprocessor's timebase, that the coprocessor
-  *     captured the image this result contains the targeting info of
-  * @param publishTimestamp The time, in uS in the coprocessor's timebase, that the coprocessor
-  *     published targeting info
-   * @param targets The list of targets identified by the pipeline.
-   * @param multitagResult The multitarget result
-   */
-  PhotonPipelineResult(units::millisecond_t latency,
-                       std::span<const PhotonTrackedTarget> targets,
-                       MultiTargetPNPResult multitagResult);
+  PhotonPipelineResult(int64_t sequenceID, units
+                       : microsecond_t captureTimestamp, units
+                       : microsecond_t publishTimestamp,
+                         std::span<const PhotonTrackedTarget> targets,
+                         MultiTargetPNPResult multitagResult = {});
 
   /**
    * Returns the best target in this pipeline result. If there are no targets,
@@ -85,7 +80,9 @@ class PhotonPipelineResult {
    * Returns the latency in the pipeline.
    * @return The latency in the pipeline.
    */
-  units::millisecond_t GetLatency() const { return latency; }
+  units::millisecond_t GetLatency() const {
+    return publishTimestamp - captureTimestamp;
+  }
 
   /**
    * Returns the estimated time the frame was taken,
@@ -93,7 +90,9 @@ class PhotonPipelineResult {
    * @return The timestamp in seconds or -1 if this result was not initiated
    * with a timestamp.
    */
-  units::second_t GetTimestamp() const { return timestamp; }
+  units::second_t GetTimestamp() const {
+    return ntRecieveTimestamp - (publishTimestamp - captureTimestamp);
+  }
 
   /**
    * Return the latest mulit-target result, as calculated on your coprocessor.
@@ -103,11 +102,14 @@ class PhotonPipelineResult {
   const MultiTargetPNPResult& MultiTagResult() const { return multitagResult; }
 
   /**
-   * Sets the timestamp in seconds
-   * @param timestamp The timestamp in seconds
+   * The number of non-empty frames processed by this camera since boot. Useful
+   * to checking if a camera is alive.
    */
-  void SetTimestamp(const units::second_t timestamp) {
-    this->timestamp = timestamp;
+  const int64_t SequenceID() const { return sequenceID; }
+
+  /** Sets the FPGA timestamp this result was recieved by robot code */
+  void SetRecieveTimestampMicros(const units::second_t timestamp) {
+    this->ntRecieveTimestampMicros = timestamp;
   }
 
   /**
@@ -129,15 +131,16 @@ class PhotonPipelineResult {
   friend Packet& operator<<(Packet& packet, const PhotonPipelineResult& result);
   friend Packet& operator>>(Packet& packet, PhotonPipelineResult& result);
 
-    // Image capture and NT publish timestamp, in microseconds and in the coprocessor timebase. As
-    // reported by WPIUtilJNI::now.
+  // Mirror of the heartbeat entry -- monotonically increasing
+  int64_t sequenceID = -1;
+
+  // Image capture and NT publish timestamp, in microseconds and in the
+  // coprocessor timebase. As reported by WPIUtilJNI::now.
   units::microsecond_t captureTimestamp;
   units::microsecond_t publishTimestamp;
-    // Since we don't trust NT time sync, keep track of when we got this packet into robot code
+  // Since we don't trust NT time sync, keep track of when we got this packet
+  // into robot code
   units::microsecond_t ntRecieveTimestamp;
-
-  // Mirror of the heartbeat entry -- monotonically increasing
-  units::microsecond_t sequenceID = -1;
 
   wpi::SmallVector<PhotonTrackedTarget, 10> targets;
   MultiTargetPNPResult multitagResult;
