@@ -74,8 +74,11 @@ Packet& operator>>(Packet& packet, PhotonPipelineResult& result) {
 
   packet >> multitagResult;
 
-  return PhotonPipelineResult{
-      sequenceID, units::microsecond_t(capTS) units::microsecond_t(pubTS),
+  units::microsecond_t captureTS = units::microsecond_t{static_cast<double>(capTS)};
+  units::microsecond_t publishTS = units::microsecond_t{static_cast<double>(pubTS)};
+
+  result = PhotonPipelineResult{
+      sequenceID, captureTS, publishTS,
       targets, multitagResult};
 
   return packet;

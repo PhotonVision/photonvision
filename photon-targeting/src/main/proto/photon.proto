@@ -61,7 +61,7 @@ message ProtobufPhotonPipelineResult {
   repeated ProtobufPhotonTrackedTarget targets = 2;
   ProtobufMultiTargetPNPResult multi_target_result = 3;
 
-  int64 sequenceID = 4;
-  int64 captureTimestampMicros = 5;
-  int64 ntPublishTimestampMicros = 6;
+  int64 sequence_id = 4;
+  int64 capture_timestamp_micros = 5;
+  int64 nt_publish_timestamp_micros = 6;
 }

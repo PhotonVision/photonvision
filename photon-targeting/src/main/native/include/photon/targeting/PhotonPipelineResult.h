@@ -50,9 +50,8 @@ class PhotonPipelineResult {
    * @param targets The list of targets identified by the pipeline.
    * @param multitagResult The multitarget result. Default to empty
    */
-  PhotonPipelineResult(int64_t sequenceID, units
-                       : microsecond_t captureTimestamp, units
-                       : microsecond_t publishTimestamp,
+  PhotonPipelineResult(int64_t sequenceID, units::microsecond_t captureTimestamp, 
+                        units::microsecond_t publishTimestamp,
                          std::span<const PhotonTrackedTarget> targets,
                          MultiTargetPNPResult multitagResult = {});
 
@@ -108,8 +107,8 @@ class PhotonPipelineResult {
   const int64_t SequenceID() const { return sequenceID; }
 
   /** Sets the FPGA timestamp this result was recieved by robot code */
-  void SetRecieveTimestampMicros(const units::second_t timestamp) {
-    this->ntRecieveTimestampMicros = timestamp;
+  void SetRecieveTimestamp(const units::second_t timestamp) {
+    this->ntRecieveTimestamp = timestamp;
   }
 
   /**

@@ -78,6 +78,7 @@ class PhotonCamera:
     def getLatestResult(self) -> PhotonPipelineResult:
         self._versionCheck()
 
+        now = RobotController.getFPGATime()
         retVal = PhotonPipelineResult()
         packetWithTimestamp = self._rawBytesEntry.getAtomic()
         byteList = packetWithTimestamp.value
@@ -89,7 +90,7 @@ class PhotonCamera:
             pkt = Packet(byteList)
             retVal.populateFromPacket(pkt)
             # We don't trust NT4 time, hack around
-            retVal.ntRecieveTimestampMicros = RobotController.getFPGATime()
+            retVal.ntRecieveTimestampMicros = now
             return retVal
 
     def getDriverMode(self) -> bool:
