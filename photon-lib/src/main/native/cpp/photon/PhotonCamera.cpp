@@ -29,6 +29,7 @@
 #include <string_view>
 
 #include <frc/Errors.h>
+#include <frc/RobotController.h>
 #include <frc/Timer.h>
 #include <opencv2/core.hpp>
 #include <opencv2/core/mat.hpp>
@@ -115,7 +116,8 @@ PhotonPipelineResult PhotonCamera::GetLatestResult() {
   PhotonPipelineResult result;
 
   // Fill the packet with latest data and populate result.
-  units::microsecond_t now = frc::RobotController::GetFPGATime();
+  units::microsecond_t now =
+      units::microsecond_t(frc::RobotController::GetFPGATime());
   const auto value = rawBytesEntry.Get();
   if (!value.size()) return result;
 

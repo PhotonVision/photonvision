@@ -39,8 +39,9 @@ bool PhotonPipelineResult::operator==(const PhotonPipelineResult& other) const {
 
 Packet& operator<<(Packet& packet, const PhotonPipelineResult& result) {
   // Encode latency and number of targets.
-  packet << result.sequenceID << result.captureTimestamp.value()
-         << result.publishTimestamp.value()
+  packet << result.sequenceID
+         << static_cast<int64_t>(result.captureTimestamp.value())
+         << static_cast<int64_t>(result.publishTimestamp.value())
          << static_cast<int8_t>(result.targets.size());
 
   // Encode the information of each target.
@@ -74,12 +75,13 @@ Packet& operator>>(Packet& packet, PhotonPipelineResult& result) {
 
   packet >> multitagResult;
 
-  units::microsecond_t captureTS = units::microsecond_t{static_cast<double>(capTS)};
-  units::microsecond_t publishTS = units::microsecond_t{static_cast<double>(pubTS)};
+  units::microsecond_t captureTS =
+      units::microsecond_t{static_cast<double>(capTS)};
+  units::microsecond_t publishTS =
+      units::microsecond_t{static_cast<double>(pubTS)};
 
-  result = PhotonPipelineResult{
-      sequenceID, captureTS, publishTS,
-      targets, multitagResult};
+  result = PhotonPipelineResult{sequenceID, captureTS, publishTS, targets,
+                                multitagResult};
 
   return packet;
 }

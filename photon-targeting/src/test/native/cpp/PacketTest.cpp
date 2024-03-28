@@ -109,7 +109,7 @@ TEST(PacketTest, PhotonPipelineResult) {
           {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6},
            std::pair{7, 8}}}};
 
-  photon::PhotonPipelineResult result2{0, 0_s, 2_s, targets};
+  photon::PhotonPipelineResult result2{0, 0_s, 1_s, targets};
   photon::Packet p2;
   p2 << result2;
 

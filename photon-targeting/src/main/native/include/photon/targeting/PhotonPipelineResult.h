@@ -50,10 +50,11 @@ class PhotonPipelineResult {
    * @param targets The list of targets identified by the pipeline.
    * @param multitagResult The multitarget result. Default to empty
    */
-  PhotonPipelineResult(int64_t sequenceID, units::microsecond_t captureTimestamp, 
-                        units::microsecond_t publishTimestamp,
-                         std::span<const PhotonTrackedTarget> targets,
-                         MultiTargetPNPResult multitagResult = {});
+  PhotonPipelineResult(int64_t sequenceID,
+                       units::microsecond_t captureTimestamp,
+                       units::microsecond_t publishTimestamp,
+                       std::span<const PhotonTrackedTarget> targets,
+                       MultiTargetPNPResult multitagResult = {});
 
   /**
    * Returns the best target in this pipeline result. If there are no targets,
@@ -104,7 +105,7 @@ class PhotonPipelineResult {
    * The number of non-empty frames processed by this camera since boot. Useful
    * to checking if a camera is alive.
    */
-  const int64_t SequenceID() const { return sequenceID; }
+  int64_t SequenceID() const { return sequenceID; }
 
   /** Sets the FPGA timestamp this result was recieved by robot code */
   void SetRecieveTimestamp(const units::second_t timestamp) {
@@ -139,7 +140,7 @@ class PhotonPipelineResult {
   units::microsecond_t publishTimestamp;
   // Since we don't trust NT time sync, keep track of when we got this packet
   // into robot code
-  units::microsecond_t ntRecieveTimestamp;
+  units::microsecond_t ntRecieveTimestamp = -1_s;
 
   wpi::SmallVector<PhotonTrackedTarget, 10> targets;
   MultiTargetPNPResult multitagResult;

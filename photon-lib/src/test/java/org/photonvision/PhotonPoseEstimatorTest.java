@@ -596,7 +596,7 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8))))); // 3 3 3 ambig .4
-        cameraOne.result.setRecieveTimestampMicros(20);
+        cameraOne.result.setRecieveTimestampMicros(20 * 1000000);
 
         PhotonPoseEstimator estimator =
                 new PhotonPoseEstimator(

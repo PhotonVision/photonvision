@@ -43,7 +43,8 @@ wpi::Protobuf<photon::PhotonPipelineResult>::Unpack(
   return photon::PhotonPipelineResult{
       m->sequence_id(),
       units::microsecond_t{static_cast<double>(m->capture_timestamp_micros())},
-      units::microsecond_t{static_cast<double>(m->nt_publish_timestamp_micros())},
+      units::microsecond_t{
+          static_cast<double>(m->nt_publish_timestamp_micros())},
       targets,
       wpi::UnpackProtobuf<photon::MultiTargetPNPResult>(
           m->multi_target_result())};

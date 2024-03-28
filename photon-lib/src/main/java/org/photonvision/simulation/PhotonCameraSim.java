@@ -541,10 +541,13 @@ public class PhotonCameraSim implements AutoCloseable {
 
         // put this simulated data to NT
         var now = RobotController.getFPGATime();
-        int seq = 0;
         var ret =
                 new PhotonPipelineResult(
-                        seq, now - (long) (latencyMillis * 1000), now, detectableTgts, multitagResult);
+                        heartbeatCounter,
+                        now - (long) (latencyMillis * 1000),
+                        now,
+                        detectableTgts,
+                        multitagResult);
         ret.setRecieveTimestampMicros(now);
         return ret;
     }
