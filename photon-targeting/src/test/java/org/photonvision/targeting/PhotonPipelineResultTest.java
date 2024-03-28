@@ -35,7 +35,9 @@ public class PhotonPipelineResultTest {
 
         a =
                 new PhotonPipelineResult(
-                        2,
+                        3,
+                        4,
+                        5,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -77,7 +79,9 @@ public class PhotonPipelineResultTest {
                                                 new TargetCorner(7, 8)))));
         b =
                 new PhotonPipelineResult(
-                        2,
+                        3,
+                        4,
+                        5,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -121,7 +125,9 @@ public class PhotonPipelineResultTest {
 
         a =
                 new PhotonPipelineResult(
-                        2,
+                        3,
+                        4,
+                        5,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -167,7 +173,9 @@ public class PhotonPipelineResultTest {
                                 List.of(1, 2, 3)));
         b =
                 new PhotonPipelineResult(
-                        2,
+                        3,
+                        4,
+                        5,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -218,7 +226,9 @@ public class PhotonPipelineResultTest {
     public void inequalityTest() {
         var a =
                 new PhotonPipelineResult(
-                        2,
+                        3,
+                        4,
+                        5,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -260,7 +270,9 @@ public class PhotonPipelineResultTest {
                                                 new TargetCorner(7, 8)))));
         var b =
                 new PhotonPipelineResult(
-                        2,
+                        3,
+                        4,
+                        5,
                         List.of(
                                 new PhotonTrackedTarget(
                                         7.0,
@@ -304,7 +316,9 @@ public class PhotonPipelineResultTest {
 
         a =
                 new PhotonPipelineResult(
-                        2,
+                        3,
+                        4,
+                        5,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -350,7 +364,9 @@ public class PhotonPipelineResultTest {
                                 List.of(3, 4, 7)));
         b =
                 new PhotonPipelineResult(
-                        2,
+                        3,
+                        4,
+                        5,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,

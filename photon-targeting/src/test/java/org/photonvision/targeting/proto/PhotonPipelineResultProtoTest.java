@@ -39,7 +39,9 @@ public class PhotonPipelineResultProtoTest {
         // non multitag result
         result =
                 new PhotonPipelineResult(
-                        2,
+                        3,
+                        4,
+                        5,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -87,7 +89,9 @@ public class PhotonPipelineResultProtoTest {
         // multitag result
         result =
                 new PhotonPipelineResult(
-                        2,
+                        3,
+                        4,
+                        5,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,

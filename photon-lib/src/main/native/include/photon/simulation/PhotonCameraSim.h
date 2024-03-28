@@ -40,6 +40,7 @@
 #include <utility>
 #include <vector>
 
+#include <frc/Timer.h>
 #include <frc/apriltag/AprilTagFieldLayout.h>
 #include <frc/apriltag/AprilTagFields.h>
 #include <units/math.h>
@@ -369,7 +370,10 @@ class PhotonCameraSim {
       multiTagResults = MultiTargetPNPResult{pnpResult, usedIds};
     }
 
-    return PhotonPipelineResult{latency, detectableTgts, multiTagResults};
+    units::second_t now = frc::Timer::GetFPGATimestamp();
+
+    return PhotonPipelineResult{heartbeatCounter, now - latency, now,
+                                detectableTgts, multiTagResults};
   }
   void SubmitProcessedFrame(const PhotonPipelineResult& result) {
     SubmitProcessedFrame(result, wpi::Now());
@@ -426,7 +430,7 @@ class PhotonCameraSim {
   PhotonCamera* cam;
 
   NTTopicSet ts{};
-  uint64_t heartbeatCounter{0};
+  int64_t heartbeatCounter{0};
 
   uint64_t nextNTEntryTime{wpi::Now()};
 

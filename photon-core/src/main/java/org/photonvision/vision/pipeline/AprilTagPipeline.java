@@ -116,7 +116,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
         if (frame.type != FrameThresholdType.GREYSCALE) {
             // We asked for a GREYSCALE frame, but didn't get one -- best we can do is give up
-            return new CVPipelineResult(0, 0, List.of(), frame);
+            return new CVPipelineResult(frame.sequenceID, 0, 0, List.of(), frame);
         }
 
         CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult;
@@ -219,7 +219,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
-        return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, multiTagResult, frame);
+        return new CVPipelineResult(
+                frame.sequenceID, sumPipeNanosElapsed, fps, targetList, multiTagResult, frame);
     }
 
     @Override

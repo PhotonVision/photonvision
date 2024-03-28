@@ -96,12 +96,12 @@ class SimCameraProperties {
                                       units::radian_t{std::numbers::pi / 2.0}})
                                      .Radians()}},
         frc::Translation3d{
-            1_m,
-            frc::Rotation3d{0_rad,
-                            (GetPixelPitch(0) + frc::Rotation2d{units::radian_t{
-                                                    std::numbers::pi / 2.0}})
-                                .Radians(),
-                            0_rad}},
+            1_m, frc::Rotation3d{0_rad,
+                                 (GetPixelPitch(0) +
+                                  frc::Rotation2d{
+                                      units::radian_t{std::numbers::pi / 2.0}})
+                                     .Radians(),
+                                 0_rad}},
         frc::Translation3d{
             1_m, frc::Rotation3d{0_rad,
                                  (GetPixelPitch(height) +

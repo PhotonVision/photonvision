@@ -56,8 +56,12 @@ message ProtobufPhotonTrackedTarget {
 }
 
 message ProtobufPhotonPipelineResult {
-  double latency_ms = 1;
+  double latency_ms = 1 [deprecated = true];
 
   repeated ProtobufPhotonTrackedTarget targets = 2;
   ProtobufMultiTargetPNPResult multi_target_result = 3;
+
+  int64 sequence_id = 4;
+  int64 capture_timestamp_micros = 5;
+  int64 nt_publish_timestamp_micros = 6;
 }

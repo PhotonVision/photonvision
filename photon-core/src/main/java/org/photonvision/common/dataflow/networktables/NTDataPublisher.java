@@ -19,6 +19,7 @@ package org.photonvision.common.dataflow.networktables;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent;
+import edu.wpi.first.util.WPIUtilJNI;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -27,6 +28,7 @@ import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networktables.NTTopicSet;
+import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
@@ -45,8 +47,6 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     NTDataChangeListener driverModeListener;
     private final BooleanSupplier driverModeSupplier;
     private final Consumer<Boolean> driverModeConsumer;
-
-    private long heartbeatCounter = 0;
 
     public NTDataPublisher(
             String cameraNickname,
@@ -129,9 +129,13 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
     @Override
     public void accept(CVPipelineResult result) {
+        var now = WPIUtilJNI.now();
+        var captureMicros = MathUtils.nanosToMicros(result.getImageCaptureTimestampNanos());
         var simplified =
                 new PhotonPipelineResult(
-                        result.getLatencyMillis(),
+                        result.sequenceID,
+                        captureMicros,
+                        now,
                         TrackedTarget.simpleFromTrackedTargets(result.targets),
                         result.multiTagResult);
 
@@ -190,7 +194,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             ts.cameraDistortionPublisher.accept(new double[] {});
         }
 
-        ts.heartbeatPublisher.set(heartbeatCounter++);
+        ts.heartbeatPublisher.set(result.sequenceID);
 
         // TODO...nt4... is this needed?
         rootTable.getInstance().flush();

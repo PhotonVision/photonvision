@@ -92,18 +92,18 @@ public class ObjectDetectionPipeline
     }
 
     @Override
-    protected CVPipelineResult process(Frame input_frame, ObjectDetectionPipelineSettings settings) {
+    protected CVPipelineResult process(Frame frame, ObjectDetectionPipelineSettings settings) {
         long sumPipeNanosElapsed = 0;
 
         // ***************** change based on backend ***********************
 
-        CVPipeResult<List<NeuralNetworkPipeResult>> rknnResult = rknnPipe.run(input_frame.colorImage);
+        CVPipeResult<List<NeuralNetworkPipeResult>> rknnResult = rknnPipe.run(frame.colorImage);
         sumPipeNanosElapsed += rknnResult.nanosElapsed;
         List<NeuralNetworkPipeResult> targetList;
 
         var names = rknnPipe.getClassNames();
 
-        input_frame.colorImage.getMat().copyTo(input_frame.processedImage.getMat());
+        frame.colorImage.getMat().copyTo(frame.processedImage.getMat());
 
         // ***************** change based on backend ***********************
 
@@ -125,7 +125,7 @@ public class ObjectDetectionPipeline
         var fps = fpsResult.output;
 
         return new CVPipelineResult(
-                sumPipeNanosElapsed, fps, collect2dTargetsResult.output, input_frame, names);
+                frame.sequenceID, sumPipeNanosElapsed, fps, collect2dTargetsResult.output, frame, names);
     }
 
     @Override
