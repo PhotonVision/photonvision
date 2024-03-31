@@ -81,7 +81,6 @@ const interactiveCols = computed(() =>
       :min="0"
       :max="100"
       :slider-cols="interactiveCols"
-      :step="0.1"
       @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraExposure: args }, false)"
     />
     <pv-slider
