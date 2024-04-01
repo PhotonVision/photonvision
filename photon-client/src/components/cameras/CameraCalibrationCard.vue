@@ -360,7 +360,6 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :min="0"
               :max="100"
               :slider-cols="8"
-              :step="0.1"
               @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraExposure: args }, false)"
             />
             <pv-slider
