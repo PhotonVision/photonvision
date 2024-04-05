@@ -120,14 +120,14 @@ public class TargetCalculationsTest {
                 Arguments.of(0, 10),
                 Arguments.of(10, 10),
                 Arguments.of(-10, -10),
-                // reduced magnitude to stay inside imager
-                Arguments.of(18, 21),
+                Arguments.of(-18, 14),
                 Arguments.of(-23, -16));
     }
 
     @ParameterizedTest
     @MethodSource("testYawPitchCalcArgs")
     public void testYawPitchCalc(double yawDeg, double pitchDeg) {
+        // FOV: ~58.5 deg horizontal, ~35 deg vertical
         JsonMatOfDouble testCameraMatrix =
                 new JsonMatOfDouble(
                         3, 3, new double[] {1142.341323, 0, 621.384201309, 0, 1139.92214, 349.897631, 0, 0, 1});
@@ -160,7 +160,7 @@ public class TargetCalculationsTest {
                 new Translation3d(1, new Rotation3d(0, Math.toRadians(pitchDeg), Math.toRadians(yawDeg)));
         // NWU to EDN
         var objectPoints =
-                new MatOfPoint3f(new Point3(targetTrl.getY(), targetTrl.getZ(), targetTrl.getX()));
+                new MatOfPoint3f(new Point3(-targetTrl.getY(), -targetTrl.getZ(), targetTrl.getX()));
         var imagePoints = new MatOfPoint2f();
         // Project translation into camera image
         Calib3d.projectPoints(
@@ -188,8 +188,9 @@ public class TargetCalculationsTest {
                         point.y,
                         testCameraCal.cameraIntrinsics.data[4],
                         testCameraCal);
-        assertEquals(yawDeg, yawPitch.getFirst(), 1e-3, "Yaw calculation incorrect");
-        assertEquals(pitchDeg, yawPitch.getSecond(), 1e-3, "Pitch calculation incorrect");
+        // convert photon angles to wpilib NWU angles 
+        assertEquals(yawDeg, -yawPitch.getFirst(), 1e-3, "Yaw calculation incorrect");
+        assertEquals(pitchDeg, -yawPitch.getSecond(), 1e-3, "Pitch calculation incorrect");
 
         testCameraCal.release();
         testDistortion.release();
