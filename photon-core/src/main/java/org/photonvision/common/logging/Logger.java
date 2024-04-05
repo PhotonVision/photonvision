@@ -99,6 +99,7 @@ public class Logger {
         levelMap.put(LogGroup.Data, LogLevel.INFO);
         levelMap.put(LogGroup.VisionModule, LogLevel.INFO);
         levelMap.put(LogGroup.Config, LogLevel.INFO);
+        levelMap.put(LogGroup.CSCore, LogLevel.TRACE);
     }
 
     static {
@@ -194,7 +195,7 @@ public class Logger {
         return logLevel.code <= levelMap.get(group).code;
     }
 
-    private void log(String message, LogLevel level) {
+    void log(String message, LogLevel level) {
         if (shouldLog(level)) {
             log(message, level, group, className);
         }

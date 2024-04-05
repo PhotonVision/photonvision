@@ -151,6 +151,12 @@ th {
   justify-content: center;
 }
 
+@media only screen and (min-width: 960px) {
+  #camera-settings-camera-view-card {
+    position: sticky;
+    top: 12px;
+  }
+}
 @media only screen and (min-width: 512px) and (max-width: 960px) {
   .stream-container {
     flex-wrap: nowrap;

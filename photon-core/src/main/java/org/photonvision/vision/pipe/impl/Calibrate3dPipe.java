@@ -38,13 +38,26 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.calibration.CameraLensModel;
 import org.photonvision.vision.calibration.JsonImageMat;
 import org.photonvision.vision.calibration.JsonMatOfDouble;
+import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.pipe.CVPipe;
+import org.photonvision.vision.pipe.impl.FindBoardCornersPipe.FindBoardCornersPipeResult;
 
 public class Calibrate3dPipe
         extends CVPipe<
-                List<FindBoardCornersPipe.FindBoardCornersPipeResult>,
+                Calibrate3dPipe.CalibrationInput,
                 CameraCalibrationCoefficients,
                 Calibrate3dPipe.CalibratePipeParams> {
+    public static class CalibrationInput {
+        final List<FindBoardCornersPipe.FindBoardCornersPipeResult> observations;
+        final FrameStaticProperties imageProps;
+
+        public CalibrationInput(
+                List<FindBoardCornersPipeResult> observations, FrameStaticProperties imageProps) {
+            this.observations = observations;
+            this.imageProps = imageProps;
+        }
+    }
+
     // For logging
     private static final Logger logger = new Logger(Calibrate3dPipe.class, LogGroup.General);
 
@@ -63,10 +76,9 @@ public class Calibrate3dPipe
      * @return Result of processing.
      */
     @Override
-    protected CameraCalibrationCoefficients process(
-            List<FindBoardCornersPipe.FindBoardCornersPipeResult> in) {
-        in =
-                in.stream()
+    protected CameraCalibrationCoefficients process(CalibrationInput in) {
+        var filteredIn =
+                in.observations.stream()
                         .filter(
                                 it ->
                                         it != null
@@ -79,17 +91,21 @@ public class Calibrate3dPipe
         var start = System.nanoTime();
         if (MrCalJNILoader.getInstance().isLoaded() && params.useMrCal) {
             logger.debug("Calibrating with mrcal!");
-            ret = calibrateMrcal(in);
+            ret =
+                    calibrateMrcal(
+                            filteredIn, in.imageProps.horizontalFocalLength, in.imageProps.verticalFocalLength);
         } else {
             logger.debug("Calibrating with opencv!");
-            ret = calibrateOpenCV(in);
+            ret =
+                    calibrateOpenCV(
+                            filteredIn, in.imageProps.horizontalFocalLength, in.imageProps.verticalFocalLength);
         }
         var dt = System.nanoTime() - start;
 
         if (ret != null)
             logger.info(
                     "CALIBRATION SUCCESS for res "
-                            + in.get(0).size
+                            + in.observations.get(0).size
                             + " in "
                             + dt / 1e6
                             + "ms! camMatrix: \n"
@@ -103,7 +119,7 @@ public class Calibrate3dPipe
     }
 
     protected CameraCalibrationCoefficients calibrateOpenCV(
-            List<FindBoardCornersPipe.FindBoardCornersPipeResult> in) {
+            List<FindBoardCornersPipe.FindBoardCornersPipeResult> in, double fxGuess, double fyGuess) {
         List<Mat> objPoints = in.stream().map(it -> it.objectPoints).collect(Collectors.toList());
         List<Mat> imgPts = in.stream().map(it -> it.imagePoints).collect(Collectors.toList());
         if (objPoints.size() != imgPts.size()) {
@@ -111,30 +127,32 @@ public class Calibrate3dPipe
             return null;
         }
 
-        Mat cameraMatrix = new Mat();
+        Mat cameraMatrix = new Mat(3, 3, CvType.CV_64F);
         MatOfDouble distortionCoefficients = new MatOfDouble();
         List<Mat> rvecs = new ArrayList<>();
         List<Mat> tvecs = new ArrayList<>();
 
-        // RMS of the calibration
-        double calibrationAccuracy;
+        // initial camera matrix guess
+        double cx = (in.get(0).size.width / 2.0) - 0.5;
+        double cy = (in.get(0).size.width / 2.0) - 0.5;
+        cameraMatrix.put(0, 0, new double[] {fxGuess, 0, cx, 0, fyGuess, cy, 0, 0, 1});
 
         try {
             // FindBoardCorners pipe outputs all the image points, object points, and frames to calculate
             // imageSize from, other parameters are output Mats
 
-            calibrationAccuracy =
-                    Calib3d.calibrateCameraExtended(
-                            objPoints,
-                            imgPts,
-                            new Size(in.get(0).size.width, in.get(0).size.height),
-                            cameraMatrix,
-                            distortionCoefficients,
-                            rvecs,
-                            tvecs,
-                            stdDeviationsIntrinsics,
-                            stdDeviationsExtrinsics,
-                            perViewErrors);
+            Calib3d.calibrateCameraExtended(
+                    objPoints,
+                    imgPts,
+                    new Size(in.get(0).size.width, in.get(0).size.height),
+                    cameraMatrix,
+                    distortionCoefficients,
+                    rvecs,
+                    tvecs,
+                    stdDeviationsIntrinsics,
+                    stdDeviationsExtrinsics,
+                    perViewErrors,
+                    Calib3d.CALIB_USE_LU + Calib3d.CALIB_USE_INTRINSIC_GUESS);
         } catch (Exception e) {
             logger.error("Calibration failed!", e);
             e.printStackTrace();
@@ -164,13 +182,12 @@ public class Calibrate3dPipe
     }
 
     protected CameraCalibrationCoefficients calibrateMrcal(
-            List<FindBoardCornersPipe.FindBoardCornersPipeResult> in) {
+            List<FindBoardCornersPipe.FindBoardCornersPipeResult> in, double fxGuess, double fyGuess) {
         List<MatOfPoint2f> corner_locations =
                 in.stream().map(it -> it.imagePoints).map(MatOfPoint2f::new).collect(Collectors.toList());
 
         int imageWidth = (int) in.get(0).size.width;
         int imageHeight = (int) in.get(0).size.height;
-        final double FOCAL_LENGTH_GUESS = 1200;
 
         MrCalResult result =
                 MrCalJNI.calibrateCamera(
@@ -180,7 +197,7 @@ public class Calibrate3dPipe
                         params.squareSize,
                         imageWidth,
                         imageHeight,
-                        FOCAL_LENGTH_GUESS);
+                        (fxGuess + fyGuess) / 2.0);
 
         // intrinsics are fx fy cx cy from mrcal
         JsonMatOfDouble cameraMatrixMat =

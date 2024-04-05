@@ -108,7 +108,7 @@ public class CameraInfo extends UsbCameraInfo {
     public String toString() {
         return "CameraInfo [cameraType="
                 + cameraType
-                + "baseName="
+                + ", baseName="
                 + getBaseName()
                 + ", vid="
                 + vendorId

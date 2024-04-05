@@ -33,7 +33,7 @@ import org.photonvision.vision.opencv.CVMat;
  * path}.
  */
 public class FileFrameProvider extends CpuImageProcessor {
-    public static final int MAX_FPS = 5;
+    public static final int MAX_FPS = 10;
     private static int count = 0;
 
     private final int thisIndex = count++;

@@ -270,9 +270,13 @@ public class USBCameraSource extends VisionSource {
                         if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.ArduOV9281)) {
                             propMin = 1;
                             propMax = 75;
+                        } else if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.ArduOV2311)) {
+                            propMin = 1;
+                            propMax = 140;
                         }
 
                         var exposure_manual_val = MathUtils.map(Math.round(exposure), 0, 100, propMin, propMax);
+                        logger.debug("Setting camera exposure to " + exposure_manual_val);
                         prop.set((int) exposure_manual_val);
                     } else {
                         scaledExposure = (int) Math.round(exposure);

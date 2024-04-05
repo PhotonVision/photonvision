@@ -32,13 +32,15 @@ import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point3;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class ArucoPoseEstimatorPipe
         extends CVPipe<
                 ArucoDetectionResult,
                 AprilTagPoseEstimate,
-                ArucoPoseEstimatorPipe.ArucoPoseEstimatorPipeParams> {
+                ArucoPoseEstimatorPipe.ArucoPoseEstimatorPipeParams>
+        implements Releasable {
     // image points of marker corners
     private final MatOfPoint2f imagePoints = new MatOfPoint2f(Mat.zeros(4, 1, CvType.CV_32FC2));
     // rvec/tvec estimations from solvepnp
@@ -115,6 +117,18 @@ public class ArucoPoseEstimatorPipe
     @Override
     public void setParams(ArucoPoseEstimatorPipe.ArucoPoseEstimatorPipeParams newParams) {
         super.setParams(newParams);
+    }
+
+    @Override
+    public void release() {
+        imagePoints.release();
+        for (var m : rvecs) m.release();
+        rvecs.clear();
+        for (var m : tvecs) m.release();
+        tvecs.clear();
+        rvec.release();
+        tvec.release();
+        reprojectionErrors.release();
     }
 
     public static class ArucoPoseEstimatorPipeParams {

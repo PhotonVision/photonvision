@@ -434,6 +434,73 @@ public class VisionSourceManagerTest {
     }
 
     @Test
+    public void testCSICameraMatching() {
+        Logger.setLevel(LogGroup.Camera, LogLevel.DEBUG);
+
+        // List of known cameras
+        var cameraInfos = new ArrayList<CameraInfo>();
+
+        var inst = new VisionSourceManager();
+        ConfigManager.getInstance().clearConfig();
+        ConfigManager.getInstance().load();
+        ConfigManager.getInstance().getConfig().getNetworkConfig().matchCamerasOnlyByPath = false;
+
+        CameraInfo info1 =
+                new CameraInfo(
+                        -1,
+                        "/base/soc/i2c0mux/i2c@0/ov9281@60",
+                        "OV9281", // Typically rp1-cfe for unit test changed to CSICAM-DEV
+                        new String[] {},
+                        -1,
+                        -1,
+                        CameraType.ZeroCopyPicam);
+
+        CameraInfo info2 =
+                new CameraInfo(
+                        -1,
+                        "/base/soc/i2c0mux/i2c@1/ov9281@60",
+                        "OV9281", // Typically rp1-cfe for unit test changed to CSICAM-DEV
+                        new String[] {},
+                        -1,
+                        -1,
+                        CameraType.ZeroCopyPicam);
+
+        var camera1_saved_config =
+                new CameraConfiguration(
+                        "OV9281", "OV9281", "test-1", "/base/soc/i2c0mux/i2c@0/ov9281@60", new String[0]);
+        camera1_saved_config.cameraType = CameraType.ZeroCopyPicam;
+        camera1_saved_config.usbVID = -1;
+        camera1_saved_config.usbPID = -1;
+
+        var camera2_saved_config =
+                new CameraConfiguration(
+                        "OV9281", "OV9281 (1)", "test-2", "/base/soc/i2c0mux/i2c@1/ov9281@60", new String[0]);
+        camera2_saved_config.usbVID = -1;
+        camera2_saved_config.usbPID = -1;
+        camera2_saved_config.cameraType = CameraType.ZeroCopyPicam;
+
+        cameraInfos.add(info1);
+        cameraInfos.add(info2);
+
+        // Try matching with both cameras being "known"
+        inst.registerLoadedConfigs(camera1_saved_config, camera2_saved_config);
+        var ret1 = inst.tryMatchCamImpl(cameraInfos);
+
+        // Our cameras should be "known"
+        assertTrue(inst.knownCameras.contains(info1));
+        assertTrue(inst.knownCameras.contains(info2));
+        assertEquals(2, inst.knownCameras.size());
+        assertEquals(2, ret1.size());
+
+        // Exactly one camera should have the path we put in
+        for (int i = 0; i < cameraInfos.size(); i++) {
+            var testPath = cameraInfos.get(i).path;
+            assertEquals(
+                    1, ret1.stream().filter(it -> testPath.equals(it.cameraConfiguration.path)).count());
+        }
+    }
+
+    @Test
     public void testIdenticalCameras() {
         Logger.setLevel(LogGroup.Camera, LogLevel.DEBUG);
 
