@@ -66,7 +66,8 @@ public class TargetCalculations {
             temp.get(0, 0, buff);
             temp.release();
 
-            // if outside of the imager, convergence fails, or really really bad user camera cal, undistort will fail by giving us nans. at some point we should log this failure
+            // if outside of the imager, convergence fails, or really really bad user camera cal,
+            // undistort will fail by giving us nans. at some point we should log this failure
             // if we can't undistort, don't change the cnter location
             if (Float.isFinite(buff[0]) && Float.isFinite(buff[1])) {
                 targetCenterX = buff[0];

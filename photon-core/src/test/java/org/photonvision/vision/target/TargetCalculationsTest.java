@@ -188,7 +188,7 @@ public class TargetCalculationsTest {
                         point.y,
                         testCameraCal.cameraIntrinsics.data[4],
                         testCameraCal);
-        // convert photon angles to wpilib NWU angles 
+        // convert photon angles to wpilib NWU angles
         assertEquals(yawDeg, -yawPitch.getFirst(), 1e-3, "Yaw calculation incorrect");
         assertEquals(pitchDeg, -yawPitch.getSecond(), 1e-3, "Pitch calculation incorrect");
 
