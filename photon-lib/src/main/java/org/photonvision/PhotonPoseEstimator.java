@@ -471,10 +471,12 @@ public class PhotonPoseEstimator {
                 return Optional.empty();
             }
 
-            double tagHeight = -(tagPose.get().getZ()-robotToCamera.getZ());
-            double hypot = (1/Math.tan(
-                    tagAngle.getY()-robotToCamera.getRotation().getY()
-            )) * tagHeight;
+            double hypot = PhotonUtils.calculateDistanceToTargetMeters(
+                    robotToCamera.getZ(),
+                    tagPose.get().getZ(),
+                    robotToCamera.getY(),
+                    tagAngle.getY()
+            );
 
             double robotX = Math.sin(tagAngle.getZ() + robotToCamera.getZ())*hypot;
             double robotY = Math.cos(tagAngle.getZ() + robotToCamera.getZ())*hypot;
