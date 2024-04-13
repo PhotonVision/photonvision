@@ -30,15 +30,11 @@ import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
-
-
-
-
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.numbers.N5;
@@ -48,7 +44,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
 import org.opencv.core.Point;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.estimation.VisionEstimation;
@@ -95,8 +90,8 @@ public class PhotonPoseEstimator {
 
         /**
          * Use the best visible tag to compute a single pose estimate. This runs on the RoboRIO in order
-         * to access the robot's yaw heading, and MUST have setReferencePose called every frame so heading
-         * data is up-to-date.
+         * to access the robot's yaw heading, and MUST have setReferencePose called every frame so
+         * heading data is up-to-date.
          */
         IMU_SOLVE_BEST_TAG
     }
@@ -456,26 +451,21 @@ public class PhotonPoseEstimator {
     }
 
     private Optional<EstimatedRobotPose> imuTagOnRioStrategy(
-            PhotonPipelineResult result,
-            Optional<Matrix<N3, N3>> cameraMatrixOpt
-    ) {
-        if(result.hasTargets() && cameraMatrixOpt.isPresent()) {
+            PhotonPipelineResult result, Optional<Matrix<N3, N3>> cameraMatrixOpt) {
+        if (result.hasTargets() && cameraMatrixOpt.isPresent()) {
             PhotonTrackedTarget target = result.getBestTarget();
 
             List<TargetCorner> targetCorners = target.getDetectedCorners();
             double sumX = 0.0;
             double sumY = 0.0;
-            for(TargetCorner t : targetCorners) {
-                sumX+=t.x;
-                sumY+=t.y;
+            for (TargetCorner t : targetCorners) {
+                sumX += t.x;
+                sumY += t.y;
             }
 
-            Point tagCenter = new Point(sumX/4, sumY/4);
+            Point tagCenter = new Point(sumX / 4, sumY / 4);
 
-            Rotation3d tagAngle = PhotonUtils.correctPixelRot(
-                    tagCenter, cameraMatrixOpt.get()
-            );
-
+            Rotation3d tagAngle = PhotonUtils.correctPixelRot(tagCenter, cameraMatrixOpt.get());
 
             int tagID = target.getFiducialId();
             Optional<Pose3d> tagPose = fieldTags.getTagPose(tagID);
@@ -485,59 +475,38 @@ public class PhotonPoseEstimator {
                 return Optional.empty();
             }
 
-            //calculate distance to the tag
-            double hypot = -PhotonUtils.calculateDistanceToTargetMeters(
-                    robotToCamera.getZ(),
-                    tagPose.get().getZ(),
-                    robotToCamera.getY(),
-                    tagAngle.getY()
-            );
+            // calculate distance to the tag
+            double hypot =
+                    -PhotonUtils.calculateDistanceToTargetMeters(
+                            robotToCamera.getZ(), tagPose.get().getZ(), robotToCamera.getY(), tagAngle.getY());
 
-            //calculating the translation of the tag from the robot center on the floor plane
-            double robotX = Math.sin(tagAngle.getZ() + robotToCamera.getRotation().getZ())*hypot;
-            double robotY = -Math.cos(tagAngle.getZ() + robotToCamera.getRotation().getZ())*hypot;
+            // calculating the translation of the tag from the robot center on the floor plane
+            double robotX = Math.sin(tagAngle.getZ() + robotToCamera.getRotation().getZ()) * hypot;
+            double robotY = -Math.cos(tagAngle.getZ() + robotToCamera.getRotation().getZ()) * hypot;
 
+            Translation2d tagToCamera = new Translation2d(robotX, robotY);
 
-            Translation2d tagToCamera = new Translation2d(robotX,robotY);
+            Translation2d robotToTag = tagToCamera.plus(robotToCamera.getTranslation().toTranslation2d());
 
-            Translation2d robotToTag = tagToCamera.plus(
-                    robotToCamera.getTranslation().toTranslation2d()
-            );
+            // rotating the robot-relative tag position by the IMU yaw to make it field-relative
+            Translation2d fixedTrans = robotToTag.rotateBy(referencePose.getRotation().toRotation2d());
 
+            Translation2d finalTranslation =
+                    tagPose.get().getTranslation().toTranslation2d().plus(fixedTrans);
 
-
-            //rotating the robot-relative tag position by the IMU yaw to make it field-relative
-            Translation2d fixedTrans = robotToTag.rotateBy(
-                    referencePose.getRotation().toRotation2d()
-            );
-
-
-            Translation2d finalTranslation = tagPose.get().getTranslation().toTranslation2d().plus(
-                    fixedTrans
-            );
-
-            Pose3d robotPosition = new Pose3d(
-                    new Pose2d(
-                            finalTranslation,
-                            referencePose.getRotation().toRotation2d()
-                    )
-            );
+            Pose3d robotPosition =
+                    new Pose3d(new Pose2d(finalTranslation, referencePose.getRotation().toRotation2d()));
 
             return Optional.of(
                     new EstimatedRobotPose(
                             robotPosition,
                             result.getTimestampSeconds(),
                             result.getTargets(),
-                            PoseStrategy.IMU_SOLVE_BEST_TAG
-                    )
-            );
+                            PoseStrategy.IMU_SOLVE_BEST_TAG));
         } else {
             return Optional.empty();
         }
-
     }
-
-
 
     private Optional<EstimatedRobotPose> multiTagOnRioStrategy(
             PhotonPipelineResult result,

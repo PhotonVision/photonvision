@@ -210,7 +210,6 @@ public final class PhotonUtils {
         return robotPose.getTranslation().getDistance(targetPose.getTranslation());
     }
 
-
     /**
      * Corrects a given pixel for perspective distortion
      *
