@@ -24,7 +24,10 @@
 
 package org.photonvision;
 
+import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.numbers.N3;
+import org.opencv.core.Point;
 
 public final class PhotonUtils {
     private PhotonUtils() {
@@ -205,5 +208,30 @@ public final class PhotonUtils {
      */
     public static double getDistanceToPose(Pose2d robotPose, Pose2d targetPose) {
         return robotPose.getTranslation().getDistance(targetPose.getTranslation());
+    }
+
+
+    /**
+     * Corrects a given pixel for perspective distortion
+     *
+     * @param pixel pixel to be corrected
+     * @param camIntrinsics the distortion matrix of the camera
+     * @return the angles
+     */
+    public static Rotation3d correctPixelRot(Point pixel, Matrix<N3, N3> camIntrinsics) {
+        double fx = camIntrinsics.get(0, 0);
+        double cx = camIntrinsics.get(0, 2);
+        double xOffset = cx - pixel.x;
+
+        double fy = camIntrinsics.get(1, 1);
+        double cy = camIntrinsics.get(1, 2);
+        double yOffset = cy - pixel.y;
+
+        // calculate yaw normally
+        var yaw = new Rotation2d(fx, xOffset);
+        // correct pitch based on yaw
+        var pitch = new Rotation2d(fy / Math.cos(Math.atan(xOffset / fx)), -yOffset);
+
+        return new Rotation3d(0, pitch.getRadians(), yaw.getRadians());
     }
 }
