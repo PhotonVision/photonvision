@@ -83,6 +83,12 @@ public class PhotonPoseEstimator {
          * take a lot of time.
          */
         MULTI_TAG_PNP_ON_RIO,
+
+        /**
+         * Use the best visible tag to compute a single pose estimate. This runs on the RoboRIO in order
+         * to access the robot's yaw heading, and MUST have setReferencePose called every frame so heading
+         * data is up-to-date.
+         */
         IMU_SOLVE_BEST_TAG
     }
 
@@ -471,6 +477,7 @@ public class PhotonPoseEstimator {
                 return Optional.empty();
             }
 
+            //calculate distance to the tag
             double hypot = PhotonUtils.calculateDistanceToTargetMeters(
                     robotToCamera.getZ(),
                     tagPose.get().getZ(),
@@ -478,6 +485,7 @@ public class PhotonPoseEstimator {
                     tagAngle.getY()
             );
 
+            //calculating the translation of the tag from the robot center on the floor plane
             double robotX = Math.sin(tagAngle.getZ() + robotToCamera.getZ())*hypot;
             double robotY = Math.cos(tagAngle.getZ() + robotToCamera.getZ())*hypot;
 
@@ -488,6 +496,8 @@ public class PhotonPoseEstimator {
             );
 
 
+
+            //rotating the robot-relative tag position by the IMU yaw to make it field-relative
             Translation2d fixedTrans = robotToTag.rotateBy(
                     referencePose.getRotation().toRotation2d().minus(
                             new Rotation2d(Math.PI/2)
@@ -513,7 +523,6 @@ public class PhotonPoseEstimator {
             );
         } else {
             return update(result, cameraMatrixOpt, distCoeffsOpt, this.multiTagFallbackStrategy);
-
         }
 
     }
