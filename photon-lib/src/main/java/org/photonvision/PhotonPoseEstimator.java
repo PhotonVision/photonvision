@@ -27,14 +27,13 @@ package org.photonvision;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Pair;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.interpolation.Interpolator;
+import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.numbers.N5;
@@ -107,6 +106,9 @@ public class PhotonPoseEstimator {
     private Pose3d referencePose;
     protected double poseCacheTimestampSeconds = -1;
     private final Set<Integer> reportedErrors = new HashSet<>();
+    private final TimeInterpolatableBuffer<Rotation2d> headingBuffer = TimeInterpolatableBuffer.createBuffer(
+            1.0
+    );
 
     /**
      * Create a new PhotonPoseEstimator.
@@ -278,6 +280,10 @@ public class PhotonPoseEstimator {
      */
     public void setLastPose(Pose2d lastPose) {
         setLastPose(new Pose3d(lastPose));
+    }
+
+    public void registerRobotHeading(Rotation2d robotHeading, double timestamp) {
+        headingBuffer.addSample(timestamp, robotHeading);
     }
 
     /**
@@ -488,14 +494,21 @@ public class PhotonPoseEstimator {
 
             Translation2d robotToTag = tagToCamera.plus(robotToCamera.getTranslation().toTranslation2d());
 
+            Optional<Rotation2d> headingState = headingBuffer.getSample(result.getTimestampSeconds());
+            if(headingState.isEmpty()) {
+                return Optional.empty();
+            }
+
+            Rotation2d robotHeading = headingState.get();
+
             // rotating the robot-relative tag position by the IMU yaw to make it field-relative
-            Translation2d fixedTrans = robotToTag.rotateBy(referencePose.getRotation().toRotation2d());
+            Translation2d fixedTrans = robotToTag.rotateBy(robotHeading);
 
             Translation2d finalTranslation =
                     tagPose.get().getTranslation().toTranslation2d().plus(fixedTrans);
 
             Pose3d robotPosition =
-                    new Pose3d(new Pose2d(finalTranslation, referencePose.getRotation().toRotation2d()));
+                    new Pose3d(new Pose2d(finalTranslation, robotHeading));
 
             return Optional.of(
                     new EstimatedRobotPose(
