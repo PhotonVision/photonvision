@@ -293,7 +293,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               label="Board Type"
               tooltip="Calibration board pattern to use"
               :select-cols="7"
-              :items="['Chessboard', 'Dotboard']"
+              :items="['Chessboard', 'Dotboard', 'Charuco']"
               :disabled="isCalibrating"
             />
             <pv-number-input

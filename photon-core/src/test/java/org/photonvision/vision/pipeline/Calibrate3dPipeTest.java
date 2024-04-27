@@ -44,7 +44,6 @@ import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
-import org.photonvision.vision.pipe.impl.Calibrate3dPipeline;
 
 public class Calibrate3dPipeTest {
     @BeforeAll
@@ -79,13 +78,13 @@ public class Calibrate3dPipeTest {
     /**
      * Run camera calibration on a given dataset
      *
-     * @param dataset Location of images and their size
+     * @param dataset  Location of images and their size
      * @param useMrCal If we should use mrcal or opencv for camera calibration
      */
     @CartesianTest
     public void calibrateTestMatrix(
             @Enum(CalibrationDatasets.class) CalibrationDatasets dataset,
-            @Values(booleans = {true, false}) boolean useMrCal) {
+            @Values(booleans = { true, false }) boolean useMrCal) {
         // Pi3 and V1.3 camera
         String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
         File dir = Path.of(base, dataset.path).toFile();
@@ -147,15 +146,15 @@ public class Calibrate3dPipeTest {
         for (var file : directoryListing) {
             if (file.isFile()) {
                 calibration3dPipeline.takeSnapshot();
-                var frame =
-                        new Frame(
-                                new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
-                                new CVMat(),
-                                FrameThresholdType.NONE,
-                                new FrameStaticProperties((int) imgRes.width, (int) imgRes.height, 67, null));
+                var frame = new Frame(
+                        new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
+                        new CVMat(),
+                        FrameThresholdType.NONE,
+                        new FrameStaticProperties((int) imgRes.width, (int) imgRes.height, 67, null));
                 var output = calibration3dPipeline.run(frame, QuirkyCamera.DefaultCamera);
 
-                // TestUtils.showImage(output.inputAndOutputFrame.processedImage.getMat(), file.getName(),
+                // TestUtils.showImage(output.inputAndOutputFrame.processedImage.getMat(),
+                // file.getName(),
                 // 1);
                 output.release();
                 frame.release();
@@ -176,13 +175,12 @@ public class Calibrate3dPipeTest {
         assertNotNull(cal);
         assertNotNull(cal.observations);
 
-        // Confirm the calibrated center pixel is fairly close to of the "expected" location at the
+        // Confirm the calibrated center pixel is fairly close to of the "expected"
+        // location at the
         // center of the sensor.
         // For all our data samples so far, this should be true.
-        double centerXErrPct =
-                Math.abs(cal.cameraIntrinsics.data[2] - expectedXCenter) / (expectedXCenter) * 100.0;
-        double centerYErrPct =
-                Math.abs(cal.cameraIntrinsics.data[5] - expectedYCenter) / (expectedYCenter) * 100.0;
+        double centerXErrPct = Math.abs(cal.cameraIntrinsics.data[2] - expectedXCenter) / (expectedXCenter) * 100.0;
+        double centerYErrPct = Math.abs(cal.cameraIntrinsics.data[5] - expectedYCenter) / (expectedYCenter) * 100.0;
         assertTrue(centerXErrPct < 10.0);
         assertTrue(centerYErrPct < 10.0);
 
@@ -190,15 +188,19 @@ public class Calibrate3dPipeTest {
         System.out.println("Dist Coeffs: " + cal.distCoeffs.toString());
 
         // Confirm we didn't get leaky on our mat usage
-        // assertEquals(startMatCount, CVMat.getMatCount()); // TODO Figure out why this doesn't
+        // assertEquals(startMatCount, CVMat.getMatCount()); // TODO Figure out why this
+        // doesn't
         // work in CI
         System.out.println("CVMats left: " + CVMat.getMatCount() + " Start: " + startMatCount);
     }
 
     /**
-     * Uses a given camera coefficents matrix set to "undistort" every image file found in a given
-     * directory and display them. Provides an easy way to visually debug the results of the
-     * calibration routine. Seems to play havoc with CI and takes a chunk of time, so shouldn't
+     * Uses a given camera coefficents matrix set to "undistort" every image file
+     * found in a given
+     * directory and display them. Provides an easy way to visually debug the
+     * results of the
+     * calibration routine. Seems to play havoc with CI and takes a chunk of time,
+     * so shouldn't
      * usually be left active in tests.
      *
      * @param directoryListing

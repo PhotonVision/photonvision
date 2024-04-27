@@ -27,8 +27,10 @@ public class UICalibrationData {
     public int patternHeight;
     public BoardType boardType;
     public boolean useMrCal;
+    public double markerLengthIn;
 
-    public UICalibrationData() {}
+    public UICalibrationData() {
+    }
 
     public UICalibrationData(
             int count,
@@ -38,6 +40,7 @@ public class UICalibrationData {
             double squareSizeIn,
             int patternWidth,
             int patternHeight,
+            double markerLengthIn,
             BoardType boardType,
             boolean useMrCal) {
         this.count = count;
@@ -47,13 +50,15 @@ public class UICalibrationData {
         this.squareSizeIn = squareSizeIn;
         this.patternWidth = patternWidth;
         this.patternHeight = patternHeight;
+        this.markerLengthIn = markerLengthIn;
         this.boardType = boardType;
         this.useMrCal = useMrCal;
     }
 
     public enum BoardType {
         CHESSBOARD,
-        DOTBOARD
+        DOTBOARD,
+        CHARUCOBOARD,
     }
 
     @Override

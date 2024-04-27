@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.vision.pipe.impl;
+package org.photonvision.vision.pipeline;
 
 import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
@@ -36,11 +36,13 @@ import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
+import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
+import org.photonvision.vision.pipe.impl.Calibrate3dPipe;
+import org.photonvision.vision.pipe.impl.FindBoardCornersPipe;
+import org.photonvision.vision.pipe.impl.FindCharucoCornersPipe;
 import org.photonvision.vision.pipe.impl.Calibrate3dPipe.CalibrationInput;
 import org.photonvision.vision.pipe.impl.FindBoardCornersPipe.FindBoardCornersPipeResult;
-import org.photonvision.vision.pipeline.CVPipeline;
-import org.photonvision.vision.pipeline.Calibration3dPipelineSettings;
-import org.photonvision.vision.pipeline.UICalibrationData;
+import org.photonvision.vision.pipeline.UICalibrationData.BoardType;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.pipeline.result.CalibrationPipelineResult;
 
@@ -51,6 +53,7 @@ public class Calibrate3dPipeline
 
     // Find board corners decides internally between opencv and mrgingham
     private final FindBoardCornersPipe findBoardCornersPipe = new FindBoardCornersPipe();
+    private final FindCharucoCornersPipe findCharuco = new FindCharucoCornersPipe();
     private final Calibrate3dPipe calibrate3dPipe = new Calibrate3dPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
@@ -82,19 +85,21 @@ public class Calibrate3dPipeline
 
     @Override
     protected void setPipeParamsImpl() {
-        FindBoardCornersPipe.FindCornersPipeParams findCornersPipeParams =
-                new FindBoardCornersPipe.FindCornersPipeParams(
-                        settings.boardHeight,
-                        settings.boardWidth,
-                        settings.boardType,
-                        settings.gridSize,
-                        settings.streamingFrameDivisor);
+        FindBoardCornersPipe.FindCornersPipeParams findCornersPipeParams = new FindBoardCornersPipe.FindCornersPipeParams(
+                settings.boardHeight,
+                settings.boardWidth,
+                settings.boardType,
+                settings.tagFamily,
+                settings.gridSize,
+                settings.markerSize,
+                settings.streamingFrameDivisor);
         findBoardCornersPipe.setParams(findCornersPipeParams);
 
-        Calibrate3dPipe.CalibratePipeParams calibratePipeParams =
-                new Calibrate3dPipe.CalibratePipeParams(
-                        settings.boardHeight, settings.boardWidth, settings.gridSize, settings.useMrCal);
+        Calibrate3dPipe.CalibratePipeParams calibratePipeParams = new Calibrate3dPipe.CalibratePipeParams(
+                settings.boardHeight, settings.boardWidth, settings.gridSize, settings.useMrCal);
         calibrate3dPipe.setParams(calibratePipeParams);
+
+        findCharuco.setParams(findCornersPipeParams);
     }
 
     @Override
@@ -106,7 +111,8 @@ public class Calibrate3dPipeline
         }
 
         if (getSettings().inputImageRotationMode != ImageRotationMode.DEG_0) {
-            // All this calibration assumes zero rotation. If we want a rotation, it should be applied at
+            // All this calibration assumes zero rotation. If we want a rotation, it should
+            // be applied at
             // the output
             logger.error(
                     "Input image rotation was non-zero! Calibration wasn't designed to deal with this. Attempting to manually change back to zero");
@@ -120,11 +126,16 @@ public class Calibrate3dPipeline
         var outputColorCVMat = new CVMat();
         inputColorMat.copyTo(outputColorCVMat.getMat());
 
-        FindBoardCornersPipeResult findBoardResult =
-                findBoardCornersPipe.run(Pair.of(inputColorMat, outputColorCVMat.getMat())).output;
+        FindBoardCornersPipeResult findBoardResult;
 
-        var fpsResult = calculateFPSPipe.run(null);
-        var fps = fpsResult.output;
+        if (settings.boardType == BoardType.CHARUCOBOARD) {
+            findBoardResult = findCharuco
+                    .run(Pair.of(inputColorMat, outputColorCVMat.getMat())).output;
+        } else {
+            findBoardResult = findBoardCornersPipe
+                    .run(Pair.of(inputColorMat, outputColorCVMat.getMat())).output;
+
+        }
 
         if (takeSnapshot) {
             // Set snapshot to false even if we don't find a board
@@ -141,9 +152,13 @@ public class Calibrate3dPipeline
             }
         }
 
+        var fpsResult = calculateFPSPipe.run(null);
+        var fps = fpsResult.output;
+
         frame.release();
 
-        // Return the drawn chessboard if corners are found, if not, then return the input image.
+        // Return the drawn chessboard if corners are found, if not, then return the
+        // input image.
         return new CalibrationPipelineResult(
                 sumPipeNanosElapsed,
                 fps, // Unused but here in case
@@ -175,10 +190,12 @@ public class Calibrate3dPipeline
 
         this.calibrating = true;
 
-        /*Pass the board corners to the pipe, which will check again to see if all boards are valid
-        and returns the corresponding image and object points*/
-        calibrationOutput =
-                calibrate3dPipe.run(new CalibrationInput(foundCornersList, frameStaticProperties));
+        /*
+         * Pass the board corners to the pipe, which will check again to see if all
+         * boards are valid
+         * and returns the corresponding image and object points
+         */
+        calibrationOutput = calibrate3dPipe.run(new CalibrationInput(foundCornersList, frameStaticProperties));
 
         this.calibrating = false;
 
@@ -201,18 +218,18 @@ public class Calibrate3dPipeline
     }
 
     private void broadcastState() {
-        var state =
-                SerializationUtils.objectToHashMap(
-                        new UICalibrationData(
-                                foundCornersList.size(),
-                                settings.cameraVideoModeIndex,
-                                minSnapshots,
-                                hasEnough(),
-                                Units.metersToInches(settings.gridSize),
-                                settings.boardWidth,
-                                settings.boardHeight,
-                                settings.boardType,
-                                settings.useMrCal));
+        var state = SerializationUtils.objectToHashMap(
+                new UICalibrationData(
+                        foundCornersList.size(),
+                        settings.cameraVideoModeIndex,
+                        minSnapshots,
+                        hasEnough(),
+                        Units.metersToInches(settings.gridSize),
+                        settings.boardWidth,
+                        settings.boardHeight,
+                        settings.markerSize,
+                        settings.boardType,
+                        settings.useMrCal));
 
         DataChangeService.getInstance()
                 .publishEvent(OutgoingUIEvent.wrappedOf("calibrationData", state));
@@ -234,6 +251,7 @@ public class Calibrate3dPipeline
 
     @Override
     public void release() {
-        // we never actually need to give resources up since pipelinemanager only makes one of us
+        // we never actually need to give resources up since pipelinemanager only makes
+        // one of us
     }
 }
