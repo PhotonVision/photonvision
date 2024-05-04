@@ -42,8 +42,9 @@ public class USBFrameProvider extends CpuImageProcessor {
     public CapturedFrame getInputMat() {
         var mat = new CVMat(); // We do this so that we don't fill a Mat in use by another thread
         // This is from wpi::Now, or WPIUtilJNI.now()
-        long time = cvSink.grabFrame(mat.getMat())
-                * 1000; // Units are microseconds, epoch is the same as the Unix epoch
+        long time =
+                cvSink.grabFrame(mat.getMat())
+                        * 1000; // Units are microseconds, epoch is the same as the Unix epoch
 
         if (time == 0) {
             var error = cvSink.getError();

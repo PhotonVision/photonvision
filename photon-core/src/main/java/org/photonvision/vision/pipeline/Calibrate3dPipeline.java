@@ -38,10 +38,10 @@ import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
 import org.photonvision.vision.pipe.impl.Calibrate3dPipe;
-import org.photonvision.vision.pipe.impl.FindBoardCornersPipe;
-import org.photonvision.vision.pipe.impl.FindCharucoCornersPipe;
 import org.photonvision.vision.pipe.impl.Calibrate3dPipe.CalibrationInput;
+import org.photonvision.vision.pipe.impl.FindBoardCornersPipe;
 import org.photonvision.vision.pipe.impl.FindBoardCornersPipe.FindBoardCornersPipeResult;
+import org.photonvision.vision.pipe.impl.FindCharucoCornersPipe;
 import org.photonvision.vision.pipeline.UICalibrationData.BoardType;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.pipeline.result.CalibrationPipelineResult;
@@ -85,18 +85,20 @@ public class Calibrate3dPipeline
 
     @Override
     protected void setPipeParamsImpl() {
-        FindBoardCornersPipe.FindCornersPipeParams findCornersPipeParams = new FindBoardCornersPipe.FindCornersPipeParams(
-                settings.boardHeight,
-                settings.boardWidth,
-                settings.boardType,
-                settings.tagFamily,
-                settings.gridSize,
-                settings.markerSize,
-                settings.streamingFrameDivisor);
+        FindBoardCornersPipe.FindCornersPipeParams findCornersPipeParams =
+                new FindBoardCornersPipe.FindCornersPipeParams(
+                        settings.boardHeight,
+                        settings.boardWidth,
+                        settings.boardType,
+                        settings.tagFamily,
+                        settings.gridSize,
+                        settings.markerSize,
+                        settings.streamingFrameDivisor);
         findBoardCornersPipe.setParams(findCornersPipeParams);
 
-        Calibrate3dPipe.CalibratePipeParams calibratePipeParams = new Calibrate3dPipe.CalibratePipeParams(
-                settings.boardHeight, settings.boardWidth, settings.gridSize, settings.useMrCal);
+        Calibrate3dPipe.CalibratePipeParams calibratePipeParams =
+                new Calibrate3dPipe.CalibratePipeParams(
+                        settings.boardHeight, settings.boardWidth, settings.gridSize, settings.useMrCal);
         calibrate3dPipe.setParams(calibratePipeParams);
 
         findCharuco.setParams(findCornersPipeParams);
@@ -129,12 +131,10 @@ public class Calibrate3dPipeline
         FindBoardCornersPipeResult findBoardResult;
 
         if (settings.boardType == BoardType.CHARUCOBOARD) {
-            findBoardResult = findCharuco
-                    .run(Pair.of(inputColorMat, outputColorCVMat.getMat())).output;
+            findBoardResult = findCharuco.run(Pair.of(inputColorMat, outputColorCVMat.getMat())).output;
         } else {
-            findBoardResult = findBoardCornersPipe
-                    .run(Pair.of(inputColorMat, outputColorCVMat.getMat())).output;
-
+            findBoardResult =
+                    findBoardCornersPipe.run(Pair.of(inputColorMat, outputColorCVMat.getMat())).output;
         }
 
         if (takeSnapshot) {
@@ -195,7 +195,8 @@ public class Calibrate3dPipeline
          * boards are valid
          * and returns the corresponding image and object points
          */
-        calibrationOutput = calibrate3dPipe.run(new CalibrationInput(foundCornersList, frameStaticProperties));
+        calibrationOutput =
+                calibrate3dPipe.run(new CalibrationInput(foundCornersList, frameStaticProperties));
 
         this.calibrating = false;
 
@@ -218,18 +219,19 @@ public class Calibrate3dPipeline
     }
 
     private void broadcastState() {
-        var state = SerializationUtils.objectToHashMap(
-                new UICalibrationData(
-                        foundCornersList.size(),
-                        settings.cameraVideoModeIndex,
-                        minSnapshots,
-                        hasEnough(),
-                        Units.metersToInches(settings.gridSize),
-                        settings.boardWidth,
-                        settings.boardHeight,
-                        settings.markerSize,
-                        settings.boardType,
-                        settings.useMrCal));
+        var state =
+                SerializationUtils.objectToHashMap(
+                        new UICalibrationData(
+                                foundCornersList.size(),
+                                settings.cameraVideoModeIndex,
+                                minSnapshots,
+                                hasEnough(),
+                                Units.metersToInches(settings.gridSize),
+                                settings.boardWidth,
+                                settings.boardHeight,
+                                settings.markerSize,
+                                settings.boardType,
+                                settings.useMrCal));
 
         DataChangeService.getInstance()
                 .publishEvent(OutgoingUIEvent.wrappedOf("calibrationData", state));

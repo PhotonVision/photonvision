@@ -19,7 +19,6 @@ package org.photonvision.vision.pipe.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
@@ -32,9 +31,12 @@ import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.pipeline.UICalibrationData;
 
 public class FindCharucoCornersPipe
-        extends
-        CVPipe<Pair<Mat, Mat>, FindBoardCornersPipe.FindBoardCornersPipeResult, FindBoardCornersPipe.FindCornersPipeParams> {
-    private static final Logger logger = new Logger(FindBoardCornersPipe.class, LogGroup.VisionModule);
+        extends CVPipe<
+                Pair<Mat, Mat>,
+                FindBoardCornersPipe.FindBoardCornersPipeResult,
+                FindBoardCornersPipe.FindCornersPipeParams> {
+    private static final Logger logger =
+            new Logger(FindBoardCornersPipe.class, LogGroup.VisionModule);
 
     MatOfPoint3f objectPoints = new MatOfPoint3f();
 
@@ -51,13 +53,16 @@ public class FindCharucoCornersPipe
     private FindBoardCornersPipe.FindCornersPipeParams lastParams = null;
 
     public void createObjectPoints() {
-        if (this.lastParams != null && this.lastParams.equals(this.params))
-            return;
+        if (this.lastParams != null && this.lastParams.equals(this.params)) return;
         this.lastParams = this.params;
 
         if (params.type == UICalibrationData.BoardType.CHARUCOBOARD) {
-            board = new CharucoBoard(new Size(params.boardWidth, params.boardHeight), (float) params.gridSize,
-                    (float) params.markerSize, Objdetect.getPredefinedDictionary(params.tagFamily));
+            board =
+                    new CharucoBoard(
+                            new Size(params.boardWidth, params.boardHeight),
+                            (float) params.gridSize,
+                            (float) params.markerSize,
+                            Objdetect.getPredefinedDictionary(params.tagFamily));
             detector = new CharucoDetector(board);
         } else {
             logger.error("Can't create pattern for unknown board type " + params.type);
@@ -81,8 +86,10 @@ public class FindCharucoCornersPipe
      * @return Frame resolution, object points, board corners
      */
     private FindBoardCornersPipe.FindBoardCornersPipeResult findBoardCorners(Pair<Mat, Mat> in) {
-        Mat ObjPoints = new Mat(); // 3 dimensional currentObjectPoints, the physical target ChArUco Board
-        Mat imgPoints = new Mat(); // 2 dimensional currentImagePoints, the likely distorted board on the flat
+        Mat ObjPoints =
+                new Mat(); // 3 dimensional currentObjectPoints, the physical target ChArUco Board
+        Mat imgPoints =
+                new Mat(); // 2 dimensional currentImagePoints, the likely distorted board on the flat
         // camera sensor frame posed relative to the target
         Mat detectedCorners = new Mat(); // currentCharucoCorners
         Mat detectedIds = new Mat(); // currentCharucoIds
@@ -116,10 +123,15 @@ public class FindCharucoCornersPipe
             }
             board.matchImagePoints(detectedCornersList, detectedIds, ObjPoints, imgPoints);
 
+            // draw the charuco board
+            Objdetect.drawDetectedCornersCharuco(
+                    outFrame, detectedCorners, detectedIds, new Scalar(0, 0, 255)); // Red
+            // Text
+
         }
 
         if (!boardFound) {
-            // If we can't find a chessboard/dot board, give up
+            // If we can't find a charuco board, give up
             return null;
         }
 
@@ -129,12 +141,34 @@ public class FindCharucoCornersPipe
         var objPts = new MatOfPoint3f();
         ObjPoints.copyTo(objPts);
 
+        var outLevels = new MatOfFloat();
+
+        Point[] boardCorners = new Point[(this.params.boardHeight - 1) * (this.params.boardWidth - 1)];
+        Point3[] objectPoints =
+                new Point3[(this.params.boardHeight - 1) * (this.params.boardWidth - 1)];
+        float[] levels = new float[(this.params.boardHeight - 1) * (this.params.boardWidth - 1)];
+
+        for (int i = 0; i < detectedIds.total(); i++) {
+            int id = (int) detectedIds.get(i, 0)[0];
+            boardCorners[id] = outBoardCorners.toList().get(i);
+            objectPoints[id] = objPts.toList().get(i);
+            levels[i] = 1.0f;
+        }
+        for (int i = 0; i < boardCorners.length; i++) {
+            if (boardCorners[i] == null) {
+                boardCorners[i] = new Point(-1, -1);
+                objectPoints[i] = new Point3(-1, -1, -1);
+                levels[i] = -1.0f;
+            }
+        }
+
+        outBoardCorners.fromArray(boardCorners);
+        outLevels.fromArray(levels);
+
         // Get the size of the inFrame
         this.imageSize = new Size(inFrame.width(), inFrame.height());
 
-        // draw the charuco board
-        // Objdetect.drawDetectedCornersCharuco(outFrame, detectedCorners, markerIds);
-
-        return new FindBoardCornersPipe.FindBoardCornersPipeResult(inFrame.size(), objPts, outBoardCorners);
+        return new FindBoardCornersPipe.FindBoardCornersPipeResult(
+                inFrame.size(), objPts, outBoardCorners, outLevels);
     }
 }

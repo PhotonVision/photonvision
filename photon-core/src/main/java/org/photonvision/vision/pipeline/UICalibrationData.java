@@ -29,8 +29,7 @@ public class UICalibrationData {
     public boolean useMrCal;
     public double markerLengthIn;
 
-    public UICalibrationData() {
-    }
+    public UICalibrationData() {}
 
     public UICalibrationData(
             int count,

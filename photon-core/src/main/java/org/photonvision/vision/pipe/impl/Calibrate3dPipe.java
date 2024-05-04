@@ -30,7 +30,6 @@ import org.opencv.core.Size;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
-import org.photonvision.mrcal.MrCalJNI;
 import org.photonvision.mrcal.MrCalJNI.MrCalResult;
 import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.vision.calibration.BoardObservation;
@@ -65,7 +64,8 @@ public class Calibrate3dPipe
     private final Mat stdDeviationsIntrinsics = new Mat();
     private final Mat stdDeviationsExtrinsics = new Mat();
 
-    // Contains the re projection error of each snapshot by re projecting the corners we found and
+    // Contains the re projection error of each snapshot by re projecting the
+    // corners we found and
     // finding the Euclidean distance between the actual corners.
     private final Mat perViewErrors = new Mat();
 
@@ -138,7 +138,8 @@ public class Calibrate3dPipe
         cameraMatrix.put(0, 0, new double[] {fxGuess, 0, cx, 0, fyGuess, cy, 0, 0, 1});
 
         try {
-            // FindBoardCorners pipe outputs all the image points, object points, and frames to calculate
+            // FindBoardCorners pipe outputs all the image points, object points, and frames
+            // to calculate
             // imageSize from, other parameters are output Mats
 
             Calib3d.calibrateCameraExtended(
@@ -190,7 +191,7 @@ public class Calibrate3dPipe
         int imageHeight = (int) in.get(0).size.height;
 
         MrCalResult result =
-                MrCalJNI.calibrateCamera(
+                MrCal.calibrateCamera(
                         corner_locations,
                         params.boardWidth,
                         params.boardHeight,
@@ -222,13 +223,36 @@ public class Calibrate3dPipe
         JsonMatOfDouble distortionCoefficientsMat =
                 new JsonMatOfDouble(1, 8, CvType.CV_64FC1, Arrays.copyOfRange(result.intrinsics, 4, 12));
 
-        // Calculate optimized board poses manually. We get this for free from mrcal too, but that's not
+        // Calculate optimized board poses manually. We get this for free from mrcal
+        // too, but that's not
         // JNIed (yet)
         List<Mat> rvecs = new ArrayList<>();
         List<Mat> tvecs = new ArrayList<>();
+
         for (var o : in) {
             var rvec = new Mat();
             var tvec = new Mat();
+
+            Point3[] oPoints = o.objectPoints.toArray();
+            Point[] iPoints = o.imagePoints.toArray();
+
+            List<Point3> outputOPoints = new ArrayList<Point3>();
+            List<Point> outputIPoints = new ArrayList<Point>();
+
+            for (int i = 0; i < iPoints.length; i++) {
+                if (iPoints[i].x != -1 && iPoints[i].y != -1) {
+                    outputIPoints.add(iPoints[i]);
+                }
+            }
+            for (int i = 0; i < oPoints.length; i++) {
+                if (oPoints[i].x != -1 && oPoints[i].y != -1 && oPoints[i].z != -1) {
+                    outputOPoints.add(oPoints[i]);
+                }
+            }
+
+            o.objectPoints.fromList(outputOPoints);
+            o.imagePoints.fromList(outputIPoints);
+
             Calib3d.solvePnP(
                     o.objectPoints,
                     o.imagePoints,
@@ -285,7 +309,8 @@ public class Calibrate3dPipe
             // Apply warp, if set
             if (calobject_warp != null && calobject_warp.length == 2) {
                 // mrcal warp model!
-                // The chessboard spans [-1, 1] on the x and y axies. We then let z=k_x(1-x^2)+k_y(1-y^2)
+                // The chessboard spans [-1, 1] on the x and y axies. We then let
+                // z=k_x(1-x^2)+k_y(1-y^2)
 
                 double xmin = 0;
                 double ymin = 0;

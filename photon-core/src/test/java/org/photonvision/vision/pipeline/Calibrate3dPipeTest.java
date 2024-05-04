@@ -78,13 +78,13 @@ public class Calibrate3dPipeTest {
     /**
      * Run camera calibration on a given dataset
      *
-     * @param dataset  Location of images and their size
+     * @param dataset Location of images and their size
      * @param useMrCal If we should use mrcal or opencv for camera calibration
      */
     @CartesianTest
     public void calibrateTestMatrix(
             @Enum(CalibrationDatasets.class) CalibrationDatasets dataset,
-            @Values(booleans = { true, false }) boolean useMrCal) {
+            @Values(booleans = {true, false}) boolean useMrCal) {
         // Pi3 and V1.3 camera
         String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
         File dir = Path.of(base, dataset.path).toFile();
@@ -146,11 +146,12 @@ public class Calibrate3dPipeTest {
         for (var file : directoryListing) {
             if (file.isFile()) {
                 calibration3dPipeline.takeSnapshot();
-                var frame = new Frame(
-                        new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
-                        new CVMat(),
-                        FrameThresholdType.NONE,
-                        new FrameStaticProperties((int) imgRes.width, (int) imgRes.height, 67, null));
+                var frame =
+                        new Frame(
+                                new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
+                                new CVMat(),
+                                FrameThresholdType.NONE,
+                                new FrameStaticProperties((int) imgRes.width, (int) imgRes.height, 67, null));
                 var output = calibration3dPipeline.run(frame, QuirkyCamera.DefaultCamera);
 
                 // TestUtils.showImage(output.inputAndOutputFrame.processedImage.getMat(),
@@ -179,8 +180,10 @@ public class Calibrate3dPipeTest {
         // location at the
         // center of the sensor.
         // For all our data samples so far, this should be true.
-        double centerXErrPct = Math.abs(cal.cameraIntrinsics.data[2] - expectedXCenter) / (expectedXCenter) * 100.0;
-        double centerYErrPct = Math.abs(cal.cameraIntrinsics.data[5] - expectedYCenter) / (expectedYCenter) * 100.0;
+        double centerXErrPct =
+                Math.abs(cal.cameraIntrinsics.data[2] - expectedXCenter) / (expectedXCenter) * 100.0;
+        double centerYErrPct =
+                Math.abs(cal.cameraIntrinsics.data[5] - expectedYCenter) / (expectedYCenter) * 100.0;
         assertTrue(centerXErrPct < 10.0);
         assertTrue(centerYErrPct < 10.0);
 
@@ -195,12 +198,9 @@ public class Calibrate3dPipeTest {
     }
 
     /**
-     * Uses a given camera coefficents matrix set to "undistort" every image file
-     * found in a given
-     * directory and display them. Provides an easy way to visually debug the
-     * results of the
-     * calibration routine. Seems to play havoc with CI and takes a chunk of time,
-     * so shouldn't
+     * Uses a given camera coefficents matrix set to "undistort" every image file found in a given
+     * directory and display them. Provides an easy way to visually debug the results of the
+     * calibration routine. Seems to play havoc with CI and takes a chunk of time, so shouldn't
      * usually be left active in tests.
      *
      * @param directoryListing
