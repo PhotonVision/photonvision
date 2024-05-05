@@ -93,7 +93,8 @@ public class Calibrate3dPipeline
                         settings.tagFamily,
                         settings.gridSize,
                         settings.markerSize,
-                        settings.streamingFrameDivisor);
+                        settings.streamingFrameDivisor,
+                        settings.useMrCal);
         findBoardCornersPipe.setParams(findCornersPipeParams);
 
         Calibrate3dPipe.CalibratePipeParams calibratePipeParams =
@@ -227,9 +228,9 @@ public class Calibrate3dPipeline
                                 minSnapshots,
                                 hasEnough(),
                                 Units.metersToInches(settings.gridSize),
+                                Units.metersToInches(settings.markerSize),
                                 settings.boardWidth,
                                 settings.boardHeight,
-                                settings.markerSize,
                                 settings.boardType,
                                 settings.useMrCal));
 

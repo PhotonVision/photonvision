@@ -27,7 +27,7 @@ public class UICalibrationData {
     public int patternHeight;
     public BoardType boardType;
     public boolean useMrCal;
-    public double markerLengthIn;
+    public double markerSizeIn;
 
     public UICalibrationData() {}
 
@@ -37,9 +37,9 @@ public class UICalibrationData {
             int minCount,
             boolean hasEnough,
             double squareSizeIn,
+            double markerSizeIn,
             int patternWidth,
             int patternHeight,
-            double markerLengthIn,
             BoardType boardType,
             boolean useMrCal) {
         this.count = count;
@@ -47,9 +47,9 @@ public class UICalibrationData {
         this.videoModeIndex = videoModeIndex;
         this.hasEnough = hasEnough;
         this.squareSizeIn = squareSizeIn;
+        this.markerSizeIn = markerSizeIn;
         this.patternWidth = patternWidth;
         this.patternHeight = patternHeight;
-        this.markerLengthIn = markerLengthIn;
         this.boardType = boardType;
         this.useMrCal = useMrCal;
     }
@@ -73,6 +73,8 @@ public class UICalibrationData {
                 + hasEnough
                 + ", squareSizeIn="
                 + squareSizeIn
+                + ", markerSizeIn="
+                + markerSizeIn
                 + ", patternWidth="
                 + patternWidth
                 + ", patternHeight="

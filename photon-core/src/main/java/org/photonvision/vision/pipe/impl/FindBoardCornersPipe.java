@@ -300,6 +300,7 @@ public class FindBoardCornersPipe
         final double markerSize;
         final FrameDivisor divisor;
         final int tagFamily;
+        final boolean useMrCal;
 
         public FindCornersPipeParams(
                 int boardHeight,
@@ -308,14 +309,16 @@ public class FindBoardCornersPipe
                 int tagFamily,
                 double gridSize,
                 double markerSize,
-                FrameDivisor divisor) {
+                FrameDivisor divisor,
+                boolean useMrCal) {
             this.boardHeight = boardHeight;
             this.boardWidth = boardWidth;
             this.tagFamily = tagFamily;
             this.type = type;
-            this.gridSize = gridSize; // mm
-            this.markerSize = markerSize; // mm
+            this.gridSize = gridSize; // meter
+            this.markerSize = markerSize; // meter
             this.divisor = divisor;
+            this.useMrCal = useMrCal;
         }
 
         @Override
@@ -351,11 +354,10 @@ public class FindBoardCornersPipe
         public Size size;
         public MatOfPoint3f objectPoints;
         public MatOfPoint2f imagePoints;
+        public MatOfFloat levels;
 
         // Set later only if we need it
         public Mat inputImage = null;
-
-        public MatOfFloat levels = null;
 
         public FindBoardCornersPipeResult(
                 Size size, MatOfPoint3f objectPoints, MatOfPoint2f imagePoints, MatOfFloat levels) {
@@ -369,8 +371,8 @@ public class FindBoardCornersPipe
         public void release() {
             objectPoints.release();
             imagePoints.release();
+            levels.release();
             if (inputImage != null) inputImage.release();
-            if (levels != null) levels.release();
         }
     }
 }

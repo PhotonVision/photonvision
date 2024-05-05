@@ -143,27 +143,30 @@ public class FindCharucoCornersPipe
 
         var outLevels = new MatOfFloat();
 
-        Point[] boardCorners = new Point[(this.params.boardHeight - 1) * (this.params.boardWidth - 1)];
-        Point3[] objectPoints =
-                new Point3[(this.params.boardHeight - 1) * (this.params.boardWidth - 1)];
-        float[] levels = new float[(this.params.boardHeight - 1) * (this.params.boardWidth - 1)];
+        if (params.useMrCal) {
+            Point[] boardCorners =
+                    new Point[(this.params.boardHeight - 1) * (this.params.boardWidth - 1)];
+            Point3[] objectPoints =
+                    new Point3[(this.params.boardHeight - 1) * (this.params.boardWidth - 1)];
+            float[] levels = new float[(this.params.boardHeight - 1) * (this.params.boardWidth - 1)];
 
-        for (int i = 0; i < detectedIds.total(); i++) {
-            int id = (int) detectedIds.get(i, 0)[0];
-            boardCorners[id] = outBoardCorners.toList().get(i);
-            objectPoints[id] = objPts.toList().get(i);
-            levels[i] = 1.0f;
-        }
-        for (int i = 0; i < boardCorners.length; i++) {
-            if (boardCorners[i] == null) {
-                boardCorners[i] = new Point(-1, -1);
-                objectPoints[i] = new Point3(-1, -1, -1);
-                levels[i] = -1.0f;
+            for (int i = 0; i < detectedIds.total(); i++) {
+                int id = (int) detectedIds.get(i, 0)[0];
+                boardCorners[id] = outBoardCorners.toList().get(i);
+                objectPoints[id] = objPts.toList().get(i);
+                levels[i] = 1.0f;
             }
-        }
+            for (int i = 0; i < boardCorners.length; i++) {
+                if (boardCorners[i] == null) {
+                    boardCorners[i] = new Point(-1, -1);
+                    objectPoints[i] = new Point3(-1, -1, -1);
+                    levels[i] = -1.0f;
+                }
+            }
 
-        outBoardCorners.fromArray(boardCorners);
-        outLevels.fromArray(levels);
+            outBoardCorners.fromArray(boardCorners);
+            outLevels.fromArray(levels);
+        }
 
         // Get the size of the inFrame
         this.imageSize = new Size(inFrame.width(), inFrame.height());

@@ -17,10 +17,44 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
 const settingsValid = ref(true);
 
+
+
 const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
   const uniqueResolutions: VideoFormat[] = [];
   useCameraSettingsStore().currentCameraSettings.validVideoFormats.forEach((format, index) => {
-    if (!uniqueResolutions.some((v) => resolutionsAreEqual(v.resolution, format.resolution))) {
+    const existingIndex = uniqueResolutions.findIndex((v) => resolutionsAreEqual(v.resolution, format.resolution));
+
+    if (existingIndex !== -1) {
+      const existingFormat = uniqueResolutions[existingIndex];
+      if (format.fps > existingFormat.fps) {
+        format.index = index;
+
+        const calib = useCameraSettingsStore().getCalibrationCoeffs(format.resolution);
+        if (calib !== undefined) {
+          // For each error, square it, sum the squares, and divide by total points N
+          if (calib.meanErrors.length)
+            format.mean = calib.meanErrors.reduce((a, b) => a + b, 0) / calib.meanErrors.length;
+          else format.mean = NaN;
+
+          format.horizontalFOV =
+            2 * Math.atan2(format.resolution.width / 2, calib.cameraIntrinsics.data[0]) * (180 / Math.PI);
+          format.verticalFOV =
+            2 * Math.atan2(format.resolution.height / 2, calib.cameraIntrinsics.data[4]) * (180 / Math.PI);
+          format.diagonalFOV =
+            2 *
+            Math.atan2(
+              Math.sqrt(
+                format.resolution.width ** 2 +
+                  (format.resolution.height / (calib.cameraIntrinsics.data[4] / calib.cameraIntrinsics.data[0])) ** 2
+              ) / 2,
+              calib.cameraIntrinsics.data[0]
+            ) *
+            (180 / Math.PI);
+        }
+        uniqueResolutions[existingIndex] = format;
+      }
+    }
+    else{
       format.index = index;
 
       const calib = useCameraSettingsStore().getCalibrationCoeffs(format.resolution);
@@ -47,6 +81,7 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
       }
       uniqueResolutions.push(format);
     }
+
   });
   uniqueResolutions.sort(
     (a, b) => b.resolution.width + b.resolution.height - (a.resolution.width + a.resolution.height)
@@ -67,6 +102,7 @@ const calibrationDivisors = computed(() =>
 );
 
 const squareSizeIn = ref(1);
+const markerSizeIn = ref(0.75);
 const patternWidth = ref(8);
 const patternHeight = ref(8);
 const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.Chessboard);
@@ -191,6 +227,7 @@ const isCalibrating = ref(false);
 const startCalibration = () => {
   useCameraSettingsStore().startPnPCalibration({
     squareSizeIn: squareSizeIn.value,
+    markerSizeIn: markerSizeIn.value,
     patternHeight: patternHeight.value,
     patternWidth: patternWidth.value,
     boardType: boardType.value,
@@ -300,6 +337,14 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               v-model="squareSizeIn"
               label="Pattern Spacing (in)"
               tooltip="Spacing between pattern features in inches"
+              :disabled="isCalibrating"
+              :rules="[(v) => v > 0 || 'Size must be positive']"
+              :label-cols="5"
+            />
+            <pv-number-input
+              v-model="markerSizeIn"
+              label="Marker Size (in)"
+              tooltip="Size of the tag markers in inches must be smaller than pattern spacing"
               :disabled="isCalibrating"
               :rules="[(v) => v > 0 || 'Size must be positive']"
               :label-cols="5"
