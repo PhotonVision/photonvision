@@ -154,7 +154,7 @@ public class FindCharucoCornersPipe
                 int id = (int) detectedIds.get(i, 0)[0];
                 boardCorners[id] = outBoardCorners.toList().get(i);
                 objectPoints[id] = objPts.toList().get(i);
-                levels[i] = 1.0f;
+                levels[id] = 1.0f;
             }
             for (int i = 0; i < boardCorners.length; i++) {
                 if (boardCorners[i] == null) {
