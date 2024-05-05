@@ -17,8 +17,6 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
 const settingsValid = ref(true);
 
-
-
 const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
   const uniqueResolutions: VideoFormat[] = [];
   useCameraSettingsStore().currentCameraSettings.validVideoFormats.forEach((format, index) => {
@@ -53,8 +51,7 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
         }
         uniqueResolutions[existingIndex] = format;
       }
-    }
-    else{
+    } else {
       format.index = index;
 
       const calib = useCameraSettingsStore().getCalibrationCoeffs(format.resolution);
@@ -81,7 +78,6 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
       }
       uniqueResolutions.push(format);
     }
-
   });
   uniqueResolutions.sort(
     (a, b) => b.resolution.width + b.resolution.height - (a.resolution.width + a.resolution.height)
