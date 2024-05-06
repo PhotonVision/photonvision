@@ -180,6 +180,7 @@ export interface CameraSettings {
   };
 
   validVideoFormats: VideoFormat[];
+  uniqueVideoFormats: VideoFormat[];
   completeCalibrations: CameraCalibrationResult[];
 
   lastPipelineIndex?: number;
@@ -208,6 +209,23 @@ export const PlaceholderCameraSettings: CameraSettings = {
     outputPort: 0
   },
   validVideoFormats: [
+    {
+      resolution: { width: 1920, height: 1080 },
+      fps: 60,
+      pixelFormat: "RGB"
+    },
+    {
+      resolution: { width: 1280, height: 720 },
+      fps: 60,
+      pixelFormat: "RGB"
+    },
+    {
+      resolution: { width: 640, height: 480 },
+      fps: 30,
+      pixelFormat: "RGB"
+    }
+  ],
+  uniqueVideoFormats: [
     {
       resolution: { width: 1920, height: 1080 },
       fps: 60,

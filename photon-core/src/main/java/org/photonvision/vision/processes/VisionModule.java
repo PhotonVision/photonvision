@@ -534,7 +534,26 @@ public class VisionModule {
 
             temp.put(k, internalMap);
         }
+
+        var uniqueMap = new HashMap<Integer, HashMap<String, Object>>();
+        var uniqueVideoModes = visionSource.getSettables().getUniqueVideoModes();
+        for (var k : uniqueVideoModes.keySet()) {
+            var internalMap = new HashMap<String, Object>();
+
+            internalMap.put("width", uniqueVideoModes.get(k).width);
+            internalMap.put("height", uniqueVideoModes.get(k).height);
+            internalMap.put("fps", uniqueVideoModes.get(k).fps);
+            internalMap.put("index", k);
+            internalMap.put(
+                    "pixelFormat",
+                    ((uniqueVideoModes.get(k) instanceof LibcameraGpuSource.FPSRatedVideoMode)
+                            ? "kPicam"
+                            : uniqueVideoModes.get(k).pixelFormat.toString())
+                            .substring(1)); // Remove the k prefix
+            uniqueMap.put(k, internalMap);
+        }
         ret.videoFormatList = temp;
+        ret.uniqueFormatList = uniqueMap;
         ret.outputStreamPort = this.outputStreamPort;
         ret.inputStreamPort = this.inputStreamPort;
 

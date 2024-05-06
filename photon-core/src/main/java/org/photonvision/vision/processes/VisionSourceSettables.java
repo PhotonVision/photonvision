@@ -19,6 +19,8 @@ package org.photonvision.vision.processes;
 
 import edu.wpi.first.cscore.VideoMode;
 import java.util.HashMap;
+import java.util.Map;
+
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -85,6 +87,30 @@ public abstract class VisionSourceSettables {
     }
 
     public abstract HashMap<Integer, VideoMode> getAllVideoModes();
+
+    public HashMap<Integer, VideoMode> getUniqueVideoModes()
+    {
+        HashMap<Integer, VideoMode> output = new HashMap<Integer, VideoMode>();
+        HashMap<Integer, VideoMode> map = getAllVideoModes();
+        for (Map.Entry<Integer, VideoMode> mode : map.entrySet()) {
+            boolean added = false;
+            for (Map.Entry<Integer, VideoMode> otherMode : output.entrySet()) {
+                if(otherMode.getValue().height == mode.getValue().height && otherMode.getValue().width == mode.getValue().width){
+                    if(mode.getValue().fps>otherMode.getValue().fps)
+                    {
+                        output.remove(otherMode.getKey());
+                        output.put(mode.getKey(), mode.getValue());
+                        added = true;
+                        break;
+                    }
+                } 
+            }
+            if (!added) {
+                output.put(mode.getKey(), mode.getValue());
+            }
+        }
+    return output;
+    }
 
     public double getFOV() {
         return configuration.FOV;

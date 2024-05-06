@@ -57,6 +57,7 @@ export interface WebsocketCameraSettingsUpdate {
   outputStreamPort: number;
   pipelineNicknames: string[];
   videoFormatList: WebsocketVideoFormat;
+  uniqueFormatList: WebsocketVideoFormat;
   cameraQuirks: QuirkyCamera;
 }
 export interface WebsocketNTUpdate {

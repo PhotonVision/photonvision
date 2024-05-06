@@ -32,7 +32,7 @@ ext {
     photonGlDriverLibVersion = "dev-v2023.1.0-9-g75fc678"
     rknnVersion = "dev-v2024.0.0-64-gc0836a6"
     frcYear = "2024"
-    mrcalVersion = "dev-v2024.0.0-19-g24c0320";
+    mrcalVersion = "dev-v2024.0.0-20-gfdd4f2b";
 
 
     pubVersion = versionString
