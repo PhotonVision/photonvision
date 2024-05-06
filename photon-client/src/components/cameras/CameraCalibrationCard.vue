@@ -43,17 +43,20 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
         (180 / Math.PI);
     }
     uniqueResolutions.push(format);
+    
   });
   uniqueResolutions.sort(
     (a, b) => b.resolution.width + b.resolution.height - (a.resolution.width + a.resolution.height)
   );
+
+  useStateStore().calibrationData.videoFormatIndex = uniqueResolutions[uniqueResolutions.length-1].index;
+
   return uniqueResolutions;
 };
 const getUniqueVideoResolutionStrings = (): { name: string; value: number }[] =>
   getUniqueVideoFormatsByResolution().map<{ name: string; value: number }>((f) => ({
     name: `${getResolutionString(f.resolution)}`,
-    // Index won't ever be undefined
-    value: f.index || 0
+    value: f.index || 0    // Index won't ever be undefined
   }));
 const calibrationDivisors = computed(() =>
   [1, 2, 4].filter((v) => {
