@@ -23,8 +23,7 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
     const calib = useCameraSettingsStore().getCalibrationCoeffs(format.resolution);
     if (calib !== undefined) {
       // For each error, square it, sum the squares, and divide by total points N
-      if (calib.meanErrors.length)
-        format.mean = calib.meanErrors.reduce((a, b) => a + b, 0) / calib.meanErrors.length;
+      if (calib.meanErrors.length) format.mean = calib.meanErrors.reduce((a, b) => a + b, 0) / calib.meanErrors.length;
       else format.mean = NaN;
 
       format.horizontalFOV =
@@ -43,20 +42,19 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
         (180 / Math.PI);
     }
     uniqueResolutions.push(format);
-    
   });
   uniqueResolutions.sort(
     (a, b) => b.resolution.width + b.resolution.height - (a.resolution.width + a.resolution.height)
   );
 
-  useStateStore().calibrationData.videoFormatIndex = uniqueResolutions[uniqueResolutions.length-1].index;
+  useStateStore().calibrationData.videoFormatIndex = uniqueResolutions[uniqueResolutions.length - 1].index;
 
   return uniqueResolutions;
 };
 const getUniqueVideoResolutionStrings = (): { name: string; value: number }[] =>
   getUniqueVideoFormatsByResolution().map<{ name: string; value: number }>((f) => ({
     name: `${getResolutionString(f.resolution)}`,
-    value: f.index || 0    // Index won't ever be undefined
+    value: f.index || 0 // Index won't ever be undefined
   }));
 const calibrationDivisors = computed(() =>
   [1, 2, 4].filter((v) => {

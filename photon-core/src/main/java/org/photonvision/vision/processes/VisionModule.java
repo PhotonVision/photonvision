@@ -547,8 +547,8 @@ public class VisionModule {
             internalMap.put(
                     "pixelFormat",
                     ((uniqueVideoModes.get(k) instanceof LibcameraGpuSource.FPSRatedVideoMode)
-                            ? "kPicam"
-                            : uniqueVideoModes.get(k).pixelFormat.toString())
+                                    ? "kPicam"
+                                    : uniqueVideoModes.get(k).pixelFormat.toString())
                             .substring(1)); // Remove the k prefix
             uniqueMap.put(k, internalMap);
         }

@@ -188,9 +188,8 @@ public class Calibrate3dPipe
         List<MatOfPoint2f> corner_locations =
                 in.stream().map(it -> it.imagePoints).map(MatOfPoint2f::new).collect(Collectors.toList());
 
-        List<MatOfFloat> levels = in.stream().map(it -> it.levels).map(MatOfFloat::new)
-                .collect(Collectors.toList());
-
+        List<MatOfFloat> levels =
+                in.stream().map(it -> it.levels).map(MatOfFloat::new).collect(Collectors.toList());
 
         int imageWidth = (int) in.get(0).size.width;
         int imageHeight = (int) in.get(0).size.height;
