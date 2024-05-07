@@ -11,7 +11,7 @@ import PvSwitch from "@/components/common/pv-switch.vue";
 import PvSelect from "@/components/common/pv-select.vue";
 import PvNumberInput from "@/components/common/pv-number-input.vue";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
-import { getResolutionString, resolutionsAreEqual } from "@/lib/PhotonUtils";
+import { getResolutionString } from "@/lib/PhotonUtils";
 import CameraCalibrationInfoCard from "@/components/cameras/CameraCalibrationInfoCard.vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
@@ -19,7 +19,7 @@ const settingsValid = ref(true);
 
 const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
   const uniqueResolutions: VideoFormat[] = [];
-  useCameraSettingsStore().currentCameraSettings.uniqueVideoFormats.forEach((format, index) => {
+  useCameraSettingsStore().currentCameraSettings.uniqueVideoFormats.forEach((format) => {
     const calib = useCameraSettingsStore().getCalibrationCoeffs(format.resolution);
     if (calib !== undefined) {
       // For each error, square it, sum the squares, and divide by total points N
