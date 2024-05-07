@@ -5,6 +5,7 @@ import { CalibrationBoardTypes, type VideoFormat } from "@/types/SettingTypes";
 import JsPDF from "jspdf";
 import { font as PromptRegular } from "@/assets/fonts/PromptRegular";
 import MonoLogo from "@/assets/images/logoMono.png";
+import CharucoImage from "@/assets/images/ChArUco_Marker8x8.png";
 import PvSlider from "@/components/common/pv-slider.vue";
 import { useStateStore } from "@/stores/StateStore";
 import PvSwitch from "@/components/common/pv-switch.vue";
@@ -47,7 +48,7 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
     (a, b) => b.resolution.width + b.resolution.height - (a.resolution.width + a.resolution.height)
   );
 
-  useStateStore().calibrationData.videoFormatIndex = uniqueResolutions[uniqueResolutions.length - 1].index;
+  useStateStore().calibrationData.videoFormatIndex = uniqueResolutions[0].index;
 
   return uniqueResolutions;
 };
@@ -107,22 +108,23 @@ const downloadCalibBoard = () => {
           }
         }
       }
+      doc.text(`${patternWidth.value} x ${patternHeight.value} | ${squareSizeIn.value}in`, paperWidth - 1, 1.0, {
+        maxWidth: (paperWidth - 2.0) / 2,
+        align: "right"
+      });
       break;
-    case CalibrationBoardTypes.DotBoard:
-      // eslint-disable-next-line no-case-declarations
-      const dotgridStartX =
-        (paperWidth - (2 * (patternWidth.value - 1) + ((patternHeight.value - 1) % 2)) * squareSizeIn.value) / 2.0;
-      // eslint-disable-next-line no-case-declarations
-      const dotgridStartY = (paperHeight - (patternHeight.value - squareSizeIn.value)) / 2;
 
-      for (let squareY = 0; squareY < patternHeight.value; squareY++) {
-        for (let squareX = 0; squareX < patternWidth.value; squareX++) {
-          const xPos = dotgridStartX + (2 * squareX + (squareY % 2)) * squareSizeIn.value;
-          const yPos = dotgridStartY + squareY * squareSizeIn.value;
+    case CalibrationBoardTypes.Charuco:
+      // Add pregenerated charuco
+      const charucoImage = new Image();
+      charucoImage.src = CharucoImage;
+      doc.addImage(charucoImage, "PNG", 0.25, 1.50, 8, 8);
 
-          doc.circle(xPos, yPos, squareSizeIn.value / 4, "F");
-        }
-      }
+      doc.text(`8 x 8 | 1in & 0.75in`, paperWidth - 1, 1.0, {
+        maxWidth: (paperWidth - 2.0) / 2,
+        align: "right"
+      });
+
       break;
   }
 
@@ -143,11 +145,6 @@ const downloadCalibBoard = () => {
   const logoImage = new Image();
   logoImage.src = MonoLogo;
   doc.addImage(logoImage, "PNG", 1.0, 0.75, 1.4, 0.5);
-
-  doc.text(`${patternWidth.value} x ${patternHeight.value} | ${squareSizeIn.value}in`, paperWidth - 1, 1.0, {
-    maxWidth: (paperWidth - 2.0) / 2,
-    align: "right"
-  });
 
   doc.save(`calibrationTarget-${CalibrationBoardTypes[boardType.value]}.pdf`);
 };
@@ -292,7 +289,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               label="Board Type"
               tooltip="Calibration board pattern to use"
               :select-cols="7"
-              :items="['Chessboard', 'Dotboard', 'Charuco']"
+              :items="['Chessboard', 'Charuco']"
               :disabled="isCalibrating"
             />
             <pv-number-input

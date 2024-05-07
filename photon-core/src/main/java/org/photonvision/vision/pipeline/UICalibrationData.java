@@ -56,7 +56,6 @@ public class UICalibrationData {
 
     public enum BoardType {
         CHESSBOARD,
-        DOTBOARD,
         CHARUCOBOARD,
     }
 

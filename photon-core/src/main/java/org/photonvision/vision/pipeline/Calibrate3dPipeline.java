@@ -41,8 +41,6 @@ import org.photonvision.vision.pipe.impl.Calibrate3dPipe;
 import org.photonvision.vision.pipe.impl.Calibrate3dPipe.CalibrationInput;
 import org.photonvision.vision.pipe.impl.FindBoardCornersPipe;
 import org.photonvision.vision.pipe.impl.FindBoardCornersPipe.FindBoardCornersPipeResult;
-import org.photonvision.vision.pipe.impl.FindCharucoCornersPipe;
-import org.photonvision.vision.pipeline.UICalibrationData.BoardType;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.pipeline.result.CalibrationPipelineResult;
 
@@ -53,7 +51,6 @@ public class Calibrate3dPipeline
 
     // Find board corners decides internally between opencv and mrgingham
     private final FindBoardCornersPipe findBoardCornersPipe = new FindBoardCornersPipe();
-    private final FindCharucoCornersPipe findCharuco = new FindCharucoCornersPipe();
     private final Calibrate3dPipe calibrate3dPipe = new Calibrate3dPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
@@ -101,8 +98,6 @@ public class Calibrate3dPipeline
                 new Calibrate3dPipe.CalibratePipeParams(
                         settings.boardHeight, settings.boardWidth, settings.gridSize, settings.useMrCal);
         calibrate3dPipe.setParams(calibratePipeParams);
-
-        findCharuco.setParams(findCornersPipeParams);
     }
 
     @Override
@@ -131,12 +126,8 @@ public class Calibrate3dPipeline
 
         FindBoardCornersPipeResult findBoardResult;
 
-        if (settings.boardType == BoardType.CHARUCOBOARD) {
-            findBoardResult = findCharuco.run(Pair.of(inputColorMat, outputColorCVMat.getMat())).output;
-        } else {
-            findBoardResult =
-                    findBoardCornersPipe.run(Pair.of(inputColorMat, outputColorCVMat.getMat())).output;
-        }
+        findBoardResult =
+                findBoardCornersPipe.run(Pair.of(inputColorMat, outputColorCVMat.getMat())).output;
 
         if (takeSnapshot) {
             // Set snapshot to false even if we don't find a board

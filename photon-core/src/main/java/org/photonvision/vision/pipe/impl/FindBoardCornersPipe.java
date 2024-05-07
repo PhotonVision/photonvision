@@ -17,11 +17,16 @@
 
 package org.photonvision.vision.pipe.impl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.objdetect.CharucoBoard;
+import org.opencv.objdetect.CharucoDetector;
+import org.opencv.objdetect.Objdetect;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.frame.FrameDivisor;
@@ -41,6 +46,9 @@ public class FindBoardCornersPipe
 
     Size imageSize;
     Size patternSize;
+
+    CharucoBoard board;
+    CharucoDetector detector;
 
     // Configure the optimizations used while using OpenCV's find corners algorithm
     // Since we return results in real-time, we want to ensure it goes as fast as
@@ -99,17 +107,14 @@ public class FindBoardCornersPipe
                     objectPoints.push_back(new MatOfPoint3f(new Point3(boardXCoord, boardYCoord, 0.0)));
                 }
             }
-        } else if (params.type == UICalibrationData.BoardType.DOTBOARD) {
-            // Here we need to alternate the amount of dots per column since a dot board is
-            // not
-            // rectangular and also by taking in account the grid size which should be in mm
-            for (int i = 0; i < patternSize.height; i++) {
-                for (int j = 0; j < patternSize.width; j++) {
-                    objectPoints.push_back(
-                            new MatOfPoint3f(
-                                    new Point3((2 * j + i % 2) * params.gridSize, i * params.gridSize, 0.0d)));
-                }
-            }
+        } else if (params.type == UICalibrationData.BoardType.CHARUCOBOARD) {
+            board =
+                    new CharucoBoard(
+                            new Size(params.boardWidth, params.boardHeight),
+                            (float) params.gridSize,
+                            (float) params.markerSize,
+                            Objdetect.getPredefinedDictionary(params.tagFamily));
+            detector = new CharucoDetector(board);
         } else {
             logger.error("Can't create pattern for unknown board type " + params.type);
         }
@@ -227,6 +232,12 @@ public class FindBoardCornersPipe
     private FindBoardCornersPipeResult findBoardCorners(Pair<Mat, Mat> in) {
         createObjectPoints();
 
+        float[] levels = null;
+        var outLevels = new MatOfFloat();
+
+        var objPts = new MatOfPoint3f();
+        var outBoardCorners = new MatOfPoint2f();
+
         var inFrame = in.getLeft();
         var outFrame = in.getRight();
 
@@ -234,7 +245,76 @@ public class FindBoardCornersPipe
         Imgproc.cvtColor(inFrame, inFrame, Imgproc.COLOR_BGR2GRAY);
         boolean boardFound = false;
 
-        if (params.type == UICalibrationData.BoardType.CHESSBOARD) {
+        // Get the size of the inFrame
+        this.imageSize = new Size(inFrame.width(), inFrame.height());
+
+        if (params.type == UICalibrationData.BoardType.CHARUCOBOARD) {
+            Mat ObjPoints =
+                    new Mat(); // 3 dimensional currentObjectPoints, the physical target ChArUco Board
+            Mat imgPoints =
+                    new Mat(); // 2 dimensional currentImagePoints, the likely distorted board on the flat
+            // camera sensor frame posed relative to the target
+            Mat detectedCorners = new Mat(); // currentCharucoCorners
+            Mat detectedIds = new Mat(); // currentCharucoIds
+            detector.detectBoard(inFrame, detectedCorners, detectedIds);
+
+            // reformat the Mat to a List<Mat> for matchImagePoints
+            final List<Mat> detectedCornersList = new ArrayList<>();
+            for (int i = 0; i < detectedCorners.total(); i++) {
+                detectedCornersList.add(detectedCorners.row(i));
+            }
+            if (detectedCornersList.size() > 0) {
+                boardFound = true;
+            }
+
+            if (!boardFound) {
+                // If we can't find a board, give up
+                return null;
+            }
+            board.matchImagePoints(detectedCornersList, detectedIds, ObjPoints, imgPoints);
+
+            // draw the charuco board
+            Objdetect.drawDetectedCornersCharuco(
+                    outFrame, detectedCorners, detectedIds, new Scalar(0, 0, 255)); // Red Text
+
+            if (!boardFound) {
+                // If we can't find a charuco board, give up
+                return null;
+            }
+
+            imgPoints.copyTo(outBoardCorners);
+            ObjPoints.copyTo(objPts);
+
+            if (params.useMrCal) {
+                Point[] boardCorners =
+                        new Point[(this.params.boardHeight - 1) * (this.params.boardWidth - 1)];
+                Point3[] objectPoints =
+                        new Point3[(this.params.boardHeight - 1) * (this.params.boardWidth - 1)];
+                levels = new float[(this.params.boardHeight - 1) * (this.params.boardWidth - 1)];
+
+                for (int i = 0; i < detectedIds.total(); i++) {
+                    int id = (int) detectedIds.get(i, 0)[0];
+                    boardCorners[id] = outBoardCorners.toList().get(i);
+                    objectPoints[id] = objPts.toList().get(i);
+                    levels[id] = 1.0f;
+                }
+                for (int i = 0; i < boardCorners.length; i++) {
+                    if (boardCorners[i] == null) {
+                        boardCorners[i] = new Point(-1, -1);
+                        objectPoints[i] = new Point3(-1, -1, -1);
+                        levels[i] = -1.0f;
+                    }
+                }
+
+                outBoardCorners.fromArray(boardCorners);
+                outLevels.fromArray(levels);
+            }
+            imgPoints.release();
+            ObjPoints.release();
+            detectedCorners.release();
+            detectedIds.release();
+
+        } else { // If not aruco then do chessboard
             // Reduce the image size to be much more manageable
             // Note that opencv will copy the frame if no resize is requested; we can skip
             // this since we
@@ -256,38 +336,27 @@ public class FindBoardCornersPipe
                 rescalePointsToOrigFrame(smallerBoardCorners, inFrame, boardCorners);
             }
 
-        } else if (params.type == UICalibrationData.BoardType.DOTBOARD) {
-            boardFound =
-                    Calib3d.findCirclesGrid(
-                            inFrame, patternSize, boardCorners, Calib3d.CALIB_CB_ASYMMETRIC_GRID);
+            boardCorners.copyTo(outBoardCorners);
+
+            objectPoints.copyTo(objPts);
+
+            // Do sub corner pix for drawing chessboard when using OpenCV
+            Imgproc.cornerSubPix(
+                    inFrame, outBoardCorners, getWindowSize(outBoardCorners), zeroZone, criteria);
+
+            // draw the chessboard, doesn't have to be different for a dot board since it
+            // just re projects
+            // the corners we found
+            Calib3d.drawChessboardCorners(outFrame, patternSize, outBoardCorners, true);
+
+            levels = new float[(int) objPts.total()];
+            Arrays.fill(levels, 1.0f);
+            outLevels.fromArray(levels);
         }
         if (!boardFound) {
             // If we can't find a chessboard/dot board, give up
             return null;
         }
-
-        var outBoardCorners = new MatOfPoint2f();
-        boardCorners.copyTo(outBoardCorners);
-
-        var objPts = new MatOfPoint3f();
-        objectPoints.copyTo(objPts);
-
-        // Get the size of the inFrame
-        this.imageSize = new Size(inFrame.width(), inFrame.height());
-
-        // Do sub corner pix for drawing chessboard when using OpenCV
-        Imgproc.cornerSubPix(
-                inFrame, outBoardCorners, getWindowSize(outBoardCorners), zeroZone, criteria);
-
-        // draw the chessboard, doesn't have to be different for a dot board since it
-        // just re projects
-        // the corners we found
-        Calib3d.drawChessboardCorners(outFrame, patternSize, outBoardCorners, true);
-
-        float[] levels = new float[(int) objPts.total()];
-        Arrays.fill(levels, 1.0f);
-        var outLevels = new MatOfFloat();
-        outLevels.fromArray(levels);
 
         return new FindBoardCornersPipeResult(inFrame.size(), objPts, outBoardCorners, outLevels);
     }
