@@ -118,7 +118,7 @@ const downloadCalibBoard = () => {
       // Add pregenerated charuco
       const charucoImage = new Image();
       charucoImage.src = CharucoImage;
-      doc.addImage(charucoImage, "PNG", 0.25, 1.50, 8, 8);
+      doc.addImage(charucoImage, "PNG", 0.25, 1.5, 8, 8);
 
       doc.text(`8 x 8 | 1in & 0.75in`, paperWidth - 1, 1.0, {
         maxWidth: (paperWidth - 2.0) / 2,
