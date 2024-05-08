@@ -63,11 +63,24 @@ public class Calibrate3dPipeTest {
     }
 
     enum CalibrationDatasets {
-        SQUARES_LIFECAM_480("lifecam/2024-01-02_lifecam_480", new Size(640, 480), new Size(11, 11), BoardType.CHESSBOARD),
-        SQUARES_LIFECAM_1280("lifecam/2024-01-02_lifecam_1280", new Size(1280, 720), new Size(11, 11), BoardType.CHESSBOARD),
+        SQUARES_LIFECAM_480(
+                "lifecam/2024-01-02_lifecam_480",
+                new Size(640, 480),
+                new Size(11, 11),
+                BoardType.CHESSBOARD),
+        SQUARES_LIFECAM_1280(
+                "lifecam/2024-01-02_lifecam_1280",
+                new Size(1280, 720),
+                new Size(11, 11),
+                BoardType.CHESSBOARD),
 
-        CHARUCO_LIFECAM_480("lifecam/2024-01-02_lifecam_480",new Size(640,480),new Size(8,8),BoardType.CHESSBOARD),
-        CHARUCO_LIFECAM_1280("lifecam/2024-01-02_lifecam_1280",new Size(1280,720),new Size(8,8),BoardType.CHESSBOARD);
+        CHARUCO_LIFECAM_480(
+                "lifecam/2024-01-02_lifecam_480", new Size(640, 480), new Size(8, 8), BoardType.CHESSBOARD),
+        CHARUCO_LIFECAM_1280(
+                "lifecam/2024-01-02_lifecam_1280",
+                new Size(1280, 720),
+                new Size(8, 8),
+                BoardType.CHESSBOARD);
 
         final String path;
         final Size size;
@@ -85,13 +98,13 @@ public class Calibrate3dPipeTest {
     /**
      * Run camera calibration on a given dataset
      *
-     * @param dataset  Location of images and their size
+     * @param dataset Location of images and their size
      * @param useMrCal If we should use mrcal or opencv for camera calibration
      */
     @CartesianTest
     public void calibrateTestMatrix(
             @Enum(CalibrationDatasets.class) CalibrationDatasets dataset,
-            @Values(booleans = { true, false }) boolean useMrCal) {
+            @Values(booleans = {true, false}) boolean useMrCal) {
         // Pi3 and V1.3 camera
         String squareBase = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
         String charucoBase = TestUtils.getCharucoBoardImagesPath().toAbsolutePath().toString();
@@ -103,11 +116,10 @@ public class Calibrate3dPipeTest {
             calibrateCommon(dataset.size, squareDir, dataset.boardSize, dataset.boardType, useMrCal);
         else if (dataset.boardType == BoardType.CHESSBOARD)
             calibrateCommon(dataset.size, charucoDir, dataset.boardSize, dataset.boardType, useMrCal);
-
     }
-    
+
     public static void calibrateCommon(
-            Size imgRes, File rootFolder, Size boardDim, BoardType boardType,  boolean useMrCal) {
+            Size imgRes, File rootFolder, Size boardDim, BoardType boardType, boolean useMrCal) {
         calibrateCommon(
                 imgRes,
                 rootFolder,
@@ -161,7 +173,8 @@ public class Calibrate3dPipeTest {
 
         assertTrue(directoryListing.length >= 12);
 
-        Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline(10, "test_calibration_common");
+        Calibrate3dPipeline calibration3dPipeline =
+                new Calibrate3dPipeline(10, "test_calibration_common");
         calibration3dPipeline.getSettings().boardType = boardType;
         calibration3dPipeline.getSettings().markerSize = markerSize;
         calibration3dPipeline.getSettings().tagFamily = tagFamily;
@@ -175,11 +188,12 @@ public class Calibrate3dPipeTest {
         for (var file : directoryListing) {
             if (file.isFile()) {
                 calibration3dPipeline.takeSnapshot();
-                var frame = new Frame(
-                        new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
-                        new CVMat(),
-                        FrameThresholdType.NONE,
-                        new FrameStaticProperties((int) imgRes.width, (int) imgRes.height, 67, null));
+                var frame =
+                        new Frame(
+                                new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
+                                new CVMat(),
+                                FrameThresholdType.NONE,
+                                new FrameStaticProperties((int) imgRes.width, (int) imgRes.height, 67, null));
                 var output = calibration3dPipeline.run(frame, QuirkyCamera.DefaultCamera);
 
                 // TestUtils.showImage(output.inputAndOutputFrame.processedImage.getMat(),
@@ -208,8 +222,10 @@ public class Calibrate3dPipeTest {
         // location at the
         // center of the sensor.
         // For all our data samples so far, this should be true.
-        double centerXErrPct = Math.abs(cal.cameraIntrinsics.data[2] - expectedXCenter) / (expectedXCenter) * 100.0;
-        double centerYErrPct = Math.abs(cal.cameraIntrinsics.data[5] - expectedYCenter) / (expectedYCenter) * 100.0;
+        double centerXErrPct =
+                Math.abs(cal.cameraIntrinsics.data[2] - expectedXCenter) / (expectedXCenter) * 100.0;
+        double centerYErrPct =
+                Math.abs(cal.cameraIntrinsics.data[5] - expectedYCenter) / (expectedYCenter) * 100.0;
         assertTrue(centerXErrPct < 10.0);
         assertTrue(centerYErrPct < 10.0);
 
@@ -224,12 +240,9 @@ public class Calibrate3dPipeTest {
     }
 
     /**
-     * Uses a given camera coefficents matrix set to "undistort" every image file
-     * found in a given
-     * directory and display them. Provides an easy way to visually debug the
-     * results of the
-     * calibration routine. Seems to play havoc with CI and takes a chunk of time,
-     * so shouldn't
+     * Uses a given camera coefficents matrix set to "undistort" every image file found in a given
+     * directory and display them. Provides an easy way to visually debug the results of the
+     * calibration routine. Seems to play havoc with CI and takes a chunk of time, so shouldn't
      * usually be left active in tests.
      *
      * @param directoryListing
