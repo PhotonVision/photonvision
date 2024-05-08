@@ -229,8 +229,7 @@ public class Calibrate3dPipe
                 new JsonMatOfDouble(1, 8, CvType.CV_64FC1, Arrays.copyOfRange(result.intrinsics, 4, 12));
 
         // Calculate optimized board poses manually. We get this for free from mrcal
-        // too, but that's not
-        // JNIed (yet)
+        // too, but that's not JNIed (yet)
         List<Mat> rvecs = new ArrayList<>();
         List<Mat> tvecs = new ArrayList<>();
 
@@ -238,6 +237,9 @@ public class Calibrate3dPipe
             var rvec = new Mat();
             var tvec = new Mat();
 
+            // If the calibration points contain points that are negative then we need to exclude them,
+            // they are considered points that we dont want to use in calibration/solvepnp. These points
+            // are required prior to this to allow mrcal to work.
             Point3[] oPoints = o.objectPoints.toArray();
             Point[] iPoints = o.imagePoints.toArray();
 
@@ -245,12 +247,12 @@ public class Calibrate3dPipe
             List<Point> outputIPoints = new ArrayList<Point>();
 
             for (int i = 0; i < iPoints.length; i++) {
-                if (iPoints[i].x != -1 && iPoints[i].y != -1) {
+                if (iPoints[i].x >= 0 && iPoints[i].y >= 0) {
                     outputIPoints.add(iPoints[i]);
                 }
             }
             for (int i = 0; i < oPoints.length; i++) {
-                if (oPoints[i].x != -1 && oPoints[i].y != -1 && oPoints[i].z != -1) {
+                if (oPoints[i].x >= 0 && oPoints[i].y >= 0 && oPoints[i].z >= 0) {
                     outputOPoints.add(oPoints[i]);
                 }
             }

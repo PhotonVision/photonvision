@@ -277,14 +277,13 @@ public class FindBoardCornersPipe
             Objdetect.drawDetectedCornersCharuco(
                     outFrame, detectedCorners, detectedIds, new Scalar(0, 0, 255)); // Red Text
 
-            if (!boardFound) {
-                // If we can't find a charuco board, give up
-                return null;
-            }
-
             imgPoints.copyTo(outBoardCorners);
             ObjPoints.copyTo(objPts);
 
+            // Since charuco can still detect without the whole board we need to send mrcal "fake" (all
+            // values less than zero) points and then tell it to ignore them (setting the corresponding
+            // level to -1). Since opencv calibration does not require the w*h to be the same we don't
+            // need to do this if not using mrcal.
             if (params.useMrCal) {
                 Point[] boardCorners =
                         new Point[(this.params.boardHeight - 1) * (this.params.boardWidth - 1)];
@@ -314,7 +313,7 @@ public class FindBoardCornersPipe
             detectedCorners.release();
             detectedIds.release();
 
-        } else { // If not aruco then do chessboard
+        } else { // If not Charuco then do chessboard
             // Reduce the image size to be much more manageable
             // Note that opencv will copy the frame if no resize is requested; we can skip
             // this since we
@@ -331,10 +330,11 @@ public class FindBoardCornersPipe
                     Calib3d.findChessboardCorners(
                             smallerInFrame, patternSize, smallerBoardCorners, findChessboardFlags);
 
-            // Rescale back to original pixel locations
-            if (boardFound) {
-                rescalePointsToOrigFrame(smallerBoardCorners, inFrame, boardCorners);
+            if (!boardFound) {
+                return null;
             }
+
+            rescalePointsToOrigFrame(smallerBoardCorners, inFrame, boardCorners);
 
             boardCorners.copyTo(outBoardCorners);
 

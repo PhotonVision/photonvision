@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, onMounted } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { CalibrationBoardTypes, type VideoFormat } from "@/types/SettingTypes";
 import JsPDF from "jspdf";
@@ -47,9 +47,6 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
   uniqueResolutions.sort(
     (a, b) => b.resolution.width + b.resolution.height - (a.resolution.width + a.resolution.height)
   );
-
-  useStateStore().calibrationData.videoFormatIndex = uniqueResolutions[0].index;
-
   return uniqueResolutions;
 };
 const getUniqueVideoResolutionStrings = (): { name: string; value: number }[] =>
@@ -63,6 +60,7 @@ const calibrationDivisors = computed(() =>
     return (currentRes.width / v >= 300 && currentRes.height / v >= 220) || v === 1;
   })
 );
+
 
 const squareSizeIn = ref(1);
 const markerSizeIn = ref(0.75);
@@ -78,6 +76,11 @@ const useMrCal = computed<boolean>({
     useMrCalRef.value = value && useSettingsStore().general.mrCalWorking;
   }
 });
+
+// On the mount of the card configure the videoformat to be the highest res with the highest fps
+onMounted(()=>{
+  useStateStore().calibrationData.videoFormatIndex = getUniqueVideoFormatsByResolution()[0].index;
+})
 
 const downloadCalibBoard = () => {
   const doc = new JsPDF({ unit: "in", format: "letter" });
