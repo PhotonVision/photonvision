@@ -344,6 +344,10 @@ public class TestUtils {
         return getResourcesFolderPath(false).resolve("calibrationSquaresImg");
     }
 
+    public static Path getCharucoBoardImagesPath() {
+        return getResourcesFolderPath(false).resolve("calibrationCharucoImg");
+    }
+
     public static File getHardwareConfigJson() {
         return getResourcesFolderPath(false)
                 .resolve("hardware")
