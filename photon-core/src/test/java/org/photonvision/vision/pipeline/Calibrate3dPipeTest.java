@@ -75,12 +75,12 @@ public class Calibrate3dPipeTest {
                 BoardType.CHESSBOARD),
 
         CHARUCO_LIFECAM_480(
-                "lifecam/2024-05-07_lifecam_480", new Size(640, 480), new Size(8, 8), BoardType.CHESSBOARD),
+                "lifecam/2024-05-07_lifecam_480", new Size(640, 480), new Size(8, 8), BoardType.CHARUCOBOARD),
         CHARUCO_LIFECAM_1280(
                 "lifecam/2024-05-07_lifecam_1280",
                 new Size(1280, 720),
                 new Size(8, 8),
-                BoardType.CHESSBOARD);
+                BoardType.CHARUCOBOARD);
 
         final String path;
         final Size size;
