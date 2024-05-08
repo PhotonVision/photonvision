@@ -61,7 +61,6 @@ const calibrationDivisors = computed(() =>
   })
 );
 
-
 const squareSizeIn = ref(1);
 const markerSizeIn = ref(0.75);
 const patternWidth = ref(8);
@@ -78,9 +77,9 @@ const useMrCal = computed<boolean>({
 });
 
 // On the mount of the card configure the videoformat to be the highest res with the highest fps
-onMounted(()=>{
+onMounted(() => {
   useStateStore().calibrationData.videoFormatIndex = getUniqueVideoFormatsByResolution()[0].index;
-})
+});
 
 const downloadCalibBoard = () => {
   const doc = new JsPDF({ unit: "in", format: "letter" });
