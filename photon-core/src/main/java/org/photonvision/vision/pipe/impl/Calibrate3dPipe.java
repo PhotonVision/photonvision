@@ -205,6 +205,9 @@ public class Calibrate3dPipe
                         imageHeight,
                         (fxGuess + fyGuess) / 2.0);
 
+        levels.forEach(MatOfFloat::release);
+        corner_locations.forEach(MatOfPoint2f::release);
+
         // intrinsics are fx fy cx cy from mrcal
         JsonMatOfDouble cameraMatrixMat =
                 new JsonMatOfDouble(
