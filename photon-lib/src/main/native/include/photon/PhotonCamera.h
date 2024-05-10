@@ -190,10 +190,10 @@ class PhotonCamera {
   nt::BooleanPublisher driverModePublisher;
   nt::IntegerSubscriber ledModeSubscriber;
 
-  nt::MultiSubscriber m_topicNameSubscriber;
+  nt::MultiSubscriber topicNameSubscriber;
 
   std::string path;
-  std::string m_cameraName;
+  std::string cameraName;
 
  private:
   units::second_t lastVersionCheckTime = 0_s;
@@ -201,6 +201,8 @@ class PhotonCamera {
   inline static int InstanceCount = 0;
 
   void VerifyVersion();
+
+  std::vector<std::string> tablesThatLookLikePhotonCameras();
 };
 
 }  // namespace photon

@@ -180,6 +180,16 @@ class PhotonCamera:
             cameraNames = (
                 self._cameraTable.getInstance().getTable(self._tableName).getSubTables()
             )
+            # Look for only cameras with rawBytes entry that exists
+            cameraNames = list(
+                filter(
+                    lambda it: self._cameraTable.getSubTable(it)
+                    .getEntry("rawBytes")
+                    .exists(),
+                    cameraNames,
+                )
+            )
+
             if len(cameraNames) == 0:
                 wpilib.reportError(
                     "Could not find any PhotonVision coprocessors on NetworkTables. Double check that PhotonVision is running, and that your camera is connected!",

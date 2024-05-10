@@ -48,7 +48,7 @@ import edu.wpi.first.wpilibj.Timer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
+import java.util.stream.Collectors;
 import org.photonvision.common.hardware.VisionLEDMode;
 import org.photonvision.common.networktables.PacketSubscriber;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -76,6 +76,8 @@ public class PhotonCamera implements AutoCloseable {
     IntegerSubscriber heartbeatEntry;
     DoubleArraySubscriber cameraIntrinsicsSubscriber;
     DoubleArraySubscriber cameraDistortionSubscriber;
+    MultiSubscriber topicNameSubscriber;
+    NetworkTable rootPhotonTable;
 
     @Override
     public void close() {
@@ -99,6 +101,7 @@ public class PhotonCamera implements AutoCloseable {
         pipelineIndexRequest.close();
         cameraIntrinsicsSubscriber.close();
         cameraDistortionSubscriber.close();
+        topicNameSubscriber.close();
     }
 
     private final String path;
@@ -126,8 +129,8 @@ public class PhotonCamera implements AutoCloseable {
      */
     public PhotonCamera(NetworkTableInstance instance, String cameraName) {
         name = cameraName;
-        var photonvision_root_table = instance.getTable(kTableName);
-        this.cameraTable = photonvision_root_table.getSubTable(cameraName);
+        rootPhotonTable = instance.getTable(kTableName);
+        this.cameraTable = rootPhotonTable.getSubTable(cameraName);
         path = cameraTable.getPath();
         var rawBytesEntry =
                 cameraTable
@@ -151,12 +154,12 @@ public class PhotonCamera implements AutoCloseable {
         cameraDistortionSubscriber =
                 cameraTable.getDoubleArrayTopic("cameraDistortion").subscribe(null);
 
-        ledModeRequest = photonvision_root_table.getIntegerTopic("ledModeRequest").publish();
-        ledModeState = photonvision_root_table.getIntegerTopic("ledModeState").subscribe(-1);
-        versionEntry = photonvision_root_table.getStringTopic("version").subscribe("");
+        ledModeRequest = rootPhotonTable.getIntegerTopic("ledModeRequest").publish();
+        ledModeState = rootPhotonTable.getIntegerTopic("ledModeState").subscribe(-1);
+        versionEntry = rootPhotonTable.getStringTopic("version").subscribe("");
 
         // Existing is enough to make this multisubscriber do its thing
-        MultiSubscriber m_topicNameSubscriber =
+        topicNameSubscriber =
                 new MultiSubscriber(
                         instance, new String[] {"/photonvision/"}, PubSubOption.topicsOnly(true));
 
@@ -365,10 +368,10 @@ public class PhotonCamera implements AutoCloseable {
         // Heartbeat entry is assumed to always be present. If it's not present, we
         // assume that a camera with that name was never connected in the first place.
         if (!heartbeatEntry.exists()) {
-            Set<String> cameraNames = cameraTable.getInstance().getTable(kTableName).getSubTables();
+            var cameraNames = getTablesThatLookLikePhotonCameras();
             if (cameraNames.isEmpty()) {
                 DriverStation.reportError(
-                        "Could not find any PhotonVision coprocessors on NetworkTables. Double check that PhotonVision is running, and that your camera is connected!",
+                        "Could not find **any** PhotonVision coprocessors on NetworkTables. Double check that PhotonVision is running, and that your camera is connected!",
                         false);
             } else {
                 DriverStation.reportError(
@@ -376,9 +379,17 @@ public class PhotonCamera implements AutoCloseable {
                                 + path
                                 + " not found on NetworkTables. Double check that your camera names match!",
                         true);
+
+                var cameraNameStr = new StringBuilder();
+                for (var c : cameraNames) {
+                    cameraNameStr.append(" ==> ");
+                    cameraNameStr.append(c);
+                    cameraNameStr.append("\n");
+                }
+
                 DriverStation.reportError(
                         "Found the following PhotonVision cameras on NetworkTables:\n"
-                                + String.join("\n", cameraNames),
+                                + cameraNameStr.toString(),
                         false);
             }
         }
@@ -422,5 +433,14 @@ public class PhotonCamera implements AutoCloseable {
             DriverStation.reportError(versionMismatchMessage, false);
             throw new UnsupportedOperationException(versionMismatchMessage);
         }
+    }
+
+    private List<String> getTablesThatLookLikePhotonCameras() {
+        return rootPhotonTable.getSubTables().stream()
+                .filter(
+                        it -> {
+                            return rootPhotonTable.getSubTable(it).getEntry("rawBytes").exists();
+                        })
+                .collect(Collectors.toList());
     }
 }

@@ -93,9 +93,9 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
           rootTable->GetBooleanTopic("driverMode").Subscribe(false)),
       driverModePublisher(
           rootTable->GetBooleanTopic("driverModeRequest").Publish()),
-      m_topicNameSubscriber(instance, PHOTON_PREFIX, {.topicsOnly = true}),
+      topicNameSubscriber(instance, PHOTON_PREFIX, {.topicsOnly = true}),
       path(rootTable->GetPath()),
-      m_cameraName(cameraName) {
+      cameraName(cameraName) {
   HAL_Report(HALUsageReporting::kResourceType_PhotonCamera, InstanceCount);
   InstanceCount++;
 }
@@ -207,7 +207,7 @@ void PhotonCamera::SetLEDMode(LEDMode mode) {
 }
 
 const std::string_view PhotonCamera::GetCameraName() const {
-  return m_cameraName;
+  return cameraName;
 }
 
 std::optional<cv::Mat> PhotonCamera::GetDistCoeffs() {
@@ -264,6 +264,19 @@ void PhotonCamera::VerifyVersion() {
     FRC_ReportError(frc::err::Error, "{}", error_str);
     throw std::runtime_error(error_str);
   }
+}
+
+std::vector<std::string> PhotonCamera::tablesThatLookLikePhotonCameras() {
+  std::vector<std::string> cameraNames = mainTable->GetSubTables();
+
+  std::vector<std::string> ret;
+  std::copy_if(
+      cameraNames.begin(), cameraNames.end(), std::back_inserter(ret),
+      [this](auto& it) {
+        return mainTable->GetSubTable(it)->GetEntry("rawBytes").Exists();
+      });
+
+  return ret;
 }
 
 }  // namespace photon
