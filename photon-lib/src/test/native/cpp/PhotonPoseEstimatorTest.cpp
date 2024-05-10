@@ -385,7 +385,7 @@ TEST(PhotonPoseEstimatorTest, PoseCache) {
   EXPECT_FALSE(estimatedPose);
 
   // Set result, and update -- expect present and timestamp to be 15
-  cameraOne.testResult = {{0, 0_s, 3_ms, {}}};
+  cameraOne.testResult = {{0, 0_s, 3_ms, targets}};
   cameraOne.testResult[0].SetRecieveTimestamp(units::second_t(15));
 
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
