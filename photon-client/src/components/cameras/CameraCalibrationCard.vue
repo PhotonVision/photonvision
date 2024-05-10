@@ -12,43 +12,88 @@ import PvSwitch from "@/components/common/pv-switch.vue";
 import PvSelect from "@/components/common/pv-select.vue";
 import PvNumberInput from "@/components/common/pv-number-input.vue";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
-import { getResolutionString } from "@/lib/PhotonUtils";
+import { getResolutionString, resolutionsAreEqual } from "@/lib/PhotonUtils";
 import CameraCalibrationInfoCard from "@/components/cameras/CameraCalibrationInfoCard.vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
 const settingsValid = ref(true);
 
+
 const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
   const uniqueResolutions: VideoFormat[] = [];
-  useCameraSettingsStore().currentCameraSettings.uniqueVideoFormats.forEach((format) => {
-    const calib = useCameraSettingsStore().getCalibrationCoeffs(format.resolution);
-    if (calib !== undefined) {
-      // For each error, square it, sum the squares, and divide by total points N
-      if (calib.meanErrors.length) format.mean = calib.meanErrors.reduce((a, b) => a + b, 0) / calib.meanErrors.length;
-      else format.mean = NaN;
-
-      format.horizontalFOV =
-        2 * Math.atan2(format.resolution.width / 2, calib.cameraIntrinsics.data[0]) * (180 / Math.PI);
-      format.verticalFOV =
-        2 * Math.atan2(format.resolution.height / 2, calib.cameraIntrinsics.data[4]) * (180 / Math.PI);
-      format.diagonalFOV =
-        2 *
-        Math.atan2(
-          Math.sqrt(
-            format.resolution.width ** 2 +
-              (format.resolution.height / (calib.cameraIntrinsics.data[4] / calib.cameraIntrinsics.data[0])) ** 2
-          ) / 2,
-          calib.cameraIntrinsics.data[0]
-        ) *
-        (180 / Math.PI);
+  useCameraSettingsStore().currentCameraSettings.validVideoFormats.forEach((format, ind) => {
+    const index = uniqueResolutions.findIndex((v) => resolutionsAreEqual(v.resolution, format.resolution));
+    const contains = index!=-1;
+    let skip = false;
+    if(contains && format.fps>uniqueResolutions[index].fps){
+      uniqueResolutions.splice(index, 1);
+    } else if(contains) {
+      skip = true;
     }
-    uniqueResolutions.push(format);
+
+    if (!skip) {
+      const calib = useCameraSettingsStore().getCalibrationCoeffs(format.resolution);
+      if (calib !== undefined) {
+        // For each error, square it, sum the squares, and divide by total points N
+        if (calib.meanErrors.length)
+          format.mean = calib.meanErrors.reduce((a, b) => a + b, 0) / calib.meanErrors.length;
+        else format.mean = NaN;
+
+        format.horizontalFOV =
+          2 * Math.atan2(format.resolution.width / 2, calib.cameraIntrinsics.data[0]) * (180 / Math.PI);
+        format.verticalFOV =
+          2 * Math.atan2(format.resolution.height / 2, calib.cameraIntrinsics.data[4]) * (180 / Math.PI);
+        format.diagonalFOV =
+          2 *
+          Math.atan2(
+            Math.sqrt(
+              format.resolution.width ** 2 +
+                (format.resolution.height / (calib.cameraIntrinsics.data[4] / calib.cameraIntrinsics.data[0])) ** 2
+            ) / 2,
+            calib.cameraIntrinsics.data[0]
+          ) *
+          (180 / Math.PI);
+      }
+      uniqueResolutions.push(format);
+    }
   });
   uniqueResolutions.sort(
     (a, b) => b.resolution.width + b.resolution.height - (a.resolution.width + a.resolution.height)
   );
   return uniqueResolutions;
 };
+
+// const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
+//   const uniqueResolutions: VideoFormat[] = [];
+//   useCameraSettingsStore().currentCameraSettings.uniqueVideoFormats.forEach((format) => {
+//     const calib = useCameraSettingsStore().getCalibrationCoeffs(format.resolution);
+//     if (calib !== undefined) {
+//       // For each error, square it, sum the squares, and divide by total points N
+//       if (calib.meanErrors.length) format.mean = calib.meanErrors.reduce((a, b) => a + b, 0) / calib.meanErrors.length;
+//       else format.mean = NaN;
+
+//       format.horizontalFOV =
+//         2 * Math.atan2(format.resolution.width / 2, calib.cameraIntrinsics.data[0]) * (180 / Math.PI);
+//       format.verticalFOV =
+//         2 * Math.atan2(format.resolution.height / 2, calib.cameraIntrinsics.data[4]) * (180 / Math.PI);
+//       format.diagonalFOV =
+//         2 *
+//         Math.atan2(
+//           Math.sqrt(
+//             format.resolution.width ** 2 +
+//               (format.resolution.height / (calib.cameraIntrinsics.data[4] / calib.cameraIntrinsics.data[0])) ** 2
+//           ) / 2,
+//           calib.cameraIntrinsics.data[0]
+//         ) *
+//         (180 / Math.PI);
+//     }
+//     uniqueResolutions.push(format);
+//   });
+//   uniqueResolutions.sort(
+//     (a, b) => b.resolution.width + b.resolution.height - (a.resolution.width + a.resolution.height)
+//   );
+//   return uniqueResolutions;
+// };
 const getUniqueVideoResolutionStrings = (): { name: string; value: number }[] =>
   getUniqueVideoFormatsByResolution().map<{ name: string; value: number }>((f) => ({
     name: `${getResolutionString(f.resolution)}`,
