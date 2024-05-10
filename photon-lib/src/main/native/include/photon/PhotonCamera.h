@@ -26,6 +26,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include <networktables/BooleanTopic.h>
 #include <networktables/DoubleArrayTopic.h>
@@ -182,10 +183,10 @@ class PhotonCamera {
   nt::BooleanPublisher driverModePublisher;
   nt::IntegerSubscriber ledModeSubscriber;
 
-  nt::MultiSubscriber m_topicNameSubscriber;
+  nt::MultiSubscriber topicNameSubscriber;
 
   std::string path;
-  std::string m_cameraName;
+  std::string cameraName;
 
   mutable Packet packet;
 
@@ -195,6 +196,8 @@ class PhotonCamera {
   inline static int InstanceCount = 0;
 
   void VerifyVersion();
+
+  std::vector<std::string> tablesThatLookLikePhotonCameras();
 };
 
 }  // namespace photon
