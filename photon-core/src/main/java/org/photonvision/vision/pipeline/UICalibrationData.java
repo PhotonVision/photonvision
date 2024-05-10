@@ -27,6 +27,7 @@ public class UICalibrationData {
     public int patternHeight;
     public BoardType boardType;
     public boolean useMrCal;
+    public double markerSizeIn;
 
     public UICalibrationData() {}
 
@@ -36,6 +37,7 @@ public class UICalibrationData {
             int minCount,
             boolean hasEnough,
             double squareSizeIn,
+            double markerSizeIn,
             int patternWidth,
             int patternHeight,
             BoardType boardType,
@@ -45,6 +47,7 @@ public class UICalibrationData {
         this.videoModeIndex = videoModeIndex;
         this.hasEnough = hasEnough;
         this.squareSizeIn = squareSizeIn;
+        this.markerSizeIn = markerSizeIn;
         this.patternWidth = patternWidth;
         this.patternHeight = patternHeight;
         this.boardType = boardType;
@@ -53,7 +56,7 @@ public class UICalibrationData {
 
     public enum BoardType {
         CHESSBOARD,
-        DOTBOARD
+        CHARUCOBOARD,
     }
 
     @Override
@@ -69,6 +72,8 @@ public class UICalibrationData {
                 + hasEnough
                 + ", squareSizeIn="
                 + squareSizeIn
+                + ", markerSizeIn="
+                + markerSizeIn
                 + ", patternWidth="
                 + patternWidth
                 + ", patternHeight="

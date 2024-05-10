@@ -292,7 +292,7 @@ export const PlaceholderCameraSettings: CameraSettings = {
 
 export enum CalibrationBoardTypes {
   Chessboard = 0,
-  DotBoard = 1
+  Charuco = 1
 }
 
 export enum RobotOffsetType {
