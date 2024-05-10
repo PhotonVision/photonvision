@@ -312,6 +312,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             />
             <pv-number-input
               v-model="markerSizeIn"
+              v-show="boardType == CalibrationBoardTypes.Charuco"
               label="Marker Size (in)"
               tooltip="Size of the tag markers in inches must be smaller than pattern spacing"
               :disabled="isCalibrating"
