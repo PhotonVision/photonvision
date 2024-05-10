@@ -217,11 +217,12 @@ PhotonPipelineResult PhotonCameraSim::Process(
 
     std::vector<std::pair<double, double>> cornersDouble{cornersFloat.begin(),
                                                          cornersFloat.end()};
-    detectableTgts.emplace_back(PhotonTrackedTarget{
+    detectableTgts.emplace_back(
         -centerRot.Z().convert<units::degrees>().to<double>(),
         -centerRot.Y().convert<units::degrees>().to<double>(), areaPercent,
         centerRot.X().convert<units::degrees>().to<double>(), tgt.fiducialId,
-        pnpSim.best, pnpSim.alt, pnpSim.ambiguity, smallVec, cornersDouble});
+        tgt.objDetClassId, tgt.objDetConf, pnpSim.best, pnpSim.alt,
+        pnpSim.ambiguity, smallVec, cornersDouble);
   }
 
   if (videoSimRawEnabled) {
