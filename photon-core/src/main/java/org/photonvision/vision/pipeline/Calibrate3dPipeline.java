@@ -90,8 +90,7 @@ public class Calibrate3dPipeline
                         settings.tagFamily,
                         settings.gridSize,
                         settings.markerSize,
-                        settings.streamingFrameDivisor,
-                        settings.useMrCal);
+                        settings.streamingFrameDivisor);
         findBoardCornersPipe.setParams(findCornersPipeParams);
 
         Calibrate3dPipe.CalibratePipeParams calibratePipeParams =

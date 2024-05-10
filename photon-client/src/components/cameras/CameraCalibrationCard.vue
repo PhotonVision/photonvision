@@ -62,37 +62,6 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
   return uniqueResolutions;
 };
 
-// const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
-//   const uniqueResolutions: VideoFormat[] = [];
-//   useCameraSettingsStore().currentCameraSettings.uniqueVideoFormats.forEach((format) => {
-//     const calib = useCameraSettingsStore().getCalibrationCoeffs(format.resolution);
-//     if (calib !== undefined) {
-//       // For each error, square it, sum the squares, and divide by total points N
-//       if (calib.meanErrors.length) format.mean = calib.meanErrors.reduce((a, b) => a + b, 0) / calib.meanErrors.length;
-//       else format.mean = NaN;
-
-//       format.horizontalFOV =
-//         2 * Math.atan2(format.resolution.width / 2, calib.cameraIntrinsics.data[0]) * (180 / Math.PI);
-//       format.verticalFOV =
-//         2 * Math.atan2(format.resolution.height / 2, calib.cameraIntrinsics.data[4]) * (180 / Math.PI);
-//       format.diagonalFOV =
-//         2 *
-//         Math.atan2(
-//           Math.sqrt(
-//             format.resolution.width ** 2 +
-//               (format.resolution.height / (calib.cameraIntrinsics.data[4] / calib.cameraIntrinsics.data[0])) ** 2
-//           ) / 2,
-//           calib.cameraIntrinsics.data[0]
-//         ) *
-//         (180 / Math.PI);
-//     }
-//     uniqueResolutions.push(format);
-//   });
-//   uniqueResolutions.sort(
-//     (a, b) => b.resolution.width + b.resolution.height - (a.resolution.width + a.resolution.height)
-//   );
-//   return uniqueResolutions;
-// };
 const getUniqueVideoResolutionStrings = (): { name: string; value: number }[] =>
   getUniqueVideoFormatsByResolution().map<{ name: string; value: number }>((f) => ({
     name: `${getResolutionString(f.resolution)}`,
@@ -109,7 +78,7 @@ const squareSizeIn = ref(1);
 const markerSizeIn = ref(0.75);
 const patternWidth = ref(8);
 const patternHeight = ref(8);
-const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.Chessboard);
+const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.Charuco);
 const useMrCalRef = ref(true);
 const useMrCal = computed<boolean>({
   get() {
@@ -317,7 +286,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :items="getUniqueVideoResolutionStrings()"
             />
             <pv-select
-              v-show="isCalibrating"
+              v-show="isCalibrating && boardType != CalibrationBoardTypes.Charuco"
               v-model="useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor"
               label="Decimation"
               tooltip="Resolution to which camera frames are downscaled for detection. Calibration still uses full-res"

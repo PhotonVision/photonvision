@@ -23,10 +23,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfDouble;
-import org.opencv.core.MatOfPoint2f;
-import org.opencv.core.Size;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
@@ -121,11 +117,29 @@ public class Calibrate3dPipe
 
     protected CameraCalibrationCoefficients calibrateOpenCV(
             List<FindBoardCornersPipe.FindBoardCornersPipeResult> in, double fxGuess, double fyGuess) {
-        List<Mat> objPoints = in.stream().map(it -> it.objectPoints).collect(Collectors.toList());
-        List<Mat> imgPts = in.stream().map(it -> it.imagePoints).collect(Collectors.toList());
-        if (objPoints.size() != imgPts.size()) {
+        List<MatOfPoint3f> objPointsIn =
+                in.stream().map(it -> it.objectPoints).collect(Collectors.toList());
+        List<MatOfPoint2f> imgPointsIn =
+                in.stream().map(it -> it.imagePoints).collect(Collectors.toList());
+        List<MatOfFloat> levelsArr = in.stream().map(it -> it.levels).collect(Collectors.toList());
+
+        if (objPointsIn.size() != imgPointsIn.size() || objPointsIn.size() != levelsArr.size()) {
             logger.error("objpts.size != imgpts.size");
             return null;
+        }
+
+        // And delete rows depending on the level -- otherwise, level has no impact for opencv
+        List<Mat> objPoints = new ArrayList<>();
+        List<Mat> imgPoints = new ArrayList<>();
+        for (int i = 0; i < objPointsIn.size(); i++) {
+            MatOfPoint3f objPtsOut = new MatOfPoint3f();
+            MatOfPoint2f imgPtsOut = new MatOfPoint2f();
+
+            deleteIgnoredPoints(
+                    objPointsIn.get(i), imgPointsIn.get(i), levelsArr.get(i), objPtsOut, imgPtsOut);
+
+            objPoints.add(objPtsOut);
+            imgPoints.add(imgPtsOut);
         }
 
         Mat cameraMatrix = new Mat(3, 3, CvType.CV_64F);
@@ -145,7 +159,7 @@ public class Calibrate3dPipe
 
             Calib3d.calibrateCameraExtended(
                     objPoints,
-                    imgPts,
+                    imgPoints,
                     new Size(in.get(0).size.width, in.get(0).size.height),
                     cameraMatrix,
                     distortionCoefficients,
@@ -171,6 +185,8 @@ public class Calibrate3dPipe
         distortionCoefficients.release();
         rvecs.forEach(Mat::release);
         tvecs.forEach(Mat::release);
+        objPoints.forEach(Mat::release);
+        imgPoints.forEach(Mat::release);
 
         return new CameraCalibrationCoefficients(
                 in.get(0).size,
@@ -379,6 +395,32 @@ public class Calibrate3dPipe
         jac_temp.release();
 
         return observations;
+    }
+
+    /** Delete all rows of mats where level is < 0. Useful for opencv */
+    private void deleteIgnoredPoints(
+            MatOfPoint3f objPtsMatIn,
+            MatOfPoint2f imgPtsMatIn,
+            MatOfFloat levelsMat,
+            MatOfPoint3f objPtsMatOut,
+            MatOfPoint2f imgPtsMatOut) {
+        var levels = levelsMat.toArray();
+        var objPtsIn = objPtsMatIn.toArray();
+        var imgPtsIn = imgPtsMatIn.toArray();
+
+        var objPtsOut = new ArrayList<Point3>();
+        var imgPtsOut = new ArrayList<Point>();
+
+        for (int i = 0; i < levels.length; i++) {
+            if (levels[i] >= 0) {
+                // point survives
+                objPtsOut.add(objPtsIn[i]);
+                imgPtsOut.add(imgPtsIn[i]);
+            }
+        }
+
+        objPtsMatOut.fromList(objPtsOut);
+        imgPtsMatOut.fromList(imgPtsOut);
     }
 
     public static class CalibratePipeParams {

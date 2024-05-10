@@ -249,7 +249,7 @@ public class FindBoardCornersPipe
         this.imageSize = new Size(inFrame.width(), inFrame.height());
 
         if (params.type == UICalibrationData.BoardType.CHARUCOBOARD) {
-            Mat ObjPoints =
+            Mat objPoints =
                     new Mat(); // 3 dimensional currentObjectPoints, the physical target ChArUco Board
             Mat imgPoints =
                     new Mat(); // 2 dimensional currentImagePoints, the likely distorted board on the flat
@@ -274,20 +274,20 @@ public class FindBoardCornersPipe
                 // If we can't find a board, give up
                 return null;
             }
-            board.matchImagePoints(detectedCornersList, detectedIds, ObjPoints, imgPoints);
+            board.matchImagePoints(detectedCornersList, detectedIds, objPoints, imgPoints);
 
             // draw the charuco board
             Objdetect.drawDetectedCornersCharuco(
                     outFrame, detectedCorners, detectedIds, new Scalar(0, 0, 255)); // Red Text
 
             imgPoints.copyTo(outBoardCorners);
-            ObjPoints.copyTo(objPts);
+            objPoints.copyTo(objPts);
 
-            // Since charuco can still detect without the whole board we need to send mrcal "fake" (all
-            // values less than zero) points and then tell it to ignore them (setting the corresponding
-            // level to -1). Since opencv calibration does not require the w*h to be the same we don't
-            // need to do this if not using mrcal.
-            if (params.useMrCal) {
+            // Since charuco can still detect without the whole board we need to send "fake" (all
+            // values less than zero) points and then tell it to ignore that corner by setting the
+            // corresponding level to -1. Calibrate3dPipe deals with piping this into the correct format
+            // for each backend
+            {
                 Point[] boardCorners =
                         new Point[(this.params.boardHeight - 1) * (this.params.boardWidth - 1)];
                 Point3[] objectPoints =
@@ -312,7 +312,7 @@ public class FindBoardCornersPipe
                 outLevels.fromArray(levels);
             }
             imgPoints.release();
-            ObjPoints.release();
+            objPoints.release();
             detectedCorners.release();
             detectedIds.release();
 
@@ -372,7 +372,6 @@ public class FindBoardCornersPipe
         final double markerSize;
         final FrameDivisor divisor;
         final int tagFamily;
-        final boolean useMrCal;
 
         public FindCornersPipeParams(
                 int boardHeight,
@@ -381,8 +380,7 @@ public class FindBoardCornersPipe
                 int tagFamily,
                 double gridSize,
                 double markerSize,
-                FrameDivisor divisor,
-                boolean useMrCal) {
+                FrameDivisor divisor) {
             this.boardHeight = boardHeight;
             this.boardWidth = boardWidth;
             this.tagFamily = tagFamily;
@@ -390,7 +388,6 @@ public class FindBoardCornersPipe
             this.gridSize = gridSize; // meter
             this.markerSize = markerSize; // meter
             this.divisor = divisor;
-            this.useMrCal = useMrCal;
         }
 
         @Override
