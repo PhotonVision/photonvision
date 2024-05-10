@@ -91,19 +91,22 @@ public abstract class VisionSourceSettables {
         HashMap<Integer, VideoMode> output = new HashMap<Integer, VideoMode>();
         HashMap<Integer, VideoMode> map = getAllVideoModes();
         for (Map.Entry<Integer, VideoMode> mode : map.entrySet()) {
-            boolean added = false;
+            boolean skip = false;
             for (Map.Entry<Integer, VideoMode> otherMode : output.entrySet()) {
                 if (otherMode.getValue().height == mode.getValue().height
                         && otherMode.getValue().width == mode.getValue().width) {
                     if (mode.getValue().fps > otherMode.getValue().fps) {
                         output.remove(otherMode.getKey());
                         output.put(mode.getKey(), mode.getValue());
-                        added = true;
+                        skip = true;
+                        break;
+                    } else {
+                        skip = true;
                         break;
                     }
                 }
             }
-            if (!added) {
+            if (!skip) {
                 output.put(mode.getKey(), mode.getValue());
             }
         }

@@ -76,11 +76,6 @@ const useMrCal = computed<boolean>({
   }
 });
 
-// On the mount of the card configure the videoformat to be the highest res with the highest fps
-onMounted(() => {
-  useStateStore().calibrationData.videoFormatIndex = getUniqueVideoFormatsByResolution()[0].index;
-});
-
 const downloadCalibBoard = () => {
   const doc = new JsPDF({ unit: "in", format: "letter" });
 

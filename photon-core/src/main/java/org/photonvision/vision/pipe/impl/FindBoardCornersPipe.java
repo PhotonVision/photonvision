@@ -263,7 +263,10 @@ public class FindBoardCornersPipe
             for (int i = 0; i < detectedCorners.total(); i++) {
                 detectedCornersList.add(detectedCorners.row(i));
             }
-            if (detectedCornersList.size() > 0) {
+
+            if (detectedCornersList.size()
+                    >= 10) { // We need at least 4 corners to be used for calibration but we force 10 just to
+                // ensure the user cant get away with a garbage calibration.
                 boardFound = true;
             }
 
