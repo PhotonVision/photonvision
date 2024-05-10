@@ -19,7 +19,6 @@ package org.photonvision.vision.processes;
 
 import edu.wpi.first.cscore.VideoMode;
 import java.util.HashMap;
-import java.util.Map;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;

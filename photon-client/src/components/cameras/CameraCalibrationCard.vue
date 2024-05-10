@@ -18,16 +18,15 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
 const settingsValid = ref(true);
 
-
 const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
   const uniqueResolutions: VideoFormat[] = [];
   useCameraSettingsStore().currentCameraSettings.validVideoFormats.forEach((format, ind) => {
     const index = uniqueResolutions.findIndex((v) => resolutionsAreEqual(v.resolution, format.resolution));
-    const contains = index!=-1;
+    const contains = index != -1;
     let skip = false;
-    if(contains && format.fps>uniqueResolutions[index].fps){
+    if (contains && format.fps > uniqueResolutions[index].fps) {
       uniqueResolutions.splice(index, 1);
-    } else if(contains) {
+    } else if (contains) {
       skip = true;
     }
 
