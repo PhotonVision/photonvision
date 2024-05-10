@@ -45,6 +45,8 @@ import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.StringSubscriber;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.photonvision.common.hardware.VisionLEDMode;
@@ -131,10 +133,12 @@ public class PhotonCamera implements AutoCloseable {
                 cameraTable
                         .getRawTopic("rawBytes")
                         .subscribe(
-                                "rawBytes", new byte[] {}, PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
-        resultSubscriber =
-                new PacketSubscriber<>(
-                        rawBytesEntry, PhotonPipelineResult.serde, new PhotonPipelineResult());
+                                "rawBytes",
+                                new byte[] {},
+                                PubSubOption.periodic(0.01),
+                                PubSubOption.sendAll(true),
+                                PubSubOption.pollStorage(20));
+        resultSubscriber = new PacketSubscriber<>(rawBytesEntry, PhotonPipelineResult.serde);
         driverModePublisher = cameraTable.getBooleanTopic("driverModeRequest").publish();
         driverModeSubscriber = cameraTable.getBooleanTopic("driverMode").subscribe(false);
         inputSaveImgEntry = cameraTable.getIntegerTopic("inputSaveImgCmd").getEntry(0);
@@ -170,22 +174,50 @@ public class PhotonCamera implements AutoCloseable {
     }
 
     /**
-     * Returns the latest pipeline result.
-     *
-     * @return The latest pipeline result.
+     * The list of pipeline results sent by PhotonVision since the last call to getAllUnreadResults().
+     * Calling this function clears the internal FIFO queue, and multiple calls to
+     * getAllUnreadResults() will return different (potentially empty) result arrays. Be careful to
+     * call this exactly ONCE per loop of your robot code! FIFO depth is limited to 20 changes, so
+     * make sure to call this frequently enough to avoid old results being discarded, too!
      */
+    public List<PhotonPipelineResult> getAllUnreadResults() {
+        List<PhotonPipelineResult> ret = new ArrayList<>();
+
+        var changes = resultSubscriber.getAllChanges();
+
+        for (var c : changes) {
+            var result = c.value;
+            result.setTimestampSeconds((c.timestamp / 1e6) - (result.getLatencyMillis() / 1e3));
+            ret.add(result);
+        }
+
+        return ret;
+    }
+
+    /**
+     * Returns the latest pipeline result. This is simply the most recent result recieved via NT.
+     * Calling this multiple times will always return the most recent result.
+     *
+     * <p>Replaced by {@link #getAllUnreadResults()} over getLatestResult, as this function can miss
+     * results, or provide duplicate ones!
+     */
+    @Deprecated(since = "2024", forRemoval = true)
     public PhotonPipelineResult getLatestResult() {
         verifyVersion();
 
         var ret = resultSubscriber.get();
 
-        // Set the timestamp of the result.
-        // getLatestChange returns in microseconds, so we divide by 1e6 to convert to seconds.
-        ret.setTimestampSeconds(
-                (resultSubscriber.subscriber.getLastChange() / 1e6) - ret.getLatencyMillis() / 1e3);
+        if (ret.timestamp == 0) return new PhotonPipelineResult();
 
-        // Return result.
-        return ret;
+        var result = ret.value;
+
+        // Set the timestamp of the result. Since PacketSubscriber doesn't realize that the result
+        // contains a thing with time knowledge, set it here.
+        // getLatestChange returns in microseconds, so we divide by 1e6 to convert to seconds.
+        // TODO: NT4 time sync is Not To Be Trusted, we should do something else?
+        result.setTimestampSeconds((ret.timestamp / 1e6) - (result.getLatencyMillis() / 1e3));
+
+        return result;
     }
 
     /**

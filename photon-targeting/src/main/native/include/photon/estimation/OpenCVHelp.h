@@ -51,6 +51,7 @@ static std::vector<cv::Point2f> GetConvexHull(
   return convexPoints;
 }
 
+[[maybe_unused]]
 static cv::RotatedRect GetMinAreaRect(const std::vector<cv::Point2f>& points) {
   return cv::minAreaRect(points);
 }
@@ -120,6 +121,7 @@ static std::vector<cv::Point3f> RotationToRVec(
   return cv::boundingRect(points);
 }
 
+[[maybe_unused]]
 static std::vector<cv::Point2f> ProjectPoints(
     const Eigen::Matrix<double, 3, 3>& cameraMatrix,
     const Eigen::Matrix<double, 5, 1>& distCoeffs,

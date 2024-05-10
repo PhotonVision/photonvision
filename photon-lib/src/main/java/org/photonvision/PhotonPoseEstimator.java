@@ -90,7 +90,6 @@ public class PhotonPoseEstimator {
     private TargetModel tagModel = TargetModel.kAprilTag16h5;
     private PoseStrategy primaryStrategy;
     private PoseStrategy multiTagFallbackStrategy = PoseStrategy.LOWEST_AMBIGUITY;
-    private final PhotonCamera camera;
     private Transform3d robotToCamera;
 
     private Pose3d lastPose;
@@ -107,29 +106,19 @@ public class PhotonPoseEstimator {
      *     Coordinate System</a>. Note that setting the origin of this layout object will affect the
      *     results from this class.
      * @param strategy The strategy it should use to determine the best pose.
-     * @param camera PhotonCamera
      * @param robotToCamera Transform3d from the center of the robot to the camera mount position (ie,
      *     robot ➔ camera) in the <a href=
      *     "https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#robot-coordinate-system">Robot
      *     Coordinate System</a>.
      */
     public PhotonPoseEstimator(
-            AprilTagFieldLayout fieldTags,
-            PoseStrategy strategy,
-            PhotonCamera camera,
-            Transform3d robotToCamera) {
+            AprilTagFieldLayout fieldTags, PoseStrategy strategy, Transform3d robotToCamera) {
         this.fieldTags = fieldTags;
         this.primaryStrategy = strategy;
-        this.camera = camera;
         this.robotToCamera = robotToCamera;
 
         HAL.report(tResourceType.kResourceType_PhotonPoseEstimator, InstanceCount);
         InstanceCount++;
-    }
-
-    public PhotonPoseEstimator(
-            AprilTagFieldLayout fieldTags, PoseStrategy strategy, Transform3d robotToCamera) {
-        this(fieldTags, strategy, null, robotToCamera);
     }
 
     /** Invalidates the pose cache. */
@@ -288,36 +277,14 @@ public class PhotonPoseEstimator {
     }
 
     /**
-     * Poll data from the configured cameras and update the estimated position of the robot. Returns
-     * empty if:
-     *
-     * <ul>
-     *   <li>New data has not been received since the last call to {@code update()}.
-     *   <li>No targets were found from the camera
-     *   <li>There is no camera set
-     * </ul>
-     *
-     * @return an {@link EstimatedRobotPose} with an estimated pose, timestamp, and targets used to
-     *     create the estimate.
-     */
-    public Optional<EstimatedRobotPose> update() {
-        if (camera == null) {
-            DriverStation.reportError("[PhotonPoseEstimator] Missing camera!", false);
-            return Optional.empty();
-        }
-
-        PhotonPipelineResult cameraResult = camera.getLatestResult();
-
-        return update(cameraResult, camera.getCameraMatrix(), camera.getDistCoeffs());
-    }
-
-    /**
-     * Updates the estimated position of the robot. Returns empty if:
+     * Updates the estimated position of the robot, assuming no camera calibration is required for the
+     * selected strategy. Returns empty if:
      *
      * <ul>
      *   <li>The timestamp of the provided pipeline result is the same as in the previous call to
      *       {@code update()}.
      *   <li>No targets were found in the pipeline results.
+     *   <li>Strategy is multi-tag on coprocessor
      * </ul>
      *
      * @param cameraResult The latest pipeline result from the camera
@@ -325,8 +292,7 @@ public class PhotonPoseEstimator {
      *     create the estimate.
      */
     public Optional<EstimatedRobotPose> update(PhotonPipelineResult cameraResult) {
-        if (camera == null) return update(cameraResult, Optional.empty(), Optional.empty());
-        return update(cameraResult, camera.getCameraMatrix(), camera.getDistCoeffs());
+        return update(cameraResult, Optional.empty(), Optional.empty());
     }
 
     /**

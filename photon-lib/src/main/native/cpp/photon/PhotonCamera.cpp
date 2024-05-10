@@ -66,7 +66,9 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
       rootTable(mainTable->GetSubTable(cameraName)),
       rawBytesEntry(
           rootTable->GetRawTopic("rawBytes")
-              .Subscribe("rawBytes", {}, {.periodic = 0.01, .sendAll = true})),
+              .Subscribe(
+                  "rawBytes", {},
+                  {.pollStorage = 20, .periodic = 0.01, .sendAll = true})),
       inputSaveImgEntry(
           rootTable->GetIntegerTopic("inputSaveImgCmd").Publish()),
       inputSaveImgSubscriber(
@@ -102,14 +104,14 @@ PhotonCamera::PhotonCamera(const std::string_view cameraName)
 
 PhotonPipelineResult PhotonCamera::GetLatestResult() {
   if (test) {
-    return testResult;
+    if (testResult.size())
+      return testResult.back();
+    else
+      return PhotonPipelineResult{};
   }
 
   // Prints warning if not connected
   VerifyVersion();
-
-  // Clear the current packet.
-  packet.Clear();
 
   // Create the new result;
   PhotonPipelineResult result;
@@ -126,6 +128,37 @@ PhotonPipelineResult PhotonCamera::GetLatestResult() {
                       result.GetLatency());
 
   return result;
+}
+
+std::vector<PhotonPipelineResult> PhotonCamera::GetAllUnreadResults() {
+  if (test) {
+    return testResult;
+  }
+
+  // Prints warning if not connected
+  VerifyVersion();
+
+  const auto changes = rawBytesEntry.ReadQueue();
+
+  // Create the new result list -- these will be updated in-place
+  std::vector<PhotonPipelineResult> ret(changes.size());
+
+  for (size_t i = 0; i < changes.size(); i++) {
+    const nt::Timestamped<std::vector<uint8_t>>& value = changes[i];
+
+    if (!value.value.size() || value.time == 0) {
+      continue;
+    }
+
+    // Fill the packet with latest data and populate result.
+    photon::Packet packet{value.value};
+
+    PhotonPipelineResult& result = ret[i];
+    packet >> result;
+    result.SetTimestamp(units::microsecond_t(value.time) - result.GetLatency());
+  }
+
+  return ret;
 }
 
 void PhotonCamera::SetDriverMode(bool driverMode) {
