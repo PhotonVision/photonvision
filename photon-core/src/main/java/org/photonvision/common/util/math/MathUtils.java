@@ -67,8 +67,8 @@ public class MathUtils {
         return micros * 1000;
     }
 
-    public static long nanosToMicros(long micros) {
-        return micros / 1000;
+    public static long nanosToMicros(long nanos) {
+        return nanos / 1000;
     }
 
     public static double map(
