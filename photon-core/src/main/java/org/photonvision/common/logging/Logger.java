@@ -17,6 +17,9 @@
 
 package org.photonvision.common.logging;
 
+import edu.wpi.first.cscore.CameraServerJNI;
+import edu.wpi.first.networktables.PubSubOption;
+import edu.wpi.first.networktables.StringPublisher;
 import java.io.*;
 import java.nio.file.Path;
 import java.text.ParseException;
@@ -28,6 +31,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.photonvision.common.configuration.PathManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
+import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.util.TimedTaskManager;
 
 @SuppressWarnings("unused")
@@ -121,6 +125,11 @@ public class Logger {
             }
         }
         currentAppenders.add(new FileLogAppender(logFilePath));
+    }
+
+    /** Publish log stringst to NT. This must be done AFTER loading ntcore. */
+    public static void addNtAppender() {
+        currentAppenders.add(new NTLogAppender());
     }
 
     public static void cleanLogs(Path folderToClean) {
@@ -302,6 +311,20 @@ public class Logger {
             var superMap = new HashMap<String, Object>();
             superMap.put("logMessage", messageMap);
             DataChangeService.getInstance().publishEvent(OutgoingUIEvent.wrappedOf("log", superMap));
+        }
+    }
+
+    private static class NTLogAppender implements LogAppender {
+        private StringPublisher pub =
+                NetworkTablesManager.getInstance()
+                        .kRootTable
+                        .getSubTable("log_outputs")
+                        .getStringTopic(CameraServerJNI.getHostname())
+                        .publish(PubSubOption.sendAll(true));
+
+        @Override
+        public void log(String message, LogLevel level) {
+            pub.accept(message);
         }
     }
 
