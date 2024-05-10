@@ -57,6 +57,8 @@ public class PhotonTrackedTargetProto
                 msg.getArea(),
                 msg.getSkew(),
                 msg.getFiducialId(),
+                msg.getObjDetectionId(),
+                msg.getObjDetectionConf(),
                 Transform3d.proto.unpack(msg.getBestCameraToTarget()),
                 Transform3d.proto.unpack(msg.getAltCameraToTarget()),
                 msg.getPoseAmbiguity(),

@@ -51,8 +51,8 @@ class PhotonTrackedTarget {
    */
   PhotonTrackedTarget(
       double yaw, double pitch, double area, double skew, int fiducialID,
-      const frc::Transform3d& pose, const frc::Transform3d& alternatePose,
-      double ambiguity,
+      int objDetectCassId, float objDetectConf, const frc::Transform3d& pose,
+      const frc::Transform3d& alternatePose, double ambiguity,
       const wpi::SmallVector<std::pair<double, double>, 4> minAreaRectCorners,
       const std::vector<std::pair<double, double>> detectedCorners);
 
@@ -85,6 +85,18 @@ class PhotonTrackedTarget {
    * or -1 if not set.
    */
   int GetFiducialId() const { return fiducialId; }
+
+  /**
+   * Get the Fiducial ID of the target currently being tracked,
+   * or -1 if not set.
+   */
+  int GetDetectedObjectClassID() const { return objDetectId; }
+
+  /**
+   * Get the object detection confidence, or -1 if not set. This will be between
+   * 0 and 1, with 1 indicating most confidence, and 0 least.
+   */
+  float GetDetectedObjectConfidence() const { return objDetectConf; }
 
   /**
    * Return a list of the 4 corners in image space (origin top left, x right, y
@@ -147,6 +159,8 @@ class PhotonTrackedTarget {
   double area = 0;
   double skew = 0;
   int fiducialId;
+  int objDetectId;
+  float objDetectConf;
   frc::Transform3d bestCameraToTarget;
   frc::Transform3d altCameraToTarget;
   double poseAmbiguity;

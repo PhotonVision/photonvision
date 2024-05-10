@@ -172,7 +172,7 @@ public class TrackedTarget implements Releasable {
     /**
      * @return O-indexed class index for the detected object.
      */
-    public double getClassID() {
+    public int getClassID() {
         return m_classId;
     }
 
@@ -453,6 +453,8 @@ public class TrackedTarget implements Releasable {
                             t.getArea(),
                             t.getSkew(),
                             t.getFiducialId(),
+                            t.getClassID(),
+                            (float) t.getConfidence(),
                             t.getBestCameraToTarget3d(),
                             t.getAltCameraToTarget3d(),
                             t.getPoseAmbiguity(),
