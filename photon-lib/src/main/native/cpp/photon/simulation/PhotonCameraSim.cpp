@@ -326,7 +326,8 @@ PhotonPipelineResult PhotonCameraSim::Process(
     multiTagResults = MultiTargetPNPResult{pnpResult, usedIds};
   }
 
-  return PhotonPipelineResult{latency, detectableTgts, multiTagResults};
+  heartbeatCounter++;
+  return PhotonPipelineResult{heartbeatCounter, 0_s, latency, detectableTgts, multiTagResults};
 }
 void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result) {
   SubmitProcessedFrame(result, wpi::Now());
@@ -376,7 +377,7 @@ void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result,
                                      distortion.data() + distortion.size()};
   ts.cameraDistortionPublisher.Set(distortionView, recieveTimestamp);
 
-  ts.heartbeatPublisher.Set(heartbeatCounter++, recieveTimestamp);
+  ts.heartbeatPublisher.Set(heartbeatCounter, recieveTimestamp);
 
   ts.subTable->GetInstance().Flush();
 }
