@@ -194,6 +194,11 @@ public class Packet {
         return Double.longBitsToDouble(data);
     }
 
+    /**
+     * Returns a decoded float from the packet.
+     *
+     * @return A decoded float from the packet.
+     */
     public float decodeFloat() {
         if (packetData.length < (readPos + 3)) {
             return 0;
