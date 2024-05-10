@@ -13,11 +13,7 @@ defineProps<{
 
 const driverMode = computed<boolean>({
   get: () => useCameraSettingsStore().isDriverMode,
-  set: (v) =>
-    useCameraSettingsStore().changeCurrentPipelineIndex(
-      v ? -1 : useCameraSettingsStore().currentCameraSettings.lastPipelineIndex || 0,
-      true
-    )
+  set: (v) => useCameraSettingsStore().setDriverMode(v)
 });
 
 const fpsTooLow = computed<boolean>(() => {

@@ -236,6 +236,13 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       }
       useStateStore().websocket?.send(payload, true);
     },
+    setDriverMode(isDriverMode: boolean, cameraIndex: number = useStateStore().currentCameraIndex) {
+      const payload = {
+        driverMode: isDriverMode,
+        cameraIndex: cameraIndex
+      };
+      useStateStore().websocket?.send(payload, true);
+    },
     /**
      * Change the currently selected pipeline of the provided camera.
      *
@@ -307,6 +314,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     startPnPCalibration(
       calibrationInitData: {
         squareSizeIn: number;
+        markerSizeIn: number;
         patternWidth: number;
         patternHeight: number;
         boardType: CalibrationBoardTypes;

@@ -143,7 +143,7 @@ public class VisionModule {
         ntConsumer =
                 new NTDataPublisher(
                         visionSource.getSettables().getConfiguration().nickname,
-                        pipelineManager::getCurrentPipelineIndex,
+                        pipelineManager::getRequestedIndex,
                         this::setPipeline,
                         pipelineManager::getDriverMode,
                         this::setDriverMode);
@@ -156,6 +156,7 @@ public class VisionModule {
                 (result) ->
                         lastPipelineResultBestTarget = result.hasTargets() ? result.targets.get(0) : null);
 
+        // Sync VisionModule state with the first pipeline index
         setPipeline(visionSource.getSettables().getConfiguration().currentPipelineIndex);
 
         // Set vendor FOV
@@ -321,7 +322,7 @@ public class VisionModule {
 
     void changePipelineType(int newType) {
         pipelineManager.changePipelineType(newType);
-        setPipeline(pipelineManager.getCurrentPipelineIndex());
+        setPipeline(pipelineManager.getRequestedIndex());
         saveAndBroadcastAll();
     }
 
@@ -329,9 +330,7 @@ public class VisionModule {
         pipelineManager.setDriverMode(isDriverMode);
         setVisionLEDs(!isDriverMode);
         setPipeline(
-                isDriverMode
-                        ? PipelineManager.DRIVERMODE_INDEX
-                        : pipelineManager.getCurrentPipelineIndex());
+                isDriverMode ? PipelineManager.DRIVERMODE_INDEX : pipelineManager.getRequestedIndex());
         saveAndBroadcastAll();
     }
 
@@ -349,6 +348,7 @@ public class VisionModule {
                         + " and settings "
                         + data);
         settings.gridSize = Units.inchesToMeters(data.squareSizeIn);
+        settings.markerSize = Units.inchesToMeters(data.markerSizeIn);
         settings.boardHeight = data.patternHeight;
         settings.boardWidth = data.patternWidth;
         settings.boardType = data.boardType;
@@ -385,7 +385,7 @@ public class VisionModule {
         var ret = pipelineManager.calibration3dPipeline.tryCalibration();
         pipelineManager.setCalibrationMode(false);
 
-        setPipeline(pipelineManager.getCurrentPipelineIndex());
+        setPipeline(pipelineManager.getRequestedIndex());
 
         if (ret != null) {
             logger.debug("Saving calibration...");
@@ -447,7 +447,7 @@ public class VisionModule {
         setVisionLEDs(pipelineSettings.ledMode);
 
         visionSource.getSettables().getConfiguration().currentPipelineIndex =
-                pipelineManager.getCurrentPipelineIndex();
+                pipelineManager.getRequestedIndex();
 
         return true;
     }
@@ -511,13 +511,14 @@ public class VisionModule {
         ret.uniqueName = visionSource.getSettables().getConfiguration().uniqueName;
         ret.currentPipelineSettings =
                 SerializationUtils.objectToHashMap(pipelineManager.getCurrentPipelineSettings());
-        ret.currentPipelineIndex = pipelineManager.getCurrentPipelineIndex();
+        ret.currentPipelineIndex = pipelineManager.getRequestedIndex();
         ret.pipelineNicknames = pipelineManager.getPipelineNicknames();
         ret.cameraQuirks = visionSource.getSettables().getConfiguration().cameraQuirks;
 
         // TODO refactor into helper method
         var temp = new HashMap<Integer, HashMap<String, Object>>();
         var videoModes = visionSource.getSettables().getAllVideoModes();
+
         for (var k : videoModes.keySet()) {
             var internalMap = new HashMap<String, Object>();
 
@@ -553,7 +554,7 @@ public class VisionModule {
         var config = visionSource.getSettables().getConfiguration();
         config.setPipelineSettings(pipelineManager.userPipelineSettings);
         config.driveModeSettings = pipelineManager.driverModePipeline.getSettings();
-        config.currentPipelineIndex = Math.max(pipelineManager.getCurrentPipelineIndex(), -1);
+        config.currentPipelineIndex = Math.max(pipelineManager.getRequestedIndex(), -1);
 
         return config;
     }

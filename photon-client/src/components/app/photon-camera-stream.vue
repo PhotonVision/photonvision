@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject } from "vue";
+import { computed, inject, ref, onBeforeUnmount } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import loadingImage from "@/assets/images/loading.svg";
@@ -53,11 +53,17 @@ const handleFullscreenRequest = () => {
   if (!stream) return;
   stream.requestFullscreen();
 };
+
+const mjpgStream: any = ref(null);
+onBeforeUnmount(() => {
+  if (!mjpgStream.value) return;
+  mjpgStream.value["src"] = null;
+});
 </script>
 
 <template>
   <div class="stream-container">
-    <img :id="id" crossorigin="anonymous" :src="streamSrc" :alt="streamDesc" :style="streamStyle" />
+    <img :id="id" crossorigin="anonymous" :src="streamSrc" :alt="streamDesc" :style="streamStyle" ref="mjpgStream" />
     <div class="stream-overlay" :style="overlayStyle">
       <pv-icon
         icon-name="mdi-camera-image"

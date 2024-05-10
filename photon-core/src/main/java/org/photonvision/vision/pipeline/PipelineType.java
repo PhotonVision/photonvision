@@ -17,8 +17,6 @@
 
 package org.photonvision.vision.pipeline;
 
-import org.photonvision.vision.pipe.impl.Calibrate3dPipeline;
-
 @SuppressWarnings("rawtypes")
 public enum PipelineType {
     Calib3d(-2, Calibrate3dPipeline.class),

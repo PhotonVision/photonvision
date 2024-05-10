@@ -131,5 +131,6 @@ public class ObjectDetectionPipeline
     @Override
     public void release() {
         rknnPipe.release();
+        super.release();
     }
 }

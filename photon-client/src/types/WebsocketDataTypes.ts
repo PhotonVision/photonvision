@@ -77,6 +77,7 @@ export interface WebsocketCalibrationData {
   videoModeIndex: number;
   patternHeight: number;
   squareSizeIn: number;
+  markerSizeIn: number;
 }
 
 export interface IncomingWebsocketData {
