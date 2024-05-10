@@ -102,11 +102,14 @@ public class PhotonTrackedTarget implements ProtobufSerializable {
     }
 
     /** Get the object detection class ID number, or -1 if not set. */
-    public int getClassId() {
+    public int getDetectedObjectClassID() {
         return classId;
     }
 
-    /** Get the object detection confidence, or -1 if not set. */
+    /**
+     * Get the object detection confidence, or -1 if not set. This will be between 0 and 1, with 1
+     * indicating most confidence, and 0 least.
+     */
     public float getDetectedObjectConfidence() {
         return objDetectConf;
     }

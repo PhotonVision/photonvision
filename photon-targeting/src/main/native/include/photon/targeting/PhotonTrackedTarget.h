@@ -90,8 +90,13 @@ class PhotonTrackedTarget {
    * Get the Fiducial ID of the target currently being tracked,
    * or -1 if not set.
    */
-  int GetObjectDetectionId() const { return objDetectId; }
-  float GetObjectDetectionConf() const { return objDetectConf; }
+  int GetDetectedObjectClassID() const { return objDetectId; }
+
+  /**
+   * Get the object detection confidence, or -1 if not set. This will be between
+   * 0 and 1, with 1 indicating most confidence, and 0 least.
+   */
+  float GetDetectedObjectConfidence() const { return objDetectConf; }
 
   /**
    * Return a list of the 4 corners in image space (origin top left, x right, y
