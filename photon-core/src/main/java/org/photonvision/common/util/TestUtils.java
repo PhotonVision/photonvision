@@ -340,12 +340,12 @@ public class TestUtils {
         return getPowercellPath(testMode).resolve(image.path);
     }
 
-    public static Path getDotBoardImagesPath() {
-        return getResourcesFolderPath(false).resolve("calibrationBoardImages");
-    }
-
     public static Path getSquaresBoardImagesPath() {
         return getResourcesFolderPath(false).resolve("calibrationSquaresImg");
+    }
+
+    public static Path getCharucoBoardImagesPath() {
+        return getResourcesFolderPath(false).resolve("calibrationCharucoImg");
     }
 
     public static File getHardwareConfigJson() {
