@@ -44,6 +44,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.StringSubscriber;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import java.util.Optional;
 import java.util.Set;
@@ -181,8 +182,7 @@ public class PhotonCamera implements AutoCloseable {
 
         // Set the timestamp of the result.
         // getLatestChange returns in microseconds, so we divide by 1e6 to convert to seconds.
-        ret.setTimestampSeconds(
-                (resultSubscriber.subscriber.getLastChange() / 1e6) - ret.getLatencyMillis() / 1e3);
+        ret.setRecieveTimestampMicros(RobotController.getFPGATime());
 
         // Return result.
         return ret;

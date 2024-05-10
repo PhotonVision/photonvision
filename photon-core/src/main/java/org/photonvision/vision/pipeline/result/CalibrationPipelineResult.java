@@ -29,7 +29,11 @@ public class CalibrationPipelineResult extends CVPipelineResult {
     }
 
     public CalibrationPipelineResult(
-            double latencyNanos, double fps, Frame outputFrame, List<List<Point>> corners) {
-        super(latencyNanos, fps, cornersToTarget(corners), outputFrame);
+            long sequenceID,
+            double latencyNanos,
+            double fps,
+            Frame outputFrame,
+            List<List<Point>> corners) {
+        super(sequenceID, latencyNanos, fps, cornersToTarget(corners), outputFrame);
     }
 }

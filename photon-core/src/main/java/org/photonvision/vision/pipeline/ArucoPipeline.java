@@ -138,7 +138,7 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
 
         if (frame.type != FrameThresholdType.GREYSCALE) {
             // We asked for a GREYSCALE frame, but didn't get one -- best we can do is give up
-            return new CVPipelineResult(0, 0, List.of(), frame);
+            return new CVPipelineResult(frame.sequenceID, 0, 0, List.of(), frame);
         }
 
         CVPipeResult<List<ArucoDetectionResult>> tagDetectionPipeResult;
@@ -236,7 +236,8 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
-        return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, multiTagResult, frame);
+        return new CVPipelineResult(
+                frame.sequenceID, sumPipeNanosElapsed, fps, targetList, multiTagResult, frame);
     }
 
     private void drawThresholdFrame(Mat greyMat, Mat outputMat, int windowSize, double constant) {

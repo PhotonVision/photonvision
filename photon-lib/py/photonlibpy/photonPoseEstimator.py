@@ -207,7 +207,7 @@ class PhotonPoseEstimator:
                 return None
             cameraResult = self._camera.getLatestResult()
 
-        if cameraResult.timestampSec < 0:
+        if cameraResult.getTimestampSeconds() < 0:
             return None
 
         # If the pose cache timestamp was set, and the result is from the same
@@ -215,12 +215,15 @@ class PhotonPoseEstimator:
         # empty result
         if (
             self._poseCacheTimestampSeconds > 0.0
-            and abs(self._poseCacheTimestampSeconds - cameraResult.timestampSec) < 1e-6
+            and abs(
+                self._poseCacheTimestampSeconds - cameraResult.getTimestampSeconds()
+            )
+            < 1e-6
         ):
             return None
 
         # Remember the timestamp of the current result used
-        self._poseCacheTimestampSeconds = cameraResult.timestampSec
+        self._poseCacheTimestampSeconds = cameraResult.getTimestampSeconds()
 
         # If no targets seen, trivial case -- return empty result
         if not cameraResult.targets:
@@ -259,7 +262,7 @@ class PhotonPoseEstimator:
             )
             return EstimatedRobotPose(
                 best,
-                result.timestampSec,
+                result.getTimestampSeconds(),
                 result.targets,
                 PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
             )
@@ -281,7 +284,6 @@ class PhotonPoseEstimator:
         lowestAmbiguityTarget = None
 
         lowestAmbiguityScore = 10.0
-
         for target in result.targets:
             targetPoseAmbiguity = target.poseAmbiguity
 
@@ -307,7 +309,7 @@ class PhotonPoseEstimator:
             targetPosition.transformBy(
                 lowestAmbiguityTarget.getBestCameraToTarget().inverse()
             ).transformBy(self.robotToCamera.inverse()),
-            result.timestampSec,
+            result.getTimestampSeconds(),
             result.targets,
             PoseStrategy.LOWEST_AMBIGUITY,
         )
