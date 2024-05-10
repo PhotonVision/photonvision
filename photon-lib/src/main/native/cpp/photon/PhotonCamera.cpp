@@ -157,7 +157,8 @@ std::vector<PhotonPipelineResult> PhotonCamera::GetAllUnreadResults() {
 
     PhotonPipelineResult& result = ret[i];
     packet >> result;
-    result.SetRecieveTimestamp(units::microsecond_t(value.time) - result.GetLatency());
+    result.SetRecieveTimestamp(units::microsecond_t(value.time) -
+                               result.GetLatency());
   }
 
   return ret;

@@ -327,7 +327,8 @@ PhotonPipelineResult PhotonCameraSim::Process(
   }
 
   heartbeatCounter++;
-  return PhotonPipelineResult{heartbeatCounter, 0_s, latency, detectableTgts, multiTagResults};
+  return PhotonPipelineResult{heartbeatCounter, 0_s, latency, detectableTgts,
+                              multiTagResults};
 }
 void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result) {
   SubmitProcessedFrame(result, wpi::Now());
