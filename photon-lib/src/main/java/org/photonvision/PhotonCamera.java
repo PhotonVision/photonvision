@@ -278,19 +278,6 @@ public class PhotonCamera implements AutoCloseable {
     }
 
     /**
-     * Returns whether the latest target result has targets.
-     *
-     * <p>This method is deprecated; {@link PhotonPipelineResult#hasTargets()} should be used instead.
-     *
-     * @deprecated This method should be replaced with {@link PhotonPipelineResult#hasTargets()}
-     * @return Whether the latest target result has targets.
-     */
-    @Deprecated
-    public boolean hasTargets() {
-        return getLatestResult().hasTargets();
-    }
-
-    /**
      * Returns the name of the camera. This will return the same value that was given to the
      * constructor as cameraName.
      *

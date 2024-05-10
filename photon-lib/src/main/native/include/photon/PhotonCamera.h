@@ -38,7 +38,6 @@
 #include <networktables/RawTopic.h>
 #include <networktables/StringTopic.h>
 #include <units/time.h>
-#include <wpi/deprecated.h>
 
 #include "photon/targeting//PhotonPipelineResult.h"
 
@@ -152,18 +151,6 @@ class PhotonCamera {
 
   std::optional<cv::Mat> GetCameraMatrix();
   std::optional<cv::Mat> GetDistCoeffs();
-
-  /**
-   * Returns whether the latest target result has targets.
-   * This method is deprecated; {@link PhotonPipelineResult#hasTargets()} should
-   * be used instead.
-   * @deprecated This method should be replaced with {@link
-   * PhotonPipelineResult#HasTargets()}
-   * @return Whether the latest target result has targets.
-   */
-  WPI_DEPRECATED(
-      "This method should be replaced with PhotonPipelineResult::HasTargets()")
-  bool HasTargets() { return GetLatestResult().HasTargets(); }
 
   inline static void SetVersionCheckEnabled(bool enabled) {
     PhotonCamera::VERSION_CHECK_ENABLED = enabled;

@@ -365,7 +365,7 @@ class PhotonCameraSim {
       std::sort(usedIds.begin(), usedIds.end());
       PNPResult pnpResult = VisionEstimation::EstimateCamPosePNP(
           prop.GetIntrinsics(), prop.GetDistCoeffs(), detectableTgts, tagLayout,
-          kAprilTag16h5);
+          kAprilTag36h11);
       multiTagResults = MultiTargetPNPResult{pnpResult, usedIds};
     }
 
