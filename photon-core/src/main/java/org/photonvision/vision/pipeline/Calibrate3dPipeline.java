@@ -104,7 +104,7 @@ public class Calibrate3dPipeline
         Mat inputColorMat = frame.colorImage.getMat();
 
         if (this.calibrating || inputColorMat.empty()) {
-            return new CVPipelineResult(0, 0, null, frame);
+            return new CVPipelineResult(frame.sequenceID, 0, 0, null, frame);
         }
 
         if (getSettings().inputImageRotationMode != ImageRotationMode.DEG_0) {
@@ -114,7 +114,7 @@ public class Calibrate3dPipeline
             logger.error(
                     "Input image rotation was non-zero! Calibration wasn't designed to deal with this. Attempting to manually change back to zero");
             getSettings().inputImageRotationMode = ImageRotationMode.DEG_0;
-            return new CVPipelineResult(0, 0, List.of(), frame);
+            return new CVPipelineResult(frame.sequenceID, 0, 0, List.of(), frame);
         }
 
         long sumPipeNanosElapsed = 0L;
@@ -151,10 +151,15 @@ public class Calibrate3dPipeline
         // Return the drawn chessboard if corners are found, if not, then return the
         // input image.
         return new CalibrationPipelineResult(
+                frame.sequenceID,
                 sumPipeNanosElapsed,
                 fps, // Unused but here in case
                 new Frame(
-                        new CVMat(), outputColorCVMat, FrameThresholdType.NONE, frame.frameStaticProperties),
+                        frame.sequenceID,
+                        new CVMat(),
+                        outputColorCVMat,
+                        FrameThresholdType.NONE,
+                        frame.frameStaticProperties),
                 getCornersList());
     }
 

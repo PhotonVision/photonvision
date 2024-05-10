@@ -83,8 +83,8 @@ TEST(PhotonPoseEstimatorTest, LowestAmbiguityStrategy) {
           0.4, corners, detectedCorners}};
 
   cameraOne.test = true;
-  cameraOne.testResult = {2_ms, targets};
-  cameraOne.testResult.SetTimestamp(units::second_t(11));
+  cameraOne.testResult = {0, 0_s, 2_ms, targets};
+  cameraOne.testResult.SetRecieveTimestamp(units::second_t(11));
 
   photon::PhotonPoseEstimator estimator(aprilTags, photon::LOWEST_AMBIGUITY,
                                         std::move(cameraOne), {});
@@ -138,8 +138,8 @@ TEST(PhotonPoseEstimatorTest, ClosestToCameraHeightStrategy) {
           0.4, corners, detectedCorners}};
 
   cameraOne.test = true;
-  cameraOne.testResult = {2_ms, targets};
-  cameraOne.testResult.SetTimestamp(17_s);
+  cameraOne.testResult = {0, 0_s, 2_ms, targets};
+  cameraOne.testResult.SetRecieveTimestamp(17_s);
 
   photon::PhotonPoseEstimator estimator(
       aprilTags, photon::CLOSEST_TO_CAMERA_HEIGHT, std::move(cameraOne),
@@ -181,8 +181,8 @@ TEST(PhotonPoseEstimatorTest, ClosestToReferencePoseStrategy) {
           0.4, corners, detectedCorners}};
 
   cameraOne.test = true;
-  cameraOne.testResult = {2_ms, targets};
-  cameraOne.testResult.SetTimestamp(units::second_t(17));
+  cameraOne.testResult = {0, 0_s, 2_ms, targets};
+  cameraOne.testResult.SetRecieveTimestamp(units::second_t(17));
 
   photon::PhotonPoseEstimator estimator(
       aprilTags, photon::CLOSEST_TO_REFERENCE_POSE, std::move(cameraOne), {});
@@ -225,8 +225,8 @@ TEST(PhotonPoseEstimatorTest, ClosestToLastPose) {
           0.4, corners, detectedCorners}};
 
   cameraOne.test = true;
-  cameraOne.testResult = {2_ms, targets};
-  cameraOne.testResult.SetTimestamp(units::second_t(17));
+  cameraOne.testResult = {0, 0_s, 2_ms, targets};
+  cameraOne.testResult.SetRecieveTimestamp(units::second_t(17));
 
   photon::PhotonPoseEstimator estimator(aprilTags, photon::CLOSEST_TO_LAST_POSE,
                                         std::move(cameraOne), {});
@@ -259,8 +259,8 @@ TEST(PhotonPoseEstimatorTest, ClosestToLastPose) {
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.4, corners, detectedCorners}};
 
-  estimator.GetCamera()->testResult = {2_ms, targetsThree};
-  estimator.GetCamera()->testResult.SetTimestamp(units::second_t(21));
+  estimator.GetCamera()->testResult = {0, 0_s, 2_ms, targetsThree};
+  estimator.GetCamera()->testResult.SetRecieveTimestamp(units::second_t(21));
 
   estimatedPose = estimator.Update();
   ASSERT_TRUE(estimatedPose);
@@ -300,8 +300,8 @@ TEST(PhotonPoseEstimatorTest, AverageBestPoses) {
           0.4, corners, detectedCorners}};
 
   cameraOne.test = true;
-  cameraOne.testResult = {2_ms, targets};
-  cameraOne.testResult.SetTimestamp(units::second_t(15));
+  cameraOne.testResult = {0, 0_ms, 2_ms, targets};
+  cameraOne.testResult.SetRecieveTimestamp(units::second_t(15));
 
   photon::PhotonPoseEstimator estimator(aprilTags, photon::AVERAGE_BEST_TARGETS,
                                         std::move(cameraOne), {});
@@ -347,17 +347,18 @@ TEST(PhotonPoseEstimatorTest, PoseCache) {
                                         std::move(cameraOne), {});
 
   // empty input, expect empty out
-  estimator.GetCamera()->testResult = {2_ms, {}};
-  estimator.GetCamera()->testResult.SetTimestamp(units::second_t(1));
+  estimator.GetCamera()->testResult = {0, 0_s, 2_ms, {}};
+  estimator.GetCamera()->testResult.SetRecieveTimestamp(units::second_t(1));
   auto estimatedPose = estimator.Update();
   EXPECT_FALSE(estimatedPose);
 
   // Set result, and update -- expect present and timestamp to be 15
-  estimator.GetCamera()->testResult = {3_ms, targets};
-  estimator.GetCamera()->testResult.SetTimestamp(units::second_t(15));
+  estimator.GetCamera()->testResult = {0, 0_s, 3_ms, targets};
+  estimator.GetCamera()->testResult.SetRecieveTimestamp(units::second_t(15));
   estimatedPose = estimator.Update();
   EXPECT_TRUE(estimatedPose);
-  EXPECT_NEAR(15, estimatedPose.value().timestamp.to<double>(), 1e-6);
+  EXPECT_NEAR((15_s - 3_ms).to<double>(),
+              estimatedPose.value().timestamp.to<double>(), 1e-6);
 
   // And again -- now pose cache should be empty
   estimatedPose = estimator.Update();

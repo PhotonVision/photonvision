@@ -180,7 +180,7 @@ class PacketTest {
 
     @Test
     void pipelineResultSerde() {
-        var ret1 = new PhotonPipelineResult(1, List.of());
+        var ret1 = new PhotonPipelineResult(1, 2, 3, List.of());
         var p1 = new Packet(ret1.getPacketSize());
         PhotonPipelineResult.serde.pack(p1, ret1);
         var unpackedRet1 = PhotonPipelineResult.serde.unpack(p1);
@@ -188,7 +188,9 @@ class PacketTest {
 
         var ret2 =
                 new PhotonPipelineResult(
+                        1,
                         2,
+                        3,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -235,7 +237,9 @@ class PacketTest {
 
         var ret3 =
                 new PhotonPipelineResult(
-                        2,
+                        3,
+                        4,
+                        5,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -289,7 +293,9 @@ class PacketTest {
     public void testMultiTargetSerde() {
         var result =
                 new PhotonPipelineResult(
-                        2,
+                        3,
+                        4,
+                        5,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,

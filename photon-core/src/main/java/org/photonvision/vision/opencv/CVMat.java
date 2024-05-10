@@ -36,11 +36,11 @@ public class CVMat implements Releasable {
         this(new Mat());
     }
 
-    public void copyTo(CVMat srcMat) {
-        copyTo(srcMat.getMat());
+    public void copyFrom(CVMat srcMat) {
+        copyFrom(srcMat.getMat());
     }
 
-    public void copyTo(Mat srcMat) {
+    public void copyFrom(Mat srcMat) {
         srcMat.copyTo(mat);
     }
 

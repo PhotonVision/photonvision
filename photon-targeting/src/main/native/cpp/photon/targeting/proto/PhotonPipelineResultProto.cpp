@@ -41,7 +41,11 @@ wpi::Protobuf<photon::PhotonPipelineResult>::Unpack(
   }
 
   return photon::PhotonPipelineResult{
-      units::millisecond_t{m->latency_ms()}, targets,
+      m->sequence_id(),
+      units::microsecond_t{static_cast<double>(m->capture_timestamp_micros())},
+      units::microsecond_t{
+          static_cast<double>(m->nt_publish_timestamp_micros())},
+      targets,
       wpi::UnpackProtobuf<photon::MultiTargetPNPResult>(
           m->multi_target_result())};
 }
@@ -50,7 +54,9 @@ void wpi::Protobuf<photon::PhotonPipelineResult>::Pack(
     google::protobuf::Message* msg, const photon::PhotonPipelineResult& value) {
   auto m = static_cast<photonvision::proto::ProtobufPhotonPipelineResult*>(msg);
 
-  m->set_latency_ms(value.latency.value());
+  m->set_sequence_id(value.sequenceID);
+  m->set_capture_timestamp_micros(value.captureTimestamp.value());
+  m->set_nt_publish_timestamp_micros(value.publishTimestamp.value());
 
   m->clear_targets();
   for (const auto& t : value.GetTargets()) {
