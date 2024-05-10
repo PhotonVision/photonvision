@@ -28,17 +28,22 @@ import org.photonvision.targeting.proto.PhotonPipelineResultProto;
 public class PhotonPipelineResult implements ProtobufSerializable {
     private static boolean HAS_WARNED = false;
 
+    // Image capture and NT publish timestamp, in microseconds and in the coprocessor timebase. As
+    // reported by WPIUtilJNI::now.
+    private long captureTimestampMicros = -1;
+    private long publishTimestampMicros = -1;
+
+    // Mirror of the heartbeat entry -- monotonically increasing
+    private long sequenceID = -1;
+
     // Targets to store.
     public final List<PhotonTrackedTarget> targets = new ArrayList<>();
 
-    // Latency in milliseconds.
-    private double latencyMillis;
-
-    // Timestamp in milliseconds.
-    private double timestampSeconds = -1;
-
     // Multi-tag result
     private MultiTargetPNPResult multiTagResult = new MultiTargetPNPResult();
+
+    // Since we don't trust NT time sync, keep track of when we got this packet into robot code
+    private long ntRecieveTimestampMicros;
 
     /** Constructs an empty pipeline result. */
     public PhotonPipelineResult() {}
@@ -46,24 +51,44 @@ public class PhotonPipelineResult implements ProtobufSerializable {
     /**
      * Constructs a pipeline result.
      *
-     * @param latencyMillis The latency in the pipeline.
+     * @param sequenceID The number of frames processed by this camera since boot
+     * @param captureTimestamp The time, in uS in the coprocessor's timebase, that the coprocessor
+     *     captured the image this result contains the targeting info of
+     * @param publishTimestamp The time, in uS in the coprocessor's timebase, that the coprocessor
+     *     published targeting info
      * @param targets The list of targets identified by the pipeline.
      */
-    public PhotonPipelineResult(double latencyMillis, List<PhotonTrackedTarget> targets) {
-        this.latencyMillis = latencyMillis;
+    public PhotonPipelineResult(
+            long sequenceID,
+            long captureTimestamp,
+            long publishTimestamp,
+            List<PhotonTrackedTarget> targets) {
+        this.captureTimestampMicros = captureTimestamp;
+        this.publishTimestampMicros = publishTimestamp;
+        this.sequenceID = sequenceID;
         this.targets.addAll(targets);
     }
 
     /**
      * Constructs a pipeline result.
      *
-     * @param latencyMillis The latency in the pipeline.
+     * @param sequenceID The number of frames processed by this camera since boot
+     * @param captureTimestamp The time, in uS in the coprocessor's timebase, that the coprocessor
+     *     captured the image this result contains the targeting info of
+     * @param publishTimestamp The time, in uS in the coprocessor's timebase, that the coprocessor
+     *     published targeting info
      * @param targets The list of targets identified by the pipeline.
      * @param result Result from multi-target PNP.
      */
     public PhotonPipelineResult(
-            double latencyMillis, List<PhotonTrackedTarget> targets, MultiTargetPNPResult result) {
-        this.latencyMillis = latencyMillis;
+            long sequenceID,
+            long captureTimestamp,
+            long publishTimestamp,
+            List<PhotonTrackedTarget> targets,
+            MultiTargetPNPResult result) {
+        this.captureTimestampMicros = captureTimestamp;
+        this.publishTimestampMicros = publishTimestamp;
+        this.sequenceID = sequenceID;
         this.targets.addAll(targets);
         this.multiTagResult = result;
     }
@@ -99,32 +124,48 @@ public class PhotonPipelineResult implements ProtobufSerializable {
         return hasTargets() ? targets.get(0) : null;
     }
 
-    /**
-     * Returns the latency in the pipeline.
-     *
-     * @return The latency in the pipeline.
-     */
+    /** Returns the time between image capture and publish to NT */
     public double getLatencyMillis() {
-        return latencyMillis;
+        return (publishTimestampMicros - captureTimestampMicros) / 1e3;
     }
 
     /**
-     * Returns the estimated time the frame was taken, This is more accurate than using <code>
-     * getLatencyMillis()</code>
+     * Returns the estimated time the frame was taken, in the recieved system's time base. This is
+     * calculated as (NT recieve time (robot base) - (publish timestamp, coproc timebase - capture
+     * timestamp, coproc timebase))
      *
-     * @return The timestamp in seconds, or -1 if this result has no timestamp set.
+     * @return The timestamp in seconds
      */
     public double getTimestampSeconds() {
-        return timestampSeconds;
+        return (ntRecieveTimestampMicros - (publishTimestampMicros - captureTimestampMicros)) / 1e6;
+    }
+
+    /** The time that this image was captured, in the coprocessor's time base. */
+    public long getCaptureTimestampMicros() {
+        return captureTimestampMicros;
+    }
+
+    /** The time that this result was published to NT, in the coprocessor's time base. */
+    public long getPublishTimestampMicros() {
+        return publishTimestampMicros;
     }
 
     /**
-     * Sets the FPGA timestamp of this result in seconds.
-     *
-     * @param timestampSeconds The timestamp in seconds.
+     * The number of non-empty frames processed by this camera since boot. Useful to checking if a
+     * camera is alive.
      */
-    public void setTimestampSeconds(double timestampSeconds) {
-        this.timestampSeconds = timestampSeconds;
+    public long getSequenceID() {
+        return sequenceID;
+    }
+
+    /** The time that the robot recieved this result, in the FPGA timebase. */
+    public long getNtRecieveTimestampMicros() {
+        return ntRecieveTimestampMicros;
+    }
+
+    /** Sets the FPGA timestamp this result was recieved by robot code */
+    public void setRecieveTimestampMicros(long timestampMicros) {
+        this.ntRecieveTimestampMicros = timestampMicros;
     }
 
     /**
@@ -157,13 +198,14 @@ public class PhotonPipelineResult implements ProtobufSerializable {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + targets.hashCode();
+        result = prime * result + (int) (captureTimestampMicros ^ (captureTimestampMicros >>> 32));
         long temp;
-        temp = Double.doubleToLongBits(latencyMillis);
+        temp = Double.doubleToLongBits(publishTimestampMicros);
         result = prime * result + (int) (temp ^ (temp >>> 32));
-        temp = Double.doubleToLongBits(timestampSeconds);
-        result = prime * result + (int) (temp ^ (temp >>> 32));
+        result = prime * result + (int) (sequenceID ^ (sequenceID >>> 32));
+        result = prime * result + ((targets == null) ? 0 : targets.hashCode());
         result = prime * result + ((multiTagResult == null) ? 0 : multiTagResult.hashCode());
+        result = prime * result + (int) (ntRecieveTimestampMicros ^ (ntRecieveTimestampMicros >>> 32));
         return result;
     }
 
@@ -173,27 +215,34 @@ public class PhotonPipelineResult implements ProtobufSerializable {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         PhotonPipelineResult other = (PhotonPipelineResult) obj;
-        if (!targets.equals(other.targets)) return false;
-        if (Double.doubleToLongBits(latencyMillis) != Double.doubleToLongBits(other.latencyMillis))
-            return false;
-        if (Double.doubleToLongBits(timestampSeconds)
-                != Double.doubleToLongBits(other.timestampSeconds)) return false;
+        if (captureTimestampMicros != other.captureTimestampMicros) return false;
+        if (Double.doubleToLongBits(publishTimestampMicros)
+                != Double.doubleToLongBits(other.publishTimestampMicros)) return false;
+        if (sequenceID != other.sequenceID) return false;
+        if (targets == null) {
+            if (other.targets != null) return false;
+        } else if (!targets.equals(other.targets)) return false;
         if (multiTagResult == null) {
             if (other.multiTagResult != null) return false;
         } else if (!multiTagResult.equals(other.multiTagResult)) return false;
+        if (ntRecieveTimestampMicros != other.ntRecieveTimestampMicros) return false;
         return true;
     }
 
     @Override
     public String toString() {
-        return "PhotonPipelineResult [targets="
+        return "PhotonPipelineResult [captureTimestamp="
+                + captureTimestampMicros
+                + ", publishTimestamp="
+                + publishTimestampMicros
+                + ", sequenceID="
+                + sequenceID
+                + ", targets="
                 + targets
-                + ", latencyMillis="
-                + latencyMillis
-                + ", timestampSeconds="
-                + timestampSeconds
                 + ", multiTagResult="
                 + multiTagResult
+                + ", ntRecieveTimestamp="
+                + ntRecieveTimestampMicros
                 + "]";
     }
 
@@ -206,7 +255,9 @@ public class PhotonPipelineResult implements ProtobufSerializable {
 
         @Override
         public void pack(Packet packet, PhotonPipelineResult value) {
-            packet.encode(value.latencyMillis);
+            packet.encode(value.sequenceID);
+            packet.encode(value.captureTimestampMicros);
+            packet.encode(value.publishTimestampMicros);
             packet.encode((byte) value.targets.size());
             for (var target : value.targets) PhotonTrackedTarget.serde.pack(packet, target);
             MultiTargetPNPResult.serde.pack(packet, value.multiTagResult);
@@ -214,7 +265,9 @@ public class PhotonPipelineResult implements ProtobufSerializable {
 
         @Override
         public PhotonPipelineResult unpack(Packet packet) {
-            var latency = packet.decodeDouble();
+            var seq = packet.decodeLong();
+            var cap = packet.decodeLong();
+            var pub = packet.decodeLong();
             var len = packet.decodeByte();
             var targets = new ArrayList<PhotonTrackedTarget>(len);
             for (int i = 0; i < len; i++) {
@@ -222,7 +275,7 @@ public class PhotonPipelineResult implements ProtobufSerializable {
             }
             var result = MultiTargetPNPResult.serde.unpack(packet);
 
-            return new PhotonPipelineResult(latency, targets, result);
+            return new PhotonPipelineResult(seq, cap, pub, targets, result);
         }
     }
 

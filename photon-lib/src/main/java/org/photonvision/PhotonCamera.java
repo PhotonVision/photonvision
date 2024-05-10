@@ -44,6 +44,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.StringSubscriber;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import java.util.ArrayList;
 import java.util.List;
@@ -187,7 +188,7 @@ public class PhotonCamera implements AutoCloseable {
 
         for (var c : changes) {
             var result = c.value;
-            result.setTimestampSeconds((c.timestamp / 1e6) - (result.getLatencyMillis() / 1e3));
+            result.setRecieveTimestampMicros(c.timestamp);
             ret.add(result);
         }
 
@@ -215,7 +216,7 @@ public class PhotonCamera implements AutoCloseable {
         // contains a thing with time knowledge, set it here.
         // getLatestChange returns in microseconds, so we divide by 1e6 to convert to seconds.
         // TODO: NT4 time sync is Not To Be Trusted, we should do something else?
-        result.setTimestampSeconds((ret.timestamp / 1e6) - (result.getLatencyMillis() / 1e3));
+        result.setRecieveTimestampMicros(ret.timestamp);
 
         return result;
     }

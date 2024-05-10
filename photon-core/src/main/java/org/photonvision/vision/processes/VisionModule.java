@@ -348,6 +348,7 @@ public class VisionModule {
                         + " and settings "
                         + data);
         settings.gridSize = Units.inchesToMeters(data.squareSizeIn);
+        settings.markerSize = Units.inchesToMeters(data.markerSizeIn);
         settings.boardHeight = data.patternHeight;
         settings.boardWidth = data.patternWidth;
         settings.boardType = data.boardType;
@@ -517,6 +518,7 @@ public class VisionModule {
         // TODO refactor into helper method
         var temp = new HashMap<Integer, HashMap<String, Object>>();
         var videoModes = visionSource.getSettables().getAllVideoModes();
+
         for (var k : videoModes.keySet()) {
             var internalMap = new HashMap<String, Object>();
 

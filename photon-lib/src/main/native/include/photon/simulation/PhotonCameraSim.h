@@ -40,6 +40,7 @@
 #include <utility>
 #include <vector>
 
+#include <frc/Timer.h>
 #include <frc/apriltag/AprilTagFieldLayout.h>
 #include <frc/apriltag/AprilTagFields.h>
 #include <units/math.h>
@@ -98,7 +99,7 @@ class PhotonCameraSim {
   PhotonCamera* cam;
 
   NTTopicSet ts{};
-  uint64_t heartbeatCounter{0};
+  int64_t heartbeatCounter{0};
 
   uint64_t nextNTEntryTime{wpi::Now()};
 

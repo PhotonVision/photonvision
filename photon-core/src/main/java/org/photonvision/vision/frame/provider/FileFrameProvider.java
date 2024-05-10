@@ -99,7 +99,7 @@ public class FileFrameProvider extends CpuImageProcessor {
     @Override
     public CapturedFrame getInputMat() {
         var out = new CVMat();
-        out.copyTo(originalFrame);
+        out.copyFrom(originalFrame);
 
         // block to keep FPS at a defined rate
         if (System.currentTimeMillis() - lastGetMillis < millisDelay) {

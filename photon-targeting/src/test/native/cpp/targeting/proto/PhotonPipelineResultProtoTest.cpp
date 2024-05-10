@@ -21,7 +21,7 @@
 #include "photon/targeting/proto/PhotonPipelineResultProto.h"
 
 TEST(PhotonPipelineResultTest, Roundtrip) {
-  photon::PhotonPipelineResult result{12_ms, {}};
+  photon::PhotonPipelineResult result{0, 0_s, 12_ms, {}};
 
   google::protobuf::Arena arena;
   google::protobuf::Message* proto =
@@ -62,7 +62,7 @@ TEST(PhotonPipelineResultTest, Roundtrip) {
           {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6},
            std::pair{7, 8}}}};
 
-  photon::PhotonPipelineResult result2{12_ms, targets};
+  photon::PhotonPipelineResult result2{0, 0_s, 12_ms, targets};
 
   proto = wpi::Protobuf<photon::PhotonPipelineResult>::New(&arena);
   wpi::Protobuf<photon::PhotonPipelineResult>::Pack(proto, result2);
@@ -84,7 +84,7 @@ TEST(PhotonPipelineResultTest, Roundtrip) {
 
   photon::MultiTargetPNPResult multitagRes{pnpRes, {1, 2, 3, 4}};
 
-  photon::PhotonPipelineResult result3{12_ms, targets, multitagRes};
+  photon::PhotonPipelineResult result3{0, 0_s, 12_ms, targets, multitagRes};
 
   proto = wpi::Protobuf<photon::PhotonPipelineResult>::New(&arena);
   wpi::Protobuf<photon::PhotonPipelineResult>::Pack(proto, result3);

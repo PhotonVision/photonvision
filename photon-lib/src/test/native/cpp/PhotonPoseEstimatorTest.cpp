@@ -83,7 +83,7 @@ TEST(PhotonPoseEstimatorTest, LowestAmbiguityStrategy) {
           0.4, corners, detectedCorners}};
 
   cameraOne.test = true;
-  cameraOne.testResult = {{2_ms, targets}};
+  cameraOne.testResult = {{0, 0_s, 2_ms, targets}};
   cameraOne.testResult[0].SetTimestamp(units::second_t(11));
 
   photon::PhotonPoseEstimator estimator(aprilTags, photon::LOWEST_AMBIGUITY,
@@ -142,7 +142,7 @@ TEST(PhotonPoseEstimatorTest, ClosestToCameraHeightStrategy) {
           0.4, corners, detectedCorners}};
 
   cameraOne.test = true;
-  cameraOne.testResult = {{2_ms, targets}};
+  cameraOne.testResult = {{0, 0_s, 2_ms, targets}};
   cameraOne.testResult[0].SetTimestamp(17_s);
 
   photon::PhotonPoseEstimator estimator(
@@ -189,7 +189,7 @@ TEST(PhotonPoseEstimatorTest, ClosestToReferencePoseStrategy) {
           0.4, corners, detectedCorners}};
 
   cameraOne.test = true;
-  cameraOne.testResult = {{2_ms, targets}};
+  cameraOne.testResult = {{0, 0_s, 2_ms, targets}};
   cameraOne.testResult[0].SetTimestamp(units::second_t(17));
 
   photon::PhotonPoseEstimator estimator(aprilTags,
@@ -238,7 +238,7 @@ TEST(PhotonPoseEstimatorTest, ClosestToLastPose) {
           0.4, corners, detectedCorners}};
 
   cameraOne.test = true;
-  cameraOne.testResult = {{2_ms, targets}};
+  cameraOne.testResult = {{0, 0_s, 2_ms, targets}};
   cameraOne.testResult[0].SetTimestamp(units::second_t(17));
 
   photon::PhotonPoseEstimator estimator(aprilTags, photon::CLOSEST_TO_LAST_POSE,
@@ -277,7 +277,7 @@ TEST(PhotonPoseEstimatorTest, ClosestToLastPose) {
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.4, corners, detectedCorners}};
 
-  cameraOne.testResult = {{2_ms, targetsThree}};
+  cameraOne.testResult = {{0,0_s, 2_ms, targetsThree}};
   cameraOne.testResult[0].SetTimestamp(units::second_t(21));
 
   // std::optional<photon::EstimatedRobotPose> estimatedPose;
@@ -322,7 +322,7 @@ TEST(PhotonPoseEstimatorTest, AverageBestPoses) {
           0.4, corners, detectedCorners}};
 
   cameraOne.test = true;
-  cameraOne.testResult = {{2_ms, targets}};
+  cameraOne.testResult = {{0,0_s, 2_ms, targets}};
   cameraOne.testResult[0].SetTimestamp(units::second_t(15));
 
   photon::PhotonPoseEstimator estimator(aprilTags, photon::AVERAGE_BEST_TARGETS,
@@ -374,7 +374,7 @@ TEST(PhotonPoseEstimatorTest, PoseCache) {
                                         {});
 
   // empty input, expect empty out
-  cameraOne.testResult = {{2_ms, {}}};
+  cameraOne.testResult = {{0,0_s, 2_ms, {}}};
   cameraOne.testResult[0].SetTimestamp(units::second_t(1));
 
   std::optional<photon::EstimatedRobotPose> estimatedPose;
@@ -385,7 +385,7 @@ TEST(PhotonPoseEstimatorTest, PoseCache) {
   EXPECT_FALSE(estimatedPose);
 
   // Set result, and update -- expect present and timestamp to be 15
-  cameraOne.testResult = {{3_ms, targets}};
+  cameraOne.testResult = {{0,0_s, 3_ms, {}}};
   cameraOne.testResult[0].SetTimestamp(units::second_t(15));
 
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
@@ -393,7 +393,8 @@ TEST(PhotonPoseEstimatorTest, PoseCache) {
   }
 
   EXPECT_TRUE(estimatedPose);
-  EXPECT_NEAR(15, estimatedPose.value().timestamp.to<double>(), 1e-6);
+  EXPECT_NEAR((15_s - 3_ms).to<double>(),
+              estimatedPose.value().timestamp.to<double>(), 1e-6);
 
   // And again -- now pose cache should be empty
   for (const auto& result : cameraOne.GetAllUnreadResults()) {

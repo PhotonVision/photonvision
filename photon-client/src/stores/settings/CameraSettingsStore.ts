@@ -314,6 +314,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     startPnPCalibration(
       calibrationInitData: {
         squareSizeIn: number;
+        markerSizeIn: number;
         patternWidth: number;
         patternHeight: number;
         boardType: CalibrationBoardTypes;

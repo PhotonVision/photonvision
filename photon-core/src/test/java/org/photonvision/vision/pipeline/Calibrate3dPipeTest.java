@@ -32,6 +32,7 @@ import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.objdetect.Objdetect;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
@@ -44,7 +45,7 @@ import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
-import org.photonvision.vision.pipe.impl.Calibrate3dPipeline;
+import org.photonvision.vision.pipeline.UICalibrationData.BoardType;
 
 public class Calibrate3dPipeTest {
     @BeforeAll
@@ -62,17 +63,38 @@ public class Calibrate3dPipeTest {
     }
 
     enum CalibrationDatasets {
-        LIFECAM_480("lifecam/2024-01-02_lifecam_480", new Size(640, 480), new Size(11, 11)),
-        LIFECAM_1280("lifecam/2024-01-02_lifecam_1280", new Size(1280, 720), new Size(11, 11));
+        SQUARES_LIFECAM_480(
+                "lifecam/2024-01-02_lifecam_480",
+                new Size(640, 480),
+                new Size(11, 11),
+                BoardType.CHESSBOARD),
+        SQUARES_LIFECAM_1280(
+                "lifecam/2024-01-02_lifecam_1280",
+                new Size(1280, 720),
+                new Size(11, 11),
+                BoardType.CHESSBOARD),
+
+        CHARUCO_LIFECAM_480(
+                "lifecam/2024-05-07_lifecam_480",
+                new Size(640, 480),
+                new Size(8, 8),
+                BoardType.CHARUCOBOARD),
+        CHARUCO_LIFECAM_1280(
+                "lifecam/2024-05-07_lifecam_1280",
+                new Size(1280, 720),
+                new Size(8, 8),
+                BoardType.CHARUCOBOARD);
 
         final String path;
         final Size size;
         final Size boardSize;
+        final BoardType boardType;
 
-        private CalibrationDatasets(String path, Size image, Size chessboard) {
+        private CalibrationDatasets(String path, Size image, Size chessboard, BoardType boardType) {
             this.path = path;
             this.size = image;
             this.boardSize = chessboard;
+            this.boardType = boardType;
         }
     }
 
@@ -87,45 +109,64 @@ public class Calibrate3dPipeTest {
             @Enum(CalibrationDatasets.class) CalibrationDatasets dataset,
             @Values(booleans = {true, false}) boolean useMrCal) {
         // Pi3 and V1.3 camera
-        String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
-        File dir = Path.of(base, dataset.path).toFile();
-        calibrateSquaresCommon(dataset.size, dir, dataset.boardSize, useMrCal);
+        String squareBase = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
+        String charucoBase = TestUtils.getCharucoBoardImagesPath().toAbsolutePath().toString();
+
+        File squareDir = Path.of(squareBase, dataset.path).toFile();
+        File charucoDir = Path.of(charucoBase, dataset.path).toFile();
+
+        if (dataset.boardType == BoardType.CHESSBOARD)
+            calibrateCommon(dataset.size, squareDir, dataset.boardSize, dataset.boardType, useMrCal);
+        else if (dataset.boardType == BoardType.CHESSBOARD)
+            calibrateCommon(dataset.size, charucoDir, dataset.boardSize, dataset.boardType, useMrCal);
     }
 
-    public static void calibrateSquaresCommon(
-            Size imgRes, File rootFolder, Size boardDim, boolean useMrCal) {
-        calibrateSquaresCommon(
+    public static void calibrateCommon(
+            Size imgRes, File rootFolder, Size boardDim, BoardType boardType, boolean useMrCal) {
+        calibrateCommon(
                 imgRes,
                 rootFolder,
                 boardDim,
                 Units.inchesToMeters(1),
+                Units.inchesToMeters(0.75),
+                boardType,
+                Objdetect.DICT_4X4_50,
                 imgRes.width / 2,
                 imgRes.height / 2,
                 useMrCal);
     }
 
-    public static void calibrateSquaresCommon(
+    public static void calibrateCommon(
             Size imgRes,
             File rootFolder,
             Size boardDim,
+            double markerSize,
+            BoardType boardType,
+            int tagFamily,
             double expectedXCenter,
             double expectedYCenter,
             boolean useMrCal) {
-        calibrateSquaresCommon(
+        calibrateCommon(
                 imgRes,
                 rootFolder,
                 boardDim,
                 Units.inchesToMeters(1),
+                markerSize,
+                boardType,
+                tagFamily,
                 expectedXCenter,
                 expectedYCenter,
                 useMrCal);
     }
 
-    public static void calibrateSquaresCommon(
+    public static void calibrateCommon(
             Size imgRes,
             File rootFolder,
             Size boardDim,
             double boardGridSize_m,
+            double markerSize,
+            BoardType boardType,
+            int tagFamily,
             double expectedXCenter,
             double expectedYCenter,
             boolean useMrCal) {
@@ -135,8 +176,11 @@ public class Calibrate3dPipeTest {
 
         assertTrue(directoryListing.length >= 12);
 
-        Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline(10, "test_squares_common");
-        calibration3dPipeline.getSettings().boardType = UICalibrationData.BoardType.CHESSBOARD;
+        Calibrate3dPipeline calibration3dPipeline =
+                new Calibrate3dPipeline(10, "test_calibration_common");
+        calibration3dPipeline.getSettings().boardType = boardType;
+        calibration3dPipeline.getSettings().markerSize = markerSize;
+        calibration3dPipeline.getSettings().tagFamily = tagFamily;
         calibration3dPipeline.getSettings().resolution = imgRes;
         calibration3dPipeline.getSettings().boardHeight = (int) Math.round(boardDim.height);
         calibration3dPipeline.getSettings().boardWidth = (int) Math.round(boardDim.width);
@@ -149,13 +193,15 @@ public class Calibrate3dPipeTest {
                 calibration3dPipeline.takeSnapshot();
                 var frame =
                         new Frame(
+                                0,
                                 new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
                                 new CVMat(),
                                 FrameThresholdType.NONE,
                                 new FrameStaticProperties((int) imgRes.width, (int) imgRes.height, 67, null));
                 var output = calibration3dPipeline.run(frame, QuirkyCamera.DefaultCamera);
 
-                // TestUtils.showImage(output.inputAndOutputFrame.processedImage.getMat(), file.getName(),
+                // TestUtils.showImage(output.inputAndOutputFrame.processedImage.getMat(),
+                // file.getName(),
                 // 1);
                 output.release();
                 frame.release();
@@ -176,7 +222,8 @@ public class Calibrate3dPipeTest {
         assertNotNull(cal);
         assertNotNull(cal.observations);
 
-        // Confirm the calibrated center pixel is fairly close to of the "expected" location at the
+        // Confirm the calibrated center pixel is fairly close to of the "expected"
+        // location at the
         // center of the sensor.
         // For all our data samples so far, this should be true.
         double centerXErrPct =
@@ -190,7 +237,8 @@ public class Calibrate3dPipeTest {
         System.out.println("Dist Coeffs: " + cal.distCoeffs.toString());
 
         // Confirm we didn't get leaky on our mat usage
-        // assertEquals(startMatCount, CVMat.getMatCount()); // TODO Figure out why this doesn't
+        // assertEquals(startMatCount, CVMat.getMatCount()); // TODO Figure out why this
+        // doesn't
         // work in CI
         System.out.println("CVMats left: " + CVMat.getMatCount() + " Start: " + startMatCount);
     }
