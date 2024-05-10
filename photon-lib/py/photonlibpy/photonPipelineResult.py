@@ -49,6 +49,7 @@ class PhotonPipelineResult:
         calculated as (NT recieve time (robot base) - (publish timestamp, coproc timebase - capture
         timestamp, coproc timebase))
         """
+        # TODO - we don't trust NT4 to correctly latency-compensate ntRecieveTimestampMicros
         return (
             self.ntRecieveTimestampMicros
             - (self.publishTimestampMicros - self.captureTimestampMicros)
