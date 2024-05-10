@@ -47,6 +47,8 @@ photon::PhotonTrackedTarget wpi::Protobuf<photon::PhotonTrackedTarget>::Unpack(
       m->area(),
       m->skew(),
       m->fiducial_id(),
+      m->obj_detection_id(),
+      m->obj_detection_conf(),
       wpi::UnpackProtobuf<frc::Transform3d>(m->best_camera_to_target()),
       wpi::UnpackProtobuf<frc::Transform3d>(m->alt_camera_to_target()),
       m->pose_ambiguity(),
@@ -63,6 +65,8 @@ void wpi::Protobuf<photon::PhotonTrackedTarget>::Pack(
   m->set_area(value.area);
   m->set_skew(value.skew);
   m->set_fiducial_id(value.fiducialId);
+  m->set_obj_detection_id(value.objDetectId);
+  m->set_obj_detection_conf(value.objDetectConf);
   wpi::PackProtobuf(m->mutable_best_camera_to_target(),
                     value.bestCameraToTarget);
   wpi::PackProtobuf(m->mutable_alt_camera_to_target(), value.altCameraToTarget);

@@ -264,7 +264,8 @@ class PhotonCameraSim {
           -centerRot.Z().convert<units::degrees>().to<double>(),
           -centerRot.Y().convert<units::degrees>().to<double>(), areaPercent,
           centerRot.X().convert<units::degrees>().to<double>(), tgt.fiducialId,
-          pnpSim.best, pnpSim.alt, pnpSim.ambiguity, smallVec, cornersDouble});
+          -1, -1, pnpSim.best, pnpSim.alt, pnpSim.ambiguity, smallVec,
+          cornersDouble});
     }
 
     if (videoSimRawEnabled) {
