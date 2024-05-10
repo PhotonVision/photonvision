@@ -96,7 +96,6 @@ class Packet:
         """
         return self._decodeGeneric(">l", 4)
 
-
     def decodeFloat(self) -> float:
         """
         * Returns a decoded float from the packet.
