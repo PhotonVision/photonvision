@@ -108,9 +108,9 @@ public class Packet {
     }
 
     /**
-     * Encodes the double into the packet.
+     * Encodes the float into the packet.
      *
-     * @param src The double to encode.
+     * @param src The float to encode.
      */
     public void encode(float src) {
         int data = Float.floatToIntBits(src);
