@@ -131,7 +131,7 @@ export interface BoardObservation {
   optimisedCameraToObject: Pose3d;
   includeObservationInCalibration: boolean;
   snapshotName: string;
-  snapshotData: JsonImageMat;
+  snapshotData?: JsonImageMat;
 }
 
 export interface CameraCalibrationResult {
