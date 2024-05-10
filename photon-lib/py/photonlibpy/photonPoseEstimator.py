@@ -284,7 +284,6 @@ class PhotonPoseEstimator:
         lowestAmbiguityTarget = None
 
         lowestAmbiguityScore = 10.0
-
         for target in result.targets:
             targetPoseAmbiguity = target.poseAmbiguity
 
