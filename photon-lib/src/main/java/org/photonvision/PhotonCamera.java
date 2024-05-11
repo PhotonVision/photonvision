@@ -49,6 +49,8 @@ import edu.wpi.first.wpilibj.Timer;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.ejml.simple.SimpleMatrix;
 import org.photonvision.common.hardware.VisionLEDMode;
 import org.photonvision.common.networktables.PacketSubscriber;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -313,10 +315,11 @@ public class PhotonCamera implements AutoCloseable {
         } else return Optional.empty();
     }
 
-    public Optional<Matrix<N5, N1>> getDistCoeffs() {
+    public Optional<Matrix<?, N1>> getDistCoeffs() {
         var distCoeffs = cameraDistortionSubscriber.get();
-        if (distCoeffs != null && distCoeffs.length == 5) {
-            return Optional.of(MatBuilder.fill(Nat.N5(), Nat.N1(), distCoeffs));
+        if (distCoeffs != null) {
+            return Optional.of(
+                new Matrix<>(new SimpleMatrix(distCoeffs.length, 1, true, distCoeffs)));
         } else return Optional.empty();
     }
 
