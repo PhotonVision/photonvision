@@ -178,7 +178,8 @@ const std::string_view PhotonCamera::GetCameraName() const {
 
 std::optional<cv::Mat> PhotonCamera::GetDistCoeffs() {
   auto distCoeffs = cameraDistortionSubscriber.Get();
-  if (auto bound = distCoeffs.size()) {
+  auto bound = distCoeffs.size();
+  if (bound > 0 && bound <= 8) {
     cv::Mat retVal(8, 1, CV_64FC1);
     for (int i = 0; i < bound; i++) {
       retVal.at<double>(i, 0) = distCoeffs[i];
