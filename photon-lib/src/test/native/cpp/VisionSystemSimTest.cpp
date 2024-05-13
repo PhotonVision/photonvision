@@ -418,11 +418,8 @@ TEST_F(VisionSystemSimTest, TestPoseEstimation) {
       {photon::VisionTargetSim{tagList[0].pose, photon::kAprilTag16h5, 0}});
   visionSysSim.Update(robotPose);
 
-  Eigen::Matrix<double, 3, 3> camEigen;
-  cv::cv2eigen(camera.GetCameraMatrix().value(), camEigen);
-
-  Eigen::Matrix<double, 5, 1> distEigen;
-  cv::cv2eigen(camera.GetDistCoeffs().value(), distEigen);
+  Eigen::Matrix<double, 3, 3> camEigen = camera.GetCameraMatrix().value();
+  Eigen::Matrix<double, 8, 1> distEigen = camera.GetDistCoeffs().value();
 
   auto camResults = camera.GetLatestResult();
   auto targetSpan = camResults.GetTargets();

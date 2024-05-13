@@ -154,20 +154,6 @@ LEDMode PhotonCamera::GetLEDMode() const {
   return static_cast<LEDMode>(static_cast<int>(ledModeSub.Get()));
 }
 
-std::optional<cv::Mat> PhotonCamera::GetCameraMatrix() {
-  auto camCoeffs = cameraIntrinsicsSubscriber.Get();
-  if (camCoeffs.size() == 9) {
-    cv::Mat retVal(3, 3, CV_64FC1);
-    for (int i = 0; i < 3; i++) {
-      for (int j = 0; j < 3; j++) {
-        retVal.at<double>(i, j) = camCoeffs[(j * 3) + i];
-      }
-    }
-    return retVal;
-  }
-  return std::nullopt;
-}
-
 void PhotonCamera::SetLEDMode(LEDMode mode) {
   ledModePub.Set(static_cast<int>(mode));
 }
@@ -176,14 +162,26 @@ const std::string_view PhotonCamera::GetCameraName() const {
   return cameraName;
 }
 
-std::optional<cv::Mat> PhotonCamera::GetDistCoeffs() {
+std::optional<PhotonCamera::CameraMatrix> PhotonCamera::GetCameraMatrix() {
+  auto camCoeffs = cameraIntrinsicsSubscriber.Get();
+  if (camCoeffs.size() == 9) {
+    PhotonCamera::CameraMatrix retVal =
+        Eigen::Map<const PhotonCamera::CameraMatrix>(camCoeffs.data());
+    return retVal;
+  }
+  return std::nullopt;
+}
+
+std::optional<PhotonCamera::DistortionMatrix> PhotonCamera::GetDistCoeffs() {
   auto distCoeffs = cameraDistortionSubscriber.Get();
   auto bound = distCoeffs.size();
   if (bound > 0 && bound <= 8) {
-    cv::Mat retVal(8, 1, CV_64FC1);
-    for (int i = 0; i < bound; i++) {
-      retVal.at<double>(i, 0) = distCoeffs[i];
-    }
+    PhotonCamera::DistortionMatrix retVal =
+        PhotonCamera::DistortionMatrix::Zero();
+
+    Eigen::Map<const Eigen::VectorXd> map(distCoeffs.data(), bound);
+    retVal.block(0, 0, bound, 1) = map;
+
     return retVal;
   }
   return std::nullopt;

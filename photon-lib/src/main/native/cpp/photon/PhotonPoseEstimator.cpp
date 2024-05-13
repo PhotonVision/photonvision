@@ -50,6 +50,9 @@
 #include "photon/targeting/PhotonPipelineResult.h"
 #include "photon/targeting/PhotonTrackedTarget.h"
 
+#define OPENCV_DISABLE_EIGEN_TENSOR_SUPPORT
+#include <opencv2/core/eigen.hpp>
+
 namespace photon {
 
 namespace detail {
@@ -126,8 +129,9 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
-    const PhotonPipelineResult& result, std::optional<cv::Mat> cameraMatrixData,
-    std::optional<cv::Mat> cameraDistCoeffs) {
+    const PhotonPipelineResult& result,
+    std::optional<PhotonCamera::CameraMatrix> cameraMatrixData,
+    std::optional<PhotonCamera::DistortionMatrix> cameraDistCoeffs) {
   // Time in the past -- give up, since the following if expects times > 0
   if (result.GetTimestamp() < 0_s) {
     return std::nullopt;
@@ -152,8 +156,10 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
-    PhotonPipelineResult result, std::optional<cv::Mat> cameraMatrixData,
-    std::optional<cv::Mat> cameraDistCoeffs, PoseStrategy strategy) {
+    const PhotonPipelineResult& result,
+    std::optional<PhotonCamera::CameraMatrix> cameraMatrixData,
+    std::optional<PhotonCamera::DistortionMatrix> cameraDistCoeffs,
+    PoseStrategy strategy) {
   std::optional<EstimatedRobotPose> ret = std::nullopt;
 
   switch (strategy) {
@@ -371,8 +377,9 @@ frc::Pose3d detail::ToPose3d(const cv::Mat& tvec, const cv::Mat& rvec) {
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagOnCoprocStrategy(
-    PhotonPipelineResult result, std::optional<cv::Mat> camMat,
-    std::optional<cv::Mat> distCoeffs) {
+    PhotonPipelineResult result,
+    std::optional<PhotonCamera::CameraMatrix> camMat,
+    std::optional<PhotonCamera::DistortionMatrix> distCoeffs) {
   if (result.MultiTagResult().result.isPresent) {
     const auto field2camera = result.MultiTagResult().result.best;
 
@@ -388,8 +395,9 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagOnCoprocStrategy(
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagOnRioStrategy(
-    PhotonPipelineResult result, std::optional<cv::Mat> camMat,
-    std::optional<cv::Mat> distCoeffs) {
+    PhotonPipelineResult result,
+    std::optional<PhotonCamera::CameraMatrix> camMat,
+    std::optional<PhotonCamera::DistortionMatrix> distCoeffs) {
   using namespace frc;
 
   // Need at least 2 targets
@@ -433,8 +441,15 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagOnRioStrategy(
   cv::Mat const rvec(3, 1, cv::DataType<double>::type);
   cv::Mat const tvec(3, 1, cv::DataType<double>::type);
 
-  cv::solvePnP(objectPoints, imagePoints, camMat.value(), distCoeffs.value(),
-               rvec, tvec, false, cv::SOLVEPNP_SQPNP);
+  {
+    cv::Mat cameraMatCV(camMat->rows(), camMat->cols(), CV_64F);
+    cv::eigen2cv(*camMat, cameraMatCV);
+    cv::Mat distCoeffsMatCV(distCoeffs->rows(), distCoeffs->cols(), CV_64F);
+    cv::eigen2cv(*distCoeffs, distCoeffsMatCV);
+
+    cv::solvePnP(objectPoints, imagePoints, cameraMatCV, distCoeffsMatCV, rvec,
+                 tvec, false, cv::SOLVEPNP_SQPNP);
+  }
 
   const Pose3d pose = detail::ToPose3d(tvec, rvec);
 
