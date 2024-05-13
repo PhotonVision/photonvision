@@ -46,11 +46,10 @@ import edu.wpi.first.networktables.StringSubscriber;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import org.ejml.simple.SimpleMatrix;
 import org.photonvision.common.hardware.VisionLEDMode;
 import org.photonvision.common.networktables.PacketSubscriber;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -315,11 +314,19 @@ public class PhotonCamera implements AutoCloseable {
         } else return Optional.empty();
     }
 
-    public Optional<Matrix<?, N1>> getDistCoeffs() {
+    /**
+     * The camera calibration's distortion coefficients, in OPENCV8 form. Higher-order terms are set
+     * to 0
+     */
+    public Optional<Matrix<N8, N1>> getDistCoeffs() {
         var distCoeffs = cameraDistortionSubscriber.get();
-        if (distCoeffs != null) {
-            return Optional.of(
-                new Matrix<>(new SimpleMatrix(distCoeffs.length, 1, true, distCoeffs)));
+        if (distCoeffs != null && distCoeffs.length <= 8) {
+            // Copy into array of length 8, and explicitly null higher order terms out
+            double[] data = new double[8];
+            Arrays.fill(data, 0);
+            System.arraycopy(distCoeffs, 0, data, 0, distCoeffs.length);
+
+            return Optional.of(MatBuilder.fill(Nat.N8(), Nat.N1(), data));
         } else return Optional.empty();
     }
 
