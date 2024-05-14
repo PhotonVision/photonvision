@@ -106,9 +106,7 @@ public class PhotonPoseEstimator {
     private Pose3d referencePose;
     protected double poseCacheTimestampSeconds = -1;
     private final Set<Integer> reportedErrors = new HashSet<>();
-    private final TimeInterpolatableBuffer<Rotation2d> headingBuffer = TimeInterpolatableBuffer.createBuffer(
-            1.0
-    );
+
 
     /**
      * Create a new PhotonPoseEstimator.
@@ -282,9 +280,6 @@ public class PhotonPoseEstimator {
         setLastPose(new Pose3d(lastPose));
     }
 
-    public void registerRobotHeading(Rotation2d robotHeading, double timestamp) {
-        headingBuffer.addSample(timestamp, robotHeading);
-    }
 
     /**
      * @return The current transform from the center of the robot to the camera mount position
@@ -494,7 +489,7 @@ public class PhotonPoseEstimator {
 
             Translation2d robotToTag = tagToCamera.plus(robotToCamera.getTranslation().toTranslation2d());
 
-            Optional<Rotation2d> headingState = headingBuffer.getSample(result.getTimestampSeconds());
+            Optional<Rotation2d> headingState = PhotonUtils.getHeadingSample(result.getTimestampSeconds());
             if(headingState.isEmpty()) {
                 return Optional.empty();
             }
