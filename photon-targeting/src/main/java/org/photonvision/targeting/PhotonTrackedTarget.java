@@ -34,6 +34,8 @@ public class PhotonTrackedTarget implements ProtobufSerializable {
     private final double area;
     private final double skew;
     private final int fiducialId;
+    private final int classId;
+    private final float objDetectConf;
     private final Transform3d bestCameraToTarget;
     private final Transform3d altCameraToTarget;
     private final double poseAmbiguity;
@@ -50,7 +52,9 @@ public class PhotonTrackedTarget implements ProtobufSerializable {
             double pitch,
             double area,
             double skew,
-            int id,
+            int fiducialId,
+            int classId,
+            float objDetectConf,
             Transform3d pose,
             Transform3d altPose,
             double ambiguity,
@@ -66,7 +70,9 @@ public class PhotonTrackedTarget implements ProtobufSerializable {
         this.pitch = pitch;
         this.area = area;
         this.skew = skew;
-        this.fiducialId = id;
+        this.fiducialId = fiducialId;
+        this.classId = classId;
+        this.objDetectConf = objDetectConf;
         this.bestCameraToTarget = pose;
         this.altCameraToTarget = altPose;
         this.minAreaRectCorners = minAreaRectCorners;
@@ -90,9 +96,22 @@ public class PhotonTrackedTarget implements ProtobufSerializable {
         return skew;
     }
 
-    /** Get the Fiducial ID, or -1 if not set. */
+    /** Get the fiducial ID, or -1 if not set. */
     public int getFiducialId() {
         return fiducialId;
+    }
+
+    /** Get the object detection class ID number, or -1 if not set. */
+    public int getDetectedObjectClassID() {
+        return classId;
+    }
+
+    /**
+     * Get the object detection confidence, or -1 if not set. This will be between 0 and 1, with 1
+     * indicating most confidence, and 0 least.
+     */
+    public float getDetectedObjectConfidence() {
+        return objDetectConf;
     }
 
     /**
@@ -219,7 +238,7 @@ public class PhotonTrackedTarget implements ProtobufSerializable {
     public static final class APacketSerde implements PacketSerde<PhotonTrackedTarget> {
         @Override
         public int getMaxByteSize() {
-            return Double.BYTES * (5 + 7 + 2 * 4 + 1 + 7 + 2 * MAX_CORNERS);
+            return Double.BYTES * (5 + 7 + 2 * 4 + 1 + 1 + 4 + 7 + 2 * MAX_CORNERS);
         }
 
         @Override
@@ -229,6 +248,8 @@ public class PhotonTrackedTarget implements ProtobufSerializable {
             packet.encode(value.area);
             packet.encode(value.skew);
             packet.encode(value.fiducialId);
+            packet.encode(value.classId);
+            packet.encode(value.objDetectConf);
             PacketUtils.packTransform3d(packet, value.bestCameraToTarget);
             PacketUtils.packTransform3d(packet, value.altCameraToTarget);
             packet.encode(value.poseAmbiguity);
@@ -250,6 +271,8 @@ public class PhotonTrackedTarget implements ProtobufSerializable {
             var area = packet.decodeDouble();
             var skew = packet.decodeDouble();
             var fiducialId = packet.decodeInt();
+            var classId = packet.decodeInt();
+            var objDetectConf = packet.decodeFloat();
             Transform3d best = PacketUtils.unpackTransform3d(packet);
             Transform3d alt = PacketUtils.unpackTransform3d(packet);
             double ambiguity = packet.decodeDouble();
@@ -271,6 +294,8 @@ public class PhotonTrackedTarget implements ProtobufSerializable {
                     area,
                     skew,
                     fiducialId,
+                    classId,
+                    objDetectConf,
                     best,
                     alt,
                     ambiguity,

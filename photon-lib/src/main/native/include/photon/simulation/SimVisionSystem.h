@@ -193,6 +193,8 @@ class SimVisionSystem {
                                 areaPixels,
                                 0.0,
                                 target.targetId,
+                                -1,
+                                -1,
                                 camToTargetTransform,
                                 // TODO sim alternate pose
                                 camToTargetTransform,

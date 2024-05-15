@@ -34,6 +34,7 @@ import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.util.PixelFormat;
 import edu.wpi.first.util.WPIUtilJNI;
+import edu.wpi.first.wpilibj.RobotController;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -436,6 +437,8 @@ public class PhotonCameraSim implements AutoCloseable {
                             areaPercent,
                             Math.toDegrees(centerRot.getX()),
                             tgt.fiducialID,
+                            -1,
+                            -1,
                             pnpSim.best,
                             pnpSim.alt,
                             pnpSim.ambiguity,
@@ -539,7 +542,16 @@ public class PhotonCameraSim implements AutoCloseable {
         }
 
         // put this simulated data to NT
-        return new PhotonPipelineResult(latencyMillis, detectableTgts, multitagResult);
+        var now = RobotController.getFPGATime();
+        var ret =
+                new PhotonPipelineResult(
+                        heartbeatCounter,
+                        now - (long) (latencyMillis * 1000),
+                        now,
+                        detectableTgts,
+                        multitagResult);
+        ret.setRecieveTimestampMicros(now);
+        return ret;
     }
 
     /**

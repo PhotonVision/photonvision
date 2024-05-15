@@ -33,6 +33,7 @@ import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVShape;
 import org.photonvision.vision.opencv.Contour;
@@ -92,7 +93,8 @@ public class TrackedTarget implements Releasable {
                         params.horizontalFocalLength,
                         params.cameraCenterPoint.y,
                         tagDetection.getCenterY(),
-                        params.verticalFocalLength);
+                        params.verticalFocalLength,
+                        params.cameraCal);
         m_yaw = yawPitch.getFirst();
         m_pitch = yawPitch.getSecond();
         var bestPose = new Transform3d();
@@ -170,7 +172,7 @@ public class TrackedTarget implements Releasable {
     /**
      * @return O-indexed class index for the detected object.
      */
-    public double getClassID() {
+    public int getClassID() {
         return m_classId;
     }
 
@@ -187,7 +189,8 @@ public class TrackedTarget implements Releasable {
                         params.horizontalFocalLength,
                         params.cameraCenterPoint.y,
                         result.getCenterY(),
-                        params.verticalFocalLength);
+                        params.verticalFocalLength,
+                        params.cameraCal);
         m_yaw = yawPitch.getFirst();
         m_pitch = yawPitch.getSecond();
 
@@ -323,7 +326,8 @@ public class TrackedTarget implements Releasable {
                         params.horizontalFocalLength,
                         m_robotOffsetPoint.y,
                         m_targetOffsetPoint.y,
-                        params.verticalFocalLength);
+                        params.verticalFocalLength,
+                        params.cameraCal);
         m_yaw = yawPitch.getFirst();
         m_pitch = yawPitch.getSecond();
 
@@ -449,6 +453,8 @@ public class TrackedTarget implements Releasable {
                             t.getArea(),
                             t.getSkew(),
                             t.getFiducialId(),
+                            t.getClassID(),
+                            (float) t.getConfidence(),
                             t.getBestCameraToTarget3d(),
                             t.getAltCameraToTarget3d(),
                             t.getPoseAmbiguity(),
@@ -480,6 +486,9 @@ public class TrackedTarget implements Releasable {
         // area calculation values
         final double imageArea;
 
+        // Camera calibration, null if not calibrated
+        final CameraCalibrationCoefficients cameraCal;
+
         public TargetCalculationParameters(
                 boolean isLandscape,
                 TargetOffsetPointEdge targetOffsetPointEdge,
@@ -489,7 +498,8 @@ public class TrackedTarget implements Releasable {
                 Point cameraCenterPoint,
                 double horizontalFocalLength,
                 double verticalFocalLength,
-                double imageArea) {
+                double imageArea,
+                CameraCalibrationCoefficients cal) {
 
             this.isLandscape = isLandscape;
             this.targetOffsetPointEdge = targetOffsetPointEdge;
@@ -500,6 +510,7 @@ public class TrackedTarget implements Releasable {
             this.horizontalFocalLength = horizontalFocalLength;
             this.verticalFocalLength = verticalFocalLength;
             this.imageArea = imageArea;
+            this.cameraCal = cal;
         }
 
         public TargetCalculationParameters(
@@ -520,6 +531,7 @@ public class TrackedTarget implements Releasable {
             this.horizontalFocalLength = frameStaticProperties.horizontalFocalLength;
             this.verticalFocalLength = frameStaticProperties.verticalFocalLength;
             this.imageArea = frameStaticProperties.imageArea;
+            this.cameraCal = frameStaticProperties.cameraCalibration;
         }
     }
 }

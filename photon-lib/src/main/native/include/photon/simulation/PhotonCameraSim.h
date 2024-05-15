@@ -40,6 +40,7 @@
 #include <utility>
 #include <vector>
 
+#include <frc/Timer.h>
 #include <frc/apriltag/AprilTagFieldLayout.h>
 #include <frc/apriltag/AprilTagFields.h>
 #include <units/math.h>
@@ -263,7 +264,8 @@ class PhotonCameraSim {
           -centerRot.Z().convert<units::degrees>().to<double>(),
           -centerRot.Y().convert<units::degrees>().to<double>(), areaPercent,
           centerRot.X().convert<units::degrees>().to<double>(), tgt.fiducialId,
-          pnpSim.best, pnpSim.alt, pnpSim.ambiguity, smallVec, cornersDouble});
+          -1, -1, pnpSim.best, pnpSim.alt, pnpSim.ambiguity, smallVec,
+          cornersDouble});
     }
 
     if (videoSimRawEnabled) {
@@ -365,11 +367,14 @@ class PhotonCameraSim {
       std::sort(usedIds.begin(), usedIds.end());
       PNPResult pnpResult = VisionEstimation::EstimateCamPosePNP(
           prop.GetIntrinsics(), prop.GetDistCoeffs(), detectableTgts, tagLayout,
-          kAprilTag16h5);
+          kAprilTag36h11);
       multiTagResults = MultiTargetPNPResult{pnpResult, usedIds};
     }
 
-    return PhotonPipelineResult{latency, detectableTgts, multiTagResults};
+    units::second_t now = frc::Timer::GetFPGATimestamp();
+
+    return PhotonPipelineResult{heartbeatCounter, now - latency, now,
+                                detectableTgts, multiTagResults};
   }
   void SubmitProcessedFrame(const PhotonPipelineResult& result) {
     SubmitProcessedFrame(result, wpi::Now());
@@ -426,7 +431,7 @@ class PhotonCameraSim {
   PhotonCamera* cam;
 
   NTTopicSet ts{};
-  uint64_t heartbeatCounter{0};
+  int64_t heartbeatCounter{0};
 
   uint64_t nextNTEntryTime{wpi::Now()};
 

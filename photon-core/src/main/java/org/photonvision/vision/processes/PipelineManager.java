@@ -27,7 +27,6 @@ import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.vision.pipe.impl.Calibrate3dPipeline;
 import org.photonvision.vision.pipeline.*;
 
 @SuppressWarnings({"rawtypes", "unused"})
@@ -72,7 +71,8 @@ public class PipelineManager {
 
         calibration3dPipeline = new Calibrate3dPipeline(uniqueName);
 
-        // We know that at this stage, VisionRunner hasn't yet started so we're good to do this from
+        // We know that at this stage, VisionRunner hasn't yet started so we're good to
+        // do this from
         // this thread
         this.setIndex(defaultIndex);
         updatePipelineFromRequested();
@@ -243,7 +243,8 @@ public class PipelineManager {
      * recreation after changing pipeline type
      */
     private void recreateUserPipeline() {
-        // Cleanup potential old native resources before swapping over from a user pipeline
+        // Cleanup potential old native resources before swapping over from a user
+        // pipeline
         if (currentUserPipeline != null && !(currentPipelineIndex < 0)) {
             currentUserPipeline.release();
         }
@@ -471,7 +472,8 @@ public class PipelineManager {
 
     public void changePipelineType(int newType) {
         // Find the PipelineType proposed
-        // To do this we look at all the PipelineType entries and look for one with matching
+        // To do this we look at all the PipelineType entries and look for one with
+        // matching
         // base indexes
         PipelineType type =
                 Arrays.stream(PipelineType.values())

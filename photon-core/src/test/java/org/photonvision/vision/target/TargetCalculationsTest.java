@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -33,12 +34,15 @@ import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.numbers.DoubleCouple;
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.calibration.CameraLensModel;
+import org.photonvision.vision.calibration.JsonMatOfDouble;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.DualOffsetValues;
 
 public class TargetCalculationsTest {
 
-    private static Size imageSize = new Size(800, 600);
+    private static Size imageSize = new Size(1280, 720);
     private static Point imageCenterPoint =
             new Point(imageSize.width / 2.0 - 0.5, imageSize.height / 2.0 - 0.5);
     private static final double diagFOV = Math.toRadians(70.0);
@@ -55,7 +59,8 @@ public class TargetCalculationsTest {
                     imageCenterPoint,
                     props.horizontalFocalLength,
                     props.verticalFocalLength,
-                    imageSize.width * imageSize.height);
+                    imageSize.width * imageSize.height,
+                    null);
 
     @BeforeAll
     public static void setup() {
@@ -76,7 +81,8 @@ public class TargetCalculationsTest {
                         params.horizontalFocalLength,
                         imageCenterPoint.y,
                         targetCenterPoint.y,
-                        params.verticalFocalLength);
+                        params.verticalFocalLength,
+                        params.cameraCal);
 
         assertTrue(targetYawPitch.getFirst() > 0, "Yaw is not positive right");
         assertTrue(targetYawPitch.getSecond() < 0, "Pitch is not positive up");
@@ -91,7 +97,8 @@ public class TargetCalculationsTest {
                         params.horizontalFocalLength,
                         imageCenterPoint.y,
                         imageCenterPoint.y,
-                        params.verticalFocalLength);
+                        params.verticalFocalLength,
+                        params.cameraCal);
         assertEquals(fovs.getFirst() / 2.0, maxYaw.getFirst(), 0.025, "Horizontal FOV check failed");
         var maxPitch =
                 TargetCalculations.calculateYawPitch(
@@ -100,7 +107,8 @@ public class TargetCalculationsTest {
                         params.horizontalFocalLength,
                         imageCenterPoint.y,
                         0,
-                        params.verticalFocalLength);
+                        params.verticalFocalLength,
+                        params.cameraCal);
         assertEquals(fovs.getSecond() / 2.0, maxPitch.getSecond(), 0.025, "Vertical FOV check failed");
     }
 
@@ -112,17 +120,40 @@ public class TargetCalculationsTest {
                 Arguments.of(0, 10),
                 Arguments.of(10, 10),
                 Arguments.of(-10, -10),
-                Arguments.of(30, 45),
-                Arguments.of(-45, -20));
+                Arguments.of(-18, 14),
+                Arguments.of(-23, -16));
     }
-
-    private static double[] testCameraMatrix = {240, 0, 320, 0, 240, 320, 0, 0, 1};
 
     @ParameterizedTest
     @MethodSource("testYawPitchCalcArgs")
     public void testYawPitchCalc(double yawDeg, double pitchDeg) {
-        Mat testCameraMat = new Mat(3, 3, CvType.CV_64F);
-        testCameraMat.put(0, 0, testCameraMatrix);
+        // FOV: ~58.5 deg horizontal, ~35 deg vertical
+        JsonMatOfDouble testCameraMatrix =
+                new JsonMatOfDouble(
+                        3, 3, new double[] {1142.341323, 0, 621.384201309, 0, 1139.92214, 349.897631, 0, 0, 1});
+        JsonMatOfDouble testDistortion =
+                new JsonMatOfDouble(
+                        5,
+                        1,
+                        new double[] {
+                            0.186841202993646,
+                            -1.482894102216622,
+                            0.005692954661309707,
+                            0.0006757267756945662,
+                            2.8659664873321287
+                        });
+        double IMAGER_WIDTH = 1280, IMAGER_HEIGHT = 720;
+        var testCameraCal =
+                new CameraCalibrationCoefficients(
+                        imageSize,
+                        testCameraMatrix,
+                        testDistortion,
+                        new double[0],
+                        List.of(),
+                        new Size(),
+                        0,
+                        CameraLensModel.LENSMODEL_OPENCV);
+
         // Since we create this translation using the given yaw/pitch, we should see the same angles
         // calculated
         var targetTrl =
@@ -136,21 +167,33 @@ public class TargetCalculationsTest {
                 objectPoints,
                 new MatOfDouble(0, 0, 0),
                 new MatOfDouble(0, 0, 0),
-                testCameraMat,
-                new MatOfDouble(0, 0, 0, 0, 0),
+                testCameraCal.getCameraIntrinsicsMat(),
+                testCameraCal.getDistCoeffsMat(),
                 imagePoints);
         var point = imagePoints.toArray()[0];
+
+        // need point within FOV to be valid
+        assertTrue(Math.abs(point.x) >= 0);
+        assertTrue(Math.abs(point.x) <= IMAGER_WIDTH);
+        assertTrue(Math.abs(point.y) >= 0);
+        assertTrue(Math.abs(point.y) <= IMAGER_HEIGHT);
+
         // Test if the target yaw/pitch calculation matches what the target was created with
         var yawPitch =
                 TargetCalculations.calculateYawPitch(
+                        testCameraCal.cameraIntrinsics.data[2],
                         point.x,
-                        testCameraMatrix[2],
-                        testCameraMatrix[0],
+                        testCameraCal.cameraIntrinsics.data[0],
+                        testCameraCal.cameraIntrinsics.data[5],
                         point.y,
-                        testCameraMatrix[5],
-                        testCameraMatrix[4]);
-        assertEquals(yawDeg, yawPitch.getFirst(), 1e-3, "Yaw calculation incorrect");
-        assertEquals(pitchDeg, yawPitch.getSecond(), 1e-3, "Pitch calculation incorrect");
+                        testCameraCal.cameraIntrinsics.data[4],
+                        testCameraCal);
+        // convert photon angles to wpilib NWU angles
+        assertEquals(yawDeg, -yawPitch.getFirst(), 1e-3, "Yaw calculation incorrect");
+        assertEquals(pitchDeg, -yawPitch.getSecond(), 1e-3, "Pitch calculation incorrect");
+
+        testCameraCal.release();
+        testDistortion.release();
     }
 
     @Test

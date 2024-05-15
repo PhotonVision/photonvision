@@ -26,6 +26,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include <networktables/BooleanTopic.h>
 #include <networktables/DoubleArrayTopic.h>
@@ -37,7 +38,6 @@
 #include <networktables/RawTopic.h>
 #include <networktables/StringTopic.h>
 #include <units/time.h>
-#include <wpi/deprecated.h>
 
 #include "photon/targeting//PhotonPipelineResult.h"
 
@@ -152,18 +152,6 @@ class PhotonCamera {
   std::optional<cv::Mat> GetCameraMatrix();
   std::optional<cv::Mat> GetDistCoeffs();
 
-  /**
-   * Returns whether the latest target result has targets.
-   * This method is deprecated; {@link PhotonPipelineResult#hasTargets()} should
-   * be used instead.
-   * @deprecated This method should be replaced with {@link
-   * PhotonPipelineResult#HasTargets()}
-   * @return Whether the latest target result has targets.
-   */
-  WPI_DEPRECATED(
-      "This method should be replaced with PhotonPipelineResult::HasTargets()")
-  bool HasTargets() { return GetLatestResult().HasTargets(); }
-
   inline static void SetVersionCheckEnabled(bool enabled) {
     PhotonCamera::VERSION_CHECK_ENABLED = enabled;
   }
@@ -195,10 +183,10 @@ class PhotonCamera {
   nt::BooleanPublisher driverModePublisher;
   nt::IntegerSubscriber ledModeSubscriber;
 
-  nt::MultiSubscriber m_topicNameSubscriber;
+  nt::MultiSubscriber topicNameSubscriber;
 
   std::string path;
-  std::string m_cameraName;
+  std::string cameraName;
 
   mutable Packet packet;
 
@@ -208,6 +196,8 @@ class PhotonCamera {
   inline static int InstanceCount = 0;
 
   void VerifyVersion();
+
+  std::vector<std::string> tablesThatLookLikePhotonCameras();
 };
 
 }  // namespace photon

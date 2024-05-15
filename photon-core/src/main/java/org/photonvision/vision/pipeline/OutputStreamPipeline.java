@@ -233,6 +233,7 @@ public class OutputStreamPipeline {
         var fps = fpsResult.output;
 
         return new CVPipelineResult(
+                inputAndOutputFrame.sequenceID,
                 sumPipeNanosElapsed,
                 fps, // Unused but here just in case
                 targetsToDraw,

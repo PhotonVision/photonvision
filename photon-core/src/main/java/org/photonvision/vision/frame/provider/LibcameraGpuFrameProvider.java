@@ -30,7 +30,7 @@ import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.pipe.impl.HSVPipe.HSVParams;
 
-public class LibcameraGpuFrameProvider implements FrameProvider {
+public class LibcameraGpuFrameProvider extends FrameProvider {
     private final LibcameraGpuSettables settables;
 
     static final Logger logger = new Logger(LibcameraGpuFrameProvider.class, LogGroup.Camera);
@@ -92,7 +92,11 @@ public class LibcameraGpuFrameProvider implements FrameProvider {
 
             LibCameraJNI.releasePair(p_ptr);
 
+            // Know frame is good -- increment sequence
+            ++sequenceID;
+
             return new Frame(
+                    sequenceID,
                     colorMat,
                     processedMat,
                     type,

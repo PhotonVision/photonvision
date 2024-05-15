@@ -5,6 +5,7 @@ import { CalibrationBoardTypes, type VideoFormat } from "@/types/SettingTypes";
 import JsPDF from "jspdf";
 import { font as PromptRegular } from "@/assets/fonts/PromptRegular";
 import MonoLogo from "@/assets/images/logoMono.png";
+import CharucoImage from "@/assets/images/ChArUco_Marker8x8.png";
 import PvSlider from "@/components/common/pv-slider.vue";
 import { useStateStore } from "@/stores/StateStore";
 import PvSwitch from "@/components/common/pv-switch.vue";
@@ -19,10 +20,17 @@ const settingsValid = ref(true);
 
 const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
   const uniqueResolutions: VideoFormat[] = [];
-  useCameraSettingsStore().currentCameraSettings.validVideoFormats.forEach((format, index) => {
-    if (!uniqueResolutions.some((v) => resolutionsAreEqual(v.resolution, format.resolution))) {
-      format.index = index;
+  useCameraSettingsStore().currentCameraSettings.validVideoFormats.forEach((format) => {
+    const index = uniqueResolutions.findIndex((v) => resolutionsAreEqual(v.resolution, format.resolution));
+    const contains = index != -1;
+    let skip = false;
+    if (contains && format.fps > uniqueResolutions[index].fps) {
+      uniqueResolutions.splice(index, 1);
+    } else if (contains) {
+      skip = true;
+    }
 
+    if (!skip) {
       const calib = useCameraSettingsStore().getCalibrationCoeffs(format.resolution);
       if (calib !== undefined) {
         // For each error, square it, sum the squares, and divide by total points N
@@ -53,11 +61,11 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
   );
   return uniqueResolutions;
 };
+
 const getUniqueVideoResolutionStrings = (): { name: string; value: number }[] =>
   getUniqueVideoFormatsByResolution().map<{ name: string; value: number }>((f) => ({
     name: `${getResolutionString(f.resolution)}`,
-    // Index won't ever be undefined
-    value: f.index || 0
+    value: f.index || 0 // Index won't ever be undefined
   }));
 const calibrationDivisors = computed(() =>
   [1, 2, 4].filter((v) => {
@@ -67,9 +75,10 @@ const calibrationDivisors = computed(() =>
 );
 
 const squareSizeIn = ref(1);
+const markerSizeIn = ref(0.75);
 const patternWidth = ref(8);
 const patternHeight = ref(8);
-const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.Chessboard);
+const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.Charuco);
 const useMrCalRef = ref(true);
 const useMrCal = computed<boolean>({
   get() {
@@ -109,22 +118,23 @@ const downloadCalibBoard = () => {
           }
         }
       }
+      doc.text(`${patternWidth.value} x ${patternHeight.value} | ${squareSizeIn.value}in`, paperWidth - 1, 1.0, {
+        maxWidth: (paperWidth - 2.0) / 2,
+        align: "right"
+      });
       break;
-    case CalibrationBoardTypes.DotBoard:
-      // eslint-disable-next-line no-case-declarations
-      const dotgridStartX =
-        (paperWidth - (2 * (patternWidth.value - 1) + ((patternHeight.value - 1) % 2)) * squareSizeIn.value) / 2.0;
-      // eslint-disable-next-line no-case-declarations
-      const dotgridStartY = (paperHeight - (patternHeight.value - squareSizeIn.value)) / 2;
 
-      for (let squareY = 0; squareY < patternHeight.value; squareY++) {
-        for (let squareX = 0; squareX < patternWidth.value; squareX++) {
-          const xPos = dotgridStartX + (2 * squareX + (squareY % 2)) * squareSizeIn.value;
-          const yPos = dotgridStartY + squareY * squareSizeIn.value;
+    case CalibrationBoardTypes.Charuco:
+      // Add pregenerated charuco
+      const charucoImage = new Image();
+      charucoImage.src = CharucoImage;
+      doc.addImage(charucoImage, "PNG", 0.25, 1.5, 8, 8);
 
-          doc.circle(xPos, yPos, squareSizeIn.value / 4, "F");
-        }
-      }
+      doc.text(`8 x 8 | 1in & 0.75in`, paperWidth - 1, 1.0, {
+        maxWidth: (paperWidth - 2.0) / 2,
+        align: "right"
+      });
+
       break;
   }
 
@@ -145,11 +155,6 @@ const downloadCalibBoard = () => {
   const logoImage = new Image();
   logoImage.src = MonoLogo;
   doc.addImage(logoImage, "PNG", 1.0, 0.75, 1.4, 0.5);
-
-  doc.text(`${patternWidth.value} x ${patternHeight.value} | ${squareSizeIn.value}in`, paperWidth - 1, 1.0, {
-    maxWidth: (paperWidth - 2.0) / 2,
-    align: "right"
-  });
 
   doc.save(`calibrationTarget-${CalibrationBoardTypes[boardType.value]}.pdf`);
 };
@@ -191,6 +196,7 @@ const isCalibrating = ref(false);
 const startCalibration = () => {
   useCameraSettingsStore().startPnPCalibration({
     squareSizeIn: squareSizeIn.value,
+    markerSizeIn: markerSizeIn.value,
     patternHeight: patternHeight.value,
     patternWidth: patternWidth.value,
     boardType: boardType.value,
@@ -280,7 +286,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :items="getUniqueVideoResolutionStrings()"
             />
             <pv-select
-              v-show="isCalibrating"
+              v-show="isCalibrating && boardType != CalibrationBoardTypes.Charuco"
               v-model="useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor"
               label="Decimation"
               tooltip="Resolution to which camera frames are downscaled for detection. Calibration still uses full-res"
@@ -293,13 +299,22 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               label="Board Type"
               tooltip="Calibration board pattern to use"
               :select-cols="7"
-              :items="['Chessboard', 'Dotboard']"
+              :items="['Chessboard', 'Charuco']"
               :disabled="isCalibrating"
             />
             <pv-number-input
               v-model="squareSizeIn"
               label="Pattern Spacing (in)"
               tooltip="Spacing between pattern features in inches"
+              :disabled="isCalibrating"
+              :rules="[(v) => v > 0 || 'Size must be positive']"
+              :label-cols="5"
+            />
+            <pv-number-input
+              v-model="markerSizeIn"
+              v-show="boardType == CalibrationBoardTypes.Charuco"
+              label="Marker Size (in)"
+              tooltip="Size of the tag markers in inches must be smaller than pattern spacing"
               :disabled="isCalibrating"
               :rules="[(v) => v > 0 || 'Size must be positive']"
               :label-cols="5"

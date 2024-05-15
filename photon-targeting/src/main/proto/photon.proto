@@ -53,11 +53,18 @@ message ProtobufPhotonTrackedTarget {
   double pose_ambiguity = 8;
   repeated ProtobufTargetCorner min_area_rect_corners = 9;
   repeated ProtobufTargetCorner detected_corners = 10;
+
+  int32 obj_detection_id = 11;
+  float obj_detection_conf = 12;
 }
 
 message ProtobufPhotonPipelineResult {
-  double latency_ms = 1;
+  double latency_ms = 1 [deprecated = true];
 
   repeated ProtobufPhotonTrackedTarget targets = 2;
   ProtobufMultiTargetPNPResult multi_target_result = 3;
+
+  int64 sequence_id = 4;
+  int64 capture_timestamp_micros = 5;
+  int64 nt_publish_timestamp_micros = 6;
 }

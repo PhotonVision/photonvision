@@ -84,9 +84,15 @@ public class DriverModePipeline
 
         // Flip-flop input and output in the Frame
         return new DriverModePipelineResult(
+                frame.sequenceID,
                 MathUtils.nanosToMillis(totalNanos),
                 fps,
-                new Frame(frame.processedImage, frame.colorImage, frame.type, frame.frameStaticProperties));
+                new Frame(
+                        frame.sequenceID,
+                        frame.processedImage,
+                        frame.colorImage,
+                        frame.type,
+                        frame.frameStaticProperties));
     }
 
     @Override
