@@ -189,9 +189,7 @@ std::optional<cv::Mat> PhotonCamera::GetDistCoeffs() {
 }
 
 void PhotonCamera::VerifyVersion() {
-  if (!versionCheckEnabled) {
-    return;
-  }
+  if (!PhotonCamera::VERSION_CHECK_ENABLED) return;
 
   if ((frc::Timer::GetFPGATimestamp() - lastVersionCheckTime) <
       VERSION_CHECK_INTERVAL)
