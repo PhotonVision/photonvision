@@ -60,6 +60,11 @@ namespace photon {
 
 constexpr const units::second_t VERSION_CHECK_INTERVAL = 5_s;
 static const std::vector<std::string_view> PHOTON_PREFIX = {"/photonvision/"};
+bool PhotonCamera::VERSION_CHECK_ENABLED = true;
+
+void PhotonCamera::SetVersionCheckEnabled(bool enabled) {
+  VERSION_CHECK_ENABLED = enabled;
+}
 
 PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
                            const std::string_view cameraName)
@@ -189,7 +194,9 @@ std::optional<cv::Mat> PhotonCamera::GetDistCoeffs() {
 }
 
 void PhotonCamera::VerifyVersion() {
-  if (!PhotonCamera::VERSION_CHECK_ENABLED) return;
+  if (!PhotonCamera::VERSION_CHECK_ENABLED) {
+    return;
+  }
 
   if ((frc::Timer::GetFPGATimestamp() - lastVersionCheckTime) <
       VERSION_CHECK_INTERVAL)
