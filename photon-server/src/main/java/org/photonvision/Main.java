@@ -356,7 +356,7 @@ public class Main {
 
         try {
             if (!handleArgs(args)) {
-                System.exit(0);
+                System.exit(1);
             }
         } catch (ParseException e) {
             logger.error("Failed to parse command-line options!", e);
