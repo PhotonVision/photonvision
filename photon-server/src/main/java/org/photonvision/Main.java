@@ -354,7 +354,16 @@ public class Main {
                         + Platform.getPlatformName()
                         + (Platform.isRaspberryPi() ? (" (Pi " + PiVersion.getPiVersion() + ")") : ""));
 
-        if (!Platform.isSupported()) {
+        try {
+            if (!handleArgs(args)) {
+                System.exit(0);
+            }
+        } catch (ParseException e) {
+            logger.error("Failed to parse command-line options!", e);
+        }
+
+        // We don't want to trigger an exit in test mode. This is specifically for MacOS.
+        if (!Platform.isSupported() && !isSmoketest) {
             logger.error("This platform is unsupported!");
             System.exit(1);
         }
@@ -396,13 +405,7 @@ public class Main {
                             + e.getMessage());
         }
 
-        try {
-            if (!handleArgs(args)) {
-                System.exit(0);
-            }
-        } catch (ParseException e) {
-            logger.error("Failed to parse command-line options!", e);
-        }
+ 
         CVMat.enablePrint(false);
         PipelineProfiler.enablePrint(false);
 
