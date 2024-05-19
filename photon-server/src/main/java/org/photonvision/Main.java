@@ -347,6 +347,11 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        if(!Platform.isSupported()) {
+            logger.error("This platform is unsupported!");
+            System.exit(1);
+        }
+
         try {
             boolean success = TestUtils.loadLibraries();
 

@@ -47,8 +47,7 @@ dependencies {
     // Only include mrcal natives on platforms that we build for
     if (!(jniPlatform in [
                 "osxx86-64",
-                "osxarm64",
-                "linuxarm32"
+                "osxarm64"
             ])) {
         implementation "org.photonvision:photon-mrcal-jni:$mrcalVersion:$wpilibNativeName"
     }
