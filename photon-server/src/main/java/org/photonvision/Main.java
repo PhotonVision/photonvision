@@ -347,6 +347,13 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        logger.info(
+                "Starting PhotonVision version "
+                        + PhotonVersion.versionString
+                        + " on "
+                        + Platform.getPlatformName()
+                        + (Platform.isRaspberryPi() ? (" (Pi " + PiVersion.getPiVersion() + ")") : ""));
+
         if(!Platform.isSupported()) {
             logger.error("This platform is unsupported!");
             System.exit(1);
@@ -407,13 +414,6 @@ public class Main {
         Logger.setLevel(LogGroup.Config, logLevel);
         Logger.setLevel(LogGroup.General, logLevel);
         logger.info("Logging initialized in debug mode.");
-
-        logger.info(
-                "Starting PhotonVision version "
-                        + PhotonVersion.versionString
-                        + " on "
-                        + Platform.getPlatformName()
-                        + (Platform.isRaspberryPi() ? (" (Pi " + PiVersion.getPiVersion() + ")") : ""));
 
         PvCSCoreLogger.getInstance();
 
