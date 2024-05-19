@@ -354,7 +354,7 @@ public class Main {
                         + Platform.getPlatformName()
                         + (Platform.isRaspberryPi() ? (" (Pi " + PiVersion.getPiVersion() + ")") : ""));
 
-        if(!Platform.isSupported()) {
+        if (!Platform.isSupported()) {
             logger.error("This platform is unsupported!");
             System.exit(1);
         }
