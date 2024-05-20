@@ -363,7 +363,7 @@ public class Main {
         }
 
         // We don't want to trigger an exit in test mode or smoke test. This is specifically for MacOS.
-        if (!Platform.isSupported() && (!isSmoketest || !isTestMode)) {
+        if (!(Platform.isSupported() || isSmoketest || isTestMode)) {
             logger.error("This platform is unsupported!");
             System.exit(1);
         }
