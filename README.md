@@ -20,9 +20,7 @@ Note that these are case sensitive!
 
 * `-PArchOverride=foobar`: builds for a target system other than your current architecture. Valid overrides are:
     * linuxathena
-    * linuxarm32
     * linuxarm64
-    * arm32
     * arm64
     * x86-64
     * x86

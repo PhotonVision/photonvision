@@ -212,10 +212,6 @@ jobs:
             architecture: x64
             arch-override: macarm64
           - os: ubuntu-latest
-            artifact-name: LinuxArm32
-            architecture: x64
-            arch-override: linuxarm32
-          - os: ubuntu-latest
             artifact-name: LinuxArm64
             architecture: x64
             arch-override: linuxarm64
