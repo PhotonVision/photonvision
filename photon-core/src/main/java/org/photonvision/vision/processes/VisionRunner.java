@@ -75,6 +75,7 @@ public class VisionRunner {
             // (pipeline-dependent). I kinda hate how much leak this has...
             // TODO would a callback object be a better fit?
             var wantedProcessType = pipeline.getThresholdType();
+
             frameSupplier.requestFrameThresholdType(wantedProcessType);
             var settings = pipeline.getSettings();
             if (settings instanceof AdvancedPipelineSettings) {
@@ -91,14 +92,19 @@ public class VisionRunner {
             // Grab the new camera frame
             var frame = frameSupplier.get();
 
+            // Frame empty -- no point in trying to do anything more?
+            if (frame.processedImage.getMat().empty() && frame.colorImage.getMat().empty()) {
+                // give up without increasing loop count
+                continue;
+            }
+
             // There's no guarantee the processing type change will occur this tick, so pipelines should
             // check themselves
             try {
                 var pipelineResult = pipeline.run(frame, cameraQuirks);
                 pipelineResultConsumer.accept(pipelineResult);
             } catch (Exception ex) {
-                logger.error("Exception on loop " + loopCount);
-                ex.printStackTrace();
+                logger.error("Exception on loop " + loopCount, ex);
             }
 
             loopCount++;

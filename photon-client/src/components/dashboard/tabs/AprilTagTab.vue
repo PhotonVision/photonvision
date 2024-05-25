@@ -1,35 +1,37 @@
 <script setup lang="ts">
-import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { PipelineType } from "@/types/PipelineTypes";
-import CvSelect from "@/components/common/cv-select.vue";
-import CvSlider from "@/components/common/cv-slider.vue";
-import CvSwitch from "@/components/common/cv-switch.vue";
+import PvSelect from "@/components/common/pv-select.vue";
+import PvSlider from "@/components/common/pv-slider.vue";
+import PvSwitch from "@/components/common/pv-switch.vue";
 import { computed, getCurrentInstance } from "vue";
 import { useStateStore } from "@/stores/StateStore";
+import type { ActivePipelineSettings } from "@/types/PipelineTypes";
+import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
 // Defer reference to store access method
-const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings;
+const currentPipelineSettings = computed<ActivePipelineSettings>(
+  () => useCameraSettingsStore().currentPipelineSettings
+);
 
-const interactiveCols = computed(
-  () =>
-    (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) &&
-    (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)
-)
-  ? 9
-  : 8;
+const interactiveCols = computed(() =>
+  (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) &&
+  (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)
+    ? 9
+    : 8
+);
 </script>
 
 <template>
   <div v-if="currentPipelineSettings.pipelineType === PipelineType.AprilTag">
-    <cv-select
+    <pv-select
       v-model="currentPipelineSettings.tagFamily"
       label="Target family"
-      :items="['AprilTag Family 36h11', 'AprilTag Family 25h9', 'AprilTag Family 16h5']"
+      :items="['AprilTag 36h11 (6.5in)', 'AprilTag 25h9 (6in)', 'AprilTag 16h5 (6in)']"
       :select-cols="interactiveCols"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ tagFamily: value }, false)"
     />
-    <cv-slider
+    <pv-slider
       v-model="currentPipelineSettings.decimate"
       class="pt-2"
       :slider-cols="interactiveCols"
@@ -39,7 +41,7 @@ const interactiveCols = computed(
       :max="8"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ decimate: value }, false)"
     />
-    <cv-slider
+    <pv-slider
       v-model="currentPipelineSettings.blur"
       class="pt-2"
       :slider-cols="interactiveCols"
@@ -50,7 +52,7 @@ const interactiveCols = computed(
       :step="0.1"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ blur: value }, false)"
     />
-    <cv-slider
+    <pv-slider
       v-model="currentPipelineSettings.threads"
       class="pt-2"
       :slider-cols="interactiveCols"
@@ -60,14 +62,14 @@ const interactiveCols = computed(
       :max="8"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ threads: value }, false)"
     />
-    <cv-switch
+    <pv-switch
       v-model="currentPipelineSettings.refineEdges"
       class="pt-2"
       label="Refine Edges"
       tooltip="Further refines the AprilTag corner position initial estimate, suggested left on"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ refineEdges: value }, false)"
     />
-    <cv-slider
+    <pv-slider
       v-model="currentPipelineSettings.decisionMargin"
       class="pt-2 pb-4"
       :slider-cols="interactiveCols"
@@ -77,7 +79,7 @@ const interactiveCols = computed(
       :max="250"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ decisionMargin: value }, false)"
     />
-    <cv-slider
+    <pv-slider
       v-model="currentPipelineSettings.numIterations"
       class="pt-2 pb-4"
       :slider-cols="interactiveCols"

@@ -29,12 +29,14 @@ public class CmdBase {
     // GPU
     public String gpuMemoryCommand = "";
     public String gpuMemUsageCommand = "";
+    // NPU
+    public String npuUsageCommand = "";
     // RAM
     public String ramUsageCommand = "";
     // Disk
     public String diskUsageCommand = "";
 
     public void initCmds(HardwareConfig config) {
-        return; // default - do nothing
+        // default - do nothing
     }
 }

@@ -1,24 +1,81 @@
 <script setup lang="ts">
-import CvSelect from "@/components/common/cv-select.vue";
-import CvNumberInput from "@/components/common/cv-number-input.vue";
+import PvSelect from "@/components/common/pv-select.vue";
+import PvNumberInput from "@/components/common/pv-number-input.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
-import { ref, watchEffect } from "vue";
+import { computed, ref, watchEffect } from "vue";
+import { type CameraSettingsChangeRequest, ValidQuirks } from "@/types/SettingTypes";
 
-const currentFov = ref();
+const tempSettingsStruct = ref<CameraSettingsChangeRequest>({
+  fov: useCameraSettingsStore().currentCameraSettings.fov.value,
+  quirksToChange: Object.assign({}, useCameraSettingsStore().currentCameraSettings.cameraQuirks.quirks)
+});
+
+const arducamSelectWrapper = computed<number>({
+  get: () => {
+    if (tempSettingsStruct.value.quirksToChange.ArduOV9281) return 1;
+    else if (tempSettingsStruct.value.quirksToChange.ArduOV2311) return 2;
+    else return 0;
+  },
+  set: (v) => {
+    switch (v) {
+      case 1:
+        tempSettingsStruct.value.quirksToChange.ArduOV9281 = true;
+        tempSettingsStruct.value.quirksToChange.ArduOV2311 = false;
+        break;
+      case 2:
+        tempSettingsStruct.value.quirksToChange.ArduOV9281 = false;
+        tempSettingsStruct.value.quirksToChange.ArduOV2311 = true;
+        break;
+      default:
+        tempSettingsStruct.value.quirksToChange.ArduOV9281 = false;
+        tempSettingsStruct.value.quirksToChange.ArduOV2311 = false;
+        break;
+    }
+  }
+});
+
+const currentCameraIsArducam = computed<boolean>(
+  () => useCameraSettingsStore().currentCameraSettings.cameraQuirks.quirks.ArduCamCamera
+);
+
+const settingsHaveChanged = (): boolean => {
+  const a = tempSettingsStruct.value;
+  const b = useCameraSettingsStore().currentCameraSettings;
+
+  for (const q in ValidQuirks) {
+    if (a.quirksToChange[q] != b.cameraQuirks.quirks[q]) return true;
+  }
+
+  return a.fov != b.fov.value;
+};
+
+const resetTempSettingsStruct = () => {
+  tempSettingsStruct.value.fov = useCameraSettingsStore().currentCameraSettings.fov.value;
+  tempSettingsStruct.value.quirksToChange = Object.assign(
+    {},
+    useCameraSettingsStore().currentCameraSettings.cameraQuirks.quirks
+  );
+};
 
 const saveCameraSettings = () => {
   useCameraSettingsStore()
-    .updateCameraSettings({ fov: currentFov.value }, false)
+    .updateCameraSettings(tempSettingsStruct.value)
     .then((response) => {
-      useCameraSettingsStore().currentCameraSettings.fov.value = currentFov.value;
       useStateStore().showSnackbarMessage({
         color: "success",
         message: response.data.text || response.data
       });
+
+      // Update the local settings cause the backend checked their validity. Assign is to deref value
+      useCameraSettingsStore().currentCameraSettings.fov.value = tempSettingsStruct.value.fov;
+      useCameraSettingsStore().currentCameraSettings.cameraQuirks.quirks = Object.assign(
+        {},
+        tempSettingsStruct.value.quirksToChange
+      );
     })
     .catch((error) => {
-      currentFov.value = useCameraSettingsStore().currentCameraSettings.fov.value;
+      resetTempSettingsStruct();
       if (error.response) {
         useStateStore().showSnackbarMessage({
           color: "error",
@@ -39,7 +96,8 @@ const saveCameraSettings = () => {
 };
 
 watchEffect(() => {
-  currentFov.value = useCameraSettingsStore().currentCameraSettings.fov.value;
+  // Reset temp settings on remote camera settings change
+  resetTempSettingsStruct();
 });
 </script>
 
@@ -47,20 +105,14 @@ watchEffect(() => {
   <v-card class="mb-3 pr-6 pb-3" color="primary" dark>
     <v-card-title>Camera Settings</v-card-title>
     <div class="ml-5">
-      <cv-select
+      <pv-select
         v-model="useStateStore().currentCameraIndex"
         label="Camera"
         :items="useCameraSettingsStore().cameraNames"
         :select-cols="8"
-        @input="
-          (args) => {
-            currentFov = useCameraSettingsStore().cameras[args].fov.value;
-            useCameraSettingsStore().setCurrentCameraIndex(args);
-          }
-        "
       />
-      <cv-number-input
-        v-model="currentFov"
+      <pv-number-input
+        v-model="tempSettingsStruct.fov"
         :tooltip="
           !useCameraSettingsStore().currentCameraSettings.fov.managedByVendor
             ? 'Field of view (in degrees) of the camera measured across the diagonal of the frame, in a video mode which covers the whole sensor area.'
@@ -70,12 +122,24 @@ watchEffect(() => {
         :disabled="useCameraSettingsStore().currentCameraSettings.fov.managedByVendor"
         :label-cols="4"
       />
+      <pv-select
+        v-show="currentCameraIsArducam"
+        v-model="arducamSelectWrapper"
+        label="Arducam Model"
+        :items="[
+          { name: 'None', value: 0, disabled: true },
+          { name: 'OV9281', value: 1 },
+          { name: 'OV2311', value: 2 }
+        ]"
+        :select-cols="8"
+      />
       <br />
       <v-btn
-        style="margin-top: 10px"
+        class="mt-2 mb-3"
+        style="width: 100%"
         small
         color="secondary"
-        :disabled="currentFov === useCameraSettingsStore().currentCameraSettings.fov.value"
+        :disabled="!settingsHaveChanged()"
         @click="saveCameraSettings"
       >
         <v-icon left> mdi-content-save </v-icon>

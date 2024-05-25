@@ -3,7 +3,8 @@ import type {
   CalibrationBoardTypes,
   CameraCalibrationResult,
   CameraSettings,
-  ConfigurableCameraSettings,
+  CameraSettingsChangeRequest,
+  Resolution,
   RobotOffsetType,
   VideoFormat
 } from "@/types/SettingTypes";
@@ -11,9 +12,9 @@ import { PlaceholderCameraSettings } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import type { WebsocketCameraSettingsUpdate } from "@/types/WebsocketDataTypes";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
-import type { ActiveConfigurablePipelineSettings, ActivePipelineSettings } from "@/types/PipelineTypes";
-import type { PipelineType } from "@/types/PipelineTypes";
+import type { ActiveConfigurablePipelineSettings, ActivePipelineSettings, PipelineType } from "@/types/PipelineTypes";
 import axios from "axios";
+import { resolutionsAreEqual } from "@/lib/PhotonUtils";
 
 interface CameraSettingsStore {
   cameras: CameraSettings[];
@@ -42,29 +43,37 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       return this.currentCameraSettings.validVideoFormats[this.currentPipelineSettings.cameraVideoModeIndex];
     },
     isCurrentVideoFormatCalibrated(): boolean {
-      return this.currentCameraSettings.completeCalibrations.some(
-        (v) =>
-          v.resolution.width === this.currentVideoFormat.resolution.width &&
-          v.resolution.height === this.currentVideoFormat.resolution.height
+      return this.currentCameraSettings.completeCalibrations.some((v) =>
+        resolutionsAreEqual(v.resolution, this.currentVideoFormat.resolution)
       );
     },
     cameraNames(): string[] {
       return this.cameras.map((c) => c.nickname);
     },
+    currentCameraName(): string {
+      return this.cameraNames[useStateStore().currentCameraIndex];
+    },
     pipelineNames(): string[] {
       return this.currentCameraSettings.pipelineNicknames;
+    },
+    currentPipelineName(): string {
+      return this.pipelineNames[useStateStore().currentCameraIndex];
     },
     isDriverMode(): boolean {
       return this.currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.DriverMode;
     },
     isCalibrationMode(): boolean {
       return this.currentCameraSettings.currentPipelineIndex == WebsocketPipelineType.Calib3d;
+    },
+    isCSICamera(): boolean {
+      return this.currentCameraSettings.isCSICamera;
     }
   },
   actions: {
     updateCameraSettingsFromWebsocket(data: WebsocketCameraSettingsUpdate[]) {
       this.cameras = data.map<CameraSettings>((d) => ({
         nickname: d.nickname,
+        uniqueName: d.uniqueName,
         fov: {
           value: d.fov,
           managedByVendor: !d.isFovConfigurable
@@ -90,33 +99,21 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
             standardDeviation: v.standardDeviation,
             mean: v.mean
           })),
-        completeCalibrations: d.calibrations.map<CameraCalibrationResult>((calib) => ({
-          resolution: {
-            height: calib.height,
-            width: calib.width
-          },
-          distCoeffs: calib.distCoeffs,
-          standardDeviation: calib.standardDeviation,
-          perViewErrors: calib.perViewErrors,
-          intrinsics: calib.intrinsics
-        })),
+        completeCalibrations: d.calibrations,
+        isCSICamera: d.isCSICamera,
         pipelineNicknames: d.pipelineNicknames,
         currentPipelineIndex: d.currentPipelineIndex,
-        pipelineSettings: d.currentPipelineSettings
+        pipelineSettings: d.currentPipelineSettings,
+        cameraQuirks: d.cameraQuirks
       }));
     },
     /**
      * Update the configurable camera settings.
      *
      * @param data camera settings to save.
-     * @param updateStore whether or not to update the store. This is useful if the input field already models the store reference.
      * @param cameraIndex the index of the camera.
      */
-    updateCameraSettings(
-      data: ConfigurableCameraSettings,
-      updateStore = true,
-      cameraIndex: number = useStateStore().currentCameraIndex
-    ) {
+    updateCameraSettings(data: CameraSettingsChangeRequest, cameraIndex: number = useStateStore().currentCameraIndex) {
       // The camera settings endpoint doesn't actually require all data, instead, it needs key data such as the FOV
       const payload = {
         settings: {
@@ -124,9 +121,6 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         },
         index: cameraIndex
       };
-      if (updateStore) {
-        this.currentCameraSettings.fov.value = data.fov;
-      }
       return axios.post("/settings/camera", payload);
     },
     /**
@@ -242,6 +236,13 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       }
       useStateStore().websocket?.send(payload, true);
     },
+    setDriverMode(isDriverMode: boolean, cameraIndex: number = useStateStore().currentCameraIndex) {
+      const payload = {
+        driverMode: isDriverMode,
+        cameraIndex: cameraIndex
+      };
+      useStateStore().websocket?.send(payload, true);
+    },
     /**
      * Change the currently selected pipeline of the provided camera.
      *
@@ -313,9 +314,11 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     startPnPCalibration(
       calibrationInitData: {
         squareSizeIn: number;
+        markerSizeIn: number;
         patternWidth: number;
         patternHeight: number;
         boardType: CalibrationBoardTypes;
+        useMrCal: boolean;
       },
       cameraIndex: number = useStateStore().currentCameraIndex
     ) {
@@ -357,15 +360,48 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       };
       return axios.post("/calibration/importFromCalibDB", payload, { headers: { "Content-Type": "text/plain" } });
     },
+    importCalibrationFromData(
+      data: { calibration: CameraCalibrationResult },
+      cameraIndex: number = useStateStore().currentCameraIndex
+    ) {
+      const payload = {
+        ...data,
+        cameraIndex: cameraIndex
+      };
+      return axios.post("/calibration/importFromData", payload);
+    },
     /**
      * Take a snapshot for the calibration processes
      *
-     * @param takeSnapshot whether or not to take a snapshot. Defaults to true
      * @param cameraIndex the index of the camera that is currently in the calibration process
      */
-    takeCalibrationSnapshot(takeSnapshot = true, cameraIndex: number = useStateStore().currentCameraIndex) {
+    takeCalibrationSnapshot(cameraIndex: number = useStateStore().currentCameraIndex) {
       const payload = {
-        takeCalibrationSnapshot: takeSnapshot,
+        takeCalibrationSnapshot: true,
+        cameraIndex: cameraIndex
+      };
+      useStateStore().websocket?.send(payload, true);
+    },
+    /**
+     * Save a snapshot of the input frame of the camera.
+     *
+     * @param cameraIndex the index of the camera
+     */
+    saveInputSnapshot(cameraIndex: number = useStateStore().currentCameraIndex) {
+      const payload = {
+        saveInputSnapshot: true,
+        cameraIndex: cameraIndex
+      };
+      useStateStore().websocket?.send(payload, true);
+    },
+    /**
+     * Save a snapshot of the output frame of the camera.
+     *
+     * @param cameraIndex the index of the camera
+     */
+    saveOutputSnapshot(cameraIndex: number = useStateStore().currentCameraIndex) {
+      const payload = {
+        saveOutputSnapshot: true,
         cameraIndex: cameraIndex
       };
       useStateStore().websocket?.send(payload, true);
@@ -382,6 +418,29 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         cameraIndex: cameraIndex
       };
       useStateStore().websocket?.send(payload, true);
+    },
+    getCalibrationCoeffs(
+      resolution: Resolution,
+      cameraIndex: number = useStateStore().currentCameraIndex
+    ): CameraCalibrationResult | undefined {
+      return this.cameras[cameraIndex].completeCalibrations.find((v) => resolutionsAreEqual(v.resolution, resolution));
+    },
+    getCalImageUrl(host: string, resolution: Resolution, idx: number, cameraIdx = useStateStore().currentCameraIndex) {
+      const url = new URL(`http://${host}/api/utils/getCalSnapshot`);
+      url.searchParams.set("width", Math.round(resolution.width).toFixed(0));
+      url.searchParams.set("height", Math.round(resolution.height).toFixed(0));
+      url.searchParams.set("snapshotIdx", Math.round(idx).toFixed(0));
+      url.searchParams.set("cameraIdx", Math.round(cameraIdx).toFixed(0));
+
+      return url.href;
+    },
+    getCalJSONUrl(host: string, resolution: Resolution, cameraIdx = useStateStore().currentCameraIndex) {
+      const url = new URL(`http://${host}/api/utils/getCalibrationJSON`);
+      url.searchParams.set("width", Math.round(resolution.width).toFixed(0));
+      url.searchParams.set("height", Math.round(resolution.height).toFixed(0));
+      url.searchParams.set("cameraIdx", Math.round(cameraIdx).toFixed(0));
+
+      return url.href;
     }
   }
 });

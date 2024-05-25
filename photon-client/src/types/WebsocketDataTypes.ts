@@ -1,6 +1,14 @@
-import type { GeneralSettings, LightingSettings, MetricData, NetworkSettings } from "@/types/SettingTypes";
+import type {
+  CameraCalibrationResult,
+  GeneralSettings,
+  LightingSettings,
+  LogLevel,
+  MetricData,
+  NetworkSettings,
+  QuirkyCamera
+} from "@/types/SettingTypes";
 import type { ActivePipelineSettings } from "@/types/PipelineTypes";
-import type { LogLevel } from "@/types/SettingTypes";
+import type { AprilTagFieldLayout, PipelineResult } from "@/types/PhotonTrackingTypes";
 
 export interface WebsocketLogMessage {
   logMessage: {
@@ -12,20 +20,12 @@ export interface WebsocketSettingsUpdate {
   general: Required<GeneralSettings>;
   lighting: Required<LightingSettings>;
   networkSettings: NetworkSettings;
+  atfl: AprilTagFieldLayout;
 }
 
 export interface WebsocketNumberPair {
   first: number;
   second: number;
-}
-
-export interface WebsocketCompleteCalib {
-  distCoeffs: number[];
-  height: number;
-  width: number;
-  standardDeviation: number;
-  perViewErrors: number[];
-  intrinsics: number[];
 }
 
 export type WebsocketVideoFormat = Record<
@@ -45,47 +45,28 @@ export type WebsocketVideoFormat = Record<
 >;
 
 export interface WebsocketCameraSettingsUpdate {
-  calibrations: WebsocketCompleteCalib[];
+  calibrations: CameraCalibrationResult[];
   currentPipelineIndex: number;
   currentPipelineSettings: ActivePipelineSettings;
   fov: number;
   inputStreamPort: number;
   isFovConfigurable: boolean;
+  isCSICamera: boolean;
   nickname: string;
+  uniqueName: string;
   outputStreamPort: number;
   pipelineNicknames: string[];
   videoFormatList: WebsocketVideoFormat;
+  cameraQuirks: QuirkyCamera;
 }
 export interface WebsocketNTUpdate {
   connected: boolean;
   address?: string;
   clients?: number;
 }
-export type WebsocketPipelineResultUpdate = Record<
-  number,
-  {
-    fps: number;
-    latency: number;
-    targets: {
-      yaw: number;
-      pitch: number;
-      skew: number;
-      area: number;
-      ambiguity: number;
-      fiducialId: number;
-      pose: {
-        angle_z: number;
-        qw: number;
-        qx: number;
-        x: number;
-        qy: number;
-        y: number;
-        qz: number;
-        z: number;
-      };
-    }[];
-  }
->;
+
+// key is the index of the camera, value is that camera's result
+export type WebsocketPipelineResultUpdate = Record<string, PipelineResult>;
 
 export interface WebsocketCalibrationData {
   patternWidth: number;
@@ -96,6 +77,7 @@ export interface WebsocketCalibrationData {
   videoModeIndex: number;
   patternHeight: number;
   squareSizeIn: number;
+  markerSizeIn: number;
 }
 
 export interface IncomingWebsocketData {
@@ -107,7 +89,7 @@ export interface IncomingWebsocketData {
   updatePipelineResult?: WebsocketPipelineResultUpdate;
   networkInfo?: {
     possibleRios: string[];
-    deviceips: string[];
+    deviceIps: string[];
   };
   mutatePipelineSettings?: Partial<ActivePipelineSettings>;
   cameraIndex?: number; // Sent when mutating pipeline settings to check against currently active
@@ -120,5 +102,6 @@ export enum WebsocketPipelineType {
   Reflective = 0,
   ColoredShape = 1,
   AprilTag = 2,
-  Aruco = 3
+  Aruco = 3,
+  ObjectDetection = 4
 }

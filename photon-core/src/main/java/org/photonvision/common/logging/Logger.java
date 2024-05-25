@@ -21,15 +21,11 @@ import java.io.*;
 import java.nio.file.Path;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.tuple.Pair;
-import org.photonvision.common.configuration.ConfigManager;
+// import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.PathManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.util.TimedTaskManager;
@@ -54,7 +50,7 @@ public class Logger {
     private static final List<Pair<String, LogLevel>> uiBacklog = new ArrayList<>();
     private static boolean connected = false;
 
-    private static UILogAppender uiLogAppender = new UILogAppender();
+    private static final UILogAppender uiLogAppender = new UILogAppender();
 
     private final String className;
     private final LogGroup group;
@@ -103,13 +99,14 @@ public class Logger {
         levelMap.put(LogGroup.Data, LogLevel.INFO);
         levelMap.put(LogGroup.VisionModule, LogLevel.INFO);
         levelMap.put(LogGroup.Config, LogLevel.INFO);
+        levelMap.put(LogGroup.CSCore, LogLevel.TRACE);
     }
 
     static {
         currentAppenders.add(new ConsoleLogAppender());
         currentAppenders.add(uiLogAppender);
-        addFileAppender(ConfigManager.getInstance().getLogPath());
-        cleanLogs(ConfigManager.getInstance().getLogsDir());
+        addFileAppender(PathManager.getInstance().getLogPath());
+        cleanLogs(PathManager.getInstance().getLogsDir());
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -133,13 +130,12 @@ public class Logger {
         HashMap<File, Date> logFileStartDateMap = new HashMap<>();
 
         // Remove any files from the list for which we can't parse a start date from their name.
-        // Simultaneously populate our HashMap with Date objects repeseting the file-name
+        // Simultaneously populate our HashMap with Date objects representing the file-name
         // indicated log start time.
         logFileList.removeIf(
                 (File arg0) -> {
                     try {
-                        logFileStartDateMap.put(
-                                arg0, ConfigManager.getInstance().logFnameToDate(arg0.getName()));
+                        logFileStartDateMap.put(arg0, PathManager.getInstance().logFnameToDate(arg0.getName()));
                         return false;
                     } catch (ParseException e) {
                         return true;
@@ -160,7 +156,6 @@ public class Logger {
             if (logCounter < MAX_LOGS_TO_KEEP) {
                 // Skip over the first MAX_LOGS_TO_KEEP files
                 logCounter++;
-                continue;
             } else {
                 // Delete this file.
                 file.delete();
@@ -200,7 +195,7 @@ public class Logger {
         return logLevel.code <= levelMap.get(group).code;
     }
 
-    private void log(String message, LogLevel level) {
+    void log(String message, LogLevel level) {
         if (shouldLog(level)) {
             log(message, level, group, className);
         }
@@ -332,7 +327,7 @@ public class Logger {
                                 3000L);
             } catch (FileNotFoundException e) {
                 out = null;
-                System.err.println("Unable to log to file " + logFilePath.toString());
+                System.err.println("Unable to log to file " + logFilePath);
             }
         }
 

@@ -20,6 +20,7 @@ package org.photonvision.vision.frame.consumer;
 import edu.wpi.first.cscore.*;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.util.PixelFormat;
 import java.awt.*;
 import java.util.ArrayList;
 import org.opencv.core.CvType;
@@ -28,12 +29,18 @@ import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.ColorHelper;
+import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.opencv.CVMat;
 
-public class MJPGFrameConsumer {
-    public static final Mat EMPTY_MAT = new Mat(60, 15 * 7, CvType.CV_8UC3);
+public class MJPGFrameConsumer implements AutoCloseable {
+    private static final double MAX_FRAMERATE = -1;
+    private static final long MAX_FRAME_PERIOD_NS = Math.round(1e9 / MAX_FRAMERATE);
+    private long lastFrameTimeNs;
+
+    private static final Mat EMPTY_MAT = new Mat(60, 15 * 7, CvType.CV_8UC3);
     private static final double EMPTY_FRAMERATE = 2;
-    private long lastEmptyTime;
+    private static final long EMPTY_FRAME_PERIOD_NS = Math.round(1e9 / EMPTY_FRAMERATE);
+    private long lastEmptyTimeNs;
 
     static {
         EMPTY_MAT.setTo(ColorHelper.colorToScalar(Color.BLACK));
@@ -106,14 +113,13 @@ public class MJPGFrameConsumer {
     private CvSource cvSource;
     private MjpegServer mjpegServer;
 
-    @SuppressWarnings("FieldCanBeLocal")
     private VideoListener listener;
 
     private final NetworkTable table;
     boolean isDisabled = false;
 
     public MJPGFrameConsumer(String sourceName, int width, int height, int port) {
-        this.cvSource = new CvSource(sourceName, VideoMode.PixelFormat.kMJPEG, width, height, 30);
+        this.cvSource = new CvSource(sourceName, PixelFormat.kMJPEG, width, height, 30);
         this.table =
                 NetworkTableInstance.getDefault().getTable("/CameraPublisher").getSubTable(sourceName);
 
@@ -169,23 +175,28 @@ public class MJPGFrameConsumer {
 
     public void accept(CVMat image) {
         if (image != null && !image.getMat().empty()) {
-            cvSource.putFrame(image.getMat());
+            long now = MathUtils.wpiNanoTime();
+            if (now - lastFrameTimeNs > MAX_FRAME_PERIOD_NS) {
+                lastFrameTimeNs = now;
+                cvSource.putFrame(image.getMat());
+            }
 
             // Make sure our disabled framerate limiting doesn't get confused
             isDisabled = false;
-            lastEmptyTime = 0;
+            lastEmptyTimeNs = 0;
         }
     }
 
     public void disabledTick() {
         if (!isDisabled) {
-            cvSource.setVideoMode(VideoMode.PixelFormat.kMJPEG, EMPTY_MAT.width(), EMPTY_MAT.height(), 0);
+            cvSource.setVideoMode(PixelFormat.kMJPEG, EMPTY_MAT.width(), EMPTY_MAT.height(), 0);
             isDisabled = true;
         }
 
-        if (System.currentTimeMillis() - lastEmptyTime > 1000.0 / EMPTY_FRAMERATE) {
+        long now = MathUtils.wpiNanoTime();
+        if (now - lastEmptyTimeNs > EMPTY_FRAME_PERIOD_NS) {
+            lastEmptyTimeNs = now;
             cvSource.putFrame(EMPTY_MAT);
-            lastEmptyTime = System.currentTimeMillis();
         }
     }
 
@@ -217,7 +228,7 @@ public class MJPGFrameConsumer {
                 + " fps";
     }
 
-    private static String pixelFormatToString(VideoMode.PixelFormat pixelFormat) {
+    private static String pixelFormatToString(PixelFormat pixelFormat) {
         switch (pixelFormat) {
             case kMJPEG:
                 return "MJPEG";
@@ -234,6 +245,7 @@ public class MJPGFrameConsumer {
         }
     }
 
+    @Override
     public void close() {
         table.getEntry("connected").setBoolean(false);
         mjpegServer.close();

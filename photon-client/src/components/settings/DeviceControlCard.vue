@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { inject, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import CvSelect from "@/components/common/cv-select.vue";
+import PvSelect from "@/components/common/pv-select.vue";
 import axios from "axios";
 
 const restartProgram = () => {
@@ -63,15 +63,18 @@ const offlineUpdate = ref();
 const openOfflineUpdatePrompt = () => {
   offlineUpdate.value.click();
 };
-const handleOfflineUpdate = ({ files }: { files: FileList }) => {
+const handleOfflineUpdate = () => {
+  const files = offlineUpdate.value.files;
+  if (files.length === 0) return;
+
+  const formData = new FormData();
+  formData.append("jarData", files[0]);
+
   useStateStore().showSnackbarMessage({
     message: "New Software Upload in Progress...",
     color: "secondary",
     timeout: -1
   });
-
-  const formData = new FormData();
-  formData.append("jarData", files[0]);
 
   axios
     .post("/utils/offlineUpdate", formData, {
@@ -133,23 +136,20 @@ enum ImportType {
   AllSettings,
   HardwareConfig,
   HardwareSettings,
-  NetworkConfig
+  NetworkConfig,
+  ApriltagFieldLayout
 }
-
 const showImportDialog = ref(false);
 const importType = ref<ImportType | number>(-1);
-const importFile = ref(null);
+const importFile = ref<File | null>(null);
 const handleSettingsImport = () => {
   if (importType.value === -1 || importFile.value === null) return;
 
   const formData = new FormData();
   formData.append("data", importFile.value);
 
-  let settingsEndpoint;
+  let settingsEndpoint: string;
   switch (importType.value) {
-    case ImportType.AllSettings:
-      settingsEndpoint = "";
-      break;
     case ImportType.HardwareConfig:
       settingsEndpoint = "/hardwareConfig";
       break;
@@ -158,6 +158,13 @@ const handleSettingsImport = () => {
       break;
     case ImportType.NetworkConfig:
       settingsEndpoint = "/networkConfig";
+      break;
+    case ImportType.ApriltagFieldLayout:
+      settingsEndpoint = "/aprilTagFieldLayout";
+      break;
+    default:
+    case ImportType.AllSettings:
+      settingsEndpoint = "";
       break;
   }
 
@@ -203,20 +210,20 @@ const handleSettingsImport = () => {
       <v-row>
         <v-col cols="12" lg="4" md="6">
           <v-btn color="red" @click="restartProgram">
-            <v-icon left> mdi-restart </v-icon>
-            Restart PhotonVision
+            <v-icon left class="open-icon"> mdi-restart </v-icon>
+            <span class="open-label">Restart PhotonVision</span>
           </v-btn>
         </v-col>
         <v-col cols="12" lg="4" md="6">
           <v-btn color="red" @click="restartDevice">
-            <v-icon left> mdi-restart-alert </v-icon>
-            Restart Device
+            <v-icon left class="open-icon"> mdi-restart-alert </v-icon>
+            <span class="open-label">Restart Device</span>
           </v-btn>
         </v-col>
         <v-col cols="12" lg="4">
           <v-btn color="secondary" @click="openOfflineUpdatePrompt">
-            <v-icon left> mdi-upload </v-icon>
-            Offline Update
+            <v-icon left class="open-icon"> mdi-upload </v-icon>
+            <span class="open-label">Offline Update</span>
           </v-btn>
           <input ref="offlineUpdate" type="file" accept=".jar" style="display: none" @change="handleOfflineUpdate" />
         </v-col>
@@ -225,8 +232,8 @@ const handleSettingsImport = () => {
       <v-row>
         <v-col cols="12" sm="6">
           <v-btn color="secondary" @click="() => (showImportDialog = true)">
-            <v-icon left> mdi-import </v-icon>
-            Import Settings
+            <v-icon left class="open-icon"> mdi-import </v-icon>
+            <span class="open-label">Import Settings</span>
           </v-btn>
           <v-dialog
             v-model="showImportDialog"
@@ -243,20 +250,27 @@ const handleSettingsImport = () => {
               <v-card-text>
                 Upload and apply previously saved or exported PhotonVision settings to this device
                 <v-row class="mt-6 ml-4">
-                  <cv-select
+                  <pv-select
                     v-model="importType"
                     label="Type"
                     tooltip="Select the type of settings file you are trying to upload"
-                    :items="['All Settings', 'Hardware Config', 'Hardware Settings', 'Network Config']"
+                    :items="[
+                      'All Settings',
+                      'Hardware Config',
+                      'Hardware Settings',
+                      'Network Config',
+                      'Apriltag Layout'
+                    ]"
                     :select-cols="10"
+                    style="width: 100%"
                   />
                 </v-row>
                 <v-row class="mt-6 ml-4 mr-8">
                   <v-file-input
+                    v-model="importFile"
                     :disabled="importType === -1"
                     :error-messages="importType === -1 ? 'Settings type not selected' : ''"
                     :accept="importType === ImportType.AllSettings ? '.zip' : '.json'"
-                    @change="(file) => (importFile = file)"
                   />
                 </v-row>
                 <v-row
@@ -265,8 +279,8 @@ const handleSettingsImport = () => {
                   align="center"
                 >
                   <v-btn color="secondary" :disabled="importFile === null" @click="handleSettingsImport">
-                    <v-icon left> mdi-import </v-icon>
-                    Import Settings
+                    <v-icon left class="open-icon"> mdi-import </v-icon>
+                    <span class="open-label">Import Settings</span>
                   </v-btn>
                 </v-row>
               </v-card-text>
@@ -275,8 +289,8 @@ const handleSettingsImport = () => {
         </v-col>
         <v-col cols="12" sm="6">
           <v-btn color="secondary" @click="openExportSettingsPrompt">
-            <v-icon left> mdi-export </v-icon>
-            Export Settings
+            <v-icon left class="open-icon"> mdi-export </v-icon>
+            <span class="open-label">Export Settings</span>
           </v-btn>
           <a
             ref="exportSettings"
@@ -288,14 +302,14 @@ const handleSettingsImport = () => {
         </v-col>
         <v-col cols="12" sm="6">
           <v-btn color="secondary" @click="openExportLogsPrompt">
-            <v-icon left> mdi-download </v-icon>
-            Download Current Log
+            <v-icon left class="open-icon"> mdi-download </v-icon>
+            <span class="open-label">Download Current Log</span>
 
             <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
             <a
               ref="exportLogFile"
               style="color: black; text-decoration: none; display: none"
-              :href="'http://' + address + '/api/utils/logs/photonvision-journalctl.txt'"
+              :href="`http://${address}/api/utils/photonvision-journalctl.txt`"
               download="photonvision-journalctl.txt"
               target="_blank"
             />
@@ -303,8 +317,8 @@ const handleSettingsImport = () => {
         </v-col>
         <v-col cols="12" sm="6">
           <v-btn color="secondary" @click="useStateStore().showLogModal = true">
-            <v-icon left> mdi-eye </v-icon>
-            Show log viewer
+            <v-icon left class="open-icon"> mdi-eye </v-icon>
+            <span class="open-label">Show log viewer</span>
           </v-btn>
         </v-col>
       </v-row>
@@ -318,5 +332,13 @@ const handleSettingsImport = () => {
 }
 .v-btn {
   width: 100%;
+}
+@media only screen and (max-width: 351px) {
+  .open-icon {
+    margin: 0 !important;
+  }
+  .open-label {
+    display: none;
+  }
 }
 </style>

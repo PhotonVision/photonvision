@@ -18,7 +18,7 @@
 package org.photonvision.vision.camera;
 
 import edu.wpi.first.cscore.VideoMode;
-import edu.wpi.first.cscore.VideoMode.PixelFormat;
+import edu.wpi.first.util.PixelFormat;
 import java.nio.file.Path;
 import java.util.HashMap;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -35,7 +35,7 @@ public class FileVisionSource extends VisionSource {
     public FileVisionSource(CameraConfiguration cameraConfiguration) {
         super(cameraConfiguration);
         var calibration =
-                cameraConfiguration.calibrations.size() > 0
+                !cameraConfiguration.calibrations.isEmpty()
                         ? cameraConfiguration.calibrations.get(0)
                         : null;
         frameProvider =

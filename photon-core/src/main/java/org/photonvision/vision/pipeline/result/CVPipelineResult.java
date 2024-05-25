@@ -20,28 +20,89 @@ package org.photonvision.vision.pipeline.result;
 import java.util.Collections;
 import java.util.List;
 import org.photonvision.common.util.math.MathUtils;
+import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class CVPipelineResult implements Releasable {
+    public final long sequenceID;
     private long imageCaptureTimestampNanos;
     public final double processingNanos;
     public final double fps;
     public final List<TrackedTarget> targets;
     public final Frame inputAndOutputFrame;
+    public MultiTargetPNPResult multiTagResult;
+    public final List<String> objectDetectionClassNames;
 
     public CVPipelineResult(
-            double processingNanos, double fps, List<TrackedTarget> targets, Frame inputFrame) {
+            long sequenceID,
+            double processingNanos,
+            double fps,
+            List<TrackedTarget> targets,
+            Frame inputFrame) {
+        this(
+                sequenceID,
+                processingNanos,
+                fps,
+                targets,
+                new MultiTargetPNPResult(),
+                inputFrame,
+                List.of());
+    }
+
+    public CVPipelineResult(
+            long sequenceID,
+            double processingNanos,
+            double fps,
+            List<TrackedTarget> targets,
+            Frame inputFrame,
+            List<String> classNames) {
+        this(
+                sequenceID,
+                processingNanos,
+                fps,
+                targets,
+                new MultiTargetPNPResult(),
+                inputFrame,
+                classNames);
+    }
+
+    public CVPipelineResult(
+            long sequenceID,
+            double processingNanos,
+            double fps,
+            List<TrackedTarget> targets,
+            MultiTargetPNPResult multiTagResult,
+            Frame inputFrame) {
+        this(sequenceID, processingNanos, fps, targets, multiTagResult, inputFrame, List.of());
+    }
+
+    public CVPipelineResult(
+            long sequenceID,
+            double processingNanos,
+            double fps,
+            List<TrackedTarget> targets,
+            MultiTargetPNPResult multiTagResult,
+            Frame inputFrame,
+            List<String> classNames) {
+        this.sequenceID = sequenceID;
         this.processingNanos = processingNanos;
         this.fps = fps;
         this.targets = targets != null ? targets : Collections.emptyList();
+        this.multiTagResult = multiTagResult;
+        this.objectDetectionClassNames = classNames;
 
         this.inputAndOutputFrame = inputFrame;
     }
 
-    public CVPipelineResult(double processingNanos, double fps, List<TrackedTarget> targets) {
-        this(processingNanos, fps, targets, null);
+    public CVPipelineResult(
+            long sequenceID,
+            double processingNanos,
+            double fps,
+            List<TrackedTarget> targets,
+            MultiTargetPNPResult multiTagResult) {
+        this(sequenceID, processingNanos, fps, targets, multiTagResult, null, List.of());
     }
 
     public boolean hasTargets() {

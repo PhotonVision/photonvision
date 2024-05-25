@@ -2,7 +2,7 @@
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { computed, onBeforeMount, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import CvIcon from "@/components/common/cv-icon.vue";
+import PvIcon from "@/components/common/pv-icon.vue";
 
 interface MetricItem {
   header: string;
@@ -27,42 +27,54 @@ const generalMetrics = computed<MetricItem[]>(() => [
     value: useSettingsStore().general.gpuAcceleration || "Unknown"
   }
 ]);
-const platformMetrics = computed<MetricItem[]>(() => [
-  {
-    header: "CPU Temp",
-    value: useSettingsStore().metrics.cpuTemp === undefined ? "Unknown" : `${useSettingsStore().metrics.cpuTemp}°C`
-  },
-  {
-    header: "CPU Usage",
-    value: useSettingsStore().metrics.cpuUtil === undefined ? "Unknown" : `${useSettingsStore().metrics.cpuUtil}%`
-  },
-  {
-    header: "CPU Memory Usage",
-    value:
-      useSettingsStore().metrics.ramUtil === undefined || useSettingsStore().metrics.cpuMem === undefined
-        ? "Unknown"
-        : `${useSettingsStore().metrics.ramUtil || "Unknown"}MB of ${useSettingsStore().metrics.cpuMem}MB`
-  },
-  {
-    header: "GPU Memory Usage",
-    value:
-      useSettingsStore().metrics.gpuMemUtil === undefined || useSettingsStore().metrics.gpuMem === undefined
-        ? "Unknown"
-        : `${useSettingsStore().metrics.gpuMemUtil}MB of ${useSettingsStore().metrics.gpuMem}MB`
-  },
-  {
-    header: "CPU Throttling",
-    value: useSettingsStore().metrics.cpuThr || "Unknown"
-  },
-  {
-    header: "CPU Uptime",
-    value: useSettingsStore().metrics.cpuUptime || "Unknown"
-  },
-  {
-    header: "Disk Usage",
-    value: useSettingsStore().metrics.diskUtilPct || "Unknown"
+
+const platformMetrics = computed<MetricItem[]>(() => {
+  const stats = [
+    {
+      header: "CPU Temp",
+      value: useSettingsStore().metrics.cpuTemp === undefined ? "Unknown" : `${useSettingsStore().metrics.cpuTemp}°C`
+    },
+    {
+      header: "CPU Usage",
+      value: useSettingsStore().metrics.cpuUtil === undefined ? "Unknown" : `${useSettingsStore().metrics.cpuUtil}%`
+    },
+    {
+      header: "CPU Memory Usage",
+      value:
+        useSettingsStore().metrics.ramUtil === undefined || useSettingsStore().metrics.cpuMem === undefined
+          ? "Unknown"
+          : `${useSettingsStore().metrics.ramUtil || "Unknown"}MB of ${useSettingsStore().metrics.cpuMem}MB`
+    },
+    {
+      header: "GPU Memory Usage",
+      value:
+        useSettingsStore().metrics.gpuMemUtil === undefined || useSettingsStore().metrics.gpuMem === undefined
+          ? "Unknown"
+          : `${useSettingsStore().metrics.gpuMemUtil}MB of ${useSettingsStore().metrics.gpuMem}MB`
+    },
+    {
+      header: "CPU Throttling",
+      value: useSettingsStore().metrics.cpuThr || "Unknown"
+    },
+    {
+      header: "CPU Uptime",
+      value: useSettingsStore().metrics.cpuUptime || "Unknown"
+    },
+    {
+      header: "Disk Usage",
+      value: useSettingsStore().metrics.diskUtilPct || "Unknown"
+    }
+  ];
+
+  if (useSettingsStore().metrics.npuUsage) {
+    stats.push({
+      header: "NPU Usage",
+      value: useSettingsStore().metrics.npuUsage || "Unknown"
+    });
   }
-]);
+
+  return stats;
+});
 
 const metricsLastFetched = ref("Never");
 const fetchMetrics = () => {
@@ -72,12 +84,12 @@ const fetchMetrics = () => {
       if (error.request) {
         useStateStore().showSnackbarMessage({
           color: "error",
-          message: "Unable to fetch Metrics! The backend didn't respond."
+          message: "Unable to fetch metrics! The backend didn't respond."
         });
       } else {
         useStateStore().showSnackbarMessage({
           color: "error",
-          message: "An error occurred while trying to fetch Metrics."
+          message: "An error occurred while trying to fetch metrics."
         });
       }
     })
@@ -100,7 +112,7 @@ onBeforeMount(() => {
   <v-card dark class="mb-3 pr-6 pb-3" style="background-color: #006492">
     <v-card-title style="display: flex; justify-content: space-between">
       <span>Stats</span>
-      <cv-icon icon-name="mdi-reload" color="white" tooltip="Reload Metrics" hover @click="fetchMetrics" />
+      <pv-icon icon-name="mdi-reload" color="white" tooltip="Reload Metrics" hover @click="fetchMetrics" />
     </v-card-title>
     <v-row class="pt-2 pa-4 ma-0 ml-5 pb-1">
       <v-card-subtitle class="ma-0 pa-0 pb-2" style="font-size: 16px"> General Metrics </v-card-subtitle>

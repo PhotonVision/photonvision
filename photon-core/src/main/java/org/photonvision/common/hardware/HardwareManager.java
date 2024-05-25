@@ -20,7 +20,8 @@ package org.photonvision.common.hardware;
 import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.IntegerSubscriber;
 import java.io.IOException;
-import org.photonvision.common.ProgramStatus;
+import java.util.HashMap;
+import java.util.Map;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.configuration.HardwareSettings;
@@ -32,6 +33,7 @@ import org.photonvision.common.hardware.metrics.MetricsManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
+import org.photonvision.common.util.TimedTaskManager;
 
 public class HardwareManager {
     private static HardwareManager instance;
@@ -48,9 +50,9 @@ public class HardwareManager {
     private final StatusLED statusLED;
 
     @SuppressWarnings("FieldCanBeLocal")
-    private IntegerSubscriber ledModeRequest;
+    private final IntegerSubscriber ledModeRequest;
 
-    private IntegerPublisher ledModeState;
+    private final IntegerPublisher ledModeState;
 
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final NTDataChangeListener ledModeListener;
@@ -96,6 +98,10 @@ public class HardwareManager {
                         ? new StatusLED(hardwareConfig.statusRGBPins)
                         : null;
 
+        if (statusLED != null) {
+            TimedTaskManager.getInstance().addTask("StatusLEDUpdate", this::statusLEDUpdate, 150);
+        }
+
         var hasBrightnessRange = hardwareConfig.ledBrightnessRange.size() == 2;
         visionLED =
                 hardwareConfig.ledPins.isEmpty()
@@ -138,7 +144,8 @@ public class HardwareManager {
     private void onJvmExit() {
         logger.info("Shutting down LEDs...");
         if (visionLED != null) visionLED.setState(false);
-        ConfigManager.getInstance().saveToDisk();
+
+        ConfigManager.getInstance().onJvmExit();
     }
 
     public boolean restartDevice() {
@@ -158,21 +165,61 @@ public class HardwareManager {
         }
     }
 
-    public void setStatus(ProgramStatus status) {
-        switch (status) {
-            case UHOH:
-                // red flashing, green off
-                break;
-            case RUNNING:
-                // red solid, green off
-                break;
-            case RUNNING_NT:
-                // red off, green solid
-                break;
-            case RUNNING_NT_TARGET:
-                // red off, green flashing
-                break;
+    // API's supporting status LEDs
+
+    private Map<Integer, Boolean> pipelineTargets = new HashMap<Integer, Boolean>();
+    private boolean ntConnected = false;
+    private boolean systemRunning = false;
+    private int blinkCounter = 0;
+
+    public void setTargetsVisibleStatus(int pipelineIdx, boolean hasTargets) {
+        pipelineTargets.put(pipelineIdx, hasTargets);
+    }
+
+    public void setNTConnected(boolean isConnected) {
+        this.ntConnected = isConnected;
+    }
+
+    public void setRunning(boolean isRunning) {
+        this.systemRunning = isRunning;
+    }
+
+    private void statusLEDUpdate() {
+        // make blinky
+        boolean blinky = ((blinkCounter % 3) > 0);
+
+        // check if any pipeline has a visible target
+        boolean anyTarget = false;
+        for (var t : this.pipelineTargets.values()) {
+            if (t) {
+                anyTarget = true;
+            }
         }
+
+        if (this.systemRunning) {
+            if (!this.ntConnected) {
+                if (anyTarget) {
+                    // Blue Flashing
+                    statusLED.setRGB(false, false, blinky);
+                } else {
+                    // Yellow flashing
+                    statusLED.setRGB(blinky, blinky, false);
+                }
+            } else {
+                if (anyTarget) {
+                    // Blue
+                    statusLED.setRGB(false, false, blinky);
+                } else {
+                    // blinky green
+                    statusLED.setRGB(false, blinky, false);
+                }
+            }
+        } else {
+            // Faulted, not running... blinky red
+            statusLED.setRGB(blinky, false, false);
+        }
+
+        blinkCounter++;
     }
 
     public HardwareConfig getConfig() {

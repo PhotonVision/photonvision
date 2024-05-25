@@ -29,8 +29,8 @@ import org.photonvision.vision.pipe.impl.GrayscalePipe;
 import org.photonvision.vision.pipe.impl.HSVPipe;
 import org.photonvision.vision.pipe.impl.RotateImagePipe;
 
-public abstract class CpuImageProcessor implements FrameProvider {
-    protected class CapturedFrame {
+public abstract class CpuImageProcessor extends FrameProvider {
+    protected static class CapturedFrame {
         CVMat colorImage;
         FrameStaticProperties staticProps;
         long captureTimestamp;
@@ -86,13 +86,20 @@ public abstract class CpuImageProcessor implements FrameProvider {
             } else {
                 outputMat = new CVMat();
             }
+
+            ++sequenceID;
         } else {
             System.out.println("Input was empty!");
             outputMat = new CVMat();
         }
 
         return new Frame(
-                input.colorImage, outputMat, m_processType, input.captureTimestamp, input.staticProps);
+                sequenceID,
+                input.colorImage,
+                outputMat,
+                m_processType,
+                input.captureTimestamp,
+                input.staticProps);
     }
 
     @Override
@@ -119,6 +126,5 @@ public abstract class CpuImageProcessor implements FrameProvider {
     @Override
     public void requestFrameCopies(boolean copyInput, boolean copyOutput) {
         // We don't actually do zero-copy, so this method is a no-op
-        return;
     }
 }

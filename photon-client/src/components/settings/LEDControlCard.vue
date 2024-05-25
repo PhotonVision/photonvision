@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import CvSlider from "@/components/common/cv-slider.vue";
+import PvSlider from "@/components/common/pv-slider.vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 </script>
 
@@ -7,7 +7,7 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
   <v-card dark class="mb-3 pr-6 pb-3" style="background-color: #006492">
     <v-card-title>LED Control</v-card-title>
     <div class="ml-5">
-      <cv-slider
+      <pv-slider
         v-model="useSettingsStore().lighting.brightness"
         label="Brightness"
         class="pt-2"

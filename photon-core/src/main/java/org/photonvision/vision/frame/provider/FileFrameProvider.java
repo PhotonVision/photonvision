@@ -33,7 +33,7 @@ import org.photonvision.vision.opencv.CVMat;
  * path}.
  */
 public class FileFrameProvider extends CpuImageProcessor {
-    public static final int MAX_FPS = 5;
+    public static final int MAX_FPS = 10;
     private static int count = 0;
 
     private final int thisIndex = count++;
@@ -63,7 +63,7 @@ public class FileFrameProvider extends CpuImageProcessor {
     public FileFrameProvider(
             Path path, double fov, int maxFPS, CameraCalibrationCoefficients calibration) {
         if (!Files.exists(path))
-            throw new RuntimeException("Invalid path for image: " + path.toAbsolutePath().toString());
+            throw new RuntimeException("Invalid path for image: " + path.toAbsolutePath());
         this.path = path;
         this.millisDelay = 1000 / maxFPS;
 
@@ -99,7 +99,7 @@ public class FileFrameProvider extends CpuImageProcessor {
     @Override
     public CapturedFrame getInputMat() {
         var out = new CVMat();
-        out.copyTo(originalFrame);
+        out.copyFrom(originalFrame);
 
         // block to keep FPS at a defined rate
         if (System.currentTimeMillis() - lastGetMillis < millisDelay) {

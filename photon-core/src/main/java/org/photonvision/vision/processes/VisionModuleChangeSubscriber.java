@@ -26,6 +26,7 @@ import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
@@ -87,7 +88,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         parentModule.saveAndBroadcastAll();
                         return;
                     case "deleteCurrPipeline":
-                        var indexToDelete = parentModule.pipelineManager.getCurrentPipelineIndex();
+                        var indexToDelete = parentModule.pipelineManager.getRequestedIndex();
                         logger.info("Deleting current pipe at index " + indexToDelete);
                         int newIndex = parentModule.pipelineManager.removePipeline(indexToDelete);
                         parentModule.setPipeline(newIndex);
@@ -95,7 +96,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         return;
                     case "changePipeline": // change active pipeline
                         var index = (Integer) newPropValue;
-                        if (index == parentModule.pipelineManager.getCurrentPipelineIndex()) {
+                        if (index == parentModule.pipelineManager.getRequestedIndex()) {
                             logger.debug("Skipping pipeline change, index " + index + " already active");
                             return;
                         }
@@ -103,9 +104,21 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         parentModule.saveAndBroadcastAll();
                         return;
                     case "startCalibration":
-                        var data = UICalibrationData.fromMap((Map<String, Object>) newPropValue);
-                        parentModule.startCalibration(data);
-                        parentModule.saveAndBroadcastAll();
+                        try {
+                            var data =
+                                    JacksonUtils.deserialize(
+                                            (Map<String, Object>) newPropValue, UICalibrationData.class);
+                            parentModule.startCalibration(data);
+                            parentModule.saveAndBroadcastAll();
+                        } catch (Exception e) {
+                            logger.error("Error deserailizing start-cal request", e);
+                        }
+                        return;
+                    case "saveInputSnapshot":
+                        parentModule.saveInputSnapshot();
+                        return;
+                    case "saveOutputSnapshot":
+                        parentModule.saveOutputSnapshot();
                         return;
                     case "takeCalSnapshot":
                         parentModule.takeCalibrationSnapshot();
@@ -167,6 +180,9 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                     case "changePipelineType":
                         parentModule.changePipelineType((Integer) newPropValue);
                         parentModule.saveAndBroadcastAll();
+                        return;
+                    case "isDriverMode":
+                        parentModule.setDriverMode((Boolean) newPropValue);
                         return;
                 }
 

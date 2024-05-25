@@ -1,113 +1,135 @@
-plugins {
-    id 'edu.wpi.first.WpilibTools' version '1.0.0'
-}
-
 import java.nio.file.Path
 
-apply plugin: "cpp"
-apply plugin: "java"
-apply plugin: "google-test-test-suite"
-apply plugin: "edu.wpi.first.NativeUtils"
+ext {
+    nativeName = "photonlib"
+    includePhotonTargeting = true
+    // Include the generated Version file
+    generatedHeaders = "src/generate/native/include"
+}
+
+apply plugin: 'cpp'
+apply plugin: 'google-test-test-suite'
+apply plugin: 'edu.wpi.first.NativeUtils'
 
 apply from: "${rootDir}/shared/config.gradle"
+apply from: "${rootDir}/shared/javacommon.gradle"
+
 apply from: "${rootDir}/versioningHelper.gradle"
 
-test {
-    useJUnitPlatform()
-}
-
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
-
-wpilibTools.deps.wpilibVersion = wpilibVersion
-println("Building for WPILib ${wpilibTools.deps.wpilibVersion}")
-
-// From wpilib shared/config.gradle:
-// NativeUtils adds the following OpenCV warning suppression for Linux, but not
-// for macOS
-// https://github.com/opencv/opencv/issues/20269
-nativeUtils.platformConfigs.osxuniversal.cppCompiler.args.add("-Wno-deprecated-anon-enum-enum-conversion")
-nativeUtils.platformConfigs.linuxathena.cppCompiler.args.add("-Wno-deprecated-anon-enum-enum-conversion")
-// nativeUtils.platformConfigs.linuxx64.cppCompiler.args.add("-Wno-deprecated-anon-enum-enum-conversion")
-
-// Apply Java configuration
-dependencies {
-    implementation project(":photon-targeting")
-
-    // WPILib deps
-    implementation wpilibTools.deps.wpilibJava("wpiutil")
-    implementation wpilibTools.deps.wpilibJava("cameraserver")
-    implementation wpilibTools.deps.wpilibJava("cscore")
-    implementation wpilibTools.deps.wpilibJava("wpimath")
-    implementation wpilibTools.deps.wpilibJava("wpinet")
-    implementation wpilibTools.deps.wpilibJava("hal")
-    implementation wpilibTools.deps.wpilibJava("ntcore")
-    implementation wpilibTools.deps.wpilibJava("wpilibj")
-    implementation wpilibTools.deps.wpilibJava("apriltag")
-
-    // Jackson
-    implementation "com.fasterxml.jackson.core:jackson-annotations:2.12.4"
-    implementation "com.fasterxml.jackson.core:jackson-core:2.12.4"
-    implementation "com.fasterxml.jackson.core:jackson-databind:2.12.4"
-
-    implementation "edu.wpi.first.thirdparty.frc2023.opencv:opencv-java:$opencvVersion"
-    implementation "edu.wpi.first.thirdparty.frc2023.opencv:opencv-jni:$opencvVersion:$jniPlatform"
-
-    implementation "org.ejml:ejml-simple:0.41"
-
-    // Junit
-    testImplementation wpilibTools.deps.wpilibJava("cscore")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
-}
-
-// Set up exports properly
 nativeUtils {
     exportsConfigs {
-        // Main library is just default empty. This will export everything
-        Photon {
-        }
+        "${nativeName}" {}
     }
 }
 
 model {
     components {
-        Photon(NativeLibrarySpec) {
+        "${nativeName}"(NativeLibrarySpec) {
             sources {
                 cpp {
                     source {
-                        srcDirs "src/main/native/cpp"
-                        srcDirs "src/generate/native/cpp"
-                        include "**/*.cpp"
+                        srcDirs 'src/main/native/cpp', "$buildDir/generated/source/proto/main/cpp", "src/generate/native/cpp"
+                        include '**/*.cpp', '**/*.cc'
                     }
                     exportedHeaders {
-                        srcDirs "src/main/native/include"
-                        srcDirs "src/generate/native/include"
+                        srcDirs 'src/main/native/include', "$buildDir/generated/source/proto/main/cpp"
+                        if (project.hasProperty('generatedHeaders')) {
+                            srcDir generatedHeaders
+                        }
+                        include "**/*.h"
                     }
                 }
             }
+
+            binaries.all {
+                it.tasks.withType(CppCompile) {
+                    it.dependsOn generateProto
+                }
+                if(project.hasProperty('includePhotonTargeting')) {
+                    lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
+                }
+            }
+
             nativeUtils.useRequiredLibrary(it, "wpilib_shared")
             nativeUtils.useRequiredLibrary(it, "apriltag_shared")
             nativeUtils.useRequiredLibrary(it, "opencv_shared")
         }
     }
     testSuites {
-        cppTest(GoogleTestTestSuiteSpec) {
-            testing $.components.Photon
-
-            sources.cpp {
-                source {
-                    srcDir "src/test/native/cpp"
-                    include "**/*.cpp"
+        "${nativeName}Test"(GoogleTestTestSuiteSpec) {
+            for(NativeComponentSpec c : $.components) {
+                if (c.name == nativeName) {
+                    testing c
+                    break
+                }
+            }
+            sources {
+                cpp {
+                    source {
+                        srcDirs 'src/test/native/cpp'
+                        include '**/*.cpp'
+                    }
+                    exportedHeaders {
+                        srcDirs 'src/test/native/include', "$buildDir/generated/source/proto/main/cpp"
+                    }
                 }
             }
 
+            binaries.all {
+                it.tasks.withType(CppCompile) {
+                    it.dependsOn generateProto
+                }
+                if(project.hasProperty('includePhotonTargeting')) {
+                    lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
+                }
+            }
+
+            nativeUtils.useRequiredLibrary(it, "cscore_shared")
+            nativeUtils.useRequiredLibrary(it, "cameraserver_shared")
             nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared")
-            nativeUtils.useRequiredLibrary(it, "apriltag_shared")
             nativeUtils.useRequiredLibrary(it, "googletest_static")
+            nativeUtils.useRequiredLibrary(it, "apriltag_shared")
             nativeUtils.useRequiredLibrary(it, "opencv_shared")
         }
+    }
+
+    tasks {
+        def c = $.testSuites
+        project.tasks.create('runCpp', Exec) {
+            description = "Run the photon-lib executable"
+            def found = false
+            def systemArch = getCurrentArch()
+            c.each {
+                if (it in GoogleTestTestSuiteSpec && it.name == "${nativeName}Test") {
+                    it.binaries.each {
+                        if (!found) {
+                            def arch = it.targetPlatform.name
+                            if (arch == systemArch) {
+                                dependsOn it.tasks.install
+                                commandLine it.tasks.install.runScriptFile.get().asFile.toString()
+                                def filePath = it.tasks.install.installDirectory.get().toString() + File.separatorChar + 'lib'
+                                test.dependsOn it.tasks.install
+                                test.systemProperty 'java.library.path', filePath
+                                test.environment 'LD_LIBRARY_PATH', filePath
+                                test.environment 'DYLD_LIBRARY_PATH', filePath
+                                test.workingDir filePath
+
+                                found = true
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+apply from: "${rootDir}/shared/javacpp/publish.gradle"
+
+// Include the version file in the distributed sources
+cppHeadersZip {
+    from('src/generate/native/include') {
+        into '/'
     }
 }
 
@@ -121,21 +143,22 @@ task generateVendorJson() {
     outputs.file photonlibFileOutput
     inputs.file photonlibFileInput
 
-    doLast {
-        println "Writing version ${pubVersion} to $photonlibFileOutput"
+    println "Writing vendor JSON ${pubVersion} to $photonlibFileOutput"
 
-        if (photonlibFileOutput.exists()) {
-            photonlibFileOutput.delete()
-        }
-        def read = photonlibFileInput.text.replace('${photon_version}', pubVersion)
-        photonlibFileOutput.write(read)
+    if (photonlibFileOutput.exists()) {
+        photonlibFileOutput.delete()
     }
+    photonlibFileOutput.parentFile.mkdirs()
+
+    def read = photonlibFileInput.text
+            .replace('${photon_version}', pubVersion)
+            .replace('${frc_year}', frcYear)
+    photonlibFileOutput.text = read
 
     outputs.upToDateWhen { false }
 }
 
-build.dependsOn generateVendorJson
-
+build.mustRunAfter generateVendorJson
 
 task writeCurrentVersion {
     def versionFileIn = file("${rootDir}/shared/PhotonVersion.java.in")
@@ -146,31 +169,50 @@ task writeCurrentVersion {
             versionString)
 }
 
-build.dependsOn writeCurrentVersion
+build.mustRunAfter writeCurrentVersion
+cppHeadersZip.dependsOn writeCurrentVersion
 
-tasks.withType(Javadoc) {
-    options.encoding = 'UTF-8'
+// Building photon-lib requires photon-targeting to generate its proto files. This technically shouldn't be required but is needed for it to build.
+model {
+    components {
+        all {
+            it.sources.each {
+                it.exportedHeaders {
+                    srcDirs "src/main/native/include"
+                    srcDirs "src/generate/native/include"
+                }
+            }
+            it.binaries.all {
+                it.tasks.withType(CppCompile) {
+                    it.dependsOn ":photon-targeting:generateProto"
+                }
+            }
+        }
+    }
+    testSuites {
+        all {
+            it.binaries.all {
+                it.tasks.withType(CppCompile) {
+                    it.dependsOn ":photon-targeting:generateProto"
+                }
+            }
+        }
+    }
 }
 
-apply from: "publish.gradle"
+def vendorJson = artifacts.add('archives', file("$photonlibFileOutput"))
 
-def testNativeConfigName = 'wpilibTestNatives'
-def testNativeConfig = configurations.create(testNativeConfigName)
+model {
+    // Publish the vendordep json
+    publishing {
+        publications {
+            vendorjson(MavenPublication) {
+                artifact vendorJson
 
-def folder = project.layout.buildDirectory.dir('NativeTest')
-
-def testNativeTasks = wpilibTools.createExtractionTasks {
-    taskPostfix = "Test"
-    configurationName = testNativeConfigName
-    rootTaskFolder.set(folder)
+                artifactId = "${nativeName}-json"
+                groupId = "org.photonvision"
+                version "1.0"
+            }
+        }
+    }
 }
-
-testNativeTasks.addToSourceSetResources(sourceSets.test)
-
-testNativeConfig.dependencies.add wpilibTools.deps.cscore()
-testNativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
-testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
-testNativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
-testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
-testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
-testNativeConfig.dependencies.add wpilibTools.deps.cscore()

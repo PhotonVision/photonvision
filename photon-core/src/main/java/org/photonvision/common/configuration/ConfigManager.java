@@ -28,7 +28,8 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.FileUtils;
@@ -36,7 +37,6 @@ import org.photonvision.vision.processes.VisionSource;
 import org.zeroturnaround.zip.ZipUtil;
 
 public class ConfigManager {
-    private static final Logger logger = new Logger(ConfigManager.class, LogGroup.General);
     private static ConfigManager INSTANCE;
 
     public static final String HW_CFG_FNAME = "hardwareConfig.json";
@@ -47,13 +47,17 @@ public class ConfigManager {
 
     private final ConfigProvider m_provider;
 
-    private Thread settingsSaveThread;
+    private final Thread settingsSaveThread;
     private long saveRequestTimestamp = -1;
+
+    // special case flag to disable flushing settings to disk at shutdown. Avoids the jvm shutdown
+    // hook overwriting the settings we just uploaded
+    private boolean flushOnShutdown = true;
 
     enum ConfigSaveStrategy {
         SQL,
         LEGACY,
-        ATOMIC_ZIP;
+        ATOMIC_ZIP
     }
 
     // This logic decides which kind of ConfigManager we load as the default. If we want
@@ -62,12 +66,13 @@ public class ConfigManager {
 
     public static ConfigManager getInstance() {
         if (INSTANCE == null) {
+            Path rootFolder = PathManager.getInstance().getRootFolder();
             switch (m_saveStrat) {
                 case SQL:
-                    INSTANCE = new ConfigManager(getRootFolder(), new SqlConfigProvider(getRootFolder()));
+                    INSTANCE = new ConfigManager(rootFolder, new SqlConfigProvider(rootFolder));
                     break;
                 case LEGACY:
-                    INSTANCE = new ConfigManager(getRootFolder(), new LegacyConfigProvider(getRootFolder()));
+                    INSTANCE = new ConfigManager(rootFolder, new LegacyConfigProvider(rootFolder));
                     break;
                 case ATOMIC_ZIP:
                     // not yet done, fall through
@@ -77,6 +82,8 @@ public class ConfigManager {
         }
         return INSTANCE;
     }
+
+    private static final Logger logger = new Logger(ConfigManager.class, LogGroup.Config);
 
     private void translateLegacyIfPresent(Path folderPath) {
         if (!(m_provider instanceof SqlConfigProvider)) {
@@ -115,9 +122,8 @@ public class ConfigManager {
                     e1.printStackTrace();
                 }
 
-                // So we can't save the old config, and we couldn't copy the folder
-                // But we've loaded the config. So just try to delete the directory so we don't try to load
-                // form it next time. That does mean we have no backup recourse, tho
+                // Delete the directory because we were successfully able to load the config but were unable
+                // to save or copy the folder.
                 if (maybeCams.exists()) FileUtils.deleteDirectory(maybeCams.toPath());
             }
 
@@ -166,7 +172,7 @@ public class ConfigManager {
     }
 
     private static Path getRootFolder() {
-        return Path.of("photonvision_config");
+        return PathManager.getInstance().getRootFolder();
     }
 
     ConfigManager(Path configDirectory, ConfigProvider provider) {
@@ -225,7 +231,7 @@ public class ConfigManager {
     }
 
     public Date logFnameToDate(String fname) throws ParseException {
-        // Strip away known unneded portions of the log file name
+        // Strip away known unneeded portions of the log file name
         fname = fname.replace(LOG_PREFIX, "").replace(LOG_EXT, "");
         DateFormat format = new SimpleDateFormat(LOG_DATE_TIME_FORMAT);
         return format.parse(fname);
@@ -253,6 +259,10 @@ public class ConfigManager {
 
     public boolean saveUploadedNetworkConfig(Path uploadPath) {
         return m_provider.saveUploadedNetworkConfig(uploadPath);
+    }
+
+    public boolean saveUploadedAprilTagFieldLayout(Path uploadPath) {
+        return m_provider.saveUploadedAprilTagFieldLayout(uploadPath);
     }
 
     public void requestSave() {
@@ -288,6 +298,28 @@ public class ConfigManager {
             } catch (InterruptedException e) {
                 logger.error("Exception waiting for settings semaphore", e);
             }
+        }
+    }
+
+    /** Get (and create if not present) the subfolder where ML models are stored */
+    public File getModelsDirectory() {
+        var ret = new File(configDirectoryFile, "models");
+        if (!ret.exists()) ret.mkdirs();
+        return ret;
+    }
+
+    /**
+     * Disable flushing settings to disk as part of our JVM exit hook. Used to prevent uploading all
+     * settings from getting its new configs overwritten at program exit and before theyre all loaded.
+     */
+    public void disableFlushOnShutdown() {
+        this.flushOnShutdown = false;
+    }
+
+    public void onJvmExit() {
+        if (flushOnShutdown) {
+            logger.info("Force-flushing settings...");
+            saveToDisk();
         }
     }
 }

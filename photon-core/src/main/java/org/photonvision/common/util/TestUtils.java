@@ -22,12 +22,12 @@ import edu.wpi.first.apriltag.jni.AprilTagJNI;
 import edu.wpi.first.cscore.CameraServerCvJNI;
 import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.hal.JNIWrapper;
+import edu.wpi.first.math.WPIMathJNI;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.net.WPINetJNI;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
-import edu.wpi.first.util.RuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
 import java.awt.*;
 import java.io.File;
@@ -39,35 +39,39 @@ import org.opencv.highgui.HighGui;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 
 public class TestUtils {
+    private static boolean has_loaded = false;
+
     public static boolean loadLibraries() {
-        JNIWrapper.Helper.setExtractOnStaticLoad(false);
-        WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
+        if (has_loaded) return true;
+
         NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
-        WPINetJNI.Helper.setExtractOnStaticLoad(false);
+        WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
+        WPIMathJNI.Helper.setExtractOnStaticLoad(false);
         CameraServerJNI.Helper.setExtractOnStaticLoad(false);
         CameraServerCvJNI.Helper.setExtractOnStaticLoad(false);
+        JNIWrapper.Helper.setExtractOnStaticLoad(false);
+        WPINetJNI.Helper.setExtractOnStaticLoad(false);
         AprilTagJNI.Helper.setExtractOnStaticLoad(false);
 
         try {
-            var loader =
-                    new RuntimeLoader<>(
-                            Core.NATIVE_LIBRARY_NAME, RuntimeLoader.getDefaultExtractionRoot(), Core.class);
-            loader.loadLibrary();
-
             CombinedRuntimeLoader.loadLibraries(
                     TestUtils.class,
                     "wpiutiljni",
+                    "wpimathjni",
                     "ntcorejni",
                     "wpinetjni",
                     "wpiHaljni",
+                    Core.NATIVE_LIBRARY_NAME,
                     "cscorejni",
-                    "cscorejnicvstatic",
                     "apriltagjni");
-            return true;
+
+            has_loaded = true;
         } catch (IOException e) {
             e.printStackTrace();
-            return false;
+            has_loaded = false;
         }
+
+        return has_loaded;
     }
 
     @SuppressWarnings("unused")
@@ -136,6 +140,24 @@ public class TestUtils {
 
         WPI2020Image(double distanceMeters) {
             this.distanceMeters = distanceMeters;
+            this.path = getPath();
+        }
+    }
+
+    public enum WPI2024Images {
+        kBackAmpZone_117in,
+        kSpeakerCenter_143in;
+
+        public static double FOV = 68.5;
+
+        public final Path path;
+
+        Path getPath() {
+            var filename = this.toString().substring(1);
+            return Path.of("2024", filename + ".jpg");
+        }
+
+        WPI2024Images() {
             this.path = getPath();
         }
     }
@@ -245,7 +267,7 @@ public class TestUtils {
     }
 
     public static Path getResourcesFolderPath(boolean testMode) {
-        System.out.println("CWD: " + Path.of("").toAbsolutePath().toString());
+        System.out.println("CWD: " + Path.of("").toAbsolutePath());
 
         // VSCode likes to make this path relative to the wrong root directory, so a fun hack to tell
         // if it's wrong
@@ -318,12 +340,12 @@ public class TestUtils {
         return getPowercellPath(testMode).resolve(image.path);
     }
 
-    public static Path getDotBoardImagesPath() {
-        return getResourcesFolderPath(false).resolve("calibrationBoardImages");
-    }
-
     public static Path getSquaresBoardImagesPath() {
         return getResourcesFolderPath(false).resolve("calibrationSquaresImg");
+    }
+
+    public static Path getCharucoBoardImagesPath() {
+        return getResourcesFolderPath(false).resolve("calibrationCharucoImg");
     }
 
     public static File getHardwareConfigJson() {
@@ -358,11 +380,15 @@ public class TestUtils {
         return getCoeffs(LIFECAM_480P_CAL_FILE, testMode);
     }
 
+    public static CameraCalibrationCoefficients get2023LifeCamCoeffs(boolean testMode) {
+        return getCoeffs(LIFECAM_1280P_CAL_FILE, testMode);
+    }
+
     public static CameraCalibrationCoefficients getLaptop() {
         return getCoeffs("laptop.json", true);
     }
 
-    private static int DefaultTimeoutMillis = 5000;
+    private static final int DefaultTimeoutMillis = 5000;
 
     public static void showImage(Mat frame, String title, int timeoutMs) {
         if (frame.empty()) return;
@@ -390,9 +416,5 @@ public class TestUtils {
         return getResourcesFolderPath(true)
                 .resolve("testimages")
                 .resolve(WPI2022Image.kTerminal22ft6in.path);
-    }
-
-    public static CameraCalibrationCoefficients get2023LifeCamCoeffs(boolean testMode) {
-        return getCoeffs(LIFECAM_1280P_CAL_FILE, testMode);
     }
 }

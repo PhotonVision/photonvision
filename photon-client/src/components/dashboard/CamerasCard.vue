@@ -13,15 +13,11 @@ defineProps<{
 
 const driverMode = computed<boolean>({
   get: () => useCameraSettingsStore().isDriverMode,
-  set: (v) =>
-    useCameraSettingsStore().changeCurrentPipelineIndex(
-      v ? -1 : useCameraSettingsStore().currentCameraSettings.lastPipelineIndex || 0,
-      true
-    )
+  set: (v) => useCameraSettingsStore().setDriverMode(v)
 });
 
 const fpsTooLow = computed<boolean>(() => {
-  const currFPS = useStateStore().pipelineResults?.fps || 0;
+  const currFPS = useStateStore().currentPipelineResults?.fps || 0;
   const targetFPS = useCameraSettingsStore().currentVideoFormat.fps;
   const driverMode = useCameraSettingsStore().isDriverMode;
   const gpuAccel = useSettingsStore().general.gpuAcceleration !== undefined;
@@ -29,54 +25,83 @@ const fpsTooLow = computed<boolean>(() => {
 
   return currFPS - targetFPS < -5 && currFPS !== 0 && !driverMode && gpuAccel && isReflective;
 });
+
+const performanceRecommendation = computed<string>(() => {
+  if (
+    fpsTooLow.value &&
+    !useCameraSettingsStore().currentPipelineSettings.inputShouldShow &&
+    useCameraSettingsStore().currentPipelineSettings.pipelineType === PipelineType.Reflective
+  ) {
+    return "HSV thresholds are too broad; narrow them for better performance";
+  } else if (fpsTooLow.value && useCameraSettingsStore().currentPipelineSettings.inputShouldShow) {
+    return "Stop viewing the raw stream for better performance";
+  } else {
+    return `${Math.min(Math.round(useStateStore().currentPipelineResults?.latency || 0), 9999)} ms latency`;
+  }
+});
 </script>
 
 <template>
   <v-card color="primary" height="100%" style="display: flex; flex-direction: column" dark>
-    <v-card-title
-      class="pb-0 mb-0 pl-4 pt-1"
-      style="min-height: 50px; justify-content: space-between; align-content: center"
-    >
-      <div class="pt-2">
-        <span class="mr-4">Cameras</span>
+    <v-row>
+      <v-col class="align-self-center text-no-wrap">
+        <v-card-title>Cameras</v-card-title>
+      </v-col>
+      <v-col class="align-self-center" style="text-align: right; margin-right: 12px; padding-left: 24px">
         <v-chip
           label
           :color="fpsTooLow ? 'error' : 'transparent'"
           :text-color="fpsTooLow ? '#C7EA46' : '#ff4d00'"
           style="font-size: 1rem; padding: 0; margin: 0"
         >
-          <span class="pr-1">
-            Processing @ {{ Math.round(useStateStore().pipelineResults?.fps || 0) }}&nbsp;FPS &ndash;
-          </span>
-          <span
-            v-if="
-              fpsTooLow &&
-              !useCameraSettingsStore().currentPipelineSettings.inputShouldShow &&
-              useCameraSettingsStore().currentPipelineSettings.pipelineType === PipelineType.Reflective
-            "
-          >
-            HSV thresholds are too broad; narrow them for better performance
-          </span>
-          <span v-else-if="fpsTooLow && useCameraSettingsStore().currentPipelineSettings.inputShouldShow">
-            stop viewing the raw stream for better performance
-          </span>
-          <span v-else>
-            {{ Math.min(Math.round(useStateStore().pipelineResults?.latency || 0), 9999) }} ms latency
-          </span>
+          <span class="pr-1"
+            >Processing @ {{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &ndash;</span
+          ><span>{{ performanceRecommendation }}</span>
         </v-chip>
-      </div>
-      <div>
-        <v-switch v-model="driverMode" label="Driver Mode" style="margin-left: auto" color="accent" class="pt-2" />
-      </div>
-    </v-card-title>
+      </v-col>
+      <v-col
+        class="align-self-center"
+        style="
+          width: min-content;
+          flex-grow: 0;
+          display: flex;
+          justify-content: flex-end;
+          margin-right: 24px;
+          padding: 0;
+        "
+      >
+        <v-switch
+          v-model="driverMode"
+          :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
+          label="Driver Mode"
+          style="margin: 0; padding: 0; padding-left: 18px; margin-top: 14px"
+          color="accent"
+        />
+      </v-col>
+    </v-row>
     <v-divider style="border-color: white" />
-    <v-row class="pl-3 pr-3 pt-3 pb-3" style="flex-wrap: nowrap; justify-content: center">
-      <v-col v-show="value.includes(0)" style="max-width: 500px; display: flex; align-items: center">
+    <v-row class="stream-viewer-container pa-3">
+      <v-col v-show="value.includes(0)" class="stream-view">
         <photon-camera-stream id="input-camera-stream" stream-type="Raw" style="width: 100%; height: auto" />
       </v-col>
-      <v-col v-show="value.includes(1)" style="max-width: 500px; display: flex; align-items: center">
+      <v-col v-show="value.includes(1)" class="stream-view">
         <photon-camera-stream id="output-camera-stream" stream-type="Processed" style="width: 100%; height: auto" />
       </v-col>
     </v-row>
   </v-card>
 </template>
+
+<style scoped>
+.stream-viewer-container {
+  display: flex;
+  justify-content: center;
+}
+.stream-view {
+  max-width: 500px;
+}
+@media only screen and (max-width: 512px) {
+  .stream-view {
+    min-width: 80%;
+  }
+}
+</style>

@@ -30,13 +30,22 @@ import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.file.JacksonUtils;
 
 public class NetworkConfig {
-    // Can be a integer team number, or a IP address
+    // Can be an integer team number, or an IP address
     public String ntServerAddress = "0";
     public NetworkMode connectionType = NetworkMode.DHCP;
     public String staticIp = "";
     public String hostname = "photonvision";
     public boolean runNTServer = false;
     public boolean shouldManage;
+    public boolean shouldPublishProto = false;
+
+    /**
+     * If we should ONLY match cameras by path, and NEVER only by base-name. For now default to false
+     * to preserve old matching logic.
+     *
+     * <p>This also disables creating new CameraConfigurations for detected "new" cameras.
+     */
+    public boolean matchCamerasOnlyByPath = false;
 
     @JsonIgnore public static final String NM_IFACE_STRING = "${interface}";
     @JsonIgnore public static final String NM_IP_STRING = "${ipaddr}";
@@ -58,7 +67,7 @@ public class NetworkConfig {
                             .orElse("Wired connection 1");
         }
 
-        // We can (usually) manage networking on Linux devices, and if we can we should try to. Command
+        // We can (usually) manage networking on Linux devices, and if we can, we should try to. Command
         // line inhibitions happen at a level above this class
         setShouldManage(deviceCanManageNetwork());
     }
@@ -72,17 +81,21 @@ public class NetworkConfig {
             @JsonProperty("hostname") String hostname,
             @JsonProperty("runNTServer") boolean runNTServer,
             @JsonProperty("shouldManage") boolean shouldManage,
+            @JsonProperty("shouldPublishProto") boolean shouldPublishProto,
             @JsonProperty("networkManagerIface") String networkManagerIface,
             @JsonProperty("setStaticCommand") String setStaticCommand,
-            @JsonProperty("setDHCPcommand") String setDHCPcommand) {
+            @JsonProperty("setDHCPcommand") String setDHCPcommand,
+            @JsonProperty("matchCamerasOnlyByPath") boolean matchCamerasOnlyByPath) {
         this.ntServerAddress = ntServerAddress;
         this.connectionType = connectionType;
         this.staticIp = staticIp;
         this.hostname = hostname;
         this.runNTServer = runNTServer;
+        this.shouldPublishProto = shouldPublishProto;
         this.networkManagerIface = networkManagerIface;
         this.setStaticCommand = setStaticCommand;
         this.setDHCPcommand = setDHCPcommand;
+        this.matchCamerasOnlyByPath = matchCamerasOnlyByPath;
         setShouldManage(shouldManage);
     }
 

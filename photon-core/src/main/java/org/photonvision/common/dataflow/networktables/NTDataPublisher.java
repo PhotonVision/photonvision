@@ -19,20 +19,17 @@ package org.photonvision.common.dataflow.networktables;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent;
-import java.util.ArrayList;
-import java.util.List;
+import edu.wpi.first.util.WPIUtilJNI;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import org.opencv.core.Point;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
-import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networktables.NTTopicSet;
+import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.targeting.PhotonPipelineResult;
-import org.photonvision.targeting.PhotonTrackedTarget;
-import org.photonvision.targeting.TargetCorner;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 
@@ -41,7 +38,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
     private final NetworkTable rootTable = NetworkTablesManager.getInstance().kRootTable;
 
-    private NTTopicSet ts = new NTTopicSet();
+    private final NTTopicSet ts = new NTTopicSet();
 
     NTDataChangeListener pipelineIndexListener;
     private final Supplier<Integer> pipelineIndexSupplier;
@@ -50,8 +47,6 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     NTDataChangeListener driverModeListener;
     private final BooleanSupplier driverModeSupplier;
     private final Consumer<Boolean> driverModeConsumer;
-
-    private long heartbeatCounter = 0;
 
     public NTDataPublisher(
             String cameraNickname,
@@ -134,13 +129,20 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
     @Override
     public void accept(CVPipelineResult result) {
+        var now = WPIUtilJNI.now();
+        var captureMicros = MathUtils.nanosToMicros(result.getImageCaptureTimestampNanos());
         var simplified =
                 new PhotonPipelineResult(
-                        result.getLatencyMillis(), simpleFromTrackedTargets(result.targets));
-        Packet packet = new Packet(simplified.getPacketSize());
-        simplified.populatePacket(packet);
+                        result.sequenceID,
+                        captureMicros,
+                        now,
+                        TrackedTarget.simpleFromTrackedTargets(result.targets),
+                        result.multiTagResult);
 
-        ts.rawBytesEntry.set(packet.getData());
+        ts.resultPublisher.set(simplified, simplified.getPacketSize());
+        if (ConfigManager.getInstance().getConfig().getNetworkConfig().shouldPublishProto) {
+            ts.protoResultPublisher.set(simplified);
+        }
 
         ts.pipelineIndexPublisher.set(pipelineIndexSupplier.get());
         ts.driverModePublisher.set(driverModeSupplier.getAsBoolean());
@@ -181,58 +183,20 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         }
 
         // Something in the result can sometimes be null -- so check probably too many things
-        if (result != null
-                && result.inputAndOutputFrame != null
+        if (result.inputAndOutputFrame != null
                 && result.inputAndOutputFrame.frameStaticProperties != null
                 && result.inputAndOutputFrame.frameStaticProperties.cameraCalibration != null) {
             var fsp = result.inputAndOutputFrame.frameStaticProperties;
-            if (fsp.cameraCalibration != null) {
-                ts.cameraIntrinsicsPublisher.accept(fsp.cameraCalibration.getIntrinsicsArr());
-                ts.cameraDistortionPublisher.accept(fsp.cameraCalibration.getExtrinsicsArr());
-            }
+            ts.cameraIntrinsicsPublisher.accept(fsp.cameraCalibration.getIntrinsicsArr());
+            ts.cameraDistortionPublisher.accept(fsp.cameraCalibration.getDistCoeffsArr());
         } else {
             ts.cameraIntrinsicsPublisher.accept(new double[] {});
             ts.cameraDistortionPublisher.accept(new double[] {});
         }
 
-        ts.heartbeatPublisher.set(heartbeatCounter++);
+        ts.heartbeatPublisher.set(result.sequenceID);
 
         // TODO...nt4... is this needed?
         rootTable.getInstance().flush();
-    }
-
-    public static List<PhotonTrackedTarget> simpleFromTrackedTargets(List<TrackedTarget> targets) {
-        var ret = new ArrayList<PhotonTrackedTarget>();
-        for (var t : targets) {
-            var minAreaRectCorners = new ArrayList<TargetCorner>();
-            var detectedCorners = new ArrayList<TargetCorner>();
-            {
-                var points = new Point[4];
-                t.getMinAreaRect().points(points);
-                for (int i = 0; i < 4; i++) {
-                    minAreaRectCorners.add(new TargetCorner(points[i].x, points[i].y));
-                }
-            }
-            {
-                var points = t.getTargetCorners();
-                for (int i = 0; i < points.size(); i++) {
-                    detectedCorners.add(new TargetCorner(points.get(i).x, points.get(i).y));
-                }
-            }
-
-            ret.add(
-                    new PhotonTrackedTarget(
-                            t.getYaw(),
-                            t.getPitch(),
-                            t.getArea(),
-                            t.getSkew(),
-                            t.getFiducialId(),
-                            t.getBestCameraToTarget3d(),
-                            t.getAltCameraToTarget3d(),
-                            t.getPoseAmbiguity(),
-                            minAreaRectCorners,
-                            detectedCorners));
-        }
-        return ret;
     }
 }

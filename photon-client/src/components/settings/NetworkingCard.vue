@@ -1,14 +1,21 @@
 <script setup lang="ts">
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
-import { computed, ref } from "vue";
-import CvInput from "@/components/common/cv-input.vue";
-import CvRadio from "@/components/common/cv-radio.vue";
-import CvSwitch from "@/components/common/cv-switch.vue";
-import CvSelect from "@/components/common/cv-select.vue";
-import { NetworkConnectionType } from "@/types/SettingTypes";
+import { computed, ref, watchEffect } from "vue";
+import PvInput from "@/components/common/pv-input.vue";
+import PvRadio from "@/components/common/pv-radio.vue";
+import PvSwitch from "@/components/common/pv-switch.vue";
+import PvSelect from "@/components/common/pv-select.vue";
+import { type ConfigurableNetworkSettings, NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 
+// Copy object to remove reference to store
+const tempSettingsStruct = ref<ConfigurableNetworkSettings>(Object.assign({}, useSettingsStore().network));
+const resetTempSettingsStruct = () => {
+  tempSettingsStruct.value = Object.assign({}, useSettingsStore().network);
+};
+
 const settingsValid = ref(true);
+
 const isValidNetworkTablesIP = (v: string | undefined): boolean => {
   // Check if it is a valid team number between 1-9999
   const teamNumberRegex = /^[1-9][0-9]{0,3}$/;
@@ -38,18 +45,59 @@ const isValidHostname = (v: string | undefined) => {
   return hostnameRegex.test(v);
 };
 
+const settingsHaveChanged = (): boolean => {
+  const a = useSettingsStore().network;
+  const b = tempSettingsStruct.value;
+
+  return (
+    a.ntServerAddress !== b.ntServerAddress ||
+    a.connectionType !== b.connectionType ||
+    a.staticIp !== b.staticIp ||
+    a.hostname !== b.hostname ||
+    a.runNTServer !== b.runNTServer ||
+    a.shouldManage !== b.shouldManage ||
+    a.shouldPublishProto !== b.shouldPublishProto ||
+    a.networkManagerIface !== b.networkManagerIface ||
+    a.setStaticCommand !== b.setStaticCommand ||
+    a.setDHCPcommand !== b.setDHCPcommand ||
+    a.matchCamerasOnlyByPath !== b.matchCamerasOnlyByPath
+  );
+};
+
 const saveGeneralSettings = () => {
   const changingStaticIp = useSettingsStore().network.connectionType === NetworkConnectionType.Static;
 
+  // replace undefined members with empty strings for backend
+  const payload = {
+    connectionType: tempSettingsStruct.value.connectionType,
+    hostname: tempSettingsStruct.value.hostname,
+    networkManagerIface: tempSettingsStruct.value.networkManagerIface || "",
+    ntServerAddress: tempSettingsStruct.value.ntServerAddress,
+    runNTServer: tempSettingsStruct.value.runNTServer,
+    setDHCPcommand: tempSettingsStruct.value.setDHCPcommand || "",
+    setStaticCommand: tempSettingsStruct.value.setStaticCommand || "",
+    shouldManage: tempSettingsStruct.value.shouldManage,
+    shouldPublishProto: tempSettingsStruct.value.shouldPublishProto,
+    matchCamerasOnlyByPath: tempSettingsStruct.value.matchCamerasOnlyByPath,
+    staticIp: tempSettingsStruct.value.staticIp
+  };
+
   useSettingsStore()
-    .saveGeneralSettings()
+    .updateGeneralSettings(payload)
     .then((response) => {
       useStateStore().showSnackbarMessage({
         message: response.data.text || response.data,
         color: "success"
       });
+
+      // Update the local settings cause the backend checked their validity. Assign is to deref value
+      useSettingsStore().network = {
+        ...useSettingsStore().network,
+        ...Object.assign({}, tempSettingsStruct.value)
+      };
     })
     .catch((error) => {
+      resetTempSettingsStruct();
       if (error.response) {
         if (error.status === 504 || changingStaticIp) {
           useStateStore().showSnackbarMessage({
@@ -80,21 +128,28 @@ const saveGeneralSettings = () => {
 
 const currentNetworkInterfaceIndex = computed<number>({
   get: () => useSettingsStore().networkInterfaceNames.indexOf(useSettingsStore().network.networkManagerIface || ""),
-  set: (v) => (useSettingsStore().network.networkManagerIface = useSettingsStore().networkInterfaceNames[v])
+  set: (v) => (tempSettingsStruct.value.networkManagerIface = useSettingsStore().networkInterfaceNames[v])
+});
+
+watchEffect(() => {
+  // Reset temp settings on remote network settings change
+  resetTempSettingsStruct();
 });
 </script>
 
 <template>
   <v-card dark class="mb-3 pr-6 pb-3" style="background-color: #006492">
+    <v-card-title>Global Settings</v-card-title>
+    <v-divider />
     <v-card-title>Networking</v-card-title>
     <div class="ml-5">
       <v-form ref="form" v-model="settingsValid">
-        <cv-input
-          v-model="useSettingsStore().network.ntServerAddress"
+        <pv-input
+          v-model="tempSettingsStruct.ntServerAddress"
           label="Team Number/NetworkTables Server Address"
           tooltip="Enter the Team Number or the IP address of the NetworkTables Server"
           :label-cols="4"
-          :disabled="useSettingsStore().network.runNTServer"
+          :disabled="tempSettingsStruct.runNTServer"
           :rules="[
             (v) =>
               isValidNetworkTablesIP(v) ||
@@ -102,10 +157,7 @@ const currentNetworkInterfaceIndex = computed<number>({
           ]"
         />
         <v-banner
-          v-show="
-            !isValidNetworkTablesIP(useSettingsStore().network.ntServerAddress) &&
-            !useSettingsStore().network.runNTServer
-          "
+          v-show="!isValidNetworkTablesIP(tempSettingsStruct.ntServerAddress) && !tempSettingsStruct.runNTServer"
           rounded
           color="red"
           text-color="white"
@@ -114,43 +166,64 @@ const currentNetworkInterfaceIndex = computed<number>({
         >
           The NetworkTables Server Address is not set or is invalid. NetworkTables is unable to connect.
         </v-banner>
-        <cv-radio
-          v-model="useSettingsStore().network.connectionType"
+        <pv-radio
+          v-show="!useSettingsStore().network.networkingDisabled"
+          v-model="tempSettingsStruct.connectionType"
           label="IP Assignment Mode"
           tooltip="DHCP will make the radio (router) automatically assign an IP address; this may result in an IP address that changes across reboots. Static IP assignment means that you pick the IP address and it won't change."
           :input-cols="12 - 4"
           :list="['DHCP', 'Static']"
-          :disabled="!(useSettingsStore().network.shouldManage && useSettingsStore().network.canManage)"
+          :disabled="
+            !tempSettingsStruct.shouldManage ||
+            !useSettingsStore().network.canManage ||
+            useSettingsStore().network.networkingDisabled
+          "
         />
-        <cv-input
-          v-if="useSettingsStore().network.connectionType === NetworkConnectionType.Static"
-          v-model="useSettingsStore().network.staticIp"
+        <pv-input
+          v-show="!useSettingsStore().network.networkingDisabled"
+          v-if="tempSettingsStruct.connectionType === NetworkConnectionType.Static"
+          v-model="tempSettingsStruct.staticIp"
           :input-cols="12 - 4"
           label="Static IP"
           :rules="[(v) => isValidIPv4(v) || 'Invalid IPv4 address']"
-          :disabled="!(useSettingsStore().network.shouldManage && useSettingsStore().network.canManage)"
+          :disabled="
+            !tempSettingsStruct.shouldManage ||
+            !useSettingsStore().network.canManage ||
+            useSettingsStore().network.networkingDisabled
+          "
         />
-        <cv-input
-          v-model="useSettingsStore().network.hostname"
+        <pv-input
+          v-show="!useSettingsStore().network.networkingDisabled"
+          v-model="tempSettingsStruct.hostname"
           label="Hostname"
           :input-cols="12 - 4"
           :rules="[(v) => isValidHostname(v) || 'Invalid hostname']"
-          :disabled="!(useSettingsStore().network.shouldManage && useSettingsStore().network.canManage)"
+          :disabled="
+            !tempSettingsStruct.shouldManage ||
+            !useSettingsStore().network.canManage ||
+            useSettingsStore().network.networkingDisabled
+          "
         />
         <v-divider class="pb-3" />
         <span style="font-weight: 700">Advanced Networking</span>
-        <cv-switch
-          v-model="useSettingsStore().network.shouldManage"
-          :disabled="!useSettingsStore().network.canManage"
+        <pv-switch
+          v-show="!useSettingsStore().network.networkingDisabled"
+          v-model="tempSettingsStruct.shouldManage"
+          :disabled="!useSettingsStore().network.canManage || useSettingsStore().network.networkingDisabled"
           label="Manage Device Networking"
           tooltip="If enabled, Photon will manage device hostname and network settings."
           :label-cols="4"
           class="pt-2"
         />
-        <cv-select
+        <pv-select
+          v-show="!useSettingsStore().network.networkingDisabled"
           v-model="currentNetworkInterfaceIndex"
           label="NetworkManager interface"
-          :disabled="!(useSettingsStore().network.shouldManage && useSettingsStore().network.canManage)"
+          :disabled="
+            !tempSettingsStruct.shouldManage ||
+            !useSettingsStore().network.canManage ||
+            useSettingsStore().network.networkingDisabled
+          "
           :select-cols="12 - 4"
           tooltip="Name of the interface PhotonVision should manage the IP address of"
           :items="useSettingsStore().networkInterfaceNames"
@@ -158,8 +231,9 @@ const currentNetworkInterfaceIndex = computed<number>({
         <v-banner
           v-show="
             !useSettingsStore().networkInterfaceNames.length &&
-            useSettingsStore().network.shouldManage &&
-            useSettingsStore().network.canManage
+            tempSettingsStruct.shouldManage &&
+            useSettingsStore().network.canManage &&
+            !useSettingsStore().network.networkingDisabled
           "
           rounded
           color="red"
@@ -168,15 +242,15 @@ const currentNetworkInterfaceIndex = computed<number>({
         >
           Photon cannot detect any wired connections! Please send program logs to the developers for help.
         </v-banner>
-        <cv-switch
-          v-model="useSettingsStore().network.runNTServer"
+        <pv-switch
+          v-model="tempSettingsStruct.runNTServer"
           label="Run NetworkTables Server (Debugging Only)"
           tooltip="If enabled, this device will create a NT server. This is useful for home debugging, but should be disabled on-robot."
-          class="mt-3 mb-3"
+          class="mt-3 mb-2"
           :label-cols="4"
         />
         <v-banner
-          v-show="useSettingsStore().network.runNTServer"
+          v-show="tempSettingsStruct.runNTServer"
           rounded
           color="red"
           text-color="white"
@@ -184,12 +258,58 @@ const currentNetworkInterfaceIndex = computed<number>({
         >
           This mode is intended for debugging; it should be off for proper usage. PhotonLib will NOT work!
         </v-banner>
+
+        <v-divider />
+        <v-card-title>Miscellaneous</v-card-title>
+        <pv-switch
+          v-model="tempSettingsStruct.shouldPublishProto"
+          label="Also Publish Protobuf"
+          tooltip="If enabled, Photon will publish all pipeline results in both the Packet and Protobuf formats. This is useful for visualizing pipeline results from NT viewers such as glass and logging software such as AdvantageScope. Note: photon-lib will ignore this value and is not recommended on the field for performance."
+          class="mt-3 mb-2"
+          :label-cols="4"
+        />
+        <v-banner
+          v-show="tempSettingsStruct.shouldPublishProto"
+          rounded
+          color="red"
+          class="mb-3"
+          text-color="white"
+          icon="mdi-information-outline"
+        >
+          This mode is intended for debugging; it should be off for field use. You may notice a performance hit by using
+          this mode.
+        </v-banner>
+        <pv-switch
+          v-model="tempSettingsStruct.matchCamerasOnlyByPath"
+          label="Strictly match ONLY known cameras"
+          tooltip="ONLY match cameras by the USB port they're plugged into + (basename or USB VID/PID), and never only by the device product string. Also disables automatic detection of new cameras."
+          class="mt-3 mb-2"
+          :label-cols="4"
+        />
+        <v-banner
+          v-show="tempSettingsStruct.matchCamerasOnlyByPath"
+          rounded
+          color="red"
+          class="mb-3"
+          text-color="white"
+          icon="mdi-information-outline"
+        >
+          Physical cameras will be strictly matched to camera configurations using physical USB port they are plugged
+          into, in addition to device name and other USB metadata. Additionally, no new cameras are allowed to be added.
+          This setting is useful for guaranteeing that an already known and configured camera can never be matched as an
+          "unknown"/"new" camera, which resets pipelines and calibration data.
+          <p />
+          Cameras will NOT be matched if they change USB ports, and new cameras plugged into this coprocessor will NOT
+          be automatically recognized or configured for vision processing.
+          <p />
+          To add a new camera to this coprocessor, disable this setting, connect the camera, and re-enable.
+        </v-banner>
+        <v-divider class="mb-3" />
       </v-form>
       <v-btn
         color="accent"
-        :class="useSettingsStore().network.runNTServer ? 'mt-3' : ''"
         style="color: black; width: 100%"
-        :disabled="!settingsValid && !useSettingsStore().network.runNTServer"
+        :disabled="!settingsValid || !settingsHaveChanged()"
         @click="saveGeneralSettings"
       >
         Save

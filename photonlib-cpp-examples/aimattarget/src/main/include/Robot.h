@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include <photonlib/PhotonCamera.h>
+#include <photon/PhotonCamera.h>
 
 #include <frc/TimedRobot.h>
 #include <frc/XboxController.h>
@@ -39,10 +39,10 @@ class Robot : public frc::TimedRobot {
   void TeleopPeriodic() override;
 
  private:
-  // Change this to match the name of your camera
-  photonlib::PhotonCamera camera{"photonvision"};
+  // Change this to match the name of your camera as shown in the web UI
+  photon::PhotonCamera camera{"YOUR_CAMERA_NAME_HERE"};
   // PID constants should be tuned per robot
-  frc2::PIDController controller{.1, 0, 0};
+  frc::PIDController controller{.1, 0, 0};
 
   frc::XboxController xboxController{0};
 

@@ -21,14 +21,21 @@ import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.FrameThresholdType;
+import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
-public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelineSettings> {
+public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelineSettings>
+        implements Releasable {
+    static final int MAX_MULTI_TARGET_RESULTS = 10;
+
     protected S settings;
     protected FrameStaticProperties frameStaticProperties;
     protected QuirkyCamera cameraQuirks;
 
     private final FrameThresholdType thresholdType;
+
+    // So releaseable doesn't keep track of if we double-free something. so (ew) remember that here
+    protected volatile boolean released = false;
 
     public CVPipeline(FrameThresholdType thresholdType) {
         this.thresholdType = thresholdType;
@@ -60,6 +67,9 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
     }
 
     public R run(Frame frame, QuirkyCamera cameraQuirks) {
+        if (released) {
+            throw new RuntimeException("Pipeline use-after-free!");
+        }
         if (settings == null) {
             throw new RuntimeException("No settings provided for pipeline!");
         }
@@ -74,5 +84,14 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
         result.setImageCaptureTimestampNanos(frame.timestampNanos);
 
         return result;
+    }
+
+    /**
+     * Release any native memory associated with this pipeline. Called by pipelinemanager at pipeline
+     * switch. Stubbed out, but override if needed.
+     */
+    @Override
+    public void release() {
+        released = true;
     }
 }

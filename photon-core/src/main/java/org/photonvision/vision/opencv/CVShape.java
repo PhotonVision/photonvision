@@ -32,7 +32,7 @@ public class CVShape implements Releasable {
 
     private MatOfPoint3f customTarget = null;
 
-    private MatOfPoint2f approxCurve = new MatOfPoint2f();
+    private final MatOfPoint2f approxCurve = new MatOfPoint2f();
 
     public CVShape(Contour contour, ContourShape shape) {
         this.contour = contour;

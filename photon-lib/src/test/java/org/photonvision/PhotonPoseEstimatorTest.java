@@ -30,17 +30,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.hal.JNIWrapper;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.net.WPINetJNI;
-import edu.wpi.first.networktables.NetworkTablesJNI;
-import edu.wpi.first.util.CombinedRuntimeLoader;
-import edu.wpi.first.util.WPIUtilJNI;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -56,20 +50,7 @@ class PhotonPoseEstimatorTest {
 
     @BeforeAll
     public static void init() {
-        JNIWrapper.Helper.setExtractOnStaticLoad(false);
-        WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
-        NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
-        WPINetJNI.Helper.setExtractOnStaticLoad(false);
-
-        try {
-            CombinedRuntimeLoader.loadLibraries(
-                    PhotonPoseEstimatorTest.class, "wpiutiljni", "ntcorejni", "wpinetjni", "wpiHaljni");
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        List<AprilTag> tagList = new ArrayList<AprilTag>(2);
+        List<AprilTag> tagList = new ArrayList<>(2);
         tagList.add(new AprilTag(0, new Pose3d(3, 3, 3, new Rotation3d())));
         tagList.add(new AprilTag(1, new Pose3d(5, 5, 5, new Rotation3d())));
         double fieldLength = Units.feetToMeters(54.0);
@@ -82,7 +63,9 @@ class PhotonPoseEstimatorTest {
         PhotonCameraInjector cameraOne = new PhotonCameraInjector();
         cameraOne.result =
                 new PhotonPipelineResult(
-                        2,
+                        0,
+                        0,
+                        0,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -90,6 +73,8 @@ class PhotonPoseEstimatorTest {
                                         9.0,
                                         4.0,
                                         0,
+                                        -1,
+                                        -1,
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         0.7,
@@ -109,6 +94,8 @@ class PhotonPoseEstimatorTest {
                                         9.1,
                                         6.7,
                                         1,
+                                        -1,
+                                        -1,
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(0, 0, 0)),
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         0.3,
@@ -128,6 +115,8 @@ class PhotonPoseEstimatorTest {
                                         19.0,
                                         3.0,
                                         0,
+                                        -1,
+                                        -1,
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         0.4,
@@ -141,7 +130,7 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
-        cameraOne.result.setTimestampSeconds(11);
+        cameraOne.result.setRecieveTimestampMicros((long) (11 * 1e6));
 
         PhotonPoseEstimator estimator =
                 new PhotonPoseEstimator(
@@ -161,7 +150,9 @@ class PhotonPoseEstimatorTest {
         PhotonCameraInjector cameraOne = new PhotonCameraInjector();
         cameraOne.result =
                 new PhotonPipelineResult(
-                        2,
+                        0,
+                        0,
+                        0,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -169,6 +160,8 @@ class PhotonPoseEstimatorTest {
                                         9.0,
                                         4.0,
                                         1,
+                                        -1,
+                                        -1,
                                         new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()),
                                         new Transform3d(new Translation3d(1, 1, 1), new Rotation3d()),
                                         0.7,
@@ -188,6 +181,8 @@ class PhotonPoseEstimatorTest {
                                         9.1,
                                         6.7,
                                         1,
+                                        -1,
+                                        -1,
                                         new Transform3d(new Translation3d(2, 2, 2), new Rotation3d()),
                                         new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
                                         0.3,
@@ -207,6 +202,8 @@ class PhotonPoseEstimatorTest {
                                         19.0,
                                         3.0,
                                         0,
+                                        -1,
+                                        -1,
                                         new Transform3d(new Translation3d(4, 4, 4), new Rotation3d()),
                                         new Transform3d(new Translation3d(5, 5, 5), new Rotation3d()),
                                         0.4,
@@ -221,7 +218,7 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
 
-        cameraOne.result.setTimestampSeconds(4);
+        cameraOne.result.setRecieveTimestampMicros((long) (4 * 1e6));
 
         PhotonPoseEstimator estimator =
                 new PhotonPoseEstimator(
@@ -244,7 +241,9 @@ class PhotonPoseEstimatorTest {
         PhotonCameraInjector cameraOne = new PhotonCameraInjector();
         cameraOne.result =
                 new PhotonPipelineResult(
-                        2,
+                        0,
+                        0,
+                        0,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -252,6 +251,8 @@ class PhotonPoseEstimatorTest {
                                         9.0,
                                         4.0,
                                         1,
+                                        -1,
+                                        -1,
                                         new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()),
                                         new Transform3d(new Translation3d(1, 1, 1), new Rotation3d()),
                                         0.7,
@@ -271,6 +272,8 @@ class PhotonPoseEstimatorTest {
                                         9.1,
                                         6.7,
                                         1,
+                                        -1,
+                                        -1,
                                         new Transform3d(new Translation3d(2, 2, 2), new Rotation3d()),
                                         new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
                                         0.3,
@@ -290,6 +293,8 @@ class PhotonPoseEstimatorTest {
                                         19.0,
                                         3.0,
                                         0,
+                                        -1,
+                                        -1,
                                         new Transform3d(new Translation3d(2.2, 2.2, 2.2), new Rotation3d()),
                                         new Transform3d(new Translation3d(2, 1.9, 2.1), new Rotation3d()),
                                         0.4,
@@ -303,7 +308,7 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
-        cameraOne.result.setTimestampSeconds(17);
+        cameraOne.result.setRecieveTimestampMicros((long) (17 * 1e6));
 
         PhotonPoseEstimator estimator =
                 new PhotonPoseEstimator(
@@ -327,7 +332,9 @@ class PhotonPoseEstimatorTest {
         PhotonCameraInjector cameraOne = new PhotonCameraInjector();
         cameraOne.result =
                 new PhotonPipelineResult(
-                        2,
+                        0,
+                        0,
+                        0,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -335,6 +342,8 @@ class PhotonPoseEstimatorTest {
                                         9.0,
                                         4.0,
                                         1,
+                                        -1,
+                                        -1,
                                         new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()),
                                         new Transform3d(new Translation3d(1, 1, 1), new Rotation3d()),
                                         0.7,
@@ -354,6 +363,8 @@ class PhotonPoseEstimatorTest {
                                         9.1,
                                         6.7,
                                         1,
+                                        -1,
+                                        -1,
                                         new Transform3d(new Translation3d(2, 2, 2), new Rotation3d()),
                                         new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
                                         0.3,
@@ -373,6 +384,8 @@ class PhotonPoseEstimatorTest {
                                         19.0,
                                         3.0,
                                         0,
+                                        -1,
+                                        -1,
                                         new Transform3d(new Translation3d(2.2, 2.2, 2.2), new Rotation3d()),
                                         new Transform3d(new Translation3d(2, 1.9, 2.1), new Rotation3d()),
                                         0.4,
@@ -386,7 +399,7 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
-        cameraOne.result.setTimestampSeconds(1);
+        cameraOne.result.setRecieveTimestampMicros((long) (1 * 1e6));
 
         PhotonPoseEstimator estimator =
                 new PhotonPoseEstimator(
@@ -402,7 +415,9 @@ class PhotonPoseEstimatorTest {
 
         cameraOne.result =
                 new PhotonPipelineResult(
-                        2,
+                        0,
+                        0,
+                        0,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -410,6 +425,8 @@ class PhotonPoseEstimatorTest {
                                         9.0,
                                         4.0,
                                         1,
+                                        -1,
+                                        -1,
                                         new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()),
                                         new Transform3d(new Translation3d(1, 1, 1), new Rotation3d()),
                                         0.7,
@@ -429,6 +446,8 @@ class PhotonPoseEstimatorTest {
                                         9.1,
                                         6.7,
                                         0,
+                                        -1,
+                                        -1,
                                         new Transform3d(new Translation3d(2.1, 1.9, 2), new Rotation3d()),
                                         new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
                                         0.3,
@@ -448,6 +467,8 @@ class PhotonPoseEstimatorTest {
                                         19.0,
                                         3.0,
                                         0,
+                                        -1,
+                                        -1,
                                         new Transform3d(new Translation3d(2.4, 2.4, 2.2), new Rotation3d()),
                                         new Transform3d(new Translation3d(2, 1, 2), new Rotation3d()),
                                         0.4,
@@ -461,7 +482,7 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
-        cameraOne.result.setTimestampSeconds(7);
+        cameraOne.result.setRecieveTimestampMicros((long) (7 * 1e6));
 
         estimatedPose = estimator.update();
         pose = estimatedPose.get().estimatedPose;
@@ -477,7 +498,9 @@ class PhotonPoseEstimatorTest {
         PhotonCameraInjector cameraOne = new PhotonCameraInjector();
         var result =
                 new PhotonPipelineResult(
-                        2,
+                        0,
+                        0,
+                        0,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -485,6 +508,8 @@ class PhotonPoseEstimatorTest {
                                         9.0,
                                         4.0,
                                         0,
+                                        -1,
+                                        -1,
                                         new Transform3d(new Translation3d(2, 2, 2), new Rotation3d()),
                                         new Transform3d(new Translation3d(1, 1, 1), new Rotation3d()),
                                         0.7,
@@ -498,7 +523,7 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
-        result.setTimestampSeconds(20);
+        result.setRecieveTimestampMicros((long) (20 * 1e6));
 
         PhotonPoseEstimator estimator =
                 new PhotonPoseEstimator(
@@ -509,7 +534,7 @@ class PhotonPoseEstimatorTest {
 
         // Empty result, expect empty result
         cameraOne.result = new PhotonPipelineResult();
-        cameraOne.result.setTimestampSeconds(1);
+        cameraOne.result.setRecieveTimestampMicros((long) (1 * 1e6));
         Optional<EstimatedRobotPose> estimatedPose = estimator.update();
         assertFalse(estimatedPose.isPresent());
 
@@ -542,7 +567,9 @@ class PhotonPoseEstimatorTest {
         PhotonCameraInjector cameraOne = new PhotonCameraInjector();
         cameraOne.result =
                 new PhotonPipelineResult(
-                        2,
+                        0,
+                        0,
+                        0,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -550,6 +577,8 @@ class PhotonPoseEstimatorTest {
                                         9.0,
                                         4.0,
                                         0,
+                                        -1,
+                                        -1,
                                         new Transform3d(new Translation3d(2, 2, 2), new Rotation3d()),
                                         new Transform3d(new Translation3d(1, 1, 1), new Rotation3d()),
                                         0.7,
@@ -569,6 +598,8 @@ class PhotonPoseEstimatorTest {
                                         9.1,
                                         6.7,
                                         1,
+                                        -1,
+                                        -1,
                                         new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
                                         new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
                                         0.3,
@@ -588,6 +619,8 @@ class PhotonPoseEstimatorTest {
                                         19.0,
                                         3.0,
                                         0,
+                                        -1,
+                                        -1,
                                         new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()),
                                         new Transform3d(new Translation3d(2, 1.9, 2.1), new Rotation3d()),
                                         0.4,
@@ -601,7 +634,7 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8))))); // 3 3 3 ambig .4
-        cameraOne.result.setTimestampSeconds(20);
+        cameraOne.result.setRecieveTimestampMicros(20 * 1000000);
 
         PhotonPoseEstimator estimator =
                 new PhotonPoseEstimator(
@@ -619,7 +652,7 @@ class PhotonPoseEstimatorTest {
         assertEquals(2.15, pose.getZ(), .01);
     }
 
-    private class PhotonCameraInjector extends PhotonCamera {
+    private static class PhotonCameraInjector extends PhotonCamera {
         public PhotonCameraInjector() {
             super("Test");
         }

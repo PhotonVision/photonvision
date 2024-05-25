@@ -1,21 +1,23 @@
 import { defineStore } from "pinia";
 import type {
+  ConfigurableNetworkSettings,
   GeneralSettings,
   LightingSettings,
   MetricData,
-  NetworkSettings,
-  ConfigurableNetworkSettings
+  NetworkSettings
 } from "@/types/SettingTypes";
 import { NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import axios from "axios";
 import type { WebsocketSettingsUpdate } from "@/types/WebsocketDataTypes";
+import type { AprilTagFieldLayout } from "@/types/PhotonTrackingTypes";
 
 interface GeneralSettingsStore {
   general: GeneralSettings;
   network: NetworkSettings;
   lighting: LightingSettings;
   metrics: MetricData;
+  currentFieldLayout: AprilTagFieldLayout;
 }
 
 export const useSettingsStore = defineStore("settings", {
@@ -24,7 +26,9 @@ export const useSettingsStore = defineStore("settings", {
       version: undefined,
       gpuAcceleration: undefined,
       hardwareModel: undefined,
-      hardwarePlatform: undefined
+      hardwarePlatform: undefined,
+      mrCalWorking: true,
+      rknnSupported: false
     },
     network: {
       ntServerAddress: "",
@@ -34,12 +38,15 @@ export const useSettingsStore = defineStore("settings", {
       staticIp: "",
       hostname: "photonvision",
       runNTServer: false,
+      shouldPublishProto: false,
       networkInterfaceNames: [
         {
           connName: "Example Wired Connection",
           devName: "eth0"
         }
-      ]
+      ],
+      networkingDisabled: false,
+      matchCamerasOnlyByPath: false
     },
     lighting: {
       supported: true,
@@ -54,7 +61,15 @@ export const useSettingsStore = defineStore("settings", {
       gpuMemUtil: undefined,
       cpuThr: undefined,
       cpuUptime: undefined,
-      diskUtilPct: undefined
+      diskUtilPct: undefined,
+      npuUsage: undefined
+    },
+    currentFieldLayout: {
+      field: {
+        length: 16.4592,
+        width: 8.2296
+      },
+      tags: []
     }
   }),
   getters: {
@@ -79,7 +94,8 @@ export const useSettingsStore = defineStore("settings", {
         gpuMemUtil: data.gpuMemUtil || undefined,
         cpuThr: data.cpuThr || undefined,
         cpuUptime: data.cpuUptime || undefined,
-        diskUtilPct: data.diskUtilPct || undefined
+        diskUtilPct: data.diskUtilPct || undefined,
+        npuUsage: data.npuUsage || undefined
       };
     },
     updateGeneralSettingsFromWebsocket(data: WebsocketSettingsUpdate) {
@@ -87,23 +103,15 @@ export const useSettingsStore = defineStore("settings", {
         version: data.general.version || undefined,
         hardwareModel: data.general.hardwareModel || undefined,
         hardwarePlatform: data.general.hardwarePlatform || undefined,
-        gpuAcceleration: data.general.gpuAcceleration || undefined
+        gpuAcceleration: data.general.gpuAcceleration || undefined,
+        mrCalWorking: data.general.mrCalWorking,
+        rknnSupported: data.general.rknnSupported
       };
       this.lighting = data.lighting;
       this.network = data.networkSettings;
+      this.currentFieldLayout = data.atfl;
     },
-    saveGeneralSettings() {
-      const payload: Required<ConfigurableNetworkSettings> = {
-        connectionType: this.network.connectionType,
-        hostname: this.network.hostname,
-        networkManagerIface: this.network.networkManagerIface || "",
-        ntServerAddress: this.network.ntServerAddress,
-        runNTServer: this.network.runNTServer,
-        setDHCPcommand: this.network.setDHCPcommand || "",
-        setStaticCommand: this.network.setStaticCommand || "",
-        shouldManage: this.network.shouldManage,
-        staticIp: this.network.staticIp
-      };
+    updateGeneralSettings(payload: Required<ConfigurableNetworkSettings>) {
       return axios.post("/settings/general", payload);
     },
     /**

@@ -25,6 +25,7 @@
 package org.photonvision.simulation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
@@ -79,7 +80,7 @@ public class SimCameraProperties {
     private double avgLatencyMs = 0;
     private double latencyStdDevMs = 0;
     // util
-    private List<DMatrix3> viewplanes = new ArrayList<>();
+    private final List<DMatrix3> viewplanes = new ArrayList<>();
 
     /** Default constructor which is the same as {@link #PERFECT_90DEG} */
     public SimCameraProperties() {
@@ -130,7 +131,7 @@ public class SimCameraProperties {
                 for (int j = 0; j < jsonIntrinsicsNode.size(); j++) {
                     jsonIntrinsics[j] = jsonIntrinsicsNode.get(j).asDouble();
                 }
-                var jsonDistortNode = calib.get("cameraExtrinsics").get("data");
+                var jsonDistortNode = calib.get("distCoeffs").get("data");
                 double[] jsonDistortion = new double[jsonDistortNode.size()];
                 for (int j = 0; j < jsonDistortNode.size(); j++) {
                     jsonDistortion[j] = jsonDistortNode.get(j).asDouble();
@@ -146,8 +147,8 @@ public class SimCameraProperties {
                 setCalibration(
                         jsonWidth,
                         jsonHeight,
-                        Matrix.mat(Nat.N3(), Nat.N3()).fill(jsonIntrinsics),
-                        Matrix.mat(Nat.N5(), Nat.N1()).fill(jsonDistortion));
+                        MatBuilder.fill(Nat.N3(), Nat.N3(), jsonIntrinsics),
+                        MatBuilder.fill(Nat.N5(), Nat.N1(), jsonDistortion));
                 setCalibError(jsonAvgError, jsonErrorStdDev);
                 success = true;
             }
@@ -184,7 +185,7 @@ public class SimCameraProperties {
         double fy = cy / Math.tan(fovHeight.getRadians() / 2.0);
 
         // create camera intrinsics matrix
-        var camIntrinsics = Matrix.mat(Nat.N3(), Nat.N3()).fill(fx, 0, cx, 0, fy, cy, 0, 0, 1);
+        var camIntrinsics = MatBuilder.fill(Nat.N3(), Nat.N3(), fx, 0, cx, 0, fy, cy, 0, 0, 1);
         setCalibration(resWidth, resHeight, camIntrinsics, distCoeff);
     }
 
@@ -215,8 +216,9 @@ public class SimCameraProperties {
                                     0, getPixelPitch(resHeight).plus(new Rotation2d(-Math.PI / 2)).getRadians(), 0))
                 };
         viewplanes.clear();
-        for (int i = 0; i < p.length; i++) {
-            viewplanes.add(new DMatrix3(p[i].getX(), p[i].getY(), p[i].getZ()));
+        for (Translation3d translation3d : p) {
+            viewplanes.add(
+                    new DMatrix3(translation3d.getX(), translation3d.getY(), translation3d.getZ()));
         }
     }
 
@@ -457,8 +459,7 @@ public class SimCameraProperties {
         // check if the ends of the line segment are visible
         boolean aVisible = true;
         boolean bVisible = true;
-        for (int i = 0; i < viewplanes.size(); i++) {
-            var normal = viewplanes.get(i);
+        for (DMatrix3 normal : viewplanes) {
             double aVisibility = CommonOps_DDF3.dot(av, normal);
             if (aVisibility < 0) aVisible = false;
             double bVisibility = CommonOps_DDF3.dot(bv, normal);
@@ -467,7 +468,7 @@ public class SimCameraProperties {
             if (aVisibility <= 0 && bVisibility <= 0) return new Pair<>(null, null);
         }
         // both ends are inside frustum
-        if (aVisible && bVisible) return new Pair<>(Double.valueOf(0), Double.valueOf(1));
+        if (aVisible && bVisible) return new Pair<>((double) 0, 1.0);
 
         // parametrized (t=0 at a, t=1 at b) intersections with viewplanes
         double[] intersections = {Double.NaN, Double.NaN, Double.NaN, Double.NaN};
@@ -546,8 +547,8 @@ public class SimCameraProperties {
         }
         // one viewplane intersection
         else if (!Double.isNaN(inter1)) {
-            if (aVisible) return new Pair<>(Double.valueOf(0), inter1);
-            if (bVisible) return new Pair<>(inter1, Double.valueOf(1));
+            if (aVisible) return new Pair<>((double) 0, inter1);
+            if (bVisible) return new Pair<>(inter1, 1.0);
             return new Pair<>(inter1, null);
         }
         // no intersections
@@ -597,17 +598,19 @@ public class SimCameraProperties {
         prop.setCalibration(
                 320,
                 240,
-                Matrix.mat(Nat.N3(), Nat.N3())
-                        .fill( // intrinsic
-                                328.2733242048587,
-                                0.0,
-                                164.8190261141906,
-                                0.0,
-                                318.0609794305216,
-                                123.8633838438093,
-                                0.0,
-                                0.0,
-                                1.0),
+                MatBuilder.fill(
+                        Nat.N3(),
+                        Nat.N3(),
+                        // intrinsic
+                        328.2733242048587,
+                        0.0,
+                        164.8190261141906,
+                        0.0,
+                        318.0609794305216,
+                        123.8633838438093,
+                        0.0,
+                        0.0,
+                        1.0),
                 VecBuilder.fill( // distort
                         0.09957946553445934,
                         -0.9166265114485799,
@@ -626,17 +629,19 @@ public class SimCameraProperties {
         prop.setCalibration(
                 640,
                 480,
-                Matrix.mat(Nat.N3(), Nat.N3())
-                        .fill( // intrinsic
-                                669.1428078983059,
-                                0.0,
-                                322.53377249329213,
-                                0.0,
-                                646.9843137061716,
-                                241.26567383784163,
-                                0.0,
-                                0.0,
-                                1.0),
+                MatBuilder.fill(
+                        Nat.N3(),
+                        Nat.N3(),
+                        // intrinsic
+                        669.1428078983059,
+                        0.0,
+                        322.53377249329213,
+                        0.0,
+                        646.9843137061716,
+                        241.26567383784163,
+                        0.0,
+                        0.0,
+                        1.0),
                 VecBuilder.fill( // distort
                         0.12788470750464645,
                         -1.2350335805796528,
@@ -655,17 +660,18 @@ public class SimCameraProperties {
         prop.setCalibration(
                 640,
                 480,
-                Matrix.mat(Nat.N3(), Nat.N3())
-                        .fill( // intrinsic
-                                511.22843367007755,
-                                0.0,
-                                323.62049380211096,
-                                0.0,
-                                514.5452336723849,
-                                261.8827920543568,
-                                0.0,
-                                0.0,
-                                1.0),
+                MatBuilder.fill(
+                        Nat.N3(),
+                        Nat.N3(), // intrinsic
+                        511.22843367007755,
+                        0.0,
+                        323.62049380211096,
+                        0.0,
+                        514.5452336723849,
+                        261.8827920543568,
+                        0.0,
+                        0.0,
+                        1.0),
                 VecBuilder.fill( // distort
                         0.1917469998873756,
                         -0.5142936883324216,
@@ -684,17 +690,19 @@ public class SimCameraProperties {
         prop.setCalibration(
                 960,
                 720,
-                Matrix.mat(Nat.N3(), Nat.N3())
-                        .fill( // intrinsic
-                                769.6873145148892,
-                                0.0,
-                                486.1096609458122,
-                                0.0,
-                                773.8164483705323,
-                                384.66071662358354,
-                                0.0,
-                                0.0,
-                                1.0),
+                MatBuilder.fill(
+                        Nat.N3(),
+                        Nat.N3(),
+                        // intrinsic
+                        769.6873145148892,
+                        0.0,
+                        486.1096609458122,
+                        0.0,
+                        773.8164483705323,
+                        384.66071662358354,
+                        0.0,
+                        0.0,
+                        1.0),
                 VecBuilder.fill( // distort
                         0.189462064814501,
                         -0.49903003669627627,
@@ -713,17 +721,19 @@ public class SimCameraProperties {
         prop.setCalibration(
                 1280,
                 720,
-                Matrix.mat(Nat.N3(), Nat.N3())
-                        .fill( // intrinsic
-                                1011.3749416937393,
-                                0.0,
-                                645.4955139388737,
-                                0.0,
-                                1008.5391755084075,
-                                508.32877656020196,
-                                0.0,
-                                0.0,
-                                1.0),
+                MatBuilder.fill(
+                        Nat.N3(),
+                        Nat.N3(),
+                        // intrinsic
+                        1011.3749416937393,
+                        0.0,
+                        645.4955139388737,
+                        0.0,
+                        1008.5391755084075,
+                        508.32877656020196,
+                        0.0,
+                        0.0,
+                        1.0),
                 VecBuilder.fill( // distort
                         0.13730101577061535,
                         -0.2904345656989261,

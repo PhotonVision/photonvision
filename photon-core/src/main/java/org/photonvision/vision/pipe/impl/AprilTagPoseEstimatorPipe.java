@@ -25,17 +25,17 @@ import org.opencv.calib3d.Calib3d;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class AprilTagPoseEstimatorPipe
         extends CVPipe<
                 AprilTagDetection,
                 AprilTagPoseEstimate,
-                AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams> {
+                AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams>
+        implements Releasable {
     private final AprilTagPoseEstimator m_poseEstimator =
             new AprilTagPoseEstimator(new AprilTagPoseEstimator.Config(0, 0, 0, 0, 0));
-
-    boolean useNativePoseEst;
 
     public AprilTagPoseEstimatorPipe() {
         super();
@@ -46,7 +46,7 @@ public class AprilTagPoseEstimatorPipe
     @Override
     protected AprilTagPoseEstimate process(AprilTagDetection in) {
         // Save the corner points of our detection to an array
-        Point corners[] = new Point[4];
+        Point[] corners = new Point[4];
         for (int i = 0; i < 4; i++) {
             corners[i] = new Point(in.getCornerX(i), in.getCornerY(i));
         }
@@ -94,8 +94,9 @@ public class AprilTagPoseEstimatorPipe
         super.setParams(newParams);
     }
 
-    public void setNativePoseEstimationEnabled(boolean enabled) {
-        this.useNativePoseEst = enabled;
+    @Override
+    public void release() {
+        temp.release();
     }
 
     public static class AprilTagPoseEstimatorPipeParams {
@@ -128,8 +129,7 @@ public class AprilTagPoseEstimatorPipe
             if (config == null) {
                 if (other.config != null) return false;
             } else if (!config.equals(other.config)) return false;
-            if (nIters != other.nIters) return false;
-            return true;
+            return nIters == other.nIters;
         }
     }
 }

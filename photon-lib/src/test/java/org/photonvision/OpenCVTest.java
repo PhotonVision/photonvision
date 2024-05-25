@@ -26,32 +26,23 @@ package org.photonvision;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import edu.wpi.first.apriltag.jni.AprilTagJNI;
 import edu.wpi.first.cscore.CameraServerCvJNI;
-import edu.wpi.first.cscore.CameraServerJNI;
-import edu.wpi.first.hal.JNIWrapper;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.net.WPINetJNI;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.NetworkTablesJNI;
-import edu.wpi.first.util.CombinedRuntimeLoader;
-import edu.wpi.first.util.RuntimeLoader;
-import edu.wpi.first.util.WPIUtilJNI;
+import java.io.IOException;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.opencv.core.Core;
 import org.photonvision.estimation.CameraTargetRelation;
 import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.RotTrlTransform3d;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.simulation.SimCameraProperties;
-import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
 
 public class OpenCVTest {
@@ -85,32 +76,8 @@ public class OpenCVTest {
     private static final SimCameraProperties prop = new SimCameraProperties();
 
     @BeforeAll
-    public static void setUp() {
-        JNIWrapper.Helper.setExtractOnStaticLoad(false);
-        WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
-        NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
-        WPINetJNI.Helper.setExtractOnStaticLoad(false);
-        CameraServerJNI.Helper.setExtractOnStaticLoad(false);
-        CameraServerCvJNI.Helper.setExtractOnStaticLoad(false);
-        AprilTagJNI.Helper.setExtractOnStaticLoad(false);
-
-        try {
-            CombinedRuntimeLoader.loadLibraries(
-                    VisionSystemSim.class,
-                    "wpiutiljni",
-                    "ntcorejni",
-                    "wpinetjni",
-                    "wpiHaljni",
-                    "cscorejni",
-                    "cscorejnicvstatic");
-
-            var loader =
-                    new RuntimeLoader<>(
-                            Core.NATIVE_LIBRARY_NAME, RuntimeLoader.getDefaultExtractionRoot(), Core.class);
-            loader.loadLibrary();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public static void setUp() throws IOException {
+        CameraServerCvJNI.forceLoad();
 
         // NT live for debug purposes
         NetworkTableInstance.getDefault().startServer();
@@ -142,7 +109,7 @@ public class OpenCVTest {
     public void testProjection() {
         var target =
                 new VisionTargetSim(
-                        new Pose3d(1, 0, 0, new Rotation3d(0, 0, Math.PI)), TargetModel.kTag16h5, 0);
+                        new Pose3d(1, 0, 0, new Rotation3d(0, 0, Math.PI)), TargetModel.kAprilTag16h5, 0);
         var cameraPose = new Pose3d(0, 0, 0, new Rotation3d());
         var camRt = RotTrlTransform3d.makeRelativeTo(cameraPose);
         var imagePoints =
@@ -198,7 +165,7 @@ public class OpenCVTest {
         // square AprilTag target
         var target =
                 new VisionTargetSim(
-                        new Pose3d(5, 0.5, 1, new Rotation3d(0, 0, Math.PI)), TargetModel.kTag16h5, 0);
+                        new Pose3d(5, 0.5, 1, new Rotation3d(0, 0, Math.PI)), TargetModel.kAprilTag16h5, 0);
         var cameraPose = new Pose3d(0, 0, 0, new Rotation3d());
         var camRt = RotTrlTransform3d.makeRelativeTo(cameraPose);
         // target relative to camera

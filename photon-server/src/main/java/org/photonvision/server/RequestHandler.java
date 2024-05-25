@@ -17,20 +17,23 @@
 
 package org.photonvision.server;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.http.Context;
 import io.javalin.http.UploadedFile;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Optional;
+import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
+import org.opencv.core.MatOfByte;
+import org.opencv.core.MatOfInt;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.dataflow.DataChangeDestination;
@@ -44,8 +47,10 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.ShellExec;
 import org.photonvision.common.util.TimedTaskManager;
+import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.common.util.file.ProgramDirectoryUtilities;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.processes.VisionModuleManager;
 
 public class RequestHandler {
@@ -90,8 +95,10 @@ public class RequestHandler {
 
         if (ConfigManager.saveUploadedSettingsZip(tempFilePath.get())) {
             ctx.status(200);
-            ctx.result("Successfully saved the uploaded settings zip");
-            logger.info("Successfully saved the uploaded settings zip");
+            ctx.result("Successfully saved the uploaded settings zip, rebooting...");
+            logger.info("Successfully saved the uploaded settings zip, rebooting...");
+            ConfigManager.getInstance().disableFlushOnShutdown();
+            restartProgram();
         } else {
             ctx.status(500);
             ctx.result("There was an error while saving the uploaded zip file");
@@ -153,8 +160,9 @@ public class RequestHandler {
 
         if (ConfigManager.getInstance().saveUploadedHardwareConfig(tempFilePath.get().toPath())) {
             ctx.status(200);
-            ctx.result("Successfully saved the uploaded hardware config");
-            logger.info("Successfully saved the uploaded hardware config");
+            ctx.result("Successfully saved the uploaded hardware config, rebooting...");
+            logger.info("Successfully saved the uploaded hardware config, rebooting...");
+            restartProgram();
         } else {
             ctx.status(500);
             ctx.result("There was an error while saving the uploaded hardware config");
@@ -195,8 +203,9 @@ public class RequestHandler {
 
         if (ConfigManager.getInstance().saveUploadedHardwareSettings(tempFilePath.get().toPath())) {
             ctx.status(200);
-            ctx.result("Successfully saved the uploaded hardware settings");
-            logger.info("Successfully saved the uploaded hardware settings");
+            ctx.result("Successfully saved the uploaded hardware settings, rebooting...");
+            logger.info("Successfully saved the uploaded hardware settings, rebooting...");
+            restartProgram();
         } else {
             ctx.status(500);
             ctx.result("There was an error while saving the uploaded hardware settings");
@@ -237,12 +246,56 @@ public class RequestHandler {
 
         if (ConfigManager.getInstance().saveUploadedNetworkConfig(tempFilePath.get().toPath())) {
             ctx.status(200);
-            ctx.result("Successfully saved the uploaded network config");
-            logger.info("Successfully saved the uploaded network config");
+            ctx.result("Successfully saved the uploaded network config, rebooting...");
+            logger.info("Successfully saved the uploaded network config, rebooting...");
+            restartProgram();
         } else {
             ctx.status(500);
             ctx.result("There was an error while saving the uploaded network config");
             logger.error("There was an error while saving the uploaded network config");
+        }
+    }
+
+    public static void onAprilTagFieldLayoutRequest(Context ctx) {
+        var file = ctx.uploadedFile("data");
+
+        if (file == null) {
+            ctx.status(400);
+            ctx.result(
+                    "No File was sent with the request. Make sure that the field layout json is sent at the key 'data'");
+            logger.error(
+                    "No File was sent with the request. Make sure that the field layout json is sent at the key 'data'");
+            return;
+        }
+
+        if (!file.extension().contains("json")) {
+            ctx.status(400);
+            ctx.result(
+                    "The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
+            logger.error(
+                    "The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
+            return;
+        }
+
+        // Create a temp file
+        var tempFilePath = handleTempFileCreation(file);
+
+        if (tempFilePath.isEmpty()) {
+            ctx.status(500);
+            ctx.result("There was an error while creating a temporary copy of the file");
+            logger.error("There was an error while creating a temporary copy of the file");
+            return;
+        }
+
+        if (ConfigManager.getInstance().saveUploadedAprilTagFieldLayout(tempFilePath.get().toPath())) {
+            ctx.status(200);
+            ctx.result("Successfully saved the uploaded AprilTagFieldLayout, rebooting...");
+            logger.info("Successfully saved the uploaded AprilTagFieldLayout, rebooting...");
+            restartProgram();
+        } else {
+            ctx.status(500);
+            ctx.result("There was an error while saving the uploaded AprilTagFieldLayout");
+            logger.error("There was an error while saving the uploaded AprilTagFieldLayout");
         }
     }
 
@@ -296,12 +349,12 @@ public class RequestHandler {
     public static void onGeneralSettingsRequest(Context ctx) {
         NetworkConfig config;
         try {
-            config = kObjectMapper.readValue(ctx.body(), NetworkConfig.class);
+            config = kObjectMapper.readValue(ctx.bodyInputStream(), NetworkConfig.class);
 
             ctx.status(200);
             ctx.result("Successfully saved general settings");
             logger.info("Successfully saved general settings");
-        } catch (JsonProcessingException e) {
+        } catch (IOException e) {
             // If the settings can't be parsed, use the default network settings
             config = new NetworkConfig();
 
@@ -318,22 +371,36 @@ public class RequestHandler {
         NetworkTablesManager.getInstance().setConfig(config);
     }
 
+    public static class UICameraSettingsRequest {
+        @JsonProperty("fov")
+        double fov;
+
+        @JsonProperty("quirksToChange")
+        HashMap<CameraQuirk, Boolean> quirksToChange;
+    }
+
     public static void onCameraSettingsRequest(Context ctx) {
         try {
-            var data = kObjectMapper.readTree(ctx.body());
+            var data = kObjectMapper.readTree(ctx.bodyInputStream());
 
             int index = data.get("index").asInt();
-            double fov = data.get("settings").get("fov").asDouble();
+            var settings =
+                    JacksonUtils.deserialize(data.get("settings").toString(), UICameraSettingsRequest.class);
+            var fov = settings.fov;
+
+            logger.info("Changing camera FOV to: " + fov);
+            logger.info("Changing quirks to: " + settings.quirksToChange.toString());
 
             var module = VisionModuleManager.getInstance().getModule(index);
             module.setFov(fov);
+            module.changeCameraQuirks(settings.quirksToChange);
 
             module.saveModule();
 
             ctx.status(200);
             ctx.result("Successfully saved camera settings");
             logger.info("Successfully saved camera settings");
-        } catch (JsonProcessingException | NullPointerException e) {
+        } catch (NullPointerException | IOException e) {
             ctx.status(400);
             ctx.result("The provided camera settings were malformed");
             logger.error("The provided camera settings were malformed", e);
@@ -384,7 +451,7 @@ public class RequestHandler {
         int index;
 
         try {
-            index = kObjectMapper.readTree(ctx.body()).get("index").asInt();
+            index = kObjectMapper.readTree(ctx.bodyInputStream()).get("index").asInt();
 
             var calData = VisionModuleManager.getInstance().getModule(index).endCalibration();
             if (calData == null) {
@@ -414,8 +481,8 @@ public class RequestHandler {
         }
     }
 
-    public static void onCalibrationImportRequest(Context ctx) {
-        var data = ctx.body();
+    public static void onCalibDBCalibrationImportRequest(Context ctx) {
+        var data = ctx.bodyInputStream();
 
         try {
             var actualObj = kObjectMapper.readTree(data);
@@ -436,13 +503,45 @@ public class RequestHandler {
             ctx.status(200);
             ctx.result("Calibration imported successfully from CalibDB data!");
             logger.info("Calibration imported successfully from CalibDB data!");
-        } catch (JsonProcessingException e) {
+        } catch (IOException e) {
             ctx.status(400);
             ctx.result(
                     "The Provided CalibDB data is malformed and cannot be parsed for the required fields.");
             logger.error(
                     "The Provided CalibDB data is malformed and cannot be parsed for the required fields.",
                     e);
+        }
+    }
+
+    public static void onDataCalibrationImportRequest(Context ctx) {
+        try {
+            var data = kObjectMapper.readTree(ctx.bodyInputStream());
+
+            int cameraIndex = data.get("cameraIndex").asInt();
+            var coeffs =
+                    kObjectMapper.convertValue(data.get("calibration"), CameraCalibrationCoefficients.class);
+
+            var uploadCalibrationEvent =
+                    new IncomingWebSocketEvent<>(
+                            DataChangeDestination.DCD_ACTIVEMODULE,
+                            "calibrationUploaded",
+                            coeffs,
+                            cameraIndex,
+                            null);
+            DataChangeService.getInstance().publishEvent(uploadCalibrationEvent);
+
+            ctx.status(200);
+            ctx.result("Calibration imported successfully from imported data!");
+            logger.info("Calibration imported successfully from imported data!");
+        } catch (JsonProcessingException e) {
+            ctx.status(400);
+            ctx.result("The provided calibration data was malformed");
+            logger.error("The provided calibration data was malformed", e);
+
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.result("An error occurred while uploading calibration data");
+            logger.error("An error occurred while uploading calibration data", e);
         }
     }
 
@@ -458,7 +557,7 @@ public class RequestHandler {
 
     public static void onCameraNicknameChangeRequest(Context ctx) {
         try {
-            var data = kObjectMapper.readTree(ctx.body());
+            var data = kObjectMapper.readTree(ctx.bodyInputStream());
 
             String name = data.get("name").asText();
             int idx = data.get("cameraIndex").asInt();
@@ -484,6 +583,158 @@ public class RequestHandler {
         ctx.status(204);
     }
 
+    public static void onCalibrationSnapshotRequest(Context ctx) {
+        logger.info(ctx.queryString().toString());
+
+        int idx = Integer.parseInt(ctx.queryParam("cameraIdx"));
+        var width = Integer.parseInt(ctx.queryParam("width"));
+        var height = Integer.parseInt(ctx.queryParam("height"));
+        var observationIdx = Integer.parseInt(ctx.queryParam("snapshotIdx"));
+
+        CameraCalibrationCoefficients calList =
+                VisionModuleManager.getInstance()
+                        .getModule(idx)
+                        .getStateAsCameraConfig()
+                        .calibrations
+                        .stream()
+                        .filter(
+                                it ->
+                                        Math.abs(it.resolution.width - width) < 1e-4
+                                                && Math.abs(it.resolution.height - height) < 1e-4)
+                        .findFirst()
+                        .orElse(null);
+
+        if (calList == null || calList.observations.size() < observationIdx) {
+            ctx.status(404);
+            return;
+        }
+
+        // encode as jpeg to save even more space. reduces size of a 1280p image from 300k to 25k
+        var jpegBytes = new MatOfByte();
+        Imgcodecs.imencode(
+                ".jpg",
+                calList.observations.get(observationIdx).snapshotData.getAsMat(),
+                jpegBytes,
+                new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 60));
+
+        ctx.result(jpegBytes.toArray());
+        jpegBytes.release();
+
+        ctx.status(200);
+    }
+
+    public static void onCalibrationExportRequest(Context ctx) {
+        logger.info(ctx.queryString().toString());
+
+        int idx = Integer.parseInt(ctx.queryParam("cameraIdx"));
+        var width = Integer.parseInt(ctx.queryParam("width"));
+        var height = Integer.parseInt(ctx.queryParam("height"));
+
+        var cc = VisionModuleManager.getInstance().getModule(idx).getStateAsCameraConfig();
+
+        CameraCalibrationCoefficients calList =
+                cc.calibrations.stream()
+                        .filter(
+                                it ->
+                                        Math.abs(it.resolution.width - width) < 1e-4
+                                                && Math.abs(it.resolution.height - height) < 1e-4)
+                        .findFirst()
+                        .orElse(null);
+
+        if (calList == null) {
+            ctx.status(404);
+            return;
+        }
+
+        var filename = "photon_calibration_" + cc.uniqueName + "_" + width + "x" + height + ".json";
+        ctx.contentType("application/zip");
+        ctx.header("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+        ctx.json(calList);
+
+        ctx.status(200);
+    }
+
+    public static void onImageSnapshotsRequest(Context ctx) {
+        var snapshots = new ArrayList<HashMap<String, Object>>();
+        var cameraDirs = ConfigManager.getInstance().getImageSavePath().toFile().listFiles();
+
+        if (cameraDirs != null) {
+            try {
+                for (File cameraDir : cameraDirs) {
+                    var cameraSnapshots = cameraDir.listFiles();
+                    if (cameraSnapshots == null) continue;
+
+                    String cameraUniqueName = cameraDir.getName();
+
+                    for (File snapshot : cameraSnapshots) {
+                        var snapshotData = new HashMap<String, Object>();
+
+                        var bufferedImage = ImageIO.read(snapshot);
+                        var buffer = new ByteArrayOutputStream();
+                        ImageIO.write(bufferedImage, "jpg", buffer);
+                        byte[] data = buffer.toByteArray();
+
+                        snapshotData.put("snapshotName", snapshot.getName());
+                        snapshotData.put("cameraUniqueName", cameraUniqueName);
+                        snapshotData.put("snapshotData", data);
+
+                        snapshots.add(snapshotData);
+                    }
+                }
+            } catch (IOException e) {
+                ctx.status(500);
+                ctx.result("Unable to read saved images");
+            }
+        }
+
+        ctx.status(200);
+        ctx.json(snapshots);
+    }
+
+    public static void onCameraCalibImagesRequest(Context ctx) {
+        try {
+            HashMap<String, HashMap<String, ArrayList<HashMap<String, Object>>>> snapshots =
+                    new HashMap<>();
+
+            var cameraDirs = ConfigManager.getInstance().getCalibDir().toFile().listFiles();
+            if (cameraDirs != null) {
+                var camData = new HashMap<String, ArrayList<HashMap<String, Object>>>();
+                for (var cameraDir : cameraDirs) {
+                    var resolutionDirs = cameraDir.listFiles();
+                    if (resolutionDirs == null) continue;
+                    for (var resolutionDir : resolutionDirs) {
+                        var calibImages = resolutionDir.listFiles();
+                        if (calibImages == null) continue;
+                        var resolutionImages = new ArrayList<HashMap<String, Object>>();
+                        for (var calibImg : calibImages) {
+                            var snapshotData = new HashMap<String, Object>();
+
+                            var bufferedImage = ImageIO.read(calibImg);
+                            var buffer = new ByteArrayOutputStream();
+                            ImageIO.write(bufferedImage, "png", buffer);
+                            byte[] data = buffer.toByteArray();
+
+                            snapshotData.put("snapshotData", data);
+                            snapshotData.put("snapshotFilename", calibImg.getName());
+
+                            resolutionImages.add(snapshotData);
+                        }
+                        camData.put(resolutionDir.getName(), resolutionImages);
+                    }
+
+                    var cameraName = cameraDir.getName();
+                    snapshots.put(cameraName, camData);
+                }
+            }
+
+            ctx.json(snapshots);
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.result("An error occurred while getting calib data");
+            logger.error("An error occurred while getting calib data", e);
+        }
+    }
+
     /**
      * Create a temporary file using the UploadedFile from Javalin.
      *
@@ -495,9 +746,12 @@ public class RequestHandler {
                 new File(Path.of(System.getProperty("java.io.tmpdir"), file.filename()).toString());
         boolean makeDirsRes = tempFilePath.getParentFile().mkdirs();
 
-        if (!makeDirsRes) {
+        if (!makeDirsRes && !(tempFilePath.getParentFile().exists())) {
             logger.error(
-                    "There was an error while uploading " + file.filename() + " to the temp folder!");
+                    "There was an error while creating "
+                            + tempFilePath.getAbsolutePath()
+                            + "! Exists: "
+                            + tempFilePath.getParentFile().exists());
             return Optional.empty();
         }
 
@@ -505,7 +759,10 @@ public class RequestHandler {
             FileUtils.copyInputStreamToFile(file.content(), tempFilePath);
         } catch (IOException e) {
             logger.error(
-                    "There was an error while uploading " + file.filename() + " to the temp folder!");
+                    "There was an error while copying "
+                            + file.filename()
+                            + " to the temp file "
+                            + tempFilePath.getAbsolutePath());
             return Optional.empty();
         }
 

@@ -30,7 +30,7 @@ const driverMode = computed<boolean>({
 });
 
 const fpsTooLow = computed<boolean>(() => {
-  const currFPS = useStateStore().pipelineResults?.fps || 0;
+  const currFPS = useStateStore().currentPipelineResults?.fps || 0;
   const targetFPS = useCameraSettingsStore().currentVideoFormat.fps;
   const driverMode = useCameraSettingsStore().isDriverMode;
   const gpuAccel = useSettingsStore().general.gpuAcceleration !== undefined;
@@ -41,7 +41,12 @@ const fpsTooLow = computed<boolean>(() => {
 </script>
 
 <template>
-  <v-card class="mb-3 pr-6 pb-3 pa-4" color="primary" dark>
+  <v-card
+    id="camera-settings-camera-view-card"
+    class="camera-settings-camera-view-card mb-3 pb-3 pa-4"
+    color="primary"
+    dark
+  >
     <v-card-title
       class="pb-0 mb-2 pl-4 pt-1"
       style="min-height: 50px; justify-content: space-between; align-content: center"
@@ -58,8 +63,8 @@ const fpsTooLow = computed<boolean>(() => {
             style="font-size: 1rem; padding: 0; margin: 0"
           >
             <span class="pr-1">
-              {{ Math.round(useStateStore().pipelineResults?.fps || 0) }}&nbsp;FPS &ndash;
-              {{ Math.min(Math.round(useStateStore().pipelineResults?.latency || 0), 9999) }} ms latency
+              {{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &ndash;
+              {{ Math.min(Math.round(useStateStore().currentPipelineResults?.latency || 0), 9999) }} ms latency
             </span>
           </v-chip>
         </div>
@@ -68,7 +73,7 @@ const fpsTooLow = computed<boolean>(() => {
       <div>
         <v-switch
           v-model="driverMode"
-          :disabled="useCameraSettingsStore().isCalibrationMode"
+          :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
           label="Driver Mode"
           style="margin-left: auto"
           color="accent"
@@ -78,10 +83,20 @@ const fpsTooLow = computed<boolean>(() => {
     </v-card-title>
     <div class="stream-container pb-4">
       <div class="stream">
-        <photon-camera-stream v-show="value.includes(0)" stream-type="Raw" style="max-width: 100%" />
+        <photon-camera-stream
+          v-show="value.includes(0)"
+          id="input-camera-stream"
+          stream-type="Raw"
+          style="max-width: 100%"
+        />
       </div>
       <div class="stream">
-        <photon-camera-stream v-show="value.includes(1)" stream-type="Processed" style="max-width: 100%" />
+        <photon-camera-stream
+          v-show="value.includes(1)"
+          id="output-camera-stream"
+          stream-type="Processed"
+          style="max-width: 100%"
+        />
       </div>
     </div>
     <v-divider />
@@ -93,16 +108,16 @@ const fpsTooLow = computed<boolean>(() => {
           class="fill"
           :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode"
         >
-          <v-icon>mdi-import</v-icon>
-          <span>Raw</span>
+          <v-icon left class="mode-btn-icon">mdi-import</v-icon>
+          <span class="mode-btn-label">Raw</span>
         </v-btn>
         <v-btn
           color="secondary"
           class="fill"
           :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode"
         >
-          <v-icon>mdi-export</v-icon>
-          <span>Processed</span>
+          <v-icon left class="mode-btn-icon">mdi-export</v-icon>
+          <span class="mode-btn-label">Processed</span>
         </v-btn>
       </v-btn-toggle>
     </div>
@@ -125,6 +140,7 @@ th {
 
 .stream-container {
   display: flex;
+  justify-content: center;
   flex-wrap: wrap;
   align-items: center;
   gap: 12px;
@@ -133,16 +149,30 @@ th {
 .stream {
   display: flex;
   justify-content: center;
-  width: 100%;
 }
 
+@media only screen and (min-width: 960px) {
+  #camera-settings-camera-view-card {
+    position: sticky;
+    top: 12px;
+  }
+}
 @media only screen and (min-width: 512px) and (max-width: 960px) {
   .stream-container {
     flex-wrap: nowrap;
+    justify-content: center;
   }
 
   .stream {
-    width: 50%;
+    max-width: 50%;
+  }
+}
+@media only screen and (max-width: 351px) {
+  .mode-btn-icon {
+    margin: 0 !important;
+  }
+  .mode-btn-label {
+    display: none;
   }
 }
 </style>

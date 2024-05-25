@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include <photonlib/PhotonCamera.h>
+#include <photon/PhotonCamera.h>
 
 #include <frc/TimedRobot.h>
 #include <frc/XboxController.h>
@@ -53,14 +53,14 @@ class Robot : public frc::TimedRobot {
   // PID constants should be tuned per robot
   const double LINEAR_P = 0.1;
   const double LINEAR_D = 0.0;
-  frc2::PIDController forwardController{LINEAR_P, 0.0, LINEAR_D};
+  frc::PIDController forwardController{LINEAR_P, 0.0, LINEAR_D};
 
   const double ANGULAR_P = 0.1;
   const double ANGULAR_D = 0.0;
-  frc2::PIDController turnController{ANGULAR_P, 0.0, ANGULAR_D};
+  frc::PIDController turnController{ANGULAR_P, 0.0, ANGULAR_D};
 
   // Change this to match the name of your camera
-  photonlib::PhotonCamera camera{"photonvision"};
+  photon::PhotonCamera camera{"photonvision"};
 
   frc::XboxController xboxController{0};
 

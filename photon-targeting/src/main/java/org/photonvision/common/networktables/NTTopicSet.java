@@ -26,8 +26,9 @@ import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.IntegerTopic;
 import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.ProtobufPublisher;
 import edu.wpi.first.networktables.PubSubOption;
-import edu.wpi.first.networktables.RawPublisher;
+import org.photonvision.targeting.PhotonPipelineResult;
 
 /**
  * This class is a wrapper around all per-pipeline NT topics that PhotonVision should be publishing
@@ -39,7 +40,9 @@ import edu.wpi.first.networktables.RawPublisher;
  */
 public class NTTopicSet {
     public NetworkTable subTable;
-    public RawPublisher rawBytesEntry;
+
+    public PacketPublisher<PhotonPipelineResult> resultPublisher;
+    public ProtobufPublisher<PhotonPipelineResult> protoResultPublisher;
 
     public IntegerPublisher pipelineIndexPublisher;
     public IntegerSubscriber pipelineIndexRequestSub;
@@ -69,10 +72,16 @@ public class NTTopicSet {
     public DoubleArrayPublisher cameraDistortionPublisher;
 
     public void updateEntries() {
-        rawBytesEntry =
+        var rawBytesEntry =
                 subTable
                         .getRawTopic("rawBytes")
                         .publish("rawBytes", PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
+
+        resultPublisher = new PacketPublisher<>(rawBytesEntry, PhotonPipelineResult.serde);
+        protoResultPublisher =
+                subTable
+                        .getProtobufTopic("result_proto", PhotonPipelineResult.proto)
+                        .publish(PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
 
         pipelineIndexPublisher = subTable.getIntegerTopic("pipelineIndexState").publish();
         pipelineIndexRequestSub = subTable.getIntegerTopic("pipelineIndexRequest").subscribe(0);
@@ -104,7 +113,7 @@ public class NTTopicSet {
 
     @SuppressWarnings("DuplicatedCode")
     public void removeEntries() {
-        if (rawBytesEntry != null) rawBytesEntry.close();
+        if (resultPublisher != null) resultPublisher.close();
         if (pipelineIndexPublisher != null) pipelineIndexPublisher.close();
         if (pipelineIndexRequestSub != null) pipelineIndexRequestSub.close();
 

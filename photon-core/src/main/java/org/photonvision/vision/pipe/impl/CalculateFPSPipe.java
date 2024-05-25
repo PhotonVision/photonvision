@@ -23,7 +23,7 @@ import org.photonvision.vision.pipe.CVPipe;
 
 public class CalculateFPSPipe
         extends CVPipe<Void, Integer, CalculateFPSPipe.CalculateFPSPipeParams> {
-    private LinearFilter fpsFilter = LinearFilter.movingAverage(20);
+    private final LinearFilter fpsFilter = LinearFilter.movingAverage(20);
     StopWatch clock = new StopWatch();
 
     @Override

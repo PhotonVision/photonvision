@@ -60,11 +60,7 @@ public abstract class NumberCouple<T extends Number> {
             return false;
         }
 
-        if (!couple.second.equals(second)) {
-            return false;
-        }
-
-        return true;
+        return couple.second.equals(second);
     }
 
     @JsonIgnore

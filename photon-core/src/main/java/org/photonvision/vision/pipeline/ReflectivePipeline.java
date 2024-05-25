@@ -30,7 +30,6 @@ import org.photonvision.vision.target.TargetOrientation;
 import org.photonvision.vision.target.TrackedTarget;
 
 /** Represents a pipeline for tracking retro-reflective targets. */
-@SuppressWarnings({"DuplicatedCode"})
 public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectivePipelineSettings> {
     private final FindContoursPipe findContoursPipe = new FindContoursPipe();
     private final SpeckleRejectPipe speckleRejectPipe = new SpeckleRejectPipe();
@@ -65,29 +64,6 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
                         settings.offsetDualPointB,
                         settings.offsetDualPointBArea);
 
-        // var rotateImageParams = new
-        // RotateImagePipe.RotateImageParams(settings.inputImageRotationMode);
-        // rotateImagePipe.setParams(rotateImageParams);
-
-        // if (cameraQuirks.hasQuirk(CameraQuirk.PiCam) && LibCameraJNI.isSupported()) {
-        //     LibCameraJNI.setThresholds(
-        //             settings.hsvHue.getFirst() / 180d,
-        //             settings.hsvSaturation.getFirst() / 255d,
-        //             settings.hsvValue.getFirst() / 255d,
-        //             settings.hsvHue.getSecond() / 180d,
-        //             settings.hsvSaturation.getSecond() / 255d,
-        //             settings.hsvValue.getSecond() / 255d);
-        //     //     LibCameraJNI.setInvertHue(settings.hueInverted);
-        //     LibCameraJNI.setRotation(settings.inputImageRotationMode.value);
-        //     //     LibCameraJNI.setShouldCopyColor(settings.inputShouldShow);
-        // } else {
-        //     var hsvParams =
-        //             new HSVPipe.HSVParams(
-        //                     settings.hsvHue, settings.hsvSaturation, settings.hsvValue,
-        // settings.hueInverted);
-        //     hsvPipe.setParams(hsvParams);
-        // }
-
         var findContoursParams = new FindContoursPipe.FindContoursParams();
         findContoursPipe.setParams(findContoursParams);
 
@@ -114,7 +90,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
         var sortContoursParams =
                 new SortContoursPipe.SortContoursParams(
                         settings.contourSortMode,
-                        settings.outputShowMultipleTargets ? 8 : 1, // TODO don't hardcode?
+                        settings.outputShowMultipleTargets ? MAX_MULTI_TARGET_RESULTS : 1,
                         frameStaticProperties);
         sortContoursPipe.setParams(sortContoursParams);
 
@@ -193,6 +169,6 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
 
         PipelineProfiler.printReflectiveProfile(pipeProfileNanos);
 
-        return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, frame);
+        return new CVPipelineResult(frame.sequenceID, sumPipeNanosElapsed, fps, targetList, frame);
     }
 }

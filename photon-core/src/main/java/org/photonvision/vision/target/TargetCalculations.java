@@ -16,24 +16,71 @@
  */
 package org.photonvision.vision.target;
 
+import org.opencv.calib3d.Calib3d;
+import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
+import org.opencv.core.TermCriteria;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.common.util.numbers.DoubleCouple;
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.opencv.DualOffsetValues;
 
 public class TargetCalculations {
-    public static double calculateYaw(
-            double offsetCenterX, double targetCenterX, double horizontalFocalLength) {
-        return Math.toDegrees(Math.atan((offsetCenterX - targetCenterX) / horizontalFocalLength));
+
+    /**
+     * Calculates the yaw and pitch of a point in the image. Yaw and pitch must be calculated together
+     * to account for perspective distortion. Yaw is positive right, and pitch is positive up.
+     *
+     * @param offsetCenterX The X value of the offset principal point (cx) in pixels
+     * @param targetCenterX The X value of the target's center point in pixels
+     * @param horizontalFocalLength The horizontal focal length (fx) in pixels
+     * @param offsetCenterY The Y value of the offset principal point (cy) in pixels
+     * @param targetCenterY The Y value of the target's center point in pixels
+     * @param verticalFocalLength The vertical focal length (fy) in pixels
+     * @param cameraCal Camera calibration parameters, or null if not calibrated
+     * @return The yaw and pitch from the principal axis to the target center, in degrees.
+     */
+    public static DoubleCouple calculateYawPitch(
+            double offsetCenterX,
+            double targetCenterX,
+            double horizontalFocalLength,
+            double offsetCenterY,
+            double targetCenterY,
+            double verticalFocalLength,
+            CameraCalibrationCoefficients cameraCal) {
+
+        if (cameraCal != null) {
+            // undistort
+            MatOfPoint2f temp = new MatOfPoint2f();
+            temp.fromArray(new Point(targetCenterX, targetCenterY));
+            // Tighten up termination criteria
+            var termCriteria = new TermCriteria(TermCriteria.COUNT + TermCriteria.EPS, 30, 1e-6);
+            Calib3d.undistortImagePoints(
+                    temp,
+                    temp,
+                    cameraCal.getCameraIntrinsicsMat(),
+                    cameraCal.getDistCoeffsMat(),
+                    termCriteria);
+            float buff[] = new float[2];
+            temp.get(0, 0, buff);
+            temp.release();
+
+            // if outside of the imager, convergence fails, or really really bad user camera cal,
+            // undistort will fail by giving us nans. at some point we should log this failure
+            // if we can't undistort, don't change the cnter location
+            if (Float.isFinite(buff[0]) && Float.isFinite(buff[1])) {
+                targetCenterX = buff[0];
+                targetCenterY = buff[1];
+            }
+        }
+
+        double yaw = Math.atan((targetCenterX - offsetCenterX) / horizontalFocalLength);
+        double pitch =
+                Math.atan((offsetCenterY - targetCenterY) / (verticalFocalLength / Math.cos(yaw)));
+        return new DoubleCouple(Math.toDegrees(yaw), Math.toDegrees(pitch));
     }
 
-    public static double calculatePitch(
-            double offsetCenterY, double targetCenterY, double verticalFocalLength) {
-        return -Math.toDegrees(Math.atan((offsetCenterY - targetCenterY) / verticalFocalLength));
-    }
-
-    @SuppressWarnings("DuplicatedCode")
     public static double calculateSkew(boolean isLandscape, RotatedRect minAreaRect) {
         // https://namkeenman.wordpress.com/2015/12/18/open-cv-determine-angle-of-rotatedrect-minarearect/
         var angle = minAreaRect.angle;

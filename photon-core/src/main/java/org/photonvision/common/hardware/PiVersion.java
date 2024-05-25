@@ -27,6 +27,7 @@ public enum PiVersion {
     ZERO_2_W("Raspberry Pi Zero 2"),
     PI_3("Pi 3"),
     PI_4("Pi 4"),
+    PI_5("Pi 5"),
     COMPUTE_MODULE_3("Compute Module 3"),
     UNKNOWN("UNKNOWN");
 
@@ -34,7 +35,7 @@ public enum PiVersion {
     private static final ShellExec shell = new ShellExec(true, false);
     private static final PiVersion currentPiVersion = calcPiVersion();
 
-    private PiVersion(String s) {
+    PiVersion(String s) {
         this.identifier = s.toLowerCase();
     }
 

@@ -17,7 +17,7 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import java.awt.Color;
+import java.awt.*;
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
@@ -62,7 +62,7 @@ public class Draw2dCrosshairPipe
                     }
                     break;
                 case Dual:
-                    if (in.getRight().size() >= 1) {
+                    if (!in.getRight().isEmpty()) {
                         var target = in.getRight().get(0);
                         if (target != null) {
                             var area = target.getArea();

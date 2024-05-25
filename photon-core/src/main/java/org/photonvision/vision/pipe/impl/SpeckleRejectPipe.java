@@ -33,7 +33,7 @@ public class SpeckleRejectPipe
         }
         m_despeckledContours.clear();
 
-        if (in.size() > 0) {
+        if (!in.isEmpty()) {
             double averageArea = 0.0;
             for (Contour c : in) {
                 averageArea += c.getArea();

@@ -4,7 +4,7 @@ import type { PhotonTarget } from "@/types/PhotonTrackingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import Photon3dVisualizer from "@/components/app/photon-3d-visualizer.vue";
 
-const trackedTargets = computed<PhotonTarget[]>(() => useStateStore().pipelineResults?.targets || []);
+const trackedTargets = computed<PhotonTarget[]>(() => useStateStore().currentPipelineResults?.targets || []);
 </script>
 
 <template>

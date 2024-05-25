@@ -19,6 +19,10 @@ package org.photonvision.common.networking;
 
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
+import org.photonvision.common.dataflow.DataChangeDestination;
+import org.photonvision.common.dataflow.DataChangeService;
+import org.photonvision.common.dataflow.DataChangeSource;
+import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -43,6 +47,7 @@ public class NetworkManager {
     public void initialize(boolean shouldManage) {
         isManaged = shouldManage && !networkingIsDisabled;
         if (!isManaged) {
+            logger.info("Network management is disabled.");
             return;
         }
 
@@ -54,7 +59,7 @@ public class NetworkManager {
             }
 
             // always set hostname
-            if (config.hostname.length() > 0) {
+            if (!config.hostname.isEmpty()) {
                 try {
                     var shell = new ShellExec(true, false);
                     shell.executeBashCommand("cat /etc/hostname | tr -d \" \\t\\n\\r\"");
@@ -107,7 +112,7 @@ public class NetworkManager {
                 }
             } else if (config.connectionType == NetworkMode.STATIC) {
                 var shell = new ShellExec();
-                if (config.staticIp.length() > 0) {
+                if (!config.staticIp.isEmpty()) {
                     try {
                         shell.executeBashCommand(
                                 config
@@ -116,7 +121,7 @@ public class NetworkManager {
                                         .replace(NetworkConfig.NM_IP_STRING, config.staticIp));
 
                         if (Platform.isRaspberryPi()) {
-                            // Pi's need to manually have their interface adjusted?? and the 5 second sleep is
+                            // Pi's need to manually have their interface adjusted?? and the 5-second sleep is
                             // integral in my testing (Matt)
                             shell.executeBashCommand(
                                     "sh -c 'nmcli con down "
@@ -125,7 +130,7 @@ public class NetworkManager {
                                             + config.getEscapedInterfaceName()
                                             + "'");
                         } else {
-                            // for now just bring down /up -- more testing needed on beelink et al
+                            // for now just bring down /up -- more testing needed on beelink et al.
                             shell.executeBashCommand(
                                     "sh -c 'nmcli con down "
                                             + config.getEscapedInterfaceName()
@@ -147,5 +152,13 @@ public class NetworkManager {
 
     public void reinitialize() {
         initialize(ConfigManager.getInstance().getConfig().getNetworkConfig().shouldManage());
+
+        DataChangeService.getInstance()
+                .publishEvent(
+                        new DataChangeEvent<Boolean>(
+                                DataChangeSource.DCS_OTHER,
+                                DataChangeDestination.DCD_WEBSERVER,
+                                "restartServer",
+                                true));
     }
 }

@@ -5,7 +5,8 @@ export enum PipelineType {
   Reflective = 2,
   ColoredShape = 3,
   AprilTag = 4,
-  Aruco = 5
+  Aruco = 5,
+  ObjectDetection = 6
 }
 
 export enum AprilTagFamily {
@@ -21,15 +22,13 @@ export enum RobotOffsetPointMode {
 }
 
 export enum TargetModel {
-  InfiniteRechargeHighGoalOuter = 0,
-  InfiniteRechargeHighGoalInner = 1,
-  DeepSpaceDualTarget = 2,
+  StrongholdHighGoal = 0,
+  DeepSpaceDualTarget = 1,
+  InfiniteRechargeHighGoalOuter = 2,
   CircularPowerCell7in = 3,
   RapidReactCircularCargoBall = 4,
-  StrongholdHighGoal = 5,
-  Apriltag_200mm = 6,
-  Aruco6in_16h5 = 7,
-  Apriltag6in_16h5 = 8
+  AprilTag6in_16h5 = 5,
+  AprilTag6p5in_36h11 = 6
 }
 
 export interface PipelineSettings {
@@ -95,7 +94,11 @@ export type ConfigurablePipelineSettings = Partial<
     | "cornerDetectionStrategy"
   >
 >;
-export const DefaultPipelineSettings: PipelineSettings = {
+// Omitted settings are changed for all pipeline types
+export const DefaultPipelineSettings: Omit<
+  PipelineSettings,
+  "cameraGain" | "targetModel" | "ledMode" | "outputShowMultipleTargets" | "cameraExposure" | "pipelineType"
+> = {
   offsetRobotOffsetMode: RobotOffsetPointMode.None,
   streamingFrameDivisor: 0,
   offsetDualPointBArea: 0,
@@ -132,15 +135,7 @@ export const DefaultPipelineSettings: PipelineSettings = {
   cornerDetectionStrategy: 0,
   cornerDetectionAccuracyPercentage: 10,
   hsvSaturation: { first: 50, second: 255 },
-  contourIntersection: 1,
-
-  // These settings will be overridden by different pipeline types
-  cameraGain: -1,
-  targetModel: -1,
-  ledMode: false,
-  outputShowMultipleTargets: false,
-  cameraExposure: -1,
-  pipelineType: -1
+  contourIntersection: 1
 };
 
 export interface ReflectivePipelineSettings extends PipelineSettings {
@@ -214,6 +209,8 @@ export interface AprilTagPipelineSettings extends PipelineSettings {
   debug: boolean;
   threads: number;
   tagFamily: AprilTagFamily;
+  doMultiTarget: boolean;
+  doSingleTargetAlways: boolean;
 }
 export type ConfigurableAprilTagPipelineSettings = Partial<
   Omit<AprilTagPipelineSettings, "pipelineType" | "hammingDist" | "debug">
@@ -222,7 +219,7 @@ export type ConfigurableAprilTagPipelineSettings = Partial<
 export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
   ...DefaultPipelineSettings,
   cameraGain: 75,
-  targetModel: TargetModel.Apriltag6in_16h5,
+  targetModel: TargetModel.AprilTag6in_16h5,
   ledMode: false,
   outputShowMultipleTargets: true,
   cameraExposure: 20,
@@ -236,42 +233,88 @@ export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
   refineEdges: true,
   debug: false,
   threads: 4,
-  tagFamily: AprilTagFamily.Family16h5
+  tagFamily: AprilTagFamily.Family16h5,
+  doMultiTarget: false,
+  doSingleTargetAlways: false
 };
 
 export interface ArucoPipelineSettings extends PipelineSettings {
   pipelineType: PipelineType.Aruco;
-  decimate: number;
-  threads: number;
-  numIterations: number;
-  cornerAccuracy: number;
+
+  tagFamily: AprilTagFamily;
+
+  threshWinSizes: WebsocketNumberPair | [number, number];
+  threshStepSize: number;
+  threshConstant: number;
+  debugThreshold: boolean;
+
+  useCornerRefinement: boolean;
+
   useAruco3: boolean;
+  aruco3MinMarkerSideRatio: number;
+  aruco3MinCanonicalImgSide: number;
+
+  doMultiTarget: boolean;
+  doSingleTargetAlways: boolean;
 }
 export type ConfigurableArucoPipelineSettings = Partial<Omit<ArucoPipelineSettings, "pipelineType">> &
   ConfigurablePipelineSettings;
 export const DefaultArucoPipelineSettings: ArucoPipelineSettings = {
   ...DefaultPipelineSettings,
+  cameraGain: 75,
   outputShowMultipleTargets: true,
-  targetModel: TargetModel.Aruco6in_16h5,
+  targetModel: TargetModel.AprilTag6in_16h5,
   cameraExposure: -1,
   cameraAutoExposure: true,
   ledMode: false,
   pipelineType: PipelineType.Aruco,
 
-  decimate: 1,
-  threads: 2,
-  numIterations: 100,
-  cornerAccuracy: 25,
-  useAruco3: true
+  tagFamily: AprilTagFamily.Family16h5,
+  threshWinSizes: { first: 11, second: 91 },
+  threshStepSize: 40,
+  threshConstant: 10,
+  debugThreshold: false,
+  useCornerRefinement: true,
+  useAruco3: false,
+  aruco3MinMarkerSideRatio: 0.02,
+  aruco3MinCanonicalImgSide: 32,
+  doMultiTarget: false,
+  doSingleTargetAlways: false
+};
+
+export interface ObjectDetectionPipelineSettings extends PipelineSettings {
+  pipelineType: PipelineType.ObjectDetection;
+  confidence: number;
+  nms: number;
+  box_thresh: number;
+}
+export type ConfigurableObjectDetectionPipelineSettings = Partial<
+  Omit<ObjectDetectionPipelineSettings, "pipelineType">
+> &
+  ConfigurablePipelineSettings;
+export const DefaultObjectDetectionPipelineSettings: ObjectDetectionPipelineSettings = {
+  ...DefaultPipelineSettings,
+  pipelineType: PipelineType.ObjectDetection,
+  cameraGain: 20,
+  targetModel: TargetModel.InfiniteRechargeHighGoalOuter,
+  ledMode: true,
+  outputShowMultipleTargets: false,
+  cameraExposure: 6,
+  confidence: 0.9,
+  nms: 0.45,
+  box_thresh: 0.25
 };
 
 export type ActivePipelineSettings =
   | ReflectivePipelineSettings
   | ColoredShapePipelineSettings
   | AprilTagPipelineSettings
-  | ArucoPipelineSettings;
+  | ArucoPipelineSettings
+  | ObjectDetectionPipelineSettings;
+
 export type ActiveConfigurablePipelineSettings =
   | ConfigurableReflectivePipelineSettings
   | ConfigurableColoredShapePipelineSettings
   | ConfigurableAprilTagPipelineSettings
-  | ConfigurableArucoPipelineSettings;
+  | ConfigurableArucoPipelineSettings
+  | ConfigurableObjectDetectionPipelineSettings;

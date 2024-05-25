@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include <photonlib/PhotonCamera.h>
+#include <photon/PhotonCamera.h>
 
 #include <frc/TimedRobot.h>
 #include <frc/XboxController.h>

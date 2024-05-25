@@ -24,14 +24,16 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Point;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
-import org.photonvision.vision.opencv.*;
+import org.photonvision.vision.opencv.CVShape;
+import org.photonvision.vision.opencv.Contour;
+import org.photonvision.vision.opencv.ContourShape;
+import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.*;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.PotentialTarget;
 import org.photonvision.vision.target.TrackedTarget;
 
-@SuppressWarnings({"DuplicatedCode"})
 public class ColoredShapePipeline
         extends CVPipeline<CVPipelineResult, ColoredShapePipelineSettings> {
     private final SpeckleRejectPipe speckleRejectPipe = new SpeckleRejectPipe();
@@ -107,7 +109,7 @@ public class ColoredShapePipeline
         SortContoursPipe.SortContoursParams sortContoursParams =
                 new SortContoursPipe.SortContoursParams(
                         settings.contourSortMode,
-                        settings.outputShowMultipleTargets ? 5 : 1,
+                        settings.outputShowMultipleTargets ? MAX_MULTI_TARGET_RESULTS : 1,
                         frameStaticProperties); // TODO don't hardcode?
         sortContoursPipe.setParams(sortContoursParams);
 
@@ -226,6 +228,6 @@ public class ColoredShapePipeline
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
-        return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, frame);
+        return new CVPipelineResult(frame.sequenceID, sumPipeNanosElapsed, fps, targetList, frame);
     }
 }

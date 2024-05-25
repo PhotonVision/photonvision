@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.cli.*;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.PiVersion;
@@ -34,11 +35,15 @@ import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.logging.PvCSCoreLogger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.numbers.IntegerCouple;
-import org.photonvision.raspi.LibCameraJNI;
+import org.photonvision.jni.RknnDetectorJNI;
+import org.photonvision.mrcal.MrCalJNILoader;
+import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.server.Server;
+import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ContourGroupingMode;
@@ -61,6 +66,7 @@ public class Main {
     private static final boolean isRelease = PhotonVersion.isRelease;
 
     private static boolean isTestMode = false;
+    private static boolean isSmoketest = false;
     private static Path testModeFolder = null;
     private static boolean printDebugLogs;
 
@@ -86,6 +92,11 @@ public class Main {
                 "clear-config",
                 false,
                 "Clears PhotonVision pipeline and networking settings. Preserves log files");
+        options.addOption(
+                "s",
+                "smoketest",
+                false,
+                "Exit Photon after loading native libraries and camera configs, but before starting up camera runners");
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
@@ -122,6 +133,10 @@ public class Main {
 
             if (cmd.hasOption("clear-config")) {
                 ConfigManager.getInstance().clearConfig();
+            }
+
+            if (cmd.hasOption("smoketest")) {
+                isSmoketest = true;
             }
         }
         return true;
@@ -251,13 +266,41 @@ public class Main {
             var pipeline2023 = new AprilTagPipelineSettings();
             var path_split = Path.of(camConf2023.path).getFileName().toString();
             pipeline2023.pipelineNickname = path_split.replace(".png", "");
-            pipeline2023.targetModel = TargetModel.k6in_16h5;
+            pipeline2023.targetModel = TargetModel.kAprilTag6in_16h5;
             pipeline2023.inputShouldShow = true;
             pipeline2023.solvePNPEnabled = true;
 
             var psList2023 = new ArrayList<CVPipelineSettings>();
             psList2023.add(pipeline2023);
             camConf2023.pipelineSettings = psList2023;
+        }
+
+        CameraConfiguration camConf2024 =
+                ConfigManager.getInstance().getConfig().getCameraConfigurations().get("WPI2024");
+        if (camConf2024 == null) {
+            camConf2024 =
+                    new CameraConfiguration(
+                            "WPI2024",
+                            TestUtils.getResourcesFolderPath(true)
+                                    .resolve("testimages")
+                                    .resolve(TestUtils.WPI2024Images.kSpeakerCenter_143in.path)
+                                    .toString());
+
+            camConf2024.FOV = TestUtils.WPI2024Images.FOV;
+            // same camera as 2023
+            camConf2024.calibrations.add(TestUtils.get2023LifeCamCoeffs(true));
+
+            var pipeline2024 = new AprilTagPipelineSettings();
+            var path_split = Path.of(camConf2024.path).getFileName().toString();
+            pipeline2024.pipelineNickname = path_split.replace(".jpg", "");
+            pipeline2024.targetModel = TargetModel.kAprilTag6p5in_36h11;
+            pipeline2024.tagFamily = AprilTagFamily.kTag36h11;
+            pipeline2024.inputShouldShow = true;
+            pipeline2024.solvePNPEnabled = true;
+
+            var psList2024 = new ArrayList<CVPipelineSettings>();
+            psList2024.add(pipeline2024);
+            camConf2024.pipelineSettings = psList2024;
         }
 
         // Colored shape testing
@@ -289,12 +332,14 @@ public class Main {
         var fvs2020 = new FileVisionSource(camConf2020);
         var fvs2022 = new FileVisionSource(camConf2022);
         var fvs2023 = new FileVisionSource(camConf2023);
+        var fvs2024 = new FileVisionSource(camConf2024);
 
-        collectedSources.add(fvs2023);
-        collectedSources.add(fvs2022);
-        collectedSources.add(fvsShape);
-        collectedSources.add(fvs2020);
-        collectedSources.add(fvs2019);
+        collectedSources.add(fvs2024);
+        // collectedSources.add(fvs2023);
+        // collectedSources.add(fvs2022);
+        // collectedSources.add(fvsShape);
+        // collectedSources.add(fvs2020);
+        // collectedSources.add(fvs2019);
 
         ConfigManager.getInstance().unloadCameraConfigs();
         VisionModuleManager.getInstance().addSources(collectedSources).forEach(VisionModule::start);
@@ -302,27 +347,62 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        logger.info(
+                "Starting PhotonVision version "
+                        + PhotonVersion.versionString
+                        + " on "
+                        + Platform.getPlatformName()
+                        + (Platform.isRaspberryPi() ? (" (Pi " + PiVersion.getPiVersion() + ")") : ""));
+
         try {
-            TestUtils.loadLibraries();
-            logger.info("Native libraries loaded.");
-        } catch (Exception e) {
-            logger.error("Failed to load native libraries!", e);
+            if (!handleArgs(args)) {
+                System.exit(1);
+            }
+        } catch (ParseException e) {
+            logger.error("Failed to parse command-line options!", e);
+        }
+
+        // We don't want to trigger an exit in test mode or smoke test. This is specifically for MacOS.
+        if (!(Platform.isSupported() || isSmoketest || isTestMode)) {
+            logger.error("This platform is unsupported!");
+            System.exit(1);
         }
 
         try {
+            boolean success = TestUtils.loadLibraries();
+
+            if (!success) {
+                logger.error("Failed to load native libraries! Giving up :(");
+                System.exit(1);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to load native libraries!", e);
+            System.exit(1);
+        }
+        logger.info("Native libraries loaded.");
+
+        try {
             if (Platform.isRaspberryPi()) {
-                LibCameraJNI.forceLoad();
+                LibCameraJNILoader.forceLoad();
             }
         } catch (IOException e) {
             logger.error("Failed to load libcamera-JNI!", e);
         }
-
         try {
-            if (!handleArgs(args)) {
-                System.exit(0);
+            if (Platform.isRK3588()) {
+                RknnDetectorJNI.forceLoad();
+            } else {
+                logger.error("Platform does not support RKNN based machine learning!");
             }
-        } catch (ParseException e) {
-            logger.error("Failed to parse command-line options!", e);
+        } catch (IOException e) {
+            logger.error("Failed to load rknn-JNI!", e);
+        }
+        try {
+            MrCalJNILoader.forceLoad();
+        } catch (IOException e) {
+            logger.warn(
+                    "Failed to load mrcal-JNI! Camera calibration will fall back to opencv\n"
+                            + e.getMessage());
         }
 
         CVMat.enablePrint(false);
@@ -337,12 +417,7 @@ public class Main {
         Logger.setLevel(LogGroup.General, logLevel);
         logger.info("Logging initialized in debug mode.");
 
-        logger.info(
-                "Starting PhotonVision version "
-                        + PhotonVersion.versionString
-                        + " on "
-                        + Platform.getPlatformName()
-                        + (Platform.isRaspberryPi() ? (" (Pi " + PiVersion.getPiVersion() + ")") : ""));
+        PvCSCoreLogger.getInstance();
 
         logger.debug("Loading ConfigManager...");
         ConfigManager.getInstance().load(); // init config manager
@@ -358,6 +433,15 @@ public class Main {
         logger.debug("Loading NetworkTablesManager...");
         NetworkTablesManager.getInstance()
                 .setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
+
+        logger.info("Loading ML models");
+        NeuralNetworkModelManager.getInstance()
+                .initialize(ConfigManager.getInstance().getModelsDirectory());
+
+        if (isSmoketest) {
+            logger.info("PhotonVision base functionality loaded -- smoketest complete");
+            System.exit(0);
+        }
 
         if (!isTestMode) {
             logger.debug("Loading VisionSourceManager...");
@@ -375,6 +459,7 @@ public class Main {
         }
 
         logger.info("Starting server...");
-        Server.start(DEFAULT_WEBPORT);
+        HardwareManager.getInstance().setRunning(true);
+        Server.initialize(DEFAULT_WEBPORT);
     }
 }

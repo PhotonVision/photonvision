@@ -17,7 +17,8 @@
 
 package org.photonvision.vision.pipeline;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;

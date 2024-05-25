@@ -56,7 +56,8 @@ public class Vision {
         camera = new PhotonCamera(kCameraName);
 
         photonEstimator =
-                new PhotonPoseEstimator(kTagLayout, PoseStrategy.MULTI_TAG_PNP, camera, kRobotToCam);
+                new PhotonPoseEstimator(
+                        kTagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, camera, kRobotToCam);
         photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
         // ----- Simulation

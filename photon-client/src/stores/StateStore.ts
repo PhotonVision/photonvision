@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import type { LogMessage } from "@/types/SettingTypes";
 import type { AutoReconnectingWebsocket } from "@/lib/AutoReconnectingWebsocket";
-import type { PipelineResult } from "@/types/PhotonTrackingTypes";
+import type { MultitagResult, PipelineResult } from "@/types/PhotonTrackingTypes";
 import type {
   WebsocketCalibrationData,
   WebsocketLogMessage,
@@ -24,7 +24,8 @@ interface StateStore {
   logMessages: LogMessage[];
   currentCameraIndex: number;
 
-  pipelineResults?: PipelineResult;
+  backendResults: Record<string, PipelineResult>;
+  multitagResultBuffer: Record<string, MultitagResult[]>;
 
   colorPickingMode: boolean;
 
@@ -58,7 +59,8 @@ export const useStateStore = defineStore("state", {
       logMessages: [],
       currentCameraIndex: 0,
 
-      pipelineResults: undefined,
+      backendResults: {},
+      multitagResultBuffer: {},
 
       colorPickingMode: false,
 
@@ -76,6 +78,15 @@ export const useStateStore = defineStore("state", {
         timeout: 2000
       }
     };
+  },
+  getters: {
+    currentPipelineResults(): PipelineResult | undefined {
+      return this.backendResults[this.currentCameraIndex.toString()];
+    },
+    currentMultitagBuffer(): MultitagResult[] | undefined {
+      if (!this.multitagResultBuffer[this.currentCameraIndex]) this.multitagResultBuffer[this.currentCameraIndex] = [];
+      return this.multitagResultBuffer[this.currentCameraIndex];
+    }
   },
   actions: {
     setSidebarFolded(value: boolean) {
@@ -95,10 +106,24 @@ export const useStateStore = defineStore("state", {
         clients: data.clients
       };
     },
-    updatePipelineResultsFromWebsocket(data: WebsocketPipelineResultUpdate) {
-      for (const cameraIndex in data) {
-        if (parseInt(cameraIndex) === this.currentCameraIndex) {
-          this.pipelineResults = data[cameraIndex];
+    updateBackendResultsFromWebsocket(data: WebsocketPipelineResultUpdate) {
+      this.backendResults = {
+        ...this.backendResults,
+        ...data
+      };
+
+      for (const key in data) {
+        const multitagRes = data[key].multitagResult;
+
+        if (multitagRes) {
+          if (!this.multitagResultBuffer[key]) {
+            this.multitagResultBuffer[key] = [];
+          }
+
+          this.multitagResultBuffer[key].push(multitagRes);
+          if (this.multitagResultBuffer[key].length > 100) {
+            this.multitagResultBuffer[key].shift();
+          }
         }
       }
     },

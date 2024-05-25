@@ -86,6 +86,16 @@ public class Packet {
     }
 
     /**
+     * Encodes the short into the packet.
+     *
+     * @param src The short to encode.
+     */
+    public void encode(short src) {
+        packetData[writePos++] = (byte) (src >>> 8);
+        packetData[writePos++] = (byte) src;
+    }
+
+    /**
      * Encodes the integer into the packet.
      *
      * @param src The integer to encode.
@@ -95,6 +105,35 @@ public class Packet {
         packetData[writePos++] = (byte) (src >>> 16);
         packetData[writePos++] = (byte) (src >>> 8);
         packetData[writePos++] = (byte) src;
+    }
+
+    /**
+     * Encodes the float into the packet.
+     *
+     * @param src The float to encode.
+     */
+    public void encode(float src) {
+        int data = Float.floatToIntBits(src);
+        packetData[writePos++] = (byte) ((data >> 24) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 16) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 8) & 0xff);
+        packetData[writePos++] = (byte) (data & 0xff);
+    }
+
+    /**
+     * Encodes the double into the packet.
+     *
+     * @param data The double to encode.
+     */
+    public void encode(long data) {
+        packetData[writePos++] = (byte) ((data >> 56) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 48) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 40) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 32) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 24) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 16) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 8) & 0xff);
+        packetData[writePos++] = (byte) (data & 0xff);
     }
 
     /**
@@ -150,6 +189,22 @@ public class Packet {
                 | (0xff & packetData[readPos++]);
     }
 
+    public long decodeLong() {
+        if (packetData.length < (readPos + 7)) {
+            return 0;
+        }
+        long data =
+                (long) (0xff & packetData[readPos++]) << 56
+                        | (long) (0xff & packetData[readPos++]) << 48
+                        | (long) (0xff & packetData[readPos++]) << 40
+                        | (long) (0xff & packetData[readPos++]) << 32
+                        | (long) (0xff & packetData[readPos++]) << 24
+                        | (long) (0xff & packetData[readPos++]) << 16
+                        | (long) (0xff & packetData[readPos++]) << 8
+                        | (long) (0xff & packetData[readPos++]);
+        return data;
+    }
+
     /**
      * Returns a decoded double from the packet.
      *
@@ -169,6 +224,23 @@ public class Packet {
                         | (long) (0xff & packetData[readPos++]) << 8
                         | (long) (0xff & packetData[readPos++]);
         return Double.longBitsToDouble(data);
+    }
+
+    /**
+     * Returns a decoded float from the packet.
+     *
+     * @return A decoded float from the packet.
+     */
+    public float decodeFloat() {
+        if (packetData.length < (readPos + 3)) {
+            return 0;
+        }
+        int data =
+                (int) (0xff & packetData[readPos++]) << 24
+                        | (int) (0xff & packetData[readPos++]) << 16
+                        | (int) (0xff & packetData[readPos++]) << 8
+                        | (int) (0xff & packetData[readPos++]);
+        return Float.intBitsToFloat(data);
     }
 
     /**
@@ -195,5 +267,12 @@ public class Packet {
             ret[i] = decodeDouble();
         }
         return ret;
+    }
+
+    public short decodeShort() {
+        if (packetData.length < readPos + 1) {
+            return 0;
+        }
+        return (short) ((0xff & packetData[readPos++]) << 8 | (0xff & packetData[readPos++]));
     }
 }

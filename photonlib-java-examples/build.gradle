@@ -28,10 +28,3 @@ spotless {
         targetExclude("photon-lib/src/main/java/org/photonvision/PhotonVersion.java")
     }
 }
-
-// Task that depends on the build task for every example
-task buildAllExamples { task ->
-    exampleFolderNames.each { line ->
-        task.dependsOn(line + ":build")
-    }
-}

@@ -114,7 +114,6 @@ fabric.properties
 **/.settings
 **/.classpath
 **/.project
-**/settings
 **/dependency-reduced-pom.xml
 # photon-server/photon-vision.iml
 
@@ -158,6 +157,11 @@ photonlib-java-examples/*/vendordeps/*
 photonlib-cpp-examples/*/vendordeps/*
 
 */networktables.json
+*/networktables.json.bck
+photonlib-cpp-examples/*/networktables.json.bck
+photonlib-java-examples/*/networktables.json.bck
 *.sqlite
 photon-server/src/main/resources/web/index.html
 photon-lib/src/generate/native/cpp/PhotonVersion.cpp
+
+venv

@@ -25,7 +25,7 @@
 
 static const char* dev_ = "dev";
 
-namespace photonlib {
+namespace photon {
   namespace PhotonVersion {
     const char* versionString = "${version}";
     const char* buildDate = "${date}";
