@@ -27,10 +27,10 @@
 #include <regex>
 #include <string>
 
-namespace photonlib {
+namespace photon {
 namespace PhotonVersion {
 extern const char* versionString;
 extern const char* buildDate;
 extern const bool isRelease;
 }  // namespace PhotonVersion
-}  // namespace photonlib
+}  // namespace photon
