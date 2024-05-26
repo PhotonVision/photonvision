@@ -149,7 +149,7 @@ jobs:
       - run: git fetch --tags --force
       - run: |
           chmod +x gradlew
-          ./gradlew photon-lib:build --max-workers 1
+          ./gradlew photon-targeting:build photon-lib:build --max-workers 1
       - run: ./gradlew photon-lib:publish photon-targeting:publish
         name: Publish
         env:
@@ -180,7 +180,7 @@ jobs:
       - name: Build PhotonLib
         run: |
           chmod +x gradlew
-          ./gradlew photon-lib:build --max-workers 1
+          ./gradlew photon-targeting:build photon-lib:build --max-workers 1
       - name: Publish
         run: |
           chmod +x gradlew
