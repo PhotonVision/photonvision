@@ -19,8 +19,8 @@ package org.photonvision.common.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.wpi.first.apriltag.jni.AprilTagJNI;
-import edu.wpi.first.cscore.OpenCvLoader;
 import edu.wpi.first.cscore.CameraServerJNI;
+import edu.wpi.first.cscore.OpenCvLoader;
 import edu.wpi.first.hal.JNIWrapper;
 import edu.wpi.first.math.WPIMathJNI;
 import edu.wpi.first.math.geometry.Translation2d;
