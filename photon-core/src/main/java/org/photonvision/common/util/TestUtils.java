@@ -27,7 +27,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.net.WPINetJNI;
 import edu.wpi.first.networktables.NetworkTablesJNI;
-import edu.wpi.first.util.CombinedRuntimeLoader2;
+import edu.wpi.first.util.CombinedRuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
 import java.awt.*;
 import java.io.File;
@@ -54,7 +54,7 @@ public class TestUtils {
         AprilTagJNI.Helper.setExtractOnStaticLoad(false);
 
         try {
-            CombinedRuntimeLoader2.loadLibraries(
+            CombinedRuntimeLoader.loadLibraries(
                     TestUtils.class,
                     "wpiutiljni",
                     "wpimathjni",
