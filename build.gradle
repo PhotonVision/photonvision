@@ -24,7 +24,7 @@ allprojects {
 apply from: "versioningHelper.gradle"
 
 ext {
-    wpilibVersion = "2024.3.2"
+    wpilibVersion = "2024.3.2-137-geb3635e"
     wpimathVersion = wpilibVersion
     openCVversion = "4.8.0-2"
     joglVersion = "2.4.0-rc-20200307"

@@ -21,7 +21,7 @@
 #include <string>
 #include <vector>
 
-#include <wpi/Endian.h>
+#include <bit>
 
 namespace photon {
 
@@ -73,8 +73,8 @@ class Packet {
     packetData.resize(packetData.size() + sizeof(T));
     std::memcpy(packetData.data() + writePos, &src, sizeof(T));
 
-    if constexpr (wpi::support::endian::system_endianness() ==
-                  wpi::support::endianness::little) {
+    if constexpr (std::endian::native ==
+                  std::endian::little) {
       // Reverse to big endian for network conventions.
       std::reverse(packetData.data() + writePos,
                    packetData.data() + writePos + sizeof(T));
@@ -95,8 +95,8 @@ class Packet {
     if (!packetData.empty()) {
       std::memcpy(&value, packetData.data() + readPos, sizeof(T));
 
-      if constexpr (wpi::support::endian::system_endianness() ==
-                    wpi::support::endianness::little) {
+      if constexpr (std::endian::native ==
+                    std::endian::little) {
         // Reverse to little endian for host.
         uint8_t& raw = reinterpret_cast<uint8_t&>(value);
         std::reverse(&raw, &raw + sizeof(T));
