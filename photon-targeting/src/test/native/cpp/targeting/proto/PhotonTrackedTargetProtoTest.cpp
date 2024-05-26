@@ -27,6 +27,8 @@ TEST(PhotonTrackedTargetTest, Roundtrip) {
       9.0,
       -5.0,
       -1,
+      -1,
+      -1.0,
       frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
                        frc::Rotation3d(1_rad, 2_rad, 3_rad)),
       frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
