@@ -162,5 +162,6 @@ photonlib-cpp-examples/*/networktables.json.bck
 photonlib-java-examples/*/networktables.json.bck
 *.sqlite
 photon-server/src/main/resources/web/index.html
+photon-lib/src/generate/native/cpp/PhotonVersion.cpp
 
 venv

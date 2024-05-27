@@ -167,9 +167,7 @@ class PhotonCamera {
    */
   std::optional<DistortionMatrix> GetDistCoeffs();
 
-  inline static void SetVersionCheckEnabled(bool enabled) {
-    PhotonCamera::VERSION_CHECK_ENABLED = enabled;
-  }
+  static void SetVersionCheckEnabled(bool enabled);
 
   std::shared_ptr<nt::NetworkTable> GetCameraTable() const { return rootTable; }
 
@@ -207,7 +205,7 @@ class PhotonCamera {
 
  private:
   units::second_t lastVersionCheckTime = 0_s;
-  inline static bool VERSION_CHECK_ENABLED = true;
+  static bool VERSION_CHECK_ENABLED;
   inline static int InstanceCount = 0;
 
   void VerifyVersion();
