@@ -189,15 +189,15 @@ public class Calibrate3dPipe
         int imageWidth = (int) in.get(0).size.width;
         int imageHeight = (int) in.get(0).size.height;
 
-        MrCalResult result =
-                MrCalJNI.calibrateCamera(
-                        corner_locations,
-                        params.boardWidth,
-                        params.boardHeight,
-                        params.squareSize,
-                        imageWidth,
-                        imageHeight,
-                        (fxGuess + fyGuess) / 2.0);
+        MrCalResult result = null;
+                // MrCalJNI.calibrateCamera(
+                //         corner_locations,
+                //         params.boardWidth,
+                //         params.boardHeight,
+                //         params.squareSize,
+                //         imageWidth,
+                //         imageHeight,
+                //         (fxGuess + fyGuess) / 2.0);
 
         // intrinsics are fx fy cx cy from mrcal
         JsonMatOfDouble cameraMatrixMat =

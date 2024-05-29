@@ -2,7 +2,9 @@ name: Build
 
 on:
   push:
-    branches: [ master ]
+    branches: 
+      - master
+      - backports/*
     tags:
       - 'v*'
   pull_request:
@@ -336,108 +338,3 @@ jobs:
           # our image better have java installed already
           commands: |
             java -jar ${{ matrix.extraOpts }} *.jar --smoketest
-
-  build-image:
-    needs: [build-package]
-
-    if: ${{ github.event_name != 'pull_request' }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            artifact-name: LinuxArm64
-            image_suffix: RaspberryPi
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.4/photonvision_raspi.img.xz
-            cpu: cortex-a7
-            image_additional_mb: 0
-          - os: ubuntu-latest
-            artifact-name: LinuxArm64
-            image_suffix: limelight2
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.4/photonvision_limelight.img.xz
-            cpu: cortex-a7
-            image_additional_mb: 0
-          - os: ubuntu-latest
-            artifact-name: LinuxArm64
-            image_suffix: limelight3
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.5/photonvision_limelight3.img.xz
-            cpu: cortex-a7
-            image_additional_mb: 0
-          - os: ubuntu-latest
-            artifact-name: LinuxArm64
-            image_suffix: orangepi5
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.10/photonvision_opi5.img.xz
-            cpu: cortex-a8
-            image_additional_mb: 4096
-          - os: ubuntu-latest
-            artifact-name: LinuxArm64
-            image_suffix: orangepi5plus
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.10/photonvision_opi5plus.img.xz
-            cpu: cortex-a8
-            image_additional_mb: 4096
-
-    runs-on: ${{ matrix.os }}
-    name: "Build image - ${{ matrix.image_url }}"
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/download-artifact@v4
-        with:
-          name: jar-${{ matrix.artifact-name }}
-      - uses: pguyot/arm-runner-action@v2
-        name: Generate image
-        id: generate_image
-        with:
-          base_image: ${{ matrix.image_url }}
-          image_additional_mb: ${{ matrix.image_additional_mb }}
-          optimize_image: yes
-          cpu: ${{ matrix.cpu }}
-          # We do _not_ wanna copy photon into the image. Bind mount instead
-          bind_mount_repository: true
-          commands: |
-            chmod +x scripts/armrunner.sh
-            ./scripts/armrunner.sh
-      - name: Compress image
-        run: |
-          new_jar=$(realpath $(find . -name photonvision\*-linuxarm64.jar))
-          new_image_name=$(basename "${new_jar/.jar/_${{ matrix.image_suffix }}.img}")
-          mv ${{ steps.generate_image.outputs.image }} $new_image_name
-          sudo xz -T 0 -v $new_image_name
-      - uses: actions/upload-artifact@v4
-        name: Upload image
-        with:
-          name: image-${{ matrix.image_suffix }}
-          path: photonvision*.xz
-  release:
-    needs: [build-package, build-image]
-    runs-on: ubuntu-22.04
-    steps:
-      # Download literally every single artifact. This also downloads client and docs,
-      # but the filtering below won't pick these up (I hope)
-      - uses: actions/download-artifact@v4
-      - run: find
-      # Push to dev release
-      - uses: pyTooling/Actions/releaser@r0
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: 'Dev'
-          rm: true
-          files: |
-            **/*.xz
-            **/*.jar
-            **/photonlib*.json
-        if: github.event_name == 'push'
-      # Upload all jars and xz archives
-      - uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            **/*.xz
-            **/*.jar
-            **/photonlib*.json
-        if: startsWith(github.ref, 'refs/tags/v')
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
