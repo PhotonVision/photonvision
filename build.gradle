@@ -13,8 +13,9 @@ allprojects {
     repositories {
         mavenCentral()
         mavenLocal()
-        maven { url = "https://maven.photonvision.org/repository/internal/" }
-        maven { url = "https://maven.photonvision.org/repository/snapshots/" }
+        maven { url = "https://maven.photonvision.org/releases" }
+        maven { url = "https://maven.photonvision.org/snapshots" }
+        maven { url = "https://jogamp.org/deployment/maven/" }
     }
     wpilibRepositories.addAllReleaseRepositories(it)
     wpilibRepositories.addAllDevelopmentRepositories(it)
@@ -27,12 +28,12 @@ ext {
     wpilibVersion = "2024.3.1"
     wpimathVersion = wpilibVersion
     openCVversion = "4.8.0-2"
-    joglVersion = "2.4.0-rc-20200307"
+    joglVersion = "2.4.0"
     javalinVersion = "5.6.2"
-    photonGlDriverLibVersion = "dev-v2023.1.0-9-g75fc678"
-    rknnVersion = "dev-v2024.0.0-64-gc0836a6"
+    photonGlDriverLibVersion = "dev-v2023.1.0-11-g2b7036f"
+    rknnVersion = "dev-v2024.0.1-4-g0db16ac"
     frcYear = "2024"
-    mrcalVersion = "dev-v2024.0.0-18-gb903a09";
+    mrcalVersion = "dev-v2024.0.0-24-gc1efcf0";
 
 
     pubVersion = versionString
@@ -50,6 +51,10 @@ ext {
     println("Building for platform " + jniPlatform + " wpilib: " + wpilibNativeName)
     println("Using Wpilib: " + wpilibVersion)
     println("Using OpenCV: " + openCVversion)
+
+
+    photonMavenURL = 'https://maven.photonvision.org/' + (isDev ? 'snapshots' : 'releases');
+    println("Publishing Photonlib to " + photonMavenURL)
 }
 
 spotless {
