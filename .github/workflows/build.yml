@@ -195,22 +195,22 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: windows-latest
+          - os: ubuntu-latest
             artifact-name: Win64
             architecture: x64
-            arch-override: none
-          - os: macos-latest
+            arch-override: winx64
+          - os: ubuntu-latest
             artifact-name: macOS
             architecture: x64
-            arch-override: none
+            arch-override: macx64
           - os: ubuntu-latest
-            artifact-name: Linux
-            architecture: x64
-            arch-override: none
-          - os: macos-latest
             artifact-name: macOSArm
             architecture: x64
             arch-override: macarm64
+          - os: ubuntu-latest
+            artifact-name: Linux
+            architecture: x64
+            arch-override: linuxx64
           - os: ubuntu-latest
             artifact-name: LinuxArm64
             architecture: x64
