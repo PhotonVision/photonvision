@@ -22,11 +22,12 @@
  * SOFTWARE.
  */
 
+#include <chrono>
+#include <thread>
+
 #include "gtest/gtest.h"
 #include "photon/PhotonUtils.h"
 #include "photon/simulation/VisionSystemSim.h"
-#include <thread>
-#include <chrono>
 
 class VisionSystemSimTest : public ::testing::Test {
   void SetUp() override {
@@ -254,10 +255,6 @@ TEST_P(VisionSystemSimTestWithParamsTest, PitchAngles) {
           frc::Rotation3d{0_rad, units::degree_t{GetParam()}, 0_rad}});
   visionSysSim.Update(robotPose);
 
-  // HACK: wait a bit to let udates propogate
-  nt::NetworkTableInstance::GetDefault().Flush();
-  std::this_thread::sleep_for(std::chrono::seconds(1));
-
   ASSERT_TRUE(camera.GetLatestResult().HasTargets());
   ASSERT_NEAR(GetParam().to<double>(),
               camera.GetLatestResult().GetBestTarget().GetPitch(), 0.25);
@@ -291,10 +288,6 @@ TEST_P(VisionSystemSimTestDistanceParamsTest, DistanceCalc) {
   visionSysSim.AddVisionTargets({photon::VisionTargetSim{
       targetPose, photon::TargetModel{0.5_m, 0.5_m}, 0}});
   visionSysSim.Update(robotPose);
-
-  // HACK: wait a bit to let udates propogate
-  nt::NetworkTableInstance::GetDefault().Flush();
-  std::this_thread::sleep_for(std::chrono::seconds(1));
 
   photon::PhotonPipelineResult res = camera.GetLatestResult();
   ASSERT_TRUE(res.HasTargets());
