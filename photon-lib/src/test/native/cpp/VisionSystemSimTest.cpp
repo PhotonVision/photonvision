@@ -253,7 +253,7 @@ TEST_P(VisionSystemSimTestWithParamsTest, PitchAngles) {
   visionSysSim.Update(robotPose);
 
   // HACK: wait a bit to let udates propogate
-  nt::NetworkTableInstance::GetDefault()::Flush();
+  nt::NetworkTableInstance::GetDefault().Flush();
   std::this_thread::sleep_for(std::chrono::seconds(1));
 
   ASSERT_TRUE(camera.GetLatestResult().HasTargets());
@@ -291,7 +291,7 @@ TEST_P(VisionSystemSimTestDistanceParamsTest, DistanceCalc) {
   visionSysSim.Update(robotPose);
 
   // HACK: wait a bit to let udates propogate
-  nt::NetworkTableInstance::GetDefault()::Flush();
+  nt::NetworkTableInstance::GetDefault().Flush();
   std::this_thread::sleep_for(std::chrono::seconds(1));
 
   photon::PhotonPipelineResult res = camera.GetLatestResult();
