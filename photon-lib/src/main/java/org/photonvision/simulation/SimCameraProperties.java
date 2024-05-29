@@ -41,6 +41,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import org.ejml.data.DMatrix3;
@@ -133,6 +134,7 @@ public class SimCameraProperties {
                 }
                 var jsonDistortNode = calib.get("distCoeffs").get("data");
                 double[] jsonDistortion = new double[8];
+                Arrays.fill(jsonDistortion, 0);
                 for (int j = 0; j < jsonDistortNode.size(); j++) {
                     jsonDistortion[j] = jsonDistortNode.get(j).asDouble();
                 }
