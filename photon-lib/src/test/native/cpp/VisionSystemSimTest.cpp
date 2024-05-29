@@ -25,6 +25,8 @@
 #include "gtest/gtest.h"
 #include "photon/PhotonUtils.h"
 #include "photon/simulation/VisionSystemSim.h"
+#include <thread>
+#include <chrono>
 
 class VisionSystemSimTest : public ::testing::Test {
   void SetUp() override {
