@@ -149,7 +149,7 @@ jobs:
       - run: git fetch --tags --force
       - run: |
           chmod +x gradlew
-          ./gradlew photon-lib:build --max-workers 1
+          ./gradlew photon-targeting:build photon-lib:build --max-workers 1
       - run: ./gradlew photon-lib:publish photon-targeting:publish
         name: Publish
         env:
@@ -180,7 +180,7 @@ jobs:
       - name: Build PhotonLib
         run: |
           chmod +x gradlew
-          ./gradlew photon-lib:build --max-workers 1
+          ./gradlew photon-targeting:build photon-lib:build --max-workers 1
       - name: Publish
         run: |
           chmod +x gradlew
@@ -211,10 +211,6 @@ jobs:
             artifact-name: macOSArm
             architecture: x64
             arch-override: macarm64
-          - os: ubuntu-latest
-            artifact-name: LinuxArm32
-            architecture: x64
-            arch-override: linuxarm32
           - os: ubuntu-latest
             artifact-name: LinuxArm64
             architecture: x64

@@ -20,6 +20,13 @@ task cppSourcesZip(type: Zip) {
     from('src/main/native/cpp') {
         into '/'
     }
+
+    // assume we will always have proto sources
+    from("$buildDir/generated/source/proto/main/cpp") {
+        into '/'
+    }
+
+    dependsOn generateProto
 }
 
 task cppHeadersZip(type: Zip) {
@@ -70,7 +77,7 @@ model {
 
         repositories {
             maven {
-                url ('https://maven.photonvision.org/repository/' + (isDev ? 'snapshots' : 'internal'))
+                url(photonMavenURL)
                 credentials {
                     username 'ghactions'
                     password System.getenv("ARTIFACTORY_API_KEY")
