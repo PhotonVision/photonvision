@@ -70,7 +70,7 @@ model {
 
         repositories {
             maven {
-                url ('https://maven.photonvision.org/repository/' + (isDev ? 'snapshots' : 'internal'))
+                url(photonMavenURL)
                 credentials {
                     username 'ghactions'
                     password System.getenv("ARTIFACTORY_API_KEY")
