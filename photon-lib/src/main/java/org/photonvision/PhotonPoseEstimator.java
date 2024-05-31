@@ -87,7 +87,7 @@ public class PhotonPoseEstimator {
     }
 
     private AprilTagFieldLayout fieldTags;
-    private TargetModel tagModel = TargetModel.kAprilTag16h5;
+    private TargetModel tagModel = TargetModel.kAprilTag36h11;
     private PoseStrategy primaryStrategy;
     private PoseStrategy multiTagFallbackStrategy = PoseStrategy.LOWEST_AMBIGUITY;
     private final PhotonCamera camera;
@@ -169,7 +169,7 @@ public class PhotonPoseEstimator {
     /**
      * Get the TargetModel representing the tags being detected. This is used for on-rio multitag.
      *
-     * <p>By default, this is {@link TargetModel#kAprilTag16h5}.
+     * <p>By default, this is {@link TargetModel#kAprilTag36h11}.
      */
     public TargetModel getTagModel() {
         return tagModel;
