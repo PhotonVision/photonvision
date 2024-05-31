@@ -141,7 +141,7 @@ class PhotonTrackedTarget {
    */
   frc::Transform3d GetBestCameraToTarget() const {
       if (bestCameraToTarget == frc::Transform3d()) {
-          FRC_ReportError(0, "3d mode is not enabled");
+          FRC_ReportError(frc::warn::Warning, "3d mode is not enabled");
       }
       return bestCameraToTarget;
   }
