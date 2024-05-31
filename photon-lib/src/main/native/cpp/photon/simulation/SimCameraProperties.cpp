@@ -42,8 +42,8 @@ void SimCameraProperties::SetCalibration(int width, int height,
   frc::Rotation2d fovHeight{
       units::radian_t{std::atan(diagRatio * (height / resDiag)) * 2}};
 
-  Eigen::Matrix<double, 5, 1> newDistCoeffs;
-  newDistCoeffs << 0, 0, 0, 0, 0;
+  Eigen::Matrix<double, 8, 1> newDistCoeffs =
+      Eigen::Matrix<double, 8, 1>::Zero();
 
   double cx = width / 2.0 - 0.5;
   double cy = height / 2.0 - 0.5;
@@ -58,7 +58,7 @@ void SimCameraProperties::SetCalibration(int width, int height,
 
 void SimCameraProperties::SetCalibration(
     int width, int height, const Eigen::Matrix<double, 3, 3>& newCamIntrinsics,
-    const Eigen::Matrix<double, 5, 1>& newDistCoeffs) {
+    const Eigen::Matrix<double, 8, 1>& newDistCoeffs) {
   resWidth = width;
   resHeight = height;
   camIntrinsics = newCamIntrinsics;

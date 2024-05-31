@@ -124,7 +124,7 @@ static std::vector<cv::Point3f> RotationToRVec(
 [[maybe_unused]]
 static std::vector<cv::Point2f> ProjectPoints(
     const Eigen::Matrix<double, 3, 3>& cameraMatrix,
-    const Eigen::Matrix<double, 5, 1>& distCoeffs,
+    const Eigen::Matrix<double, 8, 1>& distCoeffs,
     const RotTrlTransform3d& camRt,
     const std::vector<frc::Translation3d>& objectTranslations) {
   std::vector<cv::Point3f> objectPoints = TranslationToTVec(objectTranslations);
@@ -186,7 +186,7 @@ static frc::Rotation3d RVecToRotation(const cv::Mat& rvecInput) {
 
 [[maybe_unused]] static photon::PNPResult SolvePNP_Square(
     const Eigen::Matrix<double, 3, 3>& cameraMatrix,
-    const Eigen::Matrix<double, 5, 1>& distCoeffs,
+    const Eigen::Matrix<double, 8, 1>& distCoeffs,
     std::vector<frc::Translation3d> modelTrls,
     std::vector<cv::Point2f> imagePoints) {
   modelTrls = ReorderCircular(modelTrls, true, -1);
@@ -254,7 +254,7 @@ static frc::Rotation3d RVecToRotation(const cv::Mat& rvecInput) {
 
 [[maybe_unused]] static photon::PNPResult SolvePNP_SQPNP(
     const Eigen::Matrix<double, 3, 3>& cameraMatrix,
-    const Eigen::Matrix<double, 5, 1>& distCoeffs,
+    const Eigen::Matrix<double, 8, 1>& distCoeffs,
     std::vector<frc::Translation3d> modelTrls,
     std::vector<cv::Point2f> imagePoints) {
   std::vector<cv::Point3f> objectMat = TranslationToTVec(modelTrls);

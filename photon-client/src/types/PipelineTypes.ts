@@ -219,7 +219,7 @@ export type ConfigurableAprilTagPipelineSettings = Partial<
 export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
   ...DefaultPipelineSettings,
   cameraGain: 75,
-  targetModel: TargetModel.AprilTag6in_16h5,
+  targetModel: TargetModel.AprilTag6p5in_36h11,
   ledMode: false,
   outputShowMultipleTargets: true,
   cameraExposure: 20,
@@ -233,7 +233,7 @@ export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
   refineEdges: true,
   debug: false,
   threads: 4,
-  tagFamily: AprilTagFamily.Family16h5,
+  tagFamily: AprilTagFamily.Family36h11,
   doMultiTarget: false,
   doSingleTargetAlways: false
 };
@@ -263,13 +263,13 @@ export const DefaultArucoPipelineSettings: ArucoPipelineSettings = {
   ...DefaultPipelineSettings,
   cameraGain: 75,
   outputShowMultipleTargets: true,
-  targetModel: TargetModel.AprilTag6in_16h5,
+  targetModel: TargetModel.AprilTag6p5in_36h11,
   cameraExposure: -1,
   cameraAutoExposure: true,
   ledMode: false,
   pipelineType: PipelineType.Aruco,
 
-  tagFamily: AprilTagFamily.Family16h5,
+  tagFamily: AprilTagFamily.Family36h11,
   threshWinSizes: { first: 11, second: 91 },
   threshStepSize: 40,
   threshConstant: 10,

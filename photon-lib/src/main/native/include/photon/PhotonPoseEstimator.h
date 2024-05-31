@@ -185,8 +185,8 @@ class PhotonPoseEstimator {
    */
   std::optional<EstimatedRobotPose> Update(
       const PhotonPipelineResult& result,
-      std::optional<cv::Mat> cameraIntrinsics = std::nullopt,
-      std::optional<cv::Mat> distCoeffsData = std::nullopt);
+      std::optional<PhotonCamera::CameraMatrix> cameraMatrixData = std::nullopt,
+      std::optional<PhotonCamera::DistortionMatrix> coeffsData = std::nullopt);
 
  private:
   frc::AprilTagFieldLayout aprilTags;
@@ -205,8 +205,10 @@ class PhotonPoseEstimator {
   inline void InvalidatePoseCache() { poseCacheTimestamp = -1_s; }
 
   std::optional<EstimatedRobotPose> Update(
-      PhotonPipelineResult result, std::optional<cv::Mat> cameraMatrixData,
-      std::optional<cv::Mat> coeffsData, PoseStrategy strategy);
+      const PhotonPipelineResult& result,
+      std::optional<PhotonCamera::CameraMatrix> cameraMatrixData,
+      std::optional<PhotonCamera::DistortionMatrix> coeffsData,
+      PoseStrategy strategy);
 
   /**
    * Return the estimated position of the robot with the lowest position
@@ -247,8 +249,9 @@ class PhotonPoseEstimator {
    * @return the estimated position of the robot in the FCS
    */
   std::optional<EstimatedRobotPose> MultiTagOnCoprocStrategy(
-      PhotonPipelineResult result, std::optional<cv::Mat> camMat,
-      std::optional<cv::Mat> distCoeffs);
+      PhotonPipelineResult result,
+      std::optional<PhotonCamera::CameraMatrix> camMat,
+      std::optional<PhotonCamera::DistortionMatrix> distCoeffs);
 
   /**
    * Return the pose calculation using all targets in view in the same PNP()
@@ -258,8 +261,9 @@ class PhotonPoseEstimator {
    timestamp of this estimation.
    */
   std::optional<EstimatedRobotPose> MultiTagOnRioStrategy(
-      PhotonPipelineResult result, std::optional<cv::Mat> camMat,
-      std::optional<cv::Mat> distCoeffs);
+      PhotonPipelineResult result,
+      std::optional<PhotonCamera::CameraMatrix> camMat,
+      std::optional<PhotonCamera::DistortionMatrix> distCoeffs);
 
   /**
    * Return the average of the best target poses using ambiguity as weight.

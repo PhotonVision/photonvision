@@ -46,6 +46,7 @@ import edu.wpi.first.networktables.StringSubscriber;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -344,10 +345,19 @@ public class PhotonCamera implements AutoCloseable {
         } else return Optional.empty();
     }
 
-    public Optional<Matrix<N5, N1>> getDistCoeffs() {
+    /**
+     * The camera calibration's distortion coefficients, in OPENCV8 form. Higher-order terms are set
+     * to 0
+     */
+    public Optional<Matrix<N8, N1>> getDistCoeffs() {
         var distCoeffs = cameraDistortionSubscriber.get();
-        if (distCoeffs != null && distCoeffs.length == 5) {
-            return Optional.of(MatBuilder.fill(Nat.N5(), Nat.N1(), distCoeffs));
+        if (distCoeffs != null && distCoeffs.length <= 8) {
+            // Copy into array of length 8, and explicitly null higher order terms out
+            double[] data = new double[8];
+            Arrays.fill(data, 0);
+            System.arraycopy(distCoeffs, 0, data, 0, distCoeffs.length);
+
+            return Optional.of(MatBuilder.fill(Nat.N8(), Nat.N1(), data));
         } else return Optional.empty();
     }
 
