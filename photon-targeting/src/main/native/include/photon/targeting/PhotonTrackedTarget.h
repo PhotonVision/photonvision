@@ -23,6 +23,7 @@
 #include <vector>
 
 #include <frc/geometry/Transform3d.h>
+#include <frc/Errors.h>
 #include <wpi/SmallVector.h>
 
 #include "photon/dataflow/structures/Packet.h"
@@ -138,7 +139,12 @@ class PhotonTrackedTarget {
    * reprojection error is the ambiguity, which is between 0 and 1.
    * @return The pose of the target relative to the robot.
    */
-  frc::Transform3d GetBestCameraToTarget() const { return bestCameraToTarget; }
+  frc::Transform3d GetBestCameraToTarget() const {
+      if (bestCameraToTarget == frc::Transform3d()) {
+          FRC_ReportError(0, "3d mode is not enabled");
+      }
+      return bestCameraToTarget;
+  }
 
   /**
    * Get the transform that maps camera space (X = forward, Y = left, Z = up) to

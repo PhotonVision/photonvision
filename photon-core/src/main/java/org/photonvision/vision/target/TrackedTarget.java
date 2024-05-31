@@ -367,7 +367,7 @@ public class TrackedTarget implements Releasable {
 
     public Transform3d getBestCameraToTarget3d() {
         if (m_bestCameraToTarget3d == new Transform3d()) {
-            DriverStation.reportWarning("Camera has not been calibrated.", false);
+            DriverStation.reportWarning("3d mode is not enabled.", false);
         }
         return m_bestCameraToTarget3d;
     }
