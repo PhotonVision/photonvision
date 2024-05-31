@@ -22,8 +22,8 @@
 #include <utility>
 #include <vector>
 
-#include <frc/geometry/Transform3d.h>
 #include <frc/Errors.h>
+#include <frc/geometry/Transform3d.h>
 #include <wpi/SmallVector.h>
 
 #include "photon/dataflow/structures/Packet.h"
@@ -140,10 +140,10 @@ class PhotonTrackedTarget {
    * @return The pose of the target relative to the robot.
    */
   frc::Transform3d GetBestCameraToTarget() const {
-      if (bestCameraToTarget == frc::Transform3d()) {
-          FRC_ReportError(frc::warn::Warning, "3d mode is not enabled");
-      }
-      return bestCameraToTarget;
+    if (bestCameraToTarget == frc::Transform3d()) {
+      FRC_ReportError(frc::warn::Warning, "3d mode is not enabled");
+    }
+    return bestCameraToTarget;
   }
 
   /**
