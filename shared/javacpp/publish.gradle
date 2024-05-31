@@ -24,6 +24,8 @@ task cppSourcesZip(type: Zip) {
     // assume we will always have proto sources
     from("$buildDir/generated/source/proto/main/cpp") {
         into '/'
+        // Only include generated C++ source files, not headers
+        include "**/*.cc", "**/*.cpp"
     }
 
     dependsOn generateProto
@@ -46,6 +48,14 @@ task cppHeadersZip(type: Zip) {
         from(it) {
             into '/'
         }
+    }
+
+
+    // assume we will always have proto sources
+    from("$buildDir/generated/source/proto/main/cpp") {
+        into '/'
+        // Only include generated C++ headers
+        include "**/*.h"
     }
 }
 
