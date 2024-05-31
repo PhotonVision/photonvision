@@ -27,7 +27,6 @@ task cppSourcesZip(type: Zip) {
         // Only include generated C++ source files, not headers
         include "**/*.cc", "**/*.cpp"
     }
-
     dependsOn generateProto
 }
 
@@ -57,6 +56,7 @@ task cppHeadersZip(type: Zip) {
         // Only include generated C++ headers
         include "**/*.h"
     }
+    dependsOn generateProto
 }
 
 artifacts {
