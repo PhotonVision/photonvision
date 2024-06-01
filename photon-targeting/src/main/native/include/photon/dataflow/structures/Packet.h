@@ -21,6 +21,7 @@
 #include <bit>
 #include <string>
 #include <vector>
+#include <cstring>
 
 namespace photon {
 

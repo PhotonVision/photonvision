@@ -49,7 +49,6 @@ task cppHeadersZip(type: Zip) {
         }
     }
 
-
     // assume we will always have proto sources
     from("$buildDir/generated/source/proto/main/cpp") {
         into '/'
