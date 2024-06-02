@@ -33,6 +33,9 @@ model {
     binaries {
         withType(NativeBinarySpec).all {
             nativeUtils.usePlatformArguments(it)
+            if (it.toolChain instanceof GccCompatibleToolChain) {
+                it.cppCompiler.args << "-Wno-deprecated-enum-enum-conversion"
+            }
         }
     }
 }

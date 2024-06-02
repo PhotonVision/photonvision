@@ -68,7 +68,7 @@ public class VisionEstimation {
      */
     public static PNPResult estimateCamPosePNP(
             Matrix<N3, N3> cameraMatrix,
-            Matrix<N5, N1> distCoeffs,
+            Matrix<N8, N1> distCoeffs,
             List<PhotonTrackedTarget> visTags,
             AprilTagFieldLayout tagLayout,
             TargetModel tagModel) {

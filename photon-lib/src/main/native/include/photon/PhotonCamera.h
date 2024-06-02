@@ -149,8 +149,23 @@ class PhotonCamera {
    */
   const std::string_view GetCameraName() const;
 
-  std::optional<cv::Mat> GetCameraMatrix();
-  std::optional<cv::Mat> GetDistCoeffs();
+  using CameraMatrix = Eigen::Matrix<double, 3, 3>;
+  using DistortionMatrix = Eigen::Matrix<double, 8, 1>;
+
+  /**
+   * @brief Get the camera calibration matrix, in standard OpenCV form
+   *
+   * @return std::optional<cv::Mat>
+   */
+  std::optional<CameraMatrix> GetCameraMatrix();
+
+  /**
+   * @brief Get the camera calibration distortion coefficients, in OPENCV8 form.
+   * Higher order terms are set to zero.
+   *
+   * @return std::optional<cv::Mat>
+   */
+  std::optional<DistortionMatrix> GetDistCoeffs();
 
   static void SetVersionCheckEnabled(bool enabled);
 

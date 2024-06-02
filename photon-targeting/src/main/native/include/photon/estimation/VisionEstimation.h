@@ -48,7 +48,7 @@ static std::vector<frc::AprilTag> GetVisibleLayoutTags(
 
 static PNPResult EstimateCamPosePNP(
     const Eigen::Matrix<double, 3, 3>& cameraMatrix,
-    const Eigen::Matrix<double, 5, 1>& distCoeffs,
+    const Eigen::Matrix<double, 8, 1>& distCoeffs,
     const std::vector<PhotonTrackedTarget>& visTags,
     const frc::AprilTagFieldLayout& layout, const TargetModel& tagModel) {
   if (visTags.size() == 0) {

@@ -83,7 +83,7 @@ jobs:
       - name: Gradle Build
         run: |
           chmod +x gradlew
-          ./gradlew build -x check --max-workers 2
+          ./gradlew photon-targeting:build photon-core:build photon-server:build -x check --max-workers 2
       - name: Gradle Tests
         run: ./gradlew testHeadless -i --max-workers 1 --stacktrace
       - name: Gradle Coverage
@@ -121,7 +121,7 @@ jobs:
           path: build/html
   build-photonlib-host:
     env:
-      MACOSX_DEPLOYMENT_TARGET: 12
+      MACOSX_DEPLOYMENT_TARGET: 13
     strategy:
       fail-fast: false
       matrix:
@@ -129,9 +129,9 @@ jobs:
           - os: windows-2022
             artifact-name: Win64
             architecture: x64
-          - os: macos-12
+          - os: macos-14
             artifact-name: macOS
-            architecture: x64
+            architecture: aarch64
           - os: ubuntu-22.04
             artifact-name: Linux
 
@@ -146,6 +146,7 @@ jobs:
         with:
           java-version: 17
           distribution: temurin
+          architecture: ${{ matrix.architecture }}
       - run: git fetch --tags --force
       - run: |
           chmod +x gradlew
@@ -198,19 +199,19 @@ jobs:
           - os: windows-latest
             artifact-name: Win64
             architecture: x64
-            arch-override: none
+            arch-override: winx64
           - os: macos-latest
             artifact-name: macOS
             architecture: x64
-            arch-override: none
-          - os: ubuntu-latest
-            artifact-name: Linux
-            architecture: x64
-            arch-override: none
+            arch-override: macx64
           - os: macos-latest
             artifact-name: macOSArm
             architecture: x64
             arch-override: macarm64
+          - os: ubuntu-latest
+            artifact-name: Linux
+            architecture: x64
+            arch-override: linuxx64
           - os: ubuntu-latest
             artifact-name: LinuxArm64
             architecture: x64
@@ -228,6 +229,7 @@ jobs:
         with:
           java-version: 17
           distribution: temurin
+          architecture: ${{ matrix.architecture }}
       - run: |
           rm -rf photon-server/src/main/resources/web/*
           mkdir -p photon-server/src/main/resources/web/docs

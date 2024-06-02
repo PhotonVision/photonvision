@@ -263,7 +263,7 @@ public final class OpenCVHelp {
      */
     public static Point[] projectPoints(
             Matrix<N3, N3> cameraMatrix,
-            Matrix<N5, N1> distCoeffs,
+            Matrix<N8, N1> distCoeffs,
             RotTrlTransform3d camRt,
             List<Translation3d> objectTranslations) {
         // translate to opencv classes
@@ -302,7 +302,7 @@ public final class OpenCVHelp {
      * @return The undistorted image points
      */
     public static Point[] undistortPoints(
-            Matrix<N3, N3> cameraMatrix, Matrix<N5, N1> distCoeffs, Point[] points) {
+            Matrix<N3, N3> cameraMatrix, Matrix<N8, N1> distCoeffs, Point[] points) {
         var distMat = new MatOfPoint2f(points);
         var undistMat = new MatOfPoint2f();
         var cameraMatrixMat = matrixToMat(cameraMatrix.getStorage());
@@ -404,7 +404,7 @@ public final class OpenCVHelp {
      */
     public static PNPResult solvePNP_SQUARE(
             Matrix<N3, N3> cameraMatrix,
-            Matrix<N5, N1> distCoeffs,
+            Matrix<N8, N1> distCoeffs,
             List<Translation3d> modelTrls,
             Point[] imagePoints) {
         // solvepnp inputs
@@ -511,7 +511,7 @@ public final class OpenCVHelp {
      */
     public static PNPResult solvePNP_SQPNP(
             Matrix<N3, N3> cameraMatrix,
-            Matrix<N5, N1> distCoeffs,
+            Matrix<N8, N1> distCoeffs,
             List<Translation3d> objectTrls,
             Point[] imagePoints) {
         try {

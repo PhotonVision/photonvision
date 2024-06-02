@@ -52,8 +52,7 @@ public class TargetCalculations {
 
         if (cameraCal != null) {
             // undistort
-            MatOfPoint2f temp = new MatOfPoint2f();
-            temp.fromArray(new Point(targetCenterX, targetCenterY));
+            MatOfPoint2f temp = new MatOfPoint2f(new Point(targetCenterX, targetCenterY));
             // Tighten up termination criteria
             var termCriteria = new TermCriteria(TermCriteria.COUNT + TermCriteria.EPS, 30, 1e-6);
             Calib3d.undistortImagePoints(
@@ -68,7 +67,7 @@ public class TargetCalculations {
 
             // if outside of the imager, convergence fails, or really really bad user camera cal,
             // undistort will fail by giving us nans. at some point we should log this failure
-            // if we can't undistort, don't change the cnter location
+            // if we can't undistort, don't change the center location
             if (Float.isFinite(buff[0]) && Float.isFinite(buff[1])) {
                 targetCenterX = buff[0];
                 targetCenterY = buff[1];

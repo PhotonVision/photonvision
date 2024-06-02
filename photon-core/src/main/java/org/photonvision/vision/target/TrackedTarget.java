@@ -19,6 +19,7 @@ package org.photonvision.vision.target;
 import edu.wpi.first.apriltag.AprilTagDetection;
 import edu.wpi.first.apriltag.AprilTagPoseEstimate;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.wpilibj.DriverStation;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -364,6 +365,9 @@ public class TrackedTarget implements Releasable {
     }
 
     public Transform3d getBestCameraToTarget3d() {
+        if (m_bestCameraToTarget3d.equals(new Transform3d())) {
+            DriverStation.reportWarning("3d mode is not enabled.", false);
+        }
         return m_bestCameraToTarget3d;
     }
 
