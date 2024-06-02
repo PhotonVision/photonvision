@@ -35,3 +35,7 @@
 *.so binary
 *.dll binary
 *.webp binary
+
+photon-lib/src/generate/** linguist-generated
+photon-lib/src/generated/** linguist-generated
+shared/PhotonVersion.cpp linguist-generated
