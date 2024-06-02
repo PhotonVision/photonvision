@@ -280,7 +280,6 @@ public class VisionSourceManagerTest {
         var inst = new VisionSourceManager();
         ConfigManager.getInstance().clearConfig();
         ConfigManager.getInstance().load();
-        ConfigManager.getInstance().getConfig().getNetworkConfig().matchCamerasOnlyByPath = false;
 
         var CAM2_OLD_PATH =
                 new String[] {"/dev/v4l/by-path/platform-fc880000.usb-usb-0:1:1.0-video-index0"};
@@ -315,7 +314,6 @@ public class VisionSourceManagerTest {
         // And load our "old" configs
         inst.registerLoadedConfigs(camera1_saved_config, camera2_saved_config);
 
-        // Camera attached to new port, but strict matching disabled
         {
             CameraInfo info1 =
                     new CameraInfo(
@@ -345,7 +343,6 @@ public class VisionSourceManagerTest {
         var inst = new VisionSourceManager();
         ConfigManager.getInstance().clearConfig();
         ConfigManager.getInstance().load();
-        ConfigManager.getInstance().getConfig().getNetworkConfig().matchCamerasOnlyByPath = true;
 
         var CAM2_OLD_PATH =
                 new String[] {"/dev/v4l/by-path/platform-fc880000.usb-usb-0:1:1.0-video-index0"};
@@ -382,8 +379,7 @@ public class VisionSourceManagerTest {
 
         // initial pass with camera in the wrong spot
         {
-            // Give our cameras new "paths" to fake the windows logic out. this should not
-            // affect strict matching
+            // Give our cameras new "paths" to fake the windows logic out.
             CameraInfo info1 =
                     new CameraInfo(
                             0, "/dev/video11", "Arducam OV2311 USB Camera", CAM1_OLD_PATHS, 3141, 25446);
@@ -443,7 +439,6 @@ public class VisionSourceManagerTest {
         var inst = new VisionSourceManager();
         ConfigManager.getInstance().clearConfig();
         ConfigManager.getInstance().load();
-        ConfigManager.getInstance().getConfig().getNetworkConfig().matchCamerasOnlyByPath = false;
 
         CameraInfo info1 =
                 new CameraInfo(
@@ -510,8 +505,6 @@ public class VisionSourceManagerTest {
         var inst = new VisionSourceManager();
         ConfigManager.getInstance().clearConfig();
         ConfigManager.getInstance().load();
-        ConfigManager.getInstance().getConfig().getNetworkConfig().matchCamerasOnlyByPath = false;
-
         // Match empty camera infos
         inst.tryMatchCamImpl(cameraInfos);
 

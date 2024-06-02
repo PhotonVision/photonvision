@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+
+import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
@@ -169,12 +171,16 @@ public class CameraConfiguration {
 
     /**
      * Get a unique descriptor of the USB port this camera is attached to. EG
-     * "/dev/v4l/by-path/platform-fc800000.usb-usb-0:1.3:1.0-video-index0"
+     * "/dev/v4l/by-path/platform-fc800000.usb-usb-0:1.3:1.0-video-index0" or
+     * "?/usb#vid_05c8&pid_03df&mi_00#7&fa76035&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global"
+     * on windows
      *
      * @return
      */
     @JsonIgnore
     public Optional<String> getUSBPath() {
+        if(Platform.isWindows())
+            return Optional.of(this.path);
         return Arrays.stream(otherPaths).filter(path -> path.contains("/by-path/")).findFirst();
     }
 
