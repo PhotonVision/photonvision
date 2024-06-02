@@ -60,8 +60,7 @@ public class VisionSourceManager {
         return SingletonHolder.INSTANCE;
     }
 
-    VisionSourceManager() {
-    }
+    VisionSourceManager() {}
 
     public void registerTimedTask() {
         TimedTaskManager.getInstance().addTask("VisionSourceManager", this::tryMatchCams, 3000);
@@ -72,8 +71,7 @@ public class VisionSourceManager {
     }
 
     /**
-     * Register new camera configs loaded from disk. This will add them to the list
-     * of configs to try
+     * Register new camera configs loaded from disk. This will add them to the list of configs to try
      * to match, and also automatically spawn new vision processes as necessary.
      *
      * @param configs The loaded camera configs.
@@ -83,15 +81,15 @@ public class VisionSourceManager {
     }
 
     /**
-     * Pre filter out any csi cameras to return just USB Cameras. Allow defining the
-     * camerainfo.
+     * Pre filter out any csi cameras to return just USB Cameras. Allow defining the camerainfo.
      *
      * @return a list containing usbcamerainfo.
      */
     protected List<CameraInfo> getConnectedUSBCameras() {
-        List<CameraInfo> cameraInfos = List.of(UsbCamera.enumerateUsbCameras()).stream()
-                .map(c -> new CameraInfo(c))
-                .collect(Collectors.toList());
+        List<CameraInfo> cameraInfos =
+                List.of(UsbCamera.enumerateUsbCameras()).stream()
+                        .map(c -> new CameraInfo(c))
+                        .collect(Collectors.toList());
         return cameraInfos;
     }
 
@@ -113,8 +111,7 @@ public class VisionSourceManager {
 
     protected void tryMatchCams() {
         var visionSourceList = tryMatchCamImpl();
-        if (visionSourceList == null)
-            return;
+        if (visionSourceList == null) return;
 
         logger.info("Adding " + visionSourceList.size() + " configs to VMM.");
         ConfigManager.getInstance().addCameraConfigurations(visionSourceList);
@@ -144,7 +141,8 @@ public class VisionSourceManager {
             connectedCameras.addAll(new ArrayList<>(filterAllowedDevices(getConnectedCSICameras())));
         } else {
             connectedCameras = new ArrayList<>(filterAllowedDevices(cameraInfos));
-            createSources = false; // Dont create sources if we are using supplied camerainfo for unit tests.
+            createSources =
+                    false; // Dont create sources if we are using supplied camerainfo for unit tests.
         }
 
         // Return no new sources because there are no new sources
@@ -155,15 +153,13 @@ public class VisionSourceManager {
                 hasWarnedNoCameras = true;
             }
             return null;
-        } else
-            hasWarnedNoCameras = false;
+        } else hasWarnedNoCameras = false;
 
         // Remove any known cameras.
         connectedCameras.removeIf(c -> knownCameras.contains(c));
 
         // All cameras are already loaded return no new sources.
-        if (connectedCameras.isEmpty())
-            return null;
+        if (connectedCameras.isEmpty()) return null;
 
         logger.debug("Matching " + connectedCameras.size() + " new cameras!");
 
@@ -176,14 +172,16 @@ public class VisionSourceManager {
             logger.debug("Trying to match " + unmatchedLoadedConfigs.size() + " unmatched configs...");
 
         // Match camera configs to physical cameras
-        List<CameraConfiguration> matchedCameras = matchCameras(connectedCameras, unmatchedLoadedConfigs);
+        List<CameraConfiguration> matchedCameras =
+                matchCameras(connectedCameras, unmatchedLoadedConfigs);
 
         unmatchedLoadedConfigs.removeAll(matchedCameras);
         if (!unmatchedLoadedConfigs.isEmpty() && !hasWarned) {
             logger.warn(
-                    () -> "After matching, "
-                            + unmatchedLoadedConfigs.size()
-                            + " configs remained unmatched. Is your camera disconnected?");
+                    () ->
+                            "After matching, "
+                                    + unmatchedLoadedConfigs.size()
+                                    + " configs remained unmatched. Is your camera disconnected?");
             logger.warn(
                     "Unloaded configs: "
                             + unmatchedLoadedConfigs.stream()
@@ -195,8 +193,7 @@ public class VisionSourceManager {
         // We add the matched cameras to the known camera list
         this.knownCameras.addAll(connectedCameras);
 
-        if (matchedCameras.isEmpty())
-            return null;
+        if (matchedCameras.isEmpty()) return null;
 
         // Turn these camera configs into vision sources
         var sources = loadVisionSourcesFromCamConfigs(matchedCameras, createSources);
@@ -204,11 +201,12 @@ public class VisionSourceManager {
         // Print info about each vision source
         for (var src : sources) {
             logger.debug(
-                    () -> "Matched config for camera \""
-                            + src.getFrameProvider().getName()
-                            + "\" and loaded "
-                            + src.getCameraConfiguration().pipelineSettings.size()
-                            + " pipelines");
+                    () ->
+                            "Matched config for camera \""
+                                    + src.getFrameProvider().getName()
+                                    + "\" and loaded "
+                                    + src.getCameraConfiguration().pipelineSettings.size()
+                                    + " pipelines");
         }
 
         return sources;
@@ -231,22 +229,19 @@ public class VisionSourceManager {
     }
 
     /**
-     * Create {@link CameraConfiguration}s based on a list of detected USB cameras
-     * and the configs on
+     * Create {@link CameraConfiguration}s based on a list of detected USB cameras and the configs on
      * disk.
      *
      * @param detectedCamInfos Information about currently connected USB cameras.
-     * @param loadedCamConfigs The USB {@link CameraConfiguration}s loaded from
-     *                         disk.
+     * @param loadedCamConfigs The USB {@link CameraConfiguration}s loaded from disk.
      * @return the matched configurations.
      */
     public List<CameraConfiguration> matchCameras(
-            List<CameraInfo> detectedCamInfos,
-            List<CameraConfiguration> loadedCamConfigs) {
-
+            List<CameraInfo> detectedCamInfos, List<CameraConfiguration> loadedCamConfigs) {
         var detectedCameraList = new ArrayList<>(detectedCamInfos);
         ArrayList<CameraConfiguration> cameraConfigurations = new ArrayList<CameraConfiguration>();
-        ArrayList<CameraConfiguration> unloadedConfigs = new ArrayList<CameraConfiguration>(loadedCamConfigs);
+        ArrayList<CameraConfiguration> unloadedConfigs =
+                new ArrayList<CameraConfiguration>(loadedCamConfigs);
 
         logger.info("Matching all cameras by port");
 
@@ -256,10 +251,15 @@ public class VisionSourceManager {
                             "Trying to find a match for loaded camera %s (%s) with camera config: %s",
                             config.baseName, config.uniqueName, camCfgToString(config)));
 
-            var cameraInfo = detectedCameraList.stream().filter((CameraInfo physicalCamera) -> {
-                var savedPath = config.getUSBPath();
-                return (savedPath.isPresent() && physicalCamera.getUSBPath().equals(savedPath));
-            }).findFirst().orElse(null);
+            var cameraInfo =
+                    detectedCameraList.stream()
+                            .filter(
+                                    (CameraInfo physicalCamera) -> {
+                                        var savedPath = config.getUSBPath();
+                                        return (savedPath.isPresent() && physicalCamera.getUSBPath().equals(savedPath));
+                                    })
+                            .findFirst()
+                            .orElse(null);
 
             // If we actually matched a camera to a config, remove that camera from the list
             // and add it to the output
@@ -286,10 +286,8 @@ public class VisionSourceManager {
     }
 
     /**
-     * Create new {@link CameraConfiguration}s for unmatched cameras, and assign
-     * them a unique name
-     * (unique in the set of (loaded configs, unloaded configs, loaded vision
-     * modules) at least)
+     * Create new {@link CameraConfiguration}s for unmatched cameras, and assign them a unique name
+     * (unique in the set of (loaded configs, unloaded configs, loaded vision modules) at least)
      */
     private List<CameraConfiguration> createConfigsForCameras(
             List<CameraInfo> detectedCameraList,
@@ -319,8 +317,8 @@ public class VisionSourceManager {
 
             String nickname = uniqueName;
 
-            CameraConfiguration configuration = new CameraConfiguration(baseName, uniqueName, nickname, info.path,
-                    info.otherPaths);
+            CameraConfiguration configuration =
+                    new CameraConfiguration(baseName, uniqueName, nickname, info.path, info.otherPaths);
 
             configuration.cameraType = info.cameraType;
 

@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -179,8 +178,7 @@ public class CameraConfiguration {
      */
     @JsonIgnore
     public Optional<String> getUSBPath() {
-        if(Platform.isWindows())
-            return Optional.of(this.path);
+        if (Platform.isWindows()) return Optional.of(this.path);
         return Arrays.stream(otherPaths).filter(path -> path.contains("/by-path/")).findFirst();
     }
 

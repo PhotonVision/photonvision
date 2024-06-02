@@ -77,10 +77,8 @@ public class CameraInfo extends UsbCameraInfo {
      * @return
      */
     public Optional<String> getUSBPath() {
-        if(Platform.isWindows())
-            return Optional.of(this.path);
-        if(getIsV4lCsiCamera())
-            return Optional.of(this.path);
+        if (Platform.isWindows()) return Optional.of(this.path);
+        if (getIsV4lCsiCamera()) return Optional.of(this.path);
         return Arrays.stream(otherPaths).filter(path -> path.contains("/by-path/")).findFirst();
     }
 
