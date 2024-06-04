@@ -38,6 +38,7 @@ public class MJPGFrameConsumer implements AutoCloseable {
     private long lastFrameTimeNs;
 
     private static final Mat EMPTY_MAT = new Mat(60, 15 * 7, CvType.CV_8UC3);
+    private static final Mat LOST_MAT = new Mat(60, 15 * 7, CvType.CV_8UC3);
     private static final double EMPTY_FRAMERATE = 2;
     private static final long EMPTY_FRAME_PERIOD_NS = Math.round(1e9 / EMPTY_FRAMERATE);
     private long lastEmptyTimeNs;
@@ -110,6 +111,74 @@ public class MJPGFrameConsumer implements AutoCloseable {
                 EMPTY_MAT, "Disabled", new Point(14, 45), 0, 0.6, ColorHelper.colorToScalar(Color.RED), 1);
     }
 
+    static {
+        LOST_MAT.setTo(ColorHelper.colorToScalar(Color.BLACK));
+        var col = 0;
+        Imgproc.rectangle(
+                LOST_MAT,
+                new Rect(col, 0, 15, LOST_MAT.height()),
+                ColorHelper.colorToScalar(new Color(0xa2a2a2)),
+                -1);
+        col += 15;
+        Imgproc.rectangle(
+                LOST_MAT,
+                new Rect(col, 0, 15, LOST_MAT.height()),
+                ColorHelper.colorToScalar(new Color(0xa2a300)),
+                -1);
+        col += 15;
+        Imgproc.rectangle(
+                LOST_MAT,
+                new Rect(col, 0, 15, LOST_MAT.height()),
+                ColorHelper.colorToScalar(new Color(0x00a3a2)),
+                -1);
+        col += 15;
+        Imgproc.rectangle(
+                LOST_MAT,
+                new Rect(col, 0, 15, LOST_MAT.height()),
+                ColorHelper.colorToScalar(new Color(0x00a200)),
+                -1);
+        col += 15;
+        Imgproc.rectangle(
+                LOST_MAT,
+                new Rect(col, 0, 15, LOST_MAT.height()),
+                ColorHelper.colorToScalar(new Color(0x440045)),
+                -1);
+        col += 15;
+        Imgproc.rectangle(
+                LOST_MAT,
+                new Rect(col, 0, 15, LOST_MAT.height()),
+                ColorHelper.colorToScalar(new Color(0x0000a2)),
+                -1);
+        col += 15;
+        Imgproc.rectangle(
+                LOST_MAT,
+                new Rect(col, 0, 15, LOST_MAT.height()),
+                ColorHelper.colorToScalar(new Color(0)),
+                -1);
+        Imgproc.rectangle(
+                LOST_MAT,
+                new Rect(0, 50, LOST_MAT.width(), 10),
+                ColorHelper.colorToScalar(new Color(0)),
+                -1);
+        Imgproc.rectangle(
+                LOST_MAT, new Rect(15, 50, 30, 10), ColorHelper.colorToScalar(Color.WHITE), -1);
+
+        Imgproc.putText(
+                LOST_MAT, "Camera", new Point(14, 20), 0, 0.6, ColorHelper.colorToScalar(Color.white), 2);
+        Imgproc.putText(
+                LOST_MAT,
+                "Lost",
+                new Point(14, 45),
+                0,
+                0.6,
+                ColorHelper.colorToScalar(Color.white),
+                2);
+        Imgproc.putText(
+                LOST_MAT, "Camera", new Point(14, 20), 0, 0.6, ColorHelper.colorToScalar(Color.RED), 1);
+        Imgproc.putText(
+                LOST_MAT, "Lost", new Point(14, 45), 0, 0.6, ColorHelper.colorToScalar(Color.RED), 1);
+    }
+
     private CvSource cvSource;
     private MjpegServer mjpegServer;
 
@@ -120,27 +189,25 @@ public class MJPGFrameConsumer implements AutoCloseable {
 
     public MJPGFrameConsumer(String sourceName, int width, int height, int port) {
         this.cvSource = new CvSource(sourceName, PixelFormat.kMJPEG, width, height, 30);
-        this.table =
-                NetworkTableInstance.getDefault().getTable("/CameraPublisher").getSubTable(sourceName);
+        this.table = NetworkTableInstance.getDefault().getTable("/CameraPublisher").getSubTable(sourceName);
 
         this.mjpegServer = new MjpegServer("serve_" + cvSource.getName(), port);
         mjpegServer.setSource(cvSource);
         mjpegServer.setCompression(75);
 
-        listener =
-                new VideoListener(
-                        event -> {
-                            if (event.kind == VideoEvent.Kind.kNetworkInterfacesChanged) {
-                                table.getEntry("source").setString("cv:");
-                                table.getEntry("streams");
-                                table.getEntry("connected").setBoolean(true);
-                                table.getEntry("mode").setString(videoModeToString(cvSource.getVideoMode()));
-                                table.getEntry("modes").setStringArray(getSourceModeValues(cvSource.getHandle()));
-                                updateStreamValues();
-                            }
-                        },
-                        0x4fff,
-                        true);
+        listener = new VideoListener(
+                event -> {
+                    if (event.kind == VideoEvent.Kind.kNetworkInterfacesChanged) {
+                        table.getEntry("source").setString("cv:");
+                        table.getEntry("streams");
+                        table.getEntry("connected").setBoolean(true);
+                        table.getEntry("mode").setString(videoModeToString(cvSource.getVideoMode()));
+                        table.getEntry("modes").setStringArray(getSourceModeValues(cvSource.getHandle()));
+                        updateStreamValues();
+                    }
+                },
+                0x4fff,
+                true);
     }
 
     private synchronized void updateStreamValues() {
@@ -174,17 +241,22 @@ public class MJPGFrameConsumer implements AutoCloseable {
     }
 
     public void accept(CVMat image) {
+        long now = MathUtils.wpiNanoTime();
+
         if (image != null && !image.getMat().empty()) {
-            long now = MathUtils.wpiNanoTime();
             if (now - lastFrameTimeNs > MAX_FRAME_PERIOD_NS) {
                 lastFrameTimeNs = now;
                 cvSource.putFrame(image.getMat());
             }
-
-            // Make sure our disabled framerate limiting doesn't get confused
-            isDisabled = false;
-            lastEmptyTimeNs = 0;
+        } else {
+            if (now - lastFrameTimeNs > MAX_FRAME_PERIOD_NS) {
+                lastFrameTimeNs = now;
+                cvSource.putFrame(LOST_MAT);
+            }
         }
+        // Make sure our disabled framerate limiting doesn't get confused
+        isDisabled = false;
+        lastEmptyTimeNs = 0;
     }
 
     public void disabledTick() {
@@ -198,6 +270,15 @@ public class MJPGFrameConsumer implements AutoCloseable {
             lastEmptyTimeNs = now;
             cvSource.putFrame(EMPTY_MAT);
         }
+    }
+  /**
+   * Get the data rate (in bytes per second).
+   *
+   * @return Data rate averaged over the telemetry period.
+   */
+    public double getDataRate()
+    {
+        return cvSource.getActualDataRate();
     }
 
     public int getCurrentStreamPort() {

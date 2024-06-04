@@ -206,19 +206,19 @@ public class VisionModule {
     private void recreateStreamResultConsumers() {
         streamResultConsumers.add(
                 (frame, tgts) -> {
-                    if (frame != null) inputFrameSaver.accept(frame.colorImage);
+                    inputFrameSaver.accept(frame.colorImage);
                 });
         streamResultConsumers.add(
                 (frame, tgts) -> {
-                    if (frame != null) outputFrameSaver.accept(frame.processedImage);
+                    outputFrameSaver.accept(frame.processedImage);
                 });
         streamResultConsumers.add(
                 (frame, tgts) -> {
-                    if (frame != null) inputVideoStreamer.accept(frame.colorImage);
+                    inputVideoStreamer.accept(frame.colorImage);
                 });
         streamResultConsumers.add(
                 (frame, tgts) -> {
-                    if (frame != null) outputVideoStreamer.accept(frame.processedImage);
+                    outputVideoStreamer.accept(frame.processedImage);
                 });
     }
 
@@ -624,5 +624,15 @@ public class VisionModule {
     public void changeCameraQuirks(HashMap<CameraQuirk, Boolean> quirksToChange) {
         visionSource.getCameraConfiguration().cameraQuirks.updateQuirks(quirksToChange);
         saveAndBroadcastAll();
+    }
+
+    /**
+     * Get the data rate (in bytes per second).
+     *
+     * @return Data rate averaged over the telemetry period.
+     */
+    public double getDataRate()
+    {
+        return inputVideoStreamer.getDataRate() + outputVideoStreamer.getDataRate();
     }
 }
