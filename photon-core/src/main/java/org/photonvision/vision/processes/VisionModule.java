@@ -625,14 +625,4 @@ public class VisionModule {
         visionSource.getCameraConfiguration().cameraQuirks.updateQuirks(quirksToChange);
         saveAndBroadcastAll();
     }
-
-    /**
-     * Get the data rate (in bytes per second).
-     *
-     * @return Data rate averaged over the telemetry period.
-     */
-    public double getDataRate()
-    {
-        return inputVideoStreamer.getDataRate() + outputVideoStreamer.getDataRate();
-    }
 }

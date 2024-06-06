@@ -166,13 +166,7 @@ public class MJPGFrameConsumer implements AutoCloseable {
         Imgproc.putText(
                 LOST_MAT, "Camera", new Point(14, 20), 0, 0.6, ColorHelper.colorToScalar(Color.white), 2);
         Imgproc.putText(
-                LOST_MAT,
-                "Lost",
-                new Point(14, 45),
-                0,
-                0.6,
-                ColorHelper.colorToScalar(Color.white),
-                2);
+                LOST_MAT, "Lost", new Point(14, 45), 0, 0.6, ColorHelper.colorToScalar(Color.white), 2);
         Imgproc.putText(
                 LOST_MAT, "Camera", new Point(14, 20), 0, 0.6, ColorHelper.colorToScalar(Color.RED), 1);
         Imgproc.putText(
@@ -189,25 +183,27 @@ public class MJPGFrameConsumer implements AutoCloseable {
 
     public MJPGFrameConsumer(String sourceName, int width, int height, int port) {
         this.cvSource = new CvSource(sourceName, PixelFormat.kMJPEG, width, height, 30);
-        this.table = NetworkTableInstance.getDefault().getTable("/CameraPublisher").getSubTable(sourceName);
+        this.table =
+                NetworkTableInstance.getDefault().getTable("/CameraPublisher").getSubTable(sourceName);
 
         this.mjpegServer = new MjpegServer("serve_" + cvSource.getName(), port);
         mjpegServer.setSource(cvSource);
         mjpegServer.setCompression(75);
 
-        listener = new VideoListener(
-                event -> {
-                    if (event.kind == VideoEvent.Kind.kNetworkInterfacesChanged) {
-                        table.getEntry("source").setString("cv:");
-                        table.getEntry("streams");
-                        table.getEntry("connected").setBoolean(true);
-                        table.getEntry("mode").setString(videoModeToString(cvSource.getVideoMode()));
-                        table.getEntry("modes").setStringArray(getSourceModeValues(cvSource.getHandle()));
-                        updateStreamValues();
-                    }
-                },
-                0x4fff,
-                true);
+        listener =
+                new VideoListener(
+                        event -> {
+                            if (event.kind == VideoEvent.Kind.kNetworkInterfacesChanged) {
+                                table.getEntry("source").setString("cv:");
+                                table.getEntry("streams");
+                                table.getEntry("connected").setBoolean(true);
+                                table.getEntry("mode").setString(videoModeToString(cvSource.getVideoMode()));
+                                table.getEntry("modes").setStringArray(getSourceModeValues(cvSource.getHandle()));
+                                updateStreamValues();
+                            }
+                        },
+                        0x4fff,
+                        true);
     }
 
     private synchronized void updateStreamValues() {
@@ -271,13 +267,13 @@ public class MJPGFrameConsumer implements AutoCloseable {
             cvSource.putFrame(EMPTY_MAT);
         }
     }
-  /**
-   * Get the data rate (in bytes per second).
-   *
-   * @return Data rate averaged over the telemetry period.
-   */
-    public double getDataRate()
-    {
+
+    /**
+     * Get the data rate (in bytes per second).
+     *
+     * @return Data rate averaged over the telemetry period.
+     */
+    public double getDataRate() {
         return cvSource.getActualDataRate();
     }
 

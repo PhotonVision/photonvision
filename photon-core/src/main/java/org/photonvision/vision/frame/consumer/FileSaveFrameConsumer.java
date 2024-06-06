@@ -19,14 +19,12 @@ package org.photonvision.vision.frame.consumer;
 
 import edu.wpi.first.networktables.IntegerEntry;
 import edu.wpi.first.networktables.NetworkTable;
-
 import java.awt.Color;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.function.Consumer;
-
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -39,7 +37,6 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ColorHelper;
 import org.photonvision.vision.opencv.CVMat;
-
 
 public class FileSaveFrameConsumer implements Consumer<CVMat> {
     private final Logger logger = new Logger(FileSaveFrameConsumer.class, LogGroup.General);
@@ -120,19 +117,12 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
         Imgproc.putText(
                 LOST_MAT, "Camera", new Point(14, 20), 0, 0.6, ColorHelper.colorToScalar(Color.white), 2);
         Imgproc.putText(
-                LOST_MAT,
-                "Lost",
-                new Point(14, 45),
-                0,
-                0.6,
-                ColorHelper.colorToScalar(Color.white),
-                2);
+                LOST_MAT, "Lost", new Point(14, 45), 0, 0.6, ColorHelper.colorToScalar(Color.white), 2);
         Imgproc.putText(
                 LOST_MAT, "Camera", new Point(14, 20), 0, 0.6, ColorHelper.colorToScalar(Color.RED), 1);
         Imgproc.putText(
                 LOST_MAT, "Lost", new Point(14, 45), 0, 0.6, ColorHelper.colorToScalar(Color.RED), 1);
     }
-
 
     public FileSaveFrameConsumer(String camNickname, String cameraUniqueName, String streamPrefix) {
         this.ntEntryName = streamPrefix + NT_SUFFIX;
