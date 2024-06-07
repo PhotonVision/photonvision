@@ -65,7 +65,6 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
     }
 
     public void accept(CVMat image) {
-        
         long currentCount = saveFrameEntry.get();
 
         // Await save request
@@ -89,9 +88,7 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
 
             if (image == null || image.getMat() == null || image.getMat().empty()) {
                 Imgcodecs.imwrite(saveFilePath, StaticFrames.LOST_MAT);
-            }
-            else
-            {            
+            } else {
                 Imgcodecs.imwrite(saveFilePath, image.getMat());
             }
 

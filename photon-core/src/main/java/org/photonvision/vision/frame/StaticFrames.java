@@ -28,7 +28,6 @@ import org.photonvision.common.util.ColorHelper;
 public class StaticFrames {
     public static final Mat LOST_MAT = new Mat(60, 15 * 7, CvType.CV_8UC3);
     public static final Mat EMPTY_MAT = new Mat(60, 15 * 7, CvType.CV_8UC3);
-    
 
     static {
         EMPTY_MAT.setTo(ColorHelper.colorToScalar(Color.BLACK));
