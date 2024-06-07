@@ -19,23 +19,17 @@ package org.photonvision.vision.frame.consumer;
 
 import edu.wpi.first.networktables.IntegerEntry;
 import edu.wpi.first.networktables.NetworkTable;
-import java.awt.Color;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.function.Consumer;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.core.Point;
-import org.opencv.core.Rect;
 import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.common.util.ColorHelper;
+import org.photonvision.vision.frame.StaticFrames;
 import org.photonvision.vision.opencv.CVMat;
 
 public class FileSaveFrameConsumer implements Consumer<CVMat> {
@@ -60,70 +54,6 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
 
     private long savedImagesCount = 0;
 
-    private static final Mat LOST_MAT = new Mat(60, 15 * 7, CvType.CV_8UC3);
-
-    static {
-        LOST_MAT.setTo(ColorHelper.colorToScalar(Color.BLACK));
-        var col = 0;
-        Imgproc.rectangle(
-                LOST_MAT,
-                new Rect(col, 0, 15, LOST_MAT.height()),
-                ColorHelper.colorToScalar(new Color(0xa2a2a2)),
-                -1);
-        col += 15;
-        Imgproc.rectangle(
-                LOST_MAT,
-                new Rect(col, 0, 15, LOST_MAT.height()),
-                ColorHelper.colorToScalar(new Color(0xa2a300)),
-                -1);
-        col += 15;
-        Imgproc.rectangle(
-                LOST_MAT,
-                new Rect(col, 0, 15, LOST_MAT.height()),
-                ColorHelper.colorToScalar(new Color(0x00a3a2)),
-                -1);
-        col += 15;
-        Imgproc.rectangle(
-                LOST_MAT,
-                new Rect(col, 0, 15, LOST_MAT.height()),
-                ColorHelper.colorToScalar(new Color(0x00a200)),
-                -1);
-        col += 15;
-        Imgproc.rectangle(
-                LOST_MAT,
-                new Rect(col, 0, 15, LOST_MAT.height()),
-                ColorHelper.colorToScalar(new Color(0x440045)),
-                -1);
-        col += 15;
-        Imgproc.rectangle(
-                LOST_MAT,
-                new Rect(col, 0, 15, LOST_MAT.height()),
-                ColorHelper.colorToScalar(new Color(0x0000a2)),
-                -1);
-        col += 15;
-        Imgproc.rectangle(
-                LOST_MAT,
-                new Rect(col, 0, 15, LOST_MAT.height()),
-                ColorHelper.colorToScalar(new Color(0)),
-                -1);
-        Imgproc.rectangle(
-                LOST_MAT,
-                new Rect(0, 50, LOST_MAT.width(), 10),
-                ColorHelper.colorToScalar(new Color(0)),
-                -1);
-        Imgproc.rectangle(
-                LOST_MAT, new Rect(15, 50, 30, 10), ColorHelper.colorToScalar(Color.WHITE), -1);
-
-        Imgproc.putText(
-                LOST_MAT, "Camera", new Point(14, 20), 0, 0.6, ColorHelper.colorToScalar(Color.white), 2);
-        Imgproc.putText(
-                LOST_MAT, "Lost", new Point(14, 45), 0, 0.6, ColorHelper.colorToScalar(Color.white), 2);
-        Imgproc.putText(
-                LOST_MAT, "Camera", new Point(14, 20), 0, 0.6, ColorHelper.colorToScalar(Color.RED), 1);
-        Imgproc.putText(
-                LOST_MAT, "Lost", new Point(14, 45), 0, 0.6, ColorHelper.colorToScalar(Color.RED), 1);
-    }
-
     public FileSaveFrameConsumer(String camNickname, String cameraUniqueName, String streamPrefix) {
         this.ntEntryName = streamPrefix + NT_SUFFIX;
         this.cameraNickname = camNickname;
@@ -135,9 +65,7 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
     }
 
     public void accept(CVMat image) {
-        if (image == null || image.getMat() == null || image.getMat().empty()) {
-            image.copyFrom(LOST_MAT);
-        }
+        
         long currentCount = saveFrameEntry.get();
 
         // Await save request
@@ -159,7 +87,13 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
 
             String saveFilePath = cameraPath + File.separator + fileName + FILE_EXTENSION;
 
-            Imgcodecs.imwrite(saveFilePath, image.getMat());
+            if (image == null || image.getMat() == null || image.getMat().empty()) {
+                Imgcodecs.imwrite(saveFilePath, StaticFrames.LOST_MAT);
+            }
+            else
+            {            
+                Imgcodecs.imwrite(saveFilePath, image.getMat());
+            }
 
             savedImagesCount++;
             logger.info("Saved new image at " + saveFilePath);

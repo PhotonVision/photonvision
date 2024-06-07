@@ -206,19 +206,19 @@ public class VisionModule {
     private void recreateStreamResultConsumers() {
         streamResultConsumers.add(
                 (frame, tgts) -> {
-                    inputFrameSaver.accept(frame.colorImage);
+                    if (frame != null) inputFrameSaver.accept(frame.colorImage);
                 });
         streamResultConsumers.add(
                 (frame, tgts) -> {
-                    outputFrameSaver.accept(frame.processedImage);
+                    if (frame != null) outputFrameSaver.accept(frame.processedImage);
                 });
         streamResultConsumers.add(
                 (frame, tgts) -> {
-                    inputVideoStreamer.accept(frame.colorImage);
+                    if (frame != null) inputVideoStreamer.accept(frame.colorImage);
                 });
         streamResultConsumers.add(
                 (frame, tgts) -> {
-                    outputVideoStreamer.accept(frame.processedImage);
+                    if (frame != null) outputVideoStreamer.accept(frame.processedImage);
                 });
     }
 
