@@ -19,9 +19,9 @@
 
 #include <algorithm>
 #include <bit>
+#include <cstring>
 #include <string>
 #include <vector>
-#include <cstring>
 
 namespace photon {
 

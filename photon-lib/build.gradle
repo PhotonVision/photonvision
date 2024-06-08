@@ -159,6 +159,7 @@ task generateVendorJson() {
 }
 
 build.mustRunAfter generateVendorJson
+publish.mustRunAfter generateVendorJson
 
 task writeCurrentVersion {
     def versionFileIn = file("${rootDir}/shared/PhotonVersion.java.in")
@@ -229,11 +230,11 @@ tasks.named('cppSourcesZip') {
 // Publish an uberzip with photon-lib and photon-targeting. This makes python binding easier to have it in one place
 task combinedCppSourcesZip(type: Zip) {
     dependsOn(':photon-lib:cppSourcesZip', ':photon-targeting:cppSourcesZip')
-    
+
     destinationDirectory = file("$buildDir/outputs")
     archiveBaseName = zipBaseName
     archiveClassifier = "combinedsources"
-    
+
     // Include the contents of the photon-lib cppSourcesZip. Magic chatgpt nonsense
     from(zipTree(project(':photon-lib').tasks.cppSourcesZip.archiveFile.get().asFile)) {
         into 'photon-lib'
@@ -244,11 +245,11 @@ task combinedCppSourcesZip(type: Zip) {
 }
 task combinedHeadersZip(type: Zip) {
     dependsOn(':photon-lib:cppHeadersZip', ':photon-targeting:cppHeadersZip')
-    
+
     destinationDirectory = file("$buildDir/outputs")
     archiveBaseName = zipBaseName
-    archiveClassifier = "combinedsources"
-    
+    archiveClassifier = "combinedheaders"
+
     // Include the contents of the photon-lib cppHeadersZip. Magic chatgpt nonsense
     from(zipTree(project(':photon-lib').tasks.cppHeadersZip.archiveFile.get().asFile)) {
         into 'photon-lib'
