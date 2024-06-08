@@ -29,6 +29,7 @@ import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.vision.frame.StaticFrames;
 import org.photonvision.vision.opencv.CVMat;
 
 public class FileSaveFrameConsumer implements Consumer<CVMat> {
@@ -64,36 +65,38 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
     }
 
     public void accept(CVMat image) {
-        if (image != null && image.getMat() != null && !image.getMat().empty()) {
-            long currentCount = saveFrameEntry.get();
+        long currentCount = saveFrameEntry.get();
 
-            // Await save request
-            if (currentCount == -1) return;
+        // Await save request
+        if (currentCount == -1) return;
 
-            // The requested count is greater than the actual count
-            if (savedImagesCount < currentCount) {
-                Date now = new Date();
+        // The requested count is greater than the actual count
+        if (savedImagesCount < currentCount) {
+            Date now = new Date();
 
-                String fileName =
-                        cameraNickname + "_" + streamType + "_" + df.format(now) + "T" + tf.format(now);
+            String fileName =
+                    cameraNickname + "_" + streamType + "_" + df.format(now) + "T" + tf.format(now);
 
-                // Check if the Unique Camera directory exists and create it if it doesn't
-                String cameraPath = FILE_PATH + File.separator + this.cameraUniqueName;
-                var cameraDir = new File(cameraPath);
-                if (!cameraDir.exists()) {
-                    cameraDir.mkdir();
-                }
-
-                String saveFilePath = cameraPath + File.separator + fileName + FILE_EXTENSION;
-
-                Imgcodecs.imwrite(saveFilePath, image.getMat());
-
-                savedImagesCount++;
-                logger.info("Saved new image at " + saveFilePath);
-            } else if (savedImagesCount > currentCount) {
-                // Reset local value with NT value in case of de-sync
-                savedImagesCount = currentCount;
+            // Check if the Unique Camera directory exists and create it if it doesn't
+            String cameraPath = FILE_PATH + File.separator + this.cameraUniqueName;
+            var cameraDir = new File(cameraPath);
+            if (!cameraDir.exists()) {
+                cameraDir.mkdir();
             }
+
+            String saveFilePath = cameraPath + File.separator + fileName + FILE_EXTENSION;
+
+            if (image == null || image.getMat() == null || image.getMat().empty()) {
+                Imgcodecs.imwrite(saveFilePath, StaticFrames.LOST_MAT);
+            } else {
+                Imgcodecs.imwrite(saveFilePath, image.getMat());
+            }
+
+            savedImagesCount++;
+            logger.info("Saved new image at " + saveFilePath);
+        } else if (savedImagesCount > currentCount) {
+            // Reset local value with NT value in case of de-sync
+            savedImagesCount = currentCount;
         }
     }
 

@@ -22,6 +22,7 @@ import java.util.function.Supplier;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.camera.QuirkyCamera;
+import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.pipe.impl.HSVPipe;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
@@ -95,6 +96,8 @@ public class VisionRunner {
             // Frame empty -- no point in trying to do anything more?
             if (frame.processedImage.getMat().empty() && frame.colorImage.getMat().empty()) {
                 // give up without increasing loop count
+                // Still feed with blank frames just dont run any pipelines
+                pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
                 continue;
             }
 
