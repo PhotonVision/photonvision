@@ -6,6 +6,10 @@ def baseArtifactId = nativeName
 def artifactGroupId = 'org.photonvision'
 def zipBaseName = "_GROUP_org_photonvision_${baseArtifactId}_ID_${baseArtifactId}-cpp_CLS"
 
+// Quick hack to make this name visible to photon-lib for combined
+ext.zipBaseName = zipBaseName
+ext.artifactGroupId = artifactGroupId
+
 def licenseFile = file("$rootDir/LICENCE")
 
 task cppSourcesZip(type: Zip) {
