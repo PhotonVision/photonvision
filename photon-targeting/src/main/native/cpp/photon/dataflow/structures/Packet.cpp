@@ -16,3 +16,20 @@
  */
 
 #include "photon/dataflow/structures/Packet.h"
+
+using namespace photon;
+
+Packet::Packet(std::vector<uint8_t> data) : packetData(data) {}
+
+void Packet::Clear() {
+  packetData.clear();
+  readPos = 0;
+  writePos = 0;
+}
+
+bool Packet::operator==(const Packet& right) const {
+  return packetData == right.packetData;
+}
+bool Packet::operator!=(const Packet& right) const {
+  return !operator==(right);
+}

@@ -21,7 +21,8 @@ task cppSourcesZip(type: Zip) {
         into '/'
     }
 
-    from('src/main/native/cpp') {
+    println("Sources: from $projectDir ")
+    from("$projectDir/src/main/native/cpp") {
         into '/'
     }
 
