@@ -55,13 +55,13 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew copyPhotonlib -x check
-          ./gradlew build -x check --max-workers 2
+          ./gradlew build -x check
       - name: Build C++ examples
         working-directory: photonlib-cpp-examples
         run: |
           chmod +x gradlew
           ./gradlew copyPhotonlib -x check
-          ./gradlew build -x check --max-workers 2
+          ./gradlew build -x check
   build-gradle:
     name: "Gradle Build"
     runs-on: ubuntu-22.04
@@ -83,11 +83,11 @@ jobs:
       - name: Gradle Build
         run: |
           chmod +x gradlew
-          ./gradlew photon-targeting:build photon-core:build photon-server:build -x check --max-workers 2
+          ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
       - name: Gradle Tests
-        run: ./gradlew testHeadless -i --max-workers 2 --stacktrace
+        run: ./gradlew testHeadless -i --stacktrace
       - name: Gradle Coverage
-        run: ./gradlew jacocoTestReport --max-workers 2
+        run: ./gradlew jacocoTestReport
       - name: Publish Coverage Report
         uses: codecov/codecov-action@v3
         with:
@@ -150,7 +150,7 @@ jobs:
       - run: git fetch --tags --force
       - run: |
           chmod +x gradlew
-          ./gradlew photon-targeting:build photon-lib:build --max-workers 1 -Pbuildalldesktop -i
+          ./gradlew photon-targeting:build photon-lib:build -Pbuildalldesktop -i
       - run: ./gradlew photon-lib:publish photon-targeting:publish
         name: Publish
         env:
@@ -191,7 +191,7 @@ jobs:
       - name: Build PhotonLib
         run: |
           chmod +x gradlew
-          ./gradlew photon-targeting:build photon-lib:build --max-workers 1 ${{ matrix.build-options }} -i
+          ./gradlew photon-targeting:build photon-lib:build ${{ matrix.build-options }} -i
       - name: Publish
         run: |
           chmod +x gradlew
@@ -285,11 +285,11 @@ jobs:
           path: photon-server/src/main/resources/web/docs
       - run: |
           chmod +x gradlew
-          ./gradlew photon-server:shadowJar --max-workers 2 -PArchOverride=${{ matrix.arch-override }}
+          ./gradlew photon-server:shadowJar -PArchOverride=${{ matrix.arch-override }}
         if: ${{ (matrix.arch-override != 'none') }}
       - run: |
           chmod +x gradlew
-          ./gradlew photon-server:shadowJar --max-workers 2
+          ./gradlew photon-server:shadowJar
         if: ${{ (matrix.arch-override == 'none') }}
       - uses: actions/upload-artifact@v4
         with:
