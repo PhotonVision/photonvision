@@ -218,10 +218,13 @@ jobs:
         with:
           merge-multiple: false
       - run: find .
+      - run: zip -r photonlib-$(git describe --tags --match=v*).zip .
+        name: ZIP stuff up
+        working-directory: photon-client
       - uses: actions/upload-artifact@v3
         with:
           name: photonlib-offline
-          path: build/outputs
+          path: build/outputs/*.zip
 
   build-package:
     needs: [build-client, build-gradle, build-offline-docs]
