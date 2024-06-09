@@ -85,9 +85,9 @@ jobs:
           chmod +x gradlew
           ./gradlew photon-targeting:build photon-core:build photon-server:build -x check --max-workers 2
       - name: Gradle Tests
-        run: ./gradlew testHeadless -i --max-workers 1 --stacktrace
+        run: ./gradlew testHeadless -i --max-workers 2 --stacktrace
       - name: Gradle Coverage
-        run: ./gradlew jacocoTestReport --max-workers 1
+        run: ./gradlew jacocoTestReport --max-workers 2
       - name: Publish Coverage Report
         uses: codecov/codecov-action@v3
         with:
@@ -115,7 +115,7 @@ jobs:
       - name: Build the docs
         run: |
           make html
-      - uses: actions/upload-artifact@master
+      - uses: actions/upload-artifact@v4
         with:
           name: built-docs
           path: build/html
@@ -150,12 +150,19 @@ jobs:
       - run: git fetch --tags --force
       - run: |
           chmod +x gradlew
-          ./gradlew photon-targeting:build photon-lib:build --max-workers 1
+          ./gradlew photon-targeting:build photon-lib:build --max-workers 2 -Pbuildalldesktop
       - run: ./gradlew photon-lib:publish photon-targeting:publish
         name: Publish
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
         if: github.event_name == 'push'
+      # Copy artifacts to build/outputs/maven
+      - run: ./gradlew photon-lib:publish photon-targeting:publish outputVersion -PcopyOfflineArtifacts
+      - uses: actions/upload-artifact@v3
+        with:
+          name: maven-${{ matrix.artifact-name }}
+          path: build/outputs
+
   build-photonlib-docker:
     strategy:
       fail-fast: false
@@ -163,10 +170,13 @@ jobs:
         include:
           - container: wpilib/roborio-cross-ubuntu:2024-22.04
             artifact-name: Athena
+            build-options: "-Ponlylinuxathena"
           - container: wpilib/raspbian-cross-ubuntu:bullseye-22.04
             artifact-name: Raspbian
+            build-options: "-Ponlylinuxarm32"
           - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04
             artifact-name: Aarch64
+            build-options: "-Ponlylinuxarm64"
 
     runs-on: ubuntu-22.04
     container: ${{ matrix.container }}
@@ -181,7 +191,7 @@ jobs:
       - name: Build PhotonLib
         run: |
           chmod +x gradlew
-          ./gradlew photon-targeting:build photon-lib:build --max-workers 1
+          ./gradlew photon-targeting:build photon-lib:build --max-workers 2 ${{ matrix.build-options }}
       - name: Publish
         run: |
           chmod +x gradlew
@@ -189,6 +199,30 @@ jobs:
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
         if: github.event_name == 'push'
+      # Copy artifacts to build/outputs/maven
+      - run: ./gradlew photon-lib:publish photon-targeting:publish outputVersion -PcopyOfflineArtifacts
+      - uses: actions/upload-artifact@v3
+        with:
+          name: maven-${{ matrix.artifact-name }}
+          path: build/outputs
+
+  combine:
+    name: Combine
+    needs: [build-photonlib-docker, build-photonlib-host]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: wpilibsuite/build-tools
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: false
+      - run: find .
+      - uses: actions/upload-artifact@v3
+        with:
+          name: photonlib-offline
+          path: build/outputs
+
   build-package:
     needs: [build-client, build-gradle, build-offline-docs]
 
