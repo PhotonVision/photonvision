@@ -189,9 +189,10 @@ jobs:
         run: |
           git config --global --add safe.directory /__w/photonvision/photonvision
       - name: Build PhotonLib
+        # We don't need to run tests, since we specify only non-native platforms
         run: |
           chmod +x gradlew
-          ./gradlew photon-targeting:build photon-lib:build ${{ matrix.build-options }} -i
+          ./gradlew photon-targeting:build photon-lib:build ${{ matrix.build-options }} -i -x test
       - name: Publish
         run: |
           chmod +x gradlew
