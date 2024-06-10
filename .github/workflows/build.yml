@@ -214,18 +214,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: wpilibsuite/build-tools
+          fetch-depth: 0
+      - run: git fetch --tags --force
+      # download all maven-* artifacts to outputs/
       - uses: actions/download-artifact@v4
         with:
           merge-multiple: false
+          path: outputs
+          pattern: maven-*
       - run: find .
       - run: zip -r photonlib-$(git describe --tags --match=v*).zip .
         name: ZIP stuff up
-        working-directory: photon-client
+        working-directory: output
       - uses: actions/upload-artifact@v3
         with:
           name: photonlib-offline
-          path: build/outputs/*.zip
+          path: outputs/*.zip
 
   build-package:
     needs: [build-client, build-gradle, build-offline-docs]
