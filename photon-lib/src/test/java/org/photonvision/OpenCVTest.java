@@ -34,13 +34,10 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.NetworkTablesJNI;
-import edu.wpi.first.util.CombinedRuntimeLoader;
 import java.io.IOException;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.opencv.core.Core;
 import org.photonvision.estimation.CameraTargetRelation;
 import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.RotTrlTransform3d;
@@ -80,17 +77,7 @@ public class OpenCVTest {
 
     @BeforeAll
     public static void setUp() throws IOException {
-        OpenCvLoader.Helper.setExtractOnStaticLoad(false);
-        NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
-
-        try {
-            CombinedRuntimeLoader.loadLibraries(
-                    OpenCVTest.class, "wpiutiljni", "wpinetjni", "ntcorejni", Core.NATIVE_LIBRARY_NAME);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw e;
-        }
+        OpenCvLoader.forceLoad();
 
         // NT live for debug purposes
         NetworkTableInstance.getDefault().startServer();
