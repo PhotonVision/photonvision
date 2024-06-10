@@ -158,7 +158,7 @@ jobs:
         if: github.event_name == 'push'
       # Copy artifacts to build/outputs/maven
       - run: ./gradlew photon-lib:publish photon-targeting:publish outputVersion -PcopyOfflineArtifacts
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: maven-${{ matrix.artifact-name }}
           path: build/outputs
@@ -202,7 +202,7 @@ jobs:
         if: github.event_name == 'push'
       # Copy artifacts to build/outputs/maven
       - run: ./gradlew photon-lib:publish photon-targeting:publish outputVersion -PcopyOfflineArtifacts
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: maven-${{ matrix.artifact-name }}
           path: build/outputs
@@ -226,7 +226,7 @@ jobs:
       - run: zip -r photonlib-$(git describe --tags --match=v*).zip .
         name: ZIP stuff up
         working-directory: output
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: photonlib-offline
           path: outputs/*.zip
