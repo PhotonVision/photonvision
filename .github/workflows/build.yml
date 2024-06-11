@@ -219,17 +219,18 @@ jobs:
       # download all maven-* artifacts to outputs/
       - uses: actions/download-artifact@v4
         with:
-          merge-multiple: false
-          path: outputs
+          merge-multiple: true
+          path: output
           pattern: maven-*
       - run: find .
       - run: zip -r photonlib-$(git describe --tags --match=v*).zip .
         name: ZIP stuff up
         working-directory: output
+      - run: ls output
       - uses: actions/upload-artifact@v4
         with:
           name: photonlib-offline
-          path: outputs/*.zip
+          path: output/*.zip
 
   build-package:
     needs: [build-client, build-gradle, build-offline-docs]
