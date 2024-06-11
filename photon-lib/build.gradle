@@ -161,6 +161,18 @@ task generateVendorJson() {
 build.mustRunAfter generateVendorJson
 publish.mustRunAfter generateVendorJson
 
+task publishVendorJsonToLocalOutputs(type: Copy) {
+    from photonlibFileOutput
+    into "$allOutputsFolder/vendordeps/"
+
+    // Rename to match the name of the JSON we publish to maven to avoid user confusion
+    rename { String fileName ->
+        fileName.replace(".json", "-json-1.0.json")
+    }
+
+    publish.dependsOn it
+}
+
 task writeCurrentVersion {
     def versionFileIn = file("${rootDir}/shared/PhotonVersion.java.in")
     writePhotonVersionFile(versionFileIn, Path.of("$projectDir", "src", "main", "java", "org", "photonvision", "PhotonVersion.java"),
@@ -203,7 +215,7 @@ model {
 
 def vendorJson = artifacts.add('archives', file("$photonlibFileOutput"))
 
-model {
+if (!project.hasProperty('copyOfflineArtifacts')) {
     // Publish the vendordep json
     publishing {
         publications {
@@ -269,13 +281,16 @@ task combinedHeadersZip(type: Zip) {
 // Add the uberzip to our maven publications
 publishing {
     publications {
-        combinedcpp(MavenPublication) {
-            artifact combinedCppSourcesZip
-            artifact combinedHeadersZip
+        // Don't publish if we're creating an offline zip
+        if (!project.hasProperty('copyOfflineArtifacts')) {
+            combinedcpp(MavenPublication) {
+                artifact combinedCppSourcesZip
+                artifact combinedHeadersZip
 
-            artifactId = "${nativeName}-combinedcpp"
-            groupId artifactGroupId
-            version pubVersion
+                artifactId = "${nativeName}-combinedcpp"
+                groupId artifactGroupId
+                version pubVersion
+            }
         }
     }
 }
