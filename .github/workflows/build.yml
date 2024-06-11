@@ -457,9 +457,22 @@ jobs:
     needs: [build-package, build-image]
     runs-on: ubuntu-22.04
     steps:
-      # Download literally every single artifact. This also downloads client and docs,
-      # but the filtering below won't pick these up (I hope)
+      # Download all fat JARs
       - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          pattern: jar-*
+      # Download offline photonlib
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          pattern: photonlib-offline
+      # Download all images
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          pattern: image-*
+
       - run: find
       # Push to dev release
       - uses: pyTooling/Actions/releaser@r0
