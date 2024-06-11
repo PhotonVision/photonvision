@@ -151,13 +151,13 @@ jobs:
       - run: |
           chmod +x gradlew
           ./gradlew photon-targeting:build photon-lib:build -Pbuildalldesktop -i
-      - run: ./gradlew photon-lib:publish photon-targeting:publish
+      - run: ./gradlew photon-lib:publish photon-targeting:publish -Pbuildalldesktop
         name: Publish
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
         if: github.event_name == 'push' && github.repository_owner == 'photonvision'
       # Copy artifacts to build/outputs/maven
-      - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts
+      - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts -Pbuildalldesktop
       - uses: actions/upload-artifact@v4
         with:
           name: maven-${{ matrix.artifact-name }}
@@ -196,12 +196,12 @@ jobs:
       - name: Publish
         run: |
           chmod +x gradlew
-          ./gradlew photon-lib:publish photon-targeting:publish
+          ./gradlew photon-lib:publish photon-targeting:publish ${{ matrix.build-options }}
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
         if: github.event_name == 'push' && github.repository_owner == 'photonvision'
       # Copy artifacts to build/outputs/maven
-      - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts
+      - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts ${{ matrix.build-options }}
       - uses: actions/upload-artifact@v4
         with:
           name: maven-${{ matrix.artifact-name }}
