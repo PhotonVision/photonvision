@@ -155,9 +155,9 @@ jobs:
         name: Publish
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && github.repository_owner == 'photonvision'
       # Copy artifacts to build/outputs/maven
-      - run: ./gradlew photon-lib:publish photon-targeting:publish outputVersion -PcopyOfflineArtifacts
+      - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts
       - uses: actions/upload-artifact@v4
         with:
           name: maven-${{ matrix.artifact-name }}
@@ -199,7 +199,7 @@ jobs:
           ./gradlew photon-lib:publish photon-targeting:publish
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && github.repository_owner == 'photonvision'
       # Copy artifacts to build/outputs/maven
       - run: ./gradlew photon-lib:publish photon-targeting:publish outputVersion -PcopyOfflineArtifacts
       - uses: actions/upload-artifact@v4
