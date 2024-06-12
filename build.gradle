@@ -21,6 +21,9 @@ allprojects {
     wpilibRepositories.addAllDevelopmentRepositories(it)
 }
 
+ext.localMavenURL = file("$project.buildDir/outputs/maven")
+ext.allOutputsFolder = file("$project.buildDir/outputs")
+
 // Configure the version number.
 apply from: "versioningHelper.gradle"
 

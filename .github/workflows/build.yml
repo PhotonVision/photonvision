@@ -55,13 +55,13 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew copyPhotonlib -x check
-          ./gradlew build -x check --max-workers 2
+          ./gradlew build -x check
       - name: Build C++ examples
         working-directory: photonlib-cpp-examples
         run: |
           chmod +x gradlew
           ./gradlew copyPhotonlib -x check
-          ./gradlew build -x check --max-workers 2
+          ./gradlew build -x check
   build-gradle:
     name: "Gradle Build"
     runs-on: ubuntu-22.04
@@ -83,11 +83,11 @@ jobs:
       - name: Gradle Build
         run: |
           chmod +x gradlew
-          ./gradlew photon-targeting:build photon-core:build photon-server:build -x check --max-workers 2
+          ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
       - name: Gradle Tests
-        run: ./gradlew testHeadless -i --max-workers 1 --stacktrace
+        run: ./gradlew testHeadless -i --stacktrace
       - name: Gradle Coverage
-        run: ./gradlew jacocoTestReport --max-workers 1
+        run: ./gradlew jacocoTestReport
       - name: Publish Coverage Report
         uses: codecov/codecov-action@v3
         with:
@@ -115,7 +115,7 @@ jobs:
       - name: Build the docs
         run: |
           make html
-      - uses: actions/upload-artifact@master
+      - uses: actions/upload-artifact@v4
         with:
           name: built-docs
           path: build/html
@@ -150,12 +150,19 @@ jobs:
       - run: git fetch --tags --force
       - run: |
           chmod +x gradlew
-          ./gradlew photon-targeting:build photon-lib:build --max-workers 1
-      - run: ./gradlew photon-lib:publish photon-targeting:publish
+          ./gradlew photon-targeting:build photon-lib:build -Pbuildalldesktop -i
+      - run: ./gradlew photon-lib:publish photon-targeting:publish -Pbuildalldesktop
         name: Publish
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && github.repository_owner == 'photonvision'
+      # Copy artifacts to build/outputs/maven
+      - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts -Pbuildalldesktop
+      - uses: actions/upload-artifact@v4
+        with:
+          name: maven-${{ matrix.artifact-name }}
+          path: build/outputs
+
   build-photonlib-docker:
     strategy:
       fail-fast: false
@@ -163,10 +170,13 @@ jobs:
         include:
           - container: wpilib/roborio-cross-ubuntu:2024-22.04
             artifact-name: Athena
+            build-options: "-Ponlylinuxathena"
           - container: wpilib/raspbian-cross-ubuntu:bullseye-22.04
             artifact-name: Raspbian
+            build-options: "-Ponlylinuxarm32"
           - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04
             artifact-name: Aarch64
+            build-options: "-Ponlylinuxarm64"
 
     runs-on: ubuntu-22.04
     container: ${{ matrix.container }}
@@ -179,16 +189,49 @@ jobs:
         run: |
           git config --global --add safe.directory /__w/photonvision/photonvision
       - name: Build PhotonLib
+        # We don't need to run tests, since we specify only non-native platforms
         run: |
           chmod +x gradlew
-          ./gradlew photon-targeting:build photon-lib:build --max-workers 1
+          ./gradlew photon-targeting:build photon-lib:build ${{ matrix.build-options }} -i -x test
       - name: Publish
         run: |
           chmod +x gradlew
-          ./gradlew photon-lib:publish photon-targeting:publish
+          ./gradlew photon-lib:publish photon-targeting:publish ${{ matrix.build-options }}
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && github.repository_owner == 'photonvision'
+      # Copy artifacts to build/outputs/maven
+      - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts ${{ matrix.build-options }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: maven-${{ matrix.artifact-name }}
+          path: build/outputs
+
+  combine:
+    name: Combine
+    needs: [build-photonlib-docker, build-photonlib-host]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: git fetch --tags --force
+      # download all maven-* artifacts to outputs/
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: output
+          pattern: maven-*
+      - run: find .
+      - run: zip -r photonlib-$(git describe --tags --match=v*).zip .
+        name: ZIP stuff up
+        working-directory: output
+      - run: ls output
+      - uses: actions/upload-artifact@v4
+        with:
+          name: photonlib-offline
+          path: output/*.zip
+
   build-package:
     needs: [build-client, build-gradle, build-offline-docs]
 
@@ -248,11 +291,11 @@ jobs:
           path: photon-server/src/main/resources/web/docs
       - run: |
           chmod +x gradlew
-          ./gradlew photon-server:shadowJar --max-workers 2 -PArchOverride=${{ matrix.arch-override }}
+          ./gradlew photon-server:shadowJar -PArchOverride=${{ matrix.arch-override }}
         if: ${{ (matrix.arch-override != 'none') }}
       - run: |
           chmod +x gradlew
-          ./gradlew photon-server:shadowJar --max-workers 2
+          ./gradlew photon-server:shadowJar
         if: ${{ (matrix.arch-override == 'none') }}
       - uses: actions/upload-artifact@v4
         with:
@@ -414,9 +457,22 @@ jobs:
     needs: [build-package, build-image]
     runs-on: ubuntu-22.04
     steps:
-      # Download literally every single artifact. This also downloads client and docs,
-      # but the filtering below won't pick these up (I hope)
+      # Download all fat JARs
       - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          pattern: jar-*
+      # Download offline photonlib
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          pattern: photonlib-offline
+      # Download all images
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          pattern: image-*
+
       - run: find
       # Push to dev release
       - uses: pyTooling/Actions/releaser@r0
@@ -428,6 +484,7 @@ jobs:
             **/*.xz
             **/*.jar
             **/photonlib*.json
+            **/photonlib*.zip
         if: github.event_name == 'push'
       # Upload all jars and xz archives
       - uses: softprops/action-gh-release@v1
@@ -436,6 +493,7 @@ jobs:
             **/*.xz
             **/*.jar
             **/photonlib*.json
+            **/photonlib*.zip
         if: startsWith(github.ref, 'refs/tags/v')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
