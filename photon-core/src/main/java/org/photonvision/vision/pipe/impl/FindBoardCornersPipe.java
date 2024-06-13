@@ -114,6 +114,7 @@ public class FindBoardCornersPipe
                             (float) params.gridSize,
                             (float) params.markerSize,
                             Objdetect.getPredefinedDictionary(params.tagFamily));
+            board.setLegacyPattern(params.useOldPattern);
             detector = new CharucoDetector(board);
         } else {
             logger.error("Can't create pattern for unknown board type " + params.type);
@@ -372,6 +373,7 @@ public class FindBoardCornersPipe
         final double markerSize;
         final FrameDivisor divisor;
         final int tagFamily;
+        final boolean useOldPattern;
 
         public FindCornersPipeParams(
                 int boardHeight,
@@ -380,7 +382,8 @@ public class FindBoardCornersPipe
                 int tagFamily,
                 double gridSize,
                 double markerSize,
-                FrameDivisor divisor) {
+                FrameDivisor divisor,
+                boolean useOldPattern) {
             this.boardHeight = boardHeight;
             this.boardWidth = boardWidth;
             this.tagFamily = tagFamily;
@@ -388,6 +391,7 @@ public class FindBoardCornersPipe
             this.gridSize = gridSize; // meter
             this.markerSize = markerSize; // meter
             this.divisor = divisor;
+            this.useOldPattern = useOldPattern;
         }
 
         @Override

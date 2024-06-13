@@ -90,7 +90,8 @@ public class Calibrate3dPipeline
                         settings.tagFamily,
                         settings.gridSize,
                         settings.markerSize,
-                        settings.streamingFrameDivisor);
+                        settings.streamingFrameDivisor,
+                        settings.useOldPattern);
         findBoardCornersPipe.setParams(findCornersPipeParams);
 
         Calibrate3dPipe.CalibratePipeParams calibratePipeParams =
@@ -227,7 +228,8 @@ public class Calibrate3dPipeline
                                 settings.boardWidth,
                                 settings.boardHeight,
                                 settings.boardType,
-                                settings.useMrCal));
+                                settings.useMrCal,
+                                settings.useOldPattern));
 
         DataChangeService.getInstance()
                 .publishEvent(OutgoingUIEvent.wrappedOf("calibrationData", state));

@@ -354,6 +354,7 @@ public class VisionModule {
         settings.boardType = data.boardType;
         settings.useMrCal = data.useMrCal;
         settings.resolution = resolution;
+        settings.useOldPattern = data.useOldPattern;
 
         // Disable gain if not applicable
         if (!cameraQuirks.hasQuirk(CameraQuirk.Gain)) {

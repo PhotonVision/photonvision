@@ -79,6 +79,7 @@ const markerSizeIn = ref(0.75);
 const patternWidth = ref(8);
 const patternHeight = ref(8);
 const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.Charuco);
+const useOldPattern = ref(false);
 const useMrCalRef = ref(true);
 const useMrCal = computed<boolean>({
   get() {
@@ -200,7 +201,8 @@ const startCalibration = () => {
     patternHeight: patternHeight.value,
     patternWidth: patternWidth.value,
     boardType: boardType.value,
-    useMrCal: useMrCal.value
+    useMrCal: useMrCal.value,
+    useOldPattern: useOldPattern.value
   });
   // The Start PnP method already handles updating the backend so only a store update is required
   useCameraSettingsStore().currentCameraSettings.currentPipelineIndex = WebsocketPipelineType.Calib3d;
@@ -333,6 +335,14 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               tooltip="Height of the board in dots or chessboard squares"
               :disabled="isCalibrating"
               :rules="[(v) => v >= 4 || 'Height must be at least 4']"
+              :label-cols="5"
+            />
+            <pv-switch
+              v-model="useOldPattern"
+              v-show="boardType == CalibrationBoardTypes.Charuco"
+              label="Old OpenCV Pattern"
+              :disabled="isCalibrating"
+              tooltip="If enabled, Photon will use the old OpenCV pattern for calibration."
               :label-cols="5"
             />
             <pv-switch

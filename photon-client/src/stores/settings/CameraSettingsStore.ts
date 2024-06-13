@@ -319,6 +319,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         patternHeight: number;
         boardType: CalibrationBoardTypes;
         useMrCal: boolean;
+        useOldPattern: boolean;
       },
       cameraIndex: number = useStateStore().currentCameraIndex
     ) {

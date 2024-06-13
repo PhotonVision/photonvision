@@ -107,7 +107,8 @@ public class Calibrate3dPipeTest {
     @CartesianTest
     public void calibrateTestMatrix(
             @Enum(CalibrationDatasets.class) CalibrationDatasets dataset,
-            @Values(booleans = {true, false}) boolean useMrCal) {
+            @Values(booleans = {true, false}) boolean useMrCal,
+            boolean useOldPattern) {
         // Pi3 and V1.3 camera
         String squareBase = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
         String charucoBase = TestUtils.getCharucoBoardImagesPath().toAbsolutePath().toString();
@@ -116,13 +117,20 @@ public class Calibrate3dPipeTest {
         File charucoDir = Path.of(charucoBase, dataset.path).toFile();
 
         if (dataset.boardType == BoardType.CHESSBOARD)
-            calibrateCommon(dataset.size, squareDir, dataset.boardSize, dataset.boardType, useMrCal);
+            calibrateCommon(
+                    dataset.size, squareDir, dataset.boardSize, dataset.boardType, useMrCal, useOldPattern);
         else if (dataset.boardType == BoardType.CHESSBOARD)
-            calibrateCommon(dataset.size, charucoDir, dataset.boardSize, dataset.boardType, useMrCal);
+            calibrateCommon(
+                    dataset.size, charucoDir, dataset.boardSize, dataset.boardType, useMrCal, useOldPattern);
     }
 
     public static void calibrateCommon(
-            Size imgRes, File rootFolder, Size boardDim, BoardType boardType, boolean useMrCal) {
+            Size imgRes,
+            File rootFolder,
+            Size boardDim,
+            BoardType boardType,
+            boolean useMrCal,
+            boolean useOldPattern) {
         calibrateCommon(
                 imgRes,
                 rootFolder,
@@ -133,7 +141,8 @@ public class Calibrate3dPipeTest {
                 Objdetect.DICT_4X4_50,
                 imgRes.width / 2,
                 imgRes.height / 2,
-                useMrCal);
+                useMrCal,
+                useOldPattern);
     }
 
     public static void calibrateCommon(
@@ -145,7 +154,8 @@ public class Calibrate3dPipeTest {
             int tagFamily,
             double expectedXCenter,
             double expectedYCenter,
-            boolean useMrCal) {
+            boolean useMrCal,
+            boolean useOldPattern) {
         calibrateCommon(
                 imgRes,
                 rootFolder,
@@ -156,7 +166,8 @@ public class Calibrate3dPipeTest {
                 tagFamily,
                 expectedXCenter,
                 expectedYCenter,
-                useMrCal);
+                useMrCal,
+                useOldPattern);
     }
 
     public static void calibrateCommon(
@@ -169,7 +180,8 @@ public class Calibrate3dPipeTest {
             int tagFamily,
             double expectedXCenter,
             double expectedYCenter,
-            boolean useMrCal) {
+            boolean useMrCal,
+            boolean useOldPattern) {
         int startMatCount = CVMat.getMatCount();
 
         File[] directoryListing = rootFolder.listFiles();
@@ -187,6 +199,7 @@ public class Calibrate3dPipeTest {
         calibration3dPipeline.getSettings().gridSize = boardGridSize_m;
         calibration3dPipeline.getSettings().streamingFrameDivisor = FrameDivisor.NONE;
         calibration3dPipeline.getSettings().useMrCal = useMrCal;
+        calibration3dPipeline.getSettings().useOldPattern = useOldPattern;
 
         for (var file : directoryListing) {
             if (file.isFile()) {

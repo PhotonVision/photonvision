@@ -28,6 +28,7 @@ public class UICalibrationData {
     public BoardType boardType;
     public boolean useMrCal;
     public double markerSizeIn;
+    public boolean useOldPattern;
 
     public UICalibrationData() {}
 
@@ -41,7 +42,8 @@ public class UICalibrationData {
             int patternWidth,
             int patternHeight,
             BoardType boardType,
-            boolean useMrCal) {
+            boolean useMrCal,
+            boolean useOldPattern) {
         this.count = count;
         this.minCount = minCount;
         this.videoModeIndex = videoModeIndex;
@@ -52,6 +54,7 @@ public class UICalibrationData {
         this.patternHeight = patternHeight;
         this.boardType = boardType;
         this.useMrCal = useMrCal;
+        this.useOldPattern = useOldPattern;
     }
 
     public enum BoardType {
@@ -80,6 +83,8 @@ public class UICalibrationData {
                 + patternHeight
                 + ", boardType="
                 + boardType
+                + ", useOldPattern="
+                + useOldPattern
                 + '}';
     }
 }
