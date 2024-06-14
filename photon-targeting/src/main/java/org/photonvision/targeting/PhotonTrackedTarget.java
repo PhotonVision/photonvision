@@ -17,6 +17,7 @@
 
 package org.photonvision.targeting;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.util.protobuf.ProtobufSerializable;
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ import org.photonvision.utils.PacketUtils;
 
 public class PhotonTrackedTarget implements ProtobufSerializable {
     private static final int MAX_CORNERS = 8;
+    private static final Transform3d NULL_TRANSFORM3D = new Transform3d();
 
     private final double yaw;
     private final double pitch;
@@ -153,6 +155,9 @@ public class PhotonTrackedTarget implements ProtobufSerializable {
      * space (X forward, Y left, Z up) with the lowest reprojection error
      */
     public Transform3d getBestCameraToTarget() {
+        if (bestCameraToTarget.equals(NULL_TRANSFORM3D)) {
+            DriverStation.reportWarning("Best camera-to-target is the identity transform -- is 3d mode enabled?", false);
+        }
         return bestCameraToTarget;
     }
 
@@ -161,6 +166,9 @@ public class PhotonTrackedTarget implements ProtobufSerializable {
      * space (X forward, Y left, Z up) with the highest reprojection error
      */
     public Transform3d getAlternateCameraToTarget() {
+        if (altCameraToTarget.equals(NULL_TRANSFORM3D)) {
+            DriverStation.reportWarning("Alt camera-to-target is the identity transform -- is 3d mode enabled, and are you looking at an apriltag?", false);
+        }
         return altCameraToTarget;
     }
 
