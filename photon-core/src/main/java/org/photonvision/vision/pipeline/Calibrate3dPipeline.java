@@ -229,7 +229,8 @@ public class Calibrate3dPipeline
                                 settings.boardHeight,
                                 settings.boardType,
                                 settings.useMrCal,
-                                settings.useOldPattern));
+                                settings.useOldPattern,
+                                settings.tagFamily));
 
         DataChangeService.getInstance()
                 .publishEvent(OutgoingUIEvent.wrappedOf("calibrationData", state));

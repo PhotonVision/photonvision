@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import type {
+  CalibrationTagFamilies,
   CalibrationBoardTypes,
   CameraCalibrationResult,
   CameraSettings,
@@ -320,6 +321,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         boardType: CalibrationBoardTypes;
         useMrCal: boolean;
         useOldPattern: boolean;
+        tagFamily: CalibrationTagFamilies;
       },
       cameraIndex: number = useStateStore().currentCameraIndex
     ) {

@@ -295,6 +295,13 @@ export enum CalibrationBoardTypes {
   Charuco = 1
 }
 
+export enum CalibrationTagFamilies {
+  Dict_4X4_1000 = 0,
+  Dict_5X5_1000 = 1,
+  Dict_6X6_1000 = 2,
+  Dict_7X7_1000 = 3,
+}
+
 export enum RobotOffsetType {
   Clear = 0,
   Single = 1,

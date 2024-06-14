@@ -17,6 +17,8 @@
 
 package org.photonvision.vision.pipeline;
 
+import org.opencv.objdetect.Objdetect;
+
 public class UICalibrationData {
     public int videoModeIndex;
     public int count;
@@ -29,6 +31,7 @@ public class UICalibrationData {
     public boolean useMrCal;
     public double markerSizeIn;
     public boolean useOldPattern;
+    public TagFamily tagFamily;
 
     public UICalibrationData() {}
 
@@ -43,7 +46,8 @@ public class UICalibrationData {
             int patternHeight,
             BoardType boardType,
             boolean useMrCal,
-            boolean useOldPattern) {
+            boolean useOldPattern,
+            TagFamily tagFamily) {
         this.count = count;
         this.minCount = minCount;
         this.videoModeIndex = videoModeIndex;
@@ -55,11 +59,31 @@ public class UICalibrationData {
         this.boardType = boardType;
         this.useMrCal = useMrCal;
         this.useOldPattern = useOldPattern;
+        this.tagFamily = tagFamily;
     }
 
     public enum BoardType {
         CHESSBOARD,
         CHARUCOBOARD,
+    }
+
+    public enum TagFamily {
+        Dict_4X4_1000(Objdetect.DICT_4X4_1000),
+        Dict_5X5_1000(Objdetect.DICT_5X5_1000),
+        Dict_6X6_1000(Objdetect.DICT_6X6_1000),
+        Dict_7X7_1000(Objdetect.DICT_7X7_1000);
+
+        private int value;
+
+        // getter method
+        public int getValue() {
+            return this.value;
+        }
+
+        // enum constructor - cannot be public or protected
+        private TagFamily(int value) {
+            this.value = value;
+        }
     }
 
     @Override
@@ -83,6 +107,8 @@ public class UICalibrationData {
                 + patternHeight
                 + ", boardType="
                 + boardType
+                + ", tagFamily="
+                + tagFamily
                 + ", useOldPattern="
                 + useOldPattern
                 + '}';

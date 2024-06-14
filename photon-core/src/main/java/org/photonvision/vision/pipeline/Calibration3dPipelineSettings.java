@@ -19,14 +19,13 @@ package org.photonvision.vision.pipeline;
 
 import edu.wpi.first.math.util.Units;
 import org.opencv.core.Size;
-import org.opencv.objdetect.Objdetect;
 import org.photonvision.vision.frame.FrameDivisor;
 
 public class Calibration3dPipelineSettings extends AdvancedPipelineSettings {
     public int boardHeight = 8;
     public int boardWidth = 8;
     public UICalibrationData.BoardType boardType = UICalibrationData.BoardType.CHESSBOARD;
-    public int tagFamily = Objdetect.DICT_4X4_50;
+    public UICalibrationData.TagFamily tagFamily = UICalibrationData.TagFamily.Dict_4X4_1000;
     public double gridSize = Units.inchesToMeters(1.0);
     public double markerSize = Units.inchesToMeters(0.75);
 

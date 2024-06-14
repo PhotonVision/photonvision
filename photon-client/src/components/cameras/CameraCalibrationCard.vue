@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { CalibrationBoardTypes, type VideoFormat } from "@/types/SettingTypes";
+import { CalibrationBoardTypes, CalibrationTagFamilies, type VideoFormat } from "@/types/SettingTypes";
 import JsPDF from "jspdf";
 import { font as PromptRegular } from "@/assets/fonts/PromptRegular";
 import MonoLogo from "@/assets/images/logoMono.png";
@@ -80,6 +80,7 @@ const patternWidth = ref(8);
 const patternHeight = ref(8);
 const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.Charuco);
 const useOldPattern = ref(false);
+const tagFamily = ref<CalibrationTagFamilies>(CalibrationTagFamilies.Dict_4X4_1000);
 const useMrCalRef = ref(true);
 const useMrCal = computed<boolean>({
   get() {
@@ -202,7 +203,8 @@ const startCalibration = () => {
     patternWidth: patternWidth.value,
     boardType: boardType.value,
     useMrCal: useMrCal.value,
-    useOldPattern: useOldPattern.value
+    useOldPattern: useOldPattern.value,
+    tagFamily: tagFamily.value
   });
   // The Start PnP method already handles updating the backend so only a store update is required
   useCameraSettingsStore().currentCameraSettings.currentPipelineIndex = WebsocketPipelineType.Calib3d;
@@ -302,6 +304,15 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               tooltip="Calibration board pattern to use"
               :select-cols="7"
               :items="['Chessboard', 'Charuco']"
+              :disabled="isCalibrating"
+            />
+            <pv-select
+              v-model="tagFamily"
+              v-show="boardType == CalibrationBoardTypes.Charuco"
+              label="Tag Family"
+              tooltip="Dictionary of aruco markers on the charuco board"
+              :select-cols="7"
+              :items="['Dict_4X4_1000', 'Dict_5X5_1000', 'Dict_6X6_1000', 'Dict_7X7_1000']"
               :disabled="isCalibrating"
             />
             <pv-number-input

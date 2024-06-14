@@ -32,7 +32,6 @@ import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.objdetect.Objdetect;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
@@ -46,6 +45,7 @@ import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipeline.UICalibrationData.BoardType;
+import org.photonvision.vision.pipeline.UICalibrationData.TagFamily;
 
 public class Calibrate3dPipeTest {
     @BeforeAll
@@ -138,7 +138,7 @@ public class Calibrate3dPipeTest {
                 Units.inchesToMeters(1),
                 Units.inchesToMeters(0.75),
                 boardType,
-                Objdetect.DICT_4X4_50,
+                TagFamily.Dict_4X4_1000,
                 imgRes.width / 2,
                 imgRes.height / 2,
                 useMrCal,
@@ -151,7 +151,7 @@ public class Calibrate3dPipeTest {
             Size boardDim,
             double markerSize,
             BoardType boardType,
-            int tagFamily,
+            TagFamily tagFamily,
             double expectedXCenter,
             double expectedYCenter,
             boolean useMrCal,
@@ -177,7 +177,7 @@ public class Calibrate3dPipeTest {
             double boardGridSize_m,
             double markerSize,
             BoardType boardType,
-            int tagFamily,
+            TagFamily tagFamily,
             double expectedXCenter,
             double expectedYCenter,
             boolean useMrCal,
