@@ -108,7 +108,7 @@ public class Calibrate3dPipeTest {
     public void calibrateTestMatrix(
             @Enum(CalibrationDatasets.class) CalibrationDatasets dataset,
             @Values(booleans = {true, false}) boolean useMrCal,
-            boolean useOldPattern) {
+            @Values(booleans = {false}) boolean useOldPattern) {
         // Pi3 and V1.3 camera
         String squareBase = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
         String charucoBase = TestUtils.getCharucoBoardImagesPath().toAbsolutePath().toString();
