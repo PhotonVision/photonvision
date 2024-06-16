@@ -96,13 +96,13 @@ public class MJPGFrameConsumer implements AutoCloseable {
     public void accept(CVMat image) {
         long now = MathUtils.wpiNanoTime();
 
+        if (image == null || image.getMat() == null || image.getMat().empty()) {
+            image.copyFrom(StaticFrames.LOST_MAT);
+        }
+
         if (now - lastFrameTimeNs > MAX_FRAME_PERIOD_NS) {
             lastFrameTimeNs = now;
-            if (image == null || image.getMat() == null || image.getMat().empty()) {
-                cvSource.putFrame(StaticFrames.LOST_MAT);
-            } else {
-                cvSource.putFrame(image.getMat());
-            }
+            cvSource.putFrame(image.getMat());
         }
     }
 
