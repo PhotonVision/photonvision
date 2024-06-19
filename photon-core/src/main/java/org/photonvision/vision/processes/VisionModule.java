@@ -46,7 +46,6 @@ import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.LibcameraGpuSource;
 import org.photonvision.vision.camera.QuirkyCamera;
-import org.photonvision.vision.camera.USBCameraSource;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.consumer.FileSaveFrameConsumer;
 import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
@@ -98,14 +97,10 @@ public class VisionModule {
                         visionSource.getSettables().getConfiguration().nickname,
                         LogGroup.VisionModule);
 
-        // Find quirks for the current camera
-        if (visionSource instanceof USBCameraSource) {
-            cameraQuirks = ((USBCameraSource) visionSource).getCameraQuirks();
-        } else if (visionSource instanceof LibcameraGpuSource) {
-            cameraQuirks = QuirkyCamera.ZeroCopyPiCamera;
-        } else {
-            cameraQuirks = QuirkyCamera.DefaultCamera;
-        }
+        cameraQuirks = visionSource.getCameraConfiguration().cameraQuirks;
+
+        if (visionSource.getCameraConfiguration().cameraQuirks == null)
+            visionSource.getCameraConfiguration().cameraQuirks = QuirkyCamera.DefaultCamera;
 
         // We don't show gain if the config says it's -1. So check here to make sure it's non-negative
         // if it _is_ supported
