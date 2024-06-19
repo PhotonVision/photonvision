@@ -67,34 +67,52 @@ public class Calibrate3dPipeTest {
                 "lifecam/2024-01-02_lifecam_480",
                 new Size(640, 480),
                 new Size(11, 11),
-                BoardType.CHESSBOARD),
+                BoardType.CHESSBOARD,
+                false),
         SQUARES_LIFECAM_1280(
                 "lifecam/2024-01-02_lifecam_1280",
                 new Size(1280, 720),
                 new Size(11, 11),
-                BoardType.CHESSBOARD),
-
+                BoardType.CHESSBOARD,
+                false),
         CHARUCO_LIFECAM_480(
                 "lifecam/2024-05-07_lifecam_480",
                 new Size(640, 480),
                 new Size(8, 8),
-                BoardType.CHARUCOBOARD),
+                BoardType.CHARUCOBOARD,
+                false),
         CHARUCO_LIFECAM_1280(
                 "lifecam/2024-05-07_lifecam_1280",
                 new Size(1280, 720),
                 new Size(8, 8),
-                BoardType.CHARUCOBOARD);
+                BoardType.CHARUCOBOARD,
+                false),
+        CHARUCO_OLDPATTERN_LIFECAM_480(
+                "lifecam/2024-05-07_lifecam_480_Old_Pattern",
+                new Size(640, 480),
+                new Size(8, 8),
+                BoardType.CHARUCOBOARD,
+                true),
+        CHARUCO_OLDPATTERN_LIFECAM_1280(
+                "lifecam/2024-05-07_lifecam_1280_Old_Pattern",
+                new Size(1280, 720),
+                new Size(8, 8),
+                BoardType.CHARUCOBOARD,
+                true);
+        
 
         final String path;
         final Size size;
         final Size boardSize;
         final BoardType boardType;
+        final boolean useOldPattern;
 
-        private CalibrationDatasets(String path, Size image, Size chessboard, BoardType boardType) {
+        private CalibrationDatasets(String path, Size image, Size chessboard, BoardType boardType, boolean useOldPattern) {
             this.path = path;
             this.size = image;
             this.boardSize = chessboard;
             this.boardType = boardType;
+            this.useOldPattern = useOldPattern;
         }
     }
 
@@ -107,8 +125,7 @@ public class Calibrate3dPipeTest {
     @CartesianTest
     public void calibrateTestMatrix(
             @Enum(CalibrationDatasets.class) CalibrationDatasets dataset,
-            @Values(booleans = {true, false}) boolean useMrCal,
-            @Values(booleans = {false}) boolean useOldPattern) {
+            @Values(booleans = {true, false}) boolean useMrCal) {
         // Pi3 and V1.3 camera
         String squareBase = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
         String charucoBase = TestUtils.getCharucoBoardImagesPath().toAbsolutePath().toString();
@@ -118,10 +135,10 @@ public class Calibrate3dPipeTest {
 
         if (dataset.boardType == BoardType.CHESSBOARD)
             calibrateCommon(
-                    dataset.size, squareDir, dataset.boardSize, dataset.boardType, useMrCal, useOldPattern);
+                    dataset.size, squareDir, dataset.boardSize, dataset.boardType, useMrCal, dataset.useOldPattern);
         else if (dataset.boardType == BoardType.CHESSBOARD)
             calibrateCommon(
-                    dataset.size, charucoDir, dataset.boardSize, dataset.boardType, useMrCal, useOldPattern);
+                    dataset.size, charucoDir, dataset.boardSize, dataset.boardType, useMrCal, dataset.useOldPattern);
     }
 
     public static void calibrateCommon(
