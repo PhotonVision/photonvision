@@ -88,13 +88,13 @@ public class Calibrate3dPipeTest {
                 BoardType.CHARUCOBOARD,
                 false),
         CHARUCO_OLDPATTERN_LIFECAM_480(
-                "lifecam/2024-05-07_lifecam_480_Old_Pattern",
+                "lifecam/2024-06-19_lifecam_480_Old_Pattern",
                 new Size(640, 480),
                 new Size(8, 8),
                 BoardType.CHARUCOBOARD,
                 true),
         CHARUCO_OLDPATTERN_LIFECAM_1280(
-                "lifecam/2024-05-07_lifecam_1280_Old_Pattern",
+                "lifecam/2024-06-19_lifecam_1280_Old_Pattern",
                 new Size(1280, 720),
                 new Size(8, 8),
                 BoardType.CHARUCOBOARD,
