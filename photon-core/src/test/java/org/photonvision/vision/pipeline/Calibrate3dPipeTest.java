@@ -99,7 +99,6 @@ public class Calibrate3dPipeTest {
                 new Size(8, 8),
                 BoardType.CHARUCOBOARD,
                 true);
-        
 
         final String path;
         final Size size;
@@ -107,7 +106,8 @@ public class Calibrate3dPipeTest {
         final BoardType boardType;
         final boolean useOldPattern;
 
-        private CalibrationDatasets(String path, Size image, Size chessboard, BoardType boardType, boolean useOldPattern) {
+        private CalibrationDatasets(
+                String path, Size image, Size chessboard, BoardType boardType, boolean useOldPattern) {
             this.path = path;
             this.size = image;
             this.boardSize = chessboard;
@@ -135,10 +135,20 @@ public class Calibrate3dPipeTest {
 
         if (dataset.boardType == BoardType.CHESSBOARD)
             calibrateCommon(
-                    dataset.size, squareDir, dataset.boardSize, dataset.boardType, useMrCal, dataset.useOldPattern);
+                    dataset.size,
+                    squareDir,
+                    dataset.boardSize,
+                    dataset.boardType,
+                    useMrCal,
+                    dataset.useOldPattern);
         else if (dataset.boardType == BoardType.CHESSBOARD)
             calibrateCommon(
-                    dataset.size, charucoDir, dataset.boardSize, dataset.boardType, useMrCal, dataset.useOldPattern);
+                    dataset.size,
+                    charucoDir,
+                    dataset.boardSize,
+                    dataset.boardType,
+                    useMrCal,
+                    dataset.useOldPattern);
     }
 
     public static void calibrateCommon(
