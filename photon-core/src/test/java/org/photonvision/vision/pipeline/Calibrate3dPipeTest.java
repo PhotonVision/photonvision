@@ -141,7 +141,7 @@ public class Calibrate3dPipeTest {
                     dataset.boardType,
                     useMrCal,
                     dataset.useOldPattern);
-        else if (dataset.boardType == BoardType.CHESSBOARD)
+        else if (dataset.boardType == BoardType.CHARUCOBOARD)
             calibrateCommon(
                     dataset.size,
                     charucoDir,
