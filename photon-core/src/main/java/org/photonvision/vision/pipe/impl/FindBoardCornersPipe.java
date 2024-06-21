@@ -310,6 +310,7 @@ public class FindBoardCornersPipe
                 }
 
                 outBoardCorners.fromArray(boardCorners);
+                objPts.fromArray(objectPoints);
                 outLevels.fromArray(levels);
             }
             imgPoints.release();
