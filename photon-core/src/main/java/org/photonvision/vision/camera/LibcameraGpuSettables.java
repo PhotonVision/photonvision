@@ -125,21 +125,17 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
         // Minimum exposure can't be below 1uS cause otherwise it would be 0 and 0 is auto exposure.
         double minExposure = 1;
+        double maxExposure = 80000;
 
-        // HACKS!
-        // If we set exposure too low, libcamera crashes or slows down
-        // Very weird and smelly
-        // For now, band-aid this by just not setting it lower than the "it breaks" limit
-        // is different depending on camera.
-        // All units are uS.
+
         if (sensorModel == LibCameraJNI.SensorModel.OV9281) {
-            minExposure = 4800;
+            minExposure = 7;
         } else if (sensorModel == LibCameraJNI.SensorModel.OV5647) {
             minExposure = 560;
         }
         // 80,000 uS seems like an exposure value that will be greater than ever needed while giving
         // enough control over exposure.
-        exposure = MathUtils.map(exposure, 0, 100, minExposure, 80000);
+        exposure = MathUtils.map(exposure, 0, 100, minExposure, maxExposure);
 
         var success = LibCameraJNI.setExposure(r_ptr, (int) exposure);
         if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera exposure");
