@@ -411,11 +411,11 @@ public class VisionModule {
 
         // If manual exposure, force exposure slider to be valid
         if (!pipelineSettings.cameraAutoExposure) {
-            if (pipelineSettings.cameraExposure < 0)
-                pipelineSettings.cameraExposure = 10; // reasonable default
+            if (pipelineSettings.cameraExposureUs < 0)
+                pipelineSettings.cameraExposureUs = 10; // reasonable default
         }
 
-        visionSource.getSettables().setExposure(pipelineSettings.cameraExposure);
+        visionSource.getSettables().setExposureUs(pipelineSettings.cameraExposureUs);
         try {
             visionSource.getSettables().setAutoExposure(pipelineSettings.cameraAutoExposure);
         } catch (VideoException e) {

@@ -389,15 +389,15 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
         <v-row v-if="isCalibrating">
           <v-col cols="12" class="pt-0">
             <pv-slider
-              v-model="useCameraSettingsStore().currentPipelineSettings.cameraExposure"
+              v-model="useCameraSettingsStore().currentPipelineSettings.cameraExposureUs"
               :disabled="useCameraSettingsStore().currentCameraSettings.pipelineSettings.cameraAutoExposure"
-              label="Exposure"
-              tooltip="Directly controls how much light is allowed to fall onto the sensor, which affects apparent brightness"
-              :min="0"
-              :max="100"
+              label="Exposure (μS)"
+              tooltip="Directly controls how long the camera shutter remains open (in microseconds)"
+              :min="1"
+              :max="80000"
               :slider-cols="8"
-              :step="0.1"
-              @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraExposure: args }, false)"
+              :step="1"
+              @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraExposureUs: args }, false)"
             />
             <pv-slider
               v-model="useCameraSettingsStore().currentPipelineSettings.cameraBrightness"

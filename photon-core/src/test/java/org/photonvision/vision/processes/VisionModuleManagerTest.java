@@ -76,7 +76,7 @@ public class VisionModuleManagerTest {
         }
 
         @Override
-        public void setExposure(double exposure) {}
+        public void setExposureUs(double exposure) {}
 
         @Override
         public void setBrightness(int brightness) {}
