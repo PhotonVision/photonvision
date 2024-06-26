@@ -146,18 +146,21 @@ public class USBCameraSource extends VisionSource {
      */
     private Optional<VideoProperty> findProperty(String... options) {
         VideoProperty retProp = null;
+        boolean found = false;
         for (var option : options) {
             retProp = camera.getProperty(option);
             if (retProp.getKind() != VideoProperty.Kind.kNone) {
                 // got em
+                found = true;
                 break;
-            }
+            } 
         }
 
-        if (retProp == null) {
+        if (!found) {
             logger.warn(
                     "Expected at least one of the following properties to be available: "
                             + Arrays.toString(options));
+            retProp = null;
         }
 
         return Optional.of(retProp);
