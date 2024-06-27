@@ -189,6 +189,9 @@ export interface CameraSettings {
 
   cameraQuirks: QuirkyCamera;
   isCSICamera: boolean;
+
+  minExposureUs: number;
+  maxExposureUs: number;
 }
 
 export interface CameraSettingsChangeRequest {
@@ -287,7 +290,9 @@ export const PlaceholderCameraSettings: CameraSettings = {
       StickyFPS: false
     }
   },
-  isCSICamera: false
+  isCSICamera: false,
+  minExposureUs: 1,
+  maxExposureUs: 100
 };
 
 export enum CalibrationBoardTypes {

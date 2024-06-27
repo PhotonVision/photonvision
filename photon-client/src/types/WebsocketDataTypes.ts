@@ -58,6 +58,8 @@ export interface WebsocketCameraSettingsUpdate {
   pipelineNicknames: string[];
   videoFormatList: WebsocketVideoFormat;
   cameraQuirks: QuirkyCamera;
+  minExposureUs: number;
+  maxExposureUs: number;
 }
 export interface WebsocketNTUpdate {
   connected: boolean;

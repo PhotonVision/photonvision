@@ -65,6 +65,8 @@ export interface PipelineSettings {
   outputShowMultipleTargets: boolean;
   contourSortMode: number;
   cameraExposureUs: number;
+  cameraMinExposureUs: number;
+  cameraMaxExposureUs: number;
   offsetSinglePoint: { x: number; y: number };
   cameraBrightness: number;
   offsetDualPointAArea: number;

@@ -40,6 +40,9 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
     private final LibCameraJNI.SensorModel sensorModel;
 
+    private double minExposure = 1;
+    private double maxExposure = 80000;
+
     private ImageRotationMode m_rotationMode = ImageRotationMode.DEG_0;
 
     public final Object CAMERA_LOCK = new Object();
@@ -100,6 +103,12 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         // TODO need to add more video modes for new sensors here
 
         currentVideoMode = (FPSRatedVideoMode) videoModes.get(0);
+
+        if (sensorModel == LibCameraJNI.SensorModel.OV9281) {
+            minExposure = 7;
+        } else if (sensorModel == LibCameraJNI.SensorModel.OV5647) {
+            minExposure = 560;
+        }
     }
 
     @Override
@@ -123,15 +132,6 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         // Store the exposure for use when we need to recreate the camera.
         lastManualExposure = exposureUs;
 
-        // Minimum exposure can't be below 1uS cause otherwise it would be 0 and 0 is auto exposure.
-        double minExposure = 1;
-        double maxExposure = 80000;
-
-        if (sensorModel == LibCameraJNI.SensorModel.OV9281) {
-            minExposure = 7;
-        } else if (sensorModel == LibCameraJNI.SensorModel.OV5647) {
-            minExposure = 560;
-        }
         // 80,000 uS seems like an exposure value that will be greater than ever needed while giving
         // enough control over exposure.
         exposureUs = MathUtils.limit(exposureUs, minExposure, maxExposure);
@@ -245,5 +245,15 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
     public LibCameraJNI.SensorModel getModel() {
         return sensorModel;
+    }
+
+    @Override
+    public double getMinExposureUs() {
+        return this.minExposure;
+    }
+
+    @Override
+    public double getMaxExposureUs() {
+        return this.maxExposure;
     }
 }

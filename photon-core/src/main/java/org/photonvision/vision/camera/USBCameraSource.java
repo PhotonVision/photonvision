@@ -212,13 +212,13 @@ public class USBCameraSource extends VisionSource {
     private void setAllCamDefaults() {
         // Common settings for all cameras to attempt to get their image
         // as close as possible to what we want for image processing
-        // softSet("image_stabilization", 0); // No image stabilization, as this will throw off odometry
-        // softSet("power_line_frequency", 2); // Assume 60Hz USA
-        // softSet("scene_mode", 0); // no presets
-        // softSet("exposure_metering_mode", 0);
-        // softSet("exposure_dynamic_framerate", 0);
-        // softSet("focus_auto", 0);
-        // softSet("focus_absolute", 0); // Focus into infinity
+        softSet("image_stabilization", 0); // No image stabilization, as this will throw off odometry
+        softSet("power_line_frequency", 2); // Assume 60Hz USA
+        softSet("scene_mode", 0); // no presets
+        softSet("exposure_metering_mode", 0);
+        softSet("exposure_dynamic_framerate", 0);
+        softSet("focus_auto", 0);
+        softSet("focus_absolute", 0); // Focus into infinity
     }
 
     public QuirkyCamera getCameraQuirks() {
@@ -244,11 +244,23 @@ public class USBCameraSource extends VisionSource {
         // changing exposure
         private int lastBrightness = -1;
 
+        double minExposure = 1;
+        double maxExposure = 80000;
+
         protected USBCameraSettables(CameraConfiguration configuration) {
             super(configuration);
             getAllVideoModes();
             if (!configuration.cameraQuirks.hasQuirk(CameraQuirk.StickyFPS))
                 if (!videoModes.isEmpty()) setVideoMode(videoModes.get(0)); // fixes double FPS set
+
+            this.minExposure = exposureAbsProp.getMin();
+            this.maxExposure = exposureAbsProp.getMax();
+
+            if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.ArduOV2311)) {
+                // Property limits are incorrect
+                this.minExposure = 1;
+                this.maxExposure = 75;
+            }
         }
 
         public void setAutoExposure(boolean cameraAutoExposure) {
@@ -256,12 +268,12 @@ public class USBCameraSource extends VisionSource {
 
             if (!cameraAutoExposure) {
                 // Pick a bunch of reasonable setting defaults for vision processing
-                // softSet("auto_exposure_bias", 0);
-                // softSet("iso_sensitivity_auto", 0); // Disable auto ISO adjustment
-                // softSet("iso_sensitivity", 0); // Manual ISO adjustment
-                // softSet("white_balance_auto_preset", 2); // Auto white-balance disabled
-                // softSet("white_balance_automatic", 0);
-                // softSet("white_balance_temperature", 4000);
+                softSet("auto_exposure_bias", 0);
+                softSet("iso_sensitivity_auto", 0); // Disable auto ISO adjustment
+                softSet("iso_sensitivity", 0); // Manual ISO adjustment
+                softSet("white_balance_auto_preset", 2); // Auto white-balance disabled
+                softSet("white_balance_automatic", 0);
+                softSet("white_balance_temperature", 4000);
                 autoExposureProp.set(PROP_AUTO_EXPOSURE_ENABLED);
 
                 // Most cameras leave exposure time absolute at the last value from their AE algorithm.
@@ -270,32 +282,34 @@ public class USBCameraSource extends VisionSource {
 
             } else {
                 // Pick a bunch of reasonable setting to make the picture nice-for-humans
-                // softSet("auto_exposure_bias", 12);
-                // softSet("iso_sensitivity_auto", 1);
-                // softSet("iso_sensitivity", 1); // Manual ISO adjustment by default
-                // softSet("white_balance_auto_preset", 1); // Auto white-balance enabled
-                // softSet("white_balance_automatic", 1);
+                softSet("auto_exposure_bias", 12);
+                softSet("iso_sensitivity_auto", 1);
+                softSet("iso_sensitivity", 1); // Manual ISO adjustment by default
+                softSet("white_balance_auto_preset", 1); // Auto white-balance enabled
+                softSet("white_balance_automatic", 1);
                 autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
                 camera.setExposureAuto(); // belt-and-suspenders with cscore's call too.
             }
         }
 
         @Override
+        public double getMinExposureUs() {
+            return this.minExposure;
+        }
+
+        @Override
+        public double getMaxExposureUs() {
+            return this.maxExposure;
+        }
+
+        @Override
         public void setExposureUs(double exposureUs) {
             if (exposureUs >= 0.0) {
                 try {
+
                     autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
 
-                    var propMin = exposureAbsProp.getMin();
-                    var propMax = exposureAbsProp.getMax();
-
-                    if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.ArduOV2311)) {
-                        // Property limits are incorrect
-                        propMin = 1;
-                        propMax = 75;
-                    }
-
-                    int propVal = (int) MathUtils.limit(exposureUs, propMin, propMax);
+                    int propVal = (int) MathUtils.limit(exposureUs, this.minExposure, this.maxExposure);
 
                     if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.LifeCamExposure)) {
                         // Lifecam only allows certain settings for exposure

@@ -108,6 +108,16 @@ public class VisionModuleManagerTest {
 
         @Override
         public void setAutoExposure(boolean cameraAutoExposure) {}
+
+        @Override
+        public double getMinExposureUs() {
+            return 1;
+        }
+
+        @Override
+        public double getMaxExposureUs() {
+            return 1234;
+        }
     }
 
     private static class TestDataConsumer implements CVPipelineResultConsumer {

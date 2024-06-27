@@ -122,5 +122,15 @@ public class FileVisionSource extends VisionSource {
         public HashMap<Integer, VideoMode> getAllVideoModes() {
             return videoModes;
         }
+
+        @Override
+        public double getMinExposureUs() {
+            return 1f;
+        }
+
+        @Override
+        public double getMaxExposureUs() {
+            return 100f;
+        }
     }
 }

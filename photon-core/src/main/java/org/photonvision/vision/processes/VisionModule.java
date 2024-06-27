@@ -511,6 +511,8 @@ public class VisionModule {
         ret.currentPipelineIndex = pipelineManager.getRequestedIndex();
         ret.pipelineNicknames = pipelineManager.getPipelineNicknames();
         ret.cameraQuirks = visionSource.getSettables().getConfiguration().cameraQuirks;
+        ret.maxExposureUs = visionSource.getSettables().getMaxExposureUs();
+        ret.minExposureUs = visionSource.getSettables().getMinExposureUs();
 
         // TODO refactor into helper method
         var temp = new HashMap<Integer, HashMap<String, Object>>();

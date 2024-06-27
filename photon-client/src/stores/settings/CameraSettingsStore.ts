@@ -68,6 +68,12 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     },
     isCSICamera(): boolean {
       return this.currentCameraSettings.isCSICamera;
+    },
+    minExposureUs(): number {
+      return this.currentCameraSettings.minExposureUs;
+    },
+    maxExposureUs(): number {
+      return this.currentCameraSettings.maxExposureUs;
     }
   },
   actions: {
@@ -102,6 +108,8 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
           })),
         completeCalibrations: d.calibrations,
         isCSICamera: d.isCSICamera,
+        minExposureUs: d.minExposureUs,
+        maxExposureUs: d.maxExposureUs,
         pipelineNicknames: d.pipelineNicknames,
         currentPipelineIndex: d.currentPipelineIndex,
         pipelineSettings: d.currentPipelineSettings,
