@@ -44,10 +44,11 @@ public class QuirkyCamera {
                             -1,
                             "FaceTime HD Camera",
                             CameraQuirk.CompletelyBroken), // Mac Facetime Camera shared into Windows in Bootcamp
-                    new QuirkyCamera(0x2000, 0x1415, CameraQuirk.Gain, CameraQuirk.FPSCap100), // PS3Eye
                     new QuirkyCamera(
-                            -1, -1, "mmal service 16.1", CameraQuirk.PiCam), // PiCam (via V4L2, not zerocopy)
-                    new QuirkyCamera(-1, -1, "unicam", CameraQuirk.PiCam), // PiCam (via V4L2, not zerocopy)
+                            -1, -1, "LifeCam HD-3000", CameraQuirk.LifeCamExposure), // Microsoft Lifecam
+                    new QuirkyCamera(
+                            -1, -1, "LifeCam Cinema (TM)", CameraQuirk.LifeCamExposure), // Microsoft Lifecam
+                    new QuirkyCamera(0x2000, 0x1415, CameraQuirk.Gain, CameraQuirk.FPSCap100), // PS3Eye
                     new QuirkyCamera(0x85B, 0x46D, CameraQuirk.AdjustableFocus), // Logitech C925-e
                     // Generic arducam. Since OV2311 can't be differentiated at first boot, apply stickyFPS to
                     // the generic case, too
@@ -81,10 +82,9 @@ public class QuirkyCamera {
             new QuirkyCamera(
                     -1,
                     -1,
-                    "mmal service 16.1",
-                    CameraQuirk.PiCam,
+                    "mmal service 16.1", // TODO - is this still accurate in the libpicam days?
                     CameraQuirk.Gain,
-                    CameraQuirk.AWBGain); // PiCam (special zerocopy version)
+                    CameraQuirk.AWBGain); // PiCam (using libpicam GPU Driver on raspberry pi)
 
     @JsonProperty("baseName")
     public final String baseName;
@@ -173,11 +173,22 @@ public class QuirkyCamera {
 
     public static QuirkyCamera getQuirkyCamera(int usbVid, int usbPid, String baseName) {
         for (var qc : quirkyCameras) {
-            boolean hasBaseName = !qc.baseName.isEmpty();
-            boolean matchesBaseName = qc.baseName.equals(baseName) || !hasBaseName;
-            // If we have a quirkycamera we need to copy the quirks from our predefined object and create
-            // a quirkycamera object with the baseName.
-            if (qc.usbVid == usbVid && qc.usbPid == usbPid && matchesBaseName) {
+            boolean useBaseNameMatch = !qc.baseName.isEmpty();
+            boolean matchesBaseName = true; // default to matching
+            if (useBaseNameMatch) {
+                matchesBaseName = baseName.endsWith(qc.baseName);
+            }
+
+            boolean usePidVidMatch = (qc.usbVid != -1) && (qc.usbPid != -1);
+            boolean matchesPidVid = true; // default to matching
+            if (usePidVidMatch) {
+                matchesPidVid = (qc.usbVid == usbVid && qc.usbPid == usbPid);
+            }
+
+            if (matchesPidVid && matchesBaseName) {
+                // We have a quirky camera!
+                // Copy the quirks from our predefined object and create
+                // a QuirkyCamera object with the complete properties
                 List<CameraQuirk> quirks = new ArrayList<CameraQuirk>();
                 for (var q : CameraQuirk.values()) {
                     if (qc.hasQuirk(q)) quirks.add(q);

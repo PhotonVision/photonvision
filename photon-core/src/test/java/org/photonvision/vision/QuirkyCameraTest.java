@@ -38,18 +38,6 @@ public class QuirkyCameraTest {
     }
 
     @Test
-    public void picamTest() {
-        HashMap<CameraQuirk, Boolean> picamQuirks = new HashMap<>();
-        picamQuirks.put(CameraQuirk.PiCam, true);
-        for (var q : CameraQuirk.values()) {
-            picamQuirks.putIfAbsent(q, false);
-        }
-
-        QuirkyCamera picam = QuirkyCamera.getQuirkyCamera(-1, -1, "mmal service 16.1");
-        Assertions.assertEquals(picam.quirks, picamQuirks);
-    }
-
-    @Test
     public void quirklessCameraTest() {
         HashMap<CameraQuirk, Boolean> noQuirks = new HashMap<>();
         for (var q : CameraQuirk.values()) {

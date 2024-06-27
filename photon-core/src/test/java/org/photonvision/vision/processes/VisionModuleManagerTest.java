@@ -68,6 +68,11 @@ public class VisionModuleManagerTest {
         public boolean isVendorCamera() {
             return false;
         }
+
+        @Override
+        public boolean hasLEDs() {
+            return false;
+        }
     }
 
     private static class TestSettables extends VisionSourceSettables {

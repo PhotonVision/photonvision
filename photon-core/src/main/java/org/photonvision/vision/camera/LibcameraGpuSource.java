@@ -88,4 +88,9 @@ public class LibcameraGpuSource extends VisionSource {
     public boolean isVendorCamera() {
         return ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV();
     }
+
+    @Override
+    public boolean hasLEDs() {
+        return (ConfigManager.getInstance().getConfig().getHardwareConfig().ledPins.size() > 0);
+    }
 }

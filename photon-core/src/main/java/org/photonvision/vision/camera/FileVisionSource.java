@@ -74,6 +74,11 @@ public class FileVisionSource extends VisionSource {
         return false;
     }
 
+    @Override
+    public boolean hasLEDs() {
+        return false; // Assume USB cameras do not have photonvision-controlled LEDs
+    }
+
     private static class FileSourceSettables extends VisionSourceSettables {
         private final VideoMode videoMode;
 

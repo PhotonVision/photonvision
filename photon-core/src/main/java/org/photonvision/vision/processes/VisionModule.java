@@ -453,7 +453,7 @@ public class VisionModule {
         // Heuristic - if the camera has a known FOV or is a piCam, assume it's in use for
         // vision processing, and should command stuff to the LED's.
         // TODO: Make LED control a property of the camera itself and controllable in the UI.
-        return isVendorCamera() || cameraQuirks.hasQuirk(CameraQuirk.PiCam);
+        return isVendorCamera();
     }
 
     private void setVisionLEDs(boolean on) {
@@ -541,8 +541,7 @@ public class VisionModule {
                         .collect(Collectors.toList());
 
         ret.isFovConfigurable =
-                !(ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV()
-                        && cameraQuirks.hasQuirk(CameraQuirk.PiCam));
+                !(ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV());
 
         return ret;
     }

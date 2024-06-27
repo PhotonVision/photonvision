@@ -71,6 +71,23 @@ public class MathUtils {
         return nanos / 1000;
     }
 
+    /**
+     * Constrain a value to only take on certain values. Pick the next-highest allowed value in the
+     * array if in-between.
+     *
+     * @param value value to quantize
+     * @param allowableSteps sorted array of the allowed values
+     * @return quantized value
+     */
+    public static int quantize(int value, int[] allowableSteps) {
+        for (int step : allowableSteps) {
+            if (value <= step) {
+                return step;
+            }
+        }
+        return allowableSteps[allowableSteps.length - 1];
+    }
+
     public static double limit(double value, double out_min, double out_max) {
         double retVal = value;
         if (value > out_max) {

@@ -66,10 +66,9 @@ public class USBCameraSource extends VisionSource {
         if (config.usbVID <= 0) config.usbVID = this.camera.getInfo().vendorId;
         if (config.usbPID <= 0) config.usbPID = this.camera.getInfo().productId;
 
-        if (getCameraConfiguration().cameraQuirks == null)
-            getCameraConfiguration().cameraQuirks =
-                    QuirkyCamera.getQuirkyCamera(
-                            camera.getInfo().vendorId, camera.getInfo().productId, config.baseName);
+        getCameraConfiguration().cameraQuirks =
+                QuirkyCamera.getQuirkyCamera(
+                        camera.getInfo().vendorId, camera.getInfo().productId, config.baseName);
 
         if (getCameraConfiguration().cameraQuirks.hasQuirks()) {
             logger.info("Quirky camera detected: " + getCameraConfiguration().cameraQuirks.baseName);
@@ -125,9 +124,7 @@ public class USBCameraSource extends VisionSource {
     public USBCameraSource(CameraConfiguration config, int pid, int vid, boolean unitTest) {
         this(config);
 
-        if (getCameraConfiguration().cameraQuirks == null)
-            getCameraConfiguration().cameraQuirks =
-                    QuirkyCamera.getQuirkyCamera(pid, vid, config.baseName);
+        getCameraConfiguration().cameraQuirks = QuirkyCamera.getQuirkyCamera(pid, vid, config.baseName);
 
         if (unitTest)
             usbFrameProvider =
@@ -153,7 +150,7 @@ public class USBCameraSource extends VisionSource {
                 // got em
                 found = true;
                 break;
-            } 
+            }
         }
 
         if (!found) {
@@ -176,7 +173,7 @@ public class USBCameraSource extends VisionSource {
     private void softSet(String property, int value) {
         VideoProperty prop = camera.getProperty(property);
         if (prop.getKind() == VideoProperty.Kind.kNone) {
-            logger.debug("No property " + property + " for " + camera.getName() + " !");
+            logger.debug("No property " + property + " for " + camera.getName() + " , skipping.");
         } else {
             try {
                 prop.set(value);
@@ -188,7 +185,7 @@ public class USBCameraSource extends VisionSource {
 
     private void printCameraProperaties() {
         VideoProperty[] cameraProperties = camera.enumerateProperties();
-        String cameraPropertiesStr = "";
+        String cameraPropertiesStr = "Cam Properties Dump:\n";
 
         for (int i = 0; i < cameraProperties.length; i++) {
             cameraPropertiesStr +=
@@ -215,13 +212,13 @@ public class USBCameraSource extends VisionSource {
     private void setAllCamDefaults() {
         // Common settings for all cameras to attempt to get their image
         // as close as possible to what we want for image processing
-        softSet("image_stabilization", 0); // No image stabilization, as this will throw off odometry
-        softSet("power_line_frequency", 2); // Assume 60Hz USA
-        softSet("scene_mode", 0); // no presets
-        softSet("exposure_metering_mode", 0);
-        softSet("exposure_dynamic_framerate", 0);
-        softSet("focus_auto", 0);
-        softSet("focus_absolute", 0); // Focus into infinity
+        // softSet("image_stabilization", 0); // No image stabilization, as this will throw off odometry
+        // softSet("power_line_frequency", 2); // Assume 60Hz USA
+        // softSet("scene_mode", 0); // no presets
+        // softSet("exposure_metering_mode", 0);
+        // softSet("exposure_dynamic_framerate", 0);
+        // softSet("focus_auto", 0);
+        // softSet("focus_absolute", 0); // Focus into infinity
     }
 
     public QuirkyCamera getCameraQuirks() {
@@ -243,6 +240,10 @@ public class USBCameraSource extends VisionSource {
         // auto exposure mode so we can restore it
         private double lastExposureUs = -1;
 
+        // Some cameras need logic where we re-apply brightness after
+        // changing exposure
+        private int lastBrightness = -1;
+
         protected USBCameraSettables(CameraConfiguration configuration) {
             super(configuration);
             getAllVideoModes();
@@ -255,12 +256,12 @@ public class USBCameraSource extends VisionSource {
 
             if (!cameraAutoExposure) {
                 // Pick a bunch of reasonable setting defaults for vision processing
-                softSet("auto_exposure_bias", 0);
-                softSet("iso_sensitivity_auto", 0); // Disable auto ISO adjustment
-                softSet("iso_sensitivity", 0); // Manual ISO adjustment
-                softSet("white_balance_auto_preset", 2); // Auto white-balance disabled
-                softSet("white_balance_automatic", 0);
-                softSet("white_balance_temperature", 4000);
+                // softSet("auto_exposure_bias", 0);
+                // softSet("iso_sensitivity_auto", 0); // Disable auto ISO adjustment
+                // softSet("iso_sensitivity", 0); // Manual ISO adjustment
+                // softSet("white_balance_auto_preset", 2); // Auto white-balance disabled
+                // softSet("white_balance_automatic", 0);
+                // softSet("white_balance_temperature", 4000);
                 autoExposureProp.set(PROP_AUTO_EXPOSURE_ENABLED);
 
                 // Most cameras leave exposure time absolute at the last value from their AE algorithm.
@@ -269,12 +270,13 @@ public class USBCameraSource extends VisionSource {
 
             } else {
                 // Pick a bunch of reasonable setting to make the picture nice-for-humans
-                softSet("auto_exposure_bias", 12);
-                softSet("iso_sensitivity_auto", 1);
-                softSet("iso_sensitivity", 1); // Manual ISO adjustment by default
-                softSet("white_balance_auto_preset", 1); // Auto white-balance enabled
-                softSet("white_balance_automatic", 1);
+                // softSet("auto_exposure_bias", 12);
+                // softSet("iso_sensitivity_auto", 1);
+                // softSet("iso_sensitivity", 1); // Manual ISO adjustment by default
+                // softSet("white_balance_auto_preset", 1); // Auto white-balance enabled
+                // softSet("white_balance_automatic", 1);
                 autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
+                camera.setExposureAuto(); // belt-and-suspenders with cscore's call too.
             }
         }
 
@@ -282,7 +284,6 @@ public class USBCameraSource extends VisionSource {
         public void setExposureUs(double exposureUs) {
             if (exposureUs >= 0.0) {
                 try {
-
                     autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
 
                     var propMin = exposureAbsProp.getMin();
@@ -291,20 +292,38 @@ public class USBCameraSource extends VisionSource {
                     if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.ArduOV2311)) {
                         // Property limits are incorrect
                         propMin = 1;
-                        propMax = 120;
+                        propMax = 75;
                     }
 
-                    var propVal = MathUtils.limit(exposureUs, propMin, propMax);
+                    int propVal = (int) MathUtils.limit(exposureUs, propMin, propMax);
+
+                    if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.LifeCamExposure)) {
+                        // Lifecam only allows certain settings for exposure
+                        propVal = MathUtils.quantize(propVal, CameraQuirkConstants.LifecamAllowableExposures);
+                    }
+
                     logger.debug(
-                            "Setting camera exposure property to "
+                            "Setting property "
+                                    + autoExposureProp.getName()
+                                    + " to "
                                     + propVal
                                     + " (user requested "
                                     + exposureUs
                                     + " μs)");
 
-                    exposureAbsProp.set((int) propVal);
+                    exposureAbsProp.set(propVal);
 
                     this.lastExposureUs = exposureUs;
+
+                    if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.LifeCamExposure)) {
+                        // Lifecam requires setting brightness again after exposure
+                        // And it requires setting it twice, ensuring the value is different
+                        // This camera is very bork.
+                        if (lastBrightness >= 0) {
+                            camera.setBrightness(0);
+                            camera.setBrightness(lastBrightness);
+                        }
+                    }
 
                 } catch (VideoException e) {
                     logger.error("Failed to set camera exposure!", e);
@@ -316,6 +335,7 @@ public class USBCameraSource extends VisionSource {
         public void setBrightness(int brightness) {
             try {
                 camera.setBrightness(brightness);
+                this.lastBrightness = brightness;
             } catch (VideoException e) {
                 logger.error("Failed to set camera brightness!", e);
             }
@@ -401,6 +421,11 @@ public class USBCameraSource extends VisionSource {
     @Override
     public boolean isVendorCamera() {
         return false; // Vendors do not supply USB Cameras
+    }
+
+    @Override
+    public boolean hasLEDs() {
+        return false; // Assume USB cameras do not have photonvision-controlled LEDs
     }
 
     @Override

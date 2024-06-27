@@ -34,9 +34,8 @@ public class TestSource extends VisionSource {
     public TestSource(CameraConfiguration config) {
         super(config);
 
-        if (getCameraConfiguration().cameraQuirks == null)
-            getCameraConfiguration().cameraQuirks =
-                    QuirkyCamera.getQuirkyCamera(config.usbVID, config.usbVID, config.baseName);
+        getCameraConfiguration().cameraQuirks =
+                QuirkyCamera.getQuirkyCamera(config.usbVID, config.usbVID, config.baseName);
     }
 
     @Override
@@ -89,5 +88,10 @@ public class TestSource extends VisionSource {
     public boolean isVendorCamera() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'isVendorCamera'");
+    }
+
+    @Override
+    public boolean hasLEDs() {
+        return false; // Assume USB cameras do not have photonvision-controlled LEDs
     }
 }
