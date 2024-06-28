@@ -28,30 +28,43 @@ import java.util.Objects;
 public class QuirkyCamera {
     private static final List<QuirkyCamera> quirkyCameras =
             List.of(
+                    // Chris's older generic "Logitec HD Webcam"
                     new QuirkyCamera(
                             0x9331,
                             0x5A3,
-                            CameraQuirk.CompletelyBroken), // Chris's older generic "Logitec HD Webcam"
-                    new QuirkyCamera(0x825, 0x46D, CameraQuirk.CompletelyBroken), // Logitec C270
+                            CameraQuirk.CompletelyBroken), 
+                    // Logitec C270
+                    new QuirkyCamera(0x825, 0x46D, CameraQuirk.CompletelyBroken), 
+                    // A laptop internal camera someone found broken
                     new QuirkyCamera(
                             0x0bda,
                             0x5510,
-                            CameraQuirk.CompletelyBroken), // A laptop internal camera someone found broken
+                            CameraQuirk.CompletelyBroken), 
+                    // SnapCamera on Windows
                     new QuirkyCamera(
-                            -1, -1, "Snap Camera", CameraQuirk.CompletelyBroken), // SnapCamera on Windows
+                            -1, -1, "Snap Camera", CameraQuirk.CompletelyBroken), 
+                    // Mac Facetime Camera shared into Windows in Bootcamp
                     new QuirkyCamera(
                             -1,
                             -1,
                             "FaceTime HD Camera",
-                            CameraQuirk.CompletelyBroken), // Mac Facetime Camera shared into Windows in Bootcamp
+                            CameraQuirk.CompletelyBroken), 
+                    // Microsoft Lifecam
                     new QuirkyCamera(
-                            -1, -1, "LifeCam HD-3000", CameraQuirk.LifeCamExposure), // Microsoft Lifecam
+                            -1, -1, "LifeCam HD-3000", CameraQuirk.LifeCamExposure), 
+                    // Microsoft Lifecam
                     new QuirkyCamera(
-                            -1, -1, "LifeCam Cinema (TM)", CameraQuirk.LifeCamExposure), // Microsoft Lifecam
-                    new QuirkyCamera(0x2000, 0x1415, CameraQuirk.Gain, CameraQuirk.FPSCap100), // PS3Eye
-                    new QuirkyCamera(0x85B, 0x46D, CameraQuirk.AdjustableFocus), // Logitech C925-e
-                    // Generic arducam. Since OV2311 can't be differentiated at first boot, apply stickyFPS to
-                    // the generic case, too
+                            -1, -1, "LifeCam Cinema (TM)", CameraQuirk.LifeCamExposure), 
+                    // PS3Eye
+                    new QuirkyCamera(0x1415, 
+                                    0x2000,
+                                     CameraQuirk.Gain, 
+                                     CameraQuirk.FPSCap100, 
+                                     CameraQuirk.OneZeroAutoExposure), 
+                    // Logitech C925-e
+                    new QuirkyCamera(0x85B, 0x46D, CameraQuirk.AdjustableFocus),
+                    // Generic arducam. Since OV2311 can't be differentiated 
+                    // at first boot, apply stickyFPS to the generic case, too
                     new QuirkyCamera(
                             0x0c45,
                             0x6366,

@@ -411,11 +411,11 @@ public class VisionModule {
 
         // If manual exposure, force exposure slider to be valid
         if (!pipelineSettings.cameraAutoExposure) {
-            if (pipelineSettings.cameraExposureUs < 0)
-                pipelineSettings.cameraExposureUs = 10; // reasonable default
+            if (pipelineSettings.cameraExposureRaw < 0)
+                pipelineSettings.cameraExposureRaw = 10; // reasonable default
         }
 
-        visionSource.getSettables().setExposureUs(pipelineSettings.cameraExposureUs);
+        visionSource.getSettables().setexposureRaw(pipelineSettings.cameraExposureRaw);
         try {
             visionSource.getSettables().setAutoExposure(pipelineSettings.cameraAutoExposure);
         } catch (VideoException e) {
@@ -511,8 +511,8 @@ public class VisionModule {
         ret.currentPipelineIndex = pipelineManager.getRequestedIndex();
         ret.pipelineNicknames = pipelineManager.getPipelineNicknames();
         ret.cameraQuirks = visionSource.getSettables().getConfiguration().cameraQuirks;
-        ret.maxExposureUs = visionSource.getSettables().getMaxExposureUs();
-        ret.minExposureUs = visionSource.getSettables().getMinExposureUs();
+        ret.maxExposureRaw = visionSource.getSettables().getMaxexposureRaw();
+        ret.minExposureRaw = visionSource.getSettables().getMinexposureRaw();
 
         // TODO refactor into helper method
         var temp = new HashMap<Integer, HashMap<String, Object>>();

@@ -123,20 +123,20 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     }
 
     @Override
-    public void setExposureUs(double exposureUs) {
-        if (exposureUs < 0.0 || lastAutoExposureActive) {
+    public void setexposureRaw(double exposureRaw) {
+        if (exposureRaw < 0.0 || lastAutoExposureActive) {
             // Auto-exposure is active right now, don't set anything.
             return;
         }
 
         // Store the exposure for use when we need to recreate the camera.
-        lastManualExposure = exposureUs;
+        lastManualExposure = exposureRaw;
 
         // 80,000 uS seems like an exposure value that will be greater than ever needed while giving
         // enough control over exposure.
-        exposureUs = MathUtils.limit(exposureUs, minExposure, maxExposure);
+        exposureRaw = MathUtils.limit(exposureRaw, minExposure, maxExposure);
 
-        var success = LibCameraJNI.setExposure(r_ptr, (int) exposureUs);
+        var success = LibCameraJNI.setExposure(r_ptr, (int) exposureRaw);
         if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera exposure");
     }
 
@@ -227,7 +227,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
         // We don't store last settings on the native side, and when you change video mode these get
         // reset on MMAL's end
-        setExposureUs(lastManualExposure);
+        setexposureRaw(lastManualExposure);
         setAutoExposure(lastAutoExposureActive);
         setBrightness(lastBrightness);
         setGain(lastGain);
@@ -248,12 +248,12 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     }
 
     @Override
-    public double getMinExposureUs() {
+    public double getMinexposureRaw() {
         return this.minExposure;
     }
 
     @Override
-    public double getMaxExposureUs() {
+    public double getMaxexposureRaw() {
         return this.maxExposure;
     }
 }

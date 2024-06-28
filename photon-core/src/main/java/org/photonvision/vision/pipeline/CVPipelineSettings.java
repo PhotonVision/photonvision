@@ -42,9 +42,9 @@ public class CVPipelineSettings implements Cloneable {
     public String pipelineNickname = "New Pipeline";
     public boolean cameraAutoExposure = false;
     // manual exposure only used if cameraAutoExposure is false
-    public double cameraExposureUs = 20;
-    public double cameraMinExposureUs = 1;
-    public double cameraMaxExposureUs = 100;
+    public double cameraExposureRaw = 20;
+    public double cameraMinexposureRaw = 1;
+    public double cameraMaxexposureRaw = 100;
     public int cameraBrightness = 50;
     // Currently only used by a few cameras (notably the zero-copy Pi Camera driver) with the Gain
     // quirk
@@ -64,9 +64,9 @@ public class CVPipelineSettings implements Cloneable {
         if (o == null || getClass() != o.getClass()) return false;
         CVPipelineSettings that = (CVPipelineSettings) o;
         return pipelineIndex == that.pipelineIndex
-                && Double.compare(that.cameraExposureUs, cameraExposureUs) == 0
-                && Double.compare(that.cameraMinExposureUs, cameraMinExposureUs) == 0
-                && Double.compare(that.cameraMaxExposureUs, cameraMaxExposureUs) == 0
+                && Double.compare(that.cameraExposureRaw, cameraExposureRaw) == 0
+                && Double.compare(that.cameraMinexposureRaw, cameraMinexposureRaw) == 0
+                && Double.compare(that.cameraMaxexposureRaw, cameraMaxexposureRaw) == 0
                 && Double.compare(that.cameraBrightness, cameraBrightness) == 0
                 && Double.compare(that.cameraGain, cameraGain) == 0
                 && Double.compare(that.cameraRedGain, cameraRedGain) == 0
@@ -88,9 +88,9 @@ public class CVPipelineSettings implements Cloneable {
                 pipelineType,
                 inputImageRotationMode,
                 pipelineNickname,
-                cameraExposureUs,
-                cameraMinExposureUs,
-                cameraMaxExposureUs,
+                cameraExposureRaw,
+                cameraMinexposureRaw,
+                cameraMaxexposureRaw,
                 cameraBrightness,
                 cameraGain,
                 cameraRedGain,
@@ -124,8 +124,8 @@ public class CVPipelineSettings implements Cloneable {
                 + ", pipelineNickname='"
                 + pipelineNickname
                 + '\''
-                + ", cameraExposureUs="
-                + cameraExposureUs
+                + ", cameraExposureRaw="
+                + cameraExposureRaw
                 + ", cameraBrightness="
                 + cameraBrightness
                 + ", cameraGain="

@@ -22,6 +22,8 @@ public enum CameraQuirk {
     Gain,
     /** Only certain discrete exposure settings work */
     LifeCamExposure,
+    /** Auto-Exposure property uses 1/0, rather than 3/1 */
+    OneZeroAutoExposure,
     /** Cap at 100FPS for high-bandwidth cameras */
     FPSCap100,
     /** Separate red/blue gain controls available */

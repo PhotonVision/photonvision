@@ -74,15 +74,15 @@ const interactiveCols = computed(() =>
 <template>
   <div>
     <pv-slider
-      v-model="useCameraSettingsStore().currentPipelineSettings.cameraExposureUs"
+      v-model="useCameraSettingsStore().currentPipelineSettings.cameraExposureRaw"
       :disabled="useCameraSettingsStore().currentCameraSettings.pipelineSettings.cameraAutoExposure"
-      label="Exposure (μS)"
-      tooltip="Directly controls how long the camera shutter remains open (in microseconds)"
-      :min="useCameraSettingsStore().minExposureUs"
-      :max="useCameraSettingsStore().maxExposureUs"
+      label="Exposure"
+      tooltip="Directly controls how long the camera shutter remains open. Units are dependant on the underlying driver."
+      :min="useCameraSettingsStore().minExposureRaw"
+      :max="useCameraSettingsStore().maxExposureRaw"
       :slider-cols="interactiveCols"
       :step="1"
-      @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraExposureUs: args }, false)"
+      @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraExposureRaw: args }, false)"
     />
     <pv-slider
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraBrightness"

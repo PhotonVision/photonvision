@@ -42,7 +42,7 @@ public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
     public ColoredShapePipelineSettings() {
         super();
         pipelineType = PipelineType.ColoredShape;
-        cameraExposureUs = 20;
+        cameraExposureRaw = 20;
     }
 
     @Override

@@ -81,7 +81,7 @@ public class VisionModuleManagerTest {
         }
 
         @Override
-        public void setExposureUs(double exposure) {}
+        public void setexposureRaw(double exposure) {}
 
         @Override
         public void setBrightness(int brightness) {}
@@ -110,12 +110,12 @@ public class VisionModuleManagerTest {
         public void setAutoExposure(boolean cameraAutoExposure) {}
 
         @Override
-        public double getMinExposureUs() {
+        public double getMinexposureRaw() {
             return 1;
         }
 
         @Override
-        public double getMaxExposureUs() {
+        public double getMaxexposureRaw() {
             return 1234;
         }
     }

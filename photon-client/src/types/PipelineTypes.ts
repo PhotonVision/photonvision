@@ -64,9 +64,9 @@ export interface PipelineSettings {
   hueInverted: boolean;
   outputShowMultipleTargets: boolean;
   contourSortMode: number;
-  cameraExposureUs: number;
-  cameraMinExposureUs: number;
-  cameraMaxExposureUs: number;
+  cameraExposureRaw: number;
+  cameraMinexposureRaw: number;
+  cameraMaxexposureRaw: number;
   offsetSinglePoint: { x: number; y: number };
   cameraBrightness: number;
   offsetDualPointAArea: number;
@@ -99,7 +99,7 @@ export type ConfigurablePipelineSettings = Partial<
 // Omitted settings are changed for all pipeline types
 export const DefaultPipelineSettings: Omit<
   PipelineSettings,
-  "cameraGain" | "targetModel" | "ledMode" | "outputShowMultipleTargets" | "cameraExposureUs" | "pipelineType"
+  "cameraGain" | "targetModel" | "ledMode" | "outputShowMultipleTargets" | "cameraExposureRaw" | "pipelineType"
 > = {
   offsetRobotOffsetMode: RobotOffsetPointMode.None,
   streamingFrameDivisor: 0,
@@ -153,7 +153,7 @@ export const DefaultReflectivePipelineSettings: ReflectivePipelineSettings = {
   targetModel: TargetModel.InfiniteRechargeHighGoalOuter,
   ledMode: true,
   outputShowMultipleTargets: false,
-  cameraExposureUs: 6,
+  cameraExposureRaw: 6,
   pipelineType: PipelineType.Reflective,
 
   contourFilterRangeY: 2,
@@ -184,7 +184,7 @@ export const DefaultColoredShapePipelineSettings: ColoredShapePipelineSettings =
   targetModel: TargetModel.InfiniteRechargeHighGoalOuter,
   ledMode: true,
   outputShowMultipleTargets: false,
-  cameraExposureUs: 20,
+  cameraExposureRaw: 20,
   pipelineType: PipelineType.ColoredShape,
 
   erode: false,
@@ -224,7 +224,7 @@ export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
   targetModel: TargetModel.AprilTag6p5in_36h11,
   ledMode: false,
   outputShowMultipleTargets: true,
-  cameraExposureUs: 20,
+  cameraExposureRaw: 20,
   pipelineType: PipelineType.AprilTag,
 
   hammingDist: 0,
@@ -266,7 +266,7 @@ export const DefaultArucoPipelineSettings: ArucoPipelineSettings = {
   cameraGain: 75,
   outputShowMultipleTargets: true,
   targetModel: TargetModel.AprilTag6p5in_36h11,
-  cameraExposureUs: -1,
+  cameraExposureRaw: -1,
   cameraAutoExposure: true,
   ledMode: false,
   pipelineType: PipelineType.Aruco,
@@ -301,7 +301,7 @@ export const DefaultObjectDetectionPipelineSettings: ObjectDetectionPipelineSett
   targetModel: TargetModel.InfiniteRechargeHighGoalOuter,
   ledMode: true,
   outputShowMultipleTargets: false,
-  cameraExposureUs: 6,
+  cameraExposureRaw: 6,
   confidence: 0.9,
   nms: 0.45,
   box_thresh: 0.25

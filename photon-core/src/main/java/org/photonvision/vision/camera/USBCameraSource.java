@@ -47,9 +47,12 @@ public class USBCameraSource extends VisionSource {
 
     private VideoProperty exposureAbsProp = null;
     private VideoProperty autoExposureProp = null;
+    private double minExposure = 1;
+    private double maxExposure = 80000;
 
-    private static final int PROP_AUTO_EXPOSURE_ENABLED = 3;
-    private static final int PROP_AUTO_EXPOSURE_DISABLED = 1;
+
+    private int PROP_AUTO_EXPOSURE_ENABLED = 3;
+    private int PROP_AUTO_EXPOSURE_DISABLED = 1;
 
     public USBCameraSource(CameraConfiguration config) {
         super(config);
@@ -66,9 +69,11 @@ public class USBCameraSource extends VisionSource {
         if (config.usbVID <= 0) config.usbVID = this.camera.getInfo().vendorId;
         if (config.usbPID <= 0) config.usbPID = this.camera.getInfo().productId;
 
-        getCameraConfiguration().cameraQuirks =
-                QuirkyCamera.getQuirkyCamera(
-                        camera.getInfo().vendorId, camera.getInfo().productId, config.baseName);
+        if(getCameraConfiguration().cameraQuirks == null){
+            getCameraConfiguration().cameraQuirks =
+                    QuirkyCamera.getQuirkyCamera(
+                            camera.getInfo().vendorId, camera.getInfo().productId, config.baseName);
+        }
 
         if (getCameraConfiguration().cameraQuirks.hasQuirks()) {
             logger.info("Quirky camera detected: " + getCameraConfiguration().cameraQuirks.baseName);
@@ -79,7 +84,7 @@ public class USBCameraSource extends VisionSource {
         printCameraProperaties();
 
         // Photonvision needs to be able to control absolute exposure. Make sure we can first.
-        var expProp = findProperty("raw_exposure_absolute", "raw_exposure_time_absolute");
+        var expProp = findProperty("raw_exposure_absolute", "raw_exposure_time_absolute", "exposure");
 
         // Photonvision needs to be able to control auto exposure. Make sure we can first.
         var autoExpProp = findProperty("exposure_auto", "auto_exposure");
@@ -114,6 +119,26 @@ public class USBCameraSource extends VisionSource {
                 setAllCamDefaults();
                 exposureAbsProp = expProp.get();
                 autoExposureProp = autoExpProp.get();
+
+                
+                this.minExposure = exposureAbsProp.getMin();
+                this.maxExposure = exposureAbsProp.getMax();
+
+                if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.ArduOV2311)) {
+                    // Property limits are incorrect
+                    this.minExposure = 1;
+                    this.maxExposure = 75;
+                }
+
+                if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.LifeCamExposure)) {
+                    // Camera seems unstable above this point.
+                    this.maxExposure = 750;
+                }
+
+                if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.OneZeroAutoExposure)){
+                    PROP_AUTO_EXPOSURE_ENABLED = 0;
+                    PROP_AUTO_EXPOSURE_DISABLED = 1;
+                }
             }
         }
     }
@@ -238,14 +263,11 @@ public class USBCameraSource extends VisionSource {
     public class USBCameraSettables extends VisionSourceSettables {
         // We need to remember the last exposure set when exiting
         // auto exposure mode so we can restore it
-        private double lastExposureUs = -1;
+        private double lastexposureRaw = -1;
 
         // Some cameras need logic where we re-apply brightness after
         // changing exposure
         private int lastBrightness = -1;
-
-        double minExposure = 1;
-        double maxExposure = 80000;
 
         protected USBCameraSettables(CameraConfiguration configuration) {
             super(configuration);
@@ -253,14 +275,6 @@ public class USBCameraSource extends VisionSource {
             if (!configuration.cameraQuirks.hasQuirk(CameraQuirk.StickyFPS))
                 if (!videoModes.isEmpty()) setVideoMode(videoModes.get(0)); // fixes double FPS set
 
-            this.minExposure = exposureAbsProp.getMin();
-            this.maxExposure = exposureAbsProp.getMax();
-
-            if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.ArduOV2311)) {
-                // Property limits are incorrect
-                this.minExposure = 1;
-                this.maxExposure = 75;
-            }
         }
 
         public void setAutoExposure(boolean cameraAutoExposure) {
@@ -278,7 +292,7 @@ public class USBCameraSource extends VisionSource {
 
                 // Most cameras leave exposure time absolute at the last value from their AE algorithm.
                 // Set it back to the exposure slider value
-                setExposureUs(this.lastExposureUs);
+                setexposureRaw(this.lastexposureRaw);
 
             } else {
                 // Pick a bunch of reasonable setting to make the picture nice-for-humans
@@ -288,28 +302,27 @@ public class USBCameraSource extends VisionSource {
                 softSet("white_balance_auto_preset", 1); // Auto white-balance enabled
                 softSet("white_balance_automatic", 1);
                 autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
-                camera.setExposureAuto(); // belt-and-suspenders with cscore's call too.
             }
         }
 
         @Override
-        public double getMinExposureUs() {
-            return this.minExposure;
+        public double getMinexposureRaw() {
+            return minExposure;
         }
 
         @Override
-        public double getMaxExposureUs() {
-            return this.maxExposure;
+        public double getMaxexposureRaw() {
+            return maxExposure;
         }
 
         @Override
-        public void setExposureUs(double exposureUs) {
-            if (exposureUs >= 0.0) {
+        public void setexposureRaw(double exposureRaw) {
+            if (exposureRaw >= 0.0) {
                 try {
 
                     autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
 
-                    int propVal = (int) MathUtils.limit(exposureUs, this.minExposure, this.maxExposure);
+                    int propVal = (int) MathUtils.limit(exposureRaw, minExposure, maxExposure);
 
                     if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.LifeCamExposure)) {
                         // Lifecam only allows certain settings for exposure
@@ -322,20 +335,19 @@ public class USBCameraSource extends VisionSource {
                                     + " to "
                                     + propVal
                                     + " (user requested "
-                                    + exposureUs
+                                    + exposureRaw
                                     + " μs)");
 
                     exposureAbsProp.set(propVal);
 
-                    this.lastExposureUs = exposureUs;
+                    this.lastexposureRaw = exposureRaw;
 
                     if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.LifeCamExposure)) {
                         // Lifecam requires setting brightness again after exposure
                         // And it requires setting it twice, ensuring the value is different
                         // This camera is very bork.
                         if (lastBrightness >= 0) {
-                            camera.setBrightness(0);
-                            camera.setBrightness(lastBrightness);
+                            setBrightness(lastBrightness-1);
                         }
                     }
 
