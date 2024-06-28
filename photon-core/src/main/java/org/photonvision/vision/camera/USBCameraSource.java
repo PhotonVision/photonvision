@@ -30,10 +30,8 @@ import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.FrameProvider;
-import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.frame.provider.USBFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceSettables;
@@ -116,7 +114,7 @@ public class USBCameraSource extends VisionSource {
                 // Functional camera, set up the frame provider and configure defaults
                 usbFrameProvider = new USBFrameProvider(cvSink, usbCameraSettables);
                 setAllCamDefaults();
-                exposureAbsProp  = expProp.get();
+                exposureAbsProp = expProp.get();
                 autoExposureProp = autoExpProp.get();
 
                 this.minExposure = exposureAbsProp.getMin();
@@ -191,15 +189,14 @@ public class USBCameraSource extends VisionSource {
     }
 
     private void printCameraProperaties() {
-
         VideoProperty[] cameraProperties = null;
         try {
             cameraProperties = camera.enumerateProperties();
-        } catch (VideoException e){
+        } catch (VideoException e) {
             logger.error("Failed to list camera properties!", e);
         }
 
-        if(cameraProperties != null){
+        if (cameraProperties != null) {
             String cameraPropertiesStr = "Cam Properties Dump:\n";
             for (int i = 0; i < cameraProperties.length; i++) {
                 cameraPropertiesStr +=
@@ -266,7 +263,6 @@ public class USBCameraSource extends VisionSource {
         }
 
         public void setAutoExposure(boolean cameraAutoExposure) {
-
             logger.debug("Setting auto exposure to " + cameraAutoExposure);
 
             if (!cameraAutoExposure) {

@@ -186,8 +186,7 @@ public class VisionModuleManagerTest {
 
         // Arducam OV9281 UC844 raspberry pi test.
         var conf4 = new CameraConfiguration("Left", "dev/video1");
-        USBCameraSource usbSimulation = new MockUsbCameraSource(conf4, 0x6366, 0x0c45); 
-        
+        USBCameraSource usbSimulation = new MockUsbCameraSource(conf4, 0x6366, 0x0c45);
 
         var conf5 = new CameraConfiguration("Right", "dev/video2");
         USBCameraSource usbSimulation2 = new MockUsbCameraSource(conf5, 0x6366, 0x0c45);
