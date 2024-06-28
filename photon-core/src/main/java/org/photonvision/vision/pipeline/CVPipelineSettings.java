@@ -43,8 +43,8 @@ public class CVPipelineSettings implements Cloneable {
     public boolean cameraAutoExposure = false;
     // manual exposure only used if cameraAutoExposure is false
     public double cameraExposureRaw = 20;
-    public double cameraMinexposureRaw = 1;
-    public double cameraMaxexposureRaw = 100;
+    public double cameraMinExposureRaw = 1;
+    public double cameraMaxExposureRaw = 100;
     public int cameraBrightness = 50;
     // Currently only used by a few cameras (notably the zero-copy Pi Camera driver) with the Gain
     // quirk
@@ -65,8 +65,8 @@ public class CVPipelineSettings implements Cloneable {
         CVPipelineSettings that = (CVPipelineSettings) o;
         return pipelineIndex == that.pipelineIndex
                 && Double.compare(that.cameraExposureRaw, cameraExposureRaw) == 0
-                && Double.compare(that.cameraMinexposureRaw, cameraMinexposureRaw) == 0
-                && Double.compare(that.cameraMaxexposureRaw, cameraMaxexposureRaw) == 0
+                && Double.compare(that.cameraMinExposureRaw, cameraMinExposureRaw) == 0
+                && Double.compare(that.cameraMaxExposureRaw, cameraMaxExposureRaw) == 0
                 && Double.compare(that.cameraBrightness, cameraBrightness) == 0
                 && Double.compare(that.cameraGain, cameraGain) == 0
                 && Double.compare(that.cameraRedGain, cameraRedGain) == 0
@@ -89,8 +89,8 @@ public class CVPipelineSettings implements Cloneable {
                 inputImageRotationMode,
                 pipelineNickname,
                 cameraExposureRaw,
-                cameraMinexposureRaw,
-                cameraMaxexposureRaw,
+                cameraMinExposureRaw,
+                cameraMaxExposureRaw,
                 cameraBrightness,
                 cameraGain,
                 cameraRedGain,

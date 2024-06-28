@@ -123,7 +123,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     }
 
     @Override
-    public void setexposureRaw(double exposureRaw) {
+    public void setExposureRaw(double exposureRaw) {
         if (exposureRaw < 0.0 || lastAutoExposureActive) {
             // Auto-exposure is active right now, don't set anything.
             return;
@@ -227,7 +227,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
         // We don't store last settings on the native side, and when you change video mode these get
         // reset on MMAL's end
-        setexposureRaw(lastManualExposure);
+        setExposureRaw(lastManualExposure);
         setAutoExposure(lastAutoExposureActive);
         setBrightness(lastBrightness);
         setGain(lastGain);
@@ -248,12 +248,12 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     }
 
     @Override
-    public double getMinexposureRaw() {
+    public double getMinExposureRaw() {
         return this.minExposure;
     }
 
     @Override
-    public double getMaxexposureRaw() {
+    public double getMaxExposureRaw() {
         return this.maxExposure;
     }
 }

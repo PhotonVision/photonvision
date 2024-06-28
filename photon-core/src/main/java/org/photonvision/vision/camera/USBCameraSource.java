@@ -41,8 +41,8 @@ import org.photonvision.vision.processes.VisionSourceSettables;
 public class USBCameraSource extends VisionSource {
     private final Logger logger;
     private final UsbCamera camera;
-    private final USBCameraSettables usbCameraSettables;
-    private FrameProvider usbFrameProvider;
+    protected USBCameraSettables usbCameraSettables;
+    protected FrameProvider usbFrameProvider;
     private final CvSink cvSink;
 
     private VideoProperty exposureAbsProp = null;
@@ -116,7 +116,7 @@ public class USBCameraSource extends VisionSource {
                 // Functional camera, set up the frame provider and configure defaults
                 usbFrameProvider = new USBFrameProvider(cvSink, usbCameraSettables);
                 setAllCamDefaults();
-                exposureAbsProp = expProp.get();
+                exposureAbsProp  = expProp.get();
                 autoExposureProp = autoExpProp.get();
 
                 this.minExposure = exposureAbsProp.getMin();
@@ -139,22 +139,6 @@ public class USBCameraSource extends VisionSource {
                 }
             }
         }
-    }
-
-    /**
-     * Mostly just used for unit tests to better simulate a usb camera without a camera being present.
-     */
-    public USBCameraSource(CameraConfiguration config, int pid, int vid, boolean unitTest) {
-        this(config);
-
-        getCameraConfiguration().cameraQuirks = QuirkyCamera.getQuirkyCamera(pid, vid, config.baseName);
-
-        if (unitTest)
-            usbFrameProvider =
-                    new FileFrameProvider(
-                            TestUtils.getWPIImagePath(
-                                    TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
-                            TestUtils.WPI2019Image.FOV);
     }
 
     /**
@@ -183,7 +167,7 @@ public class USBCameraSource extends VisionSource {
             retProp = null;
         }
 
-        return Optional.of(retProp);
+        return Optional.ofNullable(retProp);
     }
 
     /**
@@ -207,29 +191,36 @@ public class USBCameraSource extends VisionSource {
     }
 
     private void printCameraProperaties() {
-        VideoProperty[] cameraProperties = camera.enumerateProperties();
-        String cameraPropertiesStr = "Cam Properties Dump:\n";
 
-        for (int i = 0; i < cameraProperties.length; i++) {
-            cameraPropertiesStr +=
-                    "Name: "
-                            + cameraProperties[i].getName()
-                            + ", Kind: "
-                            + cameraProperties[i].getKind()
-                            + ", Value: "
-                            + cameraProperties[i].getKind().getValue()
-                            + ", Min: "
-                            + cameraProperties[i].getMin()
-                            + ", Max: "
-                            + cameraProperties[i].getMax()
-                            + ", Dflt: "
-                            + cameraProperties[i].getDefault()
-                            + ", Step: "
-                            + cameraProperties[i].getStep()
-                            + "\n";
+        VideoProperty[] cameraProperties = null;
+        try {
+            cameraProperties = camera.enumerateProperties();
+        } catch (VideoException e){
+            logger.error("Failed to list camera properties!", e);
         }
 
-        logger.debug(cameraPropertiesStr);
+        if(cameraProperties != null){
+            String cameraPropertiesStr = "Cam Properties Dump:\n";
+            for (int i = 0; i < cameraProperties.length; i++) {
+                cameraPropertiesStr +=
+                        "Name: "
+                                + cameraProperties[i].getName()
+                                + ", Kind: "
+                                + cameraProperties[i].getKind()
+                                + ", Value: "
+                                + cameraProperties[i].getKind().getValue()
+                                + ", Min: "
+                                + cameraProperties[i].getMin()
+                                + ", Max: "
+                                + cameraProperties[i].getMax()
+                                + ", Dflt: "
+                                + cameraProperties[i].getDefault()
+                                + ", Step: "
+                                + cameraProperties[i].getStep()
+                                + "\n";
+            }
+            logger.debug(cameraPropertiesStr);
+        }
     }
 
     private void setAllCamDefaults() {
@@ -261,13 +252,13 @@ public class USBCameraSource extends VisionSource {
     public class USBCameraSettables extends VisionSourceSettables {
         // We need to remember the last exposure set when exiting
         // auto exposure mode so we can restore it
-        private double lastexposureRaw = -1;
+        private double lastExposureRaw = -1;
 
         // Some cameras need logic where we re-apply brightness after
         // changing exposure
         private int lastBrightness = -1;
 
-        protected USBCameraSettables(CameraConfiguration configuration) {
+        public USBCameraSettables(CameraConfiguration configuration) {
             super(configuration);
             getAllVideoModes();
             if (!configuration.cameraQuirks.hasQuirk(CameraQuirk.StickyFPS))
@@ -275,6 +266,7 @@ public class USBCameraSource extends VisionSource {
         }
 
         public void setAutoExposure(boolean cameraAutoExposure) {
+
             logger.debug("Setting auto exposure to " + cameraAutoExposure);
 
             if (!cameraAutoExposure) {
@@ -289,7 +281,7 @@ public class USBCameraSource extends VisionSource {
 
                 // Most cameras leave exposure time absolute at the last value from their AE algorithm.
                 // Set it back to the exposure slider value
-                setexposureRaw(this.lastexposureRaw);
+                setExposureRaw(this.lastExposureRaw);
 
             } else {
                 // Pick a bunch of reasonable setting to make the picture nice-for-humans
@@ -303,17 +295,17 @@ public class USBCameraSource extends VisionSource {
         }
 
         @Override
-        public double getMinexposureRaw() {
+        public double getMinExposureRaw() {
             return minExposure;
         }
 
         @Override
-        public double getMaxexposureRaw() {
+        public double getMaxExposureRaw() {
             return maxExposure;
         }
 
         @Override
-        public void setexposureRaw(double exposureRaw) {
+        public void setExposureRaw(double exposureRaw) {
             if (exposureRaw >= 0.0) {
                 try {
                     autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
@@ -336,7 +328,7 @@ public class USBCameraSource extends VisionSource {
 
                     exposureAbsProp.set(propVal);
 
-                    this.lastexposureRaw = exposureRaw;
+                    this.lastExposureRaw = exposureRaw;
 
                     if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.LifeCamExposure)) {
                         // Lifecam requires setting brightness again after exposure

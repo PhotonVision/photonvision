@@ -81,7 +81,7 @@ public class VisionModuleManagerTest {
         }
 
         @Override
-        public void setexposureRaw(double exposure) {}
+        public void setExposureRaw(double exposure) {}
 
         @Override
         public void setBrightness(int brightness) {}
@@ -110,12 +110,12 @@ public class VisionModuleManagerTest {
         public void setAutoExposure(boolean cameraAutoExposure) {}
 
         @Override
-        public double getMinexposureRaw() {
+        public double getMinExposureRaw() {
             return 1;
         }
 
         @Override
-        public double getMaxexposureRaw() {
+        public double getMaxExposureRaw() {
             return 1234;
         }
     }
@@ -186,10 +186,11 @@ public class VisionModuleManagerTest {
 
         // Arducam OV9281 UC844 raspberry pi test.
         var conf4 = new CameraConfiguration("Left", "dev/video1");
-        USBCameraSource usbSimulation = new USBCameraSource(conf4, 0x6366, 0x0c45, true);
+        USBCameraSource usbSimulation = new MockUsbCameraSource(conf4, 0x6366, 0x0c45); 
+        
 
         var conf5 = new CameraConfiguration("Right", "dev/video2");
-        USBCameraSource usbSimulation2 = new USBCameraSource(conf5, 0x6366, 0x0c45, true);
+        USBCameraSource usbSimulation2 = new MockUsbCameraSource(conf5, 0x6366, 0x0c45);
 
         var modules =
                 vmm.addSources(

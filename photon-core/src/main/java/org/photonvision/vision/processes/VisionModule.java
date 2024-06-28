@@ -415,7 +415,7 @@ public class VisionModule {
                 pipelineSettings.cameraExposureRaw = 10; // reasonable default
         }
 
-        visionSource.getSettables().setexposureRaw(pipelineSettings.cameraExposureRaw);
+        visionSource.getSettables().setExposureRaw(pipelineSettings.cameraExposureRaw);
         try {
             visionSource.getSettables().setAutoExposure(pipelineSettings.cameraAutoExposure);
         } catch (VideoException e) {
@@ -511,8 +511,8 @@ public class VisionModule {
         ret.currentPipelineIndex = pipelineManager.getRequestedIndex();
         ret.pipelineNicknames = pipelineManager.getPipelineNicknames();
         ret.cameraQuirks = visionSource.getSettables().getConfiguration().cameraQuirks;
-        ret.maxExposureRaw = visionSource.getSettables().getMaxexposureRaw();
-        ret.minExposureRaw = visionSource.getSettables().getMinexposureRaw();
+        ret.maxExposureRaw = visionSource.getSettables().getMaxExposureRaw();
+        ret.minExposureRaw = visionSource.getSettables().getMinExposureRaw();
 
         // TODO refactor into helper method
         var temp = new HashMap<Integer, HashMap<String, Object>>();
