@@ -397,7 +397,9 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :max="useCameraSettingsStore().maxExposureRaw"
               :slider-cols="8"
               :step="1"
-              @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraExposureRaw: args }, false)"
+              @input="
+                (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraExposureRaw: args }, false)
+              "
             />
             <pv-slider
               v-model="useCameraSettingsStore().currentPipelineSettings.cameraBrightness"
