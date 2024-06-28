@@ -50,7 +50,6 @@ public class USBCameraSource extends VisionSource {
     private double minExposure = 1;
     private double maxExposure = 80000;
 
-
     private int PROP_AUTO_EXPOSURE_ENABLED = 3;
     private int PROP_AUTO_EXPOSURE_DISABLED = 1;
 
@@ -69,7 +68,7 @@ public class USBCameraSource extends VisionSource {
         if (config.usbVID <= 0) config.usbVID = this.camera.getInfo().vendorId;
         if (config.usbPID <= 0) config.usbPID = this.camera.getInfo().productId;
 
-        if(getCameraConfiguration().cameraQuirks == null){
+        if (getCameraConfiguration().cameraQuirks == null) {
             getCameraConfiguration().cameraQuirks =
                     QuirkyCamera.getQuirkyCamera(
                             camera.getInfo().vendorId, camera.getInfo().productId, config.baseName);
@@ -120,7 +119,6 @@ public class USBCameraSource extends VisionSource {
                 exposureAbsProp = expProp.get();
                 autoExposureProp = autoExpProp.get();
 
-                
                 this.minExposure = exposureAbsProp.getMin();
                 this.maxExposure = exposureAbsProp.getMax();
 
@@ -135,7 +133,7 @@ public class USBCameraSource extends VisionSource {
                     this.maxExposure = 750;
                 }
 
-                if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.OneZeroAutoExposure)){
+                if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.OneZeroAutoExposure)) {
                     PROP_AUTO_EXPOSURE_ENABLED = 0;
                     PROP_AUTO_EXPOSURE_DISABLED = 1;
                 }
@@ -274,7 +272,6 @@ public class USBCameraSource extends VisionSource {
             getAllVideoModes();
             if (!configuration.cameraQuirks.hasQuirk(CameraQuirk.StickyFPS))
                 if (!videoModes.isEmpty()) setVideoMode(videoModes.get(0)); // fixes double FPS set
-
         }
 
         public void setAutoExposure(boolean cameraAutoExposure) {
@@ -319,7 +316,6 @@ public class USBCameraSource extends VisionSource {
         public void setexposureRaw(double exposureRaw) {
             if (exposureRaw >= 0.0) {
                 try {
-
                     autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
 
                     int propVal = (int) MathUtils.limit(exposureRaw, minExposure, maxExposure);
@@ -347,7 +343,7 @@ public class USBCameraSource extends VisionSource {
                         // And it requires setting it twice, ensuring the value is different
                         // This camera is very bork.
                         if (lastBrightness >= 0) {
-                            setBrightness(lastBrightness-1);
+                            setBrightness(lastBrightness - 1);
                         }
                     }
 
