@@ -170,7 +170,7 @@ public class USBCameraSource extends VisionSource {
 
     /**
      * Forgiving "set this property" action. Produces a debug message but skips properties if they
-     * aren't supported Errors if the property exists but the set fails.
+     * aren't supported. Errors if the property exists but the set fails.
      *
      * @param property
      * @param value
