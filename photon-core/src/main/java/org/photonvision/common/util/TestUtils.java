@@ -22,8 +22,14 @@ import edu.wpi.first.apriltag.jni.AprilTagJNI;
 import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.cscore.OpenCvLoader;
 import edu.wpi.first.hal.JNIWrapper;
-import edu.wpi.first.math.WPIMathJNI;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.jni.ArmFeedforwardJNI;
+import edu.wpi.first.math.jni.DAREJNI;
+import edu.wpi.first.math.jni.EigenJNI;
+import edu.wpi.first.math.jni.Ellipse2dJNI;
+import edu.wpi.first.math.jni.Pose3dJNI;
+import edu.wpi.first.math.jni.StateSpaceUtilJNI;
+import edu.wpi.first.math.jni.TrajectoryUtilJNI;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.net.WPINetJNI;
 import edu.wpi.first.networktables.NetworkTablesJNI;
@@ -33,7 +39,6 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.highgui.HighGui;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
@@ -44,26 +49,40 @@ public class TestUtils {
     public static boolean loadLibraries() {
         if (has_loaded) return true;
 
+        // None of these work either, wbhich is odd to me. commented out for now
+        // System.load("C:\\Users\\matth\\.wpilib\\nativecache\\windows\\x86-64\\4ca969397a399d7bcd38c546fd9ac2e1\\wpiutil.dll");
+        // System.load("C:\\Users\\matth\\.wpilib\\nativecache\\windows\\x86-64\\4ca969397a399d7bcd38c546fd9ac2e1\\wpiutiljni.dll");
+        // System.err.println("Test-load yay");
+
         NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
         WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
-        WPIMathJNI.Helper.setExtractOnStaticLoad(false);
         CameraServerJNI.Helper.setExtractOnStaticLoad(false);
         OpenCvLoader.Helper.setExtractOnStaticLoad(false);
         JNIWrapper.Helper.setExtractOnStaticLoad(false);
         WPINetJNI.Helper.setExtractOnStaticLoad(false);
         AprilTagJNI.Helper.setExtractOnStaticLoad(false);
 
+        // wpimathjni is a bit odd, it's all in the wpimathjni shared lib, but the java side stuff has
+        // been split.
+        ArmFeedforwardJNI.Helper.setExtractOnStaticLoad(false);
+        DAREJNI.Helper.setExtractOnStaticLoad(false);
+        EigenJNI.Helper.setExtractOnStaticLoad(false);
+        Ellipse2dJNI.Helper.setExtractOnStaticLoad(false);
+        Pose3dJNI.Helper.setExtractOnStaticLoad(false);
+        StateSpaceUtilJNI.Helper.setExtractOnStaticLoad(false);
+        TrajectoryUtilJNI.Helper.setExtractOnStaticLoad(false);
+
         try {
             CombinedRuntimeLoader.loadLibraries(
-                    TestUtils.class,
-                    "wpiutiljni",
-                    "wpimathjni",
-                    "ntcorejni",
-                    "wpinetjni",
-                    "wpiHaljni",
-                    Core.NATIVE_LIBRARY_NAME,
-                    "cscorejni",
-                    "apriltagjni");
+                    TestUtils.class, "wpiutiljni"
+                    // "wpimathjni",
+                    // "ntcorejni",
+                    // "wpinetjni",
+                    // "wpiHaljni",
+                    // Core.NATIVE_LIBRARY_NAME,
+                    // "cscorejni",
+                    // "apriltagjni"
+                    );
 
             has_loaded = true;
         } catch (IOException e) {
