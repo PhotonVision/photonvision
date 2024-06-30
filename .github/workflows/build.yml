@@ -110,24 +110,23 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-        with:
-          repository: 'PhotonVision/photonvision-docs.git'
-          ref: master
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.11'
       - name: Install dependencies
+        working-directory: docs
         run: |
           python -m pip install --upgrade pip
           pip install sphinx sphinx_rtd_theme sphinx-tabs sphinxext-opengraph doc8
           pip install -r requirements.txt
       - name: Build the docs
+        working-directory: docs
         run: |
           make html
       - uses: actions/upload-artifact@v4
         with:
-          name: built-docs
-          path: build/html
+          name: docs/built-docs
+          path: docs/build/html
   build-photonlib-host:
     env:
       MACOSX_DEPLOYMENT_TARGET: 13
