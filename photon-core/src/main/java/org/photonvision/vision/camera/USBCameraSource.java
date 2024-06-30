@@ -194,6 +194,7 @@ public class USBCameraSource extends VisionSource {
             cameraProperties = camera.enumerateProperties();
         } catch (VideoException e) {
             logger.error("Failed to list camera properties!", e);
+            return;
         }
 
         if (cameraProperties != null) {
