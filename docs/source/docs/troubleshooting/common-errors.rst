@@ -67,4 +67,3 @@ This is normal. You don't need to connect a display to your Raspberry Pi to use 
 Raspberry Pi enters into boot looping state when using PhotonVision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This is most commonly seen when your Pi doesn't have adequate power / is being undervolted. Ensure that your power supply is functioning properly.
-

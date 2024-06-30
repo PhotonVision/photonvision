@@ -16,9 +16,9 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'PhotonVision'
-copyright = '2024, PhotonVision'
-author = 'Banks Troutman, Matt Morley'
+project = "PhotonVision"
+copyright = "2024, PhotonVision"
+author = "Banks Troutman, Matt Morley"
 
 # -- General configuration ---------------------------------------------------
 
@@ -26,15 +26,15 @@ author = 'Banks Troutman, Matt Morley'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-	"sphinx_rtd_theme",
-	'sphinx.ext.autosectionlabel',
-    'sphinx.ext.todo',
-    'sphinx_tabs.tabs',
-	'notfound.extension',
-    'sphinxext.remoteliteralinclude',
-	"sphinxext.opengraph",
-	"sphinxcontrib.ghcontributors",
-    "sphinx_design"
+    "sphinx_rtd_theme",
+    "sphinx.ext.autosectionlabel",
+    "sphinx.ext.todo",
+    "sphinx_tabs.tabs",
+    "notfound.extension",
+    "sphinxext.remoteliteralinclude",
+    "sphinxext.opengraph",
+    "sphinxcontrib.ghcontributors",
+    "sphinx_design",
 ]
 
 # Configure OpenGraph support
@@ -44,7 +44,7 @@ ogp_site_name = "PhotonVision Documentation"
 ogp_image = "https://raw.githubusercontent.com/PhotonVision/photonvision-docs/master/source/assets/RectLogo.png"
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -52,7 +52,7 @@ templates_path = ['_templates']
 exclude_patterns = []
 
 # Enable hover content on glossary term
-hoverxref_roles = ['term']
+hoverxref_roles = ["term"]
 
 # Autosection labels prefix document path and filename
 autosectionlabel_prefix_document = True
@@ -63,15 +63,18 @@ html_title = "PhotonVision Docs"
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'furo'
-html_favicon = 'assets/RoundLogo.png'
+html_theme = "furo"
+html_favicon = "assets/RoundLogo.png"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
+
+
 def setup(app):
-    app.add_css_file('css/pv-icons.css')
+    app.add_css_file("css/pv-icons.css")
+
 
 pygments_style = "sphinx"
 
@@ -79,9 +82,8 @@ html_theme_options = {
     "sidebar_hide_name": True,
     "light_logo": "assets/PhotonVision-Header-onWhite.png",
     "dark_logo": "assets/PhotonVision-Header-noBG.png",
-    
     "light_css_variables": {
-        "font-stack": '-apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, helvetica, Ubuntu, roboto, noto, arial, sans-serif;',
+        "font-stack": "-apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, helvetica, Ubuntu, roboto, noto, arial, sans-serif;",
         "admonition-font-size": "1rem",
         "admonition-title-font-size": "1rem",
         "color-background-primary": "#ffffff",
@@ -96,8 +98,8 @@ html_theme_options = {
         "color-foreground-border": "#ffffff",
         "color-background-border": "ffffff",
         "color-api-overall": "#101010",
-        },
-    "dark_css_variables" : {
+    },
+    "dark_css_variables": {
         "color-background-primary": "#242c37",
         "color-background-secondary": "#006492",
         "color-background-hover": "#efeff400",
@@ -115,12 +117,10 @@ html_theme_options = {
     },
 }
 
-suppress_warnings = ['epub.unknown_project_files']
+suppress_warnings = ["epub.unknown_project_files"]
 
-sphinx_tabs_valid_builders = ['epub', 'linkcheck']
+sphinx_tabs_valid_builders = ["epub", "linkcheck"]
 
 # Excluded links for linkcheck
 # These should be periodically checked by hand to ensure that they are still functional
-linkcheck_ignore = [
-'https://www.raspberrypi.com/software/'
-]
+linkcheck_ignore = ["https://www.raspberrypi.com/software/"]

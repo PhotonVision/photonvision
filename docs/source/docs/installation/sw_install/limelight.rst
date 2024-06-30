@@ -23,4 +23,3 @@ Download the hardwareConfig.json file for the version of your Limelight:
 :ref:`Import the hardwareConfig.json file <docs/additional-resources/config:Importing and Exporting Settings>`. Again, this is **REQUIRED** or target measurements will be incorrect, and LEDs will not work.
 
 After installation you should be able to `locate the camera <https://photonvision.github.io/gloworm-docs/docs/quickstart/#finding-gloworm>`_ at: ``http://photonvision.local:5800/`` (not ``gloworm.local``, as previously)
-

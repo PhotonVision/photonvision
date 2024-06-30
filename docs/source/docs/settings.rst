@@ -19,4 +19,3 @@ you can set the team number to "localhost", and PhotonVision will send data to t
 LEDs
 ^^^^
 If your coprocessor electronics support hardware-controlled LED's and has the proper hardware configuration set up, here you can adjust the brightness of your LEDs.
-

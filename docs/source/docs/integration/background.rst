@@ -19,4 +19,3 @@ There are many valid strategies for doing this transformation. Picking a strateg
   3. Team willingness to take on risk
 
 Simple strategies are low-risk - they require comparatively little effort to implement and tune, but have hard limits on the complexity of motion they can control on the robot. Advanced methods allow for more complex and precise movement, but take more effort to implement and tune. For this reason, it is more risky to attempt to use them.
-

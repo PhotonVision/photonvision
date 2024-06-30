@@ -110,4 +110,3 @@ Here is a complete example ``hardwareConfig.json``:
         "restartHardwareCommand" : "",
         "vendorFOV" : 72.5
       }
-

@@ -41,4 +41,3 @@ When using this strategy, the measurements made by the camera are *fused* with m
 In turn, this best-guess position is used to path plan to the known positions on the field, which may or may not have vision targets nearby.
 
 See the  :ref:`Pose Estimation <docs/examples/simposeest:Knowledge and Equipment Needed>` example for more information.
-

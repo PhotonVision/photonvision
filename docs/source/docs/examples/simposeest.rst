@@ -127,6 +127,3 @@ Once we have all the properties of our simulated vision system defined, the rema
 
 
 The rest is done behind the scenes.
-
-
-

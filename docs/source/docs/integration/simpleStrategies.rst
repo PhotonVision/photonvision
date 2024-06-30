@@ -38,4 +38,3 @@ Angle + Range
 Since the previous two alignment strategies work on independent axes of the robot, there's no reason you can't do them simultaneously.
 
 See the :ref:`Aim and Range <docs/examples/aimandrange:Knowledge and Equipment Needed>` example for more information.
-

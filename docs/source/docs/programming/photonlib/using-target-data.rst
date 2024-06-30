@@ -95,4 +95,3 @@ Getting the Yaw To a Pose
    .. code-block:: c++
 
      //TODO
-

@@ -67,7 +67,7 @@ jobs:
     - name: Build javadocs/doxygen
       run: |
         chmod +x gradlew
-        ./gradlew docs:generateJavaDocs docs:doxygen
+        ./gradlew photon-docs:generateJavaDocs photon-docs:doxygen
 
     - uses: actions/upload-artifact@v4
       with:
