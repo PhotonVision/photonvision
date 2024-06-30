@@ -2,7 +2,7 @@ import edu.wpi.first.toolchain.*
 
 plugins {
     id "com.diffplug.spotless" version "6.24.0"
-    id "edu.wpi.first.NativeUtils" version "2024.6.1" apply false
+    id "edu.wpi.first.NativeUtils" version "2024.7.2" apply false
     id "edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin" version "2020.2"
     id "edu.wpi.first.GradleRIO" version "2024.3.2"
     id 'edu.wpi.first.WpilibTools' version '1.3.0'
@@ -21,16 +21,19 @@ allprojects {
     wpilibRepositories.addAllDevelopmentRepositories(it)
 }
 
+ext.localMavenURL = file("$project.buildDir/outputs/maven")
+ext.allOutputsFolder = file("$project.buildDir/outputs")
+
 // Configure the version number.
 apply from: "versioningHelper.gradle"
 
 ext {
-    wpilibVersion = "2024.3.2-139-gfbfef85"
+    wpilibVersion = "2025.0.0-alpha-1"
     wpimathVersion = wpilibVersion
     openCVversion = "4.8.0-2"
     joglVersion = "2.4.0"
     javalinVersion = "5.6.2"
-    libcameraDriverVersion = "dev-v2023.1.0-11-g2b7036f"
+    libcameraDriverVersion = "dev-v2023.1.0-12-gfb1eafb"
     rknnVersion = "dev-v2024.0.1-4-g0db16ac"
     frcYear = "2024"
     mrcalVersion = "dev-v2024.0.0-24-gc1efcf0";

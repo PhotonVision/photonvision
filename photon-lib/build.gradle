@@ -161,6 +161,19 @@ task generateVendorJson() {
 }
 
 build.mustRunAfter generateVendorJson
+publish.mustRunAfter generateVendorJson
+
+task publishVendorJsonToLocalOutputs(type: Copy) {
+    from photonlibFileOutput
+    into "$allOutputsFolder/vendordeps/"
+
+    // Rename to match the name of the JSON we publish to maven to avoid user confusion
+    rename { String fileName ->
+        fileName.replace(".json", "-json-1.0.json")
+    }
+
+    publish.dependsOn it
+}
 
 task writeCurrentVersion {
     def versionFileIn = file("${rootDir}/shared/PhotonVersion.java.in")
@@ -204,7 +217,7 @@ model {
 
 def vendorJson = artifacts.add('archives', file("$photonlibFileOutput"))
 
-model {
+if (!project.hasProperty('copyOfflineArtifacts')) {
     // Publish the vendordep json
     publishing {
         publications {
@@ -214,6 +227,71 @@ model {
                 artifactId = "${nativeName}-json"
                 groupId = "org.photonvision"
                 version "1.0"
+            }
+        }
+    }
+}
+
+// Add photonversion to cpp sources zip
+tasks.named('cppSourcesZip') {
+    dependsOn writeCurrentVersion
+
+    from("$projectDir/src/generate/native/cpp") {
+        into '/'
+    }
+}
+
+// Publish an uberzip with photon-lib and photon-targeting. This makes python binding easier to have it in one place
+def zipBaseNameCombined = '_GROUP_org.photonvision_combinedcpp_ID_photonvision-combinedcpp_CLS'
+task combinedCppSourcesZip(type: Zip) {
+    dependsOn(':photon-lib:cppSourcesZip', ':photon-targeting:cppSourcesZip')
+    mustRunAfter(':photon-lib:cppHeadersZip', ':photon-targeting:cppHeadersZip')
+
+    destinationDirectory = file("$buildDir/outputs")
+    archiveBaseName = zipBaseNameCombined
+    archiveClassifier = "sources"
+
+    // Include the contents of the photon-lib cppSourcesZip. Magic chatgpt nonsense
+    from(zipTree(project(':photon-lib').tasks.cppSourcesZip.archiveFile.get().asFile)) {
+        into 'photon-lib'
+    }
+    from(zipTree(project(':photon-targeting').tasks.cppSourcesZip.archiveFile.get().asFile)) {
+        into 'photon-targeting'
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+}
+task combinedHeadersZip(type: Zip) {
+    dependsOn(':photon-lib:cppHeadersZip', ':photon-targeting:cppHeadersZip')
+    mustRunAfter(':photon-lib:cppHeadersZip', ':photon-targeting:cppHeadersZip')
+
+    destinationDirectory = file("$buildDir/outputs")
+    archiveBaseName = zipBaseNameCombined
+    archiveClassifier = "headers"
+
+    // Include the contents of the photon-lib cppHeadersZip. Magic chatgpt nonsense
+    from(zipTree(project(':photon-lib').tasks.cppHeadersZip.archiveFile.get().asFile)) {
+        into 'photon-lib'
+    }
+    from(zipTree(project(':photon-targeting').tasks.cppHeadersZip.archiveFile.get().asFile)) {
+        into 'photon-targeting'
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+}
+
+// Add the uberzip to our maven publications
+publishing {
+    publications {
+        // Don't publish if we're creating an offline zip
+        if (!project.hasProperty('copyOfflineArtifacts')) {
+            combinedcpp(MavenPublication) {
+                artifact combinedCppSourcesZip
+                artifact combinedHeadersZip
+
+                artifactId = "${nativeName}-combinedcpp"
+                groupId artifactGroupId
+                version pubVersion
             }
         }
     }

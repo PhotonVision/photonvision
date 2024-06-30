@@ -13,11 +13,11 @@ evaluationDependsOn ':photon-lib'
 
 
 def baseArtifactIdCpp = 'documentation'
-def artifactGroupIdCpp = 'org.photonvision.wpilibc'
+def artifactGroupIdCpp = 'org.photonvision.cppdocs'
 def zipBaseNameCpp = '_GROUP_org.photonvision_cpp_ID_documentation_CLS'
 
 def baseArtifactIdJava = 'documentation'
-def artifactGroupIdJava = 'org.photonvision.wpilibj'
+def artifactGroupIdJava = 'org.photonvision.javadocs'
 def zipBaseNameJava = '_GROUP_org.photonvision_java_ID_documentation_CLS'
 
 def outputsFolder = file("$project.buildDir/outputs")
@@ -282,6 +282,13 @@ publishing {
             artifactId = "${baseArtifactIdCpp}"
             groupId artifactGroupIdCpp
             version pubVersion
+        }
+    }
+
+    repositories {
+        maven {
+            // Just throw everything into build/maven
+            url(localMavenURL)
         }
     }
 }

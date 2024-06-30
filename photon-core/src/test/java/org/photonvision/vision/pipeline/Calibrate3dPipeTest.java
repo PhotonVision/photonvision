@@ -32,7 +32,6 @@ import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.objdetect.Objdetect;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
@@ -46,6 +45,7 @@ import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipeline.UICalibrationData.BoardType;
+import org.photonvision.vision.pipeline.UICalibrationData.TagFamily;
 
 public class Calibrate3dPipeTest {
     @BeforeAll
@@ -67,34 +67,52 @@ public class Calibrate3dPipeTest {
                 "lifecam/2024-01-02_lifecam_480",
                 new Size(640, 480),
                 new Size(11, 11),
-                BoardType.CHESSBOARD),
+                BoardType.CHESSBOARD,
+                false),
         SQUARES_LIFECAM_1280(
                 "lifecam/2024-01-02_lifecam_1280",
                 new Size(1280, 720),
                 new Size(11, 11),
-                BoardType.CHESSBOARD),
-
+                BoardType.CHESSBOARD,
+                false),
         CHARUCO_LIFECAM_480(
                 "lifecam/2024-05-07_lifecam_480",
                 new Size(640, 480),
                 new Size(8, 8),
-                BoardType.CHARUCOBOARD),
+                BoardType.CHARUCOBOARD,
+                false),
         CHARUCO_LIFECAM_1280(
                 "lifecam/2024-05-07_lifecam_1280",
                 new Size(1280, 720),
                 new Size(8, 8),
-                BoardType.CHARUCOBOARD);
+                BoardType.CHARUCOBOARD,
+                false),
+        CHARUCO_OLDPATTERN_LIFECAM_480(
+                "lifecam/2024-06-19_lifecam_480_Old_Pattern",
+                new Size(640, 480),
+                new Size(8, 8),
+                BoardType.CHARUCOBOARD,
+                true),
+        CHARUCO_OLDPATTERN_LIFECAM_1280(
+                "lifecam/2024-06-19_lifecam_1280_Old_Pattern",
+                new Size(1280, 720),
+                new Size(8, 8),
+                BoardType.CHARUCOBOARD,
+                true);
 
         final String path;
         final Size size;
         final Size boardSize;
         final BoardType boardType;
+        final boolean useOldPattern;
 
-        private CalibrationDatasets(String path, Size image, Size chessboard, BoardType boardType) {
+        private CalibrationDatasets(
+                String path, Size image, Size chessboard, BoardType boardType, boolean useOldPattern) {
             this.path = path;
             this.size = image;
             this.boardSize = chessboard;
             this.boardType = boardType;
+            this.useOldPattern = useOldPattern;
         }
     }
 
@@ -116,13 +134,30 @@ public class Calibrate3dPipeTest {
         File charucoDir = Path.of(charucoBase, dataset.path).toFile();
 
         if (dataset.boardType == BoardType.CHESSBOARD)
-            calibrateCommon(dataset.size, squareDir, dataset.boardSize, dataset.boardType, useMrCal);
-        else if (dataset.boardType == BoardType.CHESSBOARD)
-            calibrateCommon(dataset.size, charucoDir, dataset.boardSize, dataset.boardType, useMrCal);
+            calibrateCommon(
+                    dataset.size,
+                    squareDir,
+                    dataset.boardSize,
+                    dataset.boardType,
+                    useMrCal,
+                    dataset.useOldPattern);
+        else if (dataset.boardType == BoardType.CHARUCOBOARD)
+            calibrateCommon(
+                    dataset.size,
+                    charucoDir,
+                    dataset.boardSize,
+                    dataset.boardType,
+                    useMrCal,
+                    dataset.useOldPattern);
     }
 
     public static void calibrateCommon(
-            Size imgRes, File rootFolder, Size boardDim, BoardType boardType, boolean useMrCal) {
+            Size imgRes,
+            File rootFolder,
+            Size boardDim,
+            BoardType boardType,
+            boolean useMrCal,
+            boolean useOldPattern) {
         calibrateCommon(
                 imgRes,
                 rootFolder,
@@ -130,10 +165,11 @@ public class Calibrate3dPipeTest {
                 Units.inchesToMeters(1),
                 Units.inchesToMeters(0.75),
                 boardType,
-                Objdetect.DICT_4X4_50,
+                TagFamily.Dict_4X4_1000,
                 imgRes.width / 2,
                 imgRes.height / 2,
-                useMrCal);
+                useMrCal,
+                useOldPattern);
     }
 
     public static void calibrateCommon(
@@ -142,10 +178,11 @@ public class Calibrate3dPipeTest {
             Size boardDim,
             double markerSize,
             BoardType boardType,
-            int tagFamily,
+            TagFamily tagFamily,
             double expectedXCenter,
             double expectedYCenter,
-            boolean useMrCal) {
+            boolean useMrCal,
+            boolean useOldPattern) {
         calibrateCommon(
                 imgRes,
                 rootFolder,
@@ -156,7 +193,8 @@ public class Calibrate3dPipeTest {
                 tagFamily,
                 expectedXCenter,
                 expectedYCenter,
-                useMrCal);
+                useMrCal,
+                useOldPattern);
     }
 
     public static void calibrateCommon(
@@ -166,10 +204,11 @@ public class Calibrate3dPipeTest {
             double boardGridSize_m,
             double markerSize,
             BoardType boardType,
-            int tagFamily,
+            TagFamily tagFamily,
             double expectedXCenter,
             double expectedYCenter,
-            boolean useMrCal) {
+            boolean useMrCal,
+            boolean useOldPattern) {
         int startMatCount = CVMat.getMatCount();
 
         File[] directoryListing = rootFolder.listFiles();
@@ -187,6 +226,7 @@ public class Calibrate3dPipeTest {
         calibration3dPipeline.getSettings().gridSize = boardGridSize_m;
         calibration3dPipeline.getSettings().streamingFrameDivisor = FrameDivisor.NONE;
         calibration3dPipeline.getSettings().useMrCal = useMrCal;
+        calibration3dPipeline.getSettings().useOldPattern = useOldPattern;
 
         for (var file : directoryListing) {
             if (file.isFile()) {

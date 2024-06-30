@@ -21,102 +21,22 @@ import edu.wpi.first.cscore.*;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.util.PixelFormat;
-import java.awt.*;
 import java.util.ArrayList;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.core.Point;
-import org.opencv.core.Rect;
-import org.opencv.imgproc.Imgproc;
-import org.photonvision.common.util.ColorHelper;
 import org.photonvision.common.util.math.MathUtils;
+import org.photonvision.vision.frame.StaticFrames;
 import org.photonvision.vision.opencv.CVMat;
 
 public class MJPGFrameConsumer implements AutoCloseable {
     private static final double MAX_FRAMERATE = -1;
     private static final long MAX_FRAME_PERIOD_NS = Math.round(1e9 / MAX_FRAMERATE);
+
     private long lastFrameTimeNs;
-
-    private static final Mat EMPTY_MAT = new Mat(60, 15 * 7, CvType.CV_8UC3);
-    private static final double EMPTY_FRAMERATE = 2;
-    private static final long EMPTY_FRAME_PERIOD_NS = Math.round(1e9 / EMPTY_FRAMERATE);
-    private long lastEmptyTimeNs;
-
-    static {
-        EMPTY_MAT.setTo(ColorHelper.colorToScalar(Color.BLACK));
-        var col = 0;
-        Imgproc.rectangle(
-                EMPTY_MAT,
-                new Rect(col, 0, 15, EMPTY_MAT.height()),
-                ColorHelper.colorToScalar(new Color(0xa2a2a2)),
-                -1);
-        col += 15;
-        Imgproc.rectangle(
-                EMPTY_MAT,
-                new Rect(col, 0, 15, EMPTY_MAT.height()),
-                ColorHelper.colorToScalar(new Color(0xa2a300)),
-                -1);
-        col += 15;
-        Imgproc.rectangle(
-                EMPTY_MAT,
-                new Rect(col, 0, 15, EMPTY_MAT.height()),
-                ColorHelper.colorToScalar(new Color(0x00a3a2)),
-                -1);
-        col += 15;
-        Imgproc.rectangle(
-                EMPTY_MAT,
-                new Rect(col, 0, 15, EMPTY_MAT.height()),
-                ColorHelper.colorToScalar(new Color(0x00a200)),
-                -1);
-        col += 15;
-        Imgproc.rectangle(
-                EMPTY_MAT,
-                new Rect(col, 0, 15, EMPTY_MAT.height()),
-                ColorHelper.colorToScalar(new Color(0x440045)),
-                -1);
-        col += 15;
-        Imgproc.rectangle(
-                EMPTY_MAT,
-                new Rect(col, 0, 15, EMPTY_MAT.height()),
-                ColorHelper.colorToScalar(new Color(0x0000a2)),
-                -1);
-        col += 15;
-        Imgproc.rectangle(
-                EMPTY_MAT,
-                new Rect(col, 0, 15, EMPTY_MAT.height()),
-                ColorHelper.colorToScalar(new Color(0)),
-                -1);
-        Imgproc.rectangle(
-                EMPTY_MAT,
-                new Rect(0, 50, EMPTY_MAT.width(), 10),
-                ColorHelper.colorToScalar(new Color(0)),
-                -1);
-        Imgproc.rectangle(
-                EMPTY_MAT, new Rect(15, 50, 30, 10), ColorHelper.colorToScalar(Color.WHITE), -1);
-
-        Imgproc.putText(
-                EMPTY_MAT, "Stream", new Point(14, 20), 0, 0.6, ColorHelper.colorToScalar(Color.white), 2);
-        Imgproc.putText(
-                EMPTY_MAT,
-                "Disabled",
-                new Point(14, 45),
-                0,
-                0.6,
-                ColorHelper.colorToScalar(Color.white),
-                2);
-        Imgproc.putText(
-                EMPTY_MAT, "Stream", new Point(14, 20), 0, 0.6, ColorHelper.colorToScalar(Color.RED), 1);
-        Imgproc.putText(
-                EMPTY_MAT, "Disabled", new Point(14, 45), 0, 0.6, ColorHelper.colorToScalar(Color.RED), 1);
-    }
-
     private CvSource cvSource;
     private MjpegServer mjpegServer;
 
     private VideoListener listener;
 
     private final NetworkTable table;
-    boolean isDisabled = false;
 
     public MJPGFrameConsumer(String sourceName, int width, int height, int port) {
         this.cvSource = new CvSource(sourceName, PixelFormat.kMJPEG, width, height, 30);
@@ -174,29 +94,15 @@ public class MJPGFrameConsumer implements AutoCloseable {
     }
 
     public void accept(CVMat image) {
-        if (image != null && !image.getMat().empty()) {
-            long now = MathUtils.wpiNanoTime();
-            if (now - lastFrameTimeNs > MAX_FRAME_PERIOD_NS) {
-                lastFrameTimeNs = now;
-                cvSource.putFrame(image.getMat());
-            }
-
-            // Make sure our disabled framerate limiting doesn't get confused
-            isDisabled = false;
-            lastEmptyTimeNs = 0;
-        }
-    }
-
-    public void disabledTick() {
-        if (!isDisabled) {
-            cvSource.setVideoMode(PixelFormat.kMJPEG, EMPTY_MAT.width(), EMPTY_MAT.height(), 0);
-            isDisabled = true;
-        }
-
         long now = MathUtils.wpiNanoTime();
-        if (now - lastEmptyTimeNs > EMPTY_FRAME_PERIOD_NS) {
-            lastEmptyTimeNs = now;
-            cvSource.putFrame(EMPTY_MAT);
+
+        if (image == null || image.getMat() == null || image.getMat().empty()) {
+            image.copyFrom(StaticFrames.LOST_MAT);
+        }
+
+        if (now - lastFrameTimeNs > MAX_FRAME_PERIOD_NS) {
+            lastFrameTimeNs = now;
+            cvSource.putFrame(image.getMat());
         }
     }
 
