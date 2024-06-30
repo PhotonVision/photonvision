@@ -39,6 +39,7 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.highgui.HighGui;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
@@ -74,15 +75,15 @@ public class TestUtils {
 
         try {
             CombinedRuntimeLoader.loadLibraries(
-                    TestUtils.class, "wpiutiljni"
-                    // "wpimathjni",
-                    // "ntcorejni",
-                    // "wpinetjni",
-                    // "wpiHaljni",
-                    // Core.NATIVE_LIBRARY_NAME,
-                    // "cscorejni",
-                    // "apriltagjni"
-                    );
+                    TestUtils.class,
+                    "wpiutiljni",
+                    "wpimathjni",
+                    "ntcorejni",
+                    "wpinetjni",
+                    "wpiHaljni",
+                    Core.NATIVE_LIBRARY_NAME,
+                    "cscorejni",
+                    "apriltagjni");
 
             has_loaded = true;
         } catch (IOException e) {
