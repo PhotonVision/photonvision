@@ -9,11 +9,13 @@ on:
     paths:
       - '**'
       - '!docs/**'
+      - '.github/**'
   pull_request:
     branches: [ master ]
     paths:
       - '**'
       - '!docs/**'
+      - '.github/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
