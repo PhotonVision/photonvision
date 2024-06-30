@@ -4,7 +4,7 @@ build/*
 .idea/*
 source/_build
 source/_build
-docs/build
+photon-docs/build
 source/docs/_build
 
 venv/*
