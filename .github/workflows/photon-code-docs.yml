@@ -85,6 +85,7 @@ jobs:
 
       - run: find .
       - name: copy file via ssh password
+        if: github.ref == 'refs/heads/master'
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.WEBMASTER_SSH_HOST }}
