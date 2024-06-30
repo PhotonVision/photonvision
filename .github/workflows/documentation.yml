@@ -1,12 +1,19 @@
 name: Documentation
 
 on:
+  # Run on pushes to master and pushed tags, and on pull requests against master, but ignore the docs folder
   push:
-    # For now, run on all commits to master
     branches: [ master ]
-    # and also all tags starting with v
     tags:
       - 'v*'
+    paths:
+      - '**'
+      - '!docs/**'
+  pull_request:
+    branches: [ master ]
+    paths:
+      - '**'
+      - '!docs/**'
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:

@@ -1,12 +1,19 @@
 name: Build
 
 on:
+  # Run on pushes to master and pushed tags, and on pull requests against master, but ignore the docs folder
   push:
     branches: [ master ]
     tags:
       - 'v*'
+    paths:
+      - '**'
+      - '!docs/**'
   pull_request:
     branches: [ master ]
+    paths:
+      - '**'
+      - '!docs/**'
 
 jobs:
   build-client:

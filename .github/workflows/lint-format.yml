@@ -1,12 +1,19 @@
 name: Lint and Format
 
 on:
+  # Run on pushes to master and pushed tags, and on pull requests against master, but ignore the docs folder
   push:
     branches: [ master ]
     tags:
       - 'v*'
+    paths:
+      - '**'
+      - '!docs/**'
   pull_request:
     branches: [ master ]
+    paths:
+      - '**'
+      - '!docs/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
@@ -28,7 +35,7 @@ jobs:
         with:
           python-version: 3.8
       - name: Install wpiformat
-        run: pip3 install wpiformat
+        run: pip3 install wpiformat==2024.37
       - name: Run
         run: wpiformat
       - name: Check output
