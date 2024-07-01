@@ -74,6 +74,14 @@ public class QuirkyCamera {
                             "OV9281",
                             "OV9281",
                             CameraQuirk.ArduCamCamera,
+                            CameraQuirk.ArduOV9281),
+                    // Arducam OV
+                    new QuirkyCamera(
+                            0x0c45,
+                            0x6366,
+                            "OV9782",
+                            "OV9782",
+                            CameraQuirk.ArduCamCamera,
                             CameraQuirk.ArduOV9281));
 
     public static final QuirkyCamera DefaultCamera = new QuirkyCamera(0, 0, "");

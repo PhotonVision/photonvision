@@ -15,6 +15,7 @@ const arducamSelectWrapper = computed<number>({
   get: () => {
     if (tempSettingsStruct.value.quirksToChange.ArduOV9281) return 1;
     else if (tempSettingsStruct.value.quirksToChange.ArduOV2311) return 2;
+    else if (tempSettingsStruct.value.quirksToChange.ArduOV9782) return 3;
     else return 0;
   },
   set: (v) => {
@@ -22,14 +23,22 @@ const arducamSelectWrapper = computed<number>({
       case 1:
         tempSettingsStruct.value.quirksToChange.ArduOV9281 = true;
         tempSettingsStruct.value.quirksToChange.ArduOV2311 = false;
+        tempSettingsStruct.value.quirksToChange.ArduOV9782 = false;
         break;
       case 2:
         tempSettingsStruct.value.quirksToChange.ArduOV9281 = false;
         tempSettingsStruct.value.quirksToChange.ArduOV2311 = true;
+        tempSettingsStruct.value.quirksToChange.ArduOV9782 = false;
+        break;
+      case 3:
+        tempSettingsStruct.value.quirksToChange.ArduOV9281 = false;
+        tempSettingsStruct.value.quirksToChange.ArduOV2311 = false;
+        tempSettingsStruct.value.quirksToChange.ArduOV9782 = true;
         break;
       default:
         tempSettingsStruct.value.quirksToChange.ArduOV9281 = false;
         tempSettingsStruct.value.quirksToChange.ArduOV2311 = false;
+        tempSettingsStruct.value.quirksToChange.ArduOV9782 = false;
         break;
     }
   }
@@ -129,7 +138,8 @@ watchEffect(() => {
         :items="[
           { name: 'None', value: 0, disabled: true },
           { name: 'OV9281', value: 1 },
-          { name: 'OV2311', value: 2 }
+          { name: 'OV2311', value: 2 },
+          { name: 'OV9782', value: 3 }
         ]"
         :select-cols="8"
       />
