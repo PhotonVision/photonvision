@@ -41,6 +41,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import org.ejml.data.DMatrix3;
@@ -71,7 +72,7 @@ public class SimCameraProperties {
     private int resWidth;
     private int resHeight;
     private Matrix<N3, N3> camIntrinsics;
-    private Matrix<N5, N1> distCoeffs;
+    private Matrix<N8, N1> distCoeffs;
     private double avgErrorPx;
     private double errorStdDevPx;
     // performance
@@ -132,7 +133,8 @@ public class SimCameraProperties {
                     jsonIntrinsics[j] = jsonIntrinsicsNode.get(j).asDouble();
                 }
                 var jsonDistortNode = calib.get("distCoeffs").get("data");
-                double[] jsonDistortion = new double[jsonDistortNode.size()];
+                double[] jsonDistortion = new double[8];
+                Arrays.fill(jsonDistortion, 0);
                 for (int j = 0; j < jsonDistortNode.size(); j++) {
                     jsonDistortion[j] = jsonDistortNode.get(j).asDouble();
                 }
@@ -148,7 +150,7 @@ public class SimCameraProperties {
                         jsonWidth,
                         jsonHeight,
                         MatBuilder.fill(Nat.N3(), Nat.N3(), jsonIntrinsics),
-                        MatBuilder.fill(Nat.N5(), Nat.N1(), jsonDistortion));
+                        MatBuilder.fill(Nat.N8(), Nat.N1(), jsonDistortion));
                 setCalibError(jsonAvgError, jsonErrorStdDev);
                 success = true;
             }
@@ -174,7 +176,7 @@ public class SimCameraProperties {
         var fovHeight = new Rotation2d(Math.atan(diagRatio * (resHeight / resDiag)) * 2);
 
         // assume no distortion
-        var distCoeff = VecBuilder.fill(0, 0, 0, 0, 0);
+        var distCoeff = VecBuilder.fill(0, 0, 0, 0, 0, 0, 0, 0);
 
         // assume centered principal point (pixels)
         double cx = resWidth / 2.0 - 0.5;
@@ -190,7 +192,7 @@ public class SimCameraProperties {
     }
 
     public void setCalibration(
-            int resWidth, int resHeight, Matrix<N3, N3> camIntrinsics, Matrix<N5, N1> distCoeffs) {
+            int resWidth, int resHeight, Matrix<N3, N3> camIntrinsics, Matrix<N8, N1> distCoeffs) {
         this.resWidth = resWidth;
         this.resHeight = resHeight;
         this.camIntrinsics = camIntrinsics;
@@ -280,7 +282,7 @@ public class SimCameraProperties {
         return camIntrinsics.copy();
     }
 
-    public Vector<N5> getDistCoeffs() {
+    public Vector<N8> getDistCoeffs() {
         return new Vector<>(distCoeffs);
     }
 
@@ -616,7 +618,10 @@ public class SimCameraProperties {
                         -0.9166265114485799,
                         0.0019519890627236526,
                         -0.0036071725380870333,
-                        1.5627234622420942));
+                        1.5627234622420942,
+                        0,
+                        0,
+                        0));
         prop.setCalibError(0.21, 0.0124);
         prop.setFPS(30);
         prop.setAvgLatencyMs(30);
@@ -647,7 +652,10 @@ public class SimCameraProperties {
                         -1.2350335805796528,
                         0.0024990767286192732,
                         -0.0026958287600230705,
-                        2.2951386729115537));
+                        2.2951386729115537,
+                        0,
+                        0,
+                        0));
         prop.setCalibError(0.26, 0.046);
         prop.setFPS(15);
         prop.setAvgLatencyMs(65);
@@ -677,7 +685,10 @@ public class SimCameraProperties {
                         -0.5142936883324216,
                         0.012461562046896614,
                         0.0014084973492408186,
-                        0.35160648971214437));
+                        0.35160648971214437,
+                        0,
+                        0,
+                        0));
         prop.setCalibError(0.25, 0.05);
         prop.setFPS(15);
         prop.setAvgLatencyMs(35);
@@ -708,7 +719,10 @@ public class SimCameraProperties {
                         -0.49903003669627627,
                         0.007468423590519429,
                         0.002496885298683693,
-                        0.3443122090208624));
+                        0.3443122090208624,
+                        0,
+                        0,
+                        0));
         prop.setCalibError(0.35, 0.10);
         prop.setFPS(10);
         prop.setAvgLatencyMs(50);
@@ -739,7 +753,10 @@ public class SimCameraProperties {
                         -0.2904345656989261,
                         8.32475714507539E-4,
                         -3.694397782014239E-4,
-                        0.09487962227027584));
+                        0.09487962227027584,
+                        0,
+                        0,
+                        0));
         prop.setCalibError(0.37, 0.06);
         prop.setFPS(7);
         prop.setAvgLatencyMs(60);

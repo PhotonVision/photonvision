@@ -37,20 +37,27 @@ dependencies {
     implementation 'org.zeroturnaround:zt-zip:1.14'
 
     implementation "org.xerial:sqlite-jdbc:3.41.0.0"
-    implementation "org.photonvision:rknn_jni-jni:$rknnVersion:linuxarm64"
-    implementation "org.photonvision:rknn_jni-java:$rknnVersion"
-    implementation "org.photonvision:photon-libcamera-gl-driver-jni:$photonGlDriverLibVersion:linuxarm64"
-    implementation "org.photonvision:photon-libcamera-gl-driver-java:$photonGlDriverLibVersion"
+    implementation("org.photonvision:rknn_jni-jni:$rknnVersion:linuxarm64") {
+        transitive = false
+    }
+    implementation("org.photonvision:rknn_jni-java:$rknnVersion") {
+        transitive = false
+    }
+    implementation("org.photonvision:photon-libcamera-gl-driver-jni:$libcameraDriverVersion:linuxarm64") {
+        transitive = false
+    }
+    implementation "org.photonvision:photon-libcamera-gl-driver-java:$libcameraDriverVersion"
 
     implementation "org.photonvision:photon-mrcal-java:$mrcalVersion"
 
     // Only include mrcal natives on platforms that we build for
     if (!(jniPlatform in [
                 "osxx86-64",
-                "osxarm64",
-                "linuxarm32"
+                "osxarm64"
             ])) {
-        implementation "org.photonvision:photon-mrcal-jni:$mrcalVersion:$wpilibNativeName"
+        implementation("org.photonvision:photon-mrcal-jni:$mrcalVersion:$wpilibNativeName") {
+            transitive = false
+        }
     }
 
     testImplementation group: 'org.junit-pioneer' , name: 'junit-pioneer', version: '2.2.0'

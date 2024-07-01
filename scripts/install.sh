@@ -50,14 +50,14 @@ ARCH_NAME=""
 if [ "$ARCH" = "aarch64" ]; then
   ARCH_NAME="linuxarm64"
 elif [ "$ARCH" = "armv7l" ]; then
-  ARCH_NAME="linuxarm32"
+  echo "ARM32 is not supported by PhotonVision. Exiting."
+  exit 1
 elif [ "$ARCH" = "x86_64" ]; then
   ARCH_NAME="linuxx64"
 else
   if [ "$#" -ne 1 ]; then
       echo "Can't determine current arch; please provide it (one of):"
       echo ""
-      echo "- linuxarm32 (32-bit Linux ARM)"
       echo "- linuxarm64 (64-bit Linux ARM)"
       echo "- linuxx64   (64-bit Linux)"
       exit 1
@@ -119,18 +119,6 @@ then
    apt-get install --yes openjdk-17-jre-headless
 fi
 echo "JRE installation complete."
-
-if [ "$ARCH" == "aarch64" ]
-then
-    if package_is_installed libopencv-core4.6
-    then
-        echo "libopencv-core4.6 already installed"
-    else
-        # libphotonlibcamera.so on raspberry pi has dep on libopencv_core
-        echo "Installing libopencv-core4.6 on aarch64"
-        apt-get install --yes libopencv-core4.6
-    fi
-fi
 
 echo "Installing additional math packages"
 apt-get install --yes libcholmod3 liblapack3 libsuitesparseconfig5

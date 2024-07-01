@@ -18,11 +18,14 @@
 package org.photonvision.vision.frame.provider;
 
 import edu.wpi.first.cscore.CvSink;
-import org.photonvision.common.util.math.MathUtils;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.processes.VisionSourceSettables;
 
 public class USBFrameProvider extends CpuImageProcessor {
+    private static final Logger logger = new Logger(USBFrameProvider.class, LogGroup.Camera);
+
     private final CvSink cvSink;
 
     @SuppressWarnings("SpellCheckingInspection")
@@ -43,9 +46,9 @@ public class USBFrameProvider extends CpuImageProcessor {
                 cvSink.grabFrame(mat.getMat())
                         * 1000; // Units are microseconds, epoch is the same as the Unix epoch
 
-        // Sometimes CSCore gives us a zero frametime.
-        if (time <= 1e-6) {
-            time = MathUtils.wpiNanoTime();
+        if (time == 0) {
+            var error = cvSink.getError();
+            logger.error("Error grabbing image: " + error);
         }
 
         return new CapturedFrame(mat, settables.getFrameStaticProperties(), time);

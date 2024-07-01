@@ -1,0 +1,74 @@
+{# Import the theme's layout. #}
+{% extends '!layout.html' %}
+
+{%- block extrahead %}
+<script>
+    if (localStorage.getItem("colorTheme") === "dark") {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    } else if (localStorage.getItem("colorTheme") === "light") {
+        document.documentElement.setAttribute('data-theme', 'light');
+    } else {
+        var userPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (userPrefersDark) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+       } else {
+            document.documentElement.setAttribute('data-theme', 'light');
+        }
+    }
+
+</script>
+
+{# Call the parent block #}
+{{ super() }}
+{% endblock %}
+
+{%- block extrafooter %}
+{# Add custom things to the head HTML tag #}
+
+<div class="dark-mode-toggle-container">
+    <strong class="light-label md-icon">&#xE430</strong>
+
+    <div class="dark-mode-toggle">
+        <input type="checkbox" id="switch" name="theme"/><label class="toggle" for="switch">Toggle</label>
+    </div>
+
+    <strong class="dark-label md-icon">&#xE42D</strong>
+</div>
+
+<script>
+    var checkbox = document.querySelector('input[name=theme]');
+
+    var element = document.documentElement.getAttribute('data-theme');
+
+    if (element == 'dark') {
+        // Auto check the checkbox if the set theme is "dark".
+        checkbox.checked = true;
+    }
+
+    checkbox.addEventListener('change', function() {
+        if (this.checked) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem("colorTheme", "dark");
+        } else {
+            document.documentElement.setAttribute('data-theme', 'light');
+            localStorage.setItem("colorTheme", "light");
+        }
+    });
+
+    window.matchMedia('(prefers-color-scheme: dark)')
+      .addEventListener('change', event => {
+        if (event.matches) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem("colorTheme", "dark");
+            checkbox.checked = true;
+        } else {
+            document.documentElement.setAttribute('data-theme', 'light');
+            localStorage.setItem("colorTheme", "light");
+            checkbox.checked = false;
+        }
+    });
+</script>
+
+{# Call the parent block #}
+{{ super() }}
+{%- endblock %}

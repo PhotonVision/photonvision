@@ -347,6 +347,27 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        logger.info(
+                "Starting PhotonVision version "
+                        + PhotonVersion.versionString
+                        + " on "
+                        + Platform.getPlatformName()
+                        + (Platform.isRaspberryPi() ? (" (Pi " + PiVersion.getPiVersion() + ")") : ""));
+
+        try {
+            if (!handleArgs(args)) {
+                System.exit(1);
+            }
+        } catch (ParseException e) {
+            logger.error("Failed to parse command-line options!", e);
+        }
+
+        // We don't want to trigger an exit in test mode or smoke test. This is specifically for MacOS.
+        if (!(Platform.isSupported() || isSmoketest || isTestMode)) {
+            logger.error("This platform is unsupported!");
+            System.exit(1);
+        }
+
         try {
             boolean success = TestUtils.loadLibraries();
 
@@ -384,13 +405,6 @@ public class Main {
                             + e.getMessage());
         }
 
-        try {
-            if (!handleArgs(args)) {
-                System.exit(0);
-            }
-        } catch (ParseException e) {
-            logger.error("Failed to parse command-line options!", e);
-        }
         CVMat.enablePrint(false);
         PipelineProfiler.enablePrint(false);
 
@@ -402,13 +416,6 @@ public class Main {
         Logger.setLevel(LogGroup.Config, logLevel);
         Logger.setLevel(LogGroup.General, logLevel);
         logger.info("Logging initialized in debug mode.");
-
-        logger.info(
-                "Starting PhotonVision version "
-                        + PhotonVersion.versionString
-                        + " on "
-                        + Platform.getPlatformName()
-                        + (Platform.isRaspberryPi() ? (" (Pi " + PiVersion.getPiVersion() + ")") : ""));
 
         PvCSCoreLogger.getInstance();
 

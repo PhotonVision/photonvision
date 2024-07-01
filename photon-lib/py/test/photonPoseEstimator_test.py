@@ -36,8 +36,10 @@ def test_lowestAmbiguityStrategy():
 
     cameraOne = PhotonCameraInjector()
     cameraOne.result = PhotonPipelineResult(
-        2,
-        11,
+        0,
+        2 * 1e3,
+        1,
+        11 * 1e6,
         [
             PhotonTrackedTarget(
                 3.0,
@@ -115,7 +117,7 @@ def test_lowestAmbiguityStrategy():
     estimatedPose = estimator.update()
     pose = estimatedPose.estimatedPose
 
-    assertEquals(11, estimatedPose.timestampSeconds)
+    assertEquals(11 - 0.002, estimatedPose.timestampSeconds, 1e-3)
     assertEquals(1, pose.x, 0.01)
     assertEquals(3, pose.y, 0.01)
     assertEquals(2, pose.z, 0.01)
@@ -124,8 +126,10 @@ def test_lowestAmbiguityStrategy():
 def test_multiTagOnCoprocStrategy():
     cameraOne = PhotonCameraInjector()
     cameraOne.result = PhotonPipelineResult(
-        2,
-        11,
+        0,
+        2 * 1e3,
+        1,
+        11 * 1e6,
         # There needs to be at least one target present for pose estimation to work
         # Doesn't matter which/how many targets for this test
         [
@@ -167,7 +171,7 @@ def test_multiTagOnCoprocStrategy():
     estimatedPose = estimator.update()
     pose = estimatedPose.estimatedPose
 
-    assertEquals(11, estimatedPose.timestampSeconds)
+    assertEquals(11 - 2e-3, estimatedPose.timestampSeconds, 1e-3)
     assertEquals(1, pose.x, 0.01)
     assertEquals(3, pose.y, 0.01)
     assertEquals(2, pose.z, 0.01)
@@ -178,8 +182,10 @@ def test_cacheIsInvalidated():
 
     cameraOne = PhotonCameraInjector()
     result = PhotonPipelineResult(
-        2,
-        20,
+        0,
+        2 * 1e3,
+        1,
+        20 * 1e6,
         [
             PhotonTrackedTarget(
                 3.0,
@@ -211,7 +217,9 @@ def test_cacheIsInvalidated():
     )
 
     # Empty result, expect empty result
-    cameraOne.result = PhotonPipelineResult(timestampSec=1)
+    cameraOne.result = PhotonPipelineResult(
+        captureTimestampMicros=0, publishTimestampMicros=0, ntRecieveTimestampMicros=1e6
+    )
     estimatedPose = estimator.update()
     assert estimatedPose is None
 
@@ -220,14 +228,14 @@ def test_cacheIsInvalidated():
     estimatedPose = estimator.update()
     assert estimatedPose is not None
     assertEquals(20, estimatedPose.timestampSeconds, 0.01)
-    assertEquals(20, estimator._poseCacheTimestampSeconds)
+    assertEquals(20 - 2e-3, estimator._poseCacheTimestampSeconds, 1e-3)
 
     # And again -- pose cache should mean this is empty
     cameraOne.result = result
     estimatedPose = estimator.update()
     assert estimatedPose is None
     # Expect the old timestamp to still be here
-    assertEquals(20, estimator._poseCacheTimestampSeconds)
+    assertEquals(20 - 2e-3, estimator._poseCacheTimestampSeconds, 1e-3)
 
     # Set new field layout -- right after, the pose cache timestamp should be -1
     estimator.fieldTags = AprilTagFieldLayout([AprilTag()], 0, 0)
@@ -236,7 +244,7 @@ def test_cacheIsInvalidated():
     cameraOne.result = result
     estimatedPose = estimator.update()
     assertEquals(20, estimatedPose.timestampSeconds, 0.01)
-    assertEquals(20, estimator._poseCacheTimestampSeconds)
+    assertEquals(20 - 2e-3, estimator._poseCacheTimestampSeconds, 1e-3)
 
 
 def assertEquals(expected, actual, epsilon=0.0):

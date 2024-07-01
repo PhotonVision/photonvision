@@ -35,7 +35,9 @@ public class PhotonPipelineResultTest {
 
         a =
                 new PhotonPipelineResult(
-                        2,
+                        3,
+                        4,
+                        5,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -43,6 +45,8 @@ public class PhotonPipelineResultTest {
                                         9.0,
                                         4.0,
                                         2,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         0.25,
@@ -62,6 +66,8 @@ public class PhotonPipelineResultTest {
                                         9.1,
                                         6.7,
                                         3,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         0.25,
@@ -77,7 +83,9 @@ public class PhotonPipelineResultTest {
                                                 new TargetCorner(7, 8)))));
         b =
                 new PhotonPipelineResult(
-                        2,
+                        3,
+                        4,
+                        5,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -85,6 +93,8 @@ public class PhotonPipelineResultTest {
                                         9.0,
                                         4.0,
                                         2,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         0.25,
@@ -104,6 +114,8 @@ public class PhotonPipelineResultTest {
                                         9.1,
                                         6.7,
                                         3,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         0.25,
@@ -121,7 +133,9 @@ public class PhotonPipelineResultTest {
 
         a =
                 new PhotonPipelineResult(
-                        2,
+                        3,
+                        4,
+                        5,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -129,6 +143,8 @@ public class PhotonPipelineResultTest {
                                         9.0,
                                         4.0,
                                         2,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         0.25,
@@ -148,6 +164,8 @@ public class PhotonPipelineResultTest {
                                         9.1,
                                         6.7,
                                         3,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         0.25,
@@ -167,7 +185,9 @@ public class PhotonPipelineResultTest {
                                 List.of(1, 2, 3)));
         b =
                 new PhotonPipelineResult(
-                        2,
+                        3,
+                        4,
+                        5,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -175,6 +195,8 @@ public class PhotonPipelineResultTest {
                                         9.0,
                                         4.0,
                                         2,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         0.25,
@@ -194,6 +216,8 @@ public class PhotonPipelineResultTest {
                                         9.1,
                                         6.7,
                                         3,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         0.25,
@@ -218,7 +242,9 @@ public class PhotonPipelineResultTest {
     public void inequalityTest() {
         var a =
                 new PhotonPipelineResult(
-                        2,
+                        3,
+                        4,
+                        5,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -226,6 +252,8 @@ public class PhotonPipelineResultTest {
                                         9.0,
                                         4.0,
                                         2,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         0.25,
@@ -245,6 +273,8 @@ public class PhotonPipelineResultTest {
                                         1.0,
                                         -9.0,
                                         3,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         0.25,
@@ -260,7 +290,9 @@ public class PhotonPipelineResultTest {
                                                 new TargetCorner(7, 8)))));
         var b =
                 new PhotonPipelineResult(
-                        2,
+                        3,
+                        4,
+                        5,
                         List.of(
                                 new PhotonTrackedTarget(
                                         7.0,
@@ -268,6 +300,8 @@ public class PhotonPipelineResultTest {
                                         1.0,
                                         -9.0,
                                         2,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         0.25,
@@ -287,6 +321,8 @@ public class PhotonPipelineResultTest {
                                         9.1,
                                         6.7,
                                         3,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         0.25,
@@ -304,7 +340,9 @@ public class PhotonPipelineResultTest {
 
         a =
                 new PhotonPipelineResult(
-                        2,
+                        3,
+                        4,
+                        5,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -312,6 +350,8 @@ public class PhotonPipelineResultTest {
                                         9.0,
                                         4.0,
                                         2,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         0.25,
@@ -331,6 +371,8 @@ public class PhotonPipelineResultTest {
                                         9.1,
                                         6.7,
                                         3,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         0.25,
@@ -350,7 +392,9 @@ public class PhotonPipelineResultTest {
                                 List.of(3, 4, 7)));
         b =
                 new PhotonPipelineResult(
-                        2,
+                        3,
+                        4,
+                        5,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -358,6 +402,8 @@ public class PhotonPipelineResultTest {
                                         9.0,
                                         4.0,
                                         2,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         0.25,
@@ -377,6 +423,8 @@ public class PhotonPipelineResultTest {
                                         9.1,
                                         6.7,
                                         3,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         0.25,

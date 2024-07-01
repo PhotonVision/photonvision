@@ -90,7 +90,7 @@ class SimPhotonCamera : public PhotonCamera {
     latencyMillisEntry.SetDouble(latency.to<double>());
     std::sort(targetList.begin(), targetList.end(),
               [&](auto lhs, auto rhs) { return sortMode(lhs, rhs); });
-    PhotonPipelineResult newResult{latency, targetList};
+    PhotonPipelineResult newResult{0, 0_s, latency, targetList};
     Packet packet{};
     packet << newResult;
 

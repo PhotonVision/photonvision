@@ -29,6 +29,7 @@
 #include <string_view>
 
 #include <frc/Errors.h>
+#include <frc/RobotController.h>
 #include <frc/Timer.h>
 #include <opencv2/core.hpp>
 #include <opencv2/core/mat.hpp>
@@ -59,6 +60,11 @@ namespace photon {
 
 constexpr const units::second_t VERSION_CHECK_INTERVAL = 5_s;
 static const std::vector<std::string_view> PHOTON_PREFIX = {"/photonvision/"};
+bool PhotonCamera::VERSION_CHECK_ENABLED = true;
+
+void PhotonCamera::SetVersionCheckEnabled(bool enabled) {
+  VERSION_CHECK_ENABLED = enabled;
+}
 
 PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
                            const std::string_view cameraName)
@@ -90,9 +96,9 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
           rootTable->GetBooleanTopic("driverMode").Subscribe(false)),
       driverModePublisher(
           rootTable->GetBooleanTopic("driverModeRequest").Publish()),
-      m_topicNameSubscriber(instance, PHOTON_PREFIX, {.topicsOnly = true}),
+      topicNameSubscriber(instance, PHOTON_PREFIX, {.topicsOnly = true}),
       path(rootTable->GetPath()),
-      m_cameraName(cameraName) {
+      cameraName(cameraName) {
   HAL_Report(HALUsageReporting::kResourceType_PhotonCamera, InstanceCount);
   InstanceCount++;
 }
@@ -115,6 +121,8 @@ PhotonPipelineResult PhotonCamera::GetLatestResult() {
   PhotonPipelineResult result;
 
   // Fill the packet with latest data and populate result.
+  units::microsecond_t now =
+      units::microsecond_t(frc::RobotController::GetFPGATime());
   const auto value = rawBytesEntry.Get();
   if (!value.size()) return result;
 
@@ -122,8 +130,7 @@ PhotonPipelineResult PhotonCamera::GetLatestResult() {
 
   packet >> result;
 
-  result.SetTimestamp(units::microsecond_t(rawBytesEntry.GetLastChange()) -
-                      result.GetLatency());
+  result.SetRecieveTimestamp(now);
 
   return result;
 }
@@ -152,42 +159,59 @@ LEDMode PhotonCamera::GetLEDMode() const {
   return static_cast<LEDMode>(static_cast<int>(ledModeSub.Get()));
 }
 
-std::optional<cv::Mat> PhotonCamera::GetCameraMatrix() {
-  auto camCoeffs = cameraIntrinsicsSubscriber.Get();
-  if (camCoeffs.size() == 9) {
-    cv::Mat retVal(3, 3, CV_64FC1);
-    for (int i = 0; i < 3; i++) {
-      for (int j = 0; j < 3; j++) {
-        retVal.at<double>(i, j) = camCoeffs[(j * 3) + i];
-      }
-    }
-    return retVal;
-  }
-  return std::nullopt;
-}
-
 void PhotonCamera::SetLEDMode(LEDMode mode) {
   ledModePub.Set(static_cast<int>(mode));
 }
 
 const std::string_view PhotonCamera::GetCameraName() const {
-  return m_cameraName;
+  return cameraName;
 }
 
-std::optional<cv::Mat> PhotonCamera::GetDistCoeffs() {
-  auto distCoeffs = cameraDistortionSubscriber.Get();
-  if (distCoeffs.size() == 5) {
-    cv::Mat retVal(5, 1, CV_64FC1);
-    for (int i = 0; i < 5; i++) {
-      retVal.at<double>(i, 0) = distCoeffs[i];
-    }
+std::optional<PhotonCamera::CameraMatrix> PhotonCamera::GetCameraMatrix() {
+  auto camCoeffs = cameraIntrinsicsSubscriber.Get();
+  if (camCoeffs.size() == 9) {
+    PhotonCamera::CameraMatrix retVal =
+        Eigen::Map<const PhotonCamera::CameraMatrix>(camCoeffs.data());
     return retVal;
   }
   return std::nullopt;
 }
 
+std::optional<PhotonCamera::DistortionMatrix> PhotonCamera::GetDistCoeffs() {
+  auto distCoeffs = cameraDistortionSubscriber.Get();
+  auto bound = distCoeffs.size();
+  if (bound > 0 && bound <= 8) {
+    PhotonCamera::DistortionMatrix retVal =
+        PhotonCamera::DistortionMatrix::Zero();
+
+    Eigen::Map<const Eigen::VectorXd> map(distCoeffs.data(), bound);
+    retVal.block(0, 0, bound, 1) = map;
+
+    return retVal;
+  }
+  return std::nullopt;
+}
+
+static bool VersionMatches(std::string them_str) {
+  std::smatch match;
+  std::regex versionPattern{"v[0-9]+.[0-9]+.[0-9]+"};
+
+  std::string us_str = PhotonVersion::versionString;
+
+  // Check that both versions are in the right format
+  if (std::regex_search(us_str, match, versionPattern) &&
+      std::regex_search(them_str, match, versionPattern)) {
+    // If they are, check string equality
+    return (us_str == them_str);
+  } else {
+    return false;
+  }
+}
+
 void PhotonCamera::VerifyVersion() {
-  if (!PhotonCamera::VERSION_CHECK_ENABLED) return;
+  if (!PhotonCamera::VERSION_CHECK_ENABLED) {
+    return;
+  }
 
   if ((frc::Timer::GetFPGATimestamp() - lastVersionCheckTime) <
       VERSION_CHECK_INTERVAL)
@@ -228,6 +252,19 @@ void PhotonCamera::VerifyVersion() {
     FRC_ReportError(frc::err::Error, "{}", error_str);
     throw std::runtime_error(error_str);
   }
+}
+
+std::vector<std::string> PhotonCamera::tablesThatLookLikePhotonCameras() {
+  std::vector<std::string> cameraNames = mainTable->GetSubTables();
+
+  std::vector<std::string> ret;
+  std::copy_if(
+      cameraNames.begin(), cameraNames.end(), std::back_inserter(ret),
+      [this](auto& it) {
+        return mainTable->GetSubTable(it)->GetEntry("rawBytes").Exists();
+      });
+
+  return ret;
 }
 
 }  // namespace photon

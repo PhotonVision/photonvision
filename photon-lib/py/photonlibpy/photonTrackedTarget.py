@@ -71,6 +71,9 @@ class PhotonTrackedTarget:
         self.skew = packet.decodeDouble()
         self.fiducialId = packet.decode32()
 
+        self.classId = packet.decode32()
+        self.objDetectConf = packet.decodeFloat()
+
         self.bestCameraToTarget = packet.decodeTransform()
         self.altCameraToTarget = packet.decodeTransform()
 

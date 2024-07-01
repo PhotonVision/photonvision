@@ -160,6 +160,8 @@ class PacketTest {
                         9.0,
                         -5.0,
                         -1,
+                        -1,
+                        -1f,
                         new Transform3d(),
                         new Transform3d(),
                         -1,
@@ -180,7 +182,7 @@ class PacketTest {
 
     @Test
     void pipelineResultSerde() {
-        var ret1 = new PhotonPipelineResult(1, List.of());
+        var ret1 = new PhotonPipelineResult(1, 2, 3, List.of());
         var p1 = new Packet(ret1.getPacketSize());
         PhotonPipelineResult.serde.pack(p1, ret1);
         var unpackedRet1 = PhotonPipelineResult.serde.unpack(p1);
@@ -188,7 +190,9 @@ class PacketTest {
 
         var ret2 =
                 new PhotonPipelineResult(
+                        1,
                         2,
+                        3,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -196,6 +200,8 @@ class PacketTest {
                                         9.0,
                                         4.0,
                                         2,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         0.25,
@@ -215,6 +221,8 @@ class PacketTest {
                                         9.1,
                                         6.7,
                                         3,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         0.25,
@@ -235,7 +243,9 @@ class PacketTest {
 
         var ret3 =
                 new PhotonPipelineResult(
-                        2,
+                        3,
+                        4,
+                        5,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -243,6 +253,8 @@ class PacketTest {
                                         9.0,
                                         4.0,
                                         2,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         0.25,
@@ -262,6 +274,8 @@ class PacketTest {
                                         9.1,
                                         6.7,
                                         3,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         0.25,
@@ -289,7 +303,9 @@ class PacketTest {
     public void testMultiTargetSerde() {
         var result =
                 new PhotonPipelineResult(
-                        2,
+                        3,
+                        4,
+                        5,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -297,6 +313,8 @@ class PacketTest {
                                         9.0,
                                         4.0,
                                         2,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         0.25,
@@ -316,6 +334,8 @@ class PacketTest {
                                         9.1,
                                         6.7,
                                         3,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         0.25,

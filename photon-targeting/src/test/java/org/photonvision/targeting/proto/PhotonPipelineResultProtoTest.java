@@ -39,7 +39,9 @@ public class PhotonPipelineResultProtoTest {
         // non multitag result
         result =
                 new PhotonPipelineResult(
-                        2,
+                        3,
+                        4,
+                        5,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -47,6 +49,8 @@ public class PhotonPipelineResultProtoTest {
                                         9.0,
                                         4.0,
                                         2,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         0.25,
@@ -66,6 +70,8 @@ public class PhotonPipelineResultProtoTest {
                                         9.1,
                                         6.7,
                                         3,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         0.25,
@@ -87,7 +93,9 @@ public class PhotonPipelineResultProtoTest {
         // multitag result
         result =
                 new PhotonPipelineResult(
-                        2,
+                        3,
+                        4,
+                        5,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -95,6 +103,8 @@ public class PhotonPipelineResultProtoTest {
                                         9.0,
                                         4.0,
                                         2,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         0.25,
@@ -114,6 +124,8 @@ public class PhotonPipelineResultProtoTest {
                                         9.1,
                                         6.7,
                                         3,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         0.25,

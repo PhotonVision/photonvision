@@ -1,6 +1,6 @@
 from enum import Enum
 import ntcore
-from wpilib import Timer
+from wpilib import RobotController, Timer
 import wpilib
 from photonlibpy.packet import Packet
 from photonlibpy.photonPipelineResult import PhotonPipelineResult
@@ -78,6 +78,7 @@ class PhotonCamera:
     def getLatestResult(self) -> PhotonPipelineResult:
         self._versionCheck()
 
+        now = RobotController.getFPGATime()
         retVal = PhotonPipelineResult()
         packetWithTimestamp = self._rawBytesEntry.getAtomic()
         byteList = packetWithTimestamp.value
@@ -88,10 +89,8 @@ class PhotonCamera:
         else:
             pkt = Packet(byteList)
             retVal.populateFromPacket(pkt)
-            # NT4 allows us to correct the timestamp based on when the message was sent
-            retVal.setTimestampSeconds(
-                timestamp / 1e6 - retVal.getLatencyMillis() / 1e3
-            )
+            # We don't trust NT4 time, hack around
+            retVal.ntRecieveTimestampMicros = now
             return retVal
 
     def getDriverMode(self) -> bool:
@@ -147,6 +146,16 @@ class PhotonCamera:
             cameraNames = (
                 self._cameraTable.getInstance().getTable(self._tableName).getSubTables()
             )
+            # Look for only cameras with rawBytes entry that exists
+            cameraNames = list(
+                filter(
+                    lambda it: self._cameraTable.getSubTable(it)
+                    .getEntry("rawBytes")
+                    .exists(),
+                    cameraNames,
+                )
+            )
+
             if len(cameraNames) == 0:
                 wpilib.reportError(
                     "Could not find any PhotonVision coprocessors on NetworkTables. Double check that PhotonVision is running, and that your camera is connected!",

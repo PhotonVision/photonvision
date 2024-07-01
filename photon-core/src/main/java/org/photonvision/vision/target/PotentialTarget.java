@@ -56,7 +56,7 @@ public class PotentialTarget implements Releasable {
     }
 
     public PotentialTarget(NeuralNetworkPipeResult det) {
-        this.shape = new CVShape(new Contour(det.box), ContourShape.Quadrilateral);
+        this.shape = new CVShape(new Contour(det.bbox), ContourShape.Quadrilateral);
         this.m_mainContour = this.shape.getContour();
         m_subContours = List.of();
         this.clsId = det.classIdx;

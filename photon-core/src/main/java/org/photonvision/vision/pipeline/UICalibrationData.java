@@ -17,6 +17,8 @@
 
 package org.photonvision.vision.pipeline;
 
+import org.opencv.objdetect.Objdetect;
+
 public class UICalibrationData {
     public int videoModeIndex;
     public int count;
@@ -27,6 +29,9 @@ public class UICalibrationData {
     public int patternHeight;
     public BoardType boardType;
     public boolean useMrCal;
+    public double markerSizeIn;
+    public boolean useOldPattern;
+    public TagFamily tagFamily;
 
     public UICalibrationData() {}
 
@@ -36,24 +41,49 @@ public class UICalibrationData {
             int minCount,
             boolean hasEnough,
             double squareSizeIn,
+            double markerSizeIn,
             int patternWidth,
             int patternHeight,
             BoardType boardType,
-            boolean useMrCal) {
+            boolean useMrCal,
+            boolean useOldPattern,
+            TagFamily tagFamily) {
         this.count = count;
         this.minCount = minCount;
         this.videoModeIndex = videoModeIndex;
         this.hasEnough = hasEnough;
         this.squareSizeIn = squareSizeIn;
+        this.markerSizeIn = markerSizeIn;
         this.patternWidth = patternWidth;
         this.patternHeight = patternHeight;
         this.boardType = boardType;
         this.useMrCal = useMrCal;
+        this.useOldPattern = useOldPattern;
+        this.tagFamily = tagFamily;
     }
 
     public enum BoardType {
         CHESSBOARD,
-        DOTBOARD
+        CHARUCOBOARD,
+    }
+
+    public enum TagFamily {
+        Dict_4X4_1000(Objdetect.DICT_4X4_1000),
+        Dict_5X5_1000(Objdetect.DICT_5X5_1000),
+        Dict_6X6_1000(Objdetect.DICT_6X6_1000),
+        Dict_7X7_1000(Objdetect.DICT_7X7_1000);
+
+        private int value;
+
+        // getter method
+        public int getValue() {
+            return this.value;
+        }
+
+        // enum constructor - cannot be public or protected
+        private TagFamily(int value) {
+            this.value = value;
+        }
     }
 
     @Override
@@ -69,12 +99,18 @@ public class UICalibrationData {
                 + hasEnough
                 + ", squareSizeIn="
                 + squareSizeIn
+                + ", markerSizeIn="
+                + markerSizeIn
                 + ", patternWidth="
                 + patternWidth
                 + ", patternHeight="
                 + patternHeight
                 + ", boardType="
                 + boardType
+                + ", tagFamily="
+                + tagFamily
+                + ", useOldPattern="
+                + useOldPattern
                 + '}';
     }
 }

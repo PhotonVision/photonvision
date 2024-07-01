@@ -41,6 +41,9 @@ public class LibcameraGpuSource extends VisionSource {
                     "GPUAcceleratedPicamSource only accepts CameraConfigurations with type Picam");
         }
 
+        if (getCameraConfiguration().cameraQuirks == null)
+            getCameraConfiguration().cameraQuirks = QuirkyCamera.ZeroCopyPiCamera;
+
         settables = new LibcameraGpuSettables(configuration);
         frameProvider = new LibcameraGpuFrameProvider(settables);
     }

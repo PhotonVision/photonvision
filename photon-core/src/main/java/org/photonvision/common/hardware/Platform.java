@@ -48,12 +48,12 @@ public enum Platform {
             "Linux AARCH64", "linuxarm64", false, OSType.LINUX, true), // Jetson Nano, Jetson TX2
 
     // PhotonVision Supported (Manual build/install)
-    LINUX_ARM32("Linux ARM32", "linuxarm32", false, OSType.LINUX, true), // ODROID XU4, C1+
     LINUX_ARM64("Linux ARM64", "linuxarm64", false, OSType.LINUX, true), // ODROID C2, N2
 
     // Completely unsupported
     WINDOWS_32("Windows x86", "windowsx64", false, OSType.WINDOWS, false),
     MACOS("Mac OS", "osxuniversal", false, OSType.MACOS, false),
+    LINUX_ARM32("Linux ARM32", "linuxarm32", false, OSType.LINUX, false), // ODROID XU4, C1+
     UNKNOWN("Unsupported Platform", "", false, OSType.UNKNOWN, false);
 
     private enum OSType {
@@ -117,6 +117,10 @@ public enum Platform {
 
     public static boolean isRoot() {
         return isRoot;
+    }
+
+    public static boolean isSupported() {
+        return currentPlatform.isSupported;
     }
 
     //////////////////////////////////////////////////////

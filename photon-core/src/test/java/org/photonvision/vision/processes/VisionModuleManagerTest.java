@@ -31,6 +31,7 @@ import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.util.TestUtils;
+import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.USBCameraSource;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.FrameStaticProperties;
@@ -49,6 +50,8 @@ public class VisionModuleManagerTest {
         public TestSource(FrameProvider provider, CameraConfiguration cameraConfiguration) {
             super(cameraConfiguration);
             this.provider = provider;
+            if (getCameraConfiguration().cameraQuirks == null)
+                getCameraConfiguration().cameraQuirks = QuirkyCamera.DefaultCamera;
         }
 
         @Override
