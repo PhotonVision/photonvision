@@ -273,6 +273,9 @@ public class USBCameraSource extends VisionSource {
                         } else if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.ArduOV2311)) {
                             propMin = 1;
                             propMax = 140;
+                        } else if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.See3Cam_24CUG)) {
+                            propMin = 0;
+                            propMax = 600;
                         }
 
                         var exposure_manual_val = MathUtils.map(Math.round(exposure), 0, 100, propMin, propMax);
