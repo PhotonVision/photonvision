@@ -18,7 +18,6 @@
 package org.photonvision.raspi;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -37,29 +36,8 @@ public class LibCameraJNILoader {
         var libraryName = "photonlibcamera";
 
         try {
-            // We always extract the shared object (we could hash each so, but that's a lot of work)
-            var arch_name = "linuxarm64";
-            var nativeLibName = System.mapLibraryName(libraryName);
-            var resourcePath = "/nativelibraries/" + arch_name + "/" + nativeLibName;
-            var in = LibCameraJNILoader.class.getResourceAsStream(resourcePath);
-
-            if (in == null) {
-                logger.error("Failed to find internal native library at path " + resourcePath);
-                libraryLoaded = false;
-                return;
-            }
-
-            // It's important that we don't mangle the names of these files on Windows at least
-            File temp = new File(System.getProperty("java.io.tmpdir"), nativeLibName);
-            FileOutputStream fos = new FileOutputStream(temp);
-
-            int read = -1;
-            byte[] buffer = new byte[1024];
-            while ((read = in.read(buffer)) != -1) {
-                fos.write(buffer, 0, read);
-            }
-            fos.close();
-            in.close();
+            // Temp - use the one we built here
+            File temp = new File("/home/pi/photon-libcamera-gl-driver/cmake_build/libphotonlibcamera.so");
 
             System.load(temp.getAbsolutePath());
 
@@ -68,7 +46,6 @@ public class LibCameraJNILoader {
         } catch (UnsatisfiedLinkError e) {
             logger.error("Couldn't load shared object " + libraryName, e);
             e.printStackTrace();
-            // logger.error(System.getProperty("java.library.path"));
         }
         libraryLoaded = true;
     }

@@ -20,8 +20,10 @@ package org.photonvision.vision.camera;
 public enum CameraQuirk {
     /** Camera settable for controllable image gain */
     Gain,
-    /** For the Raspberry Pi Camera */
-    PiCam,
+    /** Only certain discrete exposure settings work */
+    LifeCamExposure,
+    /** Auto-Exposure property uses 1/0, rather than 3/1 */
+    OneZeroAutoExposure,
     /** Cap at 100FPS for high-bandwidth cameras */
     FPSCap100,
     /** Separate red/blue gain controls available */

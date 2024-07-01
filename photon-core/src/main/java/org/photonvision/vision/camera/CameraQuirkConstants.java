@@ -15,20 +15,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.vision.pipeline;
+package org.photonvision.vision.camera;
 
-public class ObjectDetectionPipelineSettings extends AdvancedPipelineSettings {
-    public double confidence;
-    public double nms; // non maximal suppression
-
-    public ObjectDetectionPipelineSettings() {
-        super();
-        this.pipelineType = PipelineType.ObjectDetection; // TODO: FIX this
-        this.outputShowMultipleTargets = true;
-        cameraExposureRaw = 20;
-        cameraAutoExposure = false;
-        ledMode = false;
-        confidence = .9;
-        nms = .45;
-    }
+/** Mr. Photonvision's Home for Peculiar Camera Constants */
+public class CameraQuirkConstants {
+    public static int[] LifecamAllowableExposures = {
+        5, 10, 20, 39, 78, 156, 312, 625, 1250, 2500, 5000, 10000, 20000
+    };
 }
