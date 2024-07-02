@@ -202,6 +202,7 @@ public class USBCameraSource extends VisionSource {
                             if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.ArduOV9782)) {
                                 try {
                                     // Set white balance temperature to 3500 for OV9782 camera
+                                    camera.getProperty("white_balance_automatic").set(0);
                                     camera.getProperty("white_balance_temperature").set(3500);
                                 } catch (VideoException e) {
                                     logger.error("Failed to set white balance temperature for OV9782 camera!", e);
