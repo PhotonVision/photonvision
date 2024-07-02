@@ -82,7 +82,7 @@ public class QuirkyCamera {
                             "OV9782",
                             "OV9782",
                             CameraQuirk.ArduCamCamera,
-                            CameraQuirk.ArduOV9281));
+                            CameraQuirk.ArduOV9782));
 
     public static final QuirkyCamera DefaultCamera = new QuirkyCamera(0, 0, "");
     public static final QuirkyCamera ZeroCopyPiCamera =
