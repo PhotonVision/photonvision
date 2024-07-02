@@ -435,8 +435,9 @@ public class Main {
                 .setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
 
         logger.info("Loading ML models");
-        NeuralNetworkModelManager.getInstance()
-                .initialize(ConfigManager.getInstance().getModelsDirectory());
+        var modelManager = NeuralNetworkModelManager.getInstance();
+        modelManager.extractModels(ConfigManager.getInstance().getModelsDirectory());
+        modelManager.loadModels(ConfigManager.getInstance().getModelsDirectory());
 
         if (isSmoketest) {
             logger.info("PhotonVision base functionality loaded -- smoketest complete");

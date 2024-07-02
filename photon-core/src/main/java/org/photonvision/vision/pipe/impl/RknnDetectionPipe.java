@@ -40,14 +40,10 @@ public class RknnDetectionPipe
 
     public RknnDetectionPipe() {
         // For now this is hard-coded to defaults. Should be refactored into set pipe
-        // params, though.
-        // And ideally a little wrapper helper for only changing native stuff on content
+        // params, though. And ideally a little wrapper helper for only changing native stuff on content
         // change created.
         this.detector =
-                new RknnObjectDetector(
-                        NeuralNetworkModelManager.getInstance().getDefaultRknnModel().getAbsolutePath(),
-                        NeuralNetworkModelManager.getInstance().getLabels(),
-                        NeuralNetworkModelManager.getInstance().getModelVersion());
+                new RknnObjectDetector(NeuralNetworkModelManager.getInstance().getDefaultRknnModel());
     }
 
     private static class Letterbox {

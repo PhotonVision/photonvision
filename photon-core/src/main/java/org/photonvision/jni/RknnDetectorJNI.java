@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 import org.opencv.core.Mat;
+import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TestUtils;
@@ -69,6 +70,10 @@ public class RknnDetectorJNI extends PhotonJNICommon {
                 new CopyOnWriteArrayList<>();
 
         static volatile boolean hook = false;
+
+        public RknnObjectDetector(NeuralNetworkModelManager.Model model) {
+            this(model.getPath(), model.labels, model.version);
+        }
 
         public RknnObjectDetector(String modelPath, List<String> labels, RknnJNI.ModelVersion version) {
             synchronized (lock) {
