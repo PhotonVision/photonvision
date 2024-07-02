@@ -27,23 +27,29 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
+import org.photonvision.common.configuration.NeuralNetworkModelManager.Model;
 import org.photonvision.common.util.ColorHelper;
-import org.photonvision.jni.RknnDetectorJNI.RknnObjectDetector;
+import org.photonvision.jni.RknnObjectDetector;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 
+/**
+ * A pipe that uses an <code>rknn</code> model to detect objects in an image.
+ *
+ * <p>TODO: This class should be refactored into a generic "ObjectDetectionPipe" that can use any
+ * "ObjectDetector" implementation.
+ */
 public class RknnDetectionPipe
         extends CVPipe<CVMat, List<NeuralNetworkPipeResult>, RknnDetectionPipe.RknnDetectionPipeParams>
         implements Releasable {
+
     private RknnObjectDetector detector;
 
     public RknnDetectionPipe() {
-        // For now this is hard-coded to defaults. Should be refactored into set pipe
-        // params, though. And ideally a little wrapper helper for only changing native stuff on content
-        // change created.
-        this.detector =
-                new RknnObjectDetector(NeuralNetworkModelManager.getInstance().getDefaultRknnModel());
+        // Default model
+        Model model = NeuralNetworkModelManager.getInstance().getDefaultRknnModel();
+        this.detector = new RknnObjectDetector(model);
     }
 
     private static class Letterbox {
@@ -60,28 +66,40 @@ public class RknnDetectionPipe
 
     @Override
     protected List<NeuralNetworkPipeResult> process(CVMat in) {
-        var frame = in.getMat();
+        // Check if the model has changed
+        if (detector.getModel() != params.model) {
+            detector.release();
+            detector = new RknnObjectDetector(params.model);
+        }
 
-        // Make sure we don't get a weird empty frame
+        Mat frame = in.getMat();
         if (frame.empty()) {
             return List.of();
         }
 
-        // letterbox
-        var letterboxed = new Mat();
-        var scale =
-                letterbox(frame, letterboxed, new Size(640, 640), ColorHelper.colorToScalar(Color.GRAY));
-
-        if (letterboxed.width() != 640 || letterboxed.height() != 640) {
-            // huh whack give up lol
-            throw new RuntimeException("RGA bugged but still wrong size");
+        // Resize the frame to the input size of the model
+        Size shape = this.params.model.inputSize;
+        Mat letterboxed = new Mat();
+        Letterbox scale = letterbox(frame, letterboxed, shape, ColorHelper.colorToScalar(Color.GRAY));
+        if (!letterboxed.size().equals(shape)) {
+            throw new RuntimeException("Letterboxed frame is not the right size!");
         }
-        var ret = detector.detect(letterboxed, params.nms, params.confidence);
+
+        // Detect objects in the letterboxed frame
+        List<NeuralNetworkPipeResult> ret = detector.detect(letterboxed, params.nms, params.confidence);
         letterboxed.release();
 
+        // Resize the detections to the original frame size
         return resizeDetections(ret, scale);
     }
 
+    /**
+     * Resizes the detections to the original frame size.
+     *
+     * @param unscaled The detections to resize
+     * @param letterbox The letterbox information
+     * @return The resized detections
+     */
     private List<NeuralNetworkPipeResult> resizeDetections(
             List<NeuralNetworkPipeResult> unscaled, Letterbox letterbox) {
         var ret = new ArrayList<NeuralNetworkPipeResult>();
@@ -101,6 +119,18 @@ public class RknnDetectionPipe
         return ret;
     }
 
+    /**
+     * Resize the frame to the new shape and "letterbox" it.
+     *
+     * <p>Letterboxing is the process of resizing an image to a new shape while maintaining the aspect
+     * ratio of the original image. The new image is padded with a color to fill the remaining space.
+     *
+     * @param frame
+     * @param letterboxed
+     * @param newShape
+     * @param color
+     * @return
+     */
     private static Letterbox letterbox(Mat frame, Mat letterboxed, Size newShape, Scalar color) {
         // from https://github.com/ultralytics/yolov5/issues/8427#issuecomment-1172469631
         var frameSize = frame.size();
@@ -134,6 +164,7 @@ public class RknnDetectionPipe
         public double confidence;
         public double nms;
         public int max_detections;
+        public NeuralNetworkModelManager.Model model;
 
         public RknnDetectionPipeParams() {}
     }

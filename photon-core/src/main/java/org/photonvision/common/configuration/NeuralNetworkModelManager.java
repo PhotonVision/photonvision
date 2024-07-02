@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import org.opencv.core.Size;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.rknn.RknnJNI;
@@ -97,15 +98,36 @@ public class NeuralNetworkModelManager {
         public final File modelFile;
         public final RknnJNI.ModelVersion version;
         public final List<String> labels;
+        public final Size inputSize;
 
+        /**
+         * Model constructor.
+         *
+         * @param model format `name-width-height-model.format`
+         * @param labels
+         * @throws IllegalArgumentException
+         */
         public Model(String model, String labels) throws IllegalArgumentException {
-            this.version = getModelVersion(model);
+            String[] parts = model.split("-");
+            if (parts.length != 4) {
+                throw new IllegalArgumentException("Invalid model file name: " + model);
+            }
+
+            // TODO: model 'version' need to be replaced the by the product of 'Version' x 'Format'
+            this.version = getModelVersion(parts[3]);
+
+            int width = Integer.parseInt(parts[1]);
+            int height = Integer.parseInt(parts[2]);
+            this.inputSize = new Size(width, height);
+
             this.modelFile = new File(model);
             try {
                 this.labels = Files.readAllLines(Paths.get(labels));
             } catch (IOException e) {
-                throw new IllegalArgumentException("Error reading labels file " + labels, e);
+                throw new IllegalArgumentException("Failed to read labels file " + labels, e);
             }
+
+            logger.info("Loaded model " + modelFile.getName());
         }
 
         public String getPath() {
@@ -141,7 +163,7 @@ public class NeuralNetworkModelManager {
     /**
      * Returns the model with the given name.
      *
-     * <p>TODO: Java 17 This should return an Optional<Model> instead of null.
+     * <p>TODO: Java 17 This should return an Optional Model instead of null.
      *
      * @param modelName The model name
      * @return The model
@@ -214,7 +236,7 @@ public class NeuralNetworkModelManager {
             modelsFolder.mkdirs();
         }
 
-        String resourcePath = "models"; // Adjust path if necessary
+        String resourcePath = "models";
         try {
             URL resourceURL = NeuralNetworkModelManager.class.getClassLoader().getResource(resourcePath);
             if (resourceURL == null) {

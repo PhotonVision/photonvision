@@ -20,6 +20,7 @@ package org.photonvision.vision.pipeline;
 public class ObjectDetectionPipelineSettings extends AdvancedPipelineSettings {
     public double confidence;
     public double nms; // non maximal suppression
+    public String model;
 
     public ObjectDetectionPipelineSettings() {
         super();

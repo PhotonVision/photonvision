@@ -19,6 +19,7 @@ package org.photonvision.vision.pipeline;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.DualOffsetValues;
@@ -56,6 +57,7 @@ public class ObjectDetectionPipeline
         var params = new RknnDetectionPipeParams();
         params.confidence = settings.confidence;
         params.nms = settings.nms;
+        params.model = NeuralNetworkModelManager.getInstance().getModel(settings.model);
         rknnPipe.setParams(params);
 
         DualOffsetValues dualOffsetValues =
@@ -99,7 +101,6 @@ public class ObjectDetectionPipeline
 
         CVPipeResult<List<NeuralNetworkPipeResult>> rknnResult = rknnPipe.run(frame.colorImage);
         sumPipeNanosElapsed += rknnResult.nanosElapsed;
-        List<NeuralNetworkPipeResult> targetList;
 
         var names = rknnPipe.getClassNames();
 
