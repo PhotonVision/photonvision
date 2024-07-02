@@ -47,9 +47,11 @@ public class RknnObjectDetector implements Releasable {
         this.model = model;
 
         // Create the detector
-        objPointer = RknnJNI.create(model.getPath(), model.labels.size(), model.version.ordinal(), -1);
+        objPointer =
+                RknnJNI.create(model.modelFile.getPath(), model.labels.size(), model.version.ordinal(), -1);
         if (objPointer <= 0) {
-            throw new RuntimeException("Failed to create detector from path " + model.getPath());
+            throw new RuntimeException(
+                    "Failed to create detector from path " + model.modelFile.getPath());
         }
 
         logger.debug("Created detector for model " + model.modelFile.getName());

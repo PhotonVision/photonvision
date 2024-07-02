@@ -108,7 +108,9 @@ public class NeuralNetworkModelManager {
          * @throws IllegalArgumentException
          */
         public Model(String model, String labels) throws IllegalArgumentException {
-            String[] parts = model.split("-");
+            this.modelFile = new File(model);
+
+            String[] parts = modelFile.getName().split("-");
             if (parts.length != 4) {
                 throw new IllegalArgumentException("Invalid model file name: " + model);
             }
@@ -120,7 +122,6 @@ public class NeuralNetworkModelManager {
             int height = Integer.parseInt(parts[2]);
             this.inputSize = new Size(width, height);
 
-            this.modelFile = new File(model);
             try {
                 this.labels = Files.readAllLines(Paths.get(labels));
             } catch (IOException e) {
@@ -130,8 +131,8 @@ public class NeuralNetworkModelManager {
             logger.info("Loaded model " + modelFile.getName());
         }
 
-        public String getPath() {
-            return modelFile.getAbsolutePath();
+        public String getName() {
+            return modelFile.getName();
         }
     }
 
@@ -157,7 +158,7 @@ public class NeuralNetworkModelManager {
      * @return A list of model names
      */
     public List<String> getModels() {
-        return models.stream().map(model -> model.modelFile.getName()).toList();
+        return models.stream().map(model -> model.getName()).toList();
     }
 
     /**
@@ -170,10 +171,7 @@ public class NeuralNetworkModelManager {
      */
     public Model getModel(String modelName) {
         Model m =
-                models.stream()
-                        .filter(model -> model.modelFile.getName().equals(modelName))
-                        .findFirst()
-                        .orElse(null);
+                models.stream().filter(model -> model.getName().equals(modelName)).findFirst().orElse(null);
 
         if (m == null) {
             logger.error("Model " + modelName + " not found.");

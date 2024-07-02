@@ -140,6 +140,7 @@ public class PhotonConfiguration {
                         : ""); // TODO add support for other types of GPU accel
         generalSubmap.put("mrCalWorking", MrCalJNILoader.getInstance().isLoaded());
         generalSubmap.put("rknnSupported", RknnDetectorJNI.getInstance().isLoaded());
+        generalSubmap.put("availableRknnModels", NeuralNetworkModelManager.getInstance().getModels());
         generalSubmap.put("hardwareModel", hardwareConfig.deviceName);
         generalSubmap.put("hardwarePlatform", Platform.getPlatformName());
         settingsSubmap.put("general", generalSubmap);

@@ -57,7 +57,12 @@ public class ObjectDetectionPipeline
         var params = new RknnDetectionPipeParams();
         params.confidence = settings.confidence;
         params.nms = settings.nms;
-        params.model = NeuralNetworkModelManager.getInstance().getModel(settings.model);
+        var model = NeuralNetworkModelManager.getInstance().getModel(settings.model);
+        if (model != null) {
+            params.model = model;
+        } else {
+            params.model = NeuralNetworkModelManager.getInstance().getDefaultRknnModel();
+        }
         rknnPipe.setParams(params);
 
         DualOffsetValues dualOffsetValues =

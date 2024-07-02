@@ -289,6 +289,7 @@ export interface ObjectDetectionPipelineSettings extends PipelineSettings {
   confidence: number;
   nms: number;
   box_thresh: number;
+  model: string;
 }
 export type ConfigurableObjectDetectionPipelineSettings = Partial<
   Omit<ObjectDetectionPipelineSettings, "pipelineType">
@@ -304,7 +305,8 @@ export const DefaultObjectDetectionPipelineSettings: ObjectDetectionPipelineSett
   cameraExposureRaw: 6,
   confidence: 0.9,
   nms: 0.45,
-  box_thresh: 0.25
+  box_thresh: 0.25,
+  model: "",
 };
 
 export type ActivePipelineSettings =
