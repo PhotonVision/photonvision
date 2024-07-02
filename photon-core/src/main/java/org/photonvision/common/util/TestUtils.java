@@ -50,11 +50,6 @@ public class TestUtils {
     public static boolean loadLibraries() {
         if (has_loaded) return true;
 
-        // None of these work either, wbhich is odd to me. commented out for now
-        // System.load("C:\\Users\\matth\\.wpilib\\nativecache\\windows\\x86-64\\4ca969397a399d7bcd38c546fd9ac2e1\\wpiutil.dll");
-        // System.load("C:\\Users\\matth\\.wpilib\\nativecache\\windows\\x86-64\\4ca969397a399d7bcd38c546fd9ac2e1\\wpiutiljni.dll");
-        // System.err.println("Test-load yay");
-
         NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
         WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
         CameraServerJNI.Helper.setExtractOnStaticLoad(false);
