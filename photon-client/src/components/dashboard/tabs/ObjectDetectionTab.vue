@@ -4,6 +4,7 @@ import { type ActivePipelineSettings, PipelineType } from "@/types/PipelineTypes
 import PvSlider from "@/components/common/pv-slider.vue";
 import { computed, getCurrentInstance } from "vue";
 import { useStateStore } from "@/stores/StateStore";
+import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
 // Defer reference to store access method
@@ -31,6 +32,14 @@ const interactiveCols = computed(() =>
 
 <template>
   <div v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection">
+    <pv-select
+      v-model="currentPipelineSettings.model"
+      label="Model"
+      tooltip="The model used to detect objects in the camera feed"
+      :select-cols="interactiveCols"
+      :items="useSettingsStore().general.availableModels"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ model: value }, false)"
+    />
     <pv-slider
       v-model="currentPipelineSettings.confidence"
       class="pt-2"
