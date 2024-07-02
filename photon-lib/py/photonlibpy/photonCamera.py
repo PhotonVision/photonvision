@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import List
 import ntcore
 from wpilib import RobotController, Timer
 import wpilib
@@ -74,6 +75,39 @@ class PhotonCamera:
 
         self._prevHeartbeat = 0
         self._prevHeartbeatChangeTime = Timer.getFPGATimestamp()
+
+    def getAllUnreadResults(self) -> List[PhotonPipelineResult]:
+        """
+        The list of pipeline results sent by PhotonVision since the last call to getAllUnreadResults().
+        Calling this function clears the internal FIFO queue, and multiple calls to
+        getAllUnreadResults() will return different (potentially empty) result arrays. Be careful to
+        call this exactly ONCE per loop of your robot code! FIFO depth is limited to 20 changes, so
+        make sure to call this frequently enough to avoid old results being discarded, too!
+        """
+
+        self._versionCheck()
+
+        changes = self._rawBytesEntry.readQueue()
+
+        ret = []
+
+        for change in changes:
+            byteList = change.value
+            timestamp = change.time
+
+            if len(byteList) < 1:
+                pass
+            else:
+                newResult = PhotonPipelineResult()
+                pkt = Packet(byteList)
+                newResult.populateFromPacket(pkt)
+                # NT4 allows us to correct the timestamp based on when the message was sent
+                newResult.setTimestampSeconds(
+                    timestamp / 1e6 - newResult.getLatencyMillis() / 1e3
+                )
+                ret.append(newResult)
+
+        return ret
 
     def getLatestResult(self) -> PhotonPipelineResult:
         self._versionCheck()

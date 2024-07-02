@@ -58,37 +58,37 @@ class Vision {
       cameraProp->SetAvgLatency(50_ms);
       cameraProp->SetLatencyStdDev(15_ms);
 
-      cameraSim = std::make_shared<photon::PhotonCameraSim>(camera.get(),
-                                                            *cameraProp.get());
+      cameraSim =
+          std::make_shared<photon::PhotonCameraSim>(&camera, *cameraProp.get());
 
       visionSim->AddCamera(cameraSim.get(), constants::Vision::kRobotToCam);
       cameraSim->EnableDrawWireframe(true);
     }
   }
 
-  photon::PhotonPipelineResult GetLatestResult() {
-    return camera->GetLatestResult();
-  }
+  photon::PhotonPipelineResult GetLatestResult() { return m_latestResult; }
 
   std::optional<photon::EstimatedRobotPose> GetEstimatedGlobalPose() {
-    auto visionEst = photonEstimator.Update();
-    units::second_t latestTimestamp = camera->GetLatestResult().GetTimestamp();
-    bool newResult =
-        units::math::abs(latestTimestamp - lastEstTimestamp) > 1e-5_s;
-    if (frc::RobotBase::IsSimulation()) {
-      if (visionEst.has_value()) {
-        GetSimDebugField()
-            .GetObject("VisionEstimation")
-            ->SetPose(visionEst.value().estimatedPose.ToPose2d());
-      } else {
-        if (newResult) {
+    std::optional<photon::EstimatedRobotPose> visionEst;
+
+    // Run each new pipeline result through our pose estimator
+    for (const auto& result : camera.GetAllUnreadResults()) {
+      // cache result and update pose estimator
+      auto visionEst = photonEstimator.Update(result);
+      m_latestResult = result;
+
+      // In sim only, add our vision estimate to the sim debug field
+      if (frc::RobotBase::IsSimulation()) {
+        if (visionEst.has_value()) {
+          GetSimDebugField()
+              .GetObject("VisionEstimation")
+              ->SetPose(visionEst.value().estimatedPose.ToPose2d());
+        } else {
           GetSimDebugField().GetObject("VisionEstimation")->SetPoses({});
         }
       }
     }
-    if (newResult) {
-      lastEstTimestamp = latestTimestamp;
-    }
+
     return visionEst;
   }
 
@@ -141,10 +141,12 @@ class Vision {
   photon::PhotonPoseEstimator photonEstimator{
       constants::Vision::kTagLayout,
       photon::PoseStrategy::MULTI_TAG_PNP_ON_COPROCESSOR,
-      photon::PhotonCamera{"photonvision"}, constants::Vision::kRobotToCam};
-  std::shared_ptr<photon::PhotonCamera> camera{photonEstimator.GetCamera()};
+      constants::Vision::kRobotToCam};
+  photon::PhotonCamera camera{"photonvision"};
   std::unique_ptr<photon::VisionSystemSim> visionSim;
   std::unique_ptr<photon::SimCameraProperties> cameraProp;
   std::shared_ptr<photon::PhotonCameraSim> cameraSim;
-  units::second_t lastEstTimestamp{0_s};
+
+  // The most recent result, cached for calculating std devs
+  photon::PhotonPipelineResult m_latestResult;
 };

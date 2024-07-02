@@ -32,6 +32,7 @@
 namespace photon {
 namespace VisionEstimation {
 
+[[maybe_unused]]
 static std::vector<frc::AprilTag> GetVisibleLayoutTags(
     const std::vector<PhotonTrackedTarget>& visTags,
     const frc::AprilTagFieldLayout& layout) {
