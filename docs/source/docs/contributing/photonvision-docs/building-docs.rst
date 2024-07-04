@@ -4,29 +4,30 @@ To build the PhotonVision documentation, you will require `Git <https://git-scm.
 
 Cloning the Documentation Repository
 ------------------------------------
-If you are planning on contributing, it is recommended to create a fork of the `main docs repository <https://github.com/PhotonVision/photonvision-docs>`_. To clone this fork, run the following command in a terminal window:
 
-``git clone https://github.com/[your username]/photonvision-docs``
+Documentation lives within the main PhotonVision repository within the `docs` sub-folder. If you are planning on contributing, it is recommended to create a fork of the `PhotonVision repository <https://github.com/PhotonVision/photonvision>`_. To clone this fork, run the following command in a terminal window:
+
+``git clone https://github.com/[your username]/photonvision``
 
 Installing Python Dependencies
 ------------------------------
-You must install a set of Python dependencies in order to build the documentation. To do so, you can run the following command in the root project directory:
+You must install a set of Python dependencies in order to build the documentation. To do so, you can run the following command in the docs sub-folder:
 
-``python -m pip install -r requirements.txt``
+``~/photonvision/docs$ python -m pip install -r requirements.txt``
 
 Building the Documentation
 --------------------------
-In order to build the documentation, you can run the following command in the root project directory:
+In order to build the documentation, you can run the following command in the docs sub-folder:
 
-``make html``
+``~/photonvision/docs$ make html``
 
 .. note:: You may have to run ``./make html`` on Windows.
 
 Opening the Documentation
 -------------------------
-The built documentation is located at ``build/html/index.html``.
+The built documentation is located at ``docs/build/html/index.html`` relative to the root project directory.
 
 Docs Builds on Pull Requests
 ----------------------------
 
-Pre-merge builds of docs can be found at: ``https://photonvision-docs--PRNUMBER.org.readthedocs.build/en/PRNUMBER/index.html``. These docs are republished on every commit to a pull request made to PhotonVision/photonvision-docs. For example, PR 325 would have pre-merge documentation published to ``https://photonvision-docs--325.org.readthedocs.build/en/325/index.html``
+Pre-merge builds of docs can be found at: ``https://photonvision-docs--PRNUMBER.org.readthedocs.build/en/PRNUMBER/index.html``. These docs are republished on every commit to a pull request made to PhotonVision/photonvision-docs. For example, PR 325 would have pre-merge documentation published to ``https://photonvision-docs--325.org.readthedocs.build/en/325/index.html``. Additionally, the pull requrest will have a link directly to the pre-release build of the docs. This build only runs when there is a change to files in the docs sub-folder.
