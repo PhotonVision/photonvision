@@ -25,8 +25,6 @@ public class ObjectDetectionPipelineSettings extends AdvancedPipelineSettings {
     public double nms; // non maximal suppression
     public String model;
 
-    public List<String> availableModels;
-
     public ObjectDetectionPipelineSettings() {
         super();
         this.pipelineType = PipelineType.ObjectDetection; // TODO: FIX this
@@ -37,6 +35,5 @@ public class ObjectDetectionPipelineSettings extends AdvancedPipelineSettings {
         confidence = .9;
         nms = .45;
         model = NeuralNetworkModelManager.getInstance().getDefaultRknnModel().getName();
-        availableModels = NeuralNetworkModelManager.getInstance().getModels();
     }
 }
