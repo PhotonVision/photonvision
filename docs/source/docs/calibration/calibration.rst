@@ -59,7 +59,7 @@ In the Camera Calibration tab, we'll print out the calibration target using the 
 3. Select calibration resolution and fill in the appropriate target data.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-We'll next select a resolution to calibrate and populate our pattern spacing and board size. The provided chessboard is 8 squares in width and height (the charuco board uses a tag family of 4x4), and each square should be about 1 in across (for the charuco board the markers are 0.75in). This information should be verified with the real calibration board, printers are not perfect. Finally, once our entered data is correct, we'll click "start calibration."
+We'll next select a resolution to calibrate and populate our pattern spacing and board size. The provided chessboard is 8 squares in width and height (the charuco board uses a tag family of 4x4), and each square should be about 1 in across (for the charuco board the markers are 0.75in). This information should be verified with the real calibration board using calipers, printers are not perfect. Finally, once our entered data is correct, we'll click "start calibration."
 
 4. Take calibration images from various angles and distances.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
