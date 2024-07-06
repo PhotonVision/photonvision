@@ -52,20 +52,22 @@ The Cameras tab of the UI houses PhotonVision's camera calibration tooling. It a
 2. Print out the calibration target.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In the Camera Calibration tab, we'll print out the calibration target using the "Download" button. This should be printed on 8.5x11 printer paper. This page shows using an 8x8 chessboard (or charuco board depending on the selected calibration type).
+In the Camera Calibration tab, we'll print out the calibration target using the "Download" button. This should be printed on 8.5x11 printer paper. This page shows using an 8x8 charuco board (or chessboard depending on the selected calibration type).
 
 .. warning:: Ensure that there is no scaling applied during printing (it should be at 100%) and that the PDF is printed as is on regular printer paper. Check the square size and marker size with calipers or an accurate measuring device after printing to ensure squares are sized properly, and enter the true size of the square in the UI text box. For optimal results, various resources are available online to calibrate your specific printer if needed.
 
 3. Select calibration resolution and fill in the appropriate target data.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-We'll next select a resolution to calibrate and populate our pattern spacing and board size. The provided chessboard is 8 squares in width and height (the charuco board uses a tag family of 4x4), and each square should be about 1 in across (for the charuco board the markers are 0.75in). This information should be verified with the real calibration board using calipers, printers are not perfect. Finally, once our entered data is correct, we'll click "start calibration."
+We'll next select a resolution to calibrate and populate our pattern spacing, marker size, and board size. The provided chessboard and charuco board are an 8x8 grid of 1 inch square. The provided charuco board uses the 4x4 dictionary with a marker size of 0.75 inches (this board does not need the old OpenCV pattern selector selected). Printers are not perfect you need to measure your calibration target and enter the correct marker size and pattern spacing (aka size of the black square). Finally, once our entered data is correct, we'll click "start calibration."
+
+.. warning:: Old OpenCV Pattern selector. This should be used in the case that the calibration image is generated from a version of OpenCV before version 4.6.0. This would include targets created by calib.io. If this selector is not set correctly the calibration will be completely invalid. For more info view `this GitHub issue <https://github.com/opencv/opencv_contrib/issues/3291>`_.
 
 4. Take calibration images from various angles and distances.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-Now, we'll capture images of our board from various angles. It's important to check that the board overlay matches the board in your image. The further the overdrawn points are from the true position of the chessboard corners, the less accurate the final calibration will be. We'll want to capture enough images to cover the whole camera's FOV (with a minimum of 12). Once we've got our images, we'll click "Finish calibration" and wait for the calibration process to complete. If all goes well, the mean error and FOVs will be shown in the table on the right. The FOV should be close to the camera's specified FOV (usually found in a datasheet) usually within 10 degrees. The mean error should also be  low, usually less than 1 pixel.
+Now, we'll capture images of our board from various angles. It's important to check that the board overlay matches the board in your image. The further the overdrawn points are from the true position of the chessboard corners, the less accurate the final calibration will be. We'll want to capture enough images to cover the whole camera's FOV (with a minimum of 12). Once we've got our images, we'll click "Finish calibration" and wait for the calibration process to complete. If all goes well, the mean error and FOVs will be shown in the table on the right. The FOV should be close to the camera's specified FOV (usually found in a datasheet) usually within + or - 10 degrees. The mean error should also be low, usually less than 1 pixel.
 
 .. raw:: html
 
