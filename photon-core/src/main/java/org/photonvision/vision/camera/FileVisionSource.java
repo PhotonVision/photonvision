@@ -44,6 +44,10 @@ public class FileVisionSource extends VisionSource {
                         cameraConfiguration.FOV,
                         FileFrameProvider.MAX_FPS,
                         calibration);
+
+        if (getCameraConfiguration().cameraQuirks == null)
+            getCameraConfiguration().cameraQuirks = QuirkyCamera.DefaultCamera;
+
         settables =
                 new FileSourceSettables(cameraConfiguration, frameProvider.get().frameStaticProperties);
     }

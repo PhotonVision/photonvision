@@ -79,10 +79,16 @@ publishing {
 
     repositories {
         maven {
-            url ('https://maven.photonvision.org/repository/' + (isDev ? 'snapshots' : 'internal'))
-            credentials {
-                username 'ghactions'
-                password System.getenv("ARTIFACTORY_API_KEY")
+            // If we're trying to copy local outputs, just throw everything into build/maven
+            // The problem here is we can't specify which repo to publish to easily, so we have to choose one or the other
+            if (project.hasProperty('copyOfflineArtifacts')) {
+                url(localMavenURL)
+            } else {
+                url(photonMavenURL)
+                credentials {
+                    username 'ghactions'
+                    password System.getenv("ARTIFACTORY_API_KEY")
+                }
             }
         }
     }

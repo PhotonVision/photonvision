@@ -18,10 +18,10 @@
 #pragma once
 
 #include <algorithm>
+#include <bit>
+#include <cstring>
 #include <string>
 #include <vector>
-
-#include <wpi/Endian.h>
 
 namespace photon {
 
@@ -39,28 +39,24 @@ class Packet {
    * Constructs a packet with the given data.
    * @param data The packet data.
    */
-  explicit Packet(std::vector<uint8_t> data) : packetData(data) {}
+  explicit Packet(std::vector<uint8_t> data);
 
   /**
    * Clears the packet and resets the read and write positions.
    */
-  void Clear() {
-    packetData.clear();
-    readPos = 0;
-    writePos = 0;
-  }
+  void Clear();
 
   /**
    * Returns the packet data.
    * @return The packet data.
    */
-  const std::vector<uint8_t>& GetData() { return packetData; }
+  inline const std::vector<uint8_t>& GetData() { return packetData; }
 
   /**
    * Returns the number of bytes in the data.
    * @return The number of bytes in the data.
    */
-  size_t GetDataSize() const { return packetData.size(); }
+  inline size_t GetDataSize() const { return packetData.size(); }
 
   /**
    * Adds a value to the data buffer. This should only be used with PODs.
@@ -73,8 +69,7 @@ class Packet {
     packetData.resize(packetData.size() + sizeof(T));
     std::memcpy(packetData.data() + writePos, &src, sizeof(T));
 
-    if constexpr (wpi::support::endian::system_endianness() ==
-                  wpi::support::endianness::little) {
+    if constexpr (std::endian::native == std::endian::little) {
       // Reverse to big endian for network conventions.
       std::reverse(packetData.data() + writePos,
                    packetData.data() + writePos + sizeof(T));
@@ -95,8 +90,7 @@ class Packet {
     if (!packetData.empty()) {
       std::memcpy(&value, packetData.data() + readPos, sizeof(T));
 
-      if constexpr (wpi::support::endian::system_endianness() ==
-                    wpi::support::endianness::little) {
+      if constexpr (std::endian::native == std::endian::little) {
         // Reverse to little endian for host.
         uint8_t& raw = reinterpret_cast<uint8_t&>(value);
         std::reverse(&raw, &raw + sizeof(T));
@@ -107,10 +101,8 @@ class Packet {
     return *this;
   }
 
-  bool operator==(const Packet& right) const {
-    return packetData == right.packetData;
-  }
-  bool operator!=(const Packet& right) const { return !operator==(right); }
+  bool operator==(const Packet& right) const;
+  bool operator!=(const Packet& right) const;
 
  private:
   // Data stored in the packet

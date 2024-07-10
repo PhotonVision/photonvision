@@ -36,7 +36,7 @@ import edu.wpi.first.math.interpolation.Interpolator;
 import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.numbers.N5;
+import edu.wpi.first.math.numbers.N8;
 import edu.wpi.first.wpilibj.DriverStation;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -96,7 +96,7 @@ public class PhotonPoseEstimator {
     }
 
     private AprilTagFieldLayout fieldTags;
-    private TargetModel tagModel = TargetModel.kAprilTag16h5;
+    private TargetModel tagModel = TargetModel.kAprilTag36h11;
     private PoseStrategy primaryStrategy;
     private PoseStrategy multiTagFallbackStrategy = PoseStrategy.LOWEST_AMBIGUITY;
     private final PhotonCamera camera;
@@ -179,7 +179,7 @@ public class PhotonPoseEstimator {
     /**
      * Get the TargetModel representing the tags being detected. This is used for on-rio multitag.
      *
-     * <p>By default, this is {@link TargetModel#kAprilTag16h5}.
+     * <p>By default, this is {@link TargetModel#kAprilTag36h11}.
      */
     public TargetModel getTagModel() {
         return tagModel;
@@ -359,7 +359,7 @@ public class PhotonPoseEstimator {
     public Optional<EstimatedRobotPose> update(
             PhotonPipelineResult cameraResult,
             Optional<Matrix<N3, N3>> cameraMatrix,
-            Optional<Matrix<N5, N1>> distCoeffs) {
+            Optional<Matrix<N8, N1>> distCoeffs) {
         // Time in the past -- give up, since the following if expects times > 0
         if (cameraResult.getTimestampSeconds() < 0) {
             return Optional.empty();
@@ -387,7 +387,7 @@ public class PhotonPoseEstimator {
     private Optional<EstimatedRobotPose> update(
             PhotonPipelineResult cameraResult,
             Optional<Matrix<N3, N3>> cameraMatrix,
-            Optional<Matrix<N5, N1>> distCoeffs,
+            Optional<Matrix<N8, N1>> distCoeffs,
             PoseStrategy strat) {
         Optional<EstimatedRobotPose> estimatedPose;
         switch (strat) {
@@ -432,7 +432,7 @@ public class PhotonPoseEstimator {
     private Optional<EstimatedRobotPose> multiTagOnCoprocStrategy(
             PhotonPipelineResult result,
             Optional<Matrix<N3, N3>> cameraMatrixOpt,
-            Optional<Matrix<N5, N1>> distCoeffsOpt) {
+            Optional<Matrix<N8, N1>> distCoeffsOpt) {
         if (result.getMultiTagResult().estimatedPose.isPresent) {
             var best_tf = result.getMultiTagResult().estimatedPose.best;
             var best =
@@ -519,7 +519,7 @@ public class PhotonPoseEstimator {
     private Optional<EstimatedRobotPose> multiTagOnRioStrategy(
             PhotonPipelineResult result,
             Optional<Matrix<N3, N3>> cameraMatrixOpt,
-            Optional<Matrix<N5, N1>> distCoeffsOpt) {
+            Optional<Matrix<N8, N1>> distCoeffsOpt) {
         boolean hasCalibData = cameraMatrixOpt.isPresent() && distCoeffsOpt.isPresent();
         // cannot run multitagPNP, use fallback strategy
         if (!hasCalibData || result.getTargets().size() < 2) {

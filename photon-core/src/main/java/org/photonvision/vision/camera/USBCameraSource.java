@@ -69,6 +69,15 @@ public class USBCameraSource extends VisionSource {
             logger.info("Quirky camera detected: " + getCameraConfiguration().cameraQuirks.baseName);
         }
 
+        if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.ArduOV9782)) {
+            try {
+                // Set white balance temperature to 3500 for OV9782 camera
+                camera.getProperty("white_balance_temperature").set(3500);
+            } catch (VideoException e) {
+                logger.error("Failed to set white balance temperature for OV9782 camera!", e);
+            }
+        }
+
         if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.CompletelyBroken)) {
             // set some defaults, as these should never be used.
             logger.info(
@@ -190,9 +199,19 @@ public class USBCameraSource extends VisionSource {
                         // Linux kernel bump changed names -- now called white_balance_automatic and
                         // white_balance_temperature
                         if (camera.getProperty("white_balance_automatic").getKind() != Kind.kNone) {
-                            // 1=auto, 0=manual
-                            camera.getProperty("white_balance_automatic").set(0);
-                            camera.getProperty("white_balance_temperature").set(4000);
+                            if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.ArduOV9782)) {
+                                try {
+                                    // Set white balance temperature to 3500 for OV9782 camera
+                                    camera.getProperty("white_balance_automatic").set(0);
+                                    camera.getProperty("white_balance_temperature").set(3500);
+                                } catch (VideoException e) {
+                                    logger.error("Failed to set white balance temperature for OV9782 camera!", e);
+                                }
+                            } else {
+                                // 1=auto, 0=manual
+                                camera.getProperty("white_balance_automatic").set(0);
+                                camera.getProperty("white_balance_temperature").set(4000);
+                            }
                         } else {
                             camera.setWhiteBalanceManual(4000); // Auto white-balance disabled, 4000K preset
                         }
@@ -273,6 +292,9 @@ public class USBCameraSource extends VisionSource {
                         } else if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.ArduOV2311)) {
                             propMin = 1;
                             propMax = 140;
+                        } else if (getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.ArduOV9782)) {
+                            propMin = 1;
+                            propMax = 60;
                         }
 
                         var exposure_manual_val = MathUtils.map(Math.round(exposure), 0, 100, propMin, propMax);

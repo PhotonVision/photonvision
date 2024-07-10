@@ -150,6 +150,7 @@ export enum ValidQuirks {
   AdjustableFocus = "AdjustableFocus",
   ArduOV9281 = "ArduOV9281",
   ArduOV2311 = "ArduOV2311",
+  ArduOV9782 = "ArduOV9782",
   ArduCamCamera = "ArduCamCamera",
   CompletelyBroken = "CompletelyBroken",
   FPSCap100 = "FPSCap100",
@@ -279,6 +280,7 @@ export const PlaceholderCameraSettings: CameraSettings = {
       AdjustableFocus: false,
       ArduOV9281: false,
       ArduOV2311: false,
+      ArduOV9782: false,
       ArduCamCamera: false,
       CompletelyBroken: false,
       FPSCap100: false,
@@ -293,6 +295,13 @@ export const PlaceholderCameraSettings: CameraSettings = {
 export enum CalibrationBoardTypes {
   Chessboard = 0,
   Charuco = 1
+}
+
+export enum CalibrationTagFamilies {
+  Dict_4X4_1000 = 0,
+  Dict_5X5_1000 = 1,
+  Dict_6X6_1000 = 2,
+  Dict_7X7_1000 = 3
 }
 
 export enum RobotOffsetType {
