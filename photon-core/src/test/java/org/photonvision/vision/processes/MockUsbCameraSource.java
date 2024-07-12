@@ -17,13 +17,15 @@
 
 package org.photonvision.vision.processes;
 
+import edu.wpi.first.cscore.UsbCamera;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.QuirkyCamera;
-import org.photonvision.vision.camera.USBCameraSource;
+import org.photonvision.vision.camera.USBCameras.GenericUSBCameraSettables;
+import org.photonvision.vision.camera.USBCameras.GenericUSBCameraSource;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 
-public class MockUsbCameraSource extends USBCameraSource {
+public class MockUsbCameraSource extends GenericUSBCameraSource {
     /** Used for unit tests to better simulate a usb camera without a camera being present. */
     public MockUsbCameraSource(CameraConfiguration config, int pid, int vid) {
         super(config);
@@ -36,12 +38,12 @@ public class MockUsbCameraSource extends USBCameraSource {
                         TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
                         TestUtils.WPI2019Image.FOV);
 
-        usbCameraSettables = new MockUsbCameraSettables(config);
+        settables = new MockUsbCameraSettables(config, null);
     }
 
-    private class MockUsbCameraSettables extends USBCameraSettables {
-        public MockUsbCameraSettables(CameraConfiguration config) {
-            super(config);
+    private class MockUsbCameraSettables extends GenericUSBCameraSettables {
+        public MockUsbCameraSettables(CameraConfiguration config, UsbCamera camera) {
+            super(config, camera);
         }
 
         /** Hardware-specific implementation - do nothing in test */

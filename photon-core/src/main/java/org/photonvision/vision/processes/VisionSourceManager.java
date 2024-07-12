@@ -40,7 +40,7 @@ import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.LibcameraGpuSource;
 import org.photonvision.vision.camera.TestSource;
-import org.photonvision.vision.camera.USBCameraSource;
+import org.photonvision.vision.camera.USBCameras.GenericUSBCameraSource;
 
 public class VisionSourceManager {
     private static final Logger logger = new Logger(VisionSourceManager.class, LogGroup.Camera);
@@ -574,7 +574,7 @@ public class VisionSourceManager {
                 var piCamSrc = new LibcameraGpuSource(configuration);
                 cameraSources.add(piCamSrc);
             } else {
-                var newCam = new USBCameraSource(configuration);
+                var newCam = new GenericUSBCameraSource(configuration);
                 if (!newCam.getCameraQuirks().hasQuirk(CameraQuirk.CompletelyBroken)
                         && !newCam.getSettables().videoModes.isEmpty()) {
                     cameraSources.add(newCam);
