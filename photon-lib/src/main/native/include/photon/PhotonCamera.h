@@ -39,7 +39,7 @@
 #include <networktables/StringTopic.h>
 #include <units/time.h>
 
-#include "photon/targeting//PhotonPipelineResult.h"
+#include "photon/targeting/PhotonPipelineResult.h"
 
 namespace cv {
 class Mat;

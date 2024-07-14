@@ -2,9 +2,12 @@ from enum import Enum
 import ntcore
 from wpilib import RobotController, Timer
 import wpilib
-from photonlibpy.packet import Packet
-from photonlibpy.photonPipelineResult import PhotonPipelineResult
-from photonlibpy.version import PHOTONVISION_VERSION, PHOTONLIB_VERSION  # type: ignore[import-untyped]
+from .packet import Packet
+from .targeting.photonPipelineResult import PhotonPipelineResult
+from .version import PHOTONVISION_VERSION, PHOTONLIB_VERSION  # type: ignore[import-untyped]
+
+# magical import to make serde stuff work
+import photonlibpy.generated  # noqa
 
 
 class VisionLEDMode(Enum):
@@ -79,16 +82,15 @@ class PhotonCamera:
         self._versionCheck()
 
         now = RobotController.getFPGATime()
-        retVal = PhotonPipelineResult()
         packetWithTimestamp = self._rawBytesEntry.getAtomic()
         byteList = packetWithTimestamp.value
-        timestamp = packetWithTimestamp.time
+        packetWithTimestamp.time
 
         if len(byteList) < 1:
-            return retVal
+            return PhotonPipelineResult()
         else:
             pkt = Packet(byteList)
-            retVal.populateFromPacket(pkt)
+            retVal = PhotonPipelineResult.photonStruct.unpack(pkt)
             # We don't trust NT4 time, hack around
             retVal.ntRecieveTimestampMicros = now
             return retVal
@@ -199,6 +201,6 @@ class PhotonCamera:
 
             wpilib.reportWarning(bfw)
 
-            errText = f"Photon version {PHOTONLIB_VERSION} does not match coprocessor version {versionString}. Please install photonlibpy version {PHOTONLIB_VERSION}."
+            errText = f"Photon version {PHOTONLIB_VERSION} does not match coprocessor version {versionString}. Please install photonlibpy version {versionString}, or update your coprocessor to {PHOTONLIB_VERSION}."
             wpilib.reportError(errText, True)
             raise Exception(errText)

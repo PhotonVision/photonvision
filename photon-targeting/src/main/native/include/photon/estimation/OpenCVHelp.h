@@ -29,7 +29,7 @@
 
 #define OPENCV_DISABLE_EIGEN_TENSOR_SUPPORT
 #include <opencv2/core/eigen.hpp>
-#include "photon/targeting/PNPResult.h"
+#include "photon/targeting/PnpResult.h"
 #include "photon/targeting/MultiTargetPNPResult.h"
 
 namespace photon {
@@ -182,7 +182,7 @@ static frc::Rotation3d RVecToRotation(const cv::Mat& rvecInput) {
                                           units::radian_t{data[2]}});
 }
 
-[[maybe_unused]] static photon::PNPResult SolvePNP_Square(
+[[maybe_unused]] static photon::PnpResult SolvePNP_Square(
     const Eigen::Matrix<double, 3, 3>& cameraMatrix,
     const Eigen::Matrix<double, 8, 1>& distCoeffs,
     std::vector<frc::Translation3d> modelTrls,
@@ -233,7 +233,7 @@ static frc::Rotation3d RVecToRotation(const cv::Mat& rvecInput) {
     fmt::print("SolvePNP_Square failed!\n");
   }
   if (alt) {
-    photon::PNPResult result;
+    photon::PnpResult result;
     result.best = best;
     result.alt = alt.value();
     result.ambiguity = errors[0] / errors[1];
@@ -242,7 +242,7 @@ static frc::Rotation3d RVecToRotation(const cv::Mat& rvecInput) {
     result.isPresent = true;
     return result;
   } else {
-    photon::PNPResult result;
+    photon::PnpResult result;
     result.best = best;
     result.bestReprojErr = errors[0];
     result.isPresent = true;
@@ -250,7 +250,7 @@ static frc::Rotation3d RVecToRotation(const cv::Mat& rvecInput) {
   }
 }
 
-[[maybe_unused]] static photon::PNPResult SolvePNP_SQPNP(
+[[maybe_unused]] static photon::PnpResult SolvePNP_SQPNP(
     const Eigen::Matrix<double, 3, 3>& cameraMatrix,
     const Eigen::Matrix<double, 8, 1>& distCoeffs,
     std::vector<frc::Translation3d> modelTrls,
@@ -281,7 +281,7 @@ static frc::Rotation3d RVecToRotation(const cv::Mat& rvecInput) {
   if (std::isnan(error)) {
     fmt::print("SolvePNP_Square failed!\n");
   }
-  photon::PNPResult result;
+  photon::PnpResult result;
   result.best = best;
   result.bestReprojErr = error;
   result.isPresent = true;

@@ -29,7 +29,6 @@ message ProtobufTargetCorner {
 }
 
 message ProtobufPNPResult {
-  bool is_present = 1;
   wpi.proto.ProtobufTransform3d best = 2;
   double best_reproj_err = 3;
   optional wpi.proto.ProtobufTransform3d alt = 4;
@@ -62,7 +61,7 @@ message ProtobufPhotonPipelineResult {
   double latency_ms = 1 [deprecated = true];
 
   repeated ProtobufPhotonTrackedTarget targets = 2;
-  ProtobufMultiTargetPNPResult multi_target_result = 3;
+  optional ProtobufMultiTargetPNPResult multi_target_result = 3;
 
   int64 sequence_id = 4;
   int64 capture_timestamp_micros = 5;

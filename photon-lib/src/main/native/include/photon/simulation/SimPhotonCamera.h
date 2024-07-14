@@ -36,9 +36,9 @@
 #include "photon/PhotonTargetSortMode.h"
 #include "photon/dataflow/structures/Packet.h"
 #include "photon/targeting/MultiTargetPNPResult.h"
-#include "photon/targeting/PNPResult.h"
 #include "photon/targeting/PhotonPipelineResult.h"
 #include "photon/targeting/PhotonTrackedTarget.h"
+#include "photon/targeting/PnpResult.h"
 
 namespace photon {
 class SimPhotonCamera : public PhotonCamera {

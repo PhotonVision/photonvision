@@ -238,7 +238,7 @@ class PhotonCameraSim {
         continue;
       }
 
-      PNPResult pnpSim{};
+      PnpResult pnpSim{};
       if (tgt.fiducialId >= 0 && tgt.GetFieldVertices().size() == 4) {
         pnpSim = OpenCVHelp::SolvePNP_Square(
             prop.GetIntrinsics(), prop.GetDistCoeffs(),
@@ -365,7 +365,7 @@ class PhotonCameraSim {
                      usedIds.begin(),
                      [](const frc::AprilTag& tag) { return tag.ID; });
       std::sort(usedIds.begin(), usedIds.end());
-      PNPResult pnpResult = VisionEstimation::EstimateCamPosePNP(
+      PnpResult PnpResult = VisionEstimation::EstimateCamPosePNP(
           prop.GetIntrinsics(), prop.GetDistCoeffs(), detectableTgts, tagLayout,
           kAprilTag36h11);
       multiTagResults = MultiTargetPNPResult{pnpResult, usedIds};

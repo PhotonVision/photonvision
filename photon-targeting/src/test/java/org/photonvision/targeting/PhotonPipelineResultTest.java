@@ -24,6 +24,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 public class PhotonPipelineResultTest {
@@ -179,10 +180,11 @@ public class PhotonPipelineResultTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))),
-                        new MultiTargetPNPResult(
-                                new PNPResult(
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
-                                List.of(1, 2, 3)));
+                        Optional.of(
+                                new MultiTargetPNPResult(
+                                        new PnpResult(
+                                                new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
+                                        List.of((short) 1, (short) 2, (short) 3))));
         b =
                 new PhotonPipelineResult(
                         3,
@@ -231,10 +233,11 @@ public class PhotonPipelineResultTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))),
-                        new MultiTargetPNPResult(
-                                new PNPResult(
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
-                                List.of(1, 2, 3)));
+                        Optional.of(
+                                new MultiTargetPNPResult(
+                                        new PnpResult(
+                                                new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
+                                        List.of((short) 1, (short) 2, (short) 3))));
         assertEquals(a, b);
     }
 
@@ -386,10 +389,11 @@ public class PhotonPipelineResultTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))),
-                        new MultiTargetPNPResult(
-                                new PNPResult(
-                                        new Transform3d(new Translation3d(1, 8, 3), new Rotation3d(1, 2, 3)), 0.1),
-                                List.of(3, 4, 7)));
+                        Optional.of(
+                                new MultiTargetPNPResult(
+                                        new PnpResult(
+                                                new Transform3d(new Translation3d(1, 8, 3), new Rotation3d(1, 2, 3)), 0.1),
+                                        List.of((short) 3, (short) 4, (short) 7))));
         b =
                 new PhotonPipelineResult(
                         3,
@@ -438,10 +442,11 @@ public class PhotonPipelineResultTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))),
-                        new MultiTargetPNPResult(
-                                new PNPResult(
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
-                                List.of(1, 2, 3)));
+                        Optional.of(
+                                new MultiTargetPNPResult(
+                                        new PnpResult(
+                                                new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
+                                        List.of((short) 1, (short) 2, (short) 3))));
         assertNotEquals(a, b);
     }
 }

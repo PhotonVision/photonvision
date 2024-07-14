@@ -64,7 +64,7 @@ spotless {
     java {
         target fileTree('.') {
             include '**/*.java'
-            exclude '**/build/**', '**/build-*/**', "photon-core\\src\\main\\java\\org\\photonvision\\PhotonVersion.java", "photon-lib\\src\\main\\java\\org\\photonvision\\PhotonVersion.java"
+            exclude '**/build/**', '**/build-*/**', "photon-core\\src\\main\\java\\org\\photonvision\\PhotonVersion.java", "photon-lib\\src\\main\\java\\org\\photonvision\\PhotonVersion.java", "**/src/generated/**"
         }
         toggleOffOn()
         googleJavaFormat()

@@ -431,7 +431,7 @@ TEST_F(VisionSystemSimTest, TestPoseEstimation) {
   for (photon::PhotonTrackedTarget tar : targetSpan) {
     targets.push_back(tar);
   }
-  photon::PNPResult results = photon::VisionEstimation::EstimateCamPosePNP(
+  photon::PnpResult results = photon::VisionEstimation::EstimateCamPosePNP(
       camEigen, distEigen, targets, layout, photon::kAprilTag16h5);
   frc::Pose3d pose = frc::Pose3d{} + results.best;
   ASSERT_NEAR(5, pose.X().to<double>(), 0.01);
@@ -452,7 +452,7 @@ TEST_F(VisionSystemSimTest, TestPoseEstimation) {
   for (photon::PhotonTrackedTarget tar : targetSpan2) {
     targets2.push_back(tar);
   }
-  photon::PNPResult results2 = photon::VisionEstimation::EstimateCamPosePNP(
+  photon::PnpResult results2 = photon::VisionEstimation::EstimateCamPosePNP(
       camEigen, distEigen, targets2, layout, photon::kAprilTag16h5);
   frc::Pose3d pose2 = frc::Pose3d{} + results2.best;
   ASSERT_NEAR(5, pose2.X().to<double>(), 0.01);

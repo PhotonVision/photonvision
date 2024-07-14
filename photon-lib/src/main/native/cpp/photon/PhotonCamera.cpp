@@ -117,18 +117,16 @@ PhotonPipelineResult PhotonCamera::GetLatestResult() {
   // Clear the current packet.
   packet.Clear();
 
-  // Create the new result;
-  PhotonPipelineResult result;
-
   // Fill the packet with latest data and populate result.
   units::microsecond_t now =
       units::microsecond_t(frc::RobotController::GetFPGATime());
   const auto value = rawBytesEntry.Get();
-  if (!value.size()) return result;
+  if (!value.size()) return PhotonPipelineResult{};
 
   photon::Packet packet{value};
 
-  packet >> result;
+  // Create the new result;
+  PhotonPipelineResult result = packet.Unpack<PhotonPipelineResult>();
 
   result.SetRecieveTimestamp(now);
 

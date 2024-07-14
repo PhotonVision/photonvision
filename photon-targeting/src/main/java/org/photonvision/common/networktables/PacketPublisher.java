@@ -17,27 +17,44 @@
 
 package org.photonvision.common.networktables;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.wpi.first.networktables.RawPublisher;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.dataflow.structures.PacketSerde;
 
 public class PacketPublisher<T> implements AutoCloseable {
     public final RawPublisher publisher;
-    private final PacketSerde<T> serde;
+    private final PacketSerde<T> photonStruct;
 
-    public PacketPublisher(RawPublisher publisher, PacketSerde<T> serde) {
+    public PacketPublisher(RawPublisher publisher, PacketSerde<T> photonStruct) {
         this.publisher = publisher;
-        this.serde = serde;
+        this.photonStruct = photonStruct;
+
+        var mapper = new ObjectMapper();
+        try {
+            this.publisher
+                    .getTopic()
+                    .setProperty("message_format", mapper.writeValueAsString(photonStruct.getTypeString()));
+            this.publisher
+                    .getTopic()
+                    .setProperty("message_uuid", mapper.writeValueAsString(photonStruct.getInterfaceUUID()));
+        } catch (JsonProcessingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
 
     public void set(T value, int byteSize) {
         var packet = new Packet(byteSize);
-        serde.pack(packet, value);
-        publisher.set(packet.getData());
+        photonStruct.pack(packet, value);
+        // todo: trim to only the bytes we need to send
+        publisher.set(packet.getWrittenDataCopy());
     }
 
     public void set(T value) {
-        set(value, serde.getMaxByteSize());
+        set(value, photonStruct.getMaxByteSize());
     }
 
     @Override

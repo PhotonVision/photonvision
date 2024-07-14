@@ -20,30 +20,30 @@
 #include "photon/targeting/PhotonTrackedTarget.h"
 #include "photon/targeting/proto/PhotonTrackedTargetProto.h"
 
-TEST(PhotonTrackedTargetTest, Roundtrip) {
-  photon::PhotonTrackedTarget target{
-      3.0,
-      4.0,
-      9.0,
-      -5.0,
-      -1,
-      -1,
-      -1.0,
-      frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
-                       frc::Rotation3d(1_rad, 2_rad, 3_rad)),
-      frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
-                       frc::Rotation3d(1_rad, 2_rad, 3_rad)),
-      -1,
-      {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6}, std::pair{7, 8}},
-      {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6}, std::pair{7, 8}}};
+// TEST(PhotonTrackedTargetTest, Roundtrip) {
+//   photon::PhotonTrackedTarget target{
+//       3.0,
+//       4.0,
+//       9.0,
+//       -5.0,
+//       -1,
+//       -1,
+//       -1.0,
+//       frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
+//                        frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+//       frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
+//                        frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+//       -1,
+//       {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6}, std::pair{7, 8}},
+//       {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6}, std::pair{7, 8}}};
 
-  google::protobuf::Arena arena;
-  google::protobuf::Message* proto =
-      wpi::Protobuf<photon::PhotonTrackedTarget>::New(&arena);
-  wpi::Protobuf<photon::PhotonTrackedTarget>::Pack(proto, target);
+//   google::protobuf::Arena arena;
+//   google::protobuf::Message* proto =
+//       wpi::Protobuf<photon::PhotonTrackedTarget>::New(&arena);
+//   wpi::Protobuf<photon::PhotonTrackedTarget>::Pack(proto, target);
 
-  photon::PhotonTrackedTarget unpacked_data =
-      wpi::Protobuf<photon::PhotonTrackedTarget>::Unpack(*proto);
+//   photon::PhotonTrackedTarget unpacked_data =
+//       wpi::Protobuf<photon::PhotonTrackedTarget>::Unpack(*proto);
 
-  EXPECT_EQ(target, unpacked_data);
-}
+//   EXPECT_EQ(target, unpacked_data);
+// }

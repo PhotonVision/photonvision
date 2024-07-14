@@ -140,7 +140,7 @@ public class PhotonCamera implements AutoCloseable {
                                 "rawBytes", new byte[] {}, PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
         resultSubscriber =
                 new PacketSubscriber<>(
-                        rawBytesEntry, PhotonPipelineResult.serde, new PhotonPipelineResult());
+                        rawBytesEntry, PhotonPipelineResult.photonStruct, new PhotonPipelineResult());
         driverModePublisher = cameraTable.getBooleanTopic("driverModeRequest").publish();
         driverModeSubscriber = cameraTable.getBooleanTopic("driverMode").subscribe(false);
         inputSaveImgEntry = cameraTable.getIntegerTopic("inputSaveImgCmd").getEntry(0);

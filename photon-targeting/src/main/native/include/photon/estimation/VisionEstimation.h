@@ -46,13 +46,13 @@ static std::vector<frc::AprilTag> GetVisibleLayoutTags(
   return retVal;
 }
 
-static PNPResult EstimateCamPosePNP(
+static PnpResult EstimateCamPosePNP(
     const Eigen::Matrix<double, 3, 3>& cameraMatrix,
     const Eigen::Matrix<double, 8, 1>& distCoeffs,
     const std::vector<PhotonTrackedTarget>& visTags,
     const frc::AprilTagFieldLayout& layout, const TargetModel& tagModel) {
   if (visTags.size() == 0) {
-    return PNPResult();
+    return PnpResult();
   }
 
   std::vector<std::pair<float, float>> corners{};
@@ -69,16 +69,16 @@ static PNPResult EstimateCamPosePNP(
     }
   }
   if (knownTags.size() == 0 || corners.size() == 0 || corners.size() % 4 != 0) {
-    return PNPResult{};
+    return PnpResult{};
   }
 
   std::vector<cv::Point2f> points = OpenCVHelp::CornersToPoints(corners);
 
   if (knownTags.size() == 1) {
-    PNPResult camToTag = OpenCVHelp::SolvePNP_Square(
+    PnpResult camToTag = OpenCVHelp::SolvePNP_Square(
         cameraMatrix, distCoeffs, tagModel.GetVertices(), points);
     if (!camToTag.isPresent) {
-      return PNPResult{};
+      return PnpResult{};
     }
     frc::Pose3d bestPose =
         knownTags[0].pose.TransformBy(camToTag.best.Inverse());
@@ -87,7 +87,7 @@ static PNPResult EstimateCamPosePNP(
       altPose = knownTags[0].pose.TransformBy(camToTag.alt.Inverse());
     }
     frc::Pose3d o{};
-    PNPResult result{};
+    PnpResult result{};
     result.best = frc::Transform3d{o, bestPose};
     result.alt = frc::Transform3d{o, altPose};
     result.ambiguity = camToTag.ambiguity;
@@ -100,12 +100,12 @@ static PNPResult EstimateCamPosePNP(
       auto verts = tagModel.GetFieldVertices(tag.pose);
       objectTrls.insert(objectTrls.end(), verts.begin(), verts.end());
     }
-    PNPResult camToOrigin = OpenCVHelp::SolvePNP_SQPNP(cameraMatrix, distCoeffs,
+    PnpResult camToOrigin = OpenCVHelp::SolvePNP_SQPNP(cameraMatrix, distCoeffs,
                                                        objectTrls, points);
     if (!camToOrigin.isPresent) {
-      return PNPResult{};
+      return PnpResult{};
     } else {
-      PNPResult result{};
+      PnpResult result{};
       result.best = camToOrigin.best.Inverse(),
       result.alt = camToOrigin.alt.Inverse(),
       result.ambiguity = camToOrigin.ambiguity;

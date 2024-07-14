@@ -27,23 +27,23 @@ import org.junit.jupiter.api.Test;
 public class PNPResultTest {
     @Test
     public void equalityTest() {
-        var a = new PNPResult();
-        var b = new PNPResult();
+        var a = new PnpResult();
+        var b = new PnpResult();
         assertEquals(a, b);
 
-        a = new PNPResult(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
-        b = new PNPResult(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
+        a = new PnpResult(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
+        b = new PnpResult(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
         assertEquals(a, b);
 
         a =
-                new PNPResult(
+                new PnpResult(
                         new Transform3d(0, 1, 2, new Rotation3d()),
                         new Transform3d(3, 4, 5, new Rotation3d()),
                         0.5,
                         0.1,
                         0.1);
         b =
-                new PNPResult(
+                new PnpResult(
                         new Transform3d(0, 1, 2, new Rotation3d()),
                         new Transform3d(3, 4, 5, new Rotation3d()),
                         0.5,
@@ -54,19 +54,19 @@ public class PNPResultTest {
 
     @Test
     public void inequalityTest() {
-        var a = new PNPResult(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
-        var b = new PNPResult(new Transform3d(3, 4, 5, new Rotation3d()), 0.1);
+        var a = new PnpResult(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
+        var b = new PnpResult(new Transform3d(3, 4, 5, new Rotation3d()), 0.1);
         assertNotEquals(a, b);
 
         a =
-                new PNPResult(
+                new PnpResult(
                         new Transform3d(3, 4, 5, new Rotation3d()),
                         new Transform3d(0, 1, 2, new Rotation3d()),
                         0.5,
                         0.1,
                         0.1);
         b =
-                new PNPResult(
+                new PnpResult(
                         new Transform3d(3, 4, 5, new Rotation3d()),
                         new Transform3d(0, 1, 2, new Rotation3d()),
                         0.5,

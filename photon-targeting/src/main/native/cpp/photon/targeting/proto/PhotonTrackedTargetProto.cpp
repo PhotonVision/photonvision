@@ -19,6 +19,9 @@
 
 #include "photon.pb.h"
 
+using photon::TargetCorner;
+using photon::TargetCorner_PhotonStruct;
+
 google::protobuf::Message* wpi::Protobuf<photon::PhotonTrackedTarget>::New(
     google::protobuf::Arena* arena) {
   return google::protobuf::Arena::CreateMessage<
@@ -30,30 +33,26 @@ photon::PhotonTrackedTarget wpi::Protobuf<photon::PhotonTrackedTarget>::Unpack(
   auto m = static_cast<const photonvision::proto::ProtobufPhotonTrackedTarget*>(
       &msg);
 
-  wpi::SmallVector<std::pair<double, double>, 4> minAreaRectCorners;
+  std::vector<photon::TargetCorner> minAreaRectCorners;
+  minAreaRectCorners.reserve(4);
   for (const auto& t : m->min_area_rect_corners()) {
-    minAreaRectCorners.emplace_back(t.x(), t.y());
+    minAreaRectCorners.emplace_back(
+        TargetCorner{TargetCorner_PhotonStruct{t.x(), t.y()}});
   }
 
-  std::vector<std::pair<double, double>> detectedCorners;
+  std::vector<photon::TargetCorner> detectedCorners;
   detectedCorners.reserve(m->detected_corners_size());
   for (const auto& t : m->detected_corners()) {
-    detectedCorners.emplace_back(t.x(), t.y());
+    minAreaRectCorners.emplace_back(
+        TargetCorner{TargetCorner_PhotonStruct{t.x(), t.y()}});
   }
 
-  return photon::PhotonTrackedTarget{
-      m->yaw(),
-      m->pitch(),
-      m->area(),
-      m->skew(),
-      m->fiducial_id(),
-      m->obj_detection_id(),
-      m->obj_detection_conf(),
+  return photon::PhotonTrackedTarget{photon::PhotonTrackedTarget_PhotonStruct{
+      m->yaw(), m->pitch(), m->area(), m->skew(), m->fiducial_id(),
+      m->obj_detection_id(), m->obj_detection_conf(),
       wpi::UnpackProtobuf<frc::Transform3d>(m->best_camera_to_target()),
       wpi::UnpackProtobuf<frc::Transform3d>(m->alt_camera_to_target()),
-      m->pose_ambiguity(),
-      minAreaRectCorners,
-      detectedCorners};
+      m->pose_ambiguity(), minAreaRectCorners, detectedCorners}};
 }
 
 void wpi::Protobuf<photon::PhotonTrackedTarget>::Pack(
@@ -75,14 +74,14 @@ void wpi::Protobuf<photon::PhotonTrackedTarget>::Pack(
   m->clear_min_area_rect_corners();
   for (const auto& t : value.GetMinAreaRectCorners()) {
     auto* corner = m->add_min_area_rect_corners();
-    corner->set_x(t.first);
-    corner->set_y(t.second);
+    corner->set_x(t.x);
+    corner->set_y(t.y);
   }
 
   m->clear_detected_corners();
   for (const auto& t : value.GetDetectedCorners()) {
     auto* corner = m->add_detected_corners();
-    corner->set_x(t.first);
-    corner->set_y(t.second);
+    corner->set_x(t.x);
+    corner->set_y(t.y);
   }
 }

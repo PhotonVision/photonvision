@@ -155,7 +155,7 @@ doxygen {
     html_timestamp true
     javadoc_autobrief true
     project_name 'PhotonVision C++'
-    project_logo '../wpiutil/src/main/native/resources/wpilib-128.png'
+    project_logo '../photon-client/src/assets/images/logoSmall.svg'
     project_number pubVersion
     quiet true
     recursive true

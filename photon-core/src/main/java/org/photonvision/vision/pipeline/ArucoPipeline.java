@@ -41,6 +41,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.Objdetect;
@@ -170,7 +171,7 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         }
 
         // Do multi-tag pose estimation
-        MultiTargetPNPResult multiTagResult = new MultiTargetPNPResult();
+        Optional<MultiTargetPNPResult> multiTagResult = Optional.empty();
         if (settings.solvePNPEnabled && settings.doMultiTarget) {
             var multiTagOutput = multiTagPNPPipe.run(targetList);
             sumPipeNanosElapsed += multiTagOutput.nanosElapsed;
@@ -188,20 +189,21 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
                 AprilTagPoseEstimate tagPoseEstimate = null;
                 // Do single-tag estimation when "always enabled" or if a tag was not used for multitag
                 if (settings.doSingleTargetAlways
-                        || !multiTagResult.fiducialIDsUsed.contains(detection.getId())) {
+                        || !(multiTagResult.isPresent()
+                                && multiTagResult.get().fiducialIDsUsed.contains((short) detection.getId()))) {
                     var poseResult = singleTagPoseEstimatorPipe.run(detection);
                     sumPipeNanosElapsed += poseResult.nanosElapsed;
                     tagPoseEstimate = poseResult.output;
                 }
 
                 // If single-tag estimation was not done, this is a multi-target tag from the layout
-                if (tagPoseEstimate == null) {
+                if (tagPoseEstimate == null && multiTagResult.isPresent()) {
                     // compute this tag's camera-to-tag transform using the multitag result
                     var tagPose = atfl.getTagPose(detection.getId());
                     if (tagPose.isPresent()) {
                         var camToTag =
                                 new Transform3d(
-                                        new Pose3d().plus(multiTagResult.estimatedPose.best), tagPose.get());
+                                        new Pose3d().plus(multiTagResult.get().estimatedPose.best), tagPose.get());
                         // match expected OpenCV coordinate system
                         camToTag =
                                 CoordinateSystem.convert(camToTag, CoordinateSystem.NWU(), CoordinateSystem.EDN());

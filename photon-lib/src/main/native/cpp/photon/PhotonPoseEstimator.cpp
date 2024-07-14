@@ -380,8 +380,8 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagOnCoprocStrategy(
     PhotonPipelineResult result,
     std::optional<PhotonCamera::CameraMatrix> camMat,
     std::optional<PhotonCamera::DistortionMatrix> distCoeffs) {
-  if (result.MultiTagResult().result.isPresent) {
-    const auto field2camera = result.MultiTagResult().result.best;
+  if (result.MultiTagResult()) {
+    const auto field2camera = result.MultiTagResult()->estimatedPose.best;
 
     const auto fieldToRobot =
         frc::Pose3d() + field2camera + m_robotToCamera.Inverse();
@@ -425,8 +425,8 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagOnRioStrategy(
         tagCorners.has_value()) {
       auto const targetCorners = target.GetDetectedCorners();
       for (size_t cornerIdx = 0; cornerIdx < 4; ++cornerIdx) {
-        imagePoints.emplace_back(targetCorners[cornerIdx].first,
-                                 targetCorners[cornerIdx].second);
+        imagePoints.emplace_back(targetCorners[cornerIdx].x,
+                                 targetCorners[cornerIdx].y);
         objectPoints.emplace_back((*tagCorners)[cornerIdx]);
       }
     }
