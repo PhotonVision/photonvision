@@ -17,6 +17,8 @@ nativeUtils {
     }
 }
 
+sourceSets.main.java.srcDir "${projectDir}/src/generated/main/java"
+
 model {
     components {
         "${nativeName}"(NativeLibrarySpec) {

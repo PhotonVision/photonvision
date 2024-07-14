@@ -1,0 +1,17 @@
+---
+- name: PhotonPipelineMetadata
+  fields:
+  - name: sequenceID
+    type: int64
+  - name: captureTimestampMicros
+    type: int64
+  - name: publishTimestampMicros
+    type: int64
+
+- name: PhotonPipelineResult
+  fields:
+  - name: metadata
+    type: PhotonPipelineMetadata
+  - name: targets
+    type: int64
+    list_len: VLA

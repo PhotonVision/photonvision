@@ -1,0 +1,12 @@
+---
+bool:
+  # length in bytes
+  len: 1
+  java_type: bool
+  cpp_type: bool
+  java_decode_method: decodeBoolean
+int64:
+  len: 8
+  java_type: long
+  cpp_type: int64_t
+  java_decode_method: decodeLong
