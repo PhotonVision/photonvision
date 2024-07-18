@@ -94,6 +94,7 @@ public class USBCameraSource extends VisionSource {
             } else {
                 // Functional camera, set up the frame provider and configure defaults
                 usbFrameProvider = new USBFrameProvider(cvSink, settables);
+                settables.setUpExposureProperties();
                 settables.setAllCamDefaults();
             }
         }
@@ -125,8 +126,6 @@ public class USBCameraSource extends VisionSource {
             logger.debug("Using Generic USB Cam Settables");
             settables = new GenericUSBCameraSettables(config, camera);
         }
-
-        settables.setUpExposureProperties();
 
         return settables;
     }
