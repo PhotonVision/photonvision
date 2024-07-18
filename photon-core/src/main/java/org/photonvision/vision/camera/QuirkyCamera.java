@@ -39,9 +39,9 @@ public class QuirkyCamera {
                     // Mac Facetime Camera shared into Windows in Bootcamp
                     new QuirkyCamera(-1, -1, "FaceTime HD Camera", CameraQuirk.CompletelyBroken),
                     // Microsoft Lifecam
-                    new QuirkyCamera(-1, -1, "LifeCam HD-3000", CameraQuirk.LifeCamExposure),
+                    new QuirkyCamera(-1, -1, "LifeCam HD-3000", CameraQuirk.LifeCam),
                     // Microsoft Lifecam
-                    new QuirkyCamera(-1, -1, "LifeCam Cinema (TM)", CameraQuirk.LifeCamExposure),
+                    new QuirkyCamera(-1, -1, "LifeCam Cinema (TM)", CameraQuirk.LifeCam),
                     // PS3Eye
                     new QuirkyCamera(
                             0x1415,

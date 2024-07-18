@@ -112,9 +112,15 @@ public class GenericUSBCameraSource extends VisionSource {
 
         GenericUSBCameraSettables settables;
 
-        if (quirks.hasQuirk(CameraQuirk.LifeCamExposure) && RuntimeDetector.isWindows()) {
-            logger.debug("Using Microsoft Lifecam 3000 Windows-Specific Settables");
-            settables = new LifeCam3kWindowsCameraSettables(config, camera);
+        if (quirks.hasQuirk(CameraQuirk.LifeCam)) {
+            if(RuntimeDetector.isWindows()){
+                logger.debug("Using Microsoft Lifecam 3000 Windows-Specific Settables");
+                settables = new LifeCam3kWindowsCameraSettables(config, camera);
+            } else {
+                logger.debug("Using Microsoft Lifecam 3000 Settables");
+                settables = new LifeCam3kCameraSettables(config, camera);
+            }
+
         } else {
             logger.debug("Using Generic USB Cam Settables");
             settables = new GenericUSBCameraSettables(config, camera);

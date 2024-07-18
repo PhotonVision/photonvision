@@ -39,55 +39,6 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     protected UsbCamera camera;
     protected CameraConfiguration configuration;
 
-    /**
-     * Forgiving "set this property" action. Produces a debug message but skips properties if they
-     * aren't supported Errors if the property exists but the set fails.
-     *
-     * @param property
-     * @param value
-     */
-    protected void softSet(String property, int value) {
-        VideoProperty prop = camera.getProperty(property);
-        if (prop.getKind() == VideoProperty.Kind.kNone) {
-            logger.debug("No property " + property + " for " + camera.getName() + " , skipping.");
-        } else {
-            try {
-                prop.set(value);
-            } catch (VideoException e) {
-                logger.error("Failed to set " + property + " for " + camera.getName() + " !", e);
-            }
-        }
-    }
-
-    /**
-     * Returns the first property with a name in the list. Useful to find gandolf property that goes
-     * by many names in different os/releases/whatever
-     *
-     * @param options
-     * @return
-     */
-    protected Optional<VideoProperty> findProperty(String... options) {
-        VideoProperty retProp = null;
-        boolean found = false;
-        for (var option : options) {
-            retProp = camera.getProperty(option);
-            if (retProp.getKind() != VideoProperty.Kind.kNone) {
-                // got em
-                found = true;
-                break;
-            }
-        }
-
-        if (!found) {
-            logger.warn(
-                    "Expected at least one of the following properties to be available: "
-                            + Arrays.toString(options));
-            retProp = null;
-        }
-
-        return Optional.ofNullable(retProp);
-    }
-
     protected void setUpExposureProperties() {
         // Photonvision needs to be able to control absolute exposure. Make sure we can
         // first.
@@ -123,11 +74,6 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
             // Property limits are incorrect
             this.minExposure = 1;
             this.maxExposure = 75;
-        }
-
-        if (configuration.cameraQuirks.hasQuirk(CameraQuirk.LifeCamExposure)) {
-            // Camera seems unstable above this point.
-            this.maxExposure = 750;
         }
 
         if (configuration.cameraQuirks.hasQuirk(CameraQuirk.OneZeroAutoExposure)) {
@@ -195,11 +141,6 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
 
                 int propVal = (int) MathUtils.limit(exposureRaw, minExposure, maxExposure);
 
-                // if (configuration.cameraQuirks.hasQuirk(CameraQuirk.LifeCamExposure)) {
-                //    // Lifecam only allows certain settings for exposure
-                //    propVal = MathUtils.quantize(propVal, CameraQuirkConstants.LifecamAllowableExposures);
-                // }
-
                 logger.debug(
                         "Setting property "
                                 + exposureAbsProp.getName()
@@ -213,14 +154,6 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
 
                 this.lastExposureRaw = exposureRaw;
 
-                if (configuration.cameraQuirks.hasQuirk(CameraQuirk.LifeCamExposure)) {
-                    // Lifecam requires setting brightness again after exposure
-                    // And it requires setting it twice, ensuring the value is different
-                    // This camera is very bork.
-                    if (lastBrightness >= 0) {
-                        setBrightness(lastBrightness - 1);
-                    }
-                }
 
             } catch (VideoException e) {
                 logger.error("Failed to set camera exposure!", e);
@@ -313,4 +246,55 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         }
         return videoModes;
     }
+
+    /**
+     * Forgiving "set this property" action. Produces a debug message but skips properties if they
+     * aren't supported Errors if the property exists but the set fails.
+     *
+     * @param property
+     * @param value
+     */
+    protected void softSet(String property, int value) {
+        VideoProperty prop = camera.getProperty(property);
+        if (prop.getKind() == VideoProperty.Kind.kNone) {
+            logger.debug("No property " + property + " for " + camera.getName() + " , skipping.");
+        } else {
+            try {
+                prop.set(value);
+            } catch (VideoException e) {
+                logger.error("Failed to set " + property + " for " + camera.getName() + " !", e);
+            }
+        }
+    }
+
+    /**
+     * Returns the first property with a name in the list. Useful to find gandolf property that goes
+     * by many names in different os/releases/whatever
+     *
+     * @param options
+     * @return
+     */
+    protected Optional<VideoProperty> findProperty(String... options) {
+        VideoProperty retProp = null;
+        boolean found = false;
+        for (var option : options) {
+            retProp = camera.getProperty(option);
+            if (retProp.getKind() != VideoProperty.Kind.kNone) {
+                // got em
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            logger.warn(
+                    "Expected at least one of the following properties to be available: "
+                            + Arrays.toString(options));
+            retProp = null;
+        }
+
+        return Optional.ofNullable(retProp);
+    }
+
+    
 }
