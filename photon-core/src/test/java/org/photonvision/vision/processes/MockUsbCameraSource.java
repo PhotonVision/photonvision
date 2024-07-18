@@ -22,10 +22,10 @@ import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.USBCameras.GenericUSBCameraSettables;
-import org.photonvision.vision.camera.USBCameras.GenericUSBCameraSource;
+import org.photonvision.vision.camera.USBCameras.USBCameraSource;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 
-public class MockUsbCameraSource extends GenericUSBCameraSource {
+public class MockUsbCameraSource extends USBCameraSource {
     /** Used for unit tests to better simulate a usb camera without a camera being present. */
     public MockUsbCameraSource(CameraConfiguration config, int pid, int vid) {
         super(config);

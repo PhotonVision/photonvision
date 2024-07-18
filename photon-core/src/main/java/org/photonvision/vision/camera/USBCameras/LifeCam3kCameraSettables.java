@@ -21,7 +21,7 @@ public class LifeCam3kCameraSettables extends GenericUSBCameraSettables {
     protected void setUpExposureProperties() {
 
         autoExposureProp = findProperty("exposure_auto", "auto_exposure").get();
-        exposureAbsProp = findProperty("raw_exposure_absolute", "raw_exposure_time_absolute").get();
+        exposureAbsProp = findProperty("raw_exposure_time_absolute", "raw_exposure_absolute").get();
 
         this.minExposure = 1;
         this.maxExposure = 700;

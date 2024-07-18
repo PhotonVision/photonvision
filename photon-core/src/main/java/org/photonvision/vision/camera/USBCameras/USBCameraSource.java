@@ -34,17 +34,17 @@ import org.photonvision.vision.frame.provider.USBFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceSettables;
 
-public class GenericUSBCameraSource extends VisionSource {
+public class USBCameraSource extends VisionSource {
     private final Logger logger;
     private final UsbCamera camera;
     protected GenericUSBCameraSettables settables;
     protected FrameProvider usbFrameProvider;
     private final CvSink cvSink;
 
-    public GenericUSBCameraSource(CameraConfiguration config) {
+    public USBCameraSource(CameraConfiguration config) {
         super(config);
 
-        logger = new Logger(GenericUSBCameraSource.class, config.nickname, LogGroup.Camera);
+        logger = new Logger(USBCameraSource.class, config.nickname, LogGroup.Camera);
         // cscore will auto-reconnect to the camera path we give it. v4l does not guarantee that if i
         // swap cameras around, the same /dev/videoN ID will be assigned to that camera. So instead
         // default to pinning to a particular USB port, or by "path" (appears to be a global identifier)
@@ -192,7 +192,7 @@ public class GenericUSBCameraSource extends VisionSource {
         if (this == obj) return true;
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
-        GenericUSBCameraSource other = (GenericUSBCameraSource) obj;
+        USBCameraSource other = (USBCameraSource) obj;
         if (camera == null) {
             if (other.camera != null) return false;
         } else if (!camera.equals(other.camera)) return false;

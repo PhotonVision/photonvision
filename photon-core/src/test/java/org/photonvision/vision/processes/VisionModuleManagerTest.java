@@ -32,7 +32,7 @@ import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.QuirkyCamera;
-import org.photonvision.vision.camera.USBCameras.GenericUSBCameraSource;
+import org.photonvision.vision.camera.USBCameras.USBCameraSource;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
@@ -186,10 +186,10 @@ public class VisionModuleManagerTest {
 
         // Arducam OV9281 UC844 raspberry pi test.
         var conf4 = new CameraConfiguration("Left", "dev/video1");
-        GenericUSBCameraSource usbSimulation = new MockUsbCameraSource(conf4, 0x6366, 0x0c45);
+        USBCameraSource usbSimulation = new MockUsbCameraSource(conf4, 0x6366, 0x0c45);
 
         var conf5 = new CameraConfiguration("Right", "dev/video2");
-        GenericUSBCameraSource usbSimulation2 = new MockUsbCameraSource(conf5, 0x6366, 0x0c45);
+        USBCameraSource usbSimulation2 = new MockUsbCameraSource(conf5, 0x6366, 0x0c45);
 
         var modules =
                 vmm.addSources(
