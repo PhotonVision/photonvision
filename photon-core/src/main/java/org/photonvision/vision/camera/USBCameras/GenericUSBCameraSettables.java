@@ -32,7 +32,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
-import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.processes.VisionSourceSettables;
 
@@ -95,7 +94,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         // Common settings for all cameras to attempt to get their image
         // as close as possible to what we want for image processing
         softSet("image_stabilization", 0); // No image stabilization, as this will throw off odometry
-        softSet("power_line_frequency", 2); // Assume 60Hz USA 
+        softSet("power_line_frequency", 2); // Assume 60Hz USA
         softSet("scene_mode", 0); // no presets
         softSet("exposure_metering_mode", 0);
         softSet("exposure_dynamic_framerate", 0);

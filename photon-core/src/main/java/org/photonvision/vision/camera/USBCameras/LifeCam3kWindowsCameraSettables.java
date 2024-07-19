@@ -20,9 +20,7 @@ package org.photonvision.vision.camera.USBCameras;
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.cscore.VideoException;
 import edu.wpi.first.math.MathUtil;
-
 import org.photonvision.common.configuration.CameraConfiguration;
-import org.photonvision.common.util.math.MathUtils;
 
 public class LifeCam3kWindowsCameraSettables extends GenericUSBCameraSettables {
     public LifeCam3kWindowsCameraSettables(CameraConfiguration configuration, UsbCamera camera) {

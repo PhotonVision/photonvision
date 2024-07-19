@@ -31,7 +31,7 @@ public class LibCameraJNILoader {
     private static boolean libraryLoaded = false;
     private static final Logger logger = new Logger(LibCameraJNILoader.class, LogGroup.Camera);
 
-    private static File extractLibrary(String libraryName) throws IOException{
+    private static File extractLibrary(String libraryName) throws IOException {
         // We always extract the shared object (we could hash each so, but that's a lot of work)
         var arch_name = "linuxarm64";
         var nativeLibName = System.mapLibraryName(libraryName);
@@ -68,7 +68,7 @@ public class LibCameraJNILoader {
             // Development aid. First, try to load the library from disc if it was built locally.
             File temp = new File("/home/pi/photon-libcamera-gl-driver/cmake_build/libphotonlibcamera.so");
 
-            if(!temp.exists()){
+            if (!temp.exists()) {
                 // File was not already on disc. Extract it from the jar.
                 temp = extractLibrary(libraryName);
             }
