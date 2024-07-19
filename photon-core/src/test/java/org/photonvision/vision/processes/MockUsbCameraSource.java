@@ -18,6 +18,8 @@
 package org.photonvision.vision.processes;
 
 import edu.wpi.first.cscore.UsbCamera;
+import edu.wpi.first.cscore.VideoMode;
+
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.QuirkyCamera;
@@ -53,6 +55,17 @@ public class MockUsbCameraSource extends USBCameraSource {
         /** Hardware-specific implementation - do nothing in test */
         @Override
         public void setAutoExposure(boolean cameraAutoExposure) {}
-        ;
+        
+
+        /** Hardware-specific implementation - do nothing in test */
+        @Override
+        public void setBrightness(int brightness) {}
+
+        @Override
+        public void setGain(int gain) {}
+
+        @Override
+        public void setVideoModeInternal(VideoMode videoMode) {}
+        
     }
 }
