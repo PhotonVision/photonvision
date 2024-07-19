@@ -79,7 +79,7 @@ public class QuirkyCamera {
             new QuirkyCamera(
                     -1,
                     -1,
-                    "mmal service 16.1", // TODO - is this still accurate in the libpicam days?
+                    "unicam",
                     CameraQuirk.Gain,
                     CameraQuirk.AWBGain); // PiCam (using libpicam GPU Driver on raspberry pi)
 
