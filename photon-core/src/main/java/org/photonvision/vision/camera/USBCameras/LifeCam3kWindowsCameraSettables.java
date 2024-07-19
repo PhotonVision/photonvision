@@ -7,10 +7,6 @@ import org.photonvision.common.util.math.MathUtils;
 
 public class LifeCam3kWindowsCameraSettables extends GenericUSBCameraSettables {
 
-    private static int[] allowableExposures = {
-        5, 10, 20, 39, 78, 156, 312, 625, 1250, 2500, 5000, 10000, 20000
-    };
-
     public LifeCam3kWindowsCameraSettables(CameraConfiguration configuration, UsbCamera camera) {
         super(configuration, camera);
     }
@@ -19,10 +15,11 @@ public class LifeCam3kWindowsCameraSettables extends GenericUSBCameraSettables {
     protected void setUpExposureProperties() {
 
         autoExposureProp = null; // Not Used
+        exposureAbsProp = null; //Not Used
 
-        exposureAbsProp = camera.getProperty("raw_Exposure");
-        this.minExposure = exposureAbsProp.getMin();
-        this.maxExposure = exposureAbsProp.getMax();
+        // We'll fallback on cscore's implementation for windows lifecam
+        this.minExposure = 0;
+        this.maxExposure = 100;
     }
 
     @Override
@@ -32,18 +29,8 @@ public class LifeCam3kWindowsCameraSettables extends GenericUSBCameraSettables {
 
                 int propVal = (int) MathUtils.limit(exposureRaw, minExposure, maxExposure);
 
-                propVal = MathUtils.quantize(propVal, allowableExposures);
-
-                logger.debug(
-                        "Setting property "
-                                + autoExposureProp.getName()
-                                + " to "
-                                + propVal
-                                + " (user requested "
-                                + exposureRaw
-                                + " μs)");
-
-                exposureAbsProp.set(propVal);
+                //exposureAbsProp.set(propVal);
+                camera.setExposureManual(propVal);
 
                 this.lastExposureRaw = exposureRaw;
 
@@ -64,15 +51,12 @@ public class LifeCam3kWindowsCameraSettables extends GenericUSBCameraSettables {
         logger.debug("Setting auto exposure to " + cameraAutoExposure);
 
         if (!cameraAutoExposure) {
-
             // Most cameras leave exposure time absolute at the last value from their AE
             // algorithm.
             // Set it back to the exposure slider value
-            setExposureRaw(this.lastExposureRaw);
-
+            camera.setExposureManual( (int) this.lastExposureRaw);
         } else {
-            softSet("WhiteBalance", 4000);
-            exposureAbsProp.set(0);
+            camera.setExposureAuto();
         }
     }
 

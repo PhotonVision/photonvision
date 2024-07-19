@@ -39,23 +39,6 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     protected UsbCamera camera;
     protected CameraConfiguration configuration;
 
-    protected void setUpExposureProperties() {
-        // Photonvision needs to be able to control absolute exposure. Make sure we can
-        // first.
-        var expProp =
-                findProperty(
-                        "raw_exposure_absolute", "raw_exposure_time_absolute", "exposure", "raw_Exposure");
-
-        // Photonvision needs to be able to control auto exposure. Make sure we can
-        // first.
-        var autoExpProp = findProperty("exposure_auto", "auto_exposure");
-
-        exposureAbsProp = expProp.get();
-        autoExposureProp = autoExpProp.get();
-        this.minExposure = exposureAbsProp.getMin();
-        this.maxExposure = exposureAbsProp.getMax();
-    }
-
     public GenericUSBCameraSettables(CameraConfiguration configuration, UsbCamera camera) {
         super(configuration);
 
@@ -82,6 +65,23 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         }
     }
 
+    protected void setUpExposureProperties() {
+        // Photonvision needs to be able to control absolute exposure. Make sure we can
+        // first.
+        var expProp =
+                findProperty(
+                        "raw_exposure_absolute", "raw_exposure_time_absolute", "exposure", "raw_Exposure");
+
+        // Photonvision needs to be able to control auto exposure. Make sure we can
+        // first.
+        var autoExpProp = findProperty("exposure_auto", "auto_exposure");
+
+        exposureAbsProp = expProp.get();
+        autoExposureProp = autoExpProp.get();
+        this.minExposure = exposureAbsProp.getMin();
+        this.maxExposure = exposureAbsProp.getMax();
+    }
+
     public void setAllCamDefaults() {
         // Common settings for all cameras to attempt to get their image
         // as close as possible to what we want for image processing
@@ -105,7 +105,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
             softSet("white_balance_auto_preset", 2); // Auto white-balance disabled
             softSet("white_balance_automatic", 0);
             softSet("white_balance_temperature", 4000);
-            autoExposureProp.set(PROP_AUTO_EXPOSURE_ENABLED);
+            autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
 
             // Most cameras leave exposure time absolute at the last value from their AE
             // algorithm.
@@ -119,7 +119,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
             softSet("iso_sensitivity", 1); // Manual ISO adjustment by default
             softSet("white_balance_auto_preset", 1); // Auto white-balance enabled
             softSet("white_balance_automatic", 1);
-            autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
+            autoExposureProp.set(PROP_AUTO_EXPOSURE_ENABLED);
         }
     }
 
