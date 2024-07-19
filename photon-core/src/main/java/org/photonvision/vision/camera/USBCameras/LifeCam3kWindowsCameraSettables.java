@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) Photon Vision.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.photonvision.vision.camera.USBCameras;
 
 import edu.wpi.first.cscore.UsbCamera;
@@ -6,16 +23,14 @@ import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.util.math.MathUtils;
 
 public class LifeCam3kWindowsCameraSettables extends GenericUSBCameraSettables {
-
     public LifeCam3kWindowsCameraSettables(CameraConfiguration configuration, UsbCamera camera) {
         super(configuration, camera);
     }
 
     @Override
     protected void setUpExposureProperties() {
-
         autoExposureProp = null; // Not Used
-        exposureAbsProp = null; //Not Used
+        exposureAbsProp = null; // Not Used
 
         // We'll fallback on cscore's implementation for windows lifecam
         this.minExposure = 0;
@@ -26,10 +41,9 @@ public class LifeCam3kWindowsCameraSettables extends GenericUSBCameraSettables {
     public void setExposureRaw(double exposureRaw) {
         if (exposureRaw >= 0.0) {
             try {
-
                 int propVal = (int) MathUtils.limit(exposureRaw, minExposure, maxExposure);
 
-                //exposureAbsProp.set(propVal);
+                // exposureAbsProp.set(propVal);
                 camera.setExposureManual(propVal);
 
                 this.lastExposureRaw = exposureRaw;
@@ -54,7 +68,7 @@ public class LifeCam3kWindowsCameraSettables extends GenericUSBCameraSettables {
             // Most cameras leave exposure time absolute at the last value from their AE
             // algorithm.
             // Set it back to the exposure slider value
-            camera.setExposureManual( (int) this.lastExposureRaw);
+            camera.setExposureManual((int) this.lastExposureRaw);
         } else {
             camera.setExposureAuto();
         }

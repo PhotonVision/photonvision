@@ -44,11 +44,7 @@ public class QuirkyCamera {
                     new QuirkyCamera(-1, -1, "LifeCam Cinema (TM)", CameraQuirk.LifeCamControls),
                     // PS3Eye
                     new QuirkyCamera(
-                            0x1415,
-                            0x2000,
-                            CameraQuirk.Gain,
-                            CameraQuirk.FPSCap100,
-                            CameraQuirk.PsEyeControls),
+                            0x1415, 0x2000, CameraQuirk.Gain, CameraQuirk.FPSCap100, CameraQuirk.PsEyeControls),
                     // Logitech C925-e
                     new QuirkyCamera(0x85B, 0x46D, CameraQuirk.AdjustableFocus),
                     // Generic arducam. Since OV2311 can't be differentiated

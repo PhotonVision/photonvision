@@ -1,17 +1,29 @@
+/*
+ * Copyright (C) Photon Vision.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.photonvision.vision.camera.USBCameras;
 
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.cscore.VideoException;
-
-
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.util.math.MathUtils;
 
 public class LifeCam3kCameraSettables extends GenericUSBCameraSettables {
-
-    private static int[] allowableExposures = {
-        5, 10, 20, 39, 78, 156, 312, 625
-    };
+    private static int[] allowableExposures = {5, 10, 20, 39, 78, 156, 312, 625};
 
     public LifeCam3kCameraSettables(CameraConfiguration configuration, UsbCamera camera) {
         super(configuration, camera);
@@ -19,7 +31,6 @@ public class LifeCam3kCameraSettables extends GenericUSBCameraSettables {
 
     @Override
     protected void setUpExposureProperties() {
-
         autoExposureProp = findProperty("exposure_auto", "auto_exposure").get();
         exposureAbsProp = findProperty("raw_exposure_time_absolute", "raw_exposure_absolute").get();
 
@@ -31,7 +42,6 @@ public class LifeCam3kCameraSettables extends GenericUSBCameraSettables {
     public void setExposureRaw(double exposureRaw) {
         if (exposureRaw >= 0.0) {
             try {
-
                 int propVal = (int) MathUtils.limit(exposureRaw, minExposure, maxExposure);
 
                 propVal = MathUtils.quantize(propVal, allowableExposures);
