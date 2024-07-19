@@ -126,6 +126,12 @@ public class USBCameraSource extends VisionSource {
         } else if (quirks.hasQuirk(CameraQuirk.ArduOV2311Controls)) {
             logger.debug("Using Arducam OV2311 Settables");
             settables = new ArduOV2311CameraSettables(config, camera);
+        } else if (quirks.hasQuirk(CameraQuirk.ArduOV2311Controls)) {
+            logger.debug("Using Arducam OV9281 Settables");
+            settables = new ArduOV9281CameraSettables(config, camera);
+        } else if (quirks.hasQuirk(CameraQuirk.ArduOV2311Controls)) {
+            logger.debug("Using Arducam OV9782 Settables");
+            settables = new ArduOV9782CameraSettables(config, camera);
         } else {
             logger.debug("Using Generic USB Cam Settables");
             settables = new GenericUSBCameraSettables(config, camera);
