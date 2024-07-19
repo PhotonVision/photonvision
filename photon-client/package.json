@@ -14,7 +14,7 @@
     "format-ci": "prettier --check src/"
   },
   "engines": {
-    "node": "^16"
+    "node": "^18"
   },
   "dependencies": {
     "@fontsource/prompt": "^5.0.9",
