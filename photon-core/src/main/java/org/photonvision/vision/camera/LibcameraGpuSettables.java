@@ -134,7 +134,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
         // 80,000 uS seems like an exposure value that will be greater than ever needed while giving
         // enough control over exposure.
-        exposureRaw = MathUtils.limit(exposureRaw, minExposure, maxExposure);
+        exposureRaw = MathUtil.clamp(exposureRaw, minExposure, maxExposure);
 
         var success = LibCameraJNI.setExposure(r_ptr, (int) exposureRaw);
         if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera exposure");
@@ -226,7 +226,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         }
 
         // We don't store last settings on the native side, and when you change video mode these get
-        // reset on MMAL's end
+        // reset on the native driver's end. Reset em back to be correct
         setExposureRaw(lastManualExposure);
         setAutoExposure(lastAutoExposureActive);
         setBrightness(lastBrightness);

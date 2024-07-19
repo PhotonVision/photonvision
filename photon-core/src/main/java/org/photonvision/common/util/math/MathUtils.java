@@ -88,16 +88,6 @@ public class MathUtils {
         return allowableSteps[allowableSteps.length - 1];
     }
 
-    public static double limit(double value, double out_min, double out_max) {
-        double retVal = value;
-        if (value > out_max) {
-            retVal = out_max;
-        } else if (value < out_min) {
-            retVal = out_min;
-        }
-        return retVal;
-    }
-
     public static double map(
             double value, double in_min, double in_max, double out_min, double out_max) {
         return (value - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;

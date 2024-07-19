@@ -21,6 +21,7 @@ import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.cscore.VideoException;
 import edu.wpi.first.cscore.VideoMode;
 import edu.wpi.first.cscore.VideoProperty;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.util.PixelFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,6 +53,8 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
 
     protected static final int PROP_AUTO_EXPOSURE_ENABLED = 3;
     protected static final int PROP_AUTO_EXPOSURE_DISABLED = 1;
+
+    protected int whiteBalanceTemperature = 4000;
 
     protected UsbCamera camera;
     protected CameraConfiguration configuration;
@@ -92,12 +95,13 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         // Common settings for all cameras to attempt to get their image
         // as close as possible to what we want for image processing
         softSet("image_stabilization", 0); // No image stabilization, as this will throw off odometry
-        softSet("power_line_frequency", 2); // Assume 60Hz USA
+        softSet("power_line_frequency", 2); // Assume 60Hz USA 
         softSet("scene_mode", 0); // no presets
         softSet("exposure_metering_mode", 0);
         softSet("exposure_dynamic_framerate", 0);
         softSet("focus_auto", 0);
         softSet("focus_absolute", 0); // Focus into infinity
+        softSet("white_balance_temperature", whiteBalanceTemperature);
     }
 
     public void setAutoExposure(boolean cameraAutoExposure) {
@@ -110,7 +114,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
             softSet("iso_sensitivity", 0); // Manual ISO adjustment
             softSet("white_balance_auto_preset", 2); // Auto white-balance disabled
             softSet("white_balance_automatic", 0);
-            softSet("white_balance_temperature", 4000);
+            softSet("white_balance_temperature", whiteBalanceTemperature);
             autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
 
             // Most cameras leave exposure time absolute at the last value from their AE
@@ -145,7 +149,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
             try {
                 autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
 
-                int propVal = (int) MathUtils.limit(exposureRaw, minExposure, maxExposure);
+                int propVal = (int) MathUtil.clamp(exposureRaw, minExposure, maxExposure);
 
                 logger.debug(
                         "Setting property "

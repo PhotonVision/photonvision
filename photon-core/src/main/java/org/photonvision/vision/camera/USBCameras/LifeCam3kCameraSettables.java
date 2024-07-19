@@ -19,10 +19,14 @@ package org.photonvision.vision.camera.USBCameras;
 
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.cscore.VideoException;
+import edu.wpi.first.math.MathUtil;
+
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.util.math.MathUtils;
 
 public class LifeCam3kCameraSettables extends GenericUSBCameraSettables {
+    // Lifecam only allows specific exposures. Pulled this list from 
+    // https://github.com/wpilibsuite/allwpilib/blob/main/cscore/src/main/native/linux/UsbCameraImpl.cpp#L129
     private static int[] allowableExposures = {5, 10, 20, 39, 78, 156, 312, 625};
 
     public LifeCam3kCameraSettables(CameraConfiguration configuration, UsbCamera camera) {
@@ -42,7 +46,7 @@ public class LifeCam3kCameraSettables extends GenericUSBCameraSettables {
     public void setExposureRaw(double exposureRaw) {
         if (exposureRaw >= 0.0) {
             try {
-                int propVal = (int) MathUtils.limit(exposureRaw, minExposure, maxExposure);
+                int propVal = (int) MathUtil.clamp(exposureRaw, minExposure, maxExposure);
 
                 propVal = MathUtils.quantize(propVal, allowableExposures);
 

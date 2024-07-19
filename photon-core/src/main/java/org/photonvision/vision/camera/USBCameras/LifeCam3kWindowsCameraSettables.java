@@ -19,6 +19,8 @@ package org.photonvision.vision.camera.USBCameras;
 
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.cscore.VideoException;
+import edu.wpi.first.math.MathUtil;
+
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.util.math.MathUtils;
 
@@ -41,7 +43,7 @@ public class LifeCam3kWindowsCameraSettables extends GenericUSBCameraSettables {
     public void setExposureRaw(double exposureRaw) {
         if (exposureRaw >= 0.0) {
             try {
-                int propVal = (int) MathUtils.limit(exposureRaw, minExposure, maxExposure);
+                int propVal = (int) MathUtil.clamp(exposureRaw, minExposure, maxExposure);
 
                 // exposureAbsProp.set(propVal);
                 camera.setExposureManual(propVal);
