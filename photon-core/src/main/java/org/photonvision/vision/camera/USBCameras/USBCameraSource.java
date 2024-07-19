@@ -113,7 +113,7 @@ public class USBCameraSource extends VisionSource {
 
         GenericUSBCameraSettables settables;
 
-        if (quirks.hasQuirk(CameraQuirk.LifeCam)) {
+        if (quirks.hasQuirk(CameraQuirk.LifeCamControls)) {
             if(RuntimeDetector.isWindows()){
                 logger.debug("Using Microsoft Lifecam 3000 Windows-Specific Settables");
                 settables = new LifeCam3kWindowsCameraSettables(config, camera);
@@ -121,7 +121,12 @@ public class USBCameraSource extends VisionSource {
                 logger.debug("Using Microsoft Lifecam 3000 Settables");
                 settables = new LifeCam3kCameraSettables(config, camera);
             }
-
+        }else if (quirks.hasQuirk(CameraQuirk.PsEyeControls)){
+            logger.debug("Using PlayStation Eye Camera Settables");
+            settables = new PsEyeCameraSettables(config, camera);
+        }else if (quirks.hasQuirk(CameraQuirk.ArduOV2311Controls)){
+            logger.debug("Using Arducam OV2311 Settables");
+            settables = new ArduOV2311CameraSettables(config, camera);
         } else {
             logger.debug("Using Generic USB Cam Settables");
             settables = new GenericUSBCameraSettables(config, camera);

@@ -33,8 +33,8 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     protected double minExposure = 1;
     protected double maxExposure = 80000;
 
-    protected int PROP_AUTO_EXPOSURE_ENABLED = 3;
-    protected int PROP_AUTO_EXPOSURE_DISABLED = 1;
+    protected static final int PROP_AUTO_EXPOSURE_ENABLED = 3;
+    protected static final int PROP_AUTO_EXPOSURE_DISABLED = 1;
 
     protected UsbCamera camera;
     protected CameraConfiguration configuration;
@@ -53,16 +53,6 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
             }
         }
 
-        if (configuration.cameraQuirks.hasQuirk(CameraQuirk.ArduOV2311)) {
-            // Property limits are incorrect
-            this.minExposure = 1;
-            this.maxExposure = 75;
-        }
-
-        if (configuration.cameraQuirks.hasQuirk(CameraQuirk.OneZeroAutoExposure)) {
-            PROP_AUTO_EXPOSURE_ENABLED = 0;
-            PROP_AUTO_EXPOSURE_DISABLED = 1;
-        }
     }
 
     protected void setUpExposureProperties() {

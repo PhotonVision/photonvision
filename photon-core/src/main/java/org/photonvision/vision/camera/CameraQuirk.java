@@ -21,9 +21,9 @@ public enum CameraQuirk {
     /** Camera settable for controllable image gain */
     Gain,
     /** Only certain discrete exposure settings work */
-    LifeCam,
+    LifeCamControls,
     /** Auto-Exposure property uses 1/0, rather than 3/1 */
-    OneZeroAutoExposure,
+    PsEyeControls,
     /** Cap at 100FPS for high-bandwidth cameras */
     FPSCap100,
     /** Separate red/blue gain controls available */
@@ -42,5 +42,5 @@ public enum CameraQuirk {
      */
     ArduOV9281,
     /** Dummy quirk to tell OV2311 from OV9281 */
-    ArduOV2311,
+    ArduOV2311Controls,
 }

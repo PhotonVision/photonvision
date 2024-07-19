@@ -39,16 +39,16 @@ public class QuirkyCamera {
                     // Mac Facetime Camera shared into Windows in Bootcamp
                     new QuirkyCamera(-1, -1, "FaceTime HD Camera", CameraQuirk.CompletelyBroken),
                     // Microsoft Lifecam
-                    new QuirkyCamera(-1, -1, "LifeCam HD-3000", CameraQuirk.LifeCam),
+                    new QuirkyCamera(-1, -1, "LifeCam HD-3000", CameraQuirk.LifeCamControls),
                     // Microsoft Lifecam
-                    new QuirkyCamera(-1, -1, "LifeCam Cinema (TM)", CameraQuirk.LifeCam),
+                    new QuirkyCamera(-1, -1, "LifeCam Cinema (TM)", CameraQuirk.LifeCamControls),
                     // PS3Eye
                     new QuirkyCamera(
                             0x1415,
                             0x2000,
                             CameraQuirk.Gain,
                             CameraQuirk.FPSCap100,
-                            CameraQuirk.OneZeroAutoExposure),
+                            CameraQuirk.PsEyeControls),
                     // Logitech C925-e
                     new QuirkyCamera(0x85B, 0x46D, CameraQuirk.AdjustableFocus),
                     // Generic arducam. Since OV2311 can't be differentiated
@@ -67,7 +67,7 @@ public class QuirkyCamera {
                             "OV2311",
                             "OV2311",
                             CameraQuirk.ArduCamCamera,
-                            CameraQuirk.ArduOV2311,
+                            CameraQuirk.ArduOV2311Controls,
                             CameraQuirk.StickyFPS),
                     // Arducam OV9281
                     new QuirkyCamera(
