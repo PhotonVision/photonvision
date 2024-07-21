@@ -118,7 +118,7 @@ export interface CvPoint3 {
   x: number;
   y: number;
   z: number;
-} 
+}
 export interface CvPoint {
   x: number;
   y: number;
