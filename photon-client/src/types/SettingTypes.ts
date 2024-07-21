@@ -118,7 +118,7 @@ export interface CvPoint3 {
   x: number;
   y: number;
   z: number;
-}
+} 
 export interface CvPoint {
   x: number;
   y: number;
@@ -148,15 +148,18 @@ export interface CameraCalibrationResult {
 export enum ValidQuirks {
   AWBGain = "AWBGain",
   AdjustableFocus = "AdjustableFocus",
-  ArduOV9281 = "ArduOV9281",
-  ArduOV2311 = "ArduOV2311",
-  ArduOV9782 = "ArduOV9782",
+  ArduOV9281Controls = "ArduOV9281Controls",
+  ArduOV2311Controls = "ArduOV2311Controls",
+  ArduOV9782Controls = "ArduOV9782Controls",
   ArduCamCamera = "ArduCamCamera",
   CompletelyBroken = "CompletelyBroken",
   FPSCap100 = "FPSCap100",
   Gain = "Gain",
   PiCam = "PiCam",
-  StickyFPS = "StickyFPS"
+  StickyFPS = "StickyFPS",
+  LifeCamControls = "LifeCamControls",
+  PsEyeControls = "PsEyeControls"
+
 }
 
 export interface QuirkyCamera {
