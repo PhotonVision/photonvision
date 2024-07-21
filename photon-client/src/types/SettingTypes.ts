@@ -159,7 +159,6 @@ export enum ValidQuirks {
   StickyFPS = "StickyFPS",
   LifeCamControls = "LifeCamControls",
   PsEyeControls = "PsEyeControls"
-
 }
 
 export interface QuirkyCamera {
