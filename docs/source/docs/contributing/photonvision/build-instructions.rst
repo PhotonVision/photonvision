@@ -9,8 +9,8 @@ Development Setup
 Prerequisites
 ~~~~~~~~~~~~~
 
-| **Java Development Kit:** This project requires Java Development Kit (JDK) 17 to be compiled. This is the same Java version that comes with WPILib for 2024+. If you don't have this JDK with WPILib, you can follow the instructions to install JDK 17 for your platform `here <https://bell-sw.com/pages/downloads/#jdk-17-lts>`_.
-| **Node.js and pnpm** The UI is created using Vue and built using Vite. Node.js is required to develop and build the UI. We recomend using the pnpm package manager to handle dependencies and install Node.js. You can follow the instructions to install pnpm `here <https://pnpm.io/installation>`_. The project is already configured to create a Node.js v18 env when building photon-client.
+| **Java Development Kit:** This project requires Java Development Kit (JDK) 17 to be compiled. This is the same Java version that comes with WPILib for 2024+. If you don't have this JDK with WPILib, you can follow the instructions to install JDK 17 for your platform `here <https://bell-sw.com/pages/downloads/#jdk-17-lts>`__.
+| **Node.js and pnpm** The UI is created using Vue and built using Vite. Node.js is required to develop and build the UI. We recomend using the pnpm package manager to handle dependencies and install Node.js. You can follow the instructions to install pnpm `here <https://pnpm.io/installation>`__. The project is already configured to create a Node.js v18 env when building photon-client.
 
 Compiling Instructions
 ----------------------
