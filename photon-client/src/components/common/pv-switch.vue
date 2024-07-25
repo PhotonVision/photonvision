@@ -11,6 +11,7 @@ const props = withDefaults(
     disabled?: boolean;
     labelCols?: number;
     switchCols?: number;
+    reverseOrder?: boolean;
   }>(),
   {
     disabled: false,
@@ -30,7 +31,7 @@ const localValue = computed({
 
 <template>
   <div>
-    <v-row dense align="center">
+    <v-row dense align="center" :style="{'flex-direction': reverseOrder? 'row-reverse' : 'row'}">
       <v-col :cols="12 - switchCols || labelCols">
         <tooltipped-label :tooltip="tooltip" :label="label" />
       </v-col>
