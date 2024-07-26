@@ -39,8 +39,15 @@ public class MockUsbCameraSource extends USBCameraSource {
                         TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
                         TestUtils.WPI2019Image.FOV);
 
-        settables = new MockUsbCameraSettables(config, null);
+        this.settables = createSettables(config, null);
+
     }
+
+    @Override
+    public GenericUSBCameraSettables createSettables(CameraConfiguration config, UsbCamera camera){
+        return new MockUsbCameraSettables(config, null);
+    }
+
 
     private class MockUsbCameraSettables extends GenericUSBCameraSettables {
         public MockUsbCameraSettables(CameraConfiguration config, UsbCamera camera) {
