@@ -64,5 +64,8 @@ public class MockUsbCameraSource extends USBCameraSource {
 
         @Override
         public void setVideoModeInternal(VideoMode videoMode) {}
+
+        @Override
+        public void setUpExposureProperties() {}
     }
 }
