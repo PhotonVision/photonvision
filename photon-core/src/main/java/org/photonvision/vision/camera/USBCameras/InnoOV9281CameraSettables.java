@@ -15,29 +15,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.vision.processes;
+package org.photonvision.vision.camera.USBCameras;
 
+import edu.wpi.first.cscore.UsbCamera;
 import org.photonvision.common.configuration.CameraConfiguration;
-import org.photonvision.vision.frame.FrameProvider;
 
-public abstract class VisionSource {
-    protected final CameraConfiguration cameraConfiguration;
-
-    protected VisionSource(CameraConfiguration cameraConfiguration) {
-        this.cameraConfiguration = cameraConfiguration;
+public class InnoOV9281CameraSettables extends GenericUSBCameraSettables {
+    public InnoOV9281CameraSettables(CameraConfiguration configuration, UsbCamera camera) {
+        super(configuration, camera);
     }
 
-    public CameraConfiguration getCameraConfiguration() {
-        return cameraConfiguration;
+    @Override
+    protected void setUpExposureProperties() {
+        super.setUpExposureProperties();
+
+        // Property limits are incorrect
+        this.minExposure = 1;
+        this.maxExposure = 500;
     }
-
-    public abstract FrameProvider getFrameProvider();
-
-    public abstract VisionSourceSettables getSettables();
-
-    public abstract boolean isVendorCamera();
-
-    public abstract boolean hasLEDs();
-
-    public abstract void remakeSettables();
 }

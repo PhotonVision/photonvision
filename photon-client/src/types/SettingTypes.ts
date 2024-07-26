@@ -148,6 +148,7 @@ export interface CameraCalibrationResult {
 export enum ValidQuirks {
   AWBGain = "AWBGain",
   AdjustableFocus = "AdjustableFocus",
+  InnoOV9281Controls = "InnoOV9281Controls",
   ArduOV9281Controls = "ArduOV9281Controls",
   ArduOV2311Controls = "ArduOV2311Controls",
   ArduOV9782Controls = "ArduOV9782Controls",

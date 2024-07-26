@@ -94,7 +94,6 @@ public class USBCameraSource extends VisionSource {
             } else {
                 // Functional camera, set up the frame provider and configure defaults
                 usbFrameProvider = new USBFrameProvider(cvSink, settables);
-                settables.setUpExposureProperties();
                 settables.setAllCamDefaults();
             }
         }
@@ -128,16 +127,31 @@ public class USBCameraSource extends VisionSource {
             settables = new ArduOV2311CameraSettables(config, camera);
         } else if (quirks.hasQuirk(CameraQuirk.ArduOV9281Controls)) {
             logger.debug("Using Arducam OV9281 Settables");
-            settables = new ArduOV9281CameraSettables(config, camera);
+            settables = new InnoOV9281CameraSettables(config, camera);
         } else if (quirks.hasQuirk(CameraQuirk.ArduOV9782Controls)) {
             logger.debug("Using Arducam OV9782 Settables");
             settables = new ArduOV9782CameraSettables(config, camera);
+        } else if (quirks.hasQuirk(CameraQuirk.InnoOV9281Controls)) {
+            settables = new InnoOV9281CameraSettables(config, camera);
         } else {
             logger.debug("Using Generic USB Cam Settables");
             settables = new GenericUSBCameraSettables(config, camera);
         }
 
+        settables.setUpExposureProperties();
+
         return settables;
+    }
+
+    /**
+     * Must be called after createSettables Using the current config/camera and modified quirks, make
+     * a new settables
+     */
+    public void remakeSettables() {
+        var oldConfig = this.cameraConfiguration;
+        var oldCamera = this.camera;
+
+        this.settables = createSettables(oldConfig, oldCamera);
     }
 
     private void printCameraProperaties() {

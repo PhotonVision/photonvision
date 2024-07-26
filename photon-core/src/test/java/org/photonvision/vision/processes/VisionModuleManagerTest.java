@@ -73,6 +73,11 @@ public class VisionModuleManagerTest {
         public boolean hasLEDs() {
             return false;
         }
+
+        @Override
+        public void remakeSettables() {
+            return;
+        }
     }
 
     private static class TestSettables extends VisionSourceSettables {

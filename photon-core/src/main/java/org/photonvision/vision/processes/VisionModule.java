@@ -621,6 +621,7 @@ public class VisionModule {
      */
     public void changeCameraQuirks(HashMap<CameraQuirk, Boolean> quirksToChange) {
         visionSource.getCameraConfiguration().cameraQuirks.updateQuirks(quirksToChange);
+        visionSource.remakeSettables();
         saveAndBroadcastAll();
     }
 }

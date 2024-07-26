@@ -39,6 +39,12 @@ public class TestSource extends VisionSource {
     }
 
     @Override
+    public void remakeSettables() {
+        // Nothing to do, settables for this type of VisionSource should never be remade.
+        return;
+    }
+
+    @Override
     public FrameProvider getFrameProvider() {
         return new FrameProvider() {
             @Override

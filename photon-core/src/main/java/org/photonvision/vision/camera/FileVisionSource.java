@@ -75,6 +75,12 @@ public class FileVisionSource extends VisionSource {
     }
 
     @Override
+    public void remakeSettables() {
+        // Nothing to do, settables for this type of VisionSource should never be remade.
+        return;
+    }
+
+    @Override
     public boolean hasLEDs() {
         return false; // Assume USB cameras do not have photonvision-controlled LEDs
     }
