@@ -106,7 +106,8 @@ public class USBCameraSource extends VisionSource {
      * @param camera
      * @return
      */
-    protected GenericUSBCameraSettables createSettables(CameraConfiguration config, UsbCamera camera) {
+    protected GenericUSBCameraSettables createSettables(
+            CameraConfiguration config, UsbCamera camera) {
         var quirks = getCameraConfiguration().cameraQuirks;
 
         GenericUSBCameraSettables settables;

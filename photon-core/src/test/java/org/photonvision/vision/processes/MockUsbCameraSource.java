@@ -40,14 +40,12 @@ public class MockUsbCameraSource extends USBCameraSource {
                         TestUtils.WPI2019Image.FOV);
 
         this.settables = createSettables(config, null);
-
     }
 
     @Override
-    public GenericUSBCameraSettables createSettables(CameraConfiguration config, UsbCamera camera){
+    public GenericUSBCameraSettables createSettables(CameraConfiguration config, UsbCamera camera) {
         return new MockUsbCameraSettables(config, null);
     }
-
 
     private class MockUsbCameraSettables extends GenericUSBCameraSettables {
         public MockUsbCameraSettables(CameraConfiguration config, UsbCamera camera) {
