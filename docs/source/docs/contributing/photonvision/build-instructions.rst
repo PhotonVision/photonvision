@@ -9,18 +9,8 @@ Development Setup
 Prerequisites
 ~~~~~~~~~~~~~
 
-| **Java Development Kit:** This project requires Java Development Kit (JDK) 17 to be compiled. This is the same Java version that comes with WPILib for 2025+. If you don't have this JDK with WPILib, you can follow the instructions to install JDK 17 for your platform `here <https://bell-sw.com/pages/downloads/#jdk-17-lts>`_.
-| **Node JS:** The UI is written in Node JS. To compile the UI, Node 14.18.0 to Node 16.0.0 is required. To install Node JS follow the instructions for your platform `on the official Node JS website <https://nodejs.org/en/download/>`_.  However, modify this line
-
-.. code-block:: bash
-
-   nvm install 20
-
-so that it instead reads
-
-.. code-block:: javascript
-
-   nvm install 14.18.0
+| **Java Development Kit:** This project requires Java Development Kit (JDK) 17 to be compiled. This is the same Java version that comes with WPILib for 2024+. If you don't have this JDK with WPILib, you can follow the instructions to install JDK 17 for your platform `here <https://bell-sw.com/pages/downloads/#jdk-17-lts>`__.
+| **Node.js and pnpm** The UI is created using Vue and built using Vite. Node.js is required to develop and build the UI. We recomend using the pnpm package manager to handle dependencies and install Node.js. You can follow the instructions to install pnpm `here <https://pnpm.io/installation>`__. The project is already configured to create a Node.js v18 env when building photon-client.
 
 Compiling Instructions
 ----------------------
@@ -46,7 +36,7 @@ In the photon-client directory:
 
 .. code-block:: bash
 
-   npm install
+   pnpm install
 
 Build and Copy UI to Java Source
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -67,6 +57,8 @@ In the root directory:
    .. tab-item:: Windows (cmd)
 
       ``gradlew buildAndCopyUI``
+
+Please note that if you installed Node.js via pnpm, this gradle action will mirror Node.js in the gradle workdir and use that instead of the pnpm version.
 
 Build and Run PhotonVision
 ~~~~~~~~~~~~~~~~~~~~~~~~~~

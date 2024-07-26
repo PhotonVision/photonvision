@@ -13,6 +13,9 @@
     "lint-ci": "eslint . --max-warnings 0 --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "format-ci": "prettier --check src/"
   },
+  "engines": {
+    "node": "^18"
+  },
   "dependencies": {
     "@fontsource/prompt": "^5.0.9",
     "@mdi/font": "^7.4.47",
