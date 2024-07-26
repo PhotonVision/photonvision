@@ -31,47 +31,35 @@ public class LibCameraJNILoader {
     private static boolean libraryLoaded = false;
     private static final Logger logger = new Logger(LibCameraJNILoader.class, LogGroup.Camera);
 
-    private static File extractLibrary(String libraryName) throws IOException {
-        // We always extract the shared object (we could hash each so, but that's a lot of work)
-        var arch_name = "linuxarm64";
-        var nativeLibName = System.mapLibraryName(libraryName);
-        var resourcePath = "/nativelibraries/" + arch_name + "/" + nativeLibName;
-        var in = LibCameraJNILoader.class.getResourceAsStream(resourcePath);
-
-        if (in == null) {
-            logger.error("Failed to find internal native library at path " + resourcePath);
-            libraryLoaded = false;
-            throw new IOException();
-        }
-
-        // It's important that we don't mangle the names of these files on Windows at least
-        File temp = new File(System.getProperty("java.io.tmpdir"), nativeLibName);
-        FileOutputStream fos = new FileOutputStream(temp);
-
-        int read = -1;
-        byte[] buffer = new byte[1024];
-        while ((read = in.read(buffer)) != -1) {
-            fos.write(buffer, 0, read);
-        }
-        fos.close();
-        in.close();
-
-        return temp;
-    }
-
     public static synchronized void forceLoad() throws IOException {
         if (libraryLoaded) return;
 
         var libraryName = "photonlibcamera";
 
         try {
-            // Development aid. First, try to load the library from disc if it was built locally.
-            File temp = new File("/home/pi/photon-libcamera-gl-driver/cmake_build/libphotonlibcamera.so");
+            // We always extract the shared object (we could hash each so, but that's a lot of work)
+            var arch_name = "linuxarm64";
+            var nativeLibName = System.mapLibraryName(libraryName);
+            var resourcePath = "/nativelibraries/" + arch_name + "/" + nativeLibName;
+            var in = LibCameraJNILoader.class.getResourceAsStream(resourcePath);
 
-            if (!temp.exists()) {
-                // File was not already on disc. Extract it from the jar.
-                temp = extractLibrary(libraryName);
+            if (in == null) {
+                logger.error("Failed to find internal native library at path " + resourcePath);
+                libraryLoaded = false;
+                return;
             }
+
+            // It's important that we don't mangle the names of these files on Windows at least
+            File temp = new File(System.getProperty("java.io.tmpdir"), nativeLibName);
+            FileOutputStream fos = new FileOutputStream(temp);
+
+            int read = -1;
+            byte[] buffer = new byte[1024];
+            while ((read = in.read(buffer)) != -1) {
+                fos.write(buffer, 0, read);
+            }
+            fos.close();
+            in.close();
 
             System.load(temp.getAbsolutePath());
 
@@ -80,6 +68,7 @@ public class LibCameraJNILoader {
         } catch (UnsatisfiedLinkError e) {
             logger.error("Couldn't load shared object " + libraryName, e);
             e.printStackTrace();
+            // logger.error(System.getProperty("java.library.path"));
         }
         libraryLoaded = true;
     }
