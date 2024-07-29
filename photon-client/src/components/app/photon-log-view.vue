@@ -32,7 +32,7 @@ const getLogColor = (level: LogLevel): string => {
     case LogLevel.WARN:
       return "yellow";
     case LogLevel.INFO:
-      return "green";
+      return "light-blue";
     case LogLevel.DEBUG:
       return "white";
   }
@@ -64,10 +64,10 @@ document.addEventListener("keydown", (e) => {
 
 <template>
   <v-dialog v-model="useStateStore().showLogModal" width="1500" dark>
-    <v-card dark id="dialog-container" class="pa-3" color="primary" flat>
-      <v-row class="no-gutters">
+    <v-card dark id="dialog-container" class="pa-6" color="primary" flat>
+      <v-row class="no-gutters pb-3">
         <v-col cols="4">
-          <v-card-title>Program Logs</v-card-title>
+          <v-card-title id="logs-title">Program Logs</v-card-title>
         </v-col>
         <v-col class="align-self-center pl-3" style="text-align: right;">
           <v-btn
@@ -108,15 +108,9 @@ document.addEventListener("keydown", (e) => {
 
       <v-divider />
 
-      <div class="pr-3 pl-3 pb-3" id="dialog-data">
-        <v-row class="compact-row">
+      <div class="" id="dialog-data">
+        <v-row class="no-gutters">
           <v-col sm="6" class="align-self-center">
-            <!-- <pv-input
-              v-model="searchQuery"
-              label="Search"
-              :label-cols="2"
-              :input-cols="10"
-            /> -->
             <v-text-field
               dark
               dense
@@ -170,18 +164,22 @@ document.addEventListener("keydown", (e) => {
 </template>
 
 <style scoped lang="scss">
+#logs-title {
+  padding: 0;
+}
+
 #dialog-container {
   height: 90vh;
 }
 
 #dialog-data {
-  /* Dialog size - header - divider */
-  height: calc(90vh - 76px - 1px);
+  /* Dialog size - dialog padding - header - divider */
+  height: calc(90vh - 48px - 48px - 1px);
 }
 
 #log-display {
   /* Data size - options */
-  height: calc(100% - 82px);
+  height: calc(100% - 66px);
 }
 
 .v-dialog {
