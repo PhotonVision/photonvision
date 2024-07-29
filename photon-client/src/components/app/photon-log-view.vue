@@ -75,8 +75,8 @@ document.addEventListener("keydown", (e) => {
             color="white"
             @click="handleLogExport"
           >
-            <v-icon left class="open-icon"> mdi-download </v-icon>
-            <span class="open-label">Download</span>
+            <v-icon left class="menu-icon"> mdi-download </v-icon>
+            <span class="menu-label">Download</span>
 
             <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
             <a
@@ -92,16 +92,16 @@ document.addEventListener("keydown", (e) => {
             color="white"
             @click="handleLogClear"
           >
-            <v-icon left class="open-icon"> mdi-trash-can-outline </v-icon>
-            <span class="open-label">Clear</span>
+            <v-icon left class="menu-icon"> mdi-trash-can-outline </v-icon>
+            <span class="menu-label">Clear</span>
           </v-btn>
           <v-btn
             text
             color="white"
             @click="() => (useStateStore().showLogModal = false)"
           >
-            <v-icon left class="open-icon"> mdi-close </v-icon>
-            <span class="open-label">Close</span>
+            <v-icon left class="menu-icon"> mdi-close </v-icon>
+            <span class="menu-label">Close</span>
           </v-btn>
         </v-col>
       </v-row>
@@ -109,8 +109,8 @@ document.addEventListener("keydown", (e) => {
       <v-divider />
 
       <div class="" id="dialog-data">
-        <v-row class="no-gutters">
-          <v-col sm="6" class="align-self-center">
+        <v-row class="no-gutters" id="log-options">
+          <v-col cols="12" md="5" class="align-self-center">
             <v-text-field
               dark
               dense
@@ -120,28 +120,28 @@ document.addEventListener("keydown", (e) => {
               label="Search"
             />
           </v-col>
-          <v-col sm="6">
-            <v-row>
+          <v-col cols="12" md="7" >
+            <v-row class="no-gutters">
               <v-col v-for="level in [0, 1, 2, 3]">
-            <v-row dense align="center">
-              <v-col cols="8" style="text-align: right;">
-                {{ getLogLevelFromIndex(level) }}
-              </v-col>
-              <v-col cols="4">
-                <v-switch
-                  dark
+                <v-row dense align="center">
+                  <v-col cols="6" md="8" style="text-align: right;">
+                    {{ getLogLevelFromIndex(level) }}
+                  </v-col>
+                  <v-col cols="6" md="4" >
+                    <v-switch
+                      dark
+                      v-model="selectedLogLevels[level]"
+                      color="#ffd843"
+                    />
+                  </v-col>
+                </v-row>
+                <!-- <pv-switch
                   v-model="selectedLogLevels[level]"
-                  color="#ffd843"
-                />
+                  :label="getLogLevelFromIndex(level)"
+                  :label-cols="8"
+                  reverseOrder
+                /> -->
               </v-col>
-            </v-row>
-            <!-- <pv-switch
-              v-model="selectedLogLevels[level]"
-              :label="getLogLevelFromIndex(level)"
-              :label-cols="8"
-              reverseOrder
-            /> -->
-          </v-col>
             </v-row>
           </v-col>
           
@@ -203,18 +203,25 @@ document.addEventListener("keydown", (e) => {
 .v-btn-toggle.fill > .v-btn {
   width: 25%;
 }
-@media only screen and (max-width: 512px) {
-  .heading-container {
-    flex-direction: column;
-    padding-bottom: 14px;
+
+@media only screen and (max-width: 960px) {
+  #log-options {
+    padding-top: 16px;
   }
+
+  #log-display {
+  /* Data size - options */
+  height: calc(100% - 130px);
 }
-@media only screen and (max-width: 312px) {
-  .open-icon {
-    margin: 0 !important;
-  }
-  .open-label {
+}
+
+@media only screen and (max-width: 700px) {
+  .menu-label {
     display: none;
+  }
+
+  .menu-icon {
+    margin: 0 !important;
   }
 }
 </style>
