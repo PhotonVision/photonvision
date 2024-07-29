@@ -17,6 +17,8 @@
 
 #include "photon/targeting/PhotonPipelineResult.h"
 
+#include <vector>
+
 namespace photon {
 PhotonPipelineResult::PhotonPipelineResult(
     int64_t sequenceID, units::microsecond_t captureTimestamp,

@@ -19,6 +19,8 @@
 
 #include <iostream>
 #include <utility>
+#include <algorithm>
+#include <vector>
 
 #include <frc/geometry/Translation2d.h>
 #include <wpi/SmallVector.h>
