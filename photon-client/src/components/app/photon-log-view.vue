@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { computed, inject, ref } from "vue";
+import { computed, inject, ref, watch } from "vue";
 import { LogLevel, type LogMessage } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
+import Entry from './photon-log-entry.vue';
+import VirtualList from 'vue-virtual-scroll-list';
 
 const selectedLogLevels = ref({
   [LogLevel.ERROR]: true,
@@ -12,6 +14,8 @@ const selectedLogLevels = ref({
 
 const searchQuery = ref("");
 
+const autoScroll = ref(true);
+
 setInterval(function(){
   if (Math.random() < 0.75) useStateStore().logMessages?.push({ message: "test log entry " + useStateStore().logMessages.length, level: Math.floor(Math.random() * 5) % 4 });
   else useStateStore().logMessages?.push({ message: "[2024-07-25 02:27:26] [WebServer - Server] [DEBUG] Handled HTTP request of type POST from endpoint /api/utils/publishMetrics of req size 0 bytes & type null with return code 204 for host [0:0:0:0:0:0:0:1] in 0.591999 ms " + useStateStore().logMessages.length,level: 1 });
@@ -20,24 +24,24 @@ setInterval(function(){
 const logs = computed<LogMessage[]>(() =>
   useStateStore().logMessages.filter((message) => 
     selectedLogLevels.value[message.level]
-    && message.message.toLowerCase().includes(searchQuery.value?.toLowerCase() || ""))
+    && message.message.toLowerCase().includes(searchQuery.value?.toLowerCase() || "")
+  ).map((item, index) => ({message: item.message, level: item.level, index: index}))
 );
 
-const backendHost = inject<string>("backendHost");
+watch(logs, async (newValue, oldValue) => {
+  const virtualList = document.getElementById('virtualList');
+  if (!virtualList) return;
 
-const getLogColor = (level: LogLevel): string => {
-  switch (level) {
-    case LogLevel.ERROR:
-      return "red";
-    case LogLevel.WARN:
-      return "yellow";
-    case LogLevel.INFO:
-      return "light-blue";
-    case LogLevel.DEBUG:
-      return "white";
-  }
-  return "";
-};
+  const bottomOffset = Math.abs(
+    virtualList.scrollHeight
+    - virtualList.scrollTop
+    - virtualList.clientHeight
+  );
+  autoScroll.value = bottomOffset < 50;
+  if (autoScroll) scrollToBottom();
+})
+
+const backendHost = inject<string>("backendHost");
 
 const getLogLevelFromIndex = (index: number): string => {
   return LogLevel[index];
@@ -51,7 +55,16 @@ const handleLogExport = () => {
 
 const handleLogClear = () => {
   useStateStore().logMessages = [];
-}
+};
+
+const scrollToBottom = () => {
+  const virtualList = document.getElementById('virtualList');
+  if (virtualList) {
+    setTimeout(() => {
+      if (autoScroll.value) virtualList.scrollTop = virtualList.scrollHeight + 200;
+    }, 0);
+  }
+};
 
 document.addEventListener("keydown", (e) => {
   switch (e.key) {
@@ -137,28 +150,25 @@ document.addEventListener("keydown", (e) => {
                     />
                   </v-col>
                 </v-row>
-                <!-- <pv-switch
-                  v-model="selectedLogLevels[level]"
-                  :label="getLogLevelFromIndex(level)"
-                  :label-cols="8"
-                  reverseOrder
-                /> -->
               </v-col>
             </v-row>
           </v-col>
           
         </v-row>
-        <div class="virtual-scroll-container" id="log-display">
+        <div id="log-display">
           <v-card-text v-if="!logs.length" style="font-size: 18px; font-weight: 150; height: 100%; text-align: center;">
             No available logs
           </v-card-text>
-          <v-virtual-scroll v-else :items="logs" itemHeight="40">
-            <template #default="{ item }">
-              <div :class="[getLogColor(item.level) + '--text', 'log-item']">
-                {{ item.message }}
-              </div>
-            </template>
-          </v-virtual-scroll>
+          <virtual-list
+            v-else
+            style="height: 100%; overflow-y: auto;"
+            :data-key="'index'"
+            :data-sources="logs"
+            :data-component="Entry"
+            :estimateSize="35"
+            :keeps="40"
+            id="virtualList"
+          />
         </div>
       </div>
     </v-card>
@@ -172,44 +182,25 @@ document.addEventListener("keydown", (e) => {
 
 #dialog-container {
   height: 90vh;
+  min-height: 300px !important;
 }
 
 #dialog-data {
   /* Dialog size - dialog padding - header - divider */
-  height: calc(90vh - 48px - 48px - 1px);
+  height: calc(max(90vh, 300px) - 48px - 48px - 1px);
 }
 
 #log-display {
   /* Data size - options */
   height: calc(100% - 66px);
-}
-
-.v-dialog {
-  overflow-x: hidden;
-}
-
-.v-virtual-scroll {
-  background-color: #232c37 !important;
-}
-
-.virtual-scroll-container {
   padding: 10px;
   background-color: #232c37 !important;
   border-radius: 5px;
 }
 
-.v-btn-toggle.fill {
-  width: 100%;
+.v-virtual-scroll {
+  background-color: #232c37 !important;
 }
-
-.v-btn-toggle.fill > .v-btn {
-  width: 25%;
-}
-
-.v-text-field__slot {
-  margin-top: -10px !important
-}
-
 
 @media only screen and (max-width: 960px) {
   #log-options {
