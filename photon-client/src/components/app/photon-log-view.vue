@@ -115,6 +115,8 @@ document.addEventListener("keydown", (e) => {
               dark
               dense
               clearable
+              hide-details="auto"
+              prepend-icon="mdi-magnify"
               v-model="searchQuery"
               color="accent"
               label="Search"
@@ -204,6 +206,11 @@ document.addEventListener("keydown", (e) => {
   width: 25%;
 }
 
+.v-text-field__slot {
+  margin-top: -10px !important
+}
+
+
 @media only screen and (max-width: 960px) {
   #log-options {
     padding-top: 16px;
@@ -211,7 +218,7 @@ document.addEventListener("keydown", (e) => {
 
   #log-display {
   /* Data size - options */
-  height: calc(100% - 130px);
+  height: calc(100% - 118px);
 }
 }
 
