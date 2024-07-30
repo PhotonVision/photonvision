@@ -5,21 +5,19 @@ import { useStateStore } from "@/stores/StateStore";
 import Entry from './photon-log-entry.vue';
 import VirtualList from 'vue-virtual-scroll-list';
 
+const backendHost = inject<string>("backendHost");
+
+const searchQuery = ref("");
+const autoScroll = ref(true);
+const logList = ref();
+const logKeeps = ref(40);
+const exportLogFile = ref();
 const selectedLogLevels = ref({
   [LogLevel.ERROR]: true,
   [LogLevel.WARN]: true,
   [LogLevel.INFO]: true,
   [LogLevel.DEBUG]: false
 });
-
-const searchQuery = ref("");
-
-const autoScroll = ref(true);
-
-setInterval(function(){
-  if (Math.random() < 0.75) useStateStore().logMessages?.push({ message: "test log entry " + useStateStore().logMessages.length, level: Math.floor(Math.random() * 5) % 4 });
-  else useStateStore().logMessages?.push({ message: "[2024-07-25 02:27:26] [WebServer - Server] [DEBUG] Handled HTTP request of type POST from endpoint /api/utils/publishMetrics of req size 0 bytes & type null with return code 204 for host [0:0:0:0:0:0:0:1] in 0.591999 ms " + useStateStore().logMessages.length,level: 1 });
-}, 1000);
 
 const logs = computed<LogMessage[]>(() =>
   useStateStore().logMessages.filter((message) => 
@@ -28,26 +26,25 @@ const logs = computed<LogMessage[]>(() =>
   ).map((item, index) => ({message: item.message, level: item.level, index: index}))
 );
 
-watch(logs, async (newValue, oldValue) => {
-  const virtualList = document.getElementById('virtualList');
-  if (!virtualList) return;
+watch(logs, () => {
+  if (!logList.value) return;
+
+  // Dynamic list render size based on console size
+  logKeeps.value = Math.ceil(logList.value.$el.clientHeight / 17.5) + 10;
 
   const bottomOffset = Math.abs(
-    virtualList.scrollHeight
-    - virtualList.scrollTop
-    - virtualList.clientHeight
+    logList.value.$el.scrollHeight
+    - logList.value.$el.scrollTop
+    - logList.value.$el.clientHeight
   );
   autoScroll.value = bottomOffset < 50;
-  if (autoScroll) scrollToBottom();
-})
 
-const backendHost = inject<string>("backendHost");
+  if (autoScroll.value) logList.value.scrollToBottom();
+});
 
 const getLogLevelFromIndex = (index: number): string => {
   return LogLevel[index];
 };
-
-const exportLogFile = ref();
 
 const handleLogExport = () => {
   exportLogFile.value.click();
@@ -55,15 +52,6 @@ const handleLogExport = () => {
 
 const handleLogClear = () => {
   useStateStore().logMessages = [];
-};
-
-const scrollToBottom = () => {
-  const virtualList = document.getElementById('virtualList');
-  if (virtualList) {
-    setTimeout(() => {
-      if (autoScroll.value) virtualList.scrollTop = virtualList.scrollHeight + 200;
-    }, 0);
-  }
 };
 
 document.addEventListener("keydown", (e) => {
@@ -78,6 +66,8 @@ document.addEventListener("keydown", (e) => {
 <template>
   <v-dialog v-model="useStateStore().showLogModal" width="1500" dark>
     <v-card dark id="dialog-container" class="pa-6" color="primary" flat>
+
+      <!-- Logs header -->
       <v-row class="no-gutters pb-3">
         <v-col cols="4">
           <v-card-title id="logs-title">Program Logs</v-card-title>
@@ -122,6 +112,7 @@ document.addEventListener("keydown", (e) => {
       <v-divider />
 
       <div class="" id="dialog-data">
+        <!-- Log view options -->
         <v-row class="no-gutters" id="log-options">
           <v-col cols="12" md="5" class="align-self-center">
             <v-text-field
@@ -153,8 +144,9 @@ document.addEventListener("keydown", (e) => {
               </v-col>
             </v-row>
           </v-col>
-          
         </v-row>
+
+        <!-- Log entry list display -->
         <div id="log-display">
           <v-card-text v-if="!logs.length" style="font-size: 18px; font-weight: 150; height: 100%; text-align: center;">
             No available logs
@@ -166,8 +158,8 @@ document.addEventListener("keydown", (e) => {
             :data-sources="logs"
             :data-component="Entry"
             :estimateSize="35"
-            :keeps="40"
-            id="virtualList"
+            :keeps="logKeeps"
+            ref="logList"
           />
         </div>
       </div>
@@ -191,15 +183,11 @@ document.addEventListener("keydown", (e) => {
 }
 
 #log-display {
-  /* Data size - options */
+  /* Dialog data size - options */
   height: calc(100% - 66px);
   padding: 10px;
   background-color: #232c37 !important;
   border-radius: 5px;
-}
-
-.v-virtual-scroll {
-  background-color: #232c37 !important;
 }
 
 @media only screen and (max-width: 960px) {
@@ -208,7 +196,7 @@ document.addEventListener("keydown", (e) => {
   }
 
   #log-display {
-    /* Data size - options */
+    /* Dialog data size - options */
     height: calc(100% - 118px);
   }
 }
