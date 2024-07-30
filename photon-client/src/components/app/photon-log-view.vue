@@ -217,9 +217,9 @@ document.addEventListener("keydown", (e) => {
   }
 
   #log-display {
-  /* Data size - options */
-  height: calc(100% - 118px);
-}
+    /* Data size - options */
+    height: calc(100% - 118px);
+  }
 }
 
 @media only screen and (max-width: 700px) {
