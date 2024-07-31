@@ -110,3 +110,30 @@ PhotonVision is licensed under the `GNU GPL v3 <https://www.gnu.org/licenses/gpl
    docs/additional-resources/config
    docs/additional-resources/nt-api
    docs/contributing/index
+
+.. grid-item-card::
+  :class-header: sd-bg-info sd-text-white
+
+  **API Documentation**
+
+  ^^^
+
+  Java and C++ class documentation.
+
+  .. button-link:: https://javadocs.photonvision.org/
+     :color: primary
+     :shadow:
+     :align: center
+     :expand:
+     :outline:
+
+     Java
+
+  .. button-link:: https://cppdocs.photonvision.org/
+     :color: primary
+     :shadow:
+     :align: center
+     :expand:
+     :outline:
+
+     C++
