@@ -17,6 +17,9 @@
 
 #include "photon/targeting/proto/PhotonTrackedTargetProto.h"
 
+#include <utility>
+#include <vector>
+
 #include "photon.pb.h"
 
 google::protobuf::Message* wpi::Protobuf<photon::PhotonTrackedTarget>::New(
