@@ -111,7 +111,7 @@ PhotonVision is licensed under the `GNU GPL v3 <https://www.gnu.org/licenses/gpl
    docs/additional-resources/nt-api
    docs/contributing/index
 
-.. grid-item-card::
+.. card::
   :class-header: sd-bg-info sd-text-white
 
   **API Documentation**
