@@ -113,29 +113,9 @@ PhotonVision is licensed under the `GNU GPL v3 <https://www.gnu.org/licenses/gpl
 
 .. toctree::
   :maxdepth: 1
-  :caption: Class documentation
+  :caption: API Documentation
   :hidden:
 
-  **API Documentation**
+ `Java <https://javadocs.photonvision.org>`_
 
-  ^^^
-
-  Java and C++ class documentation.
-
-  .. button-link:: https://javadocs.photonvision.org/
-     :color: primary
-     :shadow:
-     :align: center
-     :expand:
-     :outline:
-
-     Java
-
-  .. button-link:: https://cppdocs.photonvision.org/
-     :color: primary
-     :shadow:
-     :align: center
-     :expand:
-     :outline:
-
-     C++
+ `C++ <https://cppdocs.photonvision.org/>`_
