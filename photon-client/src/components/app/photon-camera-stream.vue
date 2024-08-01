@@ -63,7 +63,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="stream-container">
-    <img :id="id" crossorigin="anonymous" :src="streamSrc" :alt="streamDesc" :style="streamStyle" ref="mjpgStream" />
+    <img :id="id" ref="mjpgStream" crossorigin="anonymous" :src="streamSrc" :alt="streamDesc" :style="streamStyle" />
     <div class="stream-overlay" :style="overlayStyle">
       <pv-icon
         icon-name="mdi-camera-image"
