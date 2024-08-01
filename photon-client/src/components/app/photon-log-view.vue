@@ -2,8 +2,8 @@
 import { computed, inject, ref, watch } from "vue";
 import { LogLevel, type LogMessage } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
-import Entry from './photon-log-entry.vue';
-import VirtualList from 'vue-virtual-scroll-list';
+import Entry from "./photon-log-entry.vue";
+import VirtualList from "vue-virtual-scroll-list";
 
 const backendHost = inject<string>("backendHost");
 
@@ -20,10 +20,13 @@ const selectedLogLevels = ref({
 });
 
 const logs = computed<LogMessage[]>(() =>
-  useStateStore().logMessages.filter((message) => 
-    selectedLogLevels.value[message.level]
-    && message.message.toLowerCase().includes(searchQuery.value?.toLowerCase() || "")
-  ).map((item, index) => ({message: item.message, level: item.level, index: index}))
+  useStateStore()
+    .logMessages.filter(
+      (message) =>
+        selectedLogLevels.value[message.level] &&
+        message.message.toLowerCase().includes(searchQuery.value?.toLowerCase() || "")
+    )
+    .map((item, index) => ({ message: item.message, level: item.level, index: index }))
 );
 
 watch(logs, () => {
@@ -33,9 +36,7 @@ watch(logs, () => {
   logKeeps.value = Math.ceil(logList.value.$el.clientHeight / 17.5) + 20;
 
   const bottomOffset = Math.abs(
-    logList.value.$el.scrollHeight
-    - logList.value.$el.scrollTop
-    - logList.value.$el.clientHeight
+    logList.value.$el.scrollHeight - logList.value.$el.scrollTop - logList.value.$el.clientHeight
   );
   autoScroll.value = bottomOffset < 50;
 
@@ -65,19 +66,14 @@ document.addEventListener("keydown", (e) => {
 
 <template>
   <v-dialog v-model="useStateStore().showLogModal" width="1500" dark>
-    <v-card dark id="dialog-container" class="pa-6" color="primary" flat>
-
+    <v-card id="dialog-container" dark class="pa-6" color="primary" flat>
       <!-- Logs header -->
       <v-row class="no-gutters pb-3">
         <v-col cols="4">
           <v-card-title id="logs-title">Program Logs</v-card-title>
         </v-col>
-        <v-col class="align-self-center pl-3" style="text-align: right;">
-          <v-btn
-            text
-            color="white"
-            @click="handleLogExport"
-          >
+        <v-col class="align-self-center pl-3" style="text-align: right">
+          <v-btn text color="white" @click="handleLogExport">
             <v-icon left class="menu-icon"> mdi-download </v-icon>
             <span class="menu-label">Download</span>
 
@@ -90,19 +86,11 @@ document.addEventListener("keydown", (e) => {
               target="_blank"
             />
           </v-btn>
-          <v-btn
-            text
-            color="white"
-            @click="handleLogClear"
-          >
+          <v-btn text color="white" @click="handleLogClear">
             <v-icon left class="menu-icon"> mdi-trash-can-outline </v-icon>
             <span class="menu-label">Clear</span>
           </v-btn>
-          <v-btn
-            text
-            color="white"
-            @click="() => (useStateStore().showLogModal = false)"
-          >
+          <v-btn text color="white" @click="() => (useStateStore().showLogModal = false)">
             <v-icon left class="menu-icon"> mdi-close </v-icon>
             <span class="menu-label">Close</span>
           </v-btn>
@@ -111,34 +99,30 @@ document.addEventListener("keydown", (e) => {
 
       <v-divider />
 
-      <div class="" id="dialog-data">
+      <div id="dialog-data" class="">
         <!-- Log view options -->
-        <v-row class="no-gutters" id="log-options">
+        <v-row id="log-options" class="no-gutters">
           <v-col cols="12" md="5" class="align-self-center">
             <v-text-field
+              v-model="searchQuery"
               dark
               dense
               clearable
               hide-details="auto"
               prepend-icon="mdi-magnify"
-              v-model="searchQuery"
               color="accent"
               label="Search"
             />
           </v-col>
-          <v-col cols="12" md="7" >
+          <v-col cols="12" md="7">
             <v-row class="no-gutters">
-              <v-col v-for="level in [0, 1, 2, 3]">
+              <v-col v-for="level in [0, 1, 2, 3]" :key="level">
                 <v-row dense align="center">
-                  <v-col cols="6" md="8" style="text-align: right;">
+                  <v-col cols="6" md="8" style="text-align: right">
                     {{ getLogLevelFromIndex(level) }}
                   </v-col>
-                  <v-col cols="6" md="4" >
-                    <v-switch
-                      dark
-                      v-model="selectedLogLevels[level]"
-                      color="#ffd843"
-                    />
+                  <v-col cols="6" md="4">
+                    <v-switch v-model="selectedLogLevels[level]" dark color="#ffd843" />
                   </v-col>
                 </v-row>
               </v-col>
@@ -148,18 +132,18 @@ document.addEventListener("keydown", (e) => {
 
         <!-- Log entry list display -->
         <div id="log-display">
-          <v-card-text v-if="!logs.length" style="font-size: 18px; font-weight: 150; height: 100%; text-align: center;">
+          <v-card-text v-if="!logs.length" style="font-size: 18px; font-weight: 150; height: 100%; text-align: center">
             No available logs
           </v-card-text>
           <virtual-list
             v-else
-            style="height: 100%; overflow-y: auto;"
+            ref="logList"
+            style="height: 100%; overflow-y: auto"
             :data-key="'index'"
             :data-sources="logs"
             :data-component="Entry"
-            :estimateSize="35"
+            :estimate-size="35"
             :keeps="logKeeps"
-            ref="logList"
           />
         </div>
       </div>
