@@ -35,6 +35,9 @@ importers:
       vue-router:
         specifier: ^3.6.5
         version: 3.6.5(vue@2.7.16)
+      vue-virtual-scroll-list:
+        specifier: ^2.3.5
+        version: 2.3.5
       vuetify:
         specifier: ^2.7.1
         version: 2.7.2(vue@2.7.16)
@@ -1794,6 +1797,9 @@ packages:
     resolution: {integrity: sha512-VYXZQLtjuvKxxcshuRAwjHnciqZVoXAjTjcqBTz4rKc8qih9g9pI3hbDjmqXaHdgL3v8pV6P8Z335XvHzESxLQ==}
     peerDependencies:
       vue: ^2
+
+  vue-virtual-scroll-list@2.3.5:
+    resolution: {integrity: sha512-YFK6u5yltqtAOfTBcij/KGAS2SoZvzbNIAf9qTULauPObEp53xj22tDuohrrM2vNkgoD5kejXICIUBt2Q4ZDqQ==}
 
   vue@2.7.16:
     resolution: {integrity: sha512-4gCtFXaAA3zYZdTp5s4Hl2sozuySsgz4jy1EnpBHNfpMa9dK1ZCG7viqBPCwXtmgc8nHqUsAu3G4gtmXkkY3Sw==}
@@ -3625,6 +3631,8 @@ snapshots:
   vue-router@3.6.5(vue@2.7.16):
     dependencies:
       vue: 2.7.16
+
+  vue-virtual-scroll-list@2.3.5: {}
 
   vue@2.7.16:
     dependencies:
