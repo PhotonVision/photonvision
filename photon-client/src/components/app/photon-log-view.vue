@@ -30,7 +30,7 @@ watch(logs, () => {
   if (!logList.value) return;
 
   // Dynamic list render size based on console size
-  logKeeps.value = Math.ceil(logList.value.$el.clientHeight / 17.5) + 10;
+  logKeeps.value = Math.ceil(logList.value.$el.clientHeight / 17.5) + 20;
 
   const bottomOffset = Math.abs(
     logList.value.$el.scrollHeight
