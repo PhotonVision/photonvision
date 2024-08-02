@@ -72,23 +72,17 @@ jobs:
         working-directory: photon-client
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
+      - uses: actions/checkout@v3
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
       - name: Install Dependencies
-        run: pnpm install
+        run: npm ci
       - name: Check Linting
-        run: pnpm run lint-ci
+        run: npm run lint-ci
       - name: Check Formatting
-        run: pnpm run format-ci
+        run: npm run format-ci
   server-index:
     name: "Check server index.html not changed"
     runs-on: ubuntu-22.04
