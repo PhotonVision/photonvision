@@ -18,14 +18,17 @@
 package org.photonvision.vision.pipeline;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
+import org.photonvision.vision.objects.Model;
+import org.photonvision.vision.objects.NullModel;
 import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.*;
-import org.photonvision.vision.pipe.impl.RknnDetectionPipe.RknnDetectionPipeParams;
+import org.photonvision.vision.pipe.impl.ObjectDetectionPipe.ObjectDetectionPipeParams;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.PotentialTarget;
 import org.photonvision.vision.target.TargetOrientation;
@@ -34,7 +37,7 @@ import org.photonvision.vision.target.TrackedTarget;
 public class ObjectDetectionPipeline
         extends CVPipeline<CVPipelineResult, ObjectDetectionPipelineSettings> {
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
-    private final RknnDetectionPipe rknnPipe = new RknnDetectionPipe();
+    private final ObjectDetectionPipe objectDetectorPipe = new ObjectDetectionPipe();
     private final SortContoursPipe sortContoursPipe = new SortContoursPipe();
     private final Collect2dTargetsPipe collect2dTargetsPipe = new Collect2dTargetsPipe();
     private final FilterObjectDetectionsPipe filterContoursPipe = new FilterObjectDetectionsPipe();
@@ -54,16 +57,20 @@ public class ObjectDetectionPipeline
     @Override
     protected void setPipeParamsImpl() {
         // this needs to be based off of the current backend selected!!
-        var params = new RknnDetectionPipeParams();
+        var params = new ObjectDetectionPipeParams();
         params.confidence = settings.confidence;
         params.nms = settings.nms;
-        var model = NeuralNetworkModelManager.getInstance().getModel(settings.model);
-        if (model != null) {
-            params.model = model;
-        } else {
-            params.model = NeuralNetworkModelManager.getInstance().getDefaultRknnModel();
-        }
-        rknnPipe.setParams(params);
+        Optional<Model> model = NeuralNetworkModelManager.getInstance().getModel(settings.model);
+        model.ifPresentOrElse(
+                m -> params.model = m,
+                () -> {
+                    params.model =
+                            NeuralNetworkModelManager.getInstance()
+                                    .getDefaultModel()
+                                    .orElse(NullModel.getInstance());
+                });
+
+        objectDetectorPipe.setParams(params);
 
         DualOffsetValues dualOffsetValues =
                 new DualOffsetValues(
@@ -104,10 +111,11 @@ public class ObjectDetectionPipeline
 
         // ***************** change based on backend ***********************
 
-        CVPipeResult<List<NeuralNetworkPipeResult>> rknnResult = rknnPipe.run(frame.colorImage);
+        CVPipeResult<List<NeuralNetworkPipeResult>> rknnResult =
+                objectDetectorPipe.run(frame.colorImage);
         sumPipeNanosElapsed += rknnResult.nanosElapsed;
 
-        var names = rknnPipe.getClassNames();
+        var names = objectDetectorPipe.getClassNames();
 
         frame.colorImage.getMat().copyTo(frame.processedImage.getMat());
 
@@ -136,7 +144,7 @@ public class ObjectDetectionPipeline
 
     @Override
     public void release() {
-        rknnPipe.release();
+        objectDetectorPipe.release();
         super.release();
     }
 }

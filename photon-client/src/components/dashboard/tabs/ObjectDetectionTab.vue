@@ -28,6 +28,12 @@ const interactiveCols = computed(() =>
     ? 9
     : 8
 );
+
+// Filters out models that are not supported by the current backend, and returns a flattened list.
+const supportedModels = computed(() => {
+  const { availableModels, supportedBackends } = useSettingsStore().general;
+  return supportedBackends.flatMap(backend => availableModels[backend] || []);
+});
 </script>
 
 <template>
@@ -37,7 +43,7 @@ const interactiveCols = computed(() =>
       label="Model"
       tooltip="The model used to detect objects in the camera feed"
       :select-cols="interactiveCols"
-      :items="useSettingsStore().general.availableModels"
+      :items="supportedModels"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ model: value }, false)"
     />
     <pv-slider
