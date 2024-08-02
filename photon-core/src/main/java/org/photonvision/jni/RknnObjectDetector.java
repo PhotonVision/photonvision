@@ -1,50 +1,53 @@
 package org.photonvision.jni;
 
+import java.awt.Color;
 import java.lang.ref.Cleaner;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.opencv.core.Mat;
-import org.photonvision.common.configuration.NeuralNetworkModelManager;
+import org.opencv.core.Size;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.ColorHelper;
 import org.photonvision.rknn.RknnJNI;
-import org.photonvision.vision.opencv.Releasable;
+import org.photonvision.vision.objects.Letterbox;
+import org.photonvision.vision.objects.ObjectDetector;
+import org.photonvision.vision.objects.RknnModel;
 import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
 
-/**
- * A class to represent an object detector using the Rknn library.
- *
- * <p>TODO: When we start supporting more platforms, we should consider moving most of this code
- * into a common "ObjectDetector" class to define the common interface for all object detectors.
- */
-public class RknnObjectDetector implements Releasable {
-    /** logger for the RknnObjectDetector */
+/** Manages an object detector using the rknn backend. */
+public class RknnObjectDetector implements ObjectDetector {
     private static final Logger logger = new Logger(RknnDetectorJNI.class, LogGroup.General);
 
-    /** Cleaner instance to release the detector when it is no longer needed */
+    /** Cleaner instance to release the detector when it goes out of scope */
     private final Cleaner cleaner = Cleaner.create();
+
+    /** Atomic boolean to ensure that the native object can only be released once. */
+    private AtomicBoolean released = new AtomicBoolean(false);
 
     /** Pointer to the native object */
     private final long objPointer;
 
-    /** Model configuration */
-    private final NeuralNetworkModelManager.Model model;
+    private final RknnModel model;
 
-    /** Returns the model used by the detector. */
-    public NeuralNetworkModelManager.Model getModel() {
+    private final Size inputSize;
+
+    /** Returns the model in use by this detector. */
+    @Override
+    public RknnModel getModel() {
         return model;
     }
-
-    /** Atomic boolean to ensure that the detector is only released _once_. */
-    private AtomicBoolean released = new AtomicBoolean(false);
 
     /**
      * Creates a new RknnObjectDetector from the given model.
      *
      * @param model The model to create the detector from.
+     * @param inputSize The required image dimensions for the model. Images will be {@link
+     *     Letterbox}ed to this shape.
      */
-    public RknnObjectDetector(NeuralNetworkModelManager.Model model) {
+    public RknnObjectDetector(RknnModel model, Size inputSize) {
         this.model = model;
+        this.inputSize = inputSize;
 
         // Create the detector
         objPointer =
@@ -58,9 +61,6 @@ public class RknnObjectDetector implements Releasable {
 
         // Register the cleaner to release the detector when it goes out of scope
         cleaner.register(this, this::release);
-
-        // Set the detector to be released when the JVM exits
-        Runtime.getRuntime().addShutdownHook(new Thread(this::release));
     }
 
     /**
@@ -68,6 +68,7 @@ public class RknnObjectDetector implements Releasable {
      *
      * @return The classes
      */
+    @Override
     public List<String> getClasses() {
         return model.labels;
     }
@@ -81,6 +82,7 @@ public class RknnObjectDetector implements Releasable {
      * @return A list of NeuralNetworkPipeResult objects representing the detected objects. Returns an
      *     empty list if the detector is not initialized or if no objects are detected.
      */
+    @Override
     public List<NeuralNetworkPipeResult> detect(Mat in, double nmsThresh, double boxThresh) {
         if (objPointer <= 0) {
             // Report error and make sure to include the model name
@@ -88,19 +90,32 @@ public class RknnObjectDetector implements Releasable {
             return List.of();
         }
 
-        var results = RknnJNI.detect(objPointer, in.getNativeObjAddr(), nmsThresh, boxThresh);
+        // Resize the frame to the input size of the model
+        Mat letterboxed = new Mat();
+        Letterbox scale =
+                Letterbox.letterbox(
+                        in, letterboxed, this.inputSize, ColorHelper.colorToScalar(Color.GRAY));
+        if (!letterboxed.size().equals(this.inputSize)) {
+            throw new RuntimeException("Letterboxed frame is not the right size!");
+        }
+
+        // Detect objects in the letterboxed frame
+        var results = RknnJNI.detect(objPointer, letterboxed.getNativeObjAddr(), nmsThresh, boxThresh);
         if (results == null) {
             return List.of();
         }
+        letterboxed.release();
 
-        return List.of(results).stream()
-                .map(it -> new NeuralNetworkPipeResult(it.rect, it.class_id, it.conf))
-                .toList();
+        return scale.resizeDetections(
+                List.of(results).stream()
+                        .map(it -> new NeuralNetworkPipeResult(it.rect, it.class_id, it.conf))
+                        .toList());
     }
 
     /** Thread-safe method to release the detector. */
     @Override
     public void release() {
+        // Checks if the atomic is 'false', and if so, sets it to 'true'
         if (released.compareAndSet(false, true)) {
             if (objPointer <= 0) {
                 logger.error(

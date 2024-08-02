@@ -17,9 +17,6 @@
 
 package org.photonvision.vision.pipeline;
 
-import java.util.List;
-import org.photonvision.common.configuration.NeuralNetworkModelManager;
-
 public class ObjectDetectionPipelineSettings extends AdvancedPipelineSettings {
     public double confidence;
     public double nms; // non maximal suppression
@@ -34,6 +31,6 @@ public class ObjectDetectionPipelineSettings extends AdvancedPipelineSettings {
         ledMode = false;
         confidence = .9;
         nms = .45;
-        model = NeuralNetworkModelManager.getInstance().getDefaultRknnModel().getName();
+        model = "";
     }
 }
