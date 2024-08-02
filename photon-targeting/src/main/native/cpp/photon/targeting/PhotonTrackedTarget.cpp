@@ -17,9 +17,9 @@
 
 #include "photon/targeting/PhotonTrackedTarget.h"
 
+#include <algorithm>
 #include <iostream>
 #include <utility>
-#include <algorithm>
 #include <vector>
 
 #include <frc/geometry/Translation2d.h>
