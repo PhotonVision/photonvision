@@ -25,6 +25,7 @@
 #include "subsystems/SwerveDrive.h"
 
 #include <iostream>
+#include <string>
 
 #include <frc/TimedRobot.h>
 #include <frc/smartdashboard/SmartDashboard.h>
