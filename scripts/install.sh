@@ -102,6 +102,10 @@ else
     echo 'GOVERNOR=performance' > /etc/default/cpufrequtils
 fi
 
+echo "Installing libatomic"
+apt-get install --yes libatomic1
+echo "libatomic installation complete."
+
 if [[ "$INSTALL_NETWORK_MANAGER" == "true" ]]; then
   echo "Installing network-manager..."
   apt-get install --yes network-manager
@@ -121,6 +125,10 @@ fi
 echo "JRE installation complete."
 
 echo "Installing additional math packages"
+if [[ "$DISTRO" = "Ubuntu" && -z $(apt-cache search libcholmod3) ]]; then
+  echo "Adding jammy to list of apt sources"
+  add-apt-repository -y -S 'deb http://ports.ubuntu.com/ubuntu-ports jammy main universe'
+fi
 apt-get install --yes libcholmod3 liblapack3 libsuitesparseconfig5
 
 echo "Installing v4l-utils..."
