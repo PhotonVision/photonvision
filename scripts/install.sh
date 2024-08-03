@@ -108,7 +108,8 @@ echo "libatomic installation complete."
 
 if [[ "$INSTALL_NETWORK_MANAGER" == "true" ]]; then
   echo "Installing network-manager..."
-  apt-get install --yes network-manager
+  apt-get install --yes network-manager net-tools
+  systemctl disable systemd-networkd-wait-online.service 
   cat > /etc/netplan/00-default-nm-renderer.yaml <<EOF
 network:
   renderer: NetworkManager
