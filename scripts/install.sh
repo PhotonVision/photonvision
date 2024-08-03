@@ -188,6 +188,11 @@ if [ "$DISABLE_NETWORKING" = "true" ]; then
   sed -i "s/photonvision.jar/photonvision.jar -n/" /lib/systemd/system/photonvision.service
 fi
 
+if [[ -n $(cat /proc/cpuinfo | grep "RK3588") ]]; then
+  echo "This has a Rockchip RK3588, enabling all cores"
+  sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=0-7/g' /lib/systemd/system/photonvision.service
+fi
+
 cp /lib/systemd/system/photonvision.service /etc/systemd/system/photonvision.service
 chmod 644 /etc/systemd/system/photonvision.service
 systemctl daemon-reload
