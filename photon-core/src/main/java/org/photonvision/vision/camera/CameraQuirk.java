@@ -44,5 +44,7 @@ public enum CameraQuirk {
     /*
      * Camera is an arducam ov9782 which has specific exposure ranges and needs a specific white balance issue
      */
-    ArduOV9782
+    ArduOV9782,
+    /** Camera has odd exposure range, and supports gain control */
+    See3Cam_24CUG
 }

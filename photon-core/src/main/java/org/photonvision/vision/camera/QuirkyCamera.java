@@ -28,6 +28,9 @@ import java.util.Objects;
 public class QuirkyCamera {
     private static final List<QuirkyCamera> quirkyCameras =
             List.of(
+                    // SeeCam, which has an odd exposure range
+                    new QuirkyCamera(
+                            0x2560, 0xc128, "See3Cam_24CUG", CameraQuirk.Gain, CameraQuirk.See3Cam_24CUG),
                     new QuirkyCamera(
                             0x9331,
                             0x5A3,
