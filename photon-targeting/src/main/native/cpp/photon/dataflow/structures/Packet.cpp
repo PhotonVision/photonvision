@@ -17,6 +17,8 @@
 
 #include "photon/dataflow/structures/Packet.h"
 
+#include <vector>
+
 using namespace photon;
 
 Packet::Packet(std::vector<uint8_t> data) : packetData(data) {}

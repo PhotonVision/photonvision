@@ -1,12 +1,21 @@
 name: Build
 
 on:
+  # Run on pushes to master and pushed tags, and on pull requests against master, but ignore the docs folder
   push:
     branches: [ master ]
     tags:
       - 'v*'
+    paths:
+      - '**'
+      - '!docs/**'
+      - '.github/**'
   pull_request:
     branches: [ master ]
+    paths:
+      - '**'
+      - '!docs/**'
+      - '.github/**'
 
 jobs:
   build-client:
@@ -101,24 +110,23 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-        with:
-          repository: 'PhotonVision/photonvision-docs.git'
-          ref: master
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.11'
       - name: Install dependencies
+        working-directory: docs
         run: |
           python -m pip install --upgrade pip
           pip install sphinx sphinx_rtd_theme sphinx-tabs sphinxext-opengraph doc8
           pip install -r requirements.txt
       - name: Build the docs
+        working-directory: docs
         run: |
           make html
       - uses: actions/upload-artifact@v4
         with:
           name: built-docs
-          path: build/html
+          path: docs/build/html
   build-photonlib-host:
     env:
       MACOSX_DEPLOYMENT_TARGET: 13
@@ -408,15 +416,21 @@ jobs:
           - os: ubuntu-latest
             artifact-name: LinuxArm64
             image_suffix: orangepi5
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.10/photonvision_opi5.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0-beta-2/photonvision_opi5.img.xz
             cpu: cortex-a8
-            image_additional_mb: 4096
+            image_additional_mb: 1024
           - os: ubuntu-latest
             artifact-name: LinuxArm64
             image_suffix: orangepi5plus
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.10/photonvision_opi5plus.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0-beta-2/photonvision_opi5plus.img.xz
             cpu: cortex-a8
-            image_additional_mb: 4096
+            image_additional_mb: 1024
+          - os: ubuntu-latest
+            artifact-name: LinuxArm64
+            image_suffix: orangepi5pro
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0-beta-2/photonvision_opi5pro.img.xz
+            cpu: cortex-a8
+            image_additional_mb: 1024
 
     runs-on: ${{ matrix.os }}
     name: "Build image - ${{ matrix.image_url }}"
@@ -429,7 +443,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: jar-${{ matrix.artifact-name }}
-      - uses: pguyot/arm-runner-action@v2
+      - uses: pguyot/arm-runner-action@HEAD
         name: Generate image
         id: generate_image
         with:
