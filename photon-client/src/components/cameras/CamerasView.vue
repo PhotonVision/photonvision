@@ -100,6 +100,49 @@ const fpsTooLow = computed<boolean>(() => {
       </div>
     </div>
     <v-divider />
+
+    <div class="pt-4">
+      <v-btn small color="secondary" style="width: 100%" @click="useCameraSettingsStore().takeCalibrationSnapshot()">
+        <v-icon left class="calib-btn-icon"> mdi-flag-outline </v-icon>
+        <span class="calib-btn-label">Take Snapshot </span>
+      </v-btn>
+
+      <v-row class="mt-0">
+        <v-col :cols="6">
+          <v-btn
+            small
+            color="red"
+            class="white---text"
+            style="width: 100%"
+          >
+            <v-icon left class="calib-btn-icon">
+              mdi-flag-off-outline
+            </v-icon>
+            <span class="calib-btn-label">
+              Cancel Calibration
+            </span>
+          </v-btn>
+        </v-col>
+        <v-col :cols="6">
+          <v-btn
+            small
+            color="accent"
+            class="black--text"
+            style="width: 100%"
+          >
+            <v-icon left class="calib-btn-icon">
+              mdi-flag-checkered
+            </v-icon>
+            <span class="calib-btn-label">
+              Finish Calibration
+            </span>
+          </v-btn>
+        </v-col>
+      </v-row>
+
+      <v-divider class="mt-4" />
+    </div>
+
     <div class="pt-4">
       <p style="color: white">Stream Display</p>
       <v-btn-toggle v-model="localValue" :multiple="true" mandatory dark class="fill" style="width: 100%">
