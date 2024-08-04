@@ -32,7 +32,6 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.PWMVictorSPX;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
 import org.photonvision.PhotonCamera;
 
 /**
@@ -75,8 +74,9 @@ public class Robot extends TimedRobot {
         var start = Timer.getFPGATimestamp();
         var res = camera.getLatestResult();
         var end = Timer.getFPGATimestamp();
-        System.out.println("dt: " + (int)((end - start)*1e6) + "uS for targets: " + res.getTargets().size());
-        SmartDashboard.putNumber("decodeTime", (int)((end-start)*1e6));
+        System.out.println(
+                "dt: " + (int) ((end - start) * 1e6) + "uS for targets: " + res.getTargets().size());
+        SmartDashboard.putNumber("decodeTime", (int) ((end - start) * 1e6));
     }
 
     @Override

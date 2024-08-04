@@ -125,7 +125,7 @@ apply from: "${rootDir}/shared/javacpp/publish.gradle"
 
 // Add photon serde headers to our published sources
 cppHeadersZip {
-    from('src/generated/main/native/include') { 
+    from('src/generated/main/native/include') {
         into '/'
-    } 
+    }
 }

@@ -378,9 +378,20 @@ public class PhotonCamera implements AutoCloseable {
                     "PhotonVision coprocessor at path " + path + " is not sending new data.", true);
         }
 
-        // Check for version. Warn if the versions aren't aligned.
         String versionString = versionEntry.get("");
-        if (!versionString.isEmpty() && !PhotonVersion.versionMatches(versionString)) {
+
+        // Check mdef UUID
+        String local_uuid = PhotonPipelineResult.photonStruct.getInterfaceUUID();
+        String remote_uuid = resultSubscriber.getInterfaceUUID();
+
+        if (remote_uuid == null || remote_uuid.isEmpty()) {
+            // not connected yet?
+            DriverStation.reportWarning(
+                    "PhotonVision coprocessor at path "
+                            + path
+                            + " has note reported a message interface UUID - is your coprocessor's camera started?",
+                    true);
+        } else if (!local_uuid.equals(remote_uuid)) {
             // Error on a verified version mismatch
             // But stay silent otherwise
 
@@ -406,8 +417,14 @@ public class PhotonCamera implements AutoCloseable {
             var versionMismatchMessage =
                     "Photon version "
                             + PhotonVersion.versionString
+                            + " (message definition version "
+                            + local_uuid
+                            + ")"
                             + " does not match coprocessor version "
                             + versionString
+                            + " (message definition version "
+                            + remote_uuid
+                            + ")"
                             + "!";
             DriverStation.reportError(versionMismatchMessage, false);
             throw new UnsupportedOperationException(versionMismatchMessage);

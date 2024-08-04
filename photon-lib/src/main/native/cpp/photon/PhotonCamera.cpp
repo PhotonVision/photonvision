@@ -35,6 +35,7 @@
 #include <frc/Timer.h>
 #include <opencv2/core.hpp>
 #include <opencv2/core/mat.hpp>
+#include <wpi/json.h>
 
 #include "PhotonVersion.h"
 #include "photon/dataflow/structures/Packet.h"
@@ -192,22 +193,6 @@ std::optional<PhotonCamera::DistortionMatrix> PhotonCamera::GetDistCoeffs() {
   return std::nullopt;
 }
 
-static bool VersionMatches(std::string them_str) {
-  std::smatch match;
-  std::regex versionPattern{"v[0-9]+.[0-9]+.[0-9]+"};
-
-  std::string us_str = PhotonVersion::versionString;
-
-  // Check that both versions are in the right format
-  if (std::regex_search(us_str, match, versionPattern) &&
-      std::regex_search(them_str, match, versionPattern)) {
-    // If they are, check string equality
-    return (us_str == them_str);
-  } else {
-    return false;
-  }
-}
-
 void PhotonCamera::VerifyVersion() {
   if (!PhotonCamera::VERSION_CHECK_ENABLED) {
     return;
@@ -244,13 +229,20 @@ void PhotonCamera::VerifyVersion() {
           "Found the following PhotonVision cameras on NetworkTables:{}",
           cameraNameOutString);
     }
-  } else if (!VersionMatches(versionString)) {
-    FRC_ReportError(frc::warn::Warning, bfw);
-    std::string error_str = fmt::format(
-        "Photonlib version {} does not match coprocessor version {}!",
-        PhotonVersion::versionString, versionString);
-    FRC_ReportError(frc::err::Error, "{}", error_str);
-    throw std::runtime_error(error_str);
+  } else {
+    std::string local_uuid{SerdeType<PhotonPipelineResult>::GetSchemaHash()};
+    std::string remote_uuid =
+        rawBytesEntry.GetTopic().GetProperty("message_uuid");
+
+    if (local_uuid != remote_uuid) {
+      FRC_ReportError(frc::warn::Warning, bfw);
+      std::string error_str = fmt::format(
+          "Photonlib version {} (message definition version {}) does not match "
+          "coprocessor version {} (message definition version {})!",
+          PhotonVersion::versionString, local_uuid, versionString, remote_uuid);
+      FRC_ReportError(frc::err::Error, "{}", error_str);
+      throw std::runtime_error(error_str);
+    }
   }
 }
 

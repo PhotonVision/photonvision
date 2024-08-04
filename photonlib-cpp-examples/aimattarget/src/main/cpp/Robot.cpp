@@ -25,9 +25,10 @@
 #include "Robot.h"
 
 #include <photon/PhotonUtils.h>
-#include <units/time.h>
+
 #include <frc/Timer.h>
 #include <frc/smartdashboard/SmartDashboard.h>
+#include <units/time.h>
 
 void Robot::RobotPeriodic() {
   photon::PhotonCamera::SetVersionCheckEnabled(false);
@@ -36,7 +37,9 @@ void Robot::RobotPeriodic() {
   photon::PhotonPipelineResult result = camera.GetLatestResult();
   auto end = frc::Timer::GetFPGATimestamp();
 
-  printf("DT is %iuS for %i targets\n",(int)units::microsecond_t(end - start).to<double>(), result.GetTargets().size());
+  std::printf("DT is %iuS for %i targets\n",
+              (int)units::microsecond_t(end - start).to<double>(),
+              result.GetTargets().size());
 }
 
 void Robot::TeleopPeriodic() {
