@@ -164,6 +164,8 @@ std::vector<PhotonPipelineResult> PhotonCamera::GetAllUnreadResults() {
 
     PhotonPipelineResult& result = ret[i];
     packet >> result;
+    // TODO: NT4 timestamps are still not to be trusted. But it's the best we
+    // can do until we can make time sync more reliable.
     result.SetRecieveTimestamp(units::microsecond_t(value.time) -
                                result.GetLatency());
   }

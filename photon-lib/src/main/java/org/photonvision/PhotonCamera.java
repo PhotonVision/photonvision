@@ -189,6 +189,8 @@ public class PhotonCamera implements AutoCloseable {
 
         var changes = resultSubscriber.getAllChanges();
 
+        // TODO: NT4 timestamps are still not to be trusted. But it's the best we can do until we can
+        // make time sync more reliable.
         for (var c : changes) {
             var result = c.value;
             result.setRecieveTimestampMicros(c.timestamp);
