@@ -249,9 +249,7 @@ class PhotonPoseEstimator {
    * @return the estimated position of the robot in the FCS
    */
   std::optional<EstimatedRobotPose> MultiTagOnCoprocStrategy(
-      PhotonPipelineResult result,
-      std::optional<PhotonCamera::CameraMatrix> camMat,
-      std::optional<PhotonCamera::DistortionMatrix> distCoeffs);
+      PhotonPipelineResult result);
 
   /**
    * Return the pose calculation using all targets in view in the same PNP()
