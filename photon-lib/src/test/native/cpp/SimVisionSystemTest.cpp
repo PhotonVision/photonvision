@@ -22,6 +22,8 @@
  * SOFTWARE.
  */
 
+#include <tuple>
+
 #include "gtest/gtest.h"
 #include "photon/PhotonUtils.h"
 #include "photon/simulation/SimVisionSystem.h"

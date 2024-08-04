@@ -24,6 +24,8 @@
 
 #include <chrono>
 #include <thread>
+#include <tuple>
+#include <vector>
 
 #include "gtest/gtest.h"
 #include "photon/PhotonUtils.h"

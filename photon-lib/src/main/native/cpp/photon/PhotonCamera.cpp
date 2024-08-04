@@ -26,7 +26,9 @@
 
 #include <hal/FRCUsageReporting.h>
 
+#include <string>
 #include <string_view>
+#include <vector>
 
 #include <frc/Errors.h>
 #include <frc/RobotController.h>

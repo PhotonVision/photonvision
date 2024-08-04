@@ -17,6 +17,8 @@
 
 #include "photon/targeting/proto/PhotonPipelineResultProto.h"
 
+#include <vector>
+
 #include "photon.pb.h"
 #include "photon/targeting/proto/MultiTargetPNPResultProto.h"
 #include "photon/targeting/proto/PhotonTrackedTargetProto.h"

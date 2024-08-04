@@ -17,6 +17,9 @@
 
 #include "photon/targeting/proto/PhotonTrackedTargetProto.h"
 
+#include <utility>
+#include <vector>
+
 #include "photon.pb.h"
 
 using photon::TargetCorner;
