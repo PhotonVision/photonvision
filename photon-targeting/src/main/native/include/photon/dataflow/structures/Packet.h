@@ -170,7 +170,8 @@ struct SerdeType<std::vector<T>> {
   static constexpr std::string_view GetSchema() {
     // TODO: this gets us the plain type name of T, but this is not schema JSON
     // compliant!
-    return wpi::Demangle(typeid(T).name());
+    std::string name = wpi::Demangle(typeid(T).name());
+    return name;
   }
 };
 
@@ -199,7 +200,8 @@ struct SerdeType<std::optional<T>> {
   static constexpr std::string_view GetSchema() {
     // TODO: this gets us the plain type name of T, but this is not schema JSON
     // compliant!
-    return wpi::Demangle(typeid(T).name());
+    std::string name = wpi::Demangle(typeid(T).name());
+    return name;
   }
 };
 

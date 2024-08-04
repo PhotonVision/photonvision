@@ -210,18 +210,17 @@ PhotonPipelineResult PhotonCameraSim::Process(
 
     std::vector<std::pair<float, float>> tempCorners =
         OpenCVHelp::PointsToCorners(minAreaRectPts);
-    wpi::SmallVector<std::pair<double, double>, 4> smallVec;
+    std::vector<TargetCorner> smallVec;
 
     for (const auto& corner : tempCorners) {
-      smallVec.emplace_back(std::make_pair(static_cast<double>(corner.first),
-                                           static_cast<double>(corner.second)));
+      smallVec.emplace_back(static_cast<double>(corner.first),
+                            static_cast<double>(corner.second));
     }
 
-    std::vector<std::pair<float, float>> cornersFloat =
-        OpenCVHelp::PointsToCorners(noisyTargetCorners);
+    auto cornersFloat = OpenCVHelp::PointsToTargetCorners(noisyTargetCorners);
 
-    std::vector<std::pair<double, double>> cornersDouble{cornersFloat.begin(),
-                                                         cornersFloat.end()};
+    std::vector<TargetCorner> cornersDouble{cornersFloat.begin(),
+                                            cornersFloat.end()};
     detectableTgts.emplace_back(
         -centerRot.Z().convert<units::degrees>().to<double>(),
         -centerRot.Y().convert<units::degrees>().to<double>(), areaPercent,
@@ -277,17 +276,15 @@ PhotonPipelineResult PhotonCameraSim::Process(
         cv::LINE_AA);
     for (const auto& tgt : detectableTgts) {
       auto detectedCornersDouble = tgt.GetDetectedCorners();
-      std::vector<std::pair<float, float>> detectedCornerFloat{
-          detectedCornersDouble.begin(), detectedCornersDouble.end()};
       if (tgt.GetFiducialId() >= 0) {
         VideoSimUtil::DrawTagDetection(
             tgt.GetFiducialId(),
-            OpenCVHelp::CornersToPoints(detectedCornerFloat),
+            OpenCVHelp::CornersToPoints(detectedCornersDouble),
             videoSimFrameProcessed);
       } else {
         cv::rectangle(videoSimFrameProcessed,
                       OpenCVHelp::GetBoundingRect(
-                          OpenCVHelp::CornersToPoints(detectedCornerFloat)),
+                          OpenCVHelp::CornersToPoints(detectedCornersDouble)),
                       cv::Scalar{0, 0, 255},
                       static_cast<int>(VideoSimUtil::GetScaledThickness(
                           1, videoSimFrameProcessed)),
@@ -316,7 +313,7 @@ PhotonPipelineResult PhotonCameraSim::Process(
         cs::VideoSource::ConnectionStrategy::kConnectionForceClose);
   }
 
-  MultiTargetPNPResult multiTagResults{};
+  std::optional<MultiTargetPNPResult> multiTagResults = std::nullopt;
 
   std::vector<frc::AprilTag> visibleLayoutTags =
       VisionEstimation::GetVisibleLayoutTags(detectableTgts, tagLayout);
@@ -330,12 +327,16 @@ PhotonPipelineResult PhotonCameraSim::Process(
     auto pnpResult = VisionEstimation::EstimateCamPosePNP(
         prop.GetIntrinsics(), prop.GetDistCoeffs(), detectableTgts, tagLayout,
         kAprilTag36h11);
-    multiTagResults = MultiTargetPNPResult{pnpResult, usedIds};
+    if (pnpResult) {
+      multiTagResults = MultiTargetPNPResult{*pnpResult, usedIds};
+    }
   }
 
   heartbeatCounter++;
-  return PhotonPipelineResult{heartbeatCounter, 0_s, latency, detectableTgts,
-                              multiTagResults};
+  return PhotonPipelineResult{
+      PhotonPipelineMetadata{heartbeatCounter, 0,
+                             units::microsecond_t{latency}.to<double>()},
+      detectableTgts, multiTagResults};
 }
 void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result) {
   SubmitProcessedFrame(result, wpi::Now());

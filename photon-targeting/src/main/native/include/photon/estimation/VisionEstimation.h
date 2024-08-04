@@ -56,7 +56,7 @@ static std::optional<PnpResult> EstimateCamPosePNP(
     return PnpResult();
   }
 
-  std::vector<std::pair<float, float>> corners{};
+  std::vector<photon::TargetCorner> corners{};
   std::vector<frc::AprilTag> knownTags{};
 
   for (const auto& tgt : visTags) {
@@ -101,19 +101,8 @@ static std::optional<PnpResult> EstimateCamPosePNP(
       auto verts = tagModel.GetFieldVertices(tag.pose);
       objectTrls.insert(objectTrls.end(), verts.begin(), verts.end());
     }
-    auto camToOrigin = OpenCVHelp::SolvePNP_SQPNP(cameraMatrix, distCoeffs,
-                                                  objectTrls, points);
-    if (!camToOrigin) {
-      return std::nullopt;
-    } else {
-      PnpResult ret{};
-      ret.best = camToOrigin.best.Inverse(),
-      ret.alt = camToOrigin.alt.Inverse(),
-      ret.ambiguity = camToOrigin.ambiguity;
-      ret.bestReprojErr = camToOrigin.bestReprojErr;
-      ret.altReprojErr = camToOrigin.altReprojErr;
-      return ret;
-    }
+    return OpenCVHelp::SolvePNP_SQPNP(cameraMatrix, distCoeffs, objectTrls,
+                                      points);
   }
 }
 

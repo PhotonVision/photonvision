@@ -32,6 +32,8 @@
 #include "photon/targeting/PnpResult.h"
 #include "photon/targeting/MultiTargetPNPResult.h"
 
+#include "photon/targeting/TargetCorner.h"
+
 namespace photon {
 namespace OpenCVHelp {
 
@@ -96,6 +98,16 @@ static std::vector<cv::Point3f> RotationToRVec(
   return points[0];
 }
 
+[[maybe_unused]] static std::vector<photon::TargetCorner> PointsToTargetCorners(
+    const std::vector<cv::Point2f>& points) {
+  std::vector<photon::TargetCorner> retVal;
+  retVal.reserve(points.size());
+  for (size_t i = 0; i < points.size(); i++) {
+    retVal.emplace_back(photon::TargetCorner{points[i].x, points[i].y});
+  }
+  return retVal;
+}
+
 [[maybe_unused]] static std::vector<std::pair<float, float>> PointsToCorners(
     const std::vector<cv::Point2f>& points) {
   std::vector<std::pair<float, float>> retVal;
@@ -112,6 +124,17 @@ static std::vector<cv::Point3f> RotationToRVec(
   retVal.reserve(corners.size());
   for (size_t i = 0; i < corners.size(); i++) {
     retVal.emplace_back(cv::Point2f{corners[i].first, corners[i].second});
+  }
+  return retVal;
+}
+
+[[maybe_unused]] static std::vector<cv::Point2f> CornersToPoints(
+    const std::vector<photon::TargetCorner>& corners) {
+  std::vector<cv::Point2f> retVal;
+  retVal.reserve(corners.size());
+  for (size_t i = 0; i < corners.size(); i++) {
+    retVal.emplace_back(cv::Point2f{static_cast<float>(corners[i].x),
+                                    static_cast<float>(corners[i].y)});
   }
   return retVal;
 }
