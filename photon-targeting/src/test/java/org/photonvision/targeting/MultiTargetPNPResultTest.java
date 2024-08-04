@@ -35,15 +35,15 @@ public class MultiTargetPNPResultTest {
 
         a =
                 new MultiTargetPNPResult(
-                        new PNPResult(
+                        new PnpResult(
                                 new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
-                        List.of(1, 2, 3));
+                        List.of((short) 1, (short) 2, (short) 3));
 
         b =
                 new MultiTargetPNPResult(
-                        new PNPResult(
+                        new PnpResult(
                                 new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
-                        List.of(1, 2, 3));
+                        List.of((short) 1, (short) 2, (short) 3));
 
         assertEquals(a, b);
     }
@@ -52,14 +52,14 @@ public class MultiTargetPNPResultTest {
     public void inequalityTest() {
         var a =
                 new MultiTargetPNPResult(
-                        new PNPResult(
+                        new PnpResult(
                                 new Transform3d(new Translation3d(1, 8, 3), new Rotation3d(1, 2, 3)), 0.1),
-                        List.of(3, 4, 7));
+                        List.of((short) 3, (short) 4, (short) 7));
         var b =
                 new MultiTargetPNPResult(
-                        new PNPResult(
+                        new PnpResult(
                                 new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
-                        List.of(1, 2, 3));
+                        List.of((short) 1, (short) 2, (short) 3));
 
         assertNotEquals(a, b);
     }

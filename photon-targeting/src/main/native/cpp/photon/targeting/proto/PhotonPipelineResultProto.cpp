@@ -42,28 +42,39 @@ wpi::Protobuf<photon::PhotonPipelineResult>::Unpack(
     targets.emplace_back(wpi::UnpackProtobuf<photon::PhotonTrackedTarget>(t));
   }
 
-  return photon::PhotonPipelineResult{
-      m->sequence_id(),
-      units::microsecond_t{static_cast<double>(m->capture_timestamp_micros())},
-      units::microsecond_t{
-          static_cast<double>(m->nt_publish_timestamp_micros())},
+  return photon::PhotonPipelineResult{photon::PhotonPipelineResult_PhotonStruct{
+      photon::PhotonPipelineMetadata{
+          photon::PhotonPipelineMetadata_PhotonStruct{
+              m->sequence_id(),
+              m->capture_timestamp_micros(),
+              m->nt_publish_timestamp_micros(),
+          }},
       targets,
-      wpi::UnpackProtobuf<photon::MultiTargetPNPResult>(
-          m->multi_target_result())};
+      // TODO need to pull this into an optional
+      m->has_multi_target_result()
+          ? std::optional<photon::MultiTargetPNPResult>{wpi::UnpackProtobuf<
+                photon::MultiTargetPNPResult>(m->multi_target_result())}
+          : std::nullopt,
+  }};
 }
 
 void wpi::Protobuf<photon::PhotonPipelineResult>::Pack(
     google::protobuf::Message* msg, const photon::PhotonPipelineResult& value) {
   auto m = static_cast<photonvision::proto::ProtobufPhotonPipelineResult*>(msg);
 
-  m->set_sequence_id(value.sequenceID);
-  m->set_capture_timestamp_micros(value.captureTimestamp.value());
-  m->set_nt_publish_timestamp_micros(value.publishTimestamp.value());
+  m->set_sequence_id(value.metadata.sequenceID);
+  m->set_capture_timestamp_micros(value.metadata.captureTimestampMicros);
+  m->set_nt_publish_timestamp_micros(value.metadata.publishTimestampMicros);
 
   m->clear_targets();
   for (const auto& t : value.GetTargets()) {
     wpi::PackProtobuf(m->add_targets(), t);
   }
 
-  wpi::PackProtobuf(m->mutable_multi_target_result(), value.multitagResult);
+  // TODO this is dumb and bad
+  if (value.multitagResult) {
+    wpi::PackProtobuf(m->mutable_multi_target_result(), *value.multitagResult);
+  } else {
+    m->clear_multi_target_result();
+  }
 }

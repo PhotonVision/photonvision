@@ -46,7 +46,6 @@ import org.photonvision.targeting.PhotonPipelineResult;
 public class Vision {
     private final PhotonCamera camera;
     private final PhotonPoseEstimator photonEstimator;
-    private double lastEstTimestamp = 0;
 
     // Simulation
     private PhotonCameraSim cameraSim;
@@ -56,8 +55,7 @@ public class Vision {
         camera = new PhotonCamera(kCameraName);
 
         photonEstimator =
-                new PhotonPoseEstimator(
-                        kTagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, camera, kRobotToCam);
+                new PhotonPoseEstimator(kTagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, kRobotToCam);
         photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
         // ----- Simulation
@@ -95,20 +93,21 @@ public class Vision {
      *     used for estimation.
      */
     public Optional<EstimatedRobotPose> getEstimatedGlobalPose() {
-        var visionEst = photonEstimator.update();
-        double latestTimestamp = camera.getLatestResult().getTimestampSeconds();
-        boolean newResult = Math.abs(latestTimestamp - lastEstTimestamp) > 1e-5;
-        if (Robot.isSimulation()) {
-            visionEst.ifPresentOrElse(
-                    est ->
-                            getSimDebugField()
-                                    .getObject("VisionEstimation")
-                                    .setPose(est.estimatedPose.toPose2d()),
-                    () -> {
-                        if (newResult) getSimDebugField().getObject("VisionEstimation").setPoses();
-                    });
+        Optional<EstimatedRobotPose> visionEst = Optional.empty();
+        for (var change : camera.getAllUnreadResults()) {
+            visionEst = photonEstimator.update(change);
+
+            if (Robot.isSimulation()) {
+                visionEst.ifPresentOrElse(
+                        est ->
+                                getSimDebugField()
+                                        .getObject("VisionEstimation")
+                                        .setPose(est.estimatedPose.toPose2d()),
+                        () -> {
+                            getSimDebugField().getObject("VisionEstimation").setPoses();
+                        });
+            }
         }
-        if (newResult) lastEstTimestamp = latestTimestamp;
         return visionEst;
     }
 

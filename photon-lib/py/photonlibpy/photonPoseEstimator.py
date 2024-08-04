@@ -5,7 +5,7 @@ import wpilib
 from robotpy_apriltag import AprilTagFieldLayout
 from wpimath.geometry import Transform3d, Pose3d, Pose2d
 
-from .photonPipelineResult import PhotonPipelineResult
+from .targeting.photonPipelineResult import PhotonPipelineResult
 from .photonCamera import PhotonCamera
 from .estimatedRobotPose import EstimatedRobotPose
 

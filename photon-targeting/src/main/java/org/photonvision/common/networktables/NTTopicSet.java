@@ -77,7 +77,8 @@ public class NTTopicSet {
                         .getRawTopic("rawBytes")
                         .publish("rawBytes", PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
 
-        resultPublisher = new PacketPublisher<>(rawBytesEntry, PhotonPipelineResult.serde);
+        resultPublisher =
+                new PacketPublisher<PhotonPipelineResult>(rawBytesEntry, PhotonPipelineResult.photonStruct);
         protoResultPublisher =
                 subTable
                         .getProtobufTopic("result_proto", PhotonPipelineResult.proto)

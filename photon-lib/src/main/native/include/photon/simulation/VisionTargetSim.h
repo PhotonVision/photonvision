@@ -46,6 +46,9 @@ class VisionTargetSim {
   }
   int fiducialId;
 
+  int objDetClassId = -1;
+  float objDetConf = -1;
+
   bool operator<(const VisionTargetSim& right) const {
     return pose.Translation().Norm() < right.pose.Translation().Norm();
   }

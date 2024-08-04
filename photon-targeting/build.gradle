@@ -17,17 +17,19 @@ nativeUtils {
     }
 }
 
+sourceSets.main.java.srcDir "${projectDir}/src/generated/main/java"
+
 model {
     components {
         "${nativeName}"(NativeLibrarySpec) {
             sources {
                 cpp {
                     source {
-                        srcDirs 'src/main/native/cpp', "$buildDir/generated/source/proto/main/cpp"
+                        srcDirs 'src/main/native/cpp', "$buildDir/generated/source/proto/main/cpp", 'src/generated/main/native/cpp'
                         include '**/*.cpp', '**/*.cc'
                     }
                     exportedHeaders {
-                        srcDirs 'src/main/native/include', "$buildDir/generated/source/proto/main/cpp"
+                        srcDirs 'src/main/native/include', 'src/generated/main/native/include', "$buildDir/generated/source/proto/main/cpp", 'src/generated/main/native/include'
                         if (project.hasProperty('generatedHeaders')) {
                             srcDir generatedHeaders
                         }
@@ -120,3 +122,10 @@ model {
 }
 
 apply from: "${rootDir}/shared/javacpp/publish.gradle"
+
+// Add photon serde headers to our published sources
+cppHeadersZip {
+    from('src/generated/main/native/include') {
+        into '/'
+    }
+}

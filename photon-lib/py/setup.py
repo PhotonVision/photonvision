@@ -48,10 +48,7 @@ with open("photonlibpy/version.py", "w", encoding="utf-8") as fp:
     fp.write(f'PHOTONVISION_VERSION="{gitDescribeResult}"\n')
 
 
-descriptionStr = f"""
-Pure-python implementation of PhotonLib for interfacing with PhotonVision on coprocessors.
-Implemented with PhotonVision version {gitDescribeResult} .
-"""
+descriptionStr = f"Pure-python implementation of PhotonLib for interfacing with PhotonVision on coprocessors. Implemented with PhotonVision version {gitDescribeResult} ."
 
 setup(
     name="photonlibpy",

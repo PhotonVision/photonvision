@@ -23,4 +23,8 @@ public interface PacketSerde<T> {
     void pack(Packet packet, T value);
 
     T unpack(Packet packet);
+
+    String getTypeString();
+
+    String getInterfaceUUID();
 }
