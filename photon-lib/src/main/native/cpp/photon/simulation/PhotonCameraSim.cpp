@@ -201,7 +201,7 @@ PhotonPipelineResult PhotonCameraSim::Process(
       continue;
     }
 
-    PNPResult pnpSim{};
+    std::optional<photon::PnpResult> pnpSim{};
     if (tgt.fiducialId >= 0 && tgt.GetFieldVertices().size() == 4) {
       pnpSim = OpenCVHelp::SolvePNP_Square(
           prop.GetIntrinsics(), prop.GetDistCoeffs(),
@@ -226,8 +226,10 @@ PhotonPipelineResult PhotonCameraSim::Process(
         -centerRot.Z().convert<units::degrees>().to<double>(),
         -centerRot.Y().convert<units::degrees>().to<double>(), areaPercent,
         centerRot.X().convert<units::degrees>().to<double>(), tgt.fiducialId,
-        tgt.objDetClassId, tgt.objDetConf, pnpSim.best, pnpSim.alt,
-        pnpSim.ambiguity, smallVec, cornersDouble);
+        tgt.objDetClassId, tgt.objDetConf,
+        pnpSim ? pnpSim->best : frc::Transform3d{},
+        pnpSim ? pnpSim->alt : frc::Transform3d{},
+        pnpSim ? pnpSim->ambiguity : -1, smallVec, cornersDouble);
   }
 
   if (videoSimRawEnabled) {
@@ -291,16 +293,14 @@ PhotonPipelineResult PhotonCameraSim::Process(
                           1, videoSimFrameProcessed)),
                       cv::LINE_AA);
 
-        wpi::SmallVector<std::pair<double, double>, 4> smallVec =
-            tgt.GetMinAreaRectCorners();
+        auto smallVec = tgt.GetMinAreaRectCorners();
 
         std::vector<std::pair<float, float>> cornersCopy{};
         cornersCopy.reserve(4);
 
         for (const auto& corner : smallVec) {
-          cornersCopy.emplace_back(
-              std::make_pair(static_cast<float>(corner.first),
-                             static_cast<float>(corner.second)));
+          cornersCopy.emplace_back(std::make_pair(
+              static_cast<float>(corner.x), static_cast<float>(corner.y)));
         }
 
         VideoSimUtil::DrawPoly(
@@ -321,12 +321,13 @@ PhotonPipelineResult PhotonCameraSim::Process(
   std::vector<frc::AprilTag> visibleLayoutTags =
       VisionEstimation::GetVisibleLayoutTags(detectableTgts, tagLayout);
   if (visibleLayoutTags.size() > 1) {
-    wpi::SmallVector<int16_t, 32> usedIds{};
+    std::vector<int16_t> usedIds{};
+    usedIds.reserve(32);
     std::transform(visibleLayoutTags.begin(), visibleLayoutTags.end(),
                    usedIds.begin(),
                    [](const frc::AprilTag& tag) { return tag.ID; });
     std::sort(usedIds.begin(), usedIds.end());
-    PNPResult pnpResult = VisionEstimation::EstimateCamPosePNP(
+    auto pnpResult = VisionEstimation::EstimateCamPosePNP(
         prop.GetIntrinsics(), prop.GetDistCoeffs(), detectableTgts, tagLayout,
         kAprilTag36h11);
     multiTagResults = MultiTargetPNPResult{pnpResult, usedIds};
@@ -346,7 +347,7 @@ void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result,
       recieveTimestamp);
 
   Packet newPacket{};
-  newPacket << result;
+  newPacket.Pack(result);
 
   ts.rawBytesEntry.Set(newPacket.GetData(), recieveTimestamp);
 

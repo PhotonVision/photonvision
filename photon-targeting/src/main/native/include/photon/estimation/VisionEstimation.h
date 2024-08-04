@@ -47,7 +47,7 @@ static std::vector<frc::AprilTag> GetVisibleLayoutTags(
   return retVal;
 }
 
-static PnpResult EstimateCamPosePNP(
+static std::optional<PnpResult> EstimateCamPosePNP(
     const Eigen::Matrix<double, 3, 3>& cameraMatrix,
     const Eigen::Matrix<double, 8, 1>& distCoeffs,
     const std::vector<PhotonTrackedTarget>& visTags,
@@ -76,24 +76,24 @@ static PnpResult EstimateCamPosePNP(
   std::vector<cv::Point2f> points = OpenCVHelp::CornersToPoints(corners);
 
   if (knownTags.size() == 1) {
-    PnpResult camToTag = OpenCVHelp::SolvePNP_Square(
-        cameraMatrix, distCoeffs, tagModel.GetVertices(), points);
-    if (!camToTag.isPresent) {
+    auto camToTag = OpenCVHelp::SolvePNP_Square(cameraMatrix, distCoeffs,
+                                                tagModel.GetVertices(), points);
+    if (!camToTag) {
       return PnpResult{};
     }
     frc::Pose3d bestPose =
-        knownTags[0].pose.TransformBy(camToTag.best.Inverse());
+        knownTags[0].pose.TransformBy(camToTag->best.Inverse());
     frc::Pose3d altPose{};
-    if (camToTag.ambiguity != 0) {
-      altPose = knownTags[0].pose.TransformBy(camToTag.alt.Inverse());
+    if (camToTag->ambiguity != 0) {
+      altPose = knownTags[0].pose.TransformBy(camToTag->alt.Inverse());
     }
     frc::Pose3d o{};
     PnpResult result{};
     result.best = frc::Transform3d{o, bestPose};
     result.alt = frc::Transform3d{o, altPose};
-    result.ambiguity = camToTag.ambiguity;
-    result.bestReprojErr = camToTag.bestReprojErr;
-    result.altReprojErr = camToTag.altReprojErr;
+    result.ambiguity = camToTag->ambiguity;
+    result.bestReprojErr = camToTag->bestReprojErr;
+    result.altReprojErr = camToTag->altReprojErr;
     return result;
   } else {
     std::vector<frc::Translation3d> objectTrls{};
@@ -101,19 +101,18 @@ static PnpResult EstimateCamPosePNP(
       auto verts = tagModel.GetFieldVertices(tag.pose);
       objectTrls.insert(objectTrls.end(), verts.begin(), verts.end());
     }
-    PnpResult camToOrigin = OpenCVHelp::SolvePNP_SQPNP(cameraMatrix, distCoeffs,
-                                                       objectTrls, points);
-    if (!camToOrigin.isPresent) {
-      return PnpResult{};
+    auto camToOrigin = OpenCVHelp::SolvePNP_SQPNP(cameraMatrix, distCoeffs,
+                                                  objectTrls, points);
+    if (!camToOrigin) {
+      return std::nullopt;
     } else {
-      PnpResult result{};
-      result.best = camToOrigin.best.Inverse(),
-      result.alt = camToOrigin.alt.Inverse(),
-      result.ambiguity = camToOrigin.ambiguity;
-      result.bestReprojErr = camToOrigin.bestReprojErr;
-      result.altReprojErr = camToOrigin.altReprojErr;
-      result.isPresent = true;
-      return result;
+      PnpResult ret{};
+      ret.best = camToOrigin.best.Inverse(),
+      ret.alt = camToOrigin.alt.Inverse(),
+      ret.ambiguity = camToOrigin.ambiguity;
+      ret.bestReprojErr = camToOrigin.bestReprojErr;
+      ret.altReprojErr = camToOrigin.altReprojErr;
+      return ret;
     }
   }
 }

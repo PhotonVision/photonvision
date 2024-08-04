@@ -393,8 +393,7 @@ public class PhotonPoseEstimator {
         return estimatedPose;
     }
 
-    private Optional<EstimatedRobotPose> multiTagOnCoprocStrategy(
-            PhotonPipelineResult result) {
+    private Optional<EstimatedRobotPose> multiTagOnCoprocStrategy(PhotonPipelineResult result) {
         if (result.getMultiTagResult().isPresent()) {
             var best_tf = result.getMultiTagResult().get().estimatedPose.best;
             var best =

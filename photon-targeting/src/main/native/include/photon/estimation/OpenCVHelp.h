@@ -184,7 +184,7 @@ static frc::Rotation3d RVecToRotation(const cv::Mat& rvecInput) {
                                           units::radian_t{data[2]}});
 }
 
-[[maybe_unused]] static photon::PnpResult SolvePNP_Square(
+[[maybe_unused]] static std::optional<photon::PnpResult> SolvePNP_Square(
     const Eigen::Matrix<double, 3, 3>& cameraMatrix,
     const Eigen::Matrix<double, 8, 1>& distCoeffs,
     std::vector<frc::Translation3d> modelTrls,
@@ -233,6 +233,7 @@ static frc::Rotation3d RVecToRotation(const cv::Mat& rvecInput) {
 
   if (std::isnan(errors[0])) {
     fmt::print("SolvePNP_Square failed!\n");
+    return std::nullopt;
   }
   if (alt) {
     photon::PnpResult result;
@@ -241,18 +242,16 @@ static frc::Rotation3d RVecToRotation(const cv::Mat& rvecInput) {
     result.ambiguity = errors[0] / errors[1];
     result.bestReprojErr = errors[0];
     result.altReprojErr = errors[1];
-    result.isPresent = true;
     return result;
   } else {
     photon::PnpResult result;
     result.best = best;
     result.bestReprojErr = errors[0];
-    result.isPresent = true;
     return result;
   }
 }
 
-[[maybe_unused]] static photon::PnpResult SolvePNP_SQPNP(
+[[maybe_unused]] static std::optional<photon::PnpResult> SolvePNP_SQPNP(
     const Eigen::Matrix<double, 3, 3>& cameraMatrix,
     const Eigen::Matrix<double, 8, 1>& distCoeffs,
     std::vector<frc::Translation3d> modelTrls,
@@ -286,7 +285,6 @@ static frc::Rotation3d RVecToRotation(const cv::Mat& rvecInput) {
   photon::PnpResult result;
   result.best = best;
   result.bestReprojErr = error;
-  result.isPresent = true;
   return result;
 }
 }  // namespace OpenCVHelp
