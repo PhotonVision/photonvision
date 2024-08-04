@@ -21,8 +21,8 @@ Paste the following URL into the box that pops up:
 
 Offline Install - Java/C++
 --------------------------
-This installation option is currently a work-in-progress. For now, we recommend users use the online installation method.
 
+Download the latest photonlib release from our GitHub releases page, and extract the contents to `$HOME/wpilib/YEAR`.
 Install - Python
 ----------------
 Add photonlibpy to `pyproject.toml`.

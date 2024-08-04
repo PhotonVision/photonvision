@@ -17,15 +17,13 @@ You must install a set of Python dependencies in order to build the documentatio
 
 Building the Documentation
 --------------------------
-In order to build the documentation, you can run the following command in the docs sub-folder:
+In order to build the documentation, you can run the following command in the docs sub-folder. This will automatically build docs every time a file changes, and serves them locally at `localhost:8000` by default.
 
-``~/photonvision/docs$ make html``
-
-.. note:: You may have to run ``./make html`` on Windows.
+``~/photonvision/docs$ sphinx-autobuild --open-browser source/_build/html``
 
 Opening the Documentation
 -------------------------
-The built documentation is located at ``docs/build/html/index.html`` relative to the root project directory.
+The built documentation is located at ``docs/build/html/index.html`` relative to the root project directory, or can be accessed via the local web server if using sphinx-autobuild.
 
 Docs Builds on Pull Requests
 ----------------------------
