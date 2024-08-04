@@ -81,7 +81,7 @@ public class PhotonCameraSim implements AutoCloseable {
     private PhotonTargetSortMode sortMode = PhotonTargetSortMode.Largest;
 
     private final AprilTagFieldLayout tagLayout =
-            AprilTagFields.kDefaultField.loadAprilTagLayoutField();
+            AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
     // video stream simulation
     private final CvSource videoSimRaw;

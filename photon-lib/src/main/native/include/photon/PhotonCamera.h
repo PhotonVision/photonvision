@@ -75,13 +75,20 @@ class PhotonCamera {
 
   PhotonCamera(PhotonCamera&&) = default;
 
-  virtual ~PhotonCamera() = default;
+  ~PhotonCamera() = default;
 
   /**
-   * Returns the latest pipeline result.
-   * @return The latest pipeline result.
+   * The list of pipeline results sent by PhotonVision since the last call to
+   * GetAllUnreadResults(). Calling this function clears the internal FIFO
+   * queue, and multiple calls to GetAllUnreadResults() will return different
+   * (potentially empty) result arrays. Be careful to call this exactly ONCE per
+   * loop of your robot code! FIFO depth is limited to 20 changes, so make sure
+   * to call this frequently enough to avoid old results being discarded, too!
    */
-  virtual PhotonPipelineResult GetLatestResult();
+  std::vector<PhotonPipelineResult> GetAllUnreadResults();
+
+  [[deprecated("Replace with GetAllUnreadResults")]]
+  PhotonPipelineResult GetLatestResult();
 
   /**
    * Toggles driver mode.
@@ -173,7 +180,7 @@ class PhotonCamera {
 
   // For use in tests
   bool test = false;
-  PhotonPipelineResult testResult;
+  std::vector<PhotonPipelineResult> testResult;
 
  protected:
   std::shared_ptr<nt::NetworkTable> mainTable;
@@ -200,8 +207,6 @@ class PhotonCamera {
 
   std::string path;
   std::string cameraName;
-
-  mutable Packet packet;
 
  private:
   units::second_t lastVersionCheckTime = 0_s;
