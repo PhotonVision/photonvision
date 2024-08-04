@@ -146,11 +146,16 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
       ret = AverageBestTargetsStrategy(result);
       break;
     case MULTI_TAG_PNP_ON_COPROCESSOR:
-      ret =
-          MultiTagOnCoprocStrategy(result, cameraMatrixData, cameraDistCoeffs);
+      ret = MultiTagOnCoprocStrategy(result);
       break;
     case MULTI_TAG_PNP_ON_RIO:
-      ret = MultiTagOnRioStrategy(result, cameraMatrixData, cameraDistCoeffs);
+      if (cameraMatrixData && cameraDistCoeffs) {
+        ret = MultiTagOnRioStrategy(result, cameraMatrixData, cameraDistCoeffs);
+      } else {
+        FRC_ReportError(frc::warn::Warning,
+                        "No camera calibration provided to multi-tag-on-rio!",
+                        "");
+      }
       break;
     default:
       FRC_ReportError(frc::warn::Warning, "Invalid Pose Strategy selected!",
