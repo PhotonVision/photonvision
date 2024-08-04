@@ -22,11 +22,12 @@
  * SOFTWARE.
  */
 
-#include <wpi/deprecated.h>
 #include <chrono>
 #include <thread>
 #include <tuple>
 #include <vector>
+
+#include <wpi/deprecated.h>
 
 #include "gtest/gtest.h"
 #include "photon/PhotonUtils.h"

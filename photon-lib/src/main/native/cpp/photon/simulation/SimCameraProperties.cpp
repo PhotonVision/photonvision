@@ -24,6 +24,10 @@
 
 #include "photon/simulation/SimCameraProperties.h"
 
+#include <algorithm>
+#include <utility>
+#include <vector>
+
 using namespace photon;
 
 void SimCameraProperties::SetCalibration(int width, int height,

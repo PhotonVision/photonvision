@@ -24,6 +24,11 @@
 
 #include "photon/simulation/PhotonCameraSim.h"
 
+#include <algorithm>
+#include <string>
+#include <utility>
+#include <vector>
+
 namespace photon {
 PhotonCameraSim::PhotonCameraSim(PhotonCamera* camera)
     : PhotonCameraSim(camera, photon::SimCameraProperties::PERFECT_90DEG()) {}
