@@ -26,20 +26,14 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
       - name: Install Dependencies
-        run: pnpm install
+        run: npm ci
       - name: Build Production Client
-        run: pnpm run build
+        run: npm run build
       - uses: actions/upload-artifact@v4
         with:
           name: built-client
@@ -422,15 +416,21 @@ jobs:
           - os: ubuntu-latest
             artifact-name: LinuxArm64
             image_suffix: orangepi5
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.10/photonvision_opi5.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0-beta-2/photonvision_opi5.img.xz
             cpu: cortex-a8
-            image_additional_mb: 4096
+            image_additional_mb: 1024
           - os: ubuntu-latest
             artifact-name: LinuxArm64
             image_suffix: orangepi5plus
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.10/photonvision_opi5plus.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0-beta-2/photonvision_opi5plus.img.xz
             cpu: cortex-a8
-            image_additional_mb: 4096
+            image_additional_mb: 1024
+          - os: ubuntu-latest
+            artifact-name: LinuxArm64
+            image_suffix: orangepi5pro
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0-beta-2/photonvision_opi5pro.img.xz
+            cpu: cortex-a8
+            image_additional_mb: 1024
 
     runs-on: ${{ matrix.os }}
     name: "Build image - ${{ matrix.image_url }}"
@@ -443,7 +443,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: jar-${{ matrix.artifact-name }}
-      - uses: pguyot/arm-runner-action@v2
+      - uses: pguyot/arm-runner-action@HEAD
         name: Generate image
         id: generate_image
         with:

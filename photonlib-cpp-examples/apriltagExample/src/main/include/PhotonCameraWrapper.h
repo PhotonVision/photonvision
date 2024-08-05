@@ -33,15 +33,21 @@
 #include <frc/apriltag/AprilTagFields.h>
 
 class PhotonCameraWrapper {
+ private:
+  photon::PhotonCamera camera{"WPI2023"};
+
  public:
   photon::PhotonPoseEstimator m_poseEstimator{
       frc::LoadAprilTagLayoutField(frc::AprilTagField::k2023ChargedUp),
-      photon::MULTI_TAG_PNP_ON_RIO, std::move(photon::PhotonCamera{"WPI2023"}),
-      frc::Transform3d{}};
+      photon::MULTI_TAG_PNP_ON_RIO, frc::Transform3d{}};
 
   inline std::optional<photon::EstimatedRobotPose> Update(
       frc::Pose2d estimatedPose) {
     m_poseEstimator.SetReferencePose(frc::Pose3d(estimatedPose));
-    return m_poseEstimator.Update();
+    std::optional<photon::EstimatedRobotPose> ret = std::nullopt;
+    for (const auto& change : camera.GetAllUnreadResults())
+      ret = m_poseEstimator.Update(change);
+
+    return ret;
   }
 };
