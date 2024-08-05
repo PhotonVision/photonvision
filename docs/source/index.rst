@@ -118,4 +118,4 @@ PhotonVision is licensed under the `GNU GPL v3 <https://www.gnu.org/licenses/gpl
 
  `Java <https://javadocs.photonvision.org>`_
 
- `C++ <https://cppdocs.photonvision.org/>`_
+  C++ <https://cppdocs.photonvision.org/>
