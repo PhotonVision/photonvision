@@ -24,6 +24,7 @@
 
 package frc.robot.subsystems.drivetrain;
 
+import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
@@ -114,18 +115,18 @@ public class SwerveDriveSim {
             SwerveDriveKinematics kinematics) {
         this(
                 new LinearSystem<N2, N1, N2>(
-                        Matrix.mat(Nat.N2(), Nat.N2()).fill(0.0, 1.0, 0.0, -driveFF.kv / driveFF.ka),
+                        MatBuilder.fill(Nat.N2(), Nat.N2(), 0.0, 1.0, 0.0, -driveFF.kv / driveFF.ka),
                         VecBuilder.fill(0.0, 1.0 / driveFF.ka),
-                        Matrix.mat(Nat.N2(), Nat.N2()).fill(1.0, 0.0, 0.0, 1.0),
+                        MatBuilder.fill(Nat.N2(), Nat.N2(), 1.0, 0.0, 0.0, 1.0),
                         VecBuilder.fill(0.0, 0.0)),
                 driveFF.ks,
                 driveMotor,
                 driveGearing,
                 driveWheelRadius,
                 new LinearSystem<N2, N1, N2>(
-                        Matrix.mat(Nat.N2(), Nat.N2()).fill(0.0, 1.0, 0.0, -steerFF.kv / steerFF.ka),
+                        MatBuilder.fill(Nat.N2(), Nat.N2(), 0.0, 1.0, 0.0, -steerFF.kv / steerFF.ka),
                         VecBuilder.fill(0.0, 1.0 / steerFF.ka),
-                        Matrix.mat(Nat.N2(), Nat.N2()).fill(1.0, 0.0, 0.0, 1.0),
+                        MatBuilder.fill(Nat.N2(), Nat.N2(), 1.0, 0.0, 0.0, 1.0),
                         VecBuilder.fill(0.0, 0.0)),
                 steerFF.ks,
                 steerMotor,
