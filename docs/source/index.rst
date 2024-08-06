@@ -110,10 +110,3 @@ PhotonVision is licensed under the `GNU GPL v3 <https://www.gnu.org/licenses/gpl
    docs/additional-resources/config
    docs/additional-resources/nt-api
    docs/contributing/index
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Additional Resources
-   :hidden:
-
-   docs/developer-docs/index

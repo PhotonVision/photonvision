@@ -12,5 +12,5 @@ Artifacts from our Maven server can also be backed up locally to a folder called
 ```
 rsync -avzrHy --no-perms --no-group --no-owner --ignore-errors --exclude ".~tmp~" --exclude "snapshots/org/photonvision/photontargeting*" \
 --exclude "snapshots/org/photonvision/photonlib*" maven.photonvision.org::reposilite-data \
-/path/to/photonlib-packup
+/path/to/photonlib-backup
 ```
