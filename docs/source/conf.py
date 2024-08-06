@@ -72,7 +72,8 @@ html_favicon = "assets/RoundLogo.png"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
-source_suffix = ['.rst', '.md']
+source_suffix = [".rst", ".md"]
+
 
 def setup(app):
     app.add_css_file("css/pv-icons.css")

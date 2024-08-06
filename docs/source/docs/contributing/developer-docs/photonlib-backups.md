@@ -2,7 +2,7 @@
 
 Our maven server is located at https://maven.photonvision.org/#/. This server runs [Reposilite](https://hub.docker.com/r/dzikoysk/reposilite) in Docker, and uses Caddy for serving requests.
 
- 
+
 ## Backing up using Rsync
 
 The Clarkson Open Source Institute at Clarkson University provides a mirror of our artifacts available [online](https://mirror.clarkson.edu/photonvision). Learn more about them at [their homepage](https://mirror.clarkson.edu/home).
