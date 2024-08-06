@@ -3,8 +3,6 @@ build/*
 .vscode/*
 .idea/*
 source/_build
-source/_build
-photon-docs/build
 source/docs/_build
 
 venv/*
