@@ -27,7 +27,7 @@ public class ReflectivePipelineSettings extends AdvancedPipelineSettings {
     public ReflectivePipelineSettings() {
         super();
         pipelineType = PipelineType.Reflective;
-        cameraExposure = 6;
+        cameraExposureRaw = 6;
         cameraGain = 20;
     }
 }

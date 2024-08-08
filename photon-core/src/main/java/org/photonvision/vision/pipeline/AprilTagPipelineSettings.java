@@ -42,7 +42,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         pipelineType = PipelineType.AprilTag;
         outputShowMultipleTargets = true;
         targetModel = TargetModel.kAprilTag6p5in_36h11;
-        cameraExposure = 20;
+        cameraExposureRaw = 20;
         cameraAutoExposure = false;
         ledMode = false;
     }

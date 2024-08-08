@@ -74,6 +74,17 @@ public class FileVisionSource extends VisionSource {
         return false;
     }
 
+    @Override
+    public void remakeSettables() {
+        // Nothing to do, settables for this type of VisionSource should never be remade.
+        return;
+    }
+
+    @Override
+    public boolean hasLEDs() {
+        return false; // Assume USB cameras do not have photonvision-controlled LEDs
+    }
+
     private static class FileSourceSettables extends VisionSourceSettables {
         private final VideoMode videoMode;
 
@@ -93,7 +104,7 @@ public class FileVisionSource extends VisionSource {
         }
 
         @Override
-        public void setExposure(double exposure) {}
+        public void setExposureRaw(double exposureRaw) {}
 
         public void setAutoExposure(boolean cameraAutoExposure) {}
 
@@ -116,6 +127,16 @@ public class FileVisionSource extends VisionSource {
         @Override
         public HashMap<Integer, VideoMode> getAllVideoModes() {
             return videoModes;
+        }
+
+        @Override
+        public double getMinExposureRaw() {
+            return 1f;
+        }
+
+        @Override
+        public double getMaxExposureRaw() {
+            return 100f;
         }
     }
 }

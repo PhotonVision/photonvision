@@ -15,20 +15,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.vision.pipeline;
+package org.photonvision.vision.camera.USBCameras;
 
-public class ObjectDetectionPipelineSettings extends AdvancedPipelineSettings {
-    public double confidence;
-    public double nms; // non maximal suppression
+import edu.wpi.first.cscore.UsbCamera;
+import org.photonvision.common.configuration.CameraConfiguration;
 
-    public ObjectDetectionPipelineSettings() {
-        super();
-        this.pipelineType = PipelineType.ObjectDetection; // TODO: FIX this
-        this.outputShowMultipleTargets = true;
-        cameraExposureRaw = 20;
-        cameraAutoExposure = false;
-        ledMode = false;
-        confidence = .9;
-        nms = .45;
+public class ArduOV9281CameraSettables extends GenericUSBCameraSettables {
+    public ArduOV9281CameraSettables(CameraConfiguration configuration, UsbCamera camera) {
+        super(configuration, camera);
+    }
+
+    @Override
+    protected void setUpExposureProperties() {
+        super.setUpExposureProperties();
+
+        // Property limits are incorrect
+        this.minExposure = 1;
+        this.maxExposure = 75;
     }
 }

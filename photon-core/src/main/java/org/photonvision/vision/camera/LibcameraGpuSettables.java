@@ -40,6 +40,9 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
     private final LibCameraJNI.SensorModel sensorModel;
 
+    private double minExposure = 1;
+    private double maxExposure = 80000;
+
     private ImageRotationMode m_rotationMode = ImageRotationMode.DEG_0;
 
     public final Object CAMERA_LOCK = new Object();
@@ -100,6 +103,12 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         // TODO need to add more video modes for new sensors here
 
         currentVideoMode = (FPSRatedVideoMode) videoModes.get(0);
+
+        if (sensorModel == LibCameraJNI.SensorModel.OV9281) {
+            minExposure = 7;
+        } else if (sensorModel == LibCameraJNI.SensorModel.OV5647) {
+            minExposure = 560;
+        }
     }
 
     @Override
@@ -114,34 +123,20 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     }
 
     @Override
-    public void setExposure(double exposure) {
-        if (exposure < 0.0 || lastAutoExposureActive) {
+    public void setExposureRaw(double exposureRaw) {
+        if (exposureRaw < 0.0 || lastAutoExposureActive) {
             // Auto-exposure is active right now, don't set anything.
             return;
         }
 
         // Store the exposure for use when we need to recreate the camera.
-        lastManualExposure = exposure;
+        lastManualExposure = exposureRaw;
 
-        // Minimum exposure can't be below 1uS cause otherwise it would be 0 and 0 is auto exposure.
-        double minExposure = 1;
-
-        // HACKS!
-        // If we set exposure too low, libcamera crashes or slows down
-        // Very weird and smelly
-        // For now, band-aid this by just not setting it lower than the "it breaks" limit
-        // is different depending on camera.
-        // All units are uS.
-        if (sensorModel == LibCameraJNI.SensorModel.OV9281) {
-            minExposure = 4800;
-        } else if (sensorModel == LibCameraJNI.SensorModel.OV5647) {
-            minExposure = 560;
-        }
         // 80,000 uS seems like an exposure value that will be greater than ever needed while giving
         // enough control over exposure.
-        exposure = MathUtils.map(exposure, 0, 100, minExposure, 80000);
+        exposureRaw = MathUtil.clamp(exposureRaw, minExposure, maxExposure);
 
-        var success = LibCameraJNI.setExposure(r_ptr, (int) exposure);
+        var success = LibCameraJNI.setExposure(r_ptr, (int) exposureRaw);
         if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera exposure");
     }
 
@@ -231,8 +226,8 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         }
 
         // We don't store last settings on the native side, and when you change video mode these get
-        // reset on MMAL's end
-        setExposure(lastManualExposure);
+        // reset on the native driver's end. Reset em back to be correct
+        setExposureRaw(lastManualExposure);
         setAutoExposure(lastAutoExposureActive);
         setBrightness(lastBrightness);
         setGain(lastGain);
@@ -250,5 +245,15 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
     public LibCameraJNI.SensorModel getModel() {
         return sensorModel;
+    }
+
+    @Override
+    public double getMinExposureRaw() {
+        return this.minExposure;
+    }
+
+    @Override
+    public double getMaxExposureRaw() {
+        return this.maxExposure;
     }
 }
