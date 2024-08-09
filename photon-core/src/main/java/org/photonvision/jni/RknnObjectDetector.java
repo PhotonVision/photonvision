@@ -93,8 +93,7 @@ public class RknnObjectDetector implements ObjectDetector {
         // Resize the frame to the input size of the model
         Mat letterboxed = new Mat();
         Letterbox scale =
-                Letterbox.letterbox(
-                        in, letterboxed, this.inputSize, ColorHelper.colorToScalar(Color.GRAY));
+                Letterbox.letterbox(in, letterboxed, this.inputSize, ColorHelper.colorToScalar(Color.GRAY));
         if (!letterboxed.size().equals(this.inputSize)) {
             throw new RuntimeException("Letterboxed frame is not the right size!");
         }

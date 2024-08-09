@@ -33,7 +33,7 @@ public class ObjectDetectionPipe
                 CVMat, List<NeuralNetworkPipeResult>, ObjectDetectionPipe.ObjectDetectionPipeParams>
         implements Releasable {
 
-    private ObjectDetector detector;;
+    private ObjectDetector detector;
 
     public ObjectDetectionPipe() {
         Optional<Model> defaultModel = NeuralNetworkModelManager.getInstance().getDefaultModel();

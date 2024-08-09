@@ -19,17 +19,20 @@ package org.photonvision.common.configuration;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -226,6 +229,8 @@ public class NeuralNetworkModelManager {
      * @param modelsFolder The folder where the models are stored
      */
     public void loadModels(File modelsFolder) {
+        logger.info("Supported backends: " + supportedBackends);
+
         if (!modelsFolder.exists()) {
             logger.error("Models folder " + modelsFolder.getAbsolutePath() + " does not exist.");
             return;
@@ -265,58 +270,35 @@ public class NeuralNetworkModelManager {
      * @param modelsDirectory the directory on disk to save models
      */
     public void extractModels(File modelsDirectory) {
-        if (!modelsDirectory.exists()) {
-            modelsDirectory.mkdirs();
+        if (!modelsDirectory.exists() && !modelsDirectory.mkdirs()) {
+            throw new RuntimeException("Failed to create directory: " + modelsDirectory);
         }
 
-        String resourcePath = "models";
+        String resource = "models";
+
         try {
-            URL resourceURL = NeuralNetworkModelManager.class.getClassLoader().getResource(resourcePath);
-            if (resourceURL == null) {
-                logger.error("Failed to find jar resource at " + resourcePath);
-                return;
-            }
-
-            Path resourcePathResolved = Paths.get(resourceURL.toURI());
-            Files.walk(resourcePathResolved)
-                    .forEach(sourcePath -> copyResource(sourcePath, resourcePathResolved, modelsDirectory));
-        } catch (Exception e) {
-            logger.error("Failed to extract models from JAR", e);
-        }
-    }
-
-    /**
-     * Copies a resource from the source path to the target path.
-     *
-     * @param sourcePath The path of the resource to be copied.
-     * @param resourcePathResolved The resolved path of the resource.
-     * @param modelsFolder The folder where the resource will be copied to.
-     */
-    private void copyResource(Path sourcePath, Path resourcePathResolved, File modelsFolder) {
-        Path targetPath =
-                Paths.get(
-                        modelsFolder.getAbsolutePath(), resourcePathResolved.relativize(sourcePath).toString());
-        try {
-            if (Files.isDirectory(sourcePath)) {
-                Files.createDirectories(targetPath);
-            } else {
-                Path parentDir = targetPath.getParent();
-                if (parentDir != null && !Files.exists(parentDir)) {
-                    Files.createDirectories(parentDir);
-                }
-
-                if (!Files.exists(targetPath)) {
-                    Files.copy(sourcePath, targetPath);
-                } else {
-                    long sourceSize = Files.size(sourcePath);
-                    long targetSize = Files.size(targetPath);
-                    if (sourceSize != targetSize) {
-                        Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
+            String jarPath =
+                    getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+            try (JarFile jarFile = new JarFile(jarPath)) {
+                Enumeration<JarEntry> entries = jarFile.entries();
+                while (entries.hasMoreElements()) {
+                    JarEntry entry = entries.nextElement();
+                    if (!entry.getName().startsWith(resource + "/") || entry.isDirectory()) {
+                        continue;
+                    }
+                    Path outputPath =
+                            modelsDirectory.toPath().resolve(entry.getName().substring(resource.length() + 1));
+                    if (Files.exists(outputPath)) {
+                        continue;
+                    }
+                    Files.createDirectories(outputPath.getParent());
+                    try (InputStream inputStream = jarFile.getInputStream(entry)) {
+                        Files.copy(inputStream, outputPath, StandardCopyOption.REPLACE_EXISTING);
                     }
                 }
             }
-        } catch (IOException e) {
-            logger.error("Failed to copy " + sourcePath + " to " + targetPath, e);
+        } catch (IOException | URISyntaxException e) {
+            logger.error("Error extracting models", e);
         }
     }
 }
