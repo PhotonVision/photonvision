@@ -26,3 +26,4 @@ dist-ssr
 *.sln
 *.sw?
 components.d.ts
+auto-imports.d.ts
