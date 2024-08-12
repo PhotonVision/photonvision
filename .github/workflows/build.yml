@@ -468,7 +468,7 @@ jobs:
           name: image-${{ matrix.image_suffix }}
           path: photonvision*.xz
   release:
-    needs: [build-package, build-image]
+    needs: [build-package, build-image, combine]
     runs-on: ubuntu-22.04
     steps:
       # Download all fat JARs
