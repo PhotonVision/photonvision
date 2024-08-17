@@ -33,7 +33,7 @@ Installing Pre-Release Versions
 
 Pre-release/development version of PhotonVision can be tested by installing/downloading artifacts from Github Actions (see below), which are built automatically on commits to open pull requests and to PhotonVision's ``master`` branch, or by :ref:`compiling PhotonVision locally <docs/contributing/photonvision/build-instructions:Build Instructions>`.
 
-.. warning:: If testing a pre-release version of PhotonVision with a robot, PhotonLib must be updated to match the version downloaded! If not, packet schema definitions may not match and unexpected things will occur.
+.. warning:: If testing a pre-release version of PhotonVision with a robot, PhotonLib must be updated to match the version downloaded! If not, packet schema definitions may not match and unexpected things will occur. To update PhotonLib, refer to :ref:`installing specific version of PhotonLib<docs/programming/photonlib/adding-vendordep:Install Specific Version - Java/C++>`.
 
 Github Actions builds pre-release version of PhotonVision automatically on PRs and on each commit merged to master. To test a particular commit to master, navigate to the `PhotonVision commit list <https://github.com/PhotonVision/photonvision/commits/master/>`_ and click on the check mark (below). Scroll to "Build / Build fat JAR - PLATFORM", click details, and then summary. From here, JAR and image files can be downloaded to be flashed or uploaded using "Offline Update".
 
