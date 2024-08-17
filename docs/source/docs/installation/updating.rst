@@ -31,7 +31,7 @@ Unless otherwise noted on the release page, config files should be backward comp
 Installing Pre-Release Versions
 -------------------------------
 
-Pre-release/development version of PhotonVision can be tested by installing/downloading artifacts from Github Actions (see below), which are built automatically on commits to open pull requests and to PhotonVision's ``master`` branch, or by :ref:`compiling PhotonVision locally <docs/contributing/photonvision/build-instructions:Build Instructions>`.
+Pre-release/development version of PhotonVision can be tested by installing/downloading artifacts from Github Actions (see below), which are built automatically on commits to open pull requests and to PhotonVision's ``master`` branch, or by :ref:`compiling PhotonVision locally <docs/contributing/building-photon:Build Instructions>`.
 
 .. warning:: If testing a pre-release version of PhotonVision with a robot, PhotonLib must be updated to match the version downloaded! If not, packet schema definitions may not match and unexpected things will occur. To update PhotonLib, refer to :ref:`installing specific version of PhotonLib<docs/programming/photonlib/adding-vendordep:Install Specific Version - Java/C++>`.
 

@@ -40,3 +40,5 @@ sphinxext-remoteliteralinclude==0.4.0
 stevedore==5.1.0
 urllib3==2.1.0
 yarg==0.1.9
+sphinx-autobuild==2024.4.16
+myst_parser==3.0.1
