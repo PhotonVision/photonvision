@@ -58,6 +58,12 @@ public class LibcameraGpuSource extends VisionSource {
         return settables;
     }
 
+    @Override
+    public void remakeSettables() {
+        // Nothing to do, settables for this type of VisionSource should never be remade.
+        return;
+    }
+
     /**
      * On the OV5649 the actual FPS we want to request from the GPU can be higher than the FPS that we
      * can do after processing. On the IMX219 these FPSes match pretty closely, except for the
@@ -87,5 +93,10 @@ public class LibcameraGpuSource extends VisionSource {
     @Override
     public boolean isVendorCamera() {
         return ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV();
+    }
+
+    @Override
+    public boolean hasLEDs() {
+        return (ConfigManager.getInstance().getConfig().getHardwareConfig().ledPins.size() > 0);
     }
 }
