@@ -31,18 +31,18 @@ The API documentation can be found in here: [Java](https://github.wpilib.org/all
 The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (see above), `PoseStrategy`, `PhotonCamera`, and `Transform3d`. `PoseStrategy` has six possible values:
 
 - MULTI_TAG_PNP_ON_COPROCESSOR
-  : - Calculates a new robot position estimate by combining all visible tag corners. Recommended for all teams as it will be the most accurate.
+    - Calculates a new robot position estimate by combining all visible tag corners. Recommended for all teams as it will be the most accurate.
     - Must configure the AprilTagFieldLayout properly in the UI, please see {ref}`here <docs/apriltag-pipelines/multitag:multitag localization>` for more information.
 - LOWEST_AMBIGUITY
-  : - Choose the Pose with the lowest ambiguity.
+    - Choose the Pose with the lowest ambiguity.
 - CLOSEST_TO_CAMERA_HEIGHT
-  : - Choose the Pose which is closest to the camera height.
+    - Choose the Pose which is closest to the camera height.
 - CLOSEST_TO_REFERENCE_POSE
-  : - Choose the Pose which is closest to the pose from setReferencePose().
+    - Choose the Pose which is closest to the pose from setReferencePose().
 - CLOSEST_TO_LAST_POSE
-  : - Choose the Pose which is closest to the last pose calculated.
+    - Choose the Pose which is closest to the last pose calculated.
 - AVERAGE_BEST_TARGETS
-  : - Choose the Pose which is the average of all the poses from each tag.
+    - Choose the Pose which is the average of all the poses from each tag.
 
 ```{eval-rst}
 .. tab-set-code::

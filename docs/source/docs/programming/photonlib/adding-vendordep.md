@@ -21,11 +21,11 @@ Paste the following URL into the box that pops up:
 It is recommended to Build Robot Code at least once when connected to the Internet before heading to an area where Internet connectivity is limited (for example, a competition). This ensures that the relevant files are downloaded to your filesystem.
 :::
 
-Refer to `The WPILib docs <https://docs.wpilib.org/en/stable/docs/software/vscode-overview/3rd-party-libraries.html#installing-libraries>` for more details on installing vendor libraries.
+Refer to [The WPILib docs](https://docs.wpilib.org/en/stable/docs/software/vscode-overview/3rd-party-libraries.html#installing-libraries) for more details on installing vendor libraries.
 
 ## Offline Install - Java/C++
 
-Download the latest photonlib release from our GitHub releases page (named something like `` photonlib-VERSION.zip` ``), and extract the contents to `$HOME/wpilib/YEAR`. This adds PhotonLib maven artifacts to your local maven repository. PhotonLib will now also appear available in the "install vendor libraries (offline)" menu in WPILib VSCode. Refer to `The WPILib docs <https://docs.wpilib.org/en/stable/docs/software/vscode-overview/3rd-party-libraries.html#installing-libraries>` for more details on installing vendor libraries offline.
+Download the latest PhotonLib release from our GitHub releases page (named something like `` photonlib-VERSION.zip` ``), and extract the contents to `$HOME/wpilib/YEAR`. This adds PhotonLib maven artifacts to your local maven repository. PhotonLib will now also appear available in the "install vendor libraries (offline)" menu in WPILib VSCode. Refer to [the WPILib docs](https://docs.wpilib.org/en/stable/docs/software/vscode-overview/3rd-party-libraries.html#installing-libraries) for more details on installing vendor libraries offline.
 
 ## Install - Python
 

@@ -11,13 +11,13 @@ Simulation is a powerful tool for validating robot code without access to a phys
 PhotonLib can simulate cameras on the field and generate target data approximating what would be seen in reality. This simulation attempts to include the following:
 
 - Camera Properties
-  : - Field of Vision
+    - Field of Vision
     - Lens distortion
     - Image noise
     - Framerate
     - Latency
 - Target Data
-  : - Detected / minimum-area-rectangle corners
+    - Detected / minimum-area-rectangle corners
     - Center yaw/pitch
     - Contour image area percentage
     - Fiducial ID

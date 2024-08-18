@@ -10,13 +10,15 @@ To calibrate a camera, images of a chessboard (or grid of dots, or other target)
 While any resolution can be calibrated, resolutions lower than 960x720 are often too low to provide accurate results. Additionally, high resolutions may be too performance intensive for a coprocessor like a Raspberry Pi to handle (solutions to this are being looked into). Thus, we recommend 960x720 when using 3D mode.
 :::
 
-% note::The calibration data collected during calibration is specific to each physical camera, as well as each individual resolution.
+:::{note}
+The calibration data collected during calibration is specific to each physical camera, as well as each individual resolution.
+:::
 
 ## Calibration Tips
 
 Accurate camera calibration is required in order to get accurate pose measurements when using AprilTags and 3D mode. The tips below should help ensure success:
 
-01. Practice calibration using your laptop webcam and <https://www.calibdb.net/>. The target can be found on the website and should be printed out if possible. Once you print it out, try to line up your target with the overlay on the screen as best as possible. The point of this practice is to notice how you are prompted to place targets in certain positions on the screen that make sure you account for all regions of the sensor. The chessboard should (in general) not be facing parallel to the camera (straight on), nor should it be aligned with any of the camera axes (ie, rotated only about an axis going left/right, up/down, or out-of-the-camera).
+01. Practice calibration using your laptop webcam and <https://www.calibdb.net/>. The target can be found on the website and should be printed out if possible. Once you print it out, try to line up your target with the overlay on the screen as best as possible. The point of this practice is to notice how you are prompted to place targets in certain positions on the screen that make sure you account for all regions of the sensor. The chessboard should (in general) not be facing parallel to the camera (straight on), nor should it be aligned with any of the camera axes (i.e., rotated only about an axis going left/right, up/down, or out-of-the-camera).
 02. Ensure your the images you take have the target in different positions and angles, with as big of a difference between angles as possible. It is important to make sure the target overlay still lines up with the board while doing this. Tilt no more than 45 degrees.
 03. Use as big of a calibration target as your printer can print.
 04. Ensure that your printed pattern has enough white border around it.
@@ -70,7 +72,7 @@ Now, we'll capture images of our chessboard from various angles. The most import
 
 ## Accessing Calibration Images
 
-Details about a particular calibration can be viewed by clicking on that resolution in the calibrations tab. This tab allows you to download raw calibration data, upload a previous calibration, and inspect details about calculated camera intrinsics.
+Details about a particular calibration can be viewed by clicking on that resolution in the calibrations tab. This tab allows you to download raw calibration data, upload a previous calibration, and inspect details about calculated camera intrinsic.
 
 ```{image} images/cal-details.png
 :alt: Captured calibration images
@@ -104,7 +106,7 @@ python3 /path/to/calibrationUtils.py path/to/photon_calibration.json /path/to/ou
 
 [mrcal](https://mrcal.secretsauce.net/tour.html) is a command-line tool for camera calibration and visualization. PhotonVision has the option to use the mrcal backend during camera calibration to estimate intrinsics. mrcal can also be used post-calibration to inspect snapshots and provide feedback. These steps will closely follow the [mrcal tour](https://mrcal.secretsauce.net/tour-initial-calibration.html) -- I'm aggregating commands and notes here, but the mrcal documentation is much more thorough.
 
-Start by [Installing mrcal](https://mrcal.secretsauce.net/install.html). Note that while mrcal *calibration* using PhotonVision is supported on all platforms, but investigation right now only works on Linux. Some users have also reported luck using ``` WSL 2 on Windows <https://learn.microsoft.com/en-us/windows/wsl/tutorials/gui-apps>`ap_ as well. You may also need to install ``feedgnuplot` ```. On Ubuntu systems, these commands should be run from a standalone terminal and *not* the one [built into vscode](https://github.com/ros2/ros2/issues/1406).
+Start by [Installing mrcal](https://mrcal.secretsauce.net/install.html). Note that while mrcal *calibration* using PhotonVision is supported on all platforms, but investigation right now only works on Linux. Some users have also reported luck using [WSL 2 on Windows](https://learn.microsoft.com/en-us/windows/wsl/tutorials/gui-apps) as well. You may also need to install `feedgnuplot`. On Ubuntu systems, these commands should be run from a standalone terminal and *not* the one [built into vscode](https://github.com/ros2/ros2/issues/1406).
 
 Let's run `calibrationUtils.py` as described above, and then cd into the output folder. From here, you can follow the mrcal tour, just replacing the VNL filename and camera imager size as necessary. My camera calibration was at 1280x720, so I've set the XY limits to that below.
 

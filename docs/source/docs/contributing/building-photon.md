@@ -8,19 +8,11 @@ This section contains the build instructions from the source code available at [
 
 **Java Development Kit:**
 
- This project requires Java Development Kit (JDK) 17 to be compiled. This is the same Java version that comes with WPILib for 2025+. If you don't have this JDK with WPILib, you can follow the instructions to install JDK 17 for your platform 
-
-[here](https://bell-sw.com/pages/downloads/#jdk-17-lts)
-
-.
+ This project requires Java Development Kit (JDK) 17 to be compiled. This is the same Java version that comes with WPILib for 2025+. If you don't have this JDK with WPILib, you can follow the instructions to install JDK 17 for your platform [here](https://bell-sw.com/pages/downloads/#jdk-17-lts).
 
 **Node JS:**
 
- The UI is written in Node JS. To compile the UI, Node 14.18.0 to Node 16.0.0 is required. To install Node JS follow the instructions for your platform 
-
-[on the official Node JS website](https://nodejs.org/en/download/)
-
-.  However, modify this line
+ The UI is written in Node JS. To compile the UI, Node 14.18.0 to Node 16.0.0 is required. To install Node JS follow the instructions for your platform [on the official Node JS website](https://nodejs.org/en/download/).  However, modify this line
 
 ```bash
 nvm install 20
@@ -42,7 +34,7 @@ Get the source code from git:
 git clone https://github.com/PhotonVision/photonvision
 ```
 
-or alternatively download the source code from github and extract the zip:
+or alternatively download the source code from GitHub and extract the zip:
 
 ```{image} assets/git-download.png
 :alt: Download source code from git
@@ -254,16 +246,16 @@ The program will wait for the VSCode debugger to attach before proceeding.
 You can run one of the many built in examples straight from the command line, too! They contain a fully featured robot project, and some include simulation support. The projects can be found inside the photonlib-java-examples and photonlib-cpp-examples subdirectories, respectively. The projects currently available include:
 
 - photonlib-java-examples:
-  : - aimandrange:simulateJava
+    - aimandrange:simulateJava
     - aimattarget:simulateJava
     - getinrange:simulateJava
     - simaimandrange:simulateJava
     - simposeest:simulateJava
 - photonlib-cpp-examples:
-  : - aimandrange:simulateNative
+    - aimandrange:simulateNative
     - getinrange:simulateNative
 
-To run them, use the commands listed below. Photonlib must first be published to your local maven repository, then the copyPhotonlib task will copy the generated vendordep json file into each example. After that, the simulateJava/simulateNative task can be used like a normal robot project. Robot simulation with attached debugger is technically possible by using simulateExternalJava and modifying the launch script it exports, though unsupported.
+To run them, use the commands listed below. PhotonLib must first be published to your local maven repository, then the copy PhotonLib task will copy the generated vendordep json file into each example. After that, the simulateJava/simulateNative task can be used like a normal robot project. Robot simulation with attached debugger is technically possible by using simulateExternalJava and modifying the launch script it exports, though unsupported.
 
 ```
 ~/photonvision$ ./gradlew publishToMavenLocal
