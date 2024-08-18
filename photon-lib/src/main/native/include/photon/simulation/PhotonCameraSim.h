@@ -91,7 +91,7 @@ class PhotonCameraSim {
 
   void SubmitProcessedFrame(const PhotonPipelineResult& result);
   void SubmitProcessedFrame(const PhotonPipelineResult& result,
-                            uint64_t recieveTimestamp);
+                            uint64_t ReceiveTimestamp);
 
   SimCameraProperties prop;
 

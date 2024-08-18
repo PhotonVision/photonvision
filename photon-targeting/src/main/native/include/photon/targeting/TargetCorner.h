@@ -15,11 +15,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "gtest/gtest.h"
-#include "photon/targeting/PhotonTrackedTarget.h"
+#include <utility>
 
-// TODO
-TEST(PhotonTrackedTargetTest, Equality) {}
+#include "photon/struct/TargetCornerStruct.h"
 
-// TODO
-TEST(PhotonTrackedTargetTest, Inequality) {}
+#pragma once
+
+namespace photon {
+class TargetCorner : public TargetCorner_PhotonStruct {
+  using Base = TargetCorner_PhotonStruct;
+
+ public:
+  explicit TargetCorner(Base&& data) : Base(data) {}
+
+  template <typename... Args>
+  explicit TargetCorner(Args&&... args) : Base{std::forward<Args>(args)...} {}
+
+  friend bool operator==(TargetCorner const&, TargetCorner const&) = default;
+};
+}  // namespace photon
+
+#include "photon/serde/TargetCornerSerde.h"

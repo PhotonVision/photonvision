@@ -79,10 +79,10 @@ class Vision {
 
       // In sim only, add our vision estimate to the sim debug field
       if (frc::RobotBase::IsSimulation()) {
-        if (visionEst.has_value()) {
+        if (visionEst) {
           GetSimDebugField()
               .GetObject("VisionEstimation")
-              ->SetPose(visionEst.value().estimatedPose.ToPose2d());
+              ->SetPose(visionEst->estimatedPose.ToPose2d());
         } else {
           GetSimDebugField().GetObject("VisionEstimation")->SetPoses({});
         }
@@ -101,9 +101,9 @@ class Vision {
     for (const auto& tgt : targets) {
       auto tagPose =
           photonEstimator.GetFieldLayout().GetTagPose(tgt.GetFiducialId());
-      if (tagPose.has_value()) {
+      if (tagPose) {
         numTags++;
-        avgDist += tagPose.value().ToPose2d().Translation().Distance(
+        avgDist += tagPose->ToPose2d().Translation().Distance(
             estimatedPose.Translation());
       }
     }

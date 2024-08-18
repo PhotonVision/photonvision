@@ -37,10 +37,11 @@
 class Robot : public frc::TimedRobot {
  public:
   void TeleopPeriodic() override;
+  void RobotPeriodic() override;
 
  private:
   // Change this to match the name of your camera as shown in the web UI
-  photon::PhotonCamera camera{"YOUR_CAMERA_NAME_HERE"};
+  photon::PhotonCamera camera{"WPI2024"};
   // PID constants should be tuned per robot
   frc::PIDController controller{.1, 0, 0};
 

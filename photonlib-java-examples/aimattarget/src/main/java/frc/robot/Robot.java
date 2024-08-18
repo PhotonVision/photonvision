@@ -27,9 +27,11 @@ package frc.robot;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.PWMVictorSPX;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.photonvision.PhotonCamera;
 
 /**
@@ -49,7 +51,7 @@ public class Robot extends TimedRobot {
     final double GOAL_RANGE_METERS = Units.feetToMeters(3);
 
     // Change this to match the name of your camera as shown in the web UI
-    PhotonCamera camera = new PhotonCamera("YOUR_CAMERA_NAME_HERE");
+    PhotonCamera camera = new PhotonCamera("Microsoft_LifeCam_HD-3000");
 
     // PID constants should be tuned per robot
     final double LINEAR_P = 0.1;
@@ -66,6 +68,16 @@ public class Robot extends TimedRobot {
     PWMVictorSPX leftMotor = new PWMVictorSPX(0);
     PWMVictorSPX rightMotor = new PWMVictorSPX(1);
     DifferentialDrive drive = new DifferentialDrive(leftMotor, rightMotor);
+
+    @Override
+    public void robotPeriodic() {
+        var start = Timer.getFPGATimestamp();
+        var res = camera.getLatestResult();
+        var end = Timer.getFPGATimestamp();
+        System.out.println(
+                "dt: " + (int) ((end - start) * 1e6) + "uS for targets: " + res.getTargets().size());
+        SmartDashboard.putNumber("decodeTime", (int) ((end - start) * 1e6));
+    }
 
     @Override
     public void teleopPeriodic() {

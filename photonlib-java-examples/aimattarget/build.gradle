@@ -10,6 +10,16 @@ def ROBOT_MAIN_CLASS = "frc.robot.Main"
 
 apply from: "${rootDir}/../shared/examples_common.gradle"
 
+ext {
+    wpilibVersion = "2025.0.0-alpha-1"
+    wpimathVersion = wpilibVersion
+    openCVversion = "4.8.0-2"
+}
+
+wpi.getVersions().getOpencvVersion().convention(openCVversion);
+wpi.getVersions().getWpilibVersion().convention(wpilibVersion);
+wpi.getVersions().getWpimathVersion().convention(wpimathVersion);
+
 // Define my targets (RoboRIO) and artifacts (deployable files)
 // This is added by GradleRIO's backing project DeployUtils.
 deploy {

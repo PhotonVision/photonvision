@@ -20,13 +20,13 @@ package org.photonvision.targeting.proto;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.util.protobuf.Protobuf;
 import org.photonvision.proto.Photon.ProtobufPNPResult;
-import org.photonvision.targeting.PNPResult;
+import org.photonvision.targeting.PnpResult;
 import us.hebi.quickbuf.Descriptors.Descriptor;
 
-public class PNPResultProto implements Protobuf<PNPResult, ProtobufPNPResult> {
+public class PNPResultProto implements Protobuf<PnpResult, ProtobufPNPResult> {
     @Override
-    public Class<PNPResult> getTypeClass() {
-        return PNPResult.class;
+    public Class<PnpResult> getTypeClass() {
+        return PnpResult.class;
     }
 
     @Override
@@ -45,12 +45,8 @@ public class PNPResultProto implements Protobuf<PNPResult, ProtobufPNPResult> {
     }
 
     @Override
-    public PNPResult unpack(ProtobufPNPResult msg) {
-        if (!msg.getIsPresent()) {
-            return new PNPResult();
-        }
-
-        return new PNPResult(
+    public PnpResult unpack(ProtobufPNPResult msg) {
+        return new PnpResult(
                 Transform3d.proto.unpack(msg.getBest()),
                 Transform3d.proto.unpack(msg.getAlt()),
                 msg.getAmbiguity(),
@@ -59,12 +55,11 @@ public class PNPResultProto implements Protobuf<PNPResult, ProtobufPNPResult> {
     }
 
     @Override
-    public void pack(ProtobufPNPResult msg, PNPResult value) {
+    public void pack(ProtobufPNPResult msg, PnpResult value) {
         Transform3d.proto.pack(msg.getMutableBest(), value.best);
         Transform3d.proto.pack(msg.getMutableAlt(), value.alt);
         msg.setAmbiguity(value.ambiguity)
                 .setBestReprojErr(value.bestReprojErr)
-                .setAltReprojErr(value.altReprojErr)
-                .setIsPresent(value.isPresent);
+                .setAltReprojErr(value.altReprojErr);
     }
 }

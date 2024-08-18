@@ -15,11 +15,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "gtest/gtest.h"
-#include "photon/targeting/PhotonPipelineResult.h"
+package org.photonvision.targeting.serde;
 
-// TODO
-TEST(PhotonPipelineResultTest, Equality) {}
+import org.photonvision.common.dataflow.structures.PacketSerde;
 
-// TODO
-TEST(PhotonPipelineResultTest, Inequality) {}
+public interface PhotonStructSerializable<T> {
+    PacketSerde<T> getSerde();
+}

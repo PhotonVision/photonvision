@@ -37,10 +37,7 @@ class PhotonCameraTest {
                     var packet = new Packet(1);
                     var ret = new PhotonPipelineResult();
                     packet.setData(new byte[0]);
-                    if (packet.getSize() < 1) {
-                        return;
-                    }
-                    PhotonPipelineResult.serde.pack(packet, ret);
+                    PhotonPipelineResult.photonStruct.pack(packet, ret);
                 });
     }
 }

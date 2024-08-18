@@ -15,31 +15,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "photon/targeting/PnpResult.h"
 
-#include <frc/geometry/Transform3d.h>
-
-#include "photon/dataflow/structures/Packet.h"
-
-namespace photon {
-
-class PNPResult {
- public:
-  // This could be wrapped in an std::optional, but chose to do it this way to
-  // mirror Java
-  bool isPresent{false};
-
-  frc::Transform3d best{};
-  double bestReprojErr{0};
-
-  frc::Transform3d alt{};
-  double altReprojErr{0};
-
-  double ambiguity{0};
-
-  bool operator==(const PNPResult& other) const;
-
-  friend Packet& operator<<(Packet& packet, const PNPResult& target);
-  friend Packet& operator>>(Packet& packet, PNPResult& target);
-};
-}  // namespace photon
+namespace photon {}  // namespace photon

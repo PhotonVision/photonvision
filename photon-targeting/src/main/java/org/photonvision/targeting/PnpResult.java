@@ -19,10 +19,10 @@ package org.photonvision.targeting;
 
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.util.protobuf.ProtobufSerializable;
-import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.dataflow.structures.PacketSerde;
+import org.photonvision.struct.PnpResultSerde;
 import org.photonvision.targeting.proto.PNPResultProto;
-import org.photonvision.utils.PacketUtils;
+import org.photonvision.targeting.serde.PhotonStructSerializable;
 
 /**
  * The best estimated transformation from solvePnP, and possibly an alternate transformation
@@ -33,37 +33,30 @@ import org.photonvision.utils.PacketUtils;
  * <p>Note that the coordinate frame of these transforms depends on the implementing solvePnP
  * method.
  */
-public class PNPResult implements ProtobufSerializable {
-    /**
-     * If this result is valid. A false value indicates there was an error in estimation, and this
-     * result should not be used.
-     */
-    public final boolean isPresent;
-
+public class PnpResult implements ProtobufSerializable, PhotonStructSerializable<PnpResult> {
     /**
      * The best-fit transform. The coordinate frame of this transform depends on the method which gave
      * this result.
      */
-    public final Transform3d best;
+    public Transform3d best;
 
     /** Reprojection error of the best solution, in pixels */
-    public final double bestReprojErr;
+    public double bestReprojErr;
 
     /**
      * Alternate, ambiguous solution from solvepnp. If no alternate solution is found, this is equal
      * to the best solution.
      */
-    public final Transform3d alt;
+    public Transform3d alt;
 
     /** If no alternate solution is found, this is bestReprojErr */
-    public final double altReprojErr;
+    public double altReprojErr;
 
     /** If no alternate solution is found, this is 0 */
-    public final double ambiguity;
+    public double ambiguity;
 
     /** An empty (invalid) result. */
-    public PNPResult() {
-        this.isPresent = false;
+    public PnpResult() {
         this.best = new Transform3d();
         this.alt = new Transform3d();
         this.ambiguity = 0;
@@ -71,17 +64,16 @@ public class PNPResult implements ProtobufSerializable {
         this.altReprojErr = 0;
     }
 
-    public PNPResult(Transform3d best, double bestReprojErr) {
+    public PnpResult(Transform3d best, double bestReprojErr) {
         this(best, best, 0, bestReprojErr, bestReprojErr);
     }
 
-    public PNPResult(
+    public PnpResult(
             Transform3d best,
             Transform3d alt,
             double ambiguity,
             double bestReprojErr,
             double altReprojErr) {
-        this.isPresent = true;
         this.best = best;
         this.alt = alt;
         this.ambiguity = ambiguity;
@@ -93,7 +85,6 @@ public class PNPResult implements ProtobufSerializable {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + (isPresent ? 1231 : 1237);
         result = prime * result + ((best == null) ? 0 : best.hashCode());
         long temp;
         temp = Double.doubleToLongBits(bestReprojErr);
@@ -111,8 +102,7 @@ public class PNPResult implements ProtobufSerializable {
         if (this == obj) return true;
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
-        PNPResult other = (PNPResult) obj;
-        if (isPresent != other.isPresent) return false;
+        PnpResult other = (PnpResult) obj;
         if (best == null) {
             if (other.best != null) return false;
         } else if (!best.equals(other.best)) return false;
@@ -130,9 +120,7 @@ public class PNPResult implements ProtobufSerializable {
 
     @Override
     public String toString() {
-        return "PNPResult [isPresent="
-                + isPresent
-                + ", best="
+        return "PnpResult [best="
                 + best
                 + ", bestReprojErr="
                 + bestReprojErr
@@ -145,42 +133,11 @@ public class PNPResult implements ProtobufSerializable {
                 + "]";
     }
 
-    public static final class APacketSerde implements PacketSerde<PNPResult> {
-        @Override
-        public int getMaxByteSize() {
-            return 1 + (Double.BYTES * 7 * 2) + (Double.BYTES * 3);
-        }
-
-        @Override
-        public void pack(Packet packet, PNPResult value) {
-            packet.encode(value.isPresent);
-
-            if (value.isPresent) {
-                PacketUtils.packTransform3d(packet, value.best);
-                PacketUtils.packTransform3d(packet, value.alt);
-                packet.encode(value.bestReprojErr);
-                packet.encode(value.altReprojErr);
-                packet.encode(value.ambiguity);
-            }
-        }
-
-        @Override
-        public PNPResult unpack(Packet packet) {
-            var present = packet.decodeBoolean();
-
-            if (!present) {
-                return new PNPResult();
-            }
-
-            var best = PacketUtils.unpackTransform3d(packet);
-            var alt = PacketUtils.unpackTransform3d(packet);
-            var bestEr = packet.decodeDouble();
-            var altEr = packet.decodeDouble();
-            var ambiguity = packet.decodeDouble();
-            return new PNPResult(best, alt, ambiguity, bestEr, altEr);
-        }
-    }
-
-    public static final APacketSerde serde = new APacketSerde();
     public static final PNPResultProto proto = new PNPResultProto();
+    public static final PnpResultSerde photonStruct = new PnpResultSerde();
+
+    @Override
+    public PacketSerde<PnpResult> getSerde() {
+        return photonStruct;
+    }
 }

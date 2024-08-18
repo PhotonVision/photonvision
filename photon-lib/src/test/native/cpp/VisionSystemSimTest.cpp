@@ -439,9 +439,10 @@ TEST_F(VisionSystemSimTest, TestPoseEstimation) {
   for (photon::PhotonTrackedTarget tar : targetSpan) {
     targets.push_back(tar);
   }
-  photon::PNPResult results = photon::VisionEstimation::EstimateCamPosePNP(
+  auto results = photon::VisionEstimation::EstimateCamPosePNP(
       camEigen, distEigen, targets, layout, photon::kAprilTag16h5);
-  frc::Pose3d pose = frc::Pose3d{} + results.best;
+  ASSERT_TRUE(results);
+  frc::Pose3d pose = frc::Pose3d{} + results->best;
   ASSERT_NEAR(5, pose.X().to<double>(), 0.01);
   ASSERT_NEAR(1, pose.Y().to<double>(), 0.01);
   ASSERT_NEAR(0, pose.Z().to<double>(), 0.01);
@@ -460,11 +461,12 @@ TEST_F(VisionSystemSimTest, TestPoseEstimation) {
   for (photon::PhotonTrackedTarget tar : targetSpan2) {
     targets2.push_back(tar);
   }
-  photon::PNPResult results2 = photon::VisionEstimation::EstimateCamPosePNP(
+  auto results2 = photon::VisionEstimation::EstimateCamPosePNP(
       camEigen, distEigen, targets2, layout, photon::kAprilTag16h5);
-  frc::Pose3d pose2 = frc::Pose3d{} + results2.best;
-  ASSERT_NEAR(5, pose2.X().to<double>(), 0.01);
-  ASSERT_NEAR(1, pose2.Y().to<double>(), 0.01);
+  ASSERT_TRUE(results2);
+  frc::Pose3d pose2 = frc::Pose3d{} + results2->best;
+  ASSERT_NEAR(robotPose.X().to<double>(), pose2.X().to<double>(), 0.01);
+  ASSERT_NEAR(robotPose.Y().to<double>(), pose2.Y().to<double>(), 0.01);
   ASSERT_NEAR(0, pose2.Z().to<double>(), 0.01);
   ASSERT_NEAR(units::degree_t{5}.convert<units::radians>().to<double>(),
               pose2.Rotation().Z().to<double>(), 0.01);

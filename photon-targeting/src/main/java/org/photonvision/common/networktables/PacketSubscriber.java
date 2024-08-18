@@ -86,6 +86,11 @@ public class PacketSubscriber<T> implements AutoCloseable {
         subscriber.close();
     }
 
+    // TODO - i can see an argument for moving this logic all here instead of keeping in photoncamera
+    public String getInterfaceUUID() {
+        return subscriber.getTopic().getProperty("message_uuid");
+    }
+
     public List<PacketResult<T>> getAllChanges() {
         List<PacketResult<T>> ret = new ArrayList<>();
 
