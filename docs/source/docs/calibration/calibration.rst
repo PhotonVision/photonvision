@@ -35,7 +35,7 @@ Accurate camera calibration is required in order to get accurate pose measuremen
 Following the ideas above should help in getting an accurate calibration.
 
 
-Calibrating Your Camera
+Calibrating using PhotonVision
 ------------------------------
 
 1. Navigate to the calibration section in the UI.
