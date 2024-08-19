@@ -1,9 +1,41 @@
-# PhotonVision ReadTheDocs
+# Website
 
-[![Documentation Status](https://readthedocs.org/projects/photonvision-docs/badge/?version=latest)](https://docs.photonvision.org/en/latest/?badge=latest)
+This website is built using [Docusaurus](https://docusaurus.io/), a modern static website generator.
 
-PhotonVision is a free open-source vision processing software for FRC teams.
+### Installation
 
-This repository is the source code for our ReadTheDocs documentation, which can be found [here](https://docs.photonvision.org).
+```
+$ yarn
+```
 
-[Contribution and formatting guidelines for this project](https://docs.photonvision.org/en/latest/docs/contributing/photonvision-docs/index.html)
+### Local Development
+
+```
+$ yarn start
+```
+
+This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
+
+### Build
+
+```
+$ yarn build
+```
+
+This command generates static content into the `build` directory and can be served using any static contents hosting service.
+
+### Deployment
+
+Using SSH:
+
+```
+$ USE_SSH=true yarn deploy
+```
+
+Not using SSH:
+
+```
+$ GIT_USER=<Your GitHub username> yarn deploy
+```
+
+If you are using GitHub pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.
