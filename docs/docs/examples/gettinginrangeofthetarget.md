@@ -46,6 +46,6 @@ https://github.com/PhotonVision/photonvision/blob/ebef19af3d926cf87292177c9a16d0
   </TabItem>
 </Tabs>
 
-:::hint
+:::tip
 The accuracy of the measurement of the camera's pitch (`CAMERA_PITCH_RADIANS` in the above example), as well as the camera's FOV, will determine the overall accuracy of this method.
 :::

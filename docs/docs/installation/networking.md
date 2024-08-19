@@ -1,3 +1,6 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Networking
 
 ## Physical Networking
@@ -37,17 +40,18 @@ Power-cycle your robot and then you will now be access the PhotonVision dashboar
 
 If you would like to access your Ethernet-connected vision device from a computer when tethered to the USB port on the roboRIO, you can use [WPILib's](https://docs.wpilib.org/en/stable/docs/networking/networking-utilities/portforwarding.html) `PortForwarder`.
 
-```{eval-rst}
-.. tab-set-code::
-
-    .. code-block:: java
-
-        PortForwarder.add(5800, "photonvision.local", 5800);
-
-    .. code-block:: C++
-
-        wpi::PortForwarder::GetInstance().Add(5800, "photonvision.local", 5800);
+<Tabs groupId="lang">
+  <TabItem value="java" label="Java">
+```java
+PortForwarder.add(5800, "photonvision.local", 5800);
 ```
+  </TabItem>
+  <TabItem value="cpp" label="C++">
+```cpp
+wpi::PortForwarder::GetInstance().Add(5800, "photonvision.local", 5800);
+```
+  </TabItem>
+</Tabs>
 
 :::note
 The address in the code above (`photonvision.local`) is the hostname of the coprocessor. This can be different depending on your hardware, and can be checked in the settings tab under "hostname".
