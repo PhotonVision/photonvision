@@ -5,7 +5,7 @@ Calibrating Your Camera
 
 To calibrate a camera, images of a Charuco board (or chessboard, grid of dots, or other target) are taken. By comparing where the grid corners (or dots) should be in object space (for example, a dot once every inch in an 8x6 grid) with where they appear in the camera image, we can find a least-squares estimate for intrinsic camera properties like focal lengths, center point, and distortion coefficients. For more on camera calibration, please review the `OpenCV documentation <https://docs.opencv.org/4.x/dc/dbb/tutorial_py_calibration.html>`_.
 
-.. warning:: While any resolution can be calibrated, resolutions lower than 960x720 are often too low to provide accurate results. Additionally, high resolutions may be too performance-intensive for a coprocessor like a Raspberry Pi to handle (solutions to this are being looked into). Thus, we recommend 960x720 when using 3D mode.
+.. warning:: While any resolution can be calibrated, higher resolutions may be too performance-intensive for some coprocessors to handle. Therefore, we recommend experimenting to see what works best for your coprocessor.
 
 .. note::The calibration data collected during calibration is specific to each physical camera, as well as each individual resolution.
 
@@ -14,25 +14,23 @@ Calibration Tips
 ----------------
 Accurate camera calibration is required in order to get accurate pose measurements when using AprilTags and 3D mode. The tips below should help ensure success:
 
-1. Practice calibration using your laptop webcam and https://www.calibdb.net/. The target can be found on the website and should be printed out if possible. Once you print it out, try to line up your target with the overlay on the screen as best as possible. The point of this practice is to notice how you are prompted to place targets in certain positions on the screen that make sure you account for all regions of the sensor. The chessboard should (in general) not be facing parallel to the camera (straight on), nor should it be aligned with any of the camera axes (ie, rotated only about an axis going left/right, up/down, or out-of-the-camera).
+1. Ensure the images you take have the target in different positions and angles, with as big of a difference between angles as possible. It is important to make sure the target overlay still lines up with the board while doing this. Tilt no more than 45 degrees.
 
-2. Ensure the images you take have the target in different positions and angles, with as big of a difference between angles as possible. It is important to make sure the target overlay still lines up with the board while doing this. Tilt no more than 45 degrees.
+2. Use as big of a calibration target as your printer can print.
 
-3. Use as big of a calibration target as your printer can print.
+3. Ensure that your printed pattern has enough white border around it.
 
-4. Ensure that your printed pattern has enough white border around it.
+4. Ensure your camera stays in one position during the duration of the calibration.
 
-5. Ensure your camera stays in one position during the duration of the calibration.
+5. Make sure you get at least 12 images from varying distances and angles while covering the whole camera's FOV (the more images usually the better the calibration).
 
-6. Make sure you get at least 12 images from varying distances and angles while covering the whole camera's FOV (the more images usually the better the calibration).
+6. Take at least one image that covers the total image area, and generally ensure that you get even coverage of the lens with your image set.
 
-7. Take at least one image that covers the total image area, and generally ensure that you get even coverage of the lens with your image set.
+7. Have good lighting, having a diffusely lit target would be best (light specifically shining on the target without shadows).
 
-8. Have good lighting, having a diffusely lit target would be best (light specifically shining on the target without shadows).
+8. Ensure the calibration target is **completely flat** and does not bend or fold in any way. It should be mounted/taped down to something flat and then used for calibration, do not just hold it up.
 
-9. Ensure the calibration target is **completely flat** and does not bend or fold in any way. It should be mounted/taped down to something flat and then used for calibration, do not just hold it up.
-
-10. Avoid having targets that are parallel to the lens of the camera / straight on towards the camera as much as possible. You want angles and variations within your calibration images.
+9. Avoid having targets that are parallel to the lens of the camera / straight on towards the camera as much as possible. You want angles and variations within your calibration images.
 
 Following the ideas above should help in getting an accurate calibration.
 
@@ -104,13 +102,6 @@ Calibration images can also be extracted from the downloaded JSON file using `th
 .. image:: images/unpacked-json.png
    :width: 600
    :alt: Captured calibration images
-
-Calibrating using calibdb
--------------------------
-
-Calibdb uses a modified chessboard/aruco marker combination target called `ChArUco targets. <https://docs.opencv.org/4.8.0/df/d4a/tutorial_charuco_detection.html>`_ The website currently only supports Chrome browser.
-
-Download and print out (or display on a monitor) the calibration by clicking Show Pattern. Click "Calibrate" and align your camera with the ghost overlay of the calibration board. The website automatically calculates the next position and displays it for you. When complete, download the calibration (do **not** use the OpenCV format). Reconnect your camera to your coprocessor and navigate to the PhotonVision web interface's camera tab. Ensure the correct camera is selected, and click the "Import from CalibDB" button. Your calibration data will be automatically saved and applied!
 
 
 Investigating Calibration Data with mrcal
