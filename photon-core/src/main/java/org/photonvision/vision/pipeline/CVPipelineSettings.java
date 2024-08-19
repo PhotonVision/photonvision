@@ -42,7 +42,9 @@ public class CVPipelineSettings implements Cloneable {
     public String pipelineNickname = "New Pipeline";
     public boolean cameraAutoExposure = false;
     // manual exposure only used if cameraAutoExposure is false
-    public double cameraExposure = 20;
+    public double cameraExposureRaw = 20;
+    public double cameraMinExposureRaw = 1;
+    public double cameraMaxExposureRaw = 100;
     public int cameraBrightness = 50;
     // Currently only used by a few cameras (notably the zero-copy Pi Camera driver) with the Gain
     // quirk
@@ -62,7 +64,9 @@ public class CVPipelineSettings implements Cloneable {
         if (o == null || getClass() != o.getClass()) return false;
         CVPipelineSettings that = (CVPipelineSettings) o;
         return pipelineIndex == that.pipelineIndex
-                && Double.compare(that.cameraExposure, cameraExposure) == 0
+                && Double.compare(that.cameraExposureRaw, cameraExposureRaw) == 0
+                && Double.compare(that.cameraMinExposureRaw, cameraMinExposureRaw) == 0
+                && Double.compare(that.cameraMaxExposureRaw, cameraMaxExposureRaw) == 0
                 && Double.compare(that.cameraBrightness, cameraBrightness) == 0
                 && Double.compare(that.cameraGain, cameraGain) == 0
                 && Double.compare(that.cameraRedGain, cameraRedGain) == 0
@@ -84,7 +88,9 @@ public class CVPipelineSettings implements Cloneable {
                 pipelineType,
                 inputImageRotationMode,
                 pipelineNickname,
-                cameraExposure,
+                cameraExposureRaw,
+                cameraMinExposureRaw,
+                cameraMaxExposureRaw,
                 cameraBrightness,
                 cameraGain,
                 cameraRedGain,
@@ -118,8 +124,8 @@ public class CVPipelineSettings implements Cloneable {
                 + ", pipelineNickname='"
                 + pipelineNickname
                 + '\''
-                + ", cameraExposure="
-                + cameraExposure
+                + ", cameraExposureRaw="
+                + cameraExposureRaw
                 + ", cameraBrightness="
                 + cameraBrightness
                 + ", cameraGain="

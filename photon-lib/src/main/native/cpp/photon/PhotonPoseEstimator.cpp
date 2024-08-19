@@ -30,6 +30,7 @@
 #include <iostream>
 #include <limits>
 #include <map>
+#include <memory>
 #include <span>
 #include <string>
 #include <utility>
@@ -69,22 +70,6 @@ PhotonPoseEstimator::PhotonPoseEstimator(frc::AprilTagFieldLayout tags,
                                          frc::Transform3d robotToCamera)
     : aprilTags(tags),
       strategy(strat),
-      camera(nullptr),
-      m_robotToCamera(robotToCamera),
-      lastPose(frc::Pose3d()),
-      referencePose(frc::Pose3d()),
-      poseCacheTimestamp(-1_s) {
-  HAL_Report(HALUsageReporting::kResourceType_PhotonPoseEstimator,
-             InstanceCount);
-  InstanceCount++;
-}
-
-PhotonPoseEstimator::PhotonPoseEstimator(frc::AprilTagFieldLayout tags,
-                                         PoseStrategy strat, PhotonCamera&& cam,
-                                         frc::Transform3d robotToCamera)
-    : aprilTags(tags),
-      strategy(strat),
-      camera(std::make_shared<PhotonCamera>(std::move(cam))),
       m_robotToCamera(robotToCamera),
       lastPose(frc::Pose3d()),
       referencePose(frc::Pose3d()),
@@ -107,25 +92,6 @@ void PhotonPoseEstimator::SetMultiTagFallbackStrategy(PoseStrategy strategy) {
     InvalidatePoseCache();
   }
   multiTagFallbackStrategy = strategy;
-}
-
-std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update() {
-  if (!camera) {
-    FRC_ReportError(frc::warn::Warning, "[PhotonPoseEstimator] Missing camera!",
-                    "");
-    return std::nullopt;
-  }
-  auto result = camera->GetLatestResult();
-  return Update(result, camera->GetCameraMatrix(), camera->GetDistCoeffs());
-}
-
-std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
-    const PhotonPipelineResult& result) {
-  // If camera is null, best we can do is pass null calibration data
-  if (!camera) {
-    return Update(result, std::nullopt, std::nullopt, this->strategy);
-  }
-  return Update(result, camera->GetCameraMatrix(), camera->GetDistCoeffs());
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
@@ -180,11 +146,16 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
       ret = AverageBestTargetsStrategy(result);
       break;
     case MULTI_TAG_PNP_ON_COPROCESSOR:
-      ret =
-          MultiTagOnCoprocStrategy(result, cameraMatrixData, cameraDistCoeffs);
+      ret = MultiTagOnCoprocStrategy(result);
       break;
     case MULTI_TAG_PNP_ON_RIO:
-      ret = MultiTagOnRioStrategy(result, cameraMatrixData, cameraDistCoeffs);
+      if (cameraMatrixData && cameraDistCoeffs) {
+        ret = MultiTagOnRioStrategy(result, cameraMatrixData, cameraDistCoeffs);
+      } else {
+        FRC_ReportError(frc::warn::Warning,
+                        "No camera calibration provided to multi-tag-on-rio!",
+                        "");
+      }
       break;
     default:
       FRC_ReportError(frc::warn::Warning, "Invalid Pose Strategy selected!",
@@ -377,9 +348,7 @@ frc::Pose3d detail::ToPose3d(const cv::Mat& tvec, const cv::Mat& rvec) {
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagOnCoprocStrategy(
-    PhotonPipelineResult result,
-    std::optional<PhotonCamera::CameraMatrix> camMat,
-    std::optional<PhotonCamera::DistortionMatrix> distCoeffs) {
+    PhotonPipelineResult result) {
   if (result.MultiTagResult().result.isPresent) {
     const auto field2camera = result.MultiTagResult().result.best;
 
@@ -407,6 +376,10 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagOnRioStrategy(
   }
 
   if (!camMat || !distCoeffs) {
+    FRC_ReportError(frc::warn::Warning,
+                    "No camera calibration data provided to "
+                    "PhotonPoseEstimator::MultiTagOnRioStrategy!",
+                    "");
     return Update(result, std::nullopt, std::nullopt,
                   this->multiTagFallbackStrategy);
   }

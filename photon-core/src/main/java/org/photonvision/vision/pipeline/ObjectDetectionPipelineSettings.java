@@ -25,7 +25,7 @@ public class ObjectDetectionPipelineSettings extends AdvancedPipelineSettings {
         super();
         this.pipelineType = PipelineType.ObjectDetection; // TODO: FIX this
         this.outputShowMultipleTargets = true;
-        cameraExposure = 20;
+        cameraExposureRaw = 20;
         cameraAutoExposure = false;
         ledMode = false;
         confidence = .9;
