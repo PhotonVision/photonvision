@@ -4,7 +4,7 @@
 In order to detect AprilTags and use 3D mode, your camera must be calibrated at the desired resolution! Inaccurate calibration will lead to poor performance.
 :::
 
-To calibrate a camera, images of a Charuco board (or chessboard) are taken. By comparing where the grid corners should be in object space (for example, a corner once every inch in an 8x6 grid) with where they appear in the camera image, we can find a least-squares estimate for intrinsic camera properties like focal lengths, center point, and distortion coefficients. For more on camera calibration, please review the `OpenCV documentation <https://docs.opencv.org/4.x/dc/dbb/tutorial_py_calibration.html>`_.
+To calibrate a camera, images of a Charuco board (or chessboard) are taken. By comparing where the grid corners should be in object space (for example, a corner once every inch in an 8x6 grid) with where they appear in the camera image, we can find a least-squares estimate for intrinsic camera properties like focal lengths, center point, and distortion coefficients. For more on camera calibration, please review the [OpenCV documentation](https://docs.opencv.org/4.x/dc/dbb/tutorial_py_calibration.html>).
 
 :::{warning}
 While any resolution can be calibrated, higher resolutions may be too performance-intensive for some coprocessors to handle. Therefore, we recommend experimenting to see what works best for your coprocessor.
@@ -48,7 +48,7 @@ Ensure that there is no scaling applied during printing (it should be at 100%) a
 
 We'll next select a resolution to calibrate and populate our pattern spacing, marker size, and board size. The provided chessboard and charuco board are an 8x8 grid of 1 inch square. The provided charuco board uses the 4x4 dictionary with a marker size of 0.75 inches (this board does not need the old OpenCV pattern selector selected). Printers are not perfect, and you need to measure your calibration target and enter the correct marker size (size of the aruco marker) and pattern spacing (aka size of the black square) using calipers or similar. Finally, once our entered data is correct, we'll click "start calibration."
 
-:::{warning} Old OpenCV Pattern selector. This should be used in the case that the calibration image is generated from a version of OpenCV before version 4.6.0. This would include targets created by calib.io. If this selector is not set correctly the calibration will be completely invalid. For more info view `this GitHub issue <https://github.com/opencv/opencv_contrib/issues/3291>`_.
+:::{warning} Old OpenCV Pattern selector. This should be used in the case that the calibration image is generated from a version of OpenCV before version 4.6.0. This would include targets created by calib.io. If this selector is not set correctly the calibration will be completely invalid. For more info view [this GitHub issue](https://github.com/opencv/opencv_contrib/issues/3291).
 :::
 
 ### 4. Take at calibration images from various angles.
