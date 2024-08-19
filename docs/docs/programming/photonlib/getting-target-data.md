@@ -12,7 +12,7 @@ The `PhotonCamera` class has two constructors: one that takes a `NetworkTable` a
 .. tab-set-code::
 
 
-     .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/a3bcd3ac4f88acd4665371abc3073bdbe5effea8/photonlib-java-examples/src/main/java/org/photonlib/examples/aimattarget/Robot.java
+     .. rli:: https://github.com/PhotonVision/photonvision/blob/a3bcd3ac4f88acd4665371abc3073bdbe5effea8/photonlib-java-examples/src/main/java/org/photonlib/examples/aimattarget/Robot.java
         :language: java
         :lines: 51-52
 
@@ -43,7 +43,7 @@ Use the `getLatestResult()`/`GetLatestResult()` (Java and C++ respectively) to o
 .. tab-set-code::
 
 
-     .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/a3bcd3ac4f88acd4665371abc3073bdbe5effea8/photonlib-java-examples/src/main/java/org/photonlib/examples/aimattarget/Robot.java
+     .. rli:: https://github.com/PhotonVision/photonvision/blob/a3bcd3ac4f88acd4665371abc3073bdbe5effea8/photonlib-java-examples/src/main/java/org/photonlib/examples/aimattarget/Robot.java
         :language: java
         :lines: 79-80
 

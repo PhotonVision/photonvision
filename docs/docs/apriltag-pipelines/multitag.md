@@ -1,3 +1,6 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # MultiTag Localization
 
 PhotonVision can combine AprilTag detections from multiple simultaneously observed AprilTags from a particular camera with information about where tags are expected to be located on the field to produce a better estimate of where the camera (and therefore robot) is located on the field. PhotonVision can calculate this multi-target result on your coprocessor, reducing CPU usage on your RoboRio. This result is sent over NetworkTables along with other detected targets as part of the `PhotonPipelineResult` provided by PhotonLib.
@@ -12,31 +15,30 @@ Ensure that your camera is calibrated and 3D mode is enabled. Navigate to the Ou
 
 <img src={require("./images/multitag-ui.png").default} alt="Multitarget enabled and running in the PhotonVision UI" width="600"/>
 
-
 :::note
 By default, enabling multi-target will disable calculating camera-to-target transforms for each observed AprilTag target to increase performance; the X/Y/angle numbers shown in the target table of the UI are instead calculated using the tag's expected location (per the field layout JSON) and the field-to-camera transform calculated using MultiTag. If you additionally want the individual camera-to-target transform calculated using SolvePNP for each target, enable "Always Do Single-Target Estimation".
 :::
 
 This multi-target pose estimate can be accessed using PhotonLib. We suggest using \{ref}`the PhotonPoseEstimator class <docs/programming/photonlib/robot-pose-estimator:AprilTags and PhotonPoseEstimator>` with the `MULTI_TAG_PNP_ON_COPROCESSOR` strategy to simplify code, but the transform can be directly accessed using `getMultiTagResult`/`MultiTagResult()` (Java/C++).
 
-```{eval-rst}
-.. tab-set-code::
-
-    .. code-block:: java
-
-        var result = camera.getLatestResult();
-        if (result.getMultiTagResult().estimatedPose.isPresent) {
-          Transform3d fieldToCamera = result.getMultiTagResult().estimatedPose.best;
-        }
-
-
-    .. code-block:: C++
-
-        auto result = camera.GetLatestResult();
-        if (result.MultiTagResult().result.isPresent) {
-          frc::Transform3d fieldToCamera = result.MultiTagResult().result.best;
-        }
+<Tabs groupId="lang">
+  <TabItem value="java" label="Java">
+```java
+var result = camera.getLatestResult();
+if (result.getMultiTagResult().estimatedPose.isPresent) {
+  Transform3d fieldToCamera = result.getMultiTagResult().estimatedPose.best;
+}
 ```
+  </TabItem>
+  <TabItem value="cpp" label="C++">
+```cpp
+auto result = camera.GetLatestResult();
+if (result.MultiTagResult().result.isPresent) {
+  frc::Transform3d fieldToCamera = result.MultiTagResult().result.best;
+}
+``` 
+  </TabItem>
+</Tabs>
 
 :::note
 The returned field to camera transform is a transform from the fixed field origin to the camera's coordinate system. This does not change based on alliance color, and by convention is on the BLUE ALLIANCE wall.

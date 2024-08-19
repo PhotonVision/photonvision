@@ -24,7 +24,7 @@ First, in the main `Robot` source file, we add support to periodically update a 
 ```{eval-rst}
 .. tab-set-code::
 
-    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/Robot.java
+    .. rli:: https://github.com/PhotonVision/photonvision/blob/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/Robot.java
       :language: java
       :lines: 118-128
       :linenos:
@@ -42,7 +42,7 @@ First, we create a new `SimVisionSystem` to represent our camera and coprocessor
 ```{eval-rst}
 .. tab-set-code::
 
-    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/sim/DrivetrainSim.java
+    .. rli:: https://github.com/PhotonVision/photonvision/blob/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/sim/DrivetrainSim.java
       :language: java
       :lines: 73-93
       :linenos:
@@ -54,7 +54,7 @@ Next, we create objects to represent the physical location and size of the visio
 ```{eval-rst}
 .. tab-set-code::
 
-    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/sim/DrivetrainSim.java
+    .. rli:: https://github.com/PhotonVision/photonvision/blob/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/sim/DrivetrainSim.java
       :language: java
       :lines: 95-111
       :linenos:
@@ -66,7 +66,7 @@ Finally, we add our target to the simulated vision system.
 ```{eval-rst}
 .. tab-set-code::
 
-    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/sim/DrivetrainSim.java
+    .. rli:: https://github.com/PhotonVision/photonvision/blob/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/sim/DrivetrainSim.java
       :language: java
       :lines: 116-117
       :linenos:
@@ -83,7 +83,7 @@ Once we have all the properties of our simulated vision system defined, the work
 ```{eval-rst}
 .. tab-set-code::
 
-    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/sim/DrivetrainSim.java
+    .. rli:: https://github.com/PhotonVision/photonvision/blob/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/sim/DrivetrainSim.java
       :language: java
       :lines: 124-142
       :linenos:

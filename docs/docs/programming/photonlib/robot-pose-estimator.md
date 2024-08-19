@@ -84,7 +84,7 @@ Calling `update()` on your `PhotonPoseEstimator` will return an `EstimatedRobotP
 
 ```{eval-rst}
 .. tab-set-code::
-   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/357d8a518a93f7a1f8084a79449249e613b605a7/photonlib-java-examples/apriltagExample/src/main/java/frc/robot/PhotonCameraWrapper.java
+   .. rli:: https://github.com/PhotonVision/photonvision/blob/357d8a518a93f7a1f8084a79449249e613b605a7/photonlib-java-examples/apriltagExample/src/main/java/frc/robot/PhotonCameraWrapper.java
       :language: java
       :lines: 85-88
 

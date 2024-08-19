@@ -1,3 +1,6 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Camera Troubleshooting
 
 ## Pi Cameras
@@ -33,76 +36,75 @@ On Linux devices (including Raspberry Pi), PhotonVision uses WPILib's CSCore to 
 
 We expect an output similar to the following. For picameras, note the "unicam" entry with path `platform:3f801000.csi` (if we don't see this, that's bad), and a huge list of valid video formats. USB cameras should show up similarly in the output of these commands.
 
-```{eval-rst}
-.. tab-set::
-  .. tab-item:: Working
+<Tabs>
+<TabItem value="Working" label="Working">
+```shell
+pi@photonvision:~ $ v4l2-ctl --list-devices
+unicam (platform:3f801000.csi):
+    /dev/video0
+    /dev/media3
 
-        .. code-block::
+bcm2835-codec-decode (platform:bcm2835-codec):
+/dev/video10
+/dev/video11
+/dev/video12
+/dev/video18
+/dev/video31
+/dev/media2
 
-            pi@photonvision:~ $ v4l2-ctl --list-devices
-            unicam (platform:3f801000.csi):
-                /dev/video0
-                /dev/media3
+bcm2835-isp (platform:bcm2835-isp):
+/dev/video13
+/dev/video14
+/dev/video15
+/dev/video16
+/dev/video20
+/dev/video21
+/dev/video22
+/dev/video23
+/dev/media0
+/dev/media1
 
-            bcm2835-codec-decode (platform:bcm2835-codec):
-                /dev/video10
-                /dev/video11
-                /dev/video12
-                /dev/video18
-                /dev/video31
-                /dev/media2
+pi@photonvision:~ $ v4l2-ctl --list-formats
+ioctl: VIDIOC_ENUM_FMT
+Type: Video Capture
 
-            bcm2835-isp (platform:bcm2835-isp):
-                /dev/video13
-                /dev/video14
-                /dev/video15
-                /dev/video16
-                /dev/video20
-                /dev/video21
-                /dev/video22
-                /dev/video23
-                /dev/media0
-                /dev/media1
+[0]: 'YUYV' "YUYV 4:2:2"
+[1]: 'UYVY' "UYVY 4:2:2"
+[2]: 'YVYU' "YVYU 4:2:2"
+[3]: 'VYUY' "VYUY 4:2:2"
 
-            pi@photonvision:~ $ v4l2-ctl --list-formats
-            ioctl: VIDIOC_ENUM_FMT
-            Type: Video Capture
-
-            [0]: 'YUYV' (YUYV 4:2:2)
-            [1]: 'UYVY' (UYVY 4:2:2)
-            [2]: 'YVYU' (YVYU 4:2:2)
-            [3]: 'VYUY' (VYUY 4:2:2)
-            <snip>
-            [42]: 'Y12P' (12-bit Greyscale (MIPI Packed))
-            [43]: 'Y12 ' (12-bit Greyscale)
-            [44]: 'Y14P' (14-bit Greyscale (MIPI Packed))
-            [45]: 'Y14 ' (14-bit Greyscale)
-
-  .. tab-item:: Not Working
-
-        .. code-block::
-
-            pi@photonvision:~ $ v4l2-ctl --list-devices
-            bcm2835-codec-decode (platform:bcm2835-codec):
-                /dev/video10
-                /dev/video11
-                /dev/video12
-                /dev/video18
-                /dev/video31
-                /dev/media3
-             bcm2835-isp (platform:bcm2835-isp):
-                /dev/video13
-                /dev/video14
-                /dev/video15
-                /dev/video16
-                /dev/video20
-                /dev/video21
-                /dev/video22
-                /dev/video23
-                /dev/media0
-                /dev/media1
-            rpivid (platform:rpivid):
-                /dev/video19
-                /dev/media2
-            Cannot open device /dev/video0, exiting.
+<snip>
+[42]: 'Y12P' (12-bit Greyscale (MIPI Packed))
+[43]: 'Y12 ' (12-bit Greyscale)
+[44]: 'Y14P' (14-bit Greyscale (MIPI Packed))
+[45]: 'Y14 ' (14-bit Greyscale)
 ```
+</TabItem>
+<TabItem value="Not Working" label="Not Working">
+```shell
+pi@photonvision:~ $ v4l2-ctl --list-devices
+bcm2835-codec-decode (platform:bcm2835-codec):
+    /dev/video10
+    /dev/video11
+    /dev/video12
+    /dev/video18
+    /dev/video31
+    /dev/media3
+    bcm2835-isp (platform:bcm2835-isp):
+    /dev/video13
+    /dev/video14
+    /dev/video15
+    /dev/video16
+    /dev/video20
+    /dev/video21
+    /dev/video22
+    /dev/video23
+    /dev/media0
+    /dev/media1
+rpivid (platform:rpivid):
+    /dev/video19
+    /dev/media2
+Cannot open device /dev/video0, exiting.
+```
+</TabItem>
+</Tabs>

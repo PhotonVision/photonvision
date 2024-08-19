@@ -1,6 +1,6 @@
 # Simulation Support in PhotonLib (Deprecated)
 
-:::{attention}
+:::attention
 This page details the pre-2024 simulation support. For current Java simulation support, see {doc}`/docs/simulation/simulation`.
 :::
 
@@ -43,7 +43,7 @@ It requires a number of pieces of configuration to accurately simulate your phys
 ```{eval-rst}
 .. tab-set-code::
 
-   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/80e16ece87c735e30755dea271a56a2ce217b588/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/sim/DrivetrainSim.java
+   .. rli:: https://github.com/PhotonVision/photonvision/blob/80e16ece87c735e30755dea271a56a2ce217b588/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/sim/DrivetrainSim.java
       :language: java
       :lines: 73-93
 ```
@@ -53,7 +53,7 @@ After declaring the system, you should create and add one `SimVisionTarget` per 
 ```{eval-rst}
 .. tab-set-code::
 
-   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/80e16ece87c735e30755dea271a56a2ce217b588/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/sim/DrivetrainSim.java
+   .. rli:: https://github.com/PhotonVision/photonvision/blob/80e16ece87c735e30755dea271a56a2ce217b588/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/sim/DrivetrainSim.java
       :language: java
       :lines: 95-111
 ```
@@ -63,7 +63,7 @@ Finally, while running the simulation, process simulated camera frames by provid
 ```{eval-rst}
 .. tab-set-code::
 
-   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/80e16ece87c735e30755dea271a56a2ce217b588/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/sim/DrivetrainSim.java
+   .. rli:: https://github.com/PhotonVision/photonvision/blob/80e16ece87c735e30755dea271a56a2ce217b588/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/sim/DrivetrainSim.java
       :language: java
       :lines: 138-139
 ```

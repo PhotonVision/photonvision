@@ -1,6 +1,6 @@
 # Simulation Support in PhotonLib
 
-:::{attention}
+:::attention
 This page details the current simulation support for Java. For other languages, see {doc}`/docs/simulation/simulation-deprecated`.
 :::
 
@@ -36,10 +36,7 @@ Simulation does NOT include the following:
 
 This scope was chosen to balance fidelity of the simulation with the ease of setup, in a way that would best benefit most teams.
 
-```{image} diagrams/SimArchitecture.drawio.svg
-:alt: A diagram comparing the architecture of a real PhotonVision process to a simulated
-:  one.
-```
+![A diagram comparing the architecture of a real PhotonVision process to a simulated one.](diagrams/SimArchitecture.drawio.svg)
 
 ## Drivetrain Simulation Prerequisite
 
@@ -68,14 +65,16 @@ PhotonLib will use this label to put a `Field2d` widget on NetworkTables at `/Vi
 
 Vision targets require a `TargetModel`, which describes the shape of the target. For AprilTags, PhotonLib provides `TargetModel.kAprilTag16h5` for the tags used in 2023, and `TargetModel.kAprilTag36h11` for the tags used starting in 2024. For other target shapes, convenience constructors exist for spheres, cuboids, and planar rectangles. For example, a planar rectangle can be created with:
 
-```{eval-rst}
-.. tab-set-code::
+<Tabs groupId="lang">
+<TabItem value="java" label="Java">
 
-   .. code-block:: java
-
-      // A 0.5 x 0.25 meter rectangular target
-      TargetModel targetModel = new TargetModel(0.5, 0.25);
+```java
+// A 0.5 x 0.25 meter rectangular target
+TargetModel targetModel = new TargetModel(0.5, 0.25);
 ```
+
+</TabItem>
+</Tabs>
 
 These `TargetModel` are paired with a target pose to create a `VisionTargetSim`. A `VisionTargetSim` is added to the `VisionSystemSim` to become visible to all of its cameras.
 

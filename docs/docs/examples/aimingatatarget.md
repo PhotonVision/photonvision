@@ -1,3 +1,6 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Aiming at a Target
 
 The following example is from the PhotonLib example repository ([Java](https://github.com/PhotonVision/photonvision/tree/master/photonlib-java-examples/aimattarget)/[C++](https://github.com/PhotonVision/photonvision/tree/master/photonlib-cpp-examples/aimattarget)).
@@ -16,30 +19,22 @@ For this simple example, only yaw is needed.
 
 In this example, while the operator holds a button down, the robot will turn towards the goal using the P term of a PID loop. To learn more about how PID loops work, how WPILib implements them, and more, visit [Advanced Controls (PID)](https://docs.wpilib.org/en/stable/docs/software/advanced-control/introduction/index.html) and [PID Control in WPILib](https://docs.wpilib.org/en/stable/docs/software/advanced-controls/controllers/pidcontroller.html#pid-control-in-wpilib).
 
-```{eval-rst}
-.. tab-set::
-
-    .. tab-item:: Java
-
-       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-java-examples/aimattarget/src/main/java/frc/robot/Robot.java
-         :language: java
-         :lines: 41-98
-         :linenos:
-         :lineno-start: 41
-
-    .. tab-item:: C++ (Header)
-
-       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-cpp-examples/aimattarget/src/main/include/Robot.h
-         :language: c++
-         :lines: 27-53
-         :linenos:
-         :lineno-start: 27
-
-    .. tab-item:: C++ (Source)
-
-       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-cpp-examples/aimattarget/src/main/cpp/Robot.cpp
-         :language: c++
-         :lines: 25-52
-         :linenos:
-         :lineno-start: 25
+<Tabs groupId="lang">
+  <TabItem value="java" label="Java">
+```java reference
+https://github.com/PhotonVision/photonvision/blob/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-java-examples/aimattarget/src/main/java/frc/robot/Robot.java#L41-L98
 ```
+  </TabItem>
+  <TabItem value="cpp" label="C++ (Header)">
+```cpp reference
+https://github.com/PhotonVision/photonvision/blob/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-cpp-examples/aimattarget/src/main/include/Robot.h#L27-L53
+```
+  </TabItem>
+  <TabItem value="cpp-src" label="C++ (Source)">
+```cpp reference
+https://github.com/PhotonVision/photonvision/blob/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-cpp-examples/aimattarget/src/main/cpp/Robot.cpp#L25-L52
+```
+  </TabItem>
+</Tabs>
+
+

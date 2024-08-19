@@ -1,3 +1,6 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Getting in Range of the Target
 
 The following example is from the PhotonLib example repository ([Java](https://github.com/PhotonVision/photonvision/tree/master/photonlib-java-examples/getinrange)/[C++](https://github.com/PhotonVision/photonvision/tree/master/photonlib-cpp-examples/getinrange)).
@@ -25,34 +28,24 @@ The PhotonLib utility to calculate distance depends on the camera being at a dif
 There is no strict minimum delta-height necessary for this method to be applicable, just a requirement that a delta exists.
 :::
 
-```{eval-rst}
-.. tab-set::
-
-    .. tab-item:: Java
-
-       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-java-examples/getinrange/src/main/java/frc/robot/Robot.java
-         :language: java
-         :lines: 42-107
-         :linenos:
-         :lineno-start: 42
-
-    .. tab-item:: C++ (Header)
-
-       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-cpp-examples/getinrange/src/main/include/Robot.h
-         :language: c++
-         :lines: 27-67
-         :linenos:
-         :lineno-start: 27
-
-    .. tab-item:: C++ (Source)
-
-       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-cpp-examples/getinrange/src/main/cpp/Robot.cpp
-         :language: c++
-         :lines: 25-58
-         :linenos:
-         :lineno-start: 25
+<Tabs groupId="lang">
+  <TabItem value="java" label="Java">
+```java reference
+https://github.com/PhotonVision/photonvision/blob/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-java-examples/getinrange/src/main/java/frc/robot/Robot.java#L42-L107
 ```
+  </TabItem>
+  <TabItem value="cpp" label="C++ (Header)">
+```cpp reference
+https://github.com/PhotonVision/photonvision/blob/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-cpp-examples/getinrange/src/main/include/Robot.h#L27-L67
+```
+  </TabItem>
+  <TabItem value="cpp-src" label="C++ (Source)">
+```cpp reference
+https://github.com/PhotonVision/photonvision/blob/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-cpp-examples/getinrange/src/main/cpp/Robot.cpp#L25-L58
+```
+  </TabItem>
+</Tabs>
 
-:::{hint}
+:::hint
 The accuracy of the measurement of the camera's pitch (`CAMERA_PITCH_RADIANS` in the above example), as well as the camera's FOV, will determine the overall accuracy of this method.
 :::
