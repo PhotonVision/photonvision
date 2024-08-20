@@ -27,10 +27,24 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
+
 public class PathManager {
+    private static final Logger logger = new Logger(PathManager.class, LogGroup.Config);
+
     private static PathManager INSTANCE;
 
+    final Path configDirectoryPath;
     final File configDirectoryFile;
+
+    /**
+     * Change the root config folder. Must happen before ConfigManager's singleton loads.
+     * @param rootFolder
+     */
+    public static void setRootFolder(Path rootFolder) {
+        INSTANCE = new PathManager(rootFolder);
+    }
 
     public static PathManager getInstance() {
         if (INSTANCE == null) {
@@ -40,11 +54,17 @@ public class PathManager {
     }
 
     private PathManager() {
+        this(Path.of("photonvision_config"));
+    }
+
+    private PathManager(Path configDirPath) {
+        this.configDirectoryPath = configDirPath;
         this.configDirectoryFile = new File(getRootFolder().toUri());
+        logger.info("Started with root config directory " + configDirPath.toAbsolutePath().toString());
     }
 
     public Path getRootFolder() {
-        return Path.of("photonvision_config");
+        return configDirectoryPath;
     }
 
     public Path getLogsDir() {
