@@ -14,4 +14,4 @@ build:
     - cd docs/ && npm run build
     # Copy generated files into Read the Docs directory
     - mkdir --parents _readthedocs/html/
-    - cp --recursive docusaurus/build/* _readthedocs/html/
+    - cp --recursive docs/build/* _readthedocs/html/
