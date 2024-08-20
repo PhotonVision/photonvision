@@ -12,8 +12,8 @@ Due to the similarities in hardware, follow the \{ref}`Gloworm install instructi
 
 Download the hardwareConfig.json file for the version of your Limelight:
 
-- {download}`Limelight Version 2 <files/Limelight2/hardwareConfig.json>`.
-- {download}`Limelight Version 2+ <files/Limelight2+/hardwareConfig.json>`.
+- \{download}`Limelight Version 2 <files/Limelight2/hardwareConfig.json>`.
+- \{download}`Limelight Version 2+ <files/Limelight2+/hardwareConfig.json>`.
 
 :::note
 No hardware config is provided for the Limelight 3 as AprilTags do not require the LEDs (meaning nobody has reverse-engineered what I/O pins drive the LEDs) and the camera FOV is determined as part of calibration.

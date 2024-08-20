@@ -1,7 +1,7 @@
 # Simulation Support in PhotonLib
 
 :::attention
-This page details the current simulation support for Java. For other languages, see {doc}`/docs/simulation/simulation-deprecated`.
+This page details the current simulation support for Java. For other languages, see \{doc}`/docs/simulation/simulation-deprecated`.
 :::
 
 ## What Is Simulated?
