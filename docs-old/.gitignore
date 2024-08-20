@@ -1,0 +1,9 @@
+build/*
+.DS_Store
+.vscode/*
+.idea/*
+source/_build
+source/docs/_build
+
+venv/*
+.venv/*
