@@ -10,10 +10,7 @@ By default, PhotonVision attempts to make minimal assumptions of the hardware it
 
 For Raspberry-Pi based hardware, PhotonVision can use [PiGPIO](https://abyz.me.uk/rpi/pigpio/) to control IO pins. The mapping of which pins control which LED's is part of the hardware config. The pins are active-high: set high when LED's are commanded on, and set low when commanded off.
 
-```{eval-rst}
-.. tab-set-code::
-   .. code-block:: json
-
+```js
       {
         "ledPins" : [ 13 ],
         "ledSetCommand" : "",
@@ -37,11 +34,8 @@ For Non-Raspberry-Pi hardware, users must provide valid hardware-specific comman
 
 Leaving a command blank will disable the associated functionality.
 
-```{eval-rst}
-.. tab-set-code::
-   .. code-block::  json
-
-      {
+```js      
+{
         "cpuTempCommand" : "",
         "cpuMemoryCommand" : "",
         "cpuUtilCommand" : "",
@@ -49,7 +43,7 @@ Leaving a command blank will disable the associated functionality.
         "gpuTempCommand" : "",
         "ramUtilCommand" : "",
         "restartHardwareCommand" : "",
-      }
+}
 ```
 
 :::note
@@ -60,22 +54,17 @@ These settings have no effect if PhotonVision detects it is running on a Raspber
 
 If your hardware contains a camera with a known field of vision, it can be entered into the hardware configuration. This will prevent users from editing it in the GUI.
 
-```{eval-rst}
-.. tab-set-code::
-   .. code-block:: json
-
-      {
-        "vendorFOV" : 98.9
-      }
+```js
+{
+  "vendorFOV" : 98.9
+}
 ```
 
 ## Cosmetic & Branding
 
 To help differentiate your hardware from other solutions, some customization is allowed.
 
-```{eval-rst}
-.. tab-set-code::
-   .. code-block:: json
+```js
 
       {
         "deviceName" : "Super Cool Custom Hardware",
@@ -92,9 +81,7 @@ Not all configuration is currently presented in the User Interface. Additional f
 
 Here is a complete example `hardwareConfig.json`:
 
-```{eval-rst}
-.. tab-set-code::
-   .. code-block:: json
+```js
 
       {
         "deviceName" : "Blinky McBlinkface",

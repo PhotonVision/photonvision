@@ -1,3 +1,6 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Simulating Aiming and Getting in Range
 
 The following example comes from the PhotonLib example repository ([Java](https://github.com/PhotonVision/photonvision/tree/661f8b2c0495474015f6ea9a89d65f9788436a05/photonlib-java-examples/src/main/java/org/photonlib/examples/simaimandrange)/[C++](https://github.com/PhotonVision/photonvision/tree/661f8b2c0495474015f6ea9a89d65f9788436a05/photonlib-cpp-examples/src/main/cpp/examples/simaimandrange)). Full code is available at those links.
@@ -21,15 +24,14 @@ This example builds upon that, adding support for simulating robot motion and in
 
 First, in the main `Robot` source file, we add support to periodically update a new simulation-specific object. This logic only gets used while running in simulation:
 
-```{eval-rst}
-.. tab-set-code::
-
-    .. rli:: https://github.com/PhotonVision/photonvision/blob/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/Robot.java
-      :language: java
-      :lines: 118-128
-      :linenos:
-      :lineno-start: 118
+<Tabs groupId="lang">
+  <TabItem value="java" label="Java">
+```java reference
+https://github.com/PhotonVision/photonvision/blob/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/Robot.java#L118-L128
 ```
+</TabItem>
+</Tabs>
+
 
 Then, we add in the implementation of our new `DrivetrainSim` class. Please reference the [WPILib documentation on physics simulation](https://docs.wpilib.org/en/stable/docs/software/wpilib-tools/robot-simulation/physics-sim.html).
 
@@ -39,40 +41,34 @@ Simulated Vision support is added with the following steps:
 
 First, we create a new `SimVisionSystem` to represent our camera and coprocessor running PhotonVision.
 
-```{eval-rst}
-.. tab-set-code::
-
-    .. rli:: https://github.com/PhotonVision/photonvision/blob/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/sim/DrivetrainSim.java
-      :language: java
-      :lines: 73-93
-      :linenos:
-      :lineno-start: 72
+<Tabs groupId="lang">
+  <TabItem value="java" label="Java">
+```java reference
+https://github.com/PhotonVision/photonvision/blob/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/sim/DrivetrainSim.java#L73-L93
 ```
+</TabItem>
+</Tabs>
 
 Next, we create objects to represent the physical location and size of the vision targets we are calibrated to detect. This example models the down-field high goal vision target from the 2020 and 2021 games.
 
-```{eval-rst}
-.. tab-set-code::
-
-    .. rli:: https://github.com/PhotonVision/photonvision/blob/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/sim/DrivetrainSim.java
-      :language: java
-      :lines: 95-111
-      :linenos:
-      :lineno-start: 95
+<Tabs groupId="lang">
+  <TabItem value="java" label="Java">
+```java reference
+https://github.com/PhotonVision/photonvision/blob/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/sim/DrivetrainSim.java#L95-L111
 ```
+</TabItem>
+</Tabs>
+
 
 Finally, we add our target to the simulated vision system.
 
-```{eval-rst}
-.. tab-set-code::
-
-    .. rli:: https://github.com/PhotonVision/photonvision/blob/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/sim/DrivetrainSim.java
-      :language: java
-      :lines: 116-117
-      :linenos:
-      :lineno-start: 113
-
+<Tabs groupId="lang">
+  <TabItem value="java" label="Java">
+```java reference
+https://github.com/PhotonVision/photonvision/blob/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/sim/DrivetrainSim.java#L116-L117
 ```
+</TabItem>
+</Tabs>
 
 If you have additional targets you want to detect, you can add them in the same way as the first one.
 
@@ -80,15 +76,12 @@ If you have additional targets you want to detect, you can add them in the same 
 
 Once we have all the properties of our simulated vision system defined, the work to do at runtime becomes very minimal. Simply pass in the robot's pose periodically to the simulated vision system.
 
-```{eval-rst}
-.. tab-set-code::
-
-    .. rli:: https://github.com/PhotonVision/photonvision/blob/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/sim/DrivetrainSim.java
-      :language: java
-      :lines: 124-142
-      :linenos:
-      :lineno-start: 122
-
+<Tabs groupId="lang">
+  <TabItem value="java" label="Java">
+```java reference
+https://github.com/PhotonVision/photonvision/blob/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/sim/DrivetrainSim.java#124-142
 ```
+</TabItem>
+</Tabs>
 
 The rest is done behind the scenes.

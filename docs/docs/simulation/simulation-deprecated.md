@@ -1,3 +1,6 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Simulation Support in PhotonLib (Deprecated)
 
 :::attention
@@ -29,10 +32,7 @@ Not all network tables objects are updated in simulation. The interaction throug
 
 Latency of processing is not yet modeled.
 
-```{image} diagrams/SimArchitecture-deprecated.drawio.svg
-:alt: A diagram comparing the architecture of a real PhotonVision process to a simulated
-:  one.
-```
+![A diagram comparing the architecture of a real PhotonVision process to a simulated one.](diagrams/SimArchitecture-deprecated.drawio.svg)
 
 ## Simulated Vision System
 
@@ -40,33 +40,35 @@ A `SimVisionSystem` represents the camera and coprocessor running PhotonVision m
 
 It requires a number of pieces of configuration to accurately simulate your physical setup. Match them to your configuration in PhotonVision, and to your robot's physical dimensions.
 
-```{eval-rst}
-.. tab-set-code::
-
-   .. rli:: https://github.com/PhotonVision/photonvision/blob/80e16ece87c735e30755dea271a56a2ce217b588/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/sim/DrivetrainSim.java
-      :language: java
-      :lines: 73-93
+<Tabs groupId="lang">
+  <TabItem value="java" label="Java">
+```java reference
+https://github.com/PhotonVision/photonvision/blob/80e16ece87c735e30755dea271a56a2ce217b588/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/sim/DrivetrainSim.java#L73-L93
 ```
+</TabItem>
+</Tabs>
+
 
 After declaring the system, you should create and add one `SimVisionTarget` per target you are attempting to detect.
 
-```{eval-rst}
-.. tab-set-code::
-
-   .. rli:: https://github.com/PhotonVision/photonvision/blob/80e16ece87c735e30755dea271a56a2ce217b588/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/sim/DrivetrainSim.java
-      :language: java
-      :lines: 95-111
+<Tabs groupId="lang">
+  <TabItem value="java" label="Java">
+```java reference
+https://github.com/PhotonVision/photonvision/blob/80e16ece87c735e30755dea271a56a2ce217b588/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/sim/DrivetrainSim.java#L95-L111
 ```
+</TabItem>
+</Tabs>
+
 
 Finally, while running the simulation, process simulated camera frames by providing the robot's pose to the system.
 
-```{eval-rst}
-.. tab-set-code::
-
-   .. rli:: https://github.com/PhotonVision/photonvision/blob/80e16ece87c735e30755dea271a56a2ce217b588/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/sim/DrivetrainSim.java
-      :language: java
-      :lines: 138-139
+<Tabs groupId="lang">
+  <TabItem value="java" label="Java">
+```java reference
+https://github.com/PhotonVision/photonvision/blob/80e16ece87c735e30755dea271a56a2ce217b588/photonlib-java-examples/simaimandrange/src/main/java/frc/robot/sim/DrivetrainSim.java#L138-L139
 ```
+</TabItem>
+</Tabs>
 
 This will cause most NetworkTables fields to update properly, representing any targets that are in view of the robot.
 
@@ -78,26 +80,26 @@ Users may wish to directly provide target information based on an existing detai
 
 A `SimPhotonCamera` can be created for this purpose. It provides an interface where the user can supply target data via a list of `PhotonTrackedTarget` objects.
 
-```{eval-rst}
-.. tab-set-code::
+<Tabs groupId="lang">
+  <TabItem value="java" label="Java">
+```java
+@Override
+public void simulationInit() {
+      //  ...
+      cam = new SimPhotonCamera("MyCamera");
+      //  ...
+}
 
-   .. code-block:: java
-
-      @Override
-      public void simulationInit() {
-          //  ...
-          cam = new SimPhotonCamera("MyCamera");
-          //  ...
-      }
-
-      @Override
-      public void simulationPeriodic() {
-          //  ...
-          ArrayList<PhotonTrackedTarget> visibleTgtList = new ArrayList<PhotonTrackedTarget>();
-          visibleTgtList.add(new PhotonTrackedTarget(yawDegrees, pitchDegrees, area, skew, camToTargetTrans)); // Repeat for each target that you see
-          cam.submitProcessedFrame(0.0, visibleTgtList);
-          //  ...
-      }
+@Override
+public void simulationPeriodic() {
+      //  ...
+      ArrayList<PhotonTrackedTarget> visibleTgtList = new ArrayList<PhotonTrackedTarget>();
+      visibleTgtList.add(new PhotonTrackedTarget(yawDegrees, pitchDegrees, area, skew, camToTargetTrans)); // Repeat for each target that you see
+      cam.submitProcessedFrame(0.0, visibleTgtList);
+      //  ...
+}
 ```
+</TabItem>
+</Tabs>
 
 Note that while there is less code and configuration required to get basic data into the simulation, this approach will cause the user to need to implement much more code on their end to calculate the relative positions of the robot and target. If you already have this, the raw interface may be helpful. However, if you don't, you'll likely want to be looking at the Simulated Vision System first.
