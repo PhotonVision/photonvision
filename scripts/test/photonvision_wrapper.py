@@ -1,3 +1,4 @@
+import contextlib
 import os
 from pathlib import Path
 import subprocess
@@ -7,7 +8,8 @@ from typing import Union
 import shutil
 
 
-def start_photon(
+@contextlib.contextmanager
+def photonvision_wrapper(
     jar_path: Union[str, os.PathLike],
     golden_config_sqlite: Union[str, os.PathLike, None] = None,
     java_exe="java",
@@ -33,22 +35,34 @@ def start_photon(
 
     print("Config copied! starting photon in test mode")
 
-    p = subprocess.Popen(
-        [java_exe, "-jar", jar_path, "-n", "--test-mode", "--config-dir", config_dir]
+    process = subprocess.Popen(
+        [
+            java_exe,
+            "-jar",
+            jar_path,
+            "-n",
+            "--test-mode",
+            "--config-dir",
+            config_dir,
+        ]
     )
 
-    # TODO: replace this with a real check to spin up photonlib or something
-    sleep(10)
+    try:
+        yield
+    finally:
+        print("Killing photon")
 
-    print("Killing photon")
-
-    p.terminate()
-    ret = p.wait()
-    print(ret)
+        process.terminate()
+        ret = process.wait()
+        print(ret)
 
 
-if __name__ == "__main__":
-    start_photon(
-        "./photon-server/build/libs/photonvision-dev-v2024.3.0-70-gf20e10fc-linuxx64.jar",
-        "photon.sqlite",
-    )
+# if __name__ == "__main__":
+#     with photonvision_wrapper(
+#         "./photon-server/build/libs/photonvision-dev-v2024.3.0-58-g30191e46-winx64.jar",
+#         "photon.sqlite",
+#         java_exe="C:\\Users\\Public\\wpilib\\2024\\jdk\\bin\\java.exe",
+#     ):
+#         print("hi!")
+#         sleep(1)
+#         print("bye!")
