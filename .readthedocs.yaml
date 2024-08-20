@@ -9,9 +9,9 @@ build:
     # npx create-docusaurus@latest docs classic
     #
     # Install Docusaurus dependencies
-    - cd docusaurus/ && npm install
+    - cd docs/ && npm install
     # Build the site
-    - cd docusaurus/ && npm run build
+    - cd docs/ && npm run build
     # Copy generated files into Read the Docs directory
     - mkdir --parents _readthedocs/html/
     - cp --recursive docusaurus/build/* _readthedocs/html/
