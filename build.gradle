@@ -33,7 +33,7 @@ ext {
     openCVversion = "4.8.0-2"
     joglVersion = "2.4.0"
     javalinVersion = "5.6.2"
-    libcameraDriverVersion = "dev-v2023.1.0-14-ge97f8dd"
+    libcameraDriverVersion = "dev-v2023.1.0-14-g787ab59"
     rknnVersion = "dev-v2024.0.1-4-g0db16ac"
     frcYear = "2024"
     mrcalVersion = "dev-v2024.0.0-24-gc1efcf0";
