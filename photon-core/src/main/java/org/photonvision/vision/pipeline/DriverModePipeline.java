@@ -54,11 +54,6 @@ public class DriverModePipeline
 
         resizeImagePipe.setParams(
                 new ResizeImagePipe.ResizeImageParams(settings.streamingFrameDivisor));
-
-        // if (LibCameraJNI.isSupported() && cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-        // LibCameraJNI.setRotation(settings.inputImageRotationMode.value);
-        // LibCameraJNI.setShouldCopyColor(true);
-        // }
     }
 
     @Override
