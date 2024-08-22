@@ -45,9 +45,7 @@ model {
                 it.tasks.withType(CppCompile) {
                     it.dependsOn generateProto
                 }
-                if(project.hasProperty('includePhotonTargeting')) {
-                    lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
-                }
+                lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
             }
 
             nativeUtils.useRequiredLibrary(it, "wpilib_shared")
@@ -81,9 +79,40 @@ model {
                 it.tasks.withType(CppCompile) {
                     it.dependsOn generateProto
                 }
-                if(project.hasProperty('includePhotonTargeting')) {
-                    lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
+                lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
+            }
+
+            nativeUtils.useRequiredLibrary(it, "cscore_shared")
+            nativeUtils.useRequiredLibrary(it, "cameraserver_shared")
+            nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared")
+            nativeUtils.useRequiredLibrary(it, "googletest_static")
+            nativeUtils.useRequiredLibrary(it, "apriltag_shared")
+            nativeUtils.useRequiredLibrary(it, "opencv_shared")
+        }
+        "${nativeName}IntegrationTest"(GoogleTestTestSuiteSpec) {
+            for(NativeComponentSpec c : $.components) {
+                if (c.name == nativeName) {
+                    testing c
+                    break
                 }
+            }
+            sources {
+                cpp {
+                    source {
+                        srcDirs 'src/integration/native/cpp'
+                        include '**/*.cpp'
+                    }
+                    exportedHeaders {
+                        srcDirs 'src/integration/native/include', "$buildDir/generated/source/proto/main/cpp"
+                    }
+                }
+            }
+
+            binaries.all {
+                it.tasks.withType(CppCompile) {
+                    it.dependsOn generateProto
+                }
+                lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
             }
 
             nativeUtils.useRequiredLibrary(it, "cscore_shared")

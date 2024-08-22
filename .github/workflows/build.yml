@@ -71,6 +71,33 @@ jobs:
           chmod +x gradlew
           ./gradlew copyPhotonlib -x check
           ./gradlew build -x check
+  run-sim-integration-tests:
+    name: "Run sim integration tests"
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fetch tags
+        run: git fetch --tags --force
+      - name: Install Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+      - name: Build photonlib-c++ tests
+        run: |
+          chmod +x gradlew
+          ./gradlew photon-lib:installPhotonlibIntegrationTestLinuxx86-64DebugGoogleTestExe
+      - name: Build photon shadowjar
+        run: |
+          chmod +x gradlew
+          ./gradlew shadowjar -x check
+      - name: Run pytest
+        working-directory: scripts/test
+        run: |
+          pytest -s
   build-gradle:
     name: "Gradle Build"
     runs-on: ubuntu-22.04

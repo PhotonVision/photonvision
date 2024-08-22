@@ -7,6 +7,22 @@ from time import sleep
 from typing import Union
 import shutil
 
+from distutils.dir_util import copy_tree
+
+@contextlib.contextmanager
+def test_resources_wrapper():
+    print("Copying test-resources folder over (ew ew ew)")
+    copy_tree("..\\..\\test-resources", "test-resources")
+
+    try:
+        yield
+    finally:
+        print("Not deleting files (too lazy to implement cleaning these up)")
+
+
+        
+
+
 
 @contextlib.contextmanager
 def photonvision_wrapper(
@@ -26,7 +42,7 @@ def photonvision_wrapper(
     jar_path = os.path.abspath(jar_path)
 
     config_dir = tempfile.mkdtemp()
-    print(config_dir)
+    print(f"Running from config_dir {config_dir}")
 
     if golden_config_sqlite is not None:
         golden_config_sqlite = os.path.abspath(golden_config_sqlite)
