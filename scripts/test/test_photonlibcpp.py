@@ -16,11 +16,17 @@ def test_photonlibpy():
         golden_config_sqlite=os.path.abspath("photon_nt_servermode.sqlite"),
         # java_exe="C:\\Users\\Public\\wpilib\\2024\\jdk\\bin\\java.exe",
     ), test_resources_wrapper():
-        # assumes we have already installed the test binary via gradle via 
+        # assumes we have already installed the test binary via gradle via
         # checkPhotonlibIntegrationTestWindowsx86-64DebugGoogleTestExe
         ret = subprocess.run(
             # todo: need a cross-platform way to do this, screm
-            ["cd", "../../", "&&", ".\\gradlew", 'checkPhotonlibIntegrationTestLinuxx86-64DebugGoogleTestExe'],
+            [
+                "cd",
+                "../../",
+                "&&",
+                ".\\gradlew",
+                "checkPhotonlibIntegrationTestLinuxx86-64DebugGoogleTestExe",
+            ],
             shell=True,
         )
         print(ret)

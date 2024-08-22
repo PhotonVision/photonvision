@@ -26,7 +26,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.Date;
-
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
@@ -40,6 +39,7 @@ public class PathManager {
 
     /**
      * Change the root config folder. Must happen before ConfigManager's singleton loads.
+     *
      * @param rootFolder
      */
     public static void setRootFolder(Path rootFolder) {

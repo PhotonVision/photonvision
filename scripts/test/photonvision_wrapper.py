@@ -9,6 +9,7 @@ import shutil
 
 from distutils.dir_util import copy_tree
 
+
 @contextlib.contextmanager
 def test_resources_wrapper():
     print("Copying test-resources folder over (ew ew ew)")
@@ -18,10 +19,6 @@ def test_resources_wrapper():
         yield
     finally:
         print("Not deleting files (too lazy to implement cleaning these up)")
-
-
-        
-
 
 
 @contextlib.contextmanager
