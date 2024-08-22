@@ -19,8 +19,8 @@ def test_photonlibpy():
         # assumes we have already installed the test binary via gradle via 
         # checkPhotonlibIntegrationTestWindowsx86-64DebugGoogleTestExe
         ret = subprocess.run(
-            [os.path.abspath("..\\..\\photon-lib\\build\\install\\photonlibIntegrationTest\\linuxx86-64\\debug\\photonlibIntegrationTest.bat")],
-            cwd=os.path.abspath("..\\..\\"),
+            # todo: need a cross-platform way to do this, screm
+            ["cd", "../../", "&&", ".\\gradlew", 'checkPhotonlibIntegrationTestLinuxx86-64DebugGoogleTestExe'],
             shell=True,
         )
         print(ret)
