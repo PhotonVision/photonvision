@@ -51,5 +51,5 @@ TEST(PhotonCameraTest, ListenToTestMode) {
 
   // we should have gotten a handful of messages by now
   fmt::println("got {} new results", total);
-  EXPECT_GT(total, 20);
+  EXPECT_GT(total, 20U);
 }
