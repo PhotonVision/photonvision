@@ -42,7 +42,11 @@ public abstract class VisionSourceSettables {
         return configuration;
     }
 
-    public abstract void setExposure(double exposure);
+    public abstract void setExposureRaw(double exposureRaw);
+
+    public abstract double getMinExposureRaw();
+
+    public abstract double getMaxExposureRaw();
 
     public abstract void setAutoExposure(boolean cameraAutoExposure);
 

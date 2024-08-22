@@ -18,33 +18,84 @@
 package org.photonvision.common.networktables;
 
 import edu.wpi.first.networktables.RawSubscriber;
+import java.util.ArrayList;
+import java.util.List;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.dataflow.structures.PacketSerde;
 
 public class PacketSubscriber<T> implements AutoCloseable {
+    public static class PacketResult<U> {
+        public final U value;
+        public final long timestamp;
+
+        public PacketResult(U value, long timestamp) {
+            this.value = value;
+            this.timestamp = timestamp;
+        }
+
+        public PacketResult() {
+            this(null, 0);
+        }
+    }
+
     public final RawSubscriber subscriber;
     private final PacketSerde<T> serde;
-    private final T defaultValue;
 
     private final Packet packet = new Packet(1);
 
-    public PacketSubscriber(RawSubscriber subscriber, PacketSerde<T> serde, T defaultValue) {
+    /**
+     * Create a PacketSubscriber
+     *
+     * @param subscriber NT subscriber. Set pollStorage to 1 to make get() faster
+     * @param serde How we convert raw to actual things
+     */
+    public PacketSubscriber(RawSubscriber subscriber, PacketSerde<T> serde) {
         this.subscriber = subscriber;
         this.serde = serde;
-        this.defaultValue = defaultValue;
     }
 
-    public T get() {
+    /** Parse one chunk of timestamped data into T */
+    private PacketResult<T> parse(byte[] data, long timestamp) {
         packet.clear();
+        packet.setData(data);
+        if (packet.getSize() < 1) {
+            return new PacketResult<T>();
+        }
 
-        packet.setData(subscriber.get(new byte[] {}));
-        if (packet.getSize() < 1) return defaultValue;
+        return new PacketResult<>(serde.unpack(packet), timestamp);
+    }
 
-        return serde.unpack(packet);
+    /**
+     * Get the latest value sent over NT. If the value has never been set, returns the provided
+     * default
+     */
+    public PacketResult<T> get() {
+        // Get /all/ changes since last call to readQueue
+        var data = subscriber.getAtomic();
+
+        // Topic has never been published to?
+        if (data.timestamp == 0) {
+            return new PacketResult<>();
+        }
+
+        return parse(data.value, data.timestamp);
     }
 
     @Override
     public void close() {
         subscriber.close();
+    }
+
+    public List<PacketResult<T>> getAllChanges() {
+        List<PacketResult<T>> ret = new ArrayList<>();
+
+        // Get /all/ changes since last call to readQueue
+        var changes = subscriber.readQueue();
+
+        for (var change : changes) {
+            ret.add(parse(change.value, change.timestamp));
+        }
+
+        return ret;
     }
 }

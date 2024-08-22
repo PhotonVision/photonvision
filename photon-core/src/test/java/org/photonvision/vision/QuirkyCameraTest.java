@@ -29,24 +29,13 @@ public class QuirkyCameraTest {
         HashMap<CameraQuirk, Boolean> ps3EyeQuirks = new HashMap<>();
         ps3EyeQuirks.put(CameraQuirk.Gain, true);
         ps3EyeQuirks.put(CameraQuirk.FPSCap100, true);
+        ps3EyeQuirks.put(CameraQuirk.PsEyeControls, true);
         for (var q : CameraQuirk.values()) {
             ps3EyeQuirks.putIfAbsent(q, false);
         }
 
-        QuirkyCamera psEye = QuirkyCamera.getQuirkyCamera(0x2000, 0x1415);
+        QuirkyCamera psEye = QuirkyCamera.getQuirkyCamera(0x1415, 0x2000);
         Assertions.assertEquals(psEye.quirks, ps3EyeQuirks);
-    }
-
-    @Test
-    public void picamTest() {
-        HashMap<CameraQuirk, Boolean> picamQuirks = new HashMap<>();
-        picamQuirks.put(CameraQuirk.PiCam, true);
-        for (var q : CameraQuirk.values()) {
-            picamQuirks.putIfAbsent(q, false);
-        }
-
-        QuirkyCamera picam = QuirkyCamera.getQuirkyCamera(-1, -1, "mmal service 16.1");
-        Assertions.assertEquals(picam.quirks, picamQuirks);
     }
 
     @Test

@@ -68,12 +68,6 @@ remotes {
         password = 'raspberry'
         knownHosts = allowAnyHosts
     }
-    gloworm {
-        host = 'gloworm.local'
-        user = 'pi'
-        password = 'raspberry'
-        knownHosts = allowAnyHosts
-    }
 }
 
 task findDeployTarget {
