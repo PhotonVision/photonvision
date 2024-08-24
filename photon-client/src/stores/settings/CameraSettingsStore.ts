@@ -78,7 +78,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
   },
   actions: {
     updateCameraSettingsFromWebsocket(data: WebsocketCameraSettingsUpdate[]) {
-      this.cameras = data.map<CameraSettings>((d) => ({
+      const configuredCameras = data.map<CameraSettings>((d) => ({
         nickname: d.nickname,
         uniqueName: d.uniqueName,
         fov: {
@@ -115,6 +115,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         pipelineSettings: d.currentPipelineSettings,
         cameraQuirks: d.cameraQuirks
       }));
+      this.cameras = configuredCameras.length > 0 ? configuredCameras : [PlaceholderCameraSettings];
     },
     /**
      * Update the configurable camera settings.
