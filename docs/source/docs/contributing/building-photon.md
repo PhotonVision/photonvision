@@ -12,7 +12,7 @@ This section contains the build instructions from the source code available at [
 
 **Node JS:**
 
- The UI is written in Node JS. To compile the UI, Node 14.18.0 to Node 16.0.0 is required. To install Node JS follow the instructions for your platform [on the official Node JS website](https://nodejs.org/en/download/).  However, modify this line
+ The UI is written in Node JS. To compile the UI, Node 18.20.4 to Node 20.0.0 is required. To install Node JS follow the instructions for your platform [on the official Node JS website](https://nodejs.org/en/download/).  However, modify this line
 
 ```bash
 nvm install 20
@@ -21,7 +21,7 @@ nvm install 20
 so that it instead reads
 
 ```javascript
-nvm install 14.18.0
+nvm install 18.20.4
 ```
 
 ## Compiling Instructions
