@@ -119,9 +119,9 @@ class PhotonPipelineResult {
   bool HasTargets() const { return targets.size() > 0; }
 
   /**
-   * Returns a reference to the vector of targets.
+   * Returns a copy of the vector of targets.
    * <p> Returned in the order set by target sort mode. </p>
-   * @return A reference to the vector of targets.
+   * @return A copy of the vector of targets.
    */
   const std::span<const PhotonTrackedTarget> GetTargets() const {
     return targets;
