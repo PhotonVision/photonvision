@@ -179,7 +179,8 @@ public class PhotonPipelineResult implements ProtobufSerializable {
 
     /**
      * Returns a copy of the vector of targets.
-     * <p> Returned in the order set by target sort mode. </p>
+     *
+     * <p>Returned in the order set by target sort mode.
      *
      * @return A copy of the vector of targets.
      */
