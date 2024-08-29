@@ -120,6 +120,7 @@ class PhotonPipelineResult {
 
   /**
    * Returns a reference to the vector of targets.
+   * <p> Returned in the order set by target sort mode. </p>
    * @return A reference to the vector of targets.
    */
   const std::span<const PhotonTrackedTarget> GetTargets() const {
