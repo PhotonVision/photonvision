@@ -116,7 +116,7 @@ class PhotonCamera:
         retVal = PhotonPipelineResult()
         packetWithTimestamp = self._rawBytesEntry.getAtomic()
         byteList = packetWithTimestamp.value
-        timestamp = packetWithTimestamp.time
+        packetWithTimestamp.time
 
         if len(byteList) < 1:
             return retVal
