@@ -58,5 +58,14 @@ class PhotonPipelineResult:
     def getTargets(self) -> list[PhotonTrackedTarget]:
         return self.targets
 
+    def getBestTarget(self) -> PhotonTrackedTarget:
+        """
+        Returns the best target in this pipeline result. If there are no targets, this method will
+        return null. The best target is determined by the target sort mode in the PhotonVision UI.
+        """
+        if not self.hasTargets():
+            return None
+        return self.getTargets()[0]
+
     def hasTargets(self) -> bool:
         return len(self.targets) > 0
