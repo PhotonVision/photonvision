@@ -132,7 +132,7 @@ const downloadCalibBoard = () => {
       charucoImage.src = CharucoImage;
       doc.addImage(charucoImage, "PNG", 0.25, 1.5, 8, 8);
 
-      doc.text(`8 x 8 | 1in & 0.75in`, paperWidth - 1, 1.0, {
+      doc.text("8 x 8 | 1in & 0.75in", paperWidth - 1, 1.0, {
         maxWidth: (paperWidth - 2.0) / 2,
         align: "right"
       });
@@ -274,8 +274,8 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :disabled="isCalibrating"
             />
             <pv-select
-              v-model="tagFamily"
               v-show="boardType == CalibrationBoardTypes.Charuco"
+              v-model="tagFamily"
               label="Tag Family"
               tooltip="Dictionary of aruco markers on the charuco board"
               :select-cols="7"
@@ -291,8 +291,8 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :label-cols="5"
             />
             <pv-number-input
-              v-model="markerSizeIn"
               v-show="boardType == CalibrationBoardTypes.Charuco"
+              v-model="markerSizeIn"
               label="Marker Size (in)"
               tooltip="Size of the tag markers in inches must be smaller than pattern spacing"
               :disabled="isCalibrating"
@@ -316,8 +316,8 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :label-cols="5"
             />
             <pv-switch
-              v-model="useOldPattern"
               v-show="boardType == CalibrationBoardTypes.Charuco"
+              v-model="useOldPattern"
               label="Old OpenCV Pattern"
               :disabled="isCalibrating"
               tooltip="If enabled, Photon will use the old OpenCV pattern for calibration."

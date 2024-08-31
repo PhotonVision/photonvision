@@ -303,7 +303,7 @@ const handleSettingsImport = () => {
         <v-col cols="12" sm="6">
           <v-btn color="secondary" @click="openExportLogsPrompt">
             <v-icon left class="open-icon"> mdi-download </v-icon>
-            <span class="open-label">Download Current Log</span>
+            <span class="open-label">Download logs</span>
 
             <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
             <a
@@ -318,7 +318,7 @@ const handleSettingsImport = () => {
         <v-col cols="12" sm="6">
           <v-btn color="secondary" @click="useStateStore().showLogModal = true">
             <v-icon left class="open-icon"> mdi-eye </v-icon>
-            <span class="open-label">Show log viewer</span>
+            <span class="open-label">View program logs</span>
           </v-btn>
         </v-col>
       </v-row>
