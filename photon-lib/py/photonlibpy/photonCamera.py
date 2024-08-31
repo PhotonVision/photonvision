@@ -3,9 +3,12 @@ from typing import List
 import ntcore
 from wpilib import RobotController, Timer
 import wpilib
-from photonlibpy.packet import Packet
-from photonlibpy.photonPipelineResult import PhotonPipelineResult
-from photonlibpy.version import PHOTONVISION_VERSION, PHOTONLIB_VERSION  # type: ignore[import-untyped]
+from .packet import Packet
+from .targeting.photonPipelineResult import PhotonPipelineResult
+from .version import PHOTONVISION_VERSION, PHOTONLIB_VERSION  # type: ignore[import-untyped]
+
+# magical import to make serde stuff work
+import photonlibpy.generated  # noqa
 
 
 class VisionLEDMode(Enum):
@@ -100,11 +103,9 @@ class PhotonCamera:
             else:
                 newResult = PhotonPipelineResult()
                 pkt = Packet(byteList)
-                newResult.populateFromPacket(pkt)
+                newResult = PhotonPipelineResult.photonStruct.unpack(pkt)
                 # NT4 allows us to correct the timestamp based on when the message was sent
-                newResult.setTimestampSeconds(
-                    timestamp / 1e6 - newResult.getLatencyMillis() / 1e3
-                )
+                newResult.ntReceiveTimestampMicros = timestamp / 1e6
                 ret.append(newResult)
 
         return ret
@@ -113,18 +114,17 @@ class PhotonCamera:
         self._versionCheck()
 
         now = RobotController.getFPGATime()
-        retVal = PhotonPipelineResult()
         packetWithTimestamp = self._rawBytesEntry.getAtomic()
         byteList = packetWithTimestamp.value
-        timestamp = packetWithTimestamp.time
+        packetWithTimestamp.time
 
         if len(byteList) < 1:
-            return retVal
+            return PhotonPipelineResult()
         else:
             pkt = Packet(byteList)
-            retVal.populateFromPacket(pkt)
+            retVal = PhotonPipelineResult.photonStruct.unpack(pkt)
             # We don't trust NT4 time, hack around
-            retVal.ntRecieveTimestampMicros = now
+            retVal.ntReceiveTimestampMicros = now
             return retVal
 
     def getDriverMode(self) -> bool:
@@ -233,6 +233,6 @@ class PhotonCamera:
 
             wpilib.reportWarning(bfw)
 
-            errText = f"Photon version {PHOTONLIB_VERSION} does not match coprocessor version {versionString}. Please install photonlibpy version {PHOTONLIB_VERSION}."
+            errText = f"Photon version {PHOTONLIB_VERSION} does not match coprocessor version {versionString}. Please install photonlibpy version {versionString}, or update your coprocessor to {PHOTONLIB_VERSION}."
             wpilib.reportError(errText, True)
             raise Exception(errText)

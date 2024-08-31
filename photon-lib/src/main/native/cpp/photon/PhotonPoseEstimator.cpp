@@ -100,6 +100,8 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
     std::optional<PhotonCamera::DistortionMatrix> cameraDistCoeffs) {
   // Time in the past -- give up, since the following if expects times > 0
   if (result.GetTimestamp() < 0_s) {
+    FRC_ReportError(frc::warn::Warning,
+                    "Result timestamp was reported in the past!");
     return std::nullopt;
   }
 
@@ -164,7 +166,7 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
   }
 
   if (ret) {
-    lastPose = ret.value().estimatedPose;
+    lastPose = ret->estimatedPose;
   }
   return ret;
 }
@@ -197,8 +199,7 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::LowestAmbiguityStrategy(
   }
 
   return EstimatedRobotPose{
-      fiducialPose.value()
-          .TransformBy(bestTarget.GetBestCameraToTarget().Inverse())
+      fiducialPose->TransformBy(bestTarget.GetBestCameraToTarget().Inverse())
           .TransformBy(m_robotToCamera.Inverse()),
       result.GetTimestamp(), result.GetTargets(), LOWEST_AMBIGUITY};
 }
@@ -220,7 +221,7 @@ PhotonPoseEstimator::ClosestToCameraHeightStrategy(
                       target.GetFiducialId());
       continue;
     }
-    frc::Pose3d const targetPose = fiducialPose.value();
+    frc::Pose3d const targetPose = *fiducialPose;
 
     units::meter_t const alternativeDifference = units::math::abs(
         m_robotToCamera.Z() -
@@ -349,8 +350,8 @@ frc::Pose3d detail::ToPose3d(const cv::Mat& tvec, const cv::Mat& rvec) {
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagOnCoprocStrategy(
     PhotonPipelineResult result) {
-  if (result.MultiTagResult().result.isPresent) {
-    const auto field2camera = result.MultiTagResult().result.best;
+  if (result.MultiTagResult()) {
+    const auto field2camera = result.MultiTagResult()->estimatedPose.best;
 
     const auto fieldToRobot =
         frc::Pose3d() + field2camera + m_robotToCamera.Inverse();
@@ -398,8 +399,8 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagOnRioStrategy(
         tagCorners.has_value()) {
       auto const targetCorners = target.GetDetectedCorners();
       for (size_t cornerIdx = 0; cornerIdx < 4; ++cornerIdx) {
-        imagePoints.emplace_back(targetCorners[cornerIdx].first,
-                                 targetCorners[cornerIdx].second);
+        imagePoints.emplace_back(targetCorners[cornerIdx].x,
+                                 targetCorners[cornerIdx].y);
         objectPoints.emplace_back((*tagCorners)[cornerIdx]);
       }
     }

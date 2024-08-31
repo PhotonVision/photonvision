@@ -394,8 +394,8 @@ public class PhotonPoseEstimator {
     }
 
     private Optional<EstimatedRobotPose> multiTagOnCoprocStrategy(PhotonPipelineResult result) {
-        if (result.getMultiTagResult().estimatedPose.isPresent) {
-            var best_tf = result.getMultiTagResult().estimatedPose.best;
+        if (result.getMultiTagResult().isPresent()) {
+            var best_tf = result.getMultiTagResult().get().estimatedPose.best;
             var best =
                     new Pose3d()
                             .plus(best_tf) // field-to-camera
@@ -427,11 +427,11 @@ public class PhotonPoseEstimator {
                 VisionEstimation.estimateCamPosePNP(
                         cameraMatrixOpt.get(), distCoeffsOpt.get(), result.getTargets(), fieldTags, tagModel);
         // try fallback strategy if solvePNP fails for some reason
-        if (!pnpResult.isPresent)
+        if (!pnpResult.isPresent())
             return update(result, cameraMatrixOpt, distCoeffsOpt, this.multiTagFallbackStrategy);
         var best =
                 new Pose3d()
-                        .plus(pnpResult.best) // field-to-camera
+                        .plus(pnpResult.get().best) // field-to-camera
                         .plus(robotToCamera.inverse()); // field-to-robot
 
         return Optional.of(

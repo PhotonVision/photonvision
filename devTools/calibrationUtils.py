@@ -3,7 +3,6 @@ import base64
 from dataclasses import dataclass
 import json
 import os
-from typing import Union
 import cv2
 import numpy as np
 import mrcal

@@ -1,4 +1,5 @@
 import struct
+from typing import Any, Optional, Type
 from wpimath.geometry import Transform3d, Translation3d, Rotation3d, Quaternion
 import wpilib
 
@@ -82,13 +83,13 @@ class Packet:
 
     def decode16(self) -> int:
         """
-        * Returns a single decoded byte from the packet.
+        * Returns a single decoded short from the packet.
         *
-        * @return A decoded byte from the packet.
+        * @return A decoded short from the packet.
         """
         return self._decodeGeneric(">h", 2)
 
-    def decode32(self) -> int:
+    def decodeInt(self) -> int:
         """
         * Returns a decoded int (32 bytes) from the packet.
         *
@@ -104,7 +105,7 @@ class Packet:
         """
         return self._decodeGeneric(">f", 4)
 
-    def decodei64(self) -> int:
+    def decodeLong(self) -> int:
         """
         * Returns a decoded int64 from the packet.
         *
@@ -131,12 +132,20 @@ class Packet:
     def decodeDoubleArray(self, length: int) -> list[float]:
         """
         * Returns a decoded array of floats from the packet.
-        *
-        * @return A decoded array of floats from the packet.
         """
         ret = []
         for _ in range(length):
             ret.append(self.decodeDouble())
+        return ret
+
+    def decodeShortList(self) -> list[float]:
+        """
+        * Returns a decoded array of shorts from the packet.
+        """
+        length = self.decode8()
+        ret = []
+        for _ in range(length):
+            ret.append(self.decode16())
         return ret
 
     def decodeTransform(self) -> Transform3d:
@@ -157,3 +166,16 @@ class Packet:
         rotation = Rotation3d(Quaternion(w, x, y, z))
 
         return Transform3d(translation, rotation)
+
+    def decodeList(self, serde: Type):
+        retList = []
+        arr_len = self.decode8()
+        for _ in range(arr_len):
+            retList.append(serde.unpack(self))
+        return retList
+
+    def decodeOptional(self, serde: Type) -> Optional[Any]:
+        if self.decodeBoolean():
+            return serde.unpack(self)
+        else:
+            return None

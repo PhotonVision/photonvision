@@ -177,7 +177,11 @@ public class OpenCVTest {
                         prop.getIntrinsics(), prop.getDistCoeffs(), camRt, target.getFieldVertices());
         var pnpSim =
                 OpenCVHelp.solvePNP_SQUARE(
-                        prop.getIntrinsics(), prop.getDistCoeffs(), target.getModel().vertices, targetCorners);
+                                prop.getIntrinsics(),
+                                prop.getDistCoeffs(),
+                                target.getModel().vertices,
+                                targetCorners)
+                        .get();
 
         // check solvePNP estimation accuracy
         assertSame(relTarget.getRotation(), pnpSim.best.getRotation());
@@ -212,7 +216,11 @@ public class OpenCVTest {
                         prop.getIntrinsics(), prop.getDistCoeffs(), camRt, target.getFieldVertices());
         var pnpSim =
                 OpenCVHelp.solvePNP_SQPNP(
-                        prop.getIntrinsics(), prop.getDistCoeffs(), target.getModel().vertices, targetCorners);
+                                prop.getIntrinsics(),
+                                prop.getDistCoeffs(),
+                                target.getModel().vertices,
+                                targetCorners)
+                        .get();
 
         // check solvePNP estimation accuracy
         assertSame(relTarget.getRotation(), pnpSim.best.getRotation());

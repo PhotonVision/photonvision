@@ -26,6 +26,22 @@
 
 #include <photon/PhotonUtils.h>
 
+#include <frc/Timer.h>
+#include <frc/smartdashboard/SmartDashboard.h>
+#include <units/time.h>
+
+void Robot::RobotPeriodic() {
+  photon::PhotonCamera::SetVersionCheckEnabled(false);
+
+  auto start = frc::Timer::GetFPGATimestamp();
+  photon::PhotonPipelineResult result = camera.GetLatestResult();
+  auto end = frc::Timer::GetFPGATimestamp();
+
+  std::printf("DT is %.2f uS for %i targets\n",
+              units::microsecond_t(end - start).to<double>(),
+              result.GetTargets().size());
+}
+
 void Robot::TeleopPeriodic() {
   double forwardSpeed = -xboxController.GetRightY();
   double rotationSpeed;
@@ -33,7 +49,10 @@ void Robot::TeleopPeriodic() {
   if (xboxController.GetAButton()) {
     // Vision-alignment mode
     // Query the latest result from PhotonVision
+    auto start = frc::Timer::GetFPGATimestamp();
     photon::PhotonPipelineResult result = camera.GetLatestResult();
+    auto end = frc::Timer::GetFPGATimestamp();
+    frc::SmartDashboard::PutNumber("decode_dt", (end - start).to<double>());
 
     if (result.HasTargets()) {
       // Rotation speed is the output of the PID controller

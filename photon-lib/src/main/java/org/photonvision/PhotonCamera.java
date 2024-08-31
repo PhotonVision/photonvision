@@ -142,7 +142,7 @@ public class PhotonCamera implements AutoCloseable {
                                 PubSubOption.periodic(0.01),
                                 PubSubOption.sendAll(true),
                                 PubSubOption.pollStorage(20));
-        resultSubscriber = new PacketSubscriber<>(rawBytesEntry, PhotonPipelineResult.serde);
+        resultSubscriber = new PacketSubscriber<>(rawBytesEntry, PhotonPipelineResult.photonStruct);
         driverModePublisher = cameraTable.getBooleanTopic("driverModeRequest").publish();
         driverModeSubscriber = cameraTable.getBooleanTopic("driverMode").subscribe(false);
         inputSaveImgEntry = cameraTable.getIntegerTopic("inputSaveImgCmd").getEntry(0);
@@ -193,7 +193,7 @@ public class PhotonCamera implements AutoCloseable {
         // make time sync more reliable.
         for (var c : changes) {
             var result = c.value;
-            result.setRecieveTimestampMicros(c.timestamp);
+            result.setReceiveTimestampMicros(c.timestamp);
             ret.add(result);
         }
 
@@ -201,7 +201,7 @@ public class PhotonCamera implements AutoCloseable {
     }
 
     /**
-     * Returns the latest pipeline result. This is simply the most recent result recieved via NT.
+     * Returns the latest pipeline result. This is simply the most recent result Received via NT.
      * Calling this multiple times will always return the most recent result.
      *
      * <p>Replaced by {@link #getAllUnreadResults()} over getLatestResult, as this function can miss
@@ -221,7 +221,7 @@ public class PhotonCamera implements AutoCloseable {
         // contains a thing with time knowledge, set it here.
         // getLatestChange returns in microseconds, so we divide by 1e6 to convert to seconds.
         // TODO: NT4 time sync is Not To Be Trusted, we should do something else?
-        result.setRecieveTimestampMicros(ret.timestamp);
+        result.setReceiveTimestampMicros(ret.timestamp);
 
         return result;
     }
@@ -411,9 +411,20 @@ public class PhotonCamera implements AutoCloseable {
                     "PhotonVision coprocessor at path " + path + " is not sending new data.", true);
         }
 
-        // Check for version. Warn if the versions aren't aligned.
         String versionString = versionEntry.get("");
-        if (!versionString.isEmpty() && !PhotonVersion.versionMatches(versionString)) {
+
+        // Check mdef UUID
+        String local_uuid = PhotonPipelineResult.photonStruct.getInterfaceUUID();
+        String remote_uuid = resultSubscriber.getInterfaceUUID();
+
+        if (remote_uuid == null || remote_uuid.isEmpty()) {
+            // not connected yet?
+            DriverStation.reportWarning(
+                    "PhotonVision coprocessor at path "
+                            + path
+                            + " has note reported a message interface UUID - is your coprocessor's camera started?",
+                    true);
+        } else if (!local_uuid.equals(remote_uuid)) {
             // Error on a verified version mismatch
             // But stay silent otherwise
 
@@ -439,8 +450,14 @@ public class PhotonCamera implements AutoCloseable {
             var versionMismatchMessage =
                     "Photon version "
                             + PhotonVersion.versionString
+                            + " (message definition version "
+                            + local_uuid
+                            + ")"
                             + " does not match coprocessor version "
                             + versionString
+                            + " (message definition version "
+                            + remote_uuid
+                            + ")"
                             + "!";
             DriverStation.reportError(versionMismatchMessage, false);
             throw new UnsupportedOperationException(versionMismatchMessage);

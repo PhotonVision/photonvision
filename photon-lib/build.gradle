@@ -18,7 +18,25 @@ apply from: "${rootDir}/versioningHelper.gradle"
 
 nativeUtils {
     exportsConfigs {
-        "${nativeName}" {}
+        "${nativeName}" {
+            // From https://github.com/wpilibsuite/allwpilib/blob/a32589831184969939fd3d63f449a2788a0a8542/wpimath/build.gradle#L72
+            // Copyright (c) FIRST and other WPILib contributors.
+            // Open Source Software; you can modify and/or share it under the terms of
+            // the WPILib BSD license file in the root directory of this project.
+            x64ExcludeSymbols = [
+                '_CT??_R0?AV_System_error',
+                '_CT??_R0?AVexception',
+                '_CT??_R0?AVfailure',
+                '_CT??_R0?AVruntime_error',
+                '_CT??_R0?AVsystem_error',
+                '_CTA5?AVfailure',
+                '_TI5?AVfailure',
+                '_CT??_R0?AVout_of_range',
+                '_CTA3?AVout_of_range',
+                '_TI3?AVout_of_range',
+                '_CT??_R0?AVbad_cast'
+            ]
+        }
     }
 }
 
