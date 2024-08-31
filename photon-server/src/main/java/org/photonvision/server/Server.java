@@ -137,8 +137,6 @@ public class Server {
 
         // Calibration
         app.post("/api/calibration/end", RequestHandler::onCalibrationEndRequest);
-        app.post(
-                "/api/calibration/importFromCalibDB", RequestHandler::onCalibDBCalibrationImportRequest);
         app.post("/api/calibration/importFromData", RequestHandler::onDataCalibrationImportRequest);
 
         app.start(port);
