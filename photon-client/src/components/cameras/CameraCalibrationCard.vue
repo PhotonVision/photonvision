@@ -161,8 +161,6 @@ const downloadCalibBoard = () => {
   doc.save(`calibrationTarget-${CalibrationBoardTypes[boardType.value]}.pdf`);
 };
 
-
-
 const isCalibrating = ref(false);
 const startCalibration = () => {
   useCameraSettingsStore().startPnPCalibration({
