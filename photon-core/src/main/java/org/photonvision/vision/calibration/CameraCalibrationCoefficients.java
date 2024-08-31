@@ -138,51 +138,6 @@ public class CameraCalibrationCoefficients implements Releasable {
         distCoeffs.release();
     }
 
-    public static CameraCalibrationCoefficients parseFromCalibdbJson(JsonNode json) {
-        // camera_matrix is a row major, array of arrays
-        var cam_matrix = json.get("camera_matrix");
-
-        double[] cam_arr =
-                new double[] {
-                    cam_matrix.get(0).get(0).doubleValue(),
-                    cam_matrix.get(0).get(1).doubleValue(),
-                    cam_matrix.get(0).get(2).doubleValue(),
-                    cam_matrix.get(1).get(0).doubleValue(),
-                    cam_matrix.get(1).get(1).doubleValue(),
-                    cam_matrix.get(1).get(2).doubleValue(),
-                    cam_matrix.get(2).get(0).doubleValue(),
-                    cam_matrix.get(2).get(1).doubleValue(),
-                    cam_matrix.get(2).get(2).doubleValue()
-                };
-
-        var dist_coefs = json.get("distortion_coefficients");
-
-        double[] dist_array =
-                new double[] {
-                    dist_coefs.get(0).doubleValue(),
-                    dist_coefs.get(1).doubleValue(),
-                    dist_coefs.get(2).doubleValue(),
-                    dist_coefs.get(3).doubleValue(),
-                    dist_coefs.get(4).doubleValue(),
-                };
-
-        var cam_jsonmat = new JsonMatOfDouble(3, 3, cam_arr);
-        var distortion_jsonmat = new JsonMatOfDouble(1, 5, dist_array);
-
-        var width = json.get("img_size").get(0).doubleValue();
-        var height = json.get("img_size").get(1).doubleValue();
-
-        return new CameraCalibrationCoefficients(
-                new Size(width, height),
-                cam_jsonmat,
-                distortion_jsonmat,
-                new double[0],
-                List.of(),
-                new Size(0, 0),
-                0,
-                CameraLensModel.LENSMODEL_OPENCV);
-    }
-
     @Override
     public String toString() {
         return "CameraCalibrationCoefficients [resolution="

@@ -161,38 +161,7 @@ const downloadCalibBoard = () => {
   doc.save(`calibrationTarget-${CalibrationBoardTypes[boardType.value]}.pdf`);
 };
 
-const importCalibrationFromCalibDB = ref();
-const openCalibUploadPrompt = () => {
-  importCalibrationFromCalibDB.value.click();
-};
-const readImportedCalibrationFromCalibDB = () => {
-  const files = importCalibrationFromCalibDB.value.files;
-  if (files.length === 0) return;
 
-  files[0].text().then((text) => {
-    useCameraSettingsStore()
-      .importCalibDB({ payload: text, filename: files[0].name })
-      .then((response) => {
-        useStateStore().showSnackbarMessage({
-          message: response.data.text || response.data,
-          color: response.status === 200 ? "success" : "error"
-        });
-      })
-      .catch((err) => {
-        if (err.request) {
-          useStateStore().showSnackbarMessage({
-            message: "Error while uploading calibration file! The backend didn't respond to the upload attempt.",
-            color: "error"
-          });
-        } else {
-          useStateStore().showSnackbarMessage({
-            message: "Error while uploading calibration file!",
-            color: "error"
-          });
-        }
-      });
-  });
-};
 
 const isCalibrating = ref(false);
 const startCalibration = () => {
@@ -481,8 +450,8 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             </v-btn>
           </v-col>
         </v-row>
-        <v-row>
-          <v-col :cols="6">
+        <v-row justify="center">
+          <v-col cols="12" sm="6" md="4">
             <v-btn
               color="accent"
               small
@@ -494,19 +463,6 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               <v-icon left class="calib-btn-icon"> mdi-download </v-icon>
               <span class="calib-btn-label">Generate Board</span>
             </v-btn>
-          </v-col>
-          <v-col :cols="6">
-            <v-btn color="secondary" :disabled="isCalibrating" small style="width: 100%" @click="openCalibUploadPrompt">
-              <v-icon left class="calib-btn-icon"> mdi-upload </v-icon>
-              <span class="calib-btn-label">Import From CalibDB</span>
-            </v-btn>
-            <input
-              ref="importCalibrationFromCalibDB"
-              type="file"
-              accept=".json"
-              style="display: none"
-              @change="readImportedCalibrationFromCalibDB"
-            />
           </v-col>
         </v-row>
       </div>

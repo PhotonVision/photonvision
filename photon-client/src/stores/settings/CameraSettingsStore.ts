@@ -356,22 +356,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     endPnPCalibration(cameraIndex: number = useStateStore().currentCameraIndex) {
       return axios.post("/calibration/end", { index: cameraIndex });
     },
-    /**
-     * Import calibration data that was computed using CalibDB.
-     *
-     * @param data Data from the uploaded CalibDB config
-     * @param cameraIndex the index of the camera
-     */
-    importCalibDB(
-      data: { payload: string; filename: string },
-      cameraIndex: number = useStateStore().currentCameraIndex
-    ) {
-      const payload = {
-        ...data,
-        cameraIndex: cameraIndex
-      };
-      return axios.post("/calibration/importFromCalibDB", payload, { headers: { "Content-Type": "text/plain" } });
-    },
+
     importCalibrationFromData(
       data: { calibration: CameraCalibrationResult },
       cameraIndex: number = useStateStore().currentCameraIndex
