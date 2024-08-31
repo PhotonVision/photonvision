@@ -8,6 +8,7 @@ import VirtualList from "vue-virtual-scroll-list";
 const backendHost = inject<string>("backendHost");
 
 const searchQuery = ref("");
+const timeInput = ref<string>();
 const autoScroll = ref(true);
 const logList = ref();
 const logKeeps = ref(40);
@@ -24,9 +25,16 @@ const logs = computed<LogMessage[]>(() =>
     .logMessages.filter(
       (message) =>
         selectedLogLevels.value[message.level] &&
-        message.message.toLowerCase().includes(searchQuery.value?.toLowerCase() || "")
+        message.message.toLowerCase().includes(searchQuery.value?.toLowerCase() || "") &&
+        (timeInput.value === undefined ||
+          message.timestamp >=
+            new Date().setHours(
+              parseInt(timeInput.value.substring(0, 2)),
+              parseInt(timeInput.value.substring(3, 5)),
+              parseInt(timeInput.value.substring(6, 8))
+            ))
     )
-    .map((item, index) => ({ message: item.message, level: item.level, index: index }))
+    .map((item, index) => ({ ...item, index: index }))
 );
 
 watch(logs, () => {
@@ -101,7 +109,7 @@ document.addEventListener("keydown", (e) => {
 
       <div class="dialog-data">
         <!-- Log view options -->
-        <v-row class="log-options no-gutters">
+        <v-row class="pt-4 pt-md-0 no-gutters">
           <v-col cols="12" md="5" class="align-self-center">
             <v-text-field
               v-model="searchQuery"
@@ -114,7 +122,13 @@ document.addEventListener("keydown", (e) => {
               label="Search"
             />
           </v-col>
-          <v-col cols="12" md="7">
+          <v-col cols="12" md="2" style="display: flex; align-items: center">
+            <input v-model="timeInput" type="time" step="1" class="white--text pl-0 pl-md-8" />
+            <v-btn icon class="ml-3" @click="timeInput = undefined">
+              <v-icon>mdi-close-circle-outline</v-icon>
+            </v-btn>
+          </v-col>
+          <v-col cols="12" md="5" class="pr-3">
             <v-row class="no-gutters">
               <v-col v-for="level in [0, 1, 2, 3]" :key="level">
                 <v-row dense align="center">
@@ -171,10 +185,6 @@ document.addEventListener("keydown", (e) => {
 }
 
 @media only screen and (max-width: 960px) {
-  .log-options {
-    padding-top: 16px;
-  }
-
   .log-display {
     /* Dialog data size - options */
     height: calc(100% - 118px);

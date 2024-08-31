@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { LogLevel } from "@/types/SettingTypes";
+import { LogLevel, type LogMessage } from "@/types/SettingTypes";
 import { computed } from "vue";
 
-const props = defineProps<{ source: any }>();
+const props = defineProps<{ source: LogMessage }>();
 
 const logColorClass = computed<string>(() => {
   switch (props.source.level) {
@@ -20,7 +20,5 @@ const logColorClass = computed<string>(() => {
 </script>
 
 <template>
-  <div :class="logColorClass">
-    {{ source.message }}
-  </div>
+  <div :class="logColorClass">[{{ source.timestamp.toTimeString().split(" ")[0] }}] {{ source.message }}</div>
 </template>
