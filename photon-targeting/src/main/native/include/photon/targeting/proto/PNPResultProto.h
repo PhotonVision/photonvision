@@ -19,12 +19,12 @@
 
 #include <wpi/protobuf/Protobuf.h>
 
-#include "photon/targeting/PNPResult.h"
+#include "photon/targeting/PnpResult.h"
 
 template <>
-struct wpi::Protobuf<photon::PNPResult> {
+struct wpi::Protobuf<photon::PnpResult> {
   static google::protobuf::Message* New(google::protobuf::Arena* arena);
-  static photon::PNPResult Unpack(const google::protobuf::Message& msg);
+  static photon::PnpResult Unpack(const google::protobuf::Message& msg);
   static void Pack(google::protobuf::Message* msg,
-                   const photon::PNPResult& value);
+                   const photon::PnpResult& value);
 };

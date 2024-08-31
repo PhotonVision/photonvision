@@ -33,24 +33,26 @@ wpi::Protobuf<photon::MultiTargetPNPResult>::Unpack(
       static_cast<const photonvision::proto::ProtobufMultiTargetPNPResult*>(
           &msg);
 
-  wpi::SmallVector<int16_t, 32> fiducialIdsUsed;
+  std::vector<int16_t> fiducialIdsUsed;
+  fiducialIdsUsed.reserve(32);
+
   for (int i = 0; i < m->fiducial_ids_used_size(); i++) {
     fiducialIdsUsed.push_back(m->fiducial_ids_used(i));
   }
 
-  return photon::MultiTargetPNPResult{
-      wpi::UnpackProtobuf<photon::PNPResult>(m->estimated_pose()),
-      fiducialIdsUsed};
+  return photon::MultiTargetPNPResult{photon::MultiTargetPNPResult_PhotonStruct{
+      wpi::UnpackProtobuf<photon::PnpResult>(m->estimated_pose()),
+      fiducialIdsUsed}};
 }
 
 void wpi::Protobuf<photon::MultiTargetPNPResult>::Pack(
     google::protobuf::Message* msg, const photon::MultiTargetPNPResult& value) {
   auto m = static_cast<photonvision::proto::ProtobufMultiTargetPNPResult*>(msg);
 
-  wpi::PackProtobuf(m->mutable_estimated_pose(), value.result);
+  wpi::PackProtobuf(m->mutable_estimated_pose(), value.estimatedPose);
 
   m->clear_fiducial_ids_used();
-  for (const auto& t : value.fiducialIdsUsed) {
+  for (const auto& t : value.fiducialIDsUsed) {
     m->add_fiducial_ids_used(t);
   }
 }

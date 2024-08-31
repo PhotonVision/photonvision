@@ -1,7 +1,7 @@
 plugins {
     id "application"
     id 'com.github.johnrengelman.shadow' version '8.1.1'
-    id "com.github.node-gradle.node" version "7.0.2"
+    id "com.github.node-gradle.node" version "7.0.1"
     id "org.hidetake.ssh" version "2.11.2"
     id 'edu.wpi.first.WpilibTools' version '1.3.0'
 }
@@ -32,23 +32,17 @@ shadowJar {
 }
 
 node {
-    download = true
-    version = "18.20.4"
     nodeProjectDir = file("${projectDir}/../photon-client")
 }
 
-tasks.register('buildUI', PnpmTask) {
-    args = ["run", "build"]
-}
-
-tasks.register('copyUIToResources', Copy) {
+tasks.register('copyClientUIToResources', Copy) {
     from "${projectDir}/../photon-client/dist/"
     into "${projectDir}/src/main/resources/web/"
 }
 
 tasks.register("buildAndCopyUI") {
-    dependsOn "buildUI"
-    finalizedBy "copyUIToResources"
+    dependsOn "npm_run_build"
+    finalizedBy "copyClientUIToResources"
 }
 
 run {
@@ -70,12 +64,6 @@ run {
 remotes {
     pi {
         host = 'photonvision.local'
-        user = 'pi'
-        password = 'raspberry'
-        knownHosts = allowAnyHosts
-    }
-    gloworm {
-        host = 'gloworm.local'
         user = 'pi'
         password = 'raspberry'
         knownHosts = allowAnyHosts

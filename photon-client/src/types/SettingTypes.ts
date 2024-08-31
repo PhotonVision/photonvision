@@ -149,15 +149,18 @@ export interface CameraCalibrationResult {
 export enum ValidQuirks {
   AWBGain = "AWBGain",
   AdjustableFocus = "AdjustableFocus",
-  ArduOV9281 = "ArduOV9281",
-  ArduOV2311 = "ArduOV2311",
-  ArduOV9782 = "ArduOV9782",
+  InnoOV9281Controls = "InnoOV9281Controls",
+  ArduOV9281Controls = "ArduOV9281Controls",
+  ArduOV2311Controls = "ArduOV2311Controls",
+  ArduOV9782Controls = "ArduOV9782Controls",
   ArduCamCamera = "ArduCamCamera",
   CompletelyBroken = "CompletelyBroken",
   FPSCap100 = "FPSCap100",
   Gain = "Gain",
   PiCam = "PiCam",
-  StickyFPS = "StickyFPS"
+  StickyFPS = "StickyFPS",
+  LifeCamControls = "LifeCamControls",
+  PsEyeControls = "PsEyeControls"
 }
 
 export interface QuirkyCamera {
@@ -191,6 +194,9 @@ export interface CameraSettings {
 
   cameraQuirks: QuirkyCamera;
   isCSICamera: boolean;
+
+  minExposureRaw: number;
+  maxExposureRaw: number;
 }
 
 export interface CameraSettingsChangeRequest {
@@ -290,7 +296,9 @@ export const PlaceholderCameraSettings: CameraSettings = {
       StickyFPS: false
     }
   },
-  isCSICamera: false
+  isCSICamera: false,
+  minExposureRaw: 1,
+  maxExposureRaw: 100
 };
 
 export enum CalibrationBoardTypes {

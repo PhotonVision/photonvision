@@ -130,13 +130,12 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
-        cameraOne.result.setRecieveTimestampMicros((long) (11 * 1e6));
+        cameraOne.result.setReceiveTimestampMicros((long) (11 * 1e6));
 
         PhotonPoseEstimator estimator =
-                new PhotonPoseEstimator(
-                        aprilTags, PoseStrategy.LOWEST_AMBIGUITY, cameraOne, new Transform3d());
+                new PhotonPoseEstimator(aprilTags, PoseStrategy.LOWEST_AMBIGUITY, new Transform3d());
 
-        Optional<EstimatedRobotPose> estimatedPose = estimator.update();
+        Optional<EstimatedRobotPose> estimatedPose = estimator.update(cameraOne.result);
         Pose3d pose = estimatedPose.get().estimatedPose;
 
         assertEquals(11, estimatedPose.get().timestampSeconds);
@@ -218,16 +217,15 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
 
-        cameraOne.result.setRecieveTimestampMicros((long) (4 * 1e6));
+        cameraOne.result.setReceiveTimestampMicros((long) (4 * 1e6));
 
         PhotonPoseEstimator estimator =
                 new PhotonPoseEstimator(
                         aprilTags,
                         PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT,
-                        cameraOne,
                         new Transform3d(new Translation3d(0, 0, 4), new Rotation3d()));
 
-        Optional<EstimatedRobotPose> estimatedPose = estimator.update();
+        Optional<EstimatedRobotPose> estimatedPose = estimator.update(cameraOne.result);
         Pose3d pose = estimatedPose.get().estimatedPose;
 
         assertEquals(4, estimatedPose.get().timestampSeconds);
@@ -308,17 +306,16 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
-        cameraOne.result.setRecieveTimestampMicros((long) (17 * 1e6));
+        cameraOne.result.setReceiveTimestampMicros((long) (17 * 1e6));
 
         PhotonPoseEstimator estimator =
                 new PhotonPoseEstimator(
                         aprilTags,
                         PoseStrategy.CLOSEST_TO_REFERENCE_POSE,
-                        cameraOne,
                         new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
         estimator.setReferencePose(new Pose3d(1, 1, 1, new Rotation3d()));
 
-        Optional<EstimatedRobotPose> estimatedPose = estimator.update();
+        Optional<EstimatedRobotPose> estimatedPose = estimator.update(cameraOne.result);
         Pose3d pose = estimatedPose.get().estimatedPose;
 
         assertEquals(17, estimatedPose.get().timestampSeconds);
@@ -399,18 +396,17 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
-        cameraOne.result.setRecieveTimestampMicros((long) (1 * 1e6));
+        cameraOne.result.setReceiveTimestampMicros((long) (1 * 1e6));
 
         PhotonPoseEstimator estimator =
                 new PhotonPoseEstimator(
                         aprilTags,
                         PoseStrategy.CLOSEST_TO_LAST_POSE,
-                        cameraOne,
                         new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
 
         estimator.setLastPose(new Pose3d(1, 1, 1, new Rotation3d()));
 
-        Optional<EstimatedRobotPose> estimatedPose = estimator.update();
+        Optional<EstimatedRobotPose> estimatedPose = estimator.update(cameraOne.result);
         Pose3d pose = estimatedPose.get().estimatedPose;
 
         cameraOne.result =
@@ -482,9 +478,9 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
-        cameraOne.result.setRecieveTimestampMicros((long) (7 * 1e6));
+        cameraOne.result.setReceiveTimestampMicros((long) (7 * 1e6));
 
-        estimatedPose = estimator.update();
+        estimatedPose = estimator.update(cameraOne.result);
         pose = estimatedPose.get().estimatedPose;
 
         assertEquals(7, estimatedPose.get().timestampSeconds);
@@ -523,31 +519,30 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
-        result.setRecieveTimestampMicros((long) (20 * 1e6));
+        result.setReceiveTimestampMicros((long) (20 * 1e6));
 
         PhotonPoseEstimator estimator =
                 new PhotonPoseEstimator(
                         aprilTags,
                         PoseStrategy.AVERAGE_BEST_TARGETS,
-                        cameraOne,
                         new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
 
         // Empty result, expect empty result
         cameraOne.result = new PhotonPipelineResult();
-        cameraOne.result.setRecieveTimestampMicros((long) (1 * 1e6));
-        Optional<EstimatedRobotPose> estimatedPose = estimator.update();
+        cameraOne.result.setReceiveTimestampMicros((long) (1 * 1e6));
+        Optional<EstimatedRobotPose> estimatedPose = estimator.update(cameraOne.result);
         assertFalse(estimatedPose.isPresent());
 
         // Set actual result
         cameraOne.result = result;
-        estimatedPose = estimator.update();
+        estimatedPose = estimator.update(cameraOne.result);
         assertTrue(estimatedPose.isPresent());
         assertEquals(20, estimatedPose.get().timestampSeconds, .01);
         assertEquals(20, estimator.poseCacheTimestampSeconds);
 
         // And again -- pose cache should mean this is empty
         cameraOne.result = result;
-        estimatedPose = estimator.update();
+        estimatedPose = estimator.update(cameraOne.result);
         assertFalse(estimatedPose.isPresent());
         // Expect the old timestamp to still be here
         assertEquals(20, estimator.poseCacheTimestampSeconds);
@@ -557,7 +552,7 @@ class PhotonPoseEstimatorTest {
         assertEquals(-1, estimator.poseCacheTimestampSeconds);
         // Update should cache the current timestamp (20) again
         cameraOne.result = result;
-        estimatedPose = estimator.update();
+        estimatedPose = estimator.update(cameraOne.result);
         assertEquals(20, estimatedPose.get().timestampSeconds, .01);
         assertEquals(20, estimator.poseCacheTimestampSeconds);
     }
@@ -634,16 +629,15 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8))))); // 3 3 3 ambig .4
-        cameraOne.result.setRecieveTimestampMicros(20 * 1000000);
+        cameraOne.result.setReceiveTimestampMicros(20 * 1000000);
 
         PhotonPoseEstimator estimator =
                 new PhotonPoseEstimator(
                         aprilTags,
                         PoseStrategy.AVERAGE_BEST_TARGETS,
-                        cameraOne,
                         new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
 
-        Optional<EstimatedRobotPose> estimatedPose = estimator.update();
+        Optional<EstimatedRobotPose> estimatedPose = estimator.update(cameraOne.result);
         Pose3d pose = estimatedPose.get().estimatedPose;
 
         assertEquals(20, estimatedPose.get().timestampSeconds, .01);
@@ -658,6 +652,11 @@ class PhotonPoseEstimatorTest {
         }
 
         PhotonPipelineResult result;
+
+        @Override
+        public List<PhotonPipelineResult> getAllUnreadResults() {
+            return List.of(result);
+        }
 
         @Override
         public PhotonPipelineResult getLatestResult() {

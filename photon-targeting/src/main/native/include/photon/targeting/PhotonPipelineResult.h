@@ -19,6 +19,7 @@
 
 #include <span>
 #include <string>
+#include <utility>
 
 #include <frc/Errors.h>
 #include <units/time.h>
@@ -27,34 +28,41 @@
 #include "MultiTargetPNPResult.h"
 #include "PhotonTrackedTarget.h"
 #include "photon/dataflow/structures/Packet.h"
+#include "photon/struct/PhotonPipelineResultStruct.h"
 
 namespace photon {
 /**
  * Represents a pipeline result from a PhotonCamera.
  */
-class PhotonPipelineResult {
- public:
-  /**
-   * Constructs an empty pipeline result
-   */
-  PhotonPipelineResult() = default;
+class PhotonPipelineResult : public PhotonPipelineResult_PhotonStruct {
+  using Base = PhotonPipelineResult_PhotonStruct;
 
-  /**
-   * Constructs a pipeline result.
-   * @param sequenceID The number of frames processed by this camera since boot
-   * @param captureTimestamp The time, in uS in the coprocessor's timebase, that
-   * the coprocessor captured the image this result contains the targeting info
-   * of
-   * @param publishTimestamp The time, in uS in the coprocessor's timebase, that
-   * the coprocessor published targeting info
-   * @param targets The list of targets identified by the pipeline.
-   * @param multitagResult The multitarget result. Default to empty
-   */
-  PhotonPipelineResult(int64_t sequenceID,
-                       units::microsecond_t captureTimestamp,
-                       units::microsecond_t publishTimestamp,
-                       std::span<const PhotonTrackedTarget> targets,
-                       MultiTargetPNPResult multitagResult = {});
+ public:
+  PhotonPipelineResult() : Base() {}
+  explicit PhotonPipelineResult(Base&& data) : Base(data) {}
+
+  // Don't forget to deal with our ntRecieveTimestamp
+  PhotonPipelineResult(const PhotonPipelineResult& other)
+      : Base(other), ntReceiveTimestamp(other.ntReceiveTimestamp) {}
+  PhotonPipelineResult(PhotonPipelineResult& other)
+      : Base(other), ntReceiveTimestamp(other.ntReceiveTimestamp) {}
+  PhotonPipelineResult(PhotonPipelineResult&& other)
+      : Base(std::move(other)),
+        ntReceiveTimestamp(std::move(other.ntReceiveTimestamp)) {}
+  auto& operator=(const PhotonPipelineResult& other) {
+    Base::operator=(other);
+    ntReceiveTimestamp = other.ntReceiveTimestamp;
+    return *this;
+  }
+  auto& operator=(PhotonPipelineResult&& other) {
+    ntReceiveTimestamp = other.ntReceiveTimestamp;
+    Base::operator=(std::move(other));
+    return *this;
+  }
+
+  template <typename... Args>
+  explicit PhotonPipelineResult(Args&&... args)
+      : Base{std::forward<Args>(args)...} {}
 
   /**
    * Returns the best target in this pipeline result. If there are no targets,
@@ -73,7 +81,7 @@ class PhotonPipelineResult {
           "http://docs.photonvision.org");
       HAS_WARNED = true;
     }
-    return HasTargets() ? targets[0] : PhotonTrackedTarget();
+    return HasTargets() ? targets[0] : PhotonTrackedTarget{};
   }
 
   /**
@@ -81,7 +89,8 @@ class PhotonPipelineResult {
    * @return The latency in the pipeline.
    */
   units::millisecond_t GetLatency() const {
-    return publishTimestamp - captureTimestamp;
+    return units::microsecond_t{static_cast<double>(
+        metadata.publishTimestampMicros - metadata.captureTimestampMicros)};
   }
 
   /**
@@ -91,7 +100,7 @@ class PhotonPipelineResult {
    * with a timestamp.
    */
   units::second_t GetTimestamp() const {
-    return ntRecieveTimestamp - (publishTimestamp - captureTimestamp);
+    return ntReceiveTimestamp - GetLatency();
   }
 
   /**
@@ -99,17 +108,19 @@ class PhotonPipelineResult {
    * Be sure to check getMultiTagResult().estimatedPose.isPresent before using
    * the pose estimate!
    */
-  const MultiTargetPNPResult& MultiTagResult() const { return multitagResult; }
+  const std::optional<MultiTargetPNPResult>& MultiTagResult() const {
+    return multitagResult;
+  }
 
   /**
    * The number of non-empty frames processed by this camera since boot. Useful
    * to checking if a camera is alive.
    */
-  int64_t SequenceID() const { return sequenceID; }
+  int64_t SequenceID() const { return metadata.sequenceID; }
 
-  /** Sets the FPGA timestamp this result was recieved by robot code */
-  void SetRecieveTimestamp(const units::second_t timestamp) {
-    this->ntRecieveTimestamp = timestamp;
+  /** Sets the FPGA timestamp this result was Received by robot code */
+  void SetReceiveTimestamp(const units::second_t timestamp) {
+    this->ntReceiveTimestamp = timestamp;
   }
 
   /**
@@ -120,30 +131,22 @@ class PhotonPipelineResult {
 
   /**
    * Returns a reference to the vector of targets.
+   * <p> Returned in the order set by target sort mode. </p>
    * @return A reference to the vector of targets.
    */
   const std::span<const PhotonTrackedTarget> GetTargets() const {
     return targets;
   }
 
-  bool operator==(const PhotonPipelineResult& other) const;
+  friend bool operator==(PhotonPipelineResult const&,
+                         PhotonPipelineResult const&) = default;
 
-  friend Packet& operator<<(Packet& packet, const PhotonPipelineResult& result);
-  friend Packet& operator>>(Packet& packet, PhotonPipelineResult& result);
-
-  // Mirror of the heartbeat entry -- monotonically increasing
-  int64_t sequenceID = -1;
-
-  // Image capture and NT publish timestamp, in microseconds and in the
-  // coprocessor timebase. As reported by WPIUtilJNI::now.
-  units::microsecond_t captureTimestamp;
-  units::microsecond_t publishTimestamp;
   // Since we don't trust NT time sync, keep track of when we got this packet
   // into robot code
-  units::microsecond_t ntRecieveTimestamp = -1_s;
+  units::microsecond_t ntReceiveTimestamp = -1_s;
 
-  wpi::SmallVector<PhotonTrackedTarget, 10> targets;
-  MultiTargetPNPResult multitagResult;
   inline static bool HAS_WARNED = false;
 };
 }  // namespace photon
+
+#include "photon/serde/PhotonPipelineResultSerde.h"

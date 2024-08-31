@@ -35,6 +35,7 @@ extensions = [
     "sphinxext.opengraph",
     "sphinxcontrib.ghcontributors",
     "sphinx_design",
+    "myst_parser",
 ]
 
 # Configure OpenGraph support
@@ -70,6 +71,8 @@ html_favicon = "assets/RoundLogo.png"
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+
+source_suffix = [".rst", ".md"]
 
 
 def setup(app):
@@ -124,3 +127,6 @@ sphinx_tabs_valid_builders = ["epub", "linkcheck"]
 # Excluded links for linkcheck
 # These should be periodically checked by hand to ensure that they are still functional
 linkcheck_ignore = ["https://www.raspberrypi.com/software/"]
+
+# MyST configuration (https://myst-parser.readthedocs.io/en/latest/configuration.html)
+myst_enable_extensions = ["colon_fence"]

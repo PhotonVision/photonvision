@@ -55,9 +55,9 @@ import org.photonvision.estimation.RotTrlTransform3d;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.estimation.VisionEstimation;
 import org.photonvision.targeting.MultiTargetPNPResult;
-import org.photonvision.targeting.PNPResult;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
+import org.photonvision.targeting.PnpResult;
 
 /**
  * A handle for simulating {@link PhotonCamera} values. Processing simulated targets through this
@@ -81,7 +81,7 @@ public class PhotonCameraSim implements AutoCloseable {
     private PhotonTargetSortMode sortMode = PhotonTargetSortMode.Largest;
 
     private final AprilTagFieldLayout tagLayout =
-            AprilTagFields.kDefaultField.loadAprilTagLayoutField();
+            AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
     // video stream simulation
     private final CvSource videoSimRaw;
@@ -420,14 +420,15 @@ public class PhotonCameraSim implements AutoCloseable {
             // projected target can't be detected, skip to next
             if (!(canSeeCorners(noisyTargetCorners) && areaPercent >= minTargetAreaPercent)) continue;
 
-            var pnpSim = new PNPResult();
+            var pnpSim = new PnpResult();
             if (tgt.fiducialID >= 0 && tgt.getFieldVertices().size() == 4) { // single AprilTag solvePNP
                 pnpSim =
-                        OpenCVHelp.solvePNP_SQUARE(
-                                prop.getIntrinsics(),
-                                prop.getDistCoeffs(),
-                                tgt.getModel().vertices,
-                                noisyTargetCorners);
+                        OpenCVHelp.solvePNP_SQPNP(
+                                        prop.getIntrinsics(),
+                                        prop.getDistCoeffs(),
+                                        tgt.getModel().vertices,
+                                        noisyTargetCorners)
+                                .get();
             }
 
             detectableTgts.add(
@@ -519,13 +520,13 @@ public class PhotonCameraSim implements AutoCloseable {
         } else videoSimProcessed.setConnectionStrategy(ConnectionStrategy.kForceClose);
 
         // calculate multitag results
-        var multitagResult = new MultiTargetPNPResult();
+        Optional<MultiTargetPNPResult> multitagResult = Optional.empty();
         // TODO: Implement ATFL subscribing in backend
         // var tagLayout = cam.getAprilTagFieldLayout();
         var visibleLayoutTags = VisionEstimation.getVisibleLayoutTags(detectableTgts, tagLayout);
         if (visibleLayoutTags.size() > 1) {
-            List<Integer> usedIDs =
-                    visibleLayoutTags.stream().map(t -> t.ID).sorted().collect(Collectors.toList());
+            List<Short> usedIDs =
+                    visibleLayoutTags.stream().map(t -> (short) t.ID).sorted().collect(Collectors.toList());
             var pnpResult =
                     VisionEstimation.estimateCamPosePNP(
                             prop.getIntrinsics(),
@@ -533,7 +534,10 @@ public class PhotonCameraSim implements AutoCloseable {
                             detectableTgts,
                             tagLayout,
                             TargetModel.kAprilTag36h11);
-            multitagResult = new MultiTargetPNPResult(pnpResult, usedIDs);
+
+            if (pnpResult.isPresent()) {
+                multitagResult = Optional.of(new MultiTargetPNPResult(pnpResult.get(), usedIDs));
+            }
         }
 
         // sort target order
@@ -550,7 +554,7 @@ public class PhotonCameraSim implements AutoCloseable {
                         now,
                         detectableTgts,
                         multitagResult);
-        ret.setRecieveTimestampMicros(now);
+        ret.setReceiveTimestampMicros(now);
         return ret;
     }
 
@@ -573,9 +577,10 @@ public class PhotonCameraSim implements AutoCloseable {
      * @param receiveTimestamp The (sim) timestamp when this result was read by NT in microseconds
      */
     public void submitProcessedFrame(PhotonPipelineResult result, long receiveTimestamp) {
-        ts.latencyMillisEntry.set(result.getLatencyMillis(), receiveTimestamp);
+        ts.latencyMillisEntry.set(result.metadata.getLatencyMillis(), receiveTimestamp);
 
-        ts.resultPublisher.set(result, result.getPacketSize());
+        // Results are now dynamically sized, so let's guess 1024 bytes is big enough
+        ts.resultPublisher.set(result, 1024);
 
         boolean hasTargets = result.hasTargets();
         ts.hasTargetEntry.set(hasTargets, receiveTimestamp);

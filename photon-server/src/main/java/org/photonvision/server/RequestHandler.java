@@ -481,38 +481,6 @@ public class RequestHandler {
         }
     }
 
-    public static void onCalibDBCalibrationImportRequest(Context ctx) {
-        var data = ctx.bodyInputStream();
-
-        try {
-            var actualObj = kObjectMapper.readTree(data);
-
-            int cameraIndex = actualObj.get("cameraIndex").asInt();
-            var payload = kObjectMapper.readTree(actualObj.get("payload").asText());
-            var coeffs = CameraCalibrationCoefficients.parseFromCalibdbJson(payload);
-
-            var uploadCalibrationEvent =
-                    new IncomingWebSocketEvent<>(
-                            DataChangeDestination.DCD_ACTIVEMODULE,
-                            "calibrationUploaded",
-                            coeffs,
-                            cameraIndex,
-                            null);
-            DataChangeService.getInstance().publishEvent(uploadCalibrationEvent);
-
-            ctx.status(200);
-            ctx.result("Calibration imported successfully from CalibDB data!");
-            logger.info("Calibration imported successfully from CalibDB data!");
-        } catch (IOException e) {
-            ctx.status(400);
-            ctx.result(
-                    "The Provided CalibDB data is malformed and cannot be parsed for the required fields.");
-            logger.error(
-                    "The Provided CalibDB data is malformed and cannot be parsed for the required fields.",
-                    e);
-        }
-    }
-
     public static void onDataCalibrationImportRequest(Context ctx) {
         try {
             var data = kObjectMapper.readTree(ctx.bodyInputStream());

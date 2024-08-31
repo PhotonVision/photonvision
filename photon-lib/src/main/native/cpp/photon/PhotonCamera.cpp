@@ -26,13 +26,16 @@
 
 #include <hal/FRCUsageReporting.h>
 
+#include <string>
 #include <string_view>
+#include <vector>
 
 #include <frc/Errors.h>
 #include <frc/RobotController.h>
 #include <frc/Timer.h>
 #include <opencv2/core.hpp>
 #include <opencv2/core/mat.hpp>
+#include <wpi/json.h>
 
 #include "PhotonVersion.h"
 #include "photon/dataflow/structures/Packet.h"
@@ -72,7 +75,9 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
       rootTable(mainTable->GetSubTable(cameraName)),
       rawBytesEntry(
           rootTable->GetRawTopic("rawBytes")
-              .Subscribe("rawBytes", {}, {.periodic = 0.01, .sendAll = true})),
+              .Subscribe(
+                  "rawBytes", {},
+                  {.pollStorage = 20, .periodic = 0.01, .sendAll = true})),
       inputSaveImgEntry(
           rootTable->GetIntegerTopic("inputSaveImgCmd").Publish()),
       inputSaveImgSubscriber(
@@ -108,31 +113,65 @@ PhotonCamera::PhotonCamera(const std::string_view cameraName)
 
 PhotonPipelineResult PhotonCamera::GetLatestResult() {
   if (test) {
+    if (testResult.size())
+      return testResult.back();
+    else
+      return PhotonPipelineResult{};
+  }
+
+  // Prints warning if not connected
+  VerifyVersion();
+
+  // Fill the packet with latest data and populate result.
+  units::microsecond_t now =
+      units::microsecond_t(frc::RobotController::GetFPGATime());
+  const auto value = rawBytesEntry.Get();
+  if (!value.size()) return PhotonPipelineResult{};
+
+  photon::Packet packet{value};
+
+  // Create the new result;
+  PhotonPipelineResult result = packet.Unpack<PhotonPipelineResult>();
+
+  result.SetReceiveTimestamp(now);
+
+  return result;
+}
+
+std::vector<PhotonPipelineResult> PhotonCamera::GetAllUnreadResults() {
+  if (test) {
     return testResult;
   }
 
   // Prints warning if not connected
   VerifyVersion();
 
-  // Clear the current packet.
-  packet.Clear();
+  const auto changes = rawBytesEntry.ReadQueue();
 
-  // Create the new result;
-  PhotonPipelineResult result;
+  // Create the new result list
+  std::vector<PhotonPipelineResult> ret;
+  ret.reserve(changes.size());
 
-  // Fill the packet with latest data and populate result.
-  units::microsecond_t now =
-      units::microsecond_t(frc::RobotController::GetFPGATime());
-  const auto value = rawBytesEntry.Get();
-  if (!value.size()) return result;
+  for (size_t i = 0; i < changes.size(); i++) {
+    const nt::Timestamped<std::vector<uint8_t>>& value = changes[i];
 
-  photon::Packet packet{value};
+    if (!value.value.size() || value.time == 0) {
+      continue;
+    }
 
-  packet >> result;
+    // Fill the packet with latest data and populate result.
+    photon::Packet packet{value.value};
+    auto result = packet.Unpack<PhotonPipelineResult>();
 
-  result.SetRecieveTimestamp(now);
+    // TODO: NT4 timestamps are still not to be trusted. But it's the best we
+    // can do until we can make time sync more reliable.
+    result.SetReceiveTimestamp(units::microsecond_t(value.time) -
+                               result.GetLatency());
 
-  return result;
+    ret.push_back(result);
+  }
+
+  return ret;
 }
 
 void PhotonCamera::SetDriverMode(bool driverMode) {
@@ -171,9 +210,11 @@ std::optional<PhotonCamera::CameraMatrix> PhotonCamera::GetCameraMatrix() {
   auto camCoeffs = cameraIntrinsicsSubscriber.Get();
   if (camCoeffs.size() == 9) {
     PhotonCamera::CameraMatrix retVal =
-        Eigen::Map<const PhotonCamera::CameraMatrix>(camCoeffs.data());
+        Eigen::Map<const Eigen::Matrix<double, 3, 3, Eigen::RowMajor>>(
+            camCoeffs.data());
     return retVal;
   }
+
   return std::nullopt;
 }
 
@@ -190,22 +231,6 @@ std::optional<PhotonCamera::DistortionMatrix> PhotonCamera::GetDistCoeffs() {
     return retVal;
   }
   return std::nullopt;
-}
-
-static bool VersionMatches(std::string them_str) {
-  std::smatch match;
-  std::regex versionPattern{"v[0-9]+.[0-9]+.[0-9]+"};
-
-  std::string us_str = PhotonVersion::versionString;
-
-  // Check that both versions are in the right format
-  if (std::regex_search(us_str, match, versionPattern) &&
-      std::regex_search(them_str, match, versionPattern)) {
-    // If they are, check string equality
-    return (us_str == them_str);
-  } else {
-    return false;
-  }
 }
 
 void PhotonCamera::VerifyVersion() {
@@ -244,13 +269,20 @@ void PhotonCamera::VerifyVersion() {
           "Found the following PhotonVision cameras on NetworkTables:{}",
           cameraNameOutString);
     }
-  } else if (!VersionMatches(versionString)) {
-    FRC_ReportError(frc::warn::Warning, bfw);
-    std::string error_str = fmt::format(
-        "Photonlib version {} does not match coprocessor version {}!",
-        PhotonVersion::versionString, versionString);
-    FRC_ReportError(frc::err::Error, "{}", error_str);
-    throw std::runtime_error(error_str);
+  } else {
+    std::string local_uuid{SerdeType<PhotonPipelineResult>::GetSchemaHash()};
+    std::string remote_uuid =
+        rawBytesEntry.GetTopic().GetProperty("message_uuid");
+
+    if (local_uuid != remote_uuid) {
+      FRC_ReportError(frc::warn::Warning, bfw);
+      std::string error_str = fmt::format(
+          "Photonlib version {} (message definition version {}) does not match "
+          "coprocessor version {} (message definition version {})!",
+          PhotonVersion::versionString, local_uuid, versionString, remote_uuid);
+      FRC_ReportError(frc::err::Error, "{}", error_str);
+      throw std::runtime_error(error_str);
+    }
   }
 }
 

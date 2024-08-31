@@ -19,33 +19,27 @@
 
 #include "photon.pb.h"
 
-google::protobuf::Message* wpi::Protobuf<photon::PNPResult>::New(
+google::protobuf::Message* wpi::Protobuf<photon::PnpResult>::New(
     google::protobuf::Arena* arena) {
   return google::protobuf::Arena::CreateMessage<
       photonvision::proto::ProtobufPNPResult>(arena);
 }
 
-photon::PNPResult wpi::Protobuf<photon::PNPResult>::Unpack(
+photon::PnpResult wpi::Protobuf<photon::PnpResult>::Unpack(
     const google::protobuf::Message& msg) {
   auto m = static_cast<const photonvision::proto::ProtobufPNPResult*>(&msg);
 
-  if (!m->is_present()) {
-    return photon::PNPResult();
-  }
-
-  return photon::PNPResult{true,
-                           wpi::UnpackProtobuf<frc::Transform3d>(m->best()),
-                           m->best_reproj_err(),
-                           wpi::UnpackProtobuf<frc::Transform3d>(m->alt()),
-                           m->alt_reproj_err(),
-                           m->ambiguity()};
+  return photon::PnpResult{photon::PnpResult_PhotonStruct{
+      wpi::UnpackProtobuf<frc::Transform3d>(m->best()),
+      wpi::UnpackProtobuf<frc::Transform3d>(m->alt()), m->best_reproj_err(),
+      m->alt_reproj_err(), m->ambiguity()}};
 }
 
-void wpi::Protobuf<photon::PNPResult>::Pack(google::protobuf::Message* msg,
-                                            const photon::PNPResult& value) {
+void wpi::Protobuf<photon::PnpResult>::Pack(google::protobuf::Message* msg,
+                                            const photon::PnpResult& value) {
   auto m = static_cast<photonvision::proto::ProtobufPNPResult*>(msg);
 
-  m->set_is_present(value.isPresent);
+  // m->set_is_present(value.isPresent);
   wpi::PackProtobuf(m->mutable_best(), value.best);
   m->set_best_reproj_err(value.bestReprojErr);
   wpi::PackProtobuf(m->mutable_alt(), value.alt);

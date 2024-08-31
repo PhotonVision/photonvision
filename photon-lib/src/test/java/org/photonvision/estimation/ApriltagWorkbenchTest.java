@@ -61,7 +61,6 @@ public class ApriltagWorkbenchTest {
                 new PhotonPoseEstimator(
                         tagLayout,
                         PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-                        cam,
                         robotToCamera);
 
         var field = new Field2d();
@@ -70,10 +69,11 @@ public class ApriltagWorkbenchTest {
         while (!Thread.interrupted()) {
             Thread.sleep(500);
 
-            var ret = pe.update();
-            System.out.println(ret);
-
-            field.setRobotPose(ret.get().estimatedPose.toPose2d());
+            for (var change : cam.getAllUnreadResults()) {
+                var ret = pe.update(change);
+                System.out.println(ret);
+                field.setRobotPose(ret.get().estimatedPose.toPose2d());
+            }
         }
     }
 }
