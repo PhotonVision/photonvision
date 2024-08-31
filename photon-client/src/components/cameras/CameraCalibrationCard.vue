@@ -451,7 +451,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           </v-col>
         </v-row>
         <v-row justify="center">
-          <v-col cols="12" sm="6" md="4">
+          <v-col cols="12">
             <v-btn
               color="accent"
               small
