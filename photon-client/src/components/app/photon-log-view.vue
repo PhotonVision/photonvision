@@ -2,7 +2,7 @@
 import { computed, inject, ref, watch } from "vue";
 import { LogLevel, type LogMessage } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
-import Entry from "./photon-log-entry.vue";
+import LogEntry from "@/components/app/photon-log-entry.vue";
 import VirtualList from "vue-virtual-scroll-list";
 
 const backendHost = inject<string>("backendHost");
@@ -66,11 +66,11 @@ document.addEventListener("keydown", (e) => {
 
 <template>
   <v-dialog v-model="useStateStore().showLogModal" width="1500" dark>
-    <v-card id="dialog-container" dark class="pa-6" color="primary" flat>
+    <v-card dark class="dialog-container pa-6" color="primary" flat>
       <!-- Logs header -->
       <v-row class="no-gutters pb-3">
         <v-col cols="4">
-          <v-card-title id="logs-title">Program Logs</v-card-title>
+          <v-card-title class="pa-0">Program Logs</v-card-title>
         </v-col>
         <v-col class="align-self-center pl-3" style="text-align: right">
           <v-btn text color="white" @click="handleLogExport">
@@ -88,7 +88,7 @@ document.addEventListener("keydown", (e) => {
           </v-btn>
           <v-btn text color="white" @click="handleLogClear">
             <v-icon left class="menu-icon"> mdi-trash-can-outline </v-icon>
-            <span class="menu-label">Clear</span>
+            <span class="menu-label">Clear Client Logs</span>
           </v-btn>
           <v-btn text color="white" @click="() => (useStateStore().showLogModal = false)">
             <v-icon left class="menu-icon"> mdi-close </v-icon>
@@ -99,9 +99,9 @@ document.addEventListener("keydown", (e) => {
 
       <v-divider />
 
-      <div id="dialog-data" class="">
+      <div class="dialog-data">
         <!-- Log view options -->
-        <v-row id="log-options" class="no-gutters">
+        <v-row class="log-options no-gutters">
           <v-col cols="12" md="5" class="align-self-center">
             <v-text-field
               v-model="searchQuery"
@@ -131,7 +131,7 @@ document.addEventListener("keydown", (e) => {
         </v-row>
 
         <!-- Log entry list display -->
-        <div id="log-display">
+        <div class="log-display">
           <v-card-text v-if="!logs.length" style="font-size: 18px; font-weight: 150; height: 100%; text-align: center">
             No available logs
           </v-card-text>
@@ -139,9 +139,9 @@ document.addEventListener("keydown", (e) => {
             v-else
             ref="logList"
             style="height: 100%; overflow-y: auto"
-            :data-key="'index'"
+            data-key="index"
             :data-sources="logs"
-            :data-component="Entry"
+            :data-component="LogEntry"
             :estimate-size="35"
             :keeps="logKeeps"
           />
@@ -152,21 +152,17 @@ document.addEventListener("keydown", (e) => {
 </template>
 
 <style scoped lang="scss">
-#logs-title {
-  padding: 0;
-}
-
-#dialog-container {
+.dialog-container {
   height: 90vh;
   min-height: 300px !important;
 }
 
-#dialog-data {
+.dialog-data {
   /* Dialog size - dialog padding - header - divider */
   height: calc(max(90vh, 300px) - 48px - 48px - 1px);
 }
 
-#log-display {
+.log-display {
   /* Dialog data size - options */
   height: calc(100% - 66px);
   padding: 10px;
@@ -175,11 +171,11 @@ document.addEventListener("keydown", (e) => {
 }
 
 @media only screen and (max-width: 960px) {
-  #log-options {
+  .log-options {
     padding-top: 16px;
   }
 
-  #log-display {
+  .log-display {
     /* Dialog data size - options */
     height: calc(100% - 118px);
   }
