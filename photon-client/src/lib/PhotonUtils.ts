@@ -1,5 +1,8 @@
 import type { Resolution } from "@/types/SettingTypes";
 
+// Common RegEx used for naming both pipelines and cameras
+export const nameChangeRegex = /^[A-Za-z0-9_ \-)(]*[A-Za-z0-9][A-Za-z0-9_ \-)(.]*$/;
+
 export const resolutionsAreEqual = (a: Resolution, b: Resolution) => {
   return a.height === b.height && a.width === b.width;
 };

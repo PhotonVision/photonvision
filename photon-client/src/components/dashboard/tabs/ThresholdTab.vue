@@ -1,19 +1,23 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { computed, getCurrentInstance, onBeforeUnmount, onMounted } from "vue";
-import PvRangeSlider from "@/components/common/pv-range-slider.vue";
+import { computed, ref } from "vue";
 import PvSwitch from "@/components/common/pv-switch.vue";
 import { useStateStore } from "@/stores/StateStore";
-import { ColorPicker, type HSV } from "@/lib/ColorPicker";
+import { useDisplay } from "vuetify";
+import PvRangeNumberSlider from "@/components/common/pv-range-number-slider.vue";
+import PvEyedropper from "@/components/common/pv-eyedropper.vue";
+import { ColorPicker, type HSV, type RGBA } from "@/lib/ColorPicker";
+import type { RGBColor } from "@/types/Components";
 
 const averageHue = computed<number>(() => {
-  const isHueInverted = useCameraSettingsStore().currentPipelineSettings.hueInverted;
-  let val = Object.values(useCameraSettingsStore().currentPipelineSettings.hsvHue).reduce((a, b) => a + b, 0);
+  const { hueInverted, hsvHue } = useCameraSettingsStore().currentPipelineSettings;
+  let val = Object.values(hsvHue).reduce((total, hue) => total + hue, 0);
 
-  if (isHueInverted) val += 180;
-  if (val > 360) val -= 360;
+  if (hueInverted) {
+    val += 180;
+  }
 
-  return val;
+  return val % 360;
 });
 
 // TODO fix pv-range-slider so that store access doesn't need to be deferred
@@ -30,35 +34,52 @@ const hsvValue = computed<[number, number]>({
   set: (v) => (useCameraSettingsStore().currentPipelineSettings.hsvValue = v)
 });
 
-let selectedEventMode: 0 | 1 | 2 | 3 = 0;
-const handleStreamClick = (event: MouseEvent) => {
-  if (!useStateStore().colorPickingMode || selectedEventMode === 0) return;
+enum ColorPickingModes {
+  Undefined = -1,
+  ShrinkRangeAroundVal = 0,
+  ExpandRangeAroundVal = 1,
+  AroundVal = 2
+}
 
-  const cameraStream = document.getElementById("input-camera-stream");
-  if (cameraStream === null) return;
+const colorPickerOpen = ref<boolean>(false);
+const colorPickingMode = ref<ColorPickingModes>(ColorPickingModes.Undefined);
+let inputShowing = true;
+let outputShowing = false;
+const startColorPicking = () => {
+  useStateStore().colorPickingMode = true;
+  inputShowing = useCameraSettingsStore().currentPipelineSettings.inputShouldShow;
+  outputShowing = useCameraSettingsStore().currentPipelineSettings.outputShouldShow;
+  useCameraSettingsStore().changeCurrentPipelineSetting(
+    { outputShouldDraw: false, inputShouldShow: true, outputShouldShow: false },
+    true
+  );
+};
+const stopColorPicking = () => {
+  useStateStore().colorPickingMode = false;
+  useCameraSettingsStore().changeCurrentPipelineSetting(
+    { outputShouldDraw: true, inputShouldShow: inputShowing, outputShouldShow: outputShowing },
+    true
+  );
+};
+const handleColorPick = (
+  selectedColor: RGBColor,
+  colorPickingMode: Exclude<ColorPickingModes, ColorPickingModes.Undefined>
+) => {
+  stopColorPicking();
 
-  const canvas = document.createElement("canvas");
-  canvas.width = cameraStream.clientWidth;
-  canvas.height = cameraStream.clientHeight;
+  // Convert RGB to RGBA
+  const rgba = Object.values(selectedColor);
+  rgba[3] = 0;
 
-  // Get the (x, y) position of the click with (0, 0) in the top left corner
-  const rect = cameraStream.getBoundingClientRect();
-  const x = Math.round(((event.clientX - rect.left) / rect.width) * cameraStream.clientWidth);
-  const y = Math.round(((event.clientY - rect.top) / rect.height) * cameraStream.clientHeight);
-
-  const context = canvas.getContext("2d");
-  if (context === null) return;
-
-  context.drawImage(cameraStream as CanvasImageSource, 0, 0, cameraStream.clientWidth, cameraStream.clientHeight);
-  const colorPicker = new ColorPicker(context.getImageData(x, y, 1, 1).data);
+  const pickerManager = new ColorPicker(rgba as RGBA);
 
   // Calculate HSV values based on the mode
   let selectedHSVData: [HSV, HSV] = [
     [0, 0, 0],
     [0, 0, 0]
   ];
-  if (selectedEventMode === 1) {
-    selectedHSVData = colorPicker.selectedColorRange();
+  if (colorPickingMode === ColorPickingModes.AroundVal) {
+    selectedHSVData = pickerManager.selectedColorRange();
   } else {
     const currentHue = Object.values(useCameraSettingsStore().currentPipelineSettings.hsvHue);
     const currentSaturation = Object.values(useCameraSettingsStore().currentPipelineSettings.hsvSaturation);
@@ -69,14 +90,13 @@ const handleStreamClick = (event: MouseEvent) => {
       [currentHue[1], currentSaturation[1], currentValue[1]]
     ];
 
-    if (selectedEventMode === 2) {
-      selectedHSVData = colorPicker.expandColorRange(currentData);
-    } else if (selectedEventMode === 3) {
-      selectedHSVData = colorPicker.shrinkColorRange(currentData);
+    if (colorPickingMode === ColorPickingModes.ExpandRangeAroundVal) {
+      selectedHSVData = pickerManager.expandColorRange(currentData);
+    } else if (colorPickingMode === ColorPickingModes.ShrinkRangeAroundVal) {
+      selectedHSVData = pickerManager.shrinkColorRange(currentData);
     }
   }
 
-  // Update the store and backend with the new HSV values
   useCameraSettingsStore().changeCurrentPipelineSetting(
     {
       hsvHue: [selectedHSVData[0][0], selectedHSVData[1][0]],
@@ -85,164 +105,136 @@ const handleStreamClick = (event: MouseEvent) => {
     },
     true
   );
-
-  disableColorPicking();
 };
 
-// Put some default values in case color picking was enabled before the enableColorPicking method is called
-let inputShowing = true;
-let outputShowing = false;
-const enableColorPicking = (mode: 1 | 2 | 3) => {
-  useStateStore().colorPickingMode = true;
-  inputShowing = useCameraSettingsStore().currentPipelineSettings.inputShouldShow;
-  outputShowing = useCameraSettingsStore().currentPipelineSettings.outputShouldShow;
-  useCameraSettingsStore().changeCurrentPipelineSetting(
-    { outputShouldDraw: false, inputShouldShow: true, outputShouldShow: false },
-    true
-  );
-  selectedEventMode = mode;
-};
-const disableColorPicking = () => {
-  useStateStore().colorPickingMode = false;
-  useCameraSettingsStore().changeCurrentPipelineSetting(
-    { outputShouldDraw: true, inputShouldShow: inputShowing, outputShouldShow: outputShowing },
-    true
-  );
-  selectedEventMode = 0;
-};
-
-onMounted(() => {
-  const cameraStream = document.getElementById("input-camera-stream");
-  if (cameraStream === null) return;
-
-  cameraStream.addEventListener("click", handleStreamClick);
-});
-onBeforeUnmount(() => {
-  const cameraStream = document.getElementById("input-camera-stream");
-  if (cameraStream === null) return;
-
-  cameraStream.removeEventListener("click", handleStreamClick);
-});
-
-const interactiveCols = computed(() =>
-  (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) &&
-  (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)
-    ? 9
-    : 8
+const { mdAndDown } = useDisplay();
+const labelCols = computed(
+  () => 12 - (mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 9 : 8)
 );
 </script>
 
 <template>
-  <div class="threshold-modifiers" :style="{ '--averageHue': averageHue }">
-    <pv-range-slider
-      id="hue-slider"
+  <div :style="{ '--averageHue': averageHue }">
+    <pv-range-number-slider
       v-model="hsvHue"
-      :class="useCameraSettingsStore().currentPipelineSettings.hueInverted ? 'inverted-slider' : 'normal-slider'"
+      class="hsv-hue-slider"
+      :flip-direction="useCameraSettingsStore().currentPipelineSettings.hueInverted"
       label="Hue"
-      tooltip="Describes color"
-      :min="0"
+      :label-cols="labelCols"
       :max="180"
-      :slider-cols="interactiveCols"
-      :inverted="useCameraSettingsStore().currentPipelineSettings.hueInverted"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvHue: value }, false)"
+      :min="0"
+      :step="1"
+      tooltip="Describes color"
+      :track-size="8"
+      @update:model-value="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvHue: value }, false)"
     />
-    <pv-range-slider
-      id="sat-slider"
+    <pv-range-number-slider
       v-model="hsvSaturation"
-      class="normal-slider"
+      class="hsv-sat-slider"
       label="Saturation"
+      :label-cols="labelCols"
+      :max="255"
+      :min="0"
+      :step="1"
       tooltip="Describes colorfulness; the smaller this value the 'whiter' the color becomes"
-      :min="0"
-      :max="255"
-      :slider-cols="interactiveCols"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvSaturation: value }, false)"
+      :track-size="8"
+      @update:model-value="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvSaturation: value }, false)
+      "
     />
-    <pv-range-slider
-      id="value-slider"
+    <pv-range-number-slider
       v-model="hsvValue"
-      class="normal-slider"
+      class="hsv-val-slider"
       label="Value"
-      tooltip="Describes lightness; the smaller this value the 'blacker' the color becomes"
-      :min="0"
+      :label-cols="labelCols"
       :max="255"
-      :slider-cols="interactiveCols"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvValue: value }, false)"
+      :min="0"
+      :step="1"
+      tooltip="Describes lightness; the smaller this value the 'blacker' the color becomes"
+      :track-size="8"
+      @update:model-value="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvValue: value }, false)"
     />
     <pv-switch
       v-model="useCameraSettingsStore().currentPipelineSettings.hueInverted"
       label="Invert Hue"
-      :switch-cols="interactiveCols"
+      :label-cols="labelCols"
       tooltip="Selects the hue range outside of the hue slider bounds instead of inside"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hueInverted: value }, false)"
+      @update:model-value="
+        (value) => {
+          useCameraSettingsStore().changeCurrentPipelineSetting({ hueInverted: value }, false);
+          colorPickingMode = ColorPickingModes.Undefined;
+        }
+      "
     />
-    <v-divider class="mt-3" />
-    <div>
-      <div class="pt-3 white--text">Color Picker</div>
-      <v-row justify="center" class="mt-3 mb-3">
-        <template v-if="!useStateStore().colorPickingMode">
+    <v-divider class="mt-3 mb-3" />
+    <v-row class="flex-nowrap" no-gutters>
+      <v-col cols="11">
+        <v-btn-toggle
+          v-model="colorPickingMode"
+          base-color="surface-variant"
+          :disabled="useStateStore().colorPickingMode"
+          divided
+          mandatory
+          style="width: 100%"
+        >
+          <v-btn append-icon="mdi-plus" style="width: 33%" text="Shrink Range" />
+          <v-btn append-icon="mdi-plus" style="width: 33%" text="Expand Range" />
           <v-btn
-            color="accent"
-            class="ma-2 black--text"
-            small
-            @click="enableColorPicking(useCameraSettingsStore().currentPipelineSettings.hueInverted ? 2 : 3)"
-          >
-            <v-icon left> mdi-minus </v-icon>
-            Shrink Range
-          </v-btn>
-          <v-btn color="accent" class="ma-2 black--text" small @click="enableColorPicking(1)">
-            <v-icon left> mdi-plus-minus </v-icon>
-            {{ useCameraSettingsStore().currentPipelineSettings.hueInverted ? "Exclude" : "Set to" }} Average
-          </v-btn>
-          <v-btn
-            color="accent"
-            class="ma-2 black--text"
-            small
-            @click="enableColorPicking(useCameraSettingsStore().currentPipelineSettings.hueInverted ? 3 : 2)"
-          >
-            <v-icon left> mdi-plus </v-icon>
-            Expand Range
-          </v-btn>
-        </template>
-        <template v-else>
-          <v-btn color="accent" class="ma-2 black--text" style="width: 30%" small @click="disableColorPicking">
-            Cancel
-          </v-btn>
-        </template>
-      </v-row>
-    </div>
+            append-icon="mdi-plus-minus"
+            style="width: 33%"
+            :text="`${useCameraSettingsStore().currentPipelineSettings.hueInverted ? 'Exclude' : 'Set to'} Average`"
+          />
+        </v-btn-toggle>
+      </v-col>
+      <v-col class="flex align-content-center pl-0 pl-sm-2 pl-md-4">
+        <pv-eyedropper
+          v-model="colorPickerOpen"
+          :disabled="colorPickingMode === ColorPickingModes.Undefined"
+          img-id="input-camera-stream"
+          @update:canceled="stopColorPicking"
+          @update:color-selected="
+            (color) =>
+              handleColorPick(color, colorPickingMode as Exclude<ColorPickingModes, ColorPickingModes.Undefined>)
+          "
+          @update:opened="startColorPicking"
+        />
+      </v-col>
+    </v-row>
+    <v-banner
+      v-show="colorPickerOpen"
+      bg-color="red"
+      class="mt-3"
+      density="compact"
+      icon="mdi-alert-circle-outline"
+      rounded
+      text-color="white"
+    >
+      Warning! A known bug causes viewfinder color to not update unless mouse is moved again. Don't worry, clicking will
+      select the right color.
+    </v-banner>
   </div>
 </template>
 
-<style scoped lang="css">
-.threshold-modifiers {
-  --averageHue: 0;
+<style scoped>
+.hsv-hue-slider >>> .v-slider .v-slider-track .v-slider-track__background {
+  background: linear-gradient(
+    to right,
+    #f00 0%,
+    #ff0 16.66%,
+    #0f0 33.33%,
+    #0ff 50%,
+    #00f 66.66%,
+    #f0f 83.33%,
+    #f00 100%
+  ) !important;
 }
-#hue-slider >>> .v-slider {
-  background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);
-  border-radius: 10px;
-  /* prettier-ignore */
-  box-shadow: 0 0 5px #333, inset 0 0 3px #333;
-}
-#sat-slider >>> .v-slider {
+.hsv-sat-slider >>> .v-slider .v-slider-track .v-slider-track__background {
   background: linear-gradient(to right, #fff 0%, hsl(var(--averageHue), 100%, 50%) 100%);
-  border-radius: 10px;
-  /* prettier-ignore */
-  box-shadow: 0 0 5px #333, inset 0 0 3px #333;
 }
-#value-slider >>> .v-slider {
+.hsv-val-slider >>> .v-slider .v-slider-track .v-slider-track__background {
   background: linear-gradient(to right, #000 0%, hsl(var(--averageHue), 100%, 50%) 100%);
-  border-radius: 10px;
-  /* prettier-ignore */
-  box-shadow: 0 0 5px #333, inset 0 0 3px #333;
 }
->>> .v-slider__thumb {
-  outline: black solid thin;
-}
-.normal-slider >>> .v-slider__track-fill {
-  outline: black solid thin;
-}
-
-.inverted-slider >>> .v-slider__track-background {
-  outline: black solid thin;
+:is(.hsv-hue-slider, .hsv-sat-slider, .hsv-val-slider) >>> .v-slider .v-slider-track .v-slider-track__fill {
+  height: 12% !important;
 }
 </style>

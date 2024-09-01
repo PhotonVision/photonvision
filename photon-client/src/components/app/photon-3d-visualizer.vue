@@ -15,7 +15,7 @@ import {
   Vector3,
   WebGLRenderer
 } from "three";
-import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
+import { TrackballControls } from "three/addons/controls/TrackballControls.js";
 
 const props = defineProps<{
   targets: PhotonTarget[];
@@ -196,10 +196,10 @@ watchEffect(() => {
     </v-row>
     <v-row style="margin-bottom: 24px">
       <v-col style="display: flex; justify-content: center">
-        <v-btn color="secondary" @click="resetCamFirstPerson"> First Person </v-btn>
+        <v-btn color="accent" text="First Person" @click="resetCamFirstPerson" />
       </v-col>
       <v-col style="display: flex; justify-content: center">
-        <v-btn color="secondary" @click="resetCamThirdPerson"> Third Person </v-btn>
+        <v-btn color="accent" text="Third Person" @click="resetCamThirdPerson" />
       </v-col>
     </v-row>
   </div>

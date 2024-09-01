@@ -1,15 +1,19 @@
 <script setup lang="ts">
-import { computed, inject, ref, onBeforeUnmount } from "vue";
+import PvTooltippedIcon from "@/components/common/pv-tooltipped-icon.vue";
+import { computed, inject, onBeforeUnmount, ref } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import loadingImage from "@/assets/images/loading.svg";
-import type { StyleValue } from "vue/types/jsx";
-import PvIcon from "@/components/common/pv-icon.vue";
 
-const props = defineProps<{
-  streamType: "Raw" | "Processed";
-  id: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    streamType: "Raw" | "Processed";
+    id?: string;
+  }>(),
+  {
+    id: "photon-camera-stream"
+  }
+);
 
 const streamSrc = computed<string>(() => {
   const port =
@@ -20,22 +24,6 @@ const streamSrc = computed<string>(() => {
   }
 
   return `http://${inject("backendHostname")}:${port}/stream.mjpg`;
-});
-const streamDesc = computed<string>(() => `${props.streamType} Stream View`);
-const streamStyle = computed<StyleValue>(() => {
-  if (useStateStore().colorPickingMode) {
-    return { width: "100%", cursor: "crosshair" };
-  }
-
-  return { width: "100%" };
-});
-
-const overlayStyle = computed<StyleValue>(() => {
-  if (useStateStore().colorPickingMode || streamSrc.value == loadingImage) {
-    return { display: "none" };
-  } else {
-    return {};
-  }
 });
 
 const handleCaptureClick = () => {
@@ -57,30 +45,43 @@ const handleFullscreenRequest = () => {
 const mjpgStream: any = ref(null);
 onBeforeUnmount(() => {
   if (!mjpgStream.value) return;
-  mjpgStream.value["src"] = null;
+  mjpgStream.value.src = null;
 });
 </script>
 
 <template>
   <div class="stream-container">
-    <img :id="id" crossorigin="anonymous" :src="streamSrc" :alt="streamDesc" :style="streamStyle" ref="mjpgStream" />
-    <div class="stream-overlay" :style="overlayStyle">
-      <pv-icon
+    <img
+      :id="id"
+      ref="mjpgStream"
+      :alt="streamType + ' Stream View'"
+      crossorigin="anonymous"
+      :src="streamSrc"
+      style="width: 100%"
+    />
+    <div
+      class="stream-overlay"
+      :style="(useStateStore().colorPickingMode || streamSrc === loadingImage) && { display: 'none' }"
+    >
+      <pv-tooltipped-icon
+        class="ma-1 mr-2"
+        clickable
         icon-name="mdi-camera-image"
         tooltip="Capture and save a frame of this stream"
-        class="ma-1 mr-2"
         @click="handleCaptureClick"
       />
-      <pv-icon
+      <pv-tooltipped-icon
+        class="ma-1 mr-2"
+        clickable
         icon-name="mdi-fullscreen"
         tooltip="Open this stream in fullscreen"
-        class="ma-1 mr-2"
         @click="handleFullscreenRequest"
       />
-      <pv-icon
+      <pv-tooltipped-icon
+        class="ma-1 mr-2"
+        clickable
         icon-name="mdi-open-in-new"
         tooltip="Open this stream in a new window"
-        class="ma-1 mr-2"
         @click="handlePopoutClick"
       />
     </div>
@@ -90,6 +91,8 @@ onBeforeUnmount(() => {
 <style scoped>
 .stream-container {
   position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .stream-overlay {

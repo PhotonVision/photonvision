@@ -7,6 +7,7 @@ import type {
   WebsocketPipelineResultUpdate
 } from "@/types/WebsocketTypes";
 import { defineStore } from "pinia";
+import { CircularBuffer } from "@/lib/CircularBuffer";
 
 export interface NTConnectionStatus {
   connected: boolean;
@@ -24,7 +25,8 @@ interface StateStore {
   currentCameraIndex: number;
 
   backendResults: Record<string, PipelineResult>;
-  multitagResultBuffer: Record<string, MultitagResult[]>;
+  multitagResultBufferSize: number;
+  multitagResultBuffer: Record<string, CircularBuffer<MultitagResult>>;
 
   colorPickingMode: boolean;
 
@@ -60,6 +62,7 @@ export const useStateStore = defineStore("state", {
       currentCameraIndex: 0,
 
       backendResults: {},
+      multitagResultBufferSize: 100,
       multitagResultBuffer: {},
 
       colorPickingMode: false,
@@ -83,8 +86,7 @@ export const useStateStore = defineStore("state", {
     currentPipelineResults(): PipelineResult | undefined {
       return this.backendResults[this.currentCameraIndex.toString()];
     },
-    currentMultitagBuffer(): MultitagResult[] | undefined {
-      if (!this.multitagResultBuffer[this.currentCameraIndex]) this.multitagResultBuffer[this.currentCameraIndex] = [];
+    currentMultitagBuffer(): CircularBuffer<MultitagResult> | undefined {
       return this.multitagResultBuffer[this.currentCameraIndex];
     }
   },
@@ -116,15 +118,10 @@ export const useStateStore = defineStore("state", {
       for (const key in data) {
         const multitagRes = data[key].multitagResult;
 
-        if (multitagRes) {
-          if (!this.multitagResultBuffer[key]) {
-            this.multitagResultBuffer[key] = [];
-          }
+        if (!multitagRes) return;
 
-          this.multitagResultBuffer[key].push(multitagRes);
-          if (this.multitagResultBuffer[key].length > 100) {
-            this.multitagResultBuffer[key].shift();
-          }
+        if (!this.multitagResultBuffer[key]) {
+          this.multitagResultBuffer[key] = new CircularBuffer(this.multitagResultBufferSize);
         }
       }
     },

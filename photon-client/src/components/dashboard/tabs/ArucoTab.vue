@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { PipelineType, type ActivePipelineSettings } from "@/types/PipelineTypes";
-import PvSlider from "@/components/common/pv-slider.vue";
-import PvSwitch from "@/components/common/pv-switch.vue";
-import PvRangeSlider from "@/components/common/pv-range-slider.vue";
-import PvSelect from "@/components/common/pv-select.vue";
-import { computed, getCurrentInstance } from "vue";
+import { type ActivePipelineSettings, ArucoPipelineSettings, PipelineType } from "@/types/PipelineTypes";
+import { computed } from "vue";
+import { useDisplay } from "vuetify";
 import { useStateStore } from "@/stores/StateStore";
+import PvDropdown from "@/components/common/pv-dropdown.vue";
+import PvSwitch from "@/components/common/pv-switch.vue";
+import PvNumberSlider from "@/components/common/pv-number-slider.vue";
+import PvRangeNumberSlider from "@/components/common/pv-range-number-slider.vue";
 
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
 // Defer reference to store access method
@@ -14,70 +15,87 @@ const currentPipelineSettings = computed<ActivePipelineSettings>(
   () => useCameraSettingsStore().currentPipelineSettings
 );
 
-const interactiveCols = computed(() =>
-  (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) &&
-  (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)
-    ? 9
-    : 8
+const threshWinSizes = computed<[number, number]>({
+  get: () =>
+    Object.values((useCameraSettingsStore().currentPipelineSettings as ArucoPipelineSettings).threshWinSizes) as [
+      number,
+      number
+    ],
+  set: (v) => ((useCameraSettingsStore().currentPipelineSettings as ArucoPipelineSettings).threshWinSizes = v)
+});
+
+const { mdAndDown } = useDisplay();
+const labelCols = computed(
+  () => 12 - (mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 9 : 8)
 );
 </script>
 
 <template>
   <div v-if="currentPipelineSettings.pipelineType === PipelineType.Aruco">
-    <pv-select
+    <pv-dropdown
       v-model="currentPipelineSettings.tagFamily"
-      label="Target family"
-      :items="['AprilTag Family 36h11', 'AprilTag Family 25h9', 'AprilTag Family 16h5']"
-      :select-cols="interactiveCols"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ tagFamily: value }, false)"
+      :items="
+        ['AprilTag Family 36h11', 'AprilTag Family 25h9', 'AprilTag Family 16h5'].map((v, i) => ({ name: v, value: i }))
+      "
+      label="Target Family"
+      :label-cols="labelCols"
+      @update:model-value="
+        (value: number) => useCameraSettingsStore().changeCurrentPipelineSetting({ tagFamily: value }, false)
+      "
     />
     <pv-switch
       v-model="currentPipelineSettings.useCornerRefinement"
-      class="pt-2"
       label="Refine Corners"
+      :label-cols="labelCols"
       tooltip="Further refine the initial corners with subpixel accuracy."
-      :switch-cols="interactiveCols"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ useCornerRefinement: value }, false)"
+      @update:model-value="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ useCornerRefinement: value }, false)
+      "
     />
-    <pv-range-slider
-      v-model="currentPipelineSettings.threshWinSizes"
+    <pv-range-number-slider
+      v-model="threshWinSizes"
       label="Thresh Min/Max Size"
-      tooltip="The minimum and maximum adaptive threshold window size. Larger windows tend more towards global thresholding, but small windows can be weak to noise."
-      :min="3"
+      :label-cols="labelCols"
       :max="255"
-      :slider-cols="interactiveCols"
+      :min="3"
       :step="2"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ threshWinSizes: value }, false)"
+      tooltip="The minimum and maximum adaptive threshold window size. Larger windows tend more towards global thresholding, but small windows can be weak to noise."
+      @update:model-value="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ threshWinSizes: value }, false)
+      "
     />
-    <pv-slider
+    <pv-number-slider
       v-model="currentPipelineSettings.threshStepSize"
-      class="pt-2"
-      :slider-cols="interactiveCols"
       label="Thresh Step Size"
-      tooltip="Smaller values will cause more steps between the min/max sizes. More, varied steps can improve detection robustness to lighting, but may decrease performance."
+      :label-cols="labelCols"
+      :max="128"
       :min="2"
-      :max="128"
       :step="1"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ threshStepSize: value }, false)"
+      tooltip="Smaller values will cause more steps between the min/max sizes. More, varied steps can improve detection robustness to lighting, but may decrease performance."
+      @update:model-value="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ threshStepSize: value }, false)
+      "
     />
-    <pv-slider
+    <pv-number-slider
       v-model="currentPipelineSettings.threshConstant"
-      class="pt-2"
-      :slider-cols="interactiveCols"
       label="Thresh Constant"
-      tooltip="Affects the threshold window mean value cutoff for all steps. Higher values can improve performance, but may harm detection rate."
-      :min="0"
+      :label-cols="labelCols"
       :max="128"
+      :min="0"
       :step="1"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ threshConstant: value }, false)"
+      tooltip="Affects the threshold window mean value cutoff for all steps. Higher values can improve performance, but may harm detection rate."
+      @update:model-value="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ threshConstant: value }, false)
+      "
     />
     <pv-switch
       v-model="currentPipelineSettings.debugThreshold"
-      class="pt-2"
       label="Debug Threshold"
+      :label-cols="labelCols"
       tooltip="Display the first threshold step to the color stream."
-      :switch-cols="interactiveCols"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ debugThreshold: value }, false)"
+      @update:model-value="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ debugThreshold: value }, false)
+      "
     />
   </div>
 </template>

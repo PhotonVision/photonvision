@@ -20,9 +20,9 @@ export class ColorPicker {
   public shrinkColorRange(currentRange: [HSV, HSV]) {
     const widenedHSV = this.widenRange([[...this.hsvData], [...this.hsvData]]);
 
-    //Tries to shrink the lower part of to widened HSV
+    // Tries to shrink the lower part of to widened HSV
     if (!this.shrinkRange(currentRange, widenedHSV[0])) {
-      //If the prev attempt failed, try to shrink the higher part of to widened HSV
+      // If the prev attempt failed, try to shrink the higher part of to widened HSV
       this.shrinkRange(currentRange, widenedHSV[1]);
     }
 
@@ -51,11 +51,11 @@ export class ColorPicker {
       [0, 0, 0]
     ];
     for (let i = 0; i < 3; i++) {
-      //Expanding the range by 10
+      // Expanding the range by 10
       expanded[0][i] = Math.max(0, range[0][i] - 10);
       expanded[1][i] = Math.min(255, range[1][i] + 10);
     }
-    expanded[1][0] = Math.min(180, expanded[1][0]); //h is up to 180
+    expanded[1][0] = Math.min(180, expanded[1][0]); // h is up to 180
     return expanded;
   }
 
@@ -66,10 +66,10 @@ export class ColorPicker {
 
     for (let i = 0; i < color.length; i++) {
       if (color[i] - range[0][i] < range[1][i] - color[i]) {
-        //shrink from min side
+        // shrink from min side
         range[0][i] = Math.min(range[0][i] + 10, range[1][i]);
       } else {
-        //shrink from max side
+        // shrink from max side
         range[1][i] = Math.max(range[1][i] - 10, range[0][i]);
       }
     }
@@ -79,9 +79,9 @@ export class ColorPicker {
 
   private RGBtoHSV(rgba: RGBA): HSV {
     // Normalize RGB ranges
-    let r = rgba[0],
-      g = rgba[1],
-      b = rgba[2];
+    let r = rgba[0];
+    let g = rgba[1];
+    let b = rgba[2];
     r = r / 255;
     g = g / 255;
     b = b / 255;

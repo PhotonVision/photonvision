@@ -11,6 +11,64 @@ const currentPipelineSettings = computed<ActivePipelineSettings>(
   () => useCameraSettingsStore().currentPipelineSettings
 );
 
+const resultsTableHeaders = computed(() => {
+  const headers = [];
+  if (
+    useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
+    useCameraSettingsStore().currentPipelineType === PipelineType.Aruco
+  ) {
+    headers.push({ title: "Fiducial ID", key: "id", align: "start" });
+  } else if (useCameraSettingsStore().currentPipelineType === PipelineType.ObjectDetection) {
+    headers.push({ title: "Class", key: "class", align: "center" });
+    headers.push({ title: "Confidence", key: "confidence", align: "center" });
+  }
+
+  if (!useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled) {
+    headers.push({ title: "Pitch θ°", key: "pitch", align: "center" });
+    headers.push({ title: "Yaw θ°", key: "yaw", align: "center" });
+    headers.push({ title: "Skew θ°", key: "skew", align: "center" });
+    headers.push({ title: "Area %", key: "area", align: "center" });
+  } else {
+    headers.push({
+      title: "Pose",
+      align: "center",
+      children: [
+        { title: "X Meters", key: "x", align: "center" },
+        { title: "Y Meters", key: "y", align: "center" },
+        { title: "Z Angle θ°", key: "theta", align: "center" }
+      ]
+    });
+  }
+
+  if (
+    (useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
+      useCameraSettingsStore().currentPipelineType === PipelineType.Aruco) &&
+    useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
+  ) {
+    headers.push({ title: "Ambiguity Ratio", key: "ambiguity", align: "center" });
+  }
+
+  return headers;
+});
+const resultsTableItems = computed(() =>
+  useStateStore().currentPipelineResults?.targets.map((t) => ({
+    id: t.fiducialId,
+    class: useStateStore().currentPipelineResults?.classNames[t.classId],
+    confidence: t.confidence.toFixed(2),
+    pitch: t.pitch.toFixed(2),
+    yaw: t.yaw.toFixed(2),
+    skew: t.skew.toFixed(2),
+    area: t.area.toFixed(2),
+    x: t.pose?.x.toFixed(2),
+    y: t.pose?.y.toFixed(2),
+    theta: toDeg(t.pose?.angle_z || 0).toFixed(2),
+    ambiguity: t.ambiguity >= 0 ? t.ambiguity.toFixed(2) : "(In Multi-Target)"
+  }))
+);
+
+// clear buffer button
+// resize buffer button
+
 const calculateStdDev = (values: number[]): number => {
   if (values.length < 2) return 0;
 
@@ -26,109 +84,25 @@ const calculateStdDev = (values: number[]): number => {
 
   return Math.sqrt(values.map((x) => Math.pow(angleModulus(x - mean), 2)).reduce((a, b) => a + b) / values.length);
 };
-const resetCurrentBuffer = () => {
-  // Need to clear the array in place
-  if (useStateStore().currentMultitagBuffer) useStateStore().currentMultitagBuffer!.length = 0;
-};
+const multitagStdDevData = computed(() => {
+  const multitagBufferData = useStateStore().currentMultitagBuffer?.toArray();
+  return {
+    x: calculateStdDev(multitagBufferData?.map((v) => v.bestTransform.x) || []),
+    y: calculateStdDev(multitagBufferData?.map((v) => v.bestTransform.y) || []),
+    z: calculateStdDev(multitagBufferData?.map((v) => v.bestTransform.z) || []),
+    theta_x: calculateStdDev(multitagBufferData?.map((v) => toDeg(v.bestTransform.angle_x)) || []),
+    theta_y: calculateStdDev(multitagBufferData?.map((v) => toDeg(v.bestTransform.angle_y)) || []),
+    theta_z: calculateStdDev(multitagBufferData?.map((v) => toDeg(v.bestTransform.angle_z)) || [])
+  };
+});
 </script>
 
 <template>
   <div>
-    <v-row align="start" class="pb-4">
-      <v-simple-table dense class="pt-2 pb-12">
-        <template #default>
-          <thead>
-            <tr>
-              <th
-                v-if="
-                  currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-                  currentPipelineSettings.pipelineType === PipelineType.Aruco
-                "
-                class="text-center white--text"
-              >
-                Fiducial ID
-              </th>
-              <template v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection">
-                <th class="text-center white--text">Class</th>
-                <th class="text-center white--text">Confidence</th>
-              </template>
-              <template v-if="!useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled">
-                <th class="text-center white--text">Pitch &theta;&deg;</th>
-                <th class="text-center white--text">Yaw &theta;&deg;</th>
-                <th class="text-center white--text">Skew &theta;&deg;</th>
-                <th class="text-center white--text">Area %</th>
-              </template>
-              <template v-else>
-                <th class="text-center white--text">X meters</th>
-                <th class="text-center white--text">Y meters</th>
-                <th class="text-center white--text">Z Angle &theta;&deg;</th>
-              </template>
-              <template
-                v-if="
-                  (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-                    currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
-                  useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
-                "
-              >
-                <th class="text-center white--text">Ambiguity Ratio</th>
-              </template>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(target, index) in useStateStore().currentPipelineResults?.targets"
-              :key="index"
-              class="white--text"
-            >
-              <td
-                v-if="
-                  currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-                  currentPipelineSettings.pipelineType === PipelineType.Aruco
-                "
-                class="text-center"
-              >
-                {{ target.fiducialId }}
-              </td>
-              <td
-                v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection"
-                class="text-center white--text"
-              >
-                {{ useStateStore().currentPipelineResults?.classNames[target.classId] }}
-              </td>
-              <td
-                v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection"
-                class="text-center white--text"
-              >
-                {{ target.confidence.toFixed(2) }}
-              </td>
-              <template v-if="!useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled">
-                <td class="text-center">{{ target.pitch.toFixed(2) }}&deg;</td>
-                <td class="text-center">{{ target.yaw.toFixed(2) }}&deg;</td>
-                <td class="text-center">{{ target.skew.toFixed(2) }}&deg;</td>
-                <td class="text-center">{{ target.area.toFixed(2) }}&deg;</td>
-              </template>
-              <template v-else>
-                <td class="text-center">{{ target.pose?.x.toFixed(2) }}&nbsp;m</td>
-                <td class="text-center">{{ target.pose?.y.toFixed(2) }}&nbsp;m</td>
-                <td class="text-center">{{ toDeg(target.pose?.angle_z || 0).toFixed(2) }}&deg;</td>
-              </template>
-              <template
-                v-if="
-                  (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-                    currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
-                  useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
-                "
-              >
-                <td class="text-center">
-                  {{ target.ambiguity >= 0 ? target.ambiguity.toFixed(2) : "(In Multi-Target)" }}
-                </td>
-              </template>
-            </tr>
-          </tbody>
-        </template>
-      </v-simple-table>
-    </v-row>
-    <v-container
+    <v-data-table :headers="resultsTableHeaders" hide-default-footer :items="resultsTableItems">
+      <template #no-data> No Targets Detected :( </template>
+    </v-data-table>
+    <div
       v-if="
         (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
           currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
@@ -137,178 +111,104 @@ const resetCurrentBuffer = () => {
         useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "
     >
-      <v-row class="pb-4 white--text">
-        <v-card-subtitle class="ma-0 pa-0 pb-4" style="font-size: 16px"
-          >Multi-tag pose, field-to-camera</v-card-subtitle
-        >
-        <v-simple-table dense>
-          <template #default>
-            <thead>
-              <tr class="white--text">
-                <th class="text-center white--text">X meters</th>
-                <th class="text-center white--text">Y meters</th>
-                <th class="text-center white--text">Z meters</th>
-                <th class="text-center white--text">X Angle &theta;&deg;</th>
-                <th class="text-center white--text">Y Angle &theta;&deg;</th>
-                <th class="text-center white--text">Z Angle &theta;&deg;</th>
-                <th class="text-center white--text">Tags</th>
-              </tr>
-            </thead>
-            <tbody v-show="useStateStore().currentPipelineResults?.multitagResult">
-              <tr>
-                <td class="text-center white--text">
-                  {{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.x.toFixed(2) }}&nbsp;m
-                </td>
-                <td class="text-center white--text">
-                  {{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.y.toFixed(2) }}&nbsp;m
-                </td>
-                <td class="text-center white--text">
-                  {{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.z.toFixed(2) }}&nbsp;m
-                </td>
-                <td class="text-center white--text">
-                  {{
-                    toDeg(useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_x || 0).toFixed(
-                      2
-                    )
-                  }}&deg;
-                </td>
-                <td class="text-center white--text">
-                  {{
-                    toDeg(useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_y || 0).toFixed(
-                      2
-                    )
-                  }}&deg;
-                </td>
-                <td class="text-center white--text">
-                  {{
-                    toDeg(useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_z || 0).toFixed(
-                      2
-                    )
-                  }}&deg;
-                </td>
-                <td class="text-center white--text">
-                  {{ useStateStore().currentPipelineResults?.multitagResult?.fiducialIDsUsed }}
-                </td>
-              </tr>
-            </tbody>
+      <div>
+        <v-divider class="mb-3 mt-3" />
+        <v-table class="pb-6" density="compact">
+          <template #top>
+            <span class="text-subtitle-1">Multi-tag Pose Results</span>
           </template>
-        </v-simple-table>
-      </v-row>
-      <v-row class="pb-4 white--text" style="display: flex; flex-direction: column">
-        <v-card-subtitle class="ma-0 pa-0 pb-4 pr-4" style="font-size: 16px"
-          >Multi-tag pose standard deviation over the last
-          {{ useStateStore().currentMultitagBuffer?.length || "NaN" }}/100 samples
-        </v-card-subtitle>
-        <v-btn color="secondary" class="mb-4 mt-1" style="width: min-content" depressed @click="resetCurrentBuffer"
-          >Reset Samples</v-btn
-        >
-        <v-simple-table dense>
-          <template #default>
-            <thead>
-              <tr>
-                <th class="text-center white--text">X meters</th>
-                <th class="text-center white--text">Y meters</th>
-                <th class="text-center white--text">Z meters</th>
-                <th class="text-center white--text">X Angle &theta;&deg;</th>
-                <th class="text-center white--text">Y Angle &theta;&deg;</th>
-                <th class="text-center white--text">Z Angle &theta;&deg;</th>
-              </tr>
-            </thead>
-            <tbody v-show="useStateStore().currentPipelineResults?.multitagResult">
-              <tr>
-                <td class="text-center white--text">
-                  {{
-                    calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.x) || []).toFixed(
-                      5
-                    )
-                  }}&nbsp;m
-                </td>
-                <td class="text-center white--text">
-                  {{
-                    calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.y) || []).toFixed(
-                      5
-                    )
-                  }}&nbsp;m
-                </td>
-                <td class="text-center white--text">
-                  {{
-                    calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.z) || []).toFixed(
-                      5
-                    )
-                  }}&nbsp;m
-                </td>
-                <td class="text-center white--text">
-                  {{
-                    calculateStdDev(
-                      useStateStore().currentMultitagBuffer?.map((v) => toDeg(v.bestTransform.angle_x)) || []
-                    ).toFixed(5)
-                  }}&deg;
-                </td>
-                <td class="text-center white--text">
-                  {{
-                    calculateStdDev(
-                      useStateStore().currentMultitagBuffer?.map((v) => toDeg(v.bestTransform.angle_y)) || []
-                    ).toFixed(5)
-                  }}&deg;
-                </td>
-                <td class="text-center white--text">
-                  {{
-                    calculateStdDev(
-                      useStateStore().currentMultitagBuffer?.map((v) => toDeg(v.bestTransform.angle_z)) || []
-                    ).toFixed(5)
-                  }}&deg;
-                </td>
-              </tr>
-            </tbody>
-          </template>
-        </v-simple-table>
-      </v-row>
-    </v-container>
+          <thead>
+            <tr>
+              <th class="text-center">X meters</th>
+              <th class="text-center">Y meters</th>
+              <th class="text-center">Z meters</th>
+              <th class="text-center">X Angle &theta;&deg;</th>
+              <th class="text-center">Y Angle &theta;&deg;</th>
+              <th class="text-center">Z Angle &theta;&deg;</th>
+              <th class="text-center">Tags</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="useStateStore().currentPipelineResults?.multitagResult">
+              <td class="text-center">
+                {{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.x.toFixed(2) }}&nbsp;m
+              </td>
+              <td class="text-center">
+                {{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.y.toFixed(2) }}&nbsp;m
+              </td>
+              <td class="text-center">
+                {{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.z.toFixed(2) }}&nbsp;m
+              </td>
+              <td class="text-center">
+                {{
+                  toDeg(useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_x || 0).toFixed(2)
+                }}&deg;
+              </td>
+              <td class="text-center">
+                {{
+                  toDeg(useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_y || 0).toFixed(2)
+                }}&deg;
+              </td>
+              <td class="text-center">
+                {{
+                  toDeg(useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_z || 0).toFixed(2)
+                }}&deg;
+              </td>
+              <td class="text-center">
+                {{ useStateStore().currentPipelineResults?.multitagResult?.fiducialIDsUsed }}
+              </td>
+            </tr>
+            <tr v-else>
+              <td class="text-center pt-3" colspan="7">No Multitag Result Available</td>
+            </tr>
+          </tbody>
+        </v-table>
+        <v-expansion-panels>
+          <v-expansion-panel>
+            <v-expansion-panel-title
+              >Multi-tag pose standard deviation over the last
+              {{ useStateStore().currentMultitagBuffer?.getBufferLength() || 0 }}/{{
+                useStateStore().multitagResultBufferSize
+              }}
+              samples</v-expansion-panel-title
+            >
+            <v-expansion-panel-text>
+              <v-table class="pb-6" density="compact">
+                <thead>
+                  <tr>
+                    <th class="text-center">X meters</th>
+                    <th class="text-center">Y meters</th>
+                    <th class="text-center">Z meters</th>
+                    <th class="text-center">X Angle &theta;&deg;</th>
+                    <th class="text-center">Y Angle &theta;&deg;</th>
+                    <th class="text-center">Z Angle &theta;&deg;</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-if="useStateStore().currentMultitagBuffer?.isEmpty() || true">
+                    <td class="text-center pt-3" colspan="6">Multitag Result Buffer is Empty</td>
+                  </tr>
+                  <tr v-else>
+                    <td class="text-center">{{ multitagStdDevData.x.toFixed(5) }}&nbsp;m</td>
+                    <td class="text-center">{{ multitagStdDevData.y.toFixed(5) }}&nbsp;m</td>
+                    <td class="text-center">{{ multitagStdDevData.z.toFixed(5) }}&nbsp;m</td>
+                    <td class="text-center">{{ multitagStdDevData.theta_x.toFixed(5) }}&deg;</td>
+                    <td class="text-center">{{ multitagStdDevData.theta_y.toFixed(5) }}&deg;</td>
+                    <td class="text-center">{{ multitagStdDevData.theta_z.toFixed(5) }}&deg;</td>
+                  </tr>
+                </tbody>
+              </v-table>
+              <v-btn
+                color="accent"
+                :disabled="useStateStore().currentMultitagBuffer?.isEmpty() || true"
+                style="width: 100%"
+                text="Clear Sample Buffer"
+                @click="useStateStore().currentMultitagBuffer?.clear()"
+              />
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+        </v-expansion-panels>
+      </div>
+    </div>
   </div>
 </template>
-
-<style scoped lang="scss">
-.v-data-table {
-  background-color: #006492 !important;
-  width: 100%;
-  font-size: 1rem !important;
-
-  thead {
-    tr {
-      th {
-        font-size: 1rem !important;
-        color: white !important;
-      }
-    }
-  }
-  tbody {
-    :hover {
-      td {
-        background-color: #005281 !important;
-      }
-    }
-    tr {
-      td {
-        font-size: 1rem !important;
-        color: white !important;
-      }
-    }
-  }
-
-  ::-webkit-scrollbar {
-    width: 0;
-    height: 0.55em;
-    border-radius: 5px;
-  }
-
-  ::-webkit-scrollbar-track {
-    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-    border-radius: 10px;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background-color: #ffd843;
-    border-radius: 10px;
-  }
-}
-</style>

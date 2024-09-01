@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import PvSelect from "@/components/common/pv-select.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { type ActivePipelineSettings, PipelineType, RobotOffsetPointMode } from "@/types/PipelineTypes";
 import PvSwitch from "@/components/common/pv-switch.vue";
-import { computed, getCurrentInstance } from "vue";
+import { computed } from "vue";
 import { RobotOffsetType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
+import { useDisplay } from "vuetify";
+import PvDropdown from "@/components/common/pv-dropdown.vue";
 
 const isTagPipeline = computed(
   () =>
@@ -34,6 +35,7 @@ const offsetPoints = computed<MetricItem[]>(() => {
         { header: "Second Offset Point", value: `(${secondPoint[0].toFixed(2)}°, ${secondPoint[1].toFixed(2)}°)` },
         { header: "Second Offset Point Area", value: `${secondPointArea.toFixed(2)}%` }
       ];
+    // eslint-disable-next-line default-case-last
     default:
     case RobotOffsetPointMode.None:
       return [];
@@ -46,44 +48,44 @@ const currentPipelineSettings = computed<ActivePipelineSettings>(
   () => useCameraSettingsStore().currentPipelineSettings
 );
 
-const interactiveCols = computed(() =>
-  (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) &&
-  (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)
-    ? 9
-    : 8
+const { mdAndDown } = useDisplay();
+const labelCols = computed(
+  () => 12 - (mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 9 : 8)
 );
 </script>
 
 <template>
   <div>
-    <pv-select
+    <pv-dropdown
       v-model="useCameraSettingsStore().currentPipelineSettings.contourTargetOffsetPointEdge"
+      :items="['Center', 'Top', 'Bottom', 'Left', 'Right'].map((v, i) => ({ name: v, value: i }))"
       label="Target Offset Point"
+      :label-cols="labelCols"
       tooltip="Changes where the 'center' of the target is (used for calculating e.g. pitch and yaw)"
-      :items="['Center', 'Top', 'Bottom', 'Left', 'Right']"
-      :select-cols="interactiveCols"
-      @input="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOffsetPointEdge: value }, false)
+      @update:model-value="
+        (value: number) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOffsetPointEdge: value }, false)
       "
     />
-    <pv-select
+    <pv-dropdown
       v-if="!isTagPipeline"
       v-model="useCameraSettingsStore().currentPipelineSettings.contourTargetOrientation"
+      :items="['Portrait', 'Landscape'].map((v, i) => ({ name: v, value: i }))"
       label="Target Orientation"
+      :label-cols="labelCols"
       tooltip="Used to determine how to calculate target landmarks (e.g. the top, left, or bottom of the target)"
-      :items="['Portrait', 'Landscape']"
-      :select-cols="interactiveCols"
-      @input="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOrientation: value }, false)
+      @update:model-value="
+        (value: number) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOrientation: value }, false)
       "
     />
     <pv-switch
       v-model="useCameraSettingsStore().currentPipelineSettings.outputShowMultipleTargets"
-      label="Show Multiple Targets"
-      tooltip="If enabled, up to five targets will be displayed and sent via PhotonLib, instead of just one"
       :disabled="isTagPipeline"
-      :switch-cols="interactiveCols"
-      @input="
+      label="Show Multiple Targets"
+      :label-cols="labelCols"
+      tooltip="If enabled, up to five targets will be displayed and sent via PhotonLib, instead of just one"
+      @update:model-value="
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ outputShowMultipleTargets: value }, false)
       "
     />
@@ -95,11 +97,13 @@ const interactiveCols = computed(() =>
         useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "
       v-model="currentPipelineSettings.doMultiTarget"
-      label="Do Multi-Target Estimation"
-      tooltip="If enabled, all visible fiducial targets will be used to provide a single pose estimate from their combined model."
-      :switch-cols="interactiveCols"
       :disabled="!isTagPipeline"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ doMultiTarget: value }, false)"
+      label="Do Multi-Target Estimation"
+      :label-cols="labelCols"
+      tooltip="If enabled, all visible fiducial targets will be used to provide a single pose estimate from their combined model."
+      @update:model-value="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ doMultiTarget: value }, false)
+      "
     />
     <pv-switch
       v-if="
@@ -109,13 +113,15 @@ const interactiveCols = computed(() =>
         useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "
       v-model="currentPipelineSettings.doSingleTargetAlways"
-      label="Always Do Single-Target Estimation"
-      tooltip="If disabled, visible fiducial targets used for multi-target estimation will not also be used for single-target estimation."
-      :switch-cols="interactiveCols"
       :disabled="!isTagPipeline || !currentPipelineSettings.doMultiTarget"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ doSingleTargetAlways: value }, false)"
+      label="Always Do Single-Target Estimation"
+      :label-cols="labelCols"
+      tooltip="If disabled, visible fiducial targets used for multi-target estimation will not also be used for single-target estimation."
+      @update:model-value="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ doSingleTargetAlways: value }, false)
+      "
     />
-    <v-divider />
+    <v-divider class="mt-3 mb-3" />
     <table
       v-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode !== RobotOffsetPointMode.None"
       class="metrics-table mt-3 mb-3"
@@ -131,13 +137,16 @@ const interactiveCols = computed(() =>
         </td>
       </tr>
     </table>
-    <pv-select
+    <pv-dropdown
       v-model="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode"
+      :items="['None', 'Single Point', 'Dual Point'].map((v, i) => ({ name: v, value: i }))"
       label="Robot Offset Mode"
+      :label-cols="labelCols"
       tooltip="Used to add an arbitrary offset to the location of the targeting crosshair"
-      :items="['None', 'Single Point', 'Dual Point']"
-      :select-cols="interactiveCols"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ offsetRobotOffsetMode: value }, false)"
+      @update:model-value="
+        (value: number) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ offsetRobotOffsetMode: value }, false)
+      "
     />
     <v-row
       v-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode !== RobotOffsetPointMode.None"
@@ -149,14 +158,12 @@ const interactiveCols = computed(() =>
       >
         <v-col>
           <v-btn
-            small
             color="accent"
+            small
             style="width: 100%"
-            class="black--text"
+            text="Take Point"
             @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Single)"
-          >
-            Take Point
-          </v-btn>
+          />
         </v-col>
       </v-row>
       <v-row
@@ -164,36 +171,30 @@ const interactiveCols = computed(() =>
       >
         <v-col>
           <v-btn
-            small
             color="accent"
+            small
             style="width: 100%"
-            class="black--text"
+            text="Take First Point"
             @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.DualFirst)"
-          >
-            Take First Point
-          </v-btn>
+          />
         </v-col>
         <v-col>
           <v-btn
-            small
             color="accent"
+            small
             style="width: 100%"
-            class="black--text"
+            text="Take Second Point"
             @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.DualSecond)"
-          >
-            Take Second Point
-          </v-btn>
+          />
         </v-col>
       </v-row>
       <v-col>
         <v-btn
           small
-          color="yellow darken-3"
           style="width: 100%"
+          text="Clear All Points"
           @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Clear)"
-        >
-          Clear All Points
-        </v-btn>
+        />
       </v-col>
     </v-row>
   </div>

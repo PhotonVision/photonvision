@@ -8,16 +8,7 @@ const trackedTargets = computed<PhotonTarget[]>(() => useStateStore().currentPip
 </script>
 
 <template>
-  <div>
-    <v-row style="width: 100%">
-      <v-col>
-        <span class="white--text">Target Visualization</span>
-      </v-col>
-    </v-row>
-    <v-row style="width: 100%">
-      <v-col style="display: flex; align-items: center; justify-content: center">
-        <photon3d-visualizer :targets="trackedTargets" />
-      </v-col>
-    </v-row>
+  <div class="pt-4">
+    <photon3d-visualizer :targets="trackedTargets" />
   </div>
 </template>
