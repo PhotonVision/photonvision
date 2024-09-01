@@ -1,49 +1,32 @@
-import Vue from "vue";
-import VueRouter from "vue-router";
+import { createRouter, createWebHashHistory } from "vue-router/auto";
+import { routes } from "vue-router/auto-routes";
 
-import DashboardView from "@/views/DashboardView.vue";
-import CameraSettingsView from "@/views/CameraSettingsView.vue";
-import GeneralSettingsView from "@/views/GeneralSettingsView.vue";
-import DocsView from "@/views/DocsView.vue";
-import NotFoundView from "@/views/NotFoundView.vue";
-
-Vue.use(VueRouter);
-
-const router = new VueRouter({
+const router = createRouter({
   // Using HTML5 History Mode is problematic with Javalin because each route is treated as a server endpoint which causes Javalin to return a 404 error before being redirected to the UI.
-  // mode: "history",
-  base: import.meta.env.BASE_URL,
-  routes: [
-    {
-      path: "/",
-      redirect: "/dashboard"
-    },
-    {
-      path: "/dashboard",
-      name: "Dashboard",
-      component: DashboardView
-    },
-    {
-      path: "/cameras",
-      name: "Cameras",
-      component: CameraSettingsView
-    },
-    {
-      path: "/settings",
-      name: "Settings",
-      component: GeneralSettingsView
-    },
-    {
-      path: "/docs",
-      name: "Docs",
-      component: DocsView
-    },
-    {
-      path: "*",
-      name: "NotFound",
-      component: NotFoundView
+  history: createWebHashHistory(),
+  routes: routes
+});
+
+router.addRoute({ path: "/", redirect: "/dashboard" });
+router.addRoute({ path: "/:pathMatch(.*)*", redirect: "/not_found" });
+
+// Workaround for https://github.com/vitejs/vite/issues/11804
+router.onError((err, to) => {
+  if (err?.message?.includes?.("Failed to fetch dynamically imported module")) {
+    if (!localStorage.getItem("vuetify:dynamic-reload")) {
+      console.log("Reloading page to fix dynamic import error");
+      localStorage.setItem("vuetify:dynamic-reload", "true");
+      location.assign(to.fullPath);
+    } else {
+      console.error("Dynamic import error, reloading page did not fix it", err);
     }
-  ]
+  } else {
+    console.error(err);
+  }
+});
+
+router.isReady().then(() => {
+  localStorage.removeItem("vuetify:dynamic-reload");
 });
 
 export default router;

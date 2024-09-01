@@ -1,5 +1,3 @@
-import { defineStore } from "pinia";
-import type { LogMessage } from "@/types/SettingTypes";
 import type { AutoReconnectingWebsocket } from "@/lib/AutoReconnectingWebsocket";
 import type { MultitagResult, PipelineResult } from "@/types/PhotonTrackingTypes";
 import type {
@@ -7,7 +5,8 @@ import type {
   WebsocketLogMessage,
   WebsocketNTUpdate,
   WebsocketPipelineResultUpdate
-} from "@/types/WebsocketDataTypes";
+} from "@/types/WebsocketTypes";
+import { defineStore } from "pinia";
 
 export interface NTConnectionStatus {
   connected: boolean;
@@ -29,6 +28,7 @@ interface StateStore {
 
   colorPickingMode: boolean;
 
+  // TODO move this into pure calib
   calibrationData: {
     imageCount: number;
     videoFormatIndex: number;
@@ -96,7 +96,8 @@ export const useStateStore = defineStore("state", {
     addLogFromWebsocket(data: WebsocketLogMessage) {
       this.logMessages.push({
         level: data.logMessage.logLevel,
-        message: data.logMessage.logMessage
+        message: data.logMessage.logMessage,
+        timestamp: new Date()
       });
     },
     updateNTConnectionStatusFromWebsocket(data: WebsocketNTUpdate) {

@@ -3,22 +3,22 @@ import { computed, inject, ref } from "vue";
 import { LogLevel, type LogMessage } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 
+const backendHost = inject<string>("backendHost");
+
 const selectedLogLevels = ref<LogLevel[]>([LogLevel.ERROR, LogLevel.WARN, LogLevel.INFO]);
 
 const logs = computed<LogMessage[]>(() =>
   useStateStore().logMessages.filter((message) => selectedLogLevels.value.includes(message.level))
 );
 
-const backendHost = inject<string>("backendHost");
-
 const getLogColor = (level: LogLevel): string => {
   switch (level) {
     case LogLevel.ERROR:
-      return "red";
+      return "error";
     case LogLevel.WARN:
-      return "yellow";
+      return "warning";
     case LogLevel.INFO:
-      return "green";
+      return "info";
     case LogLevel.DEBUG:
       return "white";
   }
@@ -30,61 +30,61 @@ const getLogLevelFromIndex = (index: number): string => {
 };
 
 const exportLogFile = ref();
-
 const handleLogExport = () => {
   exportLogFile.value.click();
 };
 
 document.addEventListener("keydown", (e) => {
-  switch (e.key) {
-    case "`":
-      useStateStore().$patch((state) => (state.showLogModal = !state.showLogModal));
-      break;
+  if (e.key === "`") {
+    useStateStore().$patch((state) => (state.showLogModal = !state.showLogModal));
   }
 });
 </script>
 
 <template>
-  <v-dialog v-model="useStateStore().showLogModal" width="1500" dark>
-    <v-card dark class="pt-3" color="primary" flat>
+  <v-dialog v-model="useStateStore().showLogModal" width="1500">
+    <v-card class="pt-3">
       <v-row class="heading-container pl-6 pr-6">
         <v-col>
           <v-card-title>View Program Logs</v-card-title>
         </v-col>
-        <v-col class="align-self-center">
+        <v-col class="align-self-center" style="display: flex">
           <v-btn
             color="secondary"
-            style="margin-left: auto; max-width: 500px; width: 100%"
             depressed
+            prepend-icon="mdi-download"
+            style="margin-left: auto; max-width: 500px"
+            text="Download Current Log"
             @click="handleLogExport"
-          >
-            <v-icon left class="open-icon"> mdi-download </v-icon>
-            <span class="open-label">Download Current Log</span>
-
-            <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
-            <a
-              ref="exportLogFile"
-              style="color: black; text-decoration: none; display: none"
-              :href="`http://${backendHost}/api/utils/photonvision-journalctl.txt`"
-              download="photonvision-journalctl.txt"
-              target="_blank"
-            />
-          </v-btn>
+          />
+          <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
+          <a
+            ref="exportLogFile"
+            download="photonvision-journalctl.txt"
+            :href="`http://${backendHost}/api/utils/photonvision-journalctl.txt`"
+            style="color: black; text-decoration: none; display: none"
+            target="_blank"
+          />
         </v-col>
       </v-row>
-      <div class="pr-6 pl-6">
-        <v-btn-toggle v-model="selectedLogLevels" dark multiple class="fill mb-4 overflow-x-auto">
-          <v-btn v-for="level in [0, 1, 2, 3]" :key="level" color="secondary" class="fill">
-            {{ getLogLevelFromIndex(level) }}
-          </v-btn>
+
+      <div class="pr-6 pl-6 pt-3">
+        <v-btn-toggle
+          v-model="selectedLogLevels"
+          base-color="surface-variant"
+          class="mb-4 overflow-x-auto"
+          multiple
+          style="width: 100%"
+        >
+          <v-btn v-for="level in [0, 1, 2, 3]" :key="level" style="width: 25%" :text="getLogLevelFromIndex(level)" />
         </v-btn-toggle>
         <v-card-text v-if="logs.length === 0" style="font-size: 18px; font-weight: 600">
           There are no logs to show
         </v-card-text>
-        <v-virtual-scroll v-else :items="logs" item-height="50" height="600">
+        <v-virtual-scroll v-else height="600" :items="logs">
           <template #default="{ item }">
-            <div :class="[getLogColor(item.level) + '--text', 'log-item']">
-              {{ item.message }}
+            <div :class="'text-' + getLogColor(item.level)">
+              [{{ (item.timestamp as Date).toTimeString().split(" ")[0] }}] {{ item.message }}
             </div>
           </template>
         </v-virtual-scroll>
@@ -94,22 +94,13 @@ document.addEventListener("keydown", (e) => {
 
       <v-card-actions>
         <v-spacer />
-        <v-btn color="white" text @click="() => (useStateStore().showLogModal = false)"> Close </v-btn>
+        <v-btn color="white" text="Close" @click="() => (useStateStore().showLogModal = false)" />
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
 <style scoped>
-.v-btn-toggle.fill {
-  width: 100%;
-  height: 100%;
-}
-
-.v-btn-toggle.fill > .v-btn {
-  width: 25%;
-  height: 100%;
-}
 @media only screen and (max-width: 512px) {
   .heading-container {
     flex-direction: column;

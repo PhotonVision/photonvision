@@ -9,7 +9,7 @@ import type {
 import { NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import axios from "axios";
-import type { WebsocketSettingsUpdate } from "@/types/WebsocketDataTypes";
+import type { WebsocketSettingsUpdate } from "@/types/WebsocketTypes";
 import type { AprilTagFieldLayout } from "@/types/PhotonTrackingTypes";
 
 interface GeneralSettingsStore {

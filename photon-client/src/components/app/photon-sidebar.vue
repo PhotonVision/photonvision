@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance } from "vue";
+import { computed } from "vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
+import { useDisplay, useTheme } from "vuetify";
+
+const { mdAndUp } = useDisplay();
 
 const compact = computed<boolean>({
   get: () => {
@@ -12,111 +15,102 @@ const compact = computed<boolean>({
   }
 });
 
-// Vuetify2 doesn't yet support the useDisplay API so this is required to access the prop when using the Composition API
-const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndUp || false);
+const themeHandler = useTheme();
+const currentThemeIcon = computed(() => themeHandler.current.value.variables.icon);
+
+const themeSwitch = computed<boolean>({
+  get: () => themeHandler.global.current.value.dark,
+  set: (v) => (themeHandler.global.name.value = v ? "PhotonVisionDarkTheme" : "PhotonVisionClassicTheme")
+});
+
+const cycleTheme = () => {
+  themeHandler.global.name.value = themeHandler.global.current.value.dark
+    ? "PhotonVisionClassicTheme"
+    : "PhotonVisionDarkTheme";
+};
 </script>
 
 <template>
-  <v-navigation-drawer dark app permanent :mini-variant="compact || !mdAndUp" color="primary">
-    <v-list>
-      <!-- List item for the heading; note that there are some tricks in setting padding and image width make things look right -->
-      <v-list-item :class="compact || !mdAndUp ? 'pr-0 pl-0' : ''" style="display: flex; justify-content: center">
-        <v-list-item-icon class="mr-0">
-          <img v-if="!(compact || !mdAndUp)" class="logo" src="@/assets/images/logoLarge.svg" alt="large logo" />
-          <img v-else class="logo" src="@/assets/images/logoSmall.svg" alt="small logo" />
-        </v-list-item-icon>
-      </v-list-item>
+  <v-navigation-drawer permanent :rail="compact || !mdAndUp">
+    <div class="mt-2 pb-6" style="height: 155px">
+      <div>
+        <v-img v-if="!compact && mdAndUp" alt="large logo" class="logo" src="@/assets/images/logoLarge.svg" />
+        <v-img v-else alt="small logo" class="logo" src="@/assets/images/logoSmall.svg" />
+      </div>
+      <div style="display: flex; justify-content: center">
+        <v-switch
+          v-if="!compact && mdAndUp"
+          v-model="themeSwitch"
+          append-icon="mdi-controller"
+          hide-details
+          prepend-icon="mdi-controller-classic"
+          style="justify-items: center; max-width: 120px"
+        />
+        <v-btn v-else class="mt-4" :icon="currentThemeIcon" size="large" variant="plain" @click="cycleTheme" />
+      </div>
+    </div>
 
+    <v-list>
       <v-list-item link to="/dashboard">
-        <v-list-item-icon>
-          <v-icon>mdi-view-dashboard</v-icon>
-        </v-list-item-icon>
-        <v-list-item-content>
-          <v-list-item-title>Dashboard</v-list-item-title>
-        </v-list-item-content>
+        <template #prepend>
+          <v-icon icon="mdi-view-dashboard" />
+        </template>
+        <v-list-item-title style="padding: 12px 0">Dashboard</v-list-item-title>
       </v-list-item>
-      <v-list-item ref="camerasTabOpener" link to="/cameras">
-        <v-list-item-icon>
-          <v-icon>mdi-camera</v-icon>
-        </v-list-item-icon>
-        <v-list-item-content>
-          <v-list-item-title>Cameras</v-list-item-title>
-        </v-list-item-content>
+      <v-list-item link to="/cameras">
+        <template #prepend>
+          <v-icon icon="mdi-camera" />
+        </template>
+        <v-list-item-title style="padding: 12px 0">Cameras</v-list-item-title>
       </v-list-item>
       <v-list-item link to="/settings">
-        <v-list-item-icon>
-          <v-icon>mdi-cog</v-icon>
-        </v-list-item-icon>
-        <v-list-item-content>
-          <v-list-item-title>Settings</v-list-item-title>
-        </v-list-item-content>
+        <template #prepend>
+          <v-icon icon="mdi-cog" />
+        </template>
+        <v-list-item-title style="padding: 12px 0">Settings</v-list-item-title>
       </v-list-item>
       <v-list-item link to="/docs">
-        <v-list-item-icon>
-          <v-icon>mdi-bookshelf</v-icon>
-        </v-list-item-icon>
-        <v-list-item-content>
-          <v-list-item-title>Documentation</v-list-item-title>
-        </v-list-item-content>
+        <template #prepend>
+          <v-icon icon="mdi-bookshelf" />
+        </template>
+        <v-list-item-title style="padding: 12px 0">Documentation</v-list-item-title>
       </v-list-item>
+
       <v-list-item v-if="mdAndUp" link @click="() => (compact = !compact)">
-        <v-list-item-icon>
-          <v-icon v-if="compact || !mdAndUp"> mdi-chevron-right </v-icon>
-          <v-icon v-else> mdi-chevron-left </v-icon>
-        </v-list-item-icon>
-        <v-list-item-content>
-          <v-list-item-title>Compact Mode</v-list-item-title>
-        </v-list-item-content>
+        <template #prepend>
+          <v-icon v-if="compact || !mdAndUp" icon="mdi-chevron-right" />
+          <v-icon v-else icon="mdi-chevron-left" />
+        </template>
+        <v-list-item-title style="padding: 12px 0">Compact Mode</v-list-item-title>
       </v-list-item>
-
-      <div style="position: absolute; bottom: 0; left: 0">
-        <v-list-item>
-          <v-list-item-icon>
-            <v-icon v-if="useSettingsStore().network.runNTServer"> mdi-server </v-icon>
-            <v-icon v-else-if="useStateStore().ntConnectionStatus.connected"> mdi-robot </v-icon>
-            <v-icon v-else style="border-radius: 100%"> mdi-robot-off </v-icon>
-          </v-list-item-icon>
-          <v-list-item-content>
-            <v-list-item-title v-if="useSettingsStore().network.runNTServer" class="text-wrap">
-              NetworkTables server running for
-              <span class="accent--text">{{ useStateStore().ntConnectionStatus.clients || 0 }}</span> clients
-            </v-list-item-title>
-            <v-list-item-title
-              v-else-if="useStateStore().ntConnectionStatus.connected && useStateStore().backendConnected"
-              class="text-wrap"
-              style="flex-direction: column; display: flex"
-            >
-              NetworkTables Server Connected!
-              <span class="accent--text">
-                {{ useStateStore().ntConnectionStatus.address }}
-              </span>
-            </v-list-item-title>
-            <v-list-item-title v-else class="text-wrap" style="flex-direction: column; display: flex">
-              Not connected to NetworkTables Server!
-            </v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-
-        <v-list-item>
-          <v-list-item-icon>
-            <v-icon v-if="useStateStore().backendConnected"> mdi-server-network </v-icon>
-            <v-icon v-else style="border-radius: 100%"> mdi-server-network-off </v-icon>
-          </v-list-item-icon>
-          <v-list-item-content>
-            <v-list-item-title class="text-wrap">
-              {{ useStateStore().backendConnected ? "Backend connected" : "Trying to connect to backend" }}
-            </v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-      </div>
+    </v-list>
+    <v-list style="position: absolute; bottom: 0">
+      <v-list-item>
+        <template #prepend>
+          <v-icon v-if="useSettingsStore().network.runNTServer" icon="mdi-server" />
+          <v-icon v-else-if="useStateStore().ntConnectionStatus.connected" icon="mdi-robot" />
+          <v-icon v-else icon="mdi-robot-off" style="border-radius: 100%" />
+        </template>
+        <v-list-item-title>NT Status</v-list-item-title>
+        <v-list-item-subtitle v-if="useSettingsStore().network.runNTServer">
+          Server Mode: <span class="text-accent">{{ useStateStore().ntConnectionStatus.clients || 0 }}</span> clients
+        </v-list-item-subtitle>
+        <v-list-item-subtitle
+          v-else-if="useStateStore().ntConnectionStatus.connected && useStateStore().backendConnected"
+        >
+          Connected to <span class="text-accent">{{ useStateStore().ntConnectionStatus.address }}</span>
+        </v-list-item-subtitle>
+        <v-list-item-subtitle v-else> Not connected </v-list-item-subtitle>
+      </v-list-item>
+      <v-list-item>
+        <template #prepend>
+          <v-icon v-if="useStateStore().backendConnected" icon="mdi-server-network" />
+          <v-icon v-else icon="mdi-server-network-off" style="border-radius: 100%" />
+        </template>
+        <v-list-item-title>Backend Status</v-list-item-title>
+        <v-list-item-subtitle v-if="useStateStore().backendConnected"> Connected </v-list-item-subtitle>
+        <v-list-item-subtitle v-else> Not connected </v-list-item-subtitle>
+      </v-list-item>
     </v-list>
   </v-navigation-drawer>
 </template>
-
-<style scoped>
-.logo {
-  width: 100%;
-  height: 70px;
-  object-fit: contain;
-}
-</style>

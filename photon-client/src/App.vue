@@ -1,15 +1,15 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { AutoReconnectingWebsocket } from "@/lib/AutoReconnectingWebsocket";
 import { inject } from "vue";
 import PhotonSidebar from "@/components/app/photon-sidebar.vue";
-import PhotonLogView from "@/components/app/photon-log-view.vue";
-import PhotonErrorSnackbar from "@/components/app/photon-error-snackbar.vue";
+import PhotonLogViewer from "@/components/app/photon-log-viewer.vue";
+import PhotonAlertLayout from "@/components/app/photon-alert-layout.vue";
 
-const is_demo = import.meta.env.MODE === "demo";
-if (!is_demo) {
+const isDemo = import.meta.env.MODE === "demo";
+if (!isDemo) {
   const websocket = new AutoReconnectingWebsocket(
     `ws://${inject("backendHost")}/websocket_data`,
     () => {
@@ -50,38 +50,41 @@ if (!is_demo) {
 </script>
 
 <template>
-  <v-app>
-    <photon-sidebar />
-    <v-main>
-      <v-container class="main-container" fluid fill-height>
-        <v-layout>
-          <v-flex>
+  <photon-alert-layout>
+    <v-app>
+      <photon-sidebar />
+      <v-main>
+        <v-container class="main-container" fill-height fluid>
+          <v-layout>
             <router-view />
-          </v-flex>
-        </v-layout>
-      </v-container>
-    </v-main>
-
-    <photon-log-view />
-    <photon-error-snackbar />
-  </v-app>
+          </v-layout>
+        </v-container>
+      </v-main>
+      <photon-log-viewer />
+    </v-app>
+  </photon-alert-layout>
 </template>
 
 <style lang="scss">
-@import "vuetify/src/styles/settings/_variables";
-
-@media #{map-get($display-breakpoints, 'md-and-down')} {
-  html {
-    font-size: 14px !important;
-  }
-}
+@import "vuetify/settings";
 
 .main-container {
-  background-color: #232c37;
   padding: 0 !important;
 }
 
 #title {
   color: #ffd843;
+}
+
+body {
+  font-family: "Prompt", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  @media #{map-get($display-breakpoints, 'md-and-down')} {
+    font-size: 14px !important;
+  }
 }
 </style>

@@ -1,9 +1,7 @@
-import Vue from "vue";
-import App from "@/App.vue";
-
-import { createPinia, PiniaVuePlugin } from "pinia";
-import router from "@/router";
-import vuetify from "@/plugins/vuetify";
+import "unfonts.css";
+import { registerPlugins } from "@/plugins";
+import App from "./App.vue";
+import { createApp } from "vue";
 import axios from "axios";
 
 type PhotonClientRuntimeMode = "production" | "development" | "local-network-development";
@@ -28,16 +26,10 @@ switch (runtimeMode as PhotonClientRuntimeMode) {
 
 axios.defaults.baseURL = `http://${backendHost}/api`;
 
-// Handle Plugins
-Vue.use(PiniaVuePlugin);
+const app = createApp(App);
 
-new Vue({
-  router,
-  vuetify,
-  pinia: createPinia(),
-  provide: {
-    backendHost: backendHost,
-    backendHostname: backendHostname
-  },
-  render: (h) => h(App)
-}).$mount("#app");
+registerPlugins(app);
+
+app.provide("backendHost", backendHostname);
+app.provide("backendHostname", backendHostname);
+app.mount("#app");

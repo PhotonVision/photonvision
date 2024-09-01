@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import type {
-  CalibrationTagFamilies,
   CalibrationBoardTypes,
+  CalibrationTagFamilies,
   CameraCalibrationResult,
   CameraSettings,
   CameraSettingsChangeRequest,
@@ -11,8 +11,8 @@ import type {
 } from "@/types/SettingTypes";
 import { PlaceholderCameraSettings } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
-import type { WebsocketCameraSettingsUpdate } from "@/types/WebsocketDataTypes";
-import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
+import type { WebsocketCameraSettingsUpdate } from "@/types/WebsocketTypes";
+import { WebsocketPipelineType } from "@/types/WebsocketTypes";
 import type { ActiveConfigurablePipelineSettings, ActivePipelineSettings, PipelineType } from "@/types/PipelineTypes";
 import axios from "axios";
 import { resolutionsAreEqual } from "@/lib/PhotonUtils";

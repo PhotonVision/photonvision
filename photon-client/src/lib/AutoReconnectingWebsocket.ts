@@ -1,5 +1,5 @@
 import { decode, encode } from "@msgpack/msgpack";
-import type { IncomingWebsocketData } from "@/types/WebsocketDataTypes";
+import type { IncomingWebsocketData } from "@/types/WebsocketTypes";
 
 /**
  * {@link WebSocket} wrapper class that automatically reconnects to the provided host address if the connection was closed by the remote host or a connection failure.
@@ -44,7 +44,7 @@ export class AutoReconnectingWebsocket {
    * @see isConnected
    *
    */
-  send(data, encodeData = true) {
+  send(data: any, encodeData = true) {
     // Only send data if the websocket is open
     if (this.isConnected()) {
       if (encodeData) {

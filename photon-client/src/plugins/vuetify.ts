@@ -1,44 +1,62 @@
-import Vue from "vue";
-import Vuetify from "vuetify";
-import "vuetify/dist/vuetify.min.css";
 import "@mdi/font/css/materialdesignicons.css";
-import type { VuetifyThemeVariant } from "vuetify/types/services/theme";
+import "vuetify/styles";
 
-Vue.use(Vuetify);
+import { createVuetify, type ThemeDefinition } from "vuetify";
 
-const darkTheme: VuetifyThemeVariant = Object.freeze({
-  primary: "#006492",
-  secondary: "#39A4D5",
-  accent: "#FFD843",
-  background: "#232C37",
+const dataColors = {
   error: "#FF5252",
   info: "#2196F3",
   success: "#4CAF50",
   warning: "#FFC107"
-});
+};
 
-const lightTheme: VuetifyThemeVariant = Object.freeze({
-  primary: "#006492",
-  secondary: "#39A4D5",
-  accent: "#FFD843",
-  background: "#232C37",
-  error: "#FF5252",
-  info: "#2196F3",
-  success: "#4CAF50",
-  warning: "#FFC107"
-});
+const PhotonVisionClassicTheme: ThemeDefinition = {
+  dark: false,
+  colors: {
+    background: "#232C37",
+    primary: "#006492",
+    surface: "#006492",
+    secondary: "#39A4D5",
+    "surface-variant": "#39A4D5",
+    accent: "#FFD843",
+    "surface-light": "#FFD843",
+    ...dataColors
+  },
+  variables: {
+    icon: "mdi-controller-classic"
+  }
+};
 
-export default new Vuetify({
+const PhotonVisionDarkTheme: ThemeDefinition = {
+  dark: true,
+  colors: {
+    primary: "#006492",
+    secondary: "#39A4D5",
+    accent: "#FFD843",
+    ...dataColors
+  },
+  variables: {
+    icon: "mdi-controller"
+  }
+};
+
+export default createVuetify({
   theme: {
+    defaultTheme: "PhotonVisionClassicTheme",
     themes: {
-      light: lightTheme,
-      dark: darkTheme
+      PhotonVisionClassicTheme,
+      PhotonVisionDarkTheme
     }
   },
-  breakpoint: {
+  display: {
+    mobileBreakpoint: "sm",
     thresholds: {
-      md: 1460,
-      lg: 2000
+      xs: 0,
+      sm: 600,
+      md: 1400,
+      lg: 2000,
+      xl: 2560,
+      xxl: 3200
     }
   }
 });

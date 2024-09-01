@@ -71,6 +71,7 @@ export enum LogLevel {
 export interface LogMessage {
   level: LogLevel;
   message: string;
+  timestamp: Date;
 }
 
 export interface Resolution {
