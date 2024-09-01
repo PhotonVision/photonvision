@@ -7,18 +7,31 @@ withDefaults(
     tooltip?: string;
     labelCols?: number;
     disabled?: boolean;
+    step?: number;
+    min?: number;
+    max?: number;
   }>(),
   {
     labelCols: 4,
-    disabled: false
+    disabled: false,
+    step: 1
   }
 );
 
-const model = defineModel<boolean>({ required: true });
+const model = defineModel<number>({ required: true });
 </script>
 
 <template>
   <pv-input-layout :label="label" :label-cols="labelCols" :tooltip="tooltip" tooltip-location="right">
-    <v-switch v-model="model" color="accent" :disabled="disabled" hide-details />
+    <v-text-field
+      v-model="model"
+      base-color="accent"
+      :disabled="disabled"
+      hide-details
+      :max="max"
+      :min="min"
+      :step="step"
+      type="number"
+    />
   </pv-input-layout>
 </template>

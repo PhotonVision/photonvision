@@ -1,51 +1,37 @@
-<script setup lang="ts">
-import { computed } from "vue";
-import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
+<script setup lang="ts" generic="T">
+import PvInputLayout from "@/components/common/pv-input-layout.vue";
+import type { RadioItem } from "@/types/Components";
 
-const props = withDefaults(
+const model = defineModel<T>({ required: true });
+
+withDefaults(
   defineProps<{
-    label?: string;
+    label: string;
     tooltip?: string;
-    // TODO fully update v-model usage in custom components on Vue3 update
-    value: number;
+    labelCols?: number;
     disabled?: boolean;
-    inputCols?: number;
-    list: string[];
+    tooltipLocation?: "top" | "bottom" | "left" | "right" | "center";
+    items: RadioItem<T>[];
+    inline?: boolean;
   }>(),
   {
+    labelCols: 4,
     disabled: false,
-    inputCols: 8
+    tooltipLocation: "right",
+    inline: false
   }
 );
-
-const emit = defineEmits<{
-  (e: "input", value: number): void;
-}>();
-
-const localValue = computed({
-  get: () => props.value,
-  set: (v) => emit("input", v)
-});
 </script>
 
 <template>
-  <div>
-    <v-row dense align="center">
-      <v-col :cols="12 - inputCols">
-        <tooltipped-label :tooltip="tooltip" :label="label" />
-      </v-col>
-      <v-col :cols="inputCols">
-        <v-radio-group v-model="localValue" row dark :mandatory="true">
-          <v-radio
-            v-for="(radioName, index) in list"
-            :key="index"
-            color="#ffd843"
-            :label="radioName"
-            :value="index"
-            :disabled="disabled"
-          />
-        </v-radio-group>
-      </v-col>
-    </v-row>
-  </div>
+  <pv-input-layout :label="label" :label-cols="labelCols" :tooltip="tooltip" tooltip-location="right">
+    <v-radio-group v-model="model" :disabled="disabled" :inline="inline">
+      <div v-for="(item, index) in items" :key="index">
+        <v-radio color="accent" :disabled="item.disabled" :label="item.name" :value="item.value" />
+        <v-tooltip v-if="item.tooltip" activator="parent" :location="tooltipLocation" open-delay="150">{{
+          item.tooltip
+        }}</v-tooltip>
+      </div>
+    </v-radio-group>
+  </pv-input-layout>
 </template>
