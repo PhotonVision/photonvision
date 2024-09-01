@@ -54,10 +54,8 @@ if (!isDemo) {
     <v-app>
       <photon-sidebar />
       <v-main>
-        <v-container class="main-container" fill-height fluid>
-          <v-layout>
-            <router-view />
-          </v-layout>
+        <v-container class="fill-height main-container" fluid>
+          <router-view />
         </v-container>
       </v-main>
       <photon-log-viewer />
