@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import CamerasCard from "@/components/dashboard/CamerasCard.vue";
-import CameraAndPipelineSelectCard from "@/components/dashboard/CameraAndPipelineSelectCard.vue";
-import StreamConfigCard from "@/components/dashboard/StreamConfigCard.vue";
-import PipelineConfigCard from "@/components/dashboard/ConfigOptions.vue";
+import CamerasViewCard from "@/components/dashboard/cards/CamerasViewCard.vue";
+import CameraAndPipelineConfigCard from "@/components/dashboard/cards/CameraAndPipelineConfigCard.vue";
+import StreamConfigCard from "@/components/dashboard/cards/StreamConfigCard.vue";
+import PipelineConfigCard from "@/components/dashboard/cards/PipelineConfigOptionsCard.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 
@@ -41,13 +41,19 @@ const cameraViewType = computed<number[]>({
 
 <template>
   <v-container class="pa-3" fluid>
-    <v-row no-gutters align="center" justify="center">
-      <v-col cols="12" class="pb-3 pr-lg-3" lg="8" align-self="stretch">
-        <CamerasCard v-model="cameraViewType" />
+    <v-row align="center" class="pb-3" justify="center" no-gutters>
+      <v-col align-self="stretch" class="pr-lg-3 pb-3 pb-lg-0" cols="12" lg="8">
+        <CamerasViewCard v-model="cameraViewType" />
       </v-col>
-      <v-col cols="12" class="pb-3" lg="4" style="display: flex; flex-direction: column" align-self="stretch">
-        <CameraAndPipelineSelectCard />
-        <StreamConfigCard v-model="cameraViewType" />
+      <v-col align-self="stretch" cols="12" lg="4">
+        <v-row class="flex-column pt-0 mt-0 fill-height" no-gutters>
+          <v-col class="pb-3">
+            <CameraAndPipelineConfigCard />
+          </v-col>
+          <v-col>
+            <StreamConfigCard v-model="cameraViewType" />
+          </v-col>
+        </v-row>
       </v-col>
     </v-row>
     <PipelineConfigCard />

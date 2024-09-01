@@ -8,7 +8,7 @@
         Please use the sidebar to find what you are looking for
       </v-card-subtitle>
     </div>
-    <img src="@/assets/images/notfound.webp" alt="missing-page" style="margin-top: 64px" />
+    <img alt="missing-page" src="@/assets/images/notfound.webp" style="margin-top: 64px" />
   </div>
 </template>
 

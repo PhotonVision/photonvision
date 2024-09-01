@@ -37,7 +37,7 @@ const cameraViewType = computed<number[]>({
 
 <template>
   <div>
-    <v-row no-gutters class="pa-3">
+    <v-row class="pa-3" no-gutters>
       <v-col cols="12" md="7">
         <CamerasCard />
         <CalibrationCard />
