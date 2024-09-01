@@ -58,7 +58,7 @@ onBeforeUnmount(() => {
       crossorigin="anonymous"
       :src="streamSrc"
       style="width: 100%"
-    />
+    >
     <div
       class="stream-overlay"
       :style="(useStateStore().colorPickingMode || streamSrc === loadingImage) && { display: 'none' }"

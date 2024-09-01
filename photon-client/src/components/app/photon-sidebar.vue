@@ -46,7 +46,14 @@ const cycleTheme = () => {
           prepend-icon="mdi-controller-classic"
           style="justify-items: center; max-width: 120px"
         />
-        <v-btn v-else class="mt-4" :icon="currentThemeIcon" size="large" variant="plain" @click="cycleTheme" />
+        <v-btn
+          v-else
+          class="mt-4"
+          :icon="currentThemeIcon"
+          size="large"
+          variant="plain"
+          @click="cycleTheme"
+        />
       </div>
     </div>
 

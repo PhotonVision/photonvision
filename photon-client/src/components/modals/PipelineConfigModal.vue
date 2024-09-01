@@ -136,11 +136,10 @@ onUpdated(() => {
                   />
                 </template>
                 <template #message>
-                  <v-card-text
-                    >By resetting a pipeline's setting you are restoring default settings for pipeline type
-                    <b>{{ item.type }}</b
-                    >. There is no way to undo this.</v-card-text
-                  >
+                  <v-card-text>
+                    By resetting a pipeline's setting you are restoring default settings for pipeline type
+                    <b>{{ item.type }}</b>. There is no way to undo this.
+                  </v-card-text>
                 </template>
               </ConfirmationModal>
               <ConfirmationModal @on-ok="deletePipelineByIndex(item.idx)">
@@ -155,10 +154,10 @@ onUpdated(() => {
                   />
                 </template>
                 <template #message>
-                  <v-card-text
-                    >Are you sure you want to delete the pipeline <b class="text-error">{{ item.name }}</b> this
-                    <b>cannot</b> be undone. Backup settings beforehand to be safe.</v-card-text
-                  >
+                  <v-card-text>
+                    Are you sure you want to delete the pipeline <b class="text-error">{{ item.name }}</b> this
+                    <b>cannot</b> be undone. Backup settings beforehand to be safe.
+                  </v-card-text>
                 </template>
               </ConfirmationModal>
             </div>

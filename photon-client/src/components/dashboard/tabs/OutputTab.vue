@@ -93,8 +93,8 @@ const labelCols = computed(
       v-if="
         (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
           currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
-        useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
-        useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
+          useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
+          useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "
       v-model="currentPipelineSettings.doMultiTarget"
       :disabled="!isTagPipeline"
@@ -109,8 +109,8 @@ const labelCols = computed(
       v-if="
         (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
           currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
-        useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
-        useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
+          useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
+          useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "
       v-model="currentPipelineSettings.doSingleTargetAlways"
       :disabled="!isTagPipeline || !currentPipelineSettings.doMultiTarget"

@@ -28,9 +28,9 @@ withDefaults(
     <v-radio-group v-model="model" :disabled="disabled" :inline="inline">
       <div v-for="(item, index) in items" :key="index">
         <v-radio color="accent" :disabled="item.disabled" :label="item.name" :value="item.value" />
-        <v-tooltip v-if="item.tooltip" activator="parent" :location="tooltipLocation" open-delay="150">{{
-          item.tooltip
-        }}</v-tooltip>
+        <v-tooltip v-if="item.tooltip" activator="parent" :location="tooltipLocation" open-delay="150">
+          {{ item.tooltip }}
+        </v-tooltip>
       </div>
     </v-radio-group>
   </pv-input-layout>

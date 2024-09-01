@@ -38,7 +38,14 @@ const emit = defineEmits<{
       variant="plain"
       @click="emit('click')"
     />
-    <v-icon v-else :color="color" :disabled="disabled" :icon="iconName" v-bind="vuetifyProps" :size="size" />
+    <v-icon
+      v-else
+      :color="color"
+      :disabled="disabled"
+      :icon="iconName"
+      v-bind="vuetifyProps"
+      :size="size"
+    />
     <v-tooltip activator="parent" :location="tooltipLocation" open-delay="150">{{ tooltip }}</v-tooltip>
   </div>
 </template>

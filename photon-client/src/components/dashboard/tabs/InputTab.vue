@@ -144,7 +144,7 @@ const labelCols = computed<number>(
     <v-banner
       v-show="
         useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
-        useCameraSettingsStore().currentPipelineSettings.inputImageRotationMode != 0
+          useCameraSettingsStore().currentPipelineSettings.inputImageRotationMode != 0
       "
       bg-color="red"
       class="mt-3"
@@ -159,7 +159,7 @@ const labelCols = computed<number>(
       v-model="useCameraSettingsStore().currentPipelineSettings.inputImageRotationMode"
       :disabled="
         useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
-        useCameraSettingsStore().currentPipelineSettings.inputImageRotationMode == 0
+          useCameraSettingsStore().currentPipelineSettings.inputImageRotationMode == 0
       "
       :items="cameraRotations"
       label="Orientation"

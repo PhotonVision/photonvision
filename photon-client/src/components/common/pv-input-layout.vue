@@ -17,9 +17,9 @@ withDefaults(
   <v-row align="center" dense>
     <v-col :cols="labelCols">
       <span class="text-white" style="cursor: text !important">{{ label }}</span>
-      <v-tooltip v-if="tooltip" activator="parent" :location="tooltipLocation" open-delay="150">{{
-        tooltip
-      }}</v-tooltip>
+      <v-tooltip v-if="tooltip" activator="parent" :location="tooltipLocation" open-delay="150">
+        {{ tooltip }}
+      </v-tooltip>
     </v-col>
     <v-col>
       <slot />

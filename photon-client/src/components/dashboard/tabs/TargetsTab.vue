@@ -106,9 +106,9 @@ const multitagStdDevData = computed(() => {
       v-if="
         (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
           currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
-        currentPipelineSettings.doMultiTarget &&
-        useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
-        useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
+          currentPipelineSettings.doMultiTarget &&
+          useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
+          useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "
     >
       <div>
@@ -165,13 +165,13 @@ const multitagStdDevData = computed(() => {
         </v-table>
         <v-expansion-panels>
           <v-expansion-panel>
-            <v-expansion-panel-title
-              >Multi-tag pose standard deviation over the last
+            <v-expansion-panel-title>
+              Multi-tag pose standard deviation over the last
               {{ useStateStore().currentMultitagBuffer?.getBufferLength() || 0 }}/{{
                 useStateStore().multitagResultBufferSize
               }}
-              samples</v-expansion-panel-title
-            >
+              samples
+            </v-expansion-panel-title>
             <v-expansion-panel-text>
               <v-table class="pb-6" density="compact">
                 <thead>
