@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { computed, onBeforeMount, ref } from "vue";
-import { useStateStore } from "@/stores/StateStore";
-import PvIcon from "@/components/common/pv-icon.vue";
+import PvTooltippedIcon from "@/components/common/pv-tooltipped-icon.vue";
 
 interface MetricItem {
   header: string;
   value?: string;
 }
 
-const generalMetrics = computed<MetricItem[]>(() => [
+const instanceMetrics = computed<MetricItem[]>(() => [
   {
     header: "Version",
     value: useSettingsStore().general.version || "Unknown"
@@ -27,7 +26,6 @@ const generalMetrics = computed<MetricItem[]>(() => [
     value: useSettingsStore().general.gpuAcceleration || "Unknown"
   }
 ]);
-
 const platformMetrics = computed<MetricItem[]>(() => {
   const stats = [
     {
@@ -66,6 +64,7 @@ const platformMetrics = computed<MetricItem[]>(() => {
     }
   ];
 
+  // Don't display NPU usage header if not possible
   if (useSettingsStore().metrics.npuUsage) {
     stats.push({
       header: "NPU Usage",
@@ -76,31 +75,38 @@ const platformMetrics = computed<MetricItem[]>(() => {
   return stats;
 });
 
-const metricsLastFetched = ref("Never");
+const lastUpdatedString = computed<string>(() => {
+  const dateOpt = useSettingsStore().metrics.lastReceived;
+
+  if (!dateOpt) return "Never";
+
+  const pad = (num: number): string => {
+    return String(num).padStart(2, "0");
+  };
+
+  return `${pad(dateOpt.getHours())}:${pad(dateOpt.getMinutes())}:${pad(dateOpt.getSeconds())}`;
+});
+
+const fetchingMetrics = ref(false);
 const fetchMetrics = () => {
+  fetchingMetrics.value = true;
   useSettingsStore()
     .requestMetricsUpdate()
     .catch((error) => {
-      if (error.request) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "Unable to fetch metrics! The backend didn't respond."
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "An error occurred while trying to fetch metrics."
-        });
-      }
+      // TODO handle reporting HTTP errors
+      // if (error.request) {
+      //   useStateStore().showSnackbarMessage({
+      //     color: "error",
+      //     message: "Unable to fetch metrics! The backend didn't respond."
+      //   });
+      // } else {
+      //   useStateStore().showSnackbarMessage({
+      //     color: "error",
+      //     message: "An error occurred while trying to fetch metrics."
+      //   });
+      // }
     })
-    .finally(() => {
-      const pad = (num: number): string => {
-        return String(num).padStart(2, "0");
-      };
-
-      const date = new Date();
-      metricsLastFetched.value = `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-    });
+    .finally(() => (fetchingMetrics.value = false));
 };
 
 onBeforeMount(() => {
@@ -109,108 +115,40 @@ onBeforeMount(() => {
 </script>
 
 <template>
-  <v-card dark class="mb-3 pr-6 pb-3" style="background-color: #006492">
-    <v-card-title style="display: flex; justify-content: space-between">
-      <span>Stats</span>
-      <pv-icon icon-name="mdi-reload" color="white" tooltip="Reload Metrics" hover @click="fetchMetrics" />
-    </v-card-title>
-    <v-row class="pt-2 pa-4 ma-0 ml-5 pb-1">
-      <v-card-subtitle class="ma-0 pa-0 pb-2" style="font-size: 16px"> General Metrics </v-card-subtitle>
-      <v-simple-table class="metrics-table">
-        <thead>
-          <tr>
-            <th v-for="(item, itemIndex) in generalMetrics" :key="itemIndex" class="metric-item metric-item-title">
-              {{ item.header }}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td v-for="(item, itemIndex) in generalMetrics" :key="itemIndex" class="metric-item">
-              {{ item.value }}
-            </td>
-          </tr>
-        </tbody>
-      </v-simple-table>
+  <v-card>
+    <v-row class="pb-3 pt-2" no-gutters>
+      <v-col>
+        <v-card-title>Metrics</v-card-title>
+      </v-col>
+      <v-col class="d-flex align-center justify-end" cols="1">
+        <pv-tooltipped-icon
+          class="pr-4"
+          clickable
+          color="white"
+          hover
+          icon-name="mdi-reload"
+          :loading="fetchingMetrics"
+          tooltip="Request Updated Metrics"
+          @click="fetchMetrics"
+        />
+      </v-col>
     </v-row>
-    <v-row class="pa-4 ma-0 ml-5">
-      <v-card-subtitle class="ma-0 pa-0 pb-2" style="font-size: 16px"> Hardware Metrics </v-card-subtitle>
-      <v-simple-table class="metrics-table">
-        <thead>
-          <tr>
-            <th v-for="(item, itemIndex) in platformMetrics" :key="itemIndex" class="metric-item metric-item-title">
-              {{ item.header }}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td v-for="(item, itemIndex) in platformMetrics" :key="itemIndex" class="metric-item">
-              <span v-if="useSettingsStore().metrics.cpuUtil !== undefined">{{ item.value }}</span>
-              <span v-else>---</span>
-            </td>
-          </tr>
-        </tbody>
-      </v-simple-table>
+    <v-row
+      v-for="(metricGroup, metricGroupIndex) in [instanceMetrics, platformMetrics]"
+      :key="metricGroupIndex"
+      class="pl-4 pr-4 pb-4"
+      no-gutters
+      style="gap: 8px"
+    >
+      <v-col v-for="(metric, metricIndex) in metricGroup" :key="metricIndex">
+        <v-card color="surface-variant">
+          <v-card-title>{{ metric.header }}</v-card-title>
+          <v-card-text>{{ metric.value }}</v-card-text>
+        </v-card>
+      </v-col>
     </v-row>
-    <div style="text-align: right">
-      <span>Last Fetched: {{ metricsLastFetched }}</span>
-    </div>
+    <v-card-actions class="d-flex justify-end">
+      <span class="pr-4">Metrics Last Fetched: {{ lastUpdatedString }}</span>
+    </v-card-actions>
   </v-card>
 </template>
-
-<style scoped lang="scss">
-.metrics-table {
-  border-collapse: separate;
-  border-spacing: 0;
-  border-radius: 5px;
-  margin-bottom: 10px;
-  border: 1px solid white;
-  width: 100%;
-  text-align: center;
-}
-
-.metric-item {
-  font-size: 16px !important;
-  padding: 1px 15px 1px 10px;
-  border-right: 1px solid;
-  font-weight: normal;
-  color: white !important;
-  text-align: center !important;
-}
-
-.metric-item-title {
-  font-size: 18px !important;
-  text-decoration: underline;
-  text-decoration-color: #ffd843;
-}
-
-.v-data-table {
-  thead,
-  tbody {
-    background-color: #006492;
-  }
-
-  :hover {
-    tbody > tr {
-      background-color: #005281 !important;
-    }
-  }
-
-  ::-webkit-scrollbar {
-    width: 0;
-    height: 0.55em;
-    border-radius: 5px;
-  }
-
-  ::-webkit-scrollbar-track {
-    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-    border-radius: 10px;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background-color: #ffd843;
-    border-radius: 10px;
-  }
-}
-</style>

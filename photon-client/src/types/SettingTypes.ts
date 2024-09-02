@@ -21,6 +21,7 @@ export interface MetricData {
   cpuUptime?: string;
   diskUtilPct?: string;
   npuUsage?: string;
+  lastReceived: Date | undefined;
 }
 
 export enum NetworkConnectionType {

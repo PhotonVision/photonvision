@@ -3,9 +3,21 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { Euler, Quaternion as ThreeQuat } from "three";
 import type { Quaternion } from "@/types/PhotonTrackingTypes";
 import { toDeg } from "@/lib/MathUtils";
+import { computed } from "vue";
 
-const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: number } => {
-  const quat = new ThreeQuat(rot_quat.X, rot_quat.Y, rot_quat.Z, rot_quat.W);
+const flattenedEulerTags = computed(() => useSettingsStore().currentFieldLayout.tags.map((tag) => {
+  const eu = quaternionToEuler(tag.pose.rotation.quaternion);
+  return {
+    ID: tag.ID,
+    ...tag.pose.translation,
+    x_t: eu.x,
+    y_t: eu.y,
+    z_t: eu.y
+  };
+}));
+
+const quaternionToEuler = (rotQuat: Quaternion): { x: number; y: number; z: number } => {
+  const quat = new ThreeQuat(rotQuat.X, rotQuat.Y, rotQuat.Z, rotQuat.W);
   const euler = new Euler().setFromQuaternion(quat, "ZYX");
 
   return {
@@ -14,80 +26,43 @@ const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: num
     z: toDeg(euler.z)
   };
 };
+
 </script>
 
 <template>
-  <v-card dark class="pr-6 pb-3" style="background-color: #006492">
-    <v-card-title>AprilTag Field Layout</v-card-title>
-    <div class="ml-5">
-      <p>Field width: {{ useSettingsStore().currentFieldLayout.field.width.toFixed(2) }} meters</p>
-      <p>Field length: {{ useSettingsStore().currentFieldLayout.field.length.toFixed(2) }} meters</p>
+  <v-card>
+    <v-card-title class="mb-3 mt-2">AprilTag Field Layout</v-card-title>
+    <v-data-table
+      class="mb-3 pl-4 pr-4"
+      :headers="Array(7).fill({})"
+      hide-default-footer
+      :items="flattenedEulerTags"
+    >
+      <template #top>
+        <p class="pl-2">Field width: {{ useSettingsStore().currentFieldLayout.field.width.toFixed(2) }} meters</p>
+        <p class="pl-2">Field length: {{ useSettingsStore().currentFieldLayout.field.length.toFixed(2) }} meters</p>
+      </template>
 
-      <!-- Simple table height must be set here and in the CSS for the fixed-header to work -->
-      <v-simple-table fixed-header height="100%" dense dark>
-        <template #default>
-          <thead style="font-size: 1.25rem">
-            <tr>
-              <th class="text-center">ID</th>
-              <th class="text-center">X meters</th>
-              <th class="text-center">Y meters</th>
-              <th class="text-center">Z meters</th>
-              <th class="text-center">θ<sub>x</sub>&deg;</th>
-              <th class="text-center">θ<sub>y</sub>&deg;</th>
-              <th class="text-center">θ<sub>z</sub>&deg;</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(tag, index) in useSettingsStore().currentFieldLayout.tags" :key="index">
-              <td>{{ tag.ID }}</td>
-              <td v-for="(val, idx) in Object.values(tag.pose.translation)" :key="idx">{{ val.toFixed(2) }}&nbsp;m</td>
-              <td v-for="(val, idx) in Object.values(quaternionToEuler(tag.pose.rotation.quaternion))" :key="idx + 4">
-                {{ val.toFixed(2) }}&deg;
-              </td>
-            </tr>
-          </tbody>
-        </template>
-      </v-simple-table>
-    </div>
+      <template #headers>
+        <tr>
+          <th :key="'ID'">ID</th>
+          <th :key="'x'">X meters</th>
+          <th :key="'y'">Y meters</th>
+          <th :key="'z'">Z meters</th>
+          <th :key="'x_t'">θ<sub>x</sub>&deg;</th>
+          <th :key="'y_t'">θ<sub>y</sub>&deg;</th>
+          <th :key="'z_t'">θ<sub>z</sub>&deg;</th>
+        </tr>
+      </template>
+      <template #no-data>
+        <span>No Tags Detected</span>
+      </template>
+    </v-data-table>
   </v-card>
 </template>
 
-<style scoped lang="scss">
-.v-data-table {
-  width: 100%;
-  height: 100%;
-  text-align: center;
-  background-color: #006492 !important;
-
-  th,
-  td {
-    background-color: #006492 !important;
-    font-size: 1rem !important;
-    color: white !important;
-  }
-
-  td {
-    font-family: monospace !important;
-  }
-
-  tbody :hover td {
-    background-color: #005281 !important;
-  }
-
-  ::-webkit-scrollbar {
-    width: 0;
-    height: 0.55em;
-    border-radius: 5px;
-  }
-
-  ::-webkit-scrollbar-track {
-    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-    border-radius: 10px;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background-color: #ffd843;
-    border-radius: 10px;
-  }
+<style scoped>
+* >>> .v-data-table-rows-no-data >>> *{
+  column-span: all;
 }
 </style>

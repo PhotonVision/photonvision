@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import MetricsCard from "@/components/settings/MetricsCard.vue";
 import DeviceControlCard from "@/components/settings/DeviceControlCard.vue";
-import NetworkingCard from "@/components/settings/NetworkingCard.vue";
+import GeneralSettingsControlCard from "@/components/settings/GeneralSettingsControlCard.vue";
 import LightingControlCard from "@/components/settings/LEDControlCard.vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import ApriltagControlCard from "@/components/settings/ApriltagControlCard.vue";
 </script>
 
 <template>
-  <div class="pa-3">
-    <MetricsCard />
-    <DeviceControlCard />
-    <NetworkingCard />
-    <LightingControlCard v-if="useSettingsStore().lighting.supported" />
+  <div class="w-100 pa-3">
+    <MetricsCard class="mb-3" />
+    <DeviceControlCard class="mb-3" />
+    <GeneralSettingsControlCard class="mb-3" />
+    <LightingControlCard v-if="useSettingsStore().lighting.supported" class="mb-3" />
     <ApriltagControlCard />
   </div>
 </template>
