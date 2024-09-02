@@ -25,7 +25,7 @@ withDefaults(
 
 <template>
   <pv-input-layout :label="label" :label-cols="labelCols" :tooltip="tooltip" tooltip-location="right">
-    <v-radio-group v-model="model" :disabled="disabled" :inline="inline">
+    <v-radio-group v-model="model" :disabled="disabled" hide-details :inline="inline">
       <div v-for="(item, index) in items" :key="index">
         <v-radio color="accent" :disabled="item.disabled" :label="item.name" :value="item.value" />
         <v-tooltip v-if="item.tooltip" activator="parent" :location="tooltipLocation" open-delay="150">

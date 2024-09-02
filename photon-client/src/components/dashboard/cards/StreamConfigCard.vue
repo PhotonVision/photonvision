@@ -15,26 +15,16 @@ const model = defineModel<number[]>({ required: true });
 </script>
 
 <template>
-  <v-card
-    class="fill-height"
-    :disabled="useCameraSettingsStore().isDriverMode"
-    style="display: flex; flex-direction: column"
-  >
+  <v-card class="fill-height d-flex flex-column" :disabled="useCameraSettingsStore().isDriverMode">
     <v-row align="center" class="pa-3 pb-0">
       <v-col>
         <span class="text-white">Processing Mode</span>
-        <v-btn-toggle
-          v-model="processingMode"
-          base-color="surface-variant"
-          class="mt-2"
-          mandatory
-          style="width: 100%"
-        >
-          <v-btn prepend-icon="mdi-square-outline" style="width: 50%" text="2D" />
+        <v-btn-toggle v-model="processingMode" base-color="surface-variant" class="w-100 mt-2" mandatory>
+          <v-btn class="w-50" prepend-icon="mdi-square-outline" text="2D" />
           <v-btn
+            class="w-50"
             :disabled="!useCameraSettingsStore().isCurrentVideoFormatCalibrated"
             prepend-icon="mdi-cube-outline"
-            style="width: 50%"
             text="3D"
           />
         </v-btn-toggle>
@@ -46,13 +36,12 @@ const model = defineModel<number[]>({ required: true });
         <v-btn-toggle
           v-model="model"
           base-color="surface-variant"
-          class="mt-2"
+          class="mt-2 w-100"
           mandatory
           :multiple="true"
-          style="width: 100%"
         >
-          <v-btn prepend-icon="mdi-import" style="width: 50%" text="Raw" />
-          <v-btn prepend-icon="mdi-export" style="width: 50%" text="Processed" />
+          <v-btn class="w-50" prepend-icon="mdi-import" text="Raw" />
+          <v-btn class="w-50" prepend-icon="mdi-export" text="Processed" />
         </v-btn-toggle>
       </v-col>
     </v-row>

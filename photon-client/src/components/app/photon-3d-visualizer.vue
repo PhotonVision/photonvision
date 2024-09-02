@@ -188,17 +188,17 @@ watchEffect(() => {
 </script>
 
 <template>
-  <div id="container" style="width: 100%">
+  <div id="container" class="w-100">
     <v-row>
-      <v-col align-self="stretch" style="display: flex; justify-content: center">
+      <v-col class="d-flex justify-center align-self-center">
         <canvas id="view" />
       </v-col>
     </v-row>
-    <v-row style="margin-bottom: 24px">
-      <v-col style="display: flex; justify-content: center">
+    <v-row class="mb-6">
+      <v-col class="d-flex justify-center">
         <v-btn color="accent" text="First Person" @click="resetCamFirstPerson" />
       </v-col>
-      <v-col style="display: flex; justify-content: center">
+      <v-col class="d-flex justify-center">
         <v-btn color="accent" text="Third Person" @click="resetCamThirdPerson" />
       </v-col>
     </v-row>

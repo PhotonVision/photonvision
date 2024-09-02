@@ -10,13 +10,15 @@ withDefaults(
     vuetifyProps?: any;
     size?: "x-small" | "small" | "default" | "large" | "x-large";
     clickable?: boolean;
+    loading?: boolean;
   }>(),
   {
     right: false,
     disabled: false,
     tooltipLocation: "right",
     size: "default",
-    clickable: false
+    clickable: false,
+    loading: false
   }
 );
 
@@ -34,6 +36,7 @@ const emit = defineEmits<{
       density="compact"
       :disabled="disabled"
       :icon="iconName"
+      :loading="loading"
       :size="size"
       variant="plain"
       @click="emit('click')"

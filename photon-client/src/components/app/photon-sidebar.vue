@@ -37,7 +37,7 @@ const cycleTheme = () => {
         <v-img v-if="!compact && mdAndUp" alt="large logo" class="logo" src="@/assets/images/logoLarge.svg" />
         <v-img v-else alt="small logo" class="logo" src="@/assets/images/logoSmall.svg" />
       </div>
-      <div style="display: flex; justify-content: center">
+      <div class="d-flex justify-center">
         <v-switch
           v-if="!compact && mdAndUp"
           v-model="themeSwitch"
@@ -62,25 +62,25 @@ const cycleTheme = () => {
         <template #prepend>
           <v-icon icon="mdi-view-dashboard" />
         </template>
-        <v-list-item-title style="padding: 12px 0">Dashboard</v-list-item-title>
+        <v-list-item-title class="pa-0 pt-3 pb-3">Dashboard</v-list-item-title>
       </v-list-item>
       <v-list-item link to="/cameras">
         <template #prepend>
           <v-icon icon="mdi-camera" />
         </template>
-        <v-list-item-title style="padding: 12px 0">Cameras</v-list-item-title>
+        <v-list-item-title class="pa-0 pt-3 pb-3">Cameras</v-list-item-title>
       </v-list-item>
       <v-list-item link to="/settings">
         <template #prepend>
           <v-icon icon="mdi-cog" />
         </template>
-        <v-list-item-title style="padding: 12px 0">Settings</v-list-item-title>
+        <v-list-item-title class="pa-0 pt-3 pb-3">Settings</v-list-item-title>
       </v-list-item>
       <v-list-item link to="/docs">
         <template #prepend>
           <v-icon icon="mdi-bookshelf" />
         </template>
-        <v-list-item-title style="padding: 12px 0">Documentation</v-list-item-title>
+        <v-list-item-title class="pa-0 pt-3 pb-3">Documentation</v-list-item-title>
       </v-list-item>
 
       <v-list-item v-if="mdAndUp" link @click="() => (compact = !compact)">
@@ -88,7 +88,7 @@ const cycleTheme = () => {
           <v-icon v-if="compact || !mdAndUp" icon="mdi-chevron-right" />
           <v-icon v-else icon="mdi-chevron-left" />
         </template>
-        <v-list-item-title style="padding: 12px 0">Compact Mode</v-list-item-title>
+        <v-list-item-title class="pa-0 pt-3 pb-3">Compact Mode</v-list-item-title>
       </v-list-item>
     </v-list>
     <v-list style="position: absolute; bottom: 0">

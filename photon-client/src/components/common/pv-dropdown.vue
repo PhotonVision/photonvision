@@ -1,6 +1,6 @@
 <script setup lang="ts" generic="V">
 import PvInputLayout from "@/components/common/pv-input-layout.vue";
-import type { DropdownSelectItem } from "@/types/Components";
+import type { DropdownSelectItem, ValidationRule } from "@/types/Components";
 
 withDefaults(
   defineProps<{
@@ -10,6 +10,7 @@ withDefaults(
     disabled?: boolean;
     items: DropdownSelectItem<V>[];
     density?: "default" | "comfortable" | "compact";
+    rules?: ValidationRule[];
   }>(),
   {
     labelCols: 4,
@@ -27,12 +28,13 @@ const model = defineModel<V>({ required: true });
       v-model="model"
       base-color="accent"
       :density="density"
-      :disabled="false"
-      hide-details
+      :disabled="disabled"
+      :hide-details="!rules?.length"
       item-disabled="disabled"
       item-title="name"
       item-value="value"
       :items="items"
+      :rules="rules"
     />
   </pv-input-layout>
 </template>

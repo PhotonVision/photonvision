@@ -48,7 +48,7 @@ document.addEventListener("keydown", (e) => {
         <v-col>
           <v-card-title>View Program Logs</v-card-title>
         </v-col>
-        <v-col class="align-self-center" style="display: flex">
+        <v-col class="d-flex align-self-center">
           <v-btn
             color="secondary"
             depressed
@@ -60,9 +60,9 @@ document.addEventListener("keydown", (e) => {
           <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
           <a
             ref="exportLogFile"
+            class="d-none"
             download="photonvision-journalctl.txt"
             :href="`http://${backendHost}/api/utils/photonvision-journalctl.txt`"
-            style="color: black; text-decoration: none; display: none"
             target="_blank"
           />
         </v-col>
@@ -72,13 +72,12 @@ document.addEventListener("keydown", (e) => {
         <v-btn-toggle
           v-model="selectedLogLevels"
           base-color="surface-variant"
-          class="mb-4 overflow-x-auto"
+          class="w-100 mb-4 overflow-x-auto"
           multiple
-          style="width: 100%"
         >
-          <v-btn v-for="level in [0, 1, 2, 3]" :key="level" style="width: 25%" :text="getLogLevelFromIndex(level)" />
+          <v-btn v-for="level in [0, 1, 2, 3]" :key="level" class="w-25" :text="getLogLevelFromIndex(level)" />
         </v-btn-toggle>
-        <v-card-text v-if="logs.length === 0" style="font-size: 18px; font-weight: 600">
+        <v-card-text v-if="!logs.length" style="font-size: 18px; font-weight: 600">
           There are no logs to show
         </v-card-text>
         <v-virtual-scroll v-else height="600" :items="logs">

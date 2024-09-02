@@ -158,9 +158,9 @@ const labelCols = computed(
       >
         <v-col>
           <v-btn
+            class="w-100"
             color="accent"
             small
-            style="width: 100%"
             text="Take Point"
             @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Single)"
           />
@@ -171,18 +171,18 @@ const labelCols = computed(
       >
         <v-col>
           <v-btn
+            class="w-100"
             color="accent"
             small
-            style="width: 100%"
             text="Take First Point"
             @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.DualFirst)"
           />
         </v-col>
         <v-col>
           <v-btn
+            class="w-100"
             color="accent"
             small
-            style="width: 100%"
             text="Take Second Point"
             @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.DualSecond)"
           />
@@ -190,8 +190,8 @@ const labelCols = computed(
       </v-row>
       <v-col>
         <v-btn
+          class="w-100"
           small
-          style="width: 100%"
           text="Clear All Points"
           @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Clear)"
         />

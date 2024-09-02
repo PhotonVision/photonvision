@@ -148,7 +148,7 @@ const changeTabGroupIndex = (tabGroupIndex: number, newTabIndex: number) => {
 </script>
 
 <template>
-  <v-row no-gutters style="display: flex; gap: 12px">
+  <v-row class="d-flex" no-gutters style="gap: 12px">
     <v-col v-for="(tabGroup, tabGroupIndex) in tabGroups" :key="tabGroupIndex">
       <v-card class="pr-4 pl-4 fill-height">
         <v-tabs

@@ -39,7 +39,7 @@ const model = defineModel<number[]>({ required: true });
 </script>
 
 <template>
-  <v-card class="fill-height" style="display: flex; flex-direction: column">
+  <v-card class="fill-height d-flex flex-column">
     <v-row>
       <v-col>
         <v-row no-gutters>
@@ -71,10 +71,10 @@ const model = defineModel<number[]>({ required: true });
     </v-row>
     <v-divider style="border-color: white" />
     <v-row class="pa-3 fill-height" justify="center">
-      <v-col v-if="(model || []).includes(0)" class="stream-wrapper" cols="12" md="6">
+      <v-col v-show="(model || []).includes(0)" class="d-flex justify-center align-center" cols="12" md="6">
         <photon-camera-stream id="input-camera-stream" class="stream" stream-type="Raw" />
       </v-col>
-      <v-col v-if="(model || []).includes(1)" class="stream-wrapper" cols="12" md="6">
+      <v-col v-show="(model || []).includes(1)" class="d-flex justify-center align-center" cols="12" md="6">
         <photon-camera-stream id="output-camera-stream" class="stream" stream-type="Processed" />
       </v-col>
     </v-row>

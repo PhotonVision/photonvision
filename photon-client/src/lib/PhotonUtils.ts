@@ -14,6 +14,7 @@ export const parseJsonFile = async <T extends Record<string, any>>(file: File): 
     const fileReader = new FileReader();
     fileReader.onload = (event) => {
       const target: FileReader | null = event.target;
+      // eslint-disable-next-line prefer-promise-reject-errors
       if (target === null) reject();
       else resolve(JSON.parse(target.result as string) as T);
     };

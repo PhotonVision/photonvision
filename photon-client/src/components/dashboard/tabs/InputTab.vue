@@ -141,20 +141,17 @@ const labelCols = computed<number>(
       "
     />
     <!-- Disable camera orientation as stop gap for Issue 1084 until calibration data gets rotated. https://github.com/PhotonVision/photonvision/issues/1084 -->
-    <v-banner
+    <v-alert
       v-show="
         useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
           useCameraSettingsStore().currentPipelineSettings.inputImageRotationMode != 0
       "
-      bg-color="red"
       class="mt-3"
-      icon="mdi-alert-circle-outline"
+      density="compact"
       rounded
-      text-color="white"
-    >
-      Warning! A known bug affects rotation of calibrated camera. Turn off rotation here and rotate using
-      cameraToRobotTransform in your robot code.
-    </v-banner>
+      text="A known bug affects rotation of calibrated camera. Turn off rotation here and rotate using cameraToRobotTransform in your robot code."
+      type="warning"
+    />
     <pv-dropdown
       v-model="useCameraSettingsStore().currentPipelineSettings.inputImageRotationMode"
       :disabled="

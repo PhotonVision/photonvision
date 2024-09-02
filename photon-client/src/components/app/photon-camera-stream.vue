@@ -55,9 +55,9 @@ onBeforeUnmount(() => {
       :id="id"
       ref="mjpgStream"
       :alt="streamType + ' Stream View'"
+      class="w-100"
       crossorigin="anonymous"
       :src="streamSrc"
-      style="width: 100%"
     >
     <div
       class="stream-overlay"

@@ -199,9 +199,9 @@ const multitagStdDevData = computed(() => {
                 </tbody>
               </v-table>
               <v-btn
+                class="w-100"
                 color="accent"
                 :disabled="useStateStore().currentMultitagBuffer?.isEmpty() || true"
-                style="width: 100%"
                 text="Clear Sample Buffer"
                 @click="useStateStore().currentMultitagBuffer?.clear()"
               />

@@ -6,6 +6,7 @@ import { onDeactivated } from "vue";
 // make viewfinder update with img frame changes
 // magnify css effect
 // mobile support
+// grey out everything but the img frame to make it more obvious to look there
 
 const props = withDefaults(
   defineProps<{

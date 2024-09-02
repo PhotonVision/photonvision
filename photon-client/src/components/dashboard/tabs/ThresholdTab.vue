@@ -172,16 +172,16 @@ const labelCols = computed(
         <v-btn-toggle
           v-model="colorPickingMode"
           base-color="surface-variant"
+          class="w-100"
           :disabled="useStateStore().colorPickingMode"
           divided
           mandatory
-          style="width: 100%"
         >
-          <v-btn append-icon="mdi-plus" style="width: 33%" text="Shrink Range" />
-          <v-btn append-icon="mdi-plus" style="width: 33%" text="Expand Range" />
+          <v-btn append-icon="mdi-plus" class="w-33" text="Shrink Range" />
+          <v-btn append-icon="mdi-plus" class="w-33" text="Expand Range" />
           <v-btn
             append-icon="mdi-plus-minus"
-            style="width: 33%"
+            class="w-33"
             :text="`${useCameraSettingsStore().currentPipelineSettings.hueInverted ? 'Exclude' : 'Set to'} Average`"
           />
         </v-btn-toggle>
@@ -200,18 +200,14 @@ const labelCols = computed(
         />
       </v-col>
     </v-row>
-    <v-banner
+    <v-alert
       v-show="colorPickerOpen"
-      bg-color="red"
       class="mt-3"
       density="compact"
-      icon="mdi-alert-circle-outline"
       rounded
-      text-color="white"
-    >
-      Warning! A known bug causes viewfinder color to not update unless mouse is moved again. Don't worry, clicking will
-      select the right color.
-    </v-banner>
+      text="A known bug causes viewfinder color to not update unless mouse is moved again. Don't worry, clicking will select the right color."
+      type="warning"
+    />
   </div>
 </template>
 
