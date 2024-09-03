@@ -78,7 +78,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         // first.
         var expProp =
                 findProperty(
-                        "raw_exposure_absolute", "raw_exposure_time_absolute", "exposure", "raw_Exposure");
+                        "raw_exposure_absolute", "raw_exposure_time_absolute", "exposure", "raw_Exposure", "Exposure");
 
         // Photonvision needs to be able to control auto exposure. Make sure we can
         // first.
