@@ -47,6 +47,15 @@ public class QuirkyCamera {
                             0x1415, 0x2000, CameraQuirk.Gain, CameraQuirk.FPSCap100, CameraQuirk.PsEyeControls),
                     // Logitech C925-e
                     new QuirkyCamera(0x85B, 0x46D, CameraQuirk.AdjustableFocus),
+                    // Generic arducam. Since OV2311 can't be differentiated
+                    // at first boot, apply stickyFPS to the generic case, too
+                    new QuirkyCamera(
+                            0x0c45,
+                            0x6366,
+                            "",
+                            "Arducam Generic",
+                            CameraQuirk.ArduCamCamera,
+                            CameraQuirk.StickyFPS),
                     // Arducam OV2311
                     new QuirkyCamera(
                             0x0c45,
@@ -72,15 +81,6 @@ public class QuirkyCamera {
                             "OV9782",
                             CameraQuirk.ArduCamCamera,
                             CameraQuirk.ArduOV9782Controls),
-                    // Generic arducam. Since OV2311 can't be differentiated
-                    // at first boot, apply stickyFPS to the generic case, too
-                    new QuirkyCamera(
-                            0x0c45,
-                            0x6366,
-                            "",
-                            "Arducam Generic",
-                            CameraQuirk.ArduCamCamera,
-                            CameraQuirk.StickyFPS),
                     // Innomaker OV9281
                     new QuirkyCamera(
                             0x0c45, 0x636d, "USB Camera", "USB Camera", CameraQuirk.InnoOV9281Controls));
@@ -184,7 +184,7 @@ public class QuirkyCamera {
             boolean useBaseNameMatch = !qc.baseName.isEmpty();
             boolean matchesBaseName = true; // default to matching
             if (useBaseNameMatch) {
-                matchesBaseName = baseName.contains(qc.baseName);
+                matchesBaseName = baseName.endsWith(qc.baseName);
             }
 
             boolean usePidVidMatch = (qc.usbVid != -1) && (qc.usbPid != -1);
