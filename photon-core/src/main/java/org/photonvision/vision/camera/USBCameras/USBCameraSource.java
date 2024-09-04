@@ -124,8 +124,13 @@ public class USBCameraSource extends VisionSource {
             logger.debug("Using PlayStation Eye Camera Settables");
             settables = new PsEyeCameraSettables(config, camera);
         } else if (quirks.hasQuirk(CameraQuirk.ArduOV2311Controls)) {
-            logger.debug("Using Arducam OV2311 Settables");
-            settables = new ArduOV2311CameraSettables(config, camera);
+            if (RuntimeDetector.isWindows()) {
+                logger.debug("Using Arducam OV2311 Windows-Specific Settables");
+                settables = new ArduOV2311WindowsCameraSettables(config, camera);
+            } else {
+                logger.debug("Using Arducam OV2311 Settables");
+                settables = new ArduOV2311CameraSettables(config, camera);
+            }
         } else if (quirks.hasQuirk(CameraQuirk.ArduOV9281Controls)) {
             logger.debug("Using Arducam OV9281 Settables");
             settables = new InnoOV9281CameraSettables(config, camera);
