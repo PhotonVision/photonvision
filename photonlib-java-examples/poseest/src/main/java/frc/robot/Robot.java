@@ -32,11 +32,14 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
+import frc.robot.subsystems.GamepieceLauncher;
 import frc.robot.subsystems.drivetrain.SwerveDrive;
 
 public class Robot extends TimedRobot {
     private SwerveDrive drivetrain;
     private Vision vision;
+
+    private GamepieceLauncher gpLauncher;
 
     private XboxController controller;
 
@@ -47,10 +50,16 @@ public class Robot extends TimedRobot {
         vision = new Vision();
 
         controller = new XboxController(0);
+
+        gpLauncher = new GamepieceLauncher();
     }
 
     @Override
     public void robotPeriodic() {
+        // Update Gamepiece Launcher Subsystem
+        gpLauncher.periodic();
+
+        // Update drivetrain subsystem
         drivetrain.periodic();
 
         // Correct pose estimate with vision measurements
@@ -64,7 +73,7 @@ public class Robot extends TimedRobot {
                             est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);
                 });
 
-        // Example only!
+        // Test/Example only!
         // Apply an offset to pose estimator to test vision correction
         // You probably don't want this on a real robot, just delete it.
         if (controller.getBButtonPressed()) {
@@ -99,6 +108,11 @@ public class Robot extends TimedRobot {
 
         // Command drivetrain motors based on target speeds
         drivetrain.drive(forward, strafe, turn);
+
+        // Calculate whether the gamepiece launcher runs based on our global pose estimate.
+        var curPose = drivetrain.getPose();
+        var shouldRun = (curPose.getX() > 5.0 && curPose.getY() < 5.0); // Close enough to blue speaker
+        gpLauncher.setRunning(shouldRun);
     }
 
     @Override
@@ -112,6 +126,9 @@ public class Robot extends TimedRobot {
         var debugField = vision.getSimDebugField();
         debugField.getObject("EstimatedRobot").setPose(drivetrain.getPose());
         debugField.getObject("EstimatedRobotModules").setPoses(drivetrain.getModulePoses());
+
+        // Update gamepiece launcher simulation
+        gpLauncher.simulationPeriodic();
 
         // Calculate battery voltage sag due to current draw
         RoboRioSim.setVInVoltage(
