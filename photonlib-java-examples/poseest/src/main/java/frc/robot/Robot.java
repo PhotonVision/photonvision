@@ -42,15 +42,7 @@ public class Robot extends TimedRobot {
     private Vision vision;
 
     private XboxController controller;
-    // Limit max speed
-    private final double kDriveSpeed = 0.6;
-    // Rudimentary limiting of drivetrain acceleration
-    private SlewRateLimiter forwardLimiter = new SlewRateLimiter(1.0 / 0.6); // 1 / x seconds to 100%
-    private SlewRateLimiter strafeLimiter = new SlewRateLimiter(1.0 / 0.6);
-    private SlewRateLimiter turnLimiter = new SlewRateLimiter(1.0 / 0.33);
 
-    private Timer autoTimer = new Timer();
-    private Random rand = new Random(4512);
 
     @Override
     public void robotInit() {
@@ -76,13 +68,15 @@ public class Robot extends TimedRobot {
                             est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);
                 });
 
-        // Apply a random offset to pose estimator to test vision correction
+        // Example only!
+        // Apply an offset to pose estimator to test vision correction
+        // You probably don't want this on a real robot, just delete it.
         if (controller.getBButtonPressed()) {
-            var trf =
+            var disturbance =
                     new Transform2d(
-                            new Translation2d(rand.nextDouble() * 4 - 2, rand.nextDouble() * 4 - 2),
-                            new Rotation2d(rand.nextDouble() * 2 * Math.PI));
-            drivetrain.resetPose(drivetrain.getPose().plus(trf), false);
+                            new Translation2d(1.0, 1.0),
+                            new Rotation2d(0.17 * 2 * Math.PI));
+            drivetrain.resetPose(drivetrain.getPose().plus(trdisturbancef), false);
         }
 
         // Log values to the dashboard
@@ -95,42 +89,17 @@ public class Robot extends TimedRobot {
     }
 
     @Override
-    public void autonomousInit() {
-        autoTimer.restart();
-        var pose = new Pose2d(1, 1, new Rotation2d());
-        drivetrain.resetPose(pose, true);
-        vision.resetSimPose(pose);
-    }
-
-    @Override
-    public void autonomousPeriodic() {
-        // translate diagonally while spinning
-        if (autoTimer.get() < 10) {
-            drivetrain.drive(0.5, 0.5, 0.5, false);
-        } else {
-            autoTimer.stop();
-            drivetrain.stop();
-        }
+    public void teleopInit() {
+        resetPose();
     }
 
     @Override
     public void teleopPeriodic() {
-        // We will use an "arcade drive" scheme to turn joystick values into target robot speeds
-        // We want to get joystick values where pushing forward/left is positive
-        double forward = -controller.getLeftY() * kDriveSpeed;
-        if (Math.abs(forward) < 0.1) forward = 0; // deadband small values
-        forward = forwardLimiter.calculate(forward); // limit acceleration
-        double strafe = -controller.getLeftX() * kDriveSpeed;
-        if (Math.abs(strafe) < 0.1) strafe = 0;
-        strafe = strafeLimiter.calculate(strafe);
-        double turn = -controller.getRightX() * kDriveSpeed;
-        if (Math.abs(turn) < 0.1) turn = 0;
-        turn = turnLimiter.calculate(turn);
 
-        // Convert from joystick values to real target speeds
-        forward *= Constants.Swerve.kMaxLinearSpeed;
-        strafe *= Constants.Swerve.kMaxLinearSpeed;
-        turn *= Constants.Swerve.kMaxLinearSpeed;
+        // Calculate drivetrain commands from Joystick values
+        double forward = -controller.getLeftY() * Constants.Swerve.kMaxLinearSpeed;
+        double strafe = -controller.getLeftX() * Constants.Swerve.kMaxLinearSpeed;
+        double turn = -controller.getRightX() * Constants.Swerve.kMaxAngularSpeed;
 
         // Command drivetrain motors based on target speeds
         drivetrain.drive(forward, strafe, turn, true);
@@ -151,5 +120,14 @@ public class Robot extends TimedRobot {
         // Calculate battery voltage sag due to current draw
         RoboRioSim.setVInVoltage(
                 BatterySim.calculateDefaultBatteryLoadedVoltage(drivetrain.getCurrentDraw()));
+    }
+
+    public void resetPose(){
+        // Example Only - startPose should be derived from some assumption 
+        // of where your robot was placed on the field.
+        // The first pose in an autonomous path is often a good choice. 
+        var startPose = new Pose2d(1, 1, new Rotation2d());
+        drivetrain.resetPose(startPose, true);
+        vision.resetSimPose(startPose);
     }
 }
