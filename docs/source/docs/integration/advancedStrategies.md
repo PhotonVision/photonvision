@@ -1,8 +1,12 @@
 # Advanced Strategies
 
-Advanced strategies for using vision processing results involve working with the robot's *pose* on the field. A *pose* is a combination an X/Y coordinate, and an angle describing where the robot's front is pointed. It is always considered *relative* to some fixed point on the field.
+Advanced strategies for using vision processing results involve working with the robot's *pose* on the field. 
 
-WPILib provides a [Pose2d](https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/pose.html)  class to describe poses in software.
+A *pose* is a combination an X/Y coordinate, and an angle describing where the robot's front is pointed. A pose is always considered *relative* to some fixed point on the field.
+
+WPILib provides a [Pose2d](https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/pose.html) class to describe poses in software.
+
+PhotonVision can supply correcting information to keep estimates of *pose* accurate over a full match.
 
 ## Knowledge and Equipment Needed
 
@@ -12,30 +16,49 @@ WPILib provides a [Pose2d](https://docs.wpilib.org/en/stable/docs/software/advan
   \- Sufficient sensors to measure wheel rotation
   \- Capable of closed-loop velocity control
 - A gyroscope or IMU measuring actual robot heading
-- Experience using some path-planning library (WPILib is our recommendation)
+- Experience using some path-planning library
 
-## Path Planning in a Target-Centered Reference Frame
+## Robot Poses from the Camera
 
-When using 3D mode in PhotonVision, the [SolvePNP Algorithm](https://en.wikipedia.org/wiki/Perspective-n-Point)  is used to deduce the *camera's* position in a 3D coordinate system centered on the target itself.
+When using 3D mode in PhotonVision, an additional step is run to estimate the 3D position of camera, relative to one or more AprilTags. These must be filtered and transformed before they represent an estimated robot pose.
 
-A simple algorithm for using this measurement is:
+PhotonLib provides {ref}`a utility class to assist with this process on the roboRIO <docs/programming/photonlib/robot-pose-estimator>`. Alternatively, {ref}`a "multi-tag" strategy can do this process on the coprocessor. <docs/apriltag-pipelines/multitag>`. 
 
-1. Assume your robot needs to be at a fixed `Pose2D` *relative to the target*.
-2. When triggered:
-   #. Read the most recent vision measurement - this is your *actual* pose.
-   #. Generate a simple trajectory to the goal position
-   #. Execute the trajectory
+## Field-Relative Pose Estimation
 
-:::{note}
-There is not currently an example demonstrating this technique.
-:::
+The camera's guess of the robot pose generally should be *fused* with other sensor readings. 
 
-## Global Pose Estimation
+WPILib provides [a set of pose estimation classes](https://docs.wpilib.org/en/stable/docs/software/advanced-controls/state-space/state-space-pose-estimators.html) for doing this work.
 
-A more complex way to utilize a camera-supplied `Pose2D` is to incorporate it into an estimation of the robot's `Pose2D` in a global field reference frame.
+## I have a Pose Estimate, Now What?
 
-When using this strategy, the measurements made by the camera are *fused* with measurements from other sensors, a model of expected robot behavior, and a matrix of weights that describes how trustworthy each sensor is. The result is a *best-guess* at the current pose on the field.
+### Triggering Actions Automatically
 
-In turn, this best-guess position is used to path plan to the known positions on the field, which may or may not have vision targets nearby.
+A simple way to use a pose estimate is to activate robot functions automatically when in the correct spot on the field.
 
-See the  {ref}`Pose Estimation <docs/examples/simposeest:Knowledge and Equipment Needed>` example for more information.
+```{eval-rst}
+.. tab-set-code::
+
+   .. code-block:: java
+
+      Pose3d robotPose;
+      boolean launcherSpinCmd;
+
+      // ...
+
+      if(robotPose.X() < 1.5){
+        // Near blue alliance wall, start spinning the launcher wheel
+        launcherSpinCmd = True;
+      } else {
+        // Far away, no need to run launcher.
+        launcherSpinCmd = False;
+      }
+
+      // ...
+```
+
+### PathPlanning
+
+A common, but more complex usage of a pose estimate is an input to a path-following algorithm. Specifically, the pose estimate is used to correct for the robot straying off of the pre-defined path.
+
+See the {ref}`Pose Estimation <docs/examples/simposeest:Knowledge and Equipment Needed>` example for details on integrating this.

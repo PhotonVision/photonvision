@@ -6,5 +6,4 @@
 background
 simpleStrategies
 advancedStrategies
-aprilTagStrategies
 ```
