@@ -24,88 +24,144 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.motorcontrol.PWMVictorSPX;
+import static frc.robot.Constants.Vision.*;
+
+
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonUtils;
 
-/**
- * The VM is configured to automatically run this class, and to call the functions corresponding to
- * each mode, as described in the TimedRobot documentation. If you change the name of this class or
- * the package after creating this project, you must also update the build.gradle file in the
- * project.
- */
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.simulation.BatterySim;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.subsystems.drivetrain.SwerveDrive;
+
 public class Robot extends TimedRobot {
-    // Constants such as camera and target height stored. Change per robot and goal!
-    final double CAMERA_HEIGHT_METERS = Units.inchesToMeters(24);
-    final double TARGET_HEIGHT_METERS = Units.feetToMeters(5);
-    // Angle between horizontal and the camera.
-    final double CAMERA_PITCH_RADIANS = Units.degreesToRadians(0);
+    private SwerveDrive drivetrain;
+    private VisionSim visionSim;
+    private PhotonCamera camera;
 
-    // How far from the target we want to be
-    final double GOAL_RANGE_METERS = Units.feetToMeters(3);
+    private final double VISION_TURN_kP = 0.01;
+    private final double VISION_DES_ANGLE_rad = 0.0;
+    private final double VISION_STRAFE_kP = 0.5;
+    private final double VISION_DES_RANGE_m = 1.25;
 
-    // Change this to match the name of your camera
-    PhotonCamera camera = new PhotonCamera("photonvision");
 
-    // PID constants should be tuned per robot
-    final double LINEAR_P = 0.1;
-    final double LINEAR_D = 0.0;
-    PIDController forwardController = new PIDController(LINEAR_P, 0, LINEAR_D);
+    private XboxController controller;
 
-    final double ANGULAR_P = 0.1;
-    final double ANGULAR_D = 0.0;
-    PIDController turnController = new PIDController(ANGULAR_P, 0, ANGULAR_D);
 
-    XboxController xboxController = new XboxController(0);
+    @Override
+    public void robotInit() {
+        drivetrain = new SwerveDrive();
+        camera = new PhotonCamera(kCameraName);
 
-    // Drive motors
-    PWMVictorSPX leftMotor = new PWMVictorSPX(0);
-    PWMVictorSPX rightMotor = new PWMVictorSPX(1);
-    DifferentialDrive drive = new DifferentialDrive(leftMotor, rightMotor);
+        visionSim = new VisionSim(camera);
+
+        controller = new XboxController(0);
+
+    }
+
+    @Override
+    public void robotPeriodic() {
+
+        // Update drivetrain subsystem
+        drivetrain.periodic();
+
+        // Log values to the dashboard
+        drivetrain.log();
+    }
+
+    @Override
+    public void disabledPeriodic() {
+        drivetrain.stop();
+    }
+
+    @Override
+    public void teleopInit() {
+        resetPose();
+    }
 
     @Override
     public void teleopPeriodic() {
-        double forwardSpeed;
-        double rotationSpeed;
 
-        if (xboxController.getAButton()) {
-            // Vision-alignment mode
-            // Query the latest result from PhotonVision
-            var result = camera.getLatestResult();
+        // Calculate drivetrain commands from Joystick values
+        double forward = -controller.getLeftY() * Constants.Swerve.kMaxLinearSpeed;
+        double strafe = -controller.getLeftX() * Constants.Swerve.kMaxLinearSpeed;
+        double turn = -controller.getRightX() * Constants.Swerve.kMaxAngularSpeed;
 
-            if (result.hasTargets()) {
-                // First calculate range
-                double range =
+        // Read in relevant data from the Camera
+        boolean targetVisible = false;
+        double targetYaw = 0.0;
+        double targetRange = 0.0;
+        var results = camera.getAllUnreadResults();
+        if(!results.isEmpty()){
+            //Camera processed a new frame since last
+            //Get the last one in the list.
+            var result = results.get(results.size()-1);
+            if(result.hasTargets()){
+                //At least one AprilTag was seen by the camera
+                for(var target:result.getTargets()){
+                    if(target.getFiducialId() == 7){
+                        //Found Tag 7, record its information
+                        targetYaw = target.getYaw();
+                        targetRange = 
                         PhotonUtils.calculateDistanceToTargetMeters(
-                                CAMERA_HEIGHT_METERS,
-                                TARGET_HEIGHT_METERS,
-                                CAMERA_PITCH_RADIANS,
-                                Units.degreesToRadians(result.getBestTarget().getPitch()));
+                                kRobotToCam.getZ(),
+                                1.435, // From 2024 game manual for ID 7
+                                -1.0*kRobotToCam.getRotation().getY(), // Rotation about Y = Pitch
+                                Units.degreesToRadians(target.getPitch()));
 
-                // Use this range as the measurement we give to the PID controller.
-                // -1.0 required to ensure positive PID controller effort _increases_ range
-                forwardSpeed = -forwardController.calculate(range, GOAL_RANGE_METERS);
-
-                // Also calculate angular power
-                // -1.0 required to ensure positive PID controller effort _increases_ yaw
-                rotationSpeed = -turnController.calculate(result.getBestTarget().getYaw(), 0);
-            } else {
-                // If we have no targets, stay still.
-                forwardSpeed = 0;
-                rotationSpeed = 0;
+                        targetVisible = true;
+                    }
+                }
             }
-        } else {
-            // Manual Driver Mode
-            forwardSpeed = -xboxController.getRightY();
-            rotationSpeed = xboxController.getLeftX();
         }
 
-        // Use our forward/turn speeds to control the drivetrain
-        drive.arcadeDrive(forwardSpeed, rotationSpeed);
+        // Auto-align when requested
+        if(controller.getAButton() && targetVisible){
+            // Driver wants auto-alignment to tag 7
+            // And, tag 7 is in sight, so we can turn toward it.
+            // Override the driver's turn and fwd/rev command with an automatic one
+            // That turns toward the tag, and gets the range right.
+            turn =  (VISION_DES_ANGLE_rad - targetYaw) * VISION_TURN_kP * Constants.Swerve.kMaxAngularSpeed;
+            forward = (VISION_DES_RANGE_m - targetRange) * VISION_STRAFE_kP * Constants.Swerve.kMaxLinearSpeed;
+        }
+
+        // Command drivetrain motors based on target speeds
+        drivetrain.drive(forward, strafe, turn);
+
+        // Put debug information to the dashboard
+        SmartDashboard.putBoolean("Vision Target Visible", targetVisible);
+        SmartDashboard.putNumber("Vision Target Range (m)", targetRange);
+    }
+
+    @Override
+    public void simulationPeriodic() {
+        // Update drivetrain simulation
+        drivetrain.simulationPeriodic();
+
+        // Update camera simulation
+        visionSim.simulationPeriodic(drivetrain.getSimPose());
+
+        var debugField = visionSim.getSimDebugField();
+        debugField.getObject("EstimatedRobot").setPose(drivetrain.getPose());
+        debugField.getObject("EstimatedRobotModules").setPoses(drivetrain.getModulePoses());
+
+        // Calculate battery voltage sag due to current draw
+        RoboRioSim.setVInVoltage(
+                BatterySim.calculateDefaultBatteryLoadedVoltage(drivetrain.getCurrentDraw()));
+    }
+
+    public void resetPose(){
+        // Example Only - startPose should be derived from some assumption 
+        // of where your robot was placed on the field.
+        // The first pose in an autonomous path is often a good choice. 
+        var startPose = new Pose2d(1, 1, new Rotation2d());
+        drivetrain.resetPose(startPose, true);
+        visionSim.resetSimPose(startPose);
     }
 }
