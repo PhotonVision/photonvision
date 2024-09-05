@@ -1,8 +1,4 @@
-# Simulation Support in PhotonLib (Deprecated)
-
-:::{attention}
-This page details the pre-2024 simulation support. For current Java simulation support, see {doc}`/docs/simulation/simulation`.
-:::
+# Simulation Support in PhotonLib in Python
 
 ## What Is Supported?
 
@@ -12,7 +8,7 @@ You can use this to help validate your robot code's behavior in simulation witho
 
 ## Simulation Vision World Model
 
-Sim-specific classes are provided to model sending one frame of a camera image through PhotonVision. Based on what targets are visible, results are published to NetworkTables.
+In Python, Sim-specific classes are provided to model sending one frame of a camera image through PhotonVision. Based on what targets are visible, results are published to NetworkTables.
 
 While processing, the given robot `Pose2d` is used to analyze which targets should be in view, and determine where they would have shown up in the camera image.
 

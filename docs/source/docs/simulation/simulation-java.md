@@ -1,14 +1,11 @@
-# Simulation Support in PhotonLib
+# Simulation Support in PhotonLib in Java
 
-:::{attention}
-This page details the current simulation support for Java. For other languages, see {doc}`/docs/simulation/simulation-deprecated`.
-:::
 
 ## What Is Simulated?
 
 Simulation is a powerful tool for validating robot code without access to a physical robot. Read more about [simulation in WPILib](https://docs.wpilib.org/en/stable/docs/software/wpilib-tools/robot-simulation/introduction.html).
 
-PhotonLib can simulate cameras on the field and generate target data approximating what would be seen in reality. This simulation attempts to include the following:
+In Java, PhotonLib can simulate cameras on the field and generate target data approximating what would be seen in reality. This simulation attempts to include the following:
 
 - Camera Properties
     - Field of Vision
