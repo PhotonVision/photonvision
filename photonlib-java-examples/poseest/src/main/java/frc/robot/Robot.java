@@ -111,7 +111,7 @@ public class Robot extends TimedRobot {
 
         // Calculate whether the gamepiece launcher runs based on our global pose estimate.
         var curPose = drivetrain.getPose();
-        var shouldRun = (curPose.getX() > 5.0 && curPose.getY() < 5.0); // Close enough to blue speaker
+        var shouldRun = (curPose.getY() > 2.0 && curPose.getX() < 4.0); // Close enough to blue speaker
         gpLauncher.setRunning(shouldRun);
     }
 
