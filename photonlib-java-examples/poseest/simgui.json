@@ -62,7 +62,7 @@
           "length": 0.6000000238418579,
           "width": 0.5
         },
-        "bottom": 544,
+        "bottom": 1476,
         "cameras": {
           "arrowColor": [
             0.29535865783691406,
@@ -77,11 +77,11 @@
           "weight": 1.0,
           "width": 1.0
         },
-        "height": 8.013679504394531,
+        "height": 8.210550308227539,
         "image": "2023-field.png",
-        "left": 46,
-        "right": 1088,
-        "top": 36,
+        "left": 150,
+        "right": 2961,
+        "top": 79,
         "visibleTargetPoses": {
           "arrows": false,
           "image": "tag-blue.png",
@@ -98,6 +98,15 @@
   },
   "NetworkTables": {
     "transitory": {
+      "CameraPublisher": {
+        "YOUR CAMERA NAME-processed": {
+          "open": true,
+          "string[]##v_/CameraPublisher/YOUR CAMERA NAME-processed/streams": {
+            "open": true
+          }
+        },
+        "open": true
+      },
       "SmartDashboard": {
         "VisionSystemSim-main": {
           "open": true
@@ -105,5 +114,8 @@
         "open": true
       }
     }
+  },
+  "NetworkTables Info": {
+    "visible": true
   }
 }

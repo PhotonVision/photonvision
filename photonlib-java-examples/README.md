@@ -1,5 +1,11 @@
 ## PhotonLib Java Examples
 
+All examples demonstrate controlling a swerve drive with outputs from PhotonVision.
+
+Simulation is available to demonstrate the concepts - swerve physics is approximated. 
+
+You can access a stream of what the simulated camera sees by going to https://localhost:1182 .
+
 ### Running examples
 
 For instructions on how to run these examples locally, see [Running Examples](https://docs.photonvision.org/en/latest/docs/contributing/building-photon.html#running-examples).
@@ -10,36 +16,26 @@ For instructions on how to run these examples locally, see [Running Examples](ht
 
 A simple demonstration of using PhotonVision's 2d target yaw to align a differential drivetrain with a target.
 
----
-
-### [**`getinrange`**](getinrange)
-
-A simple demonstration of using PhotonVision's 2d target pitch to bring a differential drivetrain to a specific distance from a target.
+**Keyboard controls:**
+- Translate field-relative: WASD
+- Rotate counter/clockwise: Q/E
+- Perform vision alignment: Z
 
 ---
 
 ### [**`aimandrange`**](aimandrange)
 
-A combination of the previous `aimattarget` and `getinrange` examples to simultaneously aim and get in range of a target.
-
----
-
-### [**`simaimandrange`**](simaimandrange)
-
-The above `aimandrange` example with simulation support.
-
-<img src="https://github-production-user-asset-6210df.s3.amazonaws.com/7953350/268856085-432a54b9-f596-4e30-8b57-a8f38f88f985.png" width=60% height=60%>
+Extends`aimattarget` to add getting in range of the target.
 
 **Keyboard controls:**
-- Drive forward/backward: W/S
-- Turn left/right: A/D
+- Translate field-relative: WASD
+- Rotate counter/clockwise: Q/E
 - Perform vision alignment: Z
 
 ---
 
-### [**`swervedriveposeestsim`**](swervedriveposeestsim)
+### [**`poseest`**](poseest)
 
-A minimal swerve drive example demonstrating the usage of PhotonVision for AprilTag vision estimation with a swerve drive pose estimator.
 
 The example also has simulation support with an approximation of swerve drive dynamics.
 
@@ -50,4 +46,5 @@ The example also has simulation support with an approximation of swerve drive dy
 **Keyboard controls:**
 - Translate field-relative: WASD
 - Rotate counter/clockwise: Q/E
+- Perform vision alignment: Z
 - Offset pose estimate: X

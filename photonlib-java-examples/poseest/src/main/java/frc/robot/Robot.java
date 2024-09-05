@@ -24,18 +24,15 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import frc.robot.subsystems.drivetrain.SwerveDrive;
-import java.util.Random;
 
 public class Robot extends TimedRobot {
     private SwerveDrive drivetrain;
@@ -60,9 +57,8 @@ public class Robot extends TimedRobot {
         var visionEst = vision.getEstimatedGlobalPose();
         visionEst.ifPresent(
                 est -> {
-                    var estPose = est.estimatedPose.toPose2d();
                     // Change our trust in the measurement based on the tags we can see
-                    var estStdDevs = vision.getEstimationStdDevs(estPose);
+                    var estStdDevs = vision.getEstimationStdDevs();
 
                     drivetrain.addVisionMeasurement(
                             est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);
@@ -76,7 +72,7 @@ public class Robot extends TimedRobot {
                     new Transform2d(
                             new Translation2d(1.0, 1.0),
                             new Rotation2d(0.17 * 2 * Math.PI));
-            drivetrain.resetPose(drivetrain.getPose().plus(trdisturbancef), false);
+            drivetrain.resetPose(drivetrain.getPose().plus(disturbance), false);
         }
 
         // Log values to the dashboard
@@ -102,7 +98,7 @@ public class Robot extends TimedRobot {
         double turn = -controller.getRightX() * Constants.Swerve.kMaxAngularSpeed;
 
         // Command drivetrain motors based on target speeds
-        drivetrain.drive(forward, strafe, turn, true);
+        drivetrain.drive(forward, strafe, turn);
     }
 
     @Override

@@ -120,13 +120,11 @@ public class SwerveDrive {
      * @param vxMeters X velocity (forwards/backwards)
      * @param vyMeters Y velocity (strafe left/right)
      * @param omegaRadians Angular velocity (rotation CCW+)
-     * @param openLoop If swerve modules should use feedforward only and ignore velocity feedback
-     *     control.
      */
-    public void drive(double vxMeters, double vyMeters, double omegaRadians, boolean openLoop) {
+    public void drive(double vxMeters, double vyMeters, double omegaRadians) {
         var targetChassisSpeeds =
                 ChassisSpeeds.fromFieldRelativeSpeeds(vxMeters, vyMeters, omegaRadians, getHeading());
-        setChassisSpeeds(targetChassisSpeeds, openLoop, false);
+        setChassisSpeeds(targetChassisSpeeds, true, false);
     }
 
     /**
@@ -162,7 +160,7 @@ public class SwerveDrive {
 
     /** Stop the swerve drive. */
     public void stop() {
-        drive(0, 0, 0, true);
+        drive(0, 0, 0);
     }
 
     /** See {@link SwerveDrivePoseEstimator#addVisionMeasurement(Pose2d, double)}. */
