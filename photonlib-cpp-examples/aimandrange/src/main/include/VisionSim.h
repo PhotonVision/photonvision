@@ -41,7 +41,7 @@
 
 class VisionSim {
  public:
-  VisionSim(photon::PhotonCamera* camera) {
+  explicit VisionSim(photon::PhotonCamera* camera) {
     if (frc::RobotBase::IsSimulation()) {
       visionSim = std::make_unique<photon::VisionSystemSim>("main");
 
