@@ -142,7 +142,7 @@ class Vision {
       constants::Vision::kTagLayout,
       photon::PoseStrategy::MULTI_TAG_PNP_ON_COPROCESSOR,
       constants::Vision::kRobotToCam};
-  photon::PhotonCamera camera{"photonvision"};
+  photon::PhotonCamera camera{constants::Vision::kCameraName};
   std::unique_ptr<photon::VisionSystemSim> visionSim;
   std::unique_ptr<photon::SimCameraProperties> cameraProp;
   std::shared_ptr<photon::PhotonCameraSim> cameraSim;

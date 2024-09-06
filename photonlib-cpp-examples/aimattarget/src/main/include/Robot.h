@@ -27,7 +27,8 @@
 #include <frc/TimedRobot.h>
 #include <frc/XboxController.h>
 
-#include "Vision.h"
+#include "VisionSim.h"
+#include "Constants.h"
 #include <photon/PhotonCamera.h>
 
 #include "subsystems/SwerveDrive.h"
@@ -51,8 +52,9 @@ class Robot : public frc::TimedRobot {
   void SimulationPeriodic() override;
 
  private:
-  photon::PhotonCamera camera{"photonvision"};
+  photon::PhotonCamera camera{constants::Vision::kCameraName};
   SwerveDrive drivetrain{};
-  Vision vision{&camera};
+  VisionSim vision{&camera};
   frc::XboxController controller{0};
+  static constexpr double VISION_TURN_kP = 0.01;
 };

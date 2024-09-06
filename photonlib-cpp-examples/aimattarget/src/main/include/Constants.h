@@ -38,7 +38,7 @@ namespace Vision {
 inline constexpr std::string_view kCameraName{"YOUR CAMERA NAME"};
 inline const frc::Transform3d kRobotToCam{
     frc::Translation3d{0.5_m, 0.0_m, 0.5_m},
-    frc::Rotation3d{0_rad, 0_rad, 0_rad}};
+    frc::Rotation3d{0_rad, -30_deg, 0_rad}};
 inline const frc::AprilTagFieldLayout kTagLayout{
     frc::LoadAprilTagLayoutField(frc::AprilTagField::k2024Crescendo)};
 

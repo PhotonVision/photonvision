@@ -39,9 +39,9 @@
 
 #include "Constants.h"
 
-class Vision {
+class VisionSim {
  public:
-  Vision(photon::PhotonCamera* camera) {
+  VisionSim(photon::PhotonCamera* camera) {
 
     if (frc::RobotBase::IsSimulation()) {
       visionSim = std::make_unique<photon::VisionSystemSim>("main");
@@ -50,10 +50,10 @@ class Vision {
 
       cameraProp = std::make_unique<photon::SimCameraProperties>();
 
-      cameraProp->SetCalibration(960, 720, frc::Rotation2d{90_deg});
+      cameraProp->SetCalibration(320, 240, frc::Rotation2d{90_deg});
       cameraProp->SetCalibError(.35, .10);
-      cameraProp->SetFPS(15_Hz);
-      cameraProp->SetAvgLatency(50_ms);
+      cameraProp->SetFPS(70_Hz);
+      cameraProp->SetAvgLatency(30_ms);
       cameraProp->SetLatencyStdDev(15_ms);
 
       cameraSim =
