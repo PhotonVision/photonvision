@@ -21,11 +21,11 @@ In this example, while the operator holds a button down, the robot will turn tow
 
     .. tab-item:: Java
 
-       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/06f0f7d66f68f43e7e461bce672b07e9d2954cda/photonlib-java-examples/aimattarget/src/main/java/frc/robot/Robot.java
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/d6c37ead118ae58d224c0c4fd7f7a2b7931940b5/photonlib-java-examples/aimattarget/src/main/java/frc/robot/Robot.java
          :language: java
-         :lines: 41-98
+         :lines: 79-114
          :linenos:
-         :lineno-start: 41
+         :lineno-start: 79
 
     .. tab-item:: C++ (Header)
 

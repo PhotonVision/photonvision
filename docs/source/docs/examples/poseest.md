@@ -26,11 +26,11 @@ We use the 2024 game's AprilTag Locations:
     .. tab-item:: Java
        :sync: java
 
-       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/d6c37ead118ae58d224c0c4fd7f7a2b7931940b5/photonlib-java-examples/poseest/src/main/java/frc/robot/Constants.java
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/d6c37ead118ae58d224c0c4fd7f7a2b7931940b5/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
          :language: java
-         :lines: 83-106
+         :lines: 68-68
          :linenos:
-         :lineno-start: 83
+         :lineno-start: 68
 
 ```
 
@@ -43,15 +43,15 @@ To incorporate PhotonVision, we need to create a {code}`PhotonCamera`:
     .. tab-item:: Java
        :sync: java
 
-       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/d6c37ead118ae58d224c0c4fd7f7a2b7931940b5/photonlib-java-examples/poseest/src/main/java/frc/robot/Constants.java
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/d6c37ead118ae58d224c0c4fd7f7a2b7931940b5/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
          :language: java
-         :lines: 83-106
+         :lines: 57-57
          :linenos:
-         :lineno-start: 83
+         :lineno-start: 57
 
 ```
 
-During periodic execution, we read back camera results. If we see AprilTags in the image, we calculate the camera-measured pose of the robot and pass it to the {code}`SwerveDrivePoseEstimator`.
+During periodic execution, we read back camera results. If we see AprilTags in the image, we calculate the camera-measured pose of the robot and pass it to the {code}`Drivetrain`.
 
 ```{eval-rst}
 .. tab-set::
@@ -59,11 +59,11 @@ During periodic execution, we read back camera results. If we see AprilTags in t
     .. tab-item:: Java
        :sync: java
 
-       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/d6c37ead118ae58d224c0c4fd7f7a2b7931940b5/photonlib-java-examples/poseest/src/main/java/frc/robot/Constants.java
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/d6c37ead118ae58d224c0c4fd7f7a2b7931940b5/photonlib-java-examples/poseest/src/main/java/frc/robot/Robot.java
          :language: java
-         :lines: 83-106
+         :lines: 64-74
          :linenos:
-         :lineno-start: 83
+         :lineno-start: 64
 
 ```
 
@@ -77,11 +77,11 @@ First, we create a new {code}`VisionSystemSim` to represent our camera and copro
     .. tab-item:: Java
        :sync: java
 
-       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/d6c37ead118ae58d224c0c4fd7f7a2b7931940b5/photonlib-java-examples/poseest/src/main/java/frc/robot/Constants.java
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/d6c37ead118ae58d224c0c4fd7f7a2b7931940b5/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
          :language: java
-         :lines: 83-106
+         :lines: 65-69
          :linenos:
-         :lineno-start: 83
+         :lineno-start: 65
 
 ```
 
@@ -93,11 +93,11 @@ Then, we add configure the simulated vision system to match the camera system be
     .. tab-item:: Java
        :sync: java
 
-       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/d6c37ead118ae58d224c0c4fd7f7a2b7931940b5/photonlib-java-examples/poseest/src/main/java/frc/robot/Constants.java
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/d6c37ead118ae58d224c0c4fd7f7a2b7931940b5/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
          :language: java
-         :lines: 83-106
+         :lines: 69-82
          :linenos:
-         :lineno-start: 83
+         :lineno-start: 69
 
 ```
 
@@ -112,11 +112,11 @@ During simulation, we periodically update the simulated vision system.
     .. tab-item:: Java
        :sync: java
 
-       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/80e16ece87c735e30755dea271a56a2ce217b588/photonlib-java-examples/poseest/src/main/java/frc/robot/DrivetrainSim.java
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/80e16ece87c735e30755dea271a56a2ce217b588/photonlib-java-examples/poseest/src/main/java/frc/robot/Robot.java
          :language: java
-         :lines: 138-139
+         :lines: 114-132
          :linenos:
-         :lineno-start: 138
+         :lineno-start: 114
 
 ```
 
