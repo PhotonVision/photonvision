@@ -1,6 +1,6 @@
 import org.gradle.internal.os.OperatingSystem
 
-rootProject.name = 'aimandrange'
+rootProject.name = 'aimattarget'
 
 pluginManagement {
     repositories {

@@ -24,13 +24,13 @@
 
 #pragma once
 
+#include <photon/PhotonCamera.h>
+
 #include <frc/TimedRobot.h>
 #include <frc/XboxController.h>
 
-#include "VisionSim.h"
 #include "Constants.h"
-#include <photon/PhotonCamera.h>
-
+#include "VisionSim.h"
 #include "subsystems/SwerveDrive.h"
 
 class Robot : public frc::TimedRobot {
