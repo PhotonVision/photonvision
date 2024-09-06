@@ -1,0 +1,31 @@
+#
+# Use this configuration file to control what RobotPy packages are installed
+# on your RoboRIO
+#
+
+[tool.robotpy]
+
+# Version of robotpy this project depends on
+robotpy_version = "2024.3.2.2"
+
+# Which extra RobotPy components should be installed
+# -> equivalent to `pip install robotpy[extra1, ...]
+robotpy_extras = [
+    # "all",
+    # "apriltag",
+    # "commands2",
+    # "cscore",
+    # "navx",
+    # "pathplannerlib",
+    # "phoenix5",
+    # "phoenix6",
+    # "photonvision",
+    # "playingwithfusion",
+    # "rev",
+    # "romi",
+    # "sim",
+    # "xrp",
+]
+
+# Other pip packages to install
+requires = []
