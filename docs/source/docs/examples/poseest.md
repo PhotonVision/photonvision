@@ -112,7 +112,7 @@ During simulation, we periodically update the simulated vision system.
     .. tab-item:: Java
        :sync: java
 
-       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/80e16ece87c735e30755dea271a56a2ce217b588/photonlib-java-examples/poseest/src/main/java/frc/robot/Robot.java
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/d6c37ead118ae58d224c0c4fd7f7a2b7931940b5/photonlib-java-examples/poseest/src/main/java/frc/robot/Robot.java
          :language: java
          :lines: 114-132
          :linenos:
