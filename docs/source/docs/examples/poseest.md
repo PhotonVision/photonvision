@@ -26,7 +26,7 @@ We use the 2024 game's AprilTag Locations:
     .. tab-item:: Java
        :sync: java
 
-       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/TODO_SHA1/photonlib-java-examples/simposeest/src/main/java/frc/robot/Constants.java
+       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/06f0f7d66f68f43e7e461bce672b07e9d2954cda/photonlib-java-examples/simposeest/src/main/java/frc/robot/Constants.java
          :language: java
          :lines: 83-106
          :linenos:
@@ -43,7 +43,7 @@ To incorporate PhotonVision, we need to create a {code}`PhotonCamera`:
     .. tab-item:: Java
        :sync: java
 
-       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/TODO_SHA1/photonlib-java-examples/simposeest/src/main/java/frc/robot/Constants.java
+       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/06f0f7d66f68f43e7e461bce672b07e9d2954cda/photonlib-java-examples/simposeest/src/main/java/frc/robot/Constants.java
          :language: java
          :lines: 83-106
          :linenos:
@@ -59,7 +59,7 @@ During periodic execution, we read back camera results. If we see AprilTags in t
     .. tab-item:: Java
        :sync: java
 
-       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/TODO_SHA1/photonlib-java-examples/simposeest/src/main/java/frc/robot/Constants.java
+       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/06f0f7d66f68f43e7e461bce672b07e9d2954cda/photonlib-java-examples/simposeest/src/main/java/frc/robot/Constants.java
          :language: java
          :lines: 83-106
          :linenos:
@@ -77,7 +77,7 @@ First, we create a new {code}`VisionSystemSim` to represent our camera and copro
     .. tab-item:: Java
        :sync: java
 
-       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/TODO_SHA1/photonlib-java-examples/simposeest/src/main/java/frc/robot/Constants.java
+       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/06f0f7d66f68f43e7e461bce672b07e9d2954cda/photonlib-java-examples/simposeest/src/main/java/frc/robot/Constants.java
          :language: java
          :lines: 83-106
          :linenos:
@@ -93,7 +93,7 @@ Then, we add configure the simulated vision system to match the camera system be
     .. tab-item:: Java
        :sync: java
 
-       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/TODO_SHA1/photonlib-java-examples/simposeest/src/main/java/frc/robot/Constants.java
+       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/06f0f7d66f68f43e7e461bce672b07e9d2954cda/photonlib-java-examples/simposeest/src/main/java/frc/robot/Constants.java
          :language: java
          :lines: 83-106
          :linenos:
