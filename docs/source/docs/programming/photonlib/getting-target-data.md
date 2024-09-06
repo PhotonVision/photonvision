@@ -20,7 +20,7 @@ The `PhotonCamera` class has two constructors: one that takes a `NetworkTable` a
         :language: c++
         :lines: 42-43
 
-     .. code-block:: python
+     .. code-block:: Python
 
          # Change this to match the name of your camera as shown in the web ui
          self.camera = PhotonCamera("your_camera_name_here")
@@ -51,7 +51,7 @@ Use the `getLatestResult()`/`GetLatestResult()` (Java and C++ respectively) to o
          :language: c++
          :lines: 35-36
 
-     .. code-block:: python
+     .. code-block:: Python
 
          # Query the latest result from PhotonVision
          result = self.camera.getLatestResult()
@@ -69,17 +69,17 @@ Each pipeline result has a `hasTargets()`/`HasTargets()` (Java and C++ respectiv
 
 ```{eval-rst}
 .. tab-set-code::
-   .. code-block:: java
+   .. code-block:: Java
 
       // Check if the latest result has any targets.
       boolean hasTargets = result.hasTargets();
 
-   .. code-block:: c++
+   .. code-block:: C++
 
       // Check if the latest result has any targets.
       bool hasTargets = result.HasTargets();
 
-   .. code-block:: python
+   .. code-block:: Python
 
      # Check if the latest result has any targets.
       hasTargets = result.hasTargets()
@@ -99,17 +99,17 @@ You can get a list of tracked targets using the `getTargets()`/`GetTargets()` (J
 
 ```{eval-rst}
 .. tab-set-code::
-   .. code-block:: java
+   .. code-block:: Java
 
       // Get a list of currently tracked targets.
       List<PhotonTrackedTarget> targets = result.getTargets();
 
-   .. code-block:: c++
+   .. code-block:: C++
 
       // Get a list of currently tracked targets.
       wpi::ArrayRef<photonlib::PhotonTrackedTarget> targets = result.GetTargets();
 
-   .. code-block:: python
+   .. code-block:: Python
 
       # Get a list of currently tracked targets.
       targets = result.getTargets()
@@ -121,18 +121,18 @@ You can get the {ref}`best target <docs/reflectiveAndShape/contour-filtering:Con
 
 ```{eval-rst}
 .. tab-set-code::
-   .. code-block:: java
+   .. code-block:: Java
 
       // Get the current best target.
       PhotonTrackedTarget target = result.getBestTarget();
 
-   .. code-block:: c++
+   .. code-block:: C++
 
       // Get the current best target.
       photonlib::PhotonTrackedTarget target = result.GetBestTarget();
 
 
-   .. code-block:: python
+   .. code-block:: Python
 
       # TODO - Not currently supported
 
@@ -149,7 +149,7 @@ You can get the {ref}`best target <docs/reflectiveAndShape/contour-filtering:Con
 
 ```{eval-rst}
 .. tab-set-code::
-   .. code-block:: java
+   .. code-block:: Java
 
       // Get information from target.
       double yaw = target.getYaw();
@@ -159,7 +159,7 @@ You can get the {ref}`best target <docs/reflectiveAndShape/contour-filtering:Con
       Transform2d pose = target.getCameraToTarget();
       List<TargetCorner> corners = target.getCorners();
 
-   .. code-block:: c++
+   .. code-block:: C++
 
       // Get information from target.
       double yaw = target.GetYaw();
@@ -169,7 +169,7 @@ You can get the {ref}`best target <docs/reflectiveAndShape/contour-filtering:Con
       frc::Transform2d pose = target.GetCameraToTarget();
       wpi::SmallVector<std::pair<double, double>, 4> corners = target.GetCorners();
 
-   .. code-block:: python
+   .. code-block:: Python
 
       # Get information from target.
       yaw = target.getYaw()
@@ -193,7 +193,7 @@ All of the data above (**except skew**) is available when using AprilTags.
 
 ```{eval-rst}
 .. tab-set-code::
-   .. code-block:: java
+   .. code-block:: Java
 
       // Get information from target.
       int targetID = target.getFiducialId();
@@ -201,7 +201,7 @@ All of the data above (**except skew**) is available when using AprilTags.
       Transform3d bestCameraToTarget = target.getBestCameraToTarget();
       Transform3d alternateCameraToTarget = target.getAlternateCameraToTarget();
 
-   .. code-block:: c++
+   .. code-block:: C++
 
       // Get information from target.
       int targetID = target.GetFiducialId();
@@ -209,7 +209,7 @@ All of the data above (**except skew**) is available when using AprilTags.
       frc::Transform3d bestCameraToTarget = target.getBestCameraToTarget();
       frc::Transform3d alternateCameraToTarget = target.getAlternateCameraToTarget();
 
-   .. code-block:: python
+   .. code-block:: Python
 
       # Get information from target.
       targetID = target.getFiducialId()
@@ -227,7 +227,7 @@ Images are stored within the PhotonVision configuration directory. Running the "
 ```{eval-rst}
 .. tab-set-code::
 
-    .. code-block:: java
+    .. code-block:: Java
 
       // Capture pre-process camera stream image
       camera.takeInputSnapshot();
@@ -243,7 +243,7 @@ Images are stored within the PhotonVision configuration directory. Running the "
       // Capture post-process camera stream image
       camera.TakeOutputSnapshot();
 
-    .. code-block:: python
+    .. code-block:: Python
 
       # Capture pre-process camera stream image
       camera.takeInputSnapshot()

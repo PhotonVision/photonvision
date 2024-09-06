@@ -55,7 +55,7 @@ A `VisionSystemSim` represents the simulated world for one or more cameras, and 
 ```{eval-rst}
 .. tab-set-code::
 
-   .. code-block:: java
+   .. code-block:: Java
 
       // A vision system sim labelled as "main" in NetworkTables
       VisionSystemSim visionSim = new VisionSystemSim("main");
@@ -68,7 +68,7 @@ Vision targets require a `TargetModel`, which describes the shape of the target.
 ```{eval-rst}
 .. tab-set-code::
 
-   .. code-block:: java
+   .. code-block:: Java
 
       // A 0.5 x 0.25 meter rectangular target
       TargetModel targetModel = new TargetModel(0.5, 0.25);
@@ -79,7 +79,7 @@ These `TargetModel` are paired with a target pose to create a `VisionTargetSim`.
 ```{eval-rst}
 .. tab-set-code::
 
-   .. code-block:: java
+   .. code-block:: Java
 
       // The pose of where the target is on the field.
       // Its rotation determines where "forward" or the target x-axis points.
@@ -101,7 +101,7 @@ For convenience, an `AprilTagFieldLayout` can also be added to automatically cre
 ```{eval-rst}
 .. tab-set-code::
 
-   .. code-block:: java
+   .. code-block:: Java
 
       // The layout of AprilTags which we want to add to the vision system
       AprilTagFieldLayout tagLayout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2024Crescendo.m_resourceFile);
@@ -122,7 +122,7 @@ Before adding a simulated camera, we need to define its properties. This is done
 ```{eval-rst}
 .. tab-set-code::
 
-   .. code-block:: java
+   .. code-block:: Java
 
       // The simulated camera properties
       SimCameraProperties cameraProp = new SimCameraProperties();
@@ -133,7 +133,7 @@ By default, this will create a 960 x 720 resolution camera with a 90 degree diag
 ```{eval-rst}
 .. tab-set-code::
 
-   .. code-block:: java
+   .. code-block:: Java
 
       // A 640 x 480 camera with a 100 degree diagonal FOV.
       cameraProp.setCalibration(640, 480, Rotation2d.fromDegrees(100));
@@ -151,7 +151,7 @@ These properties are used in a `PhotonCameraSim`, which handles generating captu
 ```{eval-rst}
 .. tab-set-code::
 
-   .. code-block:: java
+   .. code-block:: Java
 
       // The PhotonCamera used in the real robot code.
       PhotonCamera camera = new PhotonCamera("cameraName");
@@ -165,7 +165,7 @@ The `PhotonCameraSim` can now be added to the `VisionSystemSim`. We have to defi
 ```{eval-rst}
 .. tab-set-code::
 
-   .. code-block:: java
+   .. code-block:: Java
 
       // Our camera is mounted 0.1 meters forward and 0.5 meters up from the robot pose,
       // (Robot pose is considered the center of rotation at the floor level, or Z = 0)
@@ -187,7 +187,7 @@ If the camera is mounted on a mobile mechanism (like a turret) this transform ca
 ```{eval-rst}
 .. tab-set-code::
 
-   .. code-block:: java
+   .. code-block:: Java
 
       // The turret the camera is mounted on is rotated 5 degrees
       Rotation3d turretRotation = new Rotation3d(0, 0, Math.toRadians(5));
@@ -204,7 +204,7 @@ To update the `VisionSystemSim`, we simply have to pass in the simulated robot p
 ```{eval-rst}
 .. tab-set-code::
 
-   .. code-block:: java
+   .. code-block:: Java
 
       // Update with the simulated drivetrain pose. This should be called every loop in simulation.
       visionSim.update(robotPoseMeters);
@@ -219,7 +219,7 @@ Each `VisionSystemSim` has its own built-in `Field2d` for displaying object pose
 ```{eval-rst}
 .. tab-set-code::
 
-   .. code-block:: java
+   .. code-block:: Java
 
       // Get the built-in Field2d used by this VisionSystemSim
       visionSim.getDebugField();
@@ -234,7 +234,7 @@ A `PhotonCameraSim` can also draw and publish generated camera frames to a MJPEG
 ```{eval-rst}
 .. tab-set-code::
 
-   .. code-block:: java
+   .. code-block:: Java
 
       // Enable the raw and processed streams. These are enabled by default.
       cameraSim.enableRawStream(true);

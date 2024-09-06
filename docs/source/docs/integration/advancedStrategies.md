@@ -39,7 +39,7 @@ A simple way to use a pose estimate is to activate robot functions automatically
 ```{eval-rst}
 .. tab-set-code::
 
-   .. code-block:: java
+   .. code-block:: Java
 
       Pose3d robotPose;
       boolean launcherSpinCmd;
