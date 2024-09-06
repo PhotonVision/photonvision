@@ -38,7 +38,7 @@ class SwerveDrive {
   SwerveDrive();
   void Periodic();
   void Drive(units::meters_per_second_t vx, units::meters_per_second_t vy,
-             units::radians_per_second_t omega, bool openLoop);
+             units::radians_per_second_t omega);
   void SetChassisSpeeds(const frc::ChassisSpeeds& targetChassisSpeeds,
                         bool openLoop, bool steerInPlace);
   void SetModuleStates(

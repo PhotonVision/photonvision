@@ -50,15 +50,15 @@ void SwerveDrive::Periodic() {
 
 void SwerveDrive::Drive(units::meters_per_second_t vx,
                         units::meters_per_second_t vy,
-                        units::radians_per_second_t omega, bool openLoop) {
+                        units::radians_per_second_t omega) {
   frc::ChassisSpeeds newChassisSpeeds =
       frc::ChassisSpeeds::FromFieldRelativeSpeeds(vx, vy, omega, GetHeading());
-  SetChassisSpeeds(newChassisSpeeds, openLoop, false);
+  SetChassisSpeeds(newChassisSpeeds, true, false);
 }
 
 void SwerveDrive::SetChassisSpeeds(const frc::ChassisSpeeds& newChassisSpeeds,
                                    bool openLoop, bool steerInPlace) {
-  SetModuleStates(kinematics.ToSwerveModuleStates(newChassisSpeeds), openLoop,
+  SetModuleStates(kinematics.ToSwerveModuleStates(newChassisSpeeds), true,
                   steerInPlace);
   this->targetChassisSpeeds = newChassisSpeeds;
 }
@@ -75,7 +75,7 @@ void SwerveDrive::SetModuleStates(
   }
 }
 
-void SwerveDrive::Stop() { Drive(0_mps, 0_mps, 0_rad_per_s, true); }
+void SwerveDrive::Stop() { Drive(0_mps, 0_mps, 0_rad_per_s); }
 
 void SwerveDrive::AddVisionMeasurement(const frc::Pose2d& visionMeasurement,
                                        units::second_t timestamp) {

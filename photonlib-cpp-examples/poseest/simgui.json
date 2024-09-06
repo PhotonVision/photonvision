@@ -118,11 +118,11 @@
   "NetworkTables Info": {
     "visible": true
   },
-    "Plot": {
+  "Plot": {
     "Plot <0>": {
       "plots": [
         {
-"axis": [
+          "axis": [
             {
               "autoFit": true
             }

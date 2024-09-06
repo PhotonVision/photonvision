@@ -22,41 +22,37 @@
  * SOFTWARE.
  */
 
-#include "Robot.h"
+#include "subsystems/GamepieceLauncher.h"  // Include the header file
 
-#include <photon/PhotonUtils.h>
-
-void Robot::TeleopPeriodic() {
-  double forwardSpeed;
-  double rotationSpeed = xboxController.GetLeftX();
-
-  if (xboxController.GetAButton()) {
-    // Vision-alignment mode
-    // Query the latest result from PhotonVision
-    photon::PhotonPipelineResult result = camera.GetLatestResult();
-
-    if (result.HasTargets()) {
-      // First calculate range
-      units::meter_t range = photon::PhotonUtils::CalculateDistanceToTarget(
-          CAMERA_HEIGHT, TARGET_HEIGHT, CAMERA_PITCH,
-          units::degree_t{result.GetBestTarget().GetPitch()});
-
-      // Use this range as the measurement we give to the PID controller.
-      forwardSpeed =
-          -controller.Calculate(range.value(), GOAL_RANGE_METERS.value());
-    } else {
-      // If we have no targets, stay still.
-      forwardSpeed = 0;
-    }
-  } else {
-    // Manual Driver Mode
-    forwardSpeed = -xboxController.GetRightY();
-  }
-
-  // Use our forward/turn speeds to control the drivetrain
-  drive.ArcadeDrive(forwardSpeed, rotationSpeed);
+GamepieceLauncher::GamepieceLauncher() {
+  motor = new frc::PWMSparkMax(8);  // Create the motor object for PWM port 8
+  simulationInit();
 }
 
-#ifndef RUNNING_FRC_TESTS
-int main() { return frc::StartRobot<Robot>(); }
-#endif
+void GamepieceLauncher::setRunning(bool shouldRun) {
+  curDesSpd = shouldRun ? LAUNCH_SPEED_RPM : 0.0;
+}
+
+void GamepieceLauncher::periodic() {
+  // Calculate the maximum RPM
+  double maxRPM =
+      units::radians_per_second_t(frc::DCMotor::Falcon500(1).freeSpeed)
+          .to<double>() *
+      60 / (2 * std::numbers::pi);
+  curMotorCmd = curDesSpd / maxRPM;
+  curMotorCmd = std::clamp(curMotorCmd, 0.0, 1.0);
+  motor->Set(curMotorCmd);
+
+  frc::SmartDashboard::PutNumber("GPLauncher Des Spd (RPM)", curDesSpd);
+}
+
+void GamepieceLauncher::simulationPeriodic() {
+  launcherSim.SetInputVoltage(curMotorCmd *
+                              frc::RobotController::GetBatteryVoltage());
+  launcherSim.Update(0.02_s);
+  auto spd = launcherSim.GetAngularVelocity().to<double>() * 60 /
+             (2 * std::numbers::pi);
+  frc::SmartDashboard::PutNumber("GPLauncher Act Spd (RPM)", spd);
+}
+
+void GamepieceLauncher::simulationInit() {}

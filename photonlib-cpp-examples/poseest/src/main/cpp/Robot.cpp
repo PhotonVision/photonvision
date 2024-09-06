@@ -32,6 +32,7 @@
 void Robot::RobotInit() {}
 
 void Robot::RobotPeriodic() {
+  launcher.periodic();
   drivetrain.Periodic();
 
   auto visionEst = vision.GetEstimatedGlobalPose();
@@ -52,47 +53,35 @@ void Robot::DisabledPeriodic() { drivetrain.Stop(); }
 
 void Robot::DisabledExit() {}
 
-void Robot::AutonomousInit() {
-  autoTimer.Restart();
+void Robot::AutonomousInit() {}
+
+void Robot::AutonomousPeriodic() {}
+
+void Robot::AutonomousExit() {}
+
+void Robot::TeleopInit() {
   frc::Pose2d pose{1_m, 1_m, frc::Rotation2d{}};
   drivetrain.ResetPose(pose, true);
 }
 
-void Robot::AutonomousPeriodic() {
-  if (autoTimer.Get() < 10_s) {
-    drivetrain.Drive(0.5_mps, 0.5_mps, 0.5_rad_per_s, false);
-  } else {
-    autoTimer.Stop();
-    drivetrain.Stop();
-  }
-}
-
-void Robot::AutonomousExit() {}
-
-void Robot::TeleopInit() {}
-
 void Robot::TeleopPeriodic() {
-  double forward = -controller.GetLeftY() * kDriveSpeed;
-  if (std::abs(forward) < 0.1) {
-    forward = 0;
-  }
-  forward = forwardLimiter.Calculate(forward);
+  // Calculate drivetrain commands from Joystick values
+  auto forward =
+      -1.0 * controller.GetLeftY() * constants::Swerve::kMaxLinearSpeed;
+  auto strafe =
+      -1.0 * controller.GetLeftX() * constants::Swerve::kMaxLinearSpeed;
+  auto turn =
+      -1.0 * controller.GetRightX() * constants::Swerve::kMaxAngularSpeed;
 
-  double strafe = -controller.GetLeftX() * kDriveSpeed;
-  if (std::abs(strafe) < 0.1) {
-    strafe = 0;
-  }
-  strafe = strafeLimiter.Calculate(strafe);
+  // Command drivetrain motors based on target speeds
+  drivetrain.Drive(forward, strafe, turn);
 
-  double turn = -controller.GetRightX() * kDriveSpeed;
-  if (std::abs(turn) < 0.1) {
-    turn = 0;
-  }
-  turn = turnLimiter.Calculate(turn);
-
-  drivetrain.Drive(forward * constants::Swerve::kMaxLinearSpeed,
-                   strafe * constants::Swerve::kMaxLinearSpeed,
-                   turn * constants::Swerve::kMaxAngularSpeed, true);
+  // Calculate whether the gamepiece launcher runs based on our global pose
+  // estimate.
+  frc::Pose2d curPose = drivetrain.GetPose();
+  bool shouldRun = (curPose.Y() > 2.0_m &&
+                    curPose.X() < 4.0_m);  // Close enough to blue speaker
+  launcher.setRunning(shouldRun);
 }
 
 void Robot::TeleopExit() {}
@@ -104,6 +93,7 @@ void Robot::TestPeriodic() {}
 void Robot::TestExit() {}
 
 void Robot::SimulationPeriodic() {
+  launcher.simulationPeriodic();
   drivetrain.SimulationPeriodic();
   vision.SimPeriodic(drivetrain.GetSimPose());
 

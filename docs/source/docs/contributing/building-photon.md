@@ -243,19 +243,9 @@ The program will wait for the VSCode debugger to attach before proceeding.
 
 ### Running examples
 
-You can run one of the many built in examples straight from the command line, too! They contain a fully featured robot project, and some include simulation support. The projects can be found inside the photonlib-java-examples and photonlib-cpp-examples subdirectories, respectively. The projects currently available include:
+You can run one of the many built in examples straight from the command line, too! They contain a fully featured robot project, and some include simulation support. The projects can be found inside the photonlib-java-examples and photonlib-cpp-examples subdirectories, respectively.
 
-- photonlib-java-examples:
-    - aimandrange:simulateJava
-    - aimattarget:simulateJava
-    - getinrange:simulateJava
-    - simaimandrange:simulateJava
-    - simposeest:simulateJava
-- photonlib-cpp-examples:
-    - aimandrange:simulateNative
-    - getinrange:simulateNative
-
-To run them, use the commands listed below. PhotonLib must first be published to your local maven repository, then the copy PhotonLib task will copy the generated vendordep json file into each example. After that, the simulateJava/simulateNative task can be used like a normal robot project. Robot simulation with attached debugger is technically possible by using simulateExternalJava and modifying the launch script it exports, though unsupported.
+To run them, use the commands listed below. PhotonLib must first be published to your local maven repository, then the copy PhotonLib task will copy the generated vendordep json file into each example. After that, the simulateJava/simulateNative task can be used like a normal robot project. Robot simulation with attached debugger is technically possible by using simulateExternalJava and modifying the launch script it exports, though not yet supported.
 
 ```
 ~/photonvision$ ./gradlew publishToMavenLocal

@@ -22,13 +22,36 @@
  * SOFTWARE.
  */
 
-#include <hal/HAL.h>
+#pragma once
 
-#include "gtest/gtest.h"
+#include <frc/TimedRobot.h>
+#include <frc/XboxController.h>
 
-int main(int argc, char** argv) {
-  HAL_Initialize(500, 0);
-  ::testing::InitGoogleTest(&argc, argv);
-  int ret = RUN_ALL_TESTS();
-  return ret;
-}
+#include "Vision.h"
+#include "subsystems/GamepieceLauncher.h"
+#include "subsystems/SwerveDrive.h"
+
+class Robot : public frc::TimedRobot {
+ public:
+  void RobotInit() override;
+  void RobotPeriodic() override;
+  void DisabledInit() override;
+  void DisabledPeriodic() override;
+  void DisabledExit() override;
+  void AutonomousInit() override;
+  void AutonomousPeriodic() override;
+  void AutonomousExit() override;
+  void TeleopInit() override;
+  void TeleopPeriodic() override;
+  void TeleopExit() override;
+  void TestInit() override;
+  void TestPeriodic() override;
+  void TestExit() override;
+  void SimulationPeriodic() override;
+
+ private:
+  SwerveDrive drivetrain{};
+  Vision vision{};
+  GamepieceLauncher launcher{};
+  frc::XboxController controller{0};
+};
