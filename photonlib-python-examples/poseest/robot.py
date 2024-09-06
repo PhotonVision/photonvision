@@ -1,15 +1,26 @@
+#!/usr/bin/env python3
+#
+# Copyright (c) FIRST and other WPILib contributors.
+# Open Source Software; you can modify and/or share it under the terms of
+# the WPILib BSD license file in the root directory of this project.
+#
 
 import wpilib
-from photonlibpy import PhotonCamera, version
+import drivetrain
 
 
 class MyRobot(wpilib.TimedRobot):
     def robotInit(self) -> None:
-        self.cam = PhotonCamera("memes")
-    
-    def robotPeriodic(self) -> None:
-        pass
+        """Robot initialization function"""
+        self.controller = wpilib.XboxController(0)
+        self.swerve = drivetrain.Drivetrain()
+
+
 
     def teleopPeriodic(self) -> None:
-        print("memes")
-        print(version.PHOTONLIB_VERSION)
+        xSpeed = -1.0 * self.controller.getLeftY()  * drivetrain.kMaxSpeed
+        ySpeed = -1.0 * self.controller.getLeftX()  * drivetrain.kMaxSpeed
+        rot    = -1.0 * self.controller.getRightX() * drivetrain.kMaxAngularSpeed
+
+        self.swerve.drive(xSpeed, ySpeed, rot, True, self.getPeriod())
+
