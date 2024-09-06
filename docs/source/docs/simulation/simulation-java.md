@@ -226,7 +226,7 @@ Each `VisionSystemSim` has its own built-in `Field2d` for displaying object pose
 ```
 
 :::{figure} images/SimExampleField.png
-*A* `VisionSystemSim`*'s internal* `Field2d` *customized with target images and colors, as seen in the* [swervedriveposeestsim](https://github.com/PhotonVision/photonvision/tree/2a6fa1b6ac81f239c59d724da5339f608897c510/photonlib-java-examples/swervedriveposeestsim) *example.*
+*A* `VisionSystemSim`*'s internal* `Field2d` *customized with target images and colors*
 :::
 
 A `PhotonCameraSim` can also draw and publish generated camera frames to a MJPEG stream similar to an actual PhotonVision process.
@@ -248,5 +248,5 @@ A `PhotonCameraSim` can also draw and publish generated camera frames to a MJPEG
 These streams follow the port order mentioned in {ref}`docs/installation/networking:Camera Stream Ports`. For example, a single simulated camera will have its raw stream at `localhost:1181` and processed stream at `localhost:1182`, which can also be found in the CameraServer tab of Shuffleboard like a normal camera stream.
 
 :::{figure} images/SimExampleFrame.png
-*A frame from the processed stream of a simulated camera viewing some 2023 AprilTags with the field wireframe enabled, as seen in the* [swervedriveposeestsim example](https://github.com/PhotonVision/photonvision/tree/2a6fa1b6ac81f239c59d724da5339f608897c510/photonlib-java-examples/swervedriveposeestsim).
+*A frame from the processed stream of a simulated camera viewing some 2023 AprilTags with the field wireframe enabled*
 :::

@@ -1,6 +1,6 @@
 # Advanced Strategies
 
-Advanced strategies for using vision processing results involve working with the robot's *pose* on the field. 
+Advanced strategies for using vision processing results involve working with the robot's *pose* on the field.
 
 A *pose* is a combination an X/Y coordinate, and an angle describing where the robot's front is pointed. A pose is always considered *relative* to some fixed point on the field.
 
@@ -22,11 +22,11 @@ PhotonVision can supply correcting information to keep estimates of *pose* accur
 
 When using 3D mode in PhotonVision, an additional step is run to estimate the 3D position of camera, relative to one or more AprilTags. These must be filtered and transformed before they represent an estimated robot pose.
 
-PhotonLib provides {ref}`a utility class to assist with this process on the roboRIO <docs/programming/photonlib/robot-pose-estimator>`. Alternatively, {ref}`a "multi-tag" strategy can do this process on the coprocessor. <docs/apriltag-pipelines/multitag>`. 
+PhotonLib provides {ref}`a utility class to assist with this process on the roboRIO <docs/programming/photonlib/robot-pose-estimator:AprilTags and PhotonPoseEstimator>`. Alternatively, {ref}`a "multi-tag" strategy can do this process on the coprocessor. <docs/apriltag-pipelines/multitag:Enabling MultiTag>`.
 
 ## Field-Relative Pose Estimation
 
-The camera's guess of the robot pose generally should be *fused* with other sensor readings. 
+The camera's guess of the robot pose generally should be *fused* with other sensor readings.
 
 WPILib provides [a set of pose estimation classes](https://docs.wpilib.org/en/stable/docs/software/advanced-controls/state-space/state-space-pose-estimators.html) for doing this work.
 
@@ -61,4 +61,4 @@ A simple way to use a pose estimate is to activate robot functions automatically
 
 A common, but more complex usage of a pose estimate is an input to a path-following algorithm. Specifically, the pose estimate is used to correct for the robot straying off of the pre-defined path.
 
-See the {ref}`Pose Estimation <docs/examples/simposeest:Knowledge and Equipment Needed>` example for details on integrating this.
+See the {ref}`Pose Estimation <docs/examples/poseest:Knowledge and Equipment Needed>` example for details on integrating this.

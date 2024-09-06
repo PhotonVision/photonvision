@@ -43,7 +43,6 @@ public class Robot extends TimedRobot {
 
     private XboxController controller;
 
-
     @Override
     public void robotInit() {
         drivetrain = new SwerveDrive();
@@ -78,9 +77,7 @@ public class Robot extends TimedRobot {
         // You probably don't want this on a real robot, just delete it.
         if (controller.getBButtonPressed()) {
             var disturbance =
-                    new Transform2d(
-                            new Translation2d(1.0, 1.0),
-                            new Rotation2d(0.17 * 2 * Math.PI));
+                    new Transform2d(new Translation2d(1.0, 1.0), new Rotation2d(0.17 * 2 * Math.PI));
             drivetrain.resetPose(drivetrain.getPose().plus(disturbance), false);
         }
 
@@ -100,7 +97,6 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopPeriodic() {
-
         // Calculate drivetrain commands from Joystick values
         double forward = -controller.getLeftY() * Constants.Swerve.kMaxLinearSpeed;
         double strafe = -controller.getLeftX() * Constants.Swerve.kMaxLinearSpeed;
@@ -135,10 +131,10 @@ public class Robot extends TimedRobot {
                 BatterySim.calculateDefaultBatteryLoadedVoltage(drivetrain.getCurrentDraw()));
     }
 
-    public void resetPose(){
-        // Example Only - startPose should be derived from some assumption 
+    public void resetPose() {
+        // Example Only - startPose should be derived from some assumption
         // of where your robot was placed on the field.
-        // The first pose in an autonomous path is often a good choice. 
+        // The first pose in an autonomous path is often a good choice.
         var startPose = new Pose2d(1, 1, new Rotation2d());
         drivetrain.resetPose(startPose, true);
         vision.resetSimPose(startPose);

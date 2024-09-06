@@ -2,7 +2,7 @@
 
 All examples demonstrate controlling a swerve drive with outputs from PhotonVision.
 
-Simulation is available to demonstrate the concepts - swerve physics is approximated. 
+Simulation is available to demonstrate the concepts - swerve physics is approximated.
 
 You can access a stream of what the simulated camera sees by going to https://localhost:1182 .
 

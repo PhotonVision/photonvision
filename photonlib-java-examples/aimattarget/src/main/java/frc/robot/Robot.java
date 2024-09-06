@@ -26,9 +26,6 @@ package frc.robot;
 
 import static frc.robot.Constants.Vision.*;
 
-
-import org.photonvision.PhotonCamera;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -37,6 +34,7 @@ import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.drivetrain.SwerveDrive;
+import org.photonvision.PhotonCamera;
 
 public class Robot extends TimedRobot {
     private SwerveDrive drivetrain;
@@ -45,9 +43,7 @@ public class Robot extends TimedRobot {
 
     private final double VISION_TURN_kP = 0.01;
 
-
     private XboxController controller;
-
 
     @Override
     public void robotInit() {
@@ -57,12 +53,10 @@ public class Robot extends TimedRobot {
         visionSim = new VisionSim(camera);
 
         controller = new XboxController(0);
-
     }
 
     @Override
     public void robotPeriodic() {
-
         // Update drivetrain subsystem
         drivetrain.periodic();
 
@@ -82,7 +76,6 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopPeriodic() {
-
         // Calculate drivetrain commands from Joystick values
         double forward = -controller.getLeftY() * Constants.Swerve.kMaxLinearSpeed;
         double strafe = -controller.getLeftX() * Constants.Swerve.kMaxLinearSpeed;
@@ -92,15 +85,15 @@ public class Robot extends TimedRobot {
         boolean targetVisible = false;
         double targetYaw = 0.0;
         var results = camera.getAllUnreadResults();
-        if(!results.isEmpty()){
-            //Camera processed a new frame since last
-            //Get the last one in the list.
-            var result = results.get(results.size()-1);
-            if(result.hasTargets()){
-                //At least one AprilTag was seen by the camera
-                for(var target:result.getTargets()){
-                    if(target.getFiducialId() == 7){
-                        //Found Tag 7, record its information
+        if (!results.isEmpty()) {
+            // Camera processed a new frame since last
+            // Get the last one in the list.
+            var result = results.get(results.size() - 1);
+            if (result.hasTargets()) {
+                // At least one AprilTag was seen by the camera
+                for (var target : result.getTargets()) {
+                    if (target.getFiducialId() == 7) {
+                        // Found Tag 7, record its information
                         targetYaw = target.getYaw();
                         targetVisible = true;
                     }
@@ -109,11 +102,11 @@ public class Robot extends TimedRobot {
         }
 
         // Auto-align when requested
-        if(controller.getAButton() && targetVisible){
+        if (controller.getAButton() && targetVisible) {
             // Driver wants auto-alignment to tag 7
             // And, tag 7 is in sight, so we can turn toward it.
             // Override the driver's turn command with an automatic one that turns toward the tag.
-            turn = -1.0 * targetYaw * VISION_TURN_kP * Constants.Swerve.kMaxAngularSpeed; 
+            turn = -1.0 * targetYaw * VISION_TURN_kP * Constants.Swerve.kMaxAngularSpeed;
         }
 
         // Command drivetrain motors based on target speeds
@@ -140,10 +133,10 @@ public class Robot extends TimedRobot {
                 BatterySim.calculateDefaultBatteryLoadedVoltage(drivetrain.getCurrentDraw()));
     }
 
-    public void resetPose(){
-        // Example Only - startPose should be derived from some assumption 
+    public void resetPose() {
+        // Example Only - startPose should be derived from some assumption
         // of where your robot was placed on the field.
-        // The first pose in an autonomous path is often a good choice. 
+        // The first pose in an autonomous path is often a good choice.
         var startPose = new Pose2d(1, 1, new Rotation2d());
         drivetrain.resetPose(startPose, true);
         visionSim.resetSimPose(startPose);

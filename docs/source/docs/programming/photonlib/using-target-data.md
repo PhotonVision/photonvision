@@ -1,6 +1,6 @@
 # Using Target Data
 
-A `PhotonUtils` class with helpful common calculations is included within `PhotonLib` to aid teams in using target data in order to get positional information on the field. This class contains two methods, `calculateDistanceToTargetMeters()`/`CalculateDistanceToTarget()` and `estimateTargetTranslation2d()`/`EstimateTargetTranslation()` (Java and C++ respectively).
+A `PhotonUtils` class with helpful common calculations is included within `PhotonLib` to aid teams in using AprilTag data in order to get positional information on the field. This class contains two methods, `calculateDistanceToTargetMeters()`/`CalculateDistanceToTarget()` and `estimateTargetTranslation2d()`/`EstimateTargetTranslation()` (Java and C++ respectively).
 
 ## Estimating Field Relative Pose with AprilTags
 
@@ -15,6 +15,10 @@ A `PhotonUtils` class with helpful common calculations is included within `Photo
    .. code-block:: c++
 
      //TODO
+
+   .. code-block:: python
+
+      # TODO
 ```
 
 ## Estimating Field Relative Pose (Traditional)
@@ -35,6 +39,10 @@ You can get your robot's `Pose2D` on the field using various camera data, target
       frc::Pose2D robotPose = photonlib::EstimateFieldToRobot(
         kCameraHeight, kTargetHeight, kCameraPitch, kTargetPitch, frc::Rotation2d(units::degree_t(-target.GetYaw())), frc::Rotation2d(units::degree_t(gyro.GetRotation2d)), targetPose, cameraToRobot);
 
+   .. code-block:: python
+
+      # TODO
+
 ```
 
 ## Calculating Distance to Target
@@ -44,14 +52,18 @@ If your camera is at a fixed height on your robot and the height of the target i
 ```{eval-rst}
 .. tab-set-code::
 
+   .. code-block:: java
 
-     .. rli:: https://github.com/PhotonVision/photonvision/raw/a3bcd3ac4f88acd4665371abc3073bdbe5effea8/photonlib-java-examples/src/main/java/org/photonlib/examples/getinrange/Robot.java
-        :language: java
-        :lines: 78-94
+      // TODO
 
-     .. rli:: https://github.com/PhotonVision/photonvision/raw/a3bcd3ac4f88acd4665371abc3073bdbe5effea8/photonlib-cpp-examples/src/main/cpp/examples/getinrange/cpp/Robot.cpp
-        :language: cpp
-        :lines: 33-46
+   .. code-block:: c++
+
+      // TODO
+
+   .. code-block:: python
+
+      # TODO
+
 ```
 
 :::{note}
@@ -71,6 +83,10 @@ The C++ version of PhotonLib uses the Units library. For more information, see [
    .. code-block:: c++
 
       //TODO
+
+   .. code-block:: python
+
+      # TODO
 ```
 
 ## Estimating Camera Translation to Target
@@ -90,6 +106,11 @@ You can get a [translation](https://docs.wpilib.org/en/latest/docs/software/adva
       // Calculate a translation from the camera to the target.
       frc::Translation2d translation = photonlib::PhotonUtils::EstimateCameraToTargetTranslationn(
         distance, frc::Rotation2d(units::degree_t(-target.GetYaw())));
+
+   .. code-block:: python
+
+      # TODO
+
 ```
 
 :::{note}
@@ -108,4 +129,8 @@ We are negating the yaw from the camera from CV (computer vision) conventions to
    .. code-block:: c++
 
      //TODO
+
+   .. code-block:: python
+
+      # TODO
 ```

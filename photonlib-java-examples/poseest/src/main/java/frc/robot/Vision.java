@@ -33,7 +33,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-
 import java.util.List;
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
@@ -87,8 +86,8 @@ public class Vision {
     /**
      * The latest estimated robot pose on the field from vision data. This may be empty. This should
      * only be called once per loop.
-     * 
-     * Also includes updates for the standard deviations, which can (optionally) be retrieved with
+     *
+     * <p>Also includes updates for the standard deviations, which can (optionally) be retrieved with
      * {@link getEstimationStdDevs}
      *
      * @return An {@link EstimatedRobotPose} with an estimated pose, estimate timestamp, and targets
@@ -115,15 +114,15 @@ public class Vision {
     }
 
     /**
-     * Calculates new standard deviations
-     * This algorithm is a heuristic that creates dynamic standard deviations based on number of tags,
-     * estimation strategy, and distance from the tags.
+     * Calculates new standard deviations This algorithm is a heuristic that creates dynamic standard
+     * deviations based on number of tags, estimation strategy, and distance from the tags.
      *
      * @param estimatedPose The estimated pose to guess standard deviations for.
      * @param targets All targets in this camera frame
      */
-    private void updateEstimationStdDevs(Optional<EstimatedRobotPose> estimatedPose, List<PhotonTrackedTarget> targets) {
-        if(estimatedPose.isEmpty()){
+    private void updateEstimationStdDevs(
+            Optional<EstimatedRobotPose> estimatedPose, List<PhotonTrackedTarget> targets) {
+        if (estimatedPose.isEmpty()) {
             // No pose input. Default to single-tag std devs
             curStdDevs = kSingleTagStdDevs;
 
@@ -133,16 +132,20 @@ public class Vision {
             int numTags = 0;
             double avgDist = 0;
 
-            //Precalculation - see how many tags we found, and calculate an average-distance metric
+            // Precalculation - see how many tags we found, and calculate an average-distance metric
             for (var tgt : targets) {
                 var tagPose = photonEstimator.getFieldTags().getTagPose(tgt.getFiducialId());
                 if (tagPose.isEmpty()) continue;
                 numTags++;
                 avgDist +=
-                        tagPose.get().toPose2d().getTranslation().getDistance(estimatedPose.get().estimatedPose.toPose2d().getTranslation());
+                        tagPose
+                                .get()
+                                .toPose2d()
+                                .getTranslation()
+                                .getDistance(estimatedPose.get().estimatedPose.toPose2d().getTranslation());
             }
 
-            if (numTags == 0){
+            if (numTags == 0) {
                 // No tags visible. Default to single-tag std devs
                 curStdDevs = kSingleTagStdDevs;
             } else {
@@ -156,17 +159,14 @@ public class Vision {
                 else estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
                 curStdDevs = estStdDevs;
             }
-        } 
-
-
-
+        }
     }
 
     /**
-     * Returns the latest standard deviations of the estimated pose from {@link #getEstimatedGlobalPose()}, 
-     * for use with {@link edu.wpi.first.math.estimator.SwerveDrivePoseEstimator SwerveDrivePoseEstimator}.
-     * This should only be used when there are targets visible.
-     *
+     * Returns the latest standard deviations of the estimated pose from {@link
+     * #getEstimatedGlobalPose()}, for use with {@link
+     * edu.wpi.first.math.estimator.SwerveDrivePoseEstimator SwerveDrivePoseEstimator}. This should
+     * only be used when there are targets visible.
      */
     public Matrix<N3, N1> getEstimationStdDevs() {
         return curStdDevs;

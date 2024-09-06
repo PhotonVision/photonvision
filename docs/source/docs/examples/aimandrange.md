@@ -8,32 +8,31 @@ The following example is from the PhotonLib example repository ([Java](https://g
 
 ## Code
 
-Now that you know how to both aim and get in range of the target, it is time to combine them both at the same time. This example will take the previous two code examples and make them into one function using the same tools as before. With this example, you now have all the knowledge you need to use PhotonVision on your robot in any game.
+Now that you know how to aim toward the AprilTag, let's also drive the correct distance from the AprilTag.
+
+To do this, we'll use the *pitch* of the target in the camera image and trigonometry to figure out how far away the robot is from the AprilTag. Then, like before, we'll use the P term of a PID controller to drive the robot to the correct distance.
 
 ```{eval-rst}
 .. tab-set::
 
     .. tab-item:: Java
 
-       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-java-examples/aimandrange/src/main/java/frc/robot/Robot.java
+       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/TODO_SHA1/photonlib-java-examples/aimandrange/src/main/java/frc/robot/Robot.java
          :language: java
-         :lines: 42-111
+         :lines: 41-98
          :linenos:
-         :lineno-start: 42
+         :lineno-start: 41
 
     .. tab-item:: C++ (Header)
 
-       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-cpp-examples/aimandrange/src/main/include/Robot.h
-         :language: cpp
-         :lines: 27-71
-         :linenos:
-         :lineno-start: 27
+       TODO
 
     .. tab-item:: C++ (Source)
 
-       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/ebef19af3d926cf87292177c9a16d01b71219306/photonlib-cpp-examples/aimandrange/src/main/cpp/Robot.cpp
-         :language: cpp
-         :lines: 25-67
-         :linenos:
-         :lineno-start: 25
+       TODO
+
+    .. tab-item:: Python
+
+       TODO
+
 ```
