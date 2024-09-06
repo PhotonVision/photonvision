@@ -4,7 +4,7 @@ The following example is from the PhotonLib example repository ([Java](https://g
 
 ## Knowledge and Equipment Needed
 
-- Everything required in {ref}`Aiming at a Target <docs/examples/aimingatatarget:Knowledge and Equipment Needed>` and {ref}`Getting in Range of the Target <docs/examples/gettinginrangeofthetarget:Knowledge and Equipment Needed>`.
+- Everything required in {ref}`Aiming at a Target <docs/examples/aimingatatarget:Knowledge and Equipment Needed>`.
 
 ## Code
 
