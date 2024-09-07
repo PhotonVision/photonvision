@@ -1,7 +1,56 @@
 {
+  "HALProvider": {
+    "Encoders": {
+      "0": {
+        "header": {
+          "open": true
+        }
+      },
+      "window": {
+        "visible": true
+      }
+    }
+  },
   "NTProvider": {
     "types": {
-      "/FMSInfo": "FMSInfo"
+      "/FMSInfo": "FMSInfo",
+      "/SmartDashboard/Drivetrain Debug": "Field2d"
+    },
+    "windows": {
+      "/SmartDashboard/Drivetrain Debug": {
+        "EstimatedRobotModules": {
+          "image": "D:\\Projects\\photonvision\\photonlib-python-examples\\poseest\\swerve_module.png",
+          "length": 0.4000000059604645,
+          "width": 0.4000000059604645
+        },
+        "bottom": 1476,
+        "height": 8.210550308227539,
+        "left": 150,
+        "right": 2961,
+        "top": 79,
+        "width": 16.541748046875,
+        "window": {
+          "visible": true
+        }
+      }
+    }
+  },
+  "NetworkTables": {
+    "transitory": {
+      "SmartDashboard": {
+        "Drivetrain Debug": {
+          "double[]##v_/SmartDashboard/Drivetrain Debug/EstimatedRobot": {
+            "open": true
+          },
+          "double[]##v_/SmartDashboard/Drivetrain Debug/EstimatedRobotModules": {
+            "open": true
+          },
+          "double[]##v_/SmartDashboard/Drivetrain Debug/Robot": {
+            "open": true
+          }
+        },
+        "open": true
+      }
     }
   },
   "NetworkTables Info": {

@@ -6,6 +6,7 @@
 
 import math
 import wpilib
+import wpilib.simulation
 import wpimath.geometry
 import wpimath.kinematics
 import swervemodule
@@ -30,7 +31,11 @@ class Drivetrain:
         self.backLeft   = swervemodule.SwerveModule(5, 6, 8, 9, 10, 11, 3)
         self.backRight  = swervemodule.SwerveModule(7, 8, 12, 13, 14, 15, 4)
 
+        self.debugField = wpilib.Field2d()
+        wpilib.SmartDashboard.putData("Drivetrain Debug", self.debugField)
+
         self.gyro = wpilib.AnalogGyro(0)
+        self.simGyro = wpilib.simulation.AnalogGyroSim(self.gyro)
 
         self.kinematics = wpimath.kinematics.SwerveDrive4Kinematics(
             self.frontLeftLocation,
@@ -112,6 +117,19 @@ class Drivetrain:
                  self.backLeft.getState(),
                  self.backRight.getState(),
                ]
+    
+    def getModulePoses(self) -> list[wpimath.geometry.Pose2d]:
+        p = self.odometry.getPose()
+        flTrans = wpimath.geometry.Transform2d(self.frontLeftLocation, self.frontLeft.getAbsoluteHeading())
+        frTrans = wpimath.geometry.Transform2d(self.frontRightLocation, self.frontRight.getAbsoluteHeading())
+        blTrans = wpimath.geometry.Transform2d(self.backLeftLocation, self.backLeft.getAbsoluteHeading())
+        brTrans = wpimath.geometry.Transform2d(self.backRightLocation, self.backRight.getAbsoluteHeading())
+        return [ 
+                p.transformBy(flTrans),
+                p.transformBy(frTrans),
+                p.transformBy(blTrans),
+                p.transformBy(brTrans),
+            ]
 
     def getChassisSpeeds(self) -> wpimath.kinematics.ChassisSpeeds:
         return self.kinematics.toChassisSpeeds(self.getModuleStates())
@@ -137,3 +155,12 @@ class Drivetrain:
         self.frontRight.log()
         self.backLeft.log()
         self.backRight.log()
+
+        self.debugField.getObject("EstimatedRobot").setPose(self.odometry.getPose())
+        self.debugField.getObject("EstimatedRobotModules").setPoses(self.getModulePoses())
+
+    def simulationPeriodic(self):
+        self.frontLeft.simulationPeriodic()
+        self.frontRight.simulationPeriodic()
+        self.backLeft.simulationPeriodic()
+        self.backRight.simulationPeriodic()

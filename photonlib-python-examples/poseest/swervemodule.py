@@ -6,7 +6,9 @@
 
 import math
 import wpilib
+import wpilib.simulation
 import wpimath.kinematics
+import wpimath.filter
 import wpimath.geometry
 import wpimath.controller
 import wpimath.trajectory
@@ -54,7 +56,7 @@ class SwerveModule:
 
         # Gains are for example purposes only - must be determined for your own robot!
         self.turningPIDController = wpimath.controller.ProfiledPIDController(
-            1,
+            3,
             0,
             0,
             wpimath.trajectory.TrapezoidProfile.Constraints(
@@ -83,6 +85,17 @@ class SwerveModule:
         # to be continuous.
         self.turningPIDController.enableContinuousInput(-math.pi, math.pi)
 
+        # Simulation Support
+        self.simDriveEncoder = wpilib.simulation.EncoderSim(self.driveEncoder)
+        self.simTurningEncoder = wpilib.simulation.EncoderSim(self.turningEncoder)
+        self.simDrivingMotor = wpilib.simulation.PWMSim(self.driveMotor)
+        self.simTurningMotor = wpilib.simulation.PWMSim(self.turningMotor)
+        self.simDrivingMotorFilter = wpimath.filter.LinearFilter.singlePoleIIR(0.1, 0.02)
+        self.simTurningMotorFilter = wpimath.filter.LinearFilter.singlePoleIIR(0.0001, 0.02)
+        self.simTurningEncoderPos = 0
+        self.simDrivingEncoderPos = 0
+
+
     def getState(self) -> wpimath.kinematics.SwerveModuleState:
         """Returns the current state of the module.
 
@@ -99,7 +112,7 @@ class SwerveModule:
         :returns: The current position of the module.
         """
         return wpimath.kinematics.SwerveModulePosition(
-            self.driveEncoder.getRate(),
+            self.driveEncoder.getDistance(),
             wpimath.geometry.Rotation2d(self.turningEncoder.getDistance()),
         )
 
@@ -143,7 +156,10 @@ class SwerveModule:
         self.driveMotor.setVoltage(driveOutput + driveFeedforward)
         self.turningMotor.setVoltage(turnOutput + turnFeedforward)
 
-    def log(self):
+    def getAbsoluteHeading(self) -> wpimath.geometry.Rotation2d:
+        return wpimath.geometry.Rotation2d(self.turningEncoder.getDistance())
+
+    def log(self) -> None:
         state = self.getState()
 
         table = "Module " + str(self.moduleNumber) + "/"
@@ -155,3 +171,20 @@ class SwerveModule:
                 table + "Drive Velocity Feet", state.speed_fps)
         wpilib.SmartDashboard.putNumber(
                 table + "Drive Velocity Target Feet", self.desiredState.speed_fps)
+        wpilib.SmartDashboard.putNumber(table + "Drive Voltage", self.driveMotor.get() * 12.0)
+        wpilib.SmartDashboard.putNumber(table + "Steer Voltage", self.turningMotor.get() * 12.0)
+        
+    def simulationPeriodic(self) -> None:
+        driveVoltage = self.simDrivingMotor.getSpeed() * wpilib.RobotController.getBatteryVoltage()
+        turnVoltage = self.simTurningMotor.getSpeed() * wpilib.RobotController.getBatteryVoltage()
+        driveSpdRaw = driveVoltage / 12.0 * self.driveFeedforward.maxAchievableVelocity(12.0,0)
+        turnSpdRaw = turnVoltage / 12.0 * self.turnFeedforward.maxAchievableVelocity(12.0,0)
+        driveSpd = self.simDrivingMotorFilter.calculate(driveSpdRaw)
+        turnSpd = self.simTurningMotorFilter.calculate(turnSpdRaw)
+        self.simDrivingEncoderPos += 0.02 * driveSpd
+        self.simTurningEncoderPos += 0.02 * turnSpd
+        self.simDriveEncoder.setDistance(self.simDrivingEncoderPos)
+        self.simDriveEncoder.setRate(driveSpd)
+        self.simTurningEncoder.setDistance(self.simTurningEncoderPos)
+        self.simTurningEncoder.setRate(turnSpd)
+

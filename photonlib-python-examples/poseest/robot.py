@@ -16,6 +16,7 @@ class MyRobot(wpilib.TimedRobot):
         self.swerve = drivetrain.Drivetrain()
 
     def robotPeriodic(self) -> None:
+        self.swerve.updateOdometry()
         self.swerve.log()
 
     def teleopPeriodic(self) -> None:
@@ -25,3 +26,6 @@ class MyRobot(wpilib.TimedRobot):
 
         self.swerve.drive(xSpeed, ySpeed, rot, True, self.getPeriod())
 
+    def _simulationPeriodic(self) -> None:
+        self.swerve.simulationPeriodic()
+        return super()._simulationPeriodic()
