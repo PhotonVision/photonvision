@@ -15,7 +15,8 @@ class MyRobot(wpilib.TimedRobot):
         self.controller = wpilib.XboxController(0)
         self.swerve = drivetrain.Drivetrain()
 
-
+    def robotPeriodic(self) -> None:
+        self.swerve.log()
 
     def teleopPeriodic(self) -> None:
         xSpeed = -1.0 * self.controller.getLeftY()  * drivetrain.kMaxSpeed

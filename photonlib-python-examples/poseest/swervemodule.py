@@ -146,21 +146,12 @@ class SwerveModule:
     def log(self):
         state = self.getState()
 
-        table = "Module " + self.moduleNumber + "/"
+        table = "Module " + str(self.moduleNumber) + "/"
         wpilib.SmartDashboard.putNumber(
-                table + "Steer Degrees", _radToDeg(wpimath.angleModulus(state.angle.getRadians())))
+                table + "Steer Degrees", math.degrees(wpimath.angleModulus(state.angle.radians())))
         wpilib.SmartDashboard.putNumber(
-                table + "Steer Target Degrees", _radToDeg(self.turningPIDController.getSetpoint()))
+                table + "Steer Target Degrees", math.degrees(self.turningPIDController.getSetpoint().position))
         wpilib.SmartDashboard.putNumber(
-                table + "Drive Velocity Feet", _mToft(state.speedMetersPerSecond))
+                table + "Drive Velocity Feet", state.speed_fps)
         wpilib.SmartDashboard.putNumber(
-                table + "Drive Velocity Target Feet",
-                _mToft(self.desiredState.speedMetersPerSecond))
-
-
-
-def _radToDeg(in_val:float)->float:
-    return in_val * 180 / math.pi
-
-def _mToft(in_val:float)->float:
-    return in_val * 3.28084
+                table + "Drive Velocity Target Feet", self.desiredState.speed_fps)

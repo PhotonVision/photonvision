@@ -25,10 +25,10 @@ class Drivetrain:
         self.backLeftLocation = wpimath.geometry.Translation2d(-0.381, 0.381)
         self.backRightLocation = wpimath.geometry.Translation2d(-0.381, -0.381)
 
-        self.frontLeft = swervemodule.SwerveModule(1, 2, 0, 1, 2, 3)
-        self.frontRight = swervemodule.SwerveModule(3, 4, 4, 5, 6, 7)
-        self.backLeft = swervemodule.SwerveModule(5, 6, 8, 9, 10, 11)
-        self.backRight = swervemodule.SwerveModule(7, 8, 12, 13, 14, 15)
+        self.frontLeft  = swervemodule.SwerveModule(1, 2, 0, 1, 2, 3, 1)
+        self.frontRight = swervemodule.SwerveModule(3, 4, 4, 5, 6, 7, 2)
+        self.backLeft   = swervemodule.SwerveModule(5, 6, 8, 9, 10, 11, 3)
+        self.backRight  = swervemodule.SwerveModule(7, 8, 12, 13, 14, 15, 4)
 
         self.gyro = wpilib.AnalogGyro(0)
 
@@ -49,6 +49,8 @@ class Drivetrain:
                 self.backRight.getPosition(),
             ),
         )
+
+        self.targetChassisSpeeds = wpimath.kinematics.ChassisSpeeds()
 
         self.gyro.reset()
 
@@ -88,6 +90,9 @@ class Drivetrain:
         self.backLeft.setDesiredState(swerveModuleStates[2])
         self.backRight.setDesiredState(swerveModuleStates[3])
 
+        self.targetChassisSpeeds = self.kinematics.toChassisSpeeds(swerveModuleStates)
+
+
     def updateOdometry(self) -> None:
         """Updates the field relative position of the robot."""
         self.odometry.update(
@@ -99,3 +104,36 @@ class Drivetrain:
                 self.backRight.getPosition(),
             ),
         )
+
+    def getModuleStates(self) -> list[wpimath.kinematics.SwerveModuleState]:
+        return [ 
+                 self.frontLeft.getState(),
+                 self.frontRight.getState(),
+                 self.backLeft.getState(),
+                 self.backRight.getState(),
+               ]
+
+    def getChassisSpeeds(self) -> wpimath.kinematics.ChassisSpeeds:
+        return self.kinematics.toChassisSpeeds(self.getModuleStates())
+    
+    def log(self):
+        table = "Drive/"
+
+        pose = self.odometry.getPose()
+        wpilib.SmartDashboard.putNumber(table + "X", pose.X())
+        wpilib.SmartDashboard.putNumber(table + "Y", pose.Y())
+        wpilib.SmartDashboard.putNumber(table + "Heading", pose.rotation().degrees())
+
+        chassisSpeeds = self.getChassisSpeeds()
+        wpilib.SmartDashboard.putNumber(table + "VX", chassisSpeeds.vx)
+        wpilib.SmartDashboard.putNumber(table + "VY", chassisSpeeds.vy)
+        wpilib.SmartDashboard.putNumber(table + "Omega Degrees", chassisSpeeds.omega_dps)
+
+        wpilib.SmartDashboard.putNumber(table + "Target VX", self.targetChassisSpeeds.vx)
+        wpilib.SmartDashboard.putNumber(table + "Target VY", self.targetChassisSpeeds.vy)
+        wpilib.SmartDashboard.putNumber(table + "Target Omega Degrees", self.targetChassisSpeeds.omega_dps)
+        
+        self.frontLeft.log()
+        self.frontRight.log()
+        self.backLeft.log()
+        self.backRight.log()
