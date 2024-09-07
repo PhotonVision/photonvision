@@ -32,8 +32,8 @@ import org.photonvision.targeting.*;
  */
 public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResult> {
     // Message definition md5sum. See photon_packet.adoc for details
-    public static final String MESSAGE_VERSION = "cb3e1605048ba49325888eb797399fe2";
-    public static final String MESSAGE_FORMAT = "PhotonPipelineMetadata metadata;PhotonTrackedTarget[?] targets;MultiTargetPNPResult? multitagResult;";
+    public static final String MESSAGE_VERSION = "5e958c3322f2068c9bc8b1c7b25810f9";
+    public static final String MESSAGE_FORMAT = "PhotonPipelineMetadata:626e70461cbdb274fb43ead09c255f4e metadata;PhotonTrackedTarget:40a7416333cff2b68557a9248dd6e062[?] targets;MultiTargetPNPResult:d6bc73b676ca92dc882d6c317ef5473a? multitagResult;";
 
     public final String getTypeString() { return MESSAGE_FORMAT; }
     public final String getInterfaceUUID() { return MESSAGE_VERSION; }

@@ -26,8 +26,8 @@ from ..targeting import *
 class PhotonPipelineResultSerde:
 
     # Message definition md5sum. See photon_packet.adoc for details
-    MESSAGE_VERSION = "cb3e1605048ba49325888eb797399fe2"
-    MESSAGE_FORMAT = "PhotonPipelineMetadata metadata;PhotonTrackedTarget[?] targets;MultiTargetPNPResult? multiTagResult;"
+    MESSAGE_VERSION = "5e958c3322f2068c9bc8b1c7b25810f9"
+    MESSAGE_FORMAT = "PhotonPipelineMetadata:626e70461cbdb274fb43ead09c255f4e metadata;PhotonTrackedTarget:40a7416333cff2b68557a9248dd6e062[?] targets;MultiTargetPNPResult:d6bc73b676ca92dc882d6c317ef5473a? multitagResult;"
 
     @staticmethod
     def unpack(packet: "Packet") -> "PhotonPipelineResult":
@@ -39,8 +39,8 @@ class PhotonPipelineResultSerde:
         # targets is a custom VLA!
         ret.targets = packet.decodeList(PhotonTrackedTarget.photonStruct)
 
-        # multiTagResult is optional! it better not be a VLA too
-        ret.multiTagResult = packet.decodeOptional(MultiTargetPNPResult.photonStruct)
+        # multitagResult is optional! it better not be a VLA too
+        ret.multitagResult = packet.decodeOptional(MultiTargetPNPResult.photonStruct)
 
         return ret
 

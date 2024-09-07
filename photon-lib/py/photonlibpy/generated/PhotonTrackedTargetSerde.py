@@ -26,8 +26,8 @@ from ..targeting import *
 class PhotonTrackedTargetSerde:
 
     # Message definition md5sum. See photon_packet.adoc for details
-    MESSAGE_VERSION = "8fdada56b9162f2e32bd24f0055d7b60"
-    MESSAGE_FORMAT = "float64 yaw;float64 pitch;float64 area;float64 skew;int32 fiducialId;int32 objDetectId;float32 objDetectConf;Transform3d bestCameraToTarget;Transform3d altCameraToTarget;float64 poseAmbiguity;TargetCorner[?] minAreaRectCorners;TargetCorner[?] detectedCorners;"
+    MESSAGE_VERSION = "40a7416333cff2b68557a9248dd6e062"
+    MESSAGE_FORMAT = "float64 yaw;float64 pitch;float64 area;float64 skew;int32 fiducialId;int32 objDetectId;float32 objDetectConf;Transform3d:d41d8cd98f00b204e9800998ecf8427e bestCameraToTarget;Transform3d:d41d8cd98f00b204e9800998ecf8427e altCameraToTarget;float64 poseAmbiguity;TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6[?] minAreaRectCorners;TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6[?] detectedCorners;"
 
     @staticmethod
     def unpack(packet: "Packet") -> "PhotonTrackedTarget":

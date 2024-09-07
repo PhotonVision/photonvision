@@ -47,6 +47,9 @@ class MessageType(TypedDict):
     cpp_include: str
     # python shim types
     python_decode_shim: str
+    # Remember our message hash. Recalculated by us. All intrinsic types are unhashed so this is fine to live here
+    message_hash: str
+    schema_str: str
 
 
 def yaml_to_dict(path: str):
@@ -118,7 +121,7 @@ def get_field_by_name(message: MessageType, field_name: str):
     return next(f for f in message["fields"] if f["name"] == field_name)
 
 
-def get_message_hash(message_db: List[MessageType], message: MessageType):
+def get_message_hash(message_db: List[MessageType], message: MessageType) -> str:
     """
     Calculate a unique message hash via MD5 sum. This is a very similar approach to rosmsg, documented:
     http://wiki.ros.org/ROS/Technical%20Overview#Message_serialization_and_msg_MD5_sums
@@ -138,13 +141,14 @@ def get_message_hash(message_db: List[MessageType], message: MessageType):
         sub_message = get_message_by_name(message_db, field["type"])
         subhash = get_message_hash(message_db, sub_message)
 
-        # change the type to be our new md5sum
-        field["type"] = subhash.hexdigest()
 
-    # base case: message is all intrinsic types
-    # Hash a comments-stripped version for message integrity checking
-    cleaned_yaml = yaml.dump(modified_message, default_flow_style=False).strip()
-    message_hash = hashlib.md5(cleaned_yaml.encode("ascii"))
+    schema = get_struct_schema_str(message, message_db)
+    message_hash = hashlib.md5(schema.encode("ascii")).hexdigest()
+
+    # and remember the hash
+    message['message_hash'] = message_hash
+    message['schema_str'] = schema
+
     return message_hash
 
 
@@ -171,8 +175,7 @@ def get_includes(db, message: MessageType) -> str:
     return sorted(set(includes))
 
 
-def parse_yaml():
-    Path(__file__).resolve().parent
+def parse_yaml() -> List[MessageType]:
     config = yaml_to_dict("messages.yaml")
 
     return config
@@ -191,9 +194,7 @@ def get_fully_defined_field_name(field: SerdeField, message_db: List[MessageType
     if not is_intrinsic_type(field["type"]):
         typestr += (
             ":"
-            + get_message_hash(
-                message_db, get_message_by_name(message_db, field["type"])
-            ).hexdigest()
+            + get_message_by_name(message_db, field["type"])['message_hash']
         )
 
     return typestr
@@ -217,6 +218,9 @@ def get_struct_schema_str(message: MessageType, message_db: List[MessageType]):
 
 def generate_photon_messages(cpp_java_root, py_root, template_root):
     messages = parse_yaml()
+
+    for message in messages:
+        message['message_hash'] = get_message_hash(messages, message)
 
     env = Environment(
         loader=FileSystemLoader(str(template_root)),
@@ -296,7 +300,7 @@ def generate_photon_messages(cpp_java_root, py_root, template_root):
                     message,
                     type_map=extended_data_types,
                     message_fmt=get_struct_schema_str(message, messages),
-                    message_hash=message_hash.hexdigest(),
+                    message_hash=message_hash,
                     cpp_includes=get_includes(messages, message),
                 ),
                 encoding="utf-8",
