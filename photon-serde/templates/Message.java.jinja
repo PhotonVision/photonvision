@@ -48,7 +48,6 @@ public class {{ name }}Serde implements PacketSerde<{{name}}> {
     public void pack(Packet packet, {{ name }} value) {
 {%- for field in fields -%}
     {%- if field.type | is_shimmed %}
-        // field is shimmed!
         {{ get_message_by_name(field.type).java_encode_shim }}(packet, value.{{ field.name }});
     {%- elif field.optional == True %}
         // {{ field.name }} is optional! it better not be a VLA too
@@ -76,7 +75,6 @@ public class {{ name }}Serde implements PacketSerde<{{name}}> {
         var ret = new {{ name }}();
 {% for field in fields -%}
     {%- if field.type | is_shimmed %}
-        // field is shimmed!
         ret.{{ field.name }} = {{ get_message_by_name(field.type).java_decode_shim }}(packet);
     {%- elif field.optional == True %}
         // {{ field.name }} is optional! it better not be a VLA too

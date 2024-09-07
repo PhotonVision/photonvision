@@ -192,10 +192,13 @@ def get_fully_defined_field_name(field: SerdeField, message_db: List[MessageType
 
     typestr = field["type"]
     if not is_intrinsic_type(field["type"]):
-        typestr += (
-            ":"
-            + get_message_by_name(message_db, field["type"])['message_hash']
-        )
+        msg = get_message_by_name(message_db, field["type"])
+        is_shimmed = get_shimmed_filter(message_db)(field['type'])
+        if not is_shimmed:
+            typestr += (
+                ":"
+                + msg['message_hash']
+            )
 
     return typestr
 

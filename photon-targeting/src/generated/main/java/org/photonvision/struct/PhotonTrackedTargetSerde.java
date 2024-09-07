@@ -32,8 +32,8 @@ import org.photonvision.targeting.*;
  */
 public class PhotonTrackedTargetSerde implements PacketSerde<PhotonTrackedTarget> {
     // Message definition md5sum. See photon_packet.adoc for details
-    public static final String MESSAGE_VERSION = "40a7416333cff2b68557a9248dd6e062";
-    public static final String MESSAGE_FORMAT = "float64 yaw;float64 pitch;float64 area;float64 skew;int32 fiducialId;int32 objDetectId;float32 objDetectConf;Transform3d:d41d8cd98f00b204e9800998ecf8427e bestCameraToTarget;Transform3d:d41d8cd98f00b204e9800998ecf8427e altCameraToTarget;float64 poseAmbiguity;TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6[?] minAreaRectCorners;TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6[?] detectedCorners;";
+    public static final String MESSAGE_VERSION = "4387ab389a8a78b7beb4492f145831b4";
+    public static final String MESSAGE_FORMAT = "float64 yaw;float64 pitch;float64 area;float64 skew;int32 fiducialId;int32 objDetectId;float32 objDetectConf;Transform3d bestCameraToTarget;Transform3d altCameraToTarget;float64 poseAmbiguity;TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6[?] minAreaRectCorners;TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6[?] detectedCorners;";
 
     public final String getTypeString() { return MESSAGE_FORMAT; }
     public final String getInterfaceUUID() { return MESSAGE_VERSION; }
@@ -67,10 +67,8 @@ public class PhotonTrackedTargetSerde implements PacketSerde<PhotonTrackedTarget
         // field objDetectConf is of intrinsic type float32
         packet.encode((float) value.objDetectConf);
 
-        // field is shimmed!
         PacketUtils.packTransform3d(packet, value.bestCameraToTarget);
 
-        // field is shimmed!
         PacketUtils.packTransform3d(packet, value.altCameraToTarget);
 
         // field poseAmbiguity is of intrinsic type float64
@@ -108,10 +106,8 @@ public class PhotonTrackedTargetSerde implements PacketSerde<PhotonTrackedTarget
         // objDetectConf is of intrinsic type float32
         ret.objDetectConf = packet.decodeFloat();
 
-        // field is shimmed!
         ret.bestCameraToTarget = PacketUtils.unpackTransform3d(packet);
 
-        // field is shimmed!
         ret.altCameraToTarget = PacketUtils.unpackTransform3d(packet);
 
         // poseAmbiguity is of intrinsic type float64

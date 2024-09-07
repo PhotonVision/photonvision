@@ -36,11 +36,11 @@ namespace photon {
 template <>
 struct WPILIB_DLLEXPORT SerdeType<MultiTargetPNPResult> {
   static constexpr std::string_view GetSchemaHash() {
-    return "d6bc73b676ca92dc882d6c317ef5473a";
+    return "af2056aaab740eeb889a926071cae6ee";
   }
 
   static constexpr std::string_view GetSchema() {
-    return "PnpResult:efd48755dedd8e9b9ef02d6050539e86 estimatedPose;int16[?] "
+    return "PnpResult:ae4d655c0a3104d88df4f5db144c1e86 estimatedPose;int16[?] "
            "fiducialIDsUsed;";
   }
 

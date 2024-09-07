@@ -35,13 +35,12 @@ namespace photon {
 template <>
 struct WPILIB_DLLEXPORT SerdeType<PnpResult> {
   static constexpr std::string_view GetSchemaHash() {
-    return "efd48755dedd8e9b9ef02d6050539e86";
+    return "ae4d655c0a3104d88df4f5db144c1e86";
   }
 
   static constexpr std::string_view GetSchema() {
-    return "Transform3d:d41d8cd98f00b204e9800998ecf8427e "
-           "best;Transform3d:d41d8cd98f00b204e9800998ecf8427e alt;float64 "
-           "bestReprojErr;float64 altReprojErr;float64 ambiguity;";
+    return "Transform3d best;Transform3d alt;float64 bestReprojErr;float64 "
+           "altReprojErr;float64 ambiguity;";
   }
 
   static photon::PnpResult Unpack(photon::Packet& packet);

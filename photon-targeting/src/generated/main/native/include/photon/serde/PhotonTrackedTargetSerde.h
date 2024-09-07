@@ -37,15 +37,13 @@ namespace photon {
 template <>
 struct WPILIB_DLLEXPORT SerdeType<PhotonTrackedTarget> {
   static constexpr std::string_view GetSchemaHash() {
-    return "40a7416333cff2b68557a9248dd6e062";
+    return "4387ab389a8a78b7beb4492f145831b4";
   }
 
   static constexpr std::string_view GetSchema() {
     return "float64 yaw;float64 pitch;float64 area;float64 skew;int32 "
-           "fiducialId;int32 objDetectId;float32 "
-           "objDetectConf;Transform3d:d41d8cd98f00b204e9800998ecf8427e "
-           "bestCameraToTarget;Transform3d:d41d8cd98f00b204e9800998ecf8427e "
-           "altCameraToTarget;float64 "
+           "fiducialId;int32 objDetectId;float32 objDetectConf;Transform3d "
+           "bestCameraToTarget;Transform3d altCameraToTarget;float64 "
            "poseAmbiguity;TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6[?] "
            "minAreaRectCorners;TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6[?]"
            " detectedCorners;";

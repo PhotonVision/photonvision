@@ -32,8 +32,8 @@ import org.photonvision.targeting.*;
  */
 public class PnpResultSerde implements PacketSerde<PnpResult> {
     // Message definition md5sum. See photon_packet.adoc for details
-    public static final String MESSAGE_VERSION = "efd48755dedd8e9b9ef02d6050539e86";
-    public static final String MESSAGE_FORMAT = "Transform3d:d41d8cd98f00b204e9800998ecf8427e best;Transform3d:d41d8cd98f00b204e9800998ecf8427e alt;float64 bestReprojErr;float64 altReprojErr;float64 ambiguity;";
+    public static final String MESSAGE_VERSION = "ae4d655c0a3104d88df4f5db144c1e86";
+    public static final String MESSAGE_FORMAT = "Transform3d best;Transform3d alt;float64 bestReprojErr;float64 altReprojErr;float64 ambiguity;";
 
     public final String getTypeString() { return MESSAGE_FORMAT; }
     public final String getInterfaceUUID() { return MESSAGE_VERSION; }
@@ -46,10 +46,8 @@ public class PnpResultSerde implements PacketSerde<PnpResult> {
 
     @Override
     public void pack(Packet packet, PnpResult value) {
-        // field is shimmed!
         PacketUtils.packTransform3d(packet, value.best);
 
-        // field is shimmed!
         PacketUtils.packTransform3d(packet, value.alt);
 
         // field bestReprojErr is of intrinsic type float64
@@ -66,10 +64,8 @@ public class PnpResultSerde implements PacketSerde<PnpResult> {
     public PnpResult unpack(Packet packet) {
         var ret = new PnpResult();
 
-        // field is shimmed!
         ret.best = PacketUtils.unpackTransform3d(packet);
 
-        // field is shimmed!
         ret.alt = PacketUtils.unpackTransform3d(packet);
 
         // bestReprojErr is of intrinsic type float64
