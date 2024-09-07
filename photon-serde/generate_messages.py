@@ -178,15 +178,38 @@ def parse_yaml():
     return config
 
 
-def get_struct_schema_str(message: MessageType):
+def get_fully_defined_field_name(field: SerdeField, message_db: List[MessageType]):
+    """
+    Get the fully-defined, globally unique type name for a field. Returns something like Transform3d:b290703ff9e54f9ec2c733b90d7fc30b for user-defined types, or just something like int64 for built-in types
+
+    Args:
+        field: The field we want the name of
+        message_db: All other loaded messages
+    """
+
+    typestr = field["type"]
+    if not is_intrinsic_type(field["type"]):
+        typestr += (
+            ":"
+            + get_message_hash(
+                message_db, get_message_by_name(message_db, field["type"])
+            ).hexdigest()
+        )
+
+    return typestr
+
+
+def get_struct_schema_str(message: MessageType, message_db: List[MessageType]):
     ret = ""
 
     for field in message["fields"]:
-        typestr = field["type"]
+        typestr = get_fully_defined_field_name(field, message_db)
+
         if "optional" in field and field["optional"] == True:
             typestr += "?"
         if "vla" in field and field["vla"] == True:
             typestr += "[?]"
+
         ret += f"{typestr} {field['name']};"
 
     return ret
@@ -272,7 +295,7 @@ def generate_photon_messages(cpp_java_root, py_root, template_root):
                 template.render(
                     message,
                     type_map=extended_data_types,
-                    message_fmt=get_struct_schema_str(message),
+                    message_fmt=get_struct_schema_str(message, messages),
                     message_hash=message_hash.hexdigest(),
                     cpp_includes=get_includes(messages, message),
                 ),
