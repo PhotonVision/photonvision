@@ -59,6 +59,7 @@ class SwerveModule:
 
         # Gains are for example purposes only - must be determined for your own robot!
         self.driveFeedforward = wpimath.controller.SimpleMotorFeedforwardMeters(1, 3)
+        self.turnFeedforward = wpimath.controller.SimpleMotorFeedforwardMeters(1, 0.7)
 
         # Set the distance per pulse for the drive encoder. We can simply use the
         # distance traveled for one rotation of the wheel divided by the encoder
@@ -140,8 +141,12 @@ class SwerveModule:
             self.turningEncoder.getDistance(), state.angle.radians()
         )
 
+        turnFeedforward = self.turnFeedforward.calculate(
+            self.turningPIDController.getSetpoint()
+        )
+
         self.driveMotor.setVoltage(driveOutput + driveFeedforward)
-        self.turningMotor.setVoltage(turnOutput)
+        self.turningMotor.setVoltage(turnOutput + turnFeedforward)
 
     def getAbsoluteHeading(self) -> wpimath.geometry.Rotation2d:
         return wpimath.geometry.Rotation2d(self.turningEncoder.getDistance())
@@ -165,7 +170,7 @@ class SwerveModule:
         driveVoltage = self.simDrivingMotor.getSpeed() * wpilib.RobotController.getBatteryVoltage()
         turnVoltage = self.simTurningMotor.getSpeed() * wpilib.RobotController.getBatteryVoltage()
         driveSpdRaw = driveVoltage / 12.0 * self.driveFeedforward.maxAchievableVelocity(12.0,0)
-        turnSpdRaw = turnVoltage / 0.7
+        turnSpdRaw = turnVoltage / 12.0 * self.turnFeedforward.maxAchievableVelocity(12.0,0)
         driveSpd = self.simDrivingMotorFilter.calculate(driveSpdRaw)
         turnSpd = self.simTurningMotorFilter.calculate(turnSpdRaw)
         self.simDrivingEncoderPos += 0.02 * driveSpd

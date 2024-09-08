@@ -44,7 +44,7 @@ public class Robot extends TimedRobot {
     private PhotonCamera camera;
 
     private final double VISION_TURN_kP = 0.01;
-    private final double VISION_DES_ANGLE_rad = 0.0;
+    private final double VISION_DES_ANGLE_deg = 0.0;
     private final double VISION_STRAFE_kP = 0.5;
     private final double VISION_DES_RANGE_m = 1.25;
 
@@ -121,7 +121,7 @@ public class Robot extends TimedRobot {
             // Override the driver's turn and fwd/rev command with an automatic one
             // That turns toward the tag, and gets the range right.
             turn =
-                    (VISION_DES_ANGLE_rad - targetYaw) * VISION_TURN_kP * Constants.Swerve.kMaxAngularSpeed;
+                    (VISION_DES_ANGLE_deg - targetYaw) * VISION_TURN_kP * Constants.Swerve.kMaxAngularSpeed;
             forward =
                     (VISION_DES_RANGE_m - targetRange) * VISION_STRAFE_kP * Constants.Swerve.kMaxLinearSpeed;
         }
