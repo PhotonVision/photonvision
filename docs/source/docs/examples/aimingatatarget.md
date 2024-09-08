@@ -21,7 +21,7 @@ In this example, while the operator holds a button down, the robot will turn tow
 
     .. tab-item:: Java
 
-       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-java-examples/aimattarget/src/main/java/frc/robot/Robot.java
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/adb3098fbe0cdbc1a378c6d5a41126dd1d6d6955/photonlib-java-examples/aimattarget/src/main/java/frc/robot/Robot.java
          :language: java
          :lines: 77-117
          :linenos:
@@ -29,7 +29,7 @@ In this example, while the operator holds a button down, the robot will turn tow
 
     .. tab-item:: C++ (Header)
 
-       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-cpp-examples/aimattarget/src/main/inclde/Robot.h
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/adb3098fbe0cdbc1a378c6d5a41126dd1d6d6955/photonlib-cpp-examples/aimattarget/src/main/include/Robot.h
          :language: c++
          :lines: 25-61
          :linenos:
@@ -37,7 +37,7 @@ In this example, while the operator holds a button down, the robot will turn tow
 
     .. tab-item:: C++ (Source)
 
-       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-cpp-examples/aimattarget/src/main/cpp/Robot.cpp
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/adb3098fbe0cdbc1a378c6d5a41126dd1d6d6955/photonlib-cpp-examples/aimattarget/src/main/cpp/Robot.cpp
          :language: c++
          :lines: 56-96
          :linenos:
@@ -45,7 +45,7 @@ In this example, while the operator holds a button down, the robot will turn tow
 
     .. tab-item:: Python
 
-       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-python-examples/aimattarget/robot.py
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/adb3098fbe0cdbc1a378c6d5a41126dd1d6d6955/photonlib-python-examples/aimattarget/robot.py
          :language: python
          :lines: 46-70
          :linenos:

@@ -17,7 +17,7 @@ To do this, we'll use the *pitch* of the target in the camera image and trigonom
 
     .. tab-item:: Java
 
-       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-java-examples/aimandrange/src/main/java/frc/robot/Robot.java
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/adb3098fbe0cdbc1a378c6d5a41126dd1d6d6955/photonlib-java-examples/aimandrange/src/main/java/frc/robot/Robot.java
          :language: java
          :lines: 84-131
          :linenos:
@@ -25,7 +25,7 @@ To do this, we'll use the *pitch* of the target in the camera image and trigonom
 
     .. tab-item:: C++ (Header)
 
-       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-cpp-examples/aimandrange/src/main/inclde/Robot.h
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/adb3098fbe0cdbc1a378c6d5a41126dd1d6d6955/photonlib-cpp-examples/aimandrange/src/main/include/Robot.h
          :language: c++
          :lines: 25-64
          :linenos:
@@ -33,7 +33,7 @@ To do this, we'll use the *pitch* of the target in the camera image and trigonom
 
     .. tab-item:: C++ (Source)
 
-       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-cpp-examples/aimandrange/src/main/cpp/Robot.cpp
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/adb3098fbe0cdbc1a378c6d5a41126dd1d6d6955/photonlib-cpp-examples/aimandrange/src/main/cpp/Robot.cpp
          :language: c++
          :lines: 58-107
          :linenos:
@@ -41,9 +41,9 @@ To do this, we'll use the *pitch* of the target in the camera image and trigonom
 
     .. tab-item:: Python
 
-       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-python-examples/aimandrange/robot.py
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/adb3098fbe0cdbc1a378c6d5a41126dd1d6d6955/photonlib-python-examples/aimandrange/robot.py
          :language: python
-         :lines: 44-103
+         :lines: 44-98
          :linenos:
          :lineno-start: 44
 
