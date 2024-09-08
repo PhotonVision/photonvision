@@ -52,22 +52,14 @@ class SwerveModule:
         )
 
         # Gains are for example purposes only - must be determined for your own robot!
-        self.drivePIDController = wpimath.controller.PIDController(1, 0, 0)
+        self.drivePIDController = wpimath.controller.PIDController(10, 0, 0)
 
         # Gains are for example purposes only - must be determined for your own robot!
-        self.turningPIDController = wpimath.controller.ProfiledPIDController(
-            3,
-            0,
-            0,
-            wpimath.trajectory.TrapezoidProfile.Constraints(
-                kModuleMaxAngularVelocity,
-                kModuleMaxAngularAcceleration,
-            ),
-        )
+        self.turningPIDController = wpimath.controller.PIDController(30,0,0)
 
         # Gains are for example purposes only - must be determined for your own robot!
         self.driveFeedforward = wpimath.controller.SimpleMotorFeedforwardMeters(1, 3)
-        self.turnFeedforward = wpimath.controller.SimpleMotorFeedforwardMeters(1, 0.5)
+        self.turnFeedforward = wpimath.controller.SimpleMotorFeedforwardMeters(1, 0.7)
 
         # Set the distance per pulse for the drive encoder. We can simply use the
         # distance traveled for one rotation of the wheel divided by the encoder
@@ -150,7 +142,7 @@ class SwerveModule:
         )
 
         turnFeedforward = self.turnFeedforward.calculate(
-            self.turningPIDController.getSetpoint().velocity
+            self.turningPIDController.getSetpoint()
         )
 
         self.driveMotor.setVoltage(driveOutput + driveFeedforward)
@@ -166,7 +158,7 @@ class SwerveModule:
         wpilib.SmartDashboard.putNumber(
                 table + "Steer Degrees", math.degrees(wpimath.angleModulus(state.angle.radians())))
         wpilib.SmartDashboard.putNumber(
-                table + "Steer Target Degrees", math.degrees(self.turningPIDController.getSetpoint().position))
+                table + "Steer Target Degrees", math.degrees(self.turningPIDController.getSetpoint()))
         wpilib.SmartDashboard.putNumber(
                 table + "Drive Velocity Feet", state.speed_fps)
         wpilib.SmartDashboard.putNumber(

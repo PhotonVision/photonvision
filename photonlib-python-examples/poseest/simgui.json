@@ -9,6 +9,13 @@
       "window": {
         "visible": true
       }
+    },
+    "Other Devices": {
+      "AnalogGyro[0]": {
+        "header": {
+          "open": true
+        }
+      }
     }
   },
   "NTProvider": {
@@ -18,10 +25,10 @@
     },
     "windows": {
       "/SmartDashboard/Drivetrain Debug": {
-        "EstimatedRobotModules": {
-          "image": "D:\\Projects\\photonvision\\photonlib-python-examples\\poseest\\swerve_module.png",
-          "length": 0.4000000059604645,
-          "width": 0.4000000059604645
+        "SwerveModules": {
+          "image": "swerve_module.png",
+          "length": 0.5,
+          "width": 0.5
         },
         "bottom": 1476,
         "height": 8.210550308227539,
@@ -39,15 +46,12 @@
     "transitory": {
       "SmartDashboard": {
         "Drivetrain Debug": {
-          "double[]##v_/SmartDashboard/Drivetrain Debug/EstimatedRobot": {
-            "open": true
-          },
-          "double[]##v_/SmartDashboard/Drivetrain Debug/EstimatedRobotModules": {
-            "open": true
-          },
           "double[]##v_/SmartDashboard/Drivetrain Debug/Robot": {
             "open": true
           }
+        },
+        "Module 1": {
+          "open": true
         },
         "open": true
       }

@@ -156,11 +156,13 @@ class Drivetrain:
         self.backLeft.log()
         self.backRight.log()
 
-        self.debugField.getObject("EstimatedRobot").setPose(self.odometry.getPose())
-        self.debugField.getObject("EstimatedRobotModules").setPoses(self.getModulePoses())
+        self.debugField.getRobotObject().setPose(self.odometry.getPose())
+        self.debugField.getObject("SwerveModules").setPoses(self.getModulePoses())
 
     def simulationPeriodic(self):
         self.frontLeft.simulationPeriodic()
         self.frontRight.simulationPeriodic()
         self.backLeft.simulationPeriodic()
         self.backRight.simulationPeriodic()
+        self.simGyro.setRate(self.getChassisSpeeds().omega_dps)
+        self.simGyro.setAngle(self.simGyro.getAngle() + self.simGyro.getRate() * 0.02)
