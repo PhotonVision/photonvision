@@ -1,6 +1,6 @@
 # Using WPILib Pose Estimation, Simulation, and PhotonVision Together
 
-The following example comes from the PhotonLib example repository ([Java](https://github.com/gerth2/photonvision/tree/master/photonlib-java-examples/)).  Full code is available at that links.
+The following example comes from the PhotonLib example repository ([Java](https://github.com/gerth2/photonvision/tree/master/photonlib-java-examples/poseest)/[C++](https://github.com/gerth2/photonvision/tree/master/photonlib-cpp-examples/poseest)/[Python](https://github.com/gerth2/photonvision/tree/master/photonlib-python-examples/poseest)).  Full code is available at that links.
 
 ## Knowledge and Equipment Needed
 
