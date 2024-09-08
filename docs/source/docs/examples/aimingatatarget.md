@@ -21,22 +21,34 @@ In this example, while the operator holds a button down, the robot will turn tow
 
     .. tab-item:: Java
 
-       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/d6c37ead118ae58d224c0c4fd7f7a2b7931940b5/photonlib-java-examples/aimattarget/src/main/java/frc/robot/Robot.java
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-java-examples/aimattarget/src/main/java/frc/robot/Robot.java
          :language: java
-         :lines: 79-114
+         :lines: 77-117
          :linenos:
-         :lineno-start: 79
+         :lineno-start: 77
 
     .. tab-item:: C++ (Header)
 
-       TODO
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-cpp-examples/aimattarget/src/main/inclde/Robot.h
+         :language: c++
+         :lines: 25-61
+         :linenos:
+         :lineno-start: 25
 
     .. tab-item:: C++ (Source)
 
-       TODO
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-cpp-examples/aimattarget/src/main/cpp/Robot.cpp
+         :language: c++
+         :lines: 56-96
+         :linenos:
+         :lineno-start: 56
 
     .. tab-item:: Python
 
-       TODO
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-python-examples/aimattarget/robot.py
+         :language: python
+         :lines: 46-70
+         :linenos:
+         :lineno-start: 46
 
 ```

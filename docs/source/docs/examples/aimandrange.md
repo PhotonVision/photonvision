@@ -17,7 +17,7 @@ To do this, we'll use the *pitch* of the target in the camera image and trigonom
 
     .. tab-item:: Java
 
-       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/d6c37ead118ae58d224c0c4fd7f7a2b7931940b5/photonlib-java-examples/aimandrange/src/main/java/frc/robot/Robot.java
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-java-examples/aimandrange/src/main/java/frc/robot/Robot.java
          :language: java
          :lines: 84-131
          :linenos:
@@ -25,14 +25,26 @@ To do this, we'll use the *pitch* of the target in the camera image and trigonom
 
     .. tab-item:: C++ (Header)
 
-       TODO
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-cpp-examples/aimandrange/src/main/inclde/Robot.h
+         :language: c++
+         :lines: 25-64
+         :linenos:
+         :lineno-start: 25
 
     .. tab-item:: C++ (Source)
 
-       TODO
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-cpp-examples/aimandrange/src/main/cpp/Robot.cpp
+         :language: c++
+         :lines: 58-107
+         :linenos:
+         :lineno-start: 58
 
     .. tab-item:: Python
 
-       TODO
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-python-examples/aimandrange/robot.py
+         :language: python
+         :lines: 44-103
+         :linenos:
+         :lineno-start: 44
 
 ```

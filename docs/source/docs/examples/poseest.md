@@ -26,13 +26,31 @@ We use the 2024 game's AprilTag Locations:
     .. tab-item:: Java
        :sync: java
 
-       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/d6c37ead118ae58d224c0c4fd7f7a2b7931940b5/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
          :language: java
          :lines: 68-68
          :linenos:
          :lineno-start: 68
 
+    .. tab-item:: C++
+
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-cpp-examples/poseest/src/main/include/Constants.h
+         :language: c++
+         :lines: 42-43
+         :linenos:
+         :lineno-start: 42
+
+    .. tab-item:: Python
+
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-python-examples/poseest/robot.py
+         :language: python
+         :lines: 46-46
+         :linenos:
+         :lineno-start: 46
+
 ```
+
+
 
 To incorporate PhotonVision, we need to create a {code}`PhotonCamera`:
 
@@ -43,12 +61,27 @@ To incorporate PhotonVision, we need to create a {code}`PhotonCamera`:
     .. tab-item:: Java
        :sync: java
 
-       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/d6c37ead118ae58d224c0c4fd7f7a2b7931940b5/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
          :language: java
          :lines: 57-57
          :linenos:
          :lineno-start: 57
 
+    .. tab-item:: C++
+
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-cpp-examples/poseest/src/main/include/Constants.h
+         :language: c++
+         :lines: 145-145
+         :linenos:
+         :lineno-start: 145
+
+    .. tab-item:: Python
+
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-python-examples/poseest/robot.py
+         :language: python
+         :lines: 44-44
+         :linenos:
+         :lineno-start: 44
 ```
 
 During periodic execution, we read back camera results. If we see AprilTags in the image, we calculate the camera-measured pose of the robot and pass it to the {code}`Drivetrain`.
@@ -59,11 +92,27 @@ During periodic execution, we read back camera results. If we see AprilTags in t
     .. tab-item:: Java
        :sync: java
 
-       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/d6c37ead118ae58d224c0c4fd7f7a2b7931940b5/photonlib-java-examples/poseest/src/main/java/frc/robot/Robot.java
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-java-examples/poseest/src/main/java/frc/robot/Robot.java
          :language: java
          :lines: 64-74
          :linenos:
          :lineno-start: 64
+
+    .. tab-item:: C++
+
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-cpp-examples/poseest/src/main/src/Robot.cpp
+         :language: c++
+         :lines: 38-46
+         :linenos:
+         :lineno-start: 38
+
+    .. tab-item:: Python
+
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-python-examples/poseest/robot.py
+         :language: python
+         :lines: 54-56
+         :linenos:
+         :lineno-start: 54
 
 ```
 
@@ -77,11 +126,23 @@ First, we create a new {code}`VisionSystemSim` to represent our camera and copro
     .. tab-item:: Java
        :sync: java
 
-       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/d6c37ead118ae58d224c0c4fd7f7a2b7931940b5/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
          :language: java
          :lines: 65-69
          :linenos:
          :lineno-start: 65
+
+    .. tab-item:: C++
+
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-cpp-examples/poseest/src/main/include/Vision.h
+         :language: c++
+         :lines: 49-52
+         :linenos:
+         :lineno-start: 49
+
+    .. tab-item:: Python
+
+       # TODO
 
 ```
 
@@ -93,12 +154,23 @@ Then, we add configure the simulated vision system to match the camera system be
     .. tab-item:: Java
        :sync: java
 
-       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/d6c37ead118ae58d224c0c4fd7f7a2b7931940b5/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
          :language: java
          :lines: 69-82
          :linenos:
          :lineno-start: 69
 
+    .. tab-item:: C++
+
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-cpp-examples/poseest/src/main/include/Vision.h
+         :language: c++
+         :lines: 53-65
+         :linenos:
+         :lineno-start: 53
+
+    .. tab-item:: Python
+
+       # TODO
 ```
 
 
@@ -112,12 +184,23 @@ During simulation, we periodically update the simulated vision system.
     .. tab-item:: Java
        :sync: java
 
-       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/d6c37ead118ae58d224c0c4fd7f7a2b7931940b5/photonlib-java-examples/poseest/src/main/java/frc/robot/Robot.java
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-java-examples/poseest/src/main/java/frc/robot/Robot.java
          :language: java
          :lines: 114-132
          :linenos:
          :lineno-start: 114
 
+    .. tab-item:: C++
+
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/56513cef973b3b7f8de5b354467f88dd9fbaea71/photonlib-cpp-examples/poseest/src/main/src/Robot.cpp
+         :language: c++
+         :lines: 95-109
+         :linenos:
+         :lineno-start: 95
+
+    .. tab-item:: Python
+
+       # TODO
 ```
 
 The rest is done behind the scenes.

@@ -83,7 +83,19 @@ The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (s
 
     .. code-block:: Python
 
-        # TODO
+        kRobotToCam = wpimath.geometry.Transform3d(
+            wpimath.geometry.Translation3d(0.5, 0.0, 0.5),
+            wpimath.geometry.Rotation3d.fromDegrees(0.0, -30.0, 0.0),
+        )
+
+        self.cam = PhotonCamera("YOUR CAMERA NAME")
+
+        self.camPoseEst = PhotonPoseEstimator(
+            loadAprilTagLayoutField(AprilTagField.k2024Crescendo),
+            PoseStrategy.CLOSEST_TO_REFERENCE_POSE,
+            self.cam,
+            kRobotToCam
+        )
 ```
 
 ## Using a `PhotonPoseEstimator`
@@ -113,7 +125,8 @@ Calling `update()` on your `PhotonPoseEstimator` will return an `EstimatedRobotP
 
     .. code-block:: Python
 
-        # TODO
+
+
 ```
 
 You should be updating your [drivetrain pose estimator](https://docs.wpilib.org/en/latest/docs/software/advanced-controls/state-space/state-space-pose-estimators.html) with the result from the `RobotPoseEstimator` every loop using `addVisionMeasurement()`. TODO: add example note

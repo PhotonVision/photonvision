@@ -31,10 +31,11 @@ import drivetrain
 
 from photonlibpy import PhotonCamera, PhotonPoseEstimator, PoseStrategy
 
-ROBOT_TO_CAM = wpimath.geometry.Transform3d(
+kRobotToCam = wpimath.geometry.Transform3d(
     wpimath.geometry.Translation3d(0.5, 0.0, 0.5),
     wpimath.geometry.Rotation3d.fromDegrees(0.0, -30.0, 0.0),
 )
+
 
 class MyRobot(wpilib.TimedRobot):
     def robotInit(self) -> None:
@@ -46,14 +47,15 @@ class MyRobot(wpilib.TimedRobot):
             loadAprilTagLayoutField(AprilTagField.k2024Crescendo),
             PoseStrategy.LOWEST_AMBIGUITY,
             self.cam,
-            ROBOT_TO_CAM
+            kRobotToCam,
         )
 
     def robotPeriodic(self) -> None:
-
         camEstPose = self.camPoseEst.update()
-        if(camEstPose):
-            self.swerve.addVisionPoseEstimate(camEstPose.estimatedPose, camEstPose.timestampSeconds)
+        if camEstPose:
+            self.swerve.addVisionPoseEstimate(
+                camEstPose.estimatedPose, camEstPose.timestampSeconds
+            )
 
         self.swerve.updateOdometry()
         self.swerve.log()
