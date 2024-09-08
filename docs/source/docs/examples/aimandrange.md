@@ -27,7 +27,7 @@ To do this, we'll use the *pitch* of the target in the camera image and trigonom
 
        .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/adb3098fbe0cdbc1a378c6d5a41126dd1d6d6955/photonlib-cpp-examples/aimandrange/src/main/include/Robot.h
          :language: c++
-         :lines: 25-64
+         :lines: 25-63
          :linenos:
          :lineno-start: 25
 

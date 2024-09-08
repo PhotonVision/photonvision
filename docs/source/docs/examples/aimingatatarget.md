@@ -31,7 +31,7 @@ In this example, while the operator holds a button down, the robot will turn tow
 
        .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/adb3098fbe0cdbc1a378c6d5a41126dd1d6d6955/photonlib-cpp-examples/aimattarget/src/main/include/Robot.h
          :language: c++
-         :lines: 25-61
+         :lines: 25-60
          :linenos:
          :lineno-start: 25
 

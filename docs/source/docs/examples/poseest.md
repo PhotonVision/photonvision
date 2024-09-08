@@ -69,7 +69,7 @@ To incorporate PhotonVision, we need to create a {code}`PhotonCamera`:
 
     .. tab-item:: C++
 
-       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/adb3098fbe0cdbc1a378c6d5a41126dd1d6d6955/photonlib-cpp-examples/poseest/src/main/include/Constants.h
+       .. rli:: https://raw.githubusercontent.com/gerth2/photonvision/adb3098fbe0cdbc1a378c6d5a41126dd1d6d6955/photonlib-cpp-examples/poseest/src/main/include/Vision.h
          :language: c++
          :lines: 145-145
          :linenos:
