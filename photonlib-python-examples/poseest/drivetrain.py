@@ -28,10 +28,16 @@ import wpilib
 import wpilib.simulation
 import wpimath.geometry
 import wpimath.kinematics
+import wpimath.estimator
 import swervemodule
 
 kMaxSpeed = 3.0  # 3 meters per second
 kMaxAngularSpeed = math.pi  # 1/2 rotation per second
+
+kInitialPose = wpimath.geometry.Pose2d(
+    wpimath.geometry.Translation2d(1.0, 1.0),
+    wpimath.geometry.Rotation2d.fromDegrees(0.0),
+)
 
 
 class Drivetrain:
@@ -63,7 +69,7 @@ class Drivetrain:
             self.backRightLocation,
         )
 
-        self.odometry = wpimath.kinematics.SwerveDrive4Odometry(
+        self.poseEst = wpimath.estimator.SwerveDrive4PoseEstimator(
             self.kinematics,
             self.gyro.getRotation2d(),
             (
@@ -72,6 +78,7 @@ class Drivetrain:
                 self.backLeft.getPosition(),
                 self.backRight.getPosition(),
             ),
+            kInitialPose,
         )
 
         self.targetChassisSpeeds = wpimath.kinematics.ChassisSpeeds()
@@ -118,7 +125,7 @@ class Drivetrain:
 
     def updateOdometry(self) -> None:
         """Updates the field relative position of the robot."""
-        self.odometry.update(
+        self.poseEst.update(
             self.gyro.getRotation2d(),
             (
                 self.frontLeft.getPosition(),
@@ -126,6 +133,23 @@ class Drivetrain:
                 self.backLeft.getPosition(),
                 self.backRight.getPosition(),
             ),
+        )
+
+    def addVisionPoseEstimate(
+        self, pose: wpimath.geometry.Pose3d, timestamp: float
+    ) -> None:
+        self.poseEst.addVisionMeasurement(pose, timestamp)
+
+    def resetPose(self) -> None:
+        self.poseEst.resetPosition(
+            self.gyro.getRotation2d(),
+            (
+                self.frontLeft.getPosition(),
+                self.frontRight.getPosition(),
+                self.backLeft.getPosition(),
+                self.backRight.getPosition(),
+            ),
+            kInitialPose,
         )
 
     def getModuleStates(self) -> list[wpimath.kinematics.SwerveModuleState]:
@@ -137,7 +161,7 @@ class Drivetrain:
         ]
 
     def getModulePoses(self) -> list[wpimath.geometry.Pose2d]:
-        p = self.odometry.getPose()
+        p = self.poseEst.getEstimatedPosition()
         flTrans = wpimath.geometry.Transform2d(
             self.frontLeftLocation, self.frontLeft.getAbsoluteHeading()
         )
@@ -163,7 +187,7 @@ class Drivetrain:
     def log(self):
         table = "Drive/"
 
-        pose = self.odometry.getPose()
+        pose = self.poseEst.getEstimatedPosition()
         wpilib.SmartDashboard.putNumber(table + "X", pose.X())
         wpilib.SmartDashboard.putNumber(table + "Y", pose.Y())
         wpilib.SmartDashboard.putNumber(table + "Heading", pose.rotation().degrees())
@@ -190,7 +214,7 @@ class Drivetrain:
         self.backLeft.log()
         self.backRight.log()
 
-        self.debugField.getRobotObject().setPose(self.odometry.getPose())
+        self.debugField.getRobotObject().setPose(self.poseEst.getEstimatedPosition())
         self.debugField.getObject("SwerveModules").setPoses(self.getModulePoses())
 
     def simulationPeriodic(self):

@@ -64,20 +64,19 @@ class MyRobot(wpilib.TimedRobot):
         results = self.cam.getAllUnreadResults()
         if len(results) > 0:
             result = results[-1]  # take the most recent result the camera had
-            if result.hasTargets():
-                # At least one apriltag was seen by the camera
-                for target in result.getTargets():
-                    if target.getFiducialId() == 7:
-                        # Found tag 7, record its information
-                        targetVisible = True
-                        targetYaw = target.getYaw()
-                        heightDelta = (
-                            ROBOT_TO_CAM.translation().Z() - 1.435
-                        )  # From 2024 game manual for ID 7
-                        angleDelta = -1.0 * ROBOT_TO_CAM.rotation().Y() - math.radians(
-                            target.getPitch()
-                        )
-                        targetRange = heightDelta / math.tan(angleDelta)
+            # At least one apriltag was seen by the camera
+            for target in result.getTargets():
+                if target.getFiducialId() == 7:
+                    # Found tag 7, record its information
+                    targetVisible = True
+                    targetYaw = target.getYaw()
+                    heightDelta = (
+                        ROBOT_TO_CAM.translation().Z() - 1.435
+                    )  # From 2024 game manual for ID 7
+                    angleDelta = -1.0 * ROBOT_TO_CAM.rotation().Y() - math.radians(
+                        target.getPitch()
+                    )
+                    targetRange = heightDelta / math.tan(angleDelta)
 
         if self.controller.getAButton() and targetVisible:
             # Driver wants auto-alignment to tag 7

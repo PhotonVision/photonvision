@@ -25,16 +25,36 @@
 
 
 import wpilib
+import wpimath.geometry
+from robotpy_apriltag import AprilTagField, loadAprilTagLayoutField
 import drivetrain
 
+from photonlibpy import PhotonCamera, PhotonPoseEstimator, PoseStrategy
+
+ROBOT_TO_CAM = wpimath.geometry.Transform3d(
+    wpimath.geometry.Translation3d(0.5, 0.0, 0.5),
+    wpimath.geometry.Rotation3d.fromDegrees(0.0, -30.0, 0.0),
+)
 
 class MyRobot(wpilib.TimedRobot):
     def robotInit(self) -> None:
         """Robot initialization function"""
         self.controller = wpilib.XboxController(0)
         self.swerve = drivetrain.Drivetrain()
+        self.cam = PhotonCamera("YOUR CAMERA NAME")
+        self.camPoseEst = PhotonPoseEstimator(
+            loadAprilTagLayoutField(AprilTagField.k2024Crescendo),
+            PoseStrategy.LOWEST_AMBIGUITY,
+            self.cam,
+            ROBOT_TO_CAM
+        )
 
     def robotPeriodic(self) -> None:
+
+        camEstPose = self.camPoseEst.update()
+        if(camEstPose):
+            self.swerve.addVisionPoseEstimate(camEstPose.estimatedPose, camEstPose.timestampSeconds)
+
         self.swerve.updateOdometry()
         self.swerve.log()
 
