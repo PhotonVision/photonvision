@@ -14,7 +14,7 @@ This example demonstrates integration of swerve drive control, a basic swerve ph
 
 ### Estimating Pose
 
-The {code}`Drivetrain` class includes functionality to fuse multiple sensor readings together (including PhotonVision) into a best-guess of the pose on the field..
+The {code}`Drivetrain` class includes functionality to fuse multiple sensor readings together (including PhotonVision) into a best-guess of the pose on the field.
 
 Please reference the [WPILib documentation](https://docs.wpilib.org/en/stable/docs/software/advanced-controls/state-space/state-space-pose_state-estimators.html) on using the {code}`SwerveDrivePoseEstimator` class.
 

@@ -243,9 +243,11 @@ The program will wait for the VSCode debugger to attach before proceeding.
 
 ### Running examples
 
-You can run one of the many built in examples straight from the command line, too! They contain a fully featured robot project, and some include simulation support. The projects can be found inside the photonlib-java-examples and photonlib-cpp-examples subdirectories, respectively.
+You can run one of the many built in examples straight from the command line, too! They contain a fully featured robot project, and some include simulation support. The projects can be found inside the photonlib-*-examples subdirectories for each language.
 
-To run them, use the commands listed below. PhotonLib must first be published to your local maven repository, then the copy PhotonLib task will copy the generated vendordep json file into each example. After that, the simulateJava/simulateNative task can be used like a normal robot project. Robot simulation with attached debugger is technically possible by using simulateExternalJava and modifying the launch script it exports, though not yet supported.
+#### Running C++/Java
+
+PhotonLib must first be published to your local maven repository, then the copy PhotonLib task will copy the generated vendordep json file into each example. After that, the simulateJava/simulateNative task can be used like a normal robot project. Robot simulation with attached debugger is technically possible by using simulateExternalJava and modifying the launch script it exports, though not yet supported.
 
 ```
 ~/photonvision$ ./gradlew publishToMavenLocal
@@ -257,4 +259,28 @@ To run them, use the commands listed below. PhotonLib must first be published to
 ~/photonvision$ cd photonlib-cpp-examples
 ~/photonvision/photonlib-cpp-examples$ ./gradlew copyPhotonlib
 ~/photonvision/photonlib-cpp-examples$ ./gradlew <example-name>:simulateNative
+```
+
+#### Running Python
+
+PhotonLibPy must first be built into a wheel.
+
+```
+> cd photon-lib/py
+> buildAndTest.bat
+```
+
+Then, you must enable using the development wheels. robotpy will use pip behind the scenes, and this bat file tells pip about your development artifacts.
+
+Note: This is best done in a virtual environment.
+
+```
+> enableUsingDevBuilds.bat
+```
+
+Then, run the examples:
+
+```
+> cd photonlib-python-examples
+> run.bat <example name>
 ```
