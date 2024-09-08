@@ -1,8 +1,27 @@
+###################################################################################
+# MIT License
 #
-# Copyright (c) FIRST and other WPILib contributors.
-# Open Source Software; you can modify and/or share it under the terms of
-# the WPILib BSD license file in the root directory of this project.
+# Copyright (c) PhotonVision
 #
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+###################################################################################
+
 
 import math
 import wpilib
@@ -26,10 +45,10 @@ class Drivetrain:
         self.backLeftLocation = wpimath.geometry.Translation2d(-0.381, 0.381)
         self.backRightLocation = wpimath.geometry.Translation2d(-0.381, -0.381)
 
-        self.frontLeft  = swervemodule.SwerveModule(1, 2, 0, 1, 2, 3, 1)
+        self.frontLeft = swervemodule.SwerveModule(1, 2, 0, 1, 2, 3, 1)
         self.frontRight = swervemodule.SwerveModule(3, 4, 4, 5, 6, 7, 2)
-        self.backLeft   = swervemodule.SwerveModule(5, 6, 8, 9, 10, 11, 3)
-        self.backRight  = swervemodule.SwerveModule(7, 8, 12, 13, 14, 15, 4)
+        self.backLeft = swervemodule.SwerveModule(5, 6, 8, 9, 10, 11, 3)
+        self.backRight = swervemodule.SwerveModule(7, 8, 12, 13, 14, 15, 4)
 
         self.debugField = wpilib.Field2d()
         wpilib.SmartDashboard.putData("Drivetrain Debug", self.debugField)
@@ -97,7 +116,6 @@ class Drivetrain:
 
         self.targetChassisSpeeds = self.kinematics.toChassisSpeeds(swerveModuleStates)
 
-
     def updateOdometry(self) -> None:
         """Updates the field relative position of the robot."""
         self.odometry.update(
@@ -111,29 +129,37 @@ class Drivetrain:
         )
 
     def getModuleStates(self) -> list[wpimath.kinematics.SwerveModuleState]:
-        return [ 
-                 self.frontLeft.getState(),
-                 self.frontRight.getState(),
-                 self.backLeft.getState(),
-                 self.backRight.getState(),
-               ]
-    
+        return [
+            self.frontLeft.getState(),
+            self.frontRight.getState(),
+            self.backLeft.getState(),
+            self.backRight.getState(),
+        ]
+
     def getModulePoses(self) -> list[wpimath.geometry.Pose2d]:
         p = self.odometry.getPose()
-        flTrans = wpimath.geometry.Transform2d(self.frontLeftLocation, self.frontLeft.getAbsoluteHeading())
-        frTrans = wpimath.geometry.Transform2d(self.frontRightLocation, self.frontRight.getAbsoluteHeading())
-        blTrans = wpimath.geometry.Transform2d(self.backLeftLocation, self.backLeft.getAbsoluteHeading())
-        brTrans = wpimath.geometry.Transform2d(self.backRightLocation, self.backRight.getAbsoluteHeading())
-        return [ 
-                p.transformBy(flTrans),
-                p.transformBy(frTrans),
-                p.transformBy(blTrans),
-                p.transformBy(brTrans),
-            ]
+        flTrans = wpimath.geometry.Transform2d(
+            self.frontLeftLocation, self.frontLeft.getAbsoluteHeading()
+        )
+        frTrans = wpimath.geometry.Transform2d(
+            self.frontRightLocation, self.frontRight.getAbsoluteHeading()
+        )
+        blTrans = wpimath.geometry.Transform2d(
+            self.backLeftLocation, self.backLeft.getAbsoluteHeading()
+        )
+        brTrans = wpimath.geometry.Transform2d(
+            self.backRightLocation, self.backRight.getAbsoluteHeading()
+        )
+        return [
+            p.transformBy(flTrans),
+            p.transformBy(frTrans),
+            p.transformBy(blTrans),
+            p.transformBy(brTrans),
+        ]
 
     def getChassisSpeeds(self) -> wpimath.kinematics.ChassisSpeeds:
         return self.kinematics.toChassisSpeeds(self.getModuleStates())
-    
+
     def log(self):
         table = "Drive/"
 
@@ -145,12 +171,20 @@ class Drivetrain:
         chassisSpeeds = self.getChassisSpeeds()
         wpilib.SmartDashboard.putNumber(table + "VX", chassisSpeeds.vx)
         wpilib.SmartDashboard.putNumber(table + "VY", chassisSpeeds.vy)
-        wpilib.SmartDashboard.putNumber(table + "Omega Degrees", chassisSpeeds.omega_dps)
+        wpilib.SmartDashboard.putNumber(
+            table + "Omega Degrees", chassisSpeeds.omega_dps
+        )
 
-        wpilib.SmartDashboard.putNumber(table + "Target VX", self.targetChassisSpeeds.vx)
-        wpilib.SmartDashboard.putNumber(table + "Target VY", self.targetChassisSpeeds.vy)
-        wpilib.SmartDashboard.putNumber(table + "Target Omega Degrees", self.targetChassisSpeeds.omega_dps)
-        
+        wpilib.SmartDashboard.putNumber(
+            table + "Target VX", self.targetChassisSpeeds.vx
+        )
+        wpilib.SmartDashboard.putNumber(
+            table + "Target VY", self.targetChassisSpeeds.vy
+        )
+        wpilib.SmartDashboard.putNumber(
+            table + "Target Omega Degrees", self.targetChassisSpeeds.omega_dps
+        )
+
         self.frontLeft.log()
         self.frontRight.log()
         self.backLeft.log()

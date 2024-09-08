@@ -1,9 +1,27 @@
 #!/usr/bin/env python3
+###################################################################################
+# MIT License
 #
-# Copyright (c) FIRST and other WPILib contributors.
-# Open Source Software; you can modify and/or share it under the terms of
-# the WPILib BSD license file in the root directory of this project.
+# Copyright (c) PhotonVision
 #
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+###################################################################################
 
 import math
 import wpilib
@@ -18,9 +36,10 @@ VISION_DES_ANGLE_deg = 0.0
 VISION_STRAFE_kP = 0.5
 VISION_DES_RANGE_m = 1.25
 ROBOT_TO_CAM = wpimath.geometry.Transform3d(
-    wpimath.geometry.Translation3d(0.5,0.0,0.5),
-    wpimath.geometry.Rotation3d.fromDegrees(0.0, -30.0, 0.0)
+    wpimath.geometry.Translation3d(0.5, 0.0, 0.5),
+    wpimath.geometry.Rotation3d.fromDegrees(0.0, -30.0, 0.0),
 )
+
 
 class MyRobot(wpilib.TimedRobot):
     def robotInit(self) -> None:
@@ -34,17 +53,17 @@ class MyRobot(wpilib.TimedRobot):
         self.swerve.log()
 
     def teleopPeriodic(self) -> None:
-        xSpeed = -1.0 * self.controller.getLeftY()  * drivetrain.kMaxSpeed
-        ySpeed = -1.0 * self.controller.getLeftX()  * drivetrain.kMaxSpeed
-        rot    = -1.0 * self.controller.getRightX() * drivetrain.kMaxAngularSpeed
+        xSpeed = -1.0 * self.controller.getLeftY() * drivetrain.kMaxSpeed
+        ySpeed = -1.0 * self.controller.getLeftX() * drivetrain.kMaxSpeed
+        rot = -1.0 * self.controller.getRightX() * drivetrain.kMaxAngularSpeed
 
         # Get information from the camera
         targetYaw = 0.0
         targetRange = 0.0
         targetVisible = False
         results = self.cam.getAllUnreadResults()
-        if(len(results) > 0):
-            result = results[-1] #take the most recent result the camera had
+        if len(results) > 0:
+            result = results[-1]  # take the most recent result the camera had
             if result.hasTargets():
                 # At least one apriltag was seen by the camera
                 for target in result.getTargets():
@@ -52,19 +71,30 @@ class MyRobot(wpilib.TimedRobot):
                         # Found tag 7, record its information
                         targetVisible = True
                         targetYaw = target.getYaw()
-                        heightDelta = (ROBOT_TO_CAM.translation().Z() -  
-                                       1.435) # From 2024 game manual for ID 7
-                        angleDelta = -1.0 * ROBOT_TO_CAM.rotation().Y() - math.radians(target.getPitch())
+                        heightDelta = (
+                            ROBOT_TO_CAM.translation().Z() - 1.435
+                        )  # From 2024 game manual for ID 7
+                        angleDelta = -1.0 * ROBOT_TO_CAM.rotation().Y() - math.radians(
+                            target.getPitch()
+                        )
                         targetRange = heightDelta / math.tan(angleDelta)
 
-        if(self.controller.getAButton() and targetVisible):
+        if self.controller.getAButton() and targetVisible:
             # Driver wants auto-alignment to tag 7
             # And, tag 7 is in sight, so we can turn toward it.
-            # Override the driver's turn and x-vel command with 
-            # an automatic one that turns toward the tag 
+            # Override the driver's turn and x-vel command with
+            # an automatic one that turns toward the tag
             # and puts us at the right distance
-            rot = (VISION_DES_ANGLE_deg - targetYaw) * VISION_TURN_kP * drivetrain.kMaxAngularSpeed
-            xSpeed = (VISION_DES_RANGE_m - targetRange) * VISION_STRAFE_kP * drivetrain.kMaxSpeed
+            rot = (
+                (VISION_DES_ANGLE_deg - targetYaw)
+                * VISION_TURN_kP
+                * drivetrain.kMaxAngularSpeed
+            )
+            xSpeed = (
+                (VISION_DES_RANGE_m - targetRange)
+                * VISION_STRAFE_kP
+                * drivetrain.kMaxSpeed
+            )
 
         self.swerve.drive(xSpeed, ySpeed, rot, True, self.getPeriod())
 
