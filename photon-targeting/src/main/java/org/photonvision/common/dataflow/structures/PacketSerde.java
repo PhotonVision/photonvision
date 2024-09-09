@@ -24,7 +24,31 @@ public interface PacketSerde<T> {
 
     T unpack(Packet packet);
 
-    String getTypeString();
+    /** The name of this struct (eg "PhotonTrackedTarget") */
+    String getTypeName();
 
+    /**
+     * Gets the type string (e.g. for NetworkTables). This should be globally unique and start with
+     * "photonstruct:".
+     *
+     * @return type string
+     */
+    default String getTypeString() {
+        return "photonstruct:" + getTypeName();
+    }
+
+    /**
+     * Gets the list of struct types referenced by this struct.
+     *
+     * @return list of struct types
+     */
+    default PacketSerde<?>[] getNested() {
+        return new PacketSerde<?>[] {};
+    }
+
+    /** The schema definition, as defined in photon-serde/README.md */
+    String getSchema();
+
+    /** The hash of the schema string */
     String getInterfaceUUID();
 }

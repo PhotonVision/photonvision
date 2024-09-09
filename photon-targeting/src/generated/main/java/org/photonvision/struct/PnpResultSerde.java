@@ -31,12 +31,12 @@ import org.photonvision.targeting.*;
  * Auto-generated serialization/deserialization helper for PnpResult
  */
 public class PnpResultSerde implements PacketSerde<PnpResult> {
-    // Message definition md5sum. See photon_packet.adoc for details
-    public static final String MESSAGE_VERSION = "ae4d655c0a3104d88df4f5db144c1e86";
-    public static final String MESSAGE_FORMAT = "Transform3d best;Transform3d alt;float64 bestReprojErr;float64 altReprojErr;float64 ambiguity;";
-
-    public final String getTypeString() { return MESSAGE_FORMAT; }
-    public final String getInterfaceUUID() { return MESSAGE_VERSION; }
+    @Override
+    public final String getInterfaceUUID() { return "ae4d655c0a3104d88df4f5db144c1e86"; }
+    @Override
+    public final String getSchema() { return "Transform3d best;Transform3d alt;float64 bestReprojErr;float64 altReprojErr;float64 ambiguity;"; }
+    @Override
+    public final String getTypeName() { return "PnpResult"; }
 
     @Override
     public int getMaxByteSize() {
@@ -78,5 +78,12 @@ public class PnpResultSerde implements PacketSerde<PnpResult> {
         ret.ambiguity = packet.decodeDouble();
 
         return ret;
+    }
+
+    @Override
+    public PacketSerde<?>[] getNested() {
+        return new PacketSerde<?>[] {
+
+        };
     }
 }

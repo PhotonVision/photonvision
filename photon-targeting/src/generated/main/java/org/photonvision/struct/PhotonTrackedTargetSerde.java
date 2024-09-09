@@ -31,12 +31,12 @@ import org.photonvision.targeting.*;
  * Auto-generated serialization/deserialization helper for PhotonTrackedTarget
  */
 public class PhotonTrackedTargetSerde implements PacketSerde<PhotonTrackedTarget> {
-    // Message definition md5sum. See photon_packet.adoc for details
-    public static final String MESSAGE_VERSION = "4387ab389a8a78b7beb4492f145831b4";
-    public static final String MESSAGE_FORMAT = "float64 yaw;float64 pitch;float64 area;float64 skew;int32 fiducialId;int32 objDetectId;float32 objDetectConf;Transform3d bestCameraToTarget;Transform3d altCameraToTarget;float64 poseAmbiguity;TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6[?] minAreaRectCorners;TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6[?] detectedCorners;";
-
-    public final String getTypeString() { return MESSAGE_FORMAT; }
-    public final String getInterfaceUUID() { return MESSAGE_VERSION; }
+    @Override
+    public final String getInterfaceUUID() { return "4387ab389a8a78b7beb4492f145831b4"; }
+    @Override
+    public final String getSchema() { return "float64 yaw;float64 pitch;float64 area;float64 skew;int32 fiducialId;int32 objDetectId;float32 objDetectConf;Transform3d bestCameraToTarget;Transform3d altCameraToTarget;float64 poseAmbiguity;TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6[?] minAreaRectCorners;TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6[?] detectedCorners;"; }
+    @Override
+    public final String getTypeName() { return "PhotonTrackedTarget"; }
 
     @Override
     public int getMaxByteSize() {
@@ -120,5 +120,12 @@ public class PhotonTrackedTargetSerde implements PacketSerde<PhotonTrackedTarget
         ret.detectedCorners = packet.decodeList(TargetCorner.photonStruct);
 
         return ret;
+    }
+
+    @Override
+    public PacketSerde<?>[] getNested() {
+        return new PacketSerde<?>[] {
+            TargetCorner.photonStruct
+        };
     }
 }

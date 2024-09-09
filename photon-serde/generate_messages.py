@@ -141,13 +141,12 @@ def get_message_hash(message_db: List[MessageType], message: MessageType) -> str
         sub_message = get_message_by_name(message_db, field["type"])
         subhash = get_message_hash(message_db, sub_message)
 
-
     schema = get_struct_schema_str(message, message_db)
     message_hash = hashlib.md5(schema.encode("ascii")).hexdigest()
 
     # and remember the hash
-    message['message_hash'] = message_hash
-    message['schema_str'] = schema
+    message["message_hash"] = message_hash
+    message["schema_str"] = schema
 
     return message_hash
 
@@ -193,12 +192,9 @@ def get_fully_defined_field_name(field: SerdeField, message_db: List[MessageType
     typestr = field["type"]
     if not is_intrinsic_type(field["type"]):
         msg = get_message_by_name(message_db, field["type"])
-        is_shimmed = get_shimmed_filter(message_db)(field['type'])
+        is_shimmed = get_shimmed_filter(message_db)(field["type"])
         if not is_shimmed:
-            typestr += (
-                ":"
-                + msg['message_hash']
-            )
+            typestr += ":" + msg["message_hash"]
 
     return typestr
 
@@ -223,7 +219,7 @@ def generate_photon_messages(cpp_java_root, py_root, template_root):
     messages = parse_yaml()
 
     for message in messages:
-        message['message_hash'] = get_message_hash(messages, message)
+        message["message_hash"] = get_message_hash(messages, message)
 
     env = Environment(
         loader=FileSystemLoader(str(template_root)),
@@ -297,6 +293,17 @@ def generate_photon_messages(cpp_java_root, py_root, template_root):
                 messages, name
             )
 
+            nested_types = set(
+                [
+                    field["type"]
+                    for field in message["fields"]
+                    if (
+                        not is_intrinsic_type(field["type"])
+                        and not get_shimmed_filter(messages)(field["type"])
+                    )
+                ]
+            )
+
             output_file = output_folder / output_name
             output_file.write_text(
                 template.render(
@@ -305,6 +312,7 @@ def generate_photon_messages(cpp_java_root, py_root, template_root):
                     message_fmt=get_struct_schema_str(message, messages),
                     message_hash=message_hash,
                     cpp_includes=get_includes(messages, message),
+                    nested_type_names=nested_types,
                 ),
                 encoding="utf-8",
             )

@@ -31,12 +31,12 @@ import org.photonvision.targeting.*;
  * Auto-generated serialization/deserialization helper for PhotonPipelineResult
  */
 public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResult> {
-    // Message definition md5sum. See photon_packet.adoc for details
-    public static final String MESSAGE_VERSION = "ed36092eb95e9fc254ebac897e2a74df";
-    public static final String MESSAGE_FORMAT = "PhotonPipelineMetadata:626e70461cbdb274fb43ead09c255f4e metadata;PhotonTrackedTarget:4387ab389a8a78b7beb4492f145831b4[?] targets;MultiTargetPNPResult:af2056aaab740eeb889a926071cae6ee? multitagResult;";
-
-    public final String getTypeString() { return MESSAGE_FORMAT; }
-    public final String getInterfaceUUID() { return MESSAGE_VERSION; }
+    @Override
+    public final String getInterfaceUUID() { return "ed36092eb95e9fc254ebac897e2a74df"; }
+    @Override
+    public final String getSchema() { return "PhotonPipelineMetadata:626e70461cbdb274fb43ead09c255f4e metadata;PhotonTrackedTarget:4387ab389a8a78b7beb4492f145831b4[?] targets;MultiTargetPNPResult:af2056aaab740eeb889a926071cae6ee? multitagResult;"; }
+    @Override
+    public final String getTypeName() { return "PhotonPipelineResult"; }
 
     @Override
     public int getMaxByteSize() {
@@ -70,5 +70,12 @@ public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResu
         ret.multitagResult = packet.decodeOptional(MultiTargetPNPResult.photonStruct);
 
         return ret;
+    }
+
+    @Override
+    public PacketSerde<?>[] getNested() {
+        return new PacketSerde<?>[] {
+            PhotonTrackedTarget.photonStruct,MultiTargetPNPResult.photonStruct,PhotonPipelineMetadata.photonStruct
+        };
     }
 }

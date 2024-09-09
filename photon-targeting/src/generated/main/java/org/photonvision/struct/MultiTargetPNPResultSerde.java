@@ -31,12 +31,12 @@ import org.photonvision.targeting.*;
  * Auto-generated serialization/deserialization helper for MultiTargetPNPResult
  */
 public class MultiTargetPNPResultSerde implements PacketSerde<MultiTargetPNPResult> {
-    // Message definition md5sum. See photon_packet.adoc for details
-    public static final String MESSAGE_VERSION = "af2056aaab740eeb889a926071cae6ee";
-    public static final String MESSAGE_FORMAT = "PnpResult:ae4d655c0a3104d88df4f5db144c1e86 estimatedPose;int16[?] fiducialIDsUsed;";
-
-    public final String getTypeString() { return MESSAGE_FORMAT; }
-    public final String getInterfaceUUID() { return MESSAGE_VERSION; }
+    @Override
+    public final String getInterfaceUUID() { return "af2056aaab740eeb889a926071cae6ee"; }
+    @Override
+    public final String getSchema() { return "PnpResult:ae4d655c0a3104d88df4f5db144c1e86 estimatedPose;int16[?] fiducialIDsUsed;"; }
+    @Override
+    public final String getTypeName() { return "MultiTargetPNPResult"; }
 
     @Override
     public int getMaxByteSize() {
@@ -64,5 +64,12 @@ public class MultiTargetPNPResultSerde implements PacketSerde<MultiTargetPNPResu
         ret.fiducialIDsUsed = packet.decodeShortList();
 
         return ret;
+    }
+
+    @Override
+    public PacketSerde<?>[] getNested() {
+        return new PacketSerde<?>[] {
+            PnpResult.photonStruct
+        };
     }
 }

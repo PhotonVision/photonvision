@@ -31,12 +31,12 @@ import org.photonvision.targeting.*;
  * Auto-generated serialization/deserialization helper for TargetCorner
  */
 public class TargetCornerSerde implements PacketSerde<TargetCorner> {
-    // Message definition md5sum. See photon_packet.adoc for details
-    public static final String MESSAGE_VERSION = "16f6ac0dedc8eaccb951f4895d9e18b6";
-    public static final String MESSAGE_FORMAT = "float64 x;float64 y;";
-
-    public final String getTypeString() { return MESSAGE_FORMAT; }
-    public final String getInterfaceUUID() { return MESSAGE_VERSION; }
+    @Override
+    public final String getInterfaceUUID() { return "16f6ac0dedc8eaccb951f4895d9e18b6"; }
+    @Override
+    public final String getSchema() { return "float64 x;float64 y;"; }
+    @Override
+    public final String getTypeName() { return "TargetCorner"; }
 
     @Override
     public int getMaxByteSize() {
@@ -64,5 +64,12 @@ public class TargetCornerSerde implements PacketSerde<TargetCorner> {
         ret.y = packet.decodeDouble();
 
         return ret;
+    }
+
+    @Override
+    public PacketSerde<?>[] getNested() {
+        return new PacketSerde<?>[] {
+
+        };
     }
 }
