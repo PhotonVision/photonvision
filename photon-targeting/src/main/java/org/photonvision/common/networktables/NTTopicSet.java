@@ -75,7 +75,7 @@ public class NTTopicSet {
         var rawBytesEntry =
                 subTable
                         .getRawTopic("rawBytes")
-                        .publish("rawBytes", PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
+                        .publish(PhotonPipelineResult.photonStruct.getTypeString(), PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
 
         resultPublisher =
                 new PacketPublisher<PhotonPipelineResult>(rawBytesEntry, PhotonPipelineResult.photonStruct);

@@ -34,7 +34,7 @@ public interface PacketSerde<T> {
      * @return type string
      */
     default String getTypeString() {
-        return "photonstruct:" + getTypeName();
+        return "photonstruct:" + getTypeName() + ":" + getInterfaceUUID();
     }
 
     /**
