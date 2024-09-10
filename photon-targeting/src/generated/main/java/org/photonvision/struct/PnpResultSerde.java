@@ -83,7 +83,6 @@ public class PnpResultSerde implements PacketSerde<PnpResult> {
     @Override
     public PacketSerde<?>[] getNested() {
         return new PacketSerde<?>[] {
-
         };
     }
 }

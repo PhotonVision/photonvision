@@ -69,7 +69,6 @@ public class TargetCornerSerde implements PacketSerde<TargetCorner> {
     @Override
     public PacketSerde<?>[] getNested() {
         return new PacketSerde<?>[] {
-
         };
     }
 }
