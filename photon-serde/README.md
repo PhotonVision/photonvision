@@ -22,3 +22,43 @@ The code for a single type is split across 3 files. Let's look at PnpResult:
 - Protobuf: slow on embedded platforms (at least quickbuf is)
 - Wpi's struct: no VLAs/optionals
 - Rosmsg: I'm not using ros, but I'm stealing their message hash idea
+
+## Dynamic Decoding
+
+Dynamic decoding is facilitated by publishing schemas to the `.schema` table in NT, and by encoding the `message_uuid` as a property on a `photonstruct` publisher. Schema names in the .schema table shall be formatted as `photonstruct:{Type Name}:{Message UUID}`. For example, here I've published Photon results to `/photonvision/WPI2024/rawBytes`. This topic has the typestring `photonstruct:PhotonPipelineResult:ed36092eb95e9fc254ebac897e2a74df`, with properties `{message_uuid': 'ed36092eb95e9fc254ebac897e2a74df'}`. It shall be legal to have published multiple versions of the same message, as long as their UUIDs are unique (which they'd better be).
+
+| Topic Name | Type | Type String |
+|------|------|-------|
+| /.schema/photonstruct:PhotonPipelineResult:ed36092eb95e9fc254ebac897e2a74df   | kRaw |  photonstructschema |
+| /.schema/photonstruct:PhotonTrackedTarget:4387ab389a8a78b7beb4492f145831b4    | kRaw |  photonstructschema |
+| /.schema/photonstruct:TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6           | kRaw |  photonstructschema |
+| /.schema/photonstruct:MultiTargetPNPResult:af2056aaab740eeb889a926071cae6ee   | kRaw |  photonstructschema |
+| /.schema/photonstruct:PnpResult:ae4d655c0a3104d88df4f5db144c1e86              | kRaw |  photonstructschema |
+| /.schema/photonstruct:PhotonPipelineMetadata:626e70461cbdb274fb43ead09c255f4e | kRaw |  photonstructschema |
+| /.schema/proto:geometry3d.proto                                               | kRaw  |  proto:FileDescriptorProto |
+| /.schema/proto:photon.proto    | kRaw | proto:FileDescriptorProto |
+
+The struct definition for PhotonPipelineResult we retrieved from the struct schema database shown above (via the command `python.exe scripts/catnt.py --echo /.schema/photonstruct:PhotonPipelineResult:ed36092eb95e9fc254ebac897e2a74df`) is:
+
+```
+PhotonPipelineMetadata:626e70461cbdb274fb43ead09c255f4e metadata;
+PhotonTrackedTarget:4387ab389a8a78b7beb4492f145831b4[?] targets;
+MultiTargetPNPResult:af2056aaab740eeb889a926071cae6ee? multitagResult;
+```
+
+If we were decoding this, we'd go retrieve the struct definitions for all our nested types. For example, `PhotonTrackedTarget:4387ab389a8a78b7beb4492f145831b4` is defined by it's .schema table entry be the following. This type also demonstrates a mix of WPILib struct types (such as Transform3d), intrinsic types (such as float64), and Photon struct types (such as TargetCorner).
+
+```
+float64 yaw;
+float64 pitch;
+float64 area;
+float64 skew;
+int32 fiducialId;
+int32 objDetectId;
+float32 objDetectConf;
+Transform3d bestCameraToTarget;
+Transform3d altCameraToTarget;
+float64 poseAmbiguity;
+TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6[?] minAreaRectCorners;
+TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6[?] detectedCorners;
+```
