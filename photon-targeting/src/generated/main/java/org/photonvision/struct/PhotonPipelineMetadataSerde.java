@@ -75,6 +75,7 @@ public class PhotonPipelineMetadataSerde implements PacketSerde<PhotonPipelineMe
     @Override
     public PacketSerde<?>[] getNested() {
         return new PacketSerde<?>[] {
+
         };
     }
 }

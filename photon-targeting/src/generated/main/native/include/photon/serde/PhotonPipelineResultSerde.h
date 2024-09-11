@@ -39,13 +39,14 @@ namespace photon {
 template <>
 struct WPILIB_DLLEXPORT SerdeType<PhotonPipelineResult> {
   static constexpr std::string_view GetSchemaHash() {
-    return "ed36092eb95e9fc254ebac897e2a74df";
+    return "c6e4a166e3d284f41ebdfb6762bdebd4";
   }
 
   static constexpr std::string_view GetSchema() {
     return "PhotonPipelineMetadata:626e70461cbdb274fb43ead09c255f4e "
            "metadata;PhotonTrackedTarget:4387ab389a8a78b7beb4492f145831b4[?] "
-           "targets;MultiTargetPNPResult:af2056aaab740eeb889a926071cae6ee? "
+           "targets;optional "
+           "MultiTargetPNPResult:af2056aaab740eeb889a926071cae6ee "
            "multitagResult;";
   }
 
