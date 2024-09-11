@@ -23,6 +23,7 @@ if (!is_demo) {
         useSettingsStore().updateGeneralSettingsFromWebsocket(data.settings);
       }
       if (data.cameraSettings !== undefined) {
+        console.log("cameras", data.cameraSettings);
         useCameraSettingsStore().updateCameraSettingsFromWebsocket(data.cameraSettings);
       }
       if (data.ntConnectionInfo !== undefined) {

@@ -120,8 +120,8 @@ public class NeuralNetworkModelManager {
      * @return A map containing the available models, where the key is the backend and the value is a
      *     list of model names.
      */
-    public Map<String, ArrayList<String>> getModels() {
-        Map<String, ArrayList<String>> modelMap = new HashMap<>();
+    public HashMap<String, ArrayList<String>> getModels() {
+        HashMap<String, ArrayList<String>> modelMap = new HashMap<>();
         if (models == null) {
             return modelMap;
         }
@@ -177,14 +177,7 @@ public class NeuralNetworkModelManager {
         if (supportedBackends.isEmpty()) {
             return Optional.empty();
         }
-
-        if (supportedBackends.contains(NeuralNetworkBackend.RKNN)
-                && models.containsKey(NeuralNetworkBackend.RKNN)) {
-            return models.get(NeuralNetworkBackend.RKNN).stream()
-                    .filter(model -> model.getName().equals("note-640-640-yolov5s.rknn"))
-                    .findFirst();
-        }
-
+        logger.info("Default model: " + models.get(supportedBackends.get(0)).stream().findFirst().map(Model::getName).orElse("None"));
         return models.get(supportedBackends.get(0)).stream().findFirst();
     }
 
@@ -195,6 +188,10 @@ public class NeuralNetworkModelManager {
 
         // Get the model extension and check if it is supported
         String modelExtension = model.getName().substring(model.getName().lastIndexOf('.'));
+        if (modelExtension.equals(".txt")) {
+            return;
+        }
+
         Optional<NeuralNetworkBackend> backend =
                 Arrays.stream(NeuralNetworkBackend.values())
                         .filter(b -> b.format.equals(modelExtension))
@@ -206,12 +203,15 @@ public class NeuralNetworkModelManager {
         }
 
         String labels = model.getAbsolutePath().replace(backend.get().format, "-labels.txt");
-        ArrayList<Model> models = this.models.getOrDefault(backend.get(), new ArrayList<>());
+        if (!models.containsKey(backend.get())) {
+            models.put(backend.get(), new ArrayList<>());
+        }
 
         try {
             switch (backend.get()) {
                 case RKNN:
-                    models.add(new RknnModel(model, labels));
+                    models.get(backend.get()).add(new RknnModel(model, labels));     
+                    logger.info("Loaded model " + model.getName() + " for backend " + backend.get().toString());
                     break;
                 default:
                     break;
@@ -224,11 +224,11 @@ public class NeuralNetworkModelManager {
     }
 
     /**
-     * Loads models from the specified folder.
+     * Discovers DNN models from the specified folder.
      *
      * @param modelsFolder The folder where the models are stored
      */
-    public void loadModels(File modelsFolder) {
+    public void discoverModels(File modelsFolder) {
         logger.info("Supported backends: " + supportedBackends);
 
         if (!modelsFolder.exists()) {
@@ -245,17 +245,17 @@ public class NeuralNetworkModelManager {
                     .filter(Files::isRegularFile)
                     .forEach(path -> loadModel(path.toFile()));
         } catch (IOException e) {
-            logger.error("Failed to load models from " + modelsFolder.getAbsolutePath(), e);
+            logger.error("Failed to discover models at " + modelsFolder.getAbsolutePath(), e);
         }
 
-        // After loading all of the models, sort them by name to ensure a consistent ordering each time
+        // After loading all of the models, sort them by name to ensure a consistent ordering
         models.forEach(
                 (backend, backendModels) ->
                         backendModels.sort((a, b) -> a.getName().compareTo(b.getName())));
 
-        // Log the loaded models
+        // Log
         StringBuilder sb = new StringBuilder();
-        sb.append("Loaded models: ");
+        sb.append("Discovered models: ");
         models.forEach(
                 (backend, backendModels) -> {
                     sb.append(backend).append(" [");
@@ -288,9 +288,8 @@ public class NeuralNetworkModelManager {
                     }
                     Path outputPath =
                             modelsDirectory.toPath().resolve(entry.getName().substring(resource.length() + 1));
-                    if (Files.exists(outputPath)) {
-                        continue;
-                    }
+
+                    logger.info("Extracting DNN resource: " + entry.getName());
                     Files.createDirectories(outputPath.getParent());
                     try (InputStream inputStream = jarFile.getInputStream(entry)) {
                         Files.copy(inputStream, outputPath, StandardCopyOption.REPLACE_EXISTING);
