@@ -22,7 +22,6 @@
 
 from ..targeting import *
 
-
 class PnpResultSerde:
 
     # Message definition md5sum. See photon_packet.adoc for details
@@ -30,7 +29,7 @@ class PnpResultSerde:
     MESSAGE_FORMAT = "Transform3d best;Transform3d alt;float64 bestReprojErr;float64 altReprojErr;float64 ambiguity;"
 
     @staticmethod
-    def unpack(packet: "Packet") -> "PnpResult":
+    def unpack(packet: 'Packet') -> 'PnpResult':
         ret = PnpResult()
 
         ret.best = packet.decodeTransform()

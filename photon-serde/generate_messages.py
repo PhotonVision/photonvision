@@ -213,12 +213,14 @@ def get_struct_schema_str(message: MessageType, message_db: List[MessageType]):
 
         typestr = get_fully_defined_field_name(field, message_db)
 
+        array_modifier = ""
+
         if "optional" in field and field["optional"] == True:
             typestr = "optional " + typestr
         if "vla" in field and field["vla"] == True:
-            typestr += "[?]"
+            array_modifier = "[?]"
 
-        ret += f"{typestr} {field['name']};"
+        ret += f"{typestr} {field['name']}{array_modifier};"
 
     return ret
 

@@ -31,6 +31,14 @@ The code for a single type is split across 3 files. Let's look at PnpResult:
 - Arrays must be no more than 127 elements long
 - Members can be either VLAs or optional, but not both
 
+For example, this is a valid PhotonStruct schema. Note the WPILib `Transform3d`, the Photon-defined `TargetCorner`, optional prefix, and VLA suffix.
+
+```
+float64 poseAmbiguity;
+optional Transform3d altCameraToTarget;
+TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6 minAreaRectCorners[?];
+```
+
 ## Dynamic Decoding
 
 Dynamic decoding is facilitated by publishing schemas to the `.schema` table in NT, and by encoding the `message_uuid` as a property on a `photonstruct` publisher. Schema names in the .schema table shall be formatted as `photonstruct:{Type Name}:{Message UUID}`. For example, here I've published Photon results to `/photonvision/WPI2024/rawBytes`. This topic has the typestring `photonstruct:PhotonPipelineResult:ed36092eb95e9fc254ebac897e2a74df`, with properties `{message_uuid': 'ed36092eb95e9fc254ebac897e2a74df'}`. It shall be legal to have published multiple versions of the same message, as long as their UUIDs are unique (which they'd better be).

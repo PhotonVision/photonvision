@@ -31,6 +31,7 @@ import org.photonvision.targeting.*;
  * Auto-generated serialization/deserialization helper for PhotonPipelineMetadata
  */
 public class PhotonPipelineMetadataSerde implements PacketSerde<PhotonPipelineMetadata> {
+
     @Override
     public final String getInterfaceUUID() { return "626e70461cbdb274fb43ead09c255f4e"; }
     @Override
@@ -48,10 +49,10 @@ public class PhotonPipelineMetadataSerde implements PacketSerde<PhotonPipelineMe
     public void pack(Packet packet, PhotonPipelineMetadata value) {
         // field sequenceID is of intrinsic type int64
         packet.encode((long) value.sequenceID);
-
+    
         // field captureTimestampMicros is of intrinsic type int64
         packet.encode((long) value.captureTimestampMicros);
-
+    
         // field publishTimestampMicros is of intrinsic type int64
         packet.encode((long) value.publishTimestampMicros);
     }
@@ -62,10 +63,10 @@ public class PhotonPipelineMetadataSerde implements PacketSerde<PhotonPipelineMe
 
         // sequenceID is of intrinsic type int64
         ret.sequenceID = packet.decodeLong();
-
+    
         // captureTimestampMicros is of intrinsic type int64
         ret.captureTimestampMicros = packet.decodeLong();
-
+    
         // publishTimestampMicros is of intrinsic type int64
         ret.publishTimestampMicros = packet.decodeLong();
 
@@ -75,7 +76,7 @@ public class PhotonPipelineMetadataSerde implements PacketSerde<PhotonPipelineMe
     @Override
     public PacketSerde<?>[] getNested() {
         return new PacketSerde<?>[] {
-
+            
         };
     }
 }

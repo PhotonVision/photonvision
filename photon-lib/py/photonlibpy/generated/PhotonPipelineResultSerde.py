@@ -22,15 +22,14 @@
 
 from ..targeting import *
 
-
 class PhotonPipelineResultSerde:
 
     # Message definition md5sum. See photon_packet.adoc for details
-    MESSAGE_VERSION = "c6e4a166e3d284f41ebdfb6762bdebd4"
-    MESSAGE_FORMAT = "PhotonPipelineMetadata:626e70461cbdb274fb43ead09c255f4e metadata;PhotonTrackedTarget:4387ab389a8a78b7beb4492f145831b4[?] targets;optional MultiTargetPNPResult:af2056aaab740eeb889a926071cae6ee multitagResult;"
+    MESSAGE_VERSION = "5eeaa293d0c69aea90eaddea786a2b3b"
+    MESSAGE_FORMAT = "PhotonPipelineMetadata:626e70461cbdb274fb43ead09c255f4e metadata;PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 targets[?];optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b multitagResult;"
 
     @staticmethod
-    def unpack(packet: "Packet") -> "PhotonPipelineResult":
+    def unpack(packet: 'Packet') -> 'PhotonPipelineResult':
         ret = PhotonPipelineResult()
 
         # metadata is of non-intrinsic type PhotonPipelineMetadata

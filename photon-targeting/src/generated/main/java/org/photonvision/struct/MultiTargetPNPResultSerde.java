@@ -31,10 +31,11 @@ import org.photonvision.targeting.*;
  * Auto-generated serialization/deserialization helper for MultiTargetPNPResult
  */
 public class MultiTargetPNPResultSerde implements PacketSerde<MultiTargetPNPResult> {
+
     @Override
-    public final String getInterfaceUUID() { return "af2056aaab740eeb889a926071cae6ee"; }
+    public final String getInterfaceUUID() { return "541096947e9f3ca2d3f425ff7b04aa7b"; }
     @Override
-    public final String getSchema() { return "PnpResult:ae4d655c0a3104d88df4f5db144c1e86 estimatedPose;int16[?] fiducialIDsUsed;"; }
+    public final String getSchema() { return "PnpResult:ae4d655c0a3104d88df4f5db144c1e86 estimatedPose;int16 fiducialIDsUsed[?];"; }
     @Override
     public final String getTypeName() { return "MultiTargetPNPResult"; }
 
@@ -48,7 +49,7 @@ public class MultiTargetPNPResultSerde implements PacketSerde<MultiTargetPNPResu
     public void pack(Packet packet, MultiTargetPNPResult value) {
         // field estimatedPose is of non-intrinsic type PnpResult
         PnpResult.photonStruct.pack(packet, value.estimatedPose);
-
+    
         // fiducialIDsUsed is a intrinsic VLA!
         packet.encode(value.fiducialIDsUsed);
     }
@@ -59,7 +60,7 @@ public class MultiTargetPNPResultSerde implements PacketSerde<MultiTargetPNPResu
 
         // estimatedPose is of non-intrinsic type PnpResult
         ret.estimatedPose = PnpResult.photonStruct.unpack(packet);
-
+    
         // fiducialIDsUsed is a custom VLA!
         ret.fiducialIDsUsed = packet.decodeShortList();
 

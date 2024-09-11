@@ -31,10 +31,11 @@ import org.photonvision.targeting.*;
  * Auto-generated serialization/deserialization helper for PhotonTrackedTarget
  */
 public class PhotonTrackedTargetSerde implements PacketSerde<PhotonTrackedTarget> {
+
     @Override
-    public final String getInterfaceUUID() { return "4387ab389a8a78b7beb4492f145831b4"; }
+    public final String getInterfaceUUID() { return "cc6dbb5c5c1e0fa808108019b20863f1"; }
     @Override
-    public final String getSchema() { return "float64 yaw;float64 pitch;float64 area;float64 skew;int32 fiducialId;int32 objDetectId;float32 objDetectConf;Transform3d bestCameraToTarget;Transform3d altCameraToTarget;float64 poseAmbiguity;TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6[?] minAreaRectCorners;TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6[?] detectedCorners;"; }
+    public final String getSchema() { return "float64 yaw;float64 pitch;float64 area;float64 skew;int32 fiducialId;int32 objDetectId;float32 objDetectConf;Transform3d bestCameraToTarget;Transform3d altCameraToTarget;float64 poseAmbiguity;TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6 minAreaRectCorners[?];TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6 detectedCorners[?];"; }
     @Override
     public final String getTypeName() { return "PhotonTrackedTarget"; }
 
@@ -48,35 +49,35 @@ public class PhotonTrackedTargetSerde implements PacketSerde<PhotonTrackedTarget
     public void pack(Packet packet, PhotonTrackedTarget value) {
         // field yaw is of intrinsic type float64
         packet.encode((double) value.yaw);
-
+    
         // field pitch is of intrinsic type float64
         packet.encode((double) value.pitch);
-
+    
         // field area is of intrinsic type float64
         packet.encode((double) value.area);
-
+    
         // field skew is of intrinsic type float64
         packet.encode((double) value.skew);
-
+    
         // field fiducialId is of intrinsic type int32
         packet.encode((int) value.fiducialId);
-
+    
         // field objDetectId is of intrinsic type int32
         packet.encode((int) value.objDetectId);
-
+    
         // field objDetectConf is of intrinsic type float32
         packet.encode((float) value.objDetectConf);
-
+    
         PacketUtils.packTransform3d(packet, value.bestCameraToTarget);
-
+    
         PacketUtils.packTransform3d(packet, value.altCameraToTarget);
-
+    
         // field poseAmbiguity is of intrinsic type float64
         packet.encode((double) value.poseAmbiguity);
-
+    
         // minAreaRectCorners is a custom VLA!
         packet.encodeList(value.minAreaRectCorners);
-
+    
         // detectedCorners is a custom VLA!
         packet.encodeList(value.detectedCorners);
     }
@@ -87,35 +88,35 @@ public class PhotonTrackedTargetSerde implements PacketSerde<PhotonTrackedTarget
 
         // yaw is of intrinsic type float64
         ret.yaw = packet.decodeDouble();
-
+    
         // pitch is of intrinsic type float64
         ret.pitch = packet.decodeDouble();
-
+    
         // area is of intrinsic type float64
         ret.area = packet.decodeDouble();
-
+    
         // skew is of intrinsic type float64
         ret.skew = packet.decodeDouble();
-
+    
         // fiducialId is of intrinsic type int32
         ret.fiducialId = packet.decodeInt();
-
+    
         // objDetectId is of intrinsic type int32
         ret.objDetectId = packet.decodeInt();
-
+    
         // objDetectConf is of intrinsic type float32
         ret.objDetectConf = packet.decodeFloat();
-
+    
         ret.bestCameraToTarget = PacketUtils.unpackTransform3d(packet);
-
+    
         ret.altCameraToTarget = PacketUtils.unpackTransform3d(packet);
-
+    
         // poseAmbiguity is of intrinsic type float64
         ret.poseAmbiguity = packet.decodeDouble();
-
+    
         // minAreaRectCorners is a custom VLA!
         ret.minAreaRectCorners = packet.decodeList(TargetCorner.photonStruct);
-
+    
         // detectedCorners is a custom VLA!
         ret.detectedCorners = packet.decodeList(TargetCorner.photonStruct);
 
