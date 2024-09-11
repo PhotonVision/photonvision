@@ -227,7 +227,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                             propField.setBoolean(currentSettings, (Boolean) newPropValue);
                         }
                     } else {
-                        propField.set(newPropValue, newPropValue);
+                        propField.set(currentSettings, newPropValue);
                     }
                     logger.trace("Set prop " + propName + " to value " + newPropValue);
                 } catch (NoSuchFieldException | IllegalAccessException e) {
@@ -237,8 +237,9 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                                     + " with value "
                                     + newPropValue
                                     + " on "
-                                    + currentSettings,
-                            e);
+                                    + currentSettings
+                                    + " | "
+                                    + e.getClass().getSimpleName());
                 } catch (Exception e) {
                     logger.error("Unknown exception when setting PSC prop!", e);
                 }
