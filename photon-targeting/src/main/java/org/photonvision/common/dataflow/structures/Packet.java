@@ -160,8 +160,8 @@ public class Packet {
      */
     public void encode(short src) {
         ensureCapacity(2);
-        packetData[writePos++] = (byte) (src >>> 8);
         packetData[writePos++] = (byte) src;
+        packetData[writePos++] = (byte) (src >>> 8);
     }
 
     /**
@@ -171,10 +171,10 @@ public class Packet {
      */
     public void encode(int src) {
         ensureCapacity(4);
-        packetData[writePos++] = (byte) (src >>> 24);
-        packetData[writePos++] = (byte) (src >>> 16);
-        packetData[writePos++] = (byte) (src >>> 8);
         packetData[writePos++] = (byte) src;
+        packetData[writePos++] = (byte) (src >>> 8);
+        packetData[writePos++] = (byte) (src >>> 16);
+        packetData[writePos++] = (byte) (src >>> 24);
     }
 
     /**
@@ -185,10 +185,10 @@ public class Packet {
     public void encode(float src) {
         ensureCapacity(4);
         int data = Float.floatToIntBits(src);
-        packetData[writePos++] = (byte) ((data >> 24) & 0xff);
-        packetData[writePos++] = (byte) ((data >> 16) & 0xff);
-        packetData[writePos++] = (byte) ((data >> 8) & 0xff);
         packetData[writePos++] = (byte) (data & 0xff);
+        packetData[writePos++] = (byte) ((data >> 8) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 16) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 24) & 0xff);
     }
 
     /**
@@ -198,14 +198,14 @@ public class Packet {
      */
     public void encode(long data) {
         ensureCapacity(8);
-        packetData[writePos++] = (byte) ((data >> 56) & 0xff);
-        packetData[writePos++] = (byte) ((data >> 48) & 0xff);
-        packetData[writePos++] = (byte) ((data >> 40) & 0xff);
-        packetData[writePos++] = (byte) ((data >> 32) & 0xff);
-        packetData[writePos++] = (byte) ((data >> 24) & 0xff);
-        packetData[writePos++] = (byte) ((data >> 16) & 0xff);
-        packetData[writePos++] = (byte) ((data >> 8) & 0xff);
         packetData[writePos++] = (byte) (data & 0xff);
+        packetData[writePos++] = (byte) ((data >> 8) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 16) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 24) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 32) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 40) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 48) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 56) & 0xff);
     }
 
     /**
@@ -216,14 +216,14 @@ public class Packet {
     public void encode(double src) {
         ensureCapacity(8);
         long data = Double.doubleToRawLongBits(src);
-        packetData[writePos++] = (byte) ((data >> 56) & 0xff);
-        packetData[writePos++] = (byte) ((data >> 48) & 0xff);
-        packetData[writePos++] = (byte) ((data >> 40) & 0xff);
-        packetData[writePos++] = (byte) ((data >> 32) & 0xff);
-        packetData[writePos++] = (byte) ((data >> 24) & 0xff);
-        packetData[writePos++] = (byte) ((data >> 16) & 0xff);
-        packetData[writePos++] = (byte) ((data >> 8) & 0xff);
         packetData[writePos++] = (byte) (data & 0xff);
+        packetData[writePos++] = (byte) ((data >> 8) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 16) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 24) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 32) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 40) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 48) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 56) & 0xff);
     }
 
     /**
@@ -303,10 +303,12 @@ public class Packet {
         if (packetData.length < readPos + 3) {
             return 0;
         }
-        return (0xff & packetData[readPos++]) << 24
-                | (0xff & packetData[readPos++]) << 16
+        return (
+                (0xff & packetData[readPos++]
                 | (0xff & packetData[readPos++]) << 8
-                | (0xff & packetData[readPos++]);
+                | (0xff & packetData[readPos++]) << 16
+                | 0xff & packetData[readPos++]) << 24
+                );
     }
 
     public long decodeLong() {
@@ -314,14 +316,14 @@ public class Packet {
             return 0;
         }
         long data =
-                (long) (0xff & packetData[readPos++]) << 56
-                        | (long) (0xff & packetData[readPos++]) << 48
-                        | (long) (0xff & packetData[readPos++]) << 40
-                        | (long) (0xff & packetData[readPos++]) << 32
-                        | (long) (0xff & packetData[readPos++]) << 24
-                        | (long) (0xff & packetData[readPos++]) << 16
+                        (long) (0xff & packetData[readPos++]
                         | (long) (0xff & packetData[readPos++]) << 8
-                        | (long) (0xff & packetData[readPos++]);
+                        | (long) (0xff & packetData[readPos++]) << 16
+                        | (long) (0xff & packetData[readPos++]) << 24
+                        | (long) (0xff & packetData[readPos++]) << 32
+                        | (long) (0xff & packetData[readPos++]) << 40
+                        | (long) (0xff & packetData[readPos++]) << 48
+                        | (long) (0xff & packetData[readPos++]) << 56);
         return data;
     }
 
@@ -335,14 +337,14 @@ public class Packet {
             return 0;
         }
         long data =
-                (long) (0xff & packetData[readPos++]) << 56
-                        | (long) (0xff & packetData[readPos++]) << 48
-                        | (long) (0xff & packetData[readPos++]) << 40
-                        | (long) (0xff & packetData[readPos++]) << 32
-                        | (long) (0xff & packetData[readPos++]) << 24
-                        | (long) (0xff & packetData[readPos++]) << 16
+                        (long) (0xff & packetData[readPos++]
                         | (long) (0xff & packetData[readPos++]) << 8
-                        | (long) (0xff & packetData[readPos++]);
+                        | (long) (0xff & packetData[readPos++]) << 16
+                        | (long) (0xff & packetData[readPos++]) << 24
+                        | (long) (0xff & packetData[readPos++]) << 32
+                        | (long) (0xff & packetData[readPos++]) << 40
+                        | (long) (0xff & packetData[readPos++]) << 48
+                        | (long) (0xff & packetData[readPos++]) << 56);
         return Double.longBitsToDouble(data);
     }
 
@@ -355,11 +357,13 @@ public class Packet {
         if (packetData.length < (readPos + 3)) {
             return 0;
         }
-        int data =
-                (int) (0xff & packetData[readPos++]) << 24
-                        | (int) (0xff & packetData[readPos++]) << 16
-                        | (int) (0xff & packetData[readPos++]) << 8
-                        | (int) (0xff & packetData[readPos++]);
+
+        int data = (
+                (0xff & packetData[readPos++]
+                | (0xff & packetData[readPos++]) << 8
+                | (0xff & packetData[readPos++]) << 16
+                | 0xff & packetData[readPos++]) << 24
+                );
         return Float.intBitsToFloat(data);
     }
 
@@ -393,7 +397,7 @@ public class Packet {
         if (packetData.length < readPos + 1) {
             return 0;
         }
-        return (short) ((0xff & packetData[readPos++]) << 8 | (0xff & packetData[readPos++]));
+        return (short) ((0xff & packetData[readPos++]) | (0xff & packetData[readPos++]) << 8);
     }
 
     /**

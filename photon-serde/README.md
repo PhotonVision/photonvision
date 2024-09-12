@@ -30,6 +30,7 @@ The code for a single type is split across 3 files. Let's look at PnpResult:
 - Only variable length arrays are supported (no fixed-length arrays)
 - Arrays must be no more than 127 elements long
 - Members can be either VLAs or optional, but not both
+- A top-level NT topic type shall be a single type (eg TargetCorner), and cannot an array of types (eg TargetCorner[] or TargetCorner[?])
 
 For example, this is a valid PhotonStruct schema. Note the WPILib `Transform3d`, the Photon-defined `TargetCorner`, optional prefix, and VLA suffix.
 
