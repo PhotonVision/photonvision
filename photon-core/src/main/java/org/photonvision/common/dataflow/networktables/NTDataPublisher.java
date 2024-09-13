@@ -17,6 +17,7 @@
 
 package org.photonvision.common.dataflow.networktables;
 
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.util.WPIUtilJNI;
@@ -159,16 +160,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             ts.targetSkewEntry.set(bestTarget.getSkew());
 
             var pose = bestTarget.getBestCameraToTarget3d();
-            ts.targetPoseEntry.set(
-                    new double[] {
-                        pose.getTranslation().getX(),
-                        pose.getTranslation().getY(),
-                        pose.getTranslation().getZ(),
-                        pose.getRotation().getQuaternion().getW(),
-                        pose.getRotation().getQuaternion().getX(),
-                        pose.getRotation().getQuaternion().getY(),
-                        pose.getRotation().getQuaternion().getZ()
-                    });
+            ts.targetPoseEntry.set(pose);
 
             var targetOffsetPoint = bestTarget.getTargetOffsetPoint();
             ts.bestTargetPosX.set(targetOffsetPoint.x);
@@ -178,7 +170,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             ts.targetYawEntry.set(0);
             ts.targetAreaEntry.set(0);
             ts.targetSkewEntry.set(0);
-            ts.targetPoseEntry.set(new double[] {0, 0, 0});
+            ts.targetPoseEntry.set(new Transform3d());
             ts.bestTargetPosX.set(0);
             ts.bestTargetPosY.set(0);
         }

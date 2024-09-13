@@ -19,12 +19,8 @@ package org.photonvision.common.networktables;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.networktables.RawPublisher;
-
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import org.photonvision.common.dataflow.structures.Packet;
@@ -50,15 +46,14 @@ public class PacketPublisher<T> implements AutoCloseable {
         }
         addSchemaImpl(photonStruct, new HashSet<>());
 
+        // TODO: don't hard-code this
         this.publisher.getTopic().getInstance().addSchema(Transform3d.struct);
     }
 
     public void set(T value, int byteSize) {
         var packet = new Packet(byteSize);
         photonStruct.pack(packet, value);
-        // todo: trim to only the bytes we need to send
         publisher.set(packet.getWrittenDataCopy());
-        System.out.println(Arrays.toString(packet.getWrittenDataCopy()));
     }
 
     public void set(T value) {

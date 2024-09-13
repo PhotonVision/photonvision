@@ -303,12 +303,11 @@ public class Packet {
         if (packetData.length < readPos + 3) {
             return 0;
         }
-        return (
-                (0xff & packetData[readPos++]
-                | (0xff & packetData[readPos++]) << 8
-                | (0xff & packetData[readPos++]) << 16
-                | 0xff & packetData[readPos++]) << 24
-                );
+        return ((0xff & packetData[readPos++]
+                        | (0xff & packetData[readPos++]) << 8
+                        | (0xff & packetData[readPos++]) << 16
+                        | 0xff & packetData[readPos++])
+                << 24);
     }
 
     public long decodeLong() {
@@ -316,14 +315,15 @@ public class Packet {
             return 0;
         }
         long data =
-                        (long) (0xff & packetData[readPos++]
-                        | (long) (0xff & packetData[readPos++]) << 8
-                        | (long) (0xff & packetData[readPos++]) << 16
-                        | (long) (0xff & packetData[readPos++]) << 24
-                        | (long) (0xff & packetData[readPos++]) << 32
-                        | (long) (0xff & packetData[readPos++]) << 40
-                        | (long) (0xff & packetData[readPos++]) << 48
-                        | (long) (0xff & packetData[readPos++]) << 56);
+                (long)
+                        (0xff & packetData[readPos++]
+                                | (long) (0xff & packetData[readPos++]) << 8
+                                | (long) (0xff & packetData[readPos++]) << 16
+                                | (long) (0xff & packetData[readPos++]) << 24
+                                | (long) (0xff & packetData[readPos++]) << 32
+                                | (long) (0xff & packetData[readPos++]) << 40
+                                | (long) (0xff & packetData[readPos++]) << 48
+                                | (long) (0xff & packetData[readPos++]) << 56);
         return data;
     }
 
@@ -337,14 +337,15 @@ public class Packet {
             return 0;
         }
         long data =
-                        (long) (0xff & packetData[readPos++]
-                        | (long) (0xff & packetData[readPos++]) << 8
-                        | (long) (0xff & packetData[readPos++]) << 16
-                        | (long) (0xff & packetData[readPos++]) << 24
-                        | (long) (0xff & packetData[readPos++]) << 32
-                        | (long) (0xff & packetData[readPos++]) << 40
-                        | (long) (0xff & packetData[readPos++]) << 48
-                        | (long) (0xff & packetData[readPos++]) << 56);
+                (long)
+                        (0xff & packetData[readPos++]
+                                | (long) (0xff & packetData[readPos++]) << 8
+                                | (long) (0xff & packetData[readPos++]) << 16
+                                | (long) (0xff & packetData[readPos++]) << 24
+                                | (long) (0xff & packetData[readPos++]) << 32
+                                | (long) (0xff & packetData[readPos++]) << 40
+                                | (long) (0xff & packetData[readPos++]) << 48
+                                | (long) (0xff & packetData[readPos++]) << 56);
         return Double.longBitsToDouble(data);
     }
 
@@ -358,12 +359,12 @@ public class Packet {
             return 0;
         }
 
-        int data = (
-                (0xff & packetData[readPos++]
-                | (0xff & packetData[readPos++]) << 8
-                | (0xff & packetData[readPos++]) << 16
-                | 0xff & packetData[readPos++]) << 24
-                );
+        int data =
+                ((0xff & packetData[readPos++]
+                                | (0xff & packetData[readPos++]) << 8
+                                | (0xff & packetData[readPos++]) << 16
+                                | 0xff & packetData[readPos++])
+                        << 24);
         return Float.intBitsToFloat(data);
     }
 
