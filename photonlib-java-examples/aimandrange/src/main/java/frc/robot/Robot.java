@@ -103,7 +103,7 @@ public class Robot extends TimedRobot {
                         targetYaw = target.getYaw();
                         targetRange =
                                 PhotonUtils.calculateDistanceToTargetMeters(
-                                        0.5, //Measured with a tape measure, or in CAD.
+                                        0.5, // Measured with a tape measure, or in CAD.
                                         1.435, // From 2024 game manual for ID 7
                                         Units.degreesToRadians(-30.0), // Measured with a protractor, or in CAD.
                                         Units.degreesToRadians(target.getPitch()));
