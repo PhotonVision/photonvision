@@ -202,33 +202,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                 }
 
                 try {
-                    var propField = currentSettings.getClass().getField(propName);
-                    var propType = propField.getType();
-
-                    if (propType.isEnum()) {
-                        var actual = propType.getEnumConstants()[(int) newPropValue];
-                        propField.set(currentSettings, actual);
-                    } else if (propType.isAssignableFrom(DoubleCouple.class)) {
-                        var orig = (ArrayList<Number>) newPropValue;
-                        var actual = new DoubleCouple(orig.get(0), orig.get(1));
-                        propField.set(currentSettings, actual);
-                    } else if (propType.isAssignableFrom(IntegerCouple.class)) {
-                        var orig = (ArrayList<Number>) newPropValue;
-                        var actual = new IntegerCouple(orig.get(0).intValue(), orig.get(1).intValue());
-                        propField.set(currentSettings, actual);
-                    } else if (propType.equals(Double.TYPE)) {
-                        propField.setDouble(currentSettings, ((Number) newPropValue).doubleValue());
-                    } else if (propType.equals(Integer.TYPE)) {
-                        propField.setInt(currentSettings, (Integer) newPropValue);
-                    } else if (propType.equals(Boolean.TYPE)) {
-                        if (newPropValue instanceof Integer) {
-                            propField.setBoolean(currentSettings, (Integer) newPropValue != 0);
-                        } else {
-                            propField.setBoolean(currentSettings, (Boolean) newPropValue);
-                        }
-                    } else {
-                        propField.set(newPropValue, newPropValue);
-                    }
+                    setProperty(currentSettings, propName, newPropValue);
                     logger.trace("Set prop " + propName + " to value " + newPropValue);
                 } catch (NoSuchFieldException | IllegalAccessException e) {
                     logger.error(
@@ -237,14 +211,57 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                                     + " with value "
                                     + newPropValue
                                     + " on "
-                                    + currentSettings,
-                            e);
+                                    + currentSettings
+                                    + " | "
+                                    + e.getClass().getSimpleName());
                 } catch (Exception e) {
                     logger.error("Unknown exception when setting PSC prop!", e);
                 }
 
                 parentModule.saveAndBroadcastSelective(wsEvent.originContext, propName, newPropValue);
             }
+        }
+    }
+
+    /**
+     * Sets the value of a property in the given object using reflection. This method should not be
+     * used generally and is only known to be correct in the context of `onDataChangeEvent`.
+     *
+     * @param currentSettings The object whose property needs to be set.
+     * @param propName The name of the property to be set.
+     * @param newPropValue The new value to be assigned to the property.
+     * @throws IllegalAccessException If the field cannot be accessed.
+     * @throws NoSuchFieldException If the field does not exist.
+     * @throws Exception If an some other unknown exception occurs while setting the property.
+     */
+    protected static void setProperty(Object currentSettings, String propName, Object newPropValue)
+            throws IllegalAccessException, NoSuchFieldException, Exception {
+        var propField = currentSettings.getClass().getField(propName);
+        var propType = propField.getType();
+
+        if (propType.isEnum()) {
+            var actual = propType.getEnumConstants()[(int) newPropValue];
+            propField.set(currentSettings, actual);
+        } else if (propType.isAssignableFrom(DoubleCouple.class)) {
+            var orig = (ArrayList<Number>) newPropValue;
+            var actual = new DoubleCouple(orig.get(0), orig.get(1));
+            propField.set(currentSettings, actual);
+        } else if (propType.isAssignableFrom(IntegerCouple.class)) {
+            var orig = (ArrayList<Number>) newPropValue;
+            var actual = new IntegerCouple(orig.get(0).intValue(), orig.get(1).intValue());
+            propField.set(currentSettings, actual);
+        } else if (propType.equals(Double.TYPE)) {
+            propField.setDouble(currentSettings, ((Number) newPropValue).doubleValue());
+        } else if (propType.equals(Integer.TYPE)) {
+            propField.setInt(currentSettings, (Integer) newPropValue);
+        } else if (propType.equals(Boolean.TYPE)) {
+            if (newPropValue instanceof Integer) {
+                propField.setBoolean(currentSettings, (Integer) newPropValue != 0);
+            } else {
+                propField.setBoolean(currentSettings, (Boolean) newPropValue);
+            }
+        } else {
+            propField.set(currentSettings, newPropValue);
         }
     }
 }
