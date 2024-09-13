@@ -177,7 +177,6 @@ public class NeuralNetworkModelManager {
         if (supportedBackends.isEmpty()) {
             return Optional.empty();
         }
-        logger.info("Default model: " + models.get(supportedBackends.get(0)).stream().findFirst().map(Model::getName).orElse("None"));
         return models.get(supportedBackends.get(0)).stream().findFirst();
     }
 

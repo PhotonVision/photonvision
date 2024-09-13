@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { type ActivePipelineSettings, PipelineType } from "@/types/PipelineTypes";
+import { type ObjectDetectionPipelineSettings, PipelineType } from "@/types/PipelineTypes";
 import PvSlider from "@/components/common/pv-slider.vue";
 import { computed, getCurrentInstance } from "vue";
 import { useStateStore } from "@/stores/StateStore";
@@ -8,8 +8,8 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
 // Defer reference to store access method
-const currentPipelineSettings = computed<ActivePipelineSettings>(
-  () => useCameraSettingsStore().currentPipelineSettings
+const currentPipelineSettings = computed<ObjectDetectionPipelineSettings>(
+  () => useCameraSettingsStore().currentPipelineSettings as ObjectDetectionPipelineSettings
 );
 
 // TODO fix pv-range-slider so that store access doesn't need to be deferred
@@ -34,17 +34,21 @@ const supportedModels = computed(() => {
   const { availableModels, supportedBackends } = useSettingsStore().general;
   return supportedBackends.flatMap(backend => availableModels[backend] || []);
 });
+
+const selectedModel = computed({
+  get: () => supportedModels.value.indexOf(currentPipelineSettings.value.model),
+  set: (v) => useCameraSettingsStore().changeCurrentPipelineSetting({ model: supportedModels[v] }, false),
+});
 </script>
 
 <template>
   <div v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection">
     <pv-select
-      v-model="currentPipelineSettings.model"
+      v-model="selectedModel"
       label="Model"
       tooltip="The model used to detect objects in the camera feed"
       :select-cols="interactiveCols"
       :items="supportedModels"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ model: value }, false)"
     />
     <pv-slider
       v-model="currentPipelineSettings.confidence"
