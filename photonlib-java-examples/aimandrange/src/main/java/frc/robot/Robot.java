@@ -103,9 +103,9 @@ public class Robot extends TimedRobot {
                         targetYaw = target.getYaw();
                         targetRange =
                                 PhotonUtils.calculateDistanceToTargetMeters(
-                                        kRobotToCam.getZ(),
+                                        0.5, //Measured with a tape measure, or in CAD.
                                         1.435, // From 2024 game manual for ID 7
-                                        -1.0 * kRobotToCam.getRotation().getY(), // Rotation about Y = Pitch
+                                        Units.degreesToRadians(-30.0), // Measured with a protractor, or in CAD.
                                         Units.degreesToRadians(target.getPitch()));
 
                         targetVisible = true;

@@ -35,10 +35,9 @@ VISION_TURN_kP = 0.01
 VISION_DES_ANGLE_deg = 0.0
 VISION_STRAFE_kP = 0.5
 VISION_DES_RANGE_m = 1.25
-ROBOT_TO_CAM = wpimath.geometry.Transform3d(
-    wpimath.geometry.Translation3d(0.5, 0.0, 0.5),
-    wpimath.geometry.Rotation3d.fromDegrees(0.0, -30.0, 0.0),
-)
+CAM_MOUNT_HEIGHT_m = 0.5  # Measured with a tape measure, or in CAD
+CAM_MOUNT_PITCH_deg = -30.0  # Measured with a protractor, or in CAD
+TAG_7_MOUNT_HEIGHT_m = 1.435  # From the 2024 game manual
 
 
 class MyRobot(wpilib.TimedRobot):
@@ -70,12 +69,8 @@ class MyRobot(wpilib.TimedRobot):
                     # Found tag 7, record its information
                     targetVisible = True
                     targetYaw = target.getYaw()
-                    heightDelta = (
-                        ROBOT_TO_CAM.translation().Z() - 1.435
-                    )  # From 2024 game manual for ID 7
-                    angleDelta = -1.0 * ROBOT_TO_CAM.rotation().Y() - math.radians(
-                        target.getPitch()
-                    )
+                    heightDelta = CAM_MOUNT_HEIGHT_m - TAG_7_MOUNT_HEIGHT_m
+                    angleDelta = math.radians(CAM_MOUNT_PITCH_deg - target.getPitch())
                     targetRange = heightDelta / math.tan(angleDelta)
 
         if self.controller.getAButton() and targetVisible:

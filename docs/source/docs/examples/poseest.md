@@ -142,7 +142,7 @@ First, we create a new {code}`VisionSystemSim` to represent our camera and copro
 
     .. tab-item:: Python
 
-       # TODO
+       # Coming Soon!
 
 ```
 
@@ -170,7 +170,7 @@ Then, we add configure the simulated vision system to match the camera system be
 
     .. tab-item:: Python
 
-       # TODO
+       # Coming Soon!
 ```
 
 
@@ -200,7 +200,7 @@ During simulation, we periodically update the simulated vision system.
 
     .. tab-item:: Python
 
-       # TODO
+       # Coming Soon!
 ```
 
 The rest is done behind the scenes.

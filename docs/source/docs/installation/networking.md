@@ -54,7 +54,7 @@ If you would like to access your Ethernet-connected vision device from a compute
 
     .. code-block:: Python
 
-        # TODO
+        # Coming Soon!
 ```
 
 :::{note}

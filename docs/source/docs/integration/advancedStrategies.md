@@ -20,7 +20,11 @@ PhotonVision can supply correcting information to keep estimates of *pose* accur
 
 ## Robot Poses from the Camera
 
-When using 3D mode in PhotonVision, an additional step is run to estimate the 3D position of camera, relative to one or more AprilTags. These must be filtered and transformed before they represent an estimated robot pose.
+When using 3D mode in PhotonVision, an additional step is run to estimate the 3D position of camera, relative to one or more AprilTags.
+
+This process does not produce a *unique* solution. There are multiple possible camera positions which might explain the image it observed. Additionally, the camera is rarely mounted in the exact center of a robot.
+
+For these reasons, the 3D information must be filtered and transformed before they can describe the robot's pose.
 
 PhotonLib provides {ref}`a utility class to assist with this process on the roboRIO <docs/programming/photonlib/robot-pose-estimator:AprilTags and PhotonPoseEstimator>`. Alternatively, {ref}`a "multi-tag" strategy can do this process on the coprocessor. <docs/apriltag-pipelines/multitag:Enabling MultiTag>`.
 

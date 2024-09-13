@@ -21,7 +21,7 @@ You can use the `setDriverMode()`/`SetDriverMode()` (Java and C++ respectively) 
 
     .. code-block:: Python
 
-        # TODO
+        # Coming Soon!
 ```
 
 ## Setting the Pipeline Index
@@ -43,7 +43,7 @@ You can use the `setPipelineIndex()`/`SetPipelineIndex()` (Java and C++ respecti
 
     .. code-block:: Python
 
-        # TODO
+        # Coming Soon!
 ```
 
 ## Getting the Pipeline Latency
@@ -64,7 +64,7 @@ You can also get the pipeline latency from a pipeline result using the `getLaten
 
     .. code-block:: Python
 
-        # TODO
+        # Coming Soon!
 ```
 
 :::{note}

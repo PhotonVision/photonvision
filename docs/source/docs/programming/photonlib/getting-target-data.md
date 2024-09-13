@@ -134,7 +134,7 @@ You can get the {ref}`best target <docs/reflectiveAndShape/contour-filtering:Con
 
    .. code-block:: Python
 
-      # TODO - Not currently supported
+      # Coming Soon!
 
 ```
 

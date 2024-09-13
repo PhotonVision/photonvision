@@ -18,7 +18,7 @@ A `PhotonUtils` class with helpful common calculations is included within `Photo
 
    .. code-block:: Python
 
-      # TODO
+      # Coming Soon!
 ```
 
 ## Estimating Field Relative Pose (Traditional)
@@ -41,7 +41,7 @@ You can get your robot's `Pose2D` on the field using various camera data, target
 
    .. code-block:: Python
 
-      # TODO
+      # Coming Soon!
 
 ```
 
@@ -62,7 +62,7 @@ If your camera is at a fixed height on your robot and the height of the target i
 
    .. code-block:: Python
 
-      # TODO
+      # Coming Soon!
 
 ```
 
@@ -86,7 +86,7 @@ The C++ version of PhotonLib uses the Units library. For more information, see [
 
    .. code-block:: Python
 
-      # TODO
+      # Coming Soon!
 ```
 
 ## Estimating Camera Translation to Target
@@ -109,7 +109,7 @@ You can get a [translation](https://docs.wpilib.org/en/latest/docs/software/adva
 
    .. code-block:: Python
 
-      # TODO
+      # Coming Soon!
 
 ```
 
@@ -132,5 +132,5 @@ We are negating the yaw from the camera from CV (computer vision) conventions to
 
    .. code-block:: Python
 
-      # TODO
+      # Coming Soon!
 ```

@@ -41,7 +41,7 @@ This multi-target pose estimate can be accessed using PhotonLib. We suggest usin
 
     .. code-block:: Python
 
-        # TODO
+        # Coming Soon!
 
 ```
 

@@ -16,5 +16,5 @@ You can control the vision LEDs of supported hardware via PhotonLib using the `s
 
     .. code-block:: Python
 
-        # TODO
+        # Coming Soon!
 ```

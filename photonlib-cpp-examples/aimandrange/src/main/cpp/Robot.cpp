@@ -79,10 +79,9 @@ void Robot::TeleopPeriodic() {
           // Found Tag 7, record its information
           targetYaw = units::degree_t{target.GetYaw()};
           targetRange = photon::PhotonUtils::CalculateDistanceToTarget(
-              constants::Vision::kRobotToCam.Z(),
-              1.435_m,  // From 2024 game manual for ID 7
-              -1.0 * constants::Vision::kRobotToCam.Rotation()
-                         .Y(),  // Rotation about Y = Pitch
+              0.5_m,      // Measured with a tape measure, or in CAD
+              1.435_m,    // From 2024 game manual for ID 7
+              -30.0_deg,  // Measured witha protractor, or in CAD
               units::degree_t{target.GetPitch()});
           targetVisible = true;
         }
