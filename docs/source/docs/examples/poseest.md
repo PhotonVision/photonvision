@@ -204,3 +204,8 @@ During simulation, we periodically update the simulated vision system.
 ```
 
 The rest is done behind the scenes.
+
+```{image} images/poseest_demo.gif
+:alt: Simulated swerve drive and vision system working together in teleoperated mode.
+:width: 800
+```
