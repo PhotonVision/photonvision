@@ -72,14 +72,12 @@ public class TargetCornerSerde implements PacketSerde<TargetCorner> {
     @Override
     public PacketSerde<?>[] getNestedPhotonMessages() {
         return new PacketSerde<?>[] {
-
         };
     }
 
     @Override
     public Struct<?>[] getNestedWpilibMessages() {
         return new Struct<?>[] {
-
         };
     }
 }

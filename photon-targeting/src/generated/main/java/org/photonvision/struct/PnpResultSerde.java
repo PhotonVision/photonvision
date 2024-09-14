@@ -86,7 +86,6 @@ public class PnpResultSerde implements PacketSerde<PnpResult> {
     @Override
     public PacketSerde<?>[] getNestedPhotonMessages() {
         return new PacketSerde<?>[] {
-
         };
     }
 

@@ -79,7 +79,6 @@ public class MultiTargetPNPResultSerde implements PacketSerde<MultiTargetPNPResu
     @Override
     public Struct<?>[] getNestedWpilibMessages() {
         return new Struct<?>[] {
-
         };
     }
 }

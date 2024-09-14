@@ -85,7 +85,6 @@ public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResu
     @Override
     public Struct<?>[] getNestedWpilibMessages() {
         return new Struct<?>[] {
-
         };
     }
 }
