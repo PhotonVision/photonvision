@@ -26,6 +26,12 @@ import org.photonvision.utils.PacketUtils;
 // Assume that the base class lives here and we can import it
 import org.photonvision.targeting.*;
 
+// WPILib imports (if any)
+import edu.wpi.first.util.struct.Struct;
+{% for type in nested_wpilib_types -%}
+import {{ get_message_by_name(type).java_import }};
+{%- if not loop.last %},{% endif -%}
+{%- endfor%}
 
 /**
  * Auto-generated serialization/deserialization helper for {{name}}
@@ -101,10 +107,20 @@ public class {{ name }}Serde implements PacketSerde<{{name}}> {
     }
 
     @Override
-    public PacketSerde<?>[] getNested() {
+    public PacketSerde<?>[] getNestedPhotonMessages() {
         return new PacketSerde<?>[] {
-            {% for type in nested_type_names -%}
+            {% for type in nested_photon_types -%}
             {{ type }}.photonStruct
+            {%- if not loop.last %},{% endif -%}
+            {%- endfor%}
+        };
+    }
+
+    @Override
+    public Struct<?>[] getNestedWpilibMessages() {
+        return new Struct<?>[] {
+            {% for type in nested_wpilib_types -%}
+            {{ type }}.struct
             {%- if not loop.last %},{% endif -%}
             {%- endfor%}
         };

@@ -22,6 +22,7 @@
 
 from ..targeting import *
 
+
 class PhotonTrackedTargetSerde:
 
     # Message definition md5sum. See photon_packet.adoc for details
@@ -29,7 +30,7 @@ class PhotonTrackedTargetSerde:
     MESSAGE_FORMAT = "float64 yaw;float64 pitch;float64 area;float64 skew;int32 fiducialId;int32 objDetectId;float32 objDetectConf;Transform3d bestCameraToTarget;Transform3d altCameraToTarget;float64 poseAmbiguity;TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6 minAreaRectCorners[?];TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6 detectedCorners[?];"
 
     @staticmethod
-    def unpack(packet: 'Packet') -> 'PhotonTrackedTarget':
+    def unpack(packet: "Packet") -> "PhotonTrackedTarget":
         ret = PhotonTrackedTarget()
 
         # yaw is of intrinsic type float64

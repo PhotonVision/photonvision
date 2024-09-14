@@ -47,6 +47,8 @@ class MessageType(TypedDict):
     cpp_include: str
     # python shim types
     python_decode_shim: str
+    # Java import name
+    java_import: str
     # Remember our message hash. Recalculated by us. All intrinsic types are unhashed so this is fine to live here
     message_hash: str
     schema_str: str
@@ -139,7 +141,7 @@ def get_message_hash(message_db: List[MessageType], message: MessageType) -> str
 
     for field in fields_to_hash:
         sub_message = get_message_by_name(message_db, field["type"])
-        subhash = get_message_hash(message_db, sub_message)
+        get_message_hash(message_db, sub_message)
 
     schema = get_struct_schema_str(message, message_db)
     message_hash = hashlib.md5(schema.encode("ascii")).hexdigest()
@@ -180,9 +182,17 @@ def parse_yaml() -> List[MessageType]:
     return config
 
 
+INTRINSIC_TYPE_ALIASES = {
+    "float": "float32",
+    "double": "float64",
+}
+
+
 def get_fully_defined_field_name(field: SerdeField, message_db: List[MessageType]):
     """
-    Get the fully-defined, globally unique type name for a field. Returns something like Transform3d:b290703ff9e54f9ec2c733b90d7fc30b for user-defined types, or just something like int64 for built-in types
+    Get the fully-defined, globally unique type name for a field. Returns something like
+    Transform3d:b290703ff9e54f9ec2c733b90d7fc30b for user-defined types, or just
+    something like int64 for built-in types. Also normalizes float/double to float32/float64
 
     Args:
         field: The field we want the name of
@@ -194,7 +204,11 @@ def get_fully_defined_field_name(field: SerdeField, message_db: List[MessageType
         msg = get_message_by_name(message_db, field["type"])
         is_shimmed = get_shimmed_filter(message_db)(field["type"])
         if not is_shimmed:
-            typestr += ":" + msg["message_hash"]
+            typestr = field["type"] + ":" + msg["message_hash"]
+    else:
+        # handle replacing float/doubles
+        typestr = field["type"]
+        typestr = INTRINSIC_TYPE_ALIASES.get(typestr, typestr)
 
     return typestr
 
@@ -303,13 +317,23 @@ def generate_photon_messages(cpp_java_root, py_root, template_root):
                 messages, name
             )
 
-            nested_types = set(
+            nested_photon_types = set(
                 [
                     field["type"]
                     for field in message["fields"]
                     if (
                         not is_intrinsic_type(field["type"])
                         and not get_shimmed_filter(messages)(field["type"])
+                    )
+                ]
+            )
+            nested_wpilib_types = set(
+                [
+                    field["type"]
+                    for field in message["fields"]
+                    if (
+                        not is_intrinsic_type(field["type"])
+                        and get_shimmed_filter(messages)(field["type"])
                     )
                 ]
             )
@@ -322,7 +346,8 @@ def generate_photon_messages(cpp_java_root, py_root, template_root):
                     message_fmt=get_struct_schema_str(message, messages),
                     message_hash=message_hash,
                     cpp_includes=get_includes(messages, message),
-                    nested_type_names=nested_types,
+                    nested_photon_types=nested_photon_types,
+                    nested_wpilib_types=nested_wpilib_types,
                 ),
                 encoding="utf-8",
             )

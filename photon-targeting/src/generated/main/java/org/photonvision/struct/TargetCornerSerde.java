@@ -26,12 +26,14 @@ import org.photonvision.utils.PacketUtils;
 // Assume that the base class lives here and we can import it
 import org.photonvision.targeting.*;
 
+// WPILib imports (if any)
+import edu.wpi.first.util.struct.Struct;
+
 
 /**
  * Auto-generated serialization/deserialization helper for TargetCorner
  */
 public class TargetCornerSerde implements PacketSerde<TargetCorner> {
-
     @Override
     public final String getInterfaceUUID() { return "16f6ac0dedc8eaccb951f4895d9e18b6"; }
     @Override
@@ -49,7 +51,7 @@ public class TargetCornerSerde implements PacketSerde<TargetCorner> {
     public void pack(Packet packet, TargetCorner value) {
         // field x is of intrinsic type float64
         packet.encode((double) value.x);
-    
+
         // field y is of intrinsic type float64
         packet.encode((double) value.y);
     }
@@ -60,7 +62,7 @@ public class TargetCornerSerde implements PacketSerde<TargetCorner> {
 
         // x is of intrinsic type float64
         ret.x = packet.decodeDouble();
-    
+
         // y is of intrinsic type float64
         ret.y = packet.decodeDouble();
 
@@ -68,9 +70,16 @@ public class TargetCornerSerde implements PacketSerde<TargetCorner> {
     }
 
     @Override
-    public PacketSerde<?>[] getNested() {
+    public PacketSerde<?>[] getNestedPhotonMessages() {
         return new PacketSerde<?>[] {
-            
+
+        };
+    }
+
+    @Override
+    public Struct<?>[] getNestedWpilibMessages() {
+        return new Struct<?>[] {
+
         };
     }
 }

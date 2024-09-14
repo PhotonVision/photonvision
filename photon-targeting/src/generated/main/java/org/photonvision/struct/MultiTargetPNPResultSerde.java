@@ -26,12 +26,14 @@ import org.photonvision.utils.PacketUtils;
 // Assume that the base class lives here and we can import it
 import org.photonvision.targeting.*;
 
+// WPILib imports (if any)
+import edu.wpi.first.util.struct.Struct;
+
 
 /**
  * Auto-generated serialization/deserialization helper for MultiTargetPNPResult
  */
 public class MultiTargetPNPResultSerde implements PacketSerde<MultiTargetPNPResult> {
-
     @Override
     public final String getInterfaceUUID() { return "541096947e9f3ca2d3f425ff7b04aa7b"; }
     @Override
@@ -49,7 +51,7 @@ public class MultiTargetPNPResultSerde implements PacketSerde<MultiTargetPNPResu
     public void pack(Packet packet, MultiTargetPNPResult value) {
         // field estimatedPose is of non-intrinsic type PnpResult
         PnpResult.photonStruct.pack(packet, value.estimatedPose);
-    
+
         // fiducialIDsUsed is a intrinsic VLA!
         packet.encode(value.fiducialIDsUsed);
     }
@@ -60,7 +62,7 @@ public class MultiTargetPNPResultSerde implements PacketSerde<MultiTargetPNPResu
 
         // estimatedPose is of non-intrinsic type PnpResult
         ret.estimatedPose = PnpResult.photonStruct.unpack(packet);
-    
+
         // fiducialIDsUsed is a custom VLA!
         ret.fiducialIDsUsed = packet.decodeShortList();
 
@@ -68,9 +70,16 @@ public class MultiTargetPNPResultSerde implements PacketSerde<MultiTargetPNPResu
     }
 
     @Override
-    public PacketSerde<?>[] getNested() {
+    public PacketSerde<?>[] getNestedPhotonMessages() {
         return new PacketSerde<?>[] {
             PnpResult.photonStruct
+        };
+    }
+
+    @Override
+    public Struct<?>[] getNestedWpilibMessages() {
+        return new Struct<?>[] {
+
         };
     }
 }

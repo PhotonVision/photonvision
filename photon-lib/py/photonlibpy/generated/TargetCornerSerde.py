@@ -22,6 +22,7 @@
 
 from ..targeting import *
 
+
 class TargetCornerSerde:
 
     # Message definition md5sum. See photon_packet.adoc for details
@@ -29,7 +30,7 @@ class TargetCornerSerde:
     MESSAGE_FORMAT = "float64 x;float64 y;"
 
     @staticmethod
-    def unpack(packet: 'Packet') -> 'TargetCorner':
+    def unpack(packet: "Packet") -> "TargetCorner":
         ret = TargetCorner()
 
         # x is of intrinsic type float64

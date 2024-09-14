@@ -19,7 +19,6 @@ package org.photonvision.common.networktables;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.networktables.RawPublisher;
 import java.util.HashSet;
 import java.util.Set;
@@ -45,9 +44,6 @@ public class PacketPublisher<T> implements AutoCloseable {
             throw new RuntimeException(e);
         }
         addSchemaImpl(photonStruct, new HashSet<>());
-
-        // TODO: don't hard-code this
-        this.publisher.getTopic().getInstance().addSchema(Transform3d.struct);
     }
 
     public void set(T value, int byteSize) {
@@ -90,8 +86,13 @@ public class PacketPublisher<T> implements AutoCloseable {
 
         instance.addSchema(typeString, "photonstructschema", struct.getSchema());
 
-        for (var inner : struct.getNested()) {
+        for (var inner : struct.getNestedPhotonMessages()) {
+            System.out.println(inner.getTypeString());
             addSchemaImpl(inner, seen);
+        }
+        for (var inner : struct.getNestedWpilibMessages()) {
+            System.out.println(inner.getTypeString());
+            instance.addSchema(inner);
         }
         seen.remove(typeString);
     }

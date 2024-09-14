@@ -31,6 +31,7 @@ The code for a single type is split across 3 files. Let's look at PnpResult:
 - Arrays must be no more than 127 elements long
 - Members can be either VLAs or optional, but not both
 - A top-level NT topic type shall be a single type (eg TargetCorner), and cannot an array of types (eg TargetCorner[] or TargetCorner[?])
+- `float` and `double` types will be replaced with float32/float64 when generating message schema strings. This means that `float32 x;` and `float x;` will result in the same message hash.
 
 For example, this is a valid PhotonStruct schema. Note the WPILib `Transform3d`, the Photon-defined `TargetCorner`, optional prefix, and VLA suffix.
 
