@@ -19,6 +19,7 @@ package org.photonvision.common.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.wpi.first.apriltag.jni.AprilTagJNI;
+import edu.wpi.first.cscore.CameraServerCvJNI;
 import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.hal.JNIWrapper;
 import edu.wpi.first.math.WPIMathJNI;
@@ -47,6 +48,7 @@ public class TestUtils {
         WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
         WPIMathJNI.Helper.setExtractOnStaticLoad(false);
         CameraServerJNI.Helper.setExtractOnStaticLoad(false);
+        CameraServerCvJNI.Helper.setExtractOnStaticLoad(false);
         // OpenCvLoader.Helper.setExtractOnStaticLoad(false);
         JNIWrapper.Helper.setExtractOnStaticLoad(false);
         WPINetJNI.Helper.setExtractOnStaticLoad(false);
