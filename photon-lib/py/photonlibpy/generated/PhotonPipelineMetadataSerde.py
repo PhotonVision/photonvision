@@ -24,7 +24,6 @@ from ..targeting import *
 
 
 class PhotonPipelineMetadataSerde:
-
     # Message definition md5sum. See photon_packet.adoc for details
     MESSAGE_VERSION = "2a7039527bda14d13028a1b9282d40a2"
     MESSAGE_FORMAT = (

@@ -24,7 +24,6 @@ from ..targeting import *
 
 
 class PnpResultSerde:
-
     # Message definition md5sum. See photon_packet.adoc for details
     MESSAGE_VERSION = "0d1f2546b00f24718e30f38d206d4491"
     MESSAGE_FORMAT = "Transform3d best;Transform3d alt;float64 bestReprojErr;float64 altReprojErr;float64 ambiguity;"
