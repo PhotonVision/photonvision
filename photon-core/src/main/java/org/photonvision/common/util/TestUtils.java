@@ -20,22 +20,15 @@ package org.photonvision.common.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.wpi.first.apriltag.jni.AprilTagJNI;
 import edu.wpi.first.cscore.CameraServerJNI;
-import edu.wpi.first.cscore.OpenCvLoader;
 import edu.wpi.first.hal.JNIWrapper;
+import edu.wpi.first.math.WPIMathJNI;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.jni.ArmFeedforwardJNI;
-import edu.wpi.first.math.jni.DAREJNI;
-import edu.wpi.first.math.jni.EigenJNI;
-import edu.wpi.first.math.jni.Ellipse2dJNI;
-import edu.wpi.first.math.jni.Pose3dJNI;
-import edu.wpi.first.math.jni.StateSpaceUtilJNI;
-import edu.wpi.first.math.jni.TrajectoryUtilJNI;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.net.WPINetJNI;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
-import java.awt.*;
+import java.awt.HeadlessException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -53,20 +46,21 @@ public class TestUtils {
         NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
         WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
         CameraServerJNI.Helper.setExtractOnStaticLoad(false);
-        OpenCvLoader.Helper.setExtractOnStaticLoad(false);
+        // OpenCvLoader.Helper.setExtractOnStaticLoad(false);
         JNIWrapper.Helper.setExtractOnStaticLoad(false);
         WPINetJNI.Helper.setExtractOnStaticLoad(false);
         AprilTagJNI.Helper.setExtractOnStaticLoad(false);
+        WPIMathJNI.Helper.setExtractOnStaticLoad(false);
 
         // wpimathjni is a bit odd, it's all in the wpimathjni shared lib, but the java side stuff has
         // been split.
-        ArmFeedforwardJNI.Helper.setExtractOnStaticLoad(false);
-        DAREJNI.Helper.setExtractOnStaticLoad(false);
-        EigenJNI.Helper.setExtractOnStaticLoad(false);
-        Ellipse2dJNI.Helper.setExtractOnStaticLoad(false);
-        Pose3dJNI.Helper.setExtractOnStaticLoad(false);
-        StateSpaceUtilJNI.Helper.setExtractOnStaticLoad(false);
-        TrajectoryUtilJNI.Helper.setExtractOnStaticLoad(false);
+        // ArmFeedforwardJNI.Helper.setExtractOnStaticLoad(false);
+        // DAREJNI.Helper.setExtractOnStaticLoad(false);
+        // EigenJNI.Helper.setExtractOnStaticLoad(false);
+        // Ellipse2dJNI.Helper.setExtractOnStaticLoad(false);
+        // Pose3dJNI.Helper.setExtractOnStaticLoad(false);
+        // StateSpaceUtilJNI.Helper.setExtractOnStaticLoad(false);
+        // TrajectoryUtilJNI.Helper.setExtractOnStaticLoad(false);
 
         try {
             CombinedRuntimeLoader.loadLibraries(
