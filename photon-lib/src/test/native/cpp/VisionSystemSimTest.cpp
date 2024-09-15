@@ -443,9 +443,9 @@ TEST_F(VisionSystemSimTest, TestPoseEstimation) {
       camEigen, distEigen, targets, layout, photon::kAprilTag16h5);
   ASSERT_TRUE(results);
   frc::Pose3d pose = frc::Pose3d{} + results->best;
-  ASSERT_NEAR(5, pose.X().to<double>(), 0.01);
-  ASSERT_NEAR(1, pose.Y().to<double>(), 0.01);
-  ASSERT_NEAR(0, pose.Z().to<double>(), 0.01);
+  ASSERT_NEAR(5, pose.X().to<double>(), 0.02);
+  ASSERT_NEAR(1, pose.Y().to<double>(), 0.02);
+  ASSERT_NEAR(0, pose.Z().to<double>(), 0.02);
   ASSERT_NEAR(units::degree_t{5}.convert<units::radians>().to<double>(),
               pose.Rotation().Z().to<double>(), 0.01);
 

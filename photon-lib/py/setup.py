@@ -1,3 +1,5 @@
+import os
+import platform
 from setuptools import setup, find_packages
 import subprocess, re
 
@@ -50,19 +52,47 @@ with open("photonlibpy/version.py", "w", encoding="utf-8") as fp:
 
 descriptionStr = f"Pure-python implementation of PhotonLib for interfacing with PhotonVision on coprocessors. Implemented with PhotonVision version {gitDescribeResult} ."
 
+# must be in sync with the rest of the project to avoid ABI breaks
+wpilibVersion = "2024.3.2.1"
+
+from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+
+
+# source: https://github.com/Yelp/dumb-init/blob/48db0c0d0ecb4598d1a6400710445b85d67616bf/setup.py#L11-L27
+# Licensed under the MIT License
+class bdist_wheel(_bdist_wheel):
+
+    def finalize_options(self):
+        _bdist_wheel.finalize_options(self)
+        # Mark us as not a pure python package
+        self.root_is_pure = False
+
+
+script_path = os.path.dirname(os.path.realpath(__file__))
+if not os.path.exists(f"{script_path}/photonlibpy/_photonlibpy.pyi"):
+    print("Generating typehints")
+    try:
+        from create_photonlib_pyi import write_stubgen
+        write_stubgen()
+    except Exception as e:
+        print(e)
+
 setup(
     name="photonlibpy",
     packages=find_packages(),
     version=versionString,
     install_requires=[
-        "wpilib<2025,>=2024.0.0b2",
-        "robotpy-wpimath<2025,>=2024.0.0b2",
-        "robotpy-apriltag<2025,>=2024.0.0b2",
-        "pyntcore<2025,>=2024.0.0b2",
+        f"wpilib~={wpilibVersion}",
+        f"robotpy-wpimath~={wpilibVersion}",
+        f"robotpy-apriltag~={wpilibVersion}",
+        f"pyntcore~={wpilibVersion}",
     ],
     description=descriptionStr,
     url="https://photonvision.org",
     author="Photonvision Development Team",
     long_description="A Pure-python implementation of PhotonLib",
     long_description_content_type="text/markdown",
+    package_data={"photonlibpy": ["*.so*", "*.dylib*", "*.dll*", "*.pyi"]},
+    include_package_data=True,
+    cmdclass={"bdist_wheel": bdist_wheel},
 )

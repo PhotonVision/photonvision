@@ -20,29 +20,112 @@ on:
       - '.github/**'
 
 jobs:
-  buildAndDeploy:
-    runs-on: ubuntu-latest
+  build-pyi:
+    runs-on: "ubuntu-22.04"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: 'recursive'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          # Lowest version supported so typing information is always valid
+          python-version: 3.9
+
+      - name: Install Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+
+      - run: git fetch --tags --force
+      - run: python3 -c "from sysconfig import get_paths as gp; print(gp())"
+
+      - run: |
+          chmod +x gradlew
+          ./gradlew photon-lib:installPhotonlibpyNative -PpythonExecutable=python3.9
+
+      - name: Install dependencies
+        working-directory: ./photon-lib/py
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r build_requirements.txt
+
+      - name: Build wheel
+        working-directory: ./photon-lib/py
+        # Now that we have native .so's in place, generate pyi
+        run: |
+          python create_photonlib_pyi.py 
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: "photonlibpy-stubgen"
+          path: ./photon-lib/py/photonlibpy/*.pyi
+
+
+  build-host:
+    needs: build-pyi
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # max-parallel: 1
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-22.04", "macos-12", "windows-2022"]
+        python_version:
+        # - '3.8'
+        # - '3.9'
+        - '3.10'
+        # - '3.11'
+        # - '3.12'
+
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          submodules: 'recursive'
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: ${{ matrix.python_version }}
+
+      - name: Install Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+          architecture: ${{ matrix.architecture }}
+
+      - run: git fetch --tags --force
+      - run: python3 -c "from sysconfig import get_paths as gp; print(gp())"
+
+      - run: |
+          chmod +x gradlew
+          ./gradlew photon-lib:installPhotonlibpyNative -PpythonExecutable=python${{ matrix.python_version }}
 
       - name: Install dependencies
+        working-directory: ./photon-lib/py
         run: |
           python -m pip install --upgrade pip
-          pip install setuptools wheel pytest
+          python -m pip install -r build_requirements.txt
+
+      # Download our type hints
+      - uses: actions/download-artifact@v4
+        with:
+          name: "photonlibpy-stubgen"
+          path: ./photon-lib/py/photonlibpy/*.pyi
 
       - name: Build wheel
         working-directory: ./photon-lib/py
+        # disable isolation so we can run stubgen (ew but w/e)
         run: |
-          python setup.py sdist bdist_wheel
+          python -m build -swn
 
       - name: Run Unit Tests
         working-directory: ./photon-lib/py
@@ -50,19 +133,114 @@ jobs:
             pip install --no-cache-dir dist/*.whl
             pytest
 
-
       - name: Upload artifacts
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@v4
         with:
-          name: dist
+          name: "dist-${{ runner.os }}-${{ matrix.python_version }}"
           path: ./photon-lib/py/dist/
 
-      - name: Publish package distributions to TestPyPI
-        # Only upload on tags
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages_dir: ./photon-lib/py/dist/
+      # - name: Publish package distributions to TestPyPI
+      #   # Only upload on tags
+      #   if: startsWith(github.ref, 'refs/tags/v')
+      #   uses: pypa/gh-action-pypi-publish@release/v1
+      #   with:
+      #     packages_dir: ./photon-lib/py/dist/
 
     permissions:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+
+  cross-build:
+    runs-on: ubuntu-latest
+    needs: build-pyi
+    strategy:
+      # max-parallel: 1
+      fail-fast: false
+      matrix:
+        os:
+        - container: wpilib/roborio-cross-ubuntu:2024-22.04-py312
+          name: roborio
+          build-options: "-PArchOverride=linuxathena"
+          # gradle needs first letter uppercase
+          arch: "Linuxathena"
+
+        # - container: wpilib/raspbian-cross-ubuntu:bullseye-22.04-py38
+        #   name: raspbian-py38
+        # - container: wpilib/raspbian-cross-ubuntu:bullseye-22.04-py39
+        #   name: raspbian-py39
+        # - container: wpilib/raspbian-cross-ubuntu:bullseye-22.04-py310
+        #   name: raspbian-py310
+        # - container: wpilib/raspbian-cross-ubuntu:bullseye-22.04-py311
+        #   name: raspbian-py311
+        # - container: wpilib/raspbian-cross-ubuntu:bullseye-22.04-py312
+        #   name: raspbian-py312
+        #   arch-override: linuxarm64
+
+        # - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04-py38
+        #   name: raspbian-aarch64-py38
+        # - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04-py39
+        #   name: raspbian-aarch64-py39
+        - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04-py310
+          name: raspbian-aarch64-py310
+          build-options: "-PArchOverride=linuxarm64"
+          arch: "Linuxarm64"
+        # - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04-py311
+        #   name: raspbian-aarch64-py311
+        # - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04-py312
+        #   name: raspbian-aarch64-py312
+
+    container:
+      image: "${{ matrix.os.container }}"
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+        fetch-depth: 0
+
+    - name: Install Java 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: 17
+        distribution: temurin
+
+    - name: Install setuptools + wheel
+      run: |
+        /build/venv/bin/build-pip --disable-pip-version-check install -U "setuptools==63.4.3; python_version < '3.12'"
+        /build/venv/bin/build-pip --disable-pip-version-check install -U wheel==0.41.2
+        /build/venv/bin/cross-pip --disable-pip-version-check install -U "setuptools==63.4.3; python_version < '3.12'"
+        /build/venv/bin/cross-pip --disable-pip-version-check install -U wheel==0.41.2
+
+    # See https://github.com/pypa/setuptools_scm/issues/784
+    - name: Set git directory as safe to allow setuptools-scm to work
+      shell: bash
+      run: |
+        pwd
+        /usr/bin/git config --global --add safe.directory $(pwd)
+
+    - name: Install deps
+      shell: bash
+      run: |
+        /build/venv/bin/cross-pip  --disable-pip-version-check install -r photon-lib/py/build_requirements.txt
+
+    - run: git fetch --tags --force
+    - run: ./gradlew photon-lib:tasks -PpythonExecutable=/build/venv/bin/cross-python
+    - name: Install RoboRIO Toolchain
+      run: ./gradlew installRoboRioToolchain -PpythonExecutable=/build/venv/bin/cross-python
+      if: matrix.os.name == 'roborio'
+    - run: ./gradlew photon-lib:tasks -PpythonExecutable=/build/venv/bin/cross-python
+
+    - run: |
+        chmod +x gradlew
+        ./gradlew photon-lib:installPhotonlibpyNative -PpythonExecutable=/build/venv/bin/cross-python ${{ matrix.os.build-options }}
+
+    # Download our type hints
+    - uses: actions/download-artifact@v4
+      with:
+        name: "photonlibpy-stubgen"
+        path: ./photon-lib/py/photonlibpy/*.pyi
+
+    - name: Build wheel
+      working-directory: ./photon-lib/py
+      # disable isolation so we can run stubgen (ew but w/e)
+      run: |
+        /build/venv/bin/cross-python -m build -swn

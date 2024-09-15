@@ -168,3 +168,5 @@ venv
 
 .venv/*
 .venv
+meme/*.so
+meme/*.so.4.8

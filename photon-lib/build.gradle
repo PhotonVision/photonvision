@@ -40,6 +40,19 @@ nativeUtils {
     }
 }
 
+def getPythonIncludePath = {
+    def pythonexe = project.findProperty('pythonExecutable') ?: 'python3'
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine pythonexe, '-c', 'from sysconfig import get_paths as gp; print(gp()["include"])'
+        standardOutput = stdout
+    }
+    def ret = stdout.toString().trim();
+    println("using python include path: " + ret)
+    return ret
+}
+
+
 model {
     components {
         "${nativeName}"(NativeLibrarySpec) {
@@ -66,13 +79,36 @@ model {
                 if(project.hasProperty('includePhotonTargeting')) {
                     lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
                 }
+
+                nativeUtils.useRequiredLibrary(it, "wpilib_shared")
+                nativeUtils.useRequiredLibrary(it, "apriltag_shared")
+                nativeUtils.useRequiredLibrary(it, "opencv_shared")
+                nativeUtils.useRequiredLibrary(it, "cscore_shared")
+                nativeUtils.useRequiredLibrary(it, "cameraserver_shared")
             }
 
-            nativeUtils.useRequiredLibrary(it, "wpilib_shared")
-            nativeUtils.useRequiredLibrary(it, "apriltag_shared")
-            nativeUtils.useRequiredLibrary(it, "opencv_shared")
-            nativeUtils.useRequiredLibrary(it, "cscore_shared")
-            nativeUtils.useRequiredLibrary(it, "cameraserver_shared")
+        }
+        photonlibpy(NativeLibrarySpec) {
+            sources {
+                cpp {
+                    source {
+                        srcDirs 'src/main/pybindings/cpp'
+                        include '**/*.cpp', '**/*.cc'
+                    }
+                    exportedHeaders {
+                        srcDirs 'nanobind/include', 'nanobind/src', 'nanobind/ext/robin_map/include', getPythonIncludePath()
+                        include "**/*.h"
+                        include "**/*.hpp"
+                    }
+                }
+            }
+
+            binaries.all {
+                lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
+                lib library: nativeName
+
+                nativeUtils.useRequiredLibrary(it, "wpilib_shared")
+            }
         }
     }
     testSuites {
@@ -142,6 +178,16 @@ model {
             }
         }
     }
+
+    binaries {
+        withType(NativeBinarySpec).all {
+            if((it.component.baseName == "photonlibpy" || it.component.baseName == nativeName) && it.toolChain instanceof GccCompatibleToolChain) {
+                println(it)
+                it.cppCompiler.args << "-Wno-pedantic"
+                it.linker.args '-Wl,-rpath,\'$ORIGIN\''
+            }
+        }
+    }
 }
 
 apply from: "${rootDir}/shared/javacpp/publish.gradle"
@@ -191,6 +237,33 @@ task publishVendorJsonToLocalOutputs(type: Copy) {
     }
 
     publish.dependsOn it
+}
+
+task installPhotonlibpyNative(type: Copy) {
+    into("$projectDir/py/photonlibpy")
+
+    from "$projectDir/build/libs/photonlib/shared/$jniPlatform/release/libphotonlib.so"
+    for (lib in [
+        "libcameraserver.so",
+        "libcscore.so",
+        "libopencv_core.so.4.8",
+        "libopencv_calib3d.so.4.8",
+        "libopencv_features2d.so.4.8",
+        "libopencv_imgcodecs.so.4.8",
+        "libopencv_flann.so.4.8",
+        "libopencv_imgproc.so.4.8",
+        "libphotontargeting.so",
+    ]) {
+        from "$projectDir/build/install/photonlibTest/$jniPlatform/release/lib/$lib"
+    }
+
+    from("$projectDir/build/libs/photonlibpy/shared/$jniPlatform/release/libphotonlibpy.so") {
+        // Remove leading lib if present, and append an _ (renames to _photonlibpy.so/dll/dylib)
+        rename "(?:lib)?(.*)", ('_$1')
+    }
+
+    it.dependsOn "installPhotonlibTest${jniPlatform.capitalize()}ReleaseGoogleTestExe"
+    it.dependsOn "photonlibpy${jniPlatform.capitalize()}ReleaseSharedLibrary"
 }
 
 task writeCurrentVersion {

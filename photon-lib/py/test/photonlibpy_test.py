@@ -18,7 +18,6 @@
 from time import sleep
 from photonlibpy import PhotonCamera
 import ntcore
-from photonlibpy.photonCamera import setVersionCheckEnabled
 
 
 def test_roundTrip():
@@ -28,13 +27,10 @@ def test_roundTrip():
 
     camera = PhotonCamera("WPI2024")
 
-    setVersionCheckEnabled(False)
-
     for i in range(5):
         sleep(0.1)
-        result = camera.getLatestResult()
+        result = camera.GetLatestResult()
         print(result)
-        print(camera._rawBytesEntry.getTopic().getProperties())
 
 
 if __name__ == "__main__":
