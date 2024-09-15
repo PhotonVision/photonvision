@@ -9,7 +9,7 @@ You can use the `setDriverMode()`/`SetDriverMode()` (Java and C++ respectively) 
 ```{eval-rst}
 .. tab-set-code::
 
-    .. code-block:: java
+    .. code-block:: Java
 
         // Set driver mode to on.
         camera.setDriverMode(true);
@@ -18,6 +18,10 @@ You can use the `setDriverMode()`/`SetDriverMode()` (Java and C++ respectively) 
 
         // Set driver mode to on.
         camera.SetDriverMode(true);
+
+    .. code-block:: Python
+
+        # Coming Soon!
 ```
 
 ## Setting the Pipeline Index
@@ -27,7 +31,7 @@ You can use the `setPipelineIndex()`/`SetPipelineIndex()` (Java and C++ respecti
 ```{eval-rst}
 .. tab-set-code::
 
-    .. code-block:: java
+    .. code-block:: Java
 
         // Change pipeline to 2
         camera.setPipelineIndex(2);
@@ -36,6 +40,10 @@ You can use the `setPipelineIndex()`/`SetPipelineIndex()` (Java and C++ respecti
 
         // Change pipeline to 2
         camera.SetPipelineIndex(2);
+
+    .. code-block:: Python
+
+        # Coming Soon!
 ```
 
 ## Getting the Pipeline Latency
@@ -44,15 +52,19 @@ You can also get the pipeline latency from a pipeline result using the `getLaten
 
 ```{eval-rst}
 .. tab-set-code::
-   .. code-block:: java
+   .. code-block:: Java
 
       // Get the pipeline latency.
       double latencySeconds = result.getLatencyMillis() / 1000.0;
 
-   .. code-block:: c++
+   .. code-block:: C++
 
       // Get the pipeline latency.
       units::second_t latency = result.GetLatency();
+
+    .. code-block:: Python
+
+        # Coming Soon!
 ```
 
 :::{note}

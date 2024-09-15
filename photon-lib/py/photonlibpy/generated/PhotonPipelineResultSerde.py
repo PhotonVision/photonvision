@@ -24,7 +24,6 @@ from ..targeting import *
 
 
 class PhotonPipelineResultSerde:
-
     # Message definition md5sum. See photon_packet.adoc for details
     MESSAGE_VERSION = "cb3e1605048ba49325888eb797399fe2"
     MESSAGE_FORMAT = "PhotonPipelineMetadata metadata;PhotonTrackedTarget[?] targets;MultiTargetPNPResult? multiTagResult;"
