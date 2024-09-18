@@ -69,12 +69,17 @@ jobs:
 
   build-host:
     needs: build-pyi
-    runs-on: ${{ matrix.os }}
     strategy:
       # max-parallel: 1
       fail-fast: false
       matrix:
-        os: ["ubuntu-22.04", "macos-12", "windows-2022"]
+        os: 
+          - name: "ubuntu-22.04"
+            arch-override: "linuxx86-64"
+          - name: "macos-12"
+            arch-override: "osxuniversal"
+          - name: "windows-2022"
+            arch-override: "windowsx86-64"
         python_version:
         # - '3.8'
         # - '3.9'
@@ -82,6 +87,7 @@ jobs:
         # - '3.11'
         # - '3.12'
 
+    runs-on: ${{ matrix.os.name }}
 
     steps:
       - name: Checkout code
@@ -100,7 +106,6 @@ jobs:
         with:
           java-version: 17
           distribution: temurin
-          architecture: ${{ matrix.architecture }}
 
       - run: git fetch --tags --force
       - run: python3 -c "from sysconfig import get_paths as gp; print(gp())"
@@ -108,7 +113,7 @@ jobs:
       - run: ./gradlew photon-lib:tasks -PpythonExecutable=python3
       - run: |
           chmod +x gradlew
-          ./gradlew photon-lib:installPhotonlibpyNative -PpythonExecutable=python${{ matrix.python_version }}
+          ./gradlew photon-lib:installPhotonlibpyNative -PpythonExecutable=python${{ matrix.python_version }} -PArchOverride=${{ matrix.os.arch-override }}
 
       - name: Install dependencies
         working-directory: ./photon-lib/py
