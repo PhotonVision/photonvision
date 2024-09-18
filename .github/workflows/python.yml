@@ -105,6 +105,7 @@ jobs:
       - run: git fetch --tags --force
       - run: python3 -c "from sysconfig import get_paths as gp; print(gp())"
 
+      - run: ./gradlew photon-lib:tasks -PpythonExecutable=python3
       - run: |
           chmod +x gradlew
           ./gradlew photon-lib:installPhotonlibpyNative -PpythonExecutable=python${{ matrix.python_version }}
@@ -244,3 +245,9 @@ jobs:
       # disable isolation so we can run stubgen (ew but w/e)
       run: |
         /build/venv/bin/cross-python -m build -swn
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: "dist-${{ matrix.os.name }}"
+        path: ./photon-lib/py/dist/
