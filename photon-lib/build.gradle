@@ -40,11 +40,11 @@ nativeUtils {
     }
 }
 
-def getPythonIncludePath = {
+def getPythonProperty(String property) {
     def pythonexe = project.findProperty('pythonExecutable') ?: 'python3'
 
     File.createTempFile("temp",".py").with { f ->
-        f.write "from sysconfig import get_paths as gp; print(gp()['include'])"
+        f.write "from sysconfig import get_paths as gp; print(gp()['${property}'])"
 
         def stdout = new ByteArrayOutputStream()
         exec {
@@ -52,7 +52,7 @@ def getPythonIncludePath = {
             standardOutput = stdout
         }
         def ret = stdout.toString().trim();
-        println("using python include path: " + ret)
+        println("Python property: $property = $ret")
         return ret
     }
 }
@@ -100,7 +100,7 @@ model {
                         include '**/*.cpp', '**/*.cc'
                     }
                     exportedHeaders {
-                        srcDirs 'nanobind/include', 'nanobind/src', 'nanobind/ext/robin_map/include', getPythonIncludePath()
+                        srcDirs 'nanobind/include', 'nanobind/src', 'nanobind/ext/robin_map/include', getPythonProperty("include")
                         include "**/*.h"
                         include "**/*.hpp"
                     }
@@ -108,10 +108,10 @@ model {
             }
 
             binaries.all {
-                lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
-                lib library: nativeName
+                // lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
+                // lib library: nativeName
 
-                nativeUtils.useRequiredLibrary(it, "wpilib_shared")
+                // nativeUtils.useRequiredLibrary(it, "wpilib_shared")
             }
         }
     }
@@ -185,9 +185,18 @@ model {
 
     binaries {
         withType(NativeBinarySpec).all {
-            if((it.component.baseName == "photonlibpy" || it.component.baseName == nativeName) && it.toolChain instanceof GccCompatibleToolChain) {
-                it.cppCompiler.args << "-Wno-pedantic"
-                it.linker.args '-Wl,-rpath,\'$ORIGIN\''
+            println "${it.toolChain} -> ${it.component.baseName} -> ${it.toolChain instanceof VisualCpp}"
+
+            if((it.component.baseName == "photonlibpy" || it.component.baseName == nativeName)) {
+                if (it.toolChain instanceof VisualCpp) {
+                    def path = getPythonProperty("data")
+                    it.linker.args "/LIBPATH:${path}/libs"
+                }
+
+                if (it.toolChain instanceof GccCompatibleToolChain) {
+                    it.cppCompiler.args << "-Wno-pedantic"
+                    it.linker.args '-Wl,-rpath,\'$ORIGIN\''
+                }
             }
         }
     }
@@ -247,6 +256,15 @@ task installPhotonlibpyNative(type: Copy) {
 
     from "$projectDir/build/libs/photonlib/shared/$jniPlatform/release/libphotonlib.so"
     for (lib in [
+                "cameraserver.dll",
+                "cscore.dll",
+                "opencv_core480.dll",
+                "opencv_calib3d480.dll",
+                "opencv_features2d480.dll",
+                "opencv_imgcodecs480.dll",
+                "opencv_flann480.dll",
+                "opencv_imgproc480.dll",
+                "photontargeting.so",
                 "libcameraserver.so",
                 "libcscore.so",
                 "libopencv_core.so.4.8",
@@ -260,13 +278,17 @@ task installPhotonlibpyNative(type: Copy) {
         from "$projectDir/build/install/photonlibTest/$jniPlatform/release/lib/$lib"
     }
 
-    from("$projectDir/build/libs/photonlibpy/shared/$jniPlatform/release/libphotonlibpy.so") {
+    from("$projectDir/build/libs/photonlibpy/shared/$jniPlatform/release/") {
+        include "libphotonlibpy.so"
+        include "photonlibpy.dll"
+
         // Remove leading lib if present, and append an _ (renames to _photonlibpy.so/dll/dylib)
-        rename "(?:lib)?(.*)", ('_$1')
+        rename "(?:lib)?(.*)(.dll)", ('_$1.pyd')
     }
 
     def platform = project.findProperty('nativeBuildPlatform') ?: jniPlatform.capitalize()
     println("Depending on build task for platform name: $platform")
+
     it.dependsOn "installPhotonlibTest${platform}ReleaseGoogleTestExe"
     it.dependsOn "photonlibpy${platform}ReleaseSharedLibrary"
 }

@@ -22,8 +22,8 @@
  * SOFTWARE.
  */
 
-#include <fmt/format.h>
-#include "photon/PhotonCamera.h"
+// #include <fmt/format.h>
+// #include "photon/PhotonCamera.h"
 
 // actual nanobind include
 #include <nanobind/nanobind.h>
@@ -36,34 +36,34 @@ NB_MODULE(_photonlibpy, m) {
 
   m.doc() = "C++ bindings for photonlib";
 
-  nb::class_<photon::PhotonPipelineMetadata>(m, "PhotonPipelineMetadata")
-      .def_ro("sequenceID", &photon::PhotonPipelineMetadata::sequenceID)
-      .def_ro("captureTimestampMicros",
-              &photon::PhotonPipelineMetadata::captureTimestampMicros)
-      .def_ro("publishTimestampMicros",
-              &photon::PhotonPipelineMetadata::publishTimestampMicros);
+//   nb::class_<photon::PhotonPipelineMetadata>(m, "PhotonPipelineMetadata")
+//       .def_ro("sequenceID", &photon::PhotonPipelineMetadata::sequenceID)
+//       .def_ro("captureTimestampMicros",
+//               &photon::PhotonPipelineMetadata::captureTimestampMicros)
+//       .def_ro("publishTimestampMicros",
+//               &photon::PhotonPipelineMetadata::publishTimestampMicros);
 
-  nb::class_<photon::PhotonTrackedTarget>(m, "PhotonTrackedTarget")
-      .def_ro("yaw", &photon::PhotonTrackedTarget::yaw)
-      .def_ro("pitch", &photon::PhotonTrackedTarget::pitch)
-      // String representation
-      .def("__repr__", [](const photon::PhotonTrackedTarget& t) {
-        std::string s;
-        fmt::format_to(std::back_inserter(s),
-                       "PhotonTrackedTarget<yaw={},pitch={}>", t.yaw, t.pitch);
-        return s;
-      });
-  nb::class_<photon::MultiTargetPNPResult>(m, "MultiTargetPNPResult")
-      .def_ro("fiducialIDsUsed", &photon::MultiTargetPNPResult::fiducialIDsUsed)
-  ;
+//   nb::class_<photon::PhotonTrackedTarget>(m, "PhotonTrackedTarget")
+//       .def_ro("yaw", &photon::PhotonTrackedTarget::yaw)
+//       .def_ro("pitch", &photon::PhotonTrackedTarget::pitch)
+//       // String representation
+//       .def("__repr__", [](const photon::PhotonTrackedTarget& t) {
+//         std::string s;
+//         fmt::format_to(std::back_inserter(s),
+//                        "PhotonTrackedTarget<yaw={},pitch={}>", t.yaw, t.pitch);
+//         return s;
+//       });
+//   nb::class_<photon::MultiTargetPNPResult>(m, "MultiTargetPNPResult")
+//       .def_ro("fiducialIDsUsed", &photon::MultiTargetPNPResult::fiducialIDsUsed)
+//   ;
 
-  nb::class_<photon::PhotonPipelineResult>(m, "PhotonPipelineResult")
-      .def_ro("metadata", &photon::PhotonPipelineResult::metadata)
-      .def_ro("targets", &photon::PhotonPipelineResult::targets)
-      .def_ro("multitagResult", &photon::PhotonPipelineResult::multitagResult);
+//   nb::class_<photon::PhotonPipelineResult>(m, "PhotonPipelineResult")
+//       .def_ro("metadata", &photon::PhotonPipelineResult::metadata)
+//       .def_ro("targets", &photon::PhotonPipelineResult::targets)
+//       .def_ro("multitagResult", &photon::PhotonPipelineResult::multitagResult);
 
-  nb::class_<photon::PhotonCamera>(m, "PhotonCamera")
-      .def(nb::init<const std::string&>())
-      .def("GetDriverMode", &photon::PhotonCamera::GetDriverMode)
-      .def("GetLatestResult", &photon::PhotonCamera::GetLatestResult);
+//   nb::class_<photon::PhotonCamera>(m, "PhotonCamera")
+//       .def(nb::init<const std::string&>())
+//       .def("GetDriverMode", &photon::PhotonCamera::GetDriverMode)
+//       .def("GetLatestResult", &photon::PhotonCamera::GetLatestResult);
 }
