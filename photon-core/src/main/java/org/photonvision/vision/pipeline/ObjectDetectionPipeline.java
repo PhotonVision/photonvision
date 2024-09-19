@@ -56,19 +56,24 @@ public class ObjectDetectionPipeline
 
     @Override
     protected void setPipeParamsImpl() {
-        // this needs to be based off of the current backend selected!!
         var params = new ObjectDetectionPipeParams();
         params.confidence = settings.confidence;
         params.nms = settings.nms;
-        Optional<Model> model = NeuralNetworkModelManager.getInstance().getModel(settings.model);
-        model.ifPresentOrElse(
-                m -> params.model = m,
-                () -> {
-                    params.model =
-                            NeuralNetworkModelManager.getInstance()
-                                    .getDefaultModel()
-                                    .orElse(NullModel.getInstance());
-                });
+        Optional<Model> selectedModel = NeuralNetworkModelManager.getInstance().getModel(settings.model);
+
+        // If the desired model couldn't be found, log an error and try to use the default model
+        if (selectedModel.isEmpty()) {
+            // logger.error("Model not found: " + settings.model + ". Trying to use default model.");
+            selectedModel = NeuralNetworkModelManager.getInstance().getDefaultModel();
+        }
+
+        // If the model remains empty, use the NullModel
+        if (selectedModel.isEmpty()) {
+            // logger.error("Default Model not found. Using empty NullModel.");
+            selectedModel = Optional.of(NullModel.getInstance());
+        }
+
+        params.model = selectedModel.get();
 
         objectDetectorPipe.setParams(params);
 
