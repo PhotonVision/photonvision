@@ -177,6 +177,7 @@ public class NeuralNetworkModelManager {
         if (supportedBackends.isEmpty()) {
             return Optional.empty();
         }
+
         return models.get(supportedBackends.get(0)).stream().findFirst();
     }
 
@@ -288,10 +289,17 @@ public class NeuralNetworkModelManager {
                     Path outputPath =
                             modelsDirectory.toPath().resolve(entry.getName().substring(resource.length() + 1));
 
-                    logger.info("Extracting DNN resource: " + entry.getName());
+                    if (Files.exists(outputPath)) {
+                        logger.info("Skipping extraction of DNN resource: " + entry.getName());
+                        continue;
+                    }
+
                     Files.createDirectories(outputPath.getParent());
                     try (InputStream inputStream = jarFile.getInputStream(entry)) {
                         Files.copy(inputStream, outputPath, StandardCopyOption.REPLACE_EXISTING);
+                        logger.info("Extracted DNN resource: " + entry.getName());
+                    } catch (IOException e) {
+                        logger.error("Failed to extract DNN resource: " + entry.getName(), e);
                     }
                 }
             }
