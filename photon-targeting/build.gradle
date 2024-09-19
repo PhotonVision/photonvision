@@ -163,9 +163,6 @@ model {
     }
 }
 
-classes.dependsOn 'photontargetingLinuxx86-64ReleaseSharedLibrary'
-classes.dependsOn 'photontargetingJNILinuxx86-64ReleaseSharedLibrary'
-
 apply from: "${rootDir}/shared/javacpp/publish.gradle"
 
 // Add photon serde headers to our published sources

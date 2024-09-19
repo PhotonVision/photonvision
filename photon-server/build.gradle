@@ -129,8 +129,3 @@ task deploy {
         }
     }
 }
-
-// processResources {
-//     from "${project(':photon-targeting').buildDir}/libs/photontargetingJNI/shared/linuxx86-64/release/*"
-//     into "meme"
-// }
