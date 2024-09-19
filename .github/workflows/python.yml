@@ -76,11 +76,11 @@ jobs:
         # Reference: https://github.com/wpilibsuite/wpilib-tool-plugin/blob/main/src/main/java/edu/wpi/first/tools/NativePlatforms.java#L23
         os:
           - name: "ubuntu-22.04"
-            native_build_task: "linuxx86-64"
+            native_build_task: "Linuxx86-64"
           - name: "macos-12"
-            native_build_task: "osxuniversal"
+            native_build_task: "Osxuniversal"
           - name: "windows-2022"
-            native_build_task: "windowsx86-64"
+            native_build_task: "Windowsx86-64"
         python_version:
         # - '3.8'
         # - '3.9'
@@ -111,7 +111,7 @@ jobs:
       - run: git fetch --tags --force
       - run: python3 -c "from sysconfig import get_paths as gp; print(gp())"
 
-      - run: ./gradlew photon-lib:tasks -PpythonExecutable=python3
+      - run: ./gradlew photon-lib:tasks -i -PpythonExecutable=${{ matrix.python_version }}
       - run: |
           chmod +x gradlew
           ./gradlew photon-lib:installPhotonlibpyNative -PpythonExecutable=python${{ matrix.python_version }} -PnativeBuildPlatform=${{ matrix.os.native_build_task }}
