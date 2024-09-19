@@ -79,50 +79,20 @@ model {
 
         all {
             binaries.withType(SharedLibraryBinarySpec) { binary ->
+                // check that we're building for the platform (per PArchOverride/wpilib plat detection)
                 if (binary.targetPlatform.name == jniPlatform) {
                     
+                    // only include release binaries (hard coded for now)
                     def isDebug = binary.buildType.name.contains('debug')
-
-                    if (binary.library.name == nativeName) {
-                        // println("============ base library =======")
-                    }
-                    if (binary.library.name == nativeName + "JNI") {
-                        // println("============ JNI library =======")
-                    }
-
-                    println("$binary.library.name - isDebug = $isDebug")
-
                     if (!isDebug) {
-                        println binary.sharedLibraryFile
-                        // println binary.identifier.properties
-
                         jar {
+                            // Just shove the shared library into the root of the jar output by photon-targeting:jar
                             from binary.sharedLibraryFile
+                            // And (not sure if this is a hack) make the jar task depend on the build task
                             dependsOn binary.identifier.projectScopedName
                         }
 
                     }
-
-                    // println binary.properties
-                    // println nativeUtils.getPlatformPath(it)
-                    // println binary.sharedLibraryFile
-                    // println binary.buildTask
-                    // println binary.properties.toString()
-                    // println it.library.name
-                    // println it.targetPlatform.properties
-                    // println it.targetPlatform.name == jniPlatform
-
-
-                    // [sharedLibraryFile:/home/mmorley/photonvision/photon-targeting/build/libs/photontargetingJNI/shared/linuxx86-64/debug/libphotontargetingJNI.so, toolChain:Tool chain 'gcc' (GNU GCC), library:native library 'photontargetingJNI', staticLibArchiver:org.gradle.nativeplatform.internal.DefaultTool@4f80eaf9, id:project ':photon-targeting' library 'photontargetingJNI' variant 'linuxx86-64DebugSharedLibrary', inputs:[C++ source 'photontargetingJNI:cpp'], sharedLibraryLinkFile:/home/mmorley/photonvision/photon-targeting/build/libs/photontargetingJNI/shared/linuxx86-64/debug/libphotontargetingJNI.so, targetPlatform:platform 'linuxx86-64', assembler:org.gradle.nativeplatform.internal.DefaultTool@15a341e4, checkTask:task ':photon-targeting:checkPhotontargetingJNILinuxx86-64DebugSharedLibrary', headerDirs:Headers for shared library 'photontargetingJNI:linuxx86-64:debug:sharedLibrary', buildTask:task ':photon-targeting:photontargetingJNILinuxx86-64DebugSharedLibrary', sources:ModelMap<LanguageSourceSet> 'components.photontargetingJNI.binaries.linuxx86-64DebugSharedLibrary.sources', class:class org.gradle.nativeplatform.SharedLibraryBinarySpec$NodeView$org_gradle_nativeplatform_internal_DefaultSharedLibraryBinarySpec, buildType:build type 'debug', projectScopedName:photontargetingJNILinuxx86-64DebugSharedLibrary, objcppCompiler:org.gradle.nativeplatform.internal.DefaultPreprocessingTool@6c64b0b5, rcCompiler:org.gradle.nativeplatform.internal.DefaultPreprocessingTool@3c52cb1d, primaryOutput:/home/mmorley/photonvision/photon-targeting/build/libs/photontargetingJNI/shared/linuxx86-64/debug/libphotontargetingJNI.so, runtimeFiles:Runtime files for shared library 'photontargetingJNI:linuxx86-64:debug:sharedLibrary', buildAbility:org.gradle.platform.base.internal.ToolSearchBuildAbility@46026c66, cppCompiler:org.gradle.nativeplatform.internal.DefaultPreprocessingTool@7b6efa50, displayName:shared library 'photontargetingJNI:linuxx86-64:debug:sharedLibrary', backingNode:components.photontargetingJNI.binaries.linuxx86-64DebugSharedLibrary, linkFiles:Link files for shared library 'photontargetingJNI:linuxx86-64:debug:sharedLibrary', cCompiler:org.gradle.nativeplatform.internal.DefaultPreprocessingTool@32460c90, flavor:flavor 'default', objcCompiler:org.gradle.nativeplatform.internal.DefaultPreprocessingTool@18e633e6, namingScheme:org.gradle.platform.base.internal.DefaultBinaryNamingScheme@5fc6eef, tasks:[], buildDependencies:org.gradle.api.internal.tasks.DefaultTaskDependency@44d88a7, platformToolProvider:org.gradle.nativeplatform.toolchain.internal.gcc.GccPlatformToolProvider@76d85ccd, buildable:true, linker:org.gradle.nativeplatform.internal.DefaultTool@bec074f, legacyBinary:false, name:linuxx86-64DebugSharedLibrary, component:native library 'photontargetingJNI', managedType:org.gradle.nativeplatform.SharedLibraryBinarySpec, publicType:interface org.gradle.nativeplatform.SharedLibraryBinarySpec, identifier:photontargetingJNI:linuxx86-64DebugSharedLibrary, projectPath::photon-targeting, prefixFileToPCH:[:]]
-                    // println binary.properties['inputs']
-
-                    // if (binary.buildTask) {
-                    //     println "yayy"
-                    //     jar {
-                    //         from binary.sharedLibraryFile
-                    //         dependsOn binary.buildTask
-                    //     }
-                    // }
                 }
             }
         }
