@@ -43,12 +43,12 @@ nativeUtils {
 def getPythonIncludePath = {
     def pythonexe = project.findProperty('pythonExecutable') ?: 'python3'
 
-    File.createTempFile("temp",".py").with {
-        write "from sysconfig import get_paths as gp; print(gp()['include'])"
+    File.createTempFile("temp",".py").with { f ->
+        f.write "from sysconfig import get_paths as gp; print(gp()['include'])"
 
         def stdout = new ByteArrayOutputStream()
         exec {
-            commandLine pythonexe, '-c', 'from sysconfig import get_paths as gp; print(gp()["include"])'
+            commandLine pythonexe, f.absolutePath
             standardOutput = stdout
         }
         def ret = stdout.toString().trim();
