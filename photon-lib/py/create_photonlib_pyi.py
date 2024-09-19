@@ -15,5 +15,6 @@ def write_stubgen():
         print(f)
         f.write(sg.get())
 
+
 if __name__ == "__main__":
     write_stubgen()

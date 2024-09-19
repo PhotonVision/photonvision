@@ -58,7 +58,7 @@ jobs:
         working-directory: ./photon-lib/py
         # Now that we have native .so's in place, generate pyi
         run: |
-          python create_photonlib_pyi.py 
+          python create_photonlib_pyi.py
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -73,13 +73,14 @@ jobs:
       # max-parallel: 1
       fail-fast: false
       matrix:
-        os: 
+        # Reference: https://github.com/wpilibsuite/wpilib-tool-plugin/blob/main/src/main/java/edu/wpi/first/tools/NativePlatforms.java#L23
+        os:
           - name: "ubuntu-22.04"
-            arch-override: "linuxx86-64"
+            native_build_task: "linuxx86-64"
           - name: "macos-12"
-            arch-override: "osxuniversal"
+            native_build_task: "osxuniversal"
           - name: "windows-2022"
-            arch-override: "windowsx86-64"
+            native_build_task: "windowsx86-64"
         python_version:
         # - '3.8'
         # - '3.9'
@@ -113,7 +114,7 @@ jobs:
       - run: ./gradlew photon-lib:tasks -PpythonExecutable=python3
       - run: |
           chmod +x gradlew
-          ./gradlew photon-lib:installPhotonlibpyNative -PpythonExecutable=python${{ matrix.python_version }} -PArchOverride=${{ matrix.os.arch-override }}
+          ./gradlew photon-lib:installPhotonlibpyNative -PpythonExecutable=python${{ matrix.python_version }} -PnativeBuildPlatform=${{ matrix.os.native_build_task }}
 
       - name: Install dependencies
         working-directory: ./photon-lib/py
@@ -179,7 +180,6 @@ jobs:
         #   name: raspbian-py311
         # - container: wpilib/raspbian-cross-ubuntu:bullseye-22.04-py312
         #   name: raspbian-py312
-        #   arch-override: linuxarm64
 
         # - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04-py38
         #   name: raspbian-aarch64-py38
