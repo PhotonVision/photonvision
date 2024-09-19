@@ -32,7 +32,6 @@ public class ObjectDetectionPipe
         extends CVPipe<
                 CVMat, List<NeuralNetworkPipeResult>, ObjectDetectionPipe.ObjectDetectionPipeParams>
         implements Releasable {
-
     private ObjectDetector detector;
 
     public ObjectDetectionPipe() {

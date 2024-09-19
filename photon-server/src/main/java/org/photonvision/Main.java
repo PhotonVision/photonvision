@@ -423,7 +423,7 @@ public class Main {
         ConfigManager.getInstance().load(); // init config manager
         ConfigManager.getInstance().requestSave();
 
-        logger.info("Loading ML models");
+        logger.info("Loading ML models...");
         var modelManager = NeuralNetworkModelManager.getInstance();
         modelManager.extractModels(ConfigManager.getInstance().getModelsDirectory());
         modelManager.discoverModels(ConfigManager.getInstance().getModelsDirectory());

@@ -306,7 +306,7 @@ export const DefaultObjectDetectionPipelineSettings: ObjectDetectionPipelineSett
   confidence: 0.9,
   nms: 0.45,
   box_thresh: 0.25,
-  model: "",
+  model: ""
 };
 
 export type ActivePipelineSettings =

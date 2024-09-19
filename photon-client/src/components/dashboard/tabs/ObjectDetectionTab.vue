@@ -32,14 +32,14 @@ const interactiveCols = computed(() =>
 // Filters out models that are not supported by the current backend, and returns a flattened list.
 const supportedModels = computed(() => {
   const { availableModels, supportedBackends } = useSettingsStore().general;
-  return supportedBackends.flatMap(backend => availableModels[backend] || []);
+  return supportedBackends.flatMap((backend) => availableModels[backend] || []);
 });
 
 const selectedModel = computed({
   get: () => supportedModels.value.indexOf(currentPipelineSettings.value.model),
   set: (v) => {
-    useCameraSettingsStore().changeCurrentPipelineSetting({ model: supportedModels.value[v] }, false)
-  },
+    useCameraSettingsStore().changeCurrentPipelineSetting({ model: supportedModels.value[v] }, false);
+  }
 });
 </script>
 

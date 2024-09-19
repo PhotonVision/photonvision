@@ -62,8 +62,8 @@ run {
 }
 
 remotes {
-    home {
-        host = '192.168.1.220'
+    pi {
+        host = 'photonvision.local'
         user = 'pi'
         password = 'raspberry'
         knownHosts = allowAnyHosts

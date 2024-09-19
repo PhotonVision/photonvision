@@ -164,11 +164,7 @@ public class NeuralNetworkModelManager {
         return Optional.empty();
     }
 
-    /**
-     * The default model when no model is specified.
-     *
-     * @param model
-     */
+    /** The default model when no model is specified. */
     public Optional<Model> getDefaultModel() {
         if (models == null) {
             return Optional.empty();
@@ -210,8 +206,9 @@ public class NeuralNetworkModelManager {
         try {
             switch (backend.get()) {
                 case RKNN:
-                    models.get(backend.get()).add(new RknnModel(model, labels));     
-                    logger.info("Loaded model " + model.getName() + " for backend " + backend.get().toString());
+                    models.get(backend.get()).add(new RknnModel(model, labels));
+                    logger.info(
+                            "Loaded model " + model.getName() + " for backend " + backend.get().toString());
                     break;
                 default:
                     break;
