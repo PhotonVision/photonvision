@@ -47,9 +47,7 @@ tasks.register("buildAndCopyUI") {
 
 run {
     environment "PATH_PREFIX", "../"
-}
 
-run {
     if (project.hasProperty("profile")) {
         jvmArgs=[
             "-Dcom.sun.management.jmxremote=true",
@@ -131,3 +129,8 @@ task deploy {
         }
     }
 }
+
+// processResources {
+//     from "${project(':photon-targeting').buildDir}/libs/photontargetingJNI/shared/linuxx86-64/release/*"
+//     into "meme"
+// }
