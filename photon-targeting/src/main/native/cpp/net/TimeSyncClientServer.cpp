@@ -24,7 +24,7 @@
 
 template <>
 struct wpi::Struct<TspPing> {
-  static constexpr std::string_view GetTypeName() { return "TspPing"; }
+  static constexpr std::string_view GetTypeString() { return "TspPing"; }
   static constexpr size_t GetSize() { return 10; }
   static constexpr std::string_view GetSchema() {
     return "uint8 version;uint8 message_id;uint64 client_time";
@@ -46,7 +46,7 @@ struct wpi::Struct<TspPing> {
 
 template <>
 struct wpi::Struct<TspPong> {
-  static constexpr std::string_view GetTypeName() { return "TspPong"; }
+  static constexpr std::string_view GetTypeString() { return "TspPong"; }
   static constexpr size_t GetSize() { return 18; }
   static constexpr std::string_view GetSchema() {
     return "uint8 version;uint8 message_id;uint64 client_time;uint64_t "
@@ -77,7 +77,7 @@ static_assert(wpi::StructSerializable<TspPing>);
 static void ClientLoggerFunc(unsigned int level, const char* file,
                              unsigned int line, const char* msg) {
   if (level == 20) {
-    wpi::print(stderr, "TimeSyncClient: {}\n", msg);
+    fmt::print(stderr, "TimeSyncClient: {}\n", msg);
     return;
   }
 
@@ -91,14 +91,14 @@ static void ClientLoggerFunc(unsigned int level, const char* file,
   } else {
     return;
   }
-  wpi::print(stderr, "TimeSyncClient: {}: {} ({}:{})\n", levelmsg, msg, file,
+  fmt::print(stderr, "TimeSyncClient: {}: {} ({}:{})\n", levelmsg, msg, file,
              line);
 }
 
 static void ServerLoggerFunc(unsigned int level, const char* file,
                              unsigned int line, const char* msg) {
   if (level == 20) {
-    wpi::print(stderr, "TimeSyncServer: {}\n", msg);
+    fmt::print(stderr, "TimeSyncServer: {}\n", msg);
     return;
   }
 
@@ -112,13 +112,13 @@ static void ServerLoggerFunc(unsigned int level, const char* file,
   } else {
     return;
   }
-  wpi::print(stderr, "TimeSyncServer: {}: {} ({}:{})\n", levelmsg, msg, file,
+  fmt::print(stderr, "TimeSyncServer: {}: {} ({}:{})\n", levelmsg, msg, file,
              line);
 }
 
 void wpi::TimeSyncServer::UdpCallback(uv::Buffer& data, size_t n,
                                       const sockaddr& sender, unsigned flags) {
-  wpi::println("TimeSyncServer got ping!");
+  fmt::println("TimeSyncServer got ping!");
 
   TspPing ping{wpi::UnpackStruct<TspPing>(data.bytes())};
 
@@ -144,7 +144,7 @@ void wpi::TimeSyncServer::UdpCallback(uv::Buffer& data, size_t n,
   wpi::uv::Buffer pongBuf{pongData};
   int sent =
       m_udp->TrySend(sender, wpi::SmallVector<wpi::uv::Buffer, 1>{pongBuf});
-  wpi::println("Pong ret: {}", sent);
+  fmt::println("Pong ret: {}", sent);
   if (static_cast<size_t>(sent) != wpi::Struct<TspPong>::GetSize()) {
     WPI_ERROR(m_logger, "Didn't send the whole pong back?");
     return;
@@ -174,7 +174,7 @@ void wpi::TimeSyncServer::Stop() {
 }
 
 void wpi::TimeSyncClient::Tick() {
-  wpi::println("wpi::TimeSyncClient::Tick");
+  fmt::println("wpi::TimeSyncClient::Tick");
   // Regardless of if we've gotten a pong back yet, we'll ping again. this is
   // pretty naive but should be "fine" for now?
 
@@ -274,11 +274,11 @@ wpi::TimeSyncClient::TimeSyncClient(std::string_view server, int remote_port,
 }
 
 void wpi::TimeSyncClient::Start() {
-  wpi::println("Connecting recieved");
+  fmt::println("Connecting recieved");
   m_udp->received.connect(&wpi::TimeSyncClient::UdpCallback, this);
   m_udp->StartRecv();
 
-  wpi::println("Starting pinger");
+  fmt::println("Starting pinger");
   using namespace std::chrono_literals;
   m_pingTimer->timeout.connect(&wpi::TimeSyncClient::Tick, this);
 
