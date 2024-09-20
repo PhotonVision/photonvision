@@ -55,13 +55,13 @@ model {
             nativeUtils.useRequiredLibrary(it, "opencv_shared")
         }
         "${nativeName}JNI"(JniNativeLibrarySpec) {
-            
+
             enableCheckTask project.hasProperty('doJniCheck')
             javaCompileTasks << compileJava
             jniCrossCompileOptions << JniCrossCompileOptions(nativeUtils.wpi.platforms.roborio)
             jniCrossCompileOptions << JniCrossCompileOptions(nativeUtils.wpi.platforms.linuxarm32)
             jniCrossCompileOptions << JniCrossCompileOptions(nativeUtils.wpi.platforms.linuxarm64)
-            
+
             sources {
                 cpp {
                     source {
@@ -83,7 +83,7 @@ model {
             binaries.withType(SharedLibraryBinarySpec) { binary ->
                 // check that we're building for the platform (per PArchOverride/wpilib plat detection)
                 if (binary.targetPlatform.name == jniPlatform) {
-                    
+
                     // only include release binaries (hard coded for now)
                     def isDebug = binary.buildType.name.contains('debug')
                     if (!isDebug) {
@@ -95,7 +95,6 @@ model {
                             // And (not sure if this is a hack) make the jar task depend on the build task
                             dependsOn binary.identifier.projectScopedName
                         }
-
                     }
                 }
             }

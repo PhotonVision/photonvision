@@ -1,8 +1,25 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+/*
+ * Copyright (C) Photon Vision.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 #include "net/TimeSyncClientServer.h"
+
+#include <fmt/core.h>
+#include <wpinet/UDPClient.h>
+#include <wpinet/uv/util.h>
 
 #include <atomic>
 #include <chrono>
@@ -14,11 +31,7 @@
 #include <thread>
 
 #include <wpi/Logger.h>
-// #include <wpi/print.h>
-#include <fmt/core.h>
 #include <wpi/struct/Struct.h>
-#include <wpinet/UDPClient.h>
-#include <wpinet/uv/util.h>
 
 #include "ntcore_cpp.h"
 
@@ -169,9 +182,7 @@ void wpi::TimeSyncServer::Start() {
   m_udp->StartRecv();
 }
 
-void wpi::TimeSyncServer::Stop() {
-  m_loopRunner.Stop();
-}
+void wpi::TimeSyncServer::Stop() { m_loopRunner.Stop(); }
 
 void wpi::TimeSyncClient::Tick() {
   fmt::println("wpi::TimeSyncClient::Tick");
@@ -286,9 +297,7 @@ void wpi::TimeSyncClient::Start() {
       [this](uv::Loop&) { m_pingTimer->Start(m_loopDelay, m_loopDelay); });
 }
 
-void wpi::TimeSyncClient::Stop() {
-  m_loopRunner.Stop();
-}
+void wpi::TimeSyncClient::Stop() { m_loopRunner.Stop(); }
 
 int64_t wpi::TimeSyncClient::GetOffset() {
   std::lock_guard lock{m_offsetMutex};

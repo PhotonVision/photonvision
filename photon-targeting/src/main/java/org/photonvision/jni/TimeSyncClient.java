@@ -17,18 +17,21 @@
 
 package org.photonvision.jni;
 
-public class CalibrationHelper {
-    public static class CalResult {}
-
-    public static native long Create(int width, int height, long overlayMatPtr, double tolerance);
-
-    public static native long Destroy();
-
-    public static native CalResult Detect(long inputImg, long outputImg);
-
-    public static void main(String[] args) {
-        System.load(
-                "/home/matt/Documents/GitHub/photonvision/photon-core/build/libs/photoncoreJNI/shared/linuxx86-64/release/libphotoncorejni.so");
-        System.out.println(Create(1, 2, 3, 4));
+public class TimeSyncClient {
+    public static class PingMetadata {
+        long offset;
+        long pingsSent;
+        long pingsRecieved;
+        long lastPongTime;
     }
+
+    public static native long create(String serverIP, int serverPort, double pingIntervalSeconds);
+
+    public static native void start(long handle);
+
+    public static native void stop(long handle);
+
+    public static native long getOffset(long handle);
+
+    public static native PingMetadata getLatestMetadata();
 }

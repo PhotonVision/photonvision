@@ -15,35 +15,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <org_photonvision_jni_CalibrationHelper.h>
+package org.photonvision.jni;
 
-#include <cstdio>
+public class TimeSyncServer {
+    public static native long create(int port);
 
-#include <opencv2/core.hpp>
-#include <opencv2/core/mat.hpp>
-#include <opencv2/imgcodecs.hpp>
+    public static native void start(long handle);
 
-
-
-extern "C" {
-
-/*
- * Class:     org_photonvision_jni_CalibrationHelper
- * Method:    Create
- * Signature: (IIJD)J
- */
-JNIEXPORT jlong JNICALL
-Java_org_photonvision_jni_CalibrationHelper_Create
-  (JNIEnv*, jclass, jint, jint, jlong, jdouble)
-{
-  
-  cv::Mat mat = cv::imread(
-      "/home/matt/Documents/GitHub/photonvision/test-resources/testimages/2022/"
-      "WPI/FarLaunchpad13ft10in.png");
-
-  std::printf("mat size %i %i\n", mat.rows, mat.cols);
-
-  return 0;
+    public static native void stop(long handle);
 }
-
-}  // extern "C"

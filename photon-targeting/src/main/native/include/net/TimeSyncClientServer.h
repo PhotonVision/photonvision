@@ -1,8 +1,28 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+/*
+ * Copyright (C) Photon Vision.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 #pragma once
+
+#include <fmt/core.h>
+#include <wpinet/EventLoopRunner.h>
+#include <wpinet/UDPClient.h>
+#include <wpinet/uv/Buffer.h>
+#include <wpinet/uv/Timer.h>
+#include <wpinet/uv/Udp.h>
 
 #include <atomic>
 #include <chrono>
@@ -17,14 +37,7 @@
 #include <thread>
 
 #include <wpi/Logger.h>
-// #include <wpi/print.h>
-#include <fmt/core.h>
 #include <wpi/struct/Struct.h>
-#include <wpinet/EventLoopRunner.h>
-#include <wpinet/UDPClient.h>
-#include <wpinet/uv/Buffer.h>
-#include <wpinet/uv/Timer.h>
-#include <wpinet/uv/Udp.h>
 
 #include "ntcore_cpp.h"
 
@@ -59,7 +72,7 @@ class TimeSyncServer {
 
  public:
   explicit TimeSyncServer(int port = 5810,
-                 std::function<uint64_t()> timeProvider = nt::Now);
+                          std::function<uint64_t()> timeProvider = nt::Now);
 
   /**
    * Start listening for pings
