@@ -25,13 +25,31 @@ public class TimeSyncClient {
         long lastPongTime;
     }
 
-    public static native long create(String serverIP, int serverPort, double pingIntervalSeconds);
+    final long handle;
 
-    public static native void start(long handle);
+    public TimeSyncClient(String server, int port, double interval) {
+        this.handle = TimeSyncClient.create(server, port, interval);
+    }
 
-    public static native void stop(long handle);
+    public void start() {
+        TimeSyncClient.start(handle);
+    }
 
-    public static native long getOffset(long handle);
+    public void stop() {
+        TimeSyncClient.stop(handle);
+    }
 
-    public static native PingMetadata getLatestMetadata();
+    public long getOffset() {
+        return TimeSyncClient.getOffset(handle);
+    }
+
+    private static native long create(String serverIP, int serverPort, double pingIntervalSeconds);
+
+    private static native void start(long handle);
+
+    private static native void stop(long handle);
+
+    private static native long getOffset(long handle);
+
+    private static native PingMetadata getLatestMetadata();
 }

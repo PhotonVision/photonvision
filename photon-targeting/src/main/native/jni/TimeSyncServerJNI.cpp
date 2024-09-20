@@ -66,6 +66,7 @@ Java_org_photonvision_jni_TimeSyncServer_stop
 {
   TimeSyncServer* server = reinterpret_cast<TimeSyncServer*>(ptr);
   server->Stop();
+  delete server;
 }
 
 }  // extern "C"

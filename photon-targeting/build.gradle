@@ -25,6 +25,17 @@ sourceSets.main.java.srcDir "${projectDir}/src/generated/main/java"
 
 apply plugin: 'edu.wpi.first.GradleJni'
 
+// Dummy jar for our .sos
+task nativeLibsJar(type: Jar) {
+    archiveClassifier = 'native-libs'
+    build.dependsOn it
+}
+
+artifacts {
+    archives nativeLibsJar
+}
+
+
 model {
     components {
         "${nativeName}"(NativeLibrarySpec) {
@@ -87,7 +98,7 @@ model {
                     // only include release binaries (hard coded for now)
                     def isDebug = binary.buildType.name.contains('debug')
                     if (!isDebug) {
-                        jar {
+                        nativeLibsJar {
                             // Just shove the shared library into the root of the jar output by photon-targeting:jar
                             from(binary.sharedLibraryFile) {
                                 into "nativelibraries/${wpilibNativeName}/"
@@ -174,3 +185,29 @@ cppHeadersZip {
         into '/'
     }
 }
+
+// make sure native libraries can be loaded in tests
+test {
+    classpath += files(nativeLibsJar.archiveFile)
+}
+
+// setup wpilib bundled native libs
+wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()
+
+def nativeConfigName = 'wpilibNatives'
+def nativeConfig = configurations.create(nativeConfigName)
+
+def nativeTasks = wpilibTools.createExtractionTasks {
+    configurationName = nativeConfigName
+}
+
+nativeTasks.addToSourceSetResources(sourceSets.main)
+
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
+nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())

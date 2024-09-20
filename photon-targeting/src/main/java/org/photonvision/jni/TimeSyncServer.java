@@ -18,9 +18,23 @@
 package org.photonvision.jni;
 
 public class TimeSyncServer {
-    public static native long create(int port);
+    final long handle;
 
-    public static native void start(long handle);
+    public TimeSyncServer(int port) {
+        this.handle = TimeSyncServer.create(port);
+    }
 
-    public static native void stop(long handle);
+    public void start() {
+        TimeSyncServer.start(handle);
+    }
+
+    public void stop() {
+        TimeSyncServer.stop(handle);
+    }
+
+    private static native long create(int port);
+
+    private static native void start(long handle);
+
+    private static native void stop(long handle);
 }

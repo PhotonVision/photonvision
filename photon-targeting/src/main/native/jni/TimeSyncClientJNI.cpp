@@ -59,8 +59,8 @@ JNIEXPORT void JNICALL
 Java_org_photonvision_jni_TimeSyncClient_start
   (JNIEnv*, jclass, jlong ptr)
 {
-  TimeSyncClient* server = reinterpret_cast<TimeSyncClient*>(ptr);
-  server->Start();
+  TimeSyncClient* client = reinterpret_cast<TimeSyncClient*>(ptr);
+  client->Start();
 }
 
 /*
@@ -72,8 +72,9 @@ JNIEXPORT void JNICALL
 Java_org_photonvision_jni_TimeSyncClient_stop
   (JNIEnv*, jclass, jlong ptr)
 {
-  TimeSyncClient* server = reinterpret_cast<TimeSyncClient*>(ptr);
-  server->Stop();
+  TimeSyncClient* client = reinterpret_cast<TimeSyncClient*>(ptr);
+  client->Stop();
+  delete client;
 }
 
 /*
@@ -85,8 +86,8 @@ JNIEXPORT jlong JNICALL
 Java_org_photonvision_jni_TimeSyncClient_getOffset
   (JNIEnv*, jclass, jlong ptr)
 {
-  TimeSyncClient* server = reinterpret_cast<TimeSyncClient*>(ptr);
-  return server->GetOffset();
+  TimeSyncClient* client = reinterpret_cast<TimeSyncClient*>(ptr);
+  return client->GetOffset();
 }
 
 /*

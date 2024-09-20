@@ -186,6 +186,12 @@ void wpi::TimeSyncServer::Stop() { m_loopRunner.Stop(); }
 
 void wpi::TimeSyncClient::Tick() {
   fmt::println("wpi::TimeSyncClient::Tick");
+
+  if (!m_udp) {
+    fmt::println("m_udp is null");
+    return;
+  }
+
   // Regardless of if we've gotten a pong back yet, we'll ping again. this is
   // pretty naive but should be "fine" for now?
 
@@ -199,7 +205,14 @@ void wpi::TimeSyncClient::Tick() {
 
   // Wrap our buffer - pingData should free itself
   wpi::uv::Buffer pingBuf{pingData};
-  int sent = m_udp->TrySend(wpi::SmallVector<wpi::uv::Buffer, 1>{pingBuf});
+
+  int sent = 0;
+  try {
+    sent = m_udp->TrySend(wpi::SmallVector<wpi::uv::Buffer, 1>{pingBuf});
+  } catch (std::exception & e) {  
+    fmt::println("????: {}", e.what());
+    return;
+  }
 
   if (static_cast<size_t>(sent) != wpi::Struct<TspPing>::GetSize()) {
     WPI_ERROR(m_logger, "Didn't send the whole ping out?");
