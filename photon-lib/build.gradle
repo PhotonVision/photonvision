@@ -108,10 +108,10 @@ model {
             }
 
             binaries.all {
-                // lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
-                // lib library: nativeName
+                lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
+                lib library: nativeName
 
-                // nativeUtils.useRequiredLibrary(it, "wpilib_shared")
+                nativeUtils.useRequiredLibrary(it, "wpilib_shared")
             }
         }
     }
@@ -255,7 +255,10 @@ task installPhotonlibpyNative(type: Copy) {
     into("$projectDir/py/photonlibpy")
 
     from "$projectDir/build/libs/photonlib/shared/$jniPlatform/release/libphotonlib.so"
+    from "$projectDir/build/libs/photonlib/shared/$jniPlatform/release/photonlib.dll"
+
     for (lib in [
+                "photontargeting.dll",
                 "cameraserver.dll",
                 "cscore.dll",
                 "opencv_core480.dll",
@@ -264,7 +267,7 @@ task installPhotonlibpyNative(type: Copy) {
                 "opencv_imgcodecs480.dll",
                 "opencv_flann480.dll",
                 "opencv_imgproc480.dll",
-                "photontargeting.so",
+
                 "libcameraserver.so",
                 "libcscore.so",
                 "libopencv_core.so.4.8",
