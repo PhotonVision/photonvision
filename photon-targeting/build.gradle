@@ -73,8 +73,10 @@ model {
 
             binaries.all {
                 lib library: nativeName, linkage: 'shared'
-                nativeUtils.useRequiredLibrary(it, "opencv_shared")
             }
+
+            nativeUtils.useRequiredLibrary(it, "opencv_shared")
+            nativeUtils.useRequiredLibrary(it, "wpilib_shared")
         }
 
         all {
@@ -87,7 +89,9 @@ model {
                     if (!isDebug) {
                         jar {
                             // Just shove the shared library into the root of the jar output by photon-targeting:jar
-                            from binary.sharedLibraryFile
+                            from(binary.sharedLibraryFile) {
+                                into "nativelibraries/${wpilibNativeName}/"
+                            }
                             // And (not sure if this is a hack) make the jar task depend on the build task
                             dependsOn binary.identifier.projectScopedName
                         }
