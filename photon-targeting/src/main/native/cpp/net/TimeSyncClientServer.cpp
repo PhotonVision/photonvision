@@ -292,6 +292,7 @@ wpi::TimeSyncClient::TimeSyncClient(std::string_view server, int remote_port,
       m_serverIP{server},
       m_serverPort{remote_port},
       m_loopDelay(ping_delay) {
+  fmt::println("Connecting to server at {}:{}", m_serverIP, m_serverPort);
   struct sockaddr_in serverAddr;
   uv::NameToAddr(m_serverIP, m_serverPort, &serverAddr);
   m_udp->Connect(serverAddr);

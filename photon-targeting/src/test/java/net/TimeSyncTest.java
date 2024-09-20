@@ -12,6 +12,7 @@ import org.photonvision.jni.TimeSyncServer;
 import edu.wpi.first.apriltag.jni.AprilTagJNI;
 import edu.wpi.first.cscore.CameraServerCvJNI;
 import edu.wpi.first.cscore.CameraServerJNI;
+import edu.wpi.first.hal.HAL;
 import edu.wpi.first.hal.JNIWrapper;
 import edu.wpi.first.math.WPIMathJNI;
 import edu.wpi.first.net.WPINetJNI;
@@ -60,18 +61,22 @@ public class TimeSyncTest {
             assertTrue(false);
         }
 
-        // var server = new TimeSyncServer(5812);
+        HAL.initialize(1000, 0);
+
+        var server = new TimeSyncServer(5812);
         var client = new TimeSyncClient("127.0.0.1", 5812, 1.0);
 
-        // server.start();
+        System.err.println("Waiting: PID=" + ProcessHandle.current().pid());
+
+        server.start();
         client.start();
 
         for (int i = 0; i < 5; i++) {
             Thread.sleep(1000);
-            // System.out.println(client.getOffset());
+            System.out.println(client.getOffset());
         }
 
-        // server.stop();
+        server.stop();
         client.stop();
     }
 }
