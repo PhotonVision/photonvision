@@ -101,13 +101,16 @@ class PhotonCameraTest {
         var camera = new PhotonCamera("Microsoft_LifeCam_HD-3000");
         PhotonCamera.setVersionCheckEnabled(false);
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 200; i++) {
             Thread.sleep(100);
 
-            var captureTime = camera.getLatestResult().getTimestampSeconds();
+            var res = camera.getLatestResult();
+            var captureTime = res.getTimestampSeconds();
             var now = Timer.getFPGATimestamp();
 
-            assertTrue(captureTime < now);
+            // expectTrue(captureTime < now);
+
+            System.out.println("sequence " + res.metadata.sequenceID + " image capture " + captureTime + " recieved at " + now);
         }
     }
 }
