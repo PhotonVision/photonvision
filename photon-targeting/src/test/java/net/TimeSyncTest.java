@@ -1,13 +1,23 @@
+/*
+ * Copyright (C) Photon Vision.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package net;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.io.IOException;
-import org.junit.jupiter.api.Test;
-import org.opencv.core.Core;
-import org.photonvision.jni.TimeSyncClient;
-import org.photonvision.jni.TimeSyncJNILoader;
-import org.photonvision.jni.TimeSyncServer;
 
 import edu.wpi.first.apriltag.jni.AprilTagJNI;
 import edu.wpi.first.cscore.CameraServerCvJNI;
@@ -19,6 +29,12 @@ import edu.wpi.first.net.WPINetJNI;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
+import java.io.IOException;
+import org.junit.jupiter.api.Test;
+import org.opencv.core.Core;
+import org.photonvision.jni.TimeSyncClient;
+import org.photonvision.jni.TimeSyncJNILoader;
+import org.photonvision.jni.TimeSyncServer;
 
 public class TimeSyncTest {
     public static void load_wpilib() {
@@ -49,13 +65,12 @@ public class TimeSyncTest {
 
     @Test
     public void smoketest() throws InterruptedException {
-
         // for (var line : System.getProperty("java.class.path", ".").split(";")) {
         //     System.out.println(line);
         // }
 
         try {
-            load_wpilib();   
+            load_wpilib();
             TimeSyncJNILoader.load();
         } catch (IOException e) {
             assertTrue(false);

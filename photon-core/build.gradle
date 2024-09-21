@@ -61,9 +61,6 @@ dependencies {
     }
 
     testImplementation group: 'org.junit-pioneer' , name: 'junit-pioneer', version: '2.2.0'
-
-    // Include photon-targeting JNI
-    implementation(project(path: ':photon-targeting', configuration: 'archives'))
 }
 
 task writeCurrentVersion {

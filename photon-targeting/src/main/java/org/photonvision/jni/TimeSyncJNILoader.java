@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) Photon Vision.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.photonvision.jni;
 
 import java.io.File;
@@ -6,7 +23,6 @@ import java.io.IOException;
 import java.util.List;
 
 public class TimeSyncJNILoader {
-
     public static void load() throws IOException {
         // We always extract the shared object (we could hash each so, but that's a lot
         // of work)
@@ -14,7 +30,6 @@ public class TimeSyncJNILoader {
         var clazz = TimeSyncJNILoader.class;
 
         for (var libraryName : List.of("photontargeting", "photontargetingJNI")) {
-
             var nativeLibName = System.mapLibraryName(libraryName);
             var in = clazz.getResourceAsStream("/nativelibraries/" + arch_name + "/" + nativeLibName);
 

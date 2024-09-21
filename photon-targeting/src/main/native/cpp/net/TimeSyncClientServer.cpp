@@ -209,7 +209,7 @@ void wpi::TimeSyncClient::Tick() {
   int sent = 0;
   try {
     sent = m_udp->TrySend(wpi::SmallVector<wpi::uv::Buffer, 1>{pingBuf});
-  } catch (std::exception & e) {  
+  } catch (std::exception& e) {
     fmt::println("????: {}", e.what());
     return;
   }

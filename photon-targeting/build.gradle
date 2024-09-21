@@ -25,16 +25,18 @@ sourceSets.main.java.srcDir "${projectDir}/src/generated/main/java"
 
 apply plugin: 'edu.wpi.first.GradleJni'
 
-// Dummy jar for our .sos
-task nativeLibsJar(type: Jar) {
-    archiveClassifier = 'native-libs'
-    build.dependsOn it
+// Folder whose contents will be included in the final jar
+def outputsFolder = file("$buildDir/outputs")
+
+// Sync task: like the copy task, but all files that exist in the destination directory will be deleted before copying files
+task syncOutputsFolder(type: Sync) {
+    into outputsFolder
 }
 
-artifacts {
-    archives nativeLibsJar
+jar {
+    from outputsFolder
+    dependsOn syncOutputsFolder
 }
-
 
 model {
     components {
@@ -98,7 +100,7 @@ model {
                     // only include release binaries (hard coded for now)
                     def isDebug = binary.buildType.name.contains('debug')
                     if (!isDebug) {
-                        nativeLibsJar {
+                        syncOutputsFolder {
                             // Just shove the shared library into the root of the jar output by photon-targeting:jar
                             from(binary.sharedLibraryFile) {
                                 into "nativelibraries/${wpilibNativeName}/"
@@ -188,7 +190,8 @@ cppHeadersZip {
 
 // make sure native libraries can be loaded in tests
 test {
-    classpath += files(nativeLibsJar.archiveFile)
+    classpath += files(outputsFolder)
+    dependsOn syncOutputsFolder
 }
 
 // setup wpilib bundled native libs
@@ -201,7 +204,7 @@ def nativeTasks = wpilibTools.createExtractionTasks {
     configurationName = nativeConfigName
 }
 
-nativeTasks.addToSourceSetResources(sourceSets.main)
+nativeTasks.addToSourceSetResources(sourceSets.test)
 
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
