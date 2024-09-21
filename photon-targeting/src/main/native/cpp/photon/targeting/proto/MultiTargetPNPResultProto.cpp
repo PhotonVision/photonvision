@@ -17,6 +17,8 @@
 
 #include "photon/targeting/proto/MultiTargetPNPResultProto.h"
 
+#include <vector>
+
 #include "photon.pb.h"
 #include "photon/targeting/proto/PNPResultProto.h"
 

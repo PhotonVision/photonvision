@@ -16,6 +16,7 @@
  */
 
 #include <chrono>
+#include <vector>
 
 #include <units/angle.h>
 

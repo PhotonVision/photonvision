@@ -36,10 +36,6 @@ void Robot::RobotPeriodic() {
   auto start = frc::Timer::GetFPGATimestamp();
   photon::PhotonPipelineResult result = camera.GetLatestResult();
   auto end = frc::Timer::GetFPGATimestamp();
-
-  std::printf("DT is %.2f uS for %i targets\n",
-              units::microsecond_t(end - start).to<double>(),
-              result.GetTargets().size());
 }
 
 void Robot::TeleopPeriodic() {
