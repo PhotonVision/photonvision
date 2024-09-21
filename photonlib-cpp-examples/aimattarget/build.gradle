@@ -11,17 +11,11 @@ repositories {
     jcenter()
 }
 
+wpi.maven.useDevelopment = true
+wpi.versions.wpilibVersion = "2024.3.2"
+wpi.versions.wpimathVersion = "2024.3.2"
+
 apply from: "${rootDir}/../shared/examples_common.gradle"
-
-ext {
-    wpilibVersion = "2025.0.0-alpha-1"
-    wpimathVersion = wpilibVersion
-    openCVversion = "4.8.0-2"
-}
-
-wpi.getVersions().getOpencvVersion().convention(openCVversion);
-wpi.getVersions().getWpilibVersion().convention(wpilibVersion);
-wpi.getVersions().getWpimathVersion().convention(wpimathVersion);
 
 // Define my targets (RoboRIO) and artifacts (deployable files)
 // This is added by GradleRIO's backing project DeployUtils.
@@ -68,21 +62,36 @@ wpi.sim.addDriverstation()
 model {
     components {
         frcUserProgram(NativeExecutableSpec) {
-            targetPlatform wpi.platforms.roborio
-            targetPlatform wpi.platforms.desktop
+            // We don't need to build for roborio -- if we do, we need to install
+            // a roborio toolchain every time we build in CI
+            // Ideally, we'd be able to set the roborio toolchain as optional, but
+            // I can't figure out how to set that environment variable from build.gradle
+            // (see https://github.com/wpilibsuite/native-utils/blob/2917c69fb5094e36d499c465f047dab81c68446c/ToolchainPlugin/src/main/java/edu/wpi/first/toolchain/ToolchainGraphBuildService.java#L71)
+            // for now, commented out
+
+            // targetPlatform wpi.platforms.roborio
+
+            if (includeDesktopSupport) {
+                targetPlatform wpi.platforms.desktop
+            }
 
             sources.cpp {
                 source {
                     srcDir 'src/main/cpp'
+                    include '**/*.cpp', '**/*.cc'
                 }
                 exportedHeaders {
                     srcDir 'src/main/include'
                 }
             }
 
+            // Set deploy task to deploy this component
             deployArtifact.component = it
+
+            // Enable run tasks for this component
             wpi.cpp.enableExternalTasks(it)
 
+            // Enable simulation for this component
             wpi.sim.enable(it)
             // Defining my dependencies. In this case, WPILib (+ friends), and vendor libraries.
             wpi.cpp.vendor.cpp(it)
@@ -100,6 +109,7 @@ model {
                 }
             }
 
+            // Enable run tasks for this component
             wpi.cpp.enableExternalTasks(it)
 
             wpi.cpp.vendor.cpp(it)

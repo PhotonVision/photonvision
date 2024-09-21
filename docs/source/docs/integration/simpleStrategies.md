@@ -1,36 +1,32 @@
 # Simple Strategies
 
-Simple strategies for using vision processor outputs involve using the target's position in the 2D image to infer *range* and *angle* to the target.
+Simple strategies for using vision processor outputs involve using the target's position in the 2D image to infer *range* and *angle* to a particular AprilTag.
 
 ## Knowledge and Equipment Needed
 
 - A Coprocessor running PhotonVision
 - A Drivetrain with wheels
+- An AprilTag to aim at
 
 ## Angle Alignment
 
-The simplest way to use a vision processing result is to first determine how far left or right in the image the vision target should be for your robot to be "aligned" to the target. Then,
+The simplest way to align a robot to an AprilTag is to rotate the drivetrain until the tag is centered in the camera image. To do this,
 
-1. Read the current angle to the target from the vision Coprocessor.
-2. If too far in one direction, command the drivetrain to rotate in the opposite direction to compensate.
+1. Read the current yaw angle to the AprilTag from the vision Coprocessor.
+2. If too far off to one side, command the drivetrain to rotate in the opposite direction to compensate.
 
 See the  {ref}`Aiming at a Target <docs/examples/aimingatatarget:Knowledge and Equipment Needed>` example for more information.
 
-:::{note}
-Sometimes, these strategies have also involved incorporating a gyroscope. This can be necessary due to the high latency of vision processing algorithms. However, advancements in the tools available (including PhotonVision) has made that unnecessary for most applications.
-:::
+NOTE: This works if the camera is centered on the robot. This is easiest from a software perspective. If the camera is not centered, take a peek at the next example - it shows how to account for an offset.
 
-## Range Alignment
+## Adding Range Alignment
 
-By looking at the position of the target in the "vertical" direction in the image, and applying some trigonometry, the distance between the robot and the camera can be deduced.
+By looking at the position of the AprilTag in the "vertical" direction in the image, and applying some trigonometry, the distance between the robot and the camera can be deduced.
 
-1. Read the current distance to the target from the vision coprocessor.
+1. Read the current pitch angle to the AprilTag from the vision coprocessor.
+2. Do math to calculate the distance to the AprilTag.
 2. If too far in one direction, command the drivetrain to travel in the opposite direction to compensate.
 
-See the {ref}`Getting in Range of the Target <docs/examples/gettinginrangeofthetarget:Knowledge and Equipment Needed>` example for more information.
-
-## Angle + Range
-
-Since the previous two alignment strategies work on independent axes of the robot, there's no reason you can't do them simultaneously.
+This can be done simultaneously while aligning to the desired angle.
 
 See the {ref}`Aim and Range <docs/examples/aimandrange:Knowledge and Equipment Needed>` example for more information.

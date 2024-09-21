@@ -4,7 +4,8 @@
 :maxdepth: 0
 :titlesonly: true
 
-simulation
-simulation-deprecated
+simulation-java
+simulation-cpp
+simulation-python
 hardware-in-the-loop-sim
 ```

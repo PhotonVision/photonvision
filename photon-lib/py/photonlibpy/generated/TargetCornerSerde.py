@@ -24,7 +24,6 @@ from ..targeting import *
 
 
 class TargetCornerSerde:
-
     # Message definition md5sum. See photon_packet.adoc for details
     MESSAGE_VERSION = "16f6ac0dedc8eaccb951f4895d9e18b6"
     MESSAGE_FORMAT = "float64 x;float64 y;"

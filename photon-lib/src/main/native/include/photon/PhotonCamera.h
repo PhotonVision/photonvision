@@ -87,8 +87,8 @@ class PhotonCamera {
    */
   std::vector<PhotonPipelineResult> GetAllUnreadResults();
 
-  [[deprecated("Replace with GetAllUnreadResults")]]
-  PhotonPipelineResult GetLatestResult();
+  [[deprecated("Replace with GetAllUnreadResults")]] PhotonPipelineResult
+  GetLatestResult();
 
   /**
    * Toggles driver mode.

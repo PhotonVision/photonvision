@@ -1,7 +1,7 @@
 # Other Debian-Based Co-Processor Installation
 
 :::{warning}
-Working with unsupported coprocessors requires some level of "know how" of your target system. The install script has only been tested on Debian/Raspberry Pi OS Buster and Ubuntu Bionic. If any issues arise with your specific OS, please open an issue on our [issues page](https://github.com/PhotonVision/photonvision/issues).
+Working with unsupported coprocessors requires some level of "know how" of your system. The install script has only been tested on Debian/Raspberry Pi OS Buster and Ubuntu Bionic. If any issues arise with your specific OS, please open an issue on our [issues page](https://github.com/PhotonVision/photonvision/issues).
 :::
 
 :::{note}

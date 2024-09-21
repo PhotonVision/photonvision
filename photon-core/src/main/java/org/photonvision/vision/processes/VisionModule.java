@@ -407,7 +407,6 @@ public class VisionModule {
 
         visionSource.getSettables().setVideoModeInternal(pipelineSettings.cameraVideoModeIndex);
         visionSource.getSettables().setBrightness(pipelineSettings.cameraBrightness);
-        visionSource.getSettables().setGain(pipelineSettings.cameraGain);
 
         // If manual exposure, force exposure slider to be valid
         if (!pipelineSettings.cameraAutoExposure) {
