@@ -36,6 +36,7 @@ import java.nio.file.Path;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.highgui.HighGui;
+import org.photonvision.jni.PhotonTargetingJniLoader;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 
 public class TestUtils {
@@ -75,6 +76,8 @@ public class TestUtils {
                     Core.NATIVE_LIBRARY_NAME,
                     "cscorejni",
                     "apriltagjni");
+
+            PhotonTargetingJniLoader.load();
 
             has_loaded = true;
         } catch (IOException e) {

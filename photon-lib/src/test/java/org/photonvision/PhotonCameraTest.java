@@ -24,8 +24,6 @@
 
 package org.photonvision;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import edu.wpi.first.apriltag.jni.AprilTagJNI;
 import edu.wpi.first.cscore.CameraServerCvJNI;
 import edu.wpi.first.cscore.CameraServerJNI;
@@ -110,7 +108,13 @@ class PhotonCameraTest {
 
             // expectTrue(captureTime < now);
 
-            System.out.println("sequence " + res.metadata.sequenceID + " image capture " + captureTime + " recieved at " + now);
+            System.out.println(
+                    "sequence "
+                            + res.metadata.sequenceID
+                            + " image capture "
+                            + captureTime
+                            + " recieved at "
+                            + now);
         }
     }
 }

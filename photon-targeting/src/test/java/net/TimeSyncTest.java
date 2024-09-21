@@ -55,9 +55,9 @@ public class TimeSyncTest {
                     "ntcorejni",
                     "wpinetjni",
                     "wpiHaljni",
-                    Core.NATIVE_LIBRARY_NAME,
                     "cscorejni",
                     "apriltagjni");
+            CombinedRuntimeLoader.loadLibraries(TimeSyncTest.class, Core.NATIVE_LIBRARY_NAME);
         } catch (IOException e) {
             e.printStackTrace();
         }
