@@ -23,7 +23,7 @@ The code for a single type is split across 3 files. Let's look at PnpResult:
 - Wpi's struct: no VLAs/optionals
 - Rosmsg: I'm not using ros, but I'm stealing their message hash idea
 
-## Deviatioons from WPI's Struct
+## Deviations from WPI's Struct Schema Typestrings
 
 - Enum types are disallowed
 - Bitfields and bit packing are disallowed
