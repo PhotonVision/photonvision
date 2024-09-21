@@ -21,12 +21,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
+import org.photonvision.common.hardware.Platform;
 
 public class TimeSyncJNILoader {
     public static void load() throws IOException {
         // We always extract the shared object (we could hash each so, but that's a lot
         // of work)
-        String arch_name = "winx64";
+        String arch_name = Platform.getNativeLibraryFolderName();
         var clazz = TimeSyncJNILoader.class;
 
         for (var libraryName : List.of("photontargeting", "photontargetingJNI")) {
