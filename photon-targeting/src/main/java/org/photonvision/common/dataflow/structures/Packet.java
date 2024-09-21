@@ -303,11 +303,10 @@ public class Packet {
         if (packetData.length < readPos + 3) {
             return 0;
         }
-        return ((0xff & packetData[readPos++]
-                        | (0xff & packetData[readPos++]) << 8
-                        | (0xff & packetData[readPos++]) << 16
-                        | 0xff & packetData[readPos++])
-                << 24);
+        return (0xff & packetData[readPos++])
+                | (0xff & packetData[readPos++]) << 8
+                | (0xff & packetData[readPos++]) << 16
+                | (0xff & packetData[readPos++]) << 24;
     }
 
     public long decodeLong() {
