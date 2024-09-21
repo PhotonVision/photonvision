@@ -29,7 +29,6 @@ shadowJar {
     configurations = [
         project.configurations.runtimeClasspath
     ]
-    println configurations
 }
 
 node {

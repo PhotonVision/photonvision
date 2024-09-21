@@ -65,10 +65,6 @@ public class TimeSyncTest {
 
     @Test
     public void smoketest() throws InterruptedException {
-        // for (var line : System.getProperty("java.class.path", ".").split(";")) {
-        //     System.out.println(line);
-        // }
-
         try {
             load_wpilib();
             TimeSyncJNILoader.load();
