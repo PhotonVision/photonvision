@@ -57,7 +57,7 @@ const handleFullscreenRequest = () => {
 const mjpgStream: any = ref(null);
 onBeforeUnmount(() => {
   if (!mjpgStream.value) return;
-  mjpgStream.value["src"] = null;
+  mjpgStream.value["src"] = "//:0";
 });
 </script>
 
