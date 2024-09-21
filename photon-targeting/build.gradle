@@ -26,7 +26,7 @@ sourceSets.main.java.srcDir "${projectDir}/src/generated/main/java"
 apply plugin: 'edu.wpi.first.GradleJni'
 
 // Folder whose contents will be included in the final jar
-def outputsFolder = file("$buildDir/outputs")
+def outputsFolder = file("$buildDir/extra_resources")
 
 // Sync task: like the copy task, but all files that exist in the destination directory will be deleted before copying files
 task syncOutputsFolder(type: Sync) {
