@@ -160,14 +160,14 @@ jobs:
       - run: git fetch --tags --force
       - run: |
           chmod +x gradlew
-          ./gradlew photon-targeting:build photon-lib:build -Pbuildalldesktop -i
-      - run: ./gradlew photon-lib:publish photon-targeting:publish -Pbuildalldesktop
+          ./gradlew photon-targeting:build photon-lib:build -i
+      - run: ./gradlew photon-lib:publish photon-targeting:publish
         name: Publish
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
         if: github.event_name == 'push' && github.repository_owner == 'photonvision'
       # Copy artifacts to build/outputs/maven
-      - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts -Pbuildalldesktop
+      - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts
       - uses: actions/upload-artifact@v4
         with:
           name: maven-${{ matrix.artifact-name }}
