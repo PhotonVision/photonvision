@@ -24,12 +24,56 @@
 
 package org.photonvision;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import edu.wpi.first.apriltag.jni.AprilTagJNI;
+import edu.wpi.first.cscore.CameraServerCvJNI;
+import edu.wpi.first.cscore.CameraServerJNI;
+import edu.wpi.first.hal.HAL;
+import edu.wpi.first.hal.JNIWrapper;
+import edu.wpi.first.math.WPIMathJNI;
+import edu.wpi.first.net.WPINetJNI;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTablesJNI;
+import edu.wpi.first.util.CombinedRuntimeLoader;
+import edu.wpi.first.util.WPIUtilJNI;
+import edu.wpi.first.wpilibj.Timer;
+import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.opencv.core.Core;
 import org.photonvision.common.dataflow.structures.Packet;
+import org.photonvision.jni.PhotonTargetingJniLoader;
+import org.photonvision.jni.TimeSyncServer;
 import org.photonvision.targeting.PhotonPipelineResult;
 
 class PhotonCameraTest {
+    public static void load_wpilib() {
+        NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
+        WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
+        WPIMathJNI.Helper.setExtractOnStaticLoad(false);
+        CameraServerJNI.Helper.setExtractOnStaticLoad(false);
+        CameraServerCvJNI.Helper.setExtractOnStaticLoad(false);
+        JNIWrapper.Helper.setExtractOnStaticLoad(false);
+        WPINetJNI.Helper.setExtractOnStaticLoad(false);
+        AprilTagJNI.Helper.setExtractOnStaticLoad(false);
+
+        try {
+            CombinedRuntimeLoader.loadLibraries(
+                    PhotonCameraTest.class,
+                    "wpiutiljni",
+                    "wpimathjni",
+                    "ntcorejni",
+                    "wpinetjni",
+                    "wpiHaljni",
+                    Core.NATIVE_LIBRARY_NAME,
+                    "cscorejni",
+                    "apriltagjni");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Test
     public void testEmpty() {
         Assertions.assertDoesNotThrow(
@@ -39,5 +83,31 @@ class PhotonCameraTest {
                     packet.setData(new byte[0]);
                     PhotonPipelineResult.photonStruct.pack(packet, ret);
                 });
+    }
+
+    @Test
+    public void testMeme() throws InterruptedException, IOException {
+        load_wpilib();
+        PhotonTargetingJniLoader.load();
+
+        HAL.initialize(500, 0);
+
+        NetworkTableInstance.getDefault().stopClient();
+        NetworkTableInstance.getDefault().startServer();
+
+        var server = new TimeSyncServer(5812);
+        server.start();
+
+        var camera = new PhotonCamera("Microsoft_LifeCam_HD-3000");
+        PhotonCamera.setVersionCheckEnabled(false);
+
+        for (int i = 0; i < 100; i++) {
+            Thread.sleep(100);
+
+            var captureTime = camera.getLatestResult().getTimestampSeconds();
+            var now = Timer.getFPGATimestamp();
+
+            assertTrue(captureTime < now);
+        }
     }
 }

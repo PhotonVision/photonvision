@@ -39,6 +39,7 @@ import org.photonvision.common.logging.PvCSCoreLogger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.numbers.IntegerCouple;
+import org.photonvision.jni.PhotonTargetingJniLoader;
 import org.photonvision.jni.RknnDetectorJNI;
 import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.raspi.LibCameraJNILoader;
@@ -379,7 +380,20 @@ public class Main {
             logger.error("Failed to load native libraries!", e);
             System.exit(1);
         }
-        logger.info("Native libraries loaded.");
+        logger.info("WPI JNI libraries loaded.");
+
+        try {
+            boolean success = PhotonTargetingJniLoader.load();
+
+            if (!success) {
+                logger.error("Failed to load PhotonTargetingJni");
+                System.exit(1);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to load native libraries!", e);
+            System.exit(1);
+        }
+        logger.info("PhotonTargeting JNI loaded");
 
         try {
             if (Platform.isRaspberryPi()) {

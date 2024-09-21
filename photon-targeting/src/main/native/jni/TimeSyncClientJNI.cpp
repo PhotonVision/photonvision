@@ -18,6 +18,7 @@
 #include <org_photonvision_jni_TimeSyncClient.h>
 
 #include <cstdio>
+#include <string>
 
 #include <opencv2/core.hpp>
 #include <opencv2/core/mat.hpp>

@@ -25,8 +25,6 @@
 
 import math
 import wpilib
-import wpimath
-import wpimath.geometry
 import drivetrain
 
 from photonlibpy import PhotonCamera

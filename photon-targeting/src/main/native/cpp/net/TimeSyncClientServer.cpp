@@ -174,24 +174,21 @@ wpi::TimeSyncServer::TimeSyncServer(int port,
     : m_logger{::ServerLoggerFunc},
       m_timeProvider{timeProvider},
       m_udp{wpi::uv::Udp::Create(m_loopRunner.GetLoop(), AF_INET)} {
-  m_udp->Bind("0.0.0.0", port);
+  m_loopRunner.ExecSync(
+      [this, port](uv::Loop&) { m_udp->Bind("0.0.0.0", port); });
 }
 
 void wpi::TimeSyncServer::Start() {
-  m_udp->received.connect(&wpi::TimeSyncServer::UdpCallback, this);
-  m_udp->StartRecv();
+  m_loopRunner.ExecSync([this](uv::Loop&) {
+    m_udp->received.connect(&wpi::TimeSyncServer::UdpCallback, this);
+    m_udp->StartRecv();
+  });
 }
 
 void wpi::TimeSyncServer::Stop() { m_loopRunner.Stop(); }
 
 void wpi::TimeSyncClient::Tick() {
   fmt::println("wpi::TimeSyncClient::Tick");
-
-  if (!m_udp) {
-    fmt::println("m_udp is null");
-    return;
-  }
-
   // Regardless of if we've gotten a pong back yet, we'll ping again. this is
   // pretty naive but should be "fine" for now?
 
@@ -205,17 +202,10 @@ void wpi::TimeSyncClient::Tick() {
 
   // Wrap our buffer - pingData should free itself
   wpi::uv::Buffer pingBuf{pingData};
-
-  int sent = 0;
-  try {
-    sent = m_udp->TrySend(wpi::SmallVector<wpi::uv::Buffer, 1>{pingBuf});
-  } catch (std::exception& e) {
-    fmt::println("????: {}", e.what());
-    return;
-  }
+  int sent = m_udp->TrySend(wpi::SmallVector<wpi::uv::Buffer, 1>{pingBuf});
 
   if (static_cast<size_t>(sent) != wpi::Struct<TspPing>::GetSize()) {
-    WPI_ERROR(m_logger, "Didn't send the whole ping out?");
+    WPI_ERROR(m_logger, "Didn't send the whole ping out? sent {} bytes", sent);
     return;
   }
 
@@ -292,16 +282,22 @@ wpi::TimeSyncClient::TimeSyncClient(std::string_view server, int remote_port,
       m_serverIP{server},
       m_serverPort{remote_port},
       m_loopDelay(ping_delay) {
-  fmt::println("Connecting to server at {}:{}", m_serverIP, m_serverPort);
   struct sockaddr_in serverAddr;
   uv::NameToAddr(m_serverIP, m_serverPort, &serverAddr);
-  m_udp->Connect(serverAddr);
+
+  m_loopRunner.ExecSync(
+      [this, serverAddr](uv::Loop&) { m_udp->Connect(serverAddr); });
+
+  fmt::println("Starting client for {}:{}", server, remote_port);
 }
 
 void wpi::TimeSyncClient::Start() {
   fmt::println("Connecting recieved");
-  m_udp->received.connect(&wpi::TimeSyncClient::UdpCallback, this);
-  m_udp->StartRecv();
+
+  m_loopRunner.ExecSync([this](uv::Loop&) {
+    m_udp->received.connect(&wpi::TimeSyncClient::UdpCallback, this);
+    m_udp->StartRecv();
+  });
 
   fmt::println("Starting pinger");
   using namespace std::chrono_literals;

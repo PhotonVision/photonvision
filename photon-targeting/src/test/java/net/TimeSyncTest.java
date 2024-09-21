@@ -32,8 +32,8 @@ import edu.wpi.first.util.WPIUtilJNI;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.opencv.core.Core;
+import org.photonvision.jni.PhotonTargetingJniLoader;
 import org.photonvision.jni.TimeSyncClient;
-import org.photonvision.jni.TimeSyncJNILoader;
 import org.photonvision.jni.TimeSyncServer;
 
 public class TimeSyncTest {
@@ -67,7 +67,7 @@ public class TimeSyncTest {
     public void smoketest() throws InterruptedException {
         try {
             load_wpilib();
-            TimeSyncJNILoader.load();
+            PhotonTargetingJniLoader.load();
         } catch (IOException e) {
             assertTrue(false);
         }

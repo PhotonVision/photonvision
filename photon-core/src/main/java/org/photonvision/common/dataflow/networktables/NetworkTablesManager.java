@@ -39,6 +39,7 @@ import org.photonvision.common.scripting.ScriptEventType;
 import org.photonvision.common.scripting.ScriptManager;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.JacksonUtils;
+import org.photonvision.jni.TimeSyncClient;
 
 public class NetworkTablesManager {
     private final NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
@@ -53,7 +54,12 @@ public class NetworkTablesManager {
     private StringSubscriber m_fieldLayoutSubscriber =
             kRootTable.getStringTopic(kFieldLayoutName).subscribe("");
 
+    public TimeSyncClient m_timeSyncClient;
+
     private NetworkTablesManager() {
+        m_timeSyncClient = new TimeSyncClient("127.0.0.1", 5812, 1.0);
+        m_timeSyncClient.start();
+
         ntInstance.addLogger(255, 255, (event) -> {}); // to hide error messages
         ntInstance.addConnectionListener(true, m_ntLogger); // to hide error messages
 

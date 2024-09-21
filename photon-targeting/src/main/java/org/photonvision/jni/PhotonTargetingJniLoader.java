@@ -20,27 +20,30 @@ package org.photonvision.jni;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 import org.photonvision.common.hardware.Platform;
 
-public class TimeSyncJNILoader {
-    public static void load() throws IOException {
+public class PhotonTargetingJniLoader {
+    public static boolean load() throws IOException {
         // We always extract the shared object (we could hash each so, but that's a lot
         // of work)
         String arch_name = Platform.getNativeLibraryFolderName();
-        var clazz = TimeSyncJNILoader.class;
+        var clazz = PhotonTargetingJniLoader.class;
 
         for (var libraryName : List.of("photontargeting", "photontargetingJNI")) {
             var nativeLibName = System.mapLibraryName(libraryName);
             var in = clazz.getResourceAsStream("/nativelibraries/" + arch_name + "/" + nativeLibName);
 
             if (in == null) {
-                return;
+                return false;
             }
 
             // It's important that we don't mangle the names of these files on Windows at
             // least
-            File temp = new File(System.getProperty("java.io.tmpdir"), nativeLibName);
+            var tempfolder = Files.createTempDirectory("nativeextract");
+            File temp = new File(tempfolder.toAbsolutePath().toString(), nativeLibName);
+            System.out.println(temp.getAbsolutePath().toString());
             FileOutputStream fos = new FileOutputStream(temp);
 
             int read = -1;
@@ -55,5 +58,7 @@ public class TimeSyncJNILoader {
 
             System.out.println("Successfully loaded shared object " + temp.getName());
         }
+
+        return true;
     }
 }

@@ -169,12 +169,10 @@ public class PhotonPipelineResult
      * @return The timestamp in seconds
      */
     public double getTimestampSeconds() {
-        return (ntReceiveTimestampMicros
-                        - (metadata.publishTimestampMicros - metadata.captureTimestampMicros))
-                / 1e6;
+        return metadata.captureTimestampMicros / 1e6;
     }
 
-    /** The time that the robot Received this result, in the FPGA timebase. */
+    /** The time that the robot received this result, in the FPGA timebase. */
     public long getNtReceiveTimestampMicros() {
         return ntReceiveTimestampMicros;
     }

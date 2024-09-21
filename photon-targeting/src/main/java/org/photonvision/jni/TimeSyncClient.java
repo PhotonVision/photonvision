@@ -17,6 +17,9 @@
 
 package org.photonvision.jni;
 
+import edu.wpi.first.networktables.NetworkTablesJNI;
+
+/** Send ping-pongs to estimate server time, relative to nt::now */
 public class TimeSyncClient {
     public static class PingMetadata {
         long offset;
@@ -39,8 +42,23 @@ public class TimeSyncClient {
         TimeSyncClient.stop(handle);
     }
 
+    /**
+     * This offset, when added to the current value of nt::now(), yields the timestamp in the timebase
+     * of the TSP Server
+     *
+     * @return
+     */
     public long getOffset() {
         return TimeSyncClient.getOffset(handle);
+    }
+
+    /**
+     * Best estimate of the current timestamp at the TSP server
+     *
+     * @return
+     */
+    public long currentServerTimestamp() {
+        return NetworkTablesJNI.now() + getOffset();
     }
 
     private static native long create(String serverIP, int serverPort, double pingIntervalSeconds);
