@@ -17,6 +17,7 @@
 
 package org.photonvision;
 
+import edu.wpi.first.hal.HAL;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -58,8 +59,6 @@ import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceManager;
 import org.photonvision.vision.target.TargetModel;
-
-import edu.wpi.first.hal.HAL;
 
 public class Main {
     public static final int DEFAULT_WEBPORT = 5800;
@@ -384,8 +383,8 @@ public class Main {
         logger.info("WPI JNI libraries loaded.");
 
         if (!HAL.initialize(500, 0)) {
-                logger.error("Failed to initialize the HAL! Giving up :(");
-                System.exit(1);
+            logger.error("Failed to initialize the HAL! Giving up :(");
+            System.exit(1);
         }
 
         try {

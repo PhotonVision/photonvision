@@ -36,7 +36,6 @@ import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
 import edu.wpi.first.wpilibj.Timer;
-
 import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -115,7 +114,7 @@ class PhotonCameraTest {
                             + " image capture "
                             + captureTime
                             + " recieved at "
-                            + res.getNtReceiveTimestampMicros()/1e6);
+                            + res.getNtReceiveTimestampMicros() / 1e6);
         }
     }
 }
