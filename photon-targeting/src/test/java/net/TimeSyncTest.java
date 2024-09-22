@@ -31,7 +31,6 @@ import edu.wpi.first.util.CombinedRuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
-import org.opencv.core.Core;
 import org.photonvision.jni.PhotonTargetingJniLoader;
 import org.photonvision.jni.TimeSyncClient;
 import org.photonvision.jni.TimeSyncServer;
@@ -49,15 +48,7 @@ public class TimeSyncTest {
 
         try {
             CombinedRuntimeLoader.loadLibraries(
-                    TimeSyncTest.class,
-                    "wpiutiljni",
-                    "wpimathjni",
-                    "ntcorejni",
-                    "wpinetjni",
-                    "wpiHaljni",
-                    "cscorejni",
-                    "apriltagjni");
-            CombinedRuntimeLoader.loadLibraries(TimeSyncTest.class, Core.NATIVE_LIBRARY_NAME);
+                    TimeSyncTest.class, "wpiutiljni", "wpimathjni", "wpinetjni", "ntcorejni", "wpiHaljni");
         } catch (IOException e) {
             e.printStackTrace();
         }

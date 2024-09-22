@@ -25,6 +25,28 @@ sourceSets.main.java.srcDir "${projectDir}/src/generated/main/java"
 
 apply plugin: 'edu.wpi.first.GradleJni'
 
+// explicitly specify the opencv libraries linked to by nativeUtils.useRequiredLibrary(it, "opencv_shared")
+def OPENCV_LIBRARIES_TO_EXCLUDE = [
+    "**/libopencv_core.so.*",
+    "**/libopencv_stitching.so.*",
+    "**/libopencv_dnn.so.*",
+    "**/libopencv_photo.so.*",
+    "**/libopencv_video.so.*",
+    "**/libopencv_flann.so.*",
+    "**/libopencv_ml.so.*",
+    "**/libopencv_calib3d.so.*",
+    "**/libopencv_imgproc.so.*",
+    "**/libopencv_objdetect.so.*",
+    "**/libopencv_videoio.so.*",
+    "**/libopencv_highgui.so.*",
+    "**/libopencv_aruco.so.*",
+    "**/libopencv_gapi.so.*",
+    "**/libopencv_features2d.so.*",
+    "**/libopencv_imgcodecs.so.*",
+]
+nativeUtils.nativeDependencyContainer.getByName("opencv_shared").extraSharedExcludes.addAll(OPENCV_LIBRARIES_TO_EXCLUDE)
+println nativeUtils.nativeDependencyContainer.getByName("opencv_shared").extraSharedExcludes.get()
+
 // Folder whose contents will be included in the final jar
 def outputsFolder = file("$buildDir/extra_resources")
 
@@ -63,9 +85,11 @@ model {
                 }
             }
 
-            nativeUtils.useRequiredLibrary(it, "wpilib_shared")
-            nativeUtils.useRequiredLibrary(it, "apriltag_shared")
-            nativeUtils.useRequiredLibrary(it, "opencv_shared")
+            nativeUtils.useRequiredLibrary(it, "wpiutil_shared")
+            nativeUtils.useRequiredLibrary(it, "wpimath_shared")
+            nativeUtils.useRequiredLibrary(it, "wpinet_shared")
+            nativeUtils.useRequiredLibrary(it, "wpilibc_shared")
+            nativeUtils.useRequiredLibrary(it, "ntcore_shared")
         }
         "${nativeName}JNI"(JniNativeLibrarySpec) {
 
@@ -88,8 +112,9 @@ model {
                 lib library: nativeName, linkage: 'shared'
             }
 
-            nativeUtils.useRequiredLibrary(it, "opencv_shared")
-            nativeUtils.useRequiredLibrary(it, "wpilib_shared")
+            nativeUtils.useRequiredLibrary(it, "wpiutil_shared")
+            nativeUtils.useRequiredLibrary(it, "wpinet_shared")
+            nativeUtils.useRequiredLibrary(it, "ntcore_shared")
         }
 
         all {
@@ -112,7 +137,6 @@ model {
                 }
             }
         }
-
     }
     testSuites {
         "${nativeName}Test"(GoogleTestTestSuiteSpec) {
@@ -140,25 +164,9 @@ model {
                 }
             }
 
-            nativeUtils.useRequiredLibrary(it, "cscore_shared")
-            nativeUtils.useRequiredLibrary(it, "cameraserver_shared")
             nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared")
             nativeUtils.useRequiredLibrary(it, "googletest_static")
             nativeUtils.useRequiredLibrary(it, "apriltag_shared")
-            nativeUtils.useRequiredLibrary(it, "opencv_shared")
-        }
-    }
-
-    binaries {
-        withType(NativeBinarySpec).all {
-            if (it.toolChain instanceof VisualCpp) {
-                // TODO
-            }
-
-            if (it.toolChain instanceof GccCompatibleToolChain) {
-                // Ends up appending this flag, not prepending
-                it.linker.args '-Wl,--as-needed'
-            }
         }
     }
 
@@ -220,11 +228,8 @@ def nativeTasks = wpilibTools.createExtractionTasks {
 
 nativeTasks.addToSourceSetResources(sourceSets.test)
 
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
-nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())

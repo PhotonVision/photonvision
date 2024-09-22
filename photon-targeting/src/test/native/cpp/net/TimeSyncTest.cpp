@@ -30,7 +30,7 @@ TEST(TimeSyncProtocolTest, TestClient) {
   server.Start();
 
   for (int i = 0; i < 10; i++) {
-    std::this_thread::sleep_for(1000ms);
+    std::this_thread::sleep_for(50ms);
     // busywait
   }
 

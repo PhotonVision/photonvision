@@ -20,10 +20,6 @@
 
 #include <cstdio>
 
-#include <opencv2/core.hpp>
-#include <opencv2/core/mat.hpp>
-#include <opencv2/imgcodecs.hpp>
-
 #include "net/TimeSyncClientServer.h"
 
 using namespace wpi;
