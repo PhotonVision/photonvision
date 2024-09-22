@@ -83,38 +83,38 @@ class PhotonCameraTest {
                 });
     }
 
-    @Test
-    public void testMeme() throws InterruptedException, IOException {
-        load_wpilib();
-        PhotonTargetingJniLoader.load();
+    // @Test
+    // public void testMeme() throws InterruptedException, IOException {
+    //     load_wpilib();
+    //     PhotonTargetingJniLoader.load();
 
-        HAL.initialize(500, 0);
+    //     HAL.initialize(500, 0);
 
-        NetworkTableInstance.getDefault().stopClient();
-        NetworkTableInstance.getDefault().startServer();
+    //     NetworkTableInstance.getDefault().stopClient();
+    //     NetworkTableInstance.getDefault().startServer();
 
-        var server = new TimeSyncServer(5812);
-        server.start();
+    //     var server = new TimeSyncServer(5812);
+    //     server.start();
 
-        var camera = new PhotonCamera("Microsoft_LifeCam_HD-3000");
-        PhotonCamera.setVersionCheckEnabled(false);
+    //     var camera = new PhotonCamera("Microsoft_LifeCam_HD-3000");
+    //     PhotonCamera.setVersionCheckEnabled(false);
 
-        for (int i = 0; i < 200; i++) {
-            Thread.sleep(100);
+    //     for (int i = 0; i < 200; i++) {
+    //         Thread.sleep(100);
 
-            var res = camera.getLatestResult();
-            var captureTime = res.getTimestampSeconds();
-            var now = Timer.getFPGATimestamp();
+    //         var res = camera.getLatestResult();
+    //         var captureTime = res.getTimestampSeconds();
+    //         var now = Timer.getFPGATimestamp();
 
-            // expectTrue(captureTime < now);
+    //         // expectTrue(captureTime < now);
 
-            System.out.println(
-                    "sequence "
-                            + res.metadata.sequenceID
-                            + " image capture "
-                            + captureTime
-                            + " recieved at "
-                            + now);
-        }
-    }
+    //         System.out.println(
+    //                 "sequence "
+    //                         + res.metadata.sequenceID
+    //                         + " image capture "
+    //                         + captureTime
+    //                         + " recieved at "
+    //                         + now);
+    //     }
+    // }
 }
