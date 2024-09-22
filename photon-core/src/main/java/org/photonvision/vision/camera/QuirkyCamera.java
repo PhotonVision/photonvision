@@ -55,6 +55,7 @@ public class QuirkyCamera {
                             "",
                             "Arducam Generic",
                             CameraQuirk.ArduCamCamera,
+                            CameraQuirk.Gain,
                             CameraQuirk.StickyFPS),
                     // Arducam OV2311
                     new QuirkyCamera(
@@ -80,6 +81,7 @@ public class QuirkyCamera {
                             "OV9782",
                             "OV9782",
                             CameraQuirk.ArduCamCamera,
+                            CameraQuirk.Gain,
                             CameraQuirk.ArduOV9782Controls),
                     // Innomaker OV9281
                     new QuirkyCamera(
