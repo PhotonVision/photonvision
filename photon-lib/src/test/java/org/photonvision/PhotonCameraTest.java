@@ -27,22 +27,17 @@ package org.photonvision;
 import edu.wpi.first.apriltag.jni.AprilTagJNI;
 import edu.wpi.first.cscore.CameraServerCvJNI;
 import edu.wpi.first.cscore.CameraServerJNI;
-import edu.wpi.first.hal.HAL;
 import edu.wpi.first.hal.JNIWrapper;
 import edu.wpi.first.math.WPIMathJNI;
 import edu.wpi.first.net.WPINetJNI;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
-import edu.wpi.first.wpilibj.Timer;
 import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.opencv.core.Core;
 import org.photonvision.common.dataflow.structures.Packet;
-import org.photonvision.jni.PhotonTargetingJniLoader;
-import org.photonvision.jni.TimeSyncServer;
 import org.photonvision.targeting.PhotonPipelineResult;
 
 class PhotonCameraTest {
@@ -83,38 +78,40 @@ class PhotonCameraTest {
                 });
     }
 
-    @Test
-    public void testMeme() throws InterruptedException, IOException {
-        load_wpilib();
-        PhotonTargetingJniLoader.load();
+    // @Test
+    // public void testMeme() throws InterruptedException, IOException {
+    //     load_wpilib();
+    //     PhotonTargetingJniLoader.load();
 
-        HAL.initialize(500, 0);
+    //     // HAL.initialize(500, 0);
 
-        NetworkTableInstance.getDefault().stopClient();
-        NetworkTableInstance.getDefault().startServer();
+    //     NetworkTableInstance.getDefault().stopClient();
+    //     NetworkTableInstance.getDefault().startServer();
 
-        var server = new TimeSyncServer(5810);
-        server.start();
+    //     var server = new TimeSyncServer(5810);
+    //     server.start();
 
-        var camera = new PhotonCamera("Arducam_OV9281_USB_Camera");
-        PhotonCamera.setVersionCheckEnabled(false);
+    //     var camera = new PhotonCamera("Arducam_OV9281_USB_Camera");
+    //     PhotonCamera.setVersionCheckEnabled(false);
 
-        for (int i = 0; i < 20; i++) {
-            Thread.sleep(100);
+    //     for (int i = 0; i < 20; i++) {
+    //         Thread.sleep(100);
 
-            var res = camera.getLatestResult();
-            var captureTime = res.getTimestampSeconds();
-            var now = Timer.getFPGATimestamp();
+    //         var res = camera.getLatestResult();
+    //         var captureTime = res.getTimestampSeconds();
+    //         var now = Timer.getFPGATimestamp();
 
-            // expectTrue(captureTime < now);
+    //         // expectTrue(captureTime < now);
 
-            System.out.println(
-                    "sequence "
-                            + res.metadata.sequenceID
-                            + " image capture "
-                            + captureTime
-                            + " recieved at "
-                            + res.getNtReceiveTimestampMicros() / 1e6);
-        }
-    }
+    //         System.out.println(
+    //                 "sequence "
+    //                         + res.metadata.sequenceID
+    //                         + " image capture "
+    //                         + captureTime
+    //                         + " recieved at "
+    //                         + res.getNtReceiveTimestampMicros() / 1e6);
+    //     }
+
+    //     server.stop();
+    // }
 }

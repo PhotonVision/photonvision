@@ -52,19 +52,19 @@ public class PhotonPipelineResult
      * Constructs a pipeline result.
      *
      * @param sequenceID The number of frames processed by this camera since boot
-     * @param captureTimestamp The time, in uS in the coprocessor's timebase, that the coprocessor
-     *     captured the image this result contains the targeting info of
-     * @param publishTimestamp The time, in uS in the coprocessor's timebase, that the coprocessor
-     *     published targeting info
+     * @param captureTimestampMicros The time, in uS in the coprocessor's timebase, that the
+     *     coprocessor captured the image this result contains the targeting info of
+     * @param publishTimestampMicros The time, in uS in the coprocessor's timebase, that the
+     *     coprocessor published targeting info
      * @param targets The list of targets identified by the pipeline.
      */
     public PhotonPipelineResult(
             long sequenceID,
-            long captureTimestamp,
-            long publishTimestamp,
+            long captureTimestampMicros,
+            long publishTimestampMicros,
             List<PhotonTrackedTarget> targets) {
         this(
-                new PhotonPipelineMetadata(captureTimestamp, publishTimestamp, sequenceID),
+                new PhotonPipelineMetadata(captureTimestampMicros, publishTimestampMicros, sequenceID),
                 targets,
                 Optional.empty());
     }

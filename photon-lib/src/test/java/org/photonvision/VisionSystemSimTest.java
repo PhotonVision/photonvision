@@ -77,6 +77,7 @@ class VisionSystemSimTest {
     @BeforeAll
     public static void setUp() {
         // NT live for debug purposes
+        NetworkTableInstance.getDefault().stopClient();
         NetworkTableInstance.getDefault().startServer();
 
         // No version check for testing
@@ -117,42 +118,50 @@ class VisionSystemSimTest {
         // To the right, to the right
         var robotPose = new Pose2d(new Translation2d(5, 0), Rotation2d.fromDegrees(-70));
         visionSysSim.update(robotPose);
+
         assertFalse(camera.getLatestResult().hasTargets());
 
         // To the right, to the right
         robotPose = new Pose2d(new Translation2d(5, 0), Rotation2d.fromDegrees(-95));
         visionSysSim.update(robotPose);
+
         assertFalse(camera.getLatestResult().hasTargets());
 
         // To the left, to the left
         robotPose = new Pose2d(new Translation2d(5, 0), Rotation2d.fromDegrees(90));
         visionSysSim.update(robotPose);
+
         assertFalse(camera.getLatestResult().hasTargets());
 
         // To the left, to the left
         robotPose = new Pose2d(new Translation2d(5, 0), Rotation2d.fromDegrees(65));
         visionSysSim.update(robotPose);
+
         assertFalse(camera.getLatestResult().hasTargets());
 
         // now kick, now kick
         robotPose = new Pose2d(new Translation2d(2, 0), Rotation2d.fromDegrees(5));
         visionSysSim.update(robotPose);
+
         assertTrue(camera.getLatestResult().hasTargets());
 
         // now kick, now kick
         robotPose = new Pose2d(new Translation2d(2, 0), Rotation2d.fromDegrees(-5));
         visionSysSim.update(robotPose);
+
         assertTrue(camera.getLatestResult().hasTargets());
 
         // now walk it by yourself
         robotPose = new Pose2d(new Translation2d(2, 0), Rotation2d.fromDegrees(-179));
         visionSysSim.update(robotPose);
+
         assertFalse(camera.getLatestResult().hasTargets());
 
         // now walk it by yourself
         visionSysSim.adjustCamera(
                 cameraSim, new Transform3d(new Translation3d(), new Rotation3d(0, 0, Math.PI)));
         visionSysSim.update(robotPose);
+
         assertTrue(camera.getLatestResult().hasTargets());
     }
 
@@ -169,11 +178,13 @@ class VisionSystemSimTest {
 
         var robotPose = new Pose2d(new Translation2d(5, 0), Rotation2d.fromDegrees(5));
         visionSysSim.update(robotPose);
+
         assertTrue(camera.getLatestResult().hasTargets());
 
         visionSysSim.adjustCamera( // vooop selfie stick
                 cameraSim, new Transform3d(new Translation3d(0, 0, 5000), new Rotation3d(0, 0, Math.PI)));
         visionSysSim.update(robotPose);
+
         assertFalse(camera.getLatestResult().hasTargets());
     }
 
@@ -192,11 +203,13 @@ class VisionSystemSimTest {
 
         var robotPose = new Pose2d(new Translation2d(13.98, 0), Rotation2d.fromDegrees(5));
         visionSysSim.update(robotPose);
+
         assertTrue(camera.getLatestResult().hasTargets());
 
         // Pitched back camera should mean target goes out of view below the robot as distance increases
         robotPose = new Pose2d(new Translation2d(0, 0), Rotation2d.fromDegrees(5));
         visionSysSim.update(robotPose);
+
         assertFalse(camera.getLatestResult().hasTargets());
     }
 
@@ -214,10 +227,12 @@ class VisionSystemSimTest {
 
         var robotPose = new Pose2d(new Translation2d(12, 0), Rotation2d.fromDegrees(5));
         visionSysSim.update(robotPose);
+
         assertTrue(camera.getLatestResult().hasTargets());
 
         robotPose = new Pose2d(new Translation2d(0, 0), Rotation2d.fromDegrees(5));
         visionSysSim.update(robotPose);
+
         assertFalse(camera.getLatestResult().hasTargets());
     }
 
@@ -236,10 +251,12 @@ class VisionSystemSimTest {
 
         var robotPose = new Pose2d(new Translation2d(10, 0), Rotation2d.fromDegrees(5));
         visionSysSim.update(robotPose);
+
         assertTrue(camera.getLatestResult().hasTargets());
 
         robotPose = new Pose2d(new Translation2d(0, 0), Rotation2d.fromDegrees(5));
         visionSysSim.update(robotPose);
+
         assertFalse(camera.getLatestResult().hasTargets());
     }
 
@@ -259,6 +276,7 @@ class VisionSystemSimTest {
         // If the robot is rotated x deg (CCW+), the target yaw should be x deg (CW+)
         var robotPose = new Pose2d(new Translation2d(10, 0), Rotation2d.fromDegrees(testYaw));
         visionSysSim.update(robotPose);
+
         var res = camera.getLatestResult();
         assertTrue(res.hasTargets());
         var tgt = res.getBestTarget();
@@ -284,8 +302,11 @@ class VisionSystemSimTest {
                 cameraSim,
                 new Transform3d(
                         new Translation3d(), new Rotation3d(0, Units.degreesToRadians(testPitch), 0)));
+
         visionSysSim.update(robotPose);
+
         var res = camera.getLatestResult();
+        System.out.println("Got result: " + res);
         assertTrue(res.hasTargets());
         var tgt = res.getBestTarget();
 
@@ -349,6 +370,7 @@ class VisionSystemSimTest {
         // 1. These are calculated with the average of the minimum area rectangle, which does not
         // actually find the target center because of perspective distortion.
         // 2. Yaw and pitch are calculated separately which gives incorrect pitch values.
+
         var res = camera.getLatestResult();
         assertTrue(res.hasTargets());
         var tgt = res.getBestTarget();
@@ -450,6 +472,7 @@ class VisionSystemSimTest {
 
         var robotPose = new Pose2d(new Translation2d(6.0, 0), Rotation2d.fromDegrees(0.25));
         visionSysSim.update(robotPose);
+
         var res = camera.getLatestResult();
         assertTrue(res.hasTargets());
         List<PhotonTrackedTarget> tgtList;
@@ -479,6 +502,7 @@ class VisionSystemSimTest {
                 new VisionTargetSim(tagList.get(0).pose, TargetModel.kAprilTag16h5, 0));
 
         visionSysSim.update(robotPose);
+
         var results =
                 VisionEstimation.estimateCamPosePNP(
                                 camera.getCameraMatrix().get(),
@@ -499,6 +523,7 @@ class VisionSystemSimTest {
                 new VisionTargetSim(tagList.get(2).pose, TargetModel.kAprilTag16h5, 2));
 
         visionSysSim.update(robotPose);
+
         results =
                 VisionEstimation.estimateCamPosePNP(
                                 camera.getCameraMatrix().get(),
