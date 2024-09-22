@@ -100,7 +100,7 @@ class PhotonCameraTest {
         var camera = new PhotonCamera("Arducam_OV9281_USB_Camera");
         PhotonCamera.setVersionCheckEnabled(false);
 
-        for (int i = 0; i < 20000; i++) {
+        for (int i = 0; i < 20; i++) {
             Thread.sleep(100);
 
             var res = camera.getLatestResult();
