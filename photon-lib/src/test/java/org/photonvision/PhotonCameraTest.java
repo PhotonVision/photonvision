@@ -115,7 +115,7 @@ class PhotonCameraTest {
                             + " image capture "
                             + captureTime
                             + " recieved at "
-                            + now);
+                            + res.getNtReceiveTimestampMicros()/1e6);
         }
     }
 }
