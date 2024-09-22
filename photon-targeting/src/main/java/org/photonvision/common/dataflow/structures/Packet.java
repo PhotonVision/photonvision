@@ -360,10 +360,9 @@ public class Packet {
 
         int data =
                 ((0xff & packetData[readPos++]
-                                | (0xff & packetData[readPos++]) << 8
-                                | (0xff & packetData[readPos++]) << 16
-                                | 0xff & packetData[readPos++])
-                        << 24);
+                        | (0xff & packetData[readPos++]) << 8
+                        | (0xff & packetData[readPos++]) << 16
+                        | (0xff & packetData[readPos++]) << 24));
         return Float.intBitsToFloat(data);
     }
 
