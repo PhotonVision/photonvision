@@ -26,6 +26,14 @@ public class ArduOV9782CameraSettables extends GenericUSBCameraSettables {
         whiteBalanceTemperature = 3500;
     }
 
+    public void setAllCamDefaults() {
+        softSet("power_line_frequency", 2); // Assume 60Hz USA
+        softSet("exposure_metering_mode", 0);
+        softSet("exposure_dynamic_framerate", 0);
+        softSet("white_balance_automatic", 0);
+        softSet("white_balance_temperature", whiteBalanceTemperature);
+    }
+
     @Override
     protected void setUpExposureProperties() {
         super.setUpExposureProperties();

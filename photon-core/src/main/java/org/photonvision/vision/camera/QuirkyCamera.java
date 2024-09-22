@@ -73,7 +73,7 @@ public class QuirkyCamera {
                             "OV9281",
                             CameraQuirk.ArduCamCamera,
                             CameraQuirk.ArduOV9281Controls),
-                    // Arducam OV
+                    // Arducam OV9782
                     new QuirkyCamera(
                             0x0c45,
                             0x6366,
@@ -83,7 +83,7 @@ public class QuirkyCamera {
                             CameraQuirk.ArduOV9782Controls),
                     // Innomaker OV9281
                     new QuirkyCamera(
-                            0x0c45, 0x636d, "USB Camera", "USB Camera", CameraQuirk.InnoOV9281Controls));
+                            0x0c45, 0x636d, "USB Camera", "Innomaker OV9281", CameraQuirk.InnoOV9281Controls));
 
     public static final QuirkyCamera DefaultCamera = new QuirkyCamera(0, 0, "");
     public static final QuirkyCamera ZeroCopyPiCamera =
