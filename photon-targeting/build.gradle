@@ -112,6 +112,7 @@ model {
                 }
             }
         }
+
     }
     testSuites {
         "${nativeName}Test"(GoogleTestTestSuiteSpec) {
@@ -145,6 +146,19 @@ model {
             nativeUtils.useRequiredLibrary(it, "googletest_static")
             nativeUtils.useRequiredLibrary(it, "apriltag_shared")
             nativeUtils.useRequiredLibrary(it, "opencv_shared")
+        }
+    }
+
+    binaries {
+        withType(NativeBinarySpec).all {
+            if (it.toolChain instanceof VisualCpp) {
+                // TODO
+            }
+
+            if (it.toolChain instanceof GccCompatibleToolChain) {
+                // Ends up appending this flag, not prepending
+                it.linker.args '-Wl,--as-needed'
+            }
         }
     }
 
