@@ -103,7 +103,7 @@ task findDeployTarget {
 
 task deploy {
     dependsOn findDeployTarget
-    dependsOn assemble
+    dependsOn 'shadowJar'
 
     doLast {
         println 'Starting deployment to ' + findDeployTarget.rmt.host

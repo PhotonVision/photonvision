@@ -81,4 +81,29 @@ public class TimeSyncTest {
         server.stop();
         client.stop();
     }
+
+    // @Test
+    // public void runClient() throws InterruptedException {
+    //     try {
+    //         load_wpilib();
+    //         PhotonTargetingJniLoader.load();
+    //     } catch (IOException e) {
+    //         assertTrue(false);
+    //     }
+
+    //     HAL.initialize(1000, 0);
+
+    //     var client = new TimeSyncClient("10.0.0.141", 5810, 1.0);
+
+    //     System.err.println("Waiting: PID=" + ProcessHandle.current().pid());
+
+    //     client.start();
+
+    //     for (int i = 0; i < 20; i++) {
+    //         Thread.sleep(1000);
+    //         System.out.println(client.getOffset());
+    //     }
+
+    //     client.stop();
+    // }
 }

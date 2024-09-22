@@ -69,10 +69,11 @@ public class TestUtils {
             CombinedRuntimeLoader.loadLibraries(
                     TestUtils.class,
                     "wpiutiljni",
-                    "wpimathjni",
+                    "wpilibc",
                     "ntcorejni",
                     "wpinetjni",
                     "wpiHaljni",
+                    "wpi",
                     Core.NATIVE_LIBRARY_NAME,
                     "cscorejni",
                     "apriltagjni");

@@ -59,6 +59,8 @@ import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceManager;
 import org.photonvision.vision.target.TargetModel;
 
+import edu.wpi.first.hal.HAL;
+
 public class Main {
     public static final int DEFAULT_WEBPORT = 5800;
 
@@ -380,6 +382,11 @@ public class Main {
             System.exit(1);
         }
         logger.info("WPI JNI libraries loaded.");
+
+        if (!HAL.initialize(500, 0)) {
+                logger.error("Failed to initialize the HAL! Giving up :(");
+                System.exit(1);
+        }
 
         try {
             if (Platform.isRaspberryPi()) {

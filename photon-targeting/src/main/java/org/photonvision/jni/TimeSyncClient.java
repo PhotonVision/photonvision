@@ -28,7 +28,7 @@ public class TimeSyncClient {
         long lastPongTime;
     }
 
-    final long handle;
+    private long handle;
 
     public TimeSyncClient(String server, int port, double interval) {
         this.handle = TimeSyncClient.create(server, port, interval);
@@ -39,7 +39,10 @@ public class TimeSyncClient {
     }
 
     public void stop() {
-        TimeSyncClient.stop(handle);
+        if (handle > 0) {
+            TimeSyncClient.stop(handle);
+            handle = 0;
+        }
     }
 
     /**

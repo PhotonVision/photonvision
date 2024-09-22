@@ -131,7 +131,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     public void accept(CVPipelineResult result) {
         var now = NetworkTablesJNI.now();
 
-        var offset = NetworkTablesManager.getInstance().m_timeSyncClient.getOffset();
+        var offset = NetworkTablesManager.getInstance().getOffset();
 
         var captureMicros = MathUtils.nanosToMicros(result.getImageCaptureTimestampNanos());
         var simplified =

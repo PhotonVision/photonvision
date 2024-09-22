@@ -18,7 +18,7 @@
 package org.photonvision.jni;
 
 public class TimeSyncServer {
-    final long handle;
+    private long handle;
 
     public TimeSyncServer(int port) {
         this.handle = TimeSyncServer.create(port);
@@ -29,7 +29,10 @@ public class TimeSyncServer {
     }
 
     public void stop() {
-        TimeSyncServer.stop(handle);
+        if (handle > 0) {
+            TimeSyncServer.stop(handle);
+            handle = 0;
+        }
     }
 
     private static native long create(int port);
