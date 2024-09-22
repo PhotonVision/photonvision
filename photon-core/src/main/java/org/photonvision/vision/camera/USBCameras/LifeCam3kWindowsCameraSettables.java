@@ -61,6 +61,7 @@ public class LifeCam3kWindowsCameraSettables extends GenericUSBCameraSettables {
         }
     }
 
+    @Override
     public void setAutoExposure(boolean cameraAutoExposure) {
         logger.debug("Setting auto exposure to " + cameraAutoExposure);
 
