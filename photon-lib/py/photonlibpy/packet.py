@@ -85,8 +85,10 @@ class Packet:
         for _ in range(numBytes):
             intList.append(self._getNextByteAsInt())
 
-        # Interpret the bytes as a floating point number
-        value = struct.unpack(unpackFormat, bytes(intList))[0]
+        # Interpret the bytes as the requested type.
+        # Note due to NT's byte order assumptions,
+        # we have to flip the order of intList
+        value = struct.unpack(unpackFormat, bytes(reversed(intList)))[0]
 
         return value
 
