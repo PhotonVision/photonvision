@@ -225,7 +225,12 @@ class PhotonCamera:
             )
 
         versionString = self.versionEntry.get(defaultValue="")
-        if len(versionString) > 0 and versionString != PHOTONVISION_VERSION:
+        localUUID = PhotonPipelineResult.photonStruct.MESSAGE_VERSION
+        remoteUUID = self._rawBytesEntry.getTopic().getProperty("message_uuid")
+
+        if remoteUUID is None or len(remoteUUID) == 0:
+            wpilib.reportWarning(f"PhotonVision coprocessor at path {self._path} has not reported a message interface UUID - is your coprocessor's camera started?", True)
+        elif localUUID != remoteUUID:
             # Verified version mismatch
 
             bfw = """
@@ -250,6 +255,6 @@ class PhotonCamera:
 
             wpilib.reportWarning(bfw)
 
-            errText = f"Photon version {PHOTONLIB_VERSION} does not match coprocessor version {versionString}. Please install photonlibpy version {versionString}, or update your coprocessor to {PHOTONLIB_VERSION}."
+            errText = f"Photonlibpy version {PHOTONLIB_VERSION} (With message UUID {localUUID}) does not match coprocessor version {versionString} (with message UUID {remoteUUID}). Please install photonlibpy version {versionString}, or update your coprocessor to {PHOTONLIB_VERSION}."
             wpilib.reportError(errText, True)
             raise Exception(errText)

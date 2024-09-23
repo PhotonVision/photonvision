@@ -88,7 +88,7 @@ class Packet:
         # Interpret the bytes as the requested type.
         # Note due to NT's byte order assumptions,
         # we have to flip the order of intList
-        value = struct.unpack(unpackFormat, bytes(reversed(intList)))[0]
+        value = struct.unpack(unpackFormat, bytes(intList))[0]
 
         return value
 
@@ -98,7 +98,7 @@ class Packet:
         *
         * @return A decoded byte from the packet.
         """
-        return self._decodeGeneric(">b", 1)
+        return self._decodeGeneric("<b", 1)
 
     def decode16(self) -> int:
         """
@@ -106,7 +106,7 @@ class Packet:
         *
         * @return A decoded short from the packet.
         """
-        return self._decodeGeneric(">h", 2)
+        return self._decodeGeneric("<h", 2)
 
     def decodeInt(self) -> int:
         """
@@ -114,7 +114,7 @@ class Packet:
         *
         * @return A decoded int from the packet.
         """
-        return self._decodeGeneric(">l", 4)
+        return self._decodeGeneric("<l", 4)
 
     def decodeFloat(self) -> float:
         """
@@ -122,7 +122,7 @@ class Packet:
         *
         * @return A decoded float from the packet.
         """
-        return self._decodeGeneric(">f", 4)
+        return self._decodeGeneric("<f", 4)
 
     def decodeLong(self) -> int:
         """
@@ -130,7 +130,7 @@ class Packet:
         *
         * @return A decoded int64 from the packet.
         """
-        return self._decodeGeneric(">q", 8)
+        return self._decodeGeneric("<q", 8)
 
     def decodeDouble(self) -> float:
         """
@@ -138,7 +138,7 @@ class Packet:
         *
         * @return A decoded double from the packet.
         """
-        return self._decodeGeneric(">d", 8)
+        return self._decodeGeneric("<d", 8)
 
     def decodeBoolean(self) -> bool:
         """

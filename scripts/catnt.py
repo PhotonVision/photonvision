@@ -5,7 +5,6 @@ from tabulate import tabulate
 
 
 def list_topics(inst: ntcore.NetworkTableInstance, root: str):
-
     topics = inst.getTable(root).getTopics()
     subtables = inst.getTable(root).getSubTables()
 
