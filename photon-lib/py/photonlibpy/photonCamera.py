@@ -229,7 +229,10 @@ class PhotonCamera:
         remoteUUID = self._rawBytesEntry.getTopic().getProperty("message_uuid")
 
         if remoteUUID is None or len(remoteUUID) == 0:
-            wpilib.reportWarning(f"PhotonVision coprocessor at path {self._path} has not reported a message interface UUID - is your coprocessor's camera started?", True)
+            wpilib.reportWarning(
+                f"PhotonVision coprocessor at path {self._path} has not reported a message interface UUID - is your coprocessor's camera started?",
+                True,
+            )
         elif localUUID != remoteUUID:
             # Verified version mismatch
 
