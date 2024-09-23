@@ -100,7 +100,7 @@ model {
                         include '**/*.cpp', '**/*.cc'
                     }
                     exportedHeaders {
-                        srcDirs 'nanobind/include', 'nanobind/src', 'nanobind/ext/robin_map/include', getPythonProperty("include")
+                        srcDirs 'pybind11/include', getPythonProperty("include")
                         include "**/*.h"
                         include "**/*.hpp"
                     }
@@ -284,9 +284,14 @@ task installPhotonlibpyNative(type: Copy) {
     from("$projectDir/build/libs/photonlibpy/shared/$jniPlatform/release/") {
         include "libphotonlibpy.so"
         include "photonlibpy.dll"
+        include "libphotonlibpy.dylib"
 
         // Remove leading lib if present, and append an _ (renames to _photonlibpy.so/dll/dylib)
-        rename "(?:lib)?(.*)(.dll)", ('_$1.pyd')
+        if (jniPlatform.startsWith("windows")) {
+            rename "(?:lib)?(.*)(\\.dll)", ('_$1.pyd')
+        } else {
+            rename "lib(.*)", ('_$1')
+        }
     }
 
     def platform = project.findProperty('nativeBuildPlatform') ?: jniPlatform.capitalize()

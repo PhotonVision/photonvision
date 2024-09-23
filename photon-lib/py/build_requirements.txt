@@ -8,3 +8,4 @@ build
 setuptools
 wheel
 pytest
+pybind11-stubgen
