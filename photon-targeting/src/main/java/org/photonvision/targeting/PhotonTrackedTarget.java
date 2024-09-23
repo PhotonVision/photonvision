@@ -182,6 +182,8 @@ public class PhotonTrackedTarget
         temp = Double.doubleToLongBits(skew);
         result = prime * result + (int) (temp ^ (temp >>> 32));
         result = prime * result + fiducialId;
+        result = prime * result + objDetectId;
+        result = prime * result + Float.floatToIntBits(objDetectConf);
         result = prime * result + ((bestCameraToTarget == null) ? 0 : bestCameraToTarget.hashCode());
         result = prime * result + ((altCameraToTarget == null) ? 0 : altCameraToTarget.hashCode());
         temp = Double.doubleToLongBits(poseAmbiguity);
@@ -202,6 +204,9 @@ public class PhotonTrackedTarget
         if (Double.doubleToLongBits(area) != Double.doubleToLongBits(other.area)) return false;
         if (Double.doubleToLongBits(skew) != Double.doubleToLongBits(other.skew)) return false;
         if (fiducialId != other.fiducialId) return false;
+        if (objDetectId != other.objDetectId) return false;
+        if (Float.floatToIntBits(objDetectConf) != Float.floatToIntBits(other.objDetectConf))
+            return false;
         if (bestCameraToTarget == null) {
             if (other.bestCameraToTarget != null) return false;
         } else if (!bestCameraToTarget.equals(other.bestCameraToTarget)) return false;
@@ -221,8 +226,7 @@ public class PhotonTrackedTarget
 
     @Override
     public String toString() {
-        return "PhotonTrackedTarget{"
-                + "yaw="
+        return "PhotonTrackedTarget [yaw="
                 + yaw
                 + ", pitch="
                 + pitch
@@ -232,11 +236,21 @@ public class PhotonTrackedTarget
                 + skew
                 + ", fiducialId="
                 + fiducialId
-                + ", cameraToTarget="
+                + ", objDetectId="
+                + objDetectId
+                + ", objDetectConf="
+                + objDetectConf
+                + ", bestCameraToTarget="
                 + bestCameraToTarget
-                + ", targetCorners="
+                + ", altCameraToTarget="
+                + altCameraToTarget
+                + ", poseAmbiguity="
+                + poseAmbiguity
+                + ", minAreaRectCorners="
                 + minAreaRectCorners
-                + '}';
+                + ", detectedCorners="
+                + detectedCorners
+                + "]";
     }
 
     public static final PhotonTrackedTargetProto proto = new PhotonTrackedTargetProto();

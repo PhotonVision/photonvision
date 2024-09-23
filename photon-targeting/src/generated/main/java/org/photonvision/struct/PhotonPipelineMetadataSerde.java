@@ -26,17 +26,20 @@ import org.photonvision.utils.PacketUtils;
 // Assume that the base class lives here and we can import it
 import org.photonvision.targeting.*;
 
+// WPILib imports (if any)
+import edu.wpi.first.util.struct.Struct;
+
 
 /**
  * Auto-generated serialization/deserialization helper for PhotonPipelineMetadata
  */
 public class PhotonPipelineMetadataSerde implements PacketSerde<PhotonPipelineMetadata> {
-    // Message definition md5sum. See photon_packet.adoc for details
-    public static final String MESSAGE_VERSION = "2a7039527bda14d13028a1b9282d40a2";
-    public static final String MESSAGE_FORMAT = "int64 sequenceID;int64 captureTimestampMicros;int64 publishTimestampMicros;";
-
-    public final String getTypeString() { return MESSAGE_FORMAT; }
-    public final String getInterfaceUUID() { return MESSAGE_VERSION; }
+    @Override
+    public final String getInterfaceUUID() { return "626e70461cbdb274fb43ead09c255f4e"; }
+    @Override
+    public final String getSchema() { return "int64 sequenceID;int64 captureTimestampMicros;int64 publishTimestampMicros;"; }
+    @Override
+    public final String getTypeName() { return "PhotonPipelineMetadata"; }
 
     @Override
     public int getMaxByteSize() {
@@ -70,5 +73,17 @@ public class PhotonPipelineMetadataSerde implements PacketSerde<PhotonPipelineMe
         ret.publishTimestampMicros = packet.decodeLong();
 
         return ret;
+    }
+
+    @Override
+    public PacketSerde<?>[] getNestedPhotonMessages() {
+        return new PacketSerde<?>[] {
+        };
+    }
+
+    @Override
+    public Struct<?>[] getNestedWpilibMessages() {
+        return new Struct<?>[] {
+        };
     }
 }

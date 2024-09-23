@@ -25,8 +25,8 @@ from ..targeting import *
 
 class MultiTargetPNPResultSerde:
     # Message definition md5sum. See photon_packet.adoc for details
-    MESSAGE_VERSION = "ffc1cb847deb6e796a583a5b1885496b"
-    MESSAGE_FORMAT = "PnpResult estimatedPose;int16[?] fiducialIDsUsed;"
+    MESSAGE_VERSION = "541096947e9f3ca2d3f425ff7b04aa7b"
+    MESSAGE_FORMAT = "PnpResult:ae4d655c0a3104d88df4f5db144c1e86 estimatedPose;int16 fiducialIDsUsed[?];"
 
     @staticmethod
     def unpack(packet: "Packet") -> "MultiTargetPNPResult":
