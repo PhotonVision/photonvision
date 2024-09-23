@@ -24,9 +24,15 @@
 
 #include <fmt/format.h>
 #include "photon/PhotonCamera.h"
+#include <frc/geometry/Translation3d.h>
+
+void print_t(frc::Translation3d t) {
+    fmt::println("x {} y {} z {}", t.X(), t.Y(), t.Z());
+}
 
 // actual nanobind include
 #include <pybind11/pybind11.h>
+
 
 namespace py = pybind11;
 
@@ -34,7 +40,18 @@ PYBIND11_MODULE(_photonlibpy, m) {
 
   m.doc() = "C++ bindings for photonlib";
 
+  // hack -- is there any way to pull this from robotpy instead?
+  py::class_<frc::Translation3d>(m, "Translation3d")
+    .def(py::init([](double x, double y, double z) { return frc::Translation3d{
+        units::meter_t{x},
+        units::meter_t{y},
+        units::meter_t{z},
+    }; }));
+
+  m.def("print_t", &print_t, "Print a frc Translation3d");
+
   py::class_<photon::PhotonPipelineMetadata>(m, "PhotonPipelineMetadata")
+      .def(py::init<>())
       .def_readonly("sequenceID", &photon::PhotonPipelineMetadata::sequenceID)
       .def_readonly("captureTimestampMicros",
               &photon::PhotonPipelineMetadata::captureTimestampMicros)

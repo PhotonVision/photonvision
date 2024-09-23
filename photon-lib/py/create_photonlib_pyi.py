@@ -17,8 +17,9 @@ def write_stubgen():
     #     f.write(sg.get())
 
 
-    # mess with argv
+    # mess with argv (and put it back when we're done)
     import sys
+    old_argv = sys.argv
     sys.argv = [
             "<dummy>",
             "--exit-code",
@@ -29,8 +30,13 @@ def write_stubgen():
             "photonlibpy", 
     ]
 
-    import pybind11_stubgen
-    pybind11_stubgen.main()
+    try:
+        import pybind11_stubgen
+        pybind11_stubgen.main()
+    except Exception as e:
+        print(e)
+
+    sys.argv = old_argv
 
 
 if __name__ == "__main__":
