@@ -25,7 +25,7 @@ def write_stubgen():
             "--ignore-invalid-expressions=<.*>",
             "--root-suffix=",
             "-o",
-            f"{script_path}/photonlibpy",
+            f"{script_path}",
             "photonlibpy", 
     ]
 
