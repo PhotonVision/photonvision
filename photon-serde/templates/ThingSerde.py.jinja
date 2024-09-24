@@ -33,7 +33,6 @@ class {{ name }}Serde:
         ret = {{ name }}()
 {% for field in fields -%}
 {%- if field.type | is_shimmed %}
-        # field is shimmed!
         ret.{{ field.name }} = {{ get_message_by_name(field.type).python_decode_shim }}()
 {%- elif field.optional == True %}
         # {{ field.name }} is optional! it better not be a VLA too

@@ -26,17 +26,20 @@ import org.photonvision.utils.PacketUtils;
 // Assume that the base class lives here and we can import it
 import org.photonvision.targeting.*;
 
+// WPILib imports (if any)
+import edu.wpi.first.util.struct.Struct;
+
 
 /**
  * Auto-generated serialization/deserialization helper for PhotonPipelineResult
  */
 public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResult> {
-    // Message definition md5sum. See photon_packet.adoc for details
-    public static final String MESSAGE_VERSION = "cb3e1605048ba49325888eb797399fe2";
-    public static final String MESSAGE_FORMAT = "PhotonPipelineMetadata metadata;PhotonTrackedTarget[?] targets;MultiTargetPNPResult? multitagResult;";
-
-    public final String getTypeString() { return MESSAGE_FORMAT; }
-    public final String getInterfaceUUID() { return MESSAGE_VERSION; }
+    @Override
+    public final String getInterfaceUUID() { return "5eeaa293d0c69aea90eaddea786a2b3b"; }
+    @Override
+    public final String getSchema() { return "PhotonPipelineMetadata:626e70461cbdb274fb43ead09c255f4e metadata;PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 targets[?];optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b multitagResult;"; }
+    @Override
+    public final String getTypeName() { return "PhotonPipelineResult"; }
 
     @Override
     public int getMaxByteSize() {
@@ -70,5 +73,18 @@ public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResu
         ret.multitagResult = packet.decodeOptional(MultiTargetPNPResult.photonStruct);
 
         return ret;
+    }
+
+    @Override
+    public PacketSerde<?>[] getNestedPhotonMessages() {
+        return new PacketSerde<?>[] {
+            PhotonPipelineMetadata.photonStruct,MultiTargetPNPResult.photonStruct,PhotonTrackedTarget.photonStruct
+        };
+    }
+
+    @Override
+    public Struct<?>[] getNestedWpilibMessages() {
+        return new Struct<?>[] {
+        };
     }
 }

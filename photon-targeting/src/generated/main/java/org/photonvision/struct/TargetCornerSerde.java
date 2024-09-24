@@ -26,17 +26,20 @@ import org.photonvision.utils.PacketUtils;
 // Assume that the base class lives here and we can import it
 import org.photonvision.targeting.*;
 
+// WPILib imports (if any)
+import edu.wpi.first.util.struct.Struct;
+
 
 /**
  * Auto-generated serialization/deserialization helper for TargetCorner
  */
 public class TargetCornerSerde implements PacketSerde<TargetCorner> {
-    // Message definition md5sum. See photon_packet.adoc for details
-    public static final String MESSAGE_VERSION = "22b1ff7551d10215af6fb3672fe4eda8";
-    public static final String MESSAGE_FORMAT = "float64 x;float64 y;";
-
-    public final String getTypeString() { return MESSAGE_FORMAT; }
-    public final String getInterfaceUUID() { return MESSAGE_VERSION; }
+    @Override
+    public final String getInterfaceUUID() { return "16f6ac0dedc8eaccb951f4895d9e18b6"; }
+    @Override
+    public final String getSchema() { return "float64 x;float64 y;"; }
+    @Override
+    public final String getTypeName() { return "TargetCorner"; }
 
     @Override
     public int getMaxByteSize() {
@@ -64,5 +67,17 @@ public class TargetCornerSerde implements PacketSerde<TargetCorner> {
         ret.y = packet.decodeDouble();
 
         return ret;
+    }
+
+    @Override
+    public PacketSerde<?>[] getNestedPhotonMessages() {
+        return new PacketSerde<?>[] {
+        };
+    }
+
+    @Override
+    public Struct<?>[] getNestedWpilibMessages() {
+        return new Struct<?>[] {
+        };
     }
 }

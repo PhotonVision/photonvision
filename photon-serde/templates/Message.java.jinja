@@ -26,17 +26,24 @@ import org.photonvision.utils.PacketUtils;
 // Assume that the base class lives here and we can import it
 import org.photonvision.targeting.*;
 
+// WPILib imports (if any)
+import edu.wpi.first.util.struct.Struct;
+{% for type in nested_wpilib_types -%}
+import {{ get_message_by_name(type).java_import }};
+{%- if not loop.last %},{% endif -%}
+{%- endfor%}
 
 /**
  * Auto-generated serialization/deserialization helper for {{name}}
  */
 public class {{ name }}Serde implements PacketSerde<{{name}}> {
-    // Message definition md5sum. See photon_packet.adoc for details
-    public static final String MESSAGE_VERSION = "{{ message_hash }}";
-    public static final String MESSAGE_FORMAT = "{{ message_fmt }}";
 
-    public final String getTypeString() { return MESSAGE_FORMAT; }
-    public final String getInterfaceUUID() { return MESSAGE_VERSION; }
+    @Override
+    public final String getInterfaceUUID() { return "{{ message_hash }}"; }
+    @Override
+    public final String getSchema() { return "{{ message_fmt }}"; }
+    @Override
+    public final String getTypeName() { return "{{ name }}"; }
 
     @Override
     public int getMaxByteSize() {
@@ -48,7 +55,6 @@ public class {{ name }}Serde implements PacketSerde<{{name}}> {
     public void pack(Packet packet, {{ name }} value) {
 {%- for field in fields -%}
     {%- if field.type | is_shimmed %}
-        // field is shimmed!
         {{ get_message_by_name(field.type).java_encode_shim }}(packet, value.{{ field.name }});
     {%- elif field.optional == True %}
         // {{ field.name }} is optional! it better not be a VLA too
@@ -76,7 +82,6 @@ public class {{ name }}Serde implements PacketSerde<{{name}}> {
         var ret = new {{ name }}();
 {% for field in fields -%}
     {%- if field.type | is_shimmed %}
-        // field is shimmed!
         ret.{{ field.name }} = {{ get_message_by_name(field.type).java_decode_shim }}(packet);
     {%- elif field.optional == True %}
         // {{ field.name }} is optional! it better not be a VLA too
@@ -99,5 +104,25 @@ public class {{ name }}Serde implements PacketSerde<{{name}}> {
 {% endfor%}
 
         return ret;
+    }
+
+    @Override
+    public PacketSerde<?>[] getNestedPhotonMessages() {
+        return new PacketSerde<?>[] {
+            {% for type in nested_photon_types -%}
+            {{ type }}.photonStruct
+            {%- if not loop.last %},{% endif -%}
+            {%- endfor%}
+        };
+    }
+
+    @Override
+    public Struct<?>[] getNestedWpilibMessages() {
+        return new Struct<?>[] {
+            {% for type in nested_wpilib_types -%}
+            {{ type }}.struct
+            {%- if not loop.last %},{% endif -%}
+            {%- endfor%}
+        };
     }
 }

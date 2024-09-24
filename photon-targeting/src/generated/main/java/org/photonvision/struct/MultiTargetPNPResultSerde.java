@@ -26,17 +26,20 @@ import org.photonvision.utils.PacketUtils;
 // Assume that the base class lives here and we can import it
 import org.photonvision.targeting.*;
 
+// WPILib imports (if any)
+import edu.wpi.first.util.struct.Struct;
+
 
 /**
  * Auto-generated serialization/deserialization helper for MultiTargetPNPResult
  */
 public class MultiTargetPNPResultSerde implements PacketSerde<MultiTargetPNPResult> {
-    // Message definition md5sum. See photon_packet.adoc for details
-    public static final String MESSAGE_VERSION = "ffc1cb847deb6e796a583a5b1885496b";
-    public static final String MESSAGE_FORMAT = "PnpResult estimatedPose;int16[?] fiducialIDsUsed;";
-
-    public final String getTypeString() { return MESSAGE_FORMAT; }
-    public final String getInterfaceUUID() { return MESSAGE_VERSION; }
+    @Override
+    public final String getInterfaceUUID() { return "541096947e9f3ca2d3f425ff7b04aa7b"; }
+    @Override
+    public final String getSchema() { return "PnpResult:ae4d655c0a3104d88df4f5db144c1e86 estimatedPose;int16 fiducialIDsUsed[?];"; }
+    @Override
+    public final String getTypeName() { return "MultiTargetPNPResult"; }
 
     @Override
     public int getMaxByteSize() {
@@ -64,5 +67,18 @@ public class MultiTargetPNPResultSerde implements PacketSerde<MultiTargetPNPResu
         ret.fiducialIDsUsed = packet.decodeShortList();
 
         return ret;
+    }
+
+    @Override
+    public PacketSerde<?>[] getNestedPhotonMessages() {
+        return new PacketSerde<?>[] {
+            PnpResult.photonStruct
+        };
+    }
+
+    @Override
+    public Struct<?>[] getNestedWpilibMessages() {
+        return new Struct<?>[] {
+        };
     }
 }

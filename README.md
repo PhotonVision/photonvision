@@ -37,7 +37,7 @@ Note that these are case sensitive!
     * arm64
     * x86-64
     * x86
-- `-PtgtIp`: Specifies where `./gradlew deploy` should try to copy the fat JAR to
+- `-PtgtIP`: Specifies where `./gradlew deploy` should try to copy the fat JAR to
 - `-Pprofile`: enables JVM profiling
 
 If you're cross-compiling, you'll need the wpilib toolchain installed. This can be done via Gradle: for example `./gradlew installArm64Toolchain` or `./gradlew installRoboRioToolchain`

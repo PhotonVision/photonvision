@@ -32,6 +32,7 @@ import edu.wpi.first.cscore.VideoSource.ConnectionStrategy;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.util.PixelFormat;
 import edu.wpi.first.util.WPIUtilJNI;
 import edu.wpi.first.wpilibj.RobotController;
@@ -588,7 +589,7 @@ public class PhotonCameraSim implements AutoCloseable {
             ts.targetPitchEntry.set(0.0, receiveTimestamp);
             ts.targetYawEntry.set(0.0, receiveTimestamp);
             ts.targetAreaEntry.set(0.0, receiveTimestamp);
-            ts.targetPoseEntry.set(new double[] {0.0, 0.0, 0.0}, receiveTimestamp);
+            ts.targetPoseEntry.set(new Transform3d(), receiveTimestamp);
             ts.targetSkewEntry.set(0.0, receiveTimestamp);
         } else {
             var bestTarget = result.getBestTarget();
@@ -599,10 +600,7 @@ public class PhotonCameraSim implements AutoCloseable {
             ts.targetSkewEntry.set(bestTarget.getSkew(), receiveTimestamp);
 
             var transform = bestTarget.getBestCameraToTarget();
-            double[] poseData = {
-                transform.getX(), transform.getY(), transform.getRotation().toRotation2d().getDegrees()
-            };
-            ts.targetPoseEntry.set(poseData, receiveTimestamp);
+            ts.targetPoseEntry.set(transform, receiveTimestamp);
         }
 
         ts.cameraIntrinsicsPublisher.set(prop.getIntrinsics().getData(), receiveTimestamp);
