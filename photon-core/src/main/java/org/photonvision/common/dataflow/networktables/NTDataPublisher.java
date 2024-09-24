@@ -20,7 +20,7 @@ package org.photonvision.common.dataflow.networktables;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent;
-import edu.wpi.first.util.WPIUtilJNI;
+import edu.wpi.first.networktables.NetworkTablesJNI;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -130,15 +130,20 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
     @Override
     public void accept(CVPipelineResult result) {
-        var now = WPIUtilJNI.now();
+        var now = NetworkTablesJNI.now();
+
+        var offset = NetworkTablesManager.getInstance().getOffset();
+
         var captureMicros = MathUtils.nanosToMicros(result.getImageCaptureTimestampNanos());
         var simplified =
                 new PhotonPipelineResult(
                         result.sequenceID,
-                        captureMicros,
-                        now,
+                        captureMicros + offset,
+                        now + offset,
                         TrackedTarget.simpleFromTrackedTargets(result.targets),
                         result.multiTagResult);
+
+        // System.out.println(simplified.metadata);
 
         // random guess at size of the array
         ts.resultPublisher.set(simplified, 1024);

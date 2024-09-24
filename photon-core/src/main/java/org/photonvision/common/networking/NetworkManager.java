@@ -24,6 +24,7 @@ import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.DataChangeSource;
 import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.hardware.Platform;
+import org.photonvision.common.hardware.PlatformUtils;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
@@ -54,7 +55,7 @@ public class NetworkManager {
         var config = ConfigManager.getInstance().getConfig().getNetworkConfig();
         logger.info("Setting " + config.connectionType + " with team " + config.ntServerAddress);
         if (Platform.isLinux()) {
-            if (!Platform.isRoot()) {
+            if (!PlatformUtils.isRoot()) {
                 logger.error("Cannot manage hostname without root!");
             }
 

@@ -45,6 +45,7 @@ public class USBFrameProvider extends CpuImageProcessor {
         long time =
                 cvSink.grabFrame(mat.getMat())
                         * 1000; // Units are microseconds, epoch is the same as the Unix epoch
+        // this -should- be the same timebase as nt::now?
 
         if (time == 0) {
             var error = cvSink.getError();

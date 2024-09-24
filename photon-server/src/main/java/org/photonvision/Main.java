@@ -17,6 +17,7 @@
 
 package org.photonvision;
 
+import edu.wpi.first.hal.HAL;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -379,7 +380,12 @@ public class Main {
             logger.error("Failed to load native libraries!", e);
             System.exit(1);
         }
-        logger.info("Native libraries loaded.");
+        logger.info("WPI JNI libraries loaded.");
+
+        if (!HAL.initialize(500, 0)) {
+            logger.error("Failed to initialize the HAL! Giving up :(");
+            System.exit(1);
+        }
 
         try {
             if (Platform.isRaspberryPi()) {
