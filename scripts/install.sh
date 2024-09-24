@@ -102,9 +102,14 @@ else
     echo 'GOVERNOR=performance' > /etc/default/cpufrequtils
 fi
 
+echo "Installing libatomic"
+apt-get install --yes libatomic1
+echo "libatomic installation complete."
+
 if [[ "$INSTALL_NETWORK_MANAGER" == "true" ]]; then
   echo "Installing network-manager..."
-  apt-get install --yes network-manager
+  apt-get install --yes network-manager net-tools
+  systemctl disable systemd-networkd-wait-online.service
   cat > /etc/netplan/00-default-nm-renderer.yaml <<EOF
 network:
   renderer: NetworkManager
@@ -121,6 +126,10 @@ fi
 echo "JRE installation complete."
 
 echo "Installing additional math packages"
+if [[ "$DISTRO" = "Ubuntu" && -z $(apt-cache search libcholmod3) ]]; then
+  echo "Adding jammy to list of apt sources"
+  add-apt-repository -y -S 'deb http://ports.ubuntu.com/ubuntu-ports jammy main universe'
+fi
 apt-get install --yes libcholmod3 liblapack3 libsuitesparseconfig5
 
 echo "Installing v4l-utils..."
@@ -143,8 +152,7 @@ echo "Downloaded latest stable release of PhotonVision."
 echo "Creating the PhotonVision systemd service..."
 
 # service --status-all doesn't list photonvision on OrangePi use systemctl instead:
-#if systemctl --quiet is-active photonvision; then
-if service --status-all | grep -Fq 'photonvision'; then
+if systemctl --quiet is-active photonvision; then
   echo "PhotonVision is already running. Stopping service."
   systemctl stop photonvision
   systemctl disable photonvision
@@ -178,6 +186,11 @@ EOF
 
 if [ "$DISABLE_NETWORKING" = "true" ]; then
   sed -i "s/photonvision.jar/photonvision.jar -n/" /lib/systemd/system/photonvision.service
+fi
+
+if [[ -n $(cat /proc/cpuinfo | grep "RK3588") ]]; then
+  echo "This has a Rockchip RK3588, enabling all cores"
+  sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=0-7/g' /lib/systemd/system/photonvision.service
 fi
 
 cp /lib/systemd/system/photonvision.service /etc/systemd/system/photonvision.service

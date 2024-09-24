@@ -24,10 +24,17 @@
 
 #include <chrono>
 #include <thread>
+#include <tuple>
+#include <vector>
+
+#include <wpi/deprecated.h>
 
 #include "gtest/gtest.h"
 #include "photon/PhotonUtils.h"
 #include "photon/simulation/VisionSystemSim.h"
+
+// Ignore GetLatestResult warnings
+WPI_IGNORE_DEPRECATED
 
 class VisionSystemSimTest : public ::testing::Test {
   void SetUp() override {
@@ -227,9 +234,10 @@ TEST_P(VisionSystemSimTestWithParamsTest, YawAngles) {
   robotPose =
       frc::Pose2d{frc::Translation2d{10_m, 0_m}, frc::Rotation2d{GetParam()}};
   visionSysSim.Update(robotPose);
-  ASSERT_TRUE(camera.GetLatestResult().HasTargets());
-  ASSERT_NEAR(GetParam().to<double>(),
-              camera.GetLatestResult().GetBestTarget().GetYaw(), 0.25);
+
+  const auto result = camera.GetLatestResult();
+  ASSERT_TRUE(result.HasTargets());
+  ASSERT_NEAR(GetParam().to<double>(), result.GetBestTarget().GetYaw(), 0.25);
 }
 
 TEST_P(VisionSystemSimTestWithParamsTest, PitchAngles) {
@@ -255,9 +263,9 @@ TEST_P(VisionSystemSimTestWithParamsTest, PitchAngles) {
           frc::Rotation3d{0_rad, units::degree_t{GetParam()}, 0_rad}});
   visionSysSim.Update(robotPose);
 
-  ASSERT_TRUE(camera.GetLatestResult().HasTargets());
-  ASSERT_NEAR(GetParam().to<double>(),
-              camera.GetLatestResult().GetBestTarget().GetPitch(), 0.25);
+  const auto result = camera.GetLatestResult();
+  ASSERT_TRUE(result.HasTargets());
+  ASSERT_NEAR(GetParam().to<double>(), result.GetBestTarget().GetPitch(), 0.25);
 }
 
 INSTANTIATE_TEST_SUITE_P(AnglesTests, VisionSystemSimTestWithParamsTest,
@@ -431,9 +439,10 @@ TEST_F(VisionSystemSimTest, TestPoseEstimation) {
   for (photon::PhotonTrackedTarget tar : targetSpan) {
     targets.push_back(tar);
   }
-  photon::PNPResult results = photon::VisionEstimation::EstimateCamPosePNP(
+  auto results = photon::VisionEstimation::EstimateCamPosePNP(
       camEigen, distEigen, targets, layout, photon::kAprilTag16h5);
-  frc::Pose3d pose = frc::Pose3d{} + results.best;
+  ASSERT_TRUE(results);
+  frc::Pose3d pose = frc::Pose3d{} + results->best;
   ASSERT_NEAR(5, pose.X().to<double>(), 0.01);
   ASSERT_NEAR(1, pose.Y().to<double>(), 0.01);
   ASSERT_NEAR(0, pose.Z().to<double>(), 0.01);
@@ -452,11 +461,12 @@ TEST_F(VisionSystemSimTest, TestPoseEstimation) {
   for (photon::PhotonTrackedTarget tar : targetSpan2) {
     targets2.push_back(tar);
   }
-  photon::PNPResult results2 = photon::VisionEstimation::EstimateCamPosePNP(
+  auto results2 = photon::VisionEstimation::EstimateCamPosePNP(
       camEigen, distEigen, targets2, layout, photon::kAprilTag16h5);
-  frc::Pose3d pose2 = frc::Pose3d{} + results2.best;
-  ASSERT_NEAR(5, pose2.X().to<double>(), 0.01);
-  ASSERT_NEAR(1, pose2.Y().to<double>(), 0.01);
+  ASSERT_TRUE(results2);
+  frc::Pose3d pose2 = frc::Pose3d{} + results2->best;
+  ASSERT_NEAR(robotPose.X().to<double>(), pose2.X().to<double>(), 0.01);
+  ASSERT_NEAR(robotPose.Y().to<double>(), pose2.Y().to<double>(), 0.01);
   ASSERT_NEAR(0, pose2.Z().to<double>(), 0.01);
   ASSERT_NEAR(units::degree_t{5}.convert<units::radians>().to<double>(),
               pose2.Rotation().Z().to<double>(), 0.01);

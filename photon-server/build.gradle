@@ -47,9 +47,7 @@ tasks.register("buildAndCopyUI") {
 
 run {
     environment "PATH_PREFIX", "../"
-}
 
-run {
     if (project.hasProperty("profile")) {
         jvmArgs=[
             "-Dcom.sun.management.jmxremote=true",
@@ -64,12 +62,6 @@ run {
 remotes {
     pi {
         host = 'photonvision.local'
-        user = 'pi'
-        password = 'raspberry'
-        knownHosts = allowAnyHosts
-    }
-    gloworm {
-        host = 'gloworm.local'
         user = 'pi'
         password = 'raspberry'
         knownHosts = allowAnyHosts
@@ -111,7 +103,7 @@ task findDeployTarget {
 
 task deploy {
     dependsOn findDeployTarget
-    dependsOn assemble
+    dependsOn 'shadowJar'
 
     doLast {
         println 'Starting deployment to ' + findDeployTarget.rmt.host

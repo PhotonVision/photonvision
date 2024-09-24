@@ -132,7 +132,7 @@ const downloadCalibBoard = () => {
       charucoImage.src = CharucoImage;
       doc.addImage(charucoImage, "PNG", 0.25, 1.5, 8, 8);
 
-      doc.text(`8 x 8 | 1in & 0.75in`, paperWidth - 1, 1.0, {
+      doc.text("8 x 8 | 1in & 0.75in", paperWidth - 1, 1.0, {
         maxWidth: (paperWidth - 2.0) / 2,
         align: "right"
       });
@@ -159,39 +159,6 @@ const downloadCalibBoard = () => {
   doc.addImage(logoImage, "PNG", 1.0, 0.75, 1.4, 0.5);
 
   doc.save(`calibrationTarget-${CalibrationBoardTypes[boardType.value]}.pdf`);
-};
-
-const importCalibrationFromCalibDB = ref();
-const openCalibUploadPrompt = () => {
-  importCalibrationFromCalibDB.value.click();
-};
-const readImportedCalibrationFromCalibDB = () => {
-  const files = importCalibrationFromCalibDB.value.files;
-  if (files.length === 0) return;
-
-  files[0].text().then((text) => {
-    useCameraSettingsStore()
-      .importCalibDB({ payload: text, filename: files[0].name })
-      .then((response) => {
-        useStateStore().showSnackbarMessage({
-          message: response.data.text || response.data,
-          color: response.status === 200 ? "success" : "error"
-        });
-      })
-      .catch((err) => {
-        if (err.request) {
-          useStateStore().showSnackbarMessage({
-            message: "Error while uploading calibration file! The backend didn't respond to the upload attempt.",
-            color: "error"
-          });
-        } else {
-          useStateStore().showSnackbarMessage({
-            message: "Error while uploading calibration file!",
-            color: "error"
-          });
-        }
-      });
-  });
 };
 
 const isCalibrating = ref(false);
@@ -307,8 +274,8 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :disabled="isCalibrating"
             />
             <pv-select
-              v-model="tagFamily"
               v-show="boardType == CalibrationBoardTypes.Charuco"
+              v-model="tagFamily"
               label="Tag Family"
               tooltip="Dictionary of aruco markers on the charuco board"
               :select-cols="7"
@@ -324,8 +291,8 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :label-cols="5"
             />
             <pv-number-input
-              v-model="markerSizeIn"
               v-show="boardType == CalibrationBoardTypes.Charuco"
+              v-model="markerSizeIn"
               label="Marker Size (in)"
               tooltip="Size of the tag markers in inches must be smaller than pattern spacing"
               :disabled="isCalibrating"
@@ -349,8 +316,8 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :label-cols="5"
             />
             <pv-switch
-              v-model="useOldPattern"
               v-show="boardType == CalibrationBoardTypes.Charuco"
+              v-model="useOldPattern"
               label="Old OpenCV Pattern"
               :disabled="isCalibrating"
               tooltip="If enabled, Photon will use the old OpenCV pattern for calibration."
@@ -389,15 +356,17 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
         <v-row v-if="isCalibrating">
           <v-col cols="12" class="pt-0">
             <pv-slider
-              v-model="useCameraSettingsStore().currentPipelineSettings.cameraExposure"
+              v-model="useCameraSettingsStore().currentPipelineSettings.cameraExposureRaw"
               :disabled="useCameraSettingsStore().currentCameraSettings.pipelineSettings.cameraAutoExposure"
               label="Exposure"
-              tooltip="Directly controls how much light is allowed to fall onto the sensor, which affects apparent brightness"
-              :min="0"
-              :max="100"
+              tooltip="Directly controls how long the camera shutter remains open. Units are dependant on the underlying driver."
+              :min="useCameraSettingsStore().minExposureRaw"
+              :max="useCameraSettingsStore().maxExposureRaw"
               :slider-cols="8"
-              :step="0.1"
-              @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraExposure: args }, false)"
+              :step="1"
+              @input="
+                (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraExposureRaw: args }, false)
+              "
             />
             <pv-slider
               v-model="useCameraSettingsStore().currentPipelineSettings.cameraBrightness"
@@ -479,8 +448,8 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             </v-btn>
           </v-col>
         </v-row>
-        <v-row>
-          <v-col :cols="6">
+        <v-row justify="center">
+          <v-col cols="12">
             <v-btn
               color="accent"
               small
@@ -492,19 +461,6 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               <v-icon left class="calib-btn-icon"> mdi-download </v-icon>
               <span class="calib-btn-label">Generate Board</span>
             </v-btn>
-          </v-col>
-          <v-col :cols="6">
-            <v-btn color="secondary" :disabled="isCalibrating" small style="width: 100%" @click="openCalibUploadPrompt">
-              <v-icon left class="calib-btn-icon"> mdi-upload </v-icon>
-              <span class="calib-btn-label">Import From CalibDB</span>
-            </v-btn>
-            <input
-              ref="importCalibrationFromCalibDB"
-              type="file"
-              accept=".json"
-              style="display: none"
-              @change="readImportedCalibrationFromCalibDB"
-            />
           </v-col>
         </v-row>
       </div>

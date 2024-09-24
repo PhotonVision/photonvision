@@ -62,13 +62,14 @@ public class UIDataPublisher implements CVPipelineResultConsumer {
         dataMap.put("classNames", result.objectDetectionClassNames);
 
         // Only send Multitag Results if they are present, similar to 3d pose
-        if (result.multiTagResult.estimatedPose.isPresent) {
+        if (result.multiTagResult.isPresent()) {
             var multitagData = new HashMap<String, Object>();
             multitagData.put(
                     "bestTransform",
-                    SerializationUtils.transformToHashMap(result.multiTagResult.estimatedPose.best));
-            multitagData.put("bestReprojectionError", result.multiTagResult.estimatedPose.bestReprojErr);
-            multitagData.put("fiducialIDsUsed", result.multiTagResult.fiducialIDsUsed);
+                    SerializationUtils.transformToHashMap(result.multiTagResult.get().estimatedPose.best));
+            multitagData.put(
+                    "bestReprojectionError", result.multiTagResult.get().estimatedPose.bestReprojErr);
+            multitagData.put("fiducialIDsUsed", result.multiTagResult.get().fiducialIDsUsed);
             dataMap.put("multitagResult", multitagData);
         }
 

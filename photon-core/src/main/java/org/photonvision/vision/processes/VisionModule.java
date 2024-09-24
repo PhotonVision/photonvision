@@ -407,15 +407,14 @@ public class VisionModule {
 
         visionSource.getSettables().setVideoModeInternal(pipelineSettings.cameraVideoModeIndex);
         visionSource.getSettables().setBrightness(pipelineSettings.cameraBrightness);
-        visionSource.getSettables().setGain(pipelineSettings.cameraGain);
 
         // If manual exposure, force exposure slider to be valid
         if (!pipelineSettings.cameraAutoExposure) {
-            if (pipelineSettings.cameraExposure < 0)
-                pipelineSettings.cameraExposure = 10; // reasonable default
+            if (pipelineSettings.cameraExposureRaw < 0)
+                pipelineSettings.cameraExposureRaw = 10; // reasonable default
         }
 
-        visionSource.getSettables().setExposure(pipelineSettings.cameraExposure);
+        visionSource.getSettables().setExposureRaw(pipelineSettings.cameraExposureRaw);
         try {
             visionSource.getSettables().setAutoExposure(pipelineSettings.cameraAutoExposure);
         } catch (VideoException e) {
@@ -453,7 +452,7 @@ public class VisionModule {
         // Heuristic - if the camera has a known FOV or is a piCam, assume it's in use for
         // vision processing, and should command stuff to the LED's.
         // TODO: Make LED control a property of the camera itself and controllable in the UI.
-        return isVendorCamera() || cameraQuirks.hasQuirk(CameraQuirk.PiCam);
+        return isVendorCamera();
     }
 
     private void setVisionLEDs(boolean on) {
@@ -511,6 +510,8 @@ public class VisionModule {
         ret.currentPipelineIndex = pipelineManager.getRequestedIndex();
         ret.pipelineNicknames = pipelineManager.getPipelineNicknames();
         ret.cameraQuirks = visionSource.getSettables().getConfiguration().cameraQuirks;
+        ret.maxExposureRaw = visionSource.getSettables().getMaxExposureRaw();
+        ret.minExposureRaw = visionSource.getSettables().getMinExposureRaw();
 
         // TODO refactor into helper method
         var temp = new HashMap<Integer, HashMap<String, Object>>();
@@ -541,8 +542,7 @@ public class VisionModule {
                         .collect(Collectors.toList());
 
         ret.isFovConfigurable =
-                !(ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV()
-                        && cameraQuirks.hasQuirk(CameraQuirk.PiCam));
+                !(ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV());
 
         return ret;
     }
@@ -620,6 +620,7 @@ public class VisionModule {
      */
     public void changeCameraQuirks(HashMap<CameraQuirk, Boolean> quirksToChange) {
         visionSource.getCameraConfiguration().cameraQuirks.updateQuirks(quirksToChange);
+        visionSource.remakeSettables();
         saveAndBroadcastAll();
     }
 }

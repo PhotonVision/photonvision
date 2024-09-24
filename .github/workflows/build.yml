@@ -48,6 +48,8 @@ jobs:
           fetch-depth: 0
       - name: Fetch tags
         run: git fetch --tags --force
+      - name: Install RoboRIO Toolchain
+        run: ./gradlew installRoboRioToolchain
       - name: Install Java 17
         uses: actions/setup-java@v4
         with:
@@ -158,14 +160,14 @@ jobs:
       - run: git fetch --tags --force
       - run: |
           chmod +x gradlew
-          ./gradlew photon-targeting:build photon-lib:build -Pbuildalldesktop -i
-      - run: ./gradlew photon-lib:publish photon-targeting:publish -Pbuildalldesktop
+          ./gradlew photon-targeting:build photon-lib:build -i
+      - run: ./gradlew photon-lib:publish photon-targeting:publish
         name: Publish
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
         if: github.event_name == 'push' && github.repository_owner == 'photonvision'
       # Copy artifacts to build/outputs/maven
-      - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts -Pbuildalldesktop
+      - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts
       - uses: actions/upload-artifact@v4
         with:
           name: maven-${{ matrix.artifact-name }}
@@ -359,7 +361,7 @@ jobs:
           - os: ubuntu-latest
             artifact-name: LinuxArm64
             image_suffix: RaspberryPi
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0-beta-1/photonvision_raspi.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0-beta-4/photonvision_raspi.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
             extraOpts: -Djdk.lang.Process.launchMechanism=vfork
@@ -398,33 +400,45 @@ jobs:
           - os: ubuntu-latest
             artifact-name: LinuxArm64
             image_suffix: RaspberryPi
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0-beta-1/photonvision_raspi.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0-beta-4/photonvision_raspi.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
           - os: ubuntu-latest
             artifact-name: LinuxArm64
             image_suffix: limelight2
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0-beta-1/photonvision_limelight.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0-beta-4/photonvision_limelight.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
           - os: ubuntu-latest
             artifact-name: LinuxArm64
             image_suffix: limelight3
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0-beta-1/photonvision_limelight3.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0-beta-4/photonvision_limelight3.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
           - os: ubuntu-latest
             artifact-name: LinuxArm64
             image_suffix: orangepi5
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.10/photonvision_opi5.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0-beta-3/photonvision_opi5.img.xz
             cpu: cortex-a8
-            image_additional_mb: 4096
+            image_additional_mb: 1024
+          - os: ubuntu-latest
+            artifact-name: LinuxArm64
+            image_suffix: orangepi5b
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0-beta-3/photonvision_opi5b.img.xz
+            cpu: cortex-a8
+            image_additional_mb: 1024
           - os: ubuntu-latest
             artifact-name: LinuxArm64
             image_suffix: orangepi5plus
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2024.0.10/photonvision_opi5plus.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0-beta-3/photonvision_opi5plus.img.xz
             cpu: cortex-a8
-            image_additional_mb: 4096
+            image_additional_mb: 1024
+          - os: ubuntu-latest
+            artifact-name: LinuxArm64
+            image_suffix: orangepi5pro
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0-beta-3/photonvision_opi5pro.img.xz
+            cpu: cortex-a8
+            image_additional_mb: 1024
 
     runs-on: ${{ matrix.os }}
     name: "Build image - ${{ matrix.image_url }}"
@@ -437,7 +451,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: jar-${{ matrix.artifact-name }}
-      - uses: pguyot/arm-runner-action@v2
+      - uses: pguyot/arm-runner-action@HEAD
         name: Generate image
         id: generate_image
         with:
@@ -462,7 +476,7 @@ jobs:
           name: image-${{ matrix.image_suffix }}
           path: photonvision*.xz
   release:
-    needs: [build-package, build-image]
+    needs: [build-package, build-image, combine]
     runs-on: ubuntu-22.04
     steps:
       # Download all fat JARs

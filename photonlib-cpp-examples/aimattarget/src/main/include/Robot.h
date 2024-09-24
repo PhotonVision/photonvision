@@ -28,26 +28,33 @@
 
 #include <frc/TimedRobot.h>
 #include <frc/XboxController.h>
-#include <frc/controller/PIDController.h>
-#include <frc/drive/DifferentialDrive.h>
-#include <frc/motorcontrol/PWMVictorSPX.h>
-#include <units/angle.h>
-#include <units/length.h>
+
+#include "Constants.h"
+#include "VisionSim.h"
+#include "subsystems/SwerveDrive.h"
 
 class Robot : public frc::TimedRobot {
  public:
+  void RobotInit() override;
+  void RobotPeriodic() override;
+  void DisabledInit() override;
+  void DisabledPeriodic() override;
+  void DisabledExit() override;
+  void AutonomousInit() override;
+  void AutonomousPeriodic() override;
+  void AutonomousExit() override;
+  void TeleopInit() override;
   void TeleopPeriodic() override;
+  void TeleopExit() override;
+  void TestInit() override;
+  void TestPeriodic() override;
+  void TestExit() override;
+  void SimulationPeriodic() override;
 
  private:
-  // Change this to match the name of your camera as shown in the web UI
-  photon::PhotonCamera camera{"YOUR_CAMERA_NAME_HERE"};
-  // PID constants should be tuned per robot
-  frc::PIDController controller{.1, 0, 0};
-
-  frc::XboxController xboxController{0};
-
-  // Drive motors
-  frc::PWMVictorSPX leftMotor{0};
-  frc::PWMVictorSPX rightMotor{1};
-  frc::DifferentialDrive drive{leftMotor, rightMotor};
+  photon::PhotonCamera camera{constants::Vision::kCameraName};
+  SwerveDrive drivetrain{};
+  VisionSim vision{&camera};
+  frc::XboxController controller{0};
+  static constexpr double VISION_TURN_kP = 0.01;
 };

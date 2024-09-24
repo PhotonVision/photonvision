@@ -40,7 +40,7 @@ import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.LibcameraGpuSource;
 import org.photonvision.vision.camera.TestSource;
-import org.photonvision.vision.camera.USBCameraSource;
+import org.photonvision.vision.camera.USBCameras.USBCameraSource;
 
 public class VisionSourceManager {
     private static final Logger logger = new Logger(VisionSourceManager.class, LogGroup.Camera);

@@ -26,7 +26,7 @@ package org.photonvision;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import edu.wpi.first.cscore.OpenCvLoader;
+import edu.wpi.first.cscore.CameraServerCvJNI;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -77,7 +77,7 @@ public class OpenCVTest {
 
     @BeforeAll
     public static void setUp() throws IOException {
-        OpenCvLoader.forceLoad();
+        CameraServerCvJNI.forceLoad();
 
         // NT live for debug purposes
         NetworkTableInstance.getDefault().startServer();
@@ -177,7 +177,11 @@ public class OpenCVTest {
                         prop.getIntrinsics(), prop.getDistCoeffs(), camRt, target.getFieldVertices());
         var pnpSim =
                 OpenCVHelp.solvePNP_SQUARE(
-                        prop.getIntrinsics(), prop.getDistCoeffs(), target.getModel().vertices, targetCorners);
+                                prop.getIntrinsics(),
+                                prop.getDistCoeffs(),
+                                target.getModel().vertices,
+                                targetCorners)
+                        .get();
 
         // check solvePNP estimation accuracy
         assertSame(relTarget.getRotation(), pnpSim.best.getRotation());
@@ -212,7 +216,11 @@ public class OpenCVTest {
                         prop.getIntrinsics(), prop.getDistCoeffs(), camRt, target.getFieldVertices());
         var pnpSim =
                 OpenCVHelp.solvePNP_SQPNP(
-                        prop.getIntrinsics(), prop.getDistCoeffs(), target.getModel().vertices, targetCorners);
+                                prop.getIntrinsics(),
+                                prop.getDistCoeffs(),
+                                target.getModel().vertices,
+                                targetCorners)
+                        .get();
 
         // check solvePNP estimation accuracy
         assertSame(relTarget.getRotation(), pnpSim.best.getRotation());

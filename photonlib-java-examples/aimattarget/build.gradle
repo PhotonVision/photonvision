@@ -6,9 +6,14 @@ plugins {
 sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
 
+apply from: "${rootDir}/../shared/examples_common.gradle"
+
 def ROBOT_MAIN_CLASS = "frc.robot.Main"
 
-apply from: "${rootDir}/../shared/examples_common.gradle"
+wpi.maven.useDevelopment = true
+wpi.versions.wpilibVersion = "2024.3.2"
+wpi.versions.wpimathVersion = "2024.3.2"
+
 
 // Define my targets (RoboRIO) and artifacts (deployable files)
 // This is added by GradleRIO's backing project DeployUtils.
@@ -19,7 +24,7 @@ deploy {
             // or from command line. If not found an exception will be thrown.
             // You can use getTeamOrDefault(team) instead of getTeamNumber if you
             // want to store a team number in this file.
-            team = project.frc.getTeamOrDefault(5940)
+            team = project.frc.getTeamOrDefault(4512)
             debug = project.frc.getDebugOrDefault(false)
 
             artifacts {
@@ -48,7 +53,7 @@ wpi.java.debugJni = false
 def includeDesktopSupport = true
 
 // Defining my dependencies. In this case, WPILib (+ friends), and vendor libraries.
-// Also defines JUnit 4.
+// Also defines JUnit 5.
 dependencies {
     implementation wpi.java.deps.wpilib()
     implementation wpi.java.vendor.java()

@@ -1,4 +1,22 @@
+###############################################################################
+## Copyright (C) Photon Vision.
+###############################################################################
+## This program is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program.  If not, see <https://www.gnu.org/licenses/>.
+###############################################################################
+
 import struct
+from typing import Any, Optional, Type
 from wpimath.geometry import Transform3d, Translation3d, Rotation3d, Quaternion
 import wpilib
 
@@ -67,7 +85,9 @@ class Packet:
         for _ in range(numBytes):
             intList.append(self._getNextByteAsInt())
 
-        # Interpret the bytes as a floating point number
+        # Interpret the bytes as the requested type.
+        # Note due to NT's byte order assumptions,
+        # we have to flip the order of intList
         value = struct.unpack(unpackFormat, bytes(intList))[0]
 
         return value
@@ -78,23 +98,23 @@ class Packet:
         *
         * @return A decoded byte from the packet.
         """
-        return self._decodeGeneric(">b", 1)
+        return self._decodeGeneric("<b", 1)
 
     def decode16(self) -> int:
         """
-        * Returns a single decoded byte from the packet.
+        * Returns a single decoded short from the packet.
         *
-        * @return A decoded byte from the packet.
+        * @return A decoded short from the packet.
         """
-        return self._decodeGeneric(">h", 2)
+        return self._decodeGeneric("<h", 2)
 
-    def decode32(self) -> int:
+    def decodeInt(self) -> int:
         """
         * Returns a decoded int (32 bytes) from the packet.
         *
         * @return A decoded int from the packet.
         """
-        return self._decodeGeneric(">l", 4)
+        return self._decodeGeneric("<l", 4)
 
     def decodeFloat(self) -> float:
         """
@@ -102,15 +122,15 @@ class Packet:
         *
         * @return A decoded float from the packet.
         """
-        return self._decodeGeneric(">f", 4)
+        return self._decodeGeneric("<f", 4)
 
-    def decodei64(self) -> int:
+    def decodeLong(self) -> int:
         """
         * Returns a decoded int64 from the packet.
         *
         * @return A decoded int64 from the packet.
         """
-        return self._decodeGeneric(">q", 8)
+        return self._decodeGeneric("<q", 8)
 
     def decodeDouble(self) -> float:
         """
@@ -118,7 +138,7 @@ class Packet:
         *
         * @return A decoded double from the packet.
         """
-        return self._decodeGeneric(">d", 8)
+        return self._decodeGeneric("<d", 8)
 
     def decodeBoolean(self) -> bool:
         """
@@ -131,12 +151,20 @@ class Packet:
     def decodeDoubleArray(self, length: int) -> list[float]:
         """
         * Returns a decoded array of floats from the packet.
-        *
-        * @return A decoded array of floats from the packet.
         """
         ret = []
         for _ in range(length):
             ret.append(self.decodeDouble())
+        return ret
+
+    def decodeShortList(self) -> list[float]:
+        """
+        * Returns a decoded array of shorts from the packet.
+        """
+        length = self.decode8()
+        ret = []
+        for _ in range(length):
+            ret.append(self.decode16())
         return ret
 
     def decodeTransform(self) -> Transform3d:
@@ -157,3 +185,16 @@ class Packet:
         rotation = Rotation3d(Quaternion(w, x, y, z))
 
         return Transform3d(translation, rotation)
+
+    def decodeList(self, serde: Type):
+        retList = []
+        arr_len = self.decode8()
+        for _ in range(arr_len):
+            retList.append(serde.unpack(self))
+        return retList
+
+    def decodeOptional(self, serde: Type) -> Optional[Any]:
+        if self.decodeBoolean():
+            return serde.unpack(self)
+        else:
+            return None

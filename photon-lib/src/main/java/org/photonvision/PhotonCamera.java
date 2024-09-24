@@ -44,8 +44,8 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.StringSubscriber;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -137,10 +137,12 @@ public class PhotonCamera implements AutoCloseable {
                 cameraTable
                         .getRawTopic("rawBytes")
                         .subscribe(
-                                "rawBytes", new byte[] {}, PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
-        resultSubscriber =
-                new PacketSubscriber<>(
-                        rawBytesEntry, PhotonPipelineResult.serde, new PhotonPipelineResult());
+                                "rawBytes",
+                                new byte[] {},
+                                PubSubOption.periodic(0.01),
+                                PubSubOption.sendAll(true),
+                                PubSubOption.pollStorage(20));
+        resultSubscriber = new PacketSubscriber<>(rawBytesEntry, PhotonPipelineResult.photonStruct);
         driverModePublisher = cameraTable.getBooleanTopic("driverModeRequest").publish();
         driverModeSubscriber = cameraTable.getBooleanTopic("driverMode").subscribe(false);
         inputSaveImgEntry = cameraTable.getIntegerTopic("inputSaveImgCmd").getEntry(0);
@@ -176,21 +178,52 @@ public class PhotonCamera implements AutoCloseable {
     }
 
     /**
-     * Returns the latest pipeline result.
-     *
-     * @return The latest pipeline result.
+     * The list of pipeline results sent by PhotonVision since the last call to getAllUnreadResults().
+     * Calling this function clears the internal FIFO queue, and multiple calls to
+     * getAllUnreadResults() will return different (potentially empty) result arrays. Be careful to
+     * call this exactly ONCE per loop of your robot code! FIFO depth is limited to 20 changes, so
+     * make sure to call this frequently enough to avoid old results being discarded, too!
      */
+    public List<PhotonPipelineResult> getAllUnreadResults() {
+        List<PhotonPipelineResult> ret = new ArrayList<>();
+
+        var changes = resultSubscriber.getAllChanges();
+
+        // TODO: NT4 timestamps are still not to be trusted. But it's the best we can do until we can
+        // make time sync more reliable.
+        for (var c : changes) {
+            var result = c.value;
+            result.setReceiveTimestampMicros(c.timestamp);
+            ret.add(result);
+        }
+
+        return ret;
+    }
+
+    /**
+     * Returns the latest pipeline result. This is simply the most recent result Received via NT.
+     * Calling this multiple times will always return the most recent result.
+     *
+     * <p>Replaced by {@link #getAllUnreadResults()} over getLatestResult, as this function can miss
+     * results, or provide duplicate ones!
+     */
+    @Deprecated(since = "2024", forRemoval = true)
     public PhotonPipelineResult getLatestResult() {
         verifyVersion();
 
         var ret = resultSubscriber.get();
 
-        // Set the timestamp of the result.
-        // getLatestChange returns in microseconds, so we divide by 1e6 to convert to seconds.
-        ret.setRecieveTimestampMicros(RobotController.getFPGATime());
+        if (ret.timestamp == 0) return new PhotonPipelineResult();
 
-        // Return result.
-        return ret;
+        var result = ret.value;
+
+        // Set the timestamp of the result. Since PacketSubscriber doesn't realize that the result
+        // contains a thing with time knowledge, set it here.
+        // getLatestChange returns in microseconds, so we divide by 1e6 to convert to seconds.
+        // TODO: NT4 time sync is Not To Be Trusted, we should do something else?
+        result.setReceiveTimestampMicros(ret.timestamp);
+
+        return result;
     }
 
     /**
@@ -378,9 +411,20 @@ public class PhotonCamera implements AutoCloseable {
                     "PhotonVision coprocessor at path " + path + " is not sending new data.", true);
         }
 
-        // Check for version. Warn if the versions aren't aligned.
         String versionString = versionEntry.get("");
-        if (!versionString.isEmpty() && !PhotonVersion.versionMatches(versionString)) {
+
+        // Check mdef UUID
+        String local_uuid = PhotonPipelineResult.photonStruct.getInterfaceUUID();
+        String remote_uuid = resultSubscriber.getInterfaceUUID();
+
+        if (remote_uuid == null || remote_uuid.isEmpty()) {
+            // not connected yet?
+            DriverStation.reportWarning(
+                    "PhotonVision coprocessor at path "
+                            + path
+                            + " has not reported a message interface UUID - is your coprocessor's camera started?",
+                    true);
+        } else if (!local_uuid.equals(remote_uuid)) {
             // Error on a verified version mismatch
             // But stay silent otherwise
 
@@ -406,8 +450,14 @@ public class PhotonCamera implements AutoCloseable {
             var versionMismatchMessage =
                     "Photon version "
                             + PhotonVersion.versionString
+                            + " (message definition version "
+                            + local_uuid
+                            + ")"
                             + " does not match coprocessor version "
                             + versionString
+                            + " (message definition version "
+                            + remote_uuid
+                            + ")"
                             + "!";
             DriverStation.reportError(versionMismatchMessage, false);
             throw new UnsupportedOperationException(versionMismatchMessage);
