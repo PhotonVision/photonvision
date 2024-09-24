@@ -17,13 +17,11 @@
 
 package org.photonvision.common.hardware;
 
-import com.jogamp.common.os.Platform.OSType;
 import edu.wpi.first.util.RuntimeDetector;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import org.photonvision.common.util.ShellExec;
 
 @SuppressWarnings("unused")
 public enum Platform {
@@ -63,7 +61,6 @@ public enum Platform {
         UNKNOWN
     }
 
-    private static final ShellExec shell = new ShellExec(true, false);
     public final String description;
     public final String nativeLibraryFolderName;
     public final boolean isPi;
@@ -72,7 +69,6 @@ public enum Platform {
 
     // Set once at init, shouldn't be needed after.
     private static final Platform currentPlatform = getCurrentPlatform();
-    private static final boolean isRoot = checkForRoot();
 
     Platform(
             String description,
@@ -115,10 +111,6 @@ public enum Platform {
         return currentPlatform.nativeLibraryFolderName;
     }
 
-    public static boolean isRoot() {
-        return isRoot;
-    }
-
     public static boolean isSupported() {
         return currentPlatform.isSupported;
     }
@@ -130,29 +122,6 @@ public enum Platform {
     private static final String OS_ARCH = System.getProperty("os.arch");
     private static final String UnknownPlatformString =
             String.format("Unknown Platform. OS: %s, Architecture: %s", OS_NAME, OS_ARCH);
-
-    @SuppressWarnings("StatementWithEmptyBody")
-    private static boolean checkForRoot() {
-        if (isLinux()) {
-            try {
-                shell.executeBashCommand("id -u");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            while (!shell.isOutputCompleted()) {
-                // TODO: add timeout
-            }
-
-            if (shell.getExitCode() == 0) {
-                return shell.getOutput().split("\n")[0].equals("0");
-            }
-
-        } else {
-            return true;
-        }
-        return false;
-    }
 
     private static Platform getCurrentPlatform() {
         if (RuntimeDetector.isWindows()) {

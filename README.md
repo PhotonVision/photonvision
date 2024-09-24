@@ -40,6 +40,8 @@ Note that these are case sensitive!
 - `-PtgtIP`: Specifies where `./gradlew deploy` should try to copy the fat JAR to
 - `-Pprofile`: enables JVM profiling
 
+If you're cross-compiling, you'll need the wpilib toolchain installed. This can be done via Gradle: for example `./gradlew installArm64Toolchain` or `./gradlew installRoboRioToolchain`
+
 ## Out-of-Source Dependencies
 
 PhotonVision uses the following additonal out-of-source repositories for building code.
