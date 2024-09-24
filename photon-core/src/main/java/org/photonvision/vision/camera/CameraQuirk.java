@@ -45,11 +45,11 @@ public enum CameraQuirk {
     ArduOV2311Controls,
     ArduOV9782Controls,
     /**
-     * Camera is innomaker USB OV9281 which also has incorrect v4l exposure times Real range is more
-     * like 0-500
+     * Camera is one brand of USB OV9281 which also has incorrect v4l exposure times Real range is
+     * more like 0-500
      */
+    InnoOV9281Controls,
     ArduOV9782,
     /** Camera has odd exposure range, and supports gain control */
     See3Cam_24CUG,
-    InnoOV9281Controls,
 }
