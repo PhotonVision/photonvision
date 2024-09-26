@@ -39,18 +39,68 @@
 namespace nb = nanobind;
 using namespace nb::literals;
 
-frc::Pose3d makePose(double x, double y, double z, double W, double X, double Y,
+// repr helpers
+template <> struct fmt::formatter<frc::Pose3d> : formatter<string_view> {
+  auto format(frc::Pose3d const &c, format_context &ctx) const {
+    return fmt::format_to(ctx.out(), "pp_Pose3d<x={},y={},z={}>", c.X(), c.Y(), c.Z());
+  }
+};
+
+frc::Pose3d makePoseDouble(double x, double y, double z, double W, double X, double Y,
                      double Z) {
   return frc::Pose3d{frc::Translation3d{units::meter_t{x}, units::meter_t{y},
                                         units::meter_t{z}},
                      frc::Rotation3d{frc::Quaternion{W, X, Y, Z}}};
 }
 
+frc::Pose3d makePoseObject(nb::object obj) {
+  auto rotation {
+    nb::getattr(obj, "rotation")()
+  };
+  auto quat {
+    nb::getattr(rotation, "getQuaternion")()
+  };
+
+  return frc::Pose3d{
+    frc::Translation3d{
+      units::meter_t{nb::cast<double>(nb::getattr(obj, "x"))},
+      units::meter_t{nb::cast<double>(nb::getattr(obj, "y"))},
+      units::meter_t{nb::cast<double>(nb::getattr(obj, "z"))}
+    },
+    frc::Rotation3d{frc::Quaternion{
+      nb::cast<double>(nb::getattr(quat, "W")()),
+      nb::cast<double>(nb::getattr(quat, "X")()),
+      nb::cast<double>(nb::getattr(quat, "Y")()),
+      nb::cast<double>(nb::getattr(quat, "Z")())
+    }}
+  };
+}
+
 void wrap_geom(nb::module_ m) {
   using namespace frc;
-  nb::class_<Transform3d>(m, "Transform3d").def(nb::init<>());
+
+  nb::class_<Translation3d>(m, "Translation3d")
+    .def_prop_ro("x", [](Translation3d& t) { return t.X().to<double>(); })
+    ;
+  nb::class_<Rotation3d>(m, "Rotation3d")
+    .def_prop_ro("quaternion", [](Rotation3d& t) { return t.GetQuaternion(); })
+    ;
+  nb::class_<Quaternion>(m, "Quaternion")
+    .def_prop_ro("W", [](Quaternion& t) { return t.W(); })
+    ;
+
   nb::class_<Pose3d>(m, "Pose3d")
       .def(nb::init<>())
-      .def(nb::new_(&makePose),
-           "Create a Pose3d from translation/rotation components");
+      .def(nb::new_(&makePoseDouble),
+           "Create a Pose3d from translation/rotation components")
+      .def(nb::new_(&makePoseObject),
+           "Create a Pose3d from a pyobject")
+      .def_prop_ro("Translation", &Pose3d::Translation)
+      .def_prop_ro("Rotation", &Pose3d::Rotation)
+      .def("__repr__", [](const Pose3d& p) {
+        std::string s;
+        fmt::format_to(std::back_inserter(s),
+                       "{}>", p);
+        return s;
+      });
 }
