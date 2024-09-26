@@ -23,12 +23,7 @@
  */
 
 #include <nanobind/nanobind.h>
-#include "photonlib_nanobind.hpp"
 
-NB_MODULE(_photonlibpy, m) {
-  m.doc() = "C++ bindings for photonlib";
-
-  wrap_photon(m);
-  wrap_photon_sim(m);
-  wrap_geom(m);
-}
+void wrap_geom(nanobind::module_ m);
+void wrap_photon(nanobind::module_ m);
+void wrap_photon_sim(nanobind::module_ m);

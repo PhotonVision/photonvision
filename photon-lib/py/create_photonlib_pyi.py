@@ -6,7 +6,7 @@ def write_stubgen():
     # From nanobind==2.1.0
     from nanobind.stubgen import StubGen
 
-    # this is legal since we import everything from this shared library in __init__.py 
+    # this is legal since we import everything from this shared library in __init__.py
     # but still isn't /great/, lol
     from photonlibpy.lib import _photonlibpy as _pp
 

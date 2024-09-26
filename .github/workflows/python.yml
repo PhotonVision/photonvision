@@ -64,7 +64,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: "photonlibpy-stubgen"
-          path: ./photon-lib/py/photonlibpy/*.pyi
+          path: ./photon-lib/py/photonlibpy/lib/*.pyi
 
 
   build-host:
@@ -76,11 +76,8 @@ jobs:
         # Reference: https://github.com/wpilibsuite/wpilib-tool-plugin/blob/main/src/main/java/edu/wpi/first/tools/NativePlatforms.java#L23
         os:
           - name: "ubuntu-22.04"
-            native_build_task: "Linuxx86-64"
           - name: "macos-12"
-            native_build_task: "Osxuniversal"
           - name: "windows-2022"
-            native_build_task: "Windowsx86-64"
         python_version:
         # - '3.8'
         # - '3.9'
@@ -114,7 +111,7 @@ jobs:
       - run: ./gradlew photon-lib:tasks -i -PpythonExecutable=python${{ matrix.python_version }}
       - run: |
           chmod +x gradlew
-          ./gradlew photon-lib:installPhotonlibpyNative -PpythonExecutable=python${{ matrix.python_version }} -PnativeBuildPlatform=${{ matrix.os.native_build_task }}
+          ./gradlew photon-lib:installPhotonlibpyNative -PpythonExecutable=python${{ matrix.python_version }}
 
       - name: Install dependencies
         working-directory: ./photon-lib/py
@@ -126,7 +123,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: "photonlibpy-stubgen"
-          path: ./photon-lib/py/photonlibpy/*.pyi
+          path: ./photon-lib/py/photonlibpy/lib/*.pyi
 
       - name: Build wheel
         working-directory: ./photon-lib/py
@@ -168,7 +165,7 @@ jobs:
           name: roborio
           build-options: "-PArchOverride=linuxathena"
           # gradle needs first letter uppercase
-          arch: "Linuxathena"
+          # arch: "Linuxathena"
 
         # - container: wpilib/raspbian-cross-ubuntu:bullseye-22.04-py38
         #   name: raspbian-py38
@@ -188,7 +185,7 @@ jobs:
         - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04-py310
           name: raspbian-aarch64-py310
           build-options: "-PArchOverride=linuxarm64"
-          arch: "Linuxarm64"
+          # arch: "Linuxarm64"
         # - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04-py311
         #   name: raspbian-aarch64-py311
         # - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04-py312
@@ -243,7 +240,7 @@ jobs:
     - uses: actions/download-artifact@v4
       with:
         name: "photonlibpy-stubgen"
-        path: ./photon-lib/py/photonlibpy/*.pyi
+        path: ./photon-lib/py/photonlibpy/lib/*.pyi
 
     - name: Build wheel
       working-directory: ./photon-lib/py

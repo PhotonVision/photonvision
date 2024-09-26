@@ -22,13 +22,35 @@
  * SOFTWARE.
  */
 
-#include <nanobind/nanobind.h>
+#include <fmt/format.h>
+
+#include <memory>
+
+#include "photon/PhotonCamera.h"
+#include "photon/simulation/VisionSystemSim.h"
 #include "photonlib_nanobind.hpp"
 
-NB_MODULE(_photonlibpy, m) {
-  m.doc() = "C++ bindings for photonlib";
+// actual nanobind include
+#include <nanobind/nanobind.h>
+#include <nanobind/stl/string.h>
+#include <nanobind/stl/vector.h>
+#include <nanobind/stl/optional.h>
 
-  wrap_photon(m);
-  wrap_photon_sim(m);
-  wrap_geom(m);
+namespace nb = nanobind;
+using namespace nb::literals;
+
+frc::Pose3d makePose(double x, double y, double z, double W, double X, double Y,
+                     double Z) {
+  return frc::Pose3d{frc::Translation3d{units::meter_t{x}, units::meter_t{y},
+                                        units::meter_t{z}},
+                     frc::Rotation3d{frc::Quaternion{W, X, Y, Z}}};
+}
+
+void wrap_geom(nb::module_ m) {
+  using namespace frc;
+  nb::class_<Transform3d>(m, "Transform3d").def(nb::init<>());
+  nb::class_<Pose3d>(m, "Pose3d")
+      .def(nb::init<>())
+      .def(nb::new_(&makePose),
+           "Create a Pose3d from translation/rotation components");
 }
