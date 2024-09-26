@@ -106,12 +106,15 @@ jobs:
           distribution: temurin
 
       - run: git fetch --tags --force
-      - run: python3 -c "from sysconfig import get_paths as gp; print(gp())"
+      - run: python${{ matrix.python_version }} -c "from sysconfig import get_paths as gp; print(gp())"
 
-      - run: ./gradlew photon-lib:tasks -i -PpythonExecutable=python${{ matrix.python_version }}
+      - run: ./gradlew photon-lib:tasks -i -PpythonExecutable="python${{ matrix.python_version }}""
       - run: |
           chmod +x gradlew
-          ./gradlew photon-lib:installPhotonlibpyNative -PpythonExecutable=python${{ matrix.python_version }}
+          ./gradlew photon-lib:installPhotonlibpyNative -PpythonExecutable="python${{ matrix.python_version }}""
+
+      - run: find .
+        working-directory: ./photon-lib/py
 
       - name: Install dependencies
         working-directory: ./photon-lib/py
@@ -246,7 +249,7 @@ jobs:
       working-directory: ./photon-lib/py
       # disable isolation so we can run stubgen (ew but w/e)
       run: |
-        /build/venv/bin/cross-python -m build -swn
+        SKIP_PYI=1 /build/venv/bin/cross-python -m build -swn
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
