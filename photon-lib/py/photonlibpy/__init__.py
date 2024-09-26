@@ -30,8 +30,9 @@ import hal
 import wpilib.cameraserver
 import robotpy_apriltag
 
-# and now our extension module
-import os
+import platform
+if platform.system().lower() == "Windows":
+    import os
+    os.add_dll_directory(os.path.dirname(os.path.realpath(__file__)))
 
-os.add_dll_directory(os.path.dirname(os.path.realpath(__file__)))
 from ._photonlibpy import *

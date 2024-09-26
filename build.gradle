@@ -101,6 +101,7 @@ spotless {
         target fileTree('.') {
             include '**/*.md', '**/.gitignore'
             exclude '**/build/**', '**/build-*/**'
+            exclude 'photon-lib/nanobind/**'
         }
         trimTrailingWhitespace()
         indentWithSpaces(2)
