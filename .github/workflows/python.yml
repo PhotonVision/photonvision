@@ -79,10 +79,10 @@ jobs:
           - name: "windows-2022"
         python_version:
         # - '3.8'
-        # - '3.9'
+        - '3.9'
         - '3.10'
-        # - '3.11'
-        # - '3.12'
+        - '3.11'
+        - '3.12'
 
     runs-on: ${{ matrix.os.name }}
 
@@ -169,8 +169,6 @@ jobs:
         - container: wpilib/roborio-cross-ubuntu:2024-22.04-py312
           name: roborio
           build-options: "-PArchOverride=linuxathena"
-          # gradle needs first letter uppercase
-          # arch: "Linuxathena"
 
         # - container: wpilib/raspbian-cross-ubuntu:bullseye-22.04-py38
         #   name: raspbian-py38
@@ -185,16 +183,19 @@ jobs:
 
         # - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04-py38
         #   name: raspbian-aarch64-py38
-        # - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04-py39
-        #   name: raspbian-aarch64-py39
+        #   build-options: "-PArchOverride=linuxarm64"
+        - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04-py39
+          name: raspbian-aarch64-py39
+          build-options: "-PArchOverride=linuxarm64"
         - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04-py310
           name: raspbian-aarch64-py310
           build-options: "-PArchOverride=linuxarm64"
-          # arch: "Linuxarm64"
-        # - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04-py311
-        #   name: raspbian-aarch64-py311
-        # - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04-py312
-        #   name: raspbian-aarch64-py312
+        - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04-py311
+          name: raspbian-aarch64-py311
+          build-options: "-PArchOverride=linuxarm64"
+        - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04-py312
+          name: raspbian-aarch64-py312
+          build-options: "-PArchOverride=linuxarm64"
 
     container:
       image: "${{ matrix.os.container }}"
