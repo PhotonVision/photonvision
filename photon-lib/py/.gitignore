@@ -7,3 +7,4 @@ photonlibpy/lib/*.so*
 photonlibpy/lib/*.dylib*
 photonlibpy/lib/*.dll*
 photonlibpy/lib/*.pyd
+photonlibpy/*.pyi

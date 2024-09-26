@@ -63,6 +63,7 @@ def getPythonProperty(String property) {
 
 def photonlibpy_dir = "$projectDir/py/photonlibpy/lib"
 
+// This task gets .so's added as dependencies by photonlib/photonlibpy native models
 task installPhotonlibpyNative(type: Sync) {
 
     into photonlibpy_dir
@@ -166,7 +167,8 @@ model {
             // Don't love that this is copy-pasted around so much
             binaries.withType(SharedLibraryBinarySpec) { binary ->
                 // check that we're building for the platform (per PArchOverride/wpilib plat detection)
-                if (binary.targetPlatform.name == jniPlatform) {
+                String plat = binary.targetPlatform.name;
+                if (plat == jniPlatform) {
                     // only include release binaries (hard coded for now)
                     def isDebug = binary.buildType.name.contains('debug')
                     if (!isDebug) {
@@ -174,17 +176,15 @@ model {
                             // Just shove the shared library into our copy task
                             py.from(binary.sharedLibraryFile) { pppy ->
                                 pppy.rename { oldName ->
-                                    return "_" + oldName.replaceFirst(/^lib/, "")
+                                    if (plat.toLowerCase().startsWith("windows")) {
+                                        return "_" + oldName.replaceAll(".dll\$", ".pyd")
+                                    } else {
+                                        return "_" + oldName.replaceFirst(/^lib/, "")
+                                    }
                                 }
                             }
                             // And (not sure if this is a hack) make the jar task depend on the build task
                             py.dependsOn binary.identifier.projectScopedName
-
-                            println "hi"
-                            println binary
-                            println binary.targetPlatform.name
-                            println binary.sharedLibraryFile
-
                         }
                     }
                 }
@@ -238,7 +238,8 @@ model {
             binaries.all {
                 if (!found) {
                     def arch = it.targetPlatform.name
-                    if (arch == jniPlatform) {
+                    def isDebug = it.buildType.name.contains('debug')
+                    if (arch == jniPlatform && !isDebug) {
                         installPhotonlibpyNative { py ->
                             py.dependsOn it.tasks.install
                         }
