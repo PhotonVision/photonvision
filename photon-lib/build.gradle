@@ -61,21 +61,11 @@ def getPythonProperty(String property) {
     }
 }
 
-def photonlibpy_dir = "$projectDir/py/photonlibpy"
-task cleanPhotonlibpyNative(type: Delete) {
+def photonlibpy_dir = "$projectDir/py/photonlibpy/lib"
 
-    delete fileTree(photonlibpy_dir) {
-        include '*.so*', '*.dylib*', '*.pyd', '*.dll*'
-    }
-}
-
-task installPhotonlibpyNative(type: Copy) {
-    dependsOn cleanPhotonlibpyNative
+task installPhotonlibpyNative(type: Sync) {
 
     into photonlibpy_dir
-
-    // from "$projectDir/build/libs/photonlib/shared/$jniPlatform/release/libphotonlib.so"
-    // from "$projectDir/build/libs/photonlib/shared/$jniPlatform/release/photonlib.dll"
 
     for (lib in [
                 "photontargeting.dll",
@@ -99,20 +89,6 @@ task installPhotonlibpyNative(type: Copy) {
             ]) {
         from "$projectDir/build/install/photonlibTest/$jniPlatform/release/lib/$lib"
     }
-
-    // from("$projectDir/build/libs/photonlibpy/shared/$jniPlatform/release/") {
-    //     include "libphotonlibpy.so"
-    //     include "photonlibpy.dll"
-
-    //     // Remove leading lib if present, and append an _ (renames to _photonlibpy.so/dll/dylib)
-    //     rename "(?:lib)?(.*)(.dll)", ('_$1.pyd')
-    // }
-
-    // def platform = project.findProperty('nativeBuildPlatform') ?: jniPlatform.capitalize()
-    // println("Depending on build task for platform name: $platform")
-
-    // it.dependsOn "installPhotonlibTest${platform}ReleaseGoogleTestExe"
-    // it.dependsOn "photonlibpy${platform}ReleaseSharedLibrary"
 }
 
 model {

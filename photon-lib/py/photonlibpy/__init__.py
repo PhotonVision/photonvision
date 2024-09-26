@@ -15,24 +15,7 @@
 ## along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ###############################################################################
 
-# from .packet import Packet  # noqa
-# from .estimatedRobotPose import EstimatedRobotPose  # noqa
-# from .photonPoseEstimator import PhotonPoseEstimator, PoseStrategy  # noqa
-# from .photonCamera import PhotonCamera  # noqa
+# Load dependencies
+from . import _init_photonlibpy
 
-# force-load native libraries
-import ntcore
-import wpiutil
-import wpinet
-import wpimath
-import wpilib
-import hal
-import wpilib.cameraserver
-import robotpy_apriltag
-
-import platform
-if platform.system().lower() == "Windows":
-    import os
-    os.add_dll_directory(os.path.dirname(os.path.realpath(__file__)))
-
-from ._photonlibpy import *
+from .lib._photonlibpy import *
