@@ -100,7 +100,6 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         softSet("exposure_dynamic_framerate", 0);
         softSet("focus_auto", 0);
         softSet("focus_absolute", 0); // Focus into infinity
-        softSet("white_balance_temperature", whiteBalanceTemperature);
     }
 
     public void setAutoExposure(boolean cameraAutoExposure) {

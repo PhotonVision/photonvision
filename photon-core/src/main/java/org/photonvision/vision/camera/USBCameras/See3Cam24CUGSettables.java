@@ -20,19 +20,12 @@ package org.photonvision.vision.camera.USBCameras;
 import edu.wpi.first.cscore.UsbCamera;
 import org.photonvision.common.configuration.CameraConfiguration;
 
-public class ArduOV9782CameraSettables extends GenericUSBCameraSettables {
-    public ArduOV9782CameraSettables(CameraConfiguration configuration, UsbCamera camera) {
+/*
+ * This class holds the camera quirks for the See3Cam 24UGS.
+ */
+public class See3Cam24CUGSettables extends GenericUSBCameraSettables {
+    public See3Cam24CUGSettables(CameraConfiguration configuration, UsbCamera camera) {
         super(configuration, camera);
-        whiteBalanceTemperature = 3500;
-    }
-
-    @Override
-    public void setAllCamDefaults() {
-        softSet("power_line_frequency", 2); // Assume 60Hz USA
-        softSet("exposure_metering_mode", 0);
-        softSet("exposure_dynamic_framerate", 0);
-        softSet("white_balance_automatic", 0);
-        softSet("white_balance_temperature", whiteBalanceTemperature);
     }
 
     @Override
@@ -40,7 +33,7 @@ public class ArduOV9782CameraSettables extends GenericUSBCameraSettables {
         super.setUpExposureProperties();
 
         // Property limits are incorrect
-        this.minExposure = 1;
-        this.maxExposure = 60;
+        this.minExposure = 0;
+        this.maxExposure = 600;
     }
 }

@@ -1,3 +1,7 @@
+plugins {
+    id 'edu.wpi.first.WpilibTools' version '1.3.0'
+}
+
 import java.nio.file.Path
 
 ext {
@@ -110,7 +114,6 @@ model {
             binaries.all {
                 lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
                 lib library: nativeName
-
             }
 
             nativeUtils.useRequiredLibrary(it, "wpilib_shared")
@@ -421,3 +424,24 @@ publishing {
         }
     }
 }
+
+// setup wpilib bundled native libs
+wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()
+
+def nativeConfigName = 'wpilibNatives'
+def nativeConfig = configurations.create(nativeConfigName)
+
+def nativeTasks = wpilibTools.createExtractionTasks {
+    configurationName = nativeConfigName
+}
+
+nativeTasks.addToSourceSetResources(sourceSets.test)
+
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
+nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())

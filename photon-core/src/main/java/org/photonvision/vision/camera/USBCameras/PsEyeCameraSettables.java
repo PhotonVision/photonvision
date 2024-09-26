@@ -25,6 +25,7 @@ public class PsEyeCameraSettables extends GenericUSBCameraSettables {
         super(configuration, camera);
     }
 
+    @Override
     public void setAutoExposure(boolean cameraAutoExposure) {
         logger.debug("Setting auto exposure to " + cameraAutoExposure);
 
@@ -42,6 +43,7 @@ public class PsEyeCameraSettables extends GenericUSBCameraSettables {
         }
     }
 
+    @Override
     public void setAllCamDefaults() {
         // Common settings for all cameras to attempt to get their image
         // as close as possible to what we want for image processing
