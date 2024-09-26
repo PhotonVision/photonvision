@@ -115,6 +115,7 @@ jobs:
 
       - run: find .
         working-directory: ./photon-lib/py
+        if: matrix.os.name != 'windows-2022'
 
       - name: Install dependencies
         working-directory: ./photon-lib/py
