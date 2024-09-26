@@ -122,12 +122,6 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r build_requirements.txt
 
-      # Download our type hints
-      - uses: actions/download-artifact@v4
-        with:
-          name: "photonlibpy-stubgen"
-          path: ./photon-lib/py/photonlibpy/lib/*.pyi
-
       - name: Build wheel
         working-directory: ./photon-lib/py
         # disable isolation so we can run stubgen (ew but w/e)
