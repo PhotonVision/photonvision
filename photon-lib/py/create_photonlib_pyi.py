@@ -13,7 +13,7 @@ def write_stubgen():
     sg = StubGen(_pp)
     sg.put(_pp)
     script_path = os.path.dirname(os.path.realpath(__file__))
-    with open(f"{script_path}/photonlibpy/_photonlibpy.pyi", "w") as f:
+    with open(f"{script_path}/photonlibpy/lib/_photonlibpy.pyi", "w") as f:
         f.write(sg.get())
 
 
