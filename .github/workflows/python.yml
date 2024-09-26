@@ -139,7 +139,7 @@ jobs:
         working-directory: ./photon-lib/py
         if: ${{ startsWith(matrix.os.name, 'windows') }}
         run: |
-            for %i in (dist\*.whl) do python -m pip install --no-cache-dir "%i"
+            pip install --no-cache-dir (Get-ChildItem -Path dist\*.whl).FullName
             python -m pytest
 
       - name: Upload artifacts
