@@ -6,3 +6,4 @@ photonlibpy/version.py
 photonlibpy/*.so*
 photonlibpy/*.dylib*
 photonlibpy/*.dll*
+photonlibpy/*.pyd

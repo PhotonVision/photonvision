@@ -1,7 +1,7 @@
 def write_stubgen():
     import os
 
-    cwd = os.getcwd()
+    os.getcwd()
 
     # From nanobind==2.1.0
     from nanobind.stubgen import StubGen

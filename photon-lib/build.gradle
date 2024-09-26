@@ -111,8 +111,13 @@ model {
                 lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
                 lib library: nativeName
 
-                nativeUtils.useRequiredLibrary(it, "wpilib_shared")
             }
+
+            nativeUtils.useRequiredLibrary(it, "wpilib_shared")
+            nativeUtils.useRequiredLibrary(it, "cscore_shared")
+            nativeUtils.useRequiredLibrary(it, "cameraserver_shared")
+            nativeUtils.useRequiredLibrary(it, "apriltag_shared")
+            nativeUtils.useRequiredLibrary(it, "opencv_shared")
         }
     }
     testSuites {
@@ -185,7 +190,7 @@ model {
 
     binaries {
         withType(NativeBinarySpec).all {
-            println "${it.toolChain} -> ${it.component.baseName} -> ${it.toolChain instanceof VisualCpp}"
+            // println "${it.toolChain} -> ${it.component.baseName} -> ${it.toolChain instanceof VisualCpp}"
 
             if((it.component.baseName == "photonlibpy" || it.component.baseName == nativeName)) {
                 if (it.toolChain instanceof VisualCpp) {
@@ -267,7 +272,6 @@ task installPhotonlibpyNative(type: Copy) {
                 "opencv_imgcodecs480.dll",
                 "opencv_flann480.dll",
                 "opencv_imgproc480.dll",
-
                 "libcameraserver.so",
                 "libcscore.so",
                 "libopencv_core.so.4.8",
