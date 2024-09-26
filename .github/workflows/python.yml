@@ -115,7 +115,7 @@ jobs:
 
       - run: find .
         working-directory: ./photon-lib/py
-        if: matrix.os.name != 'windows-2022'
+        if: ${{ !startsWith(matrix.os.name, 'windows') }}
 
       - name: Install dependencies
         working-directory: ./photon-lib/py
@@ -131,10 +131,16 @@ jobs:
 
       - name: Run Unit Tests
         working-directory: ./photon-lib/py
-        shell: powershell
+        if: ${{ !startsWith(matrix.os.name, 'windows') }}
         run: |
-            pip install --no-cache-dir dist/*.whl
-            pytest
+            python -m pip install --no-cache-dir dist/*.whl
+            python -m pytest
+      - name: Run Unit Tests
+        working-directory: ./photon-lib/py
+        if: ${{ startsWith(matrix.os.name, 'windows') }}
+        run: |
+            for %i in (dist\*.whl) do python -m pip install --no-cache-dir "%i"
+            python -m pytest
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
