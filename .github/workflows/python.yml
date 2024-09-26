@@ -131,6 +131,7 @@ jobs:
 
       - name: Run Unit Tests
         working-directory: ./photon-lib/py
+        shell: powershell
         run: |
             pip install --no-cache-dir dist/*.whl
             pytest
