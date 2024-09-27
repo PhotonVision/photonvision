@@ -39,7 +39,51 @@ Photonvision will letterbox your camera frame to 640x640. This means that if you
 
 ## Training Custom Models
 
-Coming soon!
+You can build your own YOLOv5 model for use with PhotonVision's Object Detection. However, this process is complex and requires a good understanding of machine learning, but it can be done. Here's an overview of the process.
+
+### Step 1: Model Training
+
+You can train the Object Detection model using [Ultralytics' YOLOv5 repository](https://github.com/ultralytics/yolov5), then use [airockchip's YOLOv5 fork](https://github.com/airockchip/yolov5) to export the model currectly before the export to a deployable RKNN file. The specific training setup will vary depending on your dataset and configuration, but here’s an example using `yolov5s`. Other models should work as well. You **will** need [PyTorch](https://pytorch.org/get-started/locally/). This example has been tested on Ubuntu 22.04.
+
+#### Downloading nessessary files
+
+```bash
+git clone https://github.com/ultralytics/yolov5.git
+git clone https://github.com/airockchip/yolov5.git airockchip-yolov5
+wget https://gist.githubusercontent.com/Alex-idk/9a512ca7bd263892ff6991a856f1a458/raw/e8c0c9d8d5a1a60a2bbe72c065e04a261300baac/onnx2rknn.py # This is the onnx to rknn convertion script
+```
+
+#### Training Command
+
+Please research what each of these parameters do and adjust them to fit your dataset and training needs. Make sure to change the number of classes in the `models/yolov5s.yaml` file to how many classes are in your dataset, otherwise you will run into problems with class labeling. Currently as of `September 2024` only YOLOv5s models have been tested.
+
+```bash
+python train.py --img 640 --batch 16 --epochs 10 --data path/to/dataset/data.yaml --cfg 'models/yolov5s.yaml' --weights '' --cache
+```
+
+### Step 2: Exporting the Model to ONNX
+
+Once your model is trained, the next step is to export it to ONNX format using airockchip's YOLOv5 fork.
+
+#### Export Command
+
+```bash
+cd /path/to/airockchip-yolov5 && python export.py --weights '/path/to/best.pt' --rknpu --include 'onnx'
+```
+
+### Step 3: Converting ONNX to RKNN
+
+Using the `onnx2rknn.py` script, convert the ONNX model to an RKNN file. This script was downloaded in a previous step.
+
+#### Conversion Command
+
+Run the script, passing in the ONNX model and a text file containing paths to images from your dataset:
+
+```bash
+python onnx2rknn.py /path/to/best.onnx /path/to/export/best.rknn /path/to/imagePaths.txt
+```
+
+If you have any questions about this process feel free to mention `alex_idk` in the PhotonVision Discord server.
 
 ## Uploading Custom Models
 
