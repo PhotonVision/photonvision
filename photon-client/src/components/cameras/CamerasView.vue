@@ -149,6 +149,7 @@ th {
 .stream {
   display: flex;
   justify-content: center;
+  width: 100%;
 }
 
 @media only screen and (min-width: 960px) {
