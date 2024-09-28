@@ -84,7 +84,7 @@ const fpsTooLow = computed<boolean>(() => {
     <div class="stream-container pb-4">
       <div class="stream">
         <photon-camera-stream
-          v-show="value.includes(0)"
+          v-if="value.includes(0)"
           id="input-camera-stream"
           stream-type="Raw"
           style="max-width: 100%"
@@ -92,7 +92,7 @@ const fpsTooLow = computed<boolean>(() => {
       </div>
       <div class="stream">
         <photon-camera-stream
-          v-show="value.includes(1)"
+          v-if="value.includes(1)"
           id="output-camera-stream"
           stream-type="Processed"
           style="max-width: 100%"
