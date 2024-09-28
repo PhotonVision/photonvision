@@ -26,17 +26,20 @@ import org.photonvision.utils.PacketUtils;
 // Assume that the base class lives here and we can import it
 import org.photonvision.targeting.*;
 
+// WPILib imports (if any)
+import edu.wpi.first.util.struct.Struct;
+import edu.wpi.first.math.geometry.Transform3d;
 
 /**
  * Auto-generated serialization/deserialization helper for PnpResult
  */
 public class PnpResultSerde implements PacketSerde<PnpResult> {
-    // Message definition md5sum. See photon_packet.adoc for details
-    public static final String MESSAGE_VERSION = "0d1f2546b00f24718e30f38d206d4491";
-    public static final String MESSAGE_FORMAT = "Transform3d best;Transform3d alt;float64 bestReprojErr;float64 altReprojErr;float64 ambiguity;";
-
-    public final String getTypeString() { return MESSAGE_FORMAT; }
-    public final String getInterfaceUUID() { return MESSAGE_VERSION; }
+    @Override
+    public final String getInterfaceUUID() { return "ae4d655c0a3104d88df4f5db144c1e86"; }
+    @Override
+    public final String getSchema() { return "Transform3d best;Transform3d alt;float64 bestReprojErr;float64 altReprojErr;float64 ambiguity;"; }
+    @Override
+    public final String getTypeName() { return "PnpResult"; }
 
     @Override
     public int getMaxByteSize() {
@@ -46,10 +49,8 @@ public class PnpResultSerde implements PacketSerde<PnpResult> {
 
     @Override
     public void pack(Packet packet, PnpResult value) {
-        // field is shimmed!
         PacketUtils.packTransform3d(packet, value.best);
 
-        // field is shimmed!
         PacketUtils.packTransform3d(packet, value.alt);
 
         // field bestReprojErr is of intrinsic type float64
@@ -66,10 +67,8 @@ public class PnpResultSerde implements PacketSerde<PnpResult> {
     public PnpResult unpack(Packet packet) {
         var ret = new PnpResult();
 
-        // field is shimmed!
         ret.best = PacketUtils.unpackTransform3d(packet);
 
-        // field is shimmed!
         ret.alt = PacketUtils.unpackTransform3d(packet);
 
         // bestReprojErr is of intrinsic type float64
@@ -82,5 +81,18 @@ public class PnpResultSerde implements PacketSerde<PnpResult> {
         ret.ambiguity = packet.decodeDouble();
 
         return ret;
+    }
+
+    @Override
+    public PacketSerde<?>[] getNestedPhotonMessages() {
+        return new PacketSerde<?>[] {
+        };
+    }
+
+    @Override
+    public Struct<?>[] getNestedWpilibMessages() {
+        return new Struct<?>[] {
+            Transform3d.struct
+        };
     }
 }

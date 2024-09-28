@@ -47,9 +47,7 @@ tasks.register("buildAndCopyUI") {
 
 run {
     environment "PATH_PREFIX", "../"
-}
 
-run {
     if (project.hasProperty("profile")) {
         jvmArgs=[
             "-Dcom.sun.management.jmxremote=true",
@@ -105,7 +103,7 @@ task findDeployTarget {
 
 task deploy {
     dependsOn findDeployTarget
-    dependsOn assemble
+    dependsOn 'shadowJar'
 
     doLast {
         println 'Starting deployment to ' + findDeployTarget.rmt.host

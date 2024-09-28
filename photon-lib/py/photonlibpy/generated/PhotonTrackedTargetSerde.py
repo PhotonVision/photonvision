@@ -25,8 +25,8 @@ from ..targeting import *
 
 class PhotonTrackedTargetSerde:
     # Message definition md5sum. See photon_packet.adoc for details
-    MESSAGE_VERSION = "8fdada56b9162f2e32bd24f0055d7b60"
-    MESSAGE_FORMAT = "float64 yaw;float64 pitch;float64 area;float64 skew;int32 fiducialId;int32 objDetectId;float32 objDetectConf;Transform3d bestCameraToTarget;Transform3d altCameraToTarget;float64 poseAmbiguity;TargetCorner[?] minAreaRectCorners;TargetCorner[?] detectedCorners;"
+    MESSAGE_VERSION = "cc6dbb5c5c1e0fa808108019b20863f1"
+    MESSAGE_FORMAT = "float64 yaw;float64 pitch;float64 area;float64 skew;int32 fiducialId;int32 objDetectId;float32 objDetectConf;Transform3d bestCameraToTarget;Transform3d altCameraToTarget;float64 poseAmbiguity;TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6 minAreaRectCorners[?];TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6 detectedCorners[?];"
 
     @staticmethod
     def unpack(packet: "Packet") -> "PhotonTrackedTarget":
@@ -53,10 +53,8 @@ class PhotonTrackedTargetSerde:
         # objDetectConf is of intrinsic type float32
         ret.objDetectConf = packet.decodeFloat()
 
-        # field is shimmed!
         ret.bestCameraToTarget = packet.decodeTransform()
 
-        # field is shimmed!
         ret.altCameraToTarget = packet.decodeTransform()
 
         # poseAmbiguity is of intrinsic type float64

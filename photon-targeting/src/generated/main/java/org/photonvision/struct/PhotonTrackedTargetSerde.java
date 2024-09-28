@@ -26,17 +26,20 @@ import org.photonvision.utils.PacketUtils;
 // Assume that the base class lives here and we can import it
 import org.photonvision.targeting.*;
 
+// WPILib imports (if any)
+import edu.wpi.first.util.struct.Struct;
+import edu.wpi.first.math.geometry.Transform3d;
 
 /**
  * Auto-generated serialization/deserialization helper for PhotonTrackedTarget
  */
 public class PhotonTrackedTargetSerde implements PacketSerde<PhotonTrackedTarget> {
-    // Message definition md5sum. See photon_packet.adoc for details
-    public static final String MESSAGE_VERSION = "8fdada56b9162f2e32bd24f0055d7b60";
-    public static final String MESSAGE_FORMAT = "float64 yaw;float64 pitch;float64 area;float64 skew;int32 fiducialId;int32 objDetectId;float32 objDetectConf;Transform3d bestCameraToTarget;Transform3d altCameraToTarget;float64 poseAmbiguity;TargetCorner[?] minAreaRectCorners;TargetCorner[?] detectedCorners;";
-
-    public final String getTypeString() { return MESSAGE_FORMAT; }
-    public final String getInterfaceUUID() { return MESSAGE_VERSION; }
+    @Override
+    public final String getInterfaceUUID() { return "cc6dbb5c5c1e0fa808108019b20863f1"; }
+    @Override
+    public final String getSchema() { return "float64 yaw;float64 pitch;float64 area;float64 skew;int32 fiducialId;int32 objDetectId;float32 objDetectConf;Transform3d bestCameraToTarget;Transform3d altCameraToTarget;float64 poseAmbiguity;TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6 minAreaRectCorners[?];TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6 detectedCorners[?];"; }
+    @Override
+    public final String getTypeName() { return "PhotonTrackedTarget"; }
 
     @Override
     public int getMaxByteSize() {
@@ -67,10 +70,8 @@ public class PhotonTrackedTargetSerde implements PacketSerde<PhotonTrackedTarget
         // field objDetectConf is of intrinsic type float32
         packet.encode((float) value.objDetectConf);
 
-        // field is shimmed!
         PacketUtils.packTransform3d(packet, value.bestCameraToTarget);
 
-        // field is shimmed!
         PacketUtils.packTransform3d(packet, value.altCameraToTarget);
 
         // field poseAmbiguity is of intrinsic type float64
@@ -108,10 +109,8 @@ public class PhotonTrackedTargetSerde implements PacketSerde<PhotonTrackedTarget
         // objDetectConf is of intrinsic type float32
         ret.objDetectConf = packet.decodeFloat();
 
-        // field is shimmed!
         ret.bestCameraToTarget = PacketUtils.unpackTransform3d(packet);
 
-        // field is shimmed!
         ret.altCameraToTarget = PacketUtils.unpackTransform3d(packet);
 
         // poseAmbiguity is of intrinsic type float64
@@ -124,5 +123,19 @@ public class PhotonTrackedTargetSerde implements PacketSerde<PhotonTrackedTarget
         ret.detectedCorners = packet.decodeList(TargetCorner.photonStruct);
 
         return ret;
+    }
+
+    @Override
+    public PacketSerde<?>[] getNestedPhotonMessages() {
+        return new PacketSerde<?>[] {
+            TargetCorner.photonStruct
+        };
+    }
+
+    @Override
+    public Struct<?>[] getNestedWpilibMessages() {
+        return new Struct<?>[] {
+            Transform3d.struct
+        };
     }
 }

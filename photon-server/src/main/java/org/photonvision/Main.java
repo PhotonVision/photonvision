@@ -423,6 +423,11 @@ public class Main {
         ConfigManager.getInstance().load(); // init config manager
         ConfigManager.getInstance().requestSave();
 
+        logger.info("Loading ML models...");
+        var modelManager = NeuralNetworkModelManager.getInstance();
+        modelManager.extractModels(ConfigManager.getInstance().getModelsDirectory());
+        modelManager.discoverModels(ConfigManager.getInstance().getModelsDirectory());
+
         logger.debug("Loading HardwareManager...");
         // Force load the hardware manager
         HardwareManager.getInstance();
@@ -433,10 +438,6 @@ public class Main {
         logger.debug("Loading NetworkTablesManager...");
         NetworkTablesManager.getInstance()
                 .setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
-
-        logger.info("Loading ML models");
-        NeuralNetworkModelManager.getInstance()
-                .initialize(ConfigManager.getInstance().getModelsDirectory());
 
         if (isSmoketest) {
             logger.info("PhotonVision base functionality loaded -- smoketest complete");
