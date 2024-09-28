@@ -28,7 +28,7 @@ const streamStyle = computed<StyleValue>(() => {
     return { cursor: "crosshair" };
   }
 
-  return { };
+  return {};
 });
 
 const containerStyle = computed<StyleValue>(() => {
@@ -73,14 +73,21 @@ onBeforeUnmount(() => {
   if (!mjpgStream.value) return;
   mjpgStream.value["src"] = emptyStreamSrc;
 });
-
-
 </script>
 
 <template>
   <div class="stream-container" :style="containerStyle">
     <img :src="loadingImage" class="stream-loading" />
-    <img :id="id" class="stream-video" ref="mjpgStream" v-show="streamSrc !== emptyStreamSrc" crossorigin="anonymous" :src="streamSrc" :alt="streamDesc" :style="streamStyle" />
+    <img
+      :id="id"
+      class="stream-video"
+      ref="mjpgStream"
+      v-show="streamSrc !== emptyStreamSrc"
+      crossorigin="anonymous"
+      :src="streamSrc"
+      :alt="streamDesc"
+      :style="streamStyle"
+    />
     <div class="stream-overlay" :style="overlayStyle">
       <pv-icon
         icon-name="mdi-camera-image"
