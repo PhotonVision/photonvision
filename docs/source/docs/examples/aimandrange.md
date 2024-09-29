@@ -43,7 +43,7 @@ To do this, we'll use the *pitch* of the target in the camera image and trigonom
 
        .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-python-examples/aimandrange/robot.py
          :language: python
-         :lines: 44-98
+         :lines: 44-95
          :linenos:
          :lineno-start: 44
 
