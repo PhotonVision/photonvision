@@ -422,7 +422,7 @@ public class PhotonCamera implements AutoCloseable {
             DriverStation.reportWarning(
                     "PhotonVision coprocessor at path "
                             + path
-                            + " has note reported a message interface UUID - is your coprocessor's camera started?",
+                            + " has not reported a message interface UUID - is your coprocessor's camera started?",
                     true);
         } else if (!local_uuid.equals(remote_uuid)) {
             // Error on a verified version mismatch

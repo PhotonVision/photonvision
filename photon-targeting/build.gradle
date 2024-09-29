@@ -1,3 +1,7 @@
+plugins {
+    id 'edu.wpi.first.WpilibTools' version '1.3.0'
+}
+
 ext {
     nativeName = "photontargeting"
 }
@@ -5,6 +9,7 @@ ext {
 apply plugin: 'cpp'
 apply plugin: 'google-test-test-suite'
 apply plugin: 'edu.wpi.first.NativeUtils'
+apply plugin: 'edu.wpi.first.GradleJni'
 
 apply from: "${rootDir}/shared/config.gradle"
 apply from: "${rootDir}/shared/javacommon.gradle"
@@ -18,6 +23,20 @@ nativeUtils {
 }
 
 sourceSets.main.java.srcDir "${projectDir}/src/generated/main/java"
+
+// Folder whose contents will be included in the final jar
+def outputsFolder = file("$buildDir/extra_resources")
+
+// Sync task: like the copy task, but all files that exist in the destination directory will be deleted before copying files
+task syncOutputsFolder(type: Sync) {
+    into outputsFolder
+}
+
+// And package our outputs folder into the final jar
+jar {
+    from outputsFolder
+    dependsOn syncOutputsFolder
+}
 
 model {
     components {
@@ -42,14 +61,59 @@ model {
                 it.tasks.withType(CppCompile) {
                     it.dependsOn generateProto
                 }
-                if(project.hasProperty('includePhotonTargeting')) {
-                    lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
+            }
+
+            nativeUtils.useRequiredLibrary(it, "wpiutil_shared")
+            nativeUtils.useRequiredLibrary(it, "wpimath_shared")
+            nativeUtils.useRequiredLibrary(it, "wpinet_shared")
+            nativeUtils.useRequiredLibrary(it, "wpilibc_shared")
+            nativeUtils.useRequiredLibrary(it, "ntcore_shared")
+        }
+        "${nativeName}JNI"(JniNativeLibrarySpec) {
+
+            enableCheckTask project.hasProperty('doJniCheck')
+            javaCompileTasks << compileJava
+            jniCrossCompileOptions << JniCrossCompileOptions(nativeUtils.wpi.platforms.roborio)
+            jniCrossCompileOptions << JniCrossCompileOptions(nativeUtils.wpi.platforms.linuxarm32)
+            jniCrossCompileOptions << JniCrossCompileOptions(nativeUtils.wpi.platforms.linuxarm64)
+
+            sources {
+                cpp {
+                    source {
+                        srcDirs 'src/main/native/jni'
+                        include '**/*.cpp', '**/*.cc'
+                    }
                 }
             }
 
-            nativeUtils.useRequiredLibrary(it, "wpilib_shared")
-            nativeUtils.useRequiredLibrary(it, "apriltag_shared")
-            nativeUtils.useRequiredLibrary(it, "opencv_shared")
+            binaries.all {
+                lib library: nativeName, linkage: 'shared'
+            }
+
+            nativeUtils.useRequiredLibrary(it, "wpiutil_shared")
+            nativeUtils.useRequiredLibrary(it, "wpinet_shared")
+            nativeUtils.useRequiredLibrary(it, "ntcore_shared")
+        }
+
+        all {
+            binaries.withType(SharedLibraryBinarySpec) { binary ->
+                // check that we're building for the platform (per PArchOverride/wpilib plat detection)
+                if (binary.targetPlatform.name == jniPlatform) {
+
+                    // only include release binaries (hard coded for now)
+                    def isDebug = binary.buildType.name.contains('debug')
+                    if (!isDebug) {
+                        syncOutputsFolder {
+                            // Just shove the shared library into the root of the jar output by photon-targeting:jar
+                            from(binary.sharedLibraryFile) {
+                                into "nativelibraries/${wpilibNativeName}/"
+                            }
+                            // And (not sure if this is a hack) make the jar task depend on the build task
+                            dependsOn binary.identifier.projectScopedName
+                        }
+                    }
+                }
+            }
         }
     }
     testSuites {
@@ -76,17 +140,11 @@ model {
                 it.tasks.withType(CppCompile) {
                     it.dependsOn generateProto
                 }
-                if(project.hasProperty('includePhotonTargeting')) {
-                    lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
-                }
             }
 
-            nativeUtils.useRequiredLibrary(it, "cscore_shared")
-            nativeUtils.useRequiredLibrary(it, "cameraserver_shared")
             nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared")
             nativeUtils.useRequiredLibrary(it, "googletest_static")
             nativeUtils.useRequiredLibrary(it, "apriltag_shared")
-            nativeUtils.useRequiredLibrary(it, "opencv_shared")
         }
     }
 
@@ -129,3 +187,27 @@ cppHeadersZip {
         into '/'
     }
 }
+
+// make sure native libraries can be loaded in tests
+test {
+    classpath += files(outputsFolder)
+    dependsOn syncOutputsFolder
+}
+
+// setup wpilib bundled native libs
+wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()
+
+def nativeConfigName = 'wpilibNatives'
+def nativeConfig = configurations.create(nativeConfigName)
+
+def nativeTasks = wpilibTools.createExtractionTasks {
+    configurationName = nativeConfigName
+}
+
+nativeTasks.addToSourceSetResources(sourceSets.test)
+
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
