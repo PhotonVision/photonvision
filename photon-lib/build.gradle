@@ -44,6 +44,54 @@ nativeUtils {
     }
 }
 
+def getPythonProperty(String property) {
+    def pythonexe = project.findProperty('pythonExecutable') ?: 'python3'
+
+    File.createTempFile("temp",".py").with { f ->
+        f.write "from sysconfig import get_paths as gp; print(gp()['${property}'])"
+
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine pythonexe, f.absolutePath
+            standardOutput = stdout
+        }
+        def ret = stdout.toString().trim();
+        println("Python property: $property = $ret")
+        return ret
+    }
+}
+
+def photonlibpy_dir = "$projectDir/py/photonlibpy/lib"
+
+// This task gets .so's added as dependencies by photonlib/photonlibpy native models
+task installPhotonlibpyNative(type: Sync) {
+
+    into photonlibpy_dir
+
+    for (lib in [
+                "photontargeting.dll",
+                "cameraserver.dll",
+                "cscore.dll",
+                "opencv_core480.dll",
+                "opencv_calib3d480.dll",
+                "opencv_features2d480.dll",
+                "opencv_imgcodecs480.dll",
+                "opencv_flann480.dll",
+                "opencv_imgproc480.dll",
+                "libcameraserver.so",
+                "libcscore.so",
+                "libopencv_core.so.4.8",
+                "libopencv_calib3d.so.4.8",
+                "libopencv_features2d.so.4.8",
+                "libopencv_imgcodecs.so.4.8",
+                "libopencv_flann.so.4.8",
+                "libopencv_imgproc.so.4.8",
+                "libphotontargeting.so",
+            ]) {
+        from "$projectDir/build/install/photonlibTest/$jniPlatform/release/lib/$lib"
+    }
+}
+
 model {
     components {
         "${nativeName}"(NativeLibrarySpec) {
@@ -70,13 +118,83 @@ model {
                 if(project.hasProperty('includePhotonTargeting')) {
                     lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
                 }
+
+                nativeUtils.useRequiredLibrary(it, "wpilib_shared")
+                nativeUtils.useRequiredLibrary(it, "apriltag_shared")
+                nativeUtils.useRequiredLibrary(it, "opencv_shared")
+                nativeUtils.useRequiredLibrary(it, "cscore_shared")
+                nativeUtils.useRequiredLibrary(it, "cameraserver_shared")
+            }
+
+            // And copy into photonlibpy
+            binaries.withType(SharedLibraryBinarySpec) { binary ->
+                // check that we're building for the platform (per PArchOverride/wpilib plat detection)
+                if (binary.targetPlatform.name == jniPlatform) {
+                    // only include release binaries (hard coded for now)
+                    def isDebug = binary.buildType.name.contains('debug')
+                    if (!isDebug) {
+                        installPhotonlibpyNative {
+                            // Just shove the shared library into our copy task
+                            from binary.sharedLibraryFile
+                            // And (not sure if this is a hack) make the jar task depend on the build task
+                            dependsOn binary.identifier.projectScopedName
+                        }
+                    }
+                }
+            }
+
+        }
+        photonlibpy(NativeLibrarySpec) {
+            sources {
+                cpp {
+                    source {
+                        srcDirs 'src/main/pybindings/cpp'
+                        include '**/*.cpp', '**/*.cc'
+                    }
+                    exportedHeaders {
+                        srcDirs 'nanobind/include', 'nanobind/src', 'nanobind/ext/robin_map/include', getPythonProperty("include")
+                        include "**/*.h"
+                        include "**/*.hpp"
+                    }
+                }
+            }
+
+            binaries.all {
+                lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
+                lib library: nativeName
+            }
+
+            // Don't love that this is copy-pasted around so much
+            binaries.withType(SharedLibraryBinarySpec) { binary ->
+                // check that we're building for the platform (per PArchOverride/wpilib plat detection)
+                String plat = binary.targetPlatform.name;
+                if (plat == jniPlatform) {
+                    // only include release binaries (hard coded for now)
+                    def isDebug = binary.buildType.name.contains('debug')
+                    if (!isDebug) {
+                        installPhotonlibpyNative { py ->
+                            // Just shove the shared library into our copy task
+                            py.from(binary.sharedLibraryFile) { pppy ->
+                                pppy.rename { oldName ->
+                                    if (plat.toLowerCase().startsWith("windows")) {
+                                        return "_" + oldName.replaceAll(".dll\$", ".pyd")
+                                    } else {
+                                        return "_" + oldName.replaceFirst(/^lib/, "")
+                                    }
+                                }
+                            }
+                            // And (not sure if this is a hack) make the jar task depend on the build task
+                            py.dependsOn binary.identifier.projectScopedName
+                        }
+                    }
+                }
             }
 
             nativeUtils.useRequiredLibrary(it, "wpilib_shared")
-            nativeUtils.useRequiredLibrary(it, "apriltag_shared")
-            nativeUtils.useRequiredLibrary(it, "opencv_shared")
             nativeUtils.useRequiredLibrary(it, "cscore_shared")
             nativeUtils.useRequiredLibrary(it, "cameraserver_shared")
+            nativeUtils.useRequiredLibrary(it, "apriltag_shared")
+            nativeUtils.useRequiredLibrary(it, "opencv_shared")
         }
     }
     testSuites {
@@ -114,6 +232,22 @@ model {
             nativeUtils.useRequiredLibrary(it, "googletest_static")
             nativeUtils.useRequiredLibrary(it, "apriltag_shared")
             nativeUtils.useRequiredLibrary(it, "opencv_shared")
+
+            // Since we need to grab .so's from our test install (this is kinda a hack lol), add the dependency here
+            def found = false
+            binaries.all {
+                if (!found) {
+                    def arch = it.targetPlatform.name
+                    def isDebug = it.buildType.name.contains('debug')
+                    if (arch == jniPlatform && !isDebug) {
+                        installPhotonlibpyNative { py ->
+                            py.dependsOn it.tasks.install
+                        }
+
+                        found = true
+                    }
+                }
+            }
         }
     }
 
@@ -142,6 +276,24 @@ model {
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+
+    binaries {
+        withType(NativeBinarySpec).all {
+            // println "${it.toolChain} -> ${it.component.baseName} -> ${it.toolChain instanceof VisualCpp}"
+
+            if((it.component.baseName == "photonlibpy" || it.component.baseName == nativeName)) {
+                if (it.toolChain instanceof VisualCpp) {
+                    def path = getPythonProperty("data")
+                    it.linker.args "/LIBPATH:${path}/libs"
+                }
+
+                if (it.toolChain instanceof GccCompatibleToolChain) {
+                    it.cppCompiler.args << "-Wno-pedantic"
+                    it.linker.args '-Wl,-rpath,\'$ORIGIN\''
                 }
             }
         }

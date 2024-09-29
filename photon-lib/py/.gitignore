@@ -3,3 +3,8 @@ dist/
 build/
 .eggs/
 photonlibpy/version.py
+photonlibpy/lib/*.so*
+photonlibpy/lib/*.dylib*
+photonlibpy/lib/*.dll*
+photonlibpy/lib/*.pyd
+photonlibpy/lib/*.pyi

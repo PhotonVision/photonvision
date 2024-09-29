@@ -28,18 +28,13 @@ nvm install 18.20.4
 
 ### Getting the Source Code
 
-Get the source code from git:
+Get the source code by cloning our repository from GitHub:
 
 ```bash
-git clone https://github.com/PhotonVision/photonvision
+git clone --recurse-submodules https://github.com/PhotonVision/photonvision
 ```
 
-or alternatively download the source code from GitHub and extract the zip:
-
-```{image} assets/git-download.png
-:alt: Download source code from git
-:width: 600
-```
+Note the submodules -- when checking out new branches in the future, you may need to run `git submodule update`.
 
 ### Install Necessary Node JS Dependencies
 

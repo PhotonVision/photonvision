@@ -1,0 +1,3 @@
+[submodule "photon-lib/nanobind"]
+	path = photon-lib/nanobind
+	url = https://github.com/wjakob/nanobind
