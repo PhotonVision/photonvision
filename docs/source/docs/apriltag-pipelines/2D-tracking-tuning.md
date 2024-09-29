@@ -47,7 +47,7 @@ Pose iterations represents the amount of iterations done in order for the AprilT
 
 Max error bits, also known as hamming distance, is the number of positions at which corresponding pieces of data / tag are different. Put more generally, this is the number of bits (think of these as squares in the tag) that need to be changed / corrected in the tag to correctly detect it. A higher value means that more tags will be detected while a lower value cuts out tags that could be "questionable" in terms of detection.
 
-We recommend a value of 0 for the 16h5 and 7+ for the 36h11 family.
+We recommend a value of 0 for the 16h5 and at most 3 for the 36h11 family.
 
 ### Decision Margin Cutoff
 
