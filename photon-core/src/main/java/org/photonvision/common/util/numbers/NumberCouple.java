@@ -51,11 +51,9 @@ public abstract class NumberCouple<T extends Number> {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof NumberCouple<?> couple)) {
-            return false;
-        }
-
-        return couple.first.equals(first) && couple.second.equals(second);
+        return obj instanceof NumberCouple<?> couple
+                && couple.first.equals(first)
+                && couple.second.equals(second);
     }
 
     @JsonIgnore
