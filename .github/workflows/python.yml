@@ -60,11 +60,25 @@ jobs:
         run: |
           python create_photonlib_pyi.py
 
+      - name: Build photonlibpy api docs
+        working-directory: ./photon-lib/py/docs
+        # Now that we have native .so's in place, generate pyi
+        run: |
+          pip install -r ../../../docs/requirements.txt 
+          pip install ..
+          make html
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: "photonlibpy-stubgen"
           path: ./photon-lib/py/photonlibpy/*.pyi
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: "photonlibpy-apidocs"
+          path: ./photon-lib/py/docs/build/html
 
 
   build-host:

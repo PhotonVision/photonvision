@@ -41,7 +41,9 @@ class PhotonPipelineMetadata:
         """
     @property
     def sequenceID(self) -> int:
-        ...
+        """
+        Number of frames processed since this VisionModule was started
+        """
 class PhotonPipelineResult:
     def __repr__(self) -> str:
         ...

@@ -26,24 +26,13 @@ author = "Banks Troutman, Matt Morley"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc'
+    'sphinx.ext.autodoc',
     "sphinx_rtd_theme",
     "sphinx.ext.autosectionlabel",
-    "sphinx.ext.todo",
-    "sphinx_tabs.tabs",
     "notfound.extension",
-    "sphinxext.remoteliteralinclude",
-    "sphinxext.opengraph",
-    "sphinxcontrib.ghcontributors",
     "sphinx_design",
     "myst_parser",
 ]
-
-# Configure OpenGraph support
-
-ogp_site_url = "https://docs.photonvision.org/en/latest/"
-ogp_site_name = "PhotonVision Documentation"
-ogp_image = "https://raw.githubusercontent.com/PhotonVision/photonvision-docs/master/source/assets/RectLogo.png"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -116,8 +105,8 @@ html_theme_options = {
         "color-foreground-muted": "#ffffff",
         "color-foreground-border": "transparent",
         "color-background-border": "transparent",
-        "color-api-overall": "#101010",
         "color-inline-code-background": "#0d0d0d",
+        "color-api-overall": "#a0a0a0",
     },
 }
 
