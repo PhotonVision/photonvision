@@ -242,22 +242,7 @@ public class PigpioSocket {
                 waveSendOnce(waveformId);
             }
         } else {
-            String error = "";
-            switch (waveformId) {
-                case PI_EMPTY_WAVEFORM:
-                    error = "Waveform empty";
-                    break;
-                case PI_TOO_MANY_CBS:
-                    error = "Too many CBS";
-                    break;
-                case PI_TOO_MANY_OOL:
-                    error = "Too many OOL";
-                    break;
-                case PI_NO_WAVEFORM_ID:
-                    error = "No waveform ID";
-                    break;
-            }
-            logger.error("Failed to send wave: " + error);
+            logger.error("Failed to send wave: " + getMessageForError(waveformId));
         }
     }
 
