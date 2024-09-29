@@ -16,7 +16,7 @@
 ###############################################################################
 
 
-def prepare_to_load_photonlib():
+def _prepare_to_load_photonlib():
     # force-load native libraries
     import ntcore
     import wpiutil
@@ -36,6 +36,6 @@ def prepare_to_load_photonlib():
         os.add_dll_directory(os.path.dirname(os.path.realpath(__file__)))
 
 
-prepare_to_load_photonlib()
+_prepare_to_load_photonlib()
 
 from ._photonlibpy import *

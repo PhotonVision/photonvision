@@ -13,6 +13,6 @@ from wpimath.geometry import Pose3d
 from wpimath.geometry import Transform3d
 from wpimath.geometry import Translation3d
 from . import _photonlibpy
-__all__ = ['MultiTargetPNPResult', 'PhotonCamera', 'PhotonCameraSim', 'PhotonPipelineMetadata', 'PhotonPipelineResult', 'PhotonTrackedTarget', 'Pose3d', 'TargetModel', 'Transform3d', 'Translation3d', 'VisionSystemSim', 'VisionTargetSim', 'prepare_to_load_photonlib', 'print_t']
-def prepare_to_load_photonlib():
+__all__ = ['MultiTargetPNPResult', 'PhotonCamera', 'PhotonCameraSim', 'PhotonPipelineMetadata', 'PhotonPipelineResult', 'PhotonTrackedTarget', 'Pose3d', 'TargetModel', 'Transform3d', 'Translation3d', 'VisionSystemSim', 'VisionTargetSim', '_prepare_to_load_photonlib', 'print_t']
+def _prepare_to_load_photonlib():
     ...
