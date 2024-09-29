@@ -6,7 +6,7 @@
 #include "photon/PhotonCamera.h"
 #include "photon/simulation/VisionSystemSim.h"
 
-#include <pybind11/pybind11.h>
+#include <pybind11/smart_holder.h>
 #include <pybind11/stl.h>
 
 namespace py = pybind11;
@@ -58,7 +58,7 @@ void wrap_photon(py::module_ m) {
       });
 
   py::class_<photon::PhotonCamera>(m, "PhotonCamera")
-      .def(py::init<const std::string&>())
+      .def(py::init<std::string>())
       .def("GetDriverMode", &photon::PhotonCamera::GetDriverMode)
       .def("GetLatestResult", &photon::PhotonCamera::GetLatestResult);
 

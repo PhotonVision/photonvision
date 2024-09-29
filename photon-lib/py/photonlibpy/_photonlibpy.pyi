@@ -2,11 +2,13 @@
 C++ bindings for photonlib
 """
 from __future__ import annotations
+import robotpy_apriltag._apriltag
 import typing
+import wpimath.geometry._geometry
 from wpimath.geometry import Pose3d
 from wpimath.geometry import Transform3d
 from wpimath.geometry import Translation3d
-__all__ = ['MultiTargetPNPResult', 'PhotonCamera', 'PhotonCameraSim', 'PhotonPipelineMetadata', 'PhotonPipelineResult', 'PhotonTrackedTarget', 'Pose3d', 'TargetModel', 'Transform3d', 'Translation3d', 'VisionSystemSim', 'VisionTargetSim']
+__all__ = ['MultiTargetPNPResult', 'PhotonCamera', 'PhotonCameraSim', 'PhotonPipelineMetadata', 'PhotonPipelineResult', 'PhotonTrackedTarget', 'Pose3d', 'TargetModel', 'Transform3d', 'Translation3d', 'VisionSystemSim', 'VisionTargetSim', 'print_t']
 class MultiTargetPNPResult:
     @property
     def fiducialIDsUsed(self) -> list[int]:
@@ -19,6 +21,8 @@ class PhotonCamera:
     def __init__(self, arg0: str) -> None:
         ...
 class PhotonCameraSim:
+    def EnableDrawWireframe(self, enabled: bool) -> None:
+        ...
     def __init__(self, arg0: PhotonCamera) -> None:
         ...
 class PhotonPipelineMetadata:
@@ -62,25 +66,31 @@ class TargetModel:
     def IsSpherical(self) -> bool:
         ...
     @property
-    def Vertices(self) -> list[Translation3d]:
+    def Vertices(self) -> list[wpimath.geometry._geometry.Translation3d]:
         ...
 class VisionSystemSim:
-    def AddCamera(self, arg0: PhotonCameraSim, arg1: Transform3d) -> None:
+    def AddAprilTags(self, layout: robotpy_apriltag._apriltag.AprilTagFieldLayout) -> None:
+        ...
+    def AddCamera(self, cameraSim: PhotonCameraSim, robotToCamera: wpimath.geometry._geometry.Transform3d) -> None:
         ...
     def AddVisionTargets(self, type: str, targets: list[VisionTargetSim]) -> None:
         ...
-    def Update(self, arg0: Pose3d) -> None:
+    def Update(self, arg0: wpimath.geometry._geometry.Pose3d) -> None:
         ...
     def __init__(self, visionSystemName: str) -> None:
         ...
 class VisionTargetSim:
     @typing.overload
-    def __init__(self, pose: Pose3d, model: TargetModel) -> None:
+    def __init__(self, pose: wpimath.geometry._geometry.Pose3d, model: TargetModel) -> None:
         """
         Create a simulated target at a given pose
         """
     @typing.overload
-    def __init__(self, pose: Pose3d, model: TargetModel, fiducial_id: int) -> None:
+    def __init__(self, pose: wpimath.geometry._geometry.Pose3d, model: TargetModel, fiducial_id: int) -> None:
         """
         Create a simulated AprilTag at a given pose
         """
+def print_t(arg0: wpimath.geometry._geometry.Translation3d) -> None:
+    """
+    A function to print a pose
+    """

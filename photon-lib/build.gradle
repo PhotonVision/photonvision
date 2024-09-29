@@ -198,8 +198,8 @@ model {
                 }
 
                 if (it.toolChain instanceof GccCompatibleToolChain) {
-                    it.cppCompiler.args << "-Wno-pedantic"
-                    it.linker.args '-Wl,-rpath,\'$ORIGIN\'', '-DPYBIND11_USE_SMART_HOLDER_AS_DEFAULT=1'
+                    it.cppCompiler.args << "-Wno-pedantic" << "-DPYBIND11_USE_SMART_HOLDER_AS_DEFAULT=1"
+                    it.linker.args '-Wl,-rpath,\'$ORIGIN\''
                 }
             }
         }
