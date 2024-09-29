@@ -43,7 +43,7 @@ PYBIND11_MODULE(_photonlibpy, m) {
   py::module wpimath = py::module::import("wpimath");
   py::module geom = py::module::import("wpimath.geometry");
 
-  auto func = m.def("print_t", &print_t, "Print an frc::Translation3d", py::arg("t"), py::doc("hello"));
+  auto func = m.def("print_t", &print_t, "Print an frc::Translation3d", py::arg("t"));
 
 //   py::class_<photon::PhotonPipelineMetadata>(m, "PhotonPipelineMetadata")
 //       .def(py::init<>())
