@@ -345,46 +345,35 @@ public class PhotonPoseEstimator {
             PhotonPipelineResult cameraResult,
             Optional<Matrix<N3, N3>> cameraMatrix,
             Optional<Matrix<N8, N1>> distCoeffs,
-            PoseStrategy strat) {
-        Optional<EstimatedRobotPose> estimatedPose = Optional.empty();
-        switch (strat) {
-            case LOWEST_AMBIGUITY:
-                estimatedPose = lowestAmbiguityStrategy(cameraResult);
-                break;
-            case CLOSEST_TO_CAMERA_HEIGHT:
-                estimatedPose = closestToCameraHeightStrategy(cameraResult);
-                break;
-            case CLOSEST_TO_REFERENCE_POSE:
-                estimatedPose = closestToReferencePoseStrategy(cameraResult, referencePose);
-                break;
-            case CLOSEST_TO_LAST_POSE:
-                setReferencePose(lastPose);
-                estimatedPose = closestToReferencePoseStrategy(cameraResult, referencePose);
-                break;
-            case AVERAGE_BEST_TARGETS:
-                estimatedPose = averageBestTargetsStrategy(cameraResult);
-                break;
-            case MULTI_TAG_PNP_ON_RIO:
-                if (cameraMatrix.isEmpty()) {
-                    DriverStation.reportWarning(
-                            "Camera matrix is empty for multi-tag-on-rio",
-                            Thread.currentThread().getStackTrace());
-                } else if (distCoeffs.isEmpty()) {
-                    DriverStation.reportWarning(
-                            "Camera matrix is empty for multi-tag-on-rio",
-                            Thread.currentThread().getStackTrace());
-                } else {
-                    estimatedPose = multiTagOnRioStrategy(cameraResult, cameraMatrix, distCoeffs);
-                }
-                break;
-            case MULTI_TAG_PNP_ON_COPROCESSOR:
-                estimatedPose = multiTagOnCoprocStrategy(cameraResult);
-                break;
-            default:
-                DriverStation.reportError(
-                        "[PhotonPoseEstimator] Unknown Position Estimation Strategy!", false);
-                return Optional.empty();
-        }
+            PoseStrategy strategy) {
+        Optional<EstimatedRobotPose> estimatedPose =
+                switch (strategy) {
+                    case LOWEST_AMBIGUITY -> lowestAmbiguityStrategy(cameraResult);
+                    case CLOSEST_TO_CAMERA_HEIGHT -> closestToCameraHeightStrategy(cameraResult);
+                    case CLOSEST_TO_REFERENCE_POSE ->
+                            closestToReferencePoseStrategy(cameraResult, referencePose);
+                    case CLOSEST_TO_LAST_POSE -> {
+                        setReferencePose(lastPose);
+                        yield closestToReferencePoseStrategy(cameraResult, referencePose);
+                    }
+                    case AVERAGE_BEST_TARGETS -> averageBestTargetsStrategy(cameraResult);
+                    case MULTI_TAG_PNP_ON_RIO -> {
+                        if (cameraMatrix.isEmpty()) {
+                            DriverStation.reportWarning(
+                                    "Camera matrix is empty for multi-tag-on-rio",
+                                    Thread.currentThread().getStackTrace());
+                            yield Optional.empty();
+                        } else if (distCoeffs.isEmpty()) {
+                            DriverStation.reportWarning(
+                                    "Camera matrix is empty for multi-tag-on-rio",
+                                    Thread.currentThread().getStackTrace());
+                            yield Optional.empty();
+                        } else {
+                            yield multiTagOnRioStrategy(cameraResult, cameraMatrix, distCoeffs);
+                        }
+                    }
+                    case MULTI_TAG_PNP_ON_COPROCESSOR -> multiTagOnCoprocStrategy(cameraResult);
+                };
 
         if (estimatedPose.isPresent()) {
             lastPose = estimatedPose.get().estimatedPose;

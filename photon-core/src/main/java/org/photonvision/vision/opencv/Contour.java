@@ -158,18 +158,19 @@ public class Contour implements Releasable {
                 double massX = (x0A + x0B) / 2;
                 double massY = (y0A + y0B) / 2;
                 switch (intersectionDirection) {
-                    case Up:
+                    case None -> {}
+                    case Up -> {
                         if (intersectionY < massY) isIntersecting = true;
-                        break;
-                    case Down:
+                    }
+                    case Down -> {
                         if (intersectionY > massY) isIntersecting = true;
-                        break;
-                    case Left:
+                    }
+                    case Left -> {
                         if (intersectionX < massX) isIntersecting = true;
-                        break;
-                    case Right:
+                    }
+                    case Right -> {
                         if (intersectionX > massX) isIntersecting = true;
-                        break;
+                    }
                 }
                 intersectMatA.release();
                 intersectMatB.release();
