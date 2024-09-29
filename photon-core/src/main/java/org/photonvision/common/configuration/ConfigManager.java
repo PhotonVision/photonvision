@@ -74,7 +74,7 @@ public class ConfigManager {
                 case LEGACY ->
                         INSTANCE = new ConfigManager(rootFolder, new LegacyConfigProvider(rootFolder));
                 case ATOMIC_ZIP -> {
-                    // TODO: Not done yet, fall through
+                    // TODO: Not done yet
                 }
             }
         }
