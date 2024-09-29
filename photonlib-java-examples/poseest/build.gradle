@@ -3,8 +3,8 @@ plugins {
     id "edu.wpi.first.GradleRIO" version "2025.1.1-beta-1"
 }
 
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 apply from: "${rootDir}/../shared/examples_common.gradle"
 
