@@ -15,6 +15,7 @@
 ## along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ###############################################################################
 
+
 def prepare_to_load_photonlib():
     # force-load native libraries
     import ntcore
@@ -28,9 +29,13 @@ def prepare_to_load_photonlib():
 
     # and now our extension module
     import platform
+
     if platform.system().lower() == "Windows":
         import os
+
         os.add_dll_directory(os.path.dirname(os.path.realpath(__file__)))
+
+
 prepare_to_load_photonlib()
 
 from ._photonlibpy import *

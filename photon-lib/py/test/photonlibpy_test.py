@@ -16,8 +16,10 @@
 ###############################################################################
 
 from time import sleep
-from photonlibpy import PhotonCamera
+
 import ntcore
+
+from photonlibpy import PhotonCamera
 
 
 def test_roundTrip():

@@ -26,54 +26,17 @@
 #include "photon/PhotonCamera.h"
 #include <frc/geometry/Translation3d.h>
 
-void print_t(frc::Translation3d t) {
-    fmt::println("x {} y {} z {}", t.X(), t.Y(), t.Z());
-}
-
-// actual nanobind include
 #include <pybind11/pybind11.h>
 
 namespace py = pybind11;
+
+void wrap_photon_sim(py::module_ m);
+void wrap_photon(py::module_ m);
 
 PYBIND11_MODULE(_photonlibpy, m) {
 
   m.doc() = "C++ bindings for photonlib";
 
-  // hack -- can't make stubs...
-  py::module wpimath = py::module::import("wpimath");
-  py::module geom = py::module::import("wpimath.geometry");
-
-  auto func = m.def("print_t", &print_t, "Print an frc::Translation3d", py::arg("t"));
-
-//   py::class_<photon::PhotonPipelineMetadata>(m, "PhotonPipelineMetadata")
-//       .def(py::init<>())
-//       .def_readonly("sequenceID", &photon::PhotonPipelineMetadata::sequenceID)
-//       .def_readonly("captureTimestampMicros",
-//               &photon::PhotonPipelineMetadata::captureTimestampMicros)
-//       .def_readonly("publishTimestampMicros",
-//               &photon::PhotonPipelineMetadata::publishTimestampMicros);
-
-//   py::class_<photon::PhotonTrackedTarget>(m, "PhotonTrackedTarget")
-//       .def_readonly("yaw", &photon::PhotonTrackedTarget::yaw)
-//       .def_readonly("pitch", &photon::PhotonTrackedTarget::pitch)
-//       // String representation
-//       .def("__repr__", [](const photon::PhotonTrackedTarget& t) {
-//         std::string s;
-//         fmt::format_to(std::back_inserter(s),
-//                        "PhotonTrackedTarget<yaw={},pitch={}>", t.yaw, t.pitch);
-//         return s;
-//       });
-//   py::class_<photon::MultiTargetPNPResult>(m, "MultiTargetPNPResult")
-//       .def_readonly("fiducialIDsUsed", &photon::MultiTargetPNPResult::fiducialIDsUsed)
-//   ;
-
-//   py::class_<photon::PhotonPipelineResult>(m, "PhotonPipelineResult")
-//       .def_readonly("metadata", &photon::PhotonPipelineResult::metadata)
-//       .def_readonly("targets", &photon::PhotonPipelineResult::targets)
-//       .def_readonly("multitagResult", &photon::PhotonPipelineResult::multitagResult);
-
-//   py::class_<photon::PhotonCamera>(m, "PhotonCamera")
-//       .def(py::init<const std::string&>())
-//       .def("GetDriverMode", &photon::PhotonCamera::GetDriverMode)
-//       .def("GetLatestResult", &photon::PhotonCamera::GetLatestResult);
+  wrap_photon(m);
+  wrap_photon_sim(m);
 }

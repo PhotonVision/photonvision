@@ -126,7 +126,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: "photonlibpy-stubgen"
-          path: 
+          path:
 ./photon-lib/py/photonlibpy/*.pyi
       - name: Build wheel
         working-directory: ./photon-lib/py

@@ -48,6 +48,7 @@ namespace VisionEstimation {
 
 #include <iostream>
 
+[[maybe_unused]]
 static std::optional<PnpResult> EstimateCamPosePNP(
     const Eigen::Matrix<double, 3, 3>& cameraMatrix,
     const Eigen::Matrix<double, 8, 1>& distCoeffs,

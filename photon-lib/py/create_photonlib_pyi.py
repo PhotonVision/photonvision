@@ -70,6 +70,8 @@ def hack_stubgen():
             if result is None:
                 return None
             result.imports.add(self._wpimath_geom(Identifier("Translation3d")))
+            result.imports.add(self._wpimath_geom(Identifier("Transform3d")))
+            result.imports.add(self._wpimath_geom(Identifier("Pose3d")))
             return result
 
         def parse_value_str(self, value: str) -> Value | InvalidExpression:

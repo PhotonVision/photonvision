@@ -73,6 +73,7 @@ if not os.path.exists(f"{script_path}/photonlibpy/_photonlibpy.pyi"):
     print("Generating typehints")
     try:
         from create_photonlib_pyi import write_stubgen
+
         write_stubgen()
     except Exception as e:
         print(e)
