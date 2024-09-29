@@ -1,5 +1,7 @@
+from types import ModuleType
+from typing import Any
 import pybind11_stubgen
-from pybind11_stubgen.structs import InvalidExpression, Value
+from pybind11_stubgen.structs import Import, InvalidExpression, Module, Value
 
 
 def hack_stubgen():
@@ -52,10 +54,26 @@ def hack_stubgen():
     from typing import Any
 
     class FixWpilibTypestrings(IParser):
+        def _wpimath_geom(self, feature: Identifier) -> Import:
+            return Import(
+                name=feature, origin=QualifiedName((Identifier("wpimath.geometry"), feature))
+            )
+
+        def handle_module(self, path: QualifiedName, module: ModuleType) -> Module | None:
+            """
+            When we import a module, also import bits of wpilib we need
+            """
+            result = super().handle_module(path, module)
+            if result is None:
+                return None
+            result.imports.add(self._wpimath_geom(Identifier("Translation3d")))
+            return result
+
         def parse_value_str(self, value: str) -> Value | InvalidExpression:
-            # TODO
             if value.startswith("frc::"):
-                return Value(value, is_print_safe=False)
+                # TODO huge hack, chop off leading frc::
+                name = value[len("frc::"):]
+                return Value(name, is_print_safe=False)
             return super().parse_value_str(value)
 
     def stub_parser_from_args_HACK(args: CLIArgs) -> IParser:

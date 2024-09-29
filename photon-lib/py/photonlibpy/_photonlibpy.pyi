@@ -2,7 +2,8 @@
 C++ bindings for photonlib
 """
 from __future__ import annotations
-__all__ = ['PhotonPipelineMetadata', 'print_t']
+from wpimath.geometry import Translation3d
+__all__ = ['PhotonPipelineMetadata', 'Translation3d', 'print_t']
 class PhotonPipelineMetadata:
     def __init__(self) -> None:
         ...
@@ -15,7 +16,7 @@ class PhotonPipelineMetadata:
     @property
     def sequenceID(self) -> int:
         ...
-def print_t(t: frc::Translation3d) -> None:
+def print_t(t: Translation3d) -> None:
     """
     hello
     """
