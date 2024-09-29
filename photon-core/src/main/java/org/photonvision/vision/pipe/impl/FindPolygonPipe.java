@@ -50,23 +50,7 @@ public class FindPolygonPipe
 
     private CVShape getShape(Contour in) {
         int corners = getCorners(in);
-
-        /*The contourShape enum has predefined shapes for Circles, Triangles, and Quads
-        meaning any shape not fitting in those predefined shapes must be a custom shape.
-        */
-        if (ContourShape.fromSides(corners) == null) {
-            return new CVShape(in, ContourShape.Custom);
-        }
-        switch (ContourShape.fromSides(corners)) {
-            case Circle:
-                return new CVShape(in, ContourShape.Circle);
-            case Triangle:
-                return new CVShape(in, ContourShape.Triangle);
-            case Quadrilateral:
-                return new CVShape(in, ContourShape.Quadrilateral);
-        }
-
-        return new CVShape(in, ContourShape.Custom);
+        return new CVShape(in, ContourShape.fromSides(corners));
     }
 
     private int getCorners(Contour contour) {

@@ -85,19 +85,25 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         // 2023/other: best guess is 6in
         double tagWidth = Units.inchesToMeters(6);
         TargetModel tagModel = TargetModel.kAprilTag16h5;
-        switch (settings.tagFamily) {
-            case kTag36h11:
-                // 2024 tag, 6.5in
-                params.tagFamily = Objdetect.DICT_APRILTAG_36h11;
-                tagWidth = Units.inchesToMeters(6.5);
-                tagModel = TargetModel.kAprilTag36h11;
-                break;
-            case kTag25h9:
-                params.tagFamily = Objdetect.DICT_APRILTAG_25h9;
-                break;
-            default:
-                params.tagFamily = Objdetect.DICT_APRILTAG_16h5;
-        }
+
+        params.tagFamily =
+                switch (settings.tagFamily) {
+                    case kTag36h11 -> {
+                        // 2024 tag, 6.5in
+                        tagWidth = Units.inchesToMeters(6.5);
+                        tagModel = TargetModel.kAprilTag36h11;
+                        yield Objdetect.DICT_APRILTAG_36h11;
+                    }
+                    case kTag25h9 -> Objdetect.DICT_APRILTAG_25h9;
+                        // TODO: Somebody please approve that this is the desired behavior
+                    case kTag16h5,
+                                    kTagCircle21h7,
+                                    kTagCircle49h12,
+                                    kTagCustom48h11,
+                                    kTagStandard41h12,
+                                    kTagStandard52h13 ->
+                            Objdetect.DICT_APRILTAG_16h5;
+                };
 
         int threshMinSize = Math.max(3, settings.threshWinSizes.getFirst());
         settings.threshWinSizes.setFirst(threshMinSize);
