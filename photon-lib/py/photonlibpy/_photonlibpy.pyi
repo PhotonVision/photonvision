@@ -26,12 +26,19 @@ class PhotonCameraSim:
     def __init__(self, arg0: PhotonCamera) -> None:
         ...
 class PhotonPipelineMetadata:
+    """
+    Metadata about the frame that this result was constructed from
+    """
     @property
     def captureTimestampMicros(self) -> int:
-        ...
+        """
+        Timestamp (in the coprocessor timebase) that this frame was captured at
+        """
     @property
     def publishTimestampMicros(self) -> int:
-        ...
+        """
+        Timestamp (in the coprocessor timebase) that this frame was published to NetworkTables at
+        """
     @property
     def sequenceID(self) -> int:
         ...

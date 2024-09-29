@@ -25,12 +25,12 @@ template <> struct fmt::formatter<photon::PhotonPipelineMetadata> : formatter<st
 };
 
 void wrap_photon(py::module_ m) {
-  py::class_<photon::PhotonPipelineMetadata>(m, "PhotonPipelineMetadata")
-      .def_readonly("sequenceID", &photon::PhotonPipelineMetadata::sequenceID)
+  py::class_<photon::PhotonPipelineMetadata>(m, "PhotonPipelineMetadata", "Metadata about the frame that this result was constructed from")
+      .def_readonly("sequenceID", &photon::PhotonPipelineMetadata::sequenceID, "Number of frames processed since this VisionModule was started")
       .def_readonly("captureTimestampMicros",
-              &photon::PhotonPipelineMetadata::captureTimestampMicros)
+              &photon::PhotonPipelineMetadata::captureTimestampMicros, "Timestamp (in the coprocessor timebase) that this frame was captured at")
       .def_readonly("publishTimestampMicros",
-              &photon::PhotonPipelineMetadata::publishTimestampMicros);
+              &photon::PhotonPipelineMetadata::publishTimestampMicros, "Timestamp (in the coprocessor timebase) that this frame was published to NetworkTables at");
 
   py::class_<photon::PhotonTrackedTarget>(m, "PhotonTrackedTarget")
       .def_readonly("yaw", &photon::PhotonTrackedTarget::yaw)
