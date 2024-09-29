@@ -1,65 +1,68 @@
 from types import ModuleType
-from typing import Any
+
 import pybind11_stubgen
 from pybind11_stubgen.structs import Import, InvalidExpression, Module, Value
 
 
 def hack_stubgen():
+    from typing import Any
+
     from pybind11_stubgen import (
+        BaseParser,
         CLIArgs,
-        IParser,
-        LoggerData,
-        IgnoreAllErrors,
-        IgnoreInvalidIdentifierErrors,
-        IgnoreInvalidExpressionErrors,
-        IgnoreUnresolvedNameErrors,
-        LogErrors,
-        SuggestCxxSignatureFix,
-        TerminateOnFatalErrors,
+        ExtractSignaturesFromPybind11Docstrings,
+        FilterClassMembers,
+        FilterInvalidIdentifiers,
+        FilterPybind11ViewClasses,
+        FilterPybindInternals,
+        FilterTypingModuleAttributes,
+        FixBuiltinTypes,
+        FixCurrentModulePrefixInTypeNames,
+        FixMissing__all__Attribute,
+        FixMissing__future__AnnotationsImport,
+        FixMissingEnumMembersAnnotation,
+        FixMissingFixedSizeImport,
+        FixMissingImports,
+        FixMissingNoneHashFieldAnnotation,
         FixNumpyArrayDimAnnotation,
         FixNumpyArrayDimTypeVar,
         FixNumpyArrayFlags,
         FixNumpyArrayRemoveParameters,
-        FixMissing__future__AnnotationsImport,
-        FixMissing__all__Attribute,
-        FixMissingNoneHashFieldAnnotation,
-        FixMissingImports,
-        FilterTypingModuleAttributes,
-        FixPEP585CollectionNames,
-        FixTypingTypeNames,
-        FixScipyTypeArguments,
-        FixMissingFixedSizeImport,
-        FixMissingEnumMembersAnnotation,
-        OverridePrintSafeValues,
         FixNumpyDtype,
-        FixNumpyArrayFlags,
-        FixCurrentModulePrefixInTypeNames,
-        FixBuiltinTypes,
-        RewritePybind11EnumValueRepr,
-        FilterClassMembers,
-        ReplaceReadWritePropertyWithField,
-        FilterInvalidIdentifiers,
-        FixValueReprRandomAddress,
-        FixRedundantBuiltinsAnnotation,
-        FilterPybindInternals,
-        FilterPybind11ViewClasses,
-        FixRedundantMethodsFromBuiltinObject,
-        RemoveSelfAnnotation,
+        FixPEP585CollectionNames,
         FixPybind11EnumStrDoc,
-        ExtractSignaturesFromPybind11Docstrings,
+        FixRedundantBuiltinsAnnotation,
+        FixRedundantMethodsFromBuiltinObject,
+        FixScipyTypeArguments,
+        FixTypingTypeNames,
+        FixValueReprRandomAddress,
+        IgnoreAllErrors,
+        IgnoreInvalidExpressionErrors,
+        IgnoreInvalidIdentifierErrors,
+        IgnoreUnresolvedNameErrors,
+        IParser,
+        LogErrors,
+        LoggerData,
+        OverridePrintSafeValues,
         ParserDispatchMixin,
-        BaseParser,
+        RemoveSelfAnnotation,
+        ReplaceReadWritePropertyWithField,
+        RewritePybind11EnumValueRepr,
+        SuggestCxxSignatureFix,
+        TerminateOnFatalErrors,
     )
-    from pybind11_stubgen.structs import QualifiedName, Docstring, Alias, Class, Method, Field, Property, Identifier, Argument, ResolvedType
-    from typing import Any
+    from pybind11_stubgen.structs import Identifier, QualifiedName
 
     class FixWpilibTypestrings(IParser):
         def _wpimath_geom(self, feature: Identifier) -> Import:
             return Import(
-                name=feature, origin=QualifiedName((Identifier("wpimath.geometry"), feature))
+                name=feature,
+                origin=QualifiedName((Identifier("wpimath.geometry"), feature)),
             )
 
-        def handle_module(self, path: QualifiedName, module: ModuleType) -> Module | None:
+        def handle_module(
+            self, path: QualifiedName, module: ModuleType
+        ) -> Module | None:
             """
             When we import a module, also import bits of wpilib we need
             """
@@ -72,7 +75,7 @@ def hack_stubgen():
         def parse_value_str(self, value: str) -> Value | InvalidExpression:
             if value.startswith("frc::"):
                 # TODO huge hack, chop off leading frc::
-                name = value[len("frc::"):]
+                name = value[len("frc::") :]
                 return Value(name, is_print_safe=False)
             return super().parse_value_str(value)
 
