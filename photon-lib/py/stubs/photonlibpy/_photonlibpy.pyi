@@ -15,7 +15,7 @@ class PhotonPipelineMetadata:
     @property
     def sequenceID(self) -> int:
         ...
-def print_t(t: frc::Translation3d) -> None:
+def print_t(arg0: ...) -> None:
     """
-    hello
+    Print a frc Translation3d
     """

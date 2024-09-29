@@ -43,15 +43,15 @@ PYBIND11_MODULE(_photonlibpy, m) {
   py::module wpimath = py::module::import("wpimath");
   py::module geom = py::module::import("wpimath.geometry");
 
-  m.def("print_t", &print_t, "Print a frc Translation3d");
+  auto func = m.def("print_t", &print_t, "Print an frc::Translation3d", py::arg("t"), py::doc("hello"));
 
-  py::class_<photon::PhotonPipelineMetadata>(m, "PhotonPipelineMetadata")
-      .def(py::init<>())
-      .def_readonly("sequenceID", &photon::PhotonPipelineMetadata::sequenceID)
-      .def_readonly("captureTimestampMicros",
-              &photon::PhotonPipelineMetadata::captureTimestampMicros)
-      .def_readonly("publishTimestampMicros",
-              &photon::PhotonPipelineMetadata::publishTimestampMicros);
+//   py::class_<photon::PhotonPipelineMetadata>(m, "PhotonPipelineMetadata")
+//       .def(py::init<>())
+//       .def_readonly("sequenceID", &photon::PhotonPipelineMetadata::sequenceID)
+//       .def_readonly("captureTimestampMicros",
+//               &photon::PhotonPipelineMetadata::captureTimestampMicros)
+//       .def_readonly("publishTimestampMicros",
+//               &photon::PhotonPipelineMetadata::publishTimestampMicros);
 
 //   py::class_<photon::PhotonTrackedTarget>(m, "PhotonTrackedTarget")
 //       .def_readonly("yaw", &photon::PhotonTrackedTarget::yaw)
