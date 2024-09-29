@@ -30,15 +30,11 @@ public enum ContourShape {
     }
 
     public static ContourShape fromSides(int sides) {
-        switch (sides) {
-            case 0:
-                return Circle;
-            case 3:
-                return Triangle;
-            case 4:
-                return Quadrilateral;
-            default:
-                return Custom;
-        }
+        return switch (sides) {
+            case 0 -> Circle;
+            case 3 -> Triangle;
+            case 4 -> Quadrilateral;
+            default -> Custom;
+        };
     }
 }
