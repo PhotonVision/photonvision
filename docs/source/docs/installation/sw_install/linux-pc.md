@@ -8,10 +8,10 @@ You do not need to install PhotonVision on a Windows PC in order to access the w
 
 ## Installing Java
 
-PhotonVision requires a JDK installed and on the system path. JDK 11 is needed (different versions will not work). If you don't have JDK 11 already, run the following to install it:
+PhotonVision requires a JDK installed and on the system path. JDK 17 is needed (different versions will not work). If you don't have JDK 17 already, run the following to install it:
 
 ```
-$ sudo apt-get install openjdk-11-jdk
+$ sudo apt-get install openjdk-17-jdk
 ```
 
 :::{warning}
