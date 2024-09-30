@@ -120,3 +120,7 @@ linkcheck_ignore = ["https://www.raspberrypi.com/software/"]
 
 # MyST configuration (https://myst-parser.readthedocs.io/en/latest/configuration.html)
 myst_enable_extensions = ["colon_fence"]
+
+# remove the leading "photonvision._photonvision" from module docs, and the extra "PhotonCamera.GetDriverMode" in the contents
+add_module_names = False
+toc_object_entries_show_parents = 'hide'

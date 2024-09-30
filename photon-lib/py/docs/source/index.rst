@@ -12,4 +12,3 @@ Module contents
 .. automodule:: photonlibpy._photonlibpy
    :members:
    :undoc-members:
-   :show-inheritance:
