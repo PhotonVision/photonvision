@@ -15,7 +15,7 @@ simsystem.AddCamera(simcam, Transform3d(0, 0, 1, Rotation3d()))
 simsystem.AddAprilTags(AprilTagFieldLayout.loadField(AprilTagField.k2024Crescendo))
 
 start = time.time()
-while True:
+for i in range(10):
     simsystem.Update(Pose3d(
         Translation3d(8, 6, 0),
         Rotation3d(0, 0, time.time() - start)
