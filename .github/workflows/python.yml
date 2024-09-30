@@ -140,7 +140,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: "photonlibpy-stubgen"
-          path: ./photon-lib/py/photonlibpy/*.pyi
+          path: ./photon-lib/py/photonlibpy/
       - name: Build wheel
         working-directory: ./photon-lib/py
         # disable isolation so we can run stubgen (ew but w/e)
@@ -256,7 +256,7 @@ jobs:
     - uses: actions/download-artifact@v4
       with:
         name: "photonlibpy-stubgen"
-        path: ./photon-lib/py/photonlibpy/*.pyi
+        path: ./photon-lib/py/photonlibpy/
 
     - name: Build wheel
       working-directory: ./photon-lib/py
