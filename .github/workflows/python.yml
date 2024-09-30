@@ -66,7 +66,6 @@ jobs:
         # Now that we have native .so's in place, generate pyi
         run: |
           pip install -r ../../../docs/requirements.txt 
-          pip install ..
           make html
 
       - run: find photon-lib/py
