@@ -68,6 +68,8 @@ jobs:
           pip install ..
           make html
 
+      - run: find photon-lib/py
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
