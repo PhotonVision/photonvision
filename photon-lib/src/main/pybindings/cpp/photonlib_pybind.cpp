@@ -39,6 +39,7 @@ void print_t(frc::Translation3d t) {
 }
 
 PYBIND11_MODULE(_photonlibpy, m) {
+  static_assert(PYBIND11_USE_SMART_HOLDER_AS_DEFAULT == 1);
 
   m.doc() = "C++ bindings for photonlib";
 

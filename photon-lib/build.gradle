@@ -261,7 +261,7 @@ task publishVendorJsonToLocalOutputs(type: Copy) {
 }
 
 task installPhotonlibpyNative(type: Copy) {
-    into("$projectDir/py/photonlibpy")
+    into("$projectDir/py/photonlibpy/lib")
 
     from "$projectDir/build/libs/photonlib/shared/$jniPlatform/release/libphotonlib.so"
     from "$projectDir/build/libs/photonlib/shared/$jniPlatform/release/photonlib.dll"

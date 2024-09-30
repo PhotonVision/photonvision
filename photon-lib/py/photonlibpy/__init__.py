@@ -33,9 +33,9 @@ def _prepare_to_load_photonlib():
     if platform.system().lower() == "Windows":
         import os
 
-        os.add_dll_directory(os.path.dirname(os.path.realpath(__file__)))
+        os.add_dll_directory(os.path.dirname(os.path.realpath(__file__)) + os.path.sep + "lib")
 
 
 _prepare_to_load_photonlib()
 
-from ._photonlibpy import *
+from .lib._photonlibpy import *
