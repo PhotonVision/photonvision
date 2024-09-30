@@ -98,6 +98,7 @@ setup(
         "*lib/.dylib*", 
         "lib/*.dll*", 
         "lib/*.pyi"
+        "*.pyi"
     ]},
     include_package_data=True,
     cmdclass={"bdist_wheel": bdist_wheel},
