@@ -196,6 +196,7 @@ def write_stubgen():
         pybind11_stubgen.main()
     except Exception as e:
         print(e)
+        raise e
 
     sys.argv = old_argv
 
