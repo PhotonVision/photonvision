@@ -125,10 +125,10 @@ jobs:
       - run: git fetch --tags --force
       - run: python3 -c "from sysconfig import get_paths as gp; print(gp())"
 
-      - run: ./gradlew photon-lib:tasks -i -PpythonExecutable=python${{ matrix.python_version }}
+      - run: ./gradlew photon-lib:tasks -i -PpythonExecutable=python3
       - run: |
           chmod +x gradlew
-          ./gradlew photon-lib:installPhotonlibpyNative -PpythonExecutable=python${{ matrix.python_version }} -PnativeBuildPlatform=${{ matrix.os.native_build_task }}
+          ./gradlew photon-lib:installPhotonlibpyNative -PpythonExecutable=python3 -PnativeBuildPlatform=${{ matrix.os.native_build_task }}
 
       - name: Install dependencies
         working-directory: ./photon-lib/py
