@@ -923,3 +923,7 @@
 -U _PyCriticalSection2_Begin
 -U _PyCriticalSection2_End
 -U _PyUnicode_AsUTF8
+-U _PyInstanceMethod_New
+-U _PyInstanceMethod_Type
+-U __PyThreadState_UncheckedGet
+-U __PyType_Lookup
