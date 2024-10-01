@@ -129,6 +129,11 @@ jobs:
       - run: git fetch --tags --force
       - run: python3 -c "from sysconfig import get_paths as gp; print(gp())"
 
+      - if: ${{ startsWith(matrix.os.name, 'windows') }}
+        run: |
+            find $(python3 -c "from sysconfig import get_paths as gp; print(gp()['stdlib'])")
+            find $(python3 -c "from sysconfig import get_paths as gp; print(gp()['data'])")
+
       - run: ./gradlew photon-lib:tasks -i -PpythonExecutable=python3
       - run: |
           chmod +x gradlew

@@ -206,6 +206,12 @@ model {
                     it.cppCompiler.args << "-Wno-pedantic" << "-DPYBIND11_USE_SMART_HOLDER_AS_DEFAULT=1"
                     it.linker.args '-Wl,-rpath,\'$ORIGIN\''
                 }
+
+                if (it.toolChain instanceof Clang) {
+                    // assume mac lol
+                    it.linker.args << "-Wl,@${projectDir}/darwin-ld-cpython.sym"
+                    println it.linker.args
+                }
             }
         }
     }
