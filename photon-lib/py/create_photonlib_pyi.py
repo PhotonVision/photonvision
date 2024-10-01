@@ -1,4 +1,5 @@
 from types import ModuleType
+from typing import Optional
 
 import pybind11_stubgen
 from pybind11_stubgen.structs import Import, InvalidExpression, Module, Value
@@ -62,7 +63,7 @@ def hack_stubgen():
 
         def handle_module(
             self, path: QualifiedName, module: ModuleType
-        ) -> Module | None:
+        ):
             """
             When we import a module, also import bits of wpilib we need
             """
@@ -74,7 +75,7 @@ def hack_stubgen():
             result.imports.add(self._wpimath_geom(Identifier("Pose3d")))
             return result
 
-        def parse_value_str(self, value: str) -> Value | InvalidExpression:
+        def parse_value_str(self, value: str):
             if value.startswith("frc::"):
                 # TODO huge hack, chop off leading frc::
                 name = value[len("frc::") :]
@@ -182,7 +183,7 @@ def write_stubgen():
 
     old_argv = sys.argv
     sys.argv = [
-        "<dummy>",
+        "foobart",
         "--exit-code",
         "--ignore-invalid-expressions=<.*>",
         "--root-suffix=",

@@ -98,7 +98,7 @@ jobs:
             native_build_task: "Windowsx86-64"
         python_version:
         # - '3.8'
-        # - '3.9'
+        - '3.9'
         - '3.10'
         # - '3.11'
         # - '3.12'
