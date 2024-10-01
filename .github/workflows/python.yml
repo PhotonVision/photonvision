@@ -85,6 +85,8 @@ jobs:
 
 
   build-host:
+    env:
+      MACOSX_DEPLOYMENT_TARGET: 13
     strategy:
       # max-parallel: 1
       fail-fast: false
@@ -93,7 +95,7 @@ jobs:
         os:
           - name: "ubuntu-22.04"
             native_build_task: "Linuxx86-64"
-          - name: "macos-12"
+          - name: "macos-14"
             native_build_task: "Osxuniversal"
           - name: "windows-2022"
             native_build_task: "Windowsx86-64"
