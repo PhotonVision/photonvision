@@ -26,7 +26,7 @@ author = "Banks Troutman, Matt Morley"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
+    "sphinx.ext.autodoc",
     "sphinx_rtd_theme",
     "sphinx.ext.autosectionlabel",
     "notfound.extension",
@@ -123,4 +123,4 @@ myst_enable_extensions = ["colon_fence"]
 
 # remove the leading "photonvision._photonvision" from module docs, and the extra "PhotonCamera.GetDriverMode" in the contents
 add_module_names = False
-toc_object_entries_show_parents = 'hide'
+toc_object_entries_show_parents = "hide"

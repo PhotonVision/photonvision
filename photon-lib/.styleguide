@@ -1,3 +1,4 @@
 generatedFileExclude {
     pybind11/.*
+    py/docs/source/_static/assets/.*
 }

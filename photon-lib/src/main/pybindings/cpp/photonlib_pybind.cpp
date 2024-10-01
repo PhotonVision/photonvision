@@ -33,11 +33,6 @@ namespace py = pybind11;
 void wrap_photon_sim(py::module_ m);
 void wrap_photon(py::module_ m);
 
-void print_t(frc::Translation3d t) {
-    using namespace std;
-    cout << "Translation x " << t.X().to<double>() << " y " << t.Y().to<double>() << " z " << t.Z().to<double>() << endl;
-}
-
 PYBIND11_MODULE(_photonlibpy, m) {
   static_assert(PYBIND11_USE_SMART_HOLDER_AS_DEFAULT == 1);
 
@@ -45,6 +40,4 @@ PYBIND11_MODULE(_photonlibpy, m) {
 
   wrap_photon(m);
   wrap_photon_sim(m);
-
-  m.def("print_t", &print_t, "A function to print a pose");
 }

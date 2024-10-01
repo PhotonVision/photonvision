@@ -16,8 +16,7 @@ simsystem.AddAprilTags(AprilTagFieldLayout.loadField(AprilTagField.k2024Crescend
 
 start = time.time()
 for i in range(10):
-    simsystem.Update(Pose3d(
-        Translation3d(8, 6, 0),
-        Rotation3d(0, 0, time.time() - start)
-    ))
+    simsystem.Update(
+        Pose3d(Translation3d(8, 6, 0), Rotation3d(0, 0, time.time() - start))
+    )
     time.sleep(0.02)

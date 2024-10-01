@@ -1,12 +1,10 @@
 from types import ModuleType
-from typing import Optional
 
 import pybind11_stubgen
-from pybind11_stubgen.structs import Import, InvalidExpression, Module, Value
+from pybind11_stubgen.structs import Import, Value
 
 
 def hack_stubgen():
-    from typing import Any
 
     from pybind11_stubgen import (
         BaseParser,
@@ -61,9 +59,7 @@ def hack_stubgen():
                 origin=QualifiedName((Identifier("wpimath.geometry"), feature)),
             )
 
-        def handle_module(
-            self, path: QualifiedName, module: ModuleType
-        ):
+        def handle_module(self, path: QualifiedName, module: ModuleType):
             """
             When we import a module, also import bits of wpilib we need
             """

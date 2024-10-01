@@ -66,7 +66,7 @@ jobs:
         working-directory: ./photon-lib/py/docs
         # Now that we have native .so's in place, generate pyi
         run: |
-          pip install -r ../../../docs/requirements.txt 
+          pip install -r ../../../docs/requirements.txt
           make html
 
       - run: find photon-lib/py

@@ -276,7 +276,6 @@ task installPhotonlibpyNative(type: Copy) {
                 "opencv_imgcodecs480.dll",
                 "opencv_flann480.dll",
                 "opencv_imgproc480.dll",
-
                 "libcameraserver.so",
                 "libcscore.so",
                 "libopencv_core.so.4.8",
