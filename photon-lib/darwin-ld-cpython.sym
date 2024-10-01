@@ -927,3 +927,4 @@
 -U _PyInstanceMethod_Type
 -U __PyThreadState_UncheckedGet
 -U __PyType_Lookup
+-U _PyMethod_Type
