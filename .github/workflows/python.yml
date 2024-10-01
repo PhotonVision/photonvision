@@ -101,8 +101,8 @@ jobs:
         # - '3.8'
         - '3.9'
         - '3.10'
-        # - '3.11'
-        # - '3.12'
+        - '3.11'
+        - '3.12'
 
     runs-on: ${{ matrix.os.name }}
 
@@ -200,16 +200,16 @@ jobs:
 
         # - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04-py38
         #   name: raspbian-aarch64-py38
-        # - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04-py39
-        #   name: raspbian-aarch64-py39
+        - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04-py39
+          name: raspbian-aarch64-py39
         - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04-py310
           name: raspbian-aarch64-py310
           build-options: "-PArchOverride=linuxarm64"
           arch: "Linuxarm64"
-        # - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04-py311
-        #   name: raspbian-aarch64-py311
-        # - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04-py312
-        #   name: raspbian-aarch64-py312
+        - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04-py311
+          name: raspbian-aarch64-py311
+        - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04-py312
+          name: raspbian-aarch64-py312
 
     container:
       image: "${{ matrix.os.container }}"
