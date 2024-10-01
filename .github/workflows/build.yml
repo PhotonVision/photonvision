@@ -439,6 +439,12 @@ jobs:
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0-beta-3/photonvision_opi5pro.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
+          - os: ubuntu-latest
+            artifact-name: LinuxArm64
+            image_suffix: orangepi5max
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0-beta-6/photonvision_opi5max.img.xz
+            cpu: cortex-a8
+            image_additional_mb: 1024
 
     runs-on: ${{ matrix.os }}
     name: "Build image - ${{ matrix.image_url }}"
