@@ -151,6 +151,13 @@ jobs:
         run: |
           python -m build -swn
 
+      - name: Upload everything
+        uses: actions/upload-artifact@v4
+        if: ${{ startsWith(matrix.os.name, 'windows') }}
+        with:
+          name: "debug-build-${{ runner.os }}-${{ matrix.python_version }}"
+          path: ./photon-lib/
+
       - name: Run Unit Tests
         working-directory: ./photon-lib/py
         if: ${{ !startsWith(matrix.os.name, 'windows') }}
