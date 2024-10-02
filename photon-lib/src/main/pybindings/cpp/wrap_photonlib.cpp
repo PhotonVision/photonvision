@@ -33,8 +33,11 @@ void wrap_photon(py::module_ m) {
               &photon::PhotonPipelineMetadata::publishTimestampMicros, "Timestamp (in the coprocessor timebase) that this frame was published to NetworkTables at");
 
   py::class_<photon::PhotonTrackedTarget>(m, "PhotonTrackedTarget")
+      .def(py::init<>())
       .def_readonly("yaw", &photon::PhotonTrackedTarget::yaw)
       .def_readonly("pitch", &photon::PhotonTrackedTarget::pitch)
+      .def_readonly("bestCameraToTarget", &photon::PhotonTrackedTarget::bestCameraToTarget)
+      .def_readonly("altCameraToTarget", &photon::PhotonTrackedTarget::altCameraToTarget)
       // String representation
       .def("__repr__", [](const photon::PhotonTrackedTarget& t) {
         std::string s;

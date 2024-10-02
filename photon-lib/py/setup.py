@@ -95,7 +95,7 @@ setup(
     long_description="A Pure-python implementation of PhotonLib",
     long_description_content_type="text/markdown",
     package_data={
-        "photonlibpy": ["lib/*.so*", "*lib/.dylib*", "lib/*.dll*", "lib/*.pyi" "*.pyi"]
+        "photonlibpy": ["lib/*.so*", "*lib/.dylib*", "lib/*.dll*", "lib/*.pyi", "lib/*.pyd"]
     },
     include_package_data=True,
     cmdclass={"bdist_wheel": bdist_wheel},
