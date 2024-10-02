@@ -279,7 +279,7 @@ jobs:
       working-directory: ./photon-lib/py
       # disable isolation so we can run stubgen (ew but w/e)
       run: |
-        /build/venv/bin/cross-python -m build -swn
+        SKIP_PYI=1 /build/venv/bin/cross-python -m build -swn
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4

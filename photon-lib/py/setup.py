@@ -68,7 +68,7 @@ class bdist_wheel(_bdist_wheel):
 
 
 script_path = os.path.dirname(os.path.realpath(__file__))
-if not os.path.exists(f"{script_path}/photonlibpy/_photonlibpy.pyi"):
+if not os.path.exists(f"{script_path}/photonlibpy/lib/_photonlibpy.pyi") and not os.getenv("SKIP_PYI"):
     print("Generating typehints")
     try:
         from create_photonlib_pyi import write_stubgen
