@@ -3,6 +3,7 @@ import photonlibpy as pp
 from wpimath.geometry import *
 from robotpy_apriltag import *
 
+
 def test_simulation():
     camera = pp.PhotonCamera("camera")
 
