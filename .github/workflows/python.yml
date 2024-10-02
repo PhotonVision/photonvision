@@ -97,7 +97,7 @@ jobs:
             native_build_task: "Linuxx86-64"
           - name: "macos-14"
             native_build_task: "Osxuniversal"
-          - name: "windows-2022"
+          - name: "windows-latest"
             native_build_task: "Windowsx86-64"
         python_version:
         # - '3.8'
