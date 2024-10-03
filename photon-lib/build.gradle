@@ -203,8 +203,9 @@ model {
                 }
 
                 if (it.toolChain instanceof GccCompatibleToolChain) {
+                    println("Gcc toolchain lol")
                     it.cppCompiler.args << "-Wno-pedantic" << "-DPYBIND11_USE_SMART_HOLDER_AS_DEFAULT=1"
-                    it.linker.args '-Wl,-rpath,\'$ORIGIN\''
+                    it.linker.args '-Wl,-rpath,\'$ORIGIN/lib\''
                 }
 
                 if (it.toolChain instanceof Clang) {
@@ -266,11 +267,13 @@ task publishVendorJsonToLocalOutputs(type: Copy) {
     publish.dependsOn it
 }
 
-task installPhotonlibpyNative(type: Copy) {
+task installPhotonlibpyNative(type: Sync) {
     into("$projectDir/py/photonlibpy/lib")
 
-    from "$projectDir/build/libs/photonlib/shared/$jniPlatform/release/libphotonlib.so"
-    from "$projectDir/build/libs/photonlib/shared/$jniPlatform/release/photonlib.dll"
+    def outputfolder = project.findProperty('nativeBuildFolder') ?: jniPlatform
+    from "$projectDir/build/libs/photonlib/shared/$outputfolder/release/libphotonlib.so"
+    from "$projectDir/build/libs/photonlib/shared/$outputfolder/release/photonlib.dll"
+    from "$projectDir/build/libs/photonlib/shared/$outputfolder/release/photonlib.dylib"
 
     for (lib in [
                 "photontargeting.dll",
@@ -291,11 +294,21 @@ task installPhotonlibpyNative(type: Copy) {
                 "libopencv_flann.so.4.8",
                 "libopencv_imgproc.so.4.8",
                 "libphotontargeting.so",
+
+                "libcameraserver.dylib",
+                "libcscore.dylib",
+                "libopencv_core.4.8.dylib",
+                "libopencv_calib3d.4.8.dylib",
+                "libopencv_features2d.4.8.dylib",
+                "libopencv_imgcodecs.4.8.dylib",
+                "libopencv_flann.4.8.dylib",
+                "libopencv_imgproc.4.8.dylib",
+                "libphotontargeting.dylib",
             ]) {
-        from "$projectDir/build/install/photonlibTest/$jniPlatform/release/lib/$lib"
+        from "$projectDir/build/install/photonlibTest/$outputfolder/release/lib/$lib"
     }
 
-    from("$projectDir/build/libs/photonlibpy/shared/$jniPlatform/release/") {
+    from("$projectDir/build/libs/photonlibpy/shared/$outputfolder/release/") {
         include "libphotonlibpy.so"
         include "photonlibpy.dll"
         include "libphotonlibpy.dylib"
@@ -303,6 +316,8 @@ task installPhotonlibpyNative(type: Copy) {
         // Remove leading lib if present, and append an _ (renames to _photonlibpy.so/dll/dylib)
         if (jniPlatform.startsWith("windows")) {
             rename "(?:lib)?(.*)(\\.dll)", ('_$1.pyd')
+        } else if (jniPlatform.startsWith("windows")) {
+            rename "lib(.*).dylib", ('_$1.so')
         } else {
             rename "lib(.*)", ('_$1')
         }

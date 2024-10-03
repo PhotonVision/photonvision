@@ -30,14 +30,19 @@ def _prepare_to_load_photonlib():
     # and now our extension module
     import platform
 
-    if platform.system().lower() == "Windows":
+    if platform.system().lower() == "windows":
         import os
 
         os.add_dll_directory(
-            os.path.dirname(os.path.realpath(__file__)) + os.path.sep + "lib"
+            os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + os.path.sep + "lib"
         )
+    if platform.system().lower() == "darwin":
+        import sys
+        import os
+        sys.path.append(os.path.dirname(os.path.realpath(__file__)) + os.path.sep + "lib")
 
 
 _prepare_to_load_photonlib()
-
+import sys
+print(sys.path)
 from .lib._photonlibpy import *

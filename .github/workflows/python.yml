@@ -94,11 +94,11 @@ jobs:
         # Reference: https://github.com/wpilibsuite/wpilib-tool-plugin/blob/main/src/main/java/edu/wpi/first/tools/NativePlatforms.java#L23
         os:
           - name: "ubuntu-22.04"
-            native_build_task: "Linuxx86-64"
+            extra_args: "-PnativeBuildPlatform=Linuxx86-64"
           - name: "macos-14"
-            native_build_task: "Osxuniversal"
+            extra_args: "-PnativeBuildPlatform=Osxuniversal -PnativeBuildFolder=osxuniversal"
           - name: "windows-latest"
-            native_build_task: "Windowsx86-64"
+            extra_args: "-PnativeBuildPlatform=Windowsx86-64"
         python_version:
         # - '3.8'
         - '3.9'
@@ -137,7 +137,7 @@ jobs:
       - run: ./gradlew photon-lib:tasks -i -PpythonExecutable=python3
       - run: |
           chmod +x gradlew
-          ./gradlew photon-lib:installPhotonlibpyNative -PpythonExecutable=python3 -PnativeBuildPlatform=${{ matrix.os.native_build_task }}
+          ./gradlew photon-lib:installPhotonlibpyNative -PpythonExecutable=python3 ${{ matrix.os.extra_args }}
 
       - name: Install dependencies
         working-directory: ./photon-lib/py
