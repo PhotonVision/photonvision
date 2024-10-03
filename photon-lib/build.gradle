@@ -193,7 +193,7 @@ model {
 
     binaries {
         withType(NativeBinarySpec).all {
-            println "${it.toolChain} -> ${it.component.baseName} -> ${it.toolChain instanceof VisualCpp}"
+            // println "${it.toolChain} -> ${it.component.baseName} -> ${it.toolChain instanceof VisualCpp}"
 
             if((it.component.baseName == "photonlibpy" || it.component.baseName == nativeName)) {
                 if (it.toolChain instanceof VisualCpp) {
@@ -203,7 +203,7 @@ model {
                 }
 
                 if (it.toolChain instanceof GccCompatibleToolChain) {
-                    println("Gcc toolchain lol")
+                    // println("Gcc toolchain lol")
                     it.cppCompiler.args << "-Wno-pedantic" << "-DPYBIND11_USE_SMART_HOLDER_AS_DEFAULT=1"
                     it.linker.args '-Wl,-rpath,\'$ORIGIN/lib\''
                 }
@@ -211,7 +211,7 @@ model {
                 if (it.toolChain instanceof Clang) {
                     // assume mac lol
                     it.linker.args << "-Wl,@${projectDir}/darwin-ld-cpython.sym"
-                    println it.linker.args
+                    // println it.linker.args
                 }
             }
         }
@@ -316,8 +316,9 @@ task installPhotonlibpyNative(type: Sync) {
         // Remove leading lib if present, and append an _ (renames to _photonlibpy.so/dll/dylib)
         if (jniPlatform.startsWith("windows")) {
             rename "(?:lib)?(.*)(\\.dll)", ('_$1.pyd')
-        } else if (jniPlatform.startsWith("windows")) {
-            rename "lib(.*).dylib", ('_$1.so')
+        } else if (jniPlatform.startsWith("osx")) {
+            println it
+            rename "lib(.*)dylib", ('_$1so')
         } else {
             rename "lib(.*)", ('_$1')
         }
@@ -326,8 +327,8 @@ task installPhotonlibpyNative(type: Sync) {
     def platform = project.findProperty('nativeBuildPlatform') ?: jniPlatform.capitalize()
     println("Depending on build task for platform name: $platform")
 
-    it.dependsOn "installPhotonlibTest${platform}ReleaseGoogleTestExe"
-    it.dependsOn "photonlibpy${platform}ReleaseSharedLibrary"
+    // it.dependsOn "installPhotonlibTest${platform}ReleaseGoogleTestExe"
+    // it.dependsOn "photonlibpy${platform}ReleaseSharedLibrary"
 }
 
 task writeCurrentVersion {
