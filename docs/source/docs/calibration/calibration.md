@@ -4,7 +4,7 @@
 In order to detect AprilTags and use 3D mode, your camera must be calibrated at the desired resolution! Inaccurate calibration will lead to poor performance.
 :::
 
-To calibrate a camera, images of a Charuco board (or chessboard) are taken. By comparing where the grid corners should be in object space (for example, a corner once every inch in an 8x6 grid) with where they appear in the camera image, we can find a least-squares estimate for intrinsic camera properties like focal lengths, center point, and distortion coefficients. For more on camera calibration, please review the [OpenCV documentation](https://docs.opencv.org/4.x/dc/dbb/tutorial_py_calibration.html>).
+To calibrate a camera, images of a Charuco board (or chessboard) are taken. By comparing where the grid corners should be in object space (for example, a corner once every inch in an 8x6 grid) with where they appear in the camera image, we can find a least-squares estimate for intrinsic camera properties like focal lengths, center point, and distortion coefficients. For more on camera calibration, please review the [OpenCV documentation](https://docs.opencv.org/4.x/dc/dbb/tutorial_py_calibration.html).
 
 :::{warning}
 While any resolution can be calibrated, higher resolutions may be too performance-intensive for some coprocessors to handle. Therefore, we recommend experimenting to see what works best for your coprocessor.
