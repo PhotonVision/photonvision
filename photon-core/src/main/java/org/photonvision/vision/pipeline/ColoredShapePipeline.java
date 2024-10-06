@@ -22,8 +22,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
+import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.CVShape;
 import org.photonvision.vision.opencv.Contour;
 import org.photonvision.vision.opencv.ContourShape;
@@ -36,6 +38,7 @@ import org.photonvision.vision.target.TrackedTarget;
 
 public class ColoredShapePipeline
         extends CVPipeline<CVPipelineResult, ColoredShapePipelineSettings> {
+    private final CropPipe cropPipe = new CropPipe();
     private final SpeckleRejectPipe speckleRejectPipe = new SpeckleRejectPipe();
     private final FindContoursPipe findContoursPipe = new FindContoursPipe();
     private final FindPolygonPipe findPolygonPipe = new FindPolygonPipe();
@@ -66,6 +69,9 @@ public class ColoredShapePipeline
 
     @Override
     protected void setPipeParamsImpl() {
+        Rect staticCrop = settings.getStaticCrop();
+        cropPipe.setParams(staticCrop);
+
         DualOffsetValues dualOffsetValues =
                 new DualOffsetValues(
                         settings.offsetDualPointA,
@@ -171,8 +177,11 @@ public class ColoredShapePipeline
     protected CVPipelineResult process(Frame frame, ColoredShapePipelineSettings settings) {
         long sumPipeNanosElapsed = 0L;
 
+        CVPipeResult<CVMat> croppedFrame = cropPipe.run(frame.processedImage);
+        sumPipeNanosElapsed += croppedFrame.nanosElapsed;
+
         CVPipeResult<List<Contour>> findContoursResult =
-                findContoursPipe.run(frame.processedImage.getMat());
+                findContoursPipe.run(croppedFrame.output.getMat());
         sumPipeNanosElapsed += findContoursResult.nanosElapsed;
 
         CVPipeResult<List<Contour>> speckleRejectResult =
@@ -182,7 +191,7 @@ public class ColoredShapePipeline
         List<CVShape> shapes = null;
         if (settings.contourShape == ContourShape.Circle) {
             CVPipeResult<List<CVShape>> findCirclesResult =
-                    findCirclesPipe.run(Pair.of(frame.processedImage.getMat(), speckleRejectResult.output));
+                    findCirclesPipe.run(Pair.of(croppedFrame.output.getMat(), speckleRejectResult.output));
             sumPipeNanosElapsed += findCirclesResult.nanosElapsed;
             shapes = findCirclesResult.output;
         } else {
