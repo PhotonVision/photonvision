@@ -77,6 +77,10 @@ export interface PipelineSettings {
   hsvSaturation: WebsocketNumberPair | [number, number];
   pipelineType: PipelineType;
   contourIntersection: number;
+  static_x: number;
+  static_y: number;
+  static_width: number;
+  static_height: number;
 }
 export type ConfigurablePipelineSettings = Partial<
   Omit<
@@ -137,7 +141,13 @@ export const DefaultPipelineSettings: Omit<
   cornerDetectionStrategy: 0,
   cornerDetectionAccuracyPercentage: 10,
   hsvSaturation: { first: 50, second: 255 },
-  contourIntersection: 1
+  contourIntersection: 1,
+  cameraMinExposureRaw: 0,
+  cameraMaxExposureRaw: 0,
+  static_x: 0,
+  static_y: 0,
+  static_width: 0,
+  static_height: 0
 };
 
 export interface ReflectivePipelineSettings extends PipelineSettings {
