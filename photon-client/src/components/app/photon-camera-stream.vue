@@ -11,12 +11,13 @@ const props = defineProps<{
   id: string;
 }>();
 
+const emptyStreamSrc = "//:0";
 const streamSrc = computed<string>(() => {
   const port =
     useCameraSettingsStore().currentCameraSettings.stream[props.streamType === "Raw" ? "inputPort" : "outputPort"];
 
   if (!useStateStore().backendConnected || port === 0) {
-    return loadingImage;
+    return emptyStreamSrc;
   }
 
   return `http://${inject("backendHostname")}:${port}/stream.mjpg`;
@@ -24,14 +25,27 @@ const streamSrc = computed<string>(() => {
 const streamDesc = computed<string>(() => `${props.streamType} Stream View`);
 const streamStyle = computed<StyleValue>(() => {
   if (useStateStore().colorPickingMode) {
-    return { width: "100%", cursor: "crosshair" };
+    return { cursor: "crosshair" };
   }
 
-  return { width: "100%" };
+  return {};
+});
+
+const containerStyle = computed<StyleValue>(() => {
+  const resolution = useCameraSettingsStore().currentVideoFormat.resolution;
+  const rotation = useCameraSettingsStore().currentPipelineSettings.inputImageRotationMode;
+  if (rotation === 1 || rotation === 3) {
+    return {
+      aspectRatio: `${resolution.height}/${resolution.width}`
+    };
+  }
+  return {
+    aspectRatio: `${resolution.width}/${resolution.height}`
+  };
 });
 
 const overlayStyle = computed<StyleValue>(() => {
-  if (useStateStore().colorPickingMode || streamSrc.value == loadingImage) {
+  if (useStateStore().colorPickingMode || streamSrc.value == emptyStreamSrc) {
     return { display: "none" };
   } else {
     return {};
@@ -57,13 +71,23 @@ const handleFullscreenRequest = () => {
 const mjpgStream: any = ref(null);
 onBeforeUnmount(() => {
   if (!mjpgStream.value) return;
-  mjpgStream.value["src"] = "//:0";
+  mjpgStream.value["src"] = emptyStreamSrc;
 });
 </script>
 
 <template>
-  <div class="stream-container">
-    <img :id="id" ref="mjpgStream" crossorigin="anonymous" :src="streamSrc" :alt="streamDesc" :style="streamStyle" />
+  <div class="stream-container" :style="containerStyle">
+    <img :src="loadingImage" class="stream-loading" />
+    <img
+      :id="id"
+      class="stream-video"
+      ref="mjpgStream"
+      v-show="streamSrc !== emptyStreamSrc"
+      crossorigin="anonymous"
+      :src="streamSrc"
+      :alt="streamDesc"
+      :style="streamStyle"
+    />
     <div class="stream-overlay" :style="overlayStyle">
       <pv-icon
         icon-name="mdi-camera-image"
@@ -89,7 +113,21 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .stream-container {
+  display: flex;
   position: relative;
+  width: 100%;
+}
+
+.stream-loading {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.stream-video {
+  position: absolute;
+  width: 100%;
+  height: 100%;
 }
 
 .stream-overlay {
