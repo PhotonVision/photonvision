@@ -33,7 +33,7 @@ apply from: "versioningHelper.gradle"
 ext {
     wpilibVersion = "2024.3.2"
     wpimathVersion = wpilibVersion
-    openCVversion = "4.8.0-2"
+    openCVversion = "4.8.0-4"
     joglVersion = "2.4.0"
     javalinVersion = "5.6.2"
     libcameraDriverVersion = "dev-v2023.1.0-14-g787ab59"
@@ -61,6 +61,14 @@ ext {
 
     photonMavenURL = 'https://maven.photonvision.org/' + (isDev ? 'snapshots' : 'releases');
     println("Publishing Photonlib to " + photonMavenURL)
+}
+
+Dependency photonOpenCvJava(String frcYear, String version) {
+    return project.getDependencies().create("org.photonvision.thirdparty." + frcYear + ".opencv:opencv-java:" + version);
+}
+
+Dependency photonOpenCv(String frcYear, String version) {
+    return project.getDependencies().create("org.photonvision.thirdparty." + frcYear + ".opencv:opencv-cpp:" + version + ":" + jniPlatform + "@zip");
 }
 
 spotless {
