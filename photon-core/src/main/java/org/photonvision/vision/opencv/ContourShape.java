@@ -17,9 +17,6 @@
 
 package org.photonvision.vision.opencv;
 
-import java.util.EnumSet;
-import java.util.HashMap;
-
 public enum ContourShape {
     Circle(0),
     Custom(-1),
@@ -32,15 +29,12 @@ public enum ContourShape {
         this.sides = sides;
     }
 
-    private static final HashMap<Integer, ContourShape> sidesToValueMap = new HashMap<>();
-
-    static {
-        for (var value : EnumSet.allOf(ContourShape.class)) {
-            sidesToValueMap.put(value.sides, value);
-        }
-    }
-
     public static ContourShape fromSides(int sides) {
-        return sidesToValueMap.get(sides);
+        return switch (sides) {
+            case 0 -> Circle;
+            case 3 -> Triangle;
+            case 4 -> Quadrilateral;
+            default -> Custom;
+        };
     }
 }

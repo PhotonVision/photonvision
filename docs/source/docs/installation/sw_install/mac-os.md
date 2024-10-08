@@ -12,10 +12,10 @@ VERY Limited macOS support is available.
 
 ## Installing Java
 
-PhotonVision requires a JDK installed and on the system path. JDK 11 is needed (different versions will not work). You may already have this if you have installed WPILib. If not, [download and install it from here](https://adoptium.net/temurin/releases?version=11).
+PhotonVision requires a JDK installed and on the system path. JDK 17 is needed (different versions will not work). You may already have this if you have installed WPILib. If not, [download and install it from here](https://adoptium.net/temurin/releases?version=17).
 
 :::{warning}
-Using a JDK other than JDK11 will cause issues when running PhotonVision and is not supported.
+Using a JDK other than JDK17 will cause issues when running PhotonVision and is not supported.
 :::
 
 ## Downloading the Latest Stable Release of PhotonVision

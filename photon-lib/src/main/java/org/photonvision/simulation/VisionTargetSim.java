@@ -84,11 +84,9 @@ public class VisionTargetSim {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj instanceof VisionTargetSim) {
-            var o = (VisionTargetSim) obj;
-            return pose.equals(o.pose) && model.equals(o.model);
-        }
-        return false;
+        return this == obj
+                && obj instanceof VisionTargetSim o
+                && pose.equals(o.pose)
+                && model.equals(o.model);
     }
 }
