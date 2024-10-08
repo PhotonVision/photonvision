@@ -3,23 +3,26 @@ import { computed } from "vue";
 import CamerasViewCard from "@/components/dashboard/cards/CamerasViewCard.vue";
 import CameraAndPipelineConfigCard from "@/components/dashboard/cards/CameraAndPipelineConfigCard.vue";
 import StreamConfigCard from "@/components/dashboard/cards/StreamConfigCard.vue";
-import PipelineConfigCard from "@/components/dashboard/cards/PipelineConfigOptionsCard.vue";
-import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { useStateStore } from "@/stores/StateStore";
+import PipelineConfigCards from "@/components/dashboard/cards/PipelineConfigCards.vue";
+import { useClientStore } from "@/stores/ClientStore";
+import { useServerStore } from "@/stores/ServerStore";
+
+const clientStore = useClientStore();
+const serverStore = useServerStore();
 
 const cameraViewType = computed<number[]>({
   get: (): number[] => {
     // Only show the input stream in Color Picking Mode
-    if (useStateStore().colorPickingMode) return [0];
+    if (clientStore.colorPickingFromCameraStream) return [0];
 
     // Only show the output stream in Driver Mode or Calibration Mode
-    if (useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode) return [1];
+    if (serverStore.isDriverMode || serverStore.isCalibMode) return [1];
 
     const ret: number[] = [];
-    if (useCameraSettingsStore().currentPipelineSettings.inputShouldShow) {
+    if (serverStore.currentPipelineSettings?.inputShouldShow) {
       ret.push(0);
     }
-    if (useCameraSettingsStore().currentPipelineSettings.outputShouldShow) {
+    if (serverStore.currentPipelineSettings?.outputShouldShow) {
       ret.push(1);
     }
 
@@ -28,11 +31,12 @@ const cameraViewType = computed<number[]>({
     return ret;
   },
   set: (v) => {
-    useCameraSettingsStore().changeCurrentPipelineSetting(
+    serverStore.updateCurrentPipelineSettings(
       {
         inputShouldShow: v.includes(0),
         outputShouldShow: v.includes(1)
       },
+      true,
       true
     );
   }
@@ -41,9 +45,9 @@ const cameraViewType = computed<number[]>({
 
 <template>
   <v-container class="pa-3" fluid>
-    <v-row align="center" class="pb-3" justify="center" no-gutters>
+    <v-row align="center" class="pb-0 pb-md-3" justify="center" no-gutters>
       <v-col align-self="stretch" class="pr-lg-3 pb-3 pb-lg-0" cols="12" lg="8">
-        <CamerasViewCard v-model="cameraViewType" />
+        <CamerasViewCard :model-value="cameraViewType" />
       </v-col>
       <v-col align-self="stretch" cols="12" lg="4">
         <v-row class="flex-column pt-0 mt-0 fill-height" no-gutters>
@@ -56,6 +60,6 @@ const cameraViewType = computed<number[]>({
         </v-row>
       </v-col>
     </v-row>
-    <PipelineConfigCard />
+    <PipelineConfigCards />
   </v-container>
 </template>

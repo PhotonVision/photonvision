@@ -38,17 +38,17 @@ class UIOutboundSubscriber extends DataChangeSubscriber {
     private final DataSocketHandler socketHandler;
 
     public UIOutboundSubscriber(DataSocketHandler socketHandler) {
-        super(DataChangeSource.AllSources, Collections.singletonList(DataChangeDestination.DCD_UI));
+        super(
+                DataChangeSource.AllSources,
+                Collections.singletonList(DataChangeDestination.DCD_WEBSOCKET));
         this.socketHandler = socketHandler;
     }
 
     @Override
     public void onDataChangeEvent(DataChangeEvent event) {
-        if (event instanceof OutgoingUIEvent) {
-            var thisEvent = (OutgoingUIEvent) event;
+        if (event instanceof OutgoingUIEvent thisEvent) {
             try {
-                if (event.data instanceof HashMap) {
-                    var data = (HashMap) event.data;
+                if (event.data instanceof HashMap data) {
                     socketHandler.broadcastMessage(data, thisEvent.originContext);
                 } else {
                     socketHandler.broadcastMessage(event.data, thisEvent.originContext);

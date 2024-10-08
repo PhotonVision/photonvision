@@ -411,15 +411,21 @@ public class TrackedTarget implements Releasable {
         ret.put("yaw", getYaw());
         ret.put("skew", getSkew());
         ret.put("area", getArea());
-        ret.put("ambiguity", getPoseAmbiguity());
-        ret.put("confidence", m_confidence);
-        ret.put("classId", m_classId);
 
-        var bestCameraToTarget3d = getBestCameraToTarget3d();
-        if (bestCameraToTarget3d != null) {
-            ret.put("pose", SerializationUtils.transformToHashMap(bestCameraToTarget3d));
+        // Tag Result
+        if (m_poseAmbiguity >= 0 && m_fiducialId != -1) {
+            ret.put("fiducialId", getFiducialId());
+            ret.put("ambiguity", getPoseAmbiguity());
+
+            var bestCameraToTarget3d = getBestCameraToTarget3d();
+            if (bestCameraToTarget3d != null) {
+                ret.put("bestTransform", SerializationUtils.transformToHashMap(bestCameraToTarget3d));
+            }
+        // Object Detection Result
+        } else if(m_confidence != -1 && m_classId != -1) {
+            ret.put("confidence", m_confidence);
+            ret.put("classId", m_classId);
         }
-        ret.put("fiducialId", getFiducialId());
         return ret;
     }
 

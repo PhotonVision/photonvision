@@ -1,9 +1,10 @@
-import { createRouter, createWebHashHistory } from "vue-router/auto";
+import { createRouter, createWebHistory } from "vue-router/auto";
 import { routes } from "vue-router/auto-routes";
 
 const router = createRouter({
   // Using HTML5 History Mode is problematic with Javalin because each route is treated as a server endpoint which causes Javalin to return a 404 error before being redirected to the UI.
-  history: createWebHashHistory(),
+  // history: createWebHashHistory(),
+  history: createWebHistory(),
   routes: routes
 });
 

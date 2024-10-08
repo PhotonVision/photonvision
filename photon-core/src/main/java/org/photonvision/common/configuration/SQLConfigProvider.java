@@ -46,13 +46,14 @@ import org.photonvision.vision.pipeline.DriverModePipelineSettings;
  *
  * <p>Global has one row per global config file (like hardware settings and network settings)
  */
-public class SqlConfigProvider extends ConfigProvider {
-    private static final Logger logger = new Logger(SqlConfigProvider.class, LogGroup.Config);
+public class SQLConfigProvider extends ConfigProvider {
+    private static final Logger logger = new Logger(SQLConfigProvider.class, LogGroup.Config);
 
     static class GlobalKeys {
         static final String NETWORK_CONFIG = "networkConfig";
         static final String HARDWARE_CONFIG = "hardwareConfig";
         static final String HARDWARE_SETTINGS = "hardwareSettings";
+        static final String MISC_SETTINGS = "miscSettings";
         static final String ATFL_CONFIG_FILE = "apriltagFieldLayout";
     }
 
@@ -63,7 +64,7 @@ public class SqlConfigProvider extends ConfigProvider {
 
     private final Object m_mutex = new Object();
 
-    public SqlConfigProvider(Path rootPath) {
+    public SQLConfigProvider(Path rootPath) {
         File rootFolder = rootPath.toFile();
         // Make sure root dir exists
         if (!rootFolder.exists()) {
@@ -258,6 +259,7 @@ public class SqlConfigProvider extends ConfigProvider {
             HardwareConfig hardwareConfig;
             HardwareSettings hardwareSettings;
             NetworkConfig networkConfig;
+            MiscellaneousSettings miscSettings;
             AprilTagFieldLayout atfl;
 
             try {
@@ -288,6 +290,15 @@ public class SqlConfigProvider extends ConfigProvider {
             }
 
             try {
+                miscSettings =
+                        JacksonUtils.deserialize(
+                                getOneConfigFile(conn, GlobalKeys.MISC_SETTINGS), MiscellaneousSettings.class);
+            } catch (IOException e) {
+                logger.error("Could not deserialize misc settings! Loading defaults");
+                miscSettings = new MiscellaneousSettings();
+            }
+
+            try {
                 atfl =
                         JacksonUtils.deserialize(
                                 getOneConfigFile(conn, GlobalKeys.ATFL_CONFIG_FILE), AprilTagFieldLayout.class);
@@ -299,6 +310,7 @@ public class SqlConfigProvider extends ConfigProvider {
                     logger.error("Error loading WPILib field", e);
                     atfl = null;
                 }
+
                 if (atfl == null) {
                     // what do we even do here lmao -- wpilib should always work
                     logger.error("Field layout is *still* null??????");
@@ -315,7 +327,8 @@ public class SqlConfigProvider extends ConfigProvider {
             }
 
             this.config =
-                    new PhotonConfiguration(hardwareConfig, hardwareSettings, networkConfig, atfl, cams);
+                    new PhotonConfiguration(
+                            hardwareConfig, hardwareSettings, networkConfig, miscSettings, atfl, cams);
         }
     }
 
@@ -424,12 +437,14 @@ public class SqlConfigProvider extends ConfigProvider {
     private boolean skipSavingHWCfg = false;
     private boolean skipSavingHWSet = false;
     private boolean skipSavingNWCfg = false;
+    private boolean skipSavingMSSet = false;
     private boolean skipSavingAPRTG = false;
 
     private void saveGlobal(Connection conn) {
         PreparedStatement statement1 = null;
         PreparedStatement statement2 = null;
         PreparedStatement statement3 = null;
+        PreparedStatement statement4 = null;
         try {
             // Replace this camera's row with the new settings
             var sqlString =
@@ -466,6 +481,16 @@ public class SqlConfigProvider extends ConfigProvider {
                 statement3.close();
             }
 
+            if (!skipSavingMSSet) {
+                statement4 = conn.prepareStatement(sqlString);
+                addFile(
+                        statement4,
+                        GlobalKeys.MISC_SETTINGS,
+                        JacksonUtils.serializeToString(config.getMiscSettings()));
+                statement4.executeUpdate();
+                statement4.close();
+            }
+
         } catch (SQLException | IOException e) {
             logger.error("Err saving global", e);
             try {
@@ -478,6 +503,7 @@ public class SqlConfigProvider extends ConfigProvider {
                 if (statement1 != null) statement1.close();
                 if (statement2 != null) statement2.close();
                 if (statement3 != null) statement3.close();
+                if (statement4 != null) statement4.close();
             } catch (SQLException e) {
                 logger.error("SQL Err closing global settings query ", e);
             }
@@ -606,9 +632,5 @@ public class SqlConfigProvider extends ConfigProvider {
             }
         }
         return loadedConfigurations;
-    }
-
-    public void setConfig(PhotonConfiguration config) {
-        this.config = config;
     }
 }

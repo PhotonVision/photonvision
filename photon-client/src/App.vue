@@ -1,66 +1,71 @@
 <script lang="ts" setup>
-import { useStateStore } from "@/stores/StateStore";
-import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
-import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { AutoReconnectingWebsocket } from "@/lib/AutoReconnectingWebsocket";
 import { inject } from "vue";
 import PhotonSidebar from "@/components/app/photon-sidebar.vue";
 import PhotonLogViewer from "@/components/app/photon-log-viewer.vue";
-import PhotonAlertLayout from "@/components/app/photon-alert-layout.vue";
+import PhotonProvider from "@/components/app/photon-provider.vue";
+import { useClientStore } from "@/stores/ClientStore";
+import { useServerStore } from "@/stores/ServerStore";
 
 const isDemo = import.meta.env.MODE === "demo";
 if (!isDemo) {
-  const websocket = new AutoReconnectingWebsocket(
+  useClientStore().websocket = new AutoReconnectingWebsocket(
     `ws://${inject("backendHost")}/websocket_data`,
     () => {
-      useStateStore().$patch({ backendConnected: true });
+      useClientStore().backendConnected = true;
     },
     (data) => {
-      if (data.log !== undefined) {
-        useStateStore().addLogFromWebsocket(data.log);
+      if (data.instanceConfig) {
+        useServerStore().updateInstanceConfigFromWebsocket(data.instanceConfig);
       }
-      if (data.settings !== undefined) {
-        useSettingsStore().updateGeneralSettingsFromWebsocket(data.settings);
+      if (data.settings) {
+        useServerStore().updateSettingsFromWebsocket(data.settings);
       }
-      if (data.cameraSettings !== undefined) {
-        useCameraSettingsStore().updateCameraSettingsFromWebsocket(data.cameraSettings);
+      if (data.activeATFL) {
+        useServerStore().updateATFLFromWebsocket(data.activeATFL);
       }
-      if (data.ntConnectionInfo !== undefined) {
-        useStateStore().updateNTConnectionStatusFromWebsocket(data.ntConnectionInfo);
+      if (data.cameras) {
+        useServerStore().updateCamerasFromWebsocket(data.cameras);
       }
-      if (data.metrics !== undefined) {
-        useSettingsStore().updateMetricsFromWebsocket(data.metrics);
+      if (data.log) {
+        useClientStore().addLogFromWebsocket(data.log);
       }
-      if (data.updatePipelineResult !== undefined) {
-        useStateStore().updateBackendResultsFromWebsocket(data.updatePipelineResult);
+      if (data.ntConnectionInfo) {
+        useClientStore().updateNTConnectionStatusFromWebsocket(data.ntConnectionInfo);
       }
-      if (data.mutatePipelineSettings !== undefined && data.cameraIndex !== undefined) {
-        useCameraSettingsStore().changePipelineSettingsInStore(data.mutatePipelineSettings, data.cameraIndex);
+      if (data.metrics) {
+        useServerStore().updatePlatformMetricsFromWebsocket(data.metrics);
       }
-      if (data.calibrationData !== undefined) {
-        useStateStore().updateCalibrationStateValuesFromWebsocket(data.calibrationData);
+      if (data.updatePipelineResult) {
+        useClientStore().updateBackendResultsFromWebsocket(data.updatePipelineResult);
+      }
+      if (data.networkInfo) {
+        // Ignore this cause why do we even have it?
+      }
+      if (data.pipelineSettingMutation) {
+        const { cameraIndex, pipelineIndex, mutation } = data.pipelineSettingMutation;
+        useServerStore().updatePipelineSettings(cameraIndex, pipelineIndex, mutation, true, false);
       }
     },
     () => {
-      useStateStore().$patch({ backendConnected: false });
+      useClientStore().backendConnected = false;
     }
   );
-  useStateStore().$patch({ websocket: websocket });
 }
 </script>
 
 <template>
-  <photon-alert-layout>
-    <v-app>
+  <v-app>
+    <photon-provider>
       <photon-sidebar />
       <v-main>
-        <v-container class="fill-height align-start pa-0 ma-0" fluid>
+        <v-container class="align-start pa-0 ma-0" fluid>
           <router-view />
         </v-container>
       </v-main>
       <photon-log-viewer />
-    </v-app>
-  </photon-alert-layout>
+    </photon-provider>
+  </v-app>
 </template>
 
 <style lang="scss">

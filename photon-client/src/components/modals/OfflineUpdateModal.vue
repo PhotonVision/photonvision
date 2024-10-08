@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, ref } from "vue";
+import { inject, ref, watch } from "vue";
 import axios from "axios";
 
 const modalOpen = ref(false);
@@ -56,6 +56,7 @@ const startOfflineUpdate = () => {
       //   color: "success"
       // });
     })
+    // eslint-disable-next-line n/handle-callback-err
     .catch((error) => {
       // TODO handle this
       // if (error.response) {
@@ -76,22 +77,24 @@ const startOfflineUpdate = () => {
       // }
     })
     .finally(() => {
-      offlineUpdateConfig.value = {
-        selectedJar: undefined,
-        exportSettings: false
-      };
-      offlineUpdateState.value = {
-        uploadingJar: false,
-        startedUpload: false,
-        uploadPercentage: 0
-      };
-
       // Close modal after offline update
       setTimeout(() => (modalOpen.value = false), 500);
 
       // TODO force websocket reconnect after offline update (same as restart program and restart device)
     });
 };
+
+watch(modalOpen, () => {
+  offlineUpdateConfig.value = {
+    selectedJar: undefined,
+    exportSettings: false
+  };
+  offlineUpdateState.value = {
+    uploadingJar: false,
+    startedUpload: false,
+    uploadPercentage: 0
+  };
+});
 </script>
 
 <template>

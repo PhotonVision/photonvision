@@ -148,6 +148,24 @@ public class HardwareManager {
         ConfigManager.getInstance().onJvmExit();
     }
 
+    public void restartProgram() {
+        TimedTaskManager.getInstance()
+                .addOneShotTask(
+                        () -> {
+                            if (Platform.isLinux()) {
+                                try {
+                                    new ShellExec().executeBashCommand("systemctl restart photonvision.service");
+                                } catch (IOException e) {
+                                    logger.error("Could not restart device!", e);
+                                    System.exit(0);
+                                }
+                            } else {
+                                System.exit(0);
+                            }
+                        },
+                        0);
+    }
+
     public boolean restartDevice() {
         if (Platform.isLinux()) {
             try {

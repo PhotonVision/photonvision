@@ -58,7 +58,7 @@ public class SQLConfigTest {
     @Test
     @Order(1)
     public void testMigration() {
-        SqlConfigProvider cfgLoader = new SqlConfigProvider(tmpDir);
+        SQLConfigProvider cfgLoader = new SQLConfigProvider(tmpDir);
         cfgLoader.load();
 
         assertEquals(
@@ -70,7 +70,7 @@ public class SQLConfigTest {
     @Test
     @Order(2)
     public void testLoad() {
-        var cfgLoader = new SqlConfigProvider(tmpDir);
+        var cfgLoader = new SQLConfigProvider(tmpDir);
 
         cfgLoader.load();
 

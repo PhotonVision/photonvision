@@ -1,160 +1,148 @@
 <script setup lang="ts">
-import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { type ActivePipelineSettings, PipelineType, RobotOffsetPointMode } from "@/types/PipelineTypes";
+import {
+  AprilTagPipelineSettings, ArucoPipelineSettings,
+  PipelineType, RobotOffsetPointMode, UserPipelineSettings
+} from "@/types/PipelineTypes";
 import PvSwitch from "@/components/common/pv-switch.vue";
 import { computed } from "vue";
-import { RobotOffsetType } from "@/types/SettingTypes";
-import { useStateStore } from "@/stores/StateStore";
+import { CameraConfig, RobotOffsetOperationMode, VideoFormat } from "@/types/SettingTypes";
 import { useDisplay } from "vuetify";
 import PvDropdown from "@/components/common/pv-dropdown.vue";
+import { useClientStore } from "@/stores/ClientStore";
+import { useServerStore } from "@/stores/ServerStore";
+import { resolutionsAreEqual } from "@/lib/PhotonUtils";
 
-const isTagPipeline = computed(
-  () =>
-    useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
-    useCameraSettingsStore().currentPipelineType === PipelineType.Aruco
-);
+const clientStore = useClientStore();
+const serverStore = useServerStore();
 
-interface MetricItem {
-  header: string;
-  value?: string;
-}
+const props = defineProps<{
+  cameraSettings: CameraConfig,
+  pipelineIndex: number
+}>();
 
-const offsetPoints = computed<MetricItem[]>(() => {
-  switch (useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode) {
-    case RobotOffsetPointMode.Single:
-      const value = Object.values(useCameraSettingsStore().currentPipelineSettings.offsetSinglePoint);
-      return [{ header: "Offset Point", value: `(${value[0].toFixed(2)}°, ${value[1].toFixed(2)}°)` }];
-    case RobotOffsetPointMode.Dual:
-      const firstPoint = Object.values(useCameraSettingsStore().currentPipelineSettings.offsetDualPointA);
-      const firstPointArea = useCameraSettingsStore().currentPipelineSettings.offsetDualPointAArea;
-      const secondPoint = Object.values(useCameraSettingsStore().currentPipelineSettings.offsetDualPointB);
-      const secondPointArea = useCameraSettingsStore().currentPipelineSettings.offsetDualPointBArea;
-      return [
-        { header: "First Offset Point", value: `(${firstPoint[0].toFixed(2)}°, ${firstPoint[1].toFixed(2)}°)` },
-        { header: "First Offset Point Area", value: `${firstPointArea.toFixed(2)}%` },
-        { header: "Second Offset Point", value: `(${secondPoint[0].toFixed(2)}°, ${secondPoint[1].toFixed(2)}°)` },
-        { header: "Second Offset Point Area", value: `${secondPointArea.toFixed(2)}%` }
-      ];
-    // eslint-disable-next-line default-case-last
-    default:
-    case RobotOffsetPointMode.None:
-      return [];
+const targetPipelineSettings = computed<UserPipelineSettings>(() => props.cameraSettings.pipelineSettings.find((v) => v.pipelineIndex === props.pipelineIndex) as UserPipelineSettings);
+
+const isTagPipeline = computed(() => [PipelineType.AprilTag, PipelineType.Aruco].includes(targetPipelineSettings.value.pipelineType));
+const isCalibrated = computed(() => {
+  const targetIndex = targetPipelineSettings.value.cameraVideoModeIndex;
+  const targetVideoMode = props.cameraSettings.videoFormats.find((v) => v.sourceIndex === targetIndex) as VideoFormat;
+  return props.cameraSettings.calibrations.some((v) => resolutionsAreEqual(v.resolution, targetVideoMode.resolution));
+});
+
+const offsetData = computed(() => {
+  if (targetPipelineSettings.value.offsetRobotOffsetMode === RobotOffsetPointMode.Single) {
+    const value = Object.values(targetPipelineSettings.value.offsetSinglePoint);
+    return [{ "Offset Point": `(${value[0].toFixed(2)}°, ${value[1].toFixed(2)}°)` }];
+  } else {
+    const firstPoint = Object.values(targetPipelineSettings.value.offsetDualPointA);
+    const firstPointArea = targetPipelineSettings.value.offsetDualPointAArea;
+    const secondPoint = Object.values(targetPipelineSettings.value.offsetDualPointB);
+    const secondPointArea = targetPipelineSettings.value.offsetDualPointBArea;
+    return [
+      {
+        "First Offset Point": `(${firstPoint[0].toFixed(2)}°, ${firstPoint[1].toFixed(2)}°)`,
+        "First Offset Point Area": `${firstPointArea.toFixed(2)}%`,
+        "Second Offset Point": `(${secondPoint[0].toFixed(2)}°, ${secondPoint[1].toFixed(2)}°)`,
+        "Second Offset Point Area": `${secondPointArea.toFixed(2)}%`
+      }
+    ];
   }
 });
 
-// TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
-// Defer reference to store access method
-const currentPipelineSettings = computed<ActivePipelineSettings>(
-  () => useCameraSettingsStore().currentPipelineSettings
-);
-
 const { mdAndDown } = useDisplay();
-const labelCols = computed(
-  () => 12 - (mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 9 : 8)
-);
+const labelCols = computed<number>(() => mdAndDown.value && (!clientStore.sidebarFolded || serverStore.isDriverMode) ? 3 : 5);
 </script>
 
 <template>
   <div>
     <pv-dropdown
-      v-model="useCameraSettingsStore().currentPipelineSettings.contourTargetOffsetPointEdge"
       :items="['Center', 'Top', 'Bottom', 'Left', 'Right'].map((v, i) => ({ name: v, value: i }))"
       label="Target Offset Point"
       :label-cols="labelCols"
+      :model-value="targetPipelineSettings.contourTargetOffsetPointEdge"
       tooltip="Changes where the 'center' of the target is (used for calculating e.g. pitch and yaw)"
       @update:model-value="
         (value: number) =>
-          useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOffsetPointEdge: value }, false)
+          serverStore.updatePipelineSettings(cameraSettings.cameraIndex, pipelineIndex, { contourTargetOffsetPointEdge: value }, true, true)
       "
     />
     <pv-dropdown
       v-if="!isTagPipeline"
-      v-model="useCameraSettingsStore().currentPipelineSettings.contourTargetOrientation"
       :items="['Portrait', 'Landscape'].map((v, i) => ({ name: v, value: i }))"
       label="Target Orientation"
       :label-cols="labelCols"
+      :model-value="targetPipelineSettings.contourTargetOrientation"
       tooltip="Used to determine how to calculate target landmarks (e.g. the top, left, or bottom of the target)"
       @update:model-value="
         (value: number) =>
-          useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOrientation: value }, false)
+          serverStore.updatePipelineSettings(cameraSettings.cameraIndex, pipelineIndex, { contourTargetOrientation: value }, true, true)
       "
     />
     <pv-switch
-      v-model="useCameraSettingsStore().currentPipelineSettings.outputShowMultipleTargets"
       :disabled="isTagPipeline"
       label="Show Multiple Targets"
       :label-cols="labelCols"
+      :model-value="targetPipelineSettings.outputShowMultipleTargets"
       tooltip="If enabled, up to five targets will be displayed and sent via PhotonLib, instead of just one"
       @update:model-value="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ outputShowMultipleTargets: value }, false)
+        (value) => serverStore.updatePipelineSettings(cameraSettings.cameraIndex, pipelineIndex, { outputShowMultipleTargets: value }, true, true)
       "
     />
     <pv-switch
       v-if="
-        (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-          currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
-          useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
-          useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
+        isTagPipeline &&
+          isCalibrated &&
+          targetPipelineSettings.solvePNPEnabled
       "
-      v-model="currentPipelineSettings.doMultiTarget"
       :disabled="!isTagPipeline"
       label="Do Multi-Target Estimation"
       :label-cols="labelCols"
+      :model-value="(targetPipelineSettings as AprilTagPipelineSettings | ArucoPipelineSettings).doMultiTarget"
       tooltip="If enabled, all visible fiducial targets will be used to provide a single pose estimate from their combined model."
       @update:model-value="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ doMultiTarget: value }, false)
+        (value) => serverStore.updatePipelineSettings(cameraSettings.cameraIndex, pipelineIndex, { doMultiTarget: value }, true, true)
       "
     />
     <pv-switch
       v-if="
-        (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-          currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
-          useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
-          useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
+        isTagPipeline &&
+          isCalibrated &&
+          targetPipelineSettings.solvePNPEnabled
       "
-      v-model="currentPipelineSettings.doSingleTargetAlways"
-      :disabled="!isTagPipeline || !currentPipelineSettings.doMultiTarget"
+      :disabled="!isTagPipeline || !(targetPipelineSettings as AprilTagPipelineSettings | ArucoPipelineSettings).doMultiTarget"
       label="Always Do Single-Target Estimation"
       :label-cols="labelCols"
+      :model-value="(targetPipelineSettings as AprilTagPipelineSettings | ArucoPipelineSettings).doSingleTargetAlways"
       tooltip="If disabled, visible fiducial targets used for multi-target estimation will not also be used for single-target estimation."
       @update:model-value="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ doSingleTargetAlways: value }, false)
+        (value) => serverStore.updatePipelineSettings(cameraSettings.cameraIndex, pipelineIndex, { doSingleTargetAlways: value }, true, true)
       "
     />
     <v-divider class="mt-3 mb-3" />
-    <table
-      v-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode !== RobotOffsetPointMode.None"
-      class="metrics-table mt-3 mb-3"
-    >
-      <tr>
-        <th v-for="(item, itemIndex) in offsetPoints" :key="itemIndex" class="metric-item metric-item-title">
-          {{ item.header }}
-        </th>
-      </tr>
-      <tr>
-        <td v-for="(item, itemIndex) in offsetPoints" :key="itemIndex" class="metric-item">
-          {{ item.value }}
-        </td>
-      </tr>
-    </table>
+    <v-data-table
+      v-show="targetPipelineSettings.offsetRobotOffsetMode !== RobotOffsetPointMode.None"
+      class="mt-3 mb-3"
+      :items="offsetData"
+    />
+
     <pv-dropdown
-      v-model="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode"
-      :items="['None', 'Single Point', 'Dual Point'].map((v, i) => ({ name: v, value: i }))"
+      :items="[{name:'None', value: RobotOffsetPointMode.None}, {name:'Single Point',value:RobotOffsetPointMode.Single}, {name:'Dual Point',value:RobotOffsetPointMode.Dual}]"
       label="Robot Offset Mode"
       :label-cols="labelCols"
+      :model-value="targetPipelineSettings.offsetRobotOffsetMode"
       tooltip="Used to add an arbitrary offset to the location of the targeting crosshair"
       @update:model-value="
         (value: number) =>
-          useCameraSettingsStore().changeCurrentPipelineSetting({ offsetRobotOffsetMode: value }, false)
+          serverStore.updatePipelineSettings(cameraSettings.cameraIndex, pipelineIndex, { offsetRobotOffsetMode: value }, true, true)
       "
     />
     <v-row
-      v-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode !== RobotOffsetPointMode.None"
+      v-if="targetPipelineSettings.offsetRobotOffsetMode !== RobotOffsetPointMode.None"
       align="center"
       justify="start"
     >
       <v-row
-        v-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode === RobotOffsetPointMode.Single"
+        v-if="targetPipelineSettings.offsetRobotOffsetMode === RobotOffsetPointMode.Single"
       >
         <v-col>
           <v-btn
@@ -162,12 +150,12 @@ const labelCols = computed(
             color="accent"
             small
             text="Take Point"
-            @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Single)"
+            @click="serverStore.takeRobotOffsetPoint(RobotOffsetOperationMode.Single, cameraSettings.cameraIndex)"
           />
         </v-col>
       </v-row>
       <v-row
-        v-else-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode === RobotOffsetPointMode.Dual"
+        v-else-if="targetPipelineSettings.offsetRobotOffsetMode === RobotOffsetPointMode.Dual"
       >
         <v-col>
           <v-btn
@@ -175,7 +163,7 @@ const labelCols = computed(
             color="accent"
             small
             text="Take First Point"
-            @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.DualFirst)"
+            @click="serverStore.takeRobotOffsetPoint(RobotOffsetOperationMode.DualFirst, cameraSettings.cameraIndex)"
           />
         </v-col>
         <v-col>
@@ -184,7 +172,7 @@ const labelCols = computed(
             color="accent"
             small
             text="Take Second Point"
-            @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.DualSecond)"
+            @click="serverStore.takeRobotOffsetPoint(RobotOffsetOperationMode.DualSecond, cameraSettings.cameraIndex)"
           />
         </v-col>
       </v-row>
@@ -193,33 +181,9 @@ const labelCols = computed(
           class="w-100"
           small
           text="Clear All Points"
-          @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Clear)"
+          @click="serverStore.takeRobotOffsetPoint(RobotOffsetOperationMode.Clear, cameraSettings.cameraIndex)"
         />
       </v-col>
     </v-row>
   </div>
 </template>
-
-<style scoped>
-.metrics-table {
-  border-collapse: separate;
-  border-spacing: 0;
-  border-radius: 5px;
-  border: 1px solid white;
-  width: 100%;
-  text-align: center;
-}
-
-.metric-item {
-  padding: 1px 15px 1px 10px;
-  border-right: 1px solid;
-  font-weight: normal;
-  color: white;
-}
-
-.metric-item-title {
-  font-size: 18px;
-  text-decoration: underline;
-  text-decoration-color: #ffd843;
-}
-</style>

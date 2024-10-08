@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class HardwareConfig {
@@ -198,5 +199,17 @@ public class HardwareConfig {
                 + ", blacklistedResIndices="
                 + blacklistedResIndices
                 + "]";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof HardwareConfig that)) return false;
+        return ledsCanDim == that.ledsCanDim && Double.compare(vendorFOV, that.vendorFOV) == 0 && Objects.equals(deviceName, that.deviceName) && Objects.equals(deviceLogoPath, that.deviceLogoPath) && Objects.equals(supportURL, that.supportURL) && Objects.equals(ledPins, that.ledPins) && Objects.equals(ledSetCommand, that.ledSetCommand) && Objects.equals(ledBrightnessRange, that.ledBrightnessRange) && Objects.equals(ledDimCommand, that.ledDimCommand) && Objects.equals(ledBlinkCommand, that.ledBlinkCommand) && Objects.equals(statusRGBPins, that.statusRGBPins) && Objects.equals(cpuTempCommand, that.cpuTempCommand) && Objects.equals(cpuMemoryCommand, that.cpuMemoryCommand) && Objects.equals(cpuUtilCommand, that.cpuUtilCommand) && Objects.equals(cpuThrottleReasonCmd, that.cpuThrottleReasonCmd) && Objects.equals(cpuUptimeCommand, that.cpuUptimeCommand) && Objects.equals(gpuMemoryCommand, that.gpuMemoryCommand) && Objects.equals(ramUtilCommand, that.ramUtilCommand) && Objects.equals(gpuMemUsageCommand, that.gpuMemUsageCommand) && Objects.equals(diskUsageCommand, that.diskUsageCommand) && Objects.equals(restartHardwareCommand, that.restartHardwareCommand) && Objects.equals(blacklistedResIndices, that.blacklistedResIndices);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(deviceName, deviceLogoPath, supportURL, ledPins, ledSetCommand, ledsCanDim, ledBrightnessRange, ledDimCommand, ledBlinkCommand, statusRGBPins, cpuTempCommand, cpuMemoryCommand, cpuUtilCommand, cpuThrottleReasonCmd, cpuUptimeCommand, gpuMemoryCommand, ramUtilCommand, gpuMemUsageCommand, diskUsageCommand, restartHardwareCommand, vendorFOV, blacklistedResIndices);
     }
 }

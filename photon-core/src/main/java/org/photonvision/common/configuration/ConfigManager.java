@@ -39,10 +39,6 @@ import org.zeroturnaround.zip.ZipUtil;
 public class ConfigManager {
     private static ConfigManager INSTANCE;
 
-    public static final String HW_CFG_FNAME = "hardwareConfig.json";
-    public static final String HW_SET_FNAME = "hardwareSettings.json";
-    public static final String NET_SET_FNAME = "networkSettings.json";
-
     final File configDirectoryFile;
 
     private final ConfigProvider m_provider;
@@ -62,20 +58,20 @@ public class ConfigManager {
 
     // This logic decides which kind of ConfigManager we load as the default. If we want
     // to switch back to the legacy config manager, change this constant
-    private static final ConfigSaveStrategy m_saveStrat = ConfigSaveStrategy.SQL;
+    private static final ConfigSaveStrategy m_saveStrategy = ConfigSaveStrategy.SQL;
 
     public static ConfigManager getInstance() {
         if (INSTANCE == null) {
             Path rootFolder = PathManager.getInstance().getRootFolder();
-            switch (m_saveStrat) {
+            switch (m_saveStrategy) {
                 case SQL:
-                    INSTANCE = new ConfigManager(rootFolder, new SqlConfigProvider(rootFolder));
+                    INSTANCE = new ConfigManager(rootFolder, new SQLConfigProvider(rootFolder));
                     break;
                 case LEGACY:
                     INSTANCE = new ConfigManager(rootFolder, new LegacyConfigProvider(rootFolder));
                     break;
-                case ATOMIC_ZIP:
                     // not yet done, fall through
+                case ATOMIC_ZIP:
                 default:
                     break;
             }
@@ -86,7 +82,7 @@ public class ConfigManager {
     private static final Logger logger = new Logger(ConfigManager.class, LogGroup.Config);
 
     private void translateLegacyIfPresent(Path folderPath) {
-        if (!(m_provider instanceof SqlConfigProvider)) {
+        if (!(m_provider instanceof SQLConfigProvider)) {
             // Cannot import into SQL if we aren't in SQL mode rn
             return;
         }
@@ -128,7 +124,7 @@ public class ConfigManager {
             }
 
             // Save the same config out using SQL loader
-            var sql = new SqlConfigProvider(getRootFolder());
+            var sql = new SQLConfigProvider(getRootFolder());
             sql.setConfig(loadedConfig);
             sql.saveToDisk();
         }
@@ -151,7 +147,7 @@ public class ConfigManager {
             legacy.load();
             var loadedConfig = legacy.getConfig();
 
-            var sql = new SqlConfigProvider(getRootFolder());
+            var sql = new SQLConfigProvider(getRootFolder());
             sql.setConfig(loadedConfig);
             return sql.saveToDisk();
         } else {
@@ -210,6 +206,11 @@ public class ConfigManager {
 
     public void setNetworkSettings(NetworkConfig networkConfig) {
         getConfig().setNetworkConfig(networkConfig);
+        requestSave();
+    }
+
+    public void setMiscSettings(MiscellaneousSettings miscSettings) {
+        getConfig().setMiscSettings(miscSettings);
         requestSave();
     }
 

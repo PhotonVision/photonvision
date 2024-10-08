@@ -19,7 +19,7 @@ package org.photonvision.common.configuration;
 
 /**
  * Add migrations by adding the SQL commands for each migration sequentially to this array. DO NOT
- * edit or delete existing SQL commands. That will lead to producing an icompatible database.
+ * edit or delete existing SQL commands. That will lead to producing an incompatible database.
  *
  * <p>You can use multiple SQL statements in one migration step as long as you separate them with a
  * semicolon (;).
@@ -44,13 +44,13 @@ public final class DatabaseSchema {
 
     // Constants for the tables and column to help prevent typos in SQL queries
     // Update these tables to keep them constant with the current schema
-    public final class Tables {
+    public static final class Tables {
         // These constants should match the current SQL name of each table
         public static final String GLOBAL = "global";
         public static final String CAMERAS = "cameras";
     }
 
-    public final class Columns {
+    public static final class Columns {
         // These constants should match the current SQL name of each column
         static final String GLB_FILENAME = "filename";
         static final String GLB_CONTENTS = "contents";

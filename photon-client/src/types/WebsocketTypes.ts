@@ -1,14 +1,22 @@
-import type {
-  CameraCalibrationResult,
-  GeneralSettings,
+import {
+  type CalibrationBoardTypes,
+  type CalibrationTagFamilies,
+  CameraCalibrationCoefficients,
+  CameraConfig,
+  InstanceConfig,
   LightingSettings,
   LogLevel,
-  MetricData,
+  MiscellaneousSettings,
   NetworkSettings,
-  QuirkyCamera
+  PlatformMetrics,
+  RobotOffsetOperationMode,
+  ValidQuirks
 } from "@/types/SettingTypes";
-import type { ActivePipelineSettings } from "@/types/PipelineTypes";
-import type { AprilTagFieldLayout, PipelineResult } from "@/types/PhotonTrackingTypes";
+import { PipelineResult } from "@/types/PhotonTrackingTypes";
+import type { AprilTagFieldLayout } from "@/types/PhotonTrackingTypes";
+import { ConfigurableUserPipelineSettings, PipelineType } from "@/types/PipelineTypes";
+
+export type StringifiedCameraIndex = string;
 
 export interface WebsocketLogMessage {
   logMessage: {
@@ -16,11 +24,143 @@ export interface WebsocketLogMessage {
     logMessage: string;
   };
 }
+
 export interface WebsocketSettingsUpdate {
-  general: Required<GeneralSettings>;
-  lighting: Required<LightingSettings>;
-  networkSettings: NetworkSettings;
-  atfl: AprilTagFieldLayout;
+  lighting: LightingSettings;
+  network: NetworkSettings;
+  misc: MiscellaneousSettings;
+}
+
+export interface WebsocketNTUpdate {
+  connected: boolean;
+  address?: string;
+  clients?: number;
+}
+
+export interface WebsocketPipelineResultUpdate extends PipelineResult {
+  cameraIndex: number;
+}
+
+export interface StartCalibrationPayload {
+  cameraIndex: number;
+  videoModeIndex: number;
+  squareSizeIn: number;
+  markerSizeIn: number;
+  patternWidth: number;
+  patternHeight: number;
+  boardType: CalibrationBoardTypes;
+  useMrCal: boolean;
+  useOldPattern: boolean;
+  tagFamily: CalibrationTagFamilies;
+}
+
+export interface OutgoingWebsocketMessage {
+  changeActivePipeline: {
+    cameraIndex: number;
+    newActivePipelineIndex: number;
+  };
+  driverMode: {
+    cameraIndex: number;
+    driverMode: boolean;
+  };
+  changeCameraNickname: {
+    cameraIndex: number;
+    nickname: string;
+  };
+  changePipelineNickname: {
+    cameraIndex: number;
+    pipelineIndex: number;
+    nickname: string;
+  };
+  createNewPipeline: {
+    cameraIndex: number;
+    nickname: string;
+    type: PipelineType;
+  };
+  duplicatePipeline: {
+    cameraIndex: number;
+    targetIndex: number;
+    nickname: string;
+    setActive: boolean;
+  };
+  resetPipeline: {
+    cameraIndex: number;
+    pipelineIndex: number;
+    type?: PipelineType;
+  };
+  deletePipeline: {
+    cameraIndex: number;
+    pipelineIndex: number;
+  };
+  changePipelineSettings: {
+    cameraIndex: number;
+    pipelineIndex: number;
+    configuredSettings: Partial<ConfigurableUserPipelineSettings>;
+  };
+  startCalib: {
+    cameraIndex: number;
+    videoModeIndex: number;
+    squareSizeIn: number;
+    markerSizeIn: number;
+    patternWidth: number;
+    patternHeight: number;
+    boardType: CalibrationBoardTypes;
+    useMrCal: boolean;
+    useOldPattern: boolean;
+    tagFamily: CalibrationTagFamilies;
+  };
+  takeCalibSnapshot: {
+    cameraIndex: number;
+  };
+  cancelCalib: {
+    cameraIndex: number;
+  };
+  completeCalib: {
+    cameraIndex: number;
+  };
+  importCalibFromData: {
+    cameraIndex: number;
+    calibration: CameraCalibrationCoefficients;
+  };
+  importCalibFromCalibDB: {
+    cameraIndex: number;
+    calibration: string;
+  };
+  saveInputSnapshot: {
+    cameraIndex: number;
+  };
+  saveOutputSnapshot: {
+    cameraIndex: number;
+  };
+  ledPercentage: number;
+  changeCameraFOV: {
+    cameraIndex: number;
+    fov: number;
+  };
+  // Only possible for active pipeline
+  robotOffsetPoint: {
+    cameraIndex: number;
+    type: RobotOffsetOperationMode;
+  };
+  changeCameraQuirks: {
+    cameraIndex: number;
+    quirks: Record<ValidQuirks, boolean>;
+  };
+  restartProgram: true;
+  restartDevice: true;
+  publishMetrics: true;
+}
+
+export interface WebsocketConfigurationUpdate {
+  instanceConfig: InstanceConfig;
+  settings: WebsocketSettingsUpdate;
+  activeATFL: AprilTagFieldLayout;
+  cameras: CameraConfig[];
+}
+
+export interface WebsocketRoboRIOFinderResults {
+  possibleRios: string[];
+  deviceIps: string[];
 }
 
 export interface WebsocketNumberPair {
@@ -28,80 +168,47 @@ export interface WebsocketNumberPair {
   second: number;
 }
 
-export type WebsocketVideoFormat = Record<
-  number,
-  {
-    fps: number;
-    height: number;
-    width: number;
-    pixelFormat: string;
-    index?: number;
-    diagonalFOV?: number;
-    horizontalFOV?: number;
-    verticalFOV?: number;
-    standardDeviation?: number;
-    mean?: number;
+export interface WebsocketCameraSettingsMutation {
+  cameraIndex: number;
+  nickname?: string,
+  fov?: {
+    value: number
+  },
+  stream?: {
+    inputPort: number;
+    outputPort: number;
   }
->;
-
-export interface WebsocketCameraSettingsUpdate {
-  calibrations: CameraCalibrationResult[];
-  currentPipelineIndex: number;
-  currentPipelineSettings: ActivePipelineSettings;
-  fov: number;
-  inputStreamPort: number;
-  isFovConfigurable: boolean;
-  isCSICamera: boolean;
-  nickname: string;
-  uniqueName: string;
-  outputStreamPort: number;
-  pipelineNicknames: string[];
-  videoFormatList: WebsocketVideoFormat;
-  cameraQuirks: QuirkyCamera;
-}
-export interface WebsocketNTUpdate {
-  connected: boolean;
-  address?: string;
-  clients?: number;
+  activePipelineIndex?: number,
+  mutatePipelineSettings?: {
+    pipelineIndex: number;
+    mutation: Partial<ConfigurableUserPipelineSettings>;
+  }
+  cameraQuirks?: Record<ValidQuirks, boolean>;
 }
 
-// key is the index of the camera, value is that camera's result
-export type WebsocketPipelineResultUpdate = Record<string, PipelineResult>;
-
-export interface WebsocketCalibrationData {
-  patternWidth: number;
-  boardType: number;
-  hasEnough: boolean;
-  count: number;
-  minCount: number;
-  videoModeIndex: number;
-  patternHeight: number;
-  squareSizeIn: number;
-  markerSizeIn: number;
-}
-
-export interface IncomingWebsocketData {
+export interface IncomingWebsocketMessage extends Partial<WebsocketConfigurationUpdate> {
   log?: WebsocketLogMessage;
-  settings?: WebsocketSettingsUpdate;
-  cameraSettings?: WebsocketCameraSettingsUpdate[];
   ntConnectionInfo?: WebsocketNTUpdate;
-  metrics?: Required<MetricData>;
+  metrics?: PlatformMetrics;
   updatePipelineResult?: WebsocketPipelineResultUpdate;
-  networkInfo?: {
-    possibleRios: string[];
-    deviceIps: string[];
+  networkInfo?: WebsocketRoboRIOFinderResults;
+  pipelineSettingMutation?: {
+    cameraIndex: number;
+    pipelineIndex: number;
+    mutation: Partial<ConfigurableUserPipelineSettings>;
   };
-  mutatePipelineSettings?: Partial<ActivePipelineSettings>;
-  cameraIndex?: number; // Sent when mutating pipeline settings to check against currently active
-  calibrationData?: WebsocketCalibrationData;
-}
 
-export enum WebsocketPipelineType {
-  Calib3d = -2,
-  DriverMode = -1,
-  Reflective = 0,
-  ColoredShape = 1,
-  AprilTag = 2,
-  Aruco = 3,
-  ObjectDetection = 4
+
+
+
+  mutateCameraSettings?: WebsocketCameraSettingsMutation;
+
+  calibrationStatus?: {
+    inProgress: false
+  } | {
+    inProgress: true,
+    videoFormatIndex: number;
+    count: number;
+    minCount: number;
+  }
 }

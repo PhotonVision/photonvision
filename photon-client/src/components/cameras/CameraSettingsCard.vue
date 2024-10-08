@@ -111,50 +111,48 @@ watchEffect(() => {
 </script>
 
 <template>
-  <v-card class="mb-3 pr-6 pb-3" color="primary" dark>
+  <v-card class="mb-3 pr-6 pb-3">
     <v-card-title>Camera Settings</v-card-title>
     <div class="ml-5">
       <pv-select
         v-model="useStateStore().currentCameraIndex"
-        label="Camera"
         :items="useCameraSettingsStore().cameraNames"
+        label="Camera"
         :select-cols="8"
       />
       <pv-number-input
         v-model="tempSettingsStruct.fov"
+        :disabled="useCameraSettingsStore().currentCameraSettings.fov.managedByVendor"
+        label="Maximum Diagonal FOV"
+        :label-cols="4"
         :tooltip="
           !useCameraSettingsStore().currentCameraSettings.fov.managedByVendor
             ? 'Field of view (in degrees) of the camera measured across the diagonal of the frame, in a video mode which covers the whole sensor area.'
             : 'This setting is managed by a vendor'
         "
-        label="Maximum Diagonal FOV"
-        :disabled="useCameraSettingsStore().currentCameraSettings.fov.managedByVendor"
-        :label-cols="4"
       />
       <pv-select
         v-show="currentCameraIsArducam"
         v-model="arducamSelectWrapper"
-        label="Arducam Model"
         :items="[
           { name: 'None', value: 0, disabled: true },
           { name: 'OV9281', value: 1 },
           { name: 'OV2311', value: 2 },
           { name: 'OV9782', value: 3 }
         ]"
+        label="Arducam Model"
         :select-cols="8"
       />
       <br />
       <v-btn
-        class="mt-2 mb-3"
-        style="width: 100%"
-        small
+        class="w-100 mt-2 mb-3"
         color="secondary"
         :disabled="!settingsHaveChanged()"
+        prepend-icon="mdi-content-save"
+        small
+        text="Save Changes"
         @click="saveCameraSettings"
-      >
-        <v-icon left> mdi-content-save </v-icon>
-        Save Changes
-      </v-btn>
+      />
     </div>
   </v-card>
 </template>

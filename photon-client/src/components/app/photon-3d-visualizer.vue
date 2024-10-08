@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PhotonTarget } from "@/types/PhotonTrackingTypes";
+import type { TagTrackedTarget } from "@/types/PhotonTrackingTypes";
 import { onBeforeUnmount, onMounted, watchEffect } from "vue";
 import {
   ArrowHelper,
@@ -18,7 +18,7 @@ import {
 import { TrackballControls } from "three/addons/controls/TrackballControls.js";
 
 const props = defineProps<{
-  targets: PhotonTarget[];
+  targets: TagTrackedTarget[];
 }>();
 
 let scene: Scene | undefined;
@@ -27,7 +27,7 @@ let renderer: WebGLRenderer | undefined;
 let controls: TrackballControls | undefined;
 
 let previousTargets: Object3D[] = [];
-const drawTargets = (targets: PhotonTarget[]) => {
+const drawTargets = (targets: TagTrackedTarget[]) => {
   // Check here, since if we check in watchEffect this never gets called
   if (scene === undefined || camera === undefined || renderer === undefined || controls === undefined) {
     return;
@@ -37,33 +37,36 @@ const drawTargets = (targets: PhotonTarget[]) => {
   previousTargets = [];
 
   targets.forEach((target) => {
-    if (target.pose === undefined) return;
+    if (!target.bestTransform) return;
 
     const geometry = new BoxGeometry(0.3 / 5, 0.2, 0.2);
     const material = new MeshNormalMaterial();
 
-    const quaternion = new Quaternion(target.pose.qx, target.pose.qy, target.pose.qz, target.pose.qw);
+    const quatRaw = target.bestTransform.rotation.quaternion;
+    const translation = target.bestTransform.translation;
+
+    const quaternion = new Quaternion(quatRaw.X, quatRaw.Y, quatRaw.Z, quatRaw.W);
 
     const cube = new Mesh(geometry, material);
-    cube.position.set(target.pose.x, target.pose.y, target.pose.z);
+    cube.position.set(translation.x, translation.y, translation.z);
     cube.rotation.setFromQuaternion(quaternion);
     previousTargets.push(cube);
 
     let arrow = new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0), 1, 0xff0000, 0.1, 0.1);
     arrow.rotation.setFromQuaternion(quaternion);
     arrow.rotateZ(-Math.PI / 2);
-    arrow.position.set(target.pose.x, target.pose.y, target.pose.z);
+    arrow.position.set(translation.x, translation.y, translation.z);
     previousTargets.push(arrow);
 
     arrow = new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0), 1, 0x00ff00, 0.1, 0.1);
     arrow.rotation.setFromQuaternion(quaternion);
-    arrow.position.set(target.pose.x, target.pose.y, target.pose.z);
+    arrow.position.set(translation.x, translation.y, translation.z);
     previousTargets.push(arrow);
 
     arrow = new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0), 1, 0x0000ff, 0.1, 0.1);
     arrow.setRotationFromQuaternion(quaternion);
     arrow.rotateX(Math.PI / 2);
-    arrow.position.set(target.pose.x, target.pose.y, target.pose.z);
+    arrow.position.set(translation.x, translation.y, translation.z);
     previousTargets.push(arrow);
   });
 

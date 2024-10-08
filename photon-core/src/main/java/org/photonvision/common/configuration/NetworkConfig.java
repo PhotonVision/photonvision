@@ -21,13 +21,14 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.networking.NetworkMode;
 import org.photonvision.common.networking.NetworkUtils;
-import org.photonvision.common.util.file.JacksonUtils;
+import org.photonvision.common.util.SerializationUtils;
 
 public class NetworkConfig {
     // Can be an integer team number, or an IP address
@@ -38,14 +39,6 @@ public class NetworkConfig {
     public boolean runNTServer = false;
     public boolean shouldManage;
     public boolean shouldPublishProto = false;
-
-    /**
-     * If we should ONLY match cameras by path, and NEVER only by base-name. For now default to false
-     * to preserve old matching logic.
-     *
-     * <p>This also disables creating new CameraConfigurations for detected "new" cameras.
-     */
-    public boolean matchCamerasOnlyByPath = false;
 
     @JsonIgnore public static final String NM_IFACE_STRING = "${interface}";
     @JsonIgnore public static final String NM_IP_STRING = "${ipaddr}";
@@ -84,8 +77,7 @@ public class NetworkConfig {
             @JsonProperty("shouldPublishProto") boolean shouldPublishProto,
             @JsonProperty("networkManagerIface") String networkManagerIface,
             @JsonProperty("setStaticCommand") String setStaticCommand,
-            @JsonProperty("setDHCPcommand") String setDHCPcommand,
-            @JsonProperty("matchCamerasOnlyByPath") boolean matchCamerasOnlyByPath) {
+            @JsonProperty("setDHCPcommand") String setDHCPcommand) {
         this.ntServerAddress = ntServerAddress;
         this.connectionType = connectionType;
         this.staticIp = staticIp;
@@ -95,13 +87,12 @@ public class NetworkConfig {
         this.networkManagerIface = networkManagerIface;
         this.setStaticCommand = setStaticCommand;
         this.setDHCPcommand = setDHCPcommand;
-        this.matchCamerasOnlyByPath = matchCamerasOnlyByPath;
         setShouldManage(shouldManage);
     }
 
     public Map<String, Object> toHashMap() {
         try {
-            var ret = new ObjectMapper().convertValue(this, JacksonUtils.UIMap.class);
+            var ret = SerializationUtils.objectToHashMap(this);
             ret.put("canManage", this.deviceCanManageNetwork());
             return ret;
         } catch (Exception e) {
@@ -156,5 +147,17 @@ public class NetworkConfig {
                 + ", shouldManage="
                 + shouldManage
                 + "]";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof NetworkConfig that)) return false;
+        return runNTServer == that.runNTServer && shouldManage == that.shouldManage && shouldPublishProto == that.shouldPublishProto && Objects.equals(ntServerAddress, that.ntServerAddress) && connectionType == that.connectionType && Objects.equals(staticIp, that.staticIp) && Objects.equals(hostname, that.hostname) && Objects.equals(networkManagerIface, that.networkManagerIface) && Objects.equals(setStaticCommand, that.setStaticCommand) && Objects.equals(setDHCPcommand, that.setDHCPcommand);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(ntServerAddress, connectionType, staticIp, hostname, runNTServer, shouldManage, shouldPublishProto, networkManagerIface, setStaticCommand, setDHCPcommand);
     }
 }

@@ -41,26 +41,21 @@ const fpsTooLow = computed<boolean>(() => {
 </script>
 
 <template>
-  <v-card
-    id="camera-settings-camera-view-card"
-    class="camera-settings-camera-view-card mb-3 pb-3 pa-4"
-    color="primary"
-    dark
-  >
+  <v-card id="camera-settings-camera-view-card" class="camera-settings-camera-view-card mb-3 pb-3 pa-4">
     <v-card-title
-      class="pb-0 mb-2 pl-4 pt-1"
-      style="min-height: 50px; justify-content: space-between; align-content: center"
+      class="pb-0 mb-2 pl-4 pt-1 d-flex justify-space-between align-content-center"
+      style="min-height: 50px"
     >
-      <div style="display: flex; flex-wrap: wrap">
+      <div class="d-flex flex-wrap">
         <div>
           <span class="mr-4" style="white-space: nowrap"> Cameras </span>
         </div>
         <div>
           <v-chip
-            label
             :color="fpsTooLow ? 'error' : 'transparent'"
-            :text-color="fpsTooLow ? '#C7EA46' : '#ff4d00'"
+            label
             style="font-size: 1rem; padding: 0; margin: 0"
+            :text-color="fpsTooLow ? '#C7EA46' : '#ff4d00'"
           >
             <span class="pr-1">
               {{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &ndash;
@@ -73,11 +68,11 @@ const fpsTooLow = computed<boolean>(() => {
       <div>
         <v-switch
           v-model="driverMode"
+          class="pt-2"
+          color="accent"
           :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
           label="Driver Mode"
           style="margin-left: auto"
-          color="accent"
-          class="pt-2"
         />
       </div>
     </v-card-title>
@@ -102,23 +97,21 @@ const fpsTooLow = computed<boolean>(() => {
     <v-divider />
     <div class="pt-4">
       <p style="color: white">Stream Display</p>
-      <v-btn-toggle v-model="localValue" :multiple="true" mandatory dark class="fill" style="width: 100%">
+      <v-btn-toggle v-model="localValue" base-color="surface-variant" class="fill w-100" mandatory :multiple="true">
         <v-btn
-          color="secondary"
           class="fill"
+          color="secondary"
           :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode"
-        >
-          <v-icon left class="mode-btn-icon">mdi-import</v-icon>
-          <span class="mode-btn-label">Raw</span>
-        </v-btn>
+          prepend-icon="mdi-import"
+          text="Raw"
+        />
         <v-btn
-          color="secondary"
           class="fill"
+          color="secondary"
           :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode"
-        >
-          <v-icon left class="mode-btn-icon">mdi-export</v-icon>
-          <span class="mode-btn-label">Processed</span>
-        </v-btn>
+          prepend-icon="mdi-export"
+          text="Processed"
+        />
       </v-btn-toggle>
     </div>
   </v-card>

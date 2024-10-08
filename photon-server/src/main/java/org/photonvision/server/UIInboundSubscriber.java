@@ -27,28 +27,45 @@ import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
+import org.photonvision.common.hardware.HardwareManager;
+import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public class UIInboundSubscriber extends DataChangeSubscriber {
+    private static final Logger logger = new Logger(UIInboundSubscriber.class, LogGroup.General);
+
     public UIInboundSubscriber() {
         super(
                 Collections.singletonList(DataChangeSource.DCS_WEBSOCKET),
-                Collections.singletonList(DataChangeDestination.DCD_GENSETTINGS));
+                Collections.singletonList(DataChangeDestination.DCD_PROGRAM));
     }
 
     @Override
     public void onDataChangeEvent(DataChangeEvent<?> event) {
-        if (event instanceof IncomingWebSocketEvent) {
-            var incomingWSEvent = (IncomingWebSocketEvent<?>) event;
-            if (incomingWSEvent.propertyName.equals("userConnected")
-                    || incomingWSEvent.propertyName.equals("sendFullSettings")) {
-                // Send full settings
-                var settings = ConfigManager.getInstance().getConfig().toHashMap();
-                var message =
-                        new OutgoingUIEvent<>("fullsettings", settings, incomingWSEvent.originContext);
-                DataChangeService.getInstance().publishEvent(message);
-                Logger.sendConnectedBacklog();
-                NetworkTablesManager.getInstance().broadcastConnectedStatus();
+        if (event instanceof IncomingWebSocketEvent<?> incomingWSEvent) {
+            switch (incomingWSEvent.propertyName) {
+                case "userConnected" -> {
+                    DataChangeService.getInstance()
+                            .publishEvent(
+                                    new OutgoingUIEvent<>(
+                                            "fullsettings",
+                                            ConfigManager.getInstance().getConfig().toHashMap(),
+                                            incomingWSEvent.originContext));
+                    Logger.sendConnectedBacklog();
+                    NetworkTablesManager.getInstance().broadcastConnectedStatus();
+                }
+                case "ledPercentage" -> {
+                    HardwareManager.getInstance().setBrightnessPercent((Integer) incomingWSEvent.data);
+                }
+                case "restartProgram" -> {
+                    HardwareManager.getInstance().restartProgram();
+                }
+                case "restartDevice" -> {
+                    HardwareManager.getInstance().restartDevice();
+                }
+                case "publishMetrics" -> {
+                    HardwareManager.getInstance().publishMetrics();
+                }
             }
         }
     }

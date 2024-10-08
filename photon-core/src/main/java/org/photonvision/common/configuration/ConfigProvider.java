@@ -30,6 +30,10 @@ public abstract class ConfigProvider {
         return config;
     }
 
+    public void setConfig(PhotonConfiguration config) {
+        this.config = config;
+    }
+
     public void clearConfig() {
         config = new PhotonConfiguration();
     }

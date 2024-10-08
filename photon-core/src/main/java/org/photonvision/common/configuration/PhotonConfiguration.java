@@ -18,49 +18,49 @@
 package org.photonvision.common.configuration;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import org.photonvision.PhotonVersion;
-import org.photonvision.common.hardware.Platform;
-import org.photonvision.common.networking.NetworkManager;
-import org.photonvision.common.networking.NetworkUtils;
-import org.photonvision.common.util.SerializationUtils;
-import org.photonvision.jni.RknnDetectorJNI;
-import org.photonvision.mrcal.MrCalJNILoader;
-import org.photonvision.raspi.LibCameraJNILoader;
-import org.photonvision.vision.calibration.UICameraCalibrationCoefficients;
-import org.photonvision.vision.camera.QuirkyCamera;
-import org.photonvision.vision.processes.VisionModule;
-import org.photonvision.vision.processes.VisionModuleManager;
+import java.util.*;
+// import java.util.stream.Collectors;
+// import org.photonvision.PhotonVersion;
+// import org.photonvision.common.hardware.Platform;
+// import org.photonvision.common.networking.NetworkManager;
+// import org.photonvision.common.networking.NetworkUtils;
+// import org.photonvision.common.util.SerializationUtils;
+// import org.photonvision.jni.RknnDetectorJNI;
+// import org.photonvision.mrcal.MrCalJNILoader;
+// import org.photonvision.raspi.LibCameraJNILoader;
+// import org.photonvision.vision.processes.VisionModule;
+// import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.processes.VisionSource;
 
 public class PhotonConfiguration {
-    private final HardwareConfig hardwareConfig;
-    private final HardwareSettings hardwareSettings;
+    private HardwareConfig hardwareConfig;
+    private HardwareSettings hardwareSettings;
     private NetworkConfig networkConfig;
+    private MiscellaneousSettings miscSettings;
     private AprilTagFieldLayout atfl;
-    private HashMap<String, CameraConfiguration> cameraConfigurations;
+
+    private final HashMap<String, CameraConfiguration> cameraConfigurations;
 
     public PhotonConfiguration(
             HardwareConfig hardwareConfig,
             HardwareSettings hardwareSettings,
             NetworkConfig networkConfig,
+            MiscellaneousSettings miscSettings,
             AprilTagFieldLayout atfl) {
-        this(hardwareConfig, hardwareSettings, networkConfig, atfl, new HashMap<>());
+        this(hardwareConfig, hardwareSettings, networkConfig, miscSettings, atfl, new HashMap<>());
     }
 
     public PhotonConfiguration(
             HardwareConfig hardwareConfig,
             HardwareSettings hardwareSettings,
             NetworkConfig networkConfig,
+            MiscellaneousSettings miscSettings,
             AprilTagFieldLayout atfl,
             HashMap<String, CameraConfiguration> cameraConfigurations) {
         this.hardwareConfig = hardwareConfig;
         this.hardwareSettings = hardwareSettings;
         this.networkConfig = networkConfig;
+        this.miscSettings = miscSettings;
         this.cameraConfigurations = cameraConfigurations;
         this.atfl = atfl;
     }
@@ -70,6 +70,7 @@ public class PhotonConfiguration {
                 new HardwareConfig(),
                 new HardwareSettings(),
                 new NetworkConfig(),
+                new MiscellaneousSettings(),
                 new AprilTagFieldLayout(List.of(), 0, 0));
     }
 
@@ -77,12 +78,32 @@ public class PhotonConfiguration {
         return hardwareConfig;
     }
 
-    public NetworkConfig getNetworkConfig() {
-        return networkConfig;
+    public void setHardwareConfig(HardwareConfig hardwareConfig) {
+        this.hardwareConfig = hardwareConfig;
     }
 
     public HardwareSettings getHardwareSettings() {
         return hardwareSettings;
+    }
+
+    public void setHardwareSettings(HardwareSettings hardwareSettings) {
+        this.hardwareSettings = hardwareSettings;
+    }
+
+    public NetworkConfig getNetworkConfig() {
+        return networkConfig;
+    }
+
+    public void setNetworkConfig(NetworkConfig networkConfig) {
+        this.networkConfig = networkConfig;
+    }
+
+    public MiscellaneousSettings getMiscSettings() {
+        return miscSettings;
+    }
+
+    public void setMiscSettings(MiscellaneousSettings miscSettings) {
+        this.miscSettings = miscSettings;
     }
 
     public AprilTagFieldLayout getApriltagFieldLayout() {
@@ -91,10 +112,6 @@ public class PhotonConfiguration {
 
     public void setApriltagFieldLayout(AprilTagFieldLayout atfl) {
         this.atfl = atfl;
-    }
-
-    public void setNetworkConfig(NetworkConfig networkConfig) {
-        this.networkConfig = networkConfig;
     }
 
     public HashMap<String, CameraConfiguration> getCameraConfigurations() {
@@ -115,68 +132,49 @@ public class PhotonConfiguration {
         cameraConfigurations.put(name, config);
     }
 
-    public Map<String, Object> toHashMap() {
-        Map<String, Object> map = new HashMap<>();
-        var settingsSubmap = new HashMap<String, Object>();
-
-        // Hack active interfaces into networkSettings
-        var netConfigMap = networkConfig.toHashMap();
-        netConfigMap.put("networkInterfaceNames", NetworkUtils.getAllWiredInterfaces());
-        netConfigMap.put("networkingDisabled", NetworkManager.getInstance().networkingIsDisabled);
-
-        settingsSubmap.put("networkSettings", netConfigMap);
-
-        var lightingConfig = new UILightingConfig();
-        lightingConfig.brightness = hardwareSettings.ledBrightnessPercentage;
-        lightingConfig.supported = !hardwareConfig.ledPins.isEmpty();
-        settingsSubmap.put("lighting", SerializationUtils.objectToHashMap(lightingConfig));
-        // General Settings
-        var generalSubmap = new HashMap<String, Object>();
-        generalSubmap.put("version", PhotonVersion.versionString);
-        generalSubmap.put(
-                "gpuAcceleration",
-                LibCameraJNILoader.isSupported()
-                        ? "Zerocopy Libcamera Working"
-                        : ""); // TODO add support for other types of GPU accel
-        generalSubmap.put("mrCalWorking", MrCalJNILoader.getInstance().isLoaded());
-        generalSubmap.put("rknnSupported", RknnDetectorJNI.getInstance().isLoaded());
-        generalSubmap.put("hardwareModel", hardwareConfig.deviceName);
-        generalSubmap.put("hardwarePlatform", Platform.getPlatformName());
-        settingsSubmap.put("general", generalSubmap);
-        // AprilTagFieldLayout
-        settingsSubmap.put("atfl", this.atfl);
-
-        map.put(
-                "cameraSettings",
-                VisionModuleManager.getInstance().getModules().stream()
-                        .map(VisionModule::toUICameraConfig)
-                        .map(SerializationUtils::objectToHashMap)
-                        .collect(Collectors.toList()));
-        map.put("settings", settingsSubmap);
-
-        return map;
-    }
-
-    public static class UILightingConfig {
-        public int brightness = 0;
-        public boolean supported = true;
-    }
-
-    public static class UICameraConfiguration {
-        @SuppressWarnings("unused")
-        public double fov;
-
-        public String nickname;
-        public String uniqueName;
-        public HashMap<String, Object> currentPipelineSettings;
-        public int currentPipelineIndex;
-        public List<String> pipelineNicknames;
-        public HashMap<Integer, HashMap<String, Object>> videoFormatList;
-        public int outputStreamPort;
-        public int inputStreamPort;
-        public List<UICameraCalibrationCoefficients> calibrations;
-        public boolean isFovConfigurable = true;
-        public QuirkyCamera cameraQuirks;
-        public boolean isCSICamera;
-    }
+    //    public Map<String, Object> toHashMap() {
+    //        Map<String, Object> retMap = new HashMap<>();
+    //
+    //        // Instance Config
+    //        var instanceConfigSubmap = new HashMap<String, Object>();
+    //        instanceConfigSubmap.put("version", PhotonVersion.versionString);
+    //        instanceConfigSubmap.put("gpuAccelerationSupported", LibCameraJNILoader.isSupported());
+    //        instanceConfigSubmap.put("mrCalWorking", MrCalJNILoader.getInstance().isLoaded());
+    //        instanceConfigSubmap.put("rknnSupported", RknnDetectorJNI.getInstance().isLoaded());
+    //        instanceConfigSubmap.put("hardwareModel", hardwareConfig.deviceName);
+    //        instanceConfigSubmap.put("hardwarePlatform", Platform.getPlatformName());
+    //        retMap.put("instanceConfig", instanceConfigSubmap);
+    //
+    //        var settingsSubmap = new HashMap<String, Object>();
+    //
+    //        // Lighting Settings
+    //        var lightingSettingsSubmap = new HashMap<String, Object>();
+    //        lightingSettingsSubmap.put("brightness", hardwareSettings.ledBrightnessPercentage);
+    //        lightingSettingsSubmap.put("supported", !hardwareConfig.ledPins.isEmpty());
+    //        settingsSubmap.put("lighting", lightingSettingsSubmap);
+    //
+    //        // Network Settings
+    //        var networkSettingsSubmap = networkConfig.toHashMap();
+    //        networkSettingsSubmap.put("networkInterfaceNames",
+    // NetworkUtils.getAllWiredInterfaces());
+    //        networkSettingsSubmap.put("networkingDisabled",
+    // NetworkManager.getInstance().networkingIsDisabled);
+    //        settingsSubmap.put("network", networkSettingsSubmap);
+    //
+    //        // Misc Settings
+    //        var miscSettingsSubmap = SerializationUtils.objectToHashMap(miscSettings);
+    //        settingsSubmap.put("misc", miscSettingsSubmap);
+    //
+    //        retMap.put("settings", settingsSubmap);
+    //
+    //        retMap.put("activeATFL", this.atfl);
+    //
+    //        retMap.put(
+    //            "cameras",
+    //            VisionModuleManager.getInstance().getModules().stream()
+    //                    .map(VisionModule::toUIHashMap)
+    //                    .collect(Collectors.toList()));
+    //
+    //        return retMap;
+    //    }
 }

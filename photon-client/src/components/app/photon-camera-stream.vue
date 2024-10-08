@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import PvTooltippedIcon from "@/components/common/pv-tooltipped-icon.vue";
 import { computed, inject, onBeforeUnmount, ref } from "vue";
-import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { useStateStore } from "@/stores/StateStore";
 import loadingImage from "@/assets/images/loading.svg";
+import { useClientStore } from "@/stores/ClientStore";
+import { useServerStore } from "@/stores/ServerStore";
+
+const clientStore = useClientStore();
+const serverStore = useServerStore();
 
 const props = withDefaults(
   defineProps<{
@@ -16,10 +19,9 @@ const props = withDefaults(
 );
 
 const streamSrc = computed<string>(() => {
-  const port =
-    useCameraSettingsStore().currentCameraSettings.stream[props.streamType === "Raw" ? "inputPort" : "outputPort"];
+  const port = serverStore.currentCameraSettings?.stream[props.streamType === "Raw" ? "inputPort" : "outputPort"];
 
-  if (!useStateStore().backendConnected || port === 0) {
+  if (!clientStore.backendConnected || port === 0) {
     return loadingImage;
   }
 
@@ -28,9 +30,9 @@ const streamSrc = computed<string>(() => {
 
 const handleCaptureClick = () => {
   if (props.streamType === "Raw") {
-    useCameraSettingsStore().saveInputSnapshot();
+    serverStore.saveInputSnapshot();
   } else {
-    useCameraSettingsStore().saveOutputSnapshot();
+    serverStore.saveOutputSnapshot();
   }
 };
 const handlePopoutClick = () => {
@@ -58,10 +60,10 @@ onBeforeUnmount(() => {
       class="w-100"
       crossorigin="anonymous"
       :src="streamSrc"
-    >
+    />
     <div
       class="stream-overlay"
-      :style="(useStateStore().colorPickingMode || streamSrc === loadingImage) && { display: 'none' }"
+      :style="(clientStore.colorPickingFromCameraStream || streamSrc === loadingImage) && { display: 'none' }"
     >
       <pv-tooltipped-icon
         class="ma-1 mr-2"

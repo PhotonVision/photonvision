@@ -3,7 +3,7 @@ const devMode = process.env.NODE_ENV === "development";
 </script>
 
 <template>
-  <div class="w-100 fill-height" style="overflow: hidden">
+  <div class="w-100" style="height: 100vh">
     <div v-if="devMode" class="w-100 fill-height pa-4">
       <span style="color: white; font-weight: bold">
         PhotonClient is in development mode so the local documentation page will not load. Please recompile in

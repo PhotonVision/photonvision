@@ -120,26 +120,20 @@ public class Server {
         app.post("/api/settings/hardwareSettings", RequestHandler::onHardwareSettingsRequest);
         app.post("/api/settings/networkConfig", RequestHandler::onNetworkConfigRequest);
         app.post("/api/settings/aprilTagFieldLayout", RequestHandler::onAprilTagFieldLayoutRequest);
-        app.post("/api/settings/general", RequestHandler::onGeneralSettingsRequest);
-        app.post("/api/settings/camera", RequestHandler::onCameraSettingsRequest);
-        app.post("/api/settings/camera/setNickname", RequestHandler::onCameraNicknameChangeRequest);
+
+        app.post("/api/settings/network", RequestHandler::onNetworkSettingsRequest);
+        app.post("/api/settings/misc", RequestHandler::onMiscSettingsRequest);
         app.get("/api/settings/camera/getCalibImages", RequestHandler::onCameraCalibImagesRequest);
 
         // Utilities
         app.post("/api/utils/offlineUpdate", RequestHandler::onOfflineUpdateRequest);
         app.get("/api/utils/photonvision-journalctl.txt", RequestHandler::onLogExportRequest);
-        app.post("/api/utils/restartProgram", RequestHandler::onProgramRestartRequest);
-        app.post("/api/utils/restartDevice", RequestHandler::onDeviceRestartRequest);
-        app.post("/api/utils/publishMetrics", RequestHandler::onMetricsPublishRequest);
         app.get("/api/utils/getImageSnapshots", RequestHandler::onImageSnapshotsRequest);
         app.get("/api/utils/getCalSnapshot", RequestHandler::onCalibrationSnapshotRequest);
         app.get("/api/utils/getCalibrationJSON", RequestHandler::onCalibrationExportRequest);
 
         // Calibration
         app.post("/api/calibration/end", RequestHandler::onCalibrationEndRequest);
-        app.post(
-                "/api/calibration/importFromCalibDB", RequestHandler::onCalibDBCalibrationImportRequest);
-        app.post("/api/calibration/importFromData", RequestHandler::onDataCalibrationImportRequest);
 
         app.start(port);
     }

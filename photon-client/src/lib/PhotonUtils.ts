@@ -1,4 +1,5 @@
 import type { Resolution } from "@/types/SettingTypes";
+import { PipelineType } from "@/types/PipelineTypes";
 
 // Common RegEx used for naming both pipelines and cameras
 export const nameChangeRegex = /^[A-Za-z0-9_ \-)(]*[A-Za-z0-9][A-Za-z0-9_ \-)(.]*$/;
@@ -21,4 +22,41 @@ export const parseJsonFile = async <T extends Record<string, any>>(file: File): 
     fileReader.onerror = (error) => reject(error);
     fileReader.readAsText(file);
   });
+};
+
+export const getCalImageUrl = (host: string, resolution: Resolution, idx: number, cameraIdx: number) => {
+  const url = new URL(`http://${host}/api/utils/getCalSnapshot`);
+  url.searchParams.set("width", Math.round(resolution.width).toFixed(0));
+  url.searchParams.set("height", Math.round(resolution.height).toFixed(0));
+  url.searchParams.set("snapshotIdx", Math.round(idx).toFixed(0));
+  url.searchParams.set("cameraIdx", Math.round(cameraIdx).toFixed(0));
+
+  return url.href;
+};
+export const getCalJSONUrl = (host: string, resolution: Resolution, cameraIdx: number) => {
+  const url = new URL(`http://${host}/api/utils/getCalibrationJSON`);
+  url.searchParams.set("width", Math.round(resolution.width).toFixed(0));
+  url.searchParams.set("height", Math.round(resolution.height).toFixed(0));
+  url.searchParams.set("cameraIdx", Math.round(cameraIdx).toFixed(0));
+
+  return url.href;
+};
+
+export const pipelineTypeToString = (type: PipelineType): string => {
+  switch (type) {
+    case PipelineType.Calib3d:
+      return "Calibration";
+    case PipelineType.DriverMode:
+      return "Driver Mode";
+    case PipelineType.ColoredShape:
+      return "Colored Shape";
+    case PipelineType.Reflective:
+      return "Reflective";
+    case PipelineType.AprilTag:
+      return "AprilTag";
+    case PipelineType.Aruco:
+      return "Aruco";
+    case PipelineType.ObjectDetection:
+      return "Object Detection";
+  }
 };

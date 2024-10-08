@@ -28,13 +28,14 @@ import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.pipeline.result.CalibrationPipelineResult;
 
-public class UIDataPublisher implements CVPipelineResultConsumer {
-    private static final Logger logger = new Logger(UIDataPublisher.class, LogGroup.VisionModule);
+public class WebsocketDataPublisher implements CVPipelineResultConsumer {
+    private static final Logger logger =
+            new Logger(WebsocketDataPublisher.class, LogGroup.VisionModule);
 
     private final int index;
     private long lastUIResultUpdateTime = 0;
 
-    public UIDataPublisher(int index) {
+    public WebsocketDataPublisher(int index) {
         this.index = index;
     }
 
@@ -46,11 +47,13 @@ public class UIDataPublisher implements CVPipelineResultConsumer {
         if (lastUIResultUpdateTime + 1000.0 / 10.0 > now) return;
 
         var dataMap = new HashMap<String, Object>();
+        dataMap.put("cameraIndex", index);
+
         dataMap.put("fps", result.fps);
         dataMap.put("latency", result.getLatencyMillis());
         var uiTargets = new ArrayList<HashMap<String, Object>>(result.targets.size());
 
-        // We don't actually need to send targets during calibration and it can take up a lot (up to
+        // We don't actually need to send targets during calibration, and it can take up a lot (up to
         // 1.2Mbps for 60 snapshots) of target results with no pitch/yaw/etc set
         if (!(result instanceof CalibrationPipelineResult)) {
             for (var t : result.targets) {
@@ -72,11 +75,8 @@ public class UIDataPublisher implements CVPipelineResultConsumer {
             dataMap.put("multitagResult", multitagData);
         }
 
-        var uiMap = new HashMap<Integer, HashMap<String, Object>>();
-        uiMap.put(index, dataMap);
-
         DataChangeService.getInstance()
-                .publishEvent(OutgoingUIEvent.wrappedOf("updatePipelineResult", uiMap));
+                .publishEvent(OutgoingUIEvent.wrappedOf("updatePipelineResult", dataMap));
         lastUIResultUpdateTime = now;
     }
 }

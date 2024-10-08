@@ -90,51 +90,47 @@ const calibrationImageURL = (index: number) =>
 </script>
 
 <template>
-  <v-card color="primary" class="pa-6" dark>
+  <v-card class="pa-6">
     <v-row>
       <v-col cols="12" md="5">
-        <v-card-title class="pl-0 ml-0"
-          ><span class="text-no-wrap" style="white-space: pre !important">Calibration Details: </span
+        <v-card-title class="pl-0 ml-0">
+          <span class="text-no-wrap" style="white-space: pre !important">Calibration Details: </span
           ><span class="text-no-wrap"
             >{{ useCameraSettingsStore().currentCameraName }}@{{ getResolutionString(videoFormat.resolution) }}</span
-          ></v-card-title
-        >
+          >
+        </v-card-title>
       </v-col>
       <v-col>
-        <v-btn color="secondary" class="mt-4" style="width: 100%" @click="openUploadPhotonCalibJsonPrompt">
-          <v-icon left> mdi-import</v-icon>
-          <span>Import</span>
-        </v-btn>
+        <v-btn
+          class="w-100 mt-4"
+          color="secondary"
+          prepend-icon="mdi-import"
+          text="Import"
+          @click="openUploadPhotonCalibJsonPrompt"
+        />
         <input
           ref="importCalibrationFromPhotonJson"
-          type="file"
           accept=".json"
-          style="display: none"
+          class="d-none"
+          type="file"
           @change="importCalibration"
         />
       </v-col>
       <v-col>
         <v-btn
+          class="w-100 mt-4"
           color="secondary"
-          class="mt-4"
           :disabled="!currentCalibrationCoeffs"
-          style="width: 100%"
+          prepend-icon="mdi-export"
+          text="Export"
           @click="openExportCalibrationPrompt"
-        >
-          <v-icon left>mdi-export</v-icon>
-          <span>Export</span>
-        </v-btn>
-        <a
-          ref="exportCalibration"
-          style="color: black; text-decoration: none; display: none"
-          :href="exportCalibrationURL"
-          target="_blank"
         />
+        <a ref="exportCalibration" class="d-none" :href="exportCalibrationURL" target="_blank" />
       </v-col>
     </v-row>
     <v-row v-if="currentCalibrationCoeffs" class="pt-2">
       <v-card-subtitle>Calibration Details</v-card-subtitle>
-      <v-simple-table dense style="width: 100%" class="pl-2 pr-2">
+      <v-simple-table class="pl-2 pr-2 w-100" dense>
         <template #default>
           <thead>
             <tr>
@@ -238,25 +234,24 @@ const calibrationImageURL = (index: number) =>
           </tbody>
         </template>
       </v-simple-table>
-      <hr style="width: 100%" class="ma-6" />
+      <hr class="ma-6 w-100" />
       <v-card-subtitle>Per Observation Details</v-card-subtitle>
       <v-data-table
+        class="pl-2 pr-2 w-100"
         dense
-        style="width: 100%"
-        class="pl-2 pr-2"
+        expand-icon="mdi-eye"
         :headers="[
           { text: 'Observation Id', value: 'index' },
           { text: 'Mean Reprojection Error', value: 'mean' }
         ]"
-        :items="getObservationDetails()"
         item-key="index"
+        :items="getObservationDetails()"
         show-expand
-        expand-icon="mdi-eye"
       >
         <template #expanded-item="{ headers, item }">
           <td :colspan="headers.length">
-            <div style="display: flex; justify-content: center; width: 100%">
-              <img :src="calibrationImageURL(item.index)" alt="observation image" class="snapshot-preview pt-2 pb-2" />
+            <div class="w-100 d-flex justify-center">
+              <img alt="observation image" class="snapshot-preview pt-2 pb-2" :src="calibrationImageURL(item.index)" />
             </div>
           </td>
         </template>

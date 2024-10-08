@@ -8,7 +8,7 @@
         Please use the sidebar to find what you are looking for
       </v-card-subtitle>
     </div>
-    <img alt="missing-page" class="mt-16" src="@/assets/images/notfound.webp">
+    <img alt="missing-page" class="mt-16" src="@/assets/images/notfound.webp" />
   </div>
 </template>
 

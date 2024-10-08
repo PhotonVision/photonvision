@@ -280,7 +280,7 @@ public class VisionSourceManagerTest {
         var inst = new VisionSourceManager();
         ConfigManager.getInstance().clearConfig();
         ConfigManager.getInstance().load();
-        ConfigManager.getInstance().getConfig().getNetworkConfig().matchCamerasOnlyByPath = false;
+        ConfigManager.getInstance().getConfig().getMiscSettings().matchCamerasOnlyByPath = false;
 
         var CAM2_OLD_PATH =
                 new String[] {"/dev/v4l/by-path/platform-fc880000.usb-usb-0:1:1.0-video-index0"};
@@ -345,7 +345,7 @@ public class VisionSourceManagerTest {
         var inst = new VisionSourceManager();
         ConfigManager.getInstance().clearConfig();
         ConfigManager.getInstance().load();
-        ConfigManager.getInstance().getConfig().getNetworkConfig().matchCamerasOnlyByPath = true;
+        ConfigManager.getInstance().getConfig().getMiscSettings().matchCamerasOnlyByPath = true;
 
         var CAM2_OLD_PATH =
                 new String[] {"/dev/v4l/by-path/platform-fc880000.usb-usb-0:1:1.0-video-index0"};
@@ -443,7 +443,7 @@ public class VisionSourceManagerTest {
         var inst = new VisionSourceManager();
         ConfigManager.getInstance().clearConfig();
         ConfigManager.getInstance().load();
-        ConfigManager.getInstance().getConfig().getNetworkConfig().matchCamerasOnlyByPath = false;
+        ConfigManager.getInstance().getConfig().getMiscSettings().matchCamerasOnlyByPath = false;
 
         CameraInfo info1 =
                 new CameraInfo(
@@ -510,7 +510,7 @@ public class VisionSourceManagerTest {
         var inst = new VisionSourceManager();
         ConfigManager.getInstance().clearConfig();
         ConfigManager.getInstance().load();
-        ConfigManager.getInstance().getConfig().getNetworkConfig().matchCamerasOnlyByPath = false;
+        ConfigManager.getInstance().getConfig().getMiscSettings().matchCamerasOnlyByPath = false;
 
         // Match empty camera infos
         inst.tryMatchCamImpl(cameraInfos);

@@ -23,15 +23,16 @@ const model = defineModel<number>({ required: true });
 
 <template>
   <pv-input-layout :label="label" :label-cols="labelCols" :tooltip="tooltip" tooltip-location="right">
-    <v-text-field
+    <v-number-input
       v-model="model"
       base-color="accent"
+      control-variant="stacked"
       :disabled="disabled"
       hide-details
+      inset
       :max="max"
       :min="min"
       :step="step"
-      type="number"
     />
   </pv-input-layout>
 </template>

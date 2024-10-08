@@ -17,7 +17,6 @@
 
 package org.photonvision.server;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.http.Context;
@@ -35,10 +34,8 @@ import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfInt;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.MiscellaneousSettings;
 import org.photonvision.common.configuration.NetworkConfig;
-import org.photonvision.common.dataflow.DataChangeDestination;
-import org.photonvision.common.dataflow.DataChangeService;
-import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.Platform;
@@ -46,11 +43,8 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.ShellExec;
-import org.photonvision.common.util.TimedTaskManager;
-import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.common.util.file.ProgramDirectoryUtilities;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
-import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.processes.VisionModuleManager;
 
 public class RequestHandler {
@@ -98,7 +92,7 @@ public class RequestHandler {
             ctx.result("Successfully saved the uploaded settings zip, rebooting...");
             logger.info("Successfully saved the uploaded settings zip, rebooting...");
             ConfigManager.getInstance().disableFlushOnShutdown();
-            restartProgram();
+            HardwareManager.getInstance().restartProgram();
         } else {
             ctx.status(500);
             ctx.result("There was an error while saving the uploaded zip file");
@@ -162,7 +156,7 @@ public class RequestHandler {
             ctx.status(200);
             ctx.result("Successfully saved the uploaded hardware config, rebooting...");
             logger.info("Successfully saved the uploaded hardware config, rebooting...");
-            restartProgram();
+            HardwareManager.getInstance().restartProgram();
         } else {
             ctx.status(500);
             ctx.result("There was an error while saving the uploaded hardware config");
@@ -205,7 +199,7 @@ public class RequestHandler {
             ctx.status(200);
             ctx.result("Successfully saved the uploaded hardware settings, rebooting...");
             logger.info("Successfully saved the uploaded hardware settings, rebooting...");
-            restartProgram();
+            HardwareManager.getInstance().restartProgram();
         } else {
             ctx.status(500);
             ctx.result("There was an error while saving the uploaded hardware settings");
@@ -248,7 +242,7 @@ public class RequestHandler {
             ctx.status(200);
             ctx.result("Successfully saved the uploaded network config, rebooting...");
             logger.info("Successfully saved the uploaded network config, rebooting...");
-            restartProgram();
+            HardwareManager.getInstance().restartProgram();
         } else {
             ctx.status(500);
             ctx.result("There was an error while saving the uploaded network config");
@@ -291,7 +285,7 @@ public class RequestHandler {
             ctx.status(200);
             ctx.result("Successfully saved the uploaded AprilTagFieldLayout, rebooting...");
             logger.info("Successfully saved the uploaded AprilTagFieldLayout, rebooting...");
-            restartProgram();
+            HardwareManager.getInstance().restartProgram();
         } else {
             ctx.status(500);
             ctx.result("There was an error while saving the uploaded AprilTagFieldLayout");
@@ -334,7 +328,7 @@ public class RequestHandler {
                     "Offline update successfully complete. PhotonVision will restart in the background.");
             logger.info(
                     "Offline update successfully complete. PhotonVision will restart in the background.");
-            restartProgram();
+            HardwareManager.getInstance().restartProgram();
         } catch (FileNotFoundException e) {
             ctx.result("The current program jar file couldn't be found.");
             ctx.status(500);
@@ -346,65 +340,48 @@ public class RequestHandler {
         }
     }
 
-    public static void onGeneralSettingsRequest(Context ctx) {
+    public static void onNetworkSettingsRequest(Context ctx) {
         NetworkConfig config;
         try {
             config = kObjectMapper.readValue(ctx.bodyInputStream(), NetworkConfig.class);
 
             ctx.status(200);
-            ctx.result("Successfully saved general settings");
-            logger.info("Successfully saved general settings");
+            ctx.result("Successfully saved network settings");
+            logger.info("Successfully saved network settings");
         } catch (IOException e) {
             // If the settings can't be parsed, use the default network settings
             config = new NetworkConfig();
 
             ctx.status(400);
-            ctx.result("The provided general settings were malformed");
-            logger.error("The provided general settings were malformed", e);
+            ctx.result("The provided network settings were malformed");
+            logger.error("The provided network settings were malformed", e);
         }
 
         ConfigManager.getInstance().setNetworkSettings(config);
-        ConfigManager.getInstance().requestSave();
 
         NetworkManager.getInstance().reinitialize();
 
         NetworkTablesManager.getInstance().setConfig(config);
     }
 
-    public static class UICameraSettingsRequest {
-        @JsonProperty("fov")
-        double fov;
-
-        @JsonProperty("quirksToChange")
-        HashMap<CameraQuirk, Boolean> quirksToChange;
-    }
-
-    public static void onCameraSettingsRequest(Context ctx) {
+    public static void onMiscSettingsRequest(Context ctx) {
+        MiscellaneousSettings miscSettings;
         try {
-            var data = kObjectMapper.readTree(ctx.bodyInputStream());
-
-            int index = data.get("index").asInt();
-            var settings =
-                    JacksonUtils.deserialize(data.get("settings").toString(), UICameraSettingsRequest.class);
-            var fov = settings.fov;
-
-            logger.info("Changing camera FOV to: " + fov);
-            logger.info("Changing quirks to: " + settings.quirksToChange.toString());
-
-            var module = VisionModuleManager.getInstance().getModule(index);
-            module.setFov(fov);
-            module.changeCameraQuirks(settings.quirksToChange);
-
-            module.saveModule();
+            miscSettings = kObjectMapper.readValue(ctx.bodyInputStream(), MiscellaneousSettings.class);
 
             ctx.status(200);
-            ctx.result("Successfully saved camera settings");
-            logger.info("Successfully saved camera settings");
-        } catch (NullPointerException | IOException e) {
+            ctx.result("Successfully saved misc settings");
+            logger.info("Successfully saved misc settings");
+        } catch (IOException e) {
+            // If the settings can't be parsed, use the default network settings
+            miscSettings = new MiscellaneousSettings();
+
             ctx.status(400);
-            ctx.result("The provided camera settings were malformed");
-            logger.error("The provided camera settings were malformed", e);
+            ctx.result("The provided misc settings were malformed");
+            logger.error("The provided misc settings were malformed", e);
         }
+
+        ConfigManager.getInstance().setMiscSettings(miscSettings);
     }
 
     public static void onLogExportRequest(Context ctx) {
@@ -479,108 +456,6 @@ public class RequestHandler {
             ctx.result("There was an error while ending calibration");
             logger.error("There was an error while ending calibration", e);
         }
-    }
-
-    public static void onCalibDBCalibrationImportRequest(Context ctx) {
-        var data = ctx.bodyInputStream();
-
-        try {
-            var actualObj = kObjectMapper.readTree(data);
-
-            int cameraIndex = actualObj.get("cameraIndex").asInt();
-            var payload = kObjectMapper.readTree(actualObj.get("payload").asText());
-            var coeffs = CameraCalibrationCoefficients.parseFromCalibdbJson(payload);
-
-            var uploadCalibrationEvent =
-                    new IncomingWebSocketEvent<>(
-                            DataChangeDestination.DCD_ACTIVEMODULE,
-                            "calibrationUploaded",
-                            coeffs,
-                            cameraIndex,
-                            null);
-            DataChangeService.getInstance().publishEvent(uploadCalibrationEvent);
-
-            ctx.status(200);
-            ctx.result("Calibration imported successfully from CalibDB data!");
-            logger.info("Calibration imported successfully from CalibDB data!");
-        } catch (IOException e) {
-            ctx.status(400);
-            ctx.result(
-                    "The Provided CalibDB data is malformed and cannot be parsed for the required fields.");
-            logger.error(
-                    "The Provided CalibDB data is malformed and cannot be parsed for the required fields.",
-                    e);
-        }
-    }
-
-    public static void onDataCalibrationImportRequest(Context ctx) {
-        try {
-            var data = kObjectMapper.readTree(ctx.bodyInputStream());
-
-            int cameraIndex = data.get("cameraIndex").asInt();
-            var coeffs =
-                    kObjectMapper.convertValue(data.get("calibration"), CameraCalibrationCoefficients.class);
-
-            var uploadCalibrationEvent =
-                    new IncomingWebSocketEvent<>(
-                            DataChangeDestination.DCD_ACTIVEMODULE,
-                            "calibrationUploaded",
-                            coeffs,
-                            cameraIndex,
-                            null);
-            DataChangeService.getInstance().publishEvent(uploadCalibrationEvent);
-
-            ctx.status(200);
-            ctx.result("Calibration imported successfully from imported data!");
-            logger.info("Calibration imported successfully from imported data!");
-        } catch (JsonProcessingException e) {
-            ctx.status(400);
-            ctx.result("The provided calibration data was malformed");
-            logger.error("The provided calibration data was malformed", e);
-
-        } catch (Exception e) {
-            ctx.status(500);
-            ctx.result("An error occurred while uploading calibration data");
-            logger.error("An error occurred while uploading calibration data", e);
-        }
-    }
-
-    public static void onProgramRestartRequest(Context ctx) {
-        // TODO, check if this was successful or not
-        ctx.status(204);
-        restartProgram();
-    }
-
-    public static void onDeviceRestartRequest(Context ctx) {
-        ctx.status(HardwareManager.getInstance().restartDevice() ? 204 : 500);
-    }
-
-    public static void onCameraNicknameChangeRequest(Context ctx) {
-        try {
-            var data = kObjectMapper.readTree(ctx.bodyInputStream());
-
-            String name = data.get("name").asText();
-            int idx = data.get("cameraIndex").asInt();
-
-            VisionModuleManager.getInstance().getModule(idx).setCameraNickname(name);
-            ctx.status(200);
-            ctx.result("Successfully changed the camera name to: " + name);
-            logger.info("Successfully changed the camera name to: " + name);
-        } catch (JsonProcessingException e) {
-            ctx.status(400);
-            ctx.result("The provided nickname data was malformed");
-            logger.error("The provided nickname data was malformed", e);
-
-        } catch (Exception e) {
-            ctx.status(500);
-            ctx.result("An error occurred while changing the camera's nickname");
-            logger.error("An error occurred while changing the camera's nickname", e);
-        }
-    }
-
-    public static void onMetricsPublishRequest(Context ctx) {
-        HardwareManager.getInstance().publishMetrics();
-        ctx.status(204);
     }
 
     public static void onCalibrationSnapshotRequest(Context ctx) {
@@ -767,27 +642,5 @@ public class RequestHandler {
         }
 
         return Optional.of(tempFilePath);
-    }
-
-    /**
-     * Restart the running program. Note that this doesn't actually restart the program itself,
-     * instead, it relies on systemd or an equivalent.
-     */
-    private static void restartProgram() {
-        TimedTaskManager.getInstance()
-                .addOneShotTask(
-                        () -> {
-                            if (Platform.isLinux()) {
-                                try {
-                                    new ShellExec().executeBashCommand("systemctl restart photonvision.service");
-                                } catch (IOException e) {
-                                    logger.error("Could not restart device!", e);
-                                    System.exit(0);
-                                }
-                            } else {
-                                System.exit(0);
-                            }
-                        },
-                        0);
     }
 }

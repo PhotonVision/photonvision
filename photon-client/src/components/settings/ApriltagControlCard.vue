@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { Euler, Quaternion as ThreeQuat } from "three";
 import type { Quaternion } from "@/types/PhotonTrackingTypes";
 import { toDeg } from "@/lib/MathUtils";
 import { computed } from "vue";
+import { useServerStore } from "@/stores/ServerStore";
+
+const serverStore = useServerStore();
 
 const flattenedEulerTags = computed(() =>
-  useSettingsStore().currentFieldLayout.tags.map((tag) => {
+  serverStore.activeATFL?.tags.map((tag) => {
     const eu = quaternionToEuler(tag.pose.rotation.quaternion);
     return {
       ID: tag.ID,
@@ -33,10 +35,17 @@ const quaternionToEuler = (rotQuat: Quaternion): { x: number; y: number; z: numb
 <template>
   <v-card>
     <v-card-title class="mb-3 mt-2">AprilTag Field Layout</v-card-title>
-    <v-data-table class="mb-3 pl-4 pr-4" :headers="Array(7).fill({})" hide-default-footer :items="flattenedEulerTags">
+    <v-card-text v-if="!serverStore.activeATFL">No ATFL Found</v-card-text>
+    <v-data-table
+      v-else
+      class="mb-2 pl-4 pr-4"
+      :headers="Array(7).fill({})"
+      hide-default-footer
+      :items="flattenedEulerTags"
+    >
       <template #top>
-        <p class="pl-2">Field width: {{ useSettingsStore().currentFieldLayout.field.width.toFixed(2) }} meters</p>
-        <p class="pl-2">Field length: {{ useSettingsStore().currentFieldLayout.field.length.toFixed(2) }} meters</p>
+        <p class="pl-2">Field width: {{ serverStore.activeATFL?.field.width.toFixed(2) || "Unknown " }} meters</p>
+        <p class="pl-2">Field length: {{ serverStore.activeATFL?.field.length.toFixed(2) || "Unknown " }} meters</p>
       </template>
 
       <template #headers>
@@ -51,7 +60,7 @@ const quaternionToEuler = (rotQuat: Quaternion): { x: number; y: number; z: numb
         </tr>
       </template>
       <template #no-data>
-        <span>No Tags Detected</span>
+        <span>No Tags in ATFL</span>
       </template>
     </v-data-table>
   </v-card>

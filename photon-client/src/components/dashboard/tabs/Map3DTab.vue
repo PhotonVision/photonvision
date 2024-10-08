@@ -1,10 +1,17 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import type { PhotonTarget } from "@/types/PhotonTrackingTypes";
-import { useStateStore } from "@/stores/StateStore";
+import type { TagTrackedTarget } from "@/types/PhotonTrackingTypes";
 import Photon3dVisualizer from "@/components/app/photon-3d-visualizer.vue";
+import { useClientStore } from "@/stores/ClientStore";
+import { CameraConfig } from "@/types/SettingTypes";
 
-const trackedTargets = computed<PhotonTarget[]>(() => useStateStore().currentPipelineResults?.targets || []);
+const clientStore = useClientStore();
+
+const props = defineProps<{
+  cameraSettings: CameraConfig,
+}>();
+
+const trackedTargets = computed<TagTrackedTarget[]>(() => (clientStore.pipelineResultsFromCameraIndex(props.cameraSettings.cameraIndex)?.targets || []) as TagTrackedTarget[]);
 </script>
 
 <template>

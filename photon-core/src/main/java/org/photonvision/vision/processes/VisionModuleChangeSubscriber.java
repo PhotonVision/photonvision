@@ -18,6 +18,7 @@
 package org.photonvision.vision.processes;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Point;
@@ -26,13 +27,12 @@ import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.PipelineType;
-import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.target.RobotOffsetPointOperation;
 
 @SuppressWarnings("unchecked")
@@ -51,8 +51,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
 
     @Override
     public void onDataChangeEvent(DataChangeEvent<?> event) {
-        if (event instanceof IncomingWebSocketEvent) {
-            var wsEvent = (IncomingWebSocketEvent<?>) event;
+        if (event instanceof IncomingWebSocketEvent<?> wsEvent) {
 
             // Camera index -1 means a "multicast event" (i.e. the event is received by all cameras)
             if (wsEvent.cameraIndex != null
@@ -63,130 +62,226 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                 var newPropValue = wsEvent.data;
                 var currentSettings = parentModule.pipelineManager.getCurrentPipeline().getSettings();
 
-                // special case for non-PipelineSetting changes
                 switch (propName) {
-                        //                    case "cameraNickname": // rename camera
-                        //                        var newNickname = (String) newPropValue;
-                        //                        logger.info("Changing nickname to " + newNickname);
-                        //                        parentModule.setCameraNickname(newNickname);
-                        //                        return;
-                    case "pipelineName": // rename current pipeline
-                        logger.info("Changing nick to " + newPropValue);
-                        parentModule.pipelineManager.getCurrentPipelineSettings().pipelineNickname =
-                                (String) newPropValue;
-                        parentModule.saveAndBroadcastAll();
-                        return;
-                    case "newPipelineInfo": // add new pipeline
-                        var typeName = (Pair<String, PipelineType>) newPropValue;
-                        var type = typeName.getRight();
-                        var name = typeName.getLeft();
-
-                        logger.info("Adding a " + type + " pipeline with name " + name);
-
-                        var addedSettings = parentModule.pipelineManager.addPipeline(type);
-                        addedSettings.pipelineNickname = name;
-                        parentModule.saveAndBroadcastAll();
-                        return;
-                    case "deleteCurrPipeline":
-                        var indexToDelete = parentModule.pipelineManager.getRequestedIndex();
-                        logger.info("Deleting current pipe at index " + indexToDelete);
-                        int newIndex = parentModule.pipelineManager.removePipeline(indexToDelete);
-                        parentModule.setPipeline(newIndex);
-                        parentModule.saveAndBroadcastAll();
-                        return;
-                    case "changePipeline": // change active pipeline
-                        var index = (Integer) newPropValue;
-                        if (index == parentModule.pipelineManager.getRequestedIndex()) {
-                            logger.debug("Skipping pipeline change, index " + index + " already active");
+                    case "changeActivePipeline" -> {
+                        var newIndex = (Integer) newPropValue;
+                        if (newIndex == parentModule.pipelineManager.getRequestedIndex()) {
+                            logger.debug("Skipping pipeline change, index " + newIndex + " already active");
                             return;
                         }
-                        parentModule.setPipeline(index);
+
+                        parentModule.setPipeline(newIndex);
                         parentModule.saveAndBroadcastAll();
-                        return;
-                    case "startCalibration":
-                        try {
-                            var data =
-                                    JacksonUtils.deserialize(
-                                            (Map<String, Object>) newPropValue, UICalibrationData.class);
-                            parentModule.startCalibration(data);
-                            parentModule.saveAndBroadcastAll();
-                        } catch (Exception e) {
-                            logger.error("Error deserailizing start-cal request", e);
+                    }
+                    case "driverMode" -> {
+                        parentModule.setDriverMode((Boolean) newPropValue);
+                    }
+                    case "changeCameraNickname" -> {
+                        var newNickname = (String) newPropValue;
+                        parentModule.setCameraNickname(newNickname);
+                    }
+                    case "changePipelineNickname" -> {
+                        var payload = (HashMap<String, Object>) newPropValue;
+                        var targetIdx = (Integer) payload.get("pipelineIndex");
+                        var nickname = (String) payload.get("nickname");
+
+                        parentModule.pipelineManager.getPipelineSettings(targetIdx).pipelineNickname = nickname;
+                    }
+                    case "createNewPipeline" -> {
+                        var payload = (HashMap<String, Object>) newPropValue;
+                        var newPipelineType = PipelineType.getPipelineType((Integer) payload.get("type"));
+                        var newPipelineNickname = (String) payload.get("nickname");
+
+                        var addedSettings = parentModule.pipelineManager.addPipeline(newPipelineType);
+                        addedSettings.pipelineNickname = newPipelineNickname;
+                        parentModule.saveAndBroadcastAll();
+                    }
+                    case "duplicatePipeline" -> {
+                        var payload = (HashMap<String, Object>) newPropValue;
+                        var targetIdx = (Integer) payload.get("targetIndex");
+                        var newPipelineNickname = (String) payload.get("nickname");
+                        var setActive = (Boolean) payload.get("setActive");
+
+                        int newPipeIdx = parentModule.pipelineManager.duplicatePipeline(targetIdx);
+                        parentModule.pipelineManager.getPipelineSettings(newPipeIdx).pipelineNickname =
+                                newPipelineNickname;
+
+                        if (setActive) {
+                            parentModule.setPipeline(newPipeIdx);
                         }
-                        return;
-                    case "saveInputSnapshot":
-                        parentModule.saveInputSnapshot();
-                        return;
-                    case "saveOutputSnapshot":
-                        parentModule.saveOutputSnapshot();
-                        return;
-                    case "takeCalSnapshot":
-                        parentModule.takeCalibrationSnapshot();
-                        return;
-                    case "duplicatePipeline":
-                        int idx = parentModule.pipelineManager.duplicatePipeline((Integer) newPropValue);
-                        parentModule.setPipeline(idx);
+
                         parentModule.saveAndBroadcastAll();
-                        return;
-                    case "calibrationUploaded":
-                        if (newPropValue instanceof CameraCalibrationCoefficients)
-                            parentModule.addCalibrationToConfig((CameraCalibrationCoefficients) newPropValue);
-                        return;
-                    case "robotOffsetPoint":
-                        if (currentSettings instanceof AdvancedPipelineSettings) {
-                            var curAdvSettings = (AdvancedPipelineSettings) currentSettings;
-                            var offsetOperation = RobotOffsetPointOperation.fromIndex((int) newPropValue);
+                    }
+                    case "resetPipeline" -> {
+                        var payload = (HashMap<String, Object>) newPropValue;
+                        var targetIdx = (Integer) payload.get("pipelineIndex");
+                        var newPipelineTypeBase = (Integer) payload.get("type");
+
+                        if (newPipelineTypeBase == null) {
+                            // TODO reset pipeline settings to default
+                        } else {
+                            // TODO change pipeline type by targetIdx
+                            var newPipelineType = PipelineType.getPipelineType(newPipelineTypeBase);
+                        }
+
+                        parentModule.saveAndBroadcastAll();
+                    }
+                    case "deletePipeline" -> {
+                        var targetIdx = (Integer) newPropValue;
+                        int newIndex = parentModule.pipelineManager.removePipeline(targetIdx);
+                        // TODO make sure this doesn't change active pipeline unless deleting the active
+                        // pipeline
+                        parentModule.setPipeline(newIndex);
+                        parentModule.saveAndBroadcastAll();
+                    }
+                    case "startCalib" -> {
+                        // TODO send message to session indicating that calib started
+                        //                    case "startCalibration":
+                        //                        try {
+                        //                            var data =
+                        //                                    JacksonUtils.deserialize(
+                        //                                            (Map<String, Object>) newPropValue,
+                        // UICalibrationData.class);
+                        //                            parentModule.startCalibration(data);
+                        //                            parentModule.saveAndBroadcastAll();
+                        //                        } catch (Exception e) {
+                        //                            logger.error("Error deserailizing start-cal request", e);
+                        //                        }
+                        //                        return;
+                    }
+                    case "takeCalibSnapshot" -> {
+                        // TODO make this respect the original context and echo back with status after snapshot
+                        parentModule.takeCalibrationSnapshot();
+                    }
+                    case "cancelCalib" -> {
+                        // TODO send message to session indicating that calib was canceled
+                    }
+                    case "completeCalib" -> {
+                        // TODO send message to session indicating that calib was completed successfully or
+                        // failed
+                    }
+                    case "importCalibFromData" -> {
+                        var payload = (CameraCalibrationCoefficients) newPropValue;
+                        parentModule.addCalibrationToConfig(payload);
+                    }
+                    case "saveInputSnapshot" -> {
+                        parentModule.saveInputSnapshot();
+                    }
+                    case "saveOutputSnapshot" -> {
+                        parentModule.saveOutputSnapshot();
+                    }
+                    case "robotOffsetPoint" -> {
+                        if (currentSettings instanceof AdvancedPipelineSettings curAdvSettings) {
+                            var offsetOperation = (RobotOffsetPointOperation) newPropValue;
                             var latestTarget = parentModule.lastPipelineResultBestTarget;
 
                             if (latestTarget != null) {
                                 var newPoint = latestTarget.getTargetOffsetPoint();
 
                                 switch (curAdvSettings.offsetRobotOffsetMode) {
-                                    case Single:
+                                    case Single -> {
                                         if (offsetOperation == RobotOffsetPointOperation.ROPO_CLEAR) {
                                             curAdvSettings.offsetSinglePoint = new Point();
                                         } else if (offsetOperation == RobotOffsetPointOperation.ROPO_TAKESINGLE) {
                                             curAdvSettings.offsetSinglePoint = newPoint;
                                         }
-                                        break;
-                                    case Dual:
+                                    }
+                                    case Dual -> {
                                         if (offsetOperation == RobotOffsetPointOperation.ROPO_CLEAR) {
                                             curAdvSettings.offsetDualPointA = new Point();
                                             curAdvSettings.offsetDualPointAArea = 0;
                                             curAdvSettings.offsetDualPointB = new Point();
                                             curAdvSettings.offsetDualPointBArea = 0;
                                         } else {
-                                            // update point and area
+                                            // Update point and area
                                             switch (offsetOperation) {
-                                                case ROPO_TAKEFIRSTDUAL:
+                                                case ROPO_TAKEFIRSTDUAL -> {
                                                     curAdvSettings.offsetDualPointA = newPoint;
                                                     curAdvSettings.offsetDualPointAArea = latestTarget.getArea();
-                                                    break;
-                                                case ROPO_TAKESECONDDUAL:
+                                                }
+                                                case ROPO_TAKESECONDDUAL -> {
                                                     curAdvSettings.offsetDualPointB = newPoint;
                                                     curAdvSettings.offsetDualPointBArea = latestTarget.getArea();
-                                                    break;
-                                                default:
-                                                    break;
+                                                }
                                             }
                                         }
-                                        break;
-                                    default:
-                                        break;
+                                    }
                                 }
                             }
                         }
-                        return;
-                    case "changePipelineType":
-                        parentModule.changePipelineType((Integer) newPropValue);
-                        parentModule.saveAndBroadcastAll();
-                        return;
-                    case "isDriverMode":
-                        parentModule.setDriverMode((Boolean) newPropValue);
-                        return;
+                    }
+                    case "changeCameraFOV" -> {
+                        var newFov = (Double) newPropValue;
+                        parentModule.setFov(newFov);
+                        parentModule.saveModule();
+                    }
+                    case "changeCameraQuirks" -> {
+                        // TODO make sure this serde worked
+                        var newQuirks = (HashMap<CameraQuirk, Boolean>) newPropValue;
+                        parentModule.changeCameraQuirks(newQuirks);
+                        parentModule.saveModule();
+                    }
+                    case "pipelineSettingChange" -> {
+                        var payload = (Pair<Integer, Map.Entry<String, Object>>) newPropValue;
+                        var targetPipelineIndex = payload.getLeft();
+                        var targetPipeSettings =
+                                parentModule.pipelineManager.getPipelineSettings(targetPipelineIndex);
+
+                        var settingsChange = payload.getRight();
+
+                        try {
+                            var settingField = targetPipeSettings.getClass().getField(settingsChange.getKey());
+                            var settingType = settingField.getType();
+
+                            if (settingType.isEnum()) {
+                                var actual = settingType.getEnumConstants()[(int) settingsChange.getValue()];
+                                settingField.set(currentSettings, actual);
+                            } else if (settingType.isAssignableFrom(DoubleCouple.class)) {
+                                var orig = (ArrayList<Number>) settingsChange.getValue();
+                                var actual = new DoubleCouple(orig.get(0), orig.get(1));
+                                settingField.set(currentSettings, actual);
+                            } else if (settingType.isAssignableFrom(IntegerCouple.class)) {
+                                var orig = (ArrayList<Number>) settingsChange.getValue();
+                                var actual = new IntegerCouple(orig.get(0).intValue(), orig.get(1).intValue());
+                                settingField.set(currentSettings, actual);
+                            } else if (settingType.equals(Double.TYPE)) {
+                                settingField.setDouble(
+                                        currentSettings, ((Number) settingsChange.getValue()).doubleValue());
+                            } else if (settingType.equals(Integer.TYPE)) {
+                                settingField.setInt(currentSettings, (Integer) settingsChange.getValue());
+                            } else if (settingType.equals(Boolean.TYPE)) {
+                                if (settingsChange.getValue() instanceof Integer) {
+                                    settingField.setBoolean(
+                                            currentSettings, (Integer) settingsChange.getValue() != 0);
+                                } else {
+                                    settingField.setBoolean(currentSettings, (Boolean) settingsChange.getValue());
+                                }
+                            } else {
+                                settingField.set(settingsChange.getValue(), settingsChange.getValue());
+                            }
+                            logger.trace(
+                                    "Set prop " + settingsChange.getKey() + " to value " + settingsChange.getValue());
+                            parentModule.saveAndBroadcastPipelineChanges(
+                                    wsEvent.originContext,
+                                    settingsChange.getKey(),
+                                    settingsChange.getValue(),
+                                    targetPipelineIndex);
+                        } catch (NoSuchFieldException | IllegalAccessException e) {
+                            logger.error(
+                                    "Could not set prop "
+                                            + settingsChange.getKey()
+                                            + " with value "
+                                            + settingsChange.getValue()
+                                            + " on "
+                                            + targetPipeSettings,
+                                    e);
+                        } catch (Exception e) {
+                            logger.error("Unknown exception when setting PSC prop!", e);
+                        }
+                    }
                 }
 
-                // special case for camera settables
+                // Special case for camera settables
                 if (propName.startsWith("camera")) {
                     var propMethodName = "set" + propName.replace("camera", "");
                     var methods = parentModule.visionSource.getSettables().getClass().getMethods();
@@ -200,50 +295,6 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         }
                     }
                 }
-
-                try {
-                    var propField = currentSettings.getClass().getField(propName);
-                    var propType = propField.getType();
-
-                    if (propType.isEnum()) {
-                        var actual = propType.getEnumConstants()[(int) newPropValue];
-                        propField.set(currentSettings, actual);
-                    } else if (propType.isAssignableFrom(DoubleCouple.class)) {
-                        var orig = (ArrayList<Number>) newPropValue;
-                        var actual = new DoubleCouple(orig.get(0), orig.get(1));
-                        propField.set(currentSettings, actual);
-                    } else if (propType.isAssignableFrom(IntegerCouple.class)) {
-                        var orig = (ArrayList<Number>) newPropValue;
-                        var actual = new IntegerCouple(orig.get(0).intValue(), orig.get(1).intValue());
-                        propField.set(currentSettings, actual);
-                    } else if (propType.equals(Double.TYPE)) {
-                        propField.setDouble(currentSettings, ((Number) newPropValue).doubleValue());
-                    } else if (propType.equals(Integer.TYPE)) {
-                        propField.setInt(currentSettings, (Integer) newPropValue);
-                    } else if (propType.equals(Boolean.TYPE)) {
-                        if (newPropValue instanceof Integer) {
-                            propField.setBoolean(currentSettings, (Integer) newPropValue != 0);
-                        } else {
-                            propField.setBoolean(currentSettings, (Boolean) newPropValue);
-                        }
-                    } else {
-                        propField.set(newPropValue, newPropValue);
-                    }
-                    logger.trace("Set prop " + propName + " to value " + newPropValue);
-                } catch (NoSuchFieldException | IllegalAccessException e) {
-                    logger.error(
-                            "Could not set prop "
-                                    + propName
-                                    + " with value "
-                                    + newPropValue
-                                    + " on "
-                                    + currentSettings,
-                            e);
-                } catch (Exception e) {
-                    logger.error("Unknown exception when setting PSC prop!", e);
-                }
-
-                parentModule.saveAndBroadcastSelective(wsEvent.originContext, propName, newPropValue);
             }
         }
     }

@@ -91,26 +91,26 @@ const expanded = ref([]);
 </script>
 
 <template>
-  <v-card dark class="pr-6 pb-3" style="background-color: #006492">
+  <v-card class="pr-6 pb-3">
     <v-card-title>Camera Control</v-card-title>
     <v-row class="pl-6">
       <v-col>
-        <v-btn color="secondary" @click="fetchSnapshots">
-          <v-icon left class="open-icon"> mdi-folder </v-icon>
-          <span class="open-label">Show Saved Snapshots</span>
-        </v-btn>
+        <v-btn color="secondary" prepend-icon="mdi-folder" text="Show Saved Snapshots" @click="fetchSnapshots" />
       </v-col>
     </v-row>
     <v-dialog v-model="showSnapshotViewerDialog">
-      <v-card dark class="pt-3 pl-5 pr-5" color="primary" flat>
+      <v-card class="pt-3 pl-5 pr-5">
         <v-card-title> View Saved Frame Snapshots </v-card-title>
         <v-divider />
-        <v-card-text v-if="imgData.length === 0" style="font-size: 18px; font-weight: 600" class="pt-4">
+        <v-card-text v-if="imgData.length === 0" class="pt-4" style="font-size: 18px; font-weight: 600">
           There are no snapshots saved
         </v-card-text>
         <div v-else class="pb-2">
           <v-data-table
             v-model:expanded="expanded"
+            class="elevation-0"
+            expand-icon="mdi-eye"
+            group-by="cameraUniqueName"
             :headers="[
               { text: 'Snapshot Name', value: 'snapshotShortName', sortable: false },
               { text: 'Camera Unique Name', value: 'cameraUniqueName' },
@@ -119,23 +119,20 @@ const expanded = ref([]);
               { text: 'Time Created', value: 'timeCreated' },
               { text: 'Actions', value: 'actions', sortable: false }
             ]"
-            :items="imgData"
-            group-by="cameraUniqueName"
-            class="elevation-0"
             item-key="index"
+            :items="imgData"
             show-expand
-            expand-icon="mdi-eye"
           >
             <template #expanded-item="{ headers, item }">
               <td :colspan="headers.length">
-                <div style="display: flex; justify-content: center; width: 100%">
-                  <img :src="item.snapshotSrc" alt="snapshot-image" class="snapshot-preview pt-2 pb-2" />
+                <div class="d-flex justify-center w-100">
+                  <img alt="snapshot-image" class="snapshot-preview pt-2 pb-2" :src="item.snapshotSrc" />
                 </div>
               </td>
             </template>
             <!-- eslint-disable-next-line vue/valid-v-slot-->
             <template #item.actions="{ item }">
-              <div style="display: flex; justify-content: center">
+              <div class="d-flex justify-center">
                 <a :download="item.snapshotName" :href="item.snapshotSrc">
                   <v-icon small> mdi-download </v-icon>
                 </a>

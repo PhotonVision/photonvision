@@ -274,7 +274,7 @@ public class VisionSourceManager {
         return matchCameras(
                 detectedCamInfos,
                 loadedCamConfigs,
-                ConfigManager.getInstance().getConfig().getNetworkConfig().matchCamerasOnlyByPath);
+                ConfigManager.getInstance().getConfig().getMiscSettings().matchCamerasOnlyByPath);
     }
 
     private static final String camCfgToString(CameraConfiguration c) {

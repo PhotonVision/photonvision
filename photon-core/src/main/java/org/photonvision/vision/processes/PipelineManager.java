@@ -109,6 +109,25 @@ public class PipelineManager {
     }
 
     /**
+     * Get the settings to publish to the UI. If in DriverMode or CalibMode, will only publish those
+     * settings.
+     *
+     * @return list of pipeline settings
+     */
+    public List<CVPipelineSettings> getUIPipelineSettings() {
+        if (currentPipelineIndex < 0) {
+            switch (currentPipelineIndex) {
+                case DRIVERMODE_INDEX:
+                    return List.of(driverModePipeline.getSettings());
+                case CAL_3D_INDEX:
+                    return List.of(calibration3dPipeline.getSettings());
+            }
+        }
+
+        return userPipelineSettings;
+    }
+
+    /**
      * Get the settings for a pipeline by index.
      *
      * @param index Index of pipeline whose nickname needs getting.

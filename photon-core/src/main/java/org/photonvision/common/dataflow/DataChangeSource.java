@@ -26,6 +26,7 @@ public enum DataChangeSource {
     DCS_HTTP,
     DCS_NETWORKTABLES,
     DCS_VISIONMODULE,
+    DCS_PROGRAM,
     DCS_OTHER;
 
     public static final List<DataChangeSource> AllSources = Arrays.asList(DataChangeSource.values());

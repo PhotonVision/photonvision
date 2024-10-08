@@ -1,12 +1,22 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import { useServerStore } from "@/stores/ServerStore";
+import { AdvancedPipelineSettings } from "@/types/PipelineTypes";
+
+const serverStore = useServerStore();
 
 const processingMode = computed<number>({
-  get: () => (useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled ? 1 : 0),
+  get: () => {
+    const currentPipelineSettings = serverStore.currentPipelineSettings;
+    if (!currentPipelineSettings || !Object.prototype.hasOwnProperty.call(currentPipelineSettings, "solvePNPEnabled")) {
+      return 0;
+    } else {
+      return (currentPipelineSettings as AdvancedPipelineSettings).solvePNPEnabled ? 1 : 0;
+    }
+  },
   set: (v) => {
-    if (useCameraSettingsStore().isCurrentVideoFormatCalibrated) {
-      useCameraSettingsStore().changeCurrentPipelineSetting({ solvePNPEnabled: v === 1 }, true);
+    if (serverStore.isCurrentVideoFormatCalibrated) {
+      serverStore.updateCurrentPipelineSettings({ solvePNPEnabled: v === 1 }, true, true);
     }
   }
 });
@@ -15,15 +25,15 @@ const model = defineModel<number[]>({ required: true });
 </script>
 
 <template>
-  <v-card class="fill-height d-flex flex-column" :disabled="useCameraSettingsStore().isDriverMode">
+  <v-card class="fill-height d-flex flex-column" :disabled="serverStore.isDriverMode">
     <v-row align="center" class="pa-3 pb-0">
       <v-col>
         <span class="text-white">Processing Mode</span>
-        <v-btn-toggle v-model="processingMode" base-color="surface-variant" class="w-100 mt-2" mandatory>
+        <v-btn-toggle v-model="processingMode" base-color="surface-variant" class="w-100 mt-2" mandatory :disabled="!serverStore.currentPipelineSettings">
           <v-btn class="w-50" prepend-icon="mdi-square-outline" text="2D" />
           <v-btn
             class="w-50"
-            :disabled="!useCameraSettingsStore().isCurrentVideoFormatCalibrated"
+            :disabled="!serverStore.isCurrentVideoFormatCalibrated"
             prepend-icon="mdi-cube-outline"
             text="3D"
           />
@@ -37,6 +47,7 @@ const model = defineModel<number[]>({ required: true });
           v-model="model"
           base-color="surface-variant"
           class="mt-2 w-100"
+          :disabled="!serverStore.currentPipelineSettings"
           mandatory
           :multiple="true"
         >

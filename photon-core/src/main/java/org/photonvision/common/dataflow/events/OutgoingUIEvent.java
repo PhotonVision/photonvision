@@ -30,7 +30,8 @@ public class OutgoingUIEvent<T> extends DataChangeEvent<T> {
     }
 
     public OutgoingUIEvent(String propertyName, T newValue, WsContext originContext) {
-        super(DataChangeSource.DCS_WEBSOCKET, DataChangeDestination.DCD_UI, propertyName, newValue);
+        super(
+                DataChangeSource.DCS_PROGRAM, DataChangeDestination.DCD_WEBSOCKET, propertyName, newValue);
         this.originContext = originContext;
     }
 

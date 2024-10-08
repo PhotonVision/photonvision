@@ -17,8 +17,12 @@
 
 package org.photonvision.common.util;
 
+import edu.wpi.first.math.geometry.Quaternion;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import java.util.HashMap;
+
+import edu.wpi.first.math.geometry.Translation3d;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
@@ -45,19 +49,36 @@ public final class SerializationUtils {
         return ret;
     }
 
+    public static HashMap<String, Double> translationToHashMap(Translation3d translation) {
+        var ret = new HashMap<String, Double>();
+        ret.put("x", translation.getX());
+        ret.put("y", translation.getY());
+        ret.put("z", translation.getZ());
+        return ret;
+    }
+
+    public static HashMap<String, Double> quatToHashMap(Quaternion quat) {
+        var ret = new HashMap<String, Double>();
+        ret.put("W", quat.getW());
+        ret.put("X", quat.getX());
+        ret.put("Y", quat.getY());
+        ret.put("Z", quat.getZ());
+        return ret;
+    }
+
+    public static HashMap<String, Object> rotationToHashMap(Rotation3d rotation) {
+        var ret = new HashMap<String, Object>();
+        ret.put("quaternion", quatToHashMap(rotation.getQuaternion()));
+        ret.put("angle_x", rotation.getX());
+        ret.put("angle_y", rotation.getY());
+        ret.put("angle_z", rotation.getZ());
+        return ret;
+    }
+
     public static HashMap<String, Object> transformToHashMap(Transform3d transform) {
         var ret = new HashMap<String, Object>();
-        ret.put("x", transform.getTranslation().getX());
-        ret.put("y", transform.getTranslation().getY());
-        ret.put("z", transform.getTranslation().getZ());
-        ret.put("qw", transform.getRotation().getQuaternion().getW());
-        ret.put("qx", transform.getRotation().getQuaternion().getX());
-        ret.put("qy", transform.getRotation().getQuaternion().getY());
-        ret.put("qz", transform.getRotation().getQuaternion().getZ());
-
-        ret.put("angle_x", transform.getRotation().getX());
-        ret.put("angle_y", transform.getRotation().getY());
-        ret.put("angle_z", transform.getRotation().getZ());
+        ret.put("translation", translationToHashMap(transform.getTranslation()));
+        ret.put("rotation", rotationToHashMap(transform.getRotation()));
         return ret;
     }
 }

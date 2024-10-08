@@ -22,11 +22,10 @@ import java.util.Arrays;
 import java.util.List;
 
 public enum DataChangeDestination {
-    DCD_ACTIVEMODULE,
-    DCD_ACTIVEPIPELINESETTINGS,
-    DCD_GENSETTINGS,
-    DCD_UI,
+    DCD_PROGRAM,
+    DCD_VISIONMODULE,
     DCD_WEBSERVER,
+    DCD_WEBSOCKET,
     DCD_OTHER;
 
     public static final List<DataChangeDestination> AllDestinations =

@@ -1,22 +1,20 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { useStateStore } from "@/stores/StateStore";
-import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { PipelineType } from "@/types/PipelineTypes";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
+import { useClientStore } from "@/stores/ClientStore";
+import { useServerStore } from "@/stores/ServerStore";
+import PvSwitch from "@/components/common/pv-switch.vue";
 
-const driverMode = computed<boolean>({
-  get: () => useCameraSettingsStore().isDriverMode,
-  set: (v) => useCameraSettingsStore().setDriverMode(v)
-});
+const clientStore = useClientStore();
+const serverStore = useServerStore();
 
 const fpsTooLow = computed<boolean>(() => {
-  const currFPS = useStateStore().currentPipelineResults?.fps || 0;
-  const targetFPS = useCameraSettingsStore().currentVideoFormat.fps;
-  const driverMode = useCameraSettingsStore().isDriverMode;
-  const gpuAccel = useSettingsStore().general.gpuAcceleration !== undefined;
-  const isReflective = useCameraSettingsStore().currentPipelineSettings.pipelineType === PipelineType.Reflective;
+  const currFPS = clientStore.currentPipelineResults?.fps || 0;
+  const targetFPS = serverStore.currentVideoFormat?.fps || 0;
+  const driverMode = serverStore.isDriverMode;
+  const gpuAccel = serverStore.instanceConfig?.gpuAccelerationSupported || false;
+  const isReflective = serverStore.currentPipelineType === PipelineType.Reflective;
 
   return currFPS - targetFPS < -5 && currFPS !== 0 && !driverMode && gpuAccel && isReflective;
 });
@@ -24,14 +22,14 @@ const fpsTooLow = computed<boolean>(() => {
 const performanceRecommendation = computed<string>(() => {
   if (
     fpsTooLow.value &&
-    !useCameraSettingsStore().currentPipelineSettings.inputShouldShow &&
-    useCameraSettingsStore().currentPipelineSettings.pipelineType === PipelineType.Reflective
+    !serverStore.currentPipelineSettings?.inputShouldShow &&
+    serverStore.currentPipelineSettings?.pipelineType === PipelineType.Reflective
   ) {
     return "HSV thresholds are too broad; narrow them for better performance";
-  } else if (fpsTooLow.value && useCameraSettingsStore().currentPipelineSettings.inputShouldShow) {
+  } else if (fpsTooLow.value && serverStore.currentPipelineSettings?.inputShouldShow) {
     return "Stop viewing the raw stream for better performance";
   } else {
-    return `${Math.min(Math.round(useStateStore().currentPipelineResults?.latency || 0), 9999)} ms latency`;
+    return `${Math.min(Math.round(clientStore.currentPipelineResults?.latency || 0), 9999)} ms latency`;
   }
 });
 
@@ -46,36 +44,32 @@ const model = defineModel<number[]>({ required: true });
           <v-col cols="12" md="3">
             <v-card-title>Cameras</v-card-title>
           </v-col>
-          <v-col align-self="center" class="ml-4 ml-md-0 mb-2 mb-md-0" cols="12" md="7">
+          <v-col v-if="clientStore.currentPipelineResults" class="ml-4 ml-md-0 mb-2 mb-md-0 d-flex align-center" cols="12" md="7">
             <span :class="fpsTooLow && 'text-error'">
-              Processing @ {{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &ndash;
+              Processing @ {{ Math.round(clientStore.currentPipelineResults?.fps || 0) }}&nbsp;FPS &ndash;
               {{ performanceRecommendation }}
             </span>
           </v-col>
         </v-row>
       </v-col>
-      <v-col cols="5" md="3">
-        <v-switch
-          v-model="driverMode"
+      <v-col v-if="serverStore.currentPipelineSettings" cols="5" md="3">
+        <pv-switch
+          v-model="serverStore.driverMode"
           class="pr-3 pr-md-6"
-          color="accent"
-          :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
-          hide-details
+          :disabled="serverStore.isCalibMode"
+          label="Driver Mode"
           style="justify-items: right"
-        >
-          <template #label>
-            <span style="word-break: normal">Driver Mode</span>
-          </template>
-        </v-switch>
+          tooltip="Disable processing using this camera and just use it as a driver camera"
+        />
       </v-col>
     </v-row>
     <v-divider style="border-color: white" />
     <v-row class="pa-3 fill-height" justify="center">
-      <v-col v-show="(model || []).includes(0)" class="d-flex justify-center align-center" cols="12" md="6">
-        <photon-camera-stream id="input-camera-stream" class="stream" stream-type="Raw" />
+      <v-col v-show="model.includes(0)" class="d-flex justify-center align-center" cols="12" md="6">
+        <photon-camera-stream id="input-camera-stream" class="fill-height stream" stream-type="Raw" />
       </v-col>
-      <v-col v-show="(model || []).includes(1)" class="d-flex justify-center align-center" cols="12" md="6">
-        <photon-camera-stream id="output-camera-stream" class="stream" stream-type="Processed" />
+      <v-col v-show="model.includes(1)" class="d-flex justify-center align-center" cols="12" md="6">
+        <photon-camera-stream id="output-camera-stream" class="fill-height stream" stream-type="Processed" />
       </v-col>
     </v-row>
   </v-card>
@@ -83,15 +77,6 @@ const model = defineModel<number[]>({ required: true });
 
 <style scoped lang="scss">
 @import "vuetify/settings";
-
-.stream-wrapper {
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-}
-.stream {
-  height: 100%;
-}
 
 @media #{map-get($display-breakpoints, 'md-and-down')} {
   .stream {

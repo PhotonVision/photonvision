@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import type { Component } from "vue";
-import { useDisplay } from "vuetify";
 import { computed, ref } from "vue";
-import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { useStateStore } from "@/stores/StateStore";
+import { useDisplay } from "vuetify";
 import InputTab from "@/components/dashboard/tabs/InputTab.vue";
 import ThresholdTab from "@/components/dashboard/tabs/ThresholdTab.vue";
 import ContoursTab from "@/components/dashboard/tabs/ContoursTab.vue";
@@ -14,7 +12,12 @@ import OutputTab from "@/components/dashboard/tabs/OutputTab.vue";
 import TargetsTab from "@/components/dashboard/tabs/TargetsTab.vue";
 import PnPTab from "@/components/dashboard/tabs/PnPTab.vue";
 import Map3DTab from "@/components/dashboard/tabs/Map3DTab.vue";
-import { WebsocketPipelineType } from "@/types/WebsocketTypes";
+import { useClientStore } from "@/stores/ClientStore";
+import { useServerStore } from "@/stores/ServerStore";
+import { PipelineType, UserPipelineSettings } from "@/types/PipelineTypes";
+
+const clientStore = useClientStore();
+const serverStore = useServerStore();
 
 interface ConfigOption {
   tabName: string;
@@ -69,11 +72,11 @@ const { smAndDown, mdAndDown, lgAndDown, xl } = useDisplay();
 const tabGroups = computed<ConfigOption[][]>(() => {
   let initialGroups: Omit<ConfigOption, "index">[][];
 
-  if (useCameraSettingsStore().isDriverMode) {
+  if (serverStore.isDriverMode) {
     initialGroups = [[allTabs.inputTab]];
-  } else if (smAndDown.value || (mdAndDown.value && !useStateStore().sidebarFolded)) {
+  } else if (smAndDown.value || (mdAndDown.value && !clientStore.sidebarFolded)) {
     initialGroups = [Object.values(allTabs)];
-  } else if (mdAndDown.value && useStateStore().sidebarFolded) {
+  } else if (mdAndDown.value && clientStore.sidebarFolded) {
     initialGroups = [
       [
         allTabs.inputTab,
@@ -110,11 +113,10 @@ const tabGroups = computed<ConfigOption[][]>(() => {
     initialGroups = [Object.values(allTabs)];
   }
 
-  const allow3d = useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled;
-  const isAprilTag = useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.AprilTag;
-  const isAruco = useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.Aruco;
-  const isObjectDetection =
-    useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.ObjectDetection;
+  const allow3d = (serverStore.currentPipelineSettings as UserPipelineSettings | undefined)?.solvePNPEnabled === true;
+  const isAprilTag = serverStore.currentPipelineSettings?.pipelineType === PipelineType.AprilTag;
+  const isAruco = serverStore.currentPipelineSettings?.pipelineType === PipelineType.Aruco;
+  const isObjectDetection = serverStore.currentPipelineSettings?.pipelineType === PipelineType.ObjectDetection;
 
   return initialGroups
     .map((tabGroup) =>
@@ -148,8 +150,8 @@ const changeTabGroupIndex = (tabGroupIndex: number, newTabIndex: number) => {
 </script>
 
 <template>
-  <v-row class="d-flex" no-gutters style="gap: 12px">
-    <v-col v-for="(tabGroup, tabGroupIndex) in tabGroups" :key="tabGroupIndex">
+  <v-row v-if="serverStore.currentCameraSettings && serverStore.currentPipelineSettings" class="d-flex" no-gutters style="gap: 12px">
+    <v-col v-for="(tabGroup, tabGroupIndex) in tabGroups" :key="tabGroupIndex" cols="12" :md="12/tabGroups.length">
       <v-card class="pr-4 pl-4 fill-height">
         <v-tabs
           grow
@@ -180,7 +182,11 @@ const changeTabGroupIndex = (tabGroupIndex: number, newTabIndex: number) => {
 
         <div class="pa-4 pb-2">
           <KeepAlive>
-            <Component :is="tabGroup[getTabGroupIndex(tabGroup, tabGroupIndex)].component" />
+            <component
+              :is="tabGroup[getTabGroupIndex(tabGroup, tabGroupIndex)].component"
+              :camera-settings="serverStore.currentCameraSettings"
+              :pipeline-index="serverStore.currentCameraSettings.activePipelineIndex"
+            />
           </KeepAlive>
         </div>
       </v-card>

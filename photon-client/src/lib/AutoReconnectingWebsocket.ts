@@ -1,16 +1,18 @@
 import { decode, encode } from "@msgpack/msgpack";
-import type { IncomingWebsocketData } from "@/types/WebsocketTypes";
+import type { IncomingWebsocketMessage } from "@/types/WebsocketTypes";
 
 /**
  * {@link WebSocket} wrapper class that automatically reconnects to the provided host address if the connection was closed by the remote host or a connection failure.
  * Data sent and received by the Websocket is automatically encoded and decoded using msgpack.
  */
 export class AutoReconnectingWebsocket {
+  private static FORCE_CLOSE_CODE: number = 3000;
   private readonly serverAddress: string | URL;
   private websocket: WebSocket | null | undefined;
+  private readonly reconnectTimeoutMS: number;
 
   private readonly onConnect: () => void;
-  private readonly onData: (data: IncomingWebsocketData) => void;
+  private readonly onData: (message: IncomingWebsocketMessage) => void;
   private readonly onDisconnect: () => void;
 
   /**
@@ -20,18 +22,22 @@ export class AutoReconnectingWebsocket {
    * @param onConnect action to run on websocket connection (when the websocket changes to the OPEN state)
    * @param onData decoded websocket message data consumer. The data is automatically decoded by msgpack.
    * @param onDisconnect action to run on websocket disconnection (when the websocket changes to the CLOSED state)
+   * @param reconnectTimeoutMS how long to wait in milliseconds before attempting to re-establish a websocket connection
    */
   constructor(
     serverAddress: string | URL,
     onConnect: () => void,
-    onData: (data: IncomingWebsocketData) => void,
-    onDisconnect: () => void
+    onData: (message: IncomingWebsocketMessage) => void,
+    onDisconnect: () => void,
+    reconnectTimeoutMS: number = 500
   ) {
     this.serverAddress = serverAddress;
 
     this.onConnect = onConnect;
     this.onData = onData;
     this.onDisconnect = onDisconnect;
+
+    this.reconnectTimeoutMS = reconnectTimeoutMS;
 
     this.initializeWebsocket();
   }
@@ -65,6 +71,33 @@ export class AutoReconnectingWebsocket {
   }
 
   /**
+   * Forcefully disconnect the websocket from the server and disable auto reconnecting. This will not destroy the resource and can be restarted by calling this::forceReconnect
+   */
+  forceDisconnect() {
+    console.info("[WebSocket] Force disconnecting Websocket from server. Will not auto-reconnect.");
+    this.websocket?.close(AutoReconnectingWebsocket.FORCE_CLOSE_CODE);
+  }
+
+  /**
+   * Restart the websocket reconnect process following a force disconnect.
+   */
+  forceReconnect() {
+    console.debug("[Websocket]] Explicitly restarting Websocket connection process following a force disconnect.");
+    this.initializeWebsocket();
+  }
+
+  /**
+   * Forcefully disconnect the websocket from the server and disable the auto-reconnect process for a set timeout. Useful when initiating a known server change.
+   *
+   * @param timeoutMS how long to wait in milliseconds before retrying connection
+   */
+  forceReconnectAfterTimeout(timeoutMS: number) {
+    this.forceDisconnect();
+
+    setTimeout(this.forceReconnect.bind(this), timeoutMS);
+  }
+
+  /**
    * Handles the creation of the websocket and the binding of the action consumers.
    *
    * @private
@@ -78,15 +111,18 @@ export class AutoReconnectingWebsocket {
       this.onConnect();
     };
     this.websocket.onmessage = (event: MessageEvent) => {
-      this.onData(decode(event.data) as IncomingWebsocketData);
+      this.onData(decode(event.data) as IncomingWebsocketMessage);
     };
     this.websocket.onclose = (event: CloseEvent) => {
       this.onDisconnect();
 
       this.websocket = null;
 
+      // The Websocket was forced close by the client, needs to be explicitly restarted
+      if (event.code === AutoReconnectingWebsocket.FORCE_CLOSE_CODE) return;
+
       console.info("[WebSocket] The WebSocket was closed. Will reattempt in 500 milliseconds.", event.reason);
-      setTimeout(this.initializeWebsocket.bind(this), 500);
+      setTimeout(this.initializeWebsocket.bind(this), this.reconnectTimeoutMS);
     };
     this.websocket.onerror = () => {
       this.websocket?.close();

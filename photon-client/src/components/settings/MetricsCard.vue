@@ -1,74 +1,76 @@
 <script setup lang="ts">
-import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
-import { computed, onBeforeMount, ref } from "vue";
+import { computed, onBeforeMount } from "vue";
 import PvTooltippedIcon from "@/components/common/pv-tooltipped-icon.vue";
+import { useServerStore } from "@/stores/ServerStore";
 
 interface MetricItem {
   header: string;
-  value?: string;
+  value?: string | boolean;
 }
+
+const serverStore = useServerStore();
 
 const instanceMetrics = computed<MetricItem[]>(() => [
   {
     header: "Version",
-    value: useSettingsStore().general.version || "Unknown"
+    value: serverStore.instanceConfig?.version
   },
   {
     header: "Hardware Model",
-    value: useSettingsStore().general.hardwareModel || "Unknown"
+    value: serverStore.instanceConfig?.hardwareModel
   },
   {
     header: "Platform",
-    value: useSettingsStore().general.hardwarePlatform || "Unknown"
+    value: serverStore.instanceConfig?.hardwarePlatform
   },
   {
-    header: "GPU Acceleration",
-    value: useSettingsStore().general.gpuAcceleration || "Unknown"
+    header: "GPU Acceleration Supported",
+    value: serverStore.instanceConfig?.gpuAccelerationSupported
   }
 ]);
 const platformMetrics = computed<MetricItem[]>(() => {
   const stats = [
     {
       header: "CPU Temp",
-      value: useSettingsStore().metrics.cpuTemp === undefined ? "Unknown" : `${useSettingsStore().metrics.cpuTemp}°C`
+      value: serverStore.platformMetrics?.cpuTemp === undefined ? "Unknown" : `${serverStore.platformMetrics?.cpuTemp}°C`
     },
     {
       header: "CPU Usage",
-      value: useSettingsStore().metrics.cpuUtil === undefined ? "Unknown" : `${useSettingsStore().metrics.cpuUtil}%`
+      value: serverStore.platformMetrics?.cpuUtil === undefined ? "Unknown" : `${serverStore.platformMetrics?.cpuUtil}%`
     },
     {
       header: "CPU Memory Usage",
       value:
-        useSettingsStore().metrics.ramUtil === undefined || useSettingsStore().metrics.cpuMem === undefined
+        serverStore.platformMetrics?.ramUtil === undefined || serverStore.platformMetrics?.cpuMem === undefined
           ? "Unknown"
-          : `${useSettingsStore().metrics.ramUtil || "Unknown"}MB of ${useSettingsStore().metrics.cpuMem}MB`
+          : `${serverStore.platformMetrics?.ramUtil || "Unknown"}MB of ${serverStore.platformMetrics?.cpuMem}MB`
     },
     {
       header: "GPU Memory Usage",
       value:
-        useSettingsStore().metrics.gpuMemUtil === undefined || useSettingsStore().metrics.gpuMem === undefined
+        serverStore.platformMetrics?.gpuMemUtil === undefined || serverStore.platformMetrics?.gpuMem === undefined
           ? "Unknown"
-          : `${useSettingsStore().metrics.gpuMemUtil}MB of ${useSettingsStore().metrics.gpuMem}MB`
+          : `${serverStore.platformMetrics?.gpuMemUtil}MB of ${serverStore.platformMetrics?.gpuMem}MB`
     },
     {
       header: "CPU Throttling",
-      value: useSettingsStore().metrics.cpuThr || "Unknown"
+      value: serverStore.platformMetrics?.cpuThr
     },
     {
       header: "CPU Uptime",
-      value: useSettingsStore().metrics.cpuUptime || "Unknown"
+      value: serverStore.platformMetrics?.cpuUptime
     },
     {
       header: "Disk Usage",
-      value: useSettingsStore().metrics.diskUtilPct || "Unknown"
+      value: serverStore.platformMetrics?.diskUtilPct
     }
   ];
 
   // Don't display NPU usage header if not possible
-  if (useSettingsStore().metrics.npuUsage) {
+  if (serverStore.platformMetrics?.npuUsage) {
     stats.push({
       header: "NPU Usage",
-      value: useSettingsStore().metrics.npuUsage || "Unknown"
+      value: serverStore.platformMetrics?.npuUsage
     });
   }
 
@@ -76,7 +78,7 @@ const platformMetrics = computed<MetricItem[]>(() => {
 });
 
 const lastUpdatedString = computed<string>(() => {
-  const dateOpt = useSettingsStore().metrics.lastReceived;
+  const dateOpt = serverStore.platformMetrics?.lastReceived;
 
   if (!dateOpt) return "Never";
 
@@ -87,30 +89,8 @@ const lastUpdatedString = computed<string>(() => {
   return `${pad(dateOpt.getHours())}:${pad(dateOpt.getMinutes())}:${pad(dateOpt.getSeconds())}`;
 });
 
-const fetchingMetrics = ref(false);
-const fetchMetrics = () => {
-  fetchingMetrics.value = true;
-  useSettingsStore()
-    .requestMetricsUpdate()
-    .catch((error) => {
-      // TODO handle reporting HTTP errors
-      // if (error.request) {
-      //   useStateStore().showSnackbarMessage({
-      //     color: "error",
-      //     message: "Unable to fetch metrics! The backend didn't respond."
-      //   });
-      // } else {
-      //   useStateStore().showSnackbarMessage({
-      //     color: "error",
-      //     message: "An error occurred while trying to fetch metrics."
-      //   });
-      // }
-    })
-    .finally(() => (fetchingMetrics.value = false));
-};
-
 onBeforeMount(() => {
-  fetchMetrics();
+  serverStore.publishMetrics();
 });
 </script>
 
@@ -127,9 +107,8 @@ onBeforeMount(() => {
           color="white"
           hover
           icon-name="mdi-reload"
-          :loading="fetchingMetrics"
           tooltip="Request Updated Metrics"
-          @click="fetchMetrics"
+          @click="serverStore.publishMetrics()"
         />
       </v-col>
     </v-row>
@@ -143,7 +122,7 @@ onBeforeMount(() => {
       <v-col v-for="(metric, metricIndex) in metricGroup" :key="metricIndex">
         <v-card color="surface-variant">
           <v-card-title>{{ metric.header }}</v-card-title>
-          <v-card-text>{{ metric.value }}</v-card-text>
+          <v-card-text>{{ metric.value || "Unknown" }}</v-card-text>
         </v-card>
       </v-col>
     </v-row>

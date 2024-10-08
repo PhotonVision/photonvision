@@ -21,22 +21,18 @@ import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.cscore.VideoException;
 import edu.wpi.first.math.util.Units;
 import io.javalin.websocket.WsContext;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import org.opencv.core.Size;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
-import org.photonvision.common.configuration.PhotonConfiguration;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NTDataPublisher;
 import org.photonvision.common.dataflow.statusLEDs.StatusLEDConsumer;
-import org.photonvision.common.dataflow.websocket.UIDataPublisher;
+import org.photonvision.common.dataflow.websocket.WebsocketDataPublisher;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -74,7 +70,7 @@ public class VisionModule {
     private final LinkedList<BiConsumer<Frame, List<TrackedTarget>>> streamResultConsumers =
             new LinkedList<>();
     private final NTDataPublisher ntConsumer;
-    private final UIDataPublisher uiDataConsumer;
+    private final WebsocketDataPublisher uiDataConsumer;
     private final StatusLEDConsumer statusLEDsConsumer;
     protected final int moduleIndex;
     protected final QuirkyCamera cameraQuirks;
@@ -142,7 +138,7 @@ public class VisionModule {
                         this::setPipeline,
                         pipelineManager::getDriverMode,
                         this::setDriverMode);
-        uiDataConsumer = new UIDataPublisher(index);
+        uiDataConsumer = new WebsocketDataPublisher(index);
         statusLEDsConsumer = new StatusLEDConsumer(index);
         addResultConsumer(ntConsumer);
         addResultConsumer(uiDataConsumer);
@@ -475,15 +471,19 @@ public class VisionModule {
                                 "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
     }
 
-    void saveAndBroadcastSelective(WsContext originContext, String propertyName, Object value) {
+    void saveAndBroadcastPipelineChanges(
+            WsContext originContext, String propertyName, Object value, int pipelineIndex) {
         logger.trace("Broadcasting PSC mutation - " + propertyName + ": " + value);
         saveModule();
 
         HashMap<String, Object> map = new HashMap<>();
         HashMap<String, Object> subMap = new HashMap<>();
-        subMap.put(propertyName, value);
-        map.put("cameraIndex", this.moduleIndex);
-        map.put("mutatePipelineSettings", subMap);
+        subMap.put("cameraIndex", this.moduleIndex);
+        subMap.put("pipelineIndex", pipelineIndex);
+        HashMap<String, Object> mutationMap = new HashMap<>();
+        mutationMap.put(propertyName, value);
+        subMap.put("mutation", mutationMap);
+        map.put("pipelineSettingMutation", subMap);
 
         DataChangeService.getInstance()
                 .publishEvent(new OutgoingUIEvent<>("mutatePipeline", map, originContext));
@@ -499,52 +499,68 @@ public class VisionModule {
         saveAndBroadcastAll();
     }
 
-    public PhotonConfiguration.UICameraConfiguration toUICameraConfig() {
-        var ret = new PhotonConfiguration.UICameraConfiguration();
+    public HashMap<String, Object> toUIHashMap() {
+        var retMap = new HashMap<String, Object>();
 
-        ret.fov = visionSource.getSettables().getFOV();
-        ret.isCSICamera = visionSource.getCameraConfiguration().cameraType == CameraType.ZeroCopyPicam;
-        ret.nickname = visionSource.getSettables().getConfiguration().nickname;
-        ret.uniqueName = visionSource.getSettables().getConfiguration().uniqueName;
-        ret.currentPipelineSettings =
-                SerializationUtils.objectToHashMap(pipelineManager.getCurrentPipelineSettings());
-        ret.currentPipelineIndex = pipelineManager.getRequestedIndex();
-        ret.pipelineNicknames = pipelineManager.getPipelineNicknames();
-        ret.cameraQuirks = visionSource.getSettables().getConfiguration().cameraQuirks;
+        retMap.put("cameraIndex", moduleIndex);
+        retMap.put("nickname", visionSource.getSettables().getConfiguration().nickname);
+        retMap.put("uniqueName", visionSource.getSettables().getConfiguration().uniqueName);
 
-        // TODO refactor into helper method
-        var temp = new HashMap<Integer, HashMap<String, Object>>();
-        var videoModes = visionSource.getSettables().getAllVideoModes();
+        var fovSubmap = new HashMap<String, Object>();
+        fovSubmap.put("value", visionSource.getSettables().getFOV());
+        fovSubmap.put(
+                "managedByVendor",
+                ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV()
+                        && cameraQuirks.hasQuirk(CameraQuirk.PiCam));
+        retMap.put("fov", fovSubmap);
 
-        for (var k : videoModes.keySet()) {
-            var internalMap = new HashMap<String, Object>();
+        var streamSubmap = new HashMap<String, Object>();
+        streamSubmap.put("inputPort", this.inputStreamPort);
+        streamSubmap.put("outputPort", this.outputStreamPort);
+        retMap.put("stream", streamSubmap);
 
-            internalMap.put("width", videoModes.get(k).width);
-            internalMap.put("height", videoModes.get(k).height);
-            internalMap.put("fps", videoModes.get(k).fps);
-            internalMap.put(
-                    "pixelFormat",
-                    ((videoModes.get(k) instanceof LibcameraGpuSource.FPSRatedVideoMode)
-                                    ? "kPicam"
-                                    : videoModes.get(k).pixelFormat.toString())
-                            .substring(1)); // Remove the k prefix
-
-            temp.put(k, internalMap);
-        }
-        ret.videoFormatList = temp;
-        ret.outputStreamPort = this.outputStreamPort;
-        ret.inputStreamPort = this.inputStreamPort;
-
-        ret.calibrations =
+        retMap.put(
+                "videoFormats",
+                visionSource.getSettables().getAllVideoModes().entrySet().stream()
+                        .sorted(Comparator.comparingInt(Map.Entry::getKey))
+                        .map(
+                                (v) -> {
+                                    var videoMode = v.getValue();
+                                    var videoModeMap = new HashMap<String, Object>();
+                                    var resolutionMap = new HashMap<String, Object>();
+                                    resolutionMap.put("width", videoMode.width);
+                                    resolutionMap.put("height", videoMode.height);
+                                    videoModeMap.put("resolution", resolutionMap);
+                                    videoModeMap.put("fps", videoMode.fps);
+                                    videoModeMap.put(
+                                            "pixelFormat",
+                                            ((videoMode instanceof LibcameraGpuSource.FPSRatedVideoMode)
+                                                            ? "kPicam"
+                                                            : videoMode.pixelFormat.toString())
+                                                    .substring(1)); // Remove the k prefix
+                                    videoModeMap.put("sourceIndex", v.getKey());
+                                    return videoModeMap;
+                                })
+                        .collect(Collectors.toList()));
+        retMap.put(
+                "calibrations",
                 visionSource.getSettables().getConfiguration().calibrations.stream()
                         .map(CameraCalibrationCoefficients::cloneWithoutObservations)
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toList()));
 
-        ret.isFovConfigurable =
-                !(ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV()
-                        && cameraQuirks.hasQuirk(CameraQuirk.PiCam));
+        retMap.put("activePipelineIndex", pipelineManager.getRequestedIndex());
+        retMap.put(
+                "pipelineSettings",
+                pipelineManager.getUIPipelineSettings().stream()
+                        .map(SerializationUtils::objectToHashMap)
+                        .collect(Collectors.toList()));
 
-        return ret;
+        retMap.put(
+                "isCSICamera",
+                visionSource.getCameraConfiguration().cameraType == CameraType.ZeroCopyPicam);
+        retMap.put("cameraQuirks", visionSource.getSettables().getConfiguration().cameraQuirks);
+
+        return retMap;
     }
 
     public CameraConfiguration getStateAsCameraConfig() {

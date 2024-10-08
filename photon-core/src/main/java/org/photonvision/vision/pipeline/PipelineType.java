@@ -34,4 +34,17 @@ public enum PipelineType {
         this.baseIndex = baseIndex;
         this.clazz = clazz;
     }
+
+    public static PipelineType getPipelineType(int baseIndex) {
+        return switch (baseIndex) {
+            case -2 -> Calib3d;
+            case -1 -> DriverMode;
+            case 0 -> Reflective;
+            case 1 -> ColoredShape;
+            case 2 -> AprilTag;
+            case 3 -> Aruco;
+            case 4 -> ObjectDetection;
+            default -> throw new IllegalArgumentException("Invalid pipeline type");
+        };
+    }
 }

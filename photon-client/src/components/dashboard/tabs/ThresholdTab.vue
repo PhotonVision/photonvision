@@ -1,16 +1,31 @@
 <script setup lang="ts">
-import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { computed, ref } from "vue";
 import PvSwitch from "@/components/common/pv-switch.vue";
-import { useStateStore } from "@/stores/StateStore";
 import { useDisplay } from "vuetify";
 import PvRangeNumberSlider from "@/components/common/pv-range-number-slider.vue";
 import PvEyedropper from "@/components/common/pv-eyedropper.vue";
 import { ColorPicker, type HSV, type RGBA } from "@/lib/ColorPicker";
 import type { RGBColor } from "@/types/Components";
+import { useClientStore } from "@/stores/ClientStore";
+import { useServerStore } from "@/stores/ServerStore";
+import { CameraConfig } from "@/types/SettingTypes";
+import {
+  ColoredShapePipelineSettings,
+  ReflectivePipelineSettings
+} from "@/types/PipelineTypes";
+
+const clientStore = useClientStore();
+const serverStore = useServerStore();
+
+const props = defineProps<{
+  cameraSettings: CameraConfig,
+  pipelineIndex: number
+}>();
+
+const targetPipelineSettings = computed<ColoredShapePipelineSettings | ReflectivePipelineSettings>(() => props.cameraSettings.pipelineSettings.find((v) => v.pipelineIndex === props.pipelineIndex) as ColoredShapePipelineSettings | ReflectivePipelineSettings);
 
 const averageHue = computed<number>(() => {
-  const { hueInverted, hsvHue } = useCameraSettingsStore().currentPipelineSettings;
+  const { hueInverted, hsvHue } = targetPipelineSettings.value;
   let val = Object.values(hsvHue).reduce((total, hue) => total + hue, 0);
 
   if (hueInverted) {
@@ -20,24 +35,18 @@ const averageHue = computed<number>(() => {
   return val % 360;
 });
 
-// TODO fix pv-range-slider so that store access doesn't need to be deferred
-const hsvHue = computed<[number, number]>({
-  get: () => Object.values(useCameraSettingsStore().currentPipelineSettings.hsvHue) as [number, number],
-  set: (v) => (useCameraSettingsStore().currentPipelineSettings.hsvHue = v)
-});
-const hsvSaturation = computed<[number, number]>({
-  get: () => Object.values(useCameraSettingsStore().currentPipelineSettings.hsvSaturation) as [number, number],
-  set: (v) => (useCameraSettingsStore().currentPipelineSettings.hsvSaturation = v)
-});
-const hsvValue = computed<[number, number]>({
-  get: () => Object.values(useCameraSettingsStore().currentPipelineSettings.hsvValue) as [number, number],
-  set: (v) => (useCameraSettingsStore().currentPipelineSettings.hsvValue = v)
-});
+const hsvHue = computed<[number, number]>(() => Object.values(targetPipelineSettings.value.hsvHue) as [number, number]);
+const hsvSaturation = computed<[number, number]>(() => Object.values(targetPipelineSettings.value.hsvSaturation) as [number, number]);
+const hsvValue = computed<[number, number]>(() => Object.values(targetPipelineSettings.value.hsvValue) as [number, number]);
 
 enum ColorPickingModes {
+  // eslint-disable-next-line no-unused-vars
   Undefined = -1,
+  // eslint-disable-next-line no-unused-vars
   ShrinkRangeAroundVal = 0,
+  // eslint-disable-next-line no-unused-vars
   ExpandRangeAroundVal = 1,
+  // eslint-disable-next-line no-unused-vars
   AroundVal = 2
 }
 
@@ -46,19 +55,19 @@ const colorPickingMode = ref<ColorPickingModes>(ColorPickingModes.Undefined);
 let inputShowing = true;
 let outputShowing = false;
 const startColorPicking = () => {
-  useStateStore().colorPickingMode = true;
-  inputShowing = useCameraSettingsStore().currentPipelineSettings.inputShouldShow;
-  outputShowing = useCameraSettingsStore().currentPipelineSettings.outputShouldShow;
-  useCameraSettingsStore().changeCurrentPipelineSetting(
+  clientStore.colorPickingFromCameraStream = true;
+  inputShowing = targetPipelineSettings.value.inputShouldShow;
+  outputShowing = targetPipelineSettings.value.outputShouldShow;
+  serverStore.updatePipelineSettings(props.cameraSettings.cameraIndex, props.pipelineIndex,
     { outputShouldDraw: false, inputShouldShow: true, outputShouldShow: false },
-    true
+    true, true
   );
 };
 const stopColorPicking = () => {
-  useStateStore().colorPickingMode = false;
-  useCameraSettingsStore().changeCurrentPipelineSetting(
+  clientStore.colorPickingFromCameraStream = false;
+  serverStore.updatePipelineSettings(props.cameraSettings.cameraIndex, props.pipelineIndex,
     { outputShouldDraw: true, inputShouldShow: inputShowing, outputShouldShow: outputShowing },
-    true
+    true, true
   );
 };
 const handleColorPick = (
@@ -81,9 +90,9 @@ const handleColorPick = (
   if (colorPickingMode === ColorPickingModes.AroundVal) {
     selectedHSVData = pickerManager.selectedColorRange();
   } else {
-    const currentHue = Object.values(useCameraSettingsStore().currentPipelineSettings.hsvHue);
-    const currentSaturation = Object.values(useCameraSettingsStore().currentPipelineSettings.hsvSaturation);
-    const currentValue = Object.values(useCameraSettingsStore().currentPipelineSettings.hsvValue);
+    const currentHue = Object.values(targetPipelineSettings.value.hsvHue);
+    const currentSaturation = Object.values(targetPipelineSettings.value.hsvSaturation);
+    const currentValue = Object.values(targetPipelineSettings.value.hsvValue);
 
     const currentData: [HSV, HSV] = [
       [currentHue[0], currentSaturation[0], currentValue[0]],
@@ -97,71 +106,69 @@ const handleColorPick = (
     }
   }
 
-  useCameraSettingsStore().changeCurrentPipelineSetting(
+  serverStore.updatePipelineSettings(props.cameraSettings.cameraIndex, props.pipelineIndex,
     {
       hsvHue: [selectedHSVData[0][0], selectedHSVData[1][0]],
       hsvSaturation: [selectedHSVData[0][1], selectedHSVData[1][1]],
       hsvValue: [selectedHSVData[0][2], selectedHSVData[1][2]]
     },
-    true
+    true, true
   );
 };
 
 const { mdAndDown } = useDisplay();
-const labelCols = computed(
-  () => 12 - (mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 9 : 8)
-);
+const labelCols = computed<number>(() => mdAndDown.value && (!clientStore.sidebarFolded || serverStore.isDriverMode) ? 3 : 5);
 </script>
 
 <template>
   <div :style="{ '--averageHue': averageHue }">
     <pv-range-number-slider
-      v-model="hsvHue"
       class="hsv-hue-slider"
-      :flip-direction="useCameraSettingsStore().currentPipelineSettings.hueInverted"
+      :flip-direction="targetPipelineSettings.hueInverted"
       label="Hue"
       :label-cols="labelCols"
       :max="180"
       :min="0"
+      :model-value="hsvHue"
       :step="1"
       tooltip="Describes color"
       :track-size="8"
-      @update:model-value="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvHue: value }, false)"
+      @update:model-value="(value) => serverStore.updatePipelineSettings(cameraSettings.cameraIndex, pipelineIndex, { hsvHue: value }, true, true)"
     />
     <pv-range-number-slider
-      v-model="hsvSaturation"
       class="hsv-sat-slider"
       label="Saturation"
       :label-cols="labelCols"
       :max="255"
       :min="0"
+      :model-value="hsvSaturation"
       :step="1"
       tooltip="Describes colorfulness; the smaller this value the 'whiter' the color becomes"
       :track-size="8"
       @update:model-value="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvSaturation: value }, false)
+        (value) => serverStore.updatePipelineSettings(cameraSettings.cameraIndex, pipelineIndex, { hsvSaturation: value }, true, true)
       "
     />
     <pv-range-number-slider
-      v-model="hsvValue"
       class="hsv-val-slider"
       label="Value"
       :label-cols="labelCols"
       :max="255"
       :min="0"
+      :model-value="hsvValue"
       :step="1"
       tooltip="Describes lightness; the smaller this value the 'blacker' the color becomes"
       :track-size="8"
-      @update:model-value="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvValue: value }, false)"
+      @update:model-value="(value) => serverStore.updatePipelineSettings(cameraSettings.cameraIndex, pipelineIndex, { hsvValue: value }, true, true)"
     />
     <pv-switch
-      v-model="useCameraSettingsStore().currentPipelineSettings.hueInverted"
       label="Invert Hue"
       :label-cols="labelCols"
+      :model-value="targetPipelineSettings.hueInverted"
       tooltip="Selects the hue range outside of the hue slider bounds instead of inside"
       @update:model-value="
         (value) => {
-          useCameraSettingsStore().changeCurrentPipelineSetting({ hueInverted: value }, false);
+          serverStore.updatePipelineSettings(cameraSettings.cameraIndex, pipelineIndex, { hueInverted: value }, true, true);
           colorPickingMode = ColorPickingModes.Undefined;
         }
       "
@@ -173,7 +180,7 @@ const labelCols = computed(
           v-model="colorPickingMode"
           base-color="surface-variant"
           class="w-100"
-          :disabled="useStateStore().colorPickingMode"
+          :disabled="clientStore.colorPickingFromCameraStream"
           divided
           mandatory
         >
@@ -182,7 +189,7 @@ const labelCols = computed(
           <v-btn
             append-icon="mdi-plus-minus"
             class="w-33"
-            :text="`${useCameraSettingsStore().currentPipelineSettings.hueInverted ? 'Exclude' : 'Set to'} Average`"
+            :text="`${targetPipelineSettings.hueInverted ? 'Exclude' : 'Set to'} Average`"
           />
         </v-btn-toggle>
       </v-col>
