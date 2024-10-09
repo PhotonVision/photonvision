@@ -1,0 +1,17 @@
+/*!
+ *  Font Awesome 4.7.0 by @davegandy - http://fontawesome.io - @fontawesome
+ *  License - http://fontawesome.io/license (Font: SIL OFL 1.1, CSS: MIT License)
+ */
+
+@font-face {
+    font-family: FontAwesome;
+    src: url(fonts/fontawesome-webfont.eot?674f50d287a8c48dc19ba404d20fe713);
+    src: url(fonts/fontawesome-webfont.eot?674f50d287a8c48dc19ba404d20fe713?#iefix&v=4.7.0) format("embedded-opentype"), url(fonts/fontawesome-webfont.woff2?af7ae505a9eed503f8b8e6982036873e) format("woff2"), url(fonts/fontawesome-webfont.woff?fee66e712a8a08eef5805a46892932ad) format("woff"), url(fonts/fontawesome-webfont.ttf?b06871f281fee6b241d60582ae9369b9) format("truetype"), url(fonts/fontawesome-webfont.svg?912ec66d7572ff821749319396470bde#fontawesomeregular) format("svg");
+    font-weight: 400;
+    font-style:normal
+}
+
+.code-block-caption>.headerlink, dl dt>.headerlink, h1>.headerlink, h2>.headerlink, h3>.headerlink, h4>.headerlink, h5>.headerlink, h6>.headerlink, p.caption>.headerlink, table>caption>.headerlink {
+    font-family: FontAwesome;
+    font-size: 0.75em;
+}

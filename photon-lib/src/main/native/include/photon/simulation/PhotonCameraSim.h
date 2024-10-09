@@ -39,6 +39,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <memory>
 
 #include <frc/Timer.h>
 #include <frc/apriltag/AprilTagFieldLayout.h>
@@ -50,6 +51,9 @@ namespace photon {
 class PhotonCameraSim {
  public:
   explicit PhotonCameraSim(PhotonCamera* camera);
+  // huge hack
+  explicit PhotonCameraSim(std::shared_ptr<PhotonCamera> camera) : PhotonCameraSim(camera.get()) {}
+
   PhotonCameraSim(PhotonCamera* camera, const SimCameraProperties& props);
   PhotonCameraSim(PhotonCamera* camera, const SimCameraProperties& props,
                   double minTargetAreaPercent, units::meter_t maxSightRange);

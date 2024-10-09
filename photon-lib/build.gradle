@@ -44,6 +44,24 @@ nativeUtils {
     }
 }
 
+def getPythonProperty(String property) {
+    def pythonexe = project.findProperty('pythonExecutable') ?: 'python3'
+
+    File.createTempFile("temp",".py").with { f ->
+        f.write "from sysconfig import get_paths as gp; print(gp()['${property}'])"
+
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine pythonexe, f.absolutePath
+            standardOutput = stdout
+        }
+        def ret = stdout.toString().trim();
+        println("Python property: $property = $ret")
+        return ret
+    }
+}
+
+
 model {
     components {
         "${nativeName}"(NativeLibrarySpec) {
@@ -70,13 +88,39 @@ model {
                 if(project.hasProperty('includePhotonTargeting')) {
                     lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
                 }
+
+                nativeUtils.useRequiredLibrary(it, "wpilib_shared")
+                nativeUtils.useRequiredLibrary(it, "apriltag_shared")
+                nativeUtils.useRequiredLibrary(it, "opencv_shared")
+                nativeUtils.useRequiredLibrary(it, "cscore_shared")
+                nativeUtils.useRequiredLibrary(it, "cameraserver_shared")
+            }
+        }
+        photonlibpy(NativeLibrarySpec) {
+            sources {
+                cpp {
+                    source {
+                        srcDirs 'src/main/pybindings/cpp'
+                        include '**/*.cpp', '**/*.cc'
+                    }
+                    exportedHeaders {
+                        srcDirs 'pybind11/include', getPythonProperty("include")
+                        include "**/*.h"
+                        include "**/*.hpp"
+                    }
+                }
             }
 
-            nativeUtils.useRequiredLibrary(it, "wpilib_shared")
-            nativeUtils.useRequiredLibrary(it, "apriltag_shared")
-            nativeUtils.useRequiredLibrary(it, "opencv_shared")
-            nativeUtils.useRequiredLibrary(it, "cscore_shared")
-            nativeUtils.useRequiredLibrary(it, "cameraserver_shared")
+            binaries.all {
+                lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
+                lib library: nativeName
+
+                nativeUtils.useRequiredLibrary(it, "wpilib_shared")
+                nativeUtils.useRequiredLibrary(it, "cscore_shared")
+                nativeUtils.useRequiredLibrary(it, "cameraserver_shared")
+                nativeUtils.useRequiredLibrary(it, "apriltag_shared")
+                nativeUtils.useRequiredLibrary(it, "opencv_shared")
+            }
         }
     }
     testSuites {
@@ -146,6 +190,32 @@ model {
             }
         }
     }
+
+    binaries {
+        withType(NativeBinarySpec).all {
+            // println "${it.toolChain} -> ${it.component.baseName} -> ${it.toolChain instanceof VisualCpp}"
+
+            if((it.component.baseName == "photonlibpy" || it.component.baseName == nativeName)) {
+                if (it.toolChain instanceof VisualCpp) {
+                    def path = getPythonProperty("data")
+                    it.linker.args "/LIBPATH:${path}/libs"
+                    it.cppCompiler.args << "/DPYBIND11_USE_SMART_HOLDER_AS_DEFAULT=1"
+                }
+
+                if (it.toolChain instanceof GccCompatibleToolChain) {
+                    // println("Gcc toolchain lol")
+                    it.cppCompiler.args << "-Wno-pedantic" << "-DPYBIND11_USE_SMART_HOLDER_AS_DEFAULT=1"
+                    it.linker.args '-Wl,-rpath,\'$ORIGIN/lib\''
+                }
+
+                if (it.toolChain instanceof Clang) {
+                    // assume mac lol
+                    it.linker.args << "-Wl,@${projectDir}/darwin-ld-cpython.sym"
+                    // println it.linker.args
+                }
+            }
+        }
+    }
 }
 
 apply from: "${rootDir}/shared/javacpp/publish.gradle"
@@ -195,6 +265,70 @@ task publishVendorJsonToLocalOutputs(type: Copy) {
     }
 
     publish.dependsOn it
+}
+
+task installPhotonlibpyNative(type: Sync) {
+    into("$projectDir/py/photonlibpy/lib")
+
+    def outputfolder = project.findProperty('nativeBuildFolder') ?: jniPlatform
+    from "$projectDir/build/libs/photonlib/shared/$outputfolder/release/libphotonlib.so"
+    from "$projectDir/build/libs/photonlib/shared/$outputfolder/release/photonlib.dll"
+    from "$projectDir/build/libs/photonlib/shared/$outputfolder/release/photonlib.dylib"
+
+    for (lib in [
+                "photontargeting.dll",
+                "cameraserver.dll",
+                "cscore.dll",
+                "opencv_core480.dll",
+                "opencv_calib3d480.dll",
+                "opencv_features2d480.dll",
+                "opencv_imgcodecs480.dll",
+                "opencv_flann480.dll",
+                "opencv_imgproc480.dll",
+                "libcameraserver.so",
+                "libcscore.so",
+                "libopencv_core.so.4.8",
+                "libopencv_calib3d.so.4.8",
+                "libopencv_features2d.so.4.8",
+                "libopencv_imgcodecs.so.4.8",
+                "libopencv_flann.so.4.8",
+                "libopencv_imgproc.so.4.8",
+                "libphotontargeting.so",
+
+                "libcameraserver.dylib",
+                "libcscore.dylib",
+                "libopencv_core.4.8.dylib",
+                "libopencv_calib3d.4.8.dylib",
+                "libopencv_features2d.4.8.dylib",
+                "libopencv_imgcodecs.4.8.dylib",
+                "libopencv_flann.4.8.dylib",
+                "libopencv_imgproc.4.8.dylib",
+                "libphotontargeting.dylib",
+            ]) {
+        from "$projectDir/build/install/photonlibTest/$outputfolder/release/lib/$lib"
+    }
+
+    from("$projectDir/build/libs/photonlibpy/shared/$outputfolder/release/") {
+        include "libphotonlibpy.so"
+        include "photonlibpy.dll"
+        include "libphotonlibpy.dylib"
+
+        // Remove leading lib if present, and append an _ (renames to _photonlibpy.so/dll/dylib)
+        if (jniPlatform.startsWith("windows")) {
+            rename "(?:lib)?(.*)(\\.dll)", ('_$1.pyd')
+        } else if (jniPlatform.startsWith("osx")) {
+            println it
+            rename "lib(.*)dylib", ('_$1so')
+        } else {
+            rename "lib(.*)", ('_$1')
+        }
+    }
+
+    def platform = project.findProperty('nativeBuildPlatform') ?: jniPlatform.capitalize()
+    println("Depending on build task for platform name: $platform")
+
+    // it.dependsOn "installPhotonlibTest${platform}ReleaseGoogleTestExe"
+    // it.dependsOn "photonlibpy${platform}ReleaseSharedLibrary"
 }
 
 task writeCurrentVersion {

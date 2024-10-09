@@ -1,0 +1,10 @@
+typing-extensions
+wpilib~=2024.3.2.1
+robotpy-wpimath~=2024.3.2.1
+robotpy-apriltag~=2024.3.2.1
+pyntcore~=2024.3.2.1
+build
+setuptools
+wheel
+pytest
+pybind11-stubgen==2.5.1
