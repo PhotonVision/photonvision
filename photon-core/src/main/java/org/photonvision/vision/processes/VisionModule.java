@@ -69,8 +69,10 @@ public class VisionModule {
     protected final VisionSource visionSource;
     private final VisionRunner visionRunner;
     private final StreamRunnable streamRunnable;
+    private final VisionModuleChangeSubscriber changeSubscriber;
     private final LinkedList<CVPipelineResultConsumer> resultConsumers = new LinkedList<>();
-    // Raw result consumers run before any drawing has been done by the OutputStreamPipeline
+    // Raw result consumers run before any drawing has been done by the
+    // OutputStreamPipeline
     private final LinkedList<BiConsumer<Frame, List<TrackedTarget>>> streamResultConsumers =
             new LinkedList<>();
     private final NTDataPublisher ntConsumer;
@@ -102,7 +104,8 @@ public class VisionModule {
         if (visionSource.getCameraConfiguration().cameraQuirks == null)
             visionSource.getCameraConfiguration().cameraQuirks = QuirkyCamera.DefaultCamera;
 
-        // We don't show gain if the config says it's -1. So check here to make sure it's non-negative
+        // We don't show gain if the config says it's -1. So check here to make sure
+        // it's non-negative
         // if it _is_ supported
         if (cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
             pipelineManager.userPipelineSettings.forEach(
@@ -120,16 +123,18 @@ public class VisionModule {
 
         this.pipelineManager = pipelineManager;
         this.visionSource = visionSource;
+        changeSubscriber = new VisionModuleChangeSubscriber(this);
         this.visionRunner =
                 new VisionRunner(
                         this.visionSource.getFrameProvider(),
                         this.pipelineManager::getCurrentPipeline,
                         this::consumeResult,
-                        this.cameraQuirks);
+                        this.cameraQuirks,
+                        getChangeSubscriber());
         this.streamRunnable = new StreamRunnable(new OutputStreamPipeline());
         this.moduleIndex = index;
 
-        DataChangeService.getInstance().addSubscriber(new VisionModuleChangeSubscriber(this));
+        DataChangeService.getInstance().addSubscriber(changeSubscriber);
 
         createStreams();
 
@@ -315,6 +320,10 @@ public class VisionModule {
         return visionSource.isVendorCamera();
     }
 
+    public VisionModuleChangeSubscriber getChangeSubscriber() {
+        return changeSubscriber;
+    }
+
     void changePipelineType(int newType) {
         pipelineManager.changePipelineType(newType);
         setPipeline(pipelineManager.getRequestedIndex());
@@ -449,9 +458,11 @@ public class VisionModule {
     }
 
     private boolean camShouldControlLEDs() {
-        // Heuristic - if the camera has a known FOV or is a piCam, assume it's in use for
+        // Heuristic - if the camera has a known FOV or is a piCam, assume it's in use
+        // for
         // vision processing, and should command stuff to the LED's.
-        // TODO: Make LED control a property of the camera itself and controllable in the UI.
+        // TODO: Make LED control a property of the camera itself and controllable in
+        // the UI.
         return isVendorCamera();
     }
 
