@@ -19,6 +19,7 @@ package org.photonvision.vision.processes;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.camera.QuirkyCamera;
@@ -37,7 +38,7 @@ public class VisionRunner {
     private final FrameProvider frameSupplier;
     private final Supplier<CVPipeline> pipelineSupplier;
     private final Consumer<CVPipelineResult> pipelineResultConsumer;
-    private final Supplier<VisionModuleChangeSubscriber> changeSubSupplier;
+    private final VisionModuleChangeSubscriber changeSubscriber;
     private final QuirkyCamera cameraQuirks;
 
     private long loopCount;
@@ -55,17 +56,17 @@ public class VisionRunner {
             Supplier<CVPipeline> pipelineSupplier,
             Consumer<CVPipelineResult> pipelineResultConsumer,
             QuirkyCamera cameraQuirks,
-            Supplier<VisionModuleChangeSubscriber> changeSubSupplier) {
+            VisionModuleChangeSubscriber changeSubscriber) {
         this.frameSupplier = frameSupplier;
         this.pipelineSupplier = pipelineSupplier;
         this.pipelineResultConsumer = pipelineResultConsumer;
         this.cameraQuirks = cameraQuirks;
-        this.changeSubSupplier = changeSubSupplier;
+        this.changeSubscriber = changeSubscriber;
 
         visionProcessThread = new Thread(this::update);
         visionProcessThread.setName("VisionRunner - " + frameSupplier.getName());
         logger = new Logger(VisionRunner.class, frameSupplier.getName(), LogGroup.VisionModule);
-        changeSubSupplier.get().processSettingChanges();
+        changeSubscriber.processSettingChanges();
     }
 
     public void startProcess() {
@@ -74,7 +75,7 @@ public class VisionRunner {
 
     private void update() {
         while (!Thread.interrupted()) {
-            changeSubSupplier.get().processSettingChanges();
+            changeSubscriber.processSettingChanges();
             var pipeline = pipelineSupplier.get();
 
             // Tell our camera implementation here what kind of pre-processing we need it to be doing

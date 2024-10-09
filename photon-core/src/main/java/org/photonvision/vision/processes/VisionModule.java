@@ -17,16 +17,13 @@
 
 package org.photonvision.vision.processes;
 
-import edu.wpi.first.cscore.CameraServerJNI;
-import edu.wpi.first.cscore.VideoException;
-import edu.wpi.first.math.util.Units;
-import io.javalin.websocket.WsContext;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
+
 import org.opencv.core.Size;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
@@ -57,6 +54,11 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
 
+import edu.wpi.first.cscore.CameraServerJNI;
+import edu.wpi.first.cscore.VideoException;
+import edu.wpi.first.math.util.Units;
+import io.javalin.websocket.WsContext;
+
 /**
  * This is the God Class
  *
@@ -69,6 +71,7 @@ public class VisionModule {
     protected final VisionSource visionSource;
     private final VisionRunner visionRunner;
     private final StreamRunnable streamRunnable;
+    private final VisionModuleChangeSubscriber changeSubscriber;
     private final LinkedList<CVPipelineResultConsumer> resultConsumers = new LinkedList<>();
     // Raw result consumers run before any drawing has been done by the
     // OutputStreamPipeline
@@ -91,7 +94,6 @@ public class VisionModule {
     MJPGFrameConsumer inputVideoStreamer;
     MJPGFrameConsumer outputVideoStreamer;
 
-    private VisionModuleChangeSubscriber changeSubscriber;
 
     public VisionModule(PipelineManager pipelineManager, VisionSource visionSource, int index) {
         logger =
@@ -131,7 +133,7 @@ public class VisionModule {
                         this.pipelineManager::getCurrentPipeline,
                         this::consumeResult,
                         this.cameraQuirks,
-                        this::getChangeSubscriber);
+                        getChangeSubscriber());
         this.streamRunnable = new StreamRunnable(new OutputStreamPipeline());
         this.moduleIndex = index;
 

@@ -20,6 +20,8 @@ package org.photonvision.vision.processes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Point;
 import org.photonvision.common.dataflow.DataChangeSubscriber;
@@ -41,15 +43,14 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
     private final VisionModule parentModule;
     private final Logger logger;
     private List<VisionModuleChange<?>> settingChanges = new ArrayList<>();
-    private final Object m_mutex = new Object();
+    private final ReentrantLock changeListLock = new ReentrantLock();
 
     public VisionModuleChangeSubscriber(VisionModule parentModule) {
         this.parentModule = parentModule;
-        logger =
-                new Logger(
-                        VisionModuleChangeSubscriber.class,
-                        parentModule.visionSource.getSettables().getConfiguration().nickname,
-                        LogGroup.VisionModule);
+        logger = new Logger(
+                VisionModuleChangeSubscriber.class,
+                parentModule.visionSource.getSettables().getConfiguration().nickname,
+                LogGroup.VisionModule);
     }
 
     @Override
@@ -62,7 +63,8 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
             if (wsEvent.cameraIndex != null
                     && (wsEvent.cameraIndex == parentModule.moduleIndex || wsEvent.cameraIndex == -1)) {
                 logger.trace("Got PSC event - propName: " + wsEvent.propertyName);
-                synchronized (m_mutex) {
+                changeListLock.lock();
+                try {
                     getSettingChanges()
                             .add(
                                     new VisionModuleChange(
@@ -70,6 +72,8 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                                             wsEvent.data,
                                             parentModule.pipelineManager.getCurrentPipeline().getSettings(),
                                             wsEvent.originContext));
+                } finally {
+                    changeListLock.unlock();
                 }
             }
         }
@@ -81,22 +85,18 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
 
     public void processSettingChanges() {
         // special case for non-PipelineSetting changes
-        synchronized (m_mutex) {
+        changeListLock.lock();
+        try {
             for (var change : settingChanges) {
                 var propName = change.getPropName();
                 var newPropValue = change.getNewPropValue();
                 var currentSettings = change.getCurrentSettings();
                 var originContext = change.getOriginContext();
                 switch (propName) {
-                        // case "cameraNickname": // rename camera
-                        // var newNickname = (String) newPropValue;
-                        // logger.info("Changing nickname to " + newNickname);
-                        // setCameraNickname(newNickname);
-                        // return;
                     case "pipelineName": // rename current pipeline
                         logger.info("Changing nick to " + newPropValue);
-                        parentModule.pipelineManager.getCurrentPipelineSettings().pipelineNickname =
-                                (String) newPropValue;
+                        parentModule.pipelineManager
+                                .getCurrentPipelineSettings().pipelineNickname = (String) newPropValue;
                         parentModule.saveAndBroadcastAll();
                         continue;
                     case "newPipelineInfo": // add new pipeline
@@ -128,9 +128,8 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         continue;
                     case "startCalibration":
                         try {
-                            var data =
-                                    JacksonUtils.deserialize(
-                                            (Map<String, Object>) newPropValue, UICalibrationData.class);
+                            var data = JacksonUtils.deserialize(
+                                    (Map<String, Object>) newPropValue, UICalibrationData.class);
                             parentModule.startCalibration(data);
                             parentModule.saveAndBroadcastAll();
                         } catch (Exception e) {
@@ -244,19 +243,24 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                 parentModule.saveAndBroadcastSelective(originContext, propName, newPropValue);
             }
             getSettingChanges().clear();
+        } finally {
+            changeListLock.unlock();
         }
     }
 
     /**
-     * Sets the value of a property in the given object using reflection. This method should not be
-     * used generally and is only known to be correct in the context of `onDataChangeEvent`.
+     * Sets the value of a property in the given object using reflection. This
+     * method should not be
+     * used generally and is only known to be correct in the context of
+     * `onDataChangeEvent`.
      *
      * @param currentSettings The object whose property needs to be set.
-     * @param propName The name of the property to be set.
-     * @param newPropValue The new value to be assigned to the property.
+     * @param propName        The name of the property to be set.
+     * @param newPropValue    The new value to be assigned to the property.
      * @throws IllegalAccessException If the field cannot be accessed.
-     * @throws NoSuchFieldException If the field does not exist.
-     * @throws Exception If an some other unknown exception occurs while setting the property.
+     * @throws NoSuchFieldException   If the field does not exist.
+     * @throws Exception              If an some other unknown exception occurs
+     *                                while setting the property.
      */
     protected static void setProperty(Object currentSettings, String propName, Object newPropValue)
             throws IllegalAccessException, NoSuchFieldException, Exception {
