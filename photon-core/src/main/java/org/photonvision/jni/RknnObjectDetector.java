@@ -112,15 +112,18 @@ public class RknnObjectDetector implements ObjectDetector {
         Letterbox scale =
                 Letterbox.letterbox(in, letterboxed, this.inputSize, ColorHelper.colorToScalar(Color.GRAY));
         if (!letterboxed.size().equals(this.inputSize)) {
+            letterboxed.release();
             throw new RuntimeException("Letterboxed frame is not the right size!");
         }
 
         // Detect objects in the letterboxed frame
         var results = RknnJNI.detect(objPointer, letterboxed.getNativeObjAddr(), nmsThresh, boxThresh);
+
+        letterboxed.release();
+
         if (results == null) {
             return List.of();
         }
-        letterboxed.release();
 
         return scale.resizeDetections(
                 List.of(results).stream()
