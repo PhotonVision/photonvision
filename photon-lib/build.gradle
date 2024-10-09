@@ -16,6 +16,12 @@ apply plugin: 'google-test-test-suite'
 apply plugin: 'edu.wpi.first.NativeUtils'
 
 apply from: "${rootDir}/shared/config.gradle"
+// reset the opencv version again lol
+nativeUtils.wpi.configureDependencies {
+    opencvVersion = photonlib_openCVversion
+}
+wpi.getVersions().getOpencvVersion().convention(photonlib_openCVversion);
+
 apply from: "${rootDir}/shared/javacommon.gradle"
 
 apply from: "${rootDir}/versioningHelper.gradle"
@@ -338,4 +344,4 @@ nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
-nativeConfig.dependencies.add photonOpenCv("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())
+nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())

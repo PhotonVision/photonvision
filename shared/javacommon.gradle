@@ -121,7 +121,12 @@ dependencies {
     implementation wpilibTools.deps.wpilibJava("wpilibj")
     implementation wpilibTools.deps.wpilibJava("apriltag")
     implementation wpilibTools.deps.wpilibJava("wpiunits")
-    implementation photonOpenCvJava("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())
+    if (project.name == "photon-lib") {
+        println "Depending on wpilib opencv version " + wpi.versions.opencvVersion.get()
+        implementation wpilibTools.deps.wpilibOpenCvJava("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())
+    } else {
+        implementation photonOpenCvJava("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())
+    }
 
     implementation group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: wpi.versions.jacksonVersion.get()
     implementation group: "com.fasterxml.jackson.core", name: "jackson-core", version: wpi.versions.jacksonVersion.get()
