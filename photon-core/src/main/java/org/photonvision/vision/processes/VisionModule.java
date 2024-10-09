@@ -17,13 +17,16 @@
 
 package org.photonvision.vision.processes;
 
+import edu.wpi.first.cscore.CameraServerJNI;
+import edu.wpi.first.cscore.VideoException;
+import edu.wpi.first.math.util.Units;
+import io.javalin.websocket.WsContext;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
-
 import org.opencv.core.Size;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
@@ -53,11 +56,6 @@ import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
-
-import edu.wpi.first.cscore.CameraServerJNI;
-import edu.wpi.first.cscore.VideoException;
-import edu.wpi.first.math.util.Units;
-import io.javalin.websocket.WsContext;
 
 /**
  * This is the God Class
@@ -93,7 +91,6 @@ public class VisionModule {
 
     MJPGFrameConsumer inputVideoStreamer;
     MJPGFrameConsumer outputVideoStreamer;
-
 
     public VisionModule(PipelineManager pipelineManager, VisionSource visionSource, int index) {
         logger =

@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Point;
 import org.photonvision.common.dataflow.DataChangeSubscriber;
@@ -47,10 +46,11 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
 
     public VisionModuleChangeSubscriber(VisionModule parentModule) {
         this.parentModule = parentModule;
-        logger = new Logger(
-                VisionModuleChangeSubscriber.class,
-                parentModule.visionSource.getSettables().getConfiguration().nickname,
-                LogGroup.VisionModule);
+        logger =
+                new Logger(
+                        VisionModuleChangeSubscriber.class,
+                        parentModule.visionSource.getSettables().getConfiguration().nickname,
+                        LogGroup.VisionModule);
     }
 
     @Override
@@ -95,8 +95,8 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                 switch (propName) {
                     case "pipelineName": // rename current pipeline
                         logger.info("Changing nick to " + newPropValue);
-                        parentModule.pipelineManager
-                                .getCurrentPipelineSettings().pipelineNickname = (String) newPropValue;
+                        parentModule.pipelineManager.getCurrentPipelineSettings().pipelineNickname =
+                                (String) newPropValue;
                         parentModule.saveAndBroadcastAll();
                         continue;
                     case "newPipelineInfo": // add new pipeline
@@ -128,8 +128,9 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         continue;
                     case "startCalibration":
                         try {
-                            var data = JacksonUtils.deserialize(
-                                    (Map<String, Object>) newPropValue, UICalibrationData.class);
+                            var data =
+                                    JacksonUtils.deserialize(
+                                            (Map<String, Object>) newPropValue, UICalibrationData.class);
                             parentModule.startCalibration(data);
                             parentModule.saveAndBroadcastAll();
                         } catch (Exception e) {
@@ -249,18 +250,15 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
     }
 
     /**
-     * Sets the value of a property in the given object using reflection. This
-     * method should not be
-     * used generally and is only known to be correct in the context of
-     * `onDataChangeEvent`.
+     * Sets the value of a property in the given object using reflection. This method should not be
+     * used generally and is only known to be correct in the context of `onDataChangeEvent`.
      *
      * @param currentSettings The object whose property needs to be set.
-     * @param propName        The name of the property to be set.
-     * @param newPropValue    The new value to be assigned to the property.
+     * @param propName The name of the property to be set.
+     * @param newPropValue The new value to be assigned to the property.
      * @throws IllegalAccessException If the field cannot be accessed.
-     * @throws NoSuchFieldException   If the field does not exist.
-     * @throws Exception              If an some other unknown exception occurs
-     *                                while setting the property.
+     * @throws NoSuchFieldException If the field does not exist.
+     * @throws Exception If an some other unknown exception occurs while setting the property.
      */
     protected static void setProperty(Object currentSettings, String propName, Object newPropValue)
             throws IllegalAccessException, NoSuchFieldException, Exception {
