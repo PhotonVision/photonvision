@@ -37,8 +37,8 @@ public class VisionRunner {
     private final FrameProvider frameSupplier;
     private final Supplier<CVPipeline> pipelineSupplier;
     private final Consumer<CVPipelineResult> pipelineResultConsumer;
+    private final Supplier<VisionModuleChangeSubscriber> changeSubSupplier;
     private final QuirkyCamera cameraQuirks;
-    private final VisionModule parentModule;
 
     private long loopCount;
 
@@ -55,17 +55,17 @@ public class VisionRunner {
             Supplier<CVPipeline> pipelineSupplier,
             Consumer<CVPipelineResult> pipelineResultConsumer,
             QuirkyCamera cameraQuirks,
-            VisionModule parentModule) {
+            Supplier<VisionModuleChangeSubscriber> changeSubSupplier) {
         this.frameSupplier = frameSupplier;
         this.pipelineSupplier = pipelineSupplier;
         this.pipelineResultConsumer = pipelineResultConsumer;
         this.cameraQuirks = cameraQuirks;
-        this.parentModule = parentModule;
+        this.changeSubSupplier = changeSubSupplier;
 
         visionProcessThread = new Thread(this::update);
         visionProcessThread.setName("VisionRunner - " + frameSupplier.getName());
         logger = new Logger(VisionRunner.class, frameSupplier.getName(), LogGroup.VisionModule);
-        parentModule.processSettingChanges();
+        changeSubSupplier.get().processSettingChanges();
     }
 
     public void startProcess() {
@@ -74,7 +74,7 @@ public class VisionRunner {
 
     private void update() {
         while (!Thread.interrupted()) {
-            parentModule.processSettingChanges();
+            changeSubSupplier.get().processSettingChanges();
             var pipeline = pipelineSupplier.get();
 
             // Tell our camera implementation here what kind of pre-processing we need it to be doing
