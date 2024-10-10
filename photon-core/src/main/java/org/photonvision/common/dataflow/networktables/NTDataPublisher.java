@@ -21,6 +21,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.util.WPIUtilJNI;
+import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -32,6 +33,7 @@ import org.photonvision.common.networktables.NTTopicSet;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.photonvision.vision.pipeline.result.CalibrationPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class NTDataPublisher implements CVPipelineResultConsumer {
@@ -130,15 +132,25 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
     @Override
     public void accept(CVPipelineResult result) {
+        CVPipelineResult acceptedResult;
+        if (result instanceof CalibrationPipelineResult)
+            acceptedResult =
+                    new CVPipelineResult(
+                            result.sequenceID,
+                            result.processingNanos,
+                            result.fps,
+                            List.of(),
+                            result.inputAndOutputFrame);
+        else acceptedResult = result;
         var now = WPIUtilJNI.now();
-        var captureMicros = MathUtils.nanosToMicros(result.getImageCaptureTimestampNanos());
+        var captureMicros = MathUtils.nanosToMicros(acceptedResult.getImageCaptureTimestampNanos());
         var simplified =
                 new PhotonPipelineResult(
-                        result.sequenceID,
+                        acceptedResult.sequenceID,
                         captureMicros,
                         now,
-                        TrackedTarget.simpleFromTrackedTargets(result.targets),
-                        result.multiTagResult);
+                        TrackedTarget.simpleFromTrackedTargets(acceptedResult.targets),
+                        acceptedResult.multiTagResult);
 
         // random guess at size of the array
         ts.resultPublisher.set(simplified, 1024);
@@ -148,11 +160,11 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
         ts.pipelineIndexPublisher.set(pipelineIndexSupplier.get());
         ts.driverModePublisher.set(driverModeSupplier.getAsBoolean());
-        ts.latencyMillisEntry.set(result.getLatencyMillis());
-        ts.hasTargetEntry.set(result.hasTargets());
+        ts.latencyMillisEntry.set(acceptedResult.getLatencyMillis());
+        ts.hasTargetEntry.set(acceptedResult.hasTargets());
 
-        if (result.hasTargets()) {
-            var bestTarget = result.targets.get(0);
+        if (acceptedResult.hasTargets()) {
+            var bestTarget = acceptedResult.targets.get(0);
 
             ts.targetPitchEntry.set(bestTarget.getPitch());
             ts.targetYawEntry.set(bestTarget.getYaw());
@@ -176,10 +188,10 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         }
 
         // Something in the result can sometimes be null -- so check probably too many things
-        if (result.inputAndOutputFrame != null
-                && result.inputAndOutputFrame.frameStaticProperties != null
-                && result.inputAndOutputFrame.frameStaticProperties.cameraCalibration != null) {
-            var fsp = result.inputAndOutputFrame.frameStaticProperties;
+        if (acceptedResult.inputAndOutputFrame != null
+                && acceptedResult.inputAndOutputFrame.frameStaticProperties != null
+                && acceptedResult.inputAndOutputFrame.frameStaticProperties.cameraCalibration != null) {
+            var fsp = acceptedResult.inputAndOutputFrame.frameStaticProperties;
             ts.cameraIntrinsicsPublisher.accept(fsp.cameraCalibration.getIntrinsicsArr());
             ts.cameraDistortionPublisher.accept(fsp.cameraCalibration.getDistCoeffsArr());
         } else {
@@ -187,7 +199,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             ts.cameraDistortionPublisher.accept(new double[] {});
         }
 
-        ts.heartbeatPublisher.set(result.sequenceID);
+        ts.heartbeatPublisher.set(acceptedResult.sequenceID);
 
         // TODO...nt4... is this needed?
         rootTable.getInstance().flush();
