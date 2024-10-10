@@ -54,6 +54,7 @@ import org.photonvision.vision.pipeline.OutputStreamPipeline;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.photonvision.vision.pipeline.result.CalibrationPipelineResult;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
 
@@ -592,7 +593,10 @@ public class VisionModule {
 
     private void consumePipelineResult(CVPipelineResult result) {
         for (var dataConsumer : resultConsumers) {
-            dataConsumer.accept(result);
+            if (!(result instanceof CalibrationPipelineResult)
+                    && !(dataConsumer instanceof NTDataPublisher)) {
+                dataConsumer.accept(result);
+            }
         }
     }
 
