@@ -1,5 +1,12 @@
 #!/bin/bash
 
+die() {
+  for arg in "$@"; do
+    echo "$arg" 1>&2
+  done
+  exit 1
+}
+
 debug() {
   if [ -z "$QUIET" ] ; then
     for arg in "$@"; do
@@ -40,17 +47,15 @@ while getopts ":hmnq" name; do
     q) QUIET="true"
       ;;
     \?)
-      echo "Error: Invalid option -- '$OPTARG'"
-      echo "Try './install.sh -h' for more information."
-      exit 1
+      die "Error: Invalid option -- '$OPTARG'" \
+          "Try './install.sh -h' for more information."
   esac
 done
 
 shift $(($OPTIND -1))
 
 if [ "$(id -u)" != "0" ]; then
-   echo "This script must be run as root" 1>&2
-   exit 1
+   die "This script must be run as root"
 fi
 
 ARCH=$(uname -m)
@@ -58,17 +63,15 @@ ARCH_NAME=""
 if [ "$ARCH" = "aarch64" ]; then
   ARCH_NAME="linuxarm64"
 elif [ "$ARCH" = "armv7l" ]; then
-  echo "ARM32 is not supported by PhotonVision. Exiting."
-  exit 1
+  die "ARM32 is not supported by PhotonVision. Exiting."
 elif [ "$ARCH" = "x86_64" ]; then
   ARCH_NAME="linuxx64"
 else
   if [ "$#" -ne 1 ]; then
-      echo "Can't determine current arch; please provide it (one of):"
-      echo ""
-      echo "- linuxarm64 (64-bit Linux ARM)"
-      echo "- linuxx64   (64-bit Linux)"
-      exit 1
+      die "Can't determine current arch; please provide it (one of):" \
+          "" \
+          "- linuxarm64 (64-bit Linux ARM)" \
+          "- linuxx64   (64-bit Linux)"
   else
     debug "Can't detect arch (got $ARCH) -- using user-provided $1"
     ARCH_NAME=$1
