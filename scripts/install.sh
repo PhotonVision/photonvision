@@ -1,5 +1,13 @@
 #!/bin/bash
 
+debug() {
+  if [ -z "$QUIET" ] ; then
+    for arg in "$@"; do
+      echo "$arg"
+    done
+  fi
+}
+
 package_is_installed(){
     dpkg-query -W -f='${Status}' "$1" 2>/dev/null | grep -q "ok installed"
 }
@@ -62,84 +70,84 @@ else
       echo "- linuxx64   (64-bit Linux)"
       exit 1
   else
-    echo "Can't detect arch (got $ARCH) -- using user-provided $1"
+    debug "Can't detect arch (got $ARCH) -- using user-provided $1"
     ARCH_NAME=$1
   fi
 fi
 
-echo "This is the installation script for PhotonVision."
-echo "Installing for platform $ARCH_NAME"
+debug "This is the installation script for PhotonVision."
+debug "Installing for platform $ARCH_NAME"
 
 DISTRO=$(lsb_release -is)
 if [[ "$DISTRO" = "Ubuntu" && "$INSTALL_NETWORK_MANAGER" != "true" && -z "$QUIET" && -z "$DISABLE_NETWORKING" ]]; then
-  echo ""
-  echo "Photonvision uses NetworkManager to control networking on your device."
+  debug ""
+  debug "Photonvision uses NetworkManager to control networking on your device."
   read -p "Do you want this script to install and configure NetworkManager? [y/N]: " response
   if [[ $response == [yY] || $response == [yY][eE][sS] ]]; then
     INSTALL_NETWORK_MANAGER="true"
   fi
 fi
 
-echo "Update package list"
+debug "Update package list"
 apt-get update
 
-echo "Installing curl..."
+debug "Installing curl..."
 apt-get install --yes curl
-echo "curl installation complete."
+debug "curl installation complete."
 
-echo "Installing avahi-daemon..."
+debug "Installing avahi-daemon..."
 apt-get install --yes avahi-daemon
-echo "avahi-daemon installation complete."
+debug "avahi-daemon installation complete."
 
-echo "Installing cpufrequtils..."
+debug "Installing cpufrequtils..."
 apt-get install --yes cpufrequtils
-echo "cpufrequtils installation complete."
+debug "cpufrequtils installation complete."
 
-echo "Setting cpufrequtils to performance mode"
+debug "Setting cpufrequtils to performance mode"
 if [ -f /etc/default/cpufrequtils ]; then
     sed -i -e 's/^#\?GOVERNOR=.*$/GOVERNOR=performance/' /etc/default/cpufrequtils
 else
     echo 'GOVERNOR=performance' > /etc/default/cpufrequtils
 fi
 
-echo "Installing libatomic"
+debug "Installing libatomic"
 apt-get install --yes libatomic1
-echo "libatomic installation complete."
+debug "libatomic installation complete."
 
 if [[ "$INSTALL_NETWORK_MANAGER" == "true" ]]; then
-  echo "Installing network-manager..."
+  debug "Installing network-manager..."
   apt-get install --yes network-manager net-tools
   systemctl disable systemd-networkd-wait-online.service
   cat > /etc/netplan/00-default-nm-renderer.yaml <<EOF
 network:
   renderer: NetworkManager
 EOF
-  echo "network-manager installation complete."
+  debug "network-manager installation complete."
 fi
 
-echo "Installing the JRE..."
+debug "Installing the JRE..."
 if ! package_is_installed openjdk-17-jre-headless
 then
    apt-get update
    apt-get install --yes openjdk-17-jre-headless
 fi
-echo "JRE installation complete."
+debug "JRE installation complete."
 
-echo "Installing additional math packages"
+debug "Installing additional math packages"
 if [[ "$DISTRO" = "Ubuntu" && -z $(apt-cache search libcholmod3) ]]; then
-  echo "Adding jammy to list of apt sources"
+  debug "Adding jammy to list of apt sources"
   add-apt-repository -y -S 'deb http://ports.ubuntu.com/ubuntu-ports jammy main universe'
 fi
 apt-get install --yes libcholmod3 liblapack3 libsuitesparseconfig5
 
-echo "Installing v4l-utils..."
+debug "Installing v4l-utils..."
 apt-get install --yes v4l-utils
-echo "v4l-utils installation complete."
+debug "v4l-utils installation complete."
 
-echo "Installing sqlite3"
+debug "Installing sqlite3"
 apt-get install --yes sqlite3
 
-echo "Downloading latest stable release of PhotonVision..."
+debug "Downloading latest stable release of PhotonVision..."
 mkdir -p /opt/photonvision
 cd /opt/photonvision
 curl -sk https://api.github.com/repos/photonvision/photonvision/releases/latest |
@@ -147,13 +155,13 @@ curl -sk https://api.github.com/repos/photonvision/photonvision/releases/latest 
     cut -d : -f 2,3 |
     tr -d '"' |
     wget -qi - -O photonvision.jar
-echo "Downloaded latest stable release of PhotonVision."
+debug "Downloaded latest stable release of PhotonVision."
 
-echo "Creating the PhotonVision systemd service..."
+debug "Creating the PhotonVision systemd service..."
 
 # service --status-all doesn't list photonvision on OrangePi use systemctl instead:
 if systemctl --quiet is-active photonvision; then
-  echo "PhotonVision is already running. Stopping service."
+  debug "PhotonVision is already running. Stopping service."
   systemctl stop photonvision
   systemctl disable photonvision
   rm /lib/systemd/system/photonvision.service
@@ -189,7 +197,7 @@ if [ "$DISABLE_NETWORKING" = "true" ]; then
 fi
 
 if [[ -n $(cat /proc/cpuinfo | grep "RK3588") ]]; then
-  echo "This has a Rockchip RK3588, enabling all cores"
+  debug "This has a Rockchip RK3588, enabling all cores"
   sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=0-7/g' /lib/systemd/system/photonvision.service
 fi
 
@@ -198,6 +206,6 @@ chmod 644 /etc/systemd/system/photonvision.service
 systemctl daemon-reload
 systemctl enable photonvision.service
 
-echo "Created PhotonVision systemd service."
+debug "Created PhotonVision systemd service."
 
-echo "PhotonVision installation successful."
+debug "PhotonVision installation successful."
