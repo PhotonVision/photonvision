@@ -37,6 +37,7 @@ help() {
   echo "Syntax: sudo ./install.sh [-h|m|n|q]"
   echo "  options:"
   echo "  -h        Display this help message."
+  echo "  -a <arch> Install PhotonVision for the specified architecture."
   echo "  -m        Install and configure NetworkManager (Ubuntu only)."
   echo "  -n        Disable networking. This will also prevent installation of NetworkManager."
   echo "  -q        Silent install, automatically accepts all defaults. For non-interactive use."
@@ -45,11 +46,13 @@ help() {
 
 INSTALL_NETWORK_MANAGER="false"
 
-while getopts ":hmnq" name; do
+while getopts "ha:mnq" name; do
   case "$name" in
     h)
       help
       exit 0
+      ;;
+    a) ARCH=$OPTARG
       ;;
     m) INSTALL_NETWORK_MANAGER="true"
       ;;
@@ -69,7 +72,12 @@ if [ "$(id -u)" != "0" ]; then
    die "This script must be run as root"
 fi
 
-ARCH=$(uname -m)
+if [[ -z "$ARCH" ]]; then
+  debug "Arch was not specified. Inferring..."
+  ARCH=$(uname -m)
+  debug "Arch was inferred to be $ARCH"
+fi
+
 ARCH_NAME=""
 if [ "$ARCH" = "aarch64" ]; then
   ARCH_NAME="linuxarm64"
@@ -78,19 +86,13 @@ elif [ "$ARCH" = "armv7l" ]; then
 elif [ "$ARCH" = "x86_64" ]; then
   ARCH_NAME="linuxx64"
 else
-  if [ "$#" -ne 1 ]; then
-      die "Can't determine current arch; please provide it (one of):" \
-          "" \
-          "- linuxarm64 (64-bit Linux ARM)" \
-          "- linuxx64   (64-bit Linux)"
-  else
-    debug "Can't detect arch (got $ARCH) -- using user-provided $1"
-    ARCH_NAME=$1
-  fi
+  die "Unsupported or unknown architecture: '$ARCH'." \
+  "Please specify your architecture using: ./install.sh -a <arch> " \
+  "Run './install.sh -h' for more information."
 fi
 
 debug "This is the installation script for PhotonVision."
-debug "Installing for platform $ARCH_NAME"
+debug "Installing for platform $ARCH"
 
 DISTRO=$(lsb_release -is)
 if [[ "$DISTRO" = "Ubuntu" && "$INSTALL_NETWORK_MANAGER" != "true" && -z "$QUIET" && -z "$DISABLE_NETWORKING" ]]; then
