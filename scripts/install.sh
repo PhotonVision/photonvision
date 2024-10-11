@@ -1,5 +1,12 @@
 #!/bin/bash
 
+needs_arg() {
+    if [ -z "$OPTARG" ]; then
+      die "Argument is required for --$OPT option" \
+          "See './install.sh -h' for more information."
+    fi;
+}
+
 die() {
   for arg in "$@"; do
     echo "$arg" 1>&2
@@ -31,38 +38,59 @@ install_if_missing() {
 }
 
 help() {
-  echo "This script installs Photonvision."
-  echo "It must be run as root."
-  echo
-  echo "Syntax: sudo ./install.sh [-h|m|n|q]"
-  echo "  options:"
-  echo "  -h        Display this help message."
-  echo "  -a <arch> Install PhotonVision for the specified architecture."
-  echo "  -m        Install and configure NetworkManager (Ubuntu only)."
-  echo "  -n        Disable networking. This will also prevent installation of NetworkManager."
-  echo "  -q        Silent install, automatically accepts all defaults. For non-interactive use."
-  echo
+  cat << EOF
+This script installs Photonvision.
+It must be run as root.
+
+Syntax: sudo ./install.sh [options]
+  options:
+  -h, --help
+      Display this help message.
+  -a <arch>, --arch=<arch>
+      Install PhotonVision for the specified architecture.
+      Supported values: aarch64, x86_64
+  -m, --install-nm
+      Install and configure NetworkManager (Ubuntu only).
+  -n, --no-networking
+      Disable networking. This will also prevent installation of
+      NetworkManager.
+  -q, --quiet
+      Silent install, automatically accepts all defaults. For
+      non-interactive use.
+
+EOF
 }
 
 INSTALL_NETWORK_MANAGER="false"
 
-while getopts "ha:mnq" name; do
-  case "$name" in
-    h)
+while getopts "ha:mnq-:" OPT; do
+  if [ "$OPT" = "-" ]; then
+    OPT="${OPTARG%%=*}"       # extract long option name
+    OPTARG="${OPTARG#"$OPT"}" # extract long option argument (may be empty)
+    OPTARG="${OPTARG#=}"      # if long option argument, remove assigning `=`
+  fi
+
+  case "$OPT" in
+    h | help)
       help
       exit 0
       ;;
-    a) ARCH=$OPTARG
+    a | arch) needs_arg; ARCH=$OPTARG
       ;;
-    m) INSTALL_NETWORK_MANAGER="true"
+    m | install-nm) INSTALL_NETWORK_MANAGER="true"
       ;;
-    n) DISABLE_NETWORKING="true"
+    n | no-networking) DISABLE_NETWORKING="true"
       ;;
-    q) QUIET="true"
+    q | quiet) QUIET="true"
       ;;
-    \?)
-      die "Error: Invalid option -- '$OPTARG'" \
-          "Try './install.sh -h' for more information."
+    \?)  # Handle invalid short options
+      die "Error: Invalid option -$OPTARG" \
+          "See './install.sh -h' for more information."
+      ;;
+    * )  # Handle invalid long options
+      die "Error: Invalid option --$OPT" \
+          "See './install.sh -h' for more information."
+      ;;
   esac
 done
 
