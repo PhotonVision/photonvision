@@ -37,6 +37,28 @@ install_if_missing() {
   debug "$1 installation complete."
 }
 
+get_photonvision_releases() {
+  if ! command -v curl > /dev/null 2>&1 ; then
+    die "./install --list-versions requires curl and it is not installed."
+  fi
+
+  if [ -z "$PHOTON_VISION_RELEASES" ] ; then
+    PHOTON_VISION_RELEASES="$(curl -sk https://api.github.com/repos/photonvision/photonvision/releases)"
+  fi
+
+ echo "$PHOTON_VISION_RELEASES"
+}
+
+get_versions() {
+  if [ -z "$PHOTON_VISION_VERSIONS" ] ; then
+    PHOTON_VISION_VERSIONS=$(get_photonvision_releases | \
+      sed -En 's/\"tag_name\": \"v([0-9]+\.[0-9]+\.[0-9]+)(-(beta|alpha)(-[0-9])?(\.[0-9]+)?)?\",/\1\2/p' | \
+      sed 's/^[[:space:]]*//')
+  fi
+
+  echo "$PHOTON_VISION_VERSIONS"
+}
+
 help() {
   cat << EOF
 This script installs Photonvision.
@@ -46,6 +68,8 @@ Syntax: sudo ./install.sh [options]
   options:
   -h, --help
       Display this help message.
+  -l, --list-versions
+      Lists all available versions of PhotonVision.
   -a <arch>, --arch=<arch>
       Install PhotonVision for the specified architecture.
       Supported values: aarch64, x86_64
@@ -68,7 +92,7 @@ EOF
 
 INSTALL_NETWORK_MANAGER="ask"
 
-while getopts "ha:mnq-:" OPT; do
+while getopts "hla:mnq-:" OPT; do
   if [ "$OPT" = "-" ]; then
     OPT="${OPTARG%%=*}"       # extract long option name
     OPTARG="${OPTARG#"$OPT"}" # extract long option argument (may be empty)
@@ -78,6 +102,10 @@ while getopts "ha:mnq-:" OPT; do
   case "$OPT" in
     h | help)
       help
+      exit 0
+      ;;
+    l | list-versions)
+      get_versions
       exit 0
       ;;
     a | arch) needs_arg; ARCH=$OPTARG
