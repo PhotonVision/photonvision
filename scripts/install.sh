@@ -59,6 +59,28 @@ get_versions() {
   echo "$PHOTON_VISION_VERSIONS"
 }
 
+is_version_available() {
+  local target_version="$1"
+
+  # latest is a special case
+  if [ "$target_version" = "latest" ]; then
+    return
+  fi
+
+  # Check if the version is present
+  if ! echo "$(get_versions)" | grep -qFx "$target_version"; then
+    return 1
+  fi
+
+  # Check if multiple lines are match. You can only match 1.
+  local line_count="$(echo "$versions" | grep -cFx "$target_string")"
+  if [ $line_count -gt 1 ] ; then
+    return 1
+  fi
+
+  return 0
+}
+
 help() {
   cat << EOF
 This script installs Photonvision.
@@ -70,6 +92,10 @@ Syntax: sudo ./install.sh [options]
       Display this help message.
   -l, --list-versions
       Lists all available versions of PhotonVision.
+  -v <version>, --version=<version>
+      Specifies which version of PhotonVision to install.
+      If not specified, the latest stable release is installed.
+      Ignores leading 'v's.
   -a <arch>, --arch=<arch>
       Install PhotonVision for the specified architecture.
       Supported values: aarch64, x86_64
@@ -92,7 +118,7 @@ EOF
 
 INSTALL_NETWORK_MANAGER="ask"
 
-while getopts "hla:mnq-:" OPT; do
+while getopts "hlv:a:mnq-:" OPT; do
   if [ "$OPT" = "-" ]; then
     OPT="${OPTARG%%=*}"       # extract long option name
     OPTARG="${OPTARG#"$OPT"}" # extract long option argument (may be empty)
@@ -107,6 +133,10 @@ while getopts "hla:mnq-:" OPT; do
     l | list-versions)
       get_versions
       exit 0
+      ;;
+    v | version)
+      needs_arg
+      VERSION=$(echo "$OPTARG" | sed 's/^v//')  # drop leading 'v's
       ;;
     a | arch) needs_arg; ARCH=$OPTARG
       ;;
@@ -226,15 +256,29 @@ install_if_missing libcholmod3
 install_if_missing liblapack3
 install_if_missing libsuitesparseconfig5
 
-debug "Downloading latest stable release of PhotonVision..."
+debug ""
+
+if ! is_version_available "$VERSION" ; then
+  die "PhotonVision v$VERSION is not available" \
+      "See ./install --list-versions for a complete list of available versions."
+fi
+
+if [ "$VERSION" = "latest" ] ; then
+  RELEASE_URL="https://api.github.com/repos/photonvision/photonvision/releases/latest"
+  debug "Downloading PhotonVision (latest)..."
+else
+  RELEASE_URL="https://api.github.com/repos/photonvision/photonvision/releases/tags/v$VERSION"
+  debug "Downloading PhotonVision (v$VERSION)..."
+fi
+
 mkdir -p /opt/photonvision
 cd /opt/photonvision
-curl -sk https://api.github.com/repos/photonvision/photonvision/releases/latest |
+curl -sk "$RELEASE_URL" |
     grep "browser_download_url.*$ARCH_NAME.jar" |
     cut -d : -f 2,3 |
     tr -d '"' |
     wget -qi - -O photonvision.jar
-debug "Downloaded latest stable release of PhotonVision."
+debug "Downloaded PhotonVision."
 
 debug "Creating the PhotonVision systemd service..."
 
