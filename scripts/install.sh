@@ -91,8 +91,9 @@ if [[ "$DISTRO" = "Ubuntu" && "$INSTALL_NETWORK_MANAGER" != "true" && -z "$QUIET
   fi
 fi
 
-debug "Update package list"
+debug "Updating package list..."
 apt-get update
+debug "Updated package list."
 
 debug "Installing curl..."
 apt-get install --yes curl
