@@ -220,7 +220,7 @@ jobs:
   combine:
     name: Combine
     needs: [build-photonlib-docker, build-photonlib-host]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
         with:
