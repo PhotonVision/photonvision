@@ -19,6 +19,17 @@ package_is_installed(){
     dpkg-query -W -f='${Status}' "$1" 2>/dev/null | grep -q "ok installed"
 }
 
+install_if_missing() {
+  if package_is_installed "$1" ; then
+    debug "Found existing $1. Skipping..."
+    return
+  fi
+
+  debug "Installing $1..."
+  apt-get install --yes $1
+  debug "$1 installation complete."
+}
+
 help() {
   echo "This script installs Photonvision."
   echo "It must be run as root."
@@ -95,17 +106,13 @@ debug "Updating package list..."
 apt-get update
 debug "Updated package list."
 
-debug "Installing curl..."
-apt-get install --yes curl
-debug "curl installation complete."
-
-debug "Installing avahi-daemon..."
-apt-get install --yes avahi-daemon
-debug "avahi-daemon installation complete."
-
-debug "Installing cpufrequtils..."
-apt-get install --yes cpufrequtils
-debug "cpufrequtils installation complete."
+install_if_missing curl
+install_if_missing avahi-daemon
+install_if_missing cpufrequtils
+install_if_missing libatomic1
+install_if_missing v4l-utils
+install_if_missing sqlite3
+install_if_missing openjdk-17-jre-headless
 
 debug "Setting cpufrequtils to performance mode"
 if [ -f /etc/default/cpufrequtils ]; then
@@ -114,13 +121,10 @@ else
     echo 'GOVERNOR=performance' > /etc/default/cpufrequtils
 fi
 
-debug "Installing libatomic"
-apt-get install --yes libatomic1
-debug "libatomic installation complete."
-
 if [[ "$INSTALL_NETWORK_MANAGER" == "true" ]]; then
   debug "NetworkManager installation specified. Installing components..."
-  apt-get install --yes network-manager net-tools
+  install_if_missing network-manager
+  install_if_missing net-tools
 
   debug "Configuring..."
   systemctl disable systemd-networkd-wait-online.service
@@ -131,27 +135,16 @@ EOF
   debug "network-manager installation complete."
 fi
 
-debug "Installing the JRE..."
-if ! package_is_installed openjdk-17-jre-headless
-then
-   apt-get update
-   apt-get install --yes openjdk-17-jre-headless
-fi
-debug "JRE installation complete."
-
+debug ""
 debug "Installing additional math packages"
 if [[ "$DISTRO" = "Ubuntu" && -z $(apt-cache search libcholmod3) ]]; then
   debug "Adding jammy to list of apt sources"
   add-apt-repository -y -S 'deb http://ports.ubuntu.com/ubuntu-ports jammy main universe'
 fi
-apt-get install --yes libcholmod3 liblapack3 libsuitesparseconfig5
 
-debug "Installing v4l-utils..."
-apt-get install --yes v4l-utils
-debug "v4l-utils installation complete."
-
-debug "Installing sqlite3"
-apt-get install --yes sqlite3
+install_if_missing libcholmod3
+install_if_missing liblapack3
+install_if_missing libsuitesparseconfig5
 
 debug "Downloading latest stable release of PhotonVision..."
 mkdir -p /opt/photonvision
