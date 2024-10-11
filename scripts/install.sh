@@ -49,19 +49,24 @@ Syntax: sudo ./install.sh [options]
   -a <arch>, --arch=<arch>
       Install PhotonVision for the specified architecture.
       Supported values: aarch64, x86_64
-  -m, --install-nm
-      Install and configure NetworkManager (Ubuntu only).
+  -m [option], --install-nm=[option]
+      Whether or not to install NetworkManager. Only used on
+      Ubuntu, and ignored for all other distros.
+      Supported options are: "yes", "no", and "ask".
+      "ask" prompts the user for installation of NetworkManager.
+      If not specified, will fall back to "ask".
+      If specified, "yes" is the default option.
   -n, --no-networking
       Disable networking. This will also prevent installation of
-      NetworkManager.
+      NetworkManager (ignoring -m,--install-nm).
   -q, --quiet
       Silent install, automatically accepts all defaults. For
-      non-interactive use.
+      non-interactive use. Forces --install-nm="no".
 
 EOF
 }
 
-INSTALL_NETWORK_MANAGER="false"
+INSTALL_NETWORK_MANAGER="ask"
 
 while getopts "ha:mnq-:" OPT; do
   if [ "$OPT" = "-" ]; then
@@ -77,7 +82,19 @@ while getopts "ha:mnq-:" OPT; do
       ;;
     a | arch) needs_arg; ARCH=$OPTARG
       ;;
-    m | install-nm) INSTALL_NETWORK_MANAGER="true"
+    m | install-nm)
+      INSTALL_NETWORK_MANAGER="$(echo ${OPTARG:-'yes'} | tr '[:upper:]' '[:lower:]')"
+      case "$INSTALL_NETWORK_MANAGER" in
+        yes)
+          ;;
+        no)
+          ;;
+        ask)
+          ;;
+        * )
+          die "Valid options for -m, --install-nm are: 'yes', 'no', and 'ask'"
+          ;;
+      esac
       ;;
     n | no-networking) DISABLE_NETWORKING="true"
       ;;
@@ -123,12 +140,17 @@ debug "This is the installation script for PhotonVision."
 debug "Installing for platform $ARCH"
 
 DISTRO=$(lsb_release -is)
-if [[ "$DISTRO" = "Ubuntu" && "$INSTALL_NETWORK_MANAGER" != "true" && -z "$QUIET" && -z "$DISABLE_NETWORKING" ]]; then
+
+if [[ "$DISTRO" != "Ubuntu" || -n "$DISABLE_NETWORKING" || -n "$QUIET" ]] ; then
+  INSTALL_NETWORK_MANAGER="no"
+fi
+
+if [[ "$INSTALL_NETWORK_MANAGER" == "ask" ]]; then
   debug ""
   debug "Photonvision uses NetworkManager to control networking on your device."
   read -p "Do you want this script to install and configure NetworkManager? [y/N]: " response
   if [[ $response == [yY] || $response == [yY][eE][sS] ]]; then
-    INSTALL_NETWORK_MANAGER="true"
+    INSTALL_NETWORK_MANAGER="yes"
   fi
 fi
 
@@ -151,7 +173,7 @@ else
     echo 'GOVERNOR=performance' > /etc/default/cpufrequtils
 fi
 
-if [[ "$INSTALL_NETWORK_MANAGER" == "true" ]]; then
+if [[ "$INSTALL_NETWORK_MANAGER" == "yes" ]]; then
   debug "NetworkManager installation specified. Installing components..."
   install_if_missing network-manager
   install_if_missing net-tools
