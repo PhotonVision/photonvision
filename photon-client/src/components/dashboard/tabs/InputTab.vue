@@ -40,7 +40,7 @@ const handleResolutionChange = (value: number) => {
   useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: getNumberOfSkippedDivisors() }, false);
   useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor = 0;
 
-  if (!useCameraSettingsStore().isCurrentVideoFormatCalibrated) {
+  if (!useCameraSettingsStore().isCurrentVideoFormatCalibrated && !useCameraSettingsStore().isDriverMode) {
     useCameraSettingsStore().changeCurrentPipelineSetting({ solvePNPEnabled: false }, true);
   }
 };
