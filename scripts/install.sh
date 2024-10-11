@@ -118,8 +118,10 @@ apt-get install --yes libatomic1
 debug "libatomic installation complete."
 
 if [[ "$INSTALL_NETWORK_MANAGER" == "true" ]]; then
-  debug "Installing network-manager..."
+  debug "NetworkManager installation specified. Installing components..."
   apt-get install --yes network-manager net-tools
+
+  debug "Configuring..."
   systemctl disable systemd-networkd-wait-online.service
   cat > /etc/netplan/00-default-nm-renderer.yaml <<EOF
 network:
