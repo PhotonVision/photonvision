@@ -133,7 +133,11 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     @Override
     public void accept(CVPipelineResult result) {
         CVPipelineResult acceptedResult;
-        if (result instanceof CalibrationPipelineResult)
+        if (result
+                instanceof
+                CalibrationPipelineResult) // If the data is from a calibration pipeline, override the list
+            // of targets to be null to prevent the data from being sent and
+            // continue to post blank/zero data to the network tables
             acceptedResult =
                     new CVPipelineResult(
                             result.sequenceID,

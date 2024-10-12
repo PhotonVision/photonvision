@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.apache.commons.io.FileUtils;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
@@ -38,7 +37,6 @@ import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.vision.calibration.BoardObservation;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.calibration.CameraLensModel;
-import org.photonvision.vision.calibration.JsonImageMat;
 import org.photonvision.vision.calibration.JsonMatOfDouble;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.pipe.CVPipe;
@@ -297,8 +295,6 @@ public class Calibrate3dPipe
             tvecs.add(tvec);
         }
 
-
-
         List<BoardObservation> observations =
                 createObservations(
                         in,
@@ -333,9 +329,12 @@ public class Calibrate3dPipe
         List<Mat> imgPts = in.stream().map(it -> it.imagePoints).collect(Collectors.toList());
 
         // Clear the calibration image folder of any old images before we save the new ones.
-        
+
         try {
-            FileUtils.cleanDirectory(ConfigManager.getInstance().getCalibrationImageSavePath(in.get(0).inputImage.size()).toFile());
+            FileUtils.cleanDirectory(
+                    ConfigManager.getInstance()
+                            .getCalibrationImageSavePath(in.get(0).inputImage.size())
+                            .toFile());
         } catch (Exception e) {
             logger.error("Failed to clean calibration image directory", e);
         }
@@ -404,7 +403,12 @@ public class Calibrate3dPipe
             Path image_path = null;
             String snapshotName = "img" + i + ".png";
             if (inputImage != null) {
-                image_path = Paths.get(ConfigManager.getInstance().getCalibrationImageSavePath(inputImage.size()).toString(), snapshotName);
+                image_path =
+                        Paths.get(
+                                ConfigManager.getInstance()
+                                        .getCalibrationImageSavePath(inputImage.size())
+                                        .toString(),
+                                snapshotName);
                 Imgcodecs.imwrite(image_path.toString(), inputImage);
             }
 

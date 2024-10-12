@@ -20,7 +20,6 @@ package org.photonvision.vision.calibration;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.wpi.first.math.geometry.Pose3d;
-
 import java.nio.file.Path;
 import java.util.List;
 import org.opencv.core.Point;
