@@ -581,10 +581,11 @@ public class RequestHandler {
         // encode as jpeg to save even more space. reduces size of a 1280p image from 300k to 25k
         var jpegBytes = new MatOfByte();
         Mat img = null;
-        try{
-            img = Imgcodecs.imread(calList.observations.get(observationIdx).snapshotDataLocation.toString());
-        }
-        catch (Exception e){
+        try {
+            img =
+                    Imgcodecs.imread(
+                            calList.observations.get(observationIdx).snapshotDataLocation.toString());
+        } catch (Exception e) {
             ctx.status(500);
             ctx.result("Unable to read calibration image");
             return;
@@ -595,11 +596,7 @@ public class RequestHandler {
             return;
         }
 
-        Imgcodecs.imencode(
-                ".jpg",
-                img,
-                jpegBytes,
-                new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 60));
+        Imgcodecs.imencode(".jpg", img, jpegBytes, new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 60));
 
         ctx.result(jpegBytes.toArray());
         jpegBytes.release();

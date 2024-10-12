@@ -458,7 +458,11 @@ public class Calibrate3dPipe
         public String uniqueCameraName;
 
         public CalibratePipeParams(
-                int boardHeightSquares, int boardWidthSquares, double squareSize, boolean usemrcal, String uniqueCameraName) {
+                int boardHeightSquares,
+                int boardWidthSquares,
+                double squareSize,
+                boolean usemrcal,
+                String uniqueCameraName) {
             this.boardHeight = boardHeightSquares - 1;
             this.boardWidth = boardWidthSquares - 1;
             this.squareSize = squareSize;

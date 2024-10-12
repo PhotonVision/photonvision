@@ -99,7 +99,11 @@ public class Calibrate3dPipeline
 
         Calibrate3dPipe.CalibratePipeParams calibratePipeParams =
                 new Calibrate3dPipe.CalibratePipeParams(
-                        settings.boardHeight, settings.boardWidth, settings.gridSize, settings.useMrCal, uniqueCameraName);
+                        settings.boardHeight,
+                        settings.boardWidth,
+                        settings.gridSize,
+                        settings.useMrCal,
+                        uniqueCameraName);
         calibrate3dPipe.setParams(calibratePipeParams);
     }
 
