@@ -582,7 +582,6 @@ public class RequestHandler {
         Imgcodecs.imencode(
                 ".jpg",
                 Imgcodecs.imread(calList.observations.get(observationIdx).snapshotDataLocation.toString()),
-                // calList.observations.get(observationIdx).snapshotData.getAsMat(),
                 jpegBytes,
                 new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 60));
 
