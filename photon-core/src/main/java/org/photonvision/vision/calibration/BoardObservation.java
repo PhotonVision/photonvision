@@ -26,6 +26,7 @@ import java.util.List;
 import org.opencv.core.Point;
 import org.opencv.core.Point3;
 
+// Ignore the previous calibration data that was stored in the json file.
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class BoardObservation implements Cloneable {
     // Expected feature 3d location in the camera frame
