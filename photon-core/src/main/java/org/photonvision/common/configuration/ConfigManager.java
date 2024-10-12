@@ -51,8 +51,7 @@ public class ConfigManager {
     private final Thread settingsSaveThread;
     private long saveRequestTimestamp = -1;
 
-    // special case flag to disable flushing settings to disk at shutdown. Avoids
-    // the jvm shutdown
+    // special case flag to disable flushing settings to disk at shutdown. Avoids the jvm shutdown
     // hook overwriting the settings we just uploaded
     private boolean flushOnShutdown = true;
 
@@ -62,9 +61,8 @@ public class ConfigManager {
         ATOMIC_ZIP
     }
 
-    // This logic decides which kind of ConfigManager we load as the default. If we
-    // want
-    // to switch back to the legacy config manager, change this constant
+    // This logic decides which kind of ConfigManager we load as the default. If we want to switch
+    // back to the legacy config manager, change this constant
     private static final ConfigSaveStrategy m_saveStrat = ConfigSaveStrategy.SQL;
 
     public static ConfigManager getInstance() {
@@ -114,21 +112,18 @@ public class ConfigManager {
             } catch (IOException e) {
                 logger.error("Exception moving cameras to cameras_bak!", e);
 
-                // Try to just copy from cams to cams-bak instead of moving? Windows sometimes
-                // needs us to
+                // Try to just copy from cams to cams-bak instead of moving? Windows sometimes needs us to
                 // do that
                 try {
                     org.apache.commons.io.FileUtils.copyDirectory(maybeCams, maybeCamsBak);
                 } catch (IOException e1) {
-                    // So we can't move to cams_bak, and we can't copy and delete either? We just
-                    // have to give
+                    // So we can't move to cams_bak, and we can't copy and delete either? We just have to give
                     // up here on preserving the old folder
                     logger.error("Exception while backup-copying cameras to cameras_bak!", e);
                     e1.printStackTrace();
                 }
 
-                // Delete the directory because we were successfully able to load the config but
-                // were unable
+                // Delete the directory because we were successfully able to load the config but were unable
                 // to save or copy the folder.
                 if (maybeCams.exists()) FileUtils.deleteDirectory(maybeCams.toPath());
             }
