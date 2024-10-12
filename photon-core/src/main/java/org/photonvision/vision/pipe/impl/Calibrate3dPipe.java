@@ -333,7 +333,7 @@ public class Calibrate3dPipe
         try {
             FileUtils.cleanDirectory(
                     ConfigManager.getInstance()
-                            .getCalibrationImageSavePath(in.get(0).inputImage.size())
+                            .getCalibrationImageSavePath(in.get(0).inputImage.size(), params.uniqueCameraName)
                             .toFile());
         } catch (Exception e) {
             logger.error("Failed to clean calibration image directory", e);
@@ -406,7 +406,7 @@ public class Calibrate3dPipe
                 image_path =
                         Paths.get(
                                 ConfigManager.getInstance()
-                                        .getCalibrationImageSavePath(inputImage.size())
+                                        .getCalibrationImageSavePath(inputImage.size(), params.uniqueCameraName)
                                         .toString(),
                                 snapshotName);
                 Imgcodecs.imwrite(image_path.toString(), inputImage);
@@ -455,13 +455,15 @@ public class Calibrate3dPipe
         public double squareSize;
 
         public boolean useMrCal;
+        public String uniqueCameraName;
 
         public CalibratePipeParams(
-                int boardHeightSquares, int boardWidthSquares, double squareSize, boolean usemrcal) {
+                int boardHeightSquares, int boardWidthSquares, double squareSize, boolean usemrcal, String uniqueCameraName) {
             this.boardHeight = boardHeightSquares - 1;
             this.boardWidth = boardWidthSquares - 1;
             this.squareSize = squareSize;
             this.useMrCal = usemrcal;
+            this.uniqueCameraName = uniqueCameraName;
         }
     }
 }

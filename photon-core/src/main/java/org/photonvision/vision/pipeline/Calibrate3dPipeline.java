@@ -69,15 +69,18 @@ public class Calibrate3dPipeline
 
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
-    public Calibrate3dPipeline(String uniqueName) {
-        this(12, uniqueName);
+    private final String uniqueCameraName;
+
+    public Calibrate3dPipeline(String uniqueCameraName) {
+        this(12, uniqueCameraName);
     }
 
-    public Calibrate3dPipeline(int minSnapshots, String uniqueName) {
+    public Calibrate3dPipeline(int minSnapshots, String uniqueCameraName) {
         super(PROCESSING_TYPE);
         this.settings = new Calibration3dPipelineSettings();
         this.foundCornersList = new ArrayList<>();
         this.minSnapshots = minSnapshots;
+        this.uniqueCameraName = uniqueCameraName;
     }
 
     @Override
@@ -96,7 +99,7 @@ public class Calibrate3dPipeline
 
         Calibrate3dPipe.CalibratePipeParams calibratePipeParams =
                 new Calibrate3dPipe.CalibratePipeParams(
-                        settings.boardHeight, settings.boardWidth, settings.gridSize, settings.useMrCal);
+                        settings.boardHeight, settings.boardWidth, settings.gridSize, settings.useMrCal, uniqueCameraName);
         calibrate3dPipe.setParams(calibratePipeParams);
     }
 

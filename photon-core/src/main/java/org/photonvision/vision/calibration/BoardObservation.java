@@ -18,6 +18,7 @@
 package org.photonvision.vision.calibration;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.wpi.first.math.geometry.Pose3d;
 import java.nio.file.Path;
@@ -25,6 +26,7 @@ import java.util.List;
 import org.opencv.core.Point;
 import org.opencv.core.Point3;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public final class BoardObservation implements Cloneable {
     // Expected feature 3d location in the camera frame
     @JsonProperty("locationInObjectSpace")
