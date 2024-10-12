@@ -18,6 +18,7 @@
 package org.photonvision.vision.pipeline;
 
 import edu.wpi.first.math.util.Units;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -69,18 +70,15 @@ public class Calibrate3dPipeline
 
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
-    private final String uniqueCameraName;
-
-    public Calibrate3dPipeline(String uniqueCameraName) {
-        this(12, uniqueCameraName);
+    public Calibrate3dPipeline() {
+        this(12);
     }
 
-    public Calibrate3dPipeline(int minSnapshots, String uniqueCameraName) {
+    public Calibrate3dPipeline(int minSnapshots) {
         super(PROCESSING_TYPE);
         this.settings = new Calibration3dPipelineSettings();
         this.foundCornersList = new ArrayList<>();
         this.minSnapshots = minSnapshots;
-        this.uniqueCameraName = uniqueCameraName;
     }
 
     @Override
@@ -99,11 +97,7 @@ public class Calibrate3dPipeline
 
         Calibrate3dPipe.CalibratePipeParams calibratePipeParams =
                 new Calibrate3dPipe.CalibratePipeParams(
-                        settings.boardHeight,
-                        settings.boardWidth,
-                        settings.gridSize,
-                        settings.useMrCal,
-                        uniqueCameraName);
+                        settings.boardHeight, settings.boardWidth, settings.gridSize, settings.useMrCal);
         calibrate3dPipe.setParams(calibratePipeParams);
     }
 
@@ -181,7 +175,7 @@ public class Calibrate3dPipeline
         return foundCornersList.size() >= minSnapshots;
     }
 
-    public CameraCalibrationCoefficients tryCalibration() {
+    public CameraCalibrationCoefficients tryCalibration(Path imageSavePath) {
         if (!hasEnough()) {
             logger.info(
                     "Not enough snapshots! Only got "
@@ -200,7 +194,8 @@ public class Calibrate3dPipeline
          * and returns the corresponding image and object points
          */
         calibrationOutput =
-                calibrate3dPipe.run(new CalibrationInput(foundCornersList, frameStaticProperties));
+                calibrate3dPipe.run(
+                        new CalibrationInput(foundCornersList, frameStaticProperties, imageSavePath));
 
         this.calibrating = false;
 

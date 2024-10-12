@@ -27,7 +27,6 @@ import org.apache.commons.io.FileUtils;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
-import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
@@ -50,11 +49,15 @@ public class Calibrate3dPipe
     public static class CalibrationInput {
         final List<FindBoardCornersPipe.FindBoardCornersPipeResult> observations;
         final FrameStaticProperties imageProps;
+        final Path imageSavePath;
 
         public CalibrationInput(
-                List<FindBoardCornersPipeResult> observations, FrameStaticProperties imageProps) {
+                List<FindBoardCornersPipeResult> observations,
+                FrameStaticProperties imageProps,
+                Path imageSavePath) {
             this.observations = observations;
             this.imageProps = imageProps;
+            this.imageSavePath = imageSavePath;
         }
     }
 
@@ -95,12 +98,18 @@ public class Calibrate3dPipe
             logger.debug("Calibrating with mrcal!");
             ret =
                     calibrateMrcal(
-                            filteredIn, in.imageProps.horizontalFocalLength, in.imageProps.verticalFocalLength);
+                            filteredIn,
+                            in.imageProps.horizontalFocalLength,
+                            in.imageProps.verticalFocalLength,
+                            in.imageSavePath);
         } else {
             logger.debug("Calibrating with opencv!");
             ret =
                     calibrateOpenCV(
-                            filteredIn, in.imageProps.horizontalFocalLength, in.imageProps.verticalFocalLength);
+                            filteredIn,
+                            in.imageProps.horizontalFocalLength,
+                            in.imageProps.verticalFocalLength,
+                            in.imageSavePath);
         }
         var dt = System.nanoTime() - start;
 
@@ -121,7 +130,10 @@ public class Calibrate3dPipe
     }
 
     protected CameraCalibrationCoefficients calibrateOpenCV(
-            List<FindBoardCornersPipe.FindBoardCornersPipeResult> in, double fxGuess, double fyGuess) {
+            List<FindBoardCornersPipe.FindBoardCornersPipeResult> in,
+            double fxGuess,
+            double fyGuess,
+            Path imageSavePath) {
         List<MatOfPoint3f> objPointsIn =
                 in.stream().map(it -> it.objectPoints).collect(Collectors.toList());
         List<MatOfPoint2f> imgPointsIn =
@@ -184,7 +196,8 @@ public class Calibrate3dPipe
         JsonMatOfDouble distortionCoefficientsMat = JsonMatOfDouble.fromMat(distortionCoefficients);
 
         var observations =
-                createObservations(in, cameraMatrix, distortionCoefficients, rvecs, tvecs, null);
+                createObservations(
+                        in, cameraMatrix, distortionCoefficients, rvecs, tvecs, null, imageSavePath);
 
         cameraMatrix.release();
         distortionCoefficients.release();
@@ -205,7 +218,10 @@ public class Calibrate3dPipe
     }
 
     protected CameraCalibrationCoefficients calibrateMrcal(
-            List<FindBoardCornersPipe.FindBoardCornersPipeResult> in, double fxGuess, double fyGuess) {
+            List<FindBoardCornersPipe.FindBoardCornersPipeResult> in,
+            double fxGuess,
+            double fyGuess,
+            Path imageSavePath) {
         List<MatOfPoint2f> corner_locations =
                 in.stream().map(it -> it.imagePoints).map(MatOfPoint2f::new).collect(Collectors.toList());
 
@@ -302,7 +318,8 @@ public class Calibrate3dPipe
                         distortionCoefficientsMat.getAsMatOfDouble(),
                         rvecs,
                         tvecs,
-                        new double[] {result.warp_x, result.warp_y});
+                        new double[] {result.warp_x, result.warp_y},
+                        imageSavePath);
 
         rvecs.forEach(Mat::release);
         tvecs.forEach(Mat::release);
@@ -324,17 +341,15 @@ public class Calibrate3dPipe
             MatOfDouble distortionCoefficients_,
             List<Mat> rvecs,
             List<Mat> tvecs,
-            double[] calobject_warp) {
+            double[] calobject_warp,
+            Path imageSavePath) {
         List<Mat> objPoints = in.stream().map(it -> it.objectPoints).collect(Collectors.toList());
         List<Mat> imgPts = in.stream().map(it -> it.imagePoints).collect(Collectors.toList());
 
         // Clear the calibration image folder of any old images before we save the new ones.
 
         try {
-            FileUtils.cleanDirectory(
-                    ConfigManager.getInstance()
-                            .getCalibrationImageSavePath(in.get(0).inputImage.size(), params.uniqueCameraName)
-                            .toFile());
+            FileUtils.cleanDirectory(imageSavePath.toFile());
         } catch (Exception e) {
             logger.error("Failed to clean calibration image directory", e);
         }
@@ -403,12 +418,7 @@ public class Calibrate3dPipe
             Path image_path = null;
             String snapshotName = "img" + i + ".png";
             if (inputImage != null) {
-                image_path =
-                        Paths.get(
-                                ConfigManager.getInstance()
-                                        .getCalibrationImageSavePath(inputImage.size(), params.uniqueCameraName)
-                                        .toString(),
-                                snapshotName);
+                image_path = Paths.get(imageSavePath.toString(), snapshotName);
                 Imgcodecs.imwrite(image_path.toString(), inputImage);
             }
 
@@ -455,19 +465,13 @@ public class Calibrate3dPipe
         public double squareSize;
 
         public boolean useMrCal;
-        public String uniqueCameraName;
 
         public CalibratePipeParams(
-                int boardHeightSquares,
-                int boardWidthSquares,
-                double squareSize,
-                boolean usemrcal,
-                String uniqueCameraName) {
+                int boardHeightSquares, int boardWidthSquares, double squareSize, boolean usemrcal) {
             this.boardHeight = boardHeightSquares - 1;
             this.boardWidth = boardWidthSquares - 1;
             this.squareSize = squareSize;
             this.useMrCal = usemrcal;
-            this.uniqueCameraName = uniqueCameraName;
         }
     }
 }
