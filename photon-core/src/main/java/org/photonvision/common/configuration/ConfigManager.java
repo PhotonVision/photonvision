@@ -30,6 +30,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 import java.util.List;
+
+import org.opencv.core.Size;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.FileUtils;
@@ -245,6 +247,12 @@ public class ConfigManager {
 
     public Path getImageSavePath() {
         var imgFilePath = Path.of(configDirectoryFile.toString(), "imgSaves").toFile();
+        if (!imgFilePath.exists()) imgFilePath.mkdirs();
+        return imgFilePath.toPath();
+    }
+
+    public Path getCalibrationImageSavePath(Size frameSize) {
+        var imgFilePath = Path.of(configDirectoryFile.toString(), "calibration","imgs",frameSize.toString()).toFile();
         if (!imgFilePath.exists()) imgFilePath.mkdirs();
         return imgFilePath.toPath();
     }

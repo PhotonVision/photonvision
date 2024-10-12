@@ -581,7 +581,8 @@ public class RequestHandler {
         var jpegBytes = new MatOfByte();
         Imgcodecs.imencode(
                 ".jpg",
-                calList.observations.get(observationIdx).snapshotData.getAsMat(),
+                Imgcodecs.imread(calList.observations.get(observationIdx).snapshotDataLocation.toString()),
+                // calList.observations.get(observationIdx).snapshotData.getAsMat(),
                 jpegBytes,
                 new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 60));
 

@@ -20,6 +20,8 @@ package org.photonvision.vision.calibration;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.wpi.first.math.geometry.Pose3d;
+
+import java.nio.file.Path;
 import java.util.List;
 import org.opencv.core.Point;
 import org.opencv.core.Point3;
@@ -48,8 +50,8 @@ public final class BoardObservation implements Cloneable {
     @JsonProperty("snapshotName")
     public String snapshotName;
 
-    @JsonProperty("snapshotData")
-    public JsonImageMat snapshotData;
+    @JsonProperty("snapshotDataLocation")
+    public Path snapshotDataLocation;
 
     @JsonCreator
     public BoardObservation(
@@ -59,14 +61,14 @@ public final class BoardObservation implements Cloneable {
             @JsonProperty("optimisedCameraToObject") Pose3d optimisedCameraToObject,
             @JsonProperty("includeObservationInCalibration") boolean includeObservationInCalibration,
             @JsonProperty("snapshotName") String snapshotName,
-            @JsonProperty("snapshotData") JsonImageMat snapshotData) {
+            @JsonProperty("snapshotDataLocation") Path snapshotDataLocation) {
         this.locationInObjectSpace = locationInObjectSpace;
         this.locationInImageSpace = locationInImageSpace;
         this.reprojectionErrors = reprojectionErrors;
         this.optimisedCameraToObject = optimisedCameraToObject;
         this.includeObservationInCalibration = includeObservationInCalibration;
         this.snapshotName = snapshotName;
-        this.snapshotData = snapshotData;
+        this.snapshotDataLocation = snapshotDataLocation;
     }
 
     @Override
@@ -83,8 +85,8 @@ public final class BoardObservation implements Cloneable {
                 + includeObservationInCalibration
                 + ", snapshotName="
                 + snapshotName
-                + ", snapshotData="
-                + snapshotData
+                + ", snapshotDataLocation="
+                + snapshotDataLocation
                 + "]";
     }
 

@@ -17,12 +17,18 @@
 
 package org.photonvision.vision.pipe.impl;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.apache.commons.io.FileUtils;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
@@ -86,6 +92,7 @@ public class Calibrate3dPipe
 
         CameraCalibrationCoefficients ret;
         var start = System.nanoTime();
+
         if (MrCalJNILoader.getInstance().isLoaded() && params.useMrCal) {
             logger.debug("Calibrating with mrcal!");
             ret =
@@ -290,6 +297,8 @@ public class Calibrate3dPipe
             tvecs.add(tvec);
         }
 
+
+
         List<BoardObservation> observations =
                 createObservations(
                         in,
@@ -322,6 +331,14 @@ public class Calibrate3dPipe
             double[] calobject_warp) {
         List<Mat> objPoints = in.stream().map(it -> it.objectPoints).collect(Collectors.toList());
         List<Mat> imgPts = in.stream().map(it -> it.imagePoints).collect(Collectors.toList());
+
+        // Clear the calibration image folder of any old images before we save the new ones.
+        
+        try {
+            FileUtils.cleanDirectory(ConfigManager.getInstance().getCalibrationImageSavePath(in.get(0).inputImage.size()).toFile());
+        } catch (Exception e) {
+            logger.error("Failed to clean calibration image directory", e);
+        }
 
         // For each observation, calc reprojection error
         Mat jac_temp = new Mat();
@@ -383,14 +400,17 @@ public class Calibrate3dPipe
 
             var camToBoard = MathUtils.opencvRTtoPose3d(rvecs.get(i), tvecs.get(i));
 
-            JsonImageMat image = null;
             var inputImage = in.get(i).inputImage;
+            Path image_path = null;
+            String snapshotName = "img" + i + ".png";
             if (inputImage != null) {
-                image = new JsonImageMat(inputImage);
+                image_path = Paths.get(ConfigManager.getInstance().getCalibrationImageSavePath(inputImage.size()).toString(), snapshotName);
+                Imgcodecs.imwrite(image_path.toString(), inputImage);
             }
+
             observations.add(
                     new BoardObservation(
-                            i_objPts, i_imgPts, reprojectionError, camToBoard, true, "img" + i + ".png", image));
+                            i_objPts, i_imgPts, reprojectionError, camToBoard, true, snapshotName, image_path));
         }
         jac_temp.release();
 
