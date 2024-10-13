@@ -117,6 +117,7 @@ EOF
 }
 
 INSTALL_NETWORK_MANAGER="ask"
+VERSION="latest"
 
 while getopts "hlv:a:mnq-:" OPT; do
   if [ "$OPT" = "-" ]; then
