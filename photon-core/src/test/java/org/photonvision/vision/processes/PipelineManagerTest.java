@@ -30,7 +30,7 @@ public class PipelineManagerTest {
     public void testUniqueName() {
         TestUtils.loadLibraries();
         PipelineManager manager =
-                new PipelineManager(new DriverModePipelineSettings(), List.of(), "meme_name", -1);
+                new PipelineManager(new DriverModePipelineSettings(), List.of(), -1);
         manager.addPipeline(PipelineType.Reflective, "Another");
 
         // We now have ["New Pipeline", "Another"]
