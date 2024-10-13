@@ -508,14 +508,14 @@ public class PipelineManager {
             return;
         }
 
-        // Our new settings will be totally nuked, but that's ok
-        // We *could* set things in common between the two, if we want
-        // But they're different enough it shouldn't be an issue
-        var name = getCurrentPipelineSettings().pipelineNickname;
-
-        // a horrifying collection of hacks unfit for prod. ship it :)
+        // The settings we used to have
         var oldSettings = userPipelineSettings.get(idx);
+
+        var name = getCurrentPipelineSettings().pipelineNickname;
+        // Dummy settings to copy common fileds over
         var newSettings = createSettingsForType(type, name);
+
+        // Copy all fields from AdvancedPipelineSettings/its superclasses from old to new
         try {
             for (Field field : getAllFields(AdvancedPipelineSettings.class)) {
                 Object value = field.get(oldSettings);
