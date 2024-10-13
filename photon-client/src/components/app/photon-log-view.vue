@@ -26,7 +26,8 @@ const logs = computed<LogMessage[]>(() =>
       (message) =>
         selectedLogLevels.value[message.level] &&
         message.message.toLowerCase().includes(searchQuery.value?.toLowerCase() || "") &&
-        (timeInput.value === undefined || message.timestamp.getTime() >=
+        (timeInput.value === undefined ||
+          message.timestamp.getTime() >=
             new Date().setHours(
               parseInt(timeInput.value.substring(0, 2)),
               parseInt(timeInput.value.substring(3, 5)),
