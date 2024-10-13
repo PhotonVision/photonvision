@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.processes;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -465,6 +466,17 @@ public class PipelineManager {
         }
     }
 
+    private static List<Field> getAllFields(Class base) {
+        List<Field> ret = new ArrayList<>();
+        ret.addAll(List.of(base.getDeclaredFields()));
+        var superclazz = base.getSuperclass();
+        if (superclazz != null) {
+            ret.addAll(getAllFields(superclazz));
+        }
+
+        return ret;
+    }
+
     public void changePipelineType(int newType) {
         // Find the PipelineType proposed
         // To do this we look at all the PipelineType entries and look for one with
@@ -490,21 +502,38 @@ public class PipelineManager {
             return;
         }
 
-        // Our new settings will be totally nuked, but that's ok
-        // We *could* set things in common between the two, if we want
-        // But they're different enough it shouldn't be an issue
-        var name = getCurrentPipelineSettings().pipelineNickname;
-        var newSettings = createSettingsForType(type, name);
-
         var idx = currentPipelineIndex;
         if (idx < 0) {
             logger.error("Cannot replace non-user pipeline!");
             return;
         }
 
+        // Our new settings will be totally nuked, but that's ok
+        // We *could* set things in common between the two, if we want
+        // But they're different enough it shouldn't be an issue
+        var name = getCurrentPipelineSettings().pipelineNickname;
+
+        // a horrifying collection of hacks unfit for prod. ship it :)
+        var oldSettings = userPipelineSettings.get(idx);
+        var newSettings = createSettingsForType(type, name);
+        try {
+            for (Field field : getAllFields(AdvancedPipelineSettings.class)) {
+                Object value = field.get(oldSettings);
+                logger.debug("setting " + field.getName() + " to " + value);
+                field.set(newSettings, value);
+            }
+        } catch (Exception e) {
+            logger.error("Couldn't copy old settings", e);
+        }
+
         logger.info("Adding new pipe of type " + type + " at idx " + idx);
+
+        // type gets overritten by reflction hackery above
         newSettings.pipelineIndex = idx;
+        newSettings.pipelineType = type;
+
         userPipelineSettings.set(idx, newSettings);
+
         setPipelineInternal(idx);
         reassignIndexes();
         recreateUserPipeline();
