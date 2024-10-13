@@ -82,15 +82,6 @@ const patternHeight = ref(8);
 const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.Charuco);
 const useOldPattern = ref(false);
 const tagFamily = ref<CalibrationTagFamilies>(CalibrationTagFamilies.Dict_4X4_1000);
-const useMrCalRef = ref(true);
-const useMrCal = computed<boolean>({
-  get() {
-    return useMrCalRef.value && useSettingsStore().general.mrCalWorking;
-  },
-  set(value) {
-    useMrCalRef.value = value && useSettingsStore().general.mrCalWorking;
-  }
-});
 
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
 // Defer reference to store access method
@@ -176,7 +167,6 @@ const startCalibration = () => {
     patternHeight: patternHeight.value,
     patternWidth: patternWidth.value,
     boardType: boardType.value,
-    useMrCal: useMrCal.value,
     useOldPattern: useOldPattern.value,
     tagFamily: tagFamily.value
   });
@@ -332,13 +322,16 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               tooltip="If enabled, Photon will use the old OpenCV pattern for calibration."
               :label-cols="4"
             />
-            <pv-switch
-              v-model="useMrCal"
-              label="Try using MrCal over OpenCV"
-              :disabled="!useSettingsStore().general.mrCalWorking || isCalibrating"
-              tooltip="If enabled, Photon will (try to) use MrCal instead of OpenCV for camera calibration."
-              :label-cols="4"
-            />
+            <v-banner
+              v-show="useSettingsStore().general.mrCalWorking"
+              rounded
+              color="secondary"
+              text-color="white"
+              class="mt-3"
+              icon="mdi-alert-circle-outline"
+            >
+              Mrcal was successfully loaded, and will be used!
+            </v-banner>
             <v-banner
               v-show="!useSettingsStore().general.mrCalWorking"
               rounded
