@@ -114,6 +114,10 @@ public class NetworkTablesManager {
         }
     }
 
+    public NetworkTableInstance getNTInst() {
+        return ntInstance;
+    }
+
     private void onFieldLayoutChanged(NetworkTableEvent event) {
         var atfl_json = event.valueData.value.getString();
         try {
