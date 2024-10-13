@@ -66,7 +66,7 @@ public class PipelineManager {
 
         this.driverModePipeline.setSettings(driverSettings);
 
-        if (userPipelines.isEmpty()) addPipeline(PipelineType.Reflective);
+        if (userPipelines.isEmpty()) addPipeline(PipelineType.AprilTag);
 
         calibration3dPipeline = new Calibrate3dPipeline();
 
