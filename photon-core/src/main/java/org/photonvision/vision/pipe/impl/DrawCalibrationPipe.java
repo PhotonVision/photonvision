@@ -56,6 +56,11 @@ public class DrawCalibrationPipe
         int i = 0;
         for (var target : in.getRight()) {
             for (var c : target.getTargetCorners()) {
+                if (c.x < 0 || c.y < 0) {
+                    // Skip if the corner is less than zero
+                    continue;
+                }
+
                 c =
                         new Point(
                                 c.x / params.divisor.value.doubleValue(), c.y / params.divisor.value.doubleValue());
