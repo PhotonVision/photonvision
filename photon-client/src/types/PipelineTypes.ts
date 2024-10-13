@@ -142,7 +142,9 @@ export const DefaultPipelineSettings: Omit<
   hsvSaturation: { first: 50, second: 255 },
   contourIntersection: 1,
   cameraAutoWhiteBalance: false,
-  cameraWhiteBalanceTemp: 4000
+  cameraWhiteBalanceTemp: 4000,
+  cameraMinExposureRaw: 1,
+  cameraMaxExposureRaw: 2
 };
 
 export interface ReflectivePipelineSettings extends PipelineSettings {
@@ -314,16 +316,34 @@ export const DefaultObjectDetectionPipelineSettings: ObjectDetectionPipelineSett
   model: ""
 };
 
+export interface Calibration3dPipelineSettings extends PipelineSettings {
+  drawAllSnapshots: boolean;
+}
+export type ConfigurableCalibration3dPipelineSettings = Partial<Omit<Calibration3dPipelineSettings, "pipelineType">> &
+  ConfigurablePipelineSettings;
+export const DefaultCalibration3dPipelineSettings: Calibration3dPipelineSettings = {
+  ...DefaultPipelineSettings,
+  pipelineType: PipelineType.ObjectDetection,
+  cameraGain: 20,
+  targetModel: TargetModel.InfiniteRechargeHighGoalOuter,
+  ledMode: true,
+  outputShowMultipleTargets: false,
+  cameraExposureRaw: 6,
+  drawAllSnapshots: false
+};
+
 export type ActivePipelineSettings =
   | ReflectivePipelineSettings
   | ColoredShapePipelineSettings
   | AprilTagPipelineSettings
   | ArucoPipelineSettings
-  | ObjectDetectionPipelineSettings;
+  | ObjectDetectionPipelineSettings
+  | Calibration3dPipelineSettings;
 
 export type ActiveConfigurablePipelineSettings =
   | ConfigurableReflectivePipelineSettings
   | ConfigurableColoredShapePipelineSettings
   | ConfigurableAprilTagPipelineSettings
   | ConfigurableArucoPipelineSettings
-  | ConfigurableObjectDetectionPipelineSettings;
+  | ConfigurableObjectDetectionPipelineSettings
+  | ConfigurableCalibration3dPipelineSettings;

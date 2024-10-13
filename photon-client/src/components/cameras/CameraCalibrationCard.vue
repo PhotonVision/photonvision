@@ -201,6 +201,8 @@ const endCalibration = () => {
     });
 };
 
+let drawAllSnapshots = ref(true);
+
 let showCalDialog = ref(false);
 let selectedVideoFormat = ref<VideoFormat | undefined>(undefined);
 const setSelectedVideoFormat = (format: VideoFormat) => {
@@ -251,7 +253,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             <pv-select
               v-model="useStateStore().calibrationData.videoFormatIndex"
               label="Resolution"
-              :select-cols="7"
+              :select-cols="8"
               :disabled="isCalibrating"
               tooltip="Resolution to calibrate at (you will have to calibrate every resolution you use 3D mode on)"
               :items="getUniqueVideoResolutionStrings()"
@@ -262,14 +264,14 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               label="Decimation"
               tooltip="Resolution to which camera frames are downscaled for detection. Calibration still uses full-res"
               :items="calibrationDivisors"
-              :select-cols="7"
+              :select-cols="8"
               @input="(v) => useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: v }, false)"
             />
             <pv-select
               v-model="boardType"
               label="Board Type"
               tooltip="Calibration board pattern to use"
-              :select-cols="7"
+              :select-cols="8"
               :items="['Chessboard', 'Charuco']"
               :disabled="isCalibrating"
             />
@@ -278,7 +280,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               v-model="tagFamily"
               label="Tag Family"
               tooltip="Dictionary of aruco markers on the charuco board"
-              :select-cols="7"
+              :select-cols="8"
               :items="['Dict_4X4_1000', 'Dict_5X5_1000', 'Dict_6X6_1000', 'Dict_7X7_1000']"
               :disabled="isCalibrating"
             />
@@ -288,7 +290,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               tooltip="Spacing between pattern features in inches"
               :disabled="isCalibrating"
               :rules="[(v) => v > 0 || 'Size must be positive']"
-              :label-cols="5"
+              :label-cols="4"
             />
             <pv-number-input
               v-show="boardType == CalibrationBoardTypes.Charuco"
@@ -297,7 +299,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               tooltip="Size of the tag markers in inches must be smaller than pattern spacing"
               :disabled="isCalibrating"
               :rules="[(v) => v > 0 || 'Size must be positive']"
-              :label-cols="5"
+              :label-cols="4"
             />
             <pv-number-input
               v-model="patternWidth"
@@ -305,7 +307,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               tooltip="Width of the board in dots or chessboard squares"
               :disabled="isCalibrating"
               :rules="[(v) => v >= 4 || 'Width must be at least 4']"
-              :label-cols="5"
+              :label-cols="4"
             />
             <pv-number-input
               v-model="patternHeight"
@@ -313,7 +315,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               tooltip="Height of the board in dots or chessboard squares"
               :disabled="isCalibrating"
               :rules="[(v) => v >= 4 || 'Height must be at least 4']"
-              :label-cols="5"
+              :label-cols="4"
             />
             <pv-switch
               v-show="boardType == CalibrationBoardTypes.Charuco"
@@ -321,14 +323,14 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               label="Old OpenCV Pattern"
               :disabled="isCalibrating"
               tooltip="If enabled, Photon will use the old OpenCV pattern for calibration."
-              :label-cols="5"
+              :label-cols="4"
             />
             <pv-switch
               v-model="useMrCal"
               label="Try using MrCal over OpenCV"
               :disabled="!useSettingsStore().general.mrCalWorking || isCalibrating"
               tooltip="If enabled, Photon will (try to) use MrCal instead of OpenCV for camera calibration."
-              :label-cols="5"
+              :label-cols="4"
             />
             <v-banner
               v-show="!useSettingsStore().general.mrCalWorking"
@@ -462,6 +464,16 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               <span class="calib-btn-label">Generate Board</span>
             </v-btn>
           </v-col>
+        </v-row>
+        <v-row v-if="isCalibrating" style="display: flex; flex-direction: column">
+          <pv-switch
+            v-model="drawAllSnapshots"
+            class="pt-2"
+            label="Draw Collected Corners"
+            :switch-cols="8"
+            tooltip="Draw all snapshots"
+            @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ drawAllSnapshots: args }, false)"
+          />
         </v-row>
       </div>
     </v-card>
