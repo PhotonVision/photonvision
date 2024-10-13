@@ -139,7 +139,7 @@ export const DefaultPipelineSettings: Omit<
   hsvSaturation: { first: 50, second: 255 },
   contourIntersection: 1,
   cameraMinExposureRaw: 1,
-  cameraMaxExposureRaw: 2,
+  cameraMaxExposureRaw: 2
 };
 
 export interface ReflectivePipelineSettings extends PipelineSettings {
