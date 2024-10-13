@@ -105,8 +105,7 @@ public class VisionModule {
             visionSource.getCameraConfiguration().cameraQuirks = QuirkyCamera.DefaultCamera;
 
         // We don't show gain if the config says it's -1. So check here to make sure
-        // it's non-negative
-        // if it _is_ supported
+        // it's non-negative if it _is_ supported
         if (cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
             pipelineManager.userPipelineSettings.forEach(
                     it -> {
@@ -388,7 +387,12 @@ public class VisionModule {
     }
 
     public CameraCalibrationCoefficients endCalibration() {
-        var ret = pipelineManager.calibration3dPipeline.tryCalibration();
+        var ret =
+                pipelineManager.calibration3dPipeline.tryCalibration(
+                        ConfigManager.getInstance()
+                                .getCalibrationImageSavePath(
+                                        pipelineManager.calibration3dPipeline.getSettings().resolution,
+                                        visionSource.getCameraConfiguration().uniqueName));
         pipelineManager.setCalibrationMode(false);
 
         setPipeline(pipelineManager.getRequestedIndex());

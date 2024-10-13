@@ -30,6 +30,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 import java.util.List;
+import org.opencv.core.Size;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.FileUtils;
@@ -60,8 +61,8 @@ public class ConfigManager {
         ATOMIC_ZIP
     }
 
-    // This logic decides which kind of ConfigManager we load as the default. If we want
-    // to switch back to the legacy config manager, change this constant
+    // This logic decides which kind of ConfigManager we load as the default. If we want to switch
+    // back to the legacy config manager, change this constant
     private static final ConfigSaveStrategy m_saveStrat = ConfigSaveStrategy.SQL;
 
     public static ConfigManager getInstance() {
@@ -245,6 +246,19 @@ public class ConfigManager {
 
     public Path getImageSavePath() {
         var imgFilePath = Path.of(configDirectoryFile.toString(), "imgSaves").toFile();
+        if (!imgFilePath.exists()) imgFilePath.mkdirs();
+        return imgFilePath.toPath();
+    }
+
+    public Path getCalibrationImageSavePath(Size frameSize, String uniqueCameraName) {
+        var imgFilePath =
+                Path.of(
+                                configDirectoryFile.toString(),
+                                "calibration",
+                                uniqueCameraName,
+                                "imgs",
+                                frameSize.toString())
+                        .toFile();
         if (!imgFilePath.exists()) imgFilePath.mkdirs();
         return imgFilePath.toPath();
     }
