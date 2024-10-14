@@ -531,7 +531,6 @@ public class PipelineManager {
         }
 
         logger.info("Adding new pipe of type " + type + " at idx " + idx);
-        newSettings.pipelineIndex = idx;
 
         userPipelineSettings.set(idx, newSettings);
 
