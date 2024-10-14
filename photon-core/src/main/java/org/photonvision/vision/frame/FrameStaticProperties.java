@@ -21,6 +21,7 @@ import edu.wpi.first.cscore.VideoMode;
 import org.opencv.core.Point;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.opencv.ImageRotationMode;
 
 /** Represents the properties of a frame. */
 public class FrameStaticProperties {
@@ -83,6 +84,26 @@ public class FrameStaticProperties {
             horizontalFocalLength = (this.imageWidth / 2.0) / Math.tan(horizFOV / 2.0);
             verticalFocalLength = (this.imageHeight / 2.0) / Math.tan(vertFOV / 2.0);
         }
+    }
+
+    public FrameStaticProperties rotate(ImageRotationMode rotation) {
+        if(rotation == ImageRotationMode.DEG_0) {
+            return this;
+        }
+        int newWidth = imageWidth;
+        int newHeight = imageHeight;
+
+        if(rotation == ImageRotationMode.DEG_90 || rotation == ImageRotationMode.DEG_270) {
+            newWidth = imageHeight;
+            newHeight = imageWidth;
+        }
+        
+        if(cameraCalibration == null) {
+            return new FrameStaticProperties(newWidth, newHeight, fov, null);
+        }
+
+        return new FrameStaticProperties(
+            newWidth, newHeight, fov, cameraCalibration.rotateCoefficients(rotation));
     }
 
     /**

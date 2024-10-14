@@ -24,9 +24,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Arrays;
 import java.util.List;
+
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
 import org.opencv.core.Size;
+import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.opencv.Releasable;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -104,6 +107,100 @@ public class CameraCalibrationCoefficients implements Releasable {
         // do this once so gets are quick
         getCameraIntrinsicsMat().get(0, 0, intrinsicsArr);
         getDistCoeffsMat().get(0, 0, distCoeffsArr);
+    }
+
+    public CameraCalibrationCoefficients rotateCoefficients(ImageRotationMode rotation) {
+        if(rotation == ImageRotationMode.DEG_0) {
+            return this;
+        }
+        Mat rotatedIntrinsics = getCameraIntrinsicsMat().clone();
+        Mat rotatedDistCoeffs = getDistCoeffsMat().clone();
+        double cx = getCameraIntrinsicsMat().get(0, 2)[0];
+        double cy = getCameraIntrinsicsMat().get(1, 2)[0];
+        double fx = getCameraIntrinsicsMat().get(0,0)[0];
+        double fy = getCameraIntrinsicsMat().get(1,1)[0];
+
+        System.out.println(rotatedDistCoeffs.dump());
+        System.out.println(rotatedDistCoeffs.cols());
+        System.out.println(rotatedDistCoeffs.rows());
+
+        double p1 = getDistCoeffsMat().get(0,2)[0];
+        double p2 = getDistCoeffsMat().get(0,3)[0];
+        
+
+            switch (rotation) {
+                case DEG_0:
+                    break;
+                case DEG_90:
+                    // FX
+                    rotatedIntrinsics.put(0,0,fy);
+                    // FY
+                    rotatedIntrinsics.put(1,1,fx);
+
+                    // CX
+                    rotatedIntrinsics.put(0,2,resolution.height - cy);
+                    // CY
+                    rotatedIntrinsics.put(1,2,cx);
+
+                    //P1
+                    rotatedDistCoeffs.put(0,2, -p2);
+                    //P2
+                    rotatedDistCoeffs.put(0,3, p1);
+
+                    break;
+                case DEG_180:
+                    // CX
+                    rotatedIntrinsics.put(0,2,resolution.width - cx);
+                    // CY
+                    rotatedIntrinsics.put(1,2,resolution.height - cy);
+
+                    //P1
+                    rotatedDistCoeffs.put(0,2, -p1);
+                    //P2
+                    rotatedDistCoeffs.put(0,3, -p2);
+                    break;
+                case DEG_270:   
+                    // FX
+                    rotatedIntrinsics.put(0,0, fy);
+                    // FY
+                    rotatedIntrinsics.put(1,1, fx);
+
+                    // CX
+                    rotatedIntrinsics.put(0,2,cy);
+                    // CY
+                    rotatedIntrinsics.put(1,2,resolution.width - cx);
+
+                    //P1
+                    rotatedDistCoeffs.put(0,2, p2);
+                    //P2
+                    rotatedDistCoeffs.put(0,3, -p1);
+
+                    break;
+            }
+
+        JsonMatOfDouble newIntrinsics = JsonMatOfDouble.fromMat(rotatedIntrinsics);
+        JsonMatOfDouble newDistCoeffs = new JsonMatOfDouble(1, 8, CvType.CV_64FC1, new double[] {getDistCoeffsMat().get(0,0)[0],
+                                                                                              getDistCoeffsMat().get(0,1)[0],
+                                                                                              getDistCoeffsMat().get(0,2)[0],
+                                                                                              getDistCoeffsMat().get(0,3)[0],
+                                                                                              getDistCoeffsMat().get(0,4)[0],
+                                                                                              getDistCoeffsMat().get(0,5)[0],
+                                                                                              getDistCoeffsMat().get(0,6)[0],
+                                                                                              getDistCoeffsMat().get(0,7)[0]});
+
+        rotatedIntrinsics.release();
+        rotatedDistCoeffs.release();
+
+        return new CameraCalibrationCoefficients(
+            resolution,
+            newIntrinsics,
+            newDistCoeffs,
+            calobjectWarp,
+            observations,
+            calobjectSize,
+            calobjectSpacing,
+            lensmodel
+        );
     }
 
     @JsonIgnore
