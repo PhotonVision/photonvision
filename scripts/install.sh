@@ -39,7 +39,14 @@ install_if_missing() {
 
 get_photonvision_releases() {
   if ! command -v curl > /dev/null 2>&1 ; then
-    die "./install --list-versions requires curl and it is not installed."
+    debug "./install --list-versions requires curl and it is not installed."
+
+    read -p "Would you like to install curl? [y/N]: " response
+    if [[ $response == [nN] || $response == [nN][oO] ]]; then
+      die
+    fi
+
+    apt-get install --yes curl
   fi
 
   if [ -z "$PHOTON_VISION_RELEASES" ] ; then
