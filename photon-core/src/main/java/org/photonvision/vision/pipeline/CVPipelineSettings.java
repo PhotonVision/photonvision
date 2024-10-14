@@ -36,8 +36,8 @@ import org.photonvision.vision.opencv.ImageRotationMode;
     @JsonSubTypes.Type(value = ObjectDetectionPipelineSettings.class)
 })
 public class CVPipelineSettings implements Cloneable {
-    public int pipelineIndex = 0;
-    public PipelineType pipelineType = PipelineType.DriverMode;
+    @SuppressSettingCopy public int pipelineIndex = 0;
+    @SuppressSettingCopy public PipelineType pipelineType = PipelineType.DriverMode;
     public ImageRotationMode inputImageRotationMode = ImageRotationMode.DEG_0;
     public String pipelineNickname = "New Pipeline";
     public boolean cameraAutoExposure = false;
