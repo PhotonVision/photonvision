@@ -55,6 +55,10 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         }
     }
 
+    public ImageRotationMode getRotation() {
+        return m_rotationMode;
+    }
+
     public LibcameraGpuSettables(CameraConfiguration configuration) {
         super(configuration);
 
