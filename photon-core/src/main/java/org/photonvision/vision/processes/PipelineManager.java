@@ -518,6 +518,10 @@ public class PipelineManager {
         // Copy all fields from AdvancedPipelineSettings/its superclasses from old to new
         try {
             for (Field field : getAllFields(AdvancedPipelineSettings.class)) {
+                if (field.isAnnotationPresent(SuppressSettingCopy.class)) {
+                    // Skip fields that are annotated with SuppressSettingCopy
+                    continue;
+                }
                 Object value = field.get(oldSettings);
                 logger.debug("setting " + field.getName() + " to " + value);
                 field.set(newSettings, value);
@@ -527,10 +531,6 @@ public class PipelineManager {
         }
 
         logger.info("Adding new pipe of type " + type + " at idx " + idx);
-
-        // type gets overritten by reflction hackery above
-        newSettings.pipelineIndex = idx;
-        newSettings.pipelineType = type;
 
         userPipelineSettings.set(idx, newSettings);
 
