@@ -441,7 +441,7 @@ public class TrackedTarget implements Releasable {
             }
             {
                 var points = t.getTargetCorners();
-                if(points != null) {
+                if (points != null) {
                     for (Point point : points) {
                         detectedCorners.add(new TargetCorner(point.x, point.y));
                     }
