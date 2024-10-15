@@ -163,7 +163,11 @@ public class CameraConfiguration {
         calibrations.stream()
                 .filter(it -> it.resolution.equals(calibration.resolution))
                 .findAny()
-                .ifPresent(calibrations::remove);
+                .ifPresent(
+                        (it) -> {
+                            it.release();
+                            calibrations.remove(it);
+                        });
         calibrations.add(calibration);
     }
 

@@ -22,9 +22,10 @@ import org.opencv.core.Point;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.opencv.ImageRotationMode;
+import org.photonvision.vision.opencv.Releasable;
 
 /** Represents the properties of a frame. */
-public class FrameStaticProperties {
+public class FrameStaticProperties implements Releasable {
     public final int imageWidth;
     public final int imageHeight;
     public final double fov;
@@ -35,6 +36,9 @@ public class FrameStaticProperties {
     public final double horizontalFocalLength;
     public final double verticalFocalLength;
     public CameraCalibrationCoefficients cameraCalibration;
+
+    private CameraCalibrationCoefficients[] cachedCalibrationCoefficients =
+            new CameraCalibrationCoefficients[4];
 
     /**
      * Instantiates a new Frame static properties.
@@ -87,23 +91,26 @@ public class FrameStaticProperties {
     }
 
     public FrameStaticProperties rotate(ImageRotationMode rotation) {
-        if(rotation == ImageRotationMode.DEG_0) {
+        if (rotation == ImageRotationMode.DEG_0) {
             return this;
         }
         int newWidth = imageWidth;
         int newHeight = imageHeight;
 
-        if(rotation == ImageRotationMode.DEG_90 || rotation == ImageRotationMode.DEG_270) {
+        if (rotation == ImageRotationMode.DEG_90 || rotation == ImageRotationMode.DEG_270) {
             newWidth = imageHeight;
             newHeight = imageWidth;
         }
-        
-        if(cameraCalibration == null) {
+
+        if (cameraCalibration == null) {
             return new FrameStaticProperties(newWidth, newHeight, fov, null);
         }
-
+        if (cachedCalibrationCoefficients[rotation.ordinal()] == null) {
+            cachedCalibrationCoefficients[rotation.ordinal()] =
+                    cameraCalibration.rotateCoefficients(rotation);
+        }
         return new FrameStaticProperties(
-            newWidth, newHeight, fov, cameraCalibration.rotateCoefficients(rotation));
+                newWidth, newHeight, fov, cachedCalibrationCoefficients[rotation.ordinal()]);
     }
 
     /**
@@ -124,5 +131,14 @@ public class FrameStaticProperties {
         double verticalView = Math.atan(Math.tan(diagonalFoV / 2) * (imageHeight / diagonalAspect)) * 2;
 
         return new DoubleCouple(Math.toDegrees(horizontalView), Math.toDegrees(verticalView));
+    }
+
+    @Override
+    public void release() {
+        for (var cal : cachedCalibrationCoefficients) {
+            if (cal != null) {
+                cal.release();
+            }
+        }
     }
 }

@@ -107,6 +107,9 @@ public abstract class VisionSourceSettables {
 
     private void calculateFrameStaticProps() {
         var videoMode = getCurrentVideoMode();
+        if (this.frameStaticProperties != null) {
+            this.frameStaticProperties.release();
+        }
         this.frameStaticProperties =
                 new FrameStaticProperties(
                         videoMode,

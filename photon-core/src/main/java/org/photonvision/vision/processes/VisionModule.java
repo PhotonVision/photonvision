@@ -620,7 +620,7 @@ public class VisionModule {
     public void addCalibrationToConfig(CameraCalibrationCoefficients newCalibration) {
         if (newCalibration != null) {
             logger.info("Got new calibration for " + newCalibration.resolution);
-            visionSource.getSettables().getConfiguration().addCalibration(newCalibration);
+            visionSource.getSettables().addCalibration(newCalibration);
         } else {
             logger.error("Got null calibration?");
         }

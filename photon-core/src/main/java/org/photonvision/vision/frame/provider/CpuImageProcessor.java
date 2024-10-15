@@ -74,7 +74,6 @@ public abstract class CpuImageProcessor extends FrameProvider {
             sumNanos += out.nanosElapsed;
         }
 
-
         if (!input.colorImage.getMat().empty()) {
             if (m_processType == FrameThresholdType.HSV) {
                 var hsvResult = m_hsvPipe.run(input.colorImage.getMat());
