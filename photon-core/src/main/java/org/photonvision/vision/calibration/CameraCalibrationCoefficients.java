@@ -174,19 +174,13 @@ public class CameraCalibrationCoefficients implements Releasable {
                 break;
         }
 
-
         JsonMatOfDouble newIntrinsics = JsonMatOfDouble.fromMat(rotatedIntrinsics);
 
         double[] data = new double[(int) (rotatedDistCoeffs.total() * rotatedDistCoeffs.elemSize())];
 
         rotatedDistCoeffs.get(0, 0, data);
 
-        JsonMatOfDouble newDistCoeffs =
-                new JsonMatOfDouble(
-                        1,
-                        8,
-                        CvType.CV_64FC1,
-                        data);
+        JsonMatOfDouble newDistCoeffs = new JsonMatOfDouble(1, 8, CvType.CV_64FC1, data);
 
         rotatedIntrinsics.release();
         rotatedDistCoeffs.release();
