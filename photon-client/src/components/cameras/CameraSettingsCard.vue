@@ -144,17 +144,27 @@ watchEffect(() => {
         :select-cols="8"
       />
       <br />
-      <v-btn
-        class="mt-2 mb-3"
-        style="width: 100%"
-        small
-        color="secondary"
-        :disabled="!settingsHaveChanged()"
-        @click="saveCameraSettings"
-      >
-        <v-icon left> mdi-content-save </v-icon>
-        Save Changes
-      </v-btn>
+      <v-row>
+        <v-col cols="6">
+          <v-btn
+            class="mt-2 mb-3"
+            style="width: 100%"
+            small
+            color="secondary"
+            :disabled="!settingsHaveChanged()"
+            @click="saveCameraSettings"
+          >
+            <v-icon left> mdi-content-save </v-icon>
+            Save Changes
+          </v-btn>
+        </v-col>
+        <v-col cols="6">
+          <v-btn class="mt-2 mb-3" style="width: 100%" small color="red" @click="saveCameraSettings">
+            <v-icon left> mdi-content-save </v-icon>
+            Delete Config And Unmatch Camera
+          </v-btn>
+        </v-col>
+      </v-row>
     </div>
   </v-card>
 </template>

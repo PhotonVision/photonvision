@@ -322,6 +322,15 @@ const handleSettingsImport = () => {
           </v-btn>
         </v-col>
       </v-row>
+      <v-divider style="margin: 12px 0" />
+      <v-row>
+        <v-col cols="12">
+          <v-btn color="red" @click="restartDevice">
+            <v-icon left class="open-icon"> mdi-restart-alert </v-icon>
+            <span class="open-label">Factory Reset PhotonVision and delete everything (the big scary red button)</span>
+          </v-btn>
+        </v-col>
+      </v-row>
     </div>
   </v-card>
 </template>
