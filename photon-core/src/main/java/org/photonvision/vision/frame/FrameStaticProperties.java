@@ -25,7 +25,7 @@ import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.opencv.Releasable;
 
 /** Represents the properties of a frame. */
-public class FrameStaticProperties implements Releasable{
+public class FrameStaticProperties implements Releasable {
     public final int imageWidth;
     public final int imageHeight;
     public final double fov;
@@ -37,8 +37,8 @@ public class FrameStaticProperties implements Releasable{
     public final double verticalFocalLength;
     public CameraCalibrationCoefficients cameraCalibration;
 
-    private final FrameStaticProperties[] cachedRotationStaticProperties = new FrameStaticProperties[4];
-
+    private final FrameStaticProperties[] cachedRotationStaticProperties =
+            new FrameStaticProperties[4];
 
     /**
      * Instantiates a new Frame static properties.
@@ -106,11 +106,11 @@ public class FrameStaticProperties implements Releasable{
             return new FrameStaticProperties(newWidth, newHeight, fov, null);
         }
 
-        if(cachedRotationStaticProperties[rotation.ordinal()] == null) {
-            cachedRotationStaticProperties[rotation.ordinal()] = new FrameStaticProperties(
-                newWidth, newHeight, fov, cameraCalibration.rotateCoefficients(rotation));
+        if (cachedRotationStaticProperties[rotation.ordinal()] == null) {
+            cachedRotationStaticProperties[rotation.ordinal()] =
+                    new FrameStaticProperties(
+                            newWidth, newHeight, fov, cameraCalibration.rotateCoefficients(rotation));
         }
-
 
         return cachedRotationStaticProperties[rotation.ordinal()];
     }
@@ -137,8 +137,8 @@ public class FrameStaticProperties implements Releasable{
 
     @Override
     public void release() {
-        for(FrameStaticProperties prop : cachedRotationStaticProperties) {
-            if(prop != null) {
+        for (FrameStaticProperties prop : cachedRotationStaticProperties) {
+            if (prop != null) {
                 prop.release();
             }
         }

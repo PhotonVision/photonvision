@@ -24,7 +24,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Arrays;
 import java.util.List;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
 import org.opencv.core.Size;
@@ -176,11 +175,7 @@ public class CameraCalibrationCoefficients implements Releasable {
 
         JsonMatOfDouble newIntrinsics = JsonMatOfDouble.fromMat(rotatedIntrinsics);
 
-        double[] data = new double[(int) (rotatedDistCoeffs.total() * rotatedDistCoeffs.elemSize())];
-
-        rotatedDistCoeffs.get(0, 0, data);
-
-        JsonMatOfDouble newDistCoeffs = new JsonMatOfDouble(1, 8, CvType.CV_64FC1, data);
+        JsonMatOfDouble newDistCoeffs = JsonMatOfDouble.fromMat(rotatedDistCoeffs);
 
         rotatedIntrinsics.release();
         rotatedDistCoeffs.release();
