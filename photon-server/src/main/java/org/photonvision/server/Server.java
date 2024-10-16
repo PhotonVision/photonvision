@@ -134,6 +134,7 @@ public class Server {
         app.get("/api/utils/getImageSnapshots", RequestHandler::onImageSnapshotsRequest);
         app.get("/api/utils/getCalSnapshot", RequestHandler::onCalibrationSnapshotRequest);
         app.get("/api/utils/getCalibrationJSON", RequestHandler::onCalibrationExportRequest);
+        app.post("/api/utils/nukeConfigDirectory", RequestHandler::onNukeConfigDirectory);
 
         // Calibration
         app.post("/api/calibration/end", RequestHandler::onCalibrationEndRequest);

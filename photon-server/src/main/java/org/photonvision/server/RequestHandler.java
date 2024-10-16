@@ -94,16 +94,18 @@ public class RequestHandler {
             return;
         }
 
+        ConfigManager.getInstance().setWriteTaskEnabled(false);
+        ConfigManager.getInstance().disableFlushOnShutdown();
+        // We want to delete the -whole- zip file, so we need to teardown loggers for now
+        logger.info("Writing new settings zip (logs may be truncated)...");
+        Logger.closeAllLoggers();
         if (ConfigManager.saveUploadedSettingsZip(tempFilePath.get())) {
             ctx.status(200);
             ctx.result("Successfully saved the uploaded settings zip, rebooting...");
-            logger.info("Successfully saved the uploaded settings zip, rebooting...");
-            ConfigManager.getInstance().disableFlushOnShutdown();
             restartProgram();
         } else {
             ctx.status(500);
             ctx.result("There was an error while saving the uploaded zip file");
-            logger.error("There was an error while saving the uploaded zip file");
         }
     }
 
@@ -770,5 +772,20 @@ public class RequestHandler {
                             }
                         },
                         0);
+    }
+
+    public static void onNukeConfigDirectory(Context ctx) {
+        ConfigManager.getInstance().setWriteTaskEnabled(false);
+        ConfigManager.getInstance().disableFlushOnShutdown();
+
+        Logger.closeAllLoggers();
+        if (ConfigManager.nukeConfigDirectory()) {
+            ctx.status(200);
+            ctx.result("Successfully nuked config dir");
+            restartProgram();
+        } else {
+            ctx.status(500);
+            ctx.result("There was an error while nuking the config directory");
+        }
     }
 }

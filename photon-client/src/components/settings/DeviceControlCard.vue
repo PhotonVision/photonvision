@@ -201,6 +201,39 @@ const handleSettingsImport = () => {
   importType.value = -1;
   importFile.value = null;
 };
+
+const showFactoryReset = ref(true);
+const yesDeleteMySettings = ref(true);
+const expected = "I solumnly swear that I am up to no good";
+const yesDeleteMySettingsText = ref(expected);
+const nukePhotonConfigDirectory = () => {
+  axios
+    .post("/utils/nukeConfigDirectory")
+    .then(() => {
+      useStateStore().showSnackbarMessage({
+        message: "Successfully dispatched the reset command. Waiting for backend to start back up",
+        color: "success"
+      });
+    })
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          message: "The backend is unable to fulfil the request to reset the device.",
+          color: "error"
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          message: "Error while trying to process the request! The backend didn't respond.",
+          color: "error"
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          message: "An error occurred while trying to process the request.",
+          color: "error"
+        });
+      }
+    });
+};
 </script>
 
 <template>
@@ -325,17 +358,51 @@ const handleSettingsImport = () => {
       <v-divider style="margin: 12px 0" />
       <v-row>
         <v-col cols="12">
-          <v-btn color="red" @click="restartDevice">
+          <v-btn color="red" @click="() => (showFactoryReset = true)">
             <v-icon left class="open-icon"> mdi-restart-alert </v-icon>
             <span class="open-label">Factory Reset PhotonVision and delete everything (the big scary red button)</span>
           </v-btn>
         </v-col>
       </v-row>
     </div>
+
+    <v-dialog v-model="showFactoryReset" width="1500" height="900" dark>
+      <v-card dark class="dialog-container pa-6" color="primary" flat>
+        <v-card-title>Factory Reset PhotonVision</v-card-title>
+        <v-row>
+          <span>This will delete ALL OF YOUR SETTINGS</span>
+        </v-row>
+        <v-row>
+          <v-btn color="secondary" @click="openExportSettingsPrompt">
+            <v-icon left class="open-icon"> mdi-export </v-icon>
+            <span class="open-label">Your final chance to export settings</span>
+          </v-btn>
+        </v-row>
+
+        <v-divider class="pt-6" />
+
+        <pv-input v-model="yesDeleteMySettingsText" :label="'Type &quot;' + expected + '&quot;'" />
+
+        <v-row>
+          <v-btn
+            color="red"
+            @click="nukePhotonConfigDirectory"
+            :disabled="yesDeleteMySettingsText.toLowerCase() !== expected.toLowerCase()"
+          >
+            <v-icon left class="open-icon"> mdi-skull </v-icon>
+            <span class="open-label">I have backed up what I need</span>
+          </v-btn>
+        </v-row>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 
 <style scoped>
+.dialog-container {
+  min-height: 300px !important;
+}
+
 .v-divider {
   border-color: white !important;
 }
