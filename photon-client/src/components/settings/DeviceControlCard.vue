@@ -232,6 +232,7 @@ const nukePhotonConfigDirectory = () => {
         });
       }
     });
+    showFactoryReset.value = false
 };
 </script>
 
