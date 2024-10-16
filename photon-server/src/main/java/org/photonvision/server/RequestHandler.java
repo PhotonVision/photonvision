@@ -788,4 +788,26 @@ public class RequestHandler {
             ctx.result("There was an error while nuking the config directory");
         }
     }
+
+    public static void onNukeOneCamera(Context ctx) {
+        try {
+            var payload = kObjectMapper.readTree(ctx.bodyInputStream());
+            var name = payload.get("cameraUniqueName").asText();
+            logger.warn("Deleting camera name " + name);
+
+            // prevent -anyone- else from writing camera configs -- but flush first
+            ConfigManager.getInstance().saveToDisk();
+            ConfigManager.getInstance().setWriteTaskEnabled(false);
+            ConfigManager.getInstance().disableFlushOnShutdown();
+            // remove the config from the global config and force-flush
+            ConfigManager.getInstance().getConfig().removeCameraConfig(name);
+            ConfigManager.getInstance().saveToDisk();
+            ctx.status(200);
+            restartProgram();
+        } catch (IOException e) {
+            // todo
+            logger.error("asdf", e);
+            ctx.status(500);
+        }
+    }
 }

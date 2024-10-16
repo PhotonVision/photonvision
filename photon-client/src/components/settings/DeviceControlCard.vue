@@ -202,7 +202,7 @@ const handleSettingsImport = () => {
   importFile.value = null;
 };
 
-const showFactoryReset = ref(true);
+const showFactoryReset = ref(false);
 const expected = "I solumnly swear that I am up to no good";
 const yesDeleteMySettingsText = ref(expected);
 const nukePhotonConfigDirectory = () => {
@@ -232,7 +232,7 @@ const nukePhotonConfigDirectory = () => {
         });
       }
     });
-    showFactoryReset.value = false
+  showFactoryReset.value = false;
 };
 </script>
 

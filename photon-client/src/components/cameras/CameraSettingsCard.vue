@@ -110,22 +110,21 @@ watchEffect(() => {
   resetTempSettingsStruct();
 });
 
-
-const showDeleteCamera = ref(true);
+const showDeleteCamera = ref(false);
 const expected = computed<string>({
   get() {
-    return useCameraSettingsStore().cameraNames[useStateStore().currentCameraIndex]
+    return useCameraSettingsStore().cameraNames[useStateStore().currentCameraIndex];
   },
-  set(thing) {
-  }
-})
-const yesDeleteMySettingsText = ref("")
+  set(thing) {}
+});
+const yesDeleteMySettingsText = ref("");
 const deleteThisCamera = () => {
-  const formData = new FormData();
-  formData.append("data", "true");
+  const payload = {
+    cameraUniqueName: useCameraSettingsStore().cameraUniqueNames[useStateStore().currentCameraIndex]
+  };
 
   axios
-    .post("/utils/nukeOneCamera")
+    .post("/utils/nukeOneCamera", payload)
     .then(() => {
       useStateStore().showSnackbarMessage({
         message: "Successfully dispatched the delete command. Waiting for backend to start back up",
@@ -150,8 +149,8 @@ const deleteThisCamera = () => {
         });
       }
     });
-    showDeleteCamera.value = false
-}
+  showDeleteCamera.value = false;
+};
 </script>
 
 <template>
@@ -203,7 +202,7 @@ const deleteThisCamera = () => {
           </v-btn>
         </v-col>
         <v-col cols="6">
-          <v-btn class="mt-2 mb-3" style="width: 100%" small color="red" @click="saveCameraSettings">
+          <v-btn class="mt-2 mb-3" style="width: 100%" small color="red" @click="() => (showDeleteCamera = true)">
             <v-icon left> mdi-content-save </v-icon>
             Delete Config And Unmatch Camera
           </v-btn>
@@ -213,12 +212,14 @@ const deleteThisCamera = () => {
 
     <v-dialog v-model="showDeleteCamera" width="1500" height="900" dark>
       <v-card dark class="dialog-container pa-6" color="primary" flat>
-        <v-card-title>Delete camera "{{ useCameraSettingsStore().cameraNames[useStateStore().currentCameraIndex] }}""</v-card-title>
+        <v-card-title
+          >Delete camera "{{ useCameraSettingsStore().cameraNames[useStateStore().currentCameraIndex] }}""</v-card-title
+        >
         <v-row>
           <span>This will delete ALL OF YOUR SETTINGS for this camera</span>
         </v-row>
         <v-row>
-          <v-btn color="secondary" @click="() => showDeleteCamera = true">
+          <v-btn color="secondary" @click="() => (showDeleteCamera = true)">
             <v-icon left class="open-icon"> mdi-export </v-icon>
             <span class="open-label">Your final chance to export settings</span>
           </v-btn>
