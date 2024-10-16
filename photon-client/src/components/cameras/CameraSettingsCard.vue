@@ -5,6 +5,7 @@ import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { computed, ref, watchEffect } from "vue";
 import { type CameraSettingsChangeRequest, ValidQuirks } from "@/types/SettingTypes";
+import axios from "axios";
 
 const tempSettingsStruct = ref<CameraSettingsChangeRequest>({
   fov: useCameraSettingsStore().currentCameraSettings.fov.value,
@@ -108,6 +109,48 @@ watchEffect(() => {
   // Reset temp settings on remote camera settings change
   resetTempSettingsStruct();
 });
+
+const showDeleteCamera = ref(false);
+const expected = computed<string>({
+  get() {
+    return useCameraSettingsStore().cameraNames[useStateStore().currentCameraIndex];
+  },
+  set(thing) {}
+});
+const yesDeleteMySettingsText = ref("");
+const deleteThisCamera = () => {
+  const payload = {
+    cameraUniqueName: useCameraSettingsStore().cameraUniqueNames[useStateStore().currentCameraIndex]
+  };
+
+  axios
+    .post("/utils/nukeOneCamera", payload)
+    .then(() => {
+      useStateStore().showSnackbarMessage({
+        message: "Successfully dispatched the delete command. Waiting for backend to start back up",
+        color: "success"
+      });
+    })
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          message: "The backend is unable to fulfil the request to delete this camera.",
+          color: "error"
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          message: "Error while trying to process the request! The backend didn't respond.",
+          color: "error"
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          message: "An error occurred while trying to process the request.",
+          color: "error"
+        });
+      }
+    });
+  showDeleteCamera.value = false;
+};
 </script>
 
 <template>
@@ -144,17 +187,67 @@ watchEffect(() => {
         :select-cols="8"
       />
       <br />
-      <v-btn
-        class="mt-2 mb-3"
-        style="width: 100%"
-        small
-        color="secondary"
-        :disabled="!settingsHaveChanged()"
-        @click="saveCameraSettings"
-      >
-        <v-icon left> mdi-content-save </v-icon>
-        Save Changes
-      </v-btn>
+      <v-row>
+        <v-col cols="6">
+          <v-btn
+            class="mt-2 mb-3"
+            style="width: 100%"
+            small
+            color="secondary"
+            :disabled="!settingsHaveChanged()"
+            @click="saveCameraSettings"
+          >
+            <v-icon left> mdi-content-save </v-icon>
+            Save Changes
+          </v-btn>
+        </v-col>
+        <v-col cols="6">
+          <v-btn class="mt-2 mb-3" style="width: 100%" small color="red" @click="() => (showDeleteCamera = true)">
+            <v-icon left> mdi-content-save </v-icon>
+            Delete Config And Unmatch Camera
+          </v-btn>
+        </v-col>
+      </v-row>
     </div>
+
+    <v-dialog v-model="showDeleteCamera" width="1500" height="900" dark>
+      <v-card dark class="dialog-container pa-6" color="primary" flat>
+        <v-card-title
+          >Delete camera "{{ useCameraSettingsStore().cameraNames[useStateStore().currentCameraIndex] }}""</v-card-title
+        >
+        <v-row>
+          <span>This will delete ALL OF YOUR SETTINGS for this camera</span>
+        </v-row>
+        <v-row>
+          <v-btn color="secondary" @click="() => (showDeleteCamera = true)">
+            <v-icon left class="open-icon"> mdi-export </v-icon>
+            <span class="open-label">Your final chance to export settings</span>
+          </v-btn>
+        </v-row>
+
+        <pv-input v-model="yesDeleteMySettingsText" :label="'Type &quot;' + expected + '&quot;'" />
+
+        <v-row>
+          <v-btn
+            color="red"
+            @click="deleteThisCamera"
+            :disabled="yesDeleteMySettingsText.toLowerCase() !== expected.toLowerCase()"
+          >
+            <v-icon left class="open-icon"> mdi-skull </v-icon>
+            <span class="open-label">Yes, delete this camera; I have backed up what I need</span>
+          </v-btn>
+        </v-row>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
+
+<style scoped>
+.dialog-container {
+  min-height: 300px !important;
+}
+
+.v-divider {
+  border-color: white !important;
+}
+</style>

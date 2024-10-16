@@ -51,6 +51,9 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     cameraNames(): string[] {
       return this.cameras.map((c) => c.nickname);
     },
+    cameraUniqueNames(): string[] {
+      return this.cameras.map((c) => c.nickname);
+    },
     currentCameraName(): string {
       return this.cameraNames[useStateStore().currentCameraIndex];
     },
