@@ -108,6 +108,11 @@ watchEffect(() => {
   // Reset temp settings on remote camera settings change
   resetTempSettingsStruct();
 });
+
+
+const showFactoryReset = ref(true);
+const expected = "I solumnly swear that I am up to no good";
+const yesDeleteMySettingsText = ref(expected);
 </script>
 
 <template>
@@ -166,5 +171,43 @@ watchEffect(() => {
         </v-col>
       </v-row>
     </div>
+
+    <v-dialog v-model="showFactoryReset" width="1500" height="900" dark>
+      <v-card dark class="dialog-container pa-6" color="primary" flat>
+        <v-card-title>Delete camera "{{ useCameraSettingsStore().cameraNames[useStateStore().currentCameraIndex] }}""</v-card-title>
+        <v-row>
+          <span>This will delete ALL OF YOUR SETTINGS for this camera</span>
+        </v-row>
+        <v-row>
+          <v-btn color="secondary" @click="openExportSettingsPrompt">
+            <v-icon left class="open-icon"> mdi-export </v-icon>
+            <span class="open-label">Your final chance to export settings</span>
+          </v-btn>
+        </v-row>
+
+        <pv-input v-model="yesDeleteMySettingsText" :label="'Type &quot;' + expected + '&quot;'" />
+
+        <v-row>
+          <v-btn
+            color="red"
+            @click="nukePhotonConfigDirectory"
+            :disabled="yesDeleteMySettingsText.toLowerCase() !== expected.toLowerCase()"
+          >
+            <v-icon left class="open-icon"> mdi-skull </v-icon>
+            <span class="open-label">Yes, delete this camera; I have backed up what I need</span>
+          </v-btn>
+        </v-row>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
+
+<style scoped>
+.dialog-container {
+  min-height: 300px !important;
+}
+
+.v-divider {
+  border-color: white !important;
+}
+</style>

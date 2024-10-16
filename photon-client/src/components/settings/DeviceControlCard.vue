@@ -203,7 +203,6 @@ const handleSettingsImport = () => {
 };
 
 const showFactoryReset = ref(true);
-const yesDeleteMySettings = ref(true);
 const expected = "I solumnly swear that I am up to no good";
 const yesDeleteMySettingsText = ref(expected);
 const nukePhotonConfigDirectory = () => {
@@ -379,8 +378,6 @@ const nukePhotonConfigDirectory = () => {
           </v-btn>
         </v-row>
 
-        <v-divider class="pt-6" />
-
         <pv-input v-model="yesDeleteMySettingsText" :label="'Type &quot;' + expected + '&quot;'" />
 
         <v-row>
@@ -390,7 +387,7 @@ const nukePhotonConfigDirectory = () => {
             :disabled="yesDeleteMySettingsText.toLowerCase() !== expected.toLowerCase()"
           >
             <v-icon left class="open-icon"> mdi-skull </v-icon>
-            <span class="open-label">I have backed up what I need</span>
+            <span class="open-label">Delete everything; I have backed up what I need</span>
           </v-btn>
         </v-row>
       </v-card>
