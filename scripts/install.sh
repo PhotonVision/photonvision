@@ -107,18 +107,16 @@ Syntax: sudo ./install.sh [options]
       Install PhotonVision for the specified architecture.
       Supported values: aarch64, x86_64
   -m [option], --install-nm=[option]
-      Whether or not to install NetworkManager. Only used on
-      Ubuntu, and ignored for all other distros.
-      Supported options are: "yes", "no", and "ask".
-      "ask" prompts the user for installation of NetworkManager.
-      If not specified, will fall back to "ask".
-      If specified, "yes" is the default option.
+      Controls NetworkManager installation (Ubuntu only).
+      Options: "yes", "no", "ask".
+      Default: "ask" (unless -q or --quiet is specified, then "no").
+      "ask" prompts for installation. Ignored on other distros.
   -n, --no-networking
       Disable networking. This will also prevent installation of
-      NetworkManager (ignoring -m,--install-nm).
+      NetworkManager, overriding -m,--install-nm.
   -q, --quiet
       Silent install, automatically accepts all defaults. For
-      non-interactive use. Forces --install-nm="no".
+      non-interactive use. Makes -m,--install-nm default to "no".
 
 EOF
 }
@@ -205,9 +203,16 @@ fi
 debug "This is the installation script for PhotonVision."
 debug "Installing for platform $ARCH"
 
+# Quiet makes the default "no" instead of "ask".
+if [[ -n "$QUIET" && "$INSTALL_NETWORK_MANAGER" == "ask" ]] ; then
+  INSTALL_NETWORK_MANAGER="no"
+fi
+
 DISTRO=$(lsb_release -is)
 
-if [[ "$DISTRO" != "Ubuntu" || -n "$DISABLE_NETWORKING" || -n "$QUIET" ]] ; then
+# NetworkManager cannot be installed on non-Ubuntu distros
+# --no-networking takes precedence over --install-nm
+if [[ "$DISTRO" != "Ubuntu" || -n "$DISABLE_NETWORKING" ]] ; then
   INSTALL_NETWORK_MANAGER="no"
 fi
 
