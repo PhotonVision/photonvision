@@ -33,7 +33,7 @@ import org.photonvision.vision.opencv.Releasable;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CameraCalibrationCoefficients implements Releasable {
     @JsonProperty("resolution")
-    public final Size resolution;
+    public final Size unrotatedImageSize;
 
     @JsonProperty("cameraIntrinsics")
     public final JsonMatOfDouble cameraIntrinsics;
@@ -88,7 +88,7 @@ public class CameraCalibrationCoefficients implements Releasable {
             @JsonProperty("calobjectSize") Size calobjectSize,
             @JsonProperty("calobjectSpacing") double calobjectSpacing,
             @JsonProperty("lensmodel") CameraLensModel lensmodel) {
-        this.resolution = resolution;
+        this.unrotatedImageSize = resolution;
         this.cameraIntrinsics = cameraIntrinsics;
         this.distCoeffs = distCoeffs;
         this.calobjectWarp = calobjectWarp;
@@ -133,7 +133,7 @@ public class CameraCalibrationCoefficients implements Releasable {
                 rotatedIntrinsics.put(1, 1, fx);
 
                 // CX
-                rotatedIntrinsics.put(0, 2, resolution.height - cy);
+                rotatedIntrinsics.put(0, 2, unrotatedImageSize.height - cy);
                 // CY
                 rotatedIntrinsics.put(1, 2, cx);
 
@@ -145,9 +145,9 @@ public class CameraCalibrationCoefficients implements Releasable {
                 break;
             case DEG_180:
                 // CX
-                rotatedIntrinsics.put(0, 2, resolution.width - cx);
+                rotatedIntrinsics.put(0, 2, unrotatedImageSize.width - cx);
                 // CY
-                rotatedIntrinsics.put(1, 2, resolution.height - cy);
+                rotatedIntrinsics.put(1, 2, unrotatedImageSize.height - cy);
 
                 // P1
                 rotatedDistCoeffs.put(0, 2, -p1);
@@ -163,7 +163,7 @@ public class CameraCalibrationCoefficients implements Releasable {
                 // CX
                 rotatedIntrinsics.put(0, 2, cy);
                 // CY
-                rotatedIntrinsics.put(1, 2, resolution.width - cx);
+                rotatedIntrinsics.put(1, 2, unrotatedImageSize.width - cx);
 
                 // P1
                 rotatedDistCoeffs.put(0, 2, p2);
@@ -180,8 +180,10 @@ public class CameraCalibrationCoefficients implements Releasable {
         rotatedIntrinsics.release();
         rotatedDistCoeffs.release();
 
+        var rotatedImageSize = new Size(unrotatedImageSize.height, unrotatedImageSize.width);
+
         return new CameraCalibrationCoefficients(
-                resolution,
+                rotatedImageSize,
                 newIntrinsics,
                 newDistCoeffs,
                 calobjectWarp,
@@ -225,7 +227,7 @@ public class CameraCalibrationCoefficients implements Releasable {
     @Override
     public String toString() {
         return "CameraCalibrationCoefficients [resolution="
-                + resolution
+                + unrotatedImageSize
                 + ", cameraIntrinsics="
                 + cameraIntrinsics
                 + ", distCoeffs="
@@ -243,7 +245,7 @@ public class CameraCalibrationCoefficients implements Releasable {
 
     public UICameraCalibrationCoefficients cloneWithoutObservations() {
         return new UICameraCalibrationCoefficients(
-                resolution,
+                unrotatedImageSize,
                 cameraIntrinsics,
                 distCoeffs,
                 calobjectWarp,

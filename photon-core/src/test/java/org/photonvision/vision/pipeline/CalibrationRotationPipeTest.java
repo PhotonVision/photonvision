@@ -42,15 +42,15 @@ public class CalibrationRotationPipeTest {
 
         FrameStaticProperties frameProps =
                 new FrameStaticProperties(
-                        (int) coeffs.resolution.width, (int) coeffs.resolution.height, -1, coeffs);
-        FrameStaticProperties rotatedFrameProps = frameProps.rotate(ImageRotationMode.DEG_270_CCW);
+                        (int) coeffs.unrotatedImageSize.width, (int) coeffs.unrotatedImageSize.height, -1, coeffs);
+        FrameStaticProperties rotatedFrameProps = frameProps.rotate(ImageRotationMode.DEG_90_CCW);
         CameraCalibrationCoefficients rotatedCoeffs = rotatedFrameProps.cameraCalibration;
 
         Point[] originalPoints = {new Point(100, 100), new Point(200, 200)};
         MatOfPoint2f originalMatOfPoints = new MatOfPoint2f(originalPoints);
 
         MatOfPoint2f undistortedOriginalPoints = new MatOfPoint2f();
-        Calib3d.undistortPoints(
+        Calib3d.undistortImagePoints(
                 originalMatOfPoints,
                 undistortedOriginalPoints,
                 frameProps.cameraCalibration.getCameraIntrinsicsMat(),
@@ -65,7 +65,7 @@ public class CalibrationRotationPipeTest {
         MatOfPoint2f rotatedMatOfPoints = new MatOfPoint2f(rotatedInputPoints);
 
         MatOfPoint2f undistortedRotatedPoints = new MatOfPoint2f();
-        Calib3d.undistortPoints(
+        Calib3d.undistortImagePoints(
                 rotatedMatOfPoints,
                 undistortedRotatedPoints,
                 rotatedCoeffs.getCameraIntrinsicsMat(),

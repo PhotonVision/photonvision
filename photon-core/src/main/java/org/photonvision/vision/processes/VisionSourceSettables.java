@@ -118,8 +118,8 @@ public abstract class VisionSourceSettables {
                         configuration.calibrations.stream()
                                 .filter(
                                         it ->
-                                                it.resolution.width == videoMode.width
-                                                        && it.resolution.height == videoMode.height)
+                                                it.unrotatedImageSize.width == videoMode.width
+                                                        && it.unrotatedImageSize.height == videoMode.height)
                                 .findFirst()
                                 .orElse(null));
     }

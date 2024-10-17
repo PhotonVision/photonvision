@@ -159,9 +159,9 @@ public class CameraConfiguration {
     }
 
     public void addCalibration(CameraCalibrationCoefficients calibration) {
-        logger.info("adding calibration " + calibration.resolution);
+        logger.info("adding calibration " + calibration.unrotatedImageSize);
         calibrations.stream()
-                .filter(it -> it.resolution.equals(calibration.resolution))
+                .filter(it -> it.unrotatedImageSize.equals(calibration.unrotatedImageSize))
                 .findAny()
                 .ifPresent(
                         (it) -> {
