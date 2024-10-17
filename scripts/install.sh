@@ -136,7 +136,7 @@ while getopts "hlv:a:mnq-:" OPT; do
       ;;
     v | version)
       needs_arg
-      VERSION=$(echo "$OPTARG" | sed 's/^v//')  # drop leading 'v's
+      VERSION=${OPTARG#v}  # drop leading 'v's
       ;;
     a | arch) needs_arg; ARCH=$OPTARG
       ;;
