@@ -75,23 +75,24 @@ public class JsonMatOfDouble implements Releasable {
         if (wrappedMat == null) {
             this.wrappedMat = new Mat(this.rows, this.cols, this.type);
             this.wrappedMat.put(0, 0, this.data);
-
-            if (this.rows == 0 || this.cols == 0) {
-                throw new RuntimeException("Couldn't make cal mat??");
-            }
-            if (this.wrappedMat.rows() != this.rows) {
-                //whack
-                throw new RuntimeException("Couldn't make cal mat??");
-            }
-            if (this.wrappedMat.cols() != this.cols) {
-                //whack
-                throw new RuntimeException("Couldn't make cal mat??");
-            }
-            if (this.wrappedMat.type() != this.type) {
-                //whack
-                throw new RuntimeException("Couldn't make cal mat??");
-            }
         }
+
+        if (this.rows == 0 || this.cols == 0) {
+            throw new RuntimeException("Couldn't make cal mat??");
+        }
+        if (this.wrappedMat.rows() != this.rows) {
+            // whack
+            throw new RuntimeException("Couldn't make cal mat??");
+        }
+        if (this.wrappedMat.cols() != this.cols) {
+            // whack
+            throw new RuntimeException("Couldn't make cal mat??");
+        }
+        if (this.wrappedMat.type() != this.type) {
+            // whack
+            throw new RuntimeException("Couldn't make cal mat??");
+        }
+
         return this.wrappedMat;
     }
 

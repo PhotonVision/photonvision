@@ -17,19 +17,17 @@
 
 package org.photonvision.vision.opencv;
 
+import org.opencv.core.Core;
+
 public enum ImageRotationMode {
     DEG_0(-1),
-    DEG_90(0),
-    DEG_180(1),
-    DEG_270(2);
+    DEG_270_CCW(Core.ROTATE_90_CLOCKWISE),
+    DEG_180(Core.ROTATE_180),
+    DEG_90_CCW(Core.ROTATE_90_COUNTERCLOCKWISE);
 
     public final int value;
 
     ImageRotationMode(int value) {
         this.value = value;
-    }
-
-    public boolean isRotated() {
-        return this.value == DEG_90.value || this.value == DEG_270.value;
     }
 }

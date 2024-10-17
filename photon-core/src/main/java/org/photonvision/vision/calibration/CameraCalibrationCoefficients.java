@@ -126,7 +126,7 @@ public class CameraCalibrationCoefficients implements Releasable {
         switch (rotation) {
             case DEG_0:
                 break;
-            case DEG_90:
+            case DEG_270_CCW:
                 // FX
                 rotatedIntrinsics.put(0, 0, fy);
                 // FY
@@ -154,7 +154,7 @@ public class CameraCalibrationCoefficients implements Releasable {
                 // P2
                 rotatedDistCoeffs.put(0, 3, -p2);
                 break;
-            case DEG_270:
+            case DEG_90_CCW:
                 // FX
                 rotatedIntrinsics.put(0, 0, fy);
                 // FY
