@@ -4,7 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 import java.io.IOException;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.cartesian.CartesianTest;
+import org.junitpioneer.jupiter.cartesian.CartesianTest.Enum;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
@@ -35,15 +36,15 @@ public class CalibrationRotationPipeTest {
         ConfigManager.getInstance().load();
     }
 
-    @Test
-    public void testUndistortImagePointsWithRotation() {
+    @CartesianTest
+    public void testUndistortImagePointsWithRotation(@Enum ImageRotationMode rot) {
         // Use predefined camera calibration coefficients from TestUtils
         CameraCalibrationCoefficients coeffs = TestUtils.get2023LifeCamCoeffs(true);
 
         FrameStaticProperties frameProps =
                 new FrameStaticProperties(
                         (int) coeffs.unrotatedImageSize.width, (int) coeffs.unrotatedImageSize.height, -1, coeffs);
-        FrameStaticProperties rotatedFrameProps = frameProps.rotate(ImageRotationMode.DEG_90_CCW);
+        FrameStaticProperties rotatedFrameProps = frameProps.rotate(rot);
         CameraCalibrationCoefficients rotatedCoeffs = rotatedFrameProps.cameraCalibration;
 
         Point[] originalPoints = {new Point(100, 100), new Point(200, 200)};
