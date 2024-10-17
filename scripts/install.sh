@@ -277,7 +277,7 @@ else
 fi
 
 mkdir -p /opt/photonvision
-cd /opt/photonvision
+cd /opt/photonvision || die "Tried to enter /opt/photonvision, but it was not created."
 curl -sk "$RELEASE_URL" |
     grep "browser_download_url.*$ARCH_NAME.jar" |
     cut -d : -f 2,3 |
