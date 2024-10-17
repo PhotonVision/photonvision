@@ -33,7 +33,7 @@ install_if_missing() {
   fi
 
   debug "Installing $1..."
-  apt-get install --yes $1
+  apt-get install --yes "$1"
   debug "$1 installation complete."
 }
 
@@ -141,7 +141,7 @@ while getopts "hlv:a:mnq-:" OPT; do
     a | arch) needs_arg; ARCH=$OPTARG
       ;;
     m | install-nm)
-      INSTALL_NETWORK_MANAGER="$(echo ${OPTARG:-'yes'} | tr '[:upper:]' '[:lower:]')"
+      INSTALL_NETWORK_MANAGER="$(echo "${OPTARG:-'yes'}" | tr '[:upper:]' '[:lower:]')"
       case "$INSTALL_NETWORK_MANAGER" in
         yes)
           ;;
