@@ -70,6 +70,9 @@ public class FrameStaticProperties implements Releasable {
         if (cameraCalibration != null && cameraCalibration.getCameraIntrinsicsMat() != null) {
             // Use calibration data
             var camIntrinsics = cameraCalibration.getCameraIntrinsicsMat();
+            if (camIntrinsics.rows() == 0) {
+                throw new RuntimeException("wut");
+            }
             centerX = camIntrinsics.get(0, 2)[0];
             centerY = camIntrinsics.get(1, 2)[0];
             centerPoint = new Point(centerX, centerY);
