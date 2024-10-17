@@ -1,6 +1,7 @@
 package org.photonvision.vision.pipeline;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 
@@ -10,8 +11,10 @@ import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.cartesian.CartesianTest;
 import org.junitpioneer.jupiter.cartesian.CartesianTest.Enum;
 import org.opencv.calib3d.Calib3d;
+import org.opencv.core.Core;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.opencv.core.Size;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
@@ -29,6 +32,7 @@ import org.photonvision.vision.target.TargetModel;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
@@ -48,6 +52,21 @@ public class CalibrationRotationPipeTest {
         Logger.setLevel(LogGroup.Config, logLevel);
         Logger.setLevel(LogGroup.General, logLevel);
         ConfigManager.getInstance().load();
+    }
+
+    @Test
+    public void meme() {
+        var s = new Size(200, 100);
+        var offset = new Translation2d(s.width, s.height);
+        var angle = ImageRotationMode.DEG_90_CCW;
+
+        var p = new Translation2d(2, 1);
+        var expected = new Translation2d(s.height - p.getY(), p.getX());
+
+        var rotatedP = (p.plus(offset)).rotateBy(angle.rotation2d);
+
+
+        assertEquals(expected, rotatedP);
     }
 
     @CartesianTest
@@ -123,10 +142,10 @@ public class CalibrationRotationPipeTest {
         CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
         var pose_base = pipelineResult.targets.get(0).getBestCameraToTarget3d();
 
-        frameProvider.requestFrameRotation(ImageRotationMode.DEG_90_CCW);
+        frameProvider.requestFrameRotation(ImageRotationMode.DEG_270_CCW);
         CVPipelineResult pipelineResult2 = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
         var pose_rotated = pipelineResult2.targets.get(0).getBestCameraToTarget3d();
-        var pose_unrotated = new Transform3d(new Translation3d(), new Rotation3d(Units.degreesToRadians(180), 0, 0)).plus(pose_rotated);
+        var pose_unrotated = new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(270))).plus(pose_rotated);
 
         Assertions.assertEquals(pose_base.getX(), pose_unrotated.getX(), 0.01);
         Assertions.assertEquals(pose_base.getY(), pose_unrotated.getY(), 0.01);

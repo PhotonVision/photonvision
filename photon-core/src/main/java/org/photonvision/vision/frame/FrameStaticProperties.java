@@ -100,7 +100,7 @@ public class FrameStaticProperties implements Releasable {
         int newWidth = imageWidth;
         int newHeight = imageHeight;
 
-        if (rotation == ImageRotationMode.DEG_270_CCW || rotation == ImageRotationMode.DEG_90_CCW) {
+        if (rotation == ImageRotationMode.DEG_90_CCW || rotation == ImageRotationMode.DEG_270_CCW) {
             newWidth = imageHeight;
             newHeight = imageWidth;
         }
