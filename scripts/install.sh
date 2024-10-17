@@ -71,7 +71,7 @@ is_version_available() {
 
   # latest is a special case
   if [ "$target_version" = "latest" ]; then
-    return
+    return 0
   fi
 
   # Check if multiple lines are match. You can only match 1.
