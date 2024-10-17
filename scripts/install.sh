@@ -38,22 +38,20 @@ install_if_missing() {
 }
 
 get_photonvision_releases() {
-  if ! command -v curl > /dev/null 2>&1 ; then
-    debug "./install --list-versions requires curl and it is not installed."
-
-    read -p "Would you like to install curl? [y/N]: " response
-    if [[ $response == [nN] || $response == [nN][oO] ]]; then
-      die
-    fi
-
-    apt-get install --yes curl
+  # Return cached input
+  if [ -n "$PHOTON_VISION_RELEASES" ] ; then
+    echo "$PHOTON_VISION_RELEASES"
+    return
   fi
 
-  if [ -z "$PHOTON_VISION_RELEASES" ] ; then
+  # Use curl if available, otherwise fallback to wget
+  if command -v curl > /dev/null 2>&1 ; then
     PHOTON_VISION_RELEASES="$(curl -sk https://api.github.com/repos/photonvision/photonvision/releases)"
+  else
+    PHOTON_VISION_RELEASES="$(wget -qO- https://api.github.com/repos/photonvision/photonvision/releases)"
   fi
 
- echo "$PHOTON_VISION_RELEASES"
+  echo "$PHOTON_VISION_RELEASES"
 }
 
 get_versions() {
