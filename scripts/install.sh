@@ -80,7 +80,7 @@ is_version_available() {
   fi
 
   # Check if multiple lines are match. You can only match 1.
-  local line_count="$(echo "$versions" | grep -cFx "$target_string")"
+  local line_count="$(echo "$PHOTON_VISION_VERSIONS" | grep -cFx "$target_version")"
   if [ $line_count -gt 1 ] ; then
     return 1
   fi
