@@ -27,6 +27,7 @@ import edu.wpi.first.math.util.Units;
 
 /**
  * An image rotation about the camera's +Z axis, which points out of the camera towards the world. This is mirrored relative to what you might traditionally think of as image rotation, which is about an axis coming out of the image towards the viewer or camera.
+ * TODO: pull this from image-rotation.md
  */
 public enum ImageRotationMode {
     DEG_0(-1, new Rotation2d()),
