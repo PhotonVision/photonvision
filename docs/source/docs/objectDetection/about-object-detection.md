@@ -35,55 +35,42 @@ The same area, aspect ratio, and target orientation/sort parameters from {ref}`r
 
 ## Letterboxing
 
-Photonvision will letterbox your camera frame to 640x640. This means that if you select a resolution that is larger than 640 it will be scaled down to fit inside a 640x640 frame with black bars if needed. Smaller frames will be scaled up with black bars if needed.
+YOLO models must be fed a square image of the same resolution as the training dataset. To deal with this, PhotonVision will "letterbox" the camera images to 640x640. The image is first resized such that its widest dimension is 640 pixels, and then grey bars are added to pad out the rest of the image.
 
-## Training Custom Models
+## Converting a custom model
 
-You can build your own YOLOv5 model for use with PhotonVision's Object Detection. However, this process is complex and requires a good understanding of machine learning, but it can be done. Here's an overview of the process.
+After training your own YOLOv5s model, you can convert it to an RKNN file for use with PhotonVision. If you have not already trained a model, you can follow the official YOLOv5 training guide [here](https://docs.ultralytics.com/yolov5/tutorials/train_custom_data/)
 
-### Step 1: Model Training
+### Step 1: Exporting the Model to ONNX
 
-You can train the Object Detection model using [Ultralytics' YOLOv5 repository](https://github.com/ultralytics/yolov5), then use [airockchip's YOLOv5 fork](https://github.com/airockchip/yolov5) to export the model currectly before the export to a deployable RKNN file. The specific training setup will vary depending on your dataset and configuration, but here’s an example using `yolov5s`. Other models should work as well. You **will** need [PyTorch](https://pytorch.org/get-started/locally/). This example has been tested on Ubuntu 22.04.
+Using your trained YOLOv5s model, you will need to export it to ONNX format using airockchip's YOLOv5 fork.
 
-#### Downloading nessessary files
+First, download airockchip's YOLOv5 fork along with the onnx to rknn conversion script.
 
 ```bash
-git clone https://github.com/ultralytics/yolov5.git
 git clone https://github.com/airockchip/yolov5.git airockchip-yolov5
-wget https://gist.githubusercontent.com/Alex-idk/9a512ca7bd263892ff6991a856f1a458/raw/e8c0c9d8d5a1a60a2bbe72c065e04a261300baac/onnx2rknn.py # This is the onnx to rknn convertion script
+curl -O link-to-onnx2rknn.py
 ```
-
-#### Training Command
-
-Please research what each of these parameters do and adjust them to fit your dataset and training needs. Make sure to change the number of classes in the `models/yolov5s.yaml` file to how many classes are in your dataset, otherwise you will run into problems with class labeling. Currently as of `September 2024` only YOLOv5s models have been tested.
-
-```bash
-python train.py --img 640 --batch 16 --epochs 10 --data path/to/dataset/data.yaml --cfg 'models/yolov5s.yaml' --weights '' --cache
-```
-
-### Step 2: Exporting the Model to ONNX
-
-Once your model is trained, the next step is to export it to ONNX format using airockchip's YOLOv5 fork.
 
 #### Export Command
 
 ```bash
-cd /path/to/airockchip-yolov5 && python export.py --weights '/path/to/best.pt' --rknpu --include 'onnx'
+cd airockchip-yolov5 && python export.py --weights '/path/to/best.pt' --rknpu --include 'onnx'
 ```
 
-### Step 3: Converting ONNX to RKNN
+### Step 2: Converting ONNX to RKNN
 
 Using the `onnx2rknn.py` script, convert the ONNX model to an RKNN file. This script was downloaded in a previous step.
 
 #### Conversion Command
 
-Run the script, passing in the ONNX model and a text file containing paths to images from your dataset:
+Run the script, passing in the ONNX model and a folder containing images from your dataset:
 
 ```bash
-python onnx2rknn.py /path/to/best.onnx /path/to/export/best.rknn /path/to/imagePaths.txt
+python onnx2rknn.py /path/to/best.onnx /path/to/export/best.rknn /path/to/dataset/valid/images
 ```
 
-If you have any questions about this process feel free to mention `alex_idk` in the PhotonVision Discord server.
+If you have any questions about the conversion process, ask in the PhotonVision Discord server.
 
 ## Uploading Custom Models
 
