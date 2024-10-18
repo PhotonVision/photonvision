@@ -18,8 +18,11 @@
 package org.photonvision.vision.opencv;
 
 import org.opencv.core.Core;
+import org.opencv.core.Point;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 
 /**
@@ -36,8 +39,32 @@ public enum ImageRotationMode {
     public final int value;
     public final Rotation2d rotation2d;
 
-    ImageRotationMode(int value, Rotation2d tr) {
+    private ImageRotationMode(int value, Rotation2d tr) {
         this.value = value;
         this.rotation2d = tr;
+    }
+
+    public Point rotatePoint(Point point, int width, int height) {
+        Pose2d offset;
+        switch (this) {
+            case DEG_0:
+                return point;
+            case DEG_90_CCW:
+                offset = new Pose2d(width, 0, rotation2d);
+                break;
+            case DEG_180_CCW:
+                offset = new Pose2d(width, height, rotation2d);
+                break;
+            case DEG_270_CCW:
+                offset = new Pose2d(0, height, rotation2d);
+                break;
+            default:
+                throw new RuntimeException("Totally bjork");
+        }
+
+        var pointAsPose = new Pose2d(point.x, point.y, new Rotation2d());
+        var ret = pointAsPose.relativeTo(offset);
+
+        return new Point(ret.getX(), ret.getY());
     }
 }

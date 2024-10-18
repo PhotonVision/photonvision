@@ -252,6 +252,49 @@ public final class OpenCVHelp {
     }
 
     /**
+     * Distort a list of points in 
+     * @param src
+     * @param dst
+     */
+    public static List<Point> distortPoints(List<Point> pointsList, Mat cameraMatrix, Mat distCoeffs) {
+        var ret = new ArrayList<Point>();
+
+        var cx = cameraMatrix.get(0, 2)[0];
+        var cy = cameraMatrix.get(1, 2)[0];
+        var fx = cameraMatrix.get(0, 0)[0];
+        var fy = cameraMatrix.get(1, 1)[0];
+        var k1 = distCoeffs.get(0, 0)[0];
+        var k2 = distCoeffs.get(0, 1)[0];
+        var k3 = distCoeffs.get(0, 4)[0];
+        var p1 = distCoeffs.get(0, 2)[0];
+        var p2 = distCoeffs.get(0, 3)[0];
+
+        for (Point point : pointsList) {
+            // To relative coordinates
+            double x = (point.x - cx) / fx; // cx, cy is the center of distortion
+            double y = (point.y - cy) / fy;
+
+            double r2 = x * x + y * y; // square of the radius from center
+
+            // Radial distortion
+            double xDistort = x * (1 + k1 * r2 + k2 * r2 * r2 + k3 * r2 * r2 * r2);
+            double yDistort = y * (1 + k1 * r2 + k2 * r2 * r2 + k3 * r2 * r2 * r2);
+
+            // Tangential distortion
+            xDistort = xDistort + (2 * p1 * x * y + p2 * (r2 + 2 * x * x));
+            yDistort = yDistort + (p1 * (r2 + 2 * y * y) + 2 * p2 * x * y);
+
+            // Back to absolute coordinates.
+            xDistort = xDistort * fx + cx;
+            yDistort = yDistort * fy + cy;
+            ret.add(new Point(xDistort, yDistort));
+        }
+        
+        return ret;
+    }
+
+
+    /**
      * Project object points from the 3d world into the 2d camera image. The camera
      * properties(intrinsics, distortion) determine the results of this projection.
      *
