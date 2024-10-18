@@ -107,6 +107,10 @@ public abstract class VisionSourceSettables {
 
     private void calculateFrameStaticProps() {
         var videoMode = getCurrentVideoMode();
+        if (this.frameStaticProperties != null) {
+            // TODO: needs more thought on ownership model...
+            // this.frameStaticProperties.release();
+        }
         this.frameStaticProperties =
                 new FrameStaticProperties(
                         videoMode,
@@ -114,8 +118,8 @@ public abstract class VisionSourceSettables {
                         configuration.calibrations.stream()
                                 .filter(
                                         it ->
-                                                it.resolution.width == videoMode.width
-                                                        && it.resolution.height == videoMode.height)
+                                                it.unrotatedImageSize.width == videoMode.width
+                                                        && it.unrotatedImageSize.height == videoMode.height)
                                 .findFirst()
                                 .orElse(null));
     }
