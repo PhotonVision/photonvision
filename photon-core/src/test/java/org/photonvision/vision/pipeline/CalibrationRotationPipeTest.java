@@ -36,7 +36,10 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -63,16 +66,30 @@ public class CalibrationRotationPipeTest {
     @Test
     public void meme() {
         var s = new Size(200, 100);
-        var offset = new Translation2d(s.width, s.height);
-        var angle = ImageRotationMode.DEG_90_CCW;
 
-        var p = new Translation2d(2, 1);
-        var expected = new Translation2d(s.height - p.getY(), p.getX());
+        var p = new Point(2, 1);
 
-        var rotatedP = (p.plus(offset)).rotateBy(angle.rotation2d);
-
-
-        assertEquals(expected, rotatedP);
+        {
+            var angle = ImageRotationMode.DEG_90_CCW;
+            var expected = new Point(p.y, s.width - p.x);
+            var rotatedP = angle.rotatePoint(p, s.width, s.height);
+            assertEquals(expected.x, rotatedP.x, 1e-6);
+            assertEquals(expected.y, rotatedP.y, 1e-6);
+        }
+        {
+            var angle = ImageRotationMode.DEG_180_CCW;
+            var expected = new Point(s.width - p.x, s.height - p.y);
+            var rotatedP = angle.rotatePoint(p, s.width, s.height);
+            assertEquals(expected.x, rotatedP.x, 1e-6);
+            assertEquals(expected.y, rotatedP.y, 1e-6);
+        }
+        {
+            var angle = ImageRotationMode.DEG_270_CCW;
+            var expected = new Point(s.height - p.y, p.x);
+            var rotatedP = angle.rotatePoint(p, s.width, s.height);
+            assertEquals(expected.x, rotatedP.x, 1e-6);
+            assertEquals(expected.y, rotatedP.y, 1e-6);
+        }
     }
 
     @CartesianTest
@@ -97,28 +114,33 @@ public class CalibrationRotationPipeTest {
         Point[] originalPoints = {new Point(100, 100), new Point(200, 200), new Point(300, 100)};
         MatOfPoint2f originalMatOfPoints = new MatOfPoint2f(originalPoints);
 
-        var undistortedOriginalPoints = OpenCVHelp.distortPoints(List.of(originalPoints), 
+        // Distort the origional points
+        var distortedOriginalPoints = OpenCVHelp.distortPoints(List.of(originalPoints), 
                 frameProps.cameraCalibration.getCameraIntrinsicsMat(),
                 frameProps.cameraCalibration.getDistCoeffsMat());
 
-
-        MatOfPoint2f rotatedMatOfPoints = new MatOfPoint2f();
-        Core.rotate(originalMatOfPoints, rotatedMatOfPoints, rot.value);
-
-        MatOfPoint2f undistortedRotatedPoints = new MatOfPoint2f();
-        Calib3d.undistortImagePoints(
-                rotatedMatOfPoints,
-                undistortedRotatedPoints,
-                rotatedCoeffs.getCameraIntrinsicsMat(),
-                rotatedCoeffs.getDistCoeffsMat());
-
-        MatOfPoint2f expectedUndistortedRotatedPoints = new MatOfPoint2f();
+        // and rotate them once distorted
+        var rotatedDistortedPoints = Arrays.stream(originalPoints)
+            .map(it -> rot.rotatePoint(it, frameProps.imageWidth, frameProps.imageHeight))
+            .collect(Collectors.toList());
 
 
-        Point[] ePoints = expectedUndistortedRotatedPoints.toArray();
-        Point[] rPoints = undistortedRotatedPoints.toArray();
+        // Now let's instead rotate then distort
+        var rotatedOrigionalPoints = Arrays.stream(originalPoints)
+            .map(it -> rot.rotatePoint(it, frameProps.imageWidth, frameProps.imageHeight))
+            .collect(Collectors.toList());
 
-        assertArrayEquals(ePoints, rPoints);
+        var distortedRotatedPoints = OpenCVHelp.distortPoints(rotatedOrigionalPoints, 
+                rotatedFrameProps.cameraCalibration.getCameraIntrinsicsMat(),
+                rotatedFrameProps.cameraCalibration.getDistCoeffsMat());
+
+        System.out.println("Rotated distorted: " + rotatedDistortedPoints.toString());
+        System.out.println("Distorted rotated: " + distortedRotatedPoints.toString());
+
+        for (int i = 0; i < distortedRotatedPoints.size(); i++){
+            assertEquals(rotatedDistortedPoints.get(i).x, distortedRotatedPoints.get(i).x, 1e-6);
+            assertEquals(rotatedDistortedPoints.get(i).y, distortedRotatedPoints.get(i).y, 1e-6);
+        }
     }
 
     // @Test

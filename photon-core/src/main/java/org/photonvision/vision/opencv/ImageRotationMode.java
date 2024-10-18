@@ -44,7 +44,7 @@ public enum ImageRotationMode {
         this.rotation2d = tr;
     }
 
-    public Point rotatePoint(Point point, int width, int height) {
+    public Point rotatePoint(Point point, double width, double height) {
         Pose2d offset;
         switch (this) {
             case DEG_0:
