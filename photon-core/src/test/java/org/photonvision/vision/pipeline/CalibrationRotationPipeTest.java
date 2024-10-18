@@ -101,7 +101,6 @@ public class CalibrationRotationPipeTest {
         CameraCalibrationCoefficients rotatedCoeffs = rotatedFrameProps.cameraCalibration;
 
         Point[] originalPoints = {new Point(100, 100), new Point(200, 200), new Point(300, 100)};
-        MatOfPoint2f originalMatOfPoints = new MatOfPoint2f(originalPoints);
 
         // Distort the origional points
         var distortedOriginalPoints =
@@ -112,7 +111,7 @@ public class CalibrationRotationPipeTest {
 
         // and rotate them once distorted
         var rotatedDistortedPoints =
-                Arrays.stream(originalPoints)
+                        distortedOriginalPoints.stream()
                         .map(it -> rot.rotatePoint(it, frameProps.imageWidth, frameProps.imageHeight))
                         .collect(Collectors.toList());
 
