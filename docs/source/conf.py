@@ -36,7 +36,7 @@ extensions = [
     "sphinxcontrib.ghcontributors",
     "sphinx_design",
     "myst_parser",
-    "sphinx.ext.mathjax"
+    "sphinx.ext.mathjax",
 ]
 
 # Configure OpenGraph support
