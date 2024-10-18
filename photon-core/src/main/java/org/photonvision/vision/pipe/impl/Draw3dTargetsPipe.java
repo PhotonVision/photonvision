@@ -18,7 +18,6 @@
 package org.photonvision.vision.pipe.impl;
 
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.calib3d.Calib3d;
@@ -93,10 +92,11 @@ public class Draw3dTargetsPipe
 
                 if (params.redistortPoints) {
                     // Distort the points, so they match the image they're being overlaid on
-                    tempMat.fromList(OpenCVHelp.distortPoints(tempMat.toList(), 
-                        params.cameraCalibrationCoefficients.getCameraIntrinsicsMat(),
-                        params.cameraCalibrationCoefficients.getDistCoeffsMat()
-                    ));
+                    tempMat.fromList(
+                            OpenCVHelp.distortPoints(
+                                    tempMat.toList(),
+                                    params.cameraCalibrationCoefficients.getCameraIntrinsicsMat(),
+                                    params.cameraCalibrationCoefficients.getDistCoeffsMat()));
                 }
 
                 var bottomPoints = tempMat.toList();
@@ -112,10 +112,11 @@ public class Draw3dTargetsPipe
 
                 if (params.redistortPoints) {
                     // Distort the points, so they match the image they're being overlaid on
-                    tempMat.fromList(OpenCVHelp.distortPoints(tempMat.toList(), 
-                        params.cameraCalibrationCoefficients.getCameraIntrinsicsMat(),
-                        params.cameraCalibrationCoefficients.getDistCoeffsMat()
-                    ));
+                    tempMat.fromList(
+                            OpenCVHelp.distortPoints(
+                                    tempMat.toList(),
+                                    params.cameraCalibrationCoefficients.getCameraIntrinsicsMat(),
+                                    params.cameraCalibrationCoefficients.getDistCoeffsMat()));
                 }
                 var topPoints = tempMat.toList();
 

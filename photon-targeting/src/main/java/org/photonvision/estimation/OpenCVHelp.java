@@ -252,11 +252,13 @@ public final class OpenCVHelp {
     }
 
     /**
-     * Distort a list of points in 
+     * Distort a list of points in
+     *
      * @param src
      * @param dst
      */
-    public static List<Point> distortPoints(List<Point> pointsList, Mat cameraMatrix, Mat distCoeffs) {
+    public static List<Point> distortPoints(
+            List<Point> pointsList, Mat cameraMatrix, Mat distCoeffs) {
         var ret = new ArrayList<Point>();
 
         var cx = cameraMatrix.get(0, 2)[0];
@@ -289,10 +291,9 @@ public final class OpenCVHelp {
             yDistort = yDistort * fy + cy;
             ret.add(new Point(xDistort, yDistort));
         }
-        
+
         return ret;
     }
-
 
     /**
      * Project object points from the 3d world into the 2d camera image. The camera
