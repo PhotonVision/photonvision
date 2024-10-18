@@ -19,10 +19,7 @@ package org.photonvision.vision.opencv;
 
 import org.opencv.core.Core;
 
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 
 /**
@@ -32,9 +29,9 @@ import edu.wpi.first.math.util.Units;
 public enum ImageRotationMode {
     DEG_0(-1, new Rotation2d()),
     // rotating an image matrix clockwise is a ccw rotation about camera +Z, lmao
-    DEG_90_CCW(Core.ROTATE_90_CLOCKWISE, new Rotation2d(Units.degreesToRadians(90))),
-    DEG_180_CCW(Core.ROTATE_180, new Rotation2d(Units.degreesToRadians(90))),
-    DEG_270_CCW(Core.ROTATE_90_COUNTERCLOCKWISE, new Rotation2d(Units.degreesToRadians(90)));
+    DEG_90_CCW(Core.ROTATE_90_COUNTERCLOCKWISE, new Rotation2d(Units.degreesToRadians(90))),
+    DEG_180_CCW(Core.ROTATE_180, new Rotation2d(Units.degreesToRadians(180))),
+    DEG_270_CCW(Core.ROTATE_90_CLOCKWISE, new Rotation2d(Units.degreesToRadians(-90)));
 
     public final int value;
     public final Rotation2d rotation2d;

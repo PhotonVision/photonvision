@@ -30,7 +30,6 @@ import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
 
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -76,12 +75,17 @@ public class CalibrationRotationPipeTest {
 
         FrameStaticProperties frameProps =
                 new FrameStaticProperties(
-                        (int) coeffs.unrotatedImageSize.width, (int) coeffs.unrotatedImageSize.height, -1, coeffs);
+                        (int) coeffs.unrotatedImageSize.width, (int) coeffs.unrotatedImageSize.height, 66, coeffs);
+
+
         FrameStaticProperties rotatedFrameProps = frameProps.rotate(rot);
+
+
         CameraCalibrationCoefficients rotatedCoeffs = rotatedFrameProps.cameraCalibration;
 
-        Point[] originalPoints = {new Point(100, 100), new Point(200, 200)};
+        Point[] originalPoints = {new Point(100, 100), new Point(200, 200), new Point(300, 100)};
         MatOfPoint2f originalMatOfPoints = new MatOfPoint2f(originalPoints);
+
 
         MatOfPoint2f undistortedOriginalPoints = new MatOfPoint2f();
         Calib3d.undistortImagePoints(
@@ -90,13 +94,8 @@ public class CalibrationRotationPipeTest {
                 frameProps.cameraCalibration.getCameraIntrinsicsMat(),
                 frameProps.cameraCalibration.getDistCoeffsMat());
 
-        // Rotate the input points by 90 degrees
-        Point[] rotatedInputPoints = new Point[originalPoints.length];
-        for (int i = 0; i < originalPoints.length; i++) {
-            rotatedInputPoints[i] =
-                    new Point(rotatedFrameProps.imageWidth - originalPoints[i].y, originalPoints[i].x);
-        }
-        MatOfPoint2f rotatedMatOfPoints = new MatOfPoint2f(rotatedInputPoints);
+        MatOfPoint2f rotatedMatOfPoints = new MatOfPoint2f();
+        Core.rotate(originalMatOfPoints, rotatedMatOfPoints, rot.value);
 
         MatOfPoint2f undistortedRotatedPoints = new MatOfPoint2f();
         Calib3d.undistortImagePoints(
@@ -105,18 +104,15 @@ public class CalibrationRotationPipeTest {
                 rotatedCoeffs.getCameraIntrinsicsMat(),
                 rotatedCoeffs.getDistCoeffsMat());
 
-        // Rotate the undistorted original points by 90 degrees to get the expected rotated points
-        Point[] undistortedOriginalArray = undistortedOriginalPoints.toArray();
-        Point[] expectedRotatedPoints = new Point[undistortedOriginalArray.length];
-        for (int i = 0; i < undistortedOriginalArray.length; i++) {
-            expectedRotatedPoints[i] =
-                    new Point(
-                            rotatedFrameProps.imageWidth - undistortedOriginalArray[i].y,
-                            undistortedOriginalArray[i].x);
-        }
-        Point[] rotatedPoints = undistortedRotatedPoints.toArray();
+        MatOfPoint2f expectedUndistortedRotatedPoints = new MatOfPoint2f();
 
-        assertArrayEquals(expectedRotatedPoints, rotatedPoints);
+        Core.rotate(undistortedOriginalPoints,expectedUndistortedRotatedPoints, rot.value);
+
+        Point[] ePoints = expectedUndistortedRotatedPoints.toArray();
+        Point[] rPoints = undistortedRotatedPoints.toArray();
+
+        assertArrayEquals(ePoints, rPoints);
+
     }
 
     @Test
@@ -145,7 +141,7 @@ public class CalibrationRotationPipeTest {
         frameProvider.requestFrameRotation(ImageRotationMode.DEG_270_CCW);
         CVPipelineResult pipelineResult2 = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
         var pose_rotated = pipelineResult2.targets.get(0).getBestCameraToTarget3d();
-        var pose_unrotated = new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(270))).plus(pose_rotated);
+        var pose_unrotated = new Transform3d(new Translation3d(), new Rotation3d(Units.degreesToRadians(270), 0, 0)).plus(pose_rotated);
 
         Assertions.assertEquals(pose_base.getX(), pose_unrotated.getX(), 0.01);
         Assertions.assertEquals(pose_base.getY(), pose_unrotated.getY(), 0.01);
