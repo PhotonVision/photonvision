@@ -53,7 +53,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     protected static final int PROP_AUTO_EXPOSURE_ENABLED = 3;
     protected static final int PROP_AUTO_EXPOSURE_DISABLED = 1;
 
-    protected int whiteBalanceTemperature = 3000;
+    protected int whiteBalanceTemperature = 4000;
 
     protected UsbCamera camera;
     protected CameraConfiguration configuration;
