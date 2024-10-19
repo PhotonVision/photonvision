@@ -48,6 +48,8 @@ public class QuirkyCamera {
                     // PS3Eye
                     new QuirkyCamera(
                             0x1415, 0x2000, CameraQuirk.Gain, CameraQuirk.FPSCap100, CameraQuirk.PsEyeControls),
+                    // OBS hack
+                    new QuirkyCamera(-1, -1, CameraQuirk.CompletelyBroken),
                     // Logitech C925-e
                     new QuirkyCamera(0x85B, 0x46D, CameraQuirk.AdjustableFocus),
                     // Generic arducam. Since OV2311 can't be differentiated
@@ -97,7 +99,7 @@ public class QuirkyCamera {
                     -1,
                     "unicam",
                     CameraQuirk.Gain,
-                    CameraQuirk.AWBGain); // PiCam (using libpicam GPU Driver on raspberry pi)
+                    CameraQuirk.AwbRedBlueGain); // PiCam (using libcamera GPU Driver on raspberry pi)
 
     @JsonProperty("baseName")
     public final String baseName;

@@ -198,6 +198,9 @@ export interface CameraSettings {
 
   minExposureRaw: number;
   maxExposureRaw: number;
+
+  minWhiteBalanceTemp: number;
+  maxWhiteBalanceTemp: number;
 }
 
 export interface CameraSettingsChangeRequest {
@@ -299,7 +302,9 @@ export const PlaceholderCameraSettings: CameraSettings = {
   },
   isCSICamera: false,
   minExposureRaw: 1,
-  maxExposureRaw: 100
+  maxExposureRaw: 100,
+  minWhiteBalanceTemp: 2000,
+  maxWhiteBalanceTemp: 10000,
 };
 
 export enum CalibrationBoardTypes {
