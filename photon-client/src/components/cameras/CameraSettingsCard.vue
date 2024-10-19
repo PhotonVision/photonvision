@@ -3,7 +3,7 @@ import PvSelect from "@/components/common/pv-select.vue";
 import PvNumberInput from "@/components/common/pv-number-input.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
-import { computed, ref, watchEffect } from "vue";
+import { computed, getCurrentInstance, inject, ref, watchEffect } from "vue";
 import { type CameraSettingsChangeRequest, ValidQuirks } from "@/types/SettingTypes";
 import axios from "axios";
 
@@ -110,7 +110,18 @@ watchEffect(() => {
   resetTempSettingsStruct();
 });
 
+const interactiveCols = computed(() => {
+  return getCurrentInstance()?.proxy.$vuetify.breakpoint.smAndDown || false ? 12 : 8;
+});
+
 const showDeleteCamera = ref(false);
+
+const address = inject<string>("backendHost");
+const exportSettings = ref();
+const openExportSettingsPrompt = () => {
+  exportSettings.value.click();
+};
+
 const expected = computed<string>({
   get() {
     return useCameraSettingsStore().cameraNames[useStateStore().currentCameraIndex];
@@ -203,31 +214,41 @@ const deleteThisCamera = () => {
         </v-col>
         <v-col cols="6">
           <v-btn class="mt-2 mb-3" style="width: 100%" small color="red" @click="() => (showDeleteCamera = true)">
-            <v-icon left> mdi-content-save </v-icon>
-            Delete Config And Unmatch Camera
+            <v-icon left> mdi-bomb </v-icon>
+            {{ $vuetify.breakpoint.mdAndUp ? "Delete Config And Unmatch Camera" : "Delete Camera" }}
           </v-btn>
         </v-col>
       </v-row>
     </div>
 
-    <v-dialog v-model="showDeleteCamera" width="1500" height="900" dark>
+    <v-dialog v-model="showDeleteCamera" dark>
       <v-card dark class="dialog-container pa-6" color="primary" flat>
         <v-card-title
-          >Delete camera "{{ useCameraSettingsStore().cameraNames[useStateStore().currentCameraIndex] }}""</v-card-title
+          >Delete camera "{{ useCameraSettingsStore().cameraNames[useStateStore().currentCameraIndex] }}"</v-card-title
         >
-        <v-row>
-          <span>This will delete ALL OF YOUR SETTINGS for this camera</span>
-        </v-row>
-        <v-row>
-          <v-btn color="secondary" @click="() => (showDeleteCamera = true)">
+        <v-col>
+          <span
+            >This will delete ALL OF YOUR SETTINGS for camera "{{
+              useCameraSettingsStore().cameraNames[useStateStore().currentCameraIndex]
+            }}" and restart PhotonVision.</span
+          >
+          <v-btn color="secondary" @click="openExportSettingsPrompt" class="mt-3">
             <v-icon left class="open-icon"> mdi-export </v-icon>
             <span class="open-label">Your final chance to export settings</span>
+            <a
+              ref="exportSettings"
+              style="color: black; text-decoration: none; display: none"
+              :href="`http://${address}/api/settings/photonvision_config.zip`"
+              download="photonvision-settings.zip"
+              target="_blank"
+            />
           </v-btn>
-        </v-row>
-
-        <pv-input v-model="yesDeleteMySettingsText" :label="'Type &quot;' + expected + '&quot;'" />
-
-        <v-row>
+          <v-divider class="mt-4 mb-4" />
+          <pv-input
+            v-model="yesDeleteMySettingsText"
+            :label="'Type &quot;' + expected + '&quot;:'"
+            :inputCols="interactiveCols"
+          />
           <v-btn
             color="red"
             @click="deleteThisCamera"
@@ -236,17 +257,13 @@ const deleteThisCamera = () => {
             <v-icon left class="open-icon"> mdi-skull </v-icon>
             <span class="open-label">Yes, delete this camera; I have backed up what I need</span>
           </v-btn>
-        </v-row>
+        </v-col>
       </v-card>
     </v-dialog>
   </v-card>
 </template>
 
 <style scoped>
-.dialog-container {
-  min-height: 300px !important;
-}
-
 .v-divider {
   border-color: white !important;
 }

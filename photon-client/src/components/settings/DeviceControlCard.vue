@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, ref } from "vue";
+import { computed, getCurrentInstance, inject, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import PvSelect from "@/components/common/pv-select.vue";
 import axios from "axios";
@@ -203,8 +203,8 @@ const handleSettingsImport = () => {
 };
 
 const showFactoryReset = ref(false);
-const expected = "I solumnly swear that I am up to no good";
-const yesDeleteMySettingsText = ref(expected);
+const expected = "I have backed up my settings, now rid my coprocessor of them";
+const yesDeleteMySettingsText = ref("");
 const nukePhotonConfigDirectory = () => {
   axios
     .post("/utils/nukeConfigDirectory")
@@ -234,6 +234,12 @@ const nukePhotonConfigDirectory = () => {
     });
   showFactoryReset.value = false;
 };
+
+const interactiveCols = computed(() => {
+  const ret = getCurrentInstance()?.proxy.$vuetify.breakpoint.smAndDown || false ? 12 : 8;
+  console.log(ret);
+  return ret;
+});
 </script>
 
 <template>
@@ -359,8 +365,14 @@ const nukePhotonConfigDirectory = () => {
       <v-row>
         <v-col cols="12">
           <v-btn color="red" @click="() => (showFactoryReset = true)">
-            <v-icon left class="open-icon"> mdi-restart-alert </v-icon>
-            <span class="open-label">Factory Reset PhotonVision and delete everything (the big scary red button)</span>
+            <v-icon left class="open-icon"> mdi-skull-crossbones </v-icon>
+            <span class="open-icon">
+              {{
+                $vuetify.breakpoint.mdAndUp
+                  ? "Factory Reset PhotonVision and delete EVERYTHING (big scary button)"
+                  : "Factory Reset PhotonVision"
+              }}
+            </span>
           </v-btn>
         </v-col>
       </v-row>
@@ -368,29 +380,34 @@ const nukePhotonConfigDirectory = () => {
 
     <v-dialog v-model="showFactoryReset" width="1500" height="900" dark>
       <v-card dark class="dialog-container pa-6" color="primary" flat>
-        <v-card-title>Factory Reset PhotonVision</v-card-title>
-        <v-row>
-          <span>This will delete ALL OF YOUR SETTINGS</span>
-        </v-row>
-        <v-row>
-          <v-btn color="secondary" @click="openExportSettingsPrompt">
-            <v-icon left class="open-icon"> mdi-export </v-icon>
-            <span class="open-label">Your final chance to export settings</span>
-          </v-btn>
-        </v-row>
+        <v-card-title>
+          <v-icon right color="red" class="open-icon"> mdi-nuke </v-icon>
+          Factory Reset PhotonVision
+          <v-icon right color="red" class="open-icon"> mdi-nuke </v-icon>
+        </v-card-title>
+        <span>This will delete ALL OF YOUR SETTINGS!</span>
+        <v-btn color="secondary" @click="openExportSettingsPrompt" class="mt-2">
+          <v-icon left class="open-icon"> mdi-export </v-icon>
+          <span class="open-label">Your final chance to export settings</span>
+        </v-btn>
 
-        <pv-input v-model="yesDeleteMySettingsText" :label="'Type &quot;' + expected + '&quot;'" />
+        <v-divider class="mt-4 mb-4" />
 
-        <v-row>
-          <v-btn
-            color="red"
-            @click="nukePhotonConfigDirectory"
-            :disabled="yesDeleteMySettingsText.toLowerCase() !== expected.toLowerCase()"
-          >
-            <v-icon left class="open-icon"> mdi-skull </v-icon>
-            <span class="open-label">Delete everything; I have backed up what I need</span>
-          </v-btn>
-        </v-row>
+        <pv-input
+          v-model="yesDeleteMySettingsText"
+          :label="'Type &quot;' + expected + '&quot;:'"
+          :inputCols="interactiveCols"
+        />
+
+        <v-btn
+          color="red"
+          @click="nukePhotonConfigDirectory"
+          :disabled="yesDeleteMySettingsText.toLowerCase() !== expected.toLowerCase()"
+        >
+          <v-icon left class="open-icon"> mdi-skull-crossbones </v-icon>
+          <span class="open-label">Delete everything, I have backed up what I need</span>
+          <v-icon left class="open-icon ml-1"> mdi-skull-crossbones </v-icon>
+        </v-btn>
       </v-card>
     </v-dialog>
   </v-card>
