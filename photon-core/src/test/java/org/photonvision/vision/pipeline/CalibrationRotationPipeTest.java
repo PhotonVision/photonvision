@@ -19,10 +19,6 @@ package org.photonvision.vision.pipeline;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.util.Units;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -41,14 +37,15 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.mrcal.MrCalJNILoader;
-import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
-import org.photonvision.vision.camera.QuirkyCamera;
+import org.photonvision.vision.calibration.CameraLensModel;
+import org.photonvision.vision.calibration.JsonMatOfDouble;
 import org.photonvision.vision.frame.FrameStaticProperties;
-import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.opencv.ImageRotationMode;
-import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.photonvision.vision.pipe.impl.SolvePNPPipe;
+import org.photonvision.vision.pipe.impl.SolvePNPPipe.SolvePNPPipeParams;
 import org.photonvision.vision.target.TargetModel;
+import org.photonvision.vision.target.TrackedTarget;
 
 public class CalibrationRotationPipeTest {
     @BeforeAll
@@ -101,8 +98,35 @@ public class CalibrationRotationPipeTest {
             return;
         }
 
-        // Use predefined camera calibration coefficients from TestUtils
-        CameraCalibrationCoefficients coeffs = TestUtils.get2023LifeCamCoeffs(true);
+        CameraCalibrationCoefficients coeffs =
+                new CameraCalibrationCoefficients(
+                        new Size(1270, 720),
+                        new JsonMatOfDouble(
+                                3,
+                                3,
+                                new double[] {
+                                    900, 0, 500,
+                                    0, 951, 321,
+                                    0, 0, 1
+                                }),
+                        new JsonMatOfDouble(
+                                1,
+                                8,
+                                new double[] {
+                                    0.25,
+                                    -1.5,
+                                    0.0017808248356550637,
+                                    .00004,
+                                    2.179764689221826,
+                                    -0.034952777924711353,
+                                    0.09625562194891251,
+                                    -0.1860797479660746
+                                }),
+                        new double[] {},
+                        List.of(),
+                        new Size(),
+                        1,
+                        CameraLensModel.LENSMODEL_OPENCV);
 
         FrameStaticProperties frameProps =
                 new FrameStaticProperties(
@@ -151,43 +175,78 @@ public class CalibrationRotationPipeTest {
 
     @Test
     public void testApriltagRotated() {
-        var pipeline = new AprilTagPipeline();
+        // matt's lifecam
+        CameraCalibrationCoefficients coeffs =
+                new CameraCalibrationCoefficients(
+                        new Size(1270, 720),
+                        new JsonMatOfDouble(
+                                3,
+                                3,
+                                new double[] {
+                                    1132.983599412085, 0.0, 610.3195830765223,
+                                    0.0, 1138.2884596791835, 346.4121207400337,
+                                    0.0, 0.0, 1.0
+                                }),
+                        new JsonMatOfDouble(
+                                1,
+                                8,
+                                new double[] {
+                                    0.11508197558262527,
+                                    -1.158603446817735,
+                                    0.0017808248356550637,
+                                    4.3915976993589873E-4,
+                                    2.179764689221826,
+                                    -0.034952777924711353,
+                                    0.04625562194891251,
+                                    -0.0860797479660746
+                                }),
+                        new double[] {},
+                        List.of(),
+                        new Size(),
+                        1,
+                        CameraLensModel.LENSMODEL_OPENCV);
 
-        pipeline.getSettings().inputShouldShow = true;
-        pipeline.getSettings().outputShouldDraw = true;
-        pipeline.getSettings().solvePNPEnabled = true;
-        pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
-        pipeline.getSettings().cornerDetectionUseConvexHulls = true;
-        pipeline.getSettings().targetModel = TargetModel.kAprilTag6p5in_36h11;
-        pipeline.getSettings().tagFamily = AprilTagFamily.kTag16h5;
+        // Matt's lifecam pointing at a wall
+        var distortedCorners =
+                List.of(
+                        new Point(834.702271, 338.878143),
+                        new Point(1011.808899, 345.824463),
+                        new Point(964.300476, 225.330795),
+                        new Point(803.971191, 217.359055));
 
-        var frameProvider =
-                new FileFrameProvider(
-                        TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag_corner_1280, false),
-                        TestUtils.WPI2020Image.FOV,
-                        TestUtils.getCoeffs(TestUtils.LIMELIGHT_480P_CAL_FILE, false));
-        frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
+        SolvePNPPipe pipe = new SolvePNPPipe();
 
-        frameProvider.requestFrameRotation(ImageRotationMode.DEG_0);
-        CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-        var pose_base = pipelineResult.targets.get(0).getBestCameraToTarget3d();
+        pipe.setParams(new SolvePNPPipeParams(coeffs, TargetModel.kAprilTag6p5in_36h11));
+        var ret = pipe.run(List.of(new TrackedTarget(distortedCorners)));
 
-        frameProvider.requestFrameRotation(ImageRotationMode.DEG_270_CCW);
-        CVPipelineResult pipelineResult2 =
-                pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-        var pose_rotated = pipelineResult2.targets.get(0).getBestCameraToTarget3d();
-        var pose_unrotated =
-                new Transform3d(new Translation3d(), new Rotation3d(Units.degreesToRadians(270), 0, 0))
-                        .plus(pose_rotated);
+        // rotate and try again
+        var rotAngle = ImageRotationMode.DEG_90_CCW;
+        var rotatedDistortedPoints =
+                distortedCorners.stream()
+                        .map(it -> rotAngle.rotatePoint(it, 1280, 720))
+                        .collect(Collectors.toList());
+        pipe.setParams(
+                new SolvePNPPipeParams(
+                        coeffs.rotateCoefficients(rotAngle), TargetModel.kAprilTag6p5in_36h11));
+        var retRotated = pipe.run(List.of(new TrackedTarget(rotatedDistortedPoints)));
 
-        Assertions.assertEquals(pose_base.getX(), pose_unrotated.getX(), 0.2);
-        Assertions.assertEquals(pose_base.getY(), pose_unrotated.getY(), 0.2);
-        Assertions.assertEquals(pose_base.getZ(), pose_unrotated.getZ(), 0.2);
+        var pose_base = ret.output.get(0).getBestCameraToTarget3d();
+        // So this is ostensibly a rotation about camera +Z,
+        // but this is actually camera +X for our AprilTag pipe since we rotate to stay in ""WPILib""".
+        // Negative to return to upright
+        var pose_unrotated = retRotated.output.get(0).getBestCameraToTarget3d();
+
+        System.out.println("Base: " + pose_base);
+        System.out.println("rot-unrot: " + pose_unrotated);
+
+        Assertions.assertEquals(pose_base.getX(), pose_unrotated.getX(), 0.01);
+        Assertions.assertEquals(pose_base.getY(), pose_unrotated.getY(), 0.01);
+        Assertions.assertEquals(pose_base.getZ(), pose_unrotated.getZ(), 0.01);
         Assertions.assertEquals(
-                pose_base.getRotation().getX(), pose_unrotated.getRotation().getX(), 0.05);
+                pose_base.getRotation().getX(), pose_unrotated.getRotation().getX(), 0.01);
         Assertions.assertEquals(
-                pose_base.getRotation().getY(), pose_unrotated.getRotation().getY(), 0.05);
+                pose_base.getRotation().getY(), pose_unrotated.getRotation().getY(), 0.01);
         Assertions.assertEquals(
-                pose_base.getRotation().getZ(), pose_unrotated.getRotation().getZ(), 0.05);
+                pose_base.getRotation().getZ(), pose_unrotated.getRotation().getZ(), 0.01);
     }
 }

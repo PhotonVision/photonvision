@@ -57,9 +57,6 @@ public class CameraCalibrationCoefficients implements Releasable {
     @JsonProperty("lensmodel")
     public final CameraLensModel lensmodel;
 
-    @JsonIgnore private final double[] intrinsicsArr = new double[9];
-    @JsonIgnore private final double[] distCoeffsArr = new double[5];
-
     /**
      * Contains all camera calibration data for a particular resolution of a camera. Designed for use
      * with standard opencv camera calibration matrices. For details on the layout of camera
@@ -101,10 +98,6 @@ public class CameraCalibrationCoefficients implements Releasable {
             observations = List.of();
         }
         this.observations = observations;
-
-        // do this once so gets are quick
-        getCameraIntrinsicsMat().get(0, 0, intrinsicsArr);
-        getDistCoeffsMat().get(0, 0, distCoeffsArr);
     }
 
     public CameraCalibrationCoefficients rotateCoefficients(ImageRotationMode rotation) {
@@ -206,12 +199,12 @@ public class CameraCalibrationCoefficients implements Releasable {
 
     @JsonIgnore
     public double[] getIntrinsicsArr() {
-        return intrinsicsArr;
+        return cameraIntrinsics.data;
     }
 
     @JsonIgnore
     public double[] getDistCoeffsArr() {
-        return distCoeffsArr;
+        return distCoeffs.data;
     }
 
     @JsonIgnore
@@ -237,10 +230,6 @@ public class CameraCalibrationCoefficients implements Releasable {
                 + observations.size()
                 + ", calobjectWarp="
                 + Arrays.toString(calobjectWarp)
-                + ", intrinsicsArr="
-                + Arrays.toString(intrinsicsArr)
-                + ", distCoeffsArr="
-                + Arrays.toString(distCoeffsArr)
                 + "]";
     }
 
