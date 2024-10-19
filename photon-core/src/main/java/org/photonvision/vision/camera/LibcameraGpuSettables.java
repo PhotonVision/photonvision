@@ -260,4 +260,24 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     public double getMaxExposureRaw() {
         return this.maxExposure;
     }
+
+    @Override
+    public void setAutoWhiteBalance(boolean autowb) {
+        throw new RuntimeException("Libcamera doesn't support AWB temp (yet)");
+    }
+
+    @Override
+    public void setWhiteBalanceTemp(double temp) {
+        throw new RuntimeException("Libcamera doesn't support AWB temp -- use red/blue gain instead");
+    }
+
+        @Override
+        public double getMaxWhiteBalanceTemp() {
+            return 1;
+        }
+
+        @Override
+        public double getMinWhiteBalanceTemp() {
+            return 2;
+        }
 }

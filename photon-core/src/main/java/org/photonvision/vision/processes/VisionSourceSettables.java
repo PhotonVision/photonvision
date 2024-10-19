@@ -50,6 +50,10 @@ public abstract class VisionSourceSettables {
 
     public abstract void setAutoExposure(boolean cameraAutoExposure);
 
+    public abstract void setWhiteBalanceTemp(double temp);
+
+    public abstract void setAutoWhiteBalance(boolean autowb);
+
     public abstract void setBrightness(int brightness);
 
     public abstract void setGain(int gain);
@@ -123,4 +127,7 @@ public abstract class VisionSourceSettables {
     public FrameStaticProperties getFrameStaticProperties() {
         return frameStaticProperties;
     }
+
+    public abstract double getMinWhiteBalanceTemp();
+    public abstract double getMaxWhiteBalanceTemp();
 }

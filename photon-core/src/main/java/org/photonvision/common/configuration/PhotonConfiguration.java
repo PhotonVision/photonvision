@@ -191,5 +191,7 @@ public class PhotonConfiguration {
         public boolean isCSICamera;
         public double minExposureRaw;
         public double maxExposureRaw;
+        public double minWhiteBalanceTemp;
+        public double maxWhiteBalanceTemp;
     }
 }
