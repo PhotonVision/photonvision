@@ -122,11 +122,6 @@ const openExportSettingsPrompt = () => {
   exportSettings.value.click();
 };
 
-const expected = computed<string>({
-  get() {
-    return useCameraSettingsStore().cameraNames[useStateStore().currentCameraIndex];
-  },
-});
 const yesDeleteMySettingsText = ref("");
 const deleteThisCamera = () => {
   const payload = {
@@ -225,12 +220,14 @@ const deleteThisCamera = () => {
         <v-card-title
           >Delete camera "{{ useCameraSettingsStore().cameraNames[useStateStore().currentCameraIndex] }}"</v-card-title
         >
-        <v-col>
-          <span
+        <v-row class="pl-3">
+          <span class="mt-3"
             >This will delete ALL OF YOUR SETTINGS for camera "{{
               useCameraSettingsStore().cameraNames[useStateStore().currentCameraIndex]
             }}" and restart PhotonVision.</span
           >
+        </v-row>
+        <v-row class="pl-3">
           <v-btn color="secondary" @click="openExportSettingsPrompt" class="mt-3">
             <v-icon left class="open-icon"> mdi-export </v-icon>
             <span class="open-label">Your final chance to export settings</span>
@@ -242,21 +239,21 @@ const deleteThisCamera = () => {
               target="_blank"
             />
           </v-btn>
-          <v-divider class="mt-4 mb-4" />
-          <pv-input
-            v-model="yesDeleteMySettingsText"
-            :label="'Type &quot;' + expected + '&quot;:'"
-            :inputCols="interactiveCols"
-          />
-          <v-btn
-            color="red"
-            @click="deleteThisCamera"
-            :disabled="yesDeleteMySettingsText.toLowerCase() !== expected.toLowerCase()"
-          >
-            <v-icon left class="open-icon"> mdi-skull </v-icon>
-            <span class="open-label">Yes, delete this camera; I have backed up what I need</span>
-          </v-btn>
-        </v-col>
+        </v-row>
+        <v-divider class="mt-8 mb-4" />
+        <pv-input
+          v-model="yesDeleteMySettingsText"
+          :label="'Type &quot;' + useCameraSettingsStore().currentCameraName + '&quot;:'"
+          :inputCols="interactiveCols"
+        />
+        <v-btn
+          color="red"
+          @click="deleteThisCamera"
+          :disabled="yesDeleteMySettingsText.toLowerCase() !== useCameraSettingsStore().currentCameraName.toLowerCase()"
+        >
+          <v-icon left class="open-icon"> mdi-skull </v-icon>
+          <span class="open-label">Yes, delete this camera; I have backed up what I need</span>
+        </v-btn>
       </v-card>
     </v-dialog>
   </v-card>
