@@ -44,6 +44,14 @@ public enum ImageRotationMode {
         this.rotation2d = tr;
     }
 
+    /**
+     * Rotate a point in an image
+     *
+     * @param point The point in the unrotated image
+     * @param width Image width, in pixels
+     * @param height Image height, in pixels
+     * @return The point in the rotated frame
+     */
     public Point rotatePoint(Point point, double width, double height) {
         Pose2d offset;
         switch (this) {

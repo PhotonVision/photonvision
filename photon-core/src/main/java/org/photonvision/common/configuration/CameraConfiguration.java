@@ -158,6 +158,13 @@ public class CameraConfiguration {
         pipelineSettings = settings;
     }
 
+    /**
+     * Replace a calibration in our list with the same unrotatedImageSize with a new one, or add it if
+     * none exists yet. If we are replacing an existing calibration, the old one will be "released"
+     * and the underlying data matrices will become invalid.
+     *
+     * @param calibration The calibration to add.
+     */
     public void addCalibration(CameraCalibrationCoefficients calibration) {
         logger.info("adding calibration " + calibration.unrotatedImageSize);
         calibrations.stream()

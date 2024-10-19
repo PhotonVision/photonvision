@@ -15,7 +15,7 @@ Translation2d rotated = tag_corner1.relativeTo(ORIGIN_ROTATED_90_CCW);
 
 ## Image Distortion
 
-The distortion coefficients for OPENCV8 is given in order [k1 k2 p1 p2 ke k4 k5 k6]. Mrcal names these coefficients `[k_0 k_1, k_2, k_3, k_4, k_5, k_6, k_7]`.
+The distortion coefficients for OPENCV8 is given in order `[k1 k2 p1 p2 k3 k4 k5 k6]`. Mrcal names these coefficients `[k_0 k_1, k_2, k_3, k_4, k_5, k_6, k_7]`.
 
 ```{math}
     \begin{align*}
@@ -53,4 +53,9 @@ Let's try a concrete example. With a 90 degree CCW rotation, we have {math}`P0=-
     \end{align*}
 ```
 
-So how do I get from here to actually rotating k2/k3? lol
+By inspection, this results in just applying another 90 degree rotation to the k2/k3 parameters. Proof is left as an exercise for the reader. Note that we can repeat this rotation to yield equations for tangential distortion for 180 and 270 degrees.
+
+```{math}
+    k_2'=-k_3
+    k_3'=k_2
+```

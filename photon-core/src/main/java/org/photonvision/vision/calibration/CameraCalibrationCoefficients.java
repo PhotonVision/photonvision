@@ -123,6 +123,7 @@ public class CameraCalibrationCoefficients implements Releasable {
         double p1 = getDistCoeffsMat().get(0, 2)[0];
         double p2 = getDistCoeffsMat().get(0, 3)[0];
 
+        // A bunch of horrifying opaque rotation black magic. See image-rotation.md for more details.
         switch (rotation) {
             case DEG_0:
                 break;

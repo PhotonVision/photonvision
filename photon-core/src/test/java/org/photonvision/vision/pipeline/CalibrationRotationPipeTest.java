@@ -113,8 +113,6 @@ public class CalibrationRotationPipeTest {
 
         FrameStaticProperties rotatedFrameProps = frameProps.rotate(rot);
 
-        CameraCalibrationCoefficients rotatedCoeffs = rotatedFrameProps.cameraCalibration;
-
         Point[] originalPoints = {new Point(100, 100), new Point(200, 200), new Point(300, 100)};
 
         // Distort the origional points

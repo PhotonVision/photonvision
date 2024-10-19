@@ -22,10 +22,9 @@ import org.opencv.core.Point;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.opencv.ImageRotationMode;
-import org.photonvision.vision.opencv.Releasable;
 
 /** Represents the properties of a frame. */
-public class FrameStaticProperties implements Releasable {
+public class FrameStaticProperties {
     public final int imageWidth;
     public final int imageHeight;
     public final double fov;
@@ -37,6 +36,7 @@ public class FrameStaticProperties implements Releasable {
     public final double verticalFocalLength;
     public CameraCalibrationCoefficients cameraCalibration;
 
+    // CameraCalibrationCoefficients hold native memory, so cache them here to avoid extra allocations
     private final FrameStaticProperties[] cachedRotationStaticProperties =
             new FrameStaticProperties[4];
 
@@ -70,9 +70,6 @@ public class FrameStaticProperties implements Releasable {
         if (cameraCalibration != null && cameraCalibration.getCameraIntrinsicsMat() != null) {
             // Use calibration data
             var camIntrinsics = cameraCalibration.getCameraIntrinsicsMat();
-            if (camIntrinsics.rows() == 0) {
-                throw new RuntimeException("wut");
-            }
             centerX = camIntrinsics.get(0, 2)[0];
             centerY = camIntrinsics.get(1, 2)[0];
             centerPoint = new Point(centerX, centerY);
@@ -97,6 +94,7 @@ public class FrameStaticProperties implements Releasable {
         if (rotation == ImageRotationMode.DEG_0) {
             return this;
         }
+
         int newWidth = imageWidth;
         int newHeight = imageHeight;
 
@@ -136,15 +134,5 @@ public class FrameStaticProperties implements Releasable {
         double verticalView = Math.atan(Math.tan(diagonalFoV / 2) * (imageHeight / diagonalAspect)) * 2;
 
         return new DoubleCouple(Math.toDegrees(horizontalView), Math.toDegrees(verticalView));
-    }
-
-    @Override
-    public void release() {
-        for (FrameStaticProperties prop : cachedRotationStaticProperties) {
-            if (prop != null) {
-                prop.release();
-            }
-        }
-        cameraCalibration.release();
     }
 }

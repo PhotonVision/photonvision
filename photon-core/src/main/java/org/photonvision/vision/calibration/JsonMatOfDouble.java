@@ -26,7 +26,6 @@ import org.ejml.simple.SimpleMatrix;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
-import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.vision.opencv.Releasable;
 
 /** JSON-serializable image. Data is stored as a raw JSON array. */
@@ -41,6 +40,7 @@ public class JsonMatOfDouble implements Releasable {
     @JsonIgnore private Matrix wpilibMat = null;
 
     @JsonIgnore private MatOfDouble wrappedMatOfDouble;
+    private boolean released = false;
 
     public JsonMatOfDouble(int rows, int cols, double[] data) {
         this(rows, cols, CvType.CV_64FC1, data);
@@ -77,20 +77,8 @@ public class JsonMatOfDouble implements Releasable {
             this.wrappedMat.put(0, 0, this.data);
         }
 
-        if (this.rows == 0 || this.cols == 0) {
-            throw new RuntimeException("Couldn't make cal mat??");
-        }
-        if (this.wrappedMat.rows() != this.rows) {
-            // whack
-            throw new RuntimeException("Couldn't make cal mat??");
-        }
-        if (this.wrappedMat.cols() != this.cols) {
-            // whack
-            throw new RuntimeException("Couldn't make cal mat??");
-        }
-        if (this.wrappedMat.type() != this.type) {
-            // whack
-            throw new RuntimeException("Couldn't make cal mat??");
+        if (this.released) {
+            throw new RuntimeException("This calibration object was already released");
         }
 
         return this.wrappedMat;
@@ -98,6 +86,10 @@ public class JsonMatOfDouble implements Releasable {
 
     @JsonIgnore
     public MatOfDouble getAsMatOfDouble() {
+        if (this.released) {
+            throw new RuntimeException("This calibration object was already released");
+        }
+
         if (this.wrappedMatOfDouble == null) {
             this.wrappedMatOfDouble = new MatOfDouble();
             getAsMat().convertTo(wrappedMatOfDouble, CvType.CV_64F);
@@ -105,6 +97,7 @@ public class JsonMatOfDouble implements Releasable {
         return this.wrappedMatOfDouble;
     }
 
+    @SuppressWarnings("unchecked")
     @JsonIgnore
     public <R extends Num, C extends Num> Matrix<R, C> getAsWpilibMat() {
         if (wpilibMat == null) {
@@ -116,11 +109,7 @@ public class JsonMatOfDouble implements Releasable {
     @Override
     public void release() {
         getAsMat().release();
-    }
-
-    public Packet populatePacket(Packet packet) {
-        packet.encode(this.data);
-        return packet;
+        this.released = true;
     }
 
     @Override
