@@ -23,7 +23,12 @@ import org.photonvision.common.configuration.CameraConfiguration;
 public class ArduOV9782CameraSettables extends GenericUSBCameraSettables {
     public ArduOV9782CameraSettables(CameraConfiguration configuration, UsbCamera camera) {
         super(configuration, camera);
-        whiteBalanceTemperature = 3500;
+        // Arbitrary, worked well in Chris's basement
+        whiteBalanceTemperature = 5300;
+
+        // According to Chris' pi, running an older kernel at least
+        this.minExposure = 1;
+        this.maxExposure = 70;
     }
 
     @Override
