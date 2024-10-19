@@ -126,7 +126,6 @@ const expected = computed<string>({
   get() {
     return useCameraSettingsStore().cameraNames[useStateStore().currentCameraIndex];
   },
-  set(thing) {}
 });
 const yesDeleteMySettingsText = ref("");
 const deleteThisCamera = () => {
