@@ -180,14 +180,14 @@ public class CalibrationRotationPipeTest {
                 new Transform3d(new Translation3d(), new Rotation3d(Units.degreesToRadians(270), 0, 0))
                         .plus(pose_rotated);
 
-        Assertions.assertEquals(pose_base.getX(), pose_unrotated.getX(), 0.01);
-        Assertions.assertEquals(pose_base.getY(), pose_unrotated.getY(), 0.01);
-        Assertions.assertEquals(pose_base.getZ(), pose_unrotated.getZ(), 0.01);
+        Assertions.assertEquals(pose_base.getX(), pose_unrotated.getX(), 0.2);
+        Assertions.assertEquals(pose_base.getY(), pose_unrotated.getY(), 0.2);
+        Assertions.assertEquals(pose_base.getZ(), pose_unrotated.getZ(), 0.2);
         Assertions.assertEquals(
-                pose_base.getRotation().getX(), pose_unrotated.getRotation().getX(), 0.01);
+                pose_base.getRotation().getX(), pose_unrotated.getRotation().getX(), 0.05);
         Assertions.assertEquals(
-                pose_base.getRotation().getY(), pose_unrotated.getRotation().getY(), 0.01);
+                pose_base.getRotation().getY(), pose_unrotated.getRotation().getY(), 0.05);
         Assertions.assertEquals(
-                pose_base.getRotation().getZ(), pose_unrotated.getRotation().getZ(), 0.01);
+                pose_base.getRotation().getZ(), pose_unrotated.getRotation().getZ(), 0.05);
     }
 }

@@ -108,7 +108,13 @@ public class JsonMatOfDouble implements Releasable {
 
     @Override
     public void release() {
-        getAsMat().release();
+        if (wrappedMat != null) { 
+            wrappedMat.release();
+        }
+        if (wrappedMatOfDouble != null) { 
+            wrappedMatOfDouble.release();
+        }
+
         this.released = true;
     }
 
