@@ -252,6 +252,65 @@ public final class OpenCVHelp {
     }
 
     /**
+     * Distort a list of points in pixels using the OPENCV5/8 models. See image-rotation.md or
+     * https://docs.opencv.org/4.x/d9/d0c/group__calib3d.html for the math here.
+     *
+     * @param pointsList the undistorted points
+     * @param cameraMatrix standard OpenCV camera mat
+     * @param distCoeffs standard OpenCV distortion coefficeints. Must OPENCV5 or OPENCV8
+     */
+    public static List<Point> distortPoints(
+            List<Point> pointsList, Mat cameraMatrix, Mat distCoeffs) {
+        var ret = new ArrayList<Point>();
+
+        var cx = cameraMatrix.get(0, 2)[0];
+        var cy = cameraMatrix.get(1, 2)[0];
+        var fx = cameraMatrix.get(0, 0)[0];
+        var fy = cameraMatrix.get(1, 1)[0];
+
+        var k1 = distCoeffs.get(0, 0)[0];
+        var k2 = distCoeffs.get(0, 1)[0];
+        var p1 = distCoeffs.get(0, 2)[0];
+        var p2 = distCoeffs.get(0, 3)[0];
+        var k3 = distCoeffs.get(0, 4)[0];
+
+        double k4 = 0;
+        double k5 = 0;
+        double k6 = 0;
+        if (distCoeffs.cols() == 8) {
+            k4 = distCoeffs.get(0, 5)[0];
+            k5 = distCoeffs.get(0, 6)[0];
+            k6 = distCoeffs.get(0, 7)[0];
+        }
+
+        for (Point point : pointsList) {
+            // To relative coordinates
+            double xprime = (point.x - cx) / fx; // cx, cy is the center of distortion
+            double yprime = (point.y - cy) / fy;
+
+            double r_sq = xprime * xprime + yprime * yprime; // square of the radius from center
+
+            // Radial distortion
+            double radialDistortion =
+                    (1 + k1 * r_sq + k2 * r_sq * r_sq + k3 * r_sq * r_sq * r_sq)
+                            / (1 + k4 * r_sq + k5 * r_sq * r_sq + k6 * r_sq * r_sq * r_sq);
+            double xDistort = xprime * radialDistortion;
+            double yDistort = yprime * radialDistortion;
+
+            // Tangential distortion
+            xDistort = xDistort + (2 * p1 * xprime * yprime + p2 * (r_sq + 2 * xprime * xprime));
+            yDistort = yDistort + (p1 * (r_sq + 2 * yprime * yprime) + 2 * p2 * xprime * yprime);
+
+            // Back to absolute coordinates.
+            xDistort = xDistort * fx + cx;
+            yDistort = yDistort * fy + cy;
+            ret.add(new Point(xDistort, yDistort));
+        }
+
+        return ret;
+    }
+
+    /**
      * Project object points from the 3d world into the 2d camera image. The camera
      * properties(intrinsics, distortion) determine the results of this projection.
      *
