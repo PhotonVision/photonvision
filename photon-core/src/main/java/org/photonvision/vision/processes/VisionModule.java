@@ -453,7 +453,7 @@ public class VisionModule {
             pipelineSettings.cameraBlueGain = -1;
 
             // All other cameras (than picams) should support AWB temp
-            visionSource.getSettables().setWhiteBalanceTemp(pipelineSettings.whiteBalanceTemp);
+            visionSource.getSettables().setWhiteBalanceTemp(pipelineSettings.cameraWhiteBalanceTemp);
             visionSource.getSettables().setAutoWhiteBalance(pipelineSettings.cameraAutoWhiteBalance);
         }
 

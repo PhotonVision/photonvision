@@ -79,7 +79,7 @@ export interface PipelineSettings {
   contourIntersection: number;
 
   cameraAutoWhiteBalance: boolean;
-  whiteBalanceTemp: number;
+  cameraWhiteBalanceTemp: number;
 }
 export type ConfigurablePipelineSettings = Partial<
   Omit<
@@ -142,7 +142,7 @@ export const DefaultPipelineSettings: Omit<
   hsvSaturation: { first: 50, second: 255 },
   contourIntersection: 1,
   cameraAutoWhiteBalance: false,
-  whiteBalanceTemp: 4000,
+  cameraWhiteBalanceTemp: 4000,
 };
 
 export interface ReflectivePipelineSettings extends PipelineSettings {

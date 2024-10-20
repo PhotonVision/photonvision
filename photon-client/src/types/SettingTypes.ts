@@ -289,15 +289,18 @@ export const PlaceholderCameraSettings: CameraSettings = {
     quirks: {
       AWBGain: false,
       AdjustableFocus: false,
-      ArduOV9281: false,
-      ArduOV2311: false,
-      ArduOV9782: false,
+      ArduOV9281Controls: false,
+      ArduOV2311Controls: false,
+      ArduOV9782Controls: false,
       ArduCamCamera: false,
       CompletelyBroken: false,
       FPSCap100: false,
       Gain: false,
       PiCam: false,
-      StickyFPS: false
+      StickyFPS: false,
+      InnoOV9281Controls: false,
+      LifeCamControls: false,
+      PsEyeControls: false
     }
   },
   isCSICamera: false,
