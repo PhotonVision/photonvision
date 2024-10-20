@@ -349,14 +349,13 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         return Optional.ofNullable(retProp);
     }
 
+    @Override
+    public double getMaxWhiteBalanceTemp() {
+        return wbTempProp.getMax();
+    }
 
-        @Override
-        public double getMaxWhiteBalanceTemp() {
-            return wbTempProp.getMax();
-        }
-
-        @Override
-        public double getMinWhiteBalanceTemp() {
-            return wbTempProp.getMin();
-        }
+    @Override
+    public double getMinWhiteBalanceTemp() {
+        return wbTempProp.getMin();
+    }
 }

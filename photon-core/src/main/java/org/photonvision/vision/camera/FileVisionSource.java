@@ -145,7 +145,6 @@ public class FileVisionSource extends VisionSource {
         @Override
         public void setWhiteBalanceTemp(double temp) {}
 
-
         @Override
         public double getMaxWhiteBalanceTemp() {
             return 1;

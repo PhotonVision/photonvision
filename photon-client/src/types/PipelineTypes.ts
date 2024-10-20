@@ -142,7 +142,7 @@ export const DefaultPipelineSettings: Omit<
   hsvSaturation: { first: 50, second: 255 },
   contourIntersection: 1,
   cameraAutoWhiteBalance: false,
-  cameraWhiteBalanceTemp: 4000,
+  cameraWhiteBalanceTemp: 4000
 };
 
 export interface ReflectivePipelineSettings extends PipelineSettings {

@@ -140,8 +140,8 @@ const interactiveCols = computed(() =>
       @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraAutoWhiteBalance: args }, false)"
     />
     <pv-slider
-      v-model="useCameraSettingsStore().currentPipelineSettings.cameraWhiteBalanceTemp"
       v-if="!useCameraSettingsStore().currentPipelineSettings.cameraAutoWhiteBalance"
+      v-model="useCameraSettingsStore().currentPipelineSettings.cameraWhiteBalanceTemp"
       label="White Balance Temperature"
       :min="useCameraSettingsStore().minWhiteBalanceTemp"
       :max="useCameraSettingsStore().maxWhiteBalanceTemp"

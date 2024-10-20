@@ -307,7 +307,7 @@ export const PlaceholderCameraSettings: CameraSettings = {
   minExposureRaw: 1,
   maxExposureRaw: 100,
   minWhiteBalanceTemp: 2000,
-  maxWhiteBalanceTemp: 10000,
+  maxWhiteBalanceTemp: 10000
 };
 
 export enum CalibrationBoardTypes {
