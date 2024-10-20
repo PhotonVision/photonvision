@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.networking.NetworkMode;
-import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.file.JacksonUtils;
 
 public class NetworkConfig {
@@ -51,22 +50,13 @@ public class NetworkConfig {
     @JsonIgnore public static final String NM_IP_STRING = "${ipaddr}";
 
     public String networkManagerIface;
+    // TODO: remove these strings if no longer needed
     public String setStaticCommand =
             "nmcli con mod ${interface} ipv4.addresses ${ipaddr}/8 ipv4.method \"manual\" ipv6.method \"disabled\"";
     public String setDHCPcommand =
             "nmcli con mod ${interface} ipv4.method \"auto\" ipv6.method \"disabled\"";
 
     public NetworkConfig() {
-        if (Platform.isLinux()) {
-            // Default to the name of the first Ethernet connection. Otherwise, "Wired connection 1" is a
-            // reasonable guess
-            this.networkManagerIface =
-                    NetworkUtils.getAllWiredInterfaces().stream()
-                            .map(it -> it.connName)
-                            .findFirst()
-                            .orElse("Wired connection 1");
-        }
-
         // We can (usually) manage networking on Linux devices, and if we can, we should try to. Command
         // line inhibitions happen at a level above this class
         setShouldManage(deviceCanManageNetwork());
@@ -112,7 +102,7 @@ public class NetworkConfig {
 
     @JsonIgnore
     public String getPhysicalInterfaceName() {
-        return NetworkUtils.getNMinfoForConnName(this.networkManagerIface).devName;
+        return this.networkManagerIface;
     }
 
     @JsonIgnore

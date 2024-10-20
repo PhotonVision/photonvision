@@ -52,102 +52,54 @@ public class NetworkManager {
             return;
         }
 
+        if (!Platform.isLinux()) {
+            logger.info("Not managing network on non-Linux platforms.");
+            return;
+        }
+
+        if (!PlatformUtils.isRoot()) {
+            logger.error("Cannot manage hostname without root!");
+            return;
+        }
+
+        var physicalDevices = NetworkUtils.getAllWiredInterfaces();
+
+        if (physicalDevices.size() == 0) {
+            logger.warn("No network interfaces available. Maybe ethernet isn't connected?");
+            // start polling for an interface?
+            return;
+        }
+
         var config = ConfigManager.getInstance().getConfig().getNetworkConfig();
-        logger.info("Setting " + config.connectionType + " with team " + config.ntServerAddress);
-        if (Platform.isLinux()) {
-            if (!PlatformUtils.isRoot()) {
-                logger.error("Cannot manage hostname without root!");
+
+        if (physicalDevices.stream().noneMatch(it -> (it.devName.equals(config.networkManagerIface)))) {
+            try {
+                var iFace = physicalDevices.stream().findFirst().orElseThrow();
+                logger.warn("The configured interface doesn't match any available interface. Applying configuration to " + iFace.devName);
+                // update NetworkConfig with actual interface
+                config.networkManagerIface = iFace.devName;
+                ConfigManager.getInstance().requestSave();
+            } catch (Exception e) {
+                // already checked that there is at least one item in physicalDevices, so this should never happen
+                logger.error("No valid network interfaces to manage", e);
+                return;
             }
+        }
 
-            // always set hostname
-            if (!config.hostname.isEmpty()) {
-                try {
-                    var shell = new ShellExec(true, false);
-                    shell.executeBashCommand("cat /etc/hostname | tr -d \" \\t\\n\\r\"");
-                    var oldHostname = shell.getOutput().replace("\n", "");
+        logger.info("Setting " + config.connectionType + " with team " + config.ntServerAddress + " on " + config.networkManagerIface);
 
-                    var setHostnameRetCode =
-                            shell.executeBashCommand(
-                                    "echo $NEW_HOSTNAME > /etc/hostname".replace("$NEW_HOSTNAME", config.hostname));
-                    setHostnameRetCode =
-                            shell.executeBashCommand("hostnamectl set-hostname " + config.hostname);
-
-                    // Add to /etc/hosts
-                    var addHostRetCode =
-                            shell.executeBashCommand(
-                                    String.format(
-                                            "sed -i \"s/127.0.1.1.*%s/127.0.1.1\\t%s/g\" /etc/hosts",
-                                            oldHostname, config.hostname));
-
-                    shell.executeBashCommand("sudo service avahi-daemon restart");
-
-                    var success = setHostnameRetCode == 0 && addHostRetCode == 0;
-                    if (!success) {
-                        logger.error(
-                                "Setting hostname returned non-zero codes (hostname/hosts) "
-                                        + setHostnameRetCode
-                                        + "|"
-                                        + addHostRetCode
-                                        + "!");
-                    } else {
-                        logger.info("Set hostname to " + config.hostname);
-                    }
-                } catch (Exception e) {
-                    logger.error("Failed to set hostname!", e);
-                }
-
-            } else {
-                logger.warn("Got empty hostname?");
-            }
-
-            if (config.connectionType == NetworkMode.DHCP) {
-                var shell = new ShellExec();
-                try {
-                    // set nmcli back to DHCP, and re-run dhclient -- this ought to grab a new IP address
-                    shell.executeBashCommand(
-                            config.setDHCPcommand.replace(
-                                    NetworkConfig.NM_IFACE_STRING, config.getEscapedInterfaceName()));
-                    shell.executeBashCommand("dhclient " + config.getPhysicalInterfaceName(), false);
-                } catch (Exception e) {
-                    logger.error("Exception while setting DHCP!");
-                }
-            } else if (config.connectionType == NetworkMode.STATIC) {
-                var shell = new ShellExec();
-                if (!config.staticIp.isEmpty()) {
-                    try {
-                        shell.executeBashCommand(
-                                config
-                                        .setStaticCommand
-                                        .replace(NetworkConfig.NM_IFACE_STRING, config.getEscapedInterfaceName())
-                                        .replace(NetworkConfig.NM_IP_STRING, config.staticIp));
-
-                        if (Platform.isRaspberryPi()) {
-                            // Pi's need to manually have their interface adjusted?? and the 5-second sleep is
-                            // integral in my testing (Matt)
-                            shell.executeBashCommand(
-                                    "sh -c 'nmcli con down "
-                                            + config.getEscapedInterfaceName()
-                                            + "; nmcli con up "
-                                            + config.getEscapedInterfaceName()
-                                            + "'");
-                        } else {
-                            // for now just bring down /up -- more testing needed on beelink et al.
-                            shell.executeBashCommand(
-                                    "sh -c 'nmcli con down "
-                                            + config.getEscapedInterfaceName()
-                                            + "; nmcli con up "
-                                            + config.getEscapedInterfaceName()
-                                            + "'");
-                        }
-                    } catch (Exception e) {
-                        logger.error("Error while setting static IP!", e);
-                    }
-                } else {
-                    logger.warn("Got empty static IP?");
-                }
-            }
+        // always set hostname (unless it's blank)
+        if (!config.hostname.isBlank()) {
+            setHostname(config.hostname);
         } else {
-            logger.info("Not managing network on non-Linux platforms");
+            logger.warn("Got empty hostname?");
+            // should we force it back to photonvision in this case?
+        }
+
+        if (config.connectionType == NetworkMode.DHCP) {
+            setConnectionDHCP(config);
+        } else if (config.connectionType == NetworkMode.STATIC) {
+            setConnectionStatic(config);
         }
     }
 
@@ -161,5 +113,147 @@ public class NetworkManager {
                                 DataChangeDestination.DCD_WEBSERVER,
                                 "restartServer",
                                 true));
+    }
+
+    private void setHostname(String hostname) {
+        try {
+            var shell = new ShellExec(true, false);
+            shell.executeBashCommand("cat /etc/hostname | tr -d \" \\t\\n\\r\"");
+            var oldHostname = shell.getOutput().replace("\n", "");
+            logger.debug("Old host name: >" + oldHostname +"<");
+            logger.debug("New host name: >" + hostname +"<");
+
+            if (!oldHostname.equals(hostname)) {
+                var setHostnameRetCode =
+                        shell.executeBashCommand(
+                                "echo $NEW_HOSTNAME > /etc/hostname".replace("$NEW_HOSTNAME", hostname));
+                setHostnameRetCode =
+                        shell.executeBashCommand("hostnamectl set-hostname " + hostname);
+
+                // Add to /etc/hosts
+                var addHostRetCode =
+                        shell.executeBashCommand(
+                                String.format(
+                                        "sed -i \"s/127.0.1.1.*%s/127.0.1.1\\t%s/g\" /etc/hosts",
+                                        oldHostname, hostname));
+
+                if (Platform.isRaspberryPi()) {
+                    // TODO: test on RaspberryPi if this is still needed
+                    shell.executeBashCommand("sudo service avahi-daemon restart");
+                } else {
+                    shell.executeBashCommand("sudo systemctl restart avahi-daemon.service");
+                }
+
+                var success = setHostnameRetCode == 0 && addHostRetCode == 0;
+                if (!success) {
+                    logger.error(
+                            "Setting hostname returned non-zero codes (hostname/hosts) "
+                                    + setHostnameRetCode
+                                    + "|"
+                                    + addHostRetCode
+                                    + "!");
+                } else {
+                    logger.info("Set hostname to " + hostname);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Failed to set hostname!", e);
+        }
+    }
+
+    private void setConnectionDHCP(NetworkConfig config) {
+        String connName = "dhcp-" + config.networkManagerIface;
+
+        String addDHCPcommand = """
+            nmcli connection add
+            con-name "${connection}"
+            ifname "${interface}"
+            type ethernet
+            autoconnect no
+            ipv4.method auto
+            ipv6.method disabled
+            """;
+        addDHCPcommand = addDHCPcommand.replaceAll("[\\n]", " ");
+
+        var shell = new ShellExec();
+        try {
+            // set nmcli back to DHCP, and re-run dhclient -- this ought to grab a new IP address
+            if (NetworkUtils.connDoesNotExist(connName)) {
+                // create connection
+                logger.info("Creating the DHCP connection " + connName );
+                shell.executeBashCommand(
+                    addDHCPcommand
+                        .replace("${connection}", connName)
+                        .replace("${interface}", config.networkManagerIface)
+                    );
+            }
+            // activate it
+            logger.info("Activating the DHCP connection " + connName );
+            shell.executeBashCommand("nmcli connection up " + connName, false);
+
+            if (Platform.isRaspberryPi()) {
+                shell.executeBashCommand("dhclient " + config.networkManagerIface, false);
+            }
+        } catch (Exception e) {
+            logger.error("Exception while setting DHCP!", e);
+        }
+    }
+
+    private void setConnectionStatic(NetworkConfig config) {
+        String connName = "static-" + config.networkManagerIface;
+        String addStaticCommand = """
+            nmcli connection add
+            con-name "${connection}"
+            ifname "${interface}"
+            type ethernet
+            autoconnect no
+            ipv4.addresses ${ipaddr}/8
+            ipv4.gateway ${gateway}
+            ipv4.method "manual"
+            ipv6.method "disabled"
+            """;
+        addStaticCommand = addStaticCommand.replaceAll("[\\n]", " ");
+
+        String modStaticCommand = "nmcli connection mod \"${connection}\" ipv4.addresses ${ipaddr}/8 ipv4.gateway ${gateway}";
+
+        if (config.staticIp.isBlank()) {
+            logger.warn("Got empty static IP?");
+            return;
+        }
+
+        // guess at the gateway from the staticIp
+        String[] parts = config.staticIp.split("\\.");
+        parts[parts.length-1] = "1";
+        String gateway = String.join(".", parts);
+
+        var shell = new ShellExec();
+        try {
+            // set nmcli back to DHCP, and re-run dhclient -- this ought to grab a new IP address
+            if (NetworkUtils.connDoesNotExist(connName)) {
+                // create connection
+                logger.info("Creating the Static connection " + connName );
+                shell.executeBashCommand(
+                    addStaticCommand
+                        .replace("${connection}", connName)
+                        .replace("${interface}", config.networkManagerIface)
+                        .replace("${ipaddr}", config.staticIp)
+                        .replace("${gateway}", gateway)
+                    );
+            } else {
+                // modify it in case the static IP address is different
+                logger.info("Modifying the Static connection " + connName );
+                shell.executeBashCommand(
+                    modStaticCommand
+                        .replace("${connection}", connName)
+                        .replace("${ipaddr}", config.staticIp)
+                        .replace("${gateway}", gateway)
+                    );
+            }
+            // activate it
+            logger.info("Activating the Static connection " + connName );
+            shell.executeBashCommand("nmcli connection up " + connName, false);
+        } catch (Exception e) {
+            logger.error("Error while setting static IP!", e);
+        }
     }
 }
