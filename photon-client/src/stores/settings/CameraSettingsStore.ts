@@ -80,7 +80,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     },
     maxWhiteBalanceTemp(): number {
       return this.currentCameraSettings.maxWhiteBalanceTemp;
-    },
+    }
   },
   actions: {
     updateCameraSettingsFromWebsocket(data: WebsocketCameraSettingsUpdate[]) {

@@ -70,7 +70,7 @@ public class TimedTaskManager {
                     }
                     if (t != null) {
                         logger.error("Error from ScheduledThreadPoolExecutor!", t);
-                    } 
+                    }
                 }
             };
     private final ConcurrentHashMap<String, Future<?>> activeTasks = new ConcurrentHashMap<>();

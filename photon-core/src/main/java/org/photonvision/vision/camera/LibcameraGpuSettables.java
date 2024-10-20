@@ -271,13 +271,13 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         throw new RuntimeException("Libcamera doesn't support AWB temp -- use red/blue gain instead");
     }
 
-        @Override
-        public double getMaxWhiteBalanceTemp() {
-            return 1;
-        }
+    @Override
+    public double getMaxWhiteBalanceTemp() {
+        return 1;
+    }
 
-        @Override
-        public double getMinWhiteBalanceTemp() {
-            return 2;
-        }
+    @Override
+    public double getMinWhiteBalanceTemp() {
+        return 2;
+    }
 }

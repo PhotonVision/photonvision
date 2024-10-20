@@ -129,5 +129,6 @@ public abstract class VisionSourceSettables {
     }
 
     public abstract double getMinWhiteBalanceTemp();
+
     public abstract double getMaxWhiteBalanceTemp();
 }
