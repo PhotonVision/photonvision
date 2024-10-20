@@ -271,7 +271,7 @@ public class NetworkManager {
         Path file = Path.of("/sys/class/net/{device}/carrier".replace("{device}", devName));
         logger.debug("Watching device at path: " + file.toString());
         var last = new Object() {boolean carrier = true;};
-        return () -> 
+        return () ->
         {
             try {
                 boolean carrier = Files.readString(file).trim().equals("1");
