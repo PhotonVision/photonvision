@@ -93,7 +93,6 @@ public class NetworkManager {
             setHostname(config.hostname);
         } else {
             logger.warn("Got empty hostname?");
-            // should we force it back to photonvision in this case?
         }
 
         if (config.connectionType == NetworkMode.DHCP) {
@@ -189,7 +188,7 @@ public class NetworkManager {
             }
             // activate it
             logger.info("Activating the DHCP connection " + connName );
-            shell.executeBashCommand("nmcli connection up " + connName, false);
+            shell.executeBashCommand("nmcli connection up \"${connection}\"".replace("${connection}", connName), false);
 
             if (Platform.isRaspberryPi()) {
                 shell.executeBashCommand("dhclient " + config.networkManagerIface, false);
@@ -251,7 +250,7 @@ public class NetworkManager {
             }
             // activate it
             logger.info("Activating the Static connection " + connName );
-            shell.executeBashCommand("nmcli connection up " + connName, false);
+            shell.executeBashCommand("nmcli connection up \"${connection}\"".replace("${connection}", connName), false);
         } catch (Exception e) {
             logger.error("Error while setting static IP!", e);
         }
