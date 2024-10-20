@@ -58,7 +58,7 @@ public class NetworkManager {
         }
 
         if (!PlatformUtils.isRoot()) {
-            logger.error("Cannot manage hostname without root!");
+            logger.error("Cannot manage network without root!");
             return;
         }
 
