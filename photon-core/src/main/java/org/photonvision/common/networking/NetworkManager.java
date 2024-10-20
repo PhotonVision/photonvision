@@ -17,6 +17,8 @@
 
 package org.photonvision.common.networking;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.NoSuchElementException;
 
 import org.photonvision.common.configuration.ConfigManager;
@@ -29,7 +31,9 @@ import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.hardware.PlatformUtils;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.networking.NetworkUtils.NMDeviceInfo;
 import org.photonvision.common.util.ShellExec;
+import org.photonvision.common.util.TimedTaskManager;
 
 public class NetworkManager {
     private static final Logger logger = new Logger(NetworkManager.class, LogGroup.General);
@@ -64,17 +68,17 @@ public class NetworkManager {
             return;
         }
 
-        var physicalDevices = NetworkUtils.getAllWiredInterfaces();
-        if (physicalDevices.size() == 0) {
-            logger.warn("No network interfaces available. Maybe ethernet isn't connected?");
-            // start polling for an interface?
-            return;
+        // Start tasks to monitor the network interface(s)
+        var ethernetDevices = NetworkUtils.getAllWiredInterfaces();
+        for (NMDeviceInfo deviceInfo : ethernetDevices) {
+            TimedTaskManager.getInstance().addTask("deviceStatus-"+deviceInfo.devName, deviceStatus(deviceInfo.devName), 5000);
         }
 
+        var physicalDevices = NetworkUtils.getAllActiveWiredInterfaces();
         var config = ConfigManager.getInstance().getConfig().getNetworkConfig();
         if (physicalDevices.stream().noneMatch(it -> (it.devName.equals(config.networkManagerIface)))) {
             try {
-                // if the configured interface isn't in the list of available ones, try one that is
+                // if the configured interface isn't in the list of available ones, select one that is
                 var iFace = physicalDevices.stream().findFirst().orElseThrow();
                 logger.warn("The configured interface doesn't match any available interface. Applying configuration to " + iFace.devName);
                 // update NetworkConfig with found interface
@@ -260,5 +264,30 @@ public class NetworkManager {
         } catch (Exception e) {
             logger.error("Error while setting static IP!", e);
         }
+    }
+
+    // Detects changes in the carrier and reinitializes after re-connect
+    private Runnable deviceStatus(String devName) {
+        Path file = Path.of("/sys/class/net/{device}/carrier".replace("{device}", devName));
+        logger.debug("Watching device at path: " + file.toString());
+        var last = new Object() {boolean carrier = true;};
+        return () -> 
+        {
+            try {
+                boolean carrier = Files.readString(file).trim().equals("1");
+                if (carrier != last.carrier) {
+                    if (carrier) {
+                        // carrier came back
+                        logger.info("Interface " + devName + " has re-connected, reinitializing");
+                        reinitialize();
+                    } else {
+                        logger.warn("Interface " + devName + " is disconnected, check Ethernet!");
+                    }
+                }
+                last.carrier = carrier;
+            } catch (Exception e) {
+                logger.error("Could not check network status", e);
+            }
+        };
     }
 }

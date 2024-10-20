@@ -126,8 +126,14 @@ public class NetworkUtils {
     }
 
     public static List<NMDeviceInfo> getAllWiredInterfaces() {
-        return getAllActiveInterfaces().stream()
-                .filter(it -> it.nmType == NMType.NMTYPE_ETHERNET)
+        return getAllInterfaces().stream()
+                .filter(it -> it.nmType.equals(NMType.NMTYPE_ETHERNET))
+                .collect(Collectors.toList());
+    }
+
+    public static List<NMDeviceInfo> getAllActiveWiredInterfaces() {
+        return getAllWiredInterfaces().stream()
+                .filter(it -> !it.connName.isBlank())
                 .collect(Collectors.toList());
     }
 
