@@ -49,7 +49,7 @@ public class NetworkConfig {
     @JsonIgnore public static final String NM_IFACE_STRING = "${interface}";
     @JsonIgnore public static final String NM_IP_STRING = "${ipaddr}";
 
-    public String networkManagerIface;
+    public String networkManagerIface = "";
     // TODO: remove these strings if no longer needed
     public String setStaticCommand =
             "nmcli con mod ${interface} ipv4.addresses ${ipaddr}/8 ipv4.method \"manual\" ipv6.method \"disabled\"";

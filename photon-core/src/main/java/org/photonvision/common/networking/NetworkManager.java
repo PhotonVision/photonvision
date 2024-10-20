@@ -87,7 +87,7 @@ public class NetworkManager {
             } catch (NoSuchElementException e) {
                 // if there are no available interfaces, go with the one from settings
                 logger.warn("No physical interface found. Maybe ethernet isn't connected?");
-                if (config.networkManagerIface.isBlank()) {
+                if (config.networkManagerIface == null || config.networkManagerIface.isBlank()) {
                     // if it's also empty, there is nothing to configure
                     logger.error("No valid network interfaces to manage");
                     // TODO: add a thread that monitors the network
