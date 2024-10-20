@@ -17,6 +17,8 @@
 
 package org.photonvision.common.networking;
 
+import java.util.NoSuchElementException;
+
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.dataflow.DataChangeDestination;
@@ -78,12 +80,12 @@ public class NetworkManager {
                 // update NetworkConfig with found interface
                 config.networkManagerIface = iFace.devName;
                 ConfigManager.getInstance().requestSave();
-            } catch (Exception e) {
+            } catch (NoSuchElementException e) {
                 // if there are no available interfaces, go with the one from settings
                 logger.warn("No physical interface found. Maybe ethernet isn't connected?");
                 if (config.networkManagerIface.isBlank()) {
                     // if it's also empty, there is nothing to configure
-                    logger.error("No valid network interfaces to manage", e);
+                    logger.error("No valid network interfaces to manage");
                     // TODO: add a thread that monitors the network
                     return;
                 }
