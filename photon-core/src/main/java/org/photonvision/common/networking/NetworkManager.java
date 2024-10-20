@@ -63,7 +63,6 @@ public class NetworkManager {
         }
 
         var physicalDevices = NetworkUtils.getAllWiredInterfaces();
-
         if (physicalDevices.size() == 0) {
             logger.warn("No network interfaces available. Maybe ethernet isn't connected?");
             // start polling for an interface?
@@ -71,18 +70,23 @@ public class NetworkManager {
         }
 
         var config = ConfigManager.getInstance().getConfig().getNetworkConfig();
-
         if (physicalDevices.stream().noneMatch(it -> (it.devName.equals(config.networkManagerIface)))) {
             try {
+                // if the configured interface isn't in the list of available ones, try one that is
                 var iFace = physicalDevices.stream().findFirst().orElseThrow();
                 logger.warn("The configured interface doesn't match any available interface. Applying configuration to " + iFace.devName);
-                // update NetworkConfig with actual interface
+                // update NetworkConfig with found interface
                 config.networkManagerIface = iFace.devName;
                 ConfigManager.getInstance().requestSave();
             } catch (Exception e) {
-                // already checked that there is at least one item in physicalDevices, so this should never happen
-                logger.error("No valid network interfaces to manage", e);
-                return;
+                // if there are no available interfaces, go with the one from settings
+                logger.warn("No physical interface found. Maybe ethernet isn't connected?");
+                if (config.networkManagerIface.isBlank()) {
+                    // if it's also empty, there is nothing to configure
+                    logger.error("No valid network interfaces to manage", e);
+                    // TODO: add a thread that monitors the network
+                    return;
+                }
             }
         }
 
