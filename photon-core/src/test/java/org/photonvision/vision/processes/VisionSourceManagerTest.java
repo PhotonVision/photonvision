@@ -521,8 +521,11 @@ public class VisionSourceManagerTest {
                         "/dev/video0",
                         "Arducam OV2311 USB Camera",
                         new String[] {
-                            "/dev/v4l/by-id/usb-Arducam_Technology_Co.__Ltd._Arducam_OV2311_USB_Camera_UC621-video-index0",
-                            "/dev/v4l/by-path/platform-fc800000.usb-usb-0:1:1.0-video-index0"
+                            "/dev/v4l/by-path/platform-fc800000.usb-usb-0:1:1.0-video-index0" // V4l doesnt assign
+                            // by-id paths that
+                            // are identical to
+                            // two different
+                            // cameras
                         },
                         3141,
                         25446);
@@ -576,8 +579,11 @@ public class VisionSourceManagerTest {
                         "/dev/video0",
                         "Arducam OV2311 USB Camera",
                         new String[] {
-                            "/dev/v4l/by-id/usb-Arducam_Technology_Co.__Ltd._Arducam_OV2311_USB_Camera_UC621-video-index0",
-                            "/dev/v4l/by-path/platform-fc800000.usb-usb-0:1:1.0-video-index0"
+                            "/dev/v4l/by-path/platform-fc800000.usb-usb-0:1:1.0-video-index0" // V4l doesnt assign
+                            // by-id paths that
+                            // are identical to
+                            // two different
+                            // cameras
                         },
                         3141,
                         25446);
@@ -601,6 +607,45 @@ public class VisionSourceManagerTest {
         // Our cameras should be "known", and we should only "know" two cameras still
         assertTrue(inst.knownCameras.contains(info1_dup));
         assertTrue(inst.knownCameras.contains(info2_dup));
+        assertEquals(2, inst.knownCameras.size());
+
+        // duplciate cameras this simulates unplugging one and plugging the other in where v4l assigns
+        // the same by-id path to the other camera
+        var duplicateCameraInfos1 = new ArrayList<CameraInfo>();
+        CameraInfo info3_dup =
+                new CameraInfo(
+                        0,
+                        "/dev/video0",
+                        "Arducam OV2311 USB Camera",
+                        new String[] {
+                            "/dev/v4l/by-id/usb-Arducam_Technology_Co.__Ltd._Arducam_OV2311_USB_Camera_UC621-video-index0",
+                            "/dev/v4l/by-path/platform-fc800000.usb-usb-0:1:1.0-video-index0"
+                        },
+                        3141,
+                        25446);
+        CameraInfo info4_dup =
+                new CameraInfo(
+                        0,
+                        "/dev/video2",
+                        "Arducam OV2311 USB Camera",
+                        new String[] {
+                            "/dev/v4l/by-path/platform-fc880000.usb-usb-0:1:1.0-video-index0" // V4l doesnt assign
+                            // by-id paths that
+                            // are identical to
+                            // two different
+                            // cameras
+                        },
+                        3141,
+                        25446);
+
+        duplicateCameraInfos1.add(info3_dup);
+        duplicateCameraInfos1.add(info4_dup);
+
+        inst.tryMatchCamImpl(duplicateCameraInfos);
+
+        // Our cameras should be "known", and we should only "know" two cameras still
+        assertTrue(inst.knownCameras.contains(info3_dup));
+        assertTrue(inst.knownCameras.contains(info4_dup));
         assertEquals(2, inst.knownCameras.size());
     }
 }
