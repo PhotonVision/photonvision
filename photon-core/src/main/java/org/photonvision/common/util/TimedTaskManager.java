@@ -79,4 +79,8 @@ public class TimedTaskManager {
             activeTasks.remove(identifier);
         }
     }
+
+    public boolean taskActive(String identifier) {
+        return activeTasks.containsKey(identifier);
+    }
 }
