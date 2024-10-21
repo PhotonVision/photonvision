@@ -120,7 +120,7 @@ public class PhotonConfiguration {
 
         // Hack active interfaces into networkSettings
         var netConfigMap = networkConfig.toHashMap();
-        netConfigMap.put("networkInterfaceNames", NetworkUtils.getAllWiredInterfaces());
+        netConfigMap.put("networkInterfaceNames", NetworkUtils.getAllActiveWiredInterfaces());
         netConfigMap.put("networkingDisabled", NetworkManager.getInstance().networkingIsDisabled);
 
         settingsSubmap.put("networkSettings", netConfigMap);
