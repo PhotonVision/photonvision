@@ -93,7 +93,6 @@ public class NetworkManager {
                 if (config.networkManagerIface == null || config.networkManagerIface.isBlank()) {
                     // if it's also empty, there is nothing to configure
                     logger.error("No valid network interfaces to manage");
-                    // TODO: add a thread that monitors the network
                     return;
                 }
             }
@@ -184,7 +183,6 @@ public class NetworkManager {
 
         var shell = new ShellExec();
         try {
-            // set nmcli back to DHCP, and re-run dhclient -- this ought to grab a new IP address
             if (NetworkUtils.connDoesNotExist(connName)) {
                 // create connection
                 logger.info("Creating the DHCP connection " + connName );
@@ -231,7 +229,6 @@ public class NetworkManager {
 
         var shell = new ShellExec();
         try {
-            // set nmcli back to DHCP, and re-run dhclient -- this ought to grab a new IP address
             if (NetworkUtils.connDoesNotExist(connName)) {
                 // create connection
                 logger.info("Creating the Static connection " + connName );
