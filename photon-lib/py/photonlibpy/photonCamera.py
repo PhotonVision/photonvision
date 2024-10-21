@@ -226,7 +226,9 @@ class PhotonCamera:
 
         versionString = self.versionEntry.get(defaultValue="")
         localUUID = PhotonPipelineResult.photonStruct.MESSAGE_VERSION
-        remoteUUID = self._rawBytesEntry.getTopic().getProperty("message_uuid")
+
+        # ntcore hands us a JSON string with leading/trailing quotes - remove those
+        remoteUUID = self._rawBytesEntry.getTopic().getProperty("message_uuid")[1:-1]
 
         if remoteUUID is None or len(remoteUUID) == 0:
             wpilib.reportWarning(
