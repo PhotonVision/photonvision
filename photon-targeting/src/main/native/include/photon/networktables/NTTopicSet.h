@@ -18,16 +18,19 @@
 #pragma once
 
 #include <memory>
+#include <string>
 
+#include <frc/geometry/Transform3d.h>
 #include <networktables/BooleanTopic.h>
 #include <networktables/DoubleArrayTopic.h>
 #include <networktables/DoubleTopic.h>
 #include <networktables/IntegerTopic.h>
 #include <networktables/NetworkTable.h>
 #include <networktables/RawTopic.h>
+#include <networktables/StructTopic.h>
 
 namespace photon {
-constexpr const std::string PhotonPipelineResult_TYPE_STRING =
+const std::string PhotonPipelineResult_TYPE_STRING =
     std::string{"photonstruct:PhotonPipelineResult:"} +
     std::string{SerdeType<PhotonPipelineResult>::GetSchemaHash()};
 
@@ -48,7 +51,7 @@ class NTTopicSet {
   nt::DoublePublisher targetPitchEntry;
   nt::DoublePublisher targetYawEntry;
   nt::DoublePublisher targetAreaEntry;
-  nt::DoubleArrayPublisher targetPoseEntry;
+  nt::StructPublisher<frc::Transform3d> targetPoseEntry;
   nt::DoublePublisher targetSkewEntry;
 
   nt::DoublePublisher bestTargetPosX;
@@ -64,8 +67,8 @@ class NTTopicSet {
     nt::PubSubOptions options;
     options.periodic = 0.01;
     options.sendAll = true;
-    rawBytesEntry =
-        subTable->GetRawTopic("rawBytes").Publish(PhotonPipelineResult_TYPE_STRING, options);
+    rawBytesEntry = subTable->GetRawTopic("rawBytes")
+                        .Publish(PhotonPipelineResult_TYPE_STRING, options);
 
     pipelineIndexPublisher =
         subTable->GetIntegerTopic("pipelineIndexState").Publish();
@@ -84,7 +87,8 @@ class NTTopicSet {
     targetPitchEntry = subTable->GetDoubleTopic("targetPitch").Publish();
     targetAreaEntry = subTable->GetDoubleTopic("targetArea").Publish();
     targetYawEntry = subTable->GetDoubleTopic("targetYaw").Publish();
-    targetPoseEntry = subTable->GetDoubleArrayTopic("targetPose").Publish();
+    targetPoseEntry =
+        subTable->GetStructTopic<frc::Transform3d>("targetPose").Publish();
     targetSkewEntry = subTable->GetDoubleTopic("targetSkew").Publish();
 
     bestTargetPosX = subTable->GetDoubleTopic("targetPixelsX").Publish();

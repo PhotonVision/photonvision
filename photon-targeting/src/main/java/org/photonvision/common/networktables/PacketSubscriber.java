@@ -90,7 +90,7 @@ public class PacketSubscriber<T> implements AutoCloseable {
     public String getInterfaceUUID() {
         // ntcore hands us a JSON string with leading/trailing quotes - remove those
         var uuidStr = subscriber.getTopic().getProperty("message_uuid");
-        return uuidStr.substring(1, uuidStr.length() - 1);
+        return uuidStr.replace("\"", "");
     }
 
     public List<PacketResult<T>> getAllChanges() {

@@ -69,7 +69,7 @@ void PhotonCamera::SetVersionCheckEnabled(bool enabled) {
   VERSION_CHECK_ENABLED = enabled;
 }
 
-static constexpr const std::string TYPE_STRING =
+static const std::string TYPE_STRING =
     std::string{"photonstruct:PhotonPipelineResult:"} +
     std::string{SerdeType<PhotonPipelineResult>::GetSchemaHash()};
 
@@ -275,8 +275,14 @@ void PhotonCamera::VerifyVersion() {
     }
   } else {
     std::string local_uuid{SerdeType<PhotonPipelineResult>::GetSchemaHash()};
-    std::string remote_uuid =
+
+    // implicit conversion here might throw an exception, so be careful of that
+    wpi::json remote_uuid_json =
         rawBytesEntry.GetTopic().GetProperty("message_uuid");
+    if (!remote_uuid_json.is_string()) {
+      fmt::println("RUN IS NOT OF STRING TYPE");
+    }
+    std::string remote_uuid{remote_uuid_json};
 
     if (local_uuid != remote_uuid) {
       FRC_ReportError(frc::warn::Warning, bfw);
