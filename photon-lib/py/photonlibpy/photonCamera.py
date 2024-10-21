@@ -230,14 +230,18 @@ class PhotonCamera:
         localUUID = PhotonPipelineResult.photonStruct.MESSAGE_VERSION
 
         # ntcore hands us a JSON string with leading/trailing quotes - remove those
-        remoteUUID = self._rawBytesEntry.getTopic().getProperty("message_uuid")[1:-1]
+        remoteUUID = self._rawBytesEntry.getTopic().getProperty("message_uuid")
 
         if remoteUUID is None or len(remoteUUID) == 0:
             wpilib.reportWarning(
                 f"PhotonVision coprocessor at path {self._path} has not reported a message interface UUID - is your coprocessor's camera started?",
                 True,
             )
-        elif localUUID != remoteUUID:
+
+        # ntcore hands us a JSON string with leading/trailing quotes - remove those
+        remoteUUID = remoteUUID.replace("\"", "")
+
+        if localUUID != remoteUUID:
             # Verified version mismatch
 
             bfw = """
