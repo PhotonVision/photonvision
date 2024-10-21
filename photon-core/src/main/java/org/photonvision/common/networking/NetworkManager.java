@@ -71,7 +71,10 @@ public class NetworkManager {
         // Start tasks to monitor the network interface(s)
         var ethernetDevices = NetworkUtils.getAllWiredInterfaces();
         for (NMDeviceInfo deviceInfo : ethernetDevices) {
-            TimedTaskManager.getInstance().addTask("deviceStatus-"+deviceInfo.devName, deviceStatus(deviceInfo.devName), 5000);
+            var task = "deviceStatus-" + deviceInfo.devName;
+            if (!TimedTaskManager.getInstance().taskActive(task)) {
+                TimedTaskManager.getInstance().addTask(task, deviceStatus(deviceInfo.devName), 5000);
+            }
         }
 
         var physicalDevices = NetworkUtils.getAllActiveWiredInterfaces();
@@ -146,12 +149,7 @@ public class NetworkManager {
                                         "sed -i \"s/127.0.1.1.*%s/127.0.1.1\\t%s/g\" /etc/hosts",
                                         oldHostname, hostname));
 
-                if (Platform.isRaspberryPi()) {
-                    // TODO: test on RaspberryPi if this is still needed
-                    shell.executeBashCommand("sudo service avahi-daemon restart");
-                } else {
-                    shell.executeBashCommand("sudo systemctl restart avahi-daemon.service");
-                }
+                shell.executeBashCommand("systemctl restart avahi-daemon.service");
 
                 var success = setHostnameRetCode == 0 && addHostRetCode == 0;
                 if (!success) {
@@ -199,10 +197,6 @@ public class NetworkManager {
             // activate it
             logger.info("Activating the DHCP connection " + connName );
             shell.executeBashCommand("nmcli connection up \"${connection}\"".replace("${connection}", connName), false);
-
-            if (Platform.isRaspberryPi()) {
-                shell.executeBashCommand("dhclient " + config.networkManagerIface, false);
-            }
         } catch (Exception e) {
             logger.error("Exception while setting DHCP!", e);
         }
@@ -269,7 +263,7 @@ public class NetworkManager {
     // Detects changes in the carrier and reinitializes after re-connect
     private Runnable deviceStatus(String devName) {
         Path file = Path.of("/sys/class/net/{device}/carrier".replace("{device}", devName));
-        logger.debug("Watching device at path: " + file.toString());
+        logger.debug("Watching network interface at path: " + file.toString());
         var last = new Object() {boolean carrier = true;};
         return () ->
         {
