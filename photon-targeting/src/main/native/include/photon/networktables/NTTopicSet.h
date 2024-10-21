@@ -27,6 +27,10 @@
 #include <networktables/RawTopic.h>
 
 namespace photon {
+constexpr const std::string PhotonPipelineResult_TYPE_STRING =
+    std::string{"photonstruct:PhotonPipelineResult:"} +
+    std::string{SerdeType<PhotonPipelineResult>::GetSchemaHash()};
+
 class NTTopicSet {
  public:
   std::shared_ptr<nt::NetworkTable> subTable;
@@ -61,7 +65,7 @@ class NTTopicSet {
     options.periodic = 0.01;
     options.sendAll = true;
     rawBytesEntry =
-        subTable->GetRawTopic("rawBytes").Publish("rawBytes", options);
+        subTable->GetRawTopic("rawBytes").Publish(PhotonPipelineResult_TYPE_STRING, options);
 
     pipelineIndexPublisher =
         subTable->GetIntegerTopic("pipelineIndexState").Publish();

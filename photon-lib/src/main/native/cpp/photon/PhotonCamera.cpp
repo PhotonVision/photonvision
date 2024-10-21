@@ -69,7 +69,7 @@ void PhotonCamera::SetVersionCheckEnabled(bool enabled) {
   VERSION_CHECK_ENABLED = enabled;
 }
 
-const std::string TYPE_STRING =
+static constexpr const std::string TYPE_STRING =
     std::string{"photonstruct:PhotonPipelineResult:"} +
     std::string{SerdeType<PhotonPipelineResult>::GetSchemaHash()};
 
@@ -266,11 +266,11 @@ void PhotonCamera::VerifyVersion() {
 
       std::string cameraNameOutString;
       for (unsigned int i = 0; i < cameraNames.size(); i++) {
-        cameraNameOutString += "\n" + cameraNames[i];
+        cameraNameOutString += ("\n" + cameraNames[i]);
       }
       FRC_ReportError(
           frc::warn::Warning,
-          "Found the following PhotonVision cameras on NetworkTables:{}",
+          "Found the following PhotonVision cameras on NetworkTables:\n{}",
           cameraNameOutString);
     }
   } else {

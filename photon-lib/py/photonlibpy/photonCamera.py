@@ -229,7 +229,6 @@ class PhotonCamera:
         versionString = self.versionEntry.get(defaultValue="")
         localUUID = PhotonPipelineResult.photonStruct.MESSAGE_VERSION
 
-        # ntcore hands us a JSON string with leading/trailing quotes - remove those
         remoteUUID = self._rawBytesEntry.getTopic().getProperty("message_uuid")
 
         if remoteUUID is None or len(remoteUUID) == 0:
