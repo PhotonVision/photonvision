@@ -36,7 +36,6 @@ function debounce(func: (...args: any[]) => void, wait: number) {
 
 const debouncedEmit = debounce((v: number) => {
   emit("input", v);
-  console.log("debouncedEmit", v);
 }, 20);
 
 const localValue = computed({
