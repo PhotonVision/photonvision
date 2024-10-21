@@ -280,7 +280,9 @@ void PhotonCamera::VerifyVersion() {
     wpi::json remote_uuid_json =
         rawBytesEntry.GetTopic().GetProperty("message_uuid");
     if (!remote_uuid_json.is_string()) {
-      fmt::println("RUN IS NOT OF STRING TYPE");
+      FRC_ReportError(frc::warn::Warning,
+                      "Cannot find property message_uuid for PhotonCamera {}",
+                      path);
     }
     std::string remote_uuid{remote_uuid_json};
 
