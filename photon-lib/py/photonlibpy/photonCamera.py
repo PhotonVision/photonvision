@@ -53,7 +53,9 @@ class PhotonCamera:
         self._cameraTable = photonvision_root_table.getSubTable(cameraName)
         self._path = self._cameraTable.getPath()
         self._rawBytesEntry = self._cameraTable.getRawTopic("rawBytes").subscribe(
-            "rawBytes", bytes([]), ntcore.PubSubOptions(periodic=0.01, sendAll=True)
+            f"photonstruct:PhotonPipelineResult:{PhotonPipelineResult.photonStruct.MESSAGE_VERSION}",
+            bytes([]),
+            ntcore.PubSubOptions(periodic=0.01, sendAll=True),
         )
 
         self._driverModePublisher = self._cameraTable.getBooleanTopic(

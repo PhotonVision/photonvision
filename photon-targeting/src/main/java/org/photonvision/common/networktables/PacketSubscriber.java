@@ -88,7 +88,7 @@ public class PacketSubscriber<T> implements AutoCloseable {
 
     // TODO - i can see an argument for moving this logic all here instead of keeping in photoncamera
     public String getInterfaceUUID() {
-        // ntcore hands us a JSON string with leading/trailing quotes - remove those 
+        // ntcore hands us a JSON string with leading/trailing quotes - remove those
         var uuidStr = subscriber.getTopic().getProperty("message_uuid");
         return uuidStr.substring(1, uuidStr.length() - 1);
     }

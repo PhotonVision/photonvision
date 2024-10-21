@@ -69,6 +69,10 @@ void PhotonCamera::SetVersionCheckEnabled(bool enabled) {
   VERSION_CHECK_ENABLED = enabled;
 }
 
+const std::string TYPE_STRING =
+    std::string{"photonstruct:PhotonPipelineResult:"} +
+    std::string{SerdeType<PhotonPipelineResult>::GetSchemaHash()};
+
 PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
                            const std::string_view cameraName)
     : mainTable(instance.GetTable("photonvision")),
@@ -76,7 +80,7 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
       rawBytesEntry(
           rootTable->GetRawTopic("rawBytes")
               .Subscribe(
-                  "rawBytes", {},
+                  TYPE_STRING, {},
                   {.pollStorage = 20, .periodic = 0.01, .sendAll = true})),
       inputSaveImgEntry(
           rootTable->GetIntegerTopic("inputSaveImgCmd").Publish()),
