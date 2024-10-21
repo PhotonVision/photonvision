@@ -10,6 +10,10 @@ apply from: "${rootDir}/../shared/examples_common.gradle"
 
 def ROBOT_MAIN_CLASS = "frc.robot.Main"
 
+repositories {
+    mavenLocal();
+}
+
 wpi.maven.useDevelopment = true
 wpi.versions.wpilibVersion = "2024.3.2"
 wpi.versions.wpimathVersion = "2024.3.2"

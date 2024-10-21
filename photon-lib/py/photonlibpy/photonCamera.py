@@ -239,7 +239,7 @@ class PhotonCamera:
             )
 
         # ntcore hands us a JSON string with leading/trailing quotes - remove those
-        remoteUUID = remoteUUID.replace("\"", "")
+        remoteUUID = remoteUUID.replace('"', "")
 
         if localUUID != remoteUUID:
             # Verified version mismatch
