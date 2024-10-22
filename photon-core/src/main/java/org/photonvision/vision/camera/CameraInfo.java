@@ -87,12 +87,6 @@ public class CameraInfo extends UsbCameraInfo {
         if (getClass() != obj.getClass()) return false;
         CameraInfo other = (CameraInfo) obj;
 
-        // Windows device number is not significant. See
-        // https://github.com/wpilibsuite/allwpilib/blob/4b94a64b06057c723d6fcafeb1a45f55a70d179a/cscore/src/main/native/windows/UsbCameraImpl.cpp#L1128
-        if (!Platform.isWindows()) {
-            if (dev != other.dev) return false;
-        }
-
         if (!path.equals(other.path)) return false;
         if (!name.equals(other.name)) return false;
         if (!Arrays.asList(this.getUSBPath()).contains(other.getUSBPath())) return false;
