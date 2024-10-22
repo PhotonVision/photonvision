@@ -137,7 +137,7 @@ public class PhotonCamera implements AutoCloseable {
                 cameraTable
                         .getRawTopic("rawBytes")
                         .subscribe(
-                                "rawBytes",
+                                PhotonPipelineResult.photonStruct.getTypeString(),
                                 new byte[] {},
                                 PubSubOption.periodic(0.01),
                                 PubSubOption.sendAll(true),
@@ -185,6 +185,8 @@ public class PhotonCamera implements AutoCloseable {
      * make sure to call this frequently enough to avoid old results being discarded, too!
      */
     public List<PhotonPipelineResult> getAllUnreadResults() {
+        verifyVersion();
+
         List<PhotonPipelineResult> ret = new ArrayList<>();
 
         var changes = resultSubscriber.getAllChanges();
