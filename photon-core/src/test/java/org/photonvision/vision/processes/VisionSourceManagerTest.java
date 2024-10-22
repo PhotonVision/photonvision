@@ -648,4 +648,108 @@ public class VisionSourceManagerTest {
         assertTrue(inst.knownCameras.contains(info4_dup));
         assertEquals(2, inst.knownCameras.size());
     }
+    
+    @Test
+    public void testDevNumSwitch() {
+        Logger.setLevel(LogGroup.Camera, LogLevel.DEBUG);
+
+        // List of known cameras
+        var cameraInfos = new ArrayList<CameraInfo>();
+
+        var inst = new VisionSourceManager();
+        ConfigManager.getInstance().clearConfig();
+        ConfigManager.getInstance().load();
+        ConfigManager.getInstance().getConfig().getNetworkConfig().matchCamerasOnlyByPath = false;
+
+        // Match empty camera infos
+        inst.tryMatchCamImpl(cameraInfos);
+
+        CameraInfo info1 =
+                new CameraInfo(
+                        0,
+                        "/dev/video2",
+                        "Arducam OV2311 USB Camera",
+                        new String[] {
+                                "/dev/v4l/by-id/usb-Arducam_Technology_Co.__Ltd._Arducam_OV2311_USB_Camera_UC621-video-index0",
+                                 "/dev/v4l/by-path/platform-fc880000.usb-usb-0:1:1.0-video-index0"
+                        },
+                        3141,
+                        25446);
+        CameraInfo info2 =
+                new CameraInfo(
+                        1,
+                        "/dev/video0",
+                        "str_fr_cam",
+                        new String[] {
+                                "/dev/v4l/by-id/usb-Arducam_Technology_Co.__Ltd._str_fr_cam_2053002-video-index0",
+                                 "/dev/v4l/by-path/platform-fc800000.usb-usb-0:1:1.0-video-index0"
+                        },
+                        3141,
+                        25446);
+
+        cameraInfos.add(info1);
+        cameraInfos.add(info2);
+
+        // Match two "new" cameras
+        var ret1 = inst.tryMatchCamImpl(cameraInfos);
+
+        // Our cameras should be "known"
+        assertTrue(inst.knownCameras.contains(info1));
+        assertTrue(inst.knownCameras.contains(info2));
+        assertEquals(2, inst.knownCameras.size());
+        assertEquals(2, ret1.size());
+
+        // Exactly one camera should have the path we put in
+        for (int i = 0; i < cameraInfos.size(); i++) {
+            var testPath = cameraInfos.get(i).getUSBPath().get();
+            assertEquals(
+                    1,
+                    ret1.stream()
+                            .filter(it -> testPath.equals(it.cameraConfiguration.getUSBPath().get()))
+                            .count());
+        }
+
+        // and the names should be unique
+        for (int i = 0; i < ret1.size(); i++) {
+            var thisName = ret1.get(i).cameraConfiguration.uniqueName;
+            assertEquals(
+                    1,
+                    ret1.stream().filter(it -> thisName.equals(it.cameraConfiguration.uniqueName)).count());
+        }
+
+        // duplciate cameras, same info, new ref
+        var duplicateCameraInfos = new ArrayList<CameraInfo>();
+        CameraInfo info1_dup =
+        new CameraInfo(
+                1,
+                "/dev/video2",
+                "Arducam OV2311 USB Camera",
+                new String[] {
+                        "/dev/v4l/by-id/usb-Arducam_Technology_Co.__Ltd._Arducam_OV2311_USB_Camera_UC621-video-index0",
+                         "/dev/v4l/by-path/platform-fc880000.usb-usb-0:1:1.0-video-index0"
+                },
+                3141,
+                25446);
+        CameraInfo info2_dup =
+                new CameraInfo(
+                        0,
+                        "/dev/video0",
+                        "str_fr_cam",
+                        new String[] {
+                                "/dev/v4l/by-id/usb-Arducam_Technology_Co.__Ltd._str_fr_cam_2053002-video-index0",
+                                "/dev/v4l/by-path/platform-fc800000.usb-usb-0:1:1.0-video-index0"
+                        },
+                        3141,
+                        25446);
+
+        duplicateCameraInfos.add(info1_dup);
+        duplicateCameraInfos.add(info2_dup);
+
+        inst.tryMatchCamImpl(duplicateCameraInfos);
+
+        // Our cameras should be "known", and we should only "know" two cameras still
+        assertTrue(inst.knownCameras.contains(info1_dup));
+        assertTrue(inst.knownCameras.contains(info2_dup));
+        assertEquals(2, inst.knownCameras.size());
+    }
 }
