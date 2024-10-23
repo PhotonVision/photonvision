@@ -34,7 +34,7 @@ ext {
     wpilibVersion = "2025.1.1-beta-1"
     wpimathVersion = wpilibVersion
     openCVYear = "2024"
-    openCVversion = "4.8.0-2"
+    openCVversion = "4.8.0-4"
     joglVersion = "2.4.0"
     javalinVersion = "5.6.2"
     libcameraDriverVersion = "dev-v2023.1.0-14-g787ab59"
