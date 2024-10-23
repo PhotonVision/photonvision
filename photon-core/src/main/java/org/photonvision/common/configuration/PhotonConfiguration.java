@@ -114,6 +114,16 @@ public class PhotonConfiguration {
         cameraConfigurations.put(name, config);
     }
 
+    /**
+     * Delete a camera by its unique name
+     *
+     * @param name The camera name (usually unique name)
+     * @return True if the camera configuration was removed
+     */
+    public boolean removeCameraConfig(String name) {
+        return cameraConfigurations.remove(name) != null;
+    }
+
     public Map<String, Object> toHashMap() {
         Map<String, Object> map = new HashMap<>();
         var settingsSubmap = new HashMap<String, Object>();
