@@ -79,9 +79,7 @@ public class TestUtils {
                     "cscorejni",
                     "apriltagjni");
 
-            CombinedRuntimeLoader.loadLibraries(
-                    TestUtils.class,
-                    Core.NATIVE_LIBRARY_NAME);
+            CombinedRuntimeLoader.loadLibraries(TestUtils.class, Core.NATIVE_LIBRARY_NAME);
 
             has_loaded = true;
         } catch (IOException e) {
