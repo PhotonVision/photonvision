@@ -7,6 +7,7 @@ PhotonVision supports object detection using neural network accelerator hardware
 For the 2024 season, PhotonVision ships with a **pre-trained NOTE detector** (shown above), as well as a mechanism for swapping in custom models. Future development will focus on enabling lower friction management of multiple custom models.
 
 ```{image} images/notes-ui.png
+
 ```
 
 ## Tracking Objects
@@ -32,9 +33,40 @@ Compared to other pipelines, object detection exposes very few tuning handles. T
 
 The same area, aspect ratio, and target orientation/sort parameters from {ref}`reflective pipelines <docs/reflectiveAndShape/contour-filtering:Reflective>` are also exposed in the object detection card.
 
-## Training Custom Models
+## Converting a custom model
 
-Coming soon!
+After training your own YOLOv5s model, you can convert it to an RKNN file for use with PhotonVision. If you have not already trained a model, you can follow the official YOLOv5 training guide [here](https://docs.ultralytics.com/yolov5/tutorials/train_custom_data/)
+
+### Step 1: Exporting the Model to ONNX
+
+Using your trained YOLOv5s model, you will need to export it to ONNX format using airockchip's YOLOv5 fork.
+
+First, download airockchip's YOLOv5 fork along with the onnx to rknn conversion script.
+
+```bash
+git clone https://github.com/airockchip/yolov5.git airockchip-yolov5
+curl -O link-to-onnx2rknn.py
+```
+
+#### Export Command
+
+```bash
+cd airockchip-yolov5 && python export.py --weights '/path/to/best.pt' --rknpu --include 'onnx'
+```
+
+### Step 2: Converting ONNX to RKNN
+
+Using the `onnx2rknn.py` script, convert the ONNX model to an RKNN file. This script was downloaded in a previous step.
+
+#### Conversion Command
+
+Run the script, passing in the ONNX model and a folder containing images from your dataset:
+
+```bash
+python onnx2rknn.py /path/to/best.onnx /path/to/export/best.rknn /path/to/dataset/valid/images
+```
+
+If you have any questions about the conversion process, ask in the PhotonVision Discord server.
 
 ## Uploading Custom Models
 
