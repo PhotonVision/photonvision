@@ -146,27 +146,27 @@ jacocoTestReport {
     }
 }
 
+
 protobuf {
     protoc {
         artifact = 'com.google.protobuf:protoc:3.21.12'
     }
     plugins {
-        wpilib {
-            path = rootProject.file("protoplugin/binary/wpiprotoplugin.jar")
+        quickbuf {
+            artifact = 'us.hebi.quickbuf:protoc-gen-quickbuf:1.3.3'
         }
     }
     generateProtoTasks {
         all().configureEach { task ->
-            task.inputs.file(rootProject.file("protoplugin/binary/wpiprotoplugin.jar"))
-            task.plugins {
-                wpilib {
-                    outputSubDir = 'cpp'
-                    // option "gen_descriptors=true" // Is this needed? idk!
-                }
-            }
             task.builtins {
-                cpp {}
+                // cpp {}
+                // The protobuf-java code is bad -- use quickbuf
                 remove java
+            }
+            task.plugins {
+                quickbuf {
+                    option "gen_descriptors=true"
+                }
             }
         }
     }
