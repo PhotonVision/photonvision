@@ -1,0 +1,4 @@
+.pytest_cache
+test-resources
+networktables.json
+*.sqlite
