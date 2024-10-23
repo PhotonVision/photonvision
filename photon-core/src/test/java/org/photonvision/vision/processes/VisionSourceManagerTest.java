@@ -641,7 +641,7 @@ public class VisionSourceManagerTest {
         duplicateCameraInfos1.add(info3_dup);
         duplicateCameraInfos1.add(info4_dup);
 
-        inst.tryMatchCamImpl(duplicateCameraInfos);
+        inst.tryMatchCamImpl(duplicateCameraInfos1);
 
         // Our cameras should be "known", and we should only "know" two cameras still
         assertTrue(inst.knownCameras.contains(info3_dup));
