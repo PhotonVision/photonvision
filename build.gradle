@@ -39,7 +39,7 @@ ext {
     javalinVersion = "5.6.2"
     libcameraDriverVersion = "dev-v2023.1.0-14-g787ab59"
     rknnVersion = "dev-v2024.0.1-4-g0db16ac"
-    frcYear = "2024"
+    frcYear = "2025"
     mrcalVersion = "dev-v2024.0.0-24-gc1efcf0";
 
 
