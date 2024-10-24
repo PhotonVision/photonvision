@@ -323,7 +323,7 @@ fi
 
 if grep -q "RK3588" /proc/cpuinfo; then
   debug "This has a Rockchip RK3588, enabling all cores"
-  sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=0-7/g' /lib/systemd/system/photonvision.service
+  sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=4-7/g' /lib/systemd/system/photonvision.service
 fi
 
 cp /lib/systemd/system/photonvision.service /etc/systemd/system/photonvision.service
