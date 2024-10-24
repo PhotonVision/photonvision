@@ -44,20 +44,22 @@ SwerveDriveSim::SwerveDriveSim(
     : SwerveDriveSim(
           frc::LinearSystem<2, 1, 2>{
               (Eigen::MatrixXd(2, 2) << 0.0, 1.0, 0.0,
-               -driveFF.kV.to<double>() / driveFF.kA.to<double>())
+               -driveFF.GetKv().to<double>() / driveFF.GetKa().to<double>())
                   .finished(),
-              Eigen::Matrix<double, 2, 1>{0.0, 1.0 / driveFF.kA.to<double>()},
+              Eigen::Matrix<double, 2, 1>{0.0,
+                                          1.0 / driveFF.GetKa().to<double>()},
               (Eigen::MatrixXd(2, 2) << 1.0, 0.0, 0.0, 1.0).finished(),
               Eigen::Matrix<double, 2, 1>{0.0, 0.0}},
-          driveFF.kS, driveMotor, driveGearing, driveWheelRadius,
+          driveFF.GetKs(), driveMotor, driveGearing, driveWheelRadius,
           frc::LinearSystem<2, 1, 2>{
               (Eigen::MatrixXd(2, 2) << 0.0, 1.0, 0.0,
-               -steerFF.kV.to<double>() / steerFF.kA.to<double>())
+               -steerFF.GetKv().to<double>() / steerFF.GetKa().to<double>())
                   .finished(),
-              Eigen::Matrix<double, 2, 1>{0.0, 1.0 / steerFF.kA.to<double>()},
+              Eigen::Matrix<double, 2, 1>{0.0,
+                                          1.0 / steerFF.GetKa().to<double>()},
               (Eigen::MatrixXd(2, 2) << 1.0, 0.0, 0.0, 1.0).finished(),
               Eigen::Matrix<double, 2, 1>{0.0, 0.0}},
-          steerFF.kS, steerMotor, steerGearing, kinematics) {}
+          steerFF.GetKs(), steerMotor, steerGearing, kinematics) {}
 
 SwerveDriveSim::SwerveDriveSim(
     const frc::LinearSystem<2, 1, 2>& drivePlant, units::volt_t driveKs,

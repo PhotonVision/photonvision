@@ -38,11 +38,6 @@ public class PhotonPipelineResultProto
     }
 
     @Override
-    public Protobuf<?, ?>[] getNested() {
-        return new Protobuf<?, ?>[] {PhotonTrackedTarget.proto, MultiTargetPNPResult.proto};
-    }
-
-    @Override
     public ProtobufPhotonPipelineResult createMessage() {
         return ProtobufPhotonPipelineResult.newInstance();
     }

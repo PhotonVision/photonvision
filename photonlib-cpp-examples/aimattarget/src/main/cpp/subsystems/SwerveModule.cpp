@@ -64,12 +64,11 @@ void SwerveModule::Periodic() {
   driveMotor.SetVoltage(driveFF + drivePID);
 }
 
-void SwerveModule::SetDesiredState(const frc::SwerveModuleState& newState,
+void SwerveModule::SetDesiredState(frc::SwerveModuleState newState,
                                    bool shouldBeOpenLoop, bool steerInPlace) {
   frc::Rotation2d currentRotation = GetAbsoluteHeading();
-  frc::SwerveModuleState optimizedState =
-      frc::SwerveModuleState::Optimize(newState, currentRotation);
-  desiredState = optimizedState;
+  newState.Optimize(currentRotation);
+  desiredState = newState;
 }
 
 frc::Rotation2d SwerveModule::GetAbsoluteHeading() const {
