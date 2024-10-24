@@ -64,8 +64,8 @@ class PhotonPoseEstimatorTest {
         cameraOne.result =
                 new PhotonPipelineResult(
                         0,
-                        0,
-                        0,
+                        11 * 1000000,
+                        1100000,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -130,7 +130,6 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
-        cameraOne.result.setReceiveTimestampMicros((long) (11 * 1e6));
 
         PhotonPoseEstimator estimator =
                 new PhotonPoseEstimator(aprilTags, PoseStrategy.LOWEST_AMBIGUITY, new Transform3d());
@@ -150,8 +149,8 @@ class PhotonPoseEstimatorTest {
         cameraOne.result =
                 new PhotonPipelineResult(
                         0,
-                        0,
-                        0,
+                        4000000,
+                        1100000,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -217,8 +216,6 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
 
-        cameraOne.result.setReceiveTimestampMicros((long) (4 * 1e6));
-
         PhotonPoseEstimator estimator =
                 new PhotonPoseEstimator(
                         aprilTags,
@@ -240,8 +237,8 @@ class PhotonPoseEstimatorTest {
         cameraOne.result =
                 new PhotonPipelineResult(
                         0,
-                        0,
-                        0,
+                        17000000,
+                        1100000,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -306,7 +303,6 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
-        cameraOne.result.setReceiveTimestampMicros((long) (17 * 1e6));
 
         PhotonPoseEstimator estimator =
                 new PhotonPoseEstimator(
@@ -330,8 +326,8 @@ class PhotonPoseEstimatorTest {
         cameraOne.result =
                 new PhotonPipelineResult(
                         0,
-                        0,
-                        0,
+                        1000000,
+                        1100000,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -396,7 +392,6 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
-        cameraOne.result.setReceiveTimestampMicros((long) (1 * 1e6));
 
         PhotonPoseEstimator estimator =
                 new PhotonPoseEstimator(
@@ -412,8 +407,8 @@ class PhotonPoseEstimatorTest {
         cameraOne.result =
                 new PhotonPipelineResult(
                         0,
-                        0,
-                        0,
+                        7000000,
+                        1100000,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -478,7 +473,6 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
-        cameraOne.result.setReceiveTimestampMicros((long) (7 * 1e6));
 
         estimatedPose = estimator.update(cameraOne.result);
         pose = estimatedPose.get().estimatedPose;
@@ -495,8 +489,8 @@ class PhotonPoseEstimatorTest {
         var result =
                 new PhotonPipelineResult(
                         0,
-                        0,
-                        0,
+                        20000000,
+                        1100000,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -519,7 +513,6 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
-        result.setReceiveTimestampMicros((long) (20 * 1e6));
 
         PhotonPoseEstimator estimator =
                 new PhotonPoseEstimator(
@@ -529,7 +522,7 @@ class PhotonPoseEstimatorTest {
 
         // Empty result, expect empty result
         cameraOne.result = new PhotonPipelineResult();
-        cameraOne.result.setReceiveTimestampMicros((long) (1 * 1e6));
+        cameraOne.result.metadata.captureTimestampMicros = (long) (1 * 1e6);
         Optional<EstimatedRobotPose> estimatedPose = estimator.update(cameraOne.result);
         assertFalse(estimatedPose.isPresent());
 
@@ -563,8 +556,8 @@ class PhotonPoseEstimatorTest {
         cameraOne.result =
                 new PhotonPipelineResult(
                         0,
-                        0,
-                        0,
+                        20 * 1000000,
+                        1100000,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -629,7 +622,6 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8))))); // 3 3 3 ambig .4
-        cameraOne.result.setReceiveTimestampMicros(20 * 1000000);
 
         PhotonPoseEstimator estimator =
                 new PhotonPoseEstimator(

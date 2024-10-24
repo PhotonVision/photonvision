@@ -39,6 +39,8 @@ import org.photonvision.common.scripting.ScriptEventType;
 import org.photonvision.common.scripting.ScriptManager;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.JacksonUtils;
+import org.photonvision.jni.TimeSyncClient;
+import org.photonvision.jni.TimeSyncServer;
 
 public class NetworkTablesManager {
     private final NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
@@ -52,6 +54,9 @@ public class NetworkTablesManager {
 
     private StringSubscriber m_fieldLayoutSubscriber =
             kRootTable.getStringTopic(kFieldLayoutName).subscribe("");
+
+    private TimeSyncClient m_timeSyncClient;
+    private TimeSyncServer m_timeSyncServer;
 
     private NetworkTablesManager() {
         ntInstance.addLogger(255, 255, (event) -> {}); // to hide error messages
@@ -163,12 +168,31 @@ public class NetworkTablesManager {
     }
 
     public void setConfig(NetworkConfig config) {
+        if (m_timeSyncClient != null) m_timeSyncClient.stop();
+        if (m_timeSyncServer != null) m_timeSyncServer.stop();
+        m_timeSyncClient = null;
+        m_timeSyncServer = null;
+
         if (config.runNTServer) {
             setServerMode();
+            m_timeSyncServer = new TimeSyncServer(5810);
+            m_timeSyncServer.start();
         } else {
             setClientMode(config.ntServerAddress);
+            m_timeSyncClient = new TimeSyncClient(config.ntServerAddress, 5810, 1.0);
+            m_timeSyncClient.start();
         }
+
         broadcastVersion();
+    }
+
+    public long getOffset() {
+        if (m_timeSyncClient != null) return m_timeSyncClient.getOffset();
+        if (m_timeSyncServer != null) return 0;
+
+        // ????? should never hit
+        logger.error("Client and server and null?");
+        return 0;
     }
 
     private void setClientMode(String ntServerAddress) {

@@ -222,7 +222,7 @@ public class PhotonCamera implements AutoCloseable {
         // Set the timestamp of the result. Since PacketSubscriber doesn't realize that the result
         // contains a thing with time knowledge, set it here.
         // getLatestChange returns in microseconds, so we divide by 1e6 to convert to seconds.
-        // TODO: NT4 time sync is Not To Be Trusted, we should do something else?
+        // This is in nt::Now timebase so should Just Work with the new timesync stuff
         result.setReceiveTimestampMicros(ret.timestamp);
 
         return result;
