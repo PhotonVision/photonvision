@@ -2,8 +2,6 @@ plugins {
     id "cpp"
     id "google-test-test-suite"
     id "edu.wpi.first.GradleRIO" version "2025.1.1-beta-1"
-
-    id "com.dorongold.task-tree" version "2.1.0"
 }
 
 repositories {
@@ -11,6 +9,7 @@ repositories {
     jcenter()
 }
 
+wpi.maven.useLocal = false
 wpi.maven.useDevelopment = true
 wpi.versions.wpilibVersion = "2025.1.1-beta-1"
 wpi.versions.wpimathVersion = "2025.1.1-beta-1"

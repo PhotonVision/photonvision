@@ -78,7 +78,6 @@ inline constexpr double kSteerKP = 20.0;
 inline constexpr double kSteerKI = 0.0;
 inline constexpr double kSteerKD = 0.25;
 
-
 using namespace units;
 
 inline const frc::SimpleMotorFeedforward<units::meters> kDriveFF{
