@@ -355,7 +355,6 @@ public class VisionModule {
         settings.boardHeight = data.patternHeight;
         settings.boardWidth = data.patternWidth;
         settings.boardType = data.boardType;
-        settings.useMrCal = data.useMrCal;
         settings.resolution = resolution;
         settings.useOldPattern = data.useOldPattern;
         settings.tagFamily = data.tagFamily;

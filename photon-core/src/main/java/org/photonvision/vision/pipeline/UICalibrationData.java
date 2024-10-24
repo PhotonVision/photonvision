@@ -28,7 +28,6 @@ public class UICalibrationData {
     public int patternWidth;
     public int patternHeight;
     public BoardType boardType;
-    public boolean useMrCal;
     public double markerSizeIn;
     public boolean useOldPattern;
     public TagFamily tagFamily;
@@ -45,7 +44,6 @@ public class UICalibrationData {
             int patternWidth,
             int patternHeight,
             BoardType boardType,
-            boolean useMrCal,
             boolean useOldPattern,
             TagFamily tagFamily) {
         this.count = count;
@@ -57,7 +55,6 @@ public class UICalibrationData {
         this.patternWidth = patternWidth;
         this.patternHeight = patternHeight;
         this.boardType = boardType;
-        this.useMrCal = useMrCal;
         this.useOldPattern = useOldPattern;
         this.tagFamily = tagFamily;
     }
