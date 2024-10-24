@@ -45,34 +45,57 @@ public class TimedTaskManager {
         }
     }
 
-    private final ScheduledThreadPoolExecutor timedTaskExecutorPool =
-            new ScheduledThreadPoolExecutor(2, new CaughtThreadFactory()) {
-                @SuppressWarnings("rawtypes")
-                protected void afterExecute(Runnable r, Throwable t) {
-                    super.afterExecute(r, t);
-                    // from
-                    // https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ThreadPoolExecutor.html#afterExecute(java.lang.Runnable,%20java.lang.Throwable)
-                    if (t == null && r instanceof Future<?>) {
-                        if (!((Future<?>) r).isDone()) {
-                            return;
-                        }
-                        try {
-                            Object result = ((Future<?>) r).get();
-                            if (result == null) return;
-                            logger.error("Result from ScheduledThreadPoolExecutor! " + result);
-                        } catch (CancellationException ce) {
-                            t = ce;
-                        } catch (ExecutionException ee) {
-                            t = ee.getCause();
-                        } catch (InterruptedException ie) {
-                            Thread.currentThread().interrupt(); // ignore/reset
-                        }
-                    }
-                    if (t != null) {
-                        logger.error("Error from ScheduledThreadPoolExecutor!", t);
-                    }
+    private static class CaughtScheduledThreadPoolExecutor extends ScheduledThreadPoolExecutor {
+        public CaughtScheduledThreadPoolExecutor(int corePoolSize, ThreadFactory threadFactory) {
+            super(corePoolSize, threadFactory);
+        }
+
+        public Runnable wrap(Runnable runnable) {
+            return () -> {
+                try {
+                    runnable.run();
+                } catch (Throwable t) {
+                    logger.error("Exception thrown by threadpool: " + t.getMessage(), t);
                 }
             };
+        }
+
+        public <V> Callable<V> wrap(Callable<V> runnable) {
+            return () -> {
+                try {
+                    return runnable.call();
+                } catch (Throwable t) {
+                    logger.error("Exception thrown by threadpool: " + t.getMessage(), t);
+                    return null;
+                }
+            };
+        }
+
+        @Override
+        public <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay, TimeUnit unit) {
+            return super.schedule(wrap(callable), delay, unit);
+        }
+
+        @Override
+        public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
+            return super.schedule(wrap(command), delay, unit);
+        }
+
+        @Override
+        public ScheduledFuture<?> scheduleAtFixedRate(
+                Runnable command, long initialDelay, long period, TimeUnit unit) {
+            return super.scheduleAtFixedRate(wrap(command), initialDelay, period, unit);
+        }
+
+        @Override
+        public ScheduledFuture<?> scheduleWithFixedDelay(
+                Runnable command, long initialDelay, long delay, TimeUnit unit) {
+            return super.scheduleWithFixedDelay(wrap(command), initialDelay, delay, unit);
+        }
+    }
+
+    private final CaughtScheduledThreadPoolExecutor timedTaskExecutorPool =
+            new CaughtScheduledThreadPoolExecutor(2, new CaughtThreadFactory());
     private final ConcurrentHashMap<String, Future<?>> activeTasks = new ConcurrentHashMap<>();
 
     public void addTask(String identifier, Runnable runnable, long millisInterval) {
