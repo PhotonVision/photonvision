@@ -31,11 +31,11 @@
 #include <frc/controller/SimpleMotorFeedforward.h>
 #include <frc/geometry/Transform3d.h>
 #include <frc/geometry/Translation2d.h>
-#include <units/length.h>
-#include <units/angular_velocity.h>
 #include <units/acceleration.h>
-#include <units/velocity.h>
 #include <units/angular_acceleration.h>
+#include <units/angular_velocity.h>
+#include <units/length.h>
+#include <units/velocity.h>
 
 namespace constants {
 namespace Vision {

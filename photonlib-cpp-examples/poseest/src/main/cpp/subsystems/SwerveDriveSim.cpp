@@ -46,7 +46,8 @@ SwerveDriveSim::SwerveDriveSim(
               (Eigen::MatrixXd(2, 2) << 0.0, 1.0, 0.0,
                -driveFF.GetKv().to<double>() / driveFF.GetKa().to<double>())
                   .finished(),
-              Eigen::Matrix<double, 2, 1>{0.0, 1.0 / driveFF.GetKa().to<double>()},
+              Eigen::Matrix<double, 2, 1>{0.0,
+                                          1.0 / driveFF.GetKa().to<double>()},
               (Eigen::MatrixXd(2, 2) << 1.0, 0.0, 0.0, 1.0).finished(),
               Eigen::Matrix<double, 2, 1>{0.0, 0.0}},
           driveFF.GetKs(), driveMotor, driveGearing, driveWheelRadius,
@@ -54,7 +55,8 @@ SwerveDriveSim::SwerveDriveSim(
               (Eigen::MatrixXd(2, 2) << 0.0, 1.0, 0.0,
                -steerFF.GetKv().to<double>() / steerFF.GetKa().to<double>())
                   .finished(),
-              Eigen::Matrix<double, 2, 1>{0.0, 1.0 / steerFF.GetKa().to<double>()},
+              Eigen::Matrix<double, 2, 1>{0.0,
+                                          1.0 / steerFF.GetKa().to<double>()},
               (Eigen::MatrixXd(2, 2) << 1.0, 0.0, 0.0, 1.0).finished(),
               Eigen::Matrix<double, 2, 1>{0.0, 0.0}},
           steerFF.GetKs(), steerMotor, steerGearing, kinematics) {}
