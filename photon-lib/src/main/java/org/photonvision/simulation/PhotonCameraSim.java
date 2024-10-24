@@ -69,7 +69,7 @@ public class PhotonCameraSim implements AutoCloseable {
     private final PhotonCamera cam;
 
     NTTopicSet ts = new NTTopicSet();
-    private long heartbeatCounter = 0;
+    private long heartbeatCounter = 1;
 
     /** This simulated camera's {@link SimCameraProperties} */
     public final SimCameraProperties prop;

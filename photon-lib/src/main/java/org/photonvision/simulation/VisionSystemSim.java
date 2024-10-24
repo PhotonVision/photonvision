@@ -395,6 +395,14 @@ public class VisionSystemSim {
             // process a PhotonPipelineResult with visible targets
             var camResult = camSim.process(latencyMillis, lateCameraPose, allTargets);
             // publish this info to NT at estimated timestamp of receive
+            System.out.println(
+                    "Camera "
+                            // + camSim.ts.bestTargetPosX.getTopic().getName()
+                            + camSim.getCamera().getName()
+                            + ": result at "
+                            + timestampNT
+                            + ":\n"
+                            + camResult);
             camSim.submitProcessedFrame(camResult, timestampNT);
             // display debug results
             for (var target : camResult.getTargets()) {
