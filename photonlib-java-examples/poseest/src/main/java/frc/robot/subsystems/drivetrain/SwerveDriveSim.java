@@ -119,7 +119,7 @@ public class SwerveDriveSim {
                         VecBuilder.fill(0.0, 1.0 / driveFF.getKa()),
                         MatBuilder.fill(Nat.N2(), Nat.N2(), 1.0, 0.0, 0.0, 1.0),
                         VecBuilder.fill(0.0, 0.0)),
-                driveFF.ks,
+                driveFF.getKs(),
                 driveMotor,
                 driveGearing,
                 driveWheelRadius,
