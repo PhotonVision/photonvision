@@ -74,7 +74,9 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
                 setVideoMode(videoModes.get(0)); // fixes double FPS set
             }
         }
+    }
 
+    protected void setUpWhiteBalanceProperties() {
         wbTempProp = findProperty("white_balance_temperature", "WhiteBalance").get();
         this.minWhiteBalanceTemp = wbTempProp.getMin();
         this.maxWhiteBalanceTemp = wbTempProp.getMax();

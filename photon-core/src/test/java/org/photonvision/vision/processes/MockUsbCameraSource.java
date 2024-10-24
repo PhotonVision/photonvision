@@ -72,5 +72,24 @@ public class MockUsbCameraSource extends USBCameraSource {
 
         @Override
         public void setUpExposureProperties() {}
+
+        @Override
+        protected void setUpWhiteBalanceProperties() {}
+
+        @Override
+        public void setWhiteBalanceTemp(double tempNumber) {}
+
+        @Override
+        public void setAutoWhiteBalance(boolean autoWB) {}
+
+        @Override
+        public double getMinWhiteBalanceTemp() {
+            return 1;
+        }
+
+        @Override
+        public double getMaxWhiteBalanceTemp() {
+            return 2;
+        }
     }
 }
