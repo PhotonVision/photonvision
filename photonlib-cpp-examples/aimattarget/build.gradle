@@ -10,7 +10,7 @@ repositories {
 }
 
 wpi.maven.useLocal = false
-wpi.maven.useDevelopment = true
+wpi.maven.useDevelopment = false
 wpi.versions.wpilibVersion = "2025.1.1-beta-1"
 wpi.versions.wpimathVersion = "2025.1.1-beta-1"
 

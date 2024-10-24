@@ -32,13 +32,17 @@
 #include <frc/geometry/Transform3d.h>
 #include <frc/geometry/Translation2d.h>
 #include <units/length.h>
+#include <units/angular_velocity.h>
+#include <units/acceleration.h>
+#include <units/velocity.h>
+#include <units/angular_acceleration.h>
 
 namespace constants {
 namespace Vision {
 inline constexpr std::string_view kCameraName{"YOUR CAMERA NAME"};
 inline const frc::Transform3d kRobotToCam{
     frc::Translation3d{0.5_m, 0.0_m, 0.5_m},
-    frc::Rotation3d{0_rad, 0_rad, 0_rad}};
+    frc::Rotation3d{0_rad, -30_deg, 0_rad}};
 inline const frc::AprilTagFieldLayout kTagLayout{
     frc::LoadAprilTagLayoutField(frc::AprilTagField::k2024Crescendo)};
 
@@ -46,6 +50,7 @@ inline const Eigen::Matrix<double, 3, 1> kSingleTagStdDevs{4, 4, 8};
 inline const Eigen::Matrix<double, 3, 1> kMultiTagStdDevs{0.5, 0.5, 1};
 }  // namespace Vision
 namespace Swerve {
+using namespace units;
 
 inline constexpr units::meter_t kTrackWidth{18.5_in};
 inline constexpr units::meter_t kTrackLength{18.5_in};
@@ -72,6 +77,8 @@ inline constexpr double kDriveKD = 0.0;
 inline constexpr double kSteerKP = 20.0;
 inline constexpr double kSteerKI = 0.0;
 inline constexpr double kSteerKD = 0.25;
+
+using namespace units;
 
 inline const frc::SimpleMotorFeedforward<units::meters> kDriveFF{
     0.25_V, 2.5_V / 1_mps, 0.3_V / 1_mps_sq};
