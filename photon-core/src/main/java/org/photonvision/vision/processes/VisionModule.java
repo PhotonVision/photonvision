@@ -112,7 +112,7 @@ public class VisionModule {
                         if (it.cameraGain == -1) it.cameraGain = 75; // Sane default
                     });
         }
-        if (cameraQuirks.hasQuirk(CameraQuirk.AWBGain)) {
+        if (cameraQuirks.hasQuirk(CameraQuirk.AwbRedBlueGain)) {
             pipelineManager.userPipelineSettings.forEach(
                     it -> {
                         if (it.cameraRedGain == -1) it.cameraRedGain = 11; // Sane defaults
@@ -364,7 +364,7 @@ public class VisionModule {
         if (!cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
             settings.cameraGain = -1;
         }
-        if (!cameraQuirks.hasQuirk(CameraQuirk.AWBGain)) {
+        if (!cameraQuirks.hasQuirk(CameraQuirk.AwbRedBlueGain)) {
             settings.cameraRedGain = -1;
             settings.cameraBlueGain = -1;
         }
@@ -442,7 +442,7 @@ public class VisionModule {
             pipelineSettings.cameraGain = -1;
         }
 
-        if (cameraQuirks.hasQuirk(CameraQuirk.AWBGain)) {
+        if (cameraQuirks.hasQuirk(CameraQuirk.AwbRedBlueGain)) {
             // If the AWB gains are disabled for some reason, re-enable it
             if (pipelineSettings.cameraRedGain == -1) pipelineSettings.cameraRedGain = 11;
             if (pipelineSettings.cameraBlueGain == -1) pipelineSettings.cameraBlueGain = 20;
@@ -451,6 +451,10 @@ public class VisionModule {
         } else {
             pipelineSettings.cameraRedGain = -1;
             pipelineSettings.cameraBlueGain = -1;
+
+            // All other cameras (than picams) should support AWB temp
+            visionSource.getSettables().setWhiteBalanceTemp(pipelineSettings.cameraWhiteBalanceTemp);
+            visionSource.getSettables().setAutoWhiteBalance(pipelineSettings.cameraAutoWhiteBalance);
         }
 
         setVisionLEDs(pipelineSettings.ledMode);
@@ -525,8 +529,10 @@ public class VisionModule {
         ret.currentPipelineIndex = pipelineManager.getRequestedIndex();
         ret.pipelineNicknames = pipelineManager.getPipelineNicknames();
         ret.cameraQuirks = visionSource.getSettables().getConfiguration().cameraQuirks;
-        ret.maxExposureRaw = visionSource.getSettables().getMaxExposureRaw();
         ret.minExposureRaw = visionSource.getSettables().getMinExposureRaw();
+        ret.maxExposureRaw = visionSource.getSettables().getMaxExposureRaw();
+        ret.minWhiteBalanceTemp = visionSource.getSettables().getMinWhiteBalanceTemp();
+        ret.maxWhiteBalanceTemp = visionSource.getSettables().getMaxWhiteBalanceTemp();
 
         // TODO refactor into helper method
         var temp = new HashMap<Integer, HashMap<String, Object>>();

@@ -74,6 +74,12 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     },
     maxExposureRaw(): number {
       return this.currentCameraSettings.maxExposureRaw;
+    },
+    minWhiteBalanceTemp(): number {
+      return this.currentCameraSettings.minWhiteBalanceTemp;
+    },
+    maxWhiteBalanceTemp(): number {
+      return this.currentCameraSettings.maxWhiteBalanceTemp;
     }
   },
   actions: {
@@ -113,7 +119,9 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         pipelineNicknames: d.pipelineNicknames,
         currentPipelineIndex: d.currentPipelineIndex,
         pipelineSettings: d.currentPipelineSettings,
-        cameraQuirks: d.cameraQuirks
+        cameraQuirks: d.cameraQuirks,
+        minWhiteBalanceTemp: d.minWhiteBalanceTemp,
+        maxWhiteBalanceTemp: d.maxWhiteBalanceTemp
       }));
       this.cameras = configuredCameras.length > 0 ? configuredCameras : [PlaceholderCameraSettings];
     },

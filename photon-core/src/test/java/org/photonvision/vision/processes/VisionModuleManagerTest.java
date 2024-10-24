@@ -123,6 +123,22 @@ public class VisionModuleManagerTest {
         public double getMaxExposureRaw() {
             return 1234;
         }
+
+        @Override
+        public void setAutoWhiteBalance(boolean autowb) {}
+
+        @Override
+        public void setWhiteBalanceTemp(double temp) {}
+
+        @Override
+        public double getMaxWhiteBalanceTemp() {
+            return 1;
+        }
+
+        @Override
+        public double getMinWhiteBalanceTemp() {
+            return 2;
+        }
     }
 
     private static class TestDataConsumer implements CVPipelineResultConsumer {
