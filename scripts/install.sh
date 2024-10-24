@@ -193,17 +193,15 @@ fi
 debug "This is the installation script for PhotonVision."
 debug "Installing for platform $ARCH"
 
-# Quiet makes the default "no" instead of "ask".
-if [[ -n "$QUIET" && "$INSTALL_NETWORK_MANAGER" == "ask" ]] ; then
-  INSTALL_NETWORK_MANAGER="no"
-fi
-
 DISTRO=$(lsb_release -is)
 
-# NetworkManager cannot be installed on non-Ubuntu distros
-# --no-networking takes precedence over --install-nm
-if [[ "$DISTRO" != "Ubuntu" || -n "$DISABLE_NETWORKING" ]] ; then
-  INSTALL_NETWORK_MANAGER="no"
+# Only ask if it makes sense to do so.
+# i.e. the distro is Ubuntu, you haven't requested disabling networking,
+# and you have requested a quiet install.
+if [[ "$INSTALL_NETWORK_MANAGER" == "ask" ]]; then
+  if [[ "$DISTRO" != "Ubuntu" || -n "$DISABLE_NETWORKING" || -n "$QUIET" ]] ; then
+    INSTALL_NETWORK_MANAGER="no"
+  fi
 fi
 
 if [[ "$INSTALL_NETWORK_MANAGER" == "ask" ]]; then
