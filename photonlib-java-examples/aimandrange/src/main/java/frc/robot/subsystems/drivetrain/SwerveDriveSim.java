@@ -115,8 +115,8 @@ public class SwerveDriveSim {
             SwerveDriveKinematics kinematics) {
         this(
                 new LinearSystem<N2, N1, N2>(
-                        MatBuilder.fill(Nat.N2(), Nat.N2(), 0.0, 1.0, 0.0, -driveFF.kv / driveFF.ka),
-                        VecBuilder.fill(0.0, 1.0 / driveFF.ka),
+                        MatBuilder.fill(Nat.N2(), Nat.N2(), 0.0, 1.0, 0.0, -driveFF.getKv() / driveFF.getKa()),
+                        VecBuilder.fill(0.0, 1.0 / driveFF.getKa()),
                         MatBuilder.fill(Nat.N2(), Nat.N2(), 1.0, 0.0, 0.0, 1.0),
                         VecBuilder.fill(0.0, 0.0)),
                 driveFF.ks,
@@ -124,8 +124,8 @@ public class SwerveDriveSim {
                 driveGearing,
                 driveWheelRadius,
                 new LinearSystem<N2, N1, N2>(
-                        MatBuilder.fill(Nat.N2(), Nat.N2(), 0.0, 1.0, 0.0, -steerFF.kv / steerFF.ka),
-                        VecBuilder.fill(0.0, 1.0 / steerFF.ka),
+                        MatBuilder.fill(Nat.N2(), Nat.N2(), 0.0, 1.0, 0.0, -steerFF.getKv() / steerFF.getKa()),
+                        VecBuilder.fill(0.0, 1.0 / steerFF.getKa()),
                         MatBuilder.fill(Nat.N2(), Nat.N2(), 1.0, 0.0, 0.0, 1.0),
                         VecBuilder.fill(0.0, 0.0)),
                 steerFF.ks,
