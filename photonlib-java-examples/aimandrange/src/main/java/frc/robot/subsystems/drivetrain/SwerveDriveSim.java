@@ -128,7 +128,7 @@ public class SwerveDriveSim {
                         VecBuilder.fill(0.0, 1.0 / steerFF.getKa()),
                         MatBuilder.fill(Nat.N2(), Nat.N2(), 1.0, 0.0, 0.0, 1.0),
                         VecBuilder.fill(0.0, 0.0)),
-                steerFF.ks,
+                steerFF.getKs(),
                 steerMotor,
                 steerGearing,
                 kinematics);
