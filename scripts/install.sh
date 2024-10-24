@@ -207,6 +207,7 @@ fi
 if [[ "$INSTALL_NETWORK_MANAGER" == "ask" ]]; then
   debug ""
   debug "Photonvision uses NetworkManager to control networking on your device."
+  debug "This could possibly mess up the network configuration in Ubuntu."
   read -p "Do you want this script to install and configure NetworkManager? [y/N]: " response
   if [[ $response == [yY] || $response == [yY][eE][sS] ]]; then
     INSTALL_NETWORK_MANAGER="yes"
