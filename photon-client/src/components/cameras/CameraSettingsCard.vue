@@ -209,51 +209,58 @@ const deleteThisCamera = () => {
         <v-col cols="6">
           <v-btn class="mt-2 mb-3" style="width: 100%" small color="red" @click="() => (showDeleteCamera = true)">
             <v-icon left> mdi-bomb </v-icon>
-            {{ $vuetify.breakpoint.mdAndUp ? "Delete Config And Unmatch Camera" : "Delete Camera" }}
+            Delete Camera
           </v-btn>
         </v-col>
       </v-row>
     </div>
 
-    <v-dialog v-model="showDeleteCamera" dark>
+    <v-dialog v-model="showDeleteCamera" dark width="1500">
       <v-card dark class="dialog-container pa-6" color="primary" flat>
         <v-card-title
           >Delete camera "{{ useCameraSettingsStore().cameraNames[useStateStore().currentCameraIndex] }}"</v-card-title
         >
-        <v-row class="pl-3">
-          <span class="mt-3"
-            >This will delete ALL OF YOUR SETTINGS for camera "{{
-              useCameraSettingsStore().cameraNames[useStateStore().currentCameraIndex]
-            }}" and restart PhotonVision.</span
-          >
+        <v-row class="pl-3 align-center pa-6">
+          <v-col cols="12" md="6">
+            <span class="mt-3"> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
+          </v-col>
+          <v-col cols="12" md="6">
+            <v-btn color="secondary" style="float: right" @click="openExportSettingsPrompt">
+              <v-icon left class="open-icon"> mdi-export </v-icon>
+              <span class="open-label">Backup Settings</span>
+              <a
+                ref="exportSettings"
+                style="color: black; text-decoration: none; display: none"
+                :href="`http://${address}/api/settings/photonvision_config.zip`"
+                download="photonvision-settings.zip"
+                target="_blank"
+              />
+            </v-btn>
+          </v-col>
         </v-row>
-        <v-row class="pl-3">
-          <v-btn color="secondary" @click="openExportSettingsPrompt" class="mt-3">
-            <v-icon left class="open-icon"> mdi-export </v-icon>
-            <span class="open-label">Your final chance to export settings</span>
-            <a
-              ref="exportSettings"
-              style="color: black; text-decoration: none; display: none"
-              :href="`http://${address}/api/settings/photonvision_config.zip`"
-              download="photonvision-settings.zip"
-              target="_blank"
+
+        <v-divider class="mt-4 mb-4" />
+        <v-row class="pl-3 align-center pa-6">
+          <v-col>
+            <pv-input
+              v-model="yesDeleteMySettingsText"
+              :label="'Type &quot;' + useCameraSettingsStore().currentCameraName + '&quot;:'"
+              :label-cols="2"
+              :input-cols="10"
             />
+          </v-col>
+
+          <v-btn
+            color="red"
+            :disabled="
+              yesDeleteMySettingsText.toLowerCase() !== useCameraSettingsStore().currentCameraName.toLowerCase()
+            "
+            @click="deleteThisCamera"
+          >
+            <v-icon left class="open-icon"> mdi-skull </v-icon>
+            <span class="open-label">DELETE (UNRECOVERABLE)</span>
           </v-btn>
         </v-row>
-        <v-divider class="mt-8 mb-4" />
-        <pv-input
-          v-model="yesDeleteMySettingsText"
-          :label="'Type &quot;' + useCameraSettingsStore().currentCameraName + '&quot;:'"
-          :inputCols="interactiveCols"
-        />
-        <v-btn
-          color="red"
-          @click="deleteThisCamera"
-          :disabled="yesDeleteMySettingsText.toLowerCase() !== useCameraSettingsStore().currentCameraName.toLowerCase()"
-        >
-          <v-icon left class="open-icon"> mdi-skull </v-icon>
-          <span class="open-label">Yes, delete this camera; I have backed up what I need</span>
-        </v-btn>
       </v-card>
     </v-dialog>
   </v-card>
