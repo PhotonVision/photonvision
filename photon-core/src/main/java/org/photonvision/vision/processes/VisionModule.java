@@ -390,7 +390,7 @@ public class VisionModule {
         var ret =
                 pipelineManager.calibration3dPipeline.tryCalibration(
                         ConfigManager.getInstance()
-                                .getCalibrationImageSavePath(
+                                .getCalibrationImageSavePathWithRes(
                                         pipelineManager.calibration3dPipeline.getSettings().resolution,
                                         visionSource.getCameraConfiguration().uniqueName));
         pipelineManager.setCalibrationMode(false);

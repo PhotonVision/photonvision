@@ -349,6 +349,19 @@ public class SqlConfigProvider extends ConfigProvider {
 
     private void saveCameras(Connection conn) {
         try {
+            // Delete all cameras we don't need anymore
+            String deleteExtraCamsString =
+                    String.format(
+                            "DELETE FROM %s WHERE %s not in (%s)",
+                            Tables.CAMERAS,
+                            Columns.CAM_UNIQUE_NAME,
+                            config.getCameraConfigurations().keySet().stream()
+                                    .map(it -> "\"" + it + "\"")
+                                    .collect(Collectors.joining(", ")));
+
+            var stmt = conn.createStatement();
+            stmt.executeUpdate(deleteExtraCamsString);
+
             // Replace this camera's row with the new settings
             var sqlString =
                     String.format(
@@ -388,6 +401,7 @@ public class SqlConfigProvider extends ConfigProvider {
 
                 statement.executeUpdate();
             }
+
         } catch (SQLException | IOException e) {
             logger.error("Err saving cameras", e);
             try {

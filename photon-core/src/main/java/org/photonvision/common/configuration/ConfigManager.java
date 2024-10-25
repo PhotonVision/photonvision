@@ -54,6 +54,7 @@ public class ConfigManager {
     // special case flag to disable flushing settings to disk at shutdown. Avoids the jvm shutdown
     // hook overwriting the settings we just uploaded
     private boolean flushOnShutdown = true;
+    private boolean allowWriteTask = false;
 
     enum ConfigSaveStrategy {
         SQL,
@@ -135,6 +136,10 @@ public class ConfigManager {
         }
     }
 
+    public static boolean nukeConfigDirectory() {
+        return FileUtils.deleteDirectory(getRootFolder());
+    }
+
     public static boolean saveUploadedSettingsZip(File uploadPath) {
         // Unpack to /tmp/something/photonvision
         var folderPath = Path.of(System.getProperty("java.io.tmpdir"), "photonvision").toFile();
@@ -142,7 +147,9 @@ public class ConfigManager {
         ZipUtil.unpack(uploadPath, folderPath);
 
         // Nuke the current settings directory
-        FileUtils.deleteDirectory(getRootFolder());
+        if (!nukeConfigDirectory()) {
+            return false;
+        }
 
         // If there's a cameras folder in the upload, we know we need to import from the
         // old style
@@ -250,7 +257,14 @@ public class ConfigManager {
         return imgFilePath.toPath();
     }
 
-    public Path getCalibrationImageSavePath(Size frameSize, String uniqueCameraName) {
+    public Path getCalibrationImageSavePath(String uniqueCameraName) {
+        var imgFilePath =
+                Path.of(configDirectoryFile.toString(), "calibration", uniqueCameraName).toFile();
+        if (!imgFilePath.exists()) imgFilePath.mkdirs();
+        return imgFilePath.toPath();
+    }
+
+    public Path getCalibrationImageSavePathWithRes(Size frameSize, String uniqueCameraName) {
         var imgFilePath =
                 Path.of(
                                 configDirectoryFile.toString(),
@@ -301,7 +315,9 @@ public class ConfigManager {
     private void saveAndWriteTask() {
         // Only save if 1 second has past since the request was made
         while (!Thread.currentThread().isInterrupted()) {
-            if (saveRequestTimestamp > 0 && (System.currentTimeMillis() - saveRequestTimestamp) > 1000L) {
+            if (saveRequestTimestamp > 0
+                    && (System.currentTimeMillis() - saveRequestTimestamp) > 1000L
+                    && allowWriteTask) {
                 saveRequestTimestamp = -1;
                 logger.debug("Saving to disk...");
                 saveToDisk();
@@ -328,6 +344,11 @@ public class ConfigManager {
      */
     public void disableFlushOnShutdown() {
         this.flushOnShutdown = false;
+    }
+
+    /** Prevent pending automatic saves */
+    public void setWriteTaskEnabled(boolean enabled) {
+        this.allowWriteTask = enabled;
     }
 
     public void onJvmExit() {
