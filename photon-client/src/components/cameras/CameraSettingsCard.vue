@@ -3,7 +3,7 @@ import PvSelect from "@/components/common/pv-select.vue";
 import PvNumberInput from "@/components/common/pv-number-input.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
-import { computed, getCurrentInstance, inject, ref, watchEffect } from "vue";
+import { computed, inject, ref, watchEffect } from "vue";
 import { type CameraSettingsChangeRequest, ValidQuirks } from "@/types/SettingTypes";
 import axios from "axios";
 
@@ -108,10 +108,6 @@ const saveCameraSettings = () => {
 watchEffect(() => {
   // Reset temp settings on remote camera settings change
   resetTempSettingsStruct();
-});
-
-const interactiveCols = computed(() => {
-  return getCurrentInstance()?.proxy.$vuetify.breakpoint.smAndDown || false ? 12 : 8;
 });
 
 const showDeleteCamera = ref(false);
@@ -245,8 +241,8 @@ const deleteThisCamera = () => {
             <pv-input
               v-model="yesDeleteMySettingsText"
               :label="'Type &quot;' + useCameraSettingsStore().currentCameraName + '&quot;:'"
-              :label-cols="2"
-              :input-cols="10"
+              :label-cols="12"
+              :input-cols="12"
             />
           </v-col>
 

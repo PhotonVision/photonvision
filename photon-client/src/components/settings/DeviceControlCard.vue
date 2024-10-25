@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, inject, ref } from "vue";
+import { inject, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import PvSelect from "@/components/common/pv-select.vue";
 import axios from "axios";
@@ -235,11 +235,6 @@ const nukePhotonConfigDirectory = () => {
   showFactoryReset.value = false;
 };
 
-const interactiveCols = computed(() => {
-  const ret = getCurrentInstance()?.proxy.$vuetify.breakpoint.smAndDown || false ? 12 : 8;
-  console.log(ret);
-  return ret;
-});
 </script>
 
 <template>
@@ -417,7 +412,8 @@ const interactiveCols = computed(() => {
         <pv-input
           v-model="yesDeleteMySettingsText"
           :label="'Type &quot;' + expected + '&quot;:'"
-          :input-cols="interactiveCols"
+          :label-cols="2"
+          :input-cols="10"
         />
       </v-col>
       </v-row>
