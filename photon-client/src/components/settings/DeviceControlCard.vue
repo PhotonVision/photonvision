@@ -234,7 +234,6 @@ const nukePhotonConfigDirectory = () => {
     });
   showFactoryReset.value = false;
 };
-
 </script>
 
 <template>
@@ -375,48 +374,45 @@ const nukePhotonConfigDirectory = () => {
 
     <v-dialog v-model="showFactoryReset" width="1500" dark>
       <v-card dark class="dialog-container pa-6" color="primary" flat>
-
         <v-card-title>
           <span class="open-label">
-              <v-icon right color="red" class="open-icon">mdi-nuke</v-icon>
-              Factory Reset PhotonVision
-              <v-icon right color="red" class="open-icon">mdi-nuke</v-icon>
+            <v-icon right color="red" class="open-icon">mdi-nuke</v-icon>
+            Factory Reset PhotonVision
+            <v-icon right color="red" class="open-icon">mdi-nuke</v-icon>
           </span>
         </v-card-title>
 
         <v-row class="pl-3 align-center pa-6">
           <v-col cols="12" md="6">
-            <span class="mt-3">
-              This will delete ALL OF YOUR SETTINGS and restart PhotonVision.
-            </span>
+            <span class="mt-3"> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
           </v-col>
           <v-col cols="12" md="6">
-            <v-btn color="secondary" style="float: right;" @click="openExportSettingsPrompt">
+            <v-btn color="secondary" style="float: right" @click="openExportSettingsPrompt">
               <v-icon left class="open-icon"> mdi-export </v-icon>
               <span class="open-label">Backup Settings</span>
               <a
-          ref="exportSettings"
-          style="color: black; text-decoration: none; display: none"
-          :href="`http://${address}/api/settings/photonvision_config.zip`"
-          download="photonvision-settings.zip"
-          target="_blank"
+                ref="exportSettings"
+                style="color: black; text-decoration: none; display: none"
+                :href="`http://${address}/api/settings/photonvision_config.zip`"
+                download="photonvision-settings.zip"
+                target="_blank"
               />
             </v-btn>
           </v-col>
         </v-row>
 
-      <v-divider class="mt-4 mb-4" />
+        <v-divider class="mt-4 mb-4" />
 
-      <v-row class="pl-3 align-center pa-6">
-      <v-col>
-        <pv-input
-          v-model="yesDeleteMySettingsText"
-          :label="'Type &quot;' + expected + '&quot;:'"
-          :label-cols="2"
-          :input-cols="10"
-        />
-      </v-col>
-      </v-row>
+        <v-row class="pl-3 align-center pa-6">
+          <v-col>
+            <pv-input
+              v-model="yesDeleteMySettingsText"
+              :label="'Type &quot;' + expected + '&quot;:'"
+              :label-cols="2"
+              :input-cols="10"
+            />
+          </v-col>
+        </v-row>
 
         <v-btn
           color="red"
@@ -424,13 +420,9 @@ const nukePhotonConfigDirectory = () => {
           @click="nukePhotonConfigDirectory"
         >
           <v-icon left class="open-icon"> mdi-skull-crossbones </v-icon>
-            <span class="open-label">
-            {{
-              $vuetify.breakpoint.mdAndUp
-              ? "Delete everything, I have backed up what I need"
-              : "Delete Everything"
-            }}
-            </span>
+          <span class="open-label">
+            {{ $vuetify.breakpoint.mdAndUp ? "Delete everything, I have backed up what I need" : "Delete Everything" }}
+          </span>
         </v-btn>
       </v-card>
     </v-dialog>
