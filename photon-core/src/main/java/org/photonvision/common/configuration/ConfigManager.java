@@ -257,7 +257,13 @@ public class ConfigManager {
         return imgFilePath.toPath();
     }
 
-    public Path getCalibrationImageSavePath(Size frameSize, String uniqueCameraName) {
+    public Path getCalibrationImageSavePath(String uniqueCameraName) {
+        var imgFilePath = Path.of(configDirectoryFile.toString(), "calibration").toFile();
+        if (!imgFilePath.exists()) imgFilePath.mkdirs();
+        return imgFilePath.toPath();
+    }
+
+    public Path getCalibrationImageSavePathWithRes(Size frameSize, String uniqueCameraName) {
         var imgFilePath =
                 Path.of(
                                 configDirectoryFile.toString(),

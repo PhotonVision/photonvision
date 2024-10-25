@@ -795,6 +795,11 @@ public class RequestHandler {
             var name = payload.get("cameraUniqueName").asText();
             logger.warn("Deleting camera name " + name);
 
+            var cameraDir = ConfigManager.getInstance().getCalibrationImageSavePath(name).toFile();
+            if (cameraDir.exists()) {
+                FileUtils.deleteDirectory(cameraDir);
+            }
+
             // prevent -anyone- else from writing camera configs -- but flush first
             ConfigManager.getInstance().saveToDisk();
             ConfigManager.getInstance().setWriteTaskEnabled(false);

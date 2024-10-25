@@ -375,7 +375,7 @@ const nukePhotonConfigDirectory = () => {
 
     <v-dialog v-model="showFactoryReset" width="1500" dark>
       <v-card dark class="dialog-container pa-6" color="primary" flat>
-        
+
         <v-card-title>
           <span class="open-label">
               <v-icon right color="red" class="open-icon">mdi-nuke</v-icon>

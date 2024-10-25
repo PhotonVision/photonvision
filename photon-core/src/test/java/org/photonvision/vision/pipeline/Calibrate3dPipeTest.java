@@ -255,7 +255,8 @@ public class Calibrate3dPipeTest {
 
         var cal =
                 calibration3dPipeline.tryCalibration(
-                        ConfigManager.getInstance().getCalibrationImageSavePath(imgRes, "Calibration_Test"));
+                        ConfigManager.getInstance()
+                                .getCalibrationImageSavePathWithRes(imgRes, "Calibration_Test"));
         calibration3dPipeline.finishCalibration();
 
         // visuallyDebugDistortion(directoryListing, imgRes, cal );
