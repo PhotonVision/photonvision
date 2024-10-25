@@ -93,12 +93,23 @@ model {
             nativeUtils.useRequiredLibrary(it, "wpiutil_shared")
             nativeUtils.useRequiredLibrary(it, "wpinet_shared")
             nativeUtils.useRequiredLibrary(it, "ntcore_shared")
+            nativeUtils.useRequiredLibrary(it, "wpimath_shared")
         }
 
         all {
             binaries.withType(SharedLibraryBinarySpec) { binary ->
                 // check that we're building for the platform (per PArchOverride/wpilib plat detection)
-                if (binary.targetPlatform.name == jniPlatform) {
+                def platName = jniPlatform
+                def realWpilibName = wpilibNativeName;
+
+                if (jniPlatform.equals("osxarm64") || jniPlatform.equals("osxx86-64")) {
+                    // native-utils calls this osxuniversal
+                    platName = "osxuniversal";
+                    realWpilibName = "osxuniversal";
+                }
+
+                if (binary.targetPlatform.name == platName) {
+
 
                     // only include release binaries (hard coded for now)
                     def isDebug = binary.buildType.name.contains('debug')
@@ -106,7 +117,7 @@ model {
                         syncOutputsFolder {
                             // Just shove the shared library into the root of the jar output by photon-targeting:jar
                             from(binary.sharedLibraryFile) {
-                                into "nativelibraries/${wpilibNativeName}/"
+                                into "nativelibraries/${realWpilibName}/"
                             }
                             // And (not sure if this is a hack) make the jar task depend on the build task
                             dependsOn binary.identifier.projectScopedName
@@ -206,6 +217,7 @@ def nativeTasks = wpilibTools.createExtractionTasks {
 
 nativeTasks.addToSourceSetResources(sourceSets.test)
 
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpilibc")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")

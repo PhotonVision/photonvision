@@ -27,9 +27,11 @@ package org.photonvision;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -39,27 +41,96 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.estimation.VisionEstimation;
+import org.photonvision.jni.PhotonTargetingJniLoader;
+import org.photonvision.jni.WpilibLoader;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
+import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 class VisionSystemSimTest {
     private static final double kTrlDelta = 0.005;
     private static final double kRotDeltaDeg = 0.25;
+
+    NetworkTableInstance inst;
+
+    @BeforeAll
+    public static void setUp() {
+        WpilibLoader.loadLibraries();
+        try {
+            if (!PhotonTargetingJniLoader.load()) fail();
+        } catch (UnsatisfiedLinkError | IOException e) {
+            e.printStackTrace();
+            fail(e);
+        }
+
+        OpenCVHelp.forceLoadOpenCV();
+    }
+
+    @BeforeEach
+    public void init() {
+        // // No version check for testing
+        // PhotonCamera.setVersionCheckEnabled(false);
+    }
+
+
+    @BeforeEach
+    public void setup() {
+        HAL.initialize(500, 0);
+
+        inst = NetworkTableInstance.create();
+        inst.stopClient();
+        inst.stopServer();
+        inst.startLocal();
+        SmartDashboard.setNetworkTableInstance(inst);
+    }
+
+    @AfterEach
+    public void teardown() {
+        inst.close();
+        inst = null;
+
+        HAL.shutdown();
+    }
+
+    private PhotonPipelineResult waitForSequenceNumber(PhotonCamera camera, int seq) {
+        assertTrue(camera.heartbeatEntry.getTopic().getHandle() != 0);
+
+        System.out.println(
+                "Waiting for seq=" + seq + " on " + camera.heartbeatEntry.getTopic().getName());
+        // wait up to 1 second for a new result
+        for (int i = 0; i < 100; i++) {
+            var res = camera.getLatestResult();
+            if (res.metadata.sequenceID == seq) {
+                return res;
+            }
+
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        throw new RuntimeException("Never saw sequence number " + seq);
+    }
 
     @Test
     public void testEmpty() {
@@ -73,42 +144,12 @@ class VisionSystemSimTest {
                     }
                 });
     }
-
-    @BeforeAll
-    public static void setUp() {
-        // NT live for debug purposes
-        NetworkTableInstance.getDefault().startServer();
-
-        // No version check for testing
-        PhotonCamera.setVersionCheckEnabled(false);
-    }
-
-    @AfterAll
-    public static void shutDown() {}
-
-    // @ParameterizedTest
-    // @ValueSource(doubles = {5, 10, 15, 20, 25, 30})
-    // public void testDistanceAligned(double dist) {
-    //     final var targetPose = new Pose2d(new Translation2d(15.98, 0), new Rotation2d());
-    //     var sysUnderTest =
-    //             new SimVisionSystem("Test", 80.0, 0.0, new Transform2d(), 1, 99999, 320, 240, 0);
-    //     sysUnderTest.addSimVisionTarget(new SimVisionTarget(targetPose, 0.0, 1.0, 1.0));
-
-    //     final var robotPose = new Pose2d(new Translation2d(35 - dist, 0), new Rotation2d());
-    //     sysUnderTest.processFrame(robotPose);
-
-    //     var result = sysUnderTest.cam.getLatestResult();
-
-    //     assertTrue(result.hasTargets());
-    //     assertEquals(result.getBestTarget().getCameraToTarget().getTranslation().getNorm(), dist);
-    // }
-
     @Test
     public void testVisibilityCupidShuffle() {
         final var targetPose =
                 new Pose3d(new Translation3d(15.98, 0, 2), new Rotation3d(0, 0, Math.PI));
         var visionSysSim = new VisionSystemSim("Test");
-        var camera = new PhotonCamera("camera");
+        var camera = new PhotonCamera(inst, "camera");
         var cameraSim = new PhotonCameraSim(camera);
         visionSysSim.addCamera(cameraSim, new Transform3d());
         cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(80));
@@ -117,42 +158,51 @@ class VisionSystemSimTest {
         // To the right, to the right
         var robotPose = new Pose2d(new Translation2d(5, 0), Rotation2d.fromDegrees(-70));
         visionSysSim.update(robotPose);
+
         assertFalse(camera.getLatestResult().hasTargets());
 
         // To the right, to the right
         robotPose = new Pose2d(new Translation2d(5, 0), Rotation2d.fromDegrees(-95));
         visionSysSim.update(robotPose);
+
         assertFalse(camera.getLatestResult().hasTargets());
 
         // To the left, to the left
         robotPose = new Pose2d(new Translation2d(5, 0), Rotation2d.fromDegrees(90));
         visionSysSim.update(robotPose);
+
         assertFalse(camera.getLatestResult().hasTargets());
 
         // To the left, to the left
         robotPose = new Pose2d(new Translation2d(5, 0), Rotation2d.fromDegrees(65));
         visionSysSim.update(robotPose);
+
         assertFalse(camera.getLatestResult().hasTargets());
 
         // now kick, now kick
         robotPose = new Pose2d(new Translation2d(2, 0), Rotation2d.fromDegrees(5));
         visionSysSim.update(robotPose);
+
+        waitForSequenceNumber(camera, 5);
         assertTrue(camera.getLatestResult().hasTargets());
 
         // now kick, now kick
         robotPose = new Pose2d(new Translation2d(2, 0), Rotation2d.fromDegrees(-5));
         visionSysSim.update(robotPose);
+
         assertTrue(camera.getLatestResult().hasTargets());
 
         // now walk it by yourself
         robotPose = new Pose2d(new Translation2d(2, 0), Rotation2d.fromDegrees(-179));
         visionSysSim.update(robotPose);
+
         assertFalse(camera.getLatestResult().hasTargets());
 
         // now walk it by yourself
         visionSysSim.adjustCamera(
                 cameraSim, new Transform3d(new Translation3d(), new Rotation3d(0, 0, Math.PI)));
         visionSysSim.update(robotPose);
+
         assertTrue(camera.getLatestResult().hasTargets());
     }
 
@@ -161,7 +211,7 @@ class VisionSystemSimTest {
         final var targetPose =
                 new Pose3d(new Translation3d(15.98, 0, 1), new Rotation3d(0, 0, Math.PI));
         var visionSysSim = new VisionSystemSim("Test");
-        var camera = new PhotonCamera("camera");
+        var camera = new PhotonCamera(inst, "camera");
         var cameraSim = new PhotonCameraSim(camera);
         visionSysSim.addCamera(cameraSim, new Transform3d());
         cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(80));
@@ -169,12 +219,14 @@ class VisionSystemSimTest {
 
         var robotPose = new Pose2d(new Translation2d(5, 0), Rotation2d.fromDegrees(5));
         visionSysSim.update(robotPose);
-        assertTrue(camera.getLatestResult().hasTargets());
+
+        assertTrue(waitForSequenceNumber(camera, 1).hasTargets());
 
         visionSysSim.adjustCamera( // vooop selfie stick
                 cameraSim, new Transform3d(new Translation3d(0, 0, 5000), new Rotation3d(0, 0, Math.PI)));
         visionSysSim.update(robotPose);
-        assertFalse(camera.getLatestResult().hasTargets());
+
+        assertFalse(waitForSequenceNumber(camera, 2).hasTargets());
     }
 
     @Test
@@ -184,7 +236,7 @@ class VisionSystemSimTest {
         var robotToCamera =
                 new Transform3d(new Translation3d(0, 0, 1), new Rotation3d(0, -Math.PI / 4, 0));
         var visionSysSim = new VisionSystemSim("Test");
-        var camera = new PhotonCamera("camera");
+        var camera = new PhotonCamera(inst, "camera");
         var cameraSim = new PhotonCameraSim(camera);
         visionSysSim.addCamera(cameraSim, robotToCamera);
         cameraSim.prop.setCalibration(1234, 1234, Rotation2d.fromDegrees(80));
@@ -192,12 +244,14 @@ class VisionSystemSimTest {
 
         var robotPose = new Pose2d(new Translation2d(13.98, 0), Rotation2d.fromDegrees(5));
         visionSysSim.update(robotPose);
-        assertTrue(camera.getLatestResult().hasTargets());
+
+        assertTrue(waitForSequenceNumber(camera, 1).hasTargets());
 
         // Pitched back camera should mean target goes out of view below the robot as distance increases
         robotPose = new Pose2d(new Translation2d(0, 0), Rotation2d.fromDegrees(5));
         visionSysSim.update(robotPose);
-        assertFalse(camera.getLatestResult().hasTargets());
+
+        assertFalse(waitForSequenceNumber(camera, 2).hasTargets());
     }
 
     @Test
@@ -205,7 +259,7 @@ class VisionSystemSimTest {
         final var targetPose =
                 new Pose3d(new Translation3d(15.98, 0, 1), new Rotation3d(0, 0, Math.PI));
         var visionSysSim = new VisionSystemSim("Test");
-        var camera = new PhotonCamera("camera");
+        var camera = new PhotonCamera(inst, "camera");
         var cameraSim = new PhotonCameraSim(camera);
         visionSysSim.addCamera(cameraSim, new Transform3d());
         cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(80));
@@ -214,11 +268,13 @@ class VisionSystemSimTest {
 
         var robotPose = new Pose2d(new Translation2d(12, 0), Rotation2d.fromDegrees(5));
         visionSysSim.update(robotPose);
-        assertTrue(camera.getLatestResult().hasTargets());
+
+        assertTrue(waitForSequenceNumber(camera, 1).hasTargets());
 
         robotPose = new Pose2d(new Translation2d(0, 0), Rotation2d.fromDegrees(5));
         visionSysSim.update(robotPose);
-        assertFalse(camera.getLatestResult().hasTargets());
+
+        assertFalse(waitForSequenceNumber(camera, 2).hasTargets());
     }
 
     @Test
@@ -226,7 +282,7 @@ class VisionSystemSimTest {
         final var targetPose =
                 new Pose3d(new Translation3d(15.98, 0, 1), new Rotation3d(0, 0, Math.PI));
         var visionSysSim = new VisionSystemSim("Test");
-        var camera = new PhotonCamera("camera");
+        var camera = new PhotonCamera(inst, "camera");
         var cameraSim = new PhotonCameraSim(camera);
         visionSysSim.addCamera(cameraSim, new Transform3d());
         cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(80));
@@ -236,20 +292,22 @@ class VisionSystemSimTest {
 
         var robotPose = new Pose2d(new Translation2d(10, 0), Rotation2d.fromDegrees(5));
         visionSysSim.update(robotPose);
-        assertTrue(camera.getLatestResult().hasTargets());
+
+        assertTrue(waitForSequenceNumber(camera, 1).hasTargets());
 
         robotPose = new Pose2d(new Translation2d(0, 0), Rotation2d.fromDegrees(5));
         visionSysSim.update(robotPose);
-        assertFalse(camera.getLatestResult().hasTargets());
+
+        assertFalse(waitForSequenceNumber(camera, 2).hasTargets());
     }
 
     @ParameterizedTest
     @ValueSource(doubles = {-10, -5, -0, -1, -2, 5, 7, 10.23})
-    public void testYawAngles(double testYaw) {
+    public void testYawAngles(double testYaw) throws InterruptedException {
         final var targetPose =
                 new Pose3d(new Translation3d(15.98, 0, 1), new Rotation3d(0, 0, 3 * Math.PI / 4));
         var visionSysSim = new VisionSystemSim("Test");
-        var camera = new PhotonCamera("camera");
+        var camera = new PhotonCamera(inst, "camera");
         var cameraSim = new PhotonCameraSim(camera);
         visionSysSim.addCamera(cameraSim, new Transform3d());
         cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(80));
@@ -259,7 +317,8 @@ class VisionSystemSimTest {
         // If the robot is rotated x deg (CCW+), the target yaw should be x deg (CW+)
         var robotPose = new Pose2d(new Translation2d(10, 0), Rotation2d.fromDegrees(testYaw));
         visionSysSim.update(robotPose);
-        var res = camera.getLatestResult();
+
+        var res = waitForSequenceNumber(camera, 1);
         assertTrue(res.hasTargets());
         var tgt = res.getBestTarget();
         assertEquals(testYaw, tgt.getYaw(), kRotDeltaDeg);
@@ -267,12 +326,12 @@ class VisionSystemSimTest {
 
     @ParameterizedTest
     @ValueSource(doubles = {-10, -5, -0, -1, -2, 5, 7, 10.23, 20.21, -19.999})
-    public void testPitchAngles(double testPitch) {
+    public void testPitchAngles(double testPitch) throws InterruptedException {
         final var targetPose =
                 new Pose3d(new Translation3d(15.98, 0, 0), new Rotation3d(0, 0, 3 * Math.PI / 4));
         final var robotPose = new Pose2d(new Translation2d(10, 0), new Rotation2d(0));
         var visionSysSim = new VisionSystemSim("Test");
-        var camera = new PhotonCamera("camera");
+        var camera = new PhotonCamera(inst, "camera");
         var cameraSim = new PhotonCameraSim(camera);
         visionSysSim.addCamera(cameraSim, new Transform3d());
         cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(120));
@@ -284,8 +343,10 @@ class VisionSystemSimTest {
                 cameraSim,
                 new Transform3d(
                         new Translation3d(), new Rotation3d(0, Units.degreesToRadians(testPitch), 0)));
+
         visionSysSim.update(robotPose);
-        var res = camera.getLatestResult();
+        var res = waitForSequenceNumber(camera, 1);
+        System.out.println("Got result: " + res);
         assertTrue(res.hasTargets());
         var tgt = res.getBestTarget();
 
@@ -335,7 +396,7 @@ class VisionSystemSimTest {
         var visionSysSim =
                 new VisionSystemSim(
                         "absurdlylongnamewhichshouldneveractuallyhappenbuteehwelltestitanywaysohowsyourdaygoingihopegoodhaveagreatrestofyourlife!");
-        var camera = new PhotonCamera("camera");
+        var camera = new PhotonCamera(inst, "camera");
         var cameraSim = new PhotonCameraSim(camera);
         visionSysSim.addCamera(cameraSim, new Transform3d());
         cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(160));
@@ -349,7 +410,8 @@ class VisionSystemSimTest {
         // 1. These are calculated with the average of the minimum area rectangle, which does not
         // actually find the target center because of perspective distortion.
         // 2. Yaw and pitch are calculated separately which gives incorrect pitch values.
-        var res = camera.getLatestResult();
+
+        var res = waitForSequenceNumber(camera, 1);
         assertTrue(res.hasTargets());
         var tgt = res.getBestTarget();
         assertEquals(0.0, tgt.getYaw(), 0.5);
@@ -375,7 +437,7 @@ class VisionSystemSimTest {
                 new Pose3d(new Translation3d(15.98, -2, 0), new Rotation3d(0, 0, Math.PI));
 
         var visionSysSim = new VisionSystemSim("Test");
-        var camera = new PhotonCamera("camera");
+        var camera = new PhotonCamera(inst, "camera");
         var cameraSim = new PhotonCameraSim(camera);
         visionSysSim.addCamera(cameraSim, new Transform3d());
         cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(80));
@@ -450,7 +512,9 @@ class VisionSystemSimTest {
 
         var robotPose = new Pose2d(new Translation2d(6.0, 0), Rotation2d.fromDegrees(0.25));
         visionSysSim.update(robotPose);
-        var res = camera.getLatestResult();
+
+        var res = waitForSequenceNumber(camera, 1);
+
         assertTrue(res.hasTargets());
         List<PhotonTrackedTarget> tgtList;
         tgtList = res.getTargets();
@@ -460,7 +524,7 @@ class VisionSystemSimTest {
     @Test
     public void testPoseEstimation() {
         var visionSysSim = new VisionSystemSim("Test");
-        var camera = new PhotonCamera("camera");
+        var camera = new PhotonCamera(inst, "camera");
         var cameraSim = new PhotonCameraSim(camera);
         visionSysSim.addCamera(cameraSim, new Transform3d());
         cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(90));
@@ -479,11 +543,12 @@ class VisionSystemSimTest {
                 new VisionTargetSim(tagList.get(0).pose, TargetModel.kAprilTag16h5, 0));
 
         visionSysSim.update(robotPose);
+
         var results =
                 VisionEstimation.estimateCamPosePNP(
                                 camera.getCameraMatrix().get(),
                                 camera.getDistCoeffs().get(),
-                                camera.getLatestResult().getTargets(),
+                                waitForSequenceNumber(camera, 1).getTargets(),
                                 layout,
                                 TargetModel.kAprilTag16h5)
                         .get();
@@ -499,6 +564,7 @@ class VisionSystemSimTest {
                 new VisionTargetSim(tagList.get(2).pose, TargetModel.kAprilTag16h5, 2));
 
         visionSysSim.update(robotPose);
+
         results =
                 VisionEstimation.estimateCamPosePNP(
                                 camera.getCameraMatrix().get(),

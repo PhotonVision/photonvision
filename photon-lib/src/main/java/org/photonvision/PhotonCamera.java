@@ -53,6 +53,7 @@ import java.util.stream.Collectors;
 import org.photonvision.common.hardware.VisionLEDMode;
 import org.photonvision.common.networktables.PacketSubscriber;
 import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.timesync.TimeSyncSingleton;
 
 /** Represents a camera that is connected to PhotonVision. */
 public class PhotonCamera implements AutoCloseable {
@@ -116,6 +117,9 @@ public class PhotonCamera implements AutoCloseable {
     private double prevHeartbeatChangeTime = 0;
     private static final double HEARTBEAT_DEBOUNCE_SEC = 0.5;
 
+    private double prevTimeSyncWarnTime = 0;
+    private static final double WARN_DEBOUNCE_SEC = 5;
+
     public static void setVersionCheckEnabled(boolean enabled) {
         VERSION_CHECK_ENABLED = enabled;
     }
@@ -166,6 +170,9 @@ public class PhotonCamera implements AutoCloseable {
 
         HAL.report(tResourceType.kResourceType_PhotonCamera, InstanceCount);
         InstanceCount++;
+
+        // HACK - start a TimeSyncServer, if we haven't yet.
+        TimeSyncSingleton.load();
     }
 
     /**
@@ -189,13 +196,12 @@ public class PhotonCamera implements AutoCloseable {
 
         List<PhotonPipelineResult> ret = new ArrayList<>();
 
+        // Grab the latest results. We don't care about the timestamps from NT - the metadata header has
+        // this, latency compensated by the Time Sync Client
         var changes = resultSubscriber.getAllChanges();
-
-        // TODO: NT4 timestamps are still not to be trusted. But it's the best we can do until we can
-        // make time sync more reliable.
         for (var c : changes) {
             var result = c.value;
-            result.setReceiveTimestampMicros(c.timestamp);
+            checkTimeSyncOrWarn(result);
             ret.add(result);
         }
 
@@ -213,19 +219,36 @@ public class PhotonCamera implements AutoCloseable {
     public PhotonPipelineResult getLatestResult() {
         verifyVersion();
 
+        // Grab the latest result. We don't care about the timestamp from NT - the metadata header has
+        // this, latency compensated by the Time Sync Client
         var ret = resultSubscriber.get();
 
         if (ret.timestamp == 0) return new PhotonPipelineResult();
 
         var result = ret.value;
 
-        // Set the timestamp of the result. Since PacketSubscriber doesn't realize that the result
-        // contains a thing with time knowledge, set it here.
-        // getLatestChange returns in microseconds, so we divide by 1e6 to convert to seconds.
-        // TODO: NT4 time sync is Not To Be Trusted, we should do something else?
-        result.setReceiveTimestampMicros(ret.timestamp);
+        checkTimeSyncOrWarn(result);
 
         return result;
+    }
+
+    private void checkTimeSyncOrWarn(PhotonPipelineResult result) {
+        if (result.metadata.timeSinceLastPong > 5L * 1000000L) {
+            if (Timer.getFPGATimestamp() > (prevTimeSyncWarnTime + WARN_DEBOUNCE_SEC)) {
+                prevTimeSyncWarnTime = Timer.getFPGATimestamp();
+
+                DriverStation.reportWarning(
+                        "PhotonVision coprocessor at path "
+                                + path
+                                + " is not connected to the TimeSyncServer? It's been "
+                                + String.format("%.2f", result.metadata.timeSinceLastPong / 1e6)
+                                + "s since the coprocessor last heard a pong.\n\nCheck /photonvision/.timesync/{COPROCESSOR_HOSTNAME} for more information.",
+                        false);
+            }
+        } else {
+            // Got a valid packet, reset the last time
+            prevTimeSyncWarnTime = 0;
+        }
     }
 
     /**

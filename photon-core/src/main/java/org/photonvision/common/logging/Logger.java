@@ -100,6 +100,7 @@ public class Logger {
         levelMap.put(LogGroup.VisionModule, LogLevel.INFO);
         levelMap.put(LogGroup.Config, LogLevel.INFO);
         levelMap.put(LogGroup.CSCore, LogLevel.TRACE);
+        levelMap.put(LogGroup.NetworkTables, LogLevel.DEBUG);
     }
 
     static {
@@ -200,7 +201,7 @@ public class Logger {
         return logLevel.code <= levelMap.get(group).code;
     }
 
-    void log(String message, LogLevel level) {
+    public void log(String message, LogLevel level) {
         if (shouldLog(level)) {
             log(message, level, group, className);
         }

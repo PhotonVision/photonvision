@@ -115,6 +115,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: Install graphviz
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install graphviz
       - name: Install dependencies
         working-directory: docs
         run: |
@@ -283,6 +287,9 @@ jobs:
           java-version: 17
           distribution: temurin
           architecture: ${{ matrix.architecture }}
+      - name: Install Arm64 Toolchain
+        run: ./gradlew installArm64Toolchain
+        if: ${{ (matrix.artifact-name) == 'LinuxArm64' }}
       - run: |
           rm -rf photon-server/src/main/resources/web/*
           mkdir -p photon-server/src/main/resources/web/docs
@@ -301,7 +308,7 @@ jobs:
           path: photon-server/src/main/resources/web/docs
       - run: |
           chmod +x gradlew
-          ./gradlew photon-server:shadowJar -PArchOverride=${{ matrix.arch-override }}
+          ./gradlew photon-targeting:jar photon-server:shadowJar -PArchOverride=${{ matrix.arch-override }}
         if: ${{ (matrix.arch-override != 'none') }}
       - run: |
           chmod +x gradlew
@@ -311,6 +318,10 @@ jobs:
         with:
           name: jar-${{ matrix.artifact-name }}
           path: photon-server/build/libs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: photon-targeting_jar-${{ matrix.artifact-name }}
+          path: photon-targeting/build/libs
 
   run-smoketest-native:
     needs: [build-package]

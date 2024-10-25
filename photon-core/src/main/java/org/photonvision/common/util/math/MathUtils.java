@@ -25,7 +25,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.util.WPIUtilJNI;
+import edu.wpi.first.networktables.NetworkTablesJNI;
 import java.util.Arrays;
 import java.util.List;
 import org.opencv.core.Core;
@@ -98,7 +98,7 @@ public class MathUtils {
     }
 
     public static long wpiNanoTime() {
-        return microsToNanos(WPIUtilJNI.now());
+        return microsToNanos(NetworkTablesJNI.now());
     }
 
     /**
