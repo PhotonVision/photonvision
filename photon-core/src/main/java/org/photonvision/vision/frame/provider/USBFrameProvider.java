@@ -24,7 +24,7 @@ import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.processes.VisionSourceSettables;
 
 public class USBFrameProvider extends CpuImageProcessor {
-    private static final Logger logger = new Logger(USBFrameProvider.class, LogGroup.Camera);
+    private final Logger logger;
 
     private final CvSink cvSink;
 
@@ -33,6 +33,8 @@ public class USBFrameProvider extends CpuImageProcessor {
 
     @SuppressWarnings("SpellCheckingInspection")
     public USBFrameProvider(CvSink sink, VisionSourceSettables visionSettables) {
+        logger = new Logger(USBFrameProvider.class, sink.getName(), LogGroup.Camera);
+
         cvSink = sink;
         cvSink.setEnabled(true);
         this.settables = visionSettables;

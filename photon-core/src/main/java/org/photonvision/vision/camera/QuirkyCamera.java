@@ -97,7 +97,7 @@ public class QuirkyCamera {
                     -1,
                     "unicam",
                     CameraQuirk.Gain,
-                    CameraQuirk.AWBGain); // PiCam (using libpicam GPU Driver on raspberry pi)
+                    CameraQuirk.AwbRedBlueGain); // PiCam (using libcamera GPU Driver on raspberry pi)
 
     @JsonProperty("baseName")
     public final String baseName;
