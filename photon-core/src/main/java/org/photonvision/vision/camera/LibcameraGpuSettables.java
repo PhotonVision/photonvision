@@ -273,11 +273,11 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
     @Override
     public double getMaxWhiteBalanceTemp() {
-        return 1;
+        return 2;
     }
 
     @Override
     public double getMinWhiteBalanceTemp() {
-        return 2;
+        return 1;
     }
 }

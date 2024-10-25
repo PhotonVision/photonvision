@@ -77,9 +77,11 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     }
 
     protected void setUpWhiteBalanceProperties() {
-        wbTempProp = findProperty("white_balance_temperature", "WhiteBalance").get();
-        this.minWhiteBalanceTemp = wbTempProp.getMin();
-        this.maxWhiteBalanceTemp = wbTempProp.getMax();
+        wbTempProp = findProperty("white_balance_temperature", "WhiteBalance").orElse(null);
+        if (wbTempProp != null) {
+            this.minWhiteBalanceTemp = wbTempProp.getMin();
+            this.maxWhiteBalanceTemp = wbTempProp.getMax();
+        }
     }
 
     protected void setUpExposureProperties() {
@@ -113,10 +115,14 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
 
     @Override
     public void setWhiteBalanceTemp(double tempNumber) {
+        if (wbTempProp == null) {
+            // bail
+            return;
+        }
+
         try {
             int temp = (int) Math.round(tempNumber);
 
-            softSet("white_balance_auto_preset", 2);
             softSet("white_balance_automatic", 0);
 
             int propVal = (int) MathUtil.clamp(temp, minWhiteBalanceTemp, maxWhiteBalanceTemp);
@@ -145,13 +151,13 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
 
         if (autoWB) {
             // Seems to be a rpi-specific property?
-            softSet("white_balance_auto_preset", 1); // Auto white-balance enabled
             softSet("white_balance_automatic", 1);
         } else {
-            softSet("white_balance_auto_preset", 2); // Auto white-balance disabled
             softSet("white_balance_automatic", 0);
 
-            wbTempProp.set(this.lastWhiteBalanceTemp);
+            if (wbTempProp != null) {
+                wbTempProp.set(this.lastWhiteBalanceTemp);
+            }
         }
     }
 
@@ -353,11 +359,11 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
 
     @Override
     public double getMaxWhiteBalanceTemp() {
-        return wbTempProp.getMax();
+        return maxWhiteBalanceTemp;
     }
 
     @Override
     public double getMinWhiteBalanceTemp() {
-        return wbTempProp.getMin();
+        return minWhiteBalanceTemp;
     }
 }
