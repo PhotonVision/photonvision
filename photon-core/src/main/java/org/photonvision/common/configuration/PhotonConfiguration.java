@@ -197,8 +197,16 @@ public class PhotonConfiguration {
 
     @Override
     public String toString() {
-        return "PhotonConfiguration [\n  hardwareConfig=" + hardwareConfig + "\n  hardwareSettings=" + hardwareSettings
-                + "\n  networkConfig=" + networkConfig + "\n  atfl=" + atfl + "\n  cameraConfigurations="
-                + cameraConfigurations + "\n]";
+        return "PhotonConfiguration [\n  hardwareConfig="
+                + hardwareConfig
+                + "\n  hardwareSettings="
+                + hardwareSettings
+                + "\n  networkConfig="
+                + networkConfig
+                + "\n  atfl="
+                + atfl
+                + "\n  cameraConfigurations="
+                + cameraConfigurations
+                + "\n]";
     }
 }

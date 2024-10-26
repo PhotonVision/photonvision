@@ -17,6 +17,8 @@
 
 package org.photonvision.vision.camera;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+
 public enum CameraQuirk {
     /** Camera settable for controllable image gain */
     Gain,
@@ -27,6 +29,8 @@ public enum CameraQuirk {
     /** Cap at 100FPS for high-bandwidth cameras */
     FPSCap100,
     /** Separate red/blue gain controls available */
+    // from 2024.3.1
+    @JsonAlias("AWBGain")
     AwbRedBlueGain,
     /** Will not work with photonvision - Logitec C270 at least */
     CompletelyBroken,
@@ -40,8 +44,12 @@ public enum CameraQuirk {
      * Camera is an arducam USB ov9281 which has a funky exposure issue where it is defined in v4l as
      * 1-5000 instead of 1-75
      */
+    // from 2024.3.1
+    @JsonAlias("ArduOV9281")
     ArduOV9281Controls,
     /** Dummy quirk to tell OV2311 from OV9281 */
+    // from 2024.3.1
+    @JsonAlias("ArduOV2311")
     ArduOV2311Controls,
     ArduOV9782Controls,
     /**
@@ -52,4 +60,6 @@ public enum CameraQuirk {
     ArduOV9782,
     /** Camera has odd exposure range, and supports gain control */
     See3Cam_24CUG,
+
+    /* from 2024.3.1 */
 }
