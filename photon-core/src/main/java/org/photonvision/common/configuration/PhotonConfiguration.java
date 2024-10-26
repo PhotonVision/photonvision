@@ -194,4 +194,19 @@ public class PhotonConfiguration {
         public double minWhiteBalanceTemp;
         public double maxWhiteBalanceTemp;
     }
+
+    @Override
+    public String toString() {
+        return "PhotonConfiguration [\n  hardwareConfig="
+                + hardwareConfig
+                + "\n  hardwareSettings="
+                + hardwareSettings
+                + "\n  networkConfig="
+                + networkConfig
+                + "\n  atfl="
+                + atfl
+                + "\n  cameraConfigurations="
+                + cameraConfigurations
+                + "\n]";
+    }
 }
