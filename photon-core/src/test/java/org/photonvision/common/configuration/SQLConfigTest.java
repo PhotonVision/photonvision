@@ -108,9 +108,7 @@ public class SQLConfigTest {
     @Test
     public void testLoad2024_3_1() {
         var cfgLoader =
-                new SqlConfigProvider(
-                        Path.of(
-                                "C:\\Users\\matth\\Documents\\GitHub\\photonvision\\photon-server\\photonvision_config_from_2024.3.1"));
+                new SqlConfigProvider(TestUtils.getConfigDirectoriesPath(false).resolve("photonvision_config_from_v2024.3.1"));
 
         assertDoesNotThrow(cfgLoader::load);
 
