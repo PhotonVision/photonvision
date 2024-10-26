@@ -108,13 +108,22 @@ public class SQLConfigTest {
     @Test
     public void testLoad2024_3_1() {
         var cfgLoader =
-                new SqlConfigProvider(TestUtils.getConfigDirectoriesPath(false).resolve("photonvision_config_from_v2024.3.1"));
+                new SqlConfigProvider(
+                        TestUtils.getConfigDirectoriesPath(false)
+                                .resolve("photonvision_config_from_v2024.3.1"));
 
         assertDoesNotThrow(cfgLoader::load);
 
         System.out.println(cfgLoader.getConfig());
         for (var c : CameraQuirk.values()) {
-            assertDoesNotThrow(() -> cfgLoader.config.getCameraConfigurations().get("Microsoft_LifeCam_HD-3000").cameraQuirks.hasQuirk(c));
+            assertDoesNotThrow(
+                    () ->
+                            cfgLoader
+                                    .config
+                                    .getCameraConfigurations()
+                                    .get("Microsoft_LifeCam_HD-3000")
+                                    .cameraQuirks
+                                    .hasQuirk(c));
         }
     }
 }

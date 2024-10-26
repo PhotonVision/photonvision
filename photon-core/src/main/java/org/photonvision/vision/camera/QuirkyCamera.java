@@ -182,6 +182,7 @@ public class QuirkyCamera {
 
     /**
      * Check if this camera
+     *
      * @param quirk
      * @return
      */

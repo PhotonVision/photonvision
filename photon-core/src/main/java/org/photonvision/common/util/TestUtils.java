@@ -429,7 +429,6 @@ public class TestUtils {
                 .resolve(WPI2022Image.kTerminal22ft6in.path);
     }
 
-    
     public static Path getConfigDirectoriesPath(boolean testMode) {
         return getResourcesFolderPath(testMode).resolve("old_configs");
     }
