@@ -54,7 +54,7 @@ public class ConfigManager {
     // special case flag to disable flushing settings to disk at shutdown. Avoids the jvm shutdown
     // hook overwriting the settings we just uploaded
     private boolean flushOnShutdown = true;
-    private boolean allowWriteTask = false;
+    private boolean allowWriteTask = true;
 
     enum ConfigSaveStrategy {
         SQL,
