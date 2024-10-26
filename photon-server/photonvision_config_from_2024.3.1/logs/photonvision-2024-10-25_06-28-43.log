@@ -1,0 +1,196 @@
+[2024-10-25 18:28:43] [General - Main] [INFO] Native libraries loaded.
+[2024-10-25 18:28:43] [General - Main] [ERROR] Platform does not support RKNN based machine learning!
+[2024-10-25 18:28:43] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object libamd.dll
+[2024-10-25 18:28:43] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object libcamd.dll
+[2024-10-25 18:28:43] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object libcolamd.dll
+[2024-10-25 18:28:43] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object libccolamd.dll
+[2024-10-25 18:28:43] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object openblas.dll
+[2024-10-25 18:28:43] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object libwinpthread-1.dll
+[2024-10-25 18:28:43] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object libgcc_s_seh-1.dll
+[2024-10-25 18:28:43] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object libquadmath-0.dll
+[2024-10-25 18:28:43] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object libgfortran-5.dll
+[2024-10-25 18:28:43] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object liblapack.dll
+[2024-10-25 18:28:44] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object libcholmod.dll
+[2024-10-25 18:28:44] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object mrcal_jni.dll
+[2024-10-25 18:28:44] [General - Main] [INFO] Logging initialized in debug mode.
+[2024-10-25 18:28:44] [General - Main] [INFO] Starting PhotonVision version v2024.3.1 on Windows x64
+[2024-10-25 18:28:44] [General - Main] [DEBUG] Loading ConfigManager...
+[2024-10-25 18:28:44] [Config - SqlConfigProvider] [DEBUG] Using database C:\Users\matth\Documents\GitHub\photonvision\photon-server\photonvision_config\photon.sqlite
+[2024-10-25 18:28:44] [Config - SqlConfigProvider] [DEBUG] Older database version. Migrating ... 
+[2024-10-25 18:28:44] [Config - SqlConfigProvider] [DEBUG] Running migration step 0
+[2024-10-25 18:28:44] [Config - SqlConfigProvider] [DEBUG] Running migration step 1
+[2024-10-25 18:28:44] [Config - SqlConfigProvider] [DEBUG] Database migration complete
+[2024-10-25 18:28:44] [Config - SqlConfigProvider] [INFO] Using correct database version: 2
+[2024-10-25 18:28:44] [Config - SqlConfigProvider] [DEBUG] Loading config...
+[2024-10-25 18:28:44] [Config - SqlConfigProvider] [ERROR] Could not deserialize hardware config! Loading defaults
+[2024-10-25 18:28:44] [Config - SqlConfigProvider] [ERROR] Could not deserialize hardware settings! Loading defaults
+[2024-10-25 18:28:44] [Config - SqlConfigProvider] [ERROR] Could not deserialize network config! Loading defaults
+[2024-10-25 18:28:44] [Config - SqlConfigProvider] [ERROR] Could not deserialize apriltag layout! Loading defaults
+[2024-10-25 18:28:44] [General - Main] [DEBUG] Loading HardwareManager...
+[2024-10-25 18:28:44] [General - NetworkTablesManager] [INFO] Starting NT Client, server team is 0
+[2024-10-25 18:28:44] [General - NetworkTablesManager] [ERROR] [NetworkTablesManager] Could not connect to the robot! Will retry in the background...
+[2024-10-25 18:28:44] [General - Main] [DEBUG] Loading NetworkManager...
+[2024-10-25 18:28:44] [General - NetworkManager] [INFO] Network management is disabled.
+[2024-10-25 18:28:44] [General - Main] [DEBUG] Loading NetworkTablesManager...
+[2024-10-25 18:28:44] [General - Main] [INFO] Loading ML models
+[2024-10-25 18:28:44] [General - Main] [DEBUG] Loading VisionSourceManager...
+[2024-10-25 18:28:44] [General - Main] [INFO] Starting server...
+[2024-10-25 18:28:44] [WebServer - DataChangeService] [DEBUG] Added subscriber - Sources: DCS_WEBSOCKET, DCS_HTTP, DCS_NETWORKTABLES, DCS_VISIONMODULE, DCS_OTHER, Destinations: DCD_WEBSERVER
+[2024-10-25 18:28:44] [Camera - VisionSourceManager] [DEBUG] Matching 1 new cameras!
+[2024-10-25 18:28:44] [Camera - VisionSourceManager] [INFO] Detected unmatched physical camera: CameraInfo [cameraType=UsbCamera, baseName=Microsoft LifeCam HD-3000, vid=1118, pid=2064, path=\\?\usb#vid_045e&pid_0810&mi_00#7&1e7a2b1a&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global, otherPaths=[]]
+[2024-10-25 18:28:44] [Camera - VisionSourceManager] [INFO] Matching CSI cameras by port & base name...
+[2024-10-25 18:28:44] [Camera - VisionSourceManager] [INFO] Matching USB cameras by usb port & name & USB VID/PID...
+[2024-10-25 18:28:44] [Camera - VisionSourceManager] [INFO] Matching USB cameras by windows-path & USB VID/PID only...
+[2024-10-25 18:28:44] [Camera - VisionSourceManager] [INFO] Matching USB cameras by usb port & USB VID/PID...
+[2024-10-25 18:28:44] [Camera - VisionSourceManager] [INFO] Matching USB cameras by base-name & usb port...
+[2024-10-25 18:28:44] [Camera - VisionSourceManager] [INFO] Matching USB cameras by base-name & USB VID/PID only...
+[2024-10-25 18:28:44] [Camera - VisionSourceManager] [INFO] Matching USB cameras by base-name only...
+[2024-10-25 18:28:44] [Camera - VisionSourceManager] [DEBUG] After matching loaded configs, these configs remained unmatched: {CameraInfo [cameraType=UsbCamera, baseName=Microsoft LifeCam HD-3000, vid=1118, pid=2064, path=\\?\usb#vid_045e&pid_0810&mi_00#7&1e7a2b1a&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global, otherPaths=[]]}
+[2024-10-25 18:28:44] [Camera - VisionSourceManager] [INFO] Creating a new camera config for camera Microsoft_LifeCam_HD-3000
+[2024-10-25 18:28:44] [Camera - CameraConfiguration] [DEBUG] Creating USB camera configuration for UsbCamera Microsoft LifeCam HD-3000 (AKA Microsoft_LifeCam_HD-3000) at \\?\usb#vid_045e&pid_0810&mi_00#7&1e7a2b1a&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global
+[2024-10-25 18:28:44] [Camera - VisionSourceManager] [DEBUG] Matched or created 1 camera configs!
+[2024-10-25 18:28:44] [Camera - VisionSourceManager] [DEBUG] Creating VisionSource for [baseName=Microsoft LifeCam HD-3000, uniqueName=Microsoft_LifeCam_HD-3000, otherPaths=[], vid=-1, pid=-1]
+[2024-10-25 18:28:44] [CSCore - PvCSCoreLogger] [INFO] Microsoft_LifeCam_HD-3000: Attempting to connect to USB camera on \\?\usb#vid_045e&pid_0810&mi_00#7&1e7a2b1a&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global
+[2024-10-25 18:28:44] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 7: Microsoft_LifeCam_HD-3000: opening device (UsbCameraImpl.cpp:505)
+[2024-10-25 18:28:44] [WebServer - DataChangeService] [DEBUG] Added subscriber - Sources: DCS_WEBSOCKET, DCS_HTTP, DCS_NETWORKTABLES, DCS_VISIONMODULE, DCS_OTHER, Destinations: DCD_UI
+[2024-10-25 18:28:44] [WebServer - DataChangeService] [DEBUG] Added subscriber - Sources: DCS_WEBSOCKET, Destinations: DCD_GENSETTINGS
+[2024-10-25 18:28:44] [CSCore - PvCSCoreLogger] [INFO] Microsoft_LifeCam_HD-3000: Connected to USB camera on \\?\usb#vid_045e&pid_0810&mi_00#7&1e7a2b1a&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global
+[2024-10-25 18:28:44] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 7: Microsoft_LifeCam_HD-3000: caching properties (UsbCameraImpl.cpp:543)
+[2024-10-25 18:28:44] [VisionModule - VisionSourceSettables] [INFO] Setting video mode to FPS: 8 Width: 160 Height: 120 Pixel Format: kYUYV
+[2024-10-25 18:28:44] [CSCore - PvCSCoreLogger] [INFO] Microsoft_LifeCam_HD-3000: Disconnected from \\?\usb#vid_045e&pid_0810&mi_00#7&1e7a2b1a&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global
+[2024-10-25 18:28:44] [CSCore - PvCSCoreLogger] [INFO] Microsoft_LifeCam_HD-3000: Attempting to connect to USB camera on \\?\usb#vid_045e&pid_0810&mi_00#7&1e7a2b1a&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global
+[2024-10-25 18:28:44] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 7: Microsoft_LifeCam_HD-3000: opening device (UsbCameraImpl.cpp:505)
+[2024-10-25 18:28:44] [CSCore - PvCSCoreLogger] [INFO] Microsoft_LifeCam_HD-3000: Connected to USB camera on \\?\usb#vid_045e&pid_0810&mi_00#7&1e7a2b1a&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global
+[2024-10-25 18:28:44] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 7: Microsoft_LifeCam_HD-3000: restoring video mode (UsbCameraImpl.cpp:549)
+[2024-10-25 18:28:44] [Camera - VisionSourceManager] [DEBUG] Matched config for camera "USBFrameProvider - opencv_Microsoft_LifeCam_HD-3000" and loaded 0 pipelines
+[2024-10-25 18:28:44] [Camera - VisionSourceManager] [INFO] Adding 1 configs to VMM.
+[2024-10-25 18:28:44] [VisionModule - PipelineManager] [DEBUG] Creating Reflective pipeline
+[2024-10-25 18:28:44] [WebServer - DataChangeService] [DEBUG] Added subscriber - Sources: DCS_WEBSOCKET, DCS_HTTP, DCS_NETWORKTABLES, DCS_VISIONMODULE, DCS_OTHER, Destinations: DCD_ACTIVEMODULE, DCD_ACTIVEPIPELINESETTINGS, DCD_GENSETTINGS, DCD_UI, DCD_WEBSERVER, DCD_OTHER
+[2024-10-25 18:28:44] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_matt-desktop_Port_1181_Input_MJPEG_Server: waiting for clients to connect (MjpegServerImpl.cpp:944)
+[2024-10-25 18:28:44] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_matt-desktop_Port_1182_Output_MJPEG_Server: waiting for clients to connect (MjpegServerImpl.cpp:944)
+[2024-10-25 18:28:44] [VisionModule - VisionModule - Microsoft_LifeCam_HD-3000] [INFO] Setting pipeline to 0
+[2024-10-25 18:28:44] [VisionModule - VisionModule - Microsoft_LifeCam_HD-3000] [INFO] Pipeline name: New Pipeline
+[2024-10-25 18:28:44] [VisionModule - VisionSourceSettables] [INFO] Setting video mode to FPS: 8 Width: 160 Height: 120 Pixel Format: kYUYV
+[2024-10-25 18:28:44] [WebServer - DataSocketHandler] [INFO] New websocket connection from /127.0.0.1:52127
+[2024-10-25 18:28:44] [VisionModule - VisionSourceSettables] [DEBUG] Setting camera exposure to 6
+[2024-10-25 18:28:44] [VisionModule - VisionSourceSettables] [DEBUG] Setting auto exposure to false
+[2024-10-25 18:28:44] [VisionModule - VisionSourceSettables] [DEBUG] Setting camera exposure to 6
+[2024-10-25 18:28:44] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_matt-desktop_Port_1181_Input_MJPEG_Server: client connection from 127.0.0.1 (MjpegServerImpl.cpp:955)
+[2024-10-25 18:28:44] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_matt-desktop_Port_1182_Output_MJPEG_Server: client connection from 127.0.0.1 (MjpegServerImpl.cpp:955)
+[2024-10-25 18:28:44] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_matt-desktop_Port_1181_Input_MJPEG_Server: HTTP request: 'GET /stream.mjpg HTTP/1.1
+'
+ (MjpegServerImpl.cpp:808)
+[2024-10-25 18:28:44] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_matt-desktop_Port_1181_Input_MJPEG_Server: command parameters: "" (MjpegServerImpl.cpp:851)
+[2024-10-25 18:28:44] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_matt-desktop_Port_1182_Output_MJPEG_Server: HTTP request: 'GET /stream.mjpg HTTP/1.1
+'
+ (MjpegServerImpl.cpp:808)
+[2024-10-25 18:28:44] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_matt-desktop_Port_1182_Output_MJPEG_Server: command parameters: "" (MjpegServerImpl.cpp:851)
+[2024-10-25 18:28:44] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_matt-desktop_Port_1182_Output_MJPEG_Server: request for stream matt-desktop_Port_1182_Output_MJPEG_Server (MjpegServerImpl.cpp:869)
+[2024-10-25 18:28:44] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_matt-desktop_Port_1181_Input_MJPEG_Server: request for stream matt-desktop_Port_1181_Input_MJPEG_Server (MjpegServerImpl.cpp:869)
+[2024-10-25 18:28:44] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_matt-desktop_Port_1182_Output_MJPEG_Server: Headers send, sending stream now (MjpegServerImpl.cpp:678)
+[2024-10-25 18:28:44] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_matt-desktop_Port_1181_Input_MJPEG_Server: Headers send, sending stream now (MjpegServerImpl.cpp:678)
+[2024-10-25 18:28:45] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_matt-desktop_Port_1181_Input_MJPEG_Server: client connection from 127.0.0.1 (MjpegServerImpl.cpp:955)
+[2024-10-25 18:28:45] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_matt-desktop_Port_1182_Output_MJPEG_Server: client connection from 127.0.0.1 (MjpegServerImpl.cpp:955)
+[2024-10-25 18:28:46] [Config - ConfigManager] [DEBUG] Saving to disk...
+[2024-10-25 18:28:46] [Config - SqlConfigProvider] [DEBUG] Saving to disk
+[2024-10-25 18:28:46] [Config - SqlConfigProvider] [INFO] Settings saved!
+[2024-10-25 18:28:50] [WebServer - DataSocketHandler] [INFO] Closing websocket connection from /127.0.0.1:52127 for reason: Connection closed by client
+[2024-10-25 18:28:50] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_matt-desktop_Port_1181_Input_MJPEG_Server: leaving HTTP client thread (MjpegServerImpl.cpp:917)
+[2024-10-25 18:28:50] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_matt-desktop_Port_1182_Output_MJPEG_Server: leaving HTTP client thread (MjpegServerImpl.cpp:917)
+[2024-10-25 18:28:50] [WebServer - DataSocketHandler] [INFO] New websocket connection from /0:0:0:0:0:0:0:1:52171
+[2024-10-25 18:28:50] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_matt-desktop_Port_1181_Input_MJPEG_Server: HTTP request: 'GET /stream.mjpg HTTP/1.1
+'
+ (MjpegServerImpl.cpp:808)
+[2024-10-25 18:28:50] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_matt-desktop_Port_1181_Input_MJPEG_Server: command parameters: "" (MjpegServerImpl.cpp:851)
+[2024-10-25 18:28:50] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_matt-desktop_Port_1182_Output_MJPEG_Server: HTTP request: 'GET /stream.mjpg HTTP/1.1
+'
+ (MjpegServerImpl.cpp:808)
+[2024-10-25 18:28:50] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_matt-desktop_Port_1182_Output_MJPEG_Server: command parameters: "" (MjpegServerImpl.cpp:851)
+[2024-10-25 18:28:50] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_matt-desktop_Port_1181_Input_MJPEG_Server: request for stream matt-desktop_Port_1181_Input_MJPEG_Server (MjpegServerImpl.cpp:869)
+[2024-10-25 18:28:50] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_matt-desktop_Port_1181_Input_MJPEG_Server: Headers send, sending stream now (MjpegServerImpl.cpp:678)
+[2024-10-25 18:28:50] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_matt-desktop_Port_1182_Output_MJPEG_Server: request for stream matt-desktop_Port_1182_Output_MJPEG_Server (MjpegServerImpl.cpp:869)
+[2024-10-25 18:28:50] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_matt-desktop_Port_1182_Output_MJPEG_Server: Headers send, sending stream now (MjpegServerImpl.cpp:678)
+[2024-10-25 18:28:54] [VisionModule - VisionSourceSettables] [INFO] Setting video mode to FPS: 8 Width: 1280 Height: 720 Pixel Format: kYUYV
+[2024-10-25 18:28:54] [CSCore - PvCSCoreLogger] [INFO] Microsoft_LifeCam_HD-3000: Disconnected from \\?\usb#vid_045e&pid_0810&mi_00#7&1e7a2b1a&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global
+[2024-10-25 18:28:55] [CSCore - PvCSCoreLogger] [INFO] Microsoft_LifeCam_HD-3000: Attempting to connect to USB camera on \\?\usb#vid_045e&pid_0810&mi_00#7&1e7a2b1a&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global
+[2024-10-25 18:28:55] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 7: Microsoft_LifeCam_HD-3000: opening device (UsbCameraImpl.cpp:505)
+[2024-10-25 18:28:55] [CSCore - PvCSCoreLogger] [INFO] Microsoft_LifeCam_HD-3000: Connected to USB camera on \\?\usb#vid_045e&pid_0810&mi_00#7&1e7a2b1a&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global
+[2024-10-25 18:28:55] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 7: Microsoft_LifeCam_HD-3000: restoring video mode (UsbCameraImpl.cpp:549)
+[2024-10-25 18:28:55] [VisionModule - VisionModule - Microsoft_LifeCam_HD-3000] [INFO] Starting calibration at resolution index 50 and settings UICalibrationData{videoModeIndex=50, count=0, minCount=12, hasEnough=false, squareSizeIn=1.0, patternWidth=8, patternHeight=8, boardType=CHESSBOARD}
+[2024-10-25 18:28:55] [VisionModule - VisionModule - Microsoft_LifeCam_HD-3000] [INFO] Setting pipeline to -2
+[2024-10-25 18:28:55] [VisionModule - VisionModule - Microsoft_LifeCam_HD-3000] [INFO] Pipeline name: New Pipeline
+[2024-10-25 18:28:55] [VisionModule - VisionSourceSettables] [INFO] Setting video mode to FPS: 8 Width: 1280 Height: 720 Pixel Format: kYUYV
+[2024-10-25 18:28:55] [VisionModule - VisionSourceSettables] [DEBUG] Setting camera exposure to 20
+[2024-10-25 18:28:55] [VisionModule - VisionSourceSettables] [DEBUG] Setting auto exposure to true
+[2024-10-25 18:28:56] [WebServer - Server] [DEBUG] Handled HTTP request of type OPTIONS from endpoint /api/calibration/end for host [0:0:0:0:0:0:0:1] in 9.0775 ms
+[2024-10-25 18:28:56] [WebServer - RequestHandler] [INFO] Calibrating camera! This will take a long time...
+[2024-10-25 18:28:56] [General - Calibrate3dPipeline] [INFO] Not enough snapshots! Only got 0 of 12 -- returning null..
+[2024-10-25 18:28:56] [VisionModule - VisionModule - Microsoft_LifeCam_HD-3000] [INFO] Setting pipeline to 0
+[2024-10-25 18:28:56] [VisionModule - VisionModule - Microsoft_LifeCam_HD-3000] [INFO] Pipeline name: New Pipeline
+[2024-10-25 18:28:56] [VisionModule - VisionSourceSettables] [INFO] Setting video mode to FPS: 8 Width: 160 Height: 120 Pixel Format: kYUYV
+[2024-10-25 18:28:56] [CSCore - PvCSCoreLogger] [INFO] Microsoft_LifeCam_HD-3000: Disconnected from \\?\usb#vid_045e&pid_0810&mi_00#7&1e7a2b1a&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global
+[2024-10-25 18:28:56] [VisionModule - PipelineManager] [DEBUG] Creating Reflective pipeline
+[2024-10-25 18:28:56] [CSCore - PvCSCoreLogger] [INFO] Microsoft_LifeCam_HD-3000: Attempting to connect to USB camera on \\?\usb#vid_045e&pid_0810&mi_00#7&1e7a2b1a&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global
+[2024-10-25 18:28:56] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 7: Microsoft_LifeCam_HD-3000: opening device (UsbCameraImpl.cpp:505)
+[2024-10-25 18:28:56] [CSCore - PvCSCoreLogger] [INFO] Microsoft_LifeCam_HD-3000: Connected to USB camera on \\?\usb#vid_045e&pid_0810&mi_00#7&1e7a2b1a&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global
+[2024-10-25 18:28:56] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 7: Microsoft_LifeCam_HD-3000: restoring video mode (UsbCameraImpl.cpp:549)
+[2024-10-25 18:28:56] [VisionModule - VisionSourceSettables] [DEBUG] Setting camera exposure to 6
+[2024-10-25 18:28:56] [VisionModule - VisionSourceSettables] [DEBUG] Setting auto exposure to false
+[2024-10-25 18:28:56] [VisionModule - VisionSourceSettables] [DEBUG] Setting camera exposure to 6
+[2024-10-25 18:28:56] [VisionModule - VisionModule - Microsoft_LifeCam_HD-3000] [ERROR] Calibration failed...
+[2024-10-25 18:28:56] [WebServer - RequestHandler] [ERROR] The calibration process failed. Calibration data for module at index (0) was null
+[2024-10-25 18:28:56] [WebServer - Server] [DEBUG] Handled HTTP request of type POST from endpoint /api/calibration/end for host [0:0:0:0:0:0:0:1] in 510.7634 ms
+[2024-10-25 18:28:58] [Config - ConfigManager] [DEBUG] Saving to disk...
+[2024-10-25 18:28:58] [Config - SqlConfigProvider] [DEBUG] Saving to disk
+[2024-10-25 18:28:58] [Config - SqlConfigProvider] [INFO] Settings saved!
+[2024-10-25 18:29:02] [VisionModule - VisionSourceSettables] [INFO] Setting video mode to FPS: 8 Width: 1280 Height: 720 Pixel Format: kYUYV
+[2024-10-25 18:29:02] [CSCore - PvCSCoreLogger] [INFO] Microsoft_LifeCam_HD-3000: Disconnected from \\?\usb#vid_045e&pid_0810&mi_00#7&1e7a2b1a&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global
+[2024-10-25 18:29:02] [CSCore - PvCSCoreLogger] [INFO] Microsoft_LifeCam_HD-3000: Attempting to connect to USB camera on \\?\usb#vid_045e&pid_0810&mi_00#7&1e7a2b1a&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global
+[2024-10-25 18:29:02] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 7: Microsoft_LifeCam_HD-3000: opening device (UsbCameraImpl.cpp:505)
+[2024-10-25 18:29:02] [CSCore - PvCSCoreLogger] [INFO] Microsoft_LifeCam_HD-3000: Connected to USB camera on \\?\usb#vid_045e&pid_0810&mi_00#7&1e7a2b1a&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global
+[2024-10-25 18:29:02] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 7: Microsoft_LifeCam_HD-3000: restoring video mode (UsbCameraImpl.cpp:549)
+[2024-10-25 18:29:02] [VisionModule - VisionModule - Microsoft_LifeCam_HD-3000] [INFO] Starting calibration at resolution index 50 and settings UICalibrationData{videoModeIndex=50, count=0, minCount=12, hasEnough=false, squareSizeIn=1.0, patternWidth=8, patternHeight=8, boardType=CHESSBOARD}
+[2024-10-25 18:29:02] [VisionModule - VisionModule - Microsoft_LifeCam_HD-3000] [INFO] Setting pipeline to -2
+[2024-10-25 18:29:02] [VisionModule - VisionModule - Microsoft_LifeCam_HD-3000] [INFO] Pipeline name: New Pipeline
+[2024-10-25 18:29:02] [VisionModule - VisionSourceSettables] [INFO] Setting video mode to FPS: 8 Width: 1280 Height: 720 Pixel Format: kYUYV
+[2024-10-25 18:29:03] [VisionModule - VisionSourceSettables] [DEBUG] Setting camera exposure to 20
+[2024-10-25 18:29:03] [VisionModule - VisionSourceSettables] [DEBUG] Setting auto exposure to true
+[2024-10-25 18:29:04] [Config - ConfigManager] [DEBUG] Saving to disk...
+[2024-10-25 18:29:04] [Config - SqlConfigProvider] [DEBUG] Saving to disk
+[2024-10-25 18:29:04] [Config - SqlConfigProvider] [INFO] Settings saved!
+[2024-10-25 18:29:10] [WebServer - Server] [DEBUG] Handled HTTP request of type GET from endpoint /api/utils/getImageSnapshots for host [0:0:0:0:0:0:0:1] in 1.665 ms
+[2024-10-25 18:29:12] [WebServer - Server] [DEBUG] Handled HTTP request of type GET from endpoint /api/utils/getImageSnapshots for host [0:0:0:0:0:0:0:1] in 0.6842 ms
+[2024-10-25 18:29:29] [Config - ConfigManager] [DEBUG] Saving to disk...
+[2024-10-25 18:29:29] [Config - SqlConfigProvider] [DEBUG] Saving to disk
+[2024-10-25 18:29:29] [Config - SqlConfigProvider] [INFO] Settings saved!
+[2024-10-25 18:29:50] [WebServer - Server] [DEBUG] Handled HTTP request of type OPTIONS from endpoint /api/calibration/end for host [0:0:0:0:0:0:0:1] in 0.2769 ms
+[2024-10-25 18:29:50] [WebServer - RequestHandler] [INFO] Calibrating camera! This will take a long time...
+[2024-10-25 18:29:50] [General - Calibrate3dPipe] [DEBUG] Calibrating with opencv!
+[2024-10-25 18:29:51] [General - Calibrate3dPipe] [INFO] CALIBRATION SUCCESS for res 1280x720 in 197.4289ms! camMatrix: 
+[1158.9378687641695, 0.0, 645.019957726336, 0.0, 1155.381277561941, 322.3904430172863, 0.0, 0.0, 1.0]
+distortionCoeffs:
+[0.26000026613195826, -1.230875213303947, 0.009393281322276958, 0.009631876523900107, 0.3424310721445492]
+
+[2024-10-25 18:29:51] [VisionModule - VisionModule - Microsoft_LifeCam_HD-3000] [INFO] Setting pipeline to 0
+[2024-10-25 18:29:51] [VisionModule - VisionModule - Microsoft_LifeCam_HD-3000] [INFO] Pipeline name: New Pipeline
+[2024-10-25 18:29:51] [VisionModule - VisionSourceSettables] [INFO] Setting video mode to FPS: 8 Width: 160 Height: 120 Pixel Format: kYUYV
+[2024-10-25 18:29:51] [CSCore - PvCSCoreLogger] [INFO] Microsoft_LifeCam_HD-3000: Disconnected from \\?\usb#vid_045e&pid_0810&mi_00#7&1e7a2b1a&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global
+[2024-10-25 18:29:51] [VisionModule - PipelineManager] [DEBUG] Creating Reflective pipeline
+[2024-10-25 18:29:51] [CSCore - PvCSCoreLogger] [INFO] Microsoft_LifeCam_HD-3000: Attempting to connect to USB camera on \\?\usb#vid_045e&pid_0810&mi_00#7&1e7a2b1a&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global
+[2024-10-25 18:29:51] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 7: Microsoft_LifeCam_HD-3000: opening device (UsbCameraImpl.cpp:505)
+[2024-10-25 18:29:51] [CSCore - PvCSCoreLogger] [INFO] Microsoft_LifeCam_HD-3000: Connected to USB camera on \\?\usb#vid_045e&pid_0810&mi_00#7&1e7a2b1a&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global
+[2024-10-25 18:29:51] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 7: Microsoft_LifeCam_HD-3000: restoring video mode (UsbCameraImpl.cpp:549)
+[2024-10-25 18:29:51] [VisionModule - VisionSourceSettables] [DEBUG] Setting camera exposure to 6
+[2024-10-25 18:29:51] [VisionModule - VisionSourceSettables] [DEBUG] Setting auto exposure to false
+[2024-10-25 18:29:51] [VisionModule - VisionSourceSettables] [DEBUG] Setting camera exposure to 6
+[2024-10-25 18:29:51] [VisionModule - VisionModule - Microsoft_LifeCam_HD-3000] [DEBUG] Saving calibration...
+[2024-10-25 18:29:51] [Camera - CameraConfiguration] [INFO] adding calibration 1280x720
+[2024-10-25 18:29:51] [WebServer - RequestHandler] [INFO] Camera calibration successfully completed!
+[2024-10-25 18:29:51] [WebServer - Server] [DEBUG] Handled HTTP request of type POST from endpoint /api/calibration/end for host [0:0:0:0:0:0:0:1] in 727.0079 ms
+[2024-10-25 18:29:53] [Config - ConfigManager] [DEBUG] Saving to disk...
+[2024-10-25 18:29:53] [Config - SqlConfigProvider] [DEBUG] Saving to disk
+[2024-10-25 18:29:53] [Config - SqlConfigProvider] [INFO] Settings saved!
+[2024-10-25 18:29:55] [WebServer - RequestHandler] [INFO] width=1280&height=720&snapshotIdx=0&cameraIdx=0
+[2024-10-25 18:29:55] [WebServer - Server] [DEBUG] Handled HTTP request of type GET from endpoint /api/utils/getCalSnapshot for host [0:0:0:0:0:0:0:1] in 22.2359 ms
+[2024-10-25 18:30:00] [WebServer - RequestHandler] [INFO] width=1280&height=720&cameraIdx=0
+[2024-10-25 18:30:00] [WebServer - Server] [DEBUG] Handled HTTP request of type GET from endpoint /api/utils/getCalibrationJSON for host [0:0:0:0:0:0:0:1] in 261.0921 ms

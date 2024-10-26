@@ -102,4 +102,15 @@ public class SQLConfigTest {
 
         assertEquals(cfgLoader.getConfig().getNetworkConfig().ntServerAddress, "5940");
     }
+
+    @Test
+    public void testLoad2024_3_1() {
+        var cfgLoader = new SqlConfigProvider(Path.of("C:\\Users\\matth\\Documents\\GitHub\\photonvision\\photon-server\\photonvision_config_from_2024.3.1"));
+
+        cfgLoader.load();
+
+        System.out.println(
+            cfgLoader.getConfig()
+        );
+    }
 }
