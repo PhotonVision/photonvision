@@ -23,7 +23,7 @@ If you are interested in contributing code or documentation to the project, plea
 
 ## Building
 
-Gradle is used for all C++ and Java code, and NPM is used for the web UI. Instructions to compile PhotonVision yourself can be found [in our docs](https://docs.photonvision.org/en/latest/docs/contributing/photonvision/build-instructions.html?highlight=npm%20install#compiling-instructions).
+Gradle is used for all C++ and Java code, and NPM is used for the web UI. Instructions to compile PhotonVision yourself can be found [in our docs](https://docs.photonvision.org/en/latest/docs/contributing/building-photon.html#compiling-instructions).
 
 You can run one of the many built in examples straight from the command line, too! They contain a fully featured robot project, and some include simulation support. The projects can be found inside the [`photonlib-java-examples`](photonlib-java-examples) and [`photonlib-cpp-examples`](photonlib-cpp-examples) subdirectories, respectively. Instructions for running these examples directly from the repo are found [in the docs](https://docs.photonvision.org/en/latest/docs/contributing/photonvision/build-instructions.html#running-examples).
 
