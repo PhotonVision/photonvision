@@ -19,6 +19,7 @@ package org.photonvision.common.networking;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.NoSuchElementException;
 
 import org.photonvision.common.configuration.ConfigManager;
@@ -71,10 +72,7 @@ public class NetworkManager {
         // Start tasks to monitor the network interface(s)
         var ethernetDevices = NetworkUtils.getAllWiredInterfaces();
         for (NMDeviceInfo deviceInfo : ethernetDevices) {
-            var task = "deviceStatus-" + deviceInfo.devName;
-            if (!TimedTaskManager.getInstance().taskActive(task)) {
-                TimedTaskManager.getInstance().addTask(task, deviceStatus(deviceInfo.devName), 5000);
-            }
+            monitorDevice(deviceInfo.devName, 5000);
         }
 
         var physicalDevices = NetworkUtils.getAllActiveWiredInterfaces();
@@ -258,14 +256,22 @@ public class NetworkManager {
     }
 
     // Detects changes in the carrier and reinitializes after re-connect
-    private Runnable deviceStatus(String devName) {
-        Path file = Path.of("/sys/class/net/{device}/carrier".replace("{device}", devName));
-        logger.debug("Watching network interface at path: " + file.toString());
+    private void monitorDevice(String devName, int millisInterval) {
+        String taskName = "deviceStatus-" + devName;
+        if (TimedTaskManager.getInstance().taskActive(taskName)) {
+            // task is already running
+            return;
+        }
+        Path path = Paths.get("/sys/class/net/{device}/carrier".replace("{device}", devName));
+        if (Files.notExists(path)) {
+            logger.error("Can't find " + path + ", so can't monitor " + devName);
+            return;
+        }
+        logger.debug("Watching network interface at path: " + path);
         var last = new Object() {boolean carrier = true;};
-        return () ->
-        {
+        Runnable task = () -> {
             try {
-                boolean carrier = Files.readString(file).trim().equals("1");
+                boolean carrier = Files.readString(path).trim().equals("1");
                 if (carrier != last.carrier) {
                     if (carrier) {
                         // carrier came back
@@ -276,9 +282,14 @@ public class NetworkManager {
                     }
                 }
                 last.carrier = carrier;
-            } catch (Exception e) {
-                logger.error("Could not check network status", e);
-            }
-        };
+                } catch (Exception e) {
+                    logger.error("Could not check network status for " + devName, e);
+                    // Cancel the task to avoid spamming the logs
+                    logger.info("Cancelling task " + taskName);
+                    TimedTaskManager.getInstance().cancelTask(taskName);
+                }
+            };
+
+        TimedTaskManager.getInstance().addTask(taskName, task, millisInterval);
     }
 }
