@@ -268,7 +268,7 @@ public class NetworkManager {
             return;
         }
         logger.debug("Watching network interface at path: " + path);
-        var last = new Object() {boolean carrier = true;};
+        var last = new Object() {boolean carrier = true; boolean exceptionLogged = false;};
         Runnable task = () -> {
             try {
                 boolean carrier = Files.readString(path).trim().equals("1");
@@ -282,11 +282,13 @@ public class NetworkManager {
                     }
                 }
                 last.carrier = carrier;
+                last.exceptionLogged = false;
                 } catch (Exception e) {
-                    logger.error("Could not check network status for " + devName, e);
-                    // Cancel the task to avoid spamming the logs
-                    logger.info("Cancelling task " + taskName);
-                    TimedTaskManager.getInstance().cancelTask(taskName);
+                    if (!last.exceptionLogged) {
+                        // Log the exception only once, but keep trying
+                        logger.error("Could not check network status for " + devName, e);
+                        last.exceptionLogged = true;
+                    }
                 }
             };
 
