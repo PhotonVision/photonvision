@@ -8,6 +8,7 @@ ext {
 
 apply plugin: 'cpp'
 apply plugin: 'google-test-test-suite'
+apply plugin: 'edu.wpi.first.NativeUtils'
 apply plugin: 'edu.wpi.first.GradleJni'
 
 apply from: "${rootDir}/shared/config.gradle"
