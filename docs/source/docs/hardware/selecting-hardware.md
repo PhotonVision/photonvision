@@ -45,9 +45,11 @@ We do not currently support the usage of two of the same camera on the same copr
 
 ### Recommended Cameras
 
-For colored shape detection, any non-fisheye camera supported by PhotonVision will work. We recommend the Pi Camera V1 or a high fps USB camera.
+For colored shape detection, any non-fisheye camera supported by PhotonVision will work. We recommend the Pi Camera V1 or a high fps USB camera for Raspberry Pi. PhotonVision only supports USB cameras for the Orange Pi.
 
 For driver camera, we recommend a USB camera with a fisheye lens, so your driver can see more of the field.
+
+For object detection, we recommend an Arducam USB OV9782 100fps color camera.
 
 For AprilTag detection, we recommend you use a global shutter camera that has ~100 degree diagonal FOV. This will allow you to see more AprilTags in frame, and will allow for more accurate pose estimation. You also want a camera that supports high FPS, as this will allow you to update your pose estimator at a higher frequency.
 
