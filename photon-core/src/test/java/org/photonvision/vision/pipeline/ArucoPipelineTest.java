@@ -18,12 +18,16 @@
 package org.photonvision.vision.pipeline;
 
 import edu.wpi.first.math.geometry.Translation3d;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.TestUtils;
+import org.photonvision.jni.ArucoNanoDetectorJNI;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
@@ -36,6 +40,7 @@ public class ArucoPipelineTest {
     public void setup() {
         TestUtils.loadLibraries();
         ConfigManager.getInstance().load();
+        assertDoesNotThrow(ArucoNanoDetectorJNI::forceLoad);
     }
 
     @Test
