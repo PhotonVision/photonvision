@@ -59,7 +59,7 @@ public abstract class VisionSourceSettables {
     public abstract void setGain(int gain);
 
     // Pretty uncommon so instead of abstract this is just a no-op by default
-    // Overriden by cameras with AWB gain support
+    // Overriddenn by cameras with AWB gain support
     public void setRedGain(int red) {}
 
     public void setBlueGain(int blue) {}

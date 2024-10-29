@@ -30,4 +30,4 @@ curl -sk https://api.github.com/repos/photonvision/photonvision/releases/latest 
 echo "Starting PhotonVision service"
 systemctl start photonvision
 
-echo "PhotonVision update succesful!"
+echo "PhotonVision update successful!"

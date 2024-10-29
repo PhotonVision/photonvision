@@ -287,7 +287,7 @@ public class Calibrate3dPipeTest {
     }
 
     /**
-     * Uses a given camera coefficents matrix set to "undistort" every image file found in a given
+     * Uses a given camera coefficientss matrix set to "undistort" every image file found in a given
      * directory and display them. Provides an easy way to visually debug the results of the
      * calibration routine. Seems to play havoc with CI and takes a chunk of time, so shouldn't
      * usually be left active in tests.

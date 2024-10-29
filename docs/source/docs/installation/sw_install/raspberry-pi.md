@@ -7,7 +7,7 @@ A Pre-Built Raspberry Pi image is available for ease of installation.
 Download the latest release of the PhotonVision Raspberry image (.xz file) from the [releases page](https://github.com/PhotonVision/photonvision/releases). You do not need to extract the downloaded ZIP file.
 
 :::{note}
-Make sure you download the image that ends in '-RasberryPi.xz'.
+Make sure you download the image that ends in '-RaspberryPi.xz'.
 :::
 
 ## Flashing the Pi Image
