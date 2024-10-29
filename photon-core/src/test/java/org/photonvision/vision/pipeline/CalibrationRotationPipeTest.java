@@ -153,14 +153,14 @@ public class CalibrationRotationPipeTest {
                         .collect(Collectors.toList());
 
         // Now let's instead rotate then distort
-        var rotatedOrigonalPoints =
+        var rotatedOriginalPoints =
                 Arrays.stream(originalPoints)
                         .map(it -> rot.rotatePoint(it, frameProps.imageWidth, frameProps.imageHeight))
                         .collect(Collectors.toList());
 
         var distortedRotatedPoints =
                 OpenCVHelp.distortPoints(
-                        rotatedOrigonalPoints,
+                        rotatedOriginalPoints,
                         rotatedFrameProps.cameraCalibration.getCameraIntrinsicsMat(),
                         rotatedFrameProps.cameraCalibration.getDistCoeffsMat());
 
