@@ -15,7 +15,10 @@ def javaBaseName = "_GROUP_org_photonvision_${baseArtifactId}_ID_${baseArtifactI
 def outputsFolder = file("$buildDir/outputs")
 
 javadoc {
-    options.encoding = 'UTF-8'
+    options {
+        encoding = 'UTF-8'
+        links "https://github.wpilib.org/allwpilib/docs/release/java/"
+    }
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
