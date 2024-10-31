@@ -31,9 +31,9 @@ public class TimeSyncClient {
         public long pingsSent;
         // incoming count
         public long pongsReceived;
-        // when we last heard back from the server
+        // when we last heard back from the server, uS, in local time base
         public long lastPongTime;
-        // RTT2, time from ping send to pong recieve at the client
+        // RTT2, time from ping send to pong receive at the client, uS
         public long rtt2;
 
         public PingMetadata(

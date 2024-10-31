@@ -111,13 +111,13 @@ public class PhotonCamera implements AutoCloseable {
 
     private static boolean VERSION_CHECK_ENABLED = true;
     private static long VERSION_CHECK_INTERVAL = 5;
-    private double lastVersionCheckTime = 0;
+    double lastVersionCheckTime = 0;
 
     private long prevHeartbeatValue = -1;
     private double prevHeartbeatChangeTime = 0;
     private static final double HEARTBEAT_DEBOUNCE_SEC = 0.5;
 
-    private double prevTimeSyncWarnTime = 0;
+    double prevTimeSyncWarnTime = 0;
     private static final double WARN_DEBOUNCE_SEC = 5;
 
     public static void setVersionCheckEnabled(boolean enabled) {
@@ -396,7 +396,7 @@ public class PhotonCamera implements AutoCloseable {
         return cameraTable;
     }
 
-    private void verifyVersion() {
+    void verifyVersion() {
         if (!VERSION_CHECK_ENABLED) return;
 
         if ((Timer.getFPGATimestamp() - lastVersionCheckTime) < VERSION_CHECK_INTERVAL) return;
@@ -448,7 +448,7 @@ public class PhotonCamera implements AutoCloseable {
                     "PhotonVision coprocessor at path "
                             + path
                             + " has not reported a message interface UUID - is your coprocessor's camera started?",
-                    true);
+                    false);
         } else if (!local_uuid.equals(remote_uuid)) {
             // Error on a verified version mismatch
             // But stay silent otherwise

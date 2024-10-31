@@ -24,6 +24,7 @@
 
 package org.photonvision;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -41,6 +42,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -59,6 +61,7 @@ import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.estimation.VisionEstimation;
 import org.photonvision.jni.PhotonTargetingJniLoader;
+import org.photonvision.jni.TimeSyncClient;
 import org.photonvision.jni.WpilibLoader;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.VisionSystemSim;
@@ -126,6 +129,7 @@ class VisionSystemSimTest {
                 Thread.sleep(10);
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                fail(e);
             }
         }
         throw new RuntimeException("Never saw sequence number " + seq);
@@ -247,7 +251,8 @@ class VisionSystemSimTest {
 
         assertTrue(waitForSequenceNumber(camera, 1).hasTargets());
 
-        // Pitched back camera should mean target goes out of view below the robot as distance increases
+        // Pitched back camera should mean target goes out of view below the robot as
+        // distance increases
         robotPose = new Pose2d(new Translation2d(0, 0), Rotation2d.fromDegrees(5));
         visionSysSim.update(robotPose);
 
@@ -350,7 +355,8 @@ class VisionSystemSimTest {
         assertTrue(res.hasTargets());
         var tgt = res.getBestTarget();
 
-        // Since the camera is level with the target, a positive-upward point will mean the target is in
+        // Since the camera is level with the target, a positive-upward point will mean
+        // the target is in
         // the
         // lower half of the image
         // which should produce negative pitch.
@@ -358,7 +364,8 @@ class VisionSystemSimTest {
     }
 
     private static Stream<Arguments> testDistanceCalcArgs() {
-        // Arbitrary and fairly random assortment of distances, camera pitches, and heights
+        // Arbitrary and fairly random assortment of distances, camera pitches, and
+        // heights
         return Stream.of(
                 Arguments.of(5, -15.98, 0),
                 Arguments.of(6, -15.98, 1),
@@ -382,7 +389,8 @@ class VisionSystemSimTest {
     @ParameterizedTest
     @MethodSource("testDistanceCalcArgs")
     public void testDistanceCalc(double testDist, double testPitch, double testHeight) {
-        // Assume dist along ground and tgt height the same. Iterate over other parameters.
+        // Assume dist along ground and tgt height the same. Iterate over other
+        // parameters.
 
         final var targetPose =
                 new Pose3d(new Translation3d(15.98, 0, 1), new Rotation3d(0, 0, Math.PI * 0.98));
@@ -406,10 +414,13 @@ class VisionSystemSimTest {
 
         visionSysSim.update(robotPose);
 
-        // Note that target 2d yaw/pitch accuracy is hindered by two factors in photonvision:
-        // 1. These are calculated with the average of the minimum area rectangle, which does not
+        // Note that target 2d yaw/pitch accuracy is hindered by two factors in
+        // photonvision:
+        // 1. These are calculated with the average of the minimum area rectangle, which
+        // does not
         // actually find the target center because of perspective distortion.
-        // 2. Yaw and pitch are calculated separately which gives incorrect pitch values.
+        // 2. Yaw and pitch are calculated separately which gives incorrect pitch
+        // values.
 
         var res = waitForSequenceNumber(camera, 1);
         assertTrue(res.hasTargets());
@@ -578,5 +589,82 @@ class VisionSystemSimTest {
         assertEquals(1, pose.getY(), .01);
         assertEquals(0, pose.getZ(), .01);
         assertEquals(Math.toRadians(5), pose.getRotation().getZ(), 0.01);
+    }
+
+    private static Stream<Arguments> testNtOffsets() {
+        return Stream.of(Arguments.of(1, 10), Arguments.of(10, 2), Arguments.of(10, 10));
+    }
+
+    /**
+     * Try starting client before server and vice-versa, making sure that we never fail the version
+     * check
+     */
+    @ParameterizedTest
+    @MethodSource("testNtOffsets")
+    public void testRestartingRobotAndCoproc(int robotStart, int coprocStart) throws Throwable {
+
+        var robotNt = NetworkTableInstance.create();
+        var coprocNt = NetworkTableInstance.create();
+
+        TimeSyncClient tspClient = null;
+
+        var robotCamera = new PhotonCamera(robotNt, "MY_CAMERA");
+
+        // apparently need a PhotonCamera to hand down
+        var fakePhotonCoprocCam = new PhotonCamera(coprocNt, "MY_CAMERA");
+        var coprocSim = new PhotonCameraSim(fakePhotonCoprocCam);
+        coprocSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(90));
+        coprocSim.prop.setFPS(30);
+        coprocSim.setMinTargetAreaPixels(20.0);
+
+        int seq = 1;
+        for (int i = 0; i < 30; i++) {
+            if (i == coprocStart) {
+                coprocNt.setServer("127.0.0.1", 5940);
+                coprocNt.startClient4("testClient");
+
+                // PhotonCamera makes a server by default - connect to it
+                tspClient = new TimeSyncClient("127.0.0.1", 5810, 0.5);
+            }
+
+            if (i == robotStart) {
+                robotNt.startServer("networktables_random.json", "", 5941, 5940);
+                robotNt.startClient4("testClient");
+            }
+
+            if (i > coprocStart + 1 && i > robotStart + 1) {
+                System.out.println("coproc connections: " + coprocNt.getConnections().length);
+                System.out.println("robot connections: " + robotNt.getConnections().length);
+                assertEquals(1, coprocNt.getConnections().length);
+                assertEquals(1, robotNt.getConnections().length);
+            }
+
+            var result1 = new PhotonPipelineResult();
+            result1.metadata.captureTimestampMicros = NetworkTablesJNI.now();
+            result1.metadata.sequenceID = seq;
+            if (tspClient != null) {
+                result1.metadata.timeSinceLastPong = tspClient.getPingMetadata().timeSinceLastPong();
+            } else {
+                result1.metadata.timeSinceLastPong = Long.MAX_VALUE;
+            }
+            coprocSim.submitProcessedFrame(result1, NetworkTablesJNI.now());
+
+            if (i > robotStart && i > coprocStart) {
+                var ret = waitForSequenceNumber(robotCamera, seq);
+                System.out.println(ret);
+            }
+
+            robotCamera.lastVersionCheckTime = -100;
+            robotCamera.prevTimeSyncWarnTime = -100;
+            assertDoesNotThrow(robotCamera::verifyVersion);
+
+            seq += 1;
+            Thread.sleep(100);
+        }
+
+        coprocSim.close();
+        coprocNt.close();
+        robotNt.close();
+        tspClient.stop();
     }
 }
