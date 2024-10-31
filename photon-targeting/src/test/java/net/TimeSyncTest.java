@@ -19,14 +19,7 @@ package net;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
-import edu.wpi.first.apriltag.jni.AprilTagJNI;
-import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.hal.HAL;
-import edu.wpi.first.hal.JNIWrapper;
-import edu.wpi.first.net.WPINetJNI;
-import edu.wpi.first.networktables.NetworkTablesJNI;
-import edu.wpi.first.util.CombinedRuntimeLoader;
-import edu.wpi.first.util.WPIUtilJNI;
 import java.io.IOException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -38,8 +31,11 @@ import org.photonvision.jni.WpilibLoader;
 
 public class TimeSyncTest {
     @BeforeAll
-    public static void load_wpilib() {
+    public static void load_wpilib() throws UnsatisfiedLinkError, IOException {
         WpilibLoader.loadLibraries();
+        if (!PhotonTargetingJniLoader.load()) {
+            fail();
+        }
     }
 
     @AfterAll

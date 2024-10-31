@@ -18,18 +18,7 @@
 package org.photonvision.common.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.wpi.first.apriltag.jni.AprilTagJNI;
-import edu.wpi.first.cscore.CameraServerJNI;
-import edu.wpi.first.cscore.OpenCvLoader;
-import edu.wpi.first.hal.JNIWrapper;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.jni.ArmFeedforwardJNI;
-import edu.wpi.first.math.jni.DAREJNI;
-import edu.wpi.first.math.jni.EigenJNI;
-import edu.wpi.first.math.jni.Ellipse2dJNI;
-import edu.wpi.first.math.jni.Pose3dJNI;
-import edu.wpi.first.math.jni.StateSpaceUtilJNI;
-import edu.wpi.first.math.jni.TrajectoryUtilJNI;
 import edu.wpi.first.math.util.Units;
 import java.awt.HeadlessException;
 import java.io.File;

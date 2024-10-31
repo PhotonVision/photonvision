@@ -91,7 +91,6 @@ class VisionSystemSimTest {
         // PhotonCamera.setVersionCheckEnabled(false);
     }
 
-
     @BeforeEach
     public void setup() {
         HAL.initialize(500, 0);
@@ -144,6 +143,7 @@ class VisionSystemSimTest {
                     }
                 });
     }
+
     @Test
     public void testVisibilityCupidShuffle() {
         final var targetPose =

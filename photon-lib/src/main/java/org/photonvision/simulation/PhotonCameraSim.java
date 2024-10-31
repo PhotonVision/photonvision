@@ -607,13 +607,6 @@ public class PhotonCameraSim implements AutoCloseable {
         ts.cameraIntrinsicsPublisher.set(prop.getIntrinsics().getData(), receiveTimestamp);
         ts.cameraDistortionPublisher.set(prop.getDistCoeffs().getData(), receiveTimestamp);
 
-        System.out.println(
-                "Setting heartbeat="
-                        + heartbeatCounter
-                        + " on "
-                        + ts.heartbeatPublisher.getTopic().getName()
-                        + "@"
-                        + ts.heartbeatPublisher.getHandle());
         ts.heartbeatPublisher.set(heartbeatCounter, receiveTimestamp);
         heartbeatCounter += 1;
     }
