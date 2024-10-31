@@ -124,7 +124,7 @@ dependencies {
     implementation wpilibTools.deps.wpilibJava("wpilibj")
     implementation wpilibTools.deps.wpilibJava("apriltag")
     implementation wpilibTools.deps.wpilibJava("wpiunits")
-    implementation wpilibTools.deps.wpilibOpenCvJava("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())
+    implementation wpilibTools.deps.wpilibOpenCvJava("frc" + openCVYear, wpi.versions.opencvVersion.get())
 
     implementation group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: wpi.versions.jacksonVersion.get()
     implementation group: "com.fasterxml.jackson.core", name: "jackson-core", version: wpi.versions.jacksonVersion.get()
@@ -149,6 +149,7 @@ jacocoTestReport {
     }
 }
 
+
 protobuf {
     protoc {
         artifact = 'com.google.protobuf:protoc:3.21.12'
@@ -161,7 +162,8 @@ protobuf {
     generateProtoTasks {
         all().configureEach { task ->
             task.builtins {
-                cpp {}
+                // cpp {}
+                // The protobuf-java code is bad -- use quickbuf
                 remove java
             }
             task.plugins {

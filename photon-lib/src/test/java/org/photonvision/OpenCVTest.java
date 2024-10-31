@@ -26,7 +26,6 @@ package org.photonvision;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import edu.wpi.first.cscore.CameraServerCvJNI;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -34,10 +33,12 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.util.CombinedRuntimeLoader;
 import java.io.IOException;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.opencv.core.Core;
 import org.photonvision.estimation.CameraTargetRelation;
 import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.RotTrlTransform3d;
@@ -77,7 +78,7 @@ public class OpenCVTest {
 
     @BeforeAll
     public static void setUp() throws IOException {
-        CameraServerCvJNI.forceLoad();
+        CombinedRuntimeLoader.loadLibraries(OpenCVTest.class, Core.NATIVE_LIBRARY_NAME);
 
         // NT live for debug purposes
         NetworkTableInstance.getDefault().startServer();

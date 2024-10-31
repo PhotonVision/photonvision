@@ -38,8 +38,8 @@ class SwerveModule {
  public:
   explicit SwerveModule(const constants::Swerve::ModuleConstants& consts);
   void Periodic();
-  void SetDesiredState(const frc::SwerveModuleState& newState,
-                       bool shouldBeOpenLoop, bool steerInPlace);
+  void SetDesiredState(frc::SwerveModuleState newState, bool shouldBeOpenLoop,
+                       bool steerInPlace);
   frc::Rotation2d GetAbsoluteHeading() const;
   frc::SwerveModuleState GetState() const;
   frc::SwerveModulePosition GetPosition() const;
