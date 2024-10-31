@@ -177,6 +177,7 @@ task generateVendorJson() {
     def read = photonlibFileInput.text
             .replace('${photon_version}', pubVersion)
             .replace('${frc_year}', frcYear)
+            .replace('${wpilib_version}', wpilibVersion)
     photonlibFileOutput.text = read
 
     outputs.upToDateWhen { false }
@@ -331,6 +332,7 @@ def nativeTasks = wpilibTools.createExtractionTasks {
 
 nativeTasks.addToSourceSetResources(sourceSets.test)
 
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpilibc")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")

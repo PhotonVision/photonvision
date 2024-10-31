@@ -42,7 +42,7 @@ class PacketTest {
 
     @Test
     void pipelineResultSerde() {
-        var ret1 = new PhotonPipelineResult(1, 2, 3, List.of());
+        var ret1 = new PhotonPipelineResult(1, 2, 3, 1024, List.of());
         var p1 = new Packet(10);
         PhotonPipelineResult.photonStruct.pack(p1, ret1);
         var unpackedRet1 = PhotonPipelineResult.photonStruct.unpack(p1);
@@ -53,6 +53,7 @@ class PacketTest {
                         1,
                         2,
                         3,
+                        1024,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -106,6 +107,7 @@ class PacketTest {
                         3,
                         4,
                         5,
+                        1024,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,

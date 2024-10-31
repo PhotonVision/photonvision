@@ -42,18 +42,18 @@ public class USBFrameProvider extends CpuImageProcessor {
 
     @Override
     public CapturedFrame getInputMat() {
-        var mat = new CVMat(); // We do this so that we don't fill a Mat in use by another thread
-        // This is from wpi::Now, or WPIUtilJNI.now()
-        long time =
-                cvSink.grabFrame(mat.getMat())
-                        * 1000; // Units are microseconds, epoch is the same as the Unix epoch
+        // We allocate memory so we don't fill a Mat in use by another thread (memory model is easier)
+        var mat = new CVMat();
+        // This is from wpi::Now, or WPIUtilJNI.now(). The epoch from grabFrame is uS since
+        // Hal::initialize was called
+        long captureTimeNs = cvSink.grabFrame(mat.getMat()) * 1000;
 
-        if (time == 0) {
+        if (captureTimeNs == 0) {
             var error = cvSink.getError();
             logger.error("Error grabbing image: " + error);
         }
 
-        return new CapturedFrame(mat, settables.getFrameStaticProperties(), time);
+        return new CapturedFrame(mat, settables.getFrameStaticProperties(), captureTimeNs);
     }
 
     @Override

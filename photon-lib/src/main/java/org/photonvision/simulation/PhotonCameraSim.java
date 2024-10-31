@@ -69,7 +69,7 @@ public class PhotonCameraSim implements AutoCloseable {
     private final PhotonCamera cam;
 
     NTTopicSet ts = new NTTopicSet();
-    private long heartbeatCounter = 0;
+    private long heartbeatCounter = 1;
 
     /** This simulated camera's {@link SimCameraProperties} */
     public final SimCameraProperties prop;
@@ -553,9 +553,10 @@ public class PhotonCameraSim implements AutoCloseable {
                         heartbeatCounter,
                         now - (long) (latencyMillis * 1000),
                         now,
+                        // Pretend like we heard a pong recently
+                        1000L + (long) ((Math.random() - 0.5) * 50),
                         detectableTgts,
                         multitagResult);
-        ret.setReceiveTimestampMicros(now);
         return ret;
     }
 
@@ -605,6 +606,8 @@ public class PhotonCameraSim implements AutoCloseable {
 
         ts.cameraIntrinsicsPublisher.set(prop.getIntrinsics().getData(), receiveTimestamp);
         ts.cameraDistortionPublisher.set(prop.getDistCoeffs().getData(), receiveTimestamp);
-        ts.heartbeatPublisher.set(heartbeatCounter++, receiveTimestamp);
+
+        ts.heartbeatPublisher.set(heartbeatCounter, receiveTimestamp);
+        heartbeatCounter += 1;
     }
 }

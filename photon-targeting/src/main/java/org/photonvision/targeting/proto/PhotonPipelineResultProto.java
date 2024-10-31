@@ -48,6 +48,7 @@ public class PhotonPipelineResultProto
                 msg.getSequenceId(),
                 msg.getCaptureTimestampMicros(),
                 msg.getNtPublishTimestampMicros(),
+                msg.getTimeSinceLastPongMicros(),
                 PhotonTrackedTarget.proto.unpack(msg.getTargets()),
                 msg.hasMultiTargetResult()
                         ? Optional.of(MultiTargetPNPResult.proto.unpack(msg.getMultiTargetResult()))
