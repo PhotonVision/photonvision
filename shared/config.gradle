@@ -1,5 +1,3 @@
-apply plugin: "edu.wpi.first.NativeUtils"
-
 // Configure Native-Utils WPI Plugin
 nativeUtils.addWpiNativeUtils()
 nativeUtils.withCrossRoboRIO()

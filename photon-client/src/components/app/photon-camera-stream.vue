@@ -79,10 +79,10 @@ onBeforeUnmount(() => {
   <div class="stream-container" :style="containerStyle">
     <img :src="loadingImage" class="stream-loading" />
     <img
-      :id="id"
-      class="stream-video"
-      ref="mjpgStream"
       v-show="streamSrc !== emptyStreamSrc"
+      :id="id"
+      ref="mjpgStream"
+      class="stream-video"
       crossorigin="anonymous"
       :src="streamSrc"
       :alt="streamDesc"

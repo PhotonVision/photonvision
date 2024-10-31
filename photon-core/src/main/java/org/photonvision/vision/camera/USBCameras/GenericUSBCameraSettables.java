@@ -46,14 +46,17 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
 
     protected VideoProperty exposureAbsProp = null;
     protected VideoProperty autoExposureProp = null;
+    protected VideoProperty wbTempProp = null;
 
     protected double minExposure = 1;
     protected double maxExposure = 80000;
 
+    protected double minWhiteBalanceTemp = 1;
+    protected double maxWhiteBalanceTemp = 4000;
+    protected int lastWhiteBalanceTemp = 4000;
+
     protected static final int PROP_AUTO_EXPOSURE_ENABLED = 3;
     protected static final int PROP_AUTO_EXPOSURE_DISABLED = 1;
-
-    protected int whiteBalanceTemperature = 4000;
 
     protected UsbCamera camera;
     protected CameraConfiguration configuration;
@@ -70,6 +73,14 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
             if (!videoModes.isEmpty()) {
                 setVideoMode(videoModes.get(0)); // fixes double FPS set
             }
+        }
+    }
+
+    protected void setUpWhiteBalanceProperties() {
+        wbTempProp = findProperty("white_balance_temperature", "WhiteBalance").orElse(null);
+        if (wbTempProp != null) {
+            this.minWhiteBalanceTemp = wbTempProp.getMin();
+            this.maxWhiteBalanceTemp = wbTempProp.getMax();
         }
     }
 
@@ -102,6 +113,54 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         softSet("focus_absolute", 0); // Focus into infinity
     }
 
+    @Override
+    public void setWhiteBalanceTemp(double tempNumber) {
+        if (wbTempProp == null) {
+            // bail
+            return;
+        }
+
+        try {
+            int temp = (int) Math.round(tempNumber);
+
+            softSet("white_balance_automatic", 0);
+
+            int propVal = (int) MathUtil.clamp(temp, minWhiteBalanceTemp, maxWhiteBalanceTemp);
+
+            logger.debug(
+                    "Setting property "
+                            + wbTempProp.getName()
+                            + " to "
+                            + propVal
+                            + " (user requested "
+                            + temp
+                            + " degrees)");
+
+            wbTempProp.set(propVal);
+
+            this.lastWhiteBalanceTemp = temp;
+
+        } catch (VideoException e) {
+            logger.error("Failed to set camera exposure!", e);
+        }
+    }
+
+    @Override
+    public void setAutoWhiteBalance(boolean autoWB) {
+        logger.debug("Setting auto white balance to " + autoWB);
+
+        if (autoWB) {
+            // Seems to be a rpi-specific property?
+            softSet("white_balance_automatic", 1);
+        } else {
+            softSet("white_balance_automatic", 0);
+
+            if (wbTempProp != null) {
+                wbTempProp.set(this.lastWhiteBalanceTemp);
+            }
+        }
+    }
+
     public void setAutoExposure(boolean cameraAutoExposure) {
         logger.debug("Setting auto exposure to " + cameraAutoExposure);
 
@@ -110,9 +169,6 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
             softSet("auto_exposure_bias", 0);
             softSet("iso_sensitivity_auto", 0); // Disable auto ISO adjustment
             softSet("iso_sensitivity", 0); // Manual ISO adjustment
-            softSet("white_balance_auto_preset", 2); // Auto white-balance disabled
-            softSet("white_balance_automatic", 0);
-            softSet("white_balance_temperature", whiteBalanceTemperature);
             autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
 
             // Most cameras leave exposure time absolute at the last value from their AE
@@ -125,8 +181,6 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
             softSet("auto_exposure_bias", 12);
             softSet("iso_sensitivity_auto", 1);
             softSet("iso_sensitivity", 1); // Manual ISO adjustment by default
-            softSet("white_balance_auto_preset", 1); // Auto white-balance enabled
-            softSet("white_balance_automatic", 1);
             autoExposureProp.set(PROP_AUTO_EXPOSURE_ENABLED);
         }
     }
@@ -301,5 +355,15 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         }
 
         return Optional.ofNullable(retProp);
+    }
+
+    @Override
+    public double getMaxWhiteBalanceTemp() {
+        return maxWhiteBalanceTemp;
+    }
+
+    @Override
+    public double getMinWhiteBalanceTemp() {
+        return minWhiteBalanceTemp;
     }
 }

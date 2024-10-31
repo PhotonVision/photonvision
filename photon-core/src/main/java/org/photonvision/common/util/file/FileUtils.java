@@ -40,7 +40,7 @@ public class FileUtils {
     private static final Set<PosixFilePermission> allReadWriteExecutePerms =
             new HashSet<>(Arrays.asList(PosixFilePermission.values()));
 
-    public static void deleteDirectory(Path path) {
+    public static boolean deleteDirectory(Path path) {
         try {
             var files = Files.walk(path);
 
@@ -53,8 +53,11 @@ public class FileUtils {
 
             // close the stream
             files.close();
+
+            return true;
         } catch (IOException e) {
             logger.error("Exception deleting files in " + path + "!", e);
+            return false;
         }
     }
 

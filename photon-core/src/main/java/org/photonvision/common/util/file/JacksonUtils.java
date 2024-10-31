@@ -82,6 +82,7 @@ public class JacksonUtils {
                 JsonMapper.builder()
                         .configure(JsonReadFeature.ALLOW_JAVA_COMMENTS, true)
                         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                        .enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL)
                         .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
                         .build();
 
