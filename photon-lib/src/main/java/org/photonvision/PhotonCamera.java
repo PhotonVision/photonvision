@@ -433,7 +433,7 @@ public class PhotonCamera implements AutoCloseable {
         // Check for connection status. Warn if disconnected.
         else if (!isConnected()) {
             DriverStation.reportWarning(
-                    "PhotonVision coprocessor at path " + path + " is not sending new data.", true);
+                    "PhotonVision coprocessor at path " + path + " is not sending new data.", false);
         }
 
         String versionString = versionEntry.get("");

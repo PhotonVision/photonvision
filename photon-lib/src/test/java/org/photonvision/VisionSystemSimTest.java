@@ -24,11 +24,11 @@
 
 package org.photonvision;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.photonvision.UnitTestUtils.waitForSequenceNumber;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -42,7 +42,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -61,12 +60,10 @@ import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.estimation.VisionEstimation;
 import org.photonvision.jni.PhotonTargetingJniLoader;
-import org.photonvision.jni.TimeSyncClient;
 import org.photonvision.jni.WpilibLoader;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
-import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 class VisionSystemSimTest {
@@ -111,28 +108,6 @@ class VisionSystemSimTest {
         inst = null;
 
         HAL.shutdown();
-    }
-
-    private PhotonPipelineResult waitForSequenceNumber(PhotonCamera camera, int seq) {
-        assertTrue(camera.heartbeatEntry.getTopic().getHandle() != 0);
-
-        System.out.println(
-                "Waiting for seq=" + seq + " on " + camera.heartbeatEntry.getTopic().getName());
-        // wait up to 1 second for a new result
-        for (int i = 0; i < 100; i++) {
-            var res = camera.getLatestResult();
-            if (res.metadata.sequenceID == seq) {
-                return res;
-            }
-
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                fail(e);
-            }
-        }
-        throw new RuntimeException("Never saw sequence number " + seq);
     }
 
     @Test
@@ -589,81 +564,5 @@ class VisionSystemSimTest {
         assertEquals(1, pose.getY(), .01);
         assertEquals(0, pose.getZ(), .01);
         assertEquals(Math.toRadians(5), pose.getRotation().getZ(), 0.01);
-    }
-
-    private static Stream<Arguments> testNtOffsets() {
-        return Stream.of(Arguments.of(1, 10), Arguments.of(10, 2), Arguments.of(10, 10));
-    }
-
-    /**
-     * Try starting client before server and vice-versa, making sure that we never fail the version
-     * check
-     */
-    @ParameterizedTest
-    @MethodSource("testNtOffsets")
-    public void testRestartingRobotAndCoproc(int robotStart, int coprocStart) throws Throwable {
-        var robotNt = NetworkTableInstance.create();
-        var coprocNt = NetworkTableInstance.create();
-
-        TimeSyncClient tspClient = null;
-
-        var robotCamera = new PhotonCamera(robotNt, "MY_CAMERA");
-
-        // apparently need a PhotonCamera to hand down
-        var fakePhotonCoprocCam = new PhotonCamera(coprocNt, "MY_CAMERA");
-        var coprocSim = new PhotonCameraSim(fakePhotonCoprocCam);
-        coprocSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(90));
-        coprocSim.prop.setFPS(30);
-        coprocSim.setMinTargetAreaPixels(20.0);
-
-        int seq = 1;
-        for (int i = 0; i < 20; i++) {
-            if (i == coprocStart) {
-                coprocNt.setServer("127.0.0.1", 5940);
-                coprocNt.startClient4("testClient");
-
-                // PhotonCamera makes a server by default - connect to it
-                tspClient = new TimeSyncClient("127.0.0.1", 5810, 0.5);
-            }
-
-            if (i == robotStart) {
-                robotNt.startServer("networktables_random.json", "", 5941, 5940);
-                robotNt.startClient4("testClient");
-            }
-
-            if (i > coprocStart + 1 && i > robotStart + 1) {
-                System.out.println("coproc connections: " + coprocNt.getConnections().length);
-                System.out.println("robot connections: " + robotNt.getConnections().length);
-                assertEquals(1, coprocNt.getConnections().length);
-                assertEquals(1, robotNt.getConnections().length);
-            }
-
-            var result1 = new PhotonPipelineResult();
-            result1.metadata.captureTimestampMicros = NetworkTablesJNI.now();
-            result1.metadata.sequenceID = seq;
-            if (tspClient != null) {
-                result1.metadata.timeSinceLastPong = tspClient.getPingMetadata().timeSinceLastPong();
-            } else {
-                result1.metadata.timeSinceLastPong = Long.MAX_VALUE;
-            }
-            coprocSim.submitProcessedFrame(result1, NetworkTablesJNI.now());
-
-            if (i > robotStart && i > coprocStart) {
-                var ret = waitForSequenceNumber(robotCamera, seq);
-                System.out.println(ret);
-            }
-
-            robotCamera.lastVersionCheckTime = -100;
-            robotCamera.prevTimeSyncWarnTime = -100;
-            assertDoesNotThrow(robotCamera::verifyVersion);
-
-            seq += 1;
-            Thread.sleep(100);
-        }
-
-        coprocSim.close();
-        coprocNt.close();
-        robotNt.close();
-        tspClient.stop();
     }
 }
