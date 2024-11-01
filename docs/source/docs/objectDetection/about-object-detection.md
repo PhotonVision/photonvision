@@ -49,7 +49,7 @@ First, download airockchip's YOLOv5 fork along with the onnx to rknn conversion 
 
 ```bash
 git clone https://github.com/airockchip/yolov5.git airockchip-yolov5
-curl -O link-to-onnx2rknn.py
+wget https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/master/scripts/onnx2rknn.py
 ```
 
 #### Export Command
