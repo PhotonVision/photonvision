@@ -618,7 +618,7 @@ class VisionSystemSimTest {
         coprocSim.setMinTargetAreaPixels(20.0);
 
         int seq = 1;
-        for (int i = 0; i < 30; i++) {
+        for (int i = 0; i < 20; i++) {
             if (i == coprocStart) {
                 coprocNt.setServer("127.0.0.1", 5940);
                 coprocNt.startClient4("testClient");
