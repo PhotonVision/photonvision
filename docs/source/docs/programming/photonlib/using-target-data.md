@@ -11,7 +11,9 @@ A `PhotonUtils` class with helpful common calculations is included within `Photo
    .. code-block:: Java
 
       // Calculate robot's field relative pose
-      Pose3d robotPose = PhotonUtils.estimateFieldToRobotAprilTag(target.getBestCameraToTarget(), aprilTagFieldLayout.getTagPose(target.getFiducialId()), cameraToRobot);
+      if (aprilTagFieldLayout.getTagPose(target.getFiducialId()).isPresent()) {
+        Pose3d robotPose = PhotonUtils.estimateFieldToRobotAprilTag(target.getBestCameraToTarget(), aprilTagFieldLayout.getTagPose(target.getFiducialId()).get(), cameraToRobot);
+      }
    .. code-block:: C++
 
      //TODO

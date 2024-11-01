@@ -1,6 +1,6 @@
 plugins {
     id "java"
-    id "edu.wpi.first.GradleRIO" version "2024.3.2"
+    id "edu.wpi.first.GradleRIO" version "2025.1.1-beta-1"
 }
 
 sourceCompatibility = JavaVersion.VERSION_11
@@ -11,8 +11,8 @@ apply from: "${rootDir}/../shared/examples_common.gradle"
 def ROBOT_MAIN_CLASS = "frc.robot.Main"
 
 wpi.maven.useDevelopment = true
-wpi.versions.wpilibVersion = "2024.3.2"
-wpi.versions.wpimathVersion = "2024.3.2"
+wpi.versions.wpilibVersion = "2025.1.1-beta-1"
+wpi.versions.wpimathVersion = "2025.1.1-beta-1"
 
 
 // Define my targets (RoboRIO) and artifacts (deployable files)
@@ -24,7 +24,7 @@ deploy {
             // or from command line. If not found an exception will be thrown.
             // You can use getTeamOrDefault(team) instead of getTeamNumber if you
             // want to store a team number in this file.
-            team = project.frc.getTeamOrDefault(4512)
+            team = project.frc.getTeamOrDefault(1736)
             debug = project.frc.getDebugOrDefault(false)
 
             artifacts {

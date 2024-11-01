@@ -35,11 +35,6 @@ public class PNPResultProto implements Protobuf<PnpResult, ProtobufPNPResult> {
     }
 
     @Override
-    public Protobuf<?, ?>[] getNested() {
-        return new Protobuf<?, ?>[] {Transform3d.proto};
-    }
-
-    @Override
     public ProtobufPNPResult createMessage() {
         return ProtobufPNPResult.newInstance();
     }

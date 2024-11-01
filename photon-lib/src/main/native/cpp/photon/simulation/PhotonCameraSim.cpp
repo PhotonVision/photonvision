@@ -330,7 +330,8 @@ PhotonPipelineResult PhotonCameraSim::Process(
   heartbeatCounter++;
   return PhotonPipelineResult{
       PhotonPipelineMetadata{heartbeatCounter, 0,
-                             units::microsecond_t{latency}.to<int64_t>()},
+                             units::microsecond_t{latency}.to<int64_t>(),
+                             1000000},
       detectableTgts, multiTagResults};
 }
 void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result) {
@@ -353,8 +354,7 @@ void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result,
     ts.targetPitchEntry.Set(0.0, ReceiveTimestamp);
     ts.targetYawEntry.Set(0.0, ReceiveTimestamp);
     ts.targetAreaEntry.Set(0.0, ReceiveTimestamp);
-    std::array<double, 3> poseData{0.0, 0.0, 0.0};
-    ts.targetPoseEntry.Set(poseData, ReceiveTimestamp);
+    ts.targetPoseEntry.Set(frc::Transform3d{}, ReceiveTimestamp);
     ts.targetSkewEntry.Set(0.0, ReceiveTimestamp);
   } else {
     PhotonTrackedTarget bestTarget = result.GetBestTarget();
@@ -364,11 +364,8 @@ void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result,
     ts.targetAreaEntry.Set(bestTarget.GetArea(), ReceiveTimestamp);
     ts.targetSkewEntry.Set(bestTarget.GetSkew(), ReceiveTimestamp);
 
-    frc::Transform3d transform = bestTarget.GetBestCameraToTarget();
-    std::array<double, 4> poseData{
-        transform.X().to<double>(), transform.Y().to<double>(),
-        transform.Rotation().ToRotation2d().Degrees().to<double>()};
-    ts.targetPoseEntry.Set(poseData, ReceiveTimestamp);
+    ts.targetPoseEntry.Set(bestTarget.GetBestCameraToTarget(),
+                           ReceiveTimestamp);
   }
 
   Eigen::Matrix<double, 3, 3, Eigen::RowMajor> intrinsics =

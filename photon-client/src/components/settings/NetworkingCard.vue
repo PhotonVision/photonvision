@@ -17,10 +17,10 @@ const resetTempSettingsStruct = () => {
 const settingsValid = ref(true);
 
 const isValidNetworkTablesIP = (v: string | undefined): boolean => {
-  // Check if it is a valid team number between 1-9999
-  const teamNumberRegex = /^[1-9][0-9]{0,3}$/;
+  // Check if it is a valid team number between 1-99999 (5 digits)
+  const teamNumberRegex = /^[1-9][0-9]{0,4}$/;
   // Check if it is a team number longer than 5 digits
-  const badTeamNumberRegex = /^[0-9]{5,}$/;
+  const badTeamNumberRegex = /^[0-9]{6,}$/;
 
   if (v === undefined) return false;
   if (teamNumberRegex.test(v)) return true;

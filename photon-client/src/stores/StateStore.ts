@@ -96,7 +96,8 @@ export const useStateStore = defineStore("state", {
     addLogFromWebsocket(data: WebsocketLogMessage) {
       this.logMessages.push({
         level: data.logMessage.logLevel,
-        message: data.logMessage.logMessage
+        message: data.logMessage.logMessage,
+        timestamp: new Date()
       });
     },
     updateNTConnectionStatusFromWebsocket(data: WebsocketNTUpdate) {

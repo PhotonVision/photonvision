@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import org.eclipse.jetty.io.EofException;
 
 public class JacksonUtils {
     public static class UIMap extends HashMap<String, Object> {}
@@ -76,12 +77,17 @@ public class JacksonUtils {
     }
 
     public static <T> T deserialize(String s, Class<T> ref) throws IOException {
+        if (s.length() == 0) {
+            throw new EofException("Provided empty string for class " + ref.getName());
+        }
+
         PolymorphicTypeValidator ptv =
                 BasicPolymorphicTypeValidator.builder().allowIfBaseType(ref).build();
         ObjectMapper objectMapper =
                 JsonMapper.builder()
                         .configure(JsonReadFeature.ALLOW_JAVA_COMMENTS, true)
                         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                        .enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL)
                         .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
                         .build();
 

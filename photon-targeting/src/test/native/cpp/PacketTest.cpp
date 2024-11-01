@@ -85,7 +85,7 @@ TEST(PacketTest, PnpResult) {
 // }
 
 TEST(PacketTest, PhotonPipelineResult) {
-  PhotonPipelineResult result(PhotonPipelineMetadata(0, 0, 1),
+  PhotonPipelineResult result(PhotonPipelineMetadata(0, 0, 1, 2),
                               std::vector<PhotonTrackedTarget>{}, std::nullopt);
 
   Packet p;
@@ -130,7 +130,7 @@ TEST(PacketTest, PhotonPipelineResult) {
                 17.0, 22.33, 2.54},
       std::vector<int16_t>{8, 7, 11, 22, 59, 40}};
 
-  PhotonPipelineResult result2(PhotonPipelineMetadata{0, 0, 1}, targets,
+  PhotonPipelineResult result2(PhotonPipelineMetadata{0, 0, 1, 1}, targets,
                                mtResult);
 
   Packet p2;

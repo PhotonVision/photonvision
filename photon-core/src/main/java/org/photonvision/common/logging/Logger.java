@@ -100,6 +100,7 @@ public class Logger {
         levelMap.put(LogGroup.VisionModule, LogLevel.INFO);
         levelMap.put(LogGroup.Config, LogLevel.INFO);
         levelMap.put(LogGroup.CSCore, LogLevel.TRACE);
+        levelMap.put(LogGroup.NetworkTables, LogLevel.DEBUG);
     }
 
     static {
@@ -121,6 +122,11 @@ public class Logger {
             }
         }
         currentAppenders.add(new FileLogAppender(logFilePath));
+    }
+
+    public static void closeAllLoggers() {
+        currentAppenders.forEach(LogAppender::shutdown);
+        currentAppenders.clear();
     }
 
     public static void cleanLogs(Path folderToClean) {
@@ -195,7 +201,7 @@ public class Logger {
         return logLevel.code <= levelMap.get(group).code;
     }
 
-    void log(String message, LogLevel level) {
+    public void log(String message, LogLevel level) {
         if (shouldLog(level)) {
             log(message, level, group, className);
         }
@@ -284,6 +290,9 @@ public class Logger {
 
     private interface LogAppender {
         void log(String message, LogLevel level);
+
+        /** Release any file or other resources currently held by the Logger */
+        default void shutdown() {}
     }
 
     private static class ConsoleLogAppender implements LogAppender {
@@ -341,6 +350,17 @@ public class Logger {
                 e.printStackTrace();
             } catch (NullPointerException e) {
                 // Nothing to do - no stream available for writing
+            }
+        }
+
+        @Override
+        public void shutdown() {
+            try {
+                out.close();
+                out = null;
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
         }
     }

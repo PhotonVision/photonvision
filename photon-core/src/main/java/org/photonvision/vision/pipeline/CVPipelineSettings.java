@@ -37,7 +37,7 @@ import org.photonvision.vision.opencv.ImageRotationMode;
 })
 public class CVPipelineSettings implements Cloneable {
     public int pipelineIndex = 0;
-    public PipelineType pipelineType = PipelineType.DriverMode;
+    @SuppressSettingCopy public PipelineType pipelineType = PipelineType.DriverMode;
     public ImageRotationMode inputImageRotationMode = ImageRotationMode.DEG_0;
     public String pipelineNickname = "New Pipeline";
     public boolean cameraAutoExposure = false;
@@ -58,6 +58,9 @@ public class CVPipelineSettings implements Cloneable {
     public boolean inputShouldShow = false;
     public boolean outputShouldShow = true;
 
+    public boolean cameraAutoWhiteBalance = false;
+    public double cameraWhiteBalanceTemp = 4000;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -71,6 +74,7 @@ public class CVPipelineSettings implements Cloneable {
                 && Double.compare(that.cameraGain, cameraGain) == 0
                 && Double.compare(that.cameraRedGain, cameraRedGain) == 0
                 && Double.compare(that.cameraBlueGain, cameraBlueGain) == 0
+                && Double.compare(that.cameraWhiteBalanceTemp, cameraWhiteBalanceTemp) == 0
                 && cameraVideoModeIndex == that.cameraVideoModeIndex
                 && ledMode == that.ledMode
                 && pipelineType == that.pipelineType
@@ -95,6 +99,7 @@ public class CVPipelineSettings implements Cloneable {
                 cameraGain,
                 cameraRedGain,
                 cameraBlueGain,
+                cameraWhiteBalanceTemp,
                 cameraVideoModeIndex,
                 streamingFrameDivisor,
                 ledMode,

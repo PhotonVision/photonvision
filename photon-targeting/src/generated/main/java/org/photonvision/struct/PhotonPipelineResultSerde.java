@@ -35,9 +35,9 @@ import edu.wpi.first.util.struct.Struct;
  */
 public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResult> {
     @Override
-    public final String getInterfaceUUID() { return "5eeaa293d0c69aea90eaddea786a2b3b"; }
+    public final String getInterfaceUUID() { return "4b2ff16a964b5e2bf04be0c1454d91c4"; }
     @Override
-    public final String getSchema() { return "PhotonPipelineMetadata:626e70461cbdb274fb43ead09c255f4e metadata;PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 targets[?];optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b multitagResult;"; }
+    public final String getSchema() { return "PhotonPipelineMetadata:ac0a45f686457856fb30af77699ea356 metadata;PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 targets[?];optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b multitagResult;"; }
     @Override
     public final String getTypeName() { return "PhotonPipelineResult"; }
 
@@ -78,7 +78,7 @@ public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResu
     @Override
     public PacketSerde<?>[] getNestedPhotonMessages() {
         return new PacketSerde<?>[] {
-            PhotonPipelineMetadata.photonStruct,MultiTargetPNPResult.photonStruct,PhotonTrackedTarget.photonStruct
+            MultiTargetPNPResult.photonStruct,PhotonTrackedTarget.photonStruct,PhotonPipelineMetadata.photonStruct
         };
     }
 

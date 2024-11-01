@@ -138,5 +138,21 @@ public class FileVisionSource extends VisionSource {
         public double getMaxExposureRaw() {
             return 100f;
         }
+
+        @Override
+        public void setAutoWhiteBalance(boolean autowb) {}
+
+        @Override
+        public void setWhiteBalanceTemp(double temp) {}
+
+        @Override
+        public double getMaxWhiteBalanceTemp() {
+            return 2;
+        }
+
+        @Override
+        public double getMinWhiteBalanceTemp() {
+            return 1;
+        }
     }
 }

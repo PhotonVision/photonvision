@@ -97,7 +97,7 @@ public class QuirkyCamera {
                     -1,
                     "unicam",
                     CameraQuirk.Gain,
-                    CameraQuirk.AWBGain); // PiCam (using libpicam GPU Driver on raspberry pi)
+                    CameraQuirk.AwbRedBlueGain); // PiCam (using libcamera GPU Driver on raspberry pi)
 
     @JsonProperty("baseName")
     public final String baseName;
@@ -154,9 +154,13 @@ public class QuirkyCamera {
         this.displayName = displayName;
 
         this.quirks = new HashMap<>();
+
+        // (1) Fill quirk map with the supplied Quirk list
         for (var q : quirks) {
             this.quirks.put(q, true);
         }
+
+        // (2) for all other quirks in CameraQuirks (in this version of Photon), defalut to false
         for (var q : CameraQuirk.values()) {
             this.quirks.putIfAbsent(q, false);
         }
@@ -176,8 +180,14 @@ public class QuirkyCamera {
         this.displayName = displayName;
     }
 
+    /**
+     * Check if this camera
+     *
+     * @param quirk
+     * @return
+     */
     public boolean hasQuirk(CameraQuirk quirk) {
-        return quirks.get(quirk);
+        return quirks.getOrDefault(quirk, false);
     }
 
     public static QuirkyCamera getQuirkyCamera(int usbVid, int usbPid) {

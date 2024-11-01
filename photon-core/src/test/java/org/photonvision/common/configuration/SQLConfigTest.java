@@ -17,6 +17,7 @@
 
 package org.photonvision.common.configuration;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
@@ -30,6 +31,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.util.TestUtils;
+import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
@@ -101,5 +103,27 @@ public class SQLConfigTest {
         System.out.println(cfgLoader.getConfig());
 
         assertEquals(cfgLoader.getConfig().getNetworkConfig().ntServerAddress, "5940");
+    }
+
+    @Test
+    public void testLoad2024_3_1() {
+        var cfgLoader =
+                new SqlConfigProvider(
+                        TestUtils.getConfigDirectoriesPath(false)
+                                .resolve("photonvision_config_from_v2024.3.1"));
+
+        assertDoesNotThrow(cfgLoader::load);
+
+        System.out.println(cfgLoader.getConfig());
+        for (var c : CameraQuirk.values()) {
+            assertDoesNotThrow(
+                    () ->
+                            cfgLoader
+                                    .config
+                                    .getCameraConfigurations()
+                                    .get("Microsoft_LifeCam_HD-3000")
+                                    .cameraQuirks
+                                    .hasQuirk(c));
+        }
     }
 }

@@ -18,7 +18,6 @@
 package org.photonvision.vision.pipe.impl;
 
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.calib3d.Calib3d;
@@ -28,6 +27,7 @@ import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ColorHelper;
+import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.pipe.MutatingPipe;
@@ -92,7 +92,11 @@ public class Draw3dTargetsPipe
 
                 if (params.redistortPoints) {
                     // Distort the points, so they match the image they're being overlaid on
-                    distortPoints(tempMat, tempMat);
+                    tempMat.fromList(
+                            OpenCVHelp.distortPoints(
+                                    tempMat.toList(),
+                                    params.cameraCalibrationCoefficients.getCameraIntrinsicsMat(),
+                                    params.cameraCalibrationCoefficients.getDistCoeffsMat()));
                 }
 
                 var bottomPoints = tempMat.toList();
@@ -108,7 +112,11 @@ public class Draw3dTargetsPipe
 
                 if (params.redistortPoints) {
                     // Distort the points, so they match the image they're being overlaid on
-                    distortPoints(tempMat, tempMat);
+                    tempMat.fromList(
+                            OpenCVHelp.distortPoints(
+                                    tempMat.toList(),
+                                    params.cameraCalibrationCoefficients.getCameraIntrinsicsMat(),
+                                    params.cameraCalibrationCoefficients.getDistCoeffsMat()));
                 }
                 var topPoints = tempMat.toList();
 
@@ -221,45 +229,6 @@ public class Draw3dTargetsPipe
         }
 
         return null;
-    }
-
-    private void distortPoints(MatOfPoint2f src, MatOfPoint2f dst) {
-        var pointsList = src.toList();
-        var dstList = new ArrayList<Point>();
-        final Mat cameraMatrix = params.cameraCalibrationCoefficients.getCameraIntrinsicsMat();
-        // k1, k2, p1, p2, k3
-        final Mat distCoeffs = params.cameraCalibrationCoefficients.getDistCoeffsMat();
-        var cx = cameraMatrix.get(0, 2)[0];
-        var cy = cameraMatrix.get(1, 2)[0];
-        var fx = cameraMatrix.get(0, 0)[0];
-        var fy = cameraMatrix.get(1, 1)[0];
-        var k1 = distCoeffs.get(0, 0)[0];
-        var k2 = distCoeffs.get(0, 1)[0];
-        var k3 = distCoeffs.get(0, 4)[0];
-        var p1 = distCoeffs.get(0, 2)[0];
-        var p2 = distCoeffs.get(0, 3)[0];
-
-        for (Point point : pointsList) {
-            // To relative coordinates <- this is the step you are missing.
-            double x = (point.x - cx) / fx; // cx, cy is the center of distortion
-            double y = (point.y - cy) / fy;
-
-            double r2 = x * x + y * y; // square of the radius from center
-
-            // Radial distortion
-            double xDistort = x * (1 + k1 * r2 + k2 * r2 * r2 + k3 * r2 * r2 * r2);
-            double yDistort = y * (1 + k1 * r2 + k2 * r2 * r2 + k3 * r2 * r2 * r2);
-
-            // Tangential distortion
-            xDistort = xDistort + (2 * p1 * x * y + p2 * (r2 + 2 * x * x));
-            yDistort = yDistort + (p1 * (r2 + 2 * y * y) + 2 * p2 * x * y);
-
-            // Back to absolute coordinates.
-            xDistort = xDistort * fx + cx;
-            yDistort = yDistort * fy + cy;
-            dstList.add(new Point(xDistort, yDistort));
-        }
-        dst.fromList(dstList);
     }
 
     private void divideMat2f(MatOfPoint2f src, MatOfPoint dst) {

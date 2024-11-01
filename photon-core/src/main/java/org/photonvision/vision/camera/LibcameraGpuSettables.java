@@ -55,6 +55,10 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         }
     }
 
+    public ImageRotationMode getRotation() {
+        return m_rotationMode;
+    }
+
     public LibcameraGpuSettables(CameraConfiguration configuration) {
         super(configuration);
 
@@ -212,7 +216,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
                             getConfiguration().path,
                             mode.width,
                             mode.height,
-                            (m_rotationMode == ImageRotationMode.DEG_180 ? 180 : 0));
+                            (m_rotationMode == ImageRotationMode.DEG_180_CCW ? 180 : 0));
             if (r_ptr == 0) {
                 logger.error("Couldn't create a zero copy Pi Camera while switching video modes");
                 if (!LibCameraJNI.destroyCamera(r_ptr)) {
@@ -255,5 +259,25 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     @Override
     public double getMaxExposureRaw() {
         return this.maxExposure;
+    }
+
+    @Override
+    public void setAutoWhiteBalance(boolean autowb) {
+        throw new RuntimeException("Libcamera doesn't support AWB temp (yet)");
+    }
+
+    @Override
+    public void setWhiteBalanceTemp(double temp) {
+        throw new RuntimeException("Libcamera doesn't support AWB temp -- use red/blue gain instead");
+    }
+
+    @Override
+    public double getMaxWhiteBalanceTemp() {
+        return 2;
+    }
+
+    @Override
+    public double getMinWhiteBalanceTemp() {
+        return 1;
     }
 }

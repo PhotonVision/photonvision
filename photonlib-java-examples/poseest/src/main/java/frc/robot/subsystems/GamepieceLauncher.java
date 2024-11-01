@@ -26,6 +26,7 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
@@ -61,10 +62,15 @@ public class GamepieceLauncher {
     // -- SIMULATION SUPPORT
     private DCMotor motorSim;
     private FlywheelSim launcherSim;
+    private final double flywheelMoiKgM2 = 0.002;
+    private final double flywheelGearRatio = 1.0;
 
     private void simulationInit() {
         motorSim = DCMotor.getFalcon500(1);
-        launcherSim = new FlywheelSim(motorSim, 1.0, 0.002);
+        launcherSim =
+                new FlywheelSim(
+                        LinearSystemId.createFlywheelSystem(motorSim, flywheelMoiKgM2, flywheelGearRatio),
+                        motorSim);
     }
 
     public void simulationPeriodic() {

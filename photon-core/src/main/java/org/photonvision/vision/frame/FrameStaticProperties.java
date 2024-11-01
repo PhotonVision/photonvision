@@ -21,6 +21,7 @@ import edu.wpi.first.cscore.VideoMode;
 import org.opencv.core.Point;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.opencv.ImageRotationMode;
 
 /** Represents the properties of a frame. */
 public class FrameStaticProperties {
@@ -34,6 +35,10 @@ public class FrameStaticProperties {
     public final double horizontalFocalLength;
     public final double verticalFocalLength;
     public CameraCalibrationCoefficients cameraCalibration;
+
+    // CameraCalibrationCoefficients hold native memory, so cache them here to avoid extra allocations
+    private final FrameStaticProperties[] cachedRotationStaticProperties =
+            new FrameStaticProperties[4];
 
     /**
      * Instantiates a new Frame static properties.
@@ -83,6 +88,32 @@ public class FrameStaticProperties {
             horizontalFocalLength = (this.imageWidth / 2.0) / Math.tan(horizFOV / 2.0);
             verticalFocalLength = (this.imageHeight / 2.0) / Math.tan(vertFOV / 2.0);
         }
+    }
+
+    public FrameStaticProperties rotate(ImageRotationMode rotation) {
+        if (rotation == ImageRotationMode.DEG_0) {
+            return this;
+        }
+
+        int newWidth = imageWidth;
+        int newHeight = imageHeight;
+
+        if (rotation == ImageRotationMode.DEG_90_CCW || rotation == ImageRotationMode.DEG_270_CCW) {
+            newWidth = imageHeight;
+            newHeight = imageWidth;
+        }
+
+        if (cameraCalibration == null) {
+            return new FrameStaticProperties(newWidth, newHeight, fov, null);
+        }
+
+        if (cachedRotationStaticProperties[rotation.ordinal()] == null) {
+            cachedRotationStaticProperties[rotation.ordinal()] =
+                    new FrameStaticProperties(
+                            newWidth, newHeight, fov, cameraCalibration.rotateCoefficients(rotation));
+        }
+
+        return cachedRotationStaticProperties[rotation.ordinal()];
     }
 
     /**

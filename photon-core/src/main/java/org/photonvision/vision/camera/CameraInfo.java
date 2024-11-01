@@ -95,7 +95,7 @@ public class CameraInfo extends UsbCameraInfo {
 
         if (!path.equals(other.path)) return false;
         if (!name.equals(other.name)) return false;
-        if (!Arrays.asList(this.otherPaths).containsAll(Arrays.asList(other.otherPaths))) return false;
+        if (!Arrays.asList(this.getUSBPath()).contains(other.getUSBPath())) return false;
         if (vendorId != other.vendorId) return false;
         if (productId != other.productId) return false;
 

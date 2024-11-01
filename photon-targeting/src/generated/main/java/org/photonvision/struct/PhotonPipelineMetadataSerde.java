@@ -35,9 +35,9 @@ import edu.wpi.first.util.struct.Struct;
  */
 public class PhotonPipelineMetadataSerde implements PacketSerde<PhotonPipelineMetadata> {
     @Override
-    public final String getInterfaceUUID() { return "626e70461cbdb274fb43ead09c255f4e"; }
+    public final String getInterfaceUUID() { return "ac0a45f686457856fb30af77699ea356"; }
     @Override
-    public final String getSchema() { return "int64 sequenceID;int64 captureTimestampMicros;int64 publishTimestampMicros;"; }
+    public final String getSchema() { return "int64 sequenceID;int64 captureTimestampMicros;int64 publishTimestampMicros;int64 timeSinceLastPong;"; }
     @Override
     public final String getTypeName() { return "PhotonPipelineMetadata"; }
 
@@ -57,6 +57,9 @@ public class PhotonPipelineMetadataSerde implements PacketSerde<PhotonPipelineMe
 
         // field publishTimestampMicros is of intrinsic type int64
         packet.encode((long) value.publishTimestampMicros);
+
+        // field timeSinceLastPong is of intrinsic type int64
+        packet.encode((long) value.timeSinceLastPong);
     }
 
     @Override
@@ -71,6 +74,9 @@ public class PhotonPipelineMetadataSerde implements PacketSerde<PhotonPipelineMe
 
         // publishTimestampMicros is of intrinsic type int64
         ret.publishTimestampMicros = packet.decodeLong();
+
+        // timeSinceLastPong is of intrinsic type int64
+        ret.timeSinceLastPong = packet.decodeLong();
 
         return ret;
     }

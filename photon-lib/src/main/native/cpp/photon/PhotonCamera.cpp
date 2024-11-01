@@ -69,6 +69,10 @@ void PhotonCamera::SetVersionCheckEnabled(bool enabled) {
   VERSION_CHECK_ENABLED = enabled;
 }
 
+static const std::string TYPE_STRING =
+    std::string{"photonstruct:PhotonPipelineResult:"} +
+    std::string{SerdeType<PhotonPipelineResult>::GetSchemaHash()};
+
 PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
                            const std::string_view cameraName)
     : mainTable(instance.GetTable("photonvision")),
@@ -76,7 +80,7 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
       rawBytesEntry(
           rootTable->GetRawTopic("rawBytes")
               .Subscribe(
-                  "rawBytes", {},
+                  TYPE_STRING, {},
                   {.pollStorage = 20, .periodic = 0.01, .sendAll = true})),
       inputSaveImgEntry(
           rootTable->GetIntegerTopic("inputSaveImgCmd").Publish()),
@@ -262,17 +266,25 @@ void PhotonCamera::VerifyVersion() {
 
       std::string cameraNameOutString;
       for (unsigned int i = 0; i < cameraNames.size(); i++) {
-        cameraNameOutString += "\n" + cameraNames[i];
+        cameraNameOutString += ("\n" + cameraNames[i]);
       }
       FRC_ReportError(
           frc::warn::Warning,
-          "Found the following PhotonVision cameras on NetworkTables:{}",
+          "Found the following PhotonVision cameras on NetworkTables:\n{}",
           cameraNameOutString);
     }
   } else {
     std::string local_uuid{SerdeType<PhotonPipelineResult>::GetSchemaHash()};
-    std::string remote_uuid =
+
+    // implicit conversion here might throw an exception, so be careful of that
+    wpi::json remote_uuid_json =
         rawBytesEntry.GetTopic().GetProperty("message_uuid");
+    if (!remote_uuid_json.is_string()) {
+      FRC_ReportError(frc::warn::Warning,
+                      "Cannot find property message_uuid for PhotonCamera {}",
+                      path);
+    }
+    std::string remote_uuid{remote_uuid_json};
 
     if (local_uuid != remote_uuid) {
       FRC_ReportError(frc::warn::Warning, bfw);
