@@ -119,12 +119,13 @@ class PhotonCameraTest {
     private static Stream<Arguments> testNtOffsets() {
         return Stream.of(
                 // various initializaiton orders
-                Arguments.of(1, 10, 20, 20), Arguments.of(10, 2, 20, 20), Arguments.of(10, 10, 200, 20),
+                Arguments.of(1, 10, 30, 30),
+                Arguments.of(10, 2, 30, 30),
+                Arguments.of(10, 10, 30, 30),
                 // Reboot just the robot
-                Arguments.of(1, 1, 10, 20),
+                Arguments.of(1, 1, 10, 30),
                 // Reboot just the coproc
-                Arguments.of(1, 1, 20, 10)
-                );
+                Arguments.of(1, 1, 30, 10));
     }
 
     /**
@@ -162,7 +163,6 @@ class PhotonCameraTest {
                 coprocNt.close();
                 coprocNt = NetworkTableInstance.create();
 
-                coprocNt.addLogger(0, 255, System.out::println);
                 coprocNt.addLogger(10, 255, (it) -> System.out.println("CLIENT: " + it.logMessage.message));
 
                 fakePhotonCoprocCam = new PhotonCamera(coprocNt, "MY_CAMERA");
@@ -213,6 +213,7 @@ class PhotonCameraTest {
             }
 
             coprocSim.submitProcessedFrame(result1, NetworkTablesJNI.now());
+            coprocNt.flush();
 
             if (i > robotStart && i > coprocStart) {
                 var ret = waitForSequenceNumber(robotCamera, seq);
@@ -223,8 +224,6 @@ class PhotonCameraTest {
             robotCamera.lastVersionCheckTime = -100;
             robotCamera.prevTimeSyncWarnTime = -100;
             assertDoesNotThrow(robotCamera::verifyVersion);
-
-            Thread.sleep(100);
         }
 
         coprocSim.close();
