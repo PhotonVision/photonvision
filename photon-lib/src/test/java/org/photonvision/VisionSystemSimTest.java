@@ -602,7 +602,6 @@ class VisionSystemSimTest {
     @ParameterizedTest
     @MethodSource("testNtOffsets")
     public void testRestartingRobotAndCoproc(int robotStart, int coprocStart) throws Throwable {
-
         var robotNt = NetworkTableInstance.create();
         var coprocNt = NetworkTableInstance.create();
 
