@@ -16,7 +16,14 @@ def collect_images_from_directory(directory_path):
     
     return image_paths
 
-def convert(srcFileName, dstFilename, dataset):
+def save_dataset_to_file(dataset, output_path):
+    """Save the list of image paths to a text file."""
+    with open(output_path, 'w') as f:
+        for image_path in dataset:
+            f.write(image_path + '\n')
+    return output_path
+
+def convert(srcFileName, dstFilename, dataset_file):
     platform = "rk3588"
 
     print('--> Source file name: ' + srcFileName)
@@ -36,7 +43,7 @@ def convert(srcFileName, dstFilename, dataset):
 
     # Build model with quantization
     print('--> Building model')
-    ret = rknn.build(do_quantization=True, dataset=dataset)
+    ret = rknn.build(do_quantization=True, dataset=dataset_file)
     if ret != 0:
         print('build model failed.')
         exit(ret)
@@ -54,7 +61,6 @@ def convert(srcFileName, dstFilename, dataset):
     rknn.release()
 
 def main():
-
     parser = argparse.ArgumentParser(description='Transform to RKNN model')
     parser.add_argument('source_file', help='Path to the ONNX model file')
     parser.add_argument('description_file', help='Output path for the RKNN model file')
@@ -66,7 +72,9 @@ def main():
         print(f"No images found in directory: {args.quant_dir}")
         exit(1)
 
-    convert(args.source_file, args.description_file, dataset)
+    dataset_file = save_dataset_to_file(dataset, 'dataset.txt')
+
+    convert(args.source_file, args.description_file, dataset_file)
 
 if __name__ == '__main__':
     main()

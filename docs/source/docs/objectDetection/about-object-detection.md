@@ -52,10 +52,17 @@ git clone https://github.com/airockchip/yolov5.git airockchip-yolov5
 wget https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/master/scripts/onnx2rknn.py
 ```
 
+Now install the required packages, make sure you have Python 3.9 and pip downloaded.
+
+```bash
+cd airockchip-yolov5
+pip install -r requirements.txt
+```
+
 #### Export Command
 
 ```bash
-cd airockchip-yolov5 && python export.py --weights '/path/to/best.pt' --rknpu --include 'onnx'
+python3 export.py --weights '/path/to/model.pt' --rknpu --include 'onnx'
 ```
 
 ### Step 2: Converting ONNX to RKNN
@@ -64,10 +71,16 @@ Using the `onnx2rknn.py` script, convert the ONNX model to an RKNN file. This sc
 
 #### Conversion Command
 
-Run the script, passing in the ONNX model and a folder containing images from your dataset:
+First install RKNN Toolkit:
 
 ```bash
-python onnx2rknn.py /path/to/best.onnx /path/to/export/best.rknn /path/to/dataset/valid/images
+pip install rknn-toolkit2
+```
+
+Now, run the script, passing in the ONNX model and a folder containing images from your dataset:
+
+```bash
+python3 onnx2rknn.py /path/to/model.onnx /path/to/export/model.rknn /path/to/dataset/valid/images
 ```
 
 If you have any questions about the conversion process, ask in the PhotonVision Discord server.
