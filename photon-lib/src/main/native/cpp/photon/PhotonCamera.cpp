@@ -25,6 +25,7 @@
 #include "photon/PhotonCamera.h"
 
 #include <hal/FRCUsageReporting.h>
+#include <net/TimeSyncServer.h>
 
 #include <string>
 #include <string_view>
@@ -58,6 +59,11 @@ inline constexpr std::string_view bfw =
     ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
     ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
     "\n\n";
+
+// bit of a hack -- start a TimeSync server on port 5810 (hard-coded)
+static std::mutex g_timeSyncServerMutex;
+static bool g_timeSyncServerStarted;
+static wpi::tsp::TimeSyncServer timesyncServer{5810};
 
 namespace photon {
 
@@ -110,6 +116,14 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
       cameraName(cameraName) {
   HAL_Report(HALUsageReporting::kResourceType_PhotonCamera, InstanceCount);
   InstanceCount++;
+
+  {
+    std::lock_guard lock{g_timeSyncServerMutex};
+    if (!g_timeSyncServerStarted) {
+      timesyncServer.Start();
+      g_timeSyncServerStarted = true;
+    }
+  }
 }
 
 PhotonCamera::PhotonCamera(const std::string_view cameraName)
