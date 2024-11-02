@@ -124,7 +124,7 @@ class PhotonCamera:
                 pkt = Packet(byteList)
                 newResult = PhotonPipelineResult.photonStruct.unpack(pkt)
                 # NT4 allows us to correct the timestamp based on when the message was sent
-                newResult.ntReceiveTimestampMicros = timestamp / 1e6
+                newResult.ntReceiveTimestampMicros = timestamp
                 ret.append(newResult)
 
         return ret

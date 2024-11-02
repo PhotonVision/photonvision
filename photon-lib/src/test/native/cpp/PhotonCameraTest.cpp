@@ -22,14 +22,33 @@
  * SOFTWARE.
  */
 
+#include <gtest/gtest.h>
 #include <hal/HAL.h>
+#include <net/TimeSyncClient.h>
+#include <net/TimeSyncServer.h>
 
-#include "gtest/gtest.h"
+#include "photon/PhotonCamera.h"
 
-int main(int argc, char** argv) {
-  HAL_Initialize(500, 0);
-  ::testing::InitGoogleTest(&argc, argv);
-  int ret = RUN_ALL_TESTS();
-  HAL_Shutdown();
-  return ret;
+TEST(TimeSyncProtocolTest, Smoketest) {
+  using namespace wpi::tsp;
+  using namespace std::chrono_literals;
+
+  // start a server implicitly
+  photon::PhotonCamera camera{"camera"};
+
+  TimeSyncClient client{"127.0.0.1", 5810, 100ms};
+  client.Start();
+
+  for (int i = 0; i < 10; i++) {
+    std::this_thread::sleep_for(100ms);
+    TimeSyncClient::Metadata m = client.GetMetadata();
+
+    // give us time to warm up
+    if (i > 5) {
+      EXPECT_TRUE(m.rtt2 > 0);
+      EXPECT_TRUE(m.pongsReceived > 0);
+    }
+  }
+
+  client.Stop();
 }

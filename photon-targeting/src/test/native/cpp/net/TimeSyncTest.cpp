@@ -24,8 +24,6 @@ TEST(TimeSyncProtocolTest, Smoketest) {
   using namespace wpi::tsp;
   using namespace std::chrono_literals;
 
-  HAL_Initialize(500, 0);
-
   TimeSyncServer server{5812};
   TimeSyncClient client{"127.0.0.1", 5812, 100ms};
 
