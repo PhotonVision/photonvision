@@ -340,7 +340,8 @@ public class ConfigManager {
 
     /**
      * Disable flushing settings to disk as part of our JVM exit hook. Used to prevent uploading all
-     * settings from getting its new configs overwritten at program exit and before theyre all loaded.
+     * settings from getting its new configs overwritten at program exit and before they're all
+     * loaded.
      */
     public void disableFlushOnShutdown() {
         this.flushOnShutdown = false;

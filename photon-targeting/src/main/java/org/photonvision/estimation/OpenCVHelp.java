@@ -203,7 +203,7 @@ public final class OpenCVHelp {
      * @param <T> Element type
      * @param elements list elements
      * @param backwards If indexing should happen in reverse (0, size-1, size-2, ...)
-     * @param shiftStart How much the inital index should be shifted (instead of starting at index 0,
+     * @param shiftStart How much the initial index should be shifted (instead of starting at index 0,
      *     start at shiftStart, negated if backwards)
      * @return Reordered list
      */
@@ -257,7 +257,7 @@ public final class OpenCVHelp {
      *
      * @param pointsList the undistorted points
      * @param cameraMatrix standard OpenCV camera mat
-     * @param distCoeffs standard OpenCV distortion coefficeints. Must OPENCV5 or OPENCV8
+     * @param distCoeffs standard OpenCV distortion coefficients. Must OPENCV5 or OPENCV8
      */
     public static List<Point> distortPoints(
             List<Point> pointsList, Mat cameraMatrix, Mat distCoeffs) {

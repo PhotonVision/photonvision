@@ -26,7 +26,7 @@ The built documentation is located at `docs/build/html/index.html` relative to t
 
 ## Docs Builds on Pull Requests
 
-Pre-merge builds of docs can be found at: `https://photonvision-docs--PRNUMBER.org.readthedocs.build/en/PRNUMBER/index.html`. These docs are republished on every commit to a pull request made to PhotonVision/photonvision-docs. For example, PR 325 would have pre-merge documentation published to `https://photonvision-docs--325.org.readthedocs.build/en/325/index.html`. Additionally, the pull requrest will have a link directly to the pre-release build of the docs. This build only runs when there is a change to files in the docs sub-folder.
+Pre-merge builds of docs can be found at: `https://photonvision-docs--PRNUMBER.org.readthedocs.build/en/PRNUMBER/index.html`. These docs are republished on every commit to a pull request made to PhotonVision/photonvision-docs. For example, PR 325 would have pre-merge documentation published to `https://photonvision-docs--325.org.readthedocs.build/en/325/index.html`. Additionally, the pull request will have a link directly to the pre-release build of the docs. This build only runs when there is a change to files in the docs sub-folder.
 
 ## Style Guide
 

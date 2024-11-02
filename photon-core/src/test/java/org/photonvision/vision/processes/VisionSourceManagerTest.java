@@ -297,7 +297,7 @@ public class VisionSourceManagerTest {
                 new CameraConfiguration(
                         "Arducam OV2311 USB Camera",
                         "Arducam OV2311 USB Camera",
-                        "fromt-left",
+                        "front-left",
                         "/dev/video0",
                         CAM1_OLD_PATHS);
         camera1_saved_config.usbVID = 3141;
@@ -306,7 +306,7 @@ public class VisionSourceManagerTest {
                 new CameraConfiguration(
                         "Arducam OV2311 USB Camera",
                         "Arducam OV2311 USB Camera (1)",
-                        "fromt-left",
+                        "front-left",
                         "/dev/video2",
                         CAM2_OLD_PATH);
         camera2_saved_config.usbVID = 3141;
@@ -362,7 +362,7 @@ public class VisionSourceManagerTest {
                 new CameraConfiguration(
                         "Arducam OV2311 USB Camera",
                         "Arducam OV2311 USB Camera (1)",
-                        "fromt-left",
+                        "front-left",
                         "/dev/video0",
                         CAM1_OLD_PATHS);
         camera1_saved_config.usbVID = 3141;
@@ -371,7 +371,7 @@ public class VisionSourceManagerTest {
                 new CameraConfiguration(
                         "Arducam OV2311 USB Camera",
                         "Arducam OV2311 USB Camera (1)",
-                        "fromt-left",
+                        "front-left",
                         "/dev/video2",
                         CAM2_OLD_PATH);
         camera2_saved_config.usbVID = 3141;
@@ -571,7 +571,7 @@ public class VisionSourceManagerTest {
                     ret1.stream().filter(it -> thisName.equals(it.cameraConfiguration.uniqueName)).count());
         }
 
-        // duplciate cameras, same info, new ref
+        // duplicate cameras, same info, new ref
         var duplicateCameraInfos = new ArrayList<CameraInfo>();
         CameraInfo info1_dup =
                 new CameraInfo(
@@ -609,7 +609,7 @@ public class VisionSourceManagerTest {
         assertTrue(inst.knownCameras.contains(info2_dup));
         assertEquals(2, inst.knownCameras.size());
 
-        // duplciate cameras this simulates unplugging one and plugging the other in where v4l assigns
+        // duplicate cameras this simulates unplugging one and plugging the other in where v4l assigns
         // the same by-id path to the other camera
         var duplicateCameraInfos1 = new ArrayList<CameraInfo>();
         CameraInfo info3_dup =

@@ -143,7 +143,7 @@ public class QuirkyCamera {
      * @param usbVid USB VID of camera
      * @param usbPid USB PID of camera
      * @param baseName CSCore name of camera
-     * @param displayName Human-friendly quicky camera name
+     * @param displayName Human-friendly quirky camera name
      * @param quirks Camera quirks
      */
     private QuirkyCamera(
@@ -160,7 +160,7 @@ public class QuirkyCamera {
             this.quirks.put(q, true);
         }
 
-        // (2) for all other quirks in CameraQuirks (in this version of Photon), defalut to false
+        // (2) for all other quirks in CameraQuirks (in this version of Photon), default to false
         for (var q : CameraQuirk.values()) {
             this.quirks.putIfAbsent(q, false);
         }

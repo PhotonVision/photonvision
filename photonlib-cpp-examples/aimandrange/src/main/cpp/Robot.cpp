@@ -81,7 +81,7 @@ void Robot::TeleopPeriodic() {
           targetRange = photon::PhotonUtils::CalculateDistanceToTarget(
               0.5_m,      // Measured with a tape measure, or in CAD
               1.435_m,    // From 2024 game manual for ID 7
-              -30.0_deg,  // Measured witha protractor, or in CAD
+              -30.0_deg,  // Measured with a protractor, or in CAD
               units::degree_t{target.GetPitch()});
           targetVisible = true;
         }

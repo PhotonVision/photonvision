@@ -512,7 +512,7 @@ public class PipelineManager {
         var oldSettings = userPipelineSettings.get(idx);
 
         var name = getCurrentPipelineSettings().pipelineNickname;
-        // Dummy settings to copy common fileds over
+        // Dummy settings to copy common fields over
         var newSettings = createSettingsForType(type, name);
 
         // Copy all fields from AdvancedPipelineSettings/its superclasses from old to new

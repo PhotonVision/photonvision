@@ -152,17 +152,17 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
         var matchType = ntMatchType.getAtomic();
         if (matchType.timestamp == 0) {
             // no NT info yet
-            logger.warn("Did not recieve match type, defaulting to 0");
+            logger.warn("Did not receive match type, defaulting to 0");
         }
 
         var matchNum = ntMatchNum.getAtomic();
         if (matchNum.timestamp == 0) {
-            logger.warn("Did not recieve match num, defaulting to -1");
+            logger.warn("Did not receive match num, defaulting to -1");
         }
 
         var eventName = ntEventName.getAtomic();
         if (eventName.timestamp == 0) {
-            logger.warn("Did not recieve event name, defaulting to 'UNKNOWN'");
+            logger.warn("Did not receive event name, defaulting to 'UNKNOWN'");
         }
 
         String matchTypeStr =

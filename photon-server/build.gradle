@@ -71,7 +71,7 @@ remotes {
 task findDeployTarget {
     doLast {
         if(project.hasProperty('tgtIP')){
-            //If user specificed IP, default to using the PI profile
+            //If user specified IP, default to using the PI profile
             // but adjust hostname to match the provided IP address
             findDeployTarget.ext.rmt = remotes.pi
             findDeployTarget.ext.rmt.host=tgtIP
