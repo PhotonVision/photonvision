@@ -24,6 +24,17 @@
 
 using namespace wpi::tsp;
 
+#define CHECK_PTR(ptr)                                               \
+  if (!ptr) {                                                        \
+    fmt::println("Got invalid pointer?? {}:{}", __FILE__, __LINE__); \
+    return;                                                          \
+  }
+#define CHECK_PTR_RETURN(ptr, default)                               \
+  if (!ptr) {                                                        \
+    fmt::println("Got invalid pointer?? {}:{}", __FILE__, __LINE__); \
+    return default;                                                  \
+  }
+
 extern "C" {
 
 /*
@@ -47,6 +58,7 @@ JNIEXPORT void JNICALL
 Java_org_photonvision_jni_TimeSyncServer_start
   (JNIEnv*, jclass, jlong ptr)
 {
+  CHECK_PTR(ptr);
   TimeSyncServer* server = reinterpret_cast<TimeSyncServer*>(ptr);
   server->Start();
 }
@@ -60,6 +72,7 @@ JNIEXPORT void JNICALL
 Java_org_photonvision_jni_TimeSyncServer_stop
   (JNIEnv*, jclass, jlong ptr)
 {
+  CHECK_PTR(ptr);
   TimeSyncServer* server = reinterpret_cast<TimeSyncServer*>(ptr);
   server->Stop();
   delete server;

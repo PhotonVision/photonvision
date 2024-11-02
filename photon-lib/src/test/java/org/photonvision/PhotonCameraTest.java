@@ -190,7 +190,6 @@ class PhotonCameraTest {
 
             if (i == robotStart || i == robotRestart) {
                 robotNt.startServer("networktables_random.json", "", 5941, 5940);
-                robotNt.startClient4("testClient");
             }
 
             Thread.sleep(100);

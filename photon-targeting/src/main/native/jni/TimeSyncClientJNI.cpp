@@ -24,6 +24,17 @@
 
 using namespace wpi::tsp;
 
+#define CHECK_PTR(ptr)                                               \
+  if (!ptr) {                                                        \
+    fmt::println("Got invalid pointer?? {}:{}", __FILE__, __LINE__); \
+    return;                                                          \
+  }
+#define CHECK_PTR_RETURN(ptr, default)                               \
+  if (!ptr) {                                                        \
+    fmt::println("Got invalid pointer?? {}:{}", __FILE__, __LINE__); \
+    return default;                                                  \
+  }
+
 /**
  * Finds a class and keeps it as a global reference.
  *
@@ -117,6 +128,7 @@ JNIEXPORT void JNICALL
 Java_org_photonvision_jni_TimeSyncClient_start
   (JNIEnv*, jclass, jlong ptr)
 {
+  CHECK_PTR(ptr);
   TimeSyncClient* client = reinterpret_cast<TimeSyncClient*>(ptr);
   client->Start();
 }
@@ -130,6 +142,7 @@ JNIEXPORT void JNICALL
 Java_org_photonvision_jni_TimeSyncClient_stop
   (JNIEnv*, jclass, jlong ptr)
 {
+  CHECK_PTR(ptr);
   TimeSyncClient* client = reinterpret_cast<TimeSyncClient*>(ptr);
   client->Stop();
   delete client;
@@ -144,6 +157,7 @@ JNIEXPORT jlong JNICALL
 Java_org_photonvision_jni_TimeSyncClient_getOffset
   (JNIEnv*, jclass, jlong ptr)
 {
+  CHECK_PTR_RETURN(ptr, 0);
   TimeSyncClient* client = reinterpret_cast<TimeSyncClient*>(ptr);
   return client->GetOffset();
 }
@@ -157,6 +171,7 @@ JNIEXPORT jobject JNICALL
 Java_org_photonvision_jni_TimeSyncClient_getLatestMetadata
   (JNIEnv* env, jclass, jlong ptr)
 {
+  CHECK_PTR_RETURN(ptr, nullptr);
   TimeSyncClient* client = reinterpret_cast<TimeSyncClient*>(ptr);
   auto m{client->GetMetadata()};
   auto ret = env->NewObject(metadataClass, metadataCtor, m.offset, m.pingsSent,

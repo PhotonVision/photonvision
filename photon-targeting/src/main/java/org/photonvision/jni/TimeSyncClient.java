@@ -87,10 +87,8 @@ public class TimeSyncClient {
         this.port = port;
         this.interval = interval;
 
-        synchronized (mutex) {
-            this.handle = TimeSyncClient.create(server, port, interval);
-            TimeSyncClient.start(handle);
-        }
+        this.handle = TimeSyncClient.create(server, port, interval);
+        TimeSyncClient.start(handle);
     }
 
     public void setServer(String newServer) {
@@ -121,7 +119,12 @@ public class TimeSyncClient {
      */
     public long getOffset() {
         synchronized (mutex) {
-            return TimeSyncClient.getOffset(handle);
+            if (handle > 0) {
+                return TimeSyncClient.getOffset(handle);
+            }
+
+            System.err.println("TimeSyncClient: use after free?");
+            return 0;
         }
     }
 
@@ -136,7 +139,12 @@ public class TimeSyncClient {
 
     public PingMetadata getPingMetadata() {
         synchronized (mutex) {
-            return TimeSyncClient.getLatestMetadata(handle);
+            if (handle > 0) {
+                return TimeSyncClient.getLatestMetadata(handle);
+            }
+
+            System.err.println("TimeSyncClient: use after free?");
+            return new PingMetadata(0, 0, 0, 0, 0);
         }
     }
 
