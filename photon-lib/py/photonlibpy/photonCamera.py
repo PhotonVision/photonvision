@@ -1,11 +1,31 @@
+###############################################################################
+## Copyright (C) Photon Vision.
+###############################################################################
+## This program is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program.  If not, see <https://www.gnu.org/licenses/>.
+###############################################################################
+
 from enum import Enum
 from typing import List
 import ntcore
 from wpilib import RobotController, Timer
 import wpilib
-from photonlibpy.packet import Packet
-from photonlibpy.photonPipelineResult import PhotonPipelineResult
-from photonlibpy.version import PHOTONVISION_VERSION, PHOTONLIB_VERSION  # type: ignore[import-untyped]
+from .packet import Packet
+from .targeting.photonPipelineResult import PhotonPipelineResult
+from .version import PHOTONVISION_VERSION, PHOTONLIB_VERSION  # type: ignore[import-untyped]
+
+# magical import to make serde stuff work
+import photonlibpy.generated  # noqa
 
 
 class VisionLEDMode(Enum):
@@ -33,7 +53,9 @@ class PhotonCamera:
         self._cameraTable = photonvision_root_table.getSubTable(cameraName)
         self._path = self._cameraTable.getPath()
         self._rawBytesEntry = self._cameraTable.getRawTopic("rawBytes").subscribe(
-            "rawBytes", bytes([]), ntcore.PubSubOptions(periodic=0.01, sendAll=True)
+            f"photonstruct:PhotonPipelineResult:{PhotonPipelineResult.photonStruct.MESSAGE_VERSION}",
+            bytes([]),
+            ntcore.PubSubOptions(periodic=0.01, sendAll=True),
         )
 
         self._driverModePublisher = self._cameraTable.getBooleanTopic(
@@ -100,11 +122,9 @@ class PhotonCamera:
             else:
                 newResult = PhotonPipelineResult()
                 pkt = Packet(byteList)
-                newResult.populateFromPacket(pkt)
+                newResult = PhotonPipelineResult.photonStruct.unpack(pkt)
                 # NT4 allows us to correct the timestamp based on when the message was sent
-                newResult.setTimestampSeconds(
-                    timestamp / 1e6 - newResult.getLatencyMillis() / 1e3
-                )
+                newResult.ntReceiveTimestampMicros = timestamp / 1e6
                 ret.append(newResult)
 
         return ret
@@ -113,18 +133,17 @@ class PhotonCamera:
         self._versionCheck()
 
         now = RobotController.getFPGATime()
-        retVal = PhotonPipelineResult()
         packetWithTimestamp = self._rawBytesEntry.getAtomic()
         byteList = packetWithTimestamp.value
-        timestamp = packetWithTimestamp.time
+        packetWithTimestamp.time
 
         if len(byteList) < 1:
-            return retVal
+            return PhotonPipelineResult()
         else:
             pkt = Packet(byteList)
-            retVal.populateFromPacket(pkt)
+            retVal = PhotonPipelineResult.photonStruct.unpack(pkt)
             # We don't trust NT4 time, hack around
-            retVal.ntRecieveTimestampMicros = now
+            retVal.ntReceiveTimestampMicros = now
             return retVal
 
     def getDriverMode(self) -> bool:
@@ -208,7 +227,20 @@ class PhotonCamera:
             )
 
         versionString = self.versionEntry.get(defaultValue="")
-        if len(versionString) > 0 and versionString != PHOTONVISION_VERSION:
+        localUUID = PhotonPipelineResult.photonStruct.MESSAGE_VERSION
+
+        remoteUUID = self._rawBytesEntry.getTopic().getProperty("message_uuid")
+
+        if remoteUUID is None or len(remoteUUID) == 0:
+            wpilib.reportWarning(
+                f"PhotonVision coprocessor at path {self._path} has not reported a message interface UUID - is your coprocessor's camera started?",
+                True,
+            )
+
+        # ntcore hands us a JSON string with leading/trailing quotes - remove those
+        remoteUUID = remoteUUID.replace('"', "")
+
+        if localUUID != remoteUUID:
             # Verified version mismatch
 
             bfw = """
@@ -233,6 +265,6 @@ class PhotonCamera:
 
             wpilib.reportWarning(bfw)
 
-            errText = f"Photon version {PHOTONLIB_VERSION} does not match coprocessor version {versionString}. Please install photonlibpy version {PHOTONLIB_VERSION}."
+            errText = f"Photonlibpy version {PHOTONLIB_VERSION} (With message UUID {localUUID}) does not match coprocessor version {versionString} (with message UUID {remoteUUID}). Please install photonlibpy version {versionString}, or update your coprocessor to {PHOTONLIB_VERSION}."
             wpilib.reportError(errText, True)
             raise Exception(errText)

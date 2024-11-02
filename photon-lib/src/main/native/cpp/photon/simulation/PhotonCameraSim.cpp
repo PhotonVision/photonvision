@@ -201,33 +201,34 @@ PhotonPipelineResult PhotonCameraSim::Process(
       continue;
     }
 
-    PNPResult pnpSim{};
+    std::optional<photon::PnpResult> pnpSim = std::nullopt;
     if (tgt.fiducialId >= 0 && tgt.GetFieldVertices().size() == 4) {
-      pnpSim = OpenCVHelp::SolvePNP_Square(
+      pnpSim = OpenCVHelp::SolvePNP_SQPNP(
           prop.GetIntrinsics(), prop.GetDistCoeffs(),
           tgt.GetModel().GetVertices(), noisyTargetCorners);
     }
 
     std::vector<std::pair<float, float>> tempCorners =
         OpenCVHelp::PointsToCorners(minAreaRectPts);
-    wpi::SmallVector<std::pair<double, double>, 4> smallVec;
+    std::vector<TargetCorner> smallVec;
 
     for (const auto& corner : tempCorners) {
-      smallVec.emplace_back(std::make_pair(static_cast<double>(corner.first),
-                                           static_cast<double>(corner.second)));
+      smallVec.emplace_back(static_cast<double>(corner.first),
+                            static_cast<double>(corner.second));
     }
 
-    std::vector<std::pair<float, float>> cornersFloat =
-        OpenCVHelp::PointsToCorners(noisyTargetCorners);
+    auto cornersFloat = OpenCVHelp::PointsToTargetCorners(noisyTargetCorners);
 
-    std::vector<std::pair<double, double>> cornersDouble{cornersFloat.begin(),
-                                                         cornersFloat.end()};
+    std::vector<TargetCorner> cornersDouble{cornersFloat.begin(),
+                                            cornersFloat.end()};
     detectableTgts.emplace_back(
         -centerRot.Z().convert<units::degrees>().to<double>(),
         -centerRot.Y().convert<units::degrees>().to<double>(), areaPercent,
         centerRot.X().convert<units::degrees>().to<double>(), tgt.fiducialId,
-        tgt.objDetClassId, tgt.objDetConf, pnpSim.best, pnpSim.alt,
-        pnpSim.ambiguity, smallVec, cornersDouble);
+        tgt.objDetClassId, tgt.objDetConf,
+        pnpSim ? pnpSim->best : frc::Transform3d{},
+        pnpSim ? pnpSim->alt : frc::Transform3d{},
+        pnpSim ? pnpSim->ambiguity : -1, smallVec, cornersDouble);
   }
 
   if (videoSimRawEnabled) {
@@ -275,36 +276,27 @@ PhotonPipelineResult PhotonCameraSim::Process(
         cv::LINE_AA);
     for (const auto& tgt : detectableTgts) {
       auto detectedCornersDouble = tgt.GetDetectedCorners();
-      std::vector<std::pair<float, float>> detectedCornerFloat{
-          detectedCornersDouble.begin(), detectedCornersDouble.end()};
       if (tgt.GetFiducialId() >= 0) {
         VideoSimUtil::DrawTagDetection(
             tgt.GetFiducialId(),
-            OpenCVHelp::CornersToPoints(detectedCornerFloat),
+            OpenCVHelp::CornersToPoints(detectedCornersDouble),
             videoSimFrameProcessed);
       } else {
         cv::rectangle(videoSimFrameProcessed,
                       OpenCVHelp::GetBoundingRect(
-                          OpenCVHelp::CornersToPoints(detectedCornerFloat)),
+                          OpenCVHelp::CornersToPoints(detectedCornersDouble)),
                       cv::Scalar{0, 0, 255},
                       static_cast<int>(VideoSimUtil::GetScaledThickness(
                           1, videoSimFrameProcessed)),
                       cv::LINE_AA);
 
-        wpi::SmallVector<std::pair<double, double>, 4> smallVec =
-            tgt.GetMinAreaRectCorners();
+        auto smallVec = tgt.GetMinAreaRectCorners();
 
         std::vector<std::pair<float, float>> cornersCopy{};
         cornersCopy.reserve(4);
 
-        for (const auto& corner : smallVec) {
-          cornersCopy.emplace_back(
-              std::make_pair(static_cast<float>(corner.first),
-                             static_cast<float>(corner.second)));
-        }
-
         VideoSimUtil::DrawPoly(
-            OpenCVHelp::CornersToPoints(cornersCopy),
+            OpenCVHelp::CornersToPoints(smallVec),
             static_cast<int>(
                 VideoSimUtil::GetScaledThickness(1, videoSimFrameProcessed)),
             cv::Scalar{255, 30, 30}, true, videoSimFrameProcessed);
@@ -316,75 +308,78 @@ PhotonPipelineResult PhotonCameraSim::Process(
         cs::VideoSource::ConnectionStrategy::kConnectionForceClose);
   }
 
-  MultiTargetPNPResult multiTagResults{};
+  std::optional<MultiTargetPNPResult> multiTagResults = std::nullopt;
 
   std::vector<frc::AprilTag> visibleLayoutTags =
       VisionEstimation::GetVisibleLayoutTags(detectableTgts, tagLayout);
   if (visibleLayoutTags.size() > 1) {
-    wpi::SmallVector<int16_t, 32> usedIds{};
+    std::vector<int16_t> usedIds{};
+    usedIds.resize(visibleLayoutTags.size());
     std::transform(visibleLayoutTags.begin(), visibleLayoutTags.end(),
                    usedIds.begin(),
                    [](const frc::AprilTag& tag) { return tag.ID; });
     std::sort(usedIds.begin(), usedIds.end());
-    PNPResult pnpResult = VisionEstimation::EstimateCamPosePNP(
+    auto pnpResult = VisionEstimation::EstimateCamPosePNP(
         prop.GetIntrinsics(), prop.GetDistCoeffs(), detectableTgts, tagLayout,
         kAprilTag36h11);
-    multiTagResults = MultiTargetPNPResult{pnpResult, usedIds};
+    if (pnpResult) {
+      multiTagResults = MultiTargetPNPResult{*pnpResult, usedIds};
+    }
   }
 
   heartbeatCounter++;
-  return PhotonPipelineResult{heartbeatCounter, 0_s, latency, detectableTgts,
-                              multiTagResults};
+  return PhotonPipelineResult{
+      PhotonPipelineMetadata{heartbeatCounter, 0,
+                             units::microsecond_t{latency}.to<int64_t>(),
+                             1000000},
+      detectableTgts, multiTagResults};
 }
 void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result) {
   SubmitProcessedFrame(result, wpi::Now());
 }
 void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result,
-                                           uint64_t recieveTimestamp) {
+                                           uint64_t ReceiveTimestamp) {
   ts.latencyMillisEntry.Set(
       result.GetLatency().convert<units::milliseconds>().to<double>(),
-      recieveTimestamp);
+      ReceiveTimestamp);
 
   Packet newPacket{};
-  newPacket << result;
+  newPacket.Pack(result);
 
-  ts.rawBytesEntry.Set(newPacket.GetData(), recieveTimestamp);
+  ts.rawBytesEntry.Set(newPacket.GetData(), ReceiveTimestamp);
 
   bool hasTargets = result.HasTargets();
-  ts.hasTargetEntry.Set(hasTargets, recieveTimestamp);
+  ts.hasTargetEntry.Set(hasTargets, ReceiveTimestamp);
   if (!hasTargets) {
-    ts.targetPitchEntry.Set(0.0, recieveTimestamp);
-    ts.targetYawEntry.Set(0.0, recieveTimestamp);
-    ts.targetAreaEntry.Set(0.0, recieveTimestamp);
-    std::array<double, 3> poseData{0.0, 0.0, 0.0};
-    ts.targetPoseEntry.Set(poseData, recieveTimestamp);
-    ts.targetSkewEntry.Set(0.0, recieveTimestamp);
+    ts.targetPitchEntry.Set(0.0, ReceiveTimestamp);
+    ts.targetYawEntry.Set(0.0, ReceiveTimestamp);
+    ts.targetAreaEntry.Set(0.0, ReceiveTimestamp);
+    ts.targetPoseEntry.Set(frc::Transform3d{}, ReceiveTimestamp);
+    ts.targetSkewEntry.Set(0.0, ReceiveTimestamp);
   } else {
     PhotonTrackedTarget bestTarget = result.GetBestTarget();
 
-    ts.targetPitchEntry.Set(bestTarget.GetPitch(), recieveTimestamp);
-    ts.targetYawEntry.Set(bestTarget.GetYaw(), recieveTimestamp);
-    ts.targetAreaEntry.Set(bestTarget.GetArea(), recieveTimestamp);
-    ts.targetSkewEntry.Set(bestTarget.GetSkew(), recieveTimestamp);
+    ts.targetPitchEntry.Set(bestTarget.GetPitch(), ReceiveTimestamp);
+    ts.targetYawEntry.Set(bestTarget.GetYaw(), ReceiveTimestamp);
+    ts.targetAreaEntry.Set(bestTarget.GetArea(), ReceiveTimestamp);
+    ts.targetSkewEntry.Set(bestTarget.GetSkew(), ReceiveTimestamp);
 
-    frc::Transform3d transform = bestTarget.GetBestCameraToTarget();
-    std::array<double, 4> poseData{
-        transform.X().to<double>(), transform.Y().to<double>(),
-        transform.Rotation().ToRotation2d().Degrees().to<double>()};
-    ts.targetPoseEntry.Set(poseData, recieveTimestamp);
+    ts.targetPoseEntry.Set(bestTarget.GetBestCameraToTarget(),
+                           ReceiveTimestamp);
   }
 
-  auto intrinsics = prop.GetIntrinsics();
-  std::vector<double> intrinsicsView{intrinsics.data(),
-                                     intrinsics.data() + intrinsics.size()};
-  ts.cameraIntrinsicsPublisher.Set(intrinsicsView, recieveTimestamp);
+  Eigen::Matrix<double, 3, 3, Eigen::RowMajor> intrinsics =
+      prop.GetIntrinsics();
+  std::span<double> intrinsicsView{intrinsics.data(),
+                                   intrinsics.data() + intrinsics.size()};
+  ts.cameraIntrinsicsPublisher.Set(intrinsicsView, ReceiveTimestamp);
 
   auto distortion = prop.GetDistCoeffs();
   std::vector<double> distortionView{distortion.data(),
                                      distortion.data() + distortion.size()};
-  ts.cameraDistortionPublisher.Set(distortionView, recieveTimestamp);
+  ts.cameraDistortionPublisher.Set(distortionView, ReceiveTimestamp);
 
-  ts.heartbeatPublisher.Set(heartbeatCounter, recieveTimestamp);
+  ts.heartbeatPublisher.Set(heartbeatCounter, ReceiveTimestamp);
 
   ts.subTable->GetInstance().Flush();
 }

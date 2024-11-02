@@ -37,6 +37,7 @@ public class VisionRunner {
     private final FrameProvider frameSupplier;
     private final Supplier<CVPipeline> pipelineSupplier;
     private final Consumer<CVPipelineResult> pipelineResultConsumer;
+    private final VisionModuleChangeSubscriber changeSubscriber;
     private final QuirkyCamera cameraQuirks;
 
     private long loopCount;
@@ -53,15 +54,18 @@ public class VisionRunner {
             FrameProvider frameSupplier,
             Supplier<CVPipeline> pipelineSupplier,
             Consumer<CVPipelineResult> pipelineResultConsumer,
-            QuirkyCamera cameraQuirks) {
+            QuirkyCamera cameraQuirks,
+            VisionModuleChangeSubscriber changeSubscriber) {
         this.frameSupplier = frameSupplier;
         this.pipelineSupplier = pipelineSupplier;
         this.pipelineResultConsumer = pipelineResultConsumer;
         this.cameraQuirks = cameraQuirks;
+        this.changeSubscriber = changeSubscriber;
 
         visionProcessThread = new Thread(this::update);
         visionProcessThread.setName("VisionRunner - " + frameSupplier.getName());
         logger = new Logger(VisionRunner.class, frameSupplier.getName(), LogGroup.VisionModule);
+        changeSubscriber.processSettingChanges();
     }
 
     public void startProcess() {
@@ -70,6 +74,7 @@ public class VisionRunner {
 
     private void update() {
         while (!Thread.interrupted()) {
+            changeSubscriber.processSettingChanges();
             var pipeline = pipelineSupplier.get();
 
             // Tell our camera implementation here what kind of pre-processing we need it to be doing
@@ -101,13 +106,17 @@ public class VisionRunner {
                 continue;
             }
 
-            // There's no guarantee the processing type change will occur this tick, so pipelines should
-            // check themselves
-            try {
-                var pipelineResult = pipeline.run(frame, cameraQuirks);
-                pipelineResultConsumer.accept(pipelineResult);
-            } catch (Exception ex) {
-                logger.error("Exception on loop " + loopCount, ex);
+            // If the pipeline has changed while we are getting our frame we should scrap that frame it
+            // may result in incorrect frame settings like hsv values
+            if (pipeline == pipelineSupplier.get()) {
+                // There's no guarantee the processing type change will occur this tick, so pipelines should
+                // check themselves
+                try {
+                    var pipelineResult = pipeline.run(frame, cameraQuirks);
+                    pipelineResultConsumer.accept(pipelineResult);
+                } catch (Exception ex) {
+                    logger.error("Exception on loop " + loopCount, ex);
+                }
             }
 
             loopCount++;

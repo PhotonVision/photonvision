@@ -45,7 +45,7 @@ Welcome to the official documentation of PhotonVision! PhotonVision is the free,
         :link: docs/hardware/index
         :link-type: doc
 
-        Select appropriate hardware for high-quality and  easy vision target detection.
+        Select appropriate hardware for high-quality and easy vision target detection.
 
     .. grid-item-card::  Contributing
         :link: docs/contributing/index

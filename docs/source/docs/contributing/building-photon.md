@@ -12,7 +12,7 @@ This section contains the build instructions from the source code available at [
 
 **Node JS:**
 
- The UI is written in Node JS. To compile the UI, Node 14.18.0 to Node 16.0.0 is required. To install Node JS follow the instructions for your platform [on the official Node JS website](https://nodejs.org/en/download/).  However, modify this line
+ The UI is written in Node JS. To compile the UI, Node 18.20.4 to Node 20.0.0 is required. To install Node JS follow the instructions for your platform [on the official Node JS website](https://nodejs.org/en/download/).  However, modify this line
 
 ```bash
 nvm install 20
@@ -21,7 +21,7 @@ nvm install 20
 so that it instead reads
 
 ```javascript
-nvm install 14.18.0
+nvm install 18.20.4
 ```
 
 ## Compiling Instructions
@@ -243,19 +243,11 @@ The program will wait for the VSCode debugger to attach before proceeding.
 
 ### Running examples
 
-You can run one of the many built in examples straight from the command line, too! They contain a fully featured robot project, and some include simulation support. The projects can be found inside the photonlib-java-examples and photonlib-cpp-examples subdirectories, respectively. The projects currently available include:
+You can run one of the many built in examples straight from the command line, too! They contain a fully featured robot project, and some include simulation support. The projects can be found inside the photonlib-*-examples subdirectories for each language.
 
-- photonlib-java-examples:
-    - aimandrange:simulateJava
-    - aimattarget:simulateJava
-    - getinrange:simulateJava
-    - simaimandrange:simulateJava
-    - simposeest:simulateJava
-- photonlib-cpp-examples:
-    - aimandrange:simulateNative
-    - getinrange:simulateNative
+#### Running C++/Java
 
-To run them, use the commands listed below. PhotonLib must first be published to your local maven repository, then the copy PhotonLib task will copy the generated vendordep json file into each example. After that, the simulateJava/simulateNative task can be used like a normal robot project. Robot simulation with attached debugger is technically possible by using simulateExternalJava and modifying the launch script it exports, though unsupported.
+PhotonLib must first be published to your local maven repository, then the copy PhotonLib task will copy the generated vendordep json file into each example. After that, the simulateJava/simulateNative task can be used like a normal robot project. Robot simulation with attached debugger is technically possible by using simulateExternalJava and modifying the launch script it exports, though not yet supported.
 
 ```
 ~/photonvision$ ./gradlew publishToMavenLocal
@@ -267,4 +259,28 @@ To run them, use the commands listed below. PhotonLib must first be published to
 ~/photonvision$ cd photonlib-cpp-examples
 ~/photonvision/photonlib-cpp-examples$ ./gradlew copyPhotonlib
 ~/photonvision/photonlib-cpp-examples$ ./gradlew <example-name>:simulateNative
+```
+
+#### Running Python
+
+PhotonLibPy must first be built into a wheel.
+
+```
+> cd photon-lib/py
+> buildAndTest.bat
+```
+
+Then, you must enable using the development wheels. robotpy will use pip behind the scenes, and this bat file tells pip about your development artifacts.
+
+Note: This is best done in a virtual environment.
+
+```
+> enableUsingDevBuilds.bat
+```
+
+Then, run the examples:
+
+```
+> cd photonlib-python-examples
+> run.bat <example name>
 ```

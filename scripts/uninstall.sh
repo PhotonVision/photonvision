@@ -11,5 +11,5 @@ systemctl stop photonvision
 systemctl disable photonvision
 rm /lib/systemd/system/photonvision.service
 rm /etc/systemd/system/photonvision.service
-systemctl dameon-relaod
+systemctl daemeon-reload
 systemctl reset-failed

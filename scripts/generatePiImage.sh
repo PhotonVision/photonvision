@@ -31,7 +31,7 @@ then
     exit 1
 fi
 
-echo "Unziped image: " $IMAGE_FILE " -- mounting"
+echo "Unzipped image: " $IMAGE_FILE " -- mounting"
 TMP=$(mktemp -d)
 LOOP=$(sudo losetup --show -fP "${IMAGE_FILE}")
 echo "Image mounted! Copying jar..."

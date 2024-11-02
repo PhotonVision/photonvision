@@ -28,6 +28,9 @@ import java.util.Objects;
 public class QuirkyCamera {
     private static final List<QuirkyCamera> quirkyCameras =
             List.of(
+                    // SeeCam, which has an odd exposure range
+                    new QuirkyCamera(
+                            0x2560, 0xc128, "See3Cam_24CUG", CameraQuirk.Gain, CameraQuirk.See3Cam_24CUG),
                     // Chris's older generic "Logitec HD Webcam"
                     new QuirkyCamera(0x9331, 0x5A3, CameraQuirk.CompletelyBroken),
                     // Logitec C270
@@ -55,6 +58,7 @@ public class QuirkyCamera {
                             "",
                             "Arducam Generic",
                             CameraQuirk.ArduCamCamera,
+                            CameraQuirk.Gain,
                             CameraQuirk.StickyFPS),
                     // Arducam OV2311
                     new QuirkyCamera(
@@ -73,17 +77,18 @@ public class QuirkyCamera {
                             "OV9281",
                             CameraQuirk.ArduCamCamera,
                             CameraQuirk.ArduOV9281Controls),
-                    // Arducam OV
+                    // Arducam OV9782
                     new QuirkyCamera(
                             0x0c45,
                             0x6366,
                             "OV9782",
                             "OV9782",
                             CameraQuirk.ArduCamCamera,
+                            CameraQuirk.Gain,
                             CameraQuirk.ArduOV9782Controls),
                     // Innomaker OV9281
                     new QuirkyCamera(
-                            0x0c45, 0x636d, "USB Camera", "USB Camera", CameraQuirk.InnoOV9281Controls));
+                            0x0c45, 0x636d, "USB Camera", "Innomaker OV9281", CameraQuirk.InnoOV9281Controls));
 
     public static final QuirkyCamera DefaultCamera = new QuirkyCamera(0, 0, "");
     public static final QuirkyCamera ZeroCopyPiCamera =
@@ -92,7 +97,7 @@ public class QuirkyCamera {
                     -1,
                     "unicam",
                     CameraQuirk.Gain,
-                    CameraQuirk.AWBGain); // PiCam (using libpicam GPU Driver on raspberry pi)
+                    CameraQuirk.AwbRedBlueGain); // PiCam (using libcamera GPU Driver on raspberry pi)
 
     @JsonProperty("baseName")
     public final String baseName;
@@ -138,7 +143,7 @@ public class QuirkyCamera {
      * @param usbVid USB VID of camera
      * @param usbPid USB PID of camera
      * @param baseName CSCore name of camera
-     * @param displayName Human-friendly quicky camera name
+     * @param displayName Human-friendly quirky camera name
      * @param quirks Camera quirks
      */
     private QuirkyCamera(
@@ -149,9 +154,13 @@ public class QuirkyCamera {
         this.displayName = displayName;
 
         this.quirks = new HashMap<>();
+
+        // (1) Fill quirk map with the supplied Quirk list
         for (var q : quirks) {
             this.quirks.put(q, true);
         }
+
+        // (2) for all other quirks in CameraQuirks (in this version of Photon), default to false
         for (var q : CameraQuirk.values()) {
             this.quirks.putIfAbsent(q, false);
         }
@@ -171,8 +180,14 @@ public class QuirkyCamera {
         this.displayName = displayName;
     }
 
+    /**
+     * Check if this camera
+     *
+     * @param quirk
+     * @return
+     */
     public boolean hasQuirk(CameraQuirk quirk) {
-        return quirks.get(quirk);
+        return quirks.getOrDefault(quirk, false);
     }
 
     public static QuirkyCamera getQuirkyCamera(int usbVid, int usbPid) {

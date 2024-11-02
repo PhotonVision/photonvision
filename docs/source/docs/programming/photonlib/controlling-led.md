@@ -4,13 +4,17 @@ You can control the vision LEDs of supported hardware via PhotonLib using the `s
 
 ```{eval-rst}
 .. tab-set-code::
-   .. code-block:: java
+   .. code-block:: Java
 
       // Blink the LEDs.
       camera.setLED(VisionLEDMode.kBlink);
 
-   .. code-block:: c++
+   .. code-block:: C++
 
       // Blink the LEDs.
       camera.SetLED(photonlib::VisionLEDMode::kBlink);
+
+    .. code-block:: Python
+
+        # Coming Soon!
 ```

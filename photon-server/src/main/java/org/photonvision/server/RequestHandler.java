@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Optional;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
+import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfInt;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -93,16 +94,18 @@ public class RequestHandler {
             return;
         }
 
+        ConfigManager.getInstance().setWriteTaskEnabled(false);
+        ConfigManager.getInstance().disableFlushOnShutdown();
+        // We want to delete the -whole- zip file, so we need to teardown loggers for now
+        logger.info("Writing new settings zip (logs may be truncated)...");
+        Logger.closeAllLoggers();
         if (ConfigManager.saveUploadedSettingsZip(tempFilePath.get())) {
             ctx.status(200);
             ctx.result("Successfully saved the uploaded settings zip, rebooting...");
-            logger.info("Successfully saved the uploaded settings zip, rebooting...");
-            ConfigManager.getInstance().disableFlushOnShutdown();
             restartProgram();
         } else {
             ctx.status(500);
             ctx.result("There was an error while saving the uploaded zip file");
-            logger.error("There was an error while saving the uploaded zip file");
         }
     }
 
@@ -481,38 +484,6 @@ public class RequestHandler {
         }
     }
 
-    public static void onCalibDBCalibrationImportRequest(Context ctx) {
-        var data = ctx.bodyInputStream();
-
-        try {
-            var actualObj = kObjectMapper.readTree(data);
-
-            int cameraIndex = actualObj.get("cameraIndex").asInt();
-            var payload = kObjectMapper.readTree(actualObj.get("payload").asText());
-            var coeffs = CameraCalibrationCoefficients.parseFromCalibdbJson(payload);
-
-            var uploadCalibrationEvent =
-                    new IncomingWebSocketEvent<>(
-                            DataChangeDestination.DCD_ACTIVEMODULE,
-                            "calibrationUploaded",
-                            coeffs,
-                            cameraIndex,
-                            null);
-            DataChangeService.getInstance().publishEvent(uploadCalibrationEvent);
-
-            ctx.status(200);
-            ctx.result("Calibration imported successfully from CalibDB data!");
-            logger.info("Calibration imported successfully from CalibDB data!");
-        } catch (IOException e) {
-            ctx.status(400);
-            ctx.result(
-                    "The Provided CalibDB data is malformed and cannot be parsed for the required fields.");
-            logger.error(
-                    "The Provided CalibDB data is malformed and cannot be parsed for the required fields.",
-                    e);
-        }
-    }
-
     public static void onDataCalibrationImportRequest(Context ctx) {
         try {
             var data = kObjectMapper.readTree(ctx.bodyInputStream());
@@ -599,8 +570,8 @@ public class RequestHandler {
                         .stream()
                         .filter(
                                 it ->
-                                        Math.abs(it.resolution.width - width) < 1e-4
-                                                && Math.abs(it.resolution.height - height) < 1e-4)
+                                        Math.abs(it.unrotatedImageSize.width - width) < 1e-4
+                                                && Math.abs(it.unrotatedImageSize.height - height) < 1e-4)
                         .findFirst()
                         .orElse(null);
 
@@ -611,11 +582,23 @@ public class RequestHandler {
 
         // encode as jpeg to save even more space. reduces size of a 1280p image from 300k to 25k
         var jpegBytes = new MatOfByte();
-        Imgcodecs.imencode(
-                ".jpg",
-                calList.observations.get(observationIdx).snapshotData.getAsMat(),
-                jpegBytes,
-                new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 60));
+        Mat img = null;
+        try {
+            img =
+                    Imgcodecs.imread(
+                            calList.observations.get(observationIdx).snapshotDataLocation.toString());
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.result("Unable to read calibration image");
+            return;
+        }
+        if (img == null || img.empty()) {
+            ctx.status(500);
+            ctx.result("Unable to read calibration image");
+            return;
+        }
+
+        Imgcodecs.imencode(".jpg", img, jpegBytes, new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 60));
 
         ctx.result(jpegBytes.toArray());
         jpegBytes.release();
@@ -636,8 +619,8 @@ public class RequestHandler {
                 cc.calibrations.stream()
                         .filter(
                                 it ->
-                                        Math.abs(it.resolution.width - width) < 1e-4
-                                                && Math.abs(it.resolution.height - height) < 1e-4)
+                                        Math.abs(it.unrotatedImageSize.width - width) < 1e-4
+                                                && Math.abs(it.unrotatedImageSize.height - height) < 1e-4)
                         .findFirst()
                         .orElse(null);
 
@@ -789,5 +772,47 @@ public class RequestHandler {
                             }
                         },
                         0);
+    }
+
+    public static void onNukeConfigDirectory(Context ctx) {
+        ConfigManager.getInstance().setWriteTaskEnabled(false);
+        ConfigManager.getInstance().disableFlushOnShutdown();
+
+        Logger.closeAllLoggers();
+        if (ConfigManager.nukeConfigDirectory()) {
+            ctx.status(200);
+            ctx.result("Successfully nuked config dir");
+            restartProgram();
+        } else {
+            ctx.status(500);
+            ctx.result("There was an error while nuking the config directory");
+        }
+    }
+
+    public static void onNukeOneCamera(Context ctx) {
+        try {
+            var payload = kObjectMapper.readTree(ctx.bodyInputStream());
+            var name = payload.get("cameraUniqueName").asText();
+            logger.warn("Deleting camera name " + name);
+
+            var cameraDir = ConfigManager.getInstance().getCalibrationImageSavePath(name).toFile();
+            if (cameraDir.exists()) {
+                FileUtils.deleteDirectory(cameraDir);
+            }
+
+            // prevent -anyone- else from writing camera configs -- but flush first
+            ConfigManager.getInstance().saveToDisk();
+            ConfigManager.getInstance().setWriteTaskEnabled(false);
+            ConfigManager.getInstance().disableFlushOnShutdown();
+            // remove the config from the global config and force-flush
+            ConfigManager.getInstance().getConfig().removeCameraConfig(name);
+            ConfigManager.getInstance().saveToDisk();
+            ctx.status(200);
+            restartProgram();
+        } catch (IOException e) {
+            // todo
+            logger.error("asdf", e);
+            ctx.status(500);
+        }
     }
 }

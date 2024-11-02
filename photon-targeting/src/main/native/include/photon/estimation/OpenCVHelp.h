@@ -29,8 +29,10 @@
 
 #define OPENCV_DISABLE_EIGEN_TENSOR_SUPPORT
 #include <opencv2/core/eigen.hpp>
-#include "photon/targeting/PNPResult.h"
+#include "photon/targeting/PnpResult.h"
 #include "photon/targeting/MultiTargetPNPResult.h"
+
+#include "photon/targeting/TargetCorner.h"
 
 namespace photon {
 namespace OpenCVHelp {
@@ -51,8 +53,8 @@ static std::vector<cv::Point2f> GetConvexHull(
   return convexPoints;
 }
 
-[[maybe_unused]]
-static cv::RotatedRect GetMinAreaRect(const std::vector<cv::Point2f>& points) {
+[[maybe_unused]] static cv::RotatedRect GetMinAreaRect(
+    const std::vector<cv::Point2f>& points) {
   return cv::minAreaRect(points);
 }
 
@@ -96,6 +98,16 @@ static std::vector<cv::Point3f> RotationToRVec(
   return points[0];
 }
 
+[[maybe_unused]] static std::vector<photon::TargetCorner> PointsToTargetCorners(
+    const std::vector<cv::Point2f>& points) {
+  std::vector<photon::TargetCorner> retVal;
+  retVal.reserve(points.size());
+  for (size_t i = 0; i < points.size(); i++) {
+    retVal.emplace_back(photon::TargetCorner{points[i].x, points[i].y});
+  }
+  return retVal;
+}
+
 [[maybe_unused]] static std::vector<std::pair<float, float>> PointsToCorners(
     const std::vector<cv::Point2f>& points) {
   std::vector<std::pair<float, float>> retVal;
@@ -116,13 +128,23 @@ static std::vector<cv::Point3f> RotationToRVec(
   return retVal;
 }
 
+[[maybe_unused]] static std::vector<cv::Point2f> CornersToPoints(
+    const std::vector<photon::TargetCorner>& corners) {
+  std::vector<cv::Point2f> retVal;
+  retVal.reserve(corners.size());
+  for (size_t i = 0; i < corners.size(); i++) {
+    retVal.emplace_back(cv::Point2f{static_cast<float>(corners[i].x),
+                                    static_cast<float>(corners[i].y)});
+  }
+  return retVal;
+}
+
 [[maybe_unused]] static cv::Rect GetBoundingRect(
     const std::vector<cv::Point2f>& points) {
   return cv::boundingRect(points);
 }
 
-[[maybe_unused]]
-static std::vector<cv::Point2f> ProjectPoints(
+[[maybe_unused]] static std::vector<cv::Point2f> ProjectPoints(
     const Eigen::Matrix<double, 3, 3>& cameraMatrix,
     const Eigen::Matrix<double, 8, 1>& distCoeffs,
     const RotTrlTransform3d& camRt,
@@ -184,7 +206,7 @@ static frc::Rotation3d RVecToRotation(const cv::Mat& rvecInput) {
                                           units::radian_t{data[2]}});
 }
 
-[[maybe_unused]] static photon::PNPResult SolvePNP_Square(
+[[maybe_unused]] static std::optional<photon::PnpResult> SolvePNP_Square(
     const Eigen::Matrix<double, 3, 3>& cameraMatrix,
     const Eigen::Matrix<double, 8, 1>& distCoeffs,
     std::vector<frc::Translation3d> modelTrls,
@@ -233,26 +255,25 @@ static frc::Rotation3d RVecToRotation(const cv::Mat& rvecInput) {
 
   if (std::isnan(errors[0])) {
     fmt::print("SolvePNP_Square failed!\n");
+    return std::nullopt;
   }
   if (alt) {
-    photon::PNPResult result;
+    photon::PnpResult result;
     result.best = best;
     result.alt = alt.value();
     result.ambiguity = errors[0] / errors[1];
     result.bestReprojErr = errors[0];
     result.altReprojErr = errors[1];
-    result.isPresent = true;
     return result;
   } else {
-    photon::PNPResult result;
+    photon::PnpResult result;
     result.best = best;
     result.bestReprojErr = errors[0];
-    result.isPresent = true;
     return result;
   }
 }
 
-[[maybe_unused]] static photon::PNPResult SolvePNP_SQPNP(
+[[maybe_unused]] static std::optional<photon::PnpResult> SolvePNP_SQPNP(
     const Eigen::Matrix<double, 3, 3>& cameraMatrix,
     const Eigen::Matrix<double, 8, 1>& distCoeffs,
     std::vector<frc::Translation3d> modelTrls,
@@ -283,10 +304,9 @@ static frc::Rotation3d RVecToRotation(const cv::Mat& rvecInput) {
   if (std::isnan(error)) {
     fmt::print("SolvePNP_Square failed!\n");
   }
-  photon::PNPResult result;
+  photon::PnpResult result;
   result.best = best;
   result.bestReprojErr = error;
-  result.isPresent = true;
   return result;
 }
 }  // namespace OpenCVHelp

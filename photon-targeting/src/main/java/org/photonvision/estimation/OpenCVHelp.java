@@ -31,6 +31,7 @@ import edu.wpi.first.math.numbers.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import org.ejml.simple.SimpleMatrix;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
@@ -46,7 +47,7 @@ import org.opencv.core.Point3;
 import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 import org.opencv.imgproc.Imgproc;
-import org.photonvision.targeting.PNPResult;
+import org.photonvision.targeting.PnpResult;
 import org.photonvision.targeting.TargetCorner;
 
 public final class OpenCVHelp {
@@ -202,7 +203,7 @@ public final class OpenCVHelp {
      * @param <T> Element type
      * @param elements list elements
      * @param backwards If indexing should happen in reverse (0, size-1, size-2, ...)
-     * @param shiftStart How much the inital index should be shifted (instead of starting at index 0,
+     * @param shiftStart How much the initial index should be shifted (instead of starting at index 0,
      *     start at shiftStart, negated if backwards)
      * @return Reordered list
      */
@@ -248,6 +249,65 @@ public final class OpenCVHelp {
      */
     private static Translation3d translationNWUtoEDN(Translation3d trl) {
         return trl.rotateBy(NWU_TO_EDN);
+    }
+
+    /**
+     * Distort a list of points in pixels using the OPENCV5/8 models. See image-rotation.md or
+     * https://docs.opencv.org/4.x/d9/d0c/group__calib3d.html for the math here.
+     *
+     * @param pointsList the undistorted points
+     * @param cameraMatrix standard OpenCV camera mat
+     * @param distCoeffs standard OpenCV distortion coefficients. Must OPENCV5 or OPENCV8
+     */
+    public static List<Point> distortPoints(
+            List<Point> pointsList, Mat cameraMatrix, Mat distCoeffs) {
+        var ret = new ArrayList<Point>();
+
+        var cx = cameraMatrix.get(0, 2)[0];
+        var cy = cameraMatrix.get(1, 2)[0];
+        var fx = cameraMatrix.get(0, 0)[0];
+        var fy = cameraMatrix.get(1, 1)[0];
+
+        var k1 = distCoeffs.get(0, 0)[0];
+        var k2 = distCoeffs.get(0, 1)[0];
+        var p1 = distCoeffs.get(0, 2)[0];
+        var p2 = distCoeffs.get(0, 3)[0];
+        var k3 = distCoeffs.get(0, 4)[0];
+
+        double k4 = 0;
+        double k5 = 0;
+        double k6 = 0;
+        if (distCoeffs.cols() == 8) {
+            k4 = distCoeffs.get(0, 5)[0];
+            k5 = distCoeffs.get(0, 6)[0];
+            k6 = distCoeffs.get(0, 7)[0];
+        }
+
+        for (Point point : pointsList) {
+            // To relative coordinates
+            double xprime = (point.x - cx) / fx; // cx, cy is the center of distortion
+            double yprime = (point.y - cy) / fy;
+
+            double r_sq = xprime * xprime + yprime * yprime; // square of the radius from center
+
+            // Radial distortion
+            double radialDistortion =
+                    (1 + k1 * r_sq + k2 * r_sq * r_sq + k3 * r_sq * r_sq * r_sq)
+                            / (1 + k4 * r_sq + k5 * r_sq * r_sq + k6 * r_sq * r_sq * r_sq);
+            double xDistort = xprime * radialDistortion;
+            double yDistort = yprime * radialDistortion;
+
+            // Tangential distortion
+            xDistort = xDistort + (2 * p1 * xprime * yprime + p2 * (r_sq + 2 * xprime * xprime));
+            yDistort = yDistort + (p1 * (r_sq + 2 * yprime * yprime) + 2 * p2 * xprime * yprime);
+
+            // Back to absolute coordinates.
+            xDistort = xDistort * fx + cx;
+            yDistort = yDistort * fy + cy;
+            ret.add(new Point(xDistort, yDistort));
+        }
+
+        return ret;
     }
 
     /**
@@ -402,7 +462,7 @@ public final class OpenCVHelp {
      * @return The resulting transformation that maps the camera pose to the target pose and the
      *     ambiguity if an alternate solution is available.
      */
-    public static PNPResult solvePNP_SQUARE(
+    public static Optional<PnpResult> solvePNP_SQUARE(
             Matrix<N3, N3> cameraMatrix,
             Matrix<N8, N1> distCoeffs,
             List<Translation3d> modelTrls,
@@ -467,14 +527,15 @@ public final class OpenCVHelp {
             // check if solvePnP failed with NaN results and retrying failed
             if (Double.isNaN(errors[0])) throw new Exception("SolvePNP_SQUARE NaN result");
 
-            if (alt != null) return new PNPResult(best, alt, errors[0] / errors[1], errors[0], errors[1]);
-            else return new PNPResult(best, errors[0]);
+            if (alt != null)
+                return Optional.of(new PnpResult(best, alt, errors[0] / errors[1], errors[0], errors[1]));
+            else return Optional.empty();
         }
         // solvePnP failed
         catch (Exception e) {
             System.err.println("SolvePNP_SQUARE failed!");
             e.printStackTrace();
-            return new PNPResult();
+            return Optional.empty();
         } finally {
             // release our Mats from native memory
             objectMat.release();
@@ -509,7 +570,7 @@ public final class OpenCVHelp {
      *     model points are supplied relative to the origin, this transformation brings the camera to
      *     the origin.
      */
-    public static PNPResult solvePNP_SQPNP(
+    public static Optional<PnpResult> solvePNP_SQPNP(
             Matrix<N3, N3> cameraMatrix,
             Matrix<N8, N1> distCoeffs,
             List<Translation3d> objectTrls,
@@ -558,11 +619,11 @@ public final class OpenCVHelp {
             // check if solvePnP failed with NaN results
             if (Double.isNaN(error[0])) throw new Exception("SolvePNP_SQPNP NaN result");
 
-            return new PNPResult(best, error[0]);
+            return Optional.of(new PnpResult(best, error[0]));
         } catch (Exception e) {
             System.err.println("SolvePNP_SQPNP failed!");
             e.printStackTrace();
-            return new PNPResult();
+            return Optional.empty();
         }
     }
 }

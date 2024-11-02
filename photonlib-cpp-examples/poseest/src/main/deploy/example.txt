@@ -1,0 +1,4 @@
+Files placed in this directory will be deployed to the RoboRIO into the
+  'deploy' directory in the home folder. Use the 'frc::filesystem::GetDeployDirectory'
+  function from the 'frc/Filesystem.h' header to get a proper path relative to the deploy
+  directory.

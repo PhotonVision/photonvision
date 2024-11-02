@@ -39,7 +39,7 @@
 #include <networktables/StringTopic.h>
 #include <units/time.h>
 
-#include "photon/targeting//PhotonPipelineResult.h"
+#include "photon/targeting/PhotonPipelineResult.h"
 
 namespace cv {
 class Mat;
@@ -87,8 +87,8 @@ class PhotonCamera {
    */
   std::vector<PhotonPipelineResult> GetAllUnreadResults();
 
-  [[deprecated("Replace with GetAllUnreadResults")]]
-  PhotonPipelineResult GetLatestResult();
+  [[deprecated("Replace with GetAllUnreadResults")]] PhotonPipelineResult
+  GetLatestResult();
 
   /**
    * Toggles driver mode.

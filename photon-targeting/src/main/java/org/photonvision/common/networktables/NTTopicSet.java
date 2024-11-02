@@ -17,6 +17,7 @@
 
 package org.photonvision.common.networktables;
 
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.BooleanTopic;
@@ -28,6 +29,7 @@ import edu.wpi.first.networktables.IntegerTopic;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.ProtobufPublisher;
 import edu.wpi.first.networktables.PubSubOption;
+import edu.wpi.first.networktables.StructPublisher;
 import org.photonvision.targeting.PhotonPipelineResult;
 
 /**
@@ -56,7 +58,7 @@ public class NTTopicSet {
     public DoublePublisher targetPitchEntry;
     public DoublePublisher targetYawEntry;
     public DoublePublisher targetAreaEntry;
-    public DoubleArrayPublisher targetPoseEntry;
+    public StructPublisher<Transform3d> targetPoseEntry;
     public DoublePublisher targetSkewEntry;
 
     // The raw position of the best target, in pixels.
@@ -75,9 +77,14 @@ public class NTTopicSet {
         var rawBytesEntry =
                 subTable
                         .getRawTopic("rawBytes")
-                        .publish("rawBytes", PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
+                        .publish(
+                                PhotonPipelineResult.photonStruct.getTypeString(),
+                                PubSubOption.periodic(0.01),
+                                PubSubOption.sendAll(true),
+                                PubSubOption.keepDuplicates(true));
 
-        resultPublisher = new PacketPublisher<>(rawBytesEntry, PhotonPipelineResult.serde);
+        resultPublisher =
+                new PacketPublisher<PhotonPipelineResult>(rawBytesEntry, PhotonPipelineResult.photonStruct);
         protoResultPublisher =
                 subTable
                         .getProtobufTopic("result_proto", PhotonPipelineResult.proto)
@@ -98,7 +105,7 @@ public class NTTopicSet {
         targetPitchEntry = subTable.getDoubleTopic("targetPitch").publish();
         targetAreaEntry = subTable.getDoubleTopic("targetArea").publish();
         targetYawEntry = subTable.getDoubleTopic("targetYaw").publish();
-        targetPoseEntry = subTable.getDoubleArrayTopic("targetPose").publish();
+        targetPoseEntry = subTable.getStructTopic("targetPose", Transform3d.struct).publish();
         targetSkewEntry = subTable.getDoubleTopic("targetSkew").publish();
 
         bestTargetPosX = subTable.getDoubleTopic("targetPixelsX").publish();

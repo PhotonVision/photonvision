@@ -1,3 +1,4 @@
+import java.security.MessageDigest
 apply plugin: 'maven-publish'
 
 def outputsFolder = file("$buildDir/outputs")
@@ -6,11 +7,14 @@ def baseArtifactId = nativeName
 def artifactGroupId = 'org.photonvision'
 def zipBaseName = "_GROUP_org_photonvision_${baseArtifactId}_ID_${baseArtifactId}-cpp_CLS"
 
+def jniBaseName = "_GROUP_edu_wpi_first_${nativeName}_ID_${nativeName}-jni_CLS"
+def jniCvStaticBaseName = "_GROUP_edu_wpi_first_${nativeName}_ID_${nativeName}-jnicvstatic_CLS"
+
+def licenseFile = file("$rootDir/LICENCE")
+
 // Quick hack to make this name visible to photon-lib for combined
 ext.zipBaseName = zipBaseName
 ext.artifactGroupId = artifactGroupId
-
-def licenseFile = file("$rootDir/LICENCE")
 
 task cppSourcesZip(type: Zip) {
     destinationDirectory = outputsFolder
@@ -72,17 +76,49 @@ addTaskToCopyAllOutputs(cppHeadersZip)
 
 model {
     publishing {
-        def taskList = createComponentZipTasks($.components, [nativeName], zipBaseName, Zip, project, includeStandardZipFormat)
+        def cppTaskList = createComponentZipTasks($.components, [nativeName], zipBaseName, Zip, project, includeStandardZipFormat)
+
+        // From https://github.com/wpilibsuite/allwpilib/blob/1c220ebc607daa8da7d983b8f17bc40323633cb2/shared/jni/publish.gradle#L80C9-L100C11
+        def jniTaskList = createComponentZipTasks($.components, ["${nativeName}JNI"], jniBaseName, Jar, project, { task, value ->
+            value.each { binary ->
+                if (binary.buildable) {
+                    if (binary instanceof SharedLibraryBinarySpec) {
+                        task.dependsOn binary.tasks.link
+                        def hashFile = new File(binary.sharedLibraryFile.parentFile.absolutePath, "${binary.component.baseName}.hash")
+                        task.outputs.file(hashFile)
+                        task.inputs.file(binary.sharedLibraryFile)
+                        task.from(hashFile) {
+                            into nativeUtils.getPlatformPath(binary)
+                        }
+                        task.doFirst {
+                            hashFile.text = MessageDigest.getInstance("MD5").digest(binary.sharedLibraryFile.bytes).encodeHex().toString()
+                        }
+                        task.from(binary.sharedLibraryFile) {
+                            into nativeUtils.getPlatformPath(binary)
+                        }
+                    }
+                }
+            }
+        })
 
         publications {
             cpp(MavenPublication) {
-                taskList.each {
+                cppTaskList.each {
                     artifact it
                 }
                 artifact cppHeadersZip
                 artifact cppSourcesZip
 
                 artifactId = "${baseArtifactId}-cpp"
+                groupId artifactGroupId
+                version pubVersion
+            }
+            jni(MavenPublication) {
+                jniTaskList.each {
+                    artifact it
+                }
+
+                artifactId = "${baseArtifactId}-jni"
                 groupId artifactGroupId
                 version pubVersion
             }

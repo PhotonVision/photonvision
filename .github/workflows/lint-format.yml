@@ -37,7 +37,7 @@ jobs:
         with:
           python-version: 3.11
       - name: Install wpiformat
-        run: pip3 install wpiformat==2024.37
+        run: pip3 install wpiformat==2024.41
       - name: Run
         run: wpiformat
       - name: Check output
@@ -57,7 +57,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           java-version: 17
           distribution: temurin

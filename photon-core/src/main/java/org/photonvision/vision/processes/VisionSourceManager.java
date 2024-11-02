@@ -535,7 +535,7 @@ public class VisionSourceManager {
      * Filter out any blacklisted or ignored devices.
      *
      * @param allDevices
-     * @return list of devices with blacklisted or ingore devices removed.
+     * @return list of devices with blacklisted or ignore devices removed.
      */
     private List<CameraInfo> filterAllowedDevices(List<CameraInfo> allDevices) {
         List<CameraInfo> filteredDevices = new ArrayList<>();

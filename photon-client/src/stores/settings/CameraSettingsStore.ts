@@ -51,6 +51,9 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     cameraNames(): string[] {
       return this.cameras.map((c) => c.nickname);
     },
+    cameraUniqueNames(): string[] {
+      return this.cameras.map((c) => c.nickname);
+    },
     currentCameraName(): string {
       return this.cameraNames[useStateStore().currentCameraIndex];
     },
@@ -74,11 +77,17 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     },
     maxExposureRaw(): number {
       return this.currentCameraSettings.maxExposureRaw;
+    },
+    minWhiteBalanceTemp(): number {
+      return this.currentCameraSettings.minWhiteBalanceTemp;
+    },
+    maxWhiteBalanceTemp(): number {
+      return this.currentCameraSettings.maxWhiteBalanceTemp;
     }
   },
   actions: {
     updateCameraSettingsFromWebsocket(data: WebsocketCameraSettingsUpdate[]) {
-      this.cameras = data.map<CameraSettings>((d) => ({
+      const configuredCameras = data.map<CameraSettings>((d) => ({
         nickname: d.nickname,
         uniqueName: d.uniqueName,
         fov: {
@@ -113,8 +122,11 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         pipelineNicknames: d.pipelineNicknames,
         currentPipelineIndex: d.currentPipelineIndex,
         pipelineSettings: d.currentPipelineSettings,
-        cameraQuirks: d.cameraQuirks
+        cameraQuirks: d.cameraQuirks,
+        minWhiteBalanceTemp: d.minWhiteBalanceTemp,
+        maxWhiteBalanceTemp: d.maxWhiteBalanceTemp
       }));
+      this.cameras = configuredCameras.length > 0 ? configuredCameras : [PlaceholderCameraSettings];
     },
     /**
      * Update the configurable camera settings.
@@ -327,7 +339,6 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         patternWidth: number;
         patternHeight: number;
         boardType: CalibrationBoardTypes;
-        useMrCal: boolean;
         useOldPattern: boolean;
         tagFamily: CalibrationTagFamilies;
       },
@@ -355,22 +366,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     endPnPCalibration(cameraIndex: number = useStateStore().currentCameraIndex) {
       return axios.post("/calibration/end", { index: cameraIndex });
     },
-    /**
-     * Import calibration data that was computed using CalibDB.
-     *
-     * @param data Data from the uploaded CalibDB config
-     * @param cameraIndex the index of the camera
-     */
-    importCalibDB(
-      data: { payload: string; filename: string },
-      cameraIndex: number = useStateStore().currentCameraIndex
-    ) {
-      const payload = {
-        ...data,
-        cameraIndex: cameraIndex
-      };
-      return axios.post("/calibration/importFromCalibDB", payload, { headers: { "Content-Type": "text/plain" } });
-    },
+
     importCalibrationFromData(
       data: { calibration: CameraCalibrationResult },
       cameraIndex: number = useStateStore().currentCameraIndex

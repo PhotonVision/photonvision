@@ -47,13 +47,6 @@ public class Draw2dCrosshairPipe
             double y = params.frameStaticProperties.centerY;
             double scale = params.frameStaticProperties.imageWidth / (double) params.divisor.value / 32.0;
 
-            if (this.params.rotMode == ImageRotationMode.DEG_270
-                    || this.params.rotMode == ImageRotationMode.DEG_90) {
-                var tmp = x;
-                x = y;
-                y = tmp;
-            }
-
             switch (params.robotOffsetPointMode) {
                 case Single:
                     if (params.singleOffsetPoint.x != 0 && params.singleOffsetPoint.y != 0) {

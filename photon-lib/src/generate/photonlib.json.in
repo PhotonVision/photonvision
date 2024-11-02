@@ -9,7 +9,47 @@
     "https://maven.photonvision.org/repository/snapshots"
   ],
   "jsonUrl": "https://maven.photonvision.org/repository/internal/org/photonvision/photonlib-json/1.0/photonlib-json-1.0.json",
-  "jniDependencies": [],
+  "jniDependencies": [
+    {
+      "groupId": "edu.wpi.first.wpilibc",
+      "artifactId": "wpilibc-cpp",
+      "version": "${wpilib_version}",
+      "skipInvalidPlatforms": true,
+      "isJar": false,
+      "validPlatforms": [
+        "windowsx86-64",
+        "linuxathena",
+        "linuxx86-64",
+        "osxuniversal"
+      ]
+    },
+    {
+      "groupId": "org.photonvision",
+      "artifactId": "photontargeting-cpp",
+      "version": "${photon_version}",
+      "skipInvalidPlatforms": true,
+      "isJar": false,
+      "validPlatforms": [
+        "windowsx86-64",
+        "linuxathena",
+        "linuxx86-64",
+        "osxuniversal"
+      ]
+    },
+    {
+      "groupId": "org.photonvision",
+      "artifactId": "photontargeting-jni",
+      "version": "${photon_version}",
+      "skipInvalidPlatforms": true,
+      "isJar": true,
+      "validPlatforms": [
+        "windowsx86-64",
+        "linuxathena",
+        "linuxx86-64",
+        "osxuniversal"
+      ]
+    }
+  ],
   "cppDependencies": [
     {
       "groupId": "org.photonvision",

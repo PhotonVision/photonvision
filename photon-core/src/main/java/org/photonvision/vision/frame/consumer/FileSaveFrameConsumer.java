@@ -17,8 +17,11 @@
 
 package org.photonvision.vision.frame.consumer;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.IntegerEntry;
+import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.StringSubscriber;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -35,6 +38,9 @@ import org.photonvision.vision.opencv.CVMat;
 public class FileSaveFrameConsumer implements Consumer<CVMat> {
     private final Logger logger = new Logger(FileSaveFrameConsumer.class, LogGroup.General);
 
+    // match type's values from the FMS.
+    private static final String[] matchTypes = {"N/A", "P", "Q", "E", "EV"};
+
     // Formatters to generate unique, timestamped file names
     private static final String FILE_PATH = ConfigManager.getInstance().getImageSavePath().toString();
     private static final String FILE_EXTENSION = ".jpg";
@@ -47,6 +53,10 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
     private NetworkTable subTable;
     private final String ntEntryName;
     private IntegerEntry saveFrameEntry;
+
+    private StringSubscriber ntEventName;
+    private IntegerSubscriber ntMatchNum;
+    private IntegerSubscriber ntMatchType;
 
     private final String cameraUniqueName;
     private String cameraNickname;
@@ -61,6 +71,12 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
         this.streamType = streamPrefix;
 
         this.rootTable = NetworkTablesManager.getInstance().kRootTable;
+
+        NetworkTable fmsTable = NetworkTablesManager.getInstance().getNTInst().getTable("FMSInfo");
+        this.ntEventName = fmsTable.getStringTopic("EventName").subscribe("UNKNOWN");
+        this.ntMatchNum = fmsTable.getIntegerTopic("MatchNumber").subscribe(-1);
+        this.ntMatchType = fmsTable.getIntegerTopic("MatchType").subscribe(0);
+
         updateCameraNickname(camNickname);
     }
 
@@ -75,7 +91,15 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
             Date now = new Date();
 
             String fileName =
-                    cameraNickname + "_" + streamType + "_" + df.format(now) + "T" + tf.format(now);
+                    cameraNickname
+                            + "_"
+                            + streamType
+                            + "_"
+                            + df.format(now)
+                            + "T"
+                            + tf.format(now)
+                            + "_"
+                            + getMatchData();
 
             // Check if the Unique Camera directory exists and create it if it doesn't
             String cameraPath = FILE_PATH + File.separator + this.cameraUniqueName;
@@ -118,5 +142,31 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
     public void overrideTakeSnapshot() {
         // Simulate NT change
         saveFrameEntry.set(saveFrameEntry.get() + 1);
+    }
+
+    /**
+     * Returns the match Data collected from the NT. eg : Q58 for qualfication match 58. If not in
+     * event, returns N/A-0-EVENTNAME
+     */
+    private String getMatchData() {
+        var matchType = ntMatchType.getAtomic();
+        if (matchType.timestamp == 0) {
+            // no NT info yet
+            logger.warn("Did not receive match type, defaulting to 0");
+        }
+
+        var matchNum = ntMatchNum.getAtomic();
+        if (matchNum.timestamp == 0) {
+            logger.warn("Did not receive match num, defaulting to -1");
+        }
+
+        var eventName = ntEventName.getAtomic();
+        if (eventName.timestamp == 0) {
+            logger.warn("Did not receive event name, defaulting to 'UNKNOWN'");
+        }
+
+        String matchTypeStr =
+                matchTypes[MathUtil.clamp((int) matchType.value, 0, matchTypes.length - 1)];
+        return matchTypeStr + "-" + matchNum.value + "-" + eventName.value;
     }
 }

@@ -18,8 +18,10 @@
 package org.photonvision.vision.processes;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import edu.wpi.first.cscore.VideoMode;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +33,7 @@ import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.util.TestUtils;
+import org.photonvision.jni.PhotonTargetingJniLoader;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.USBCameras.USBCameraSource;
 import org.photonvision.vision.frame.FrameProvider;
@@ -41,7 +44,16 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 public class VisionModuleManagerTest {
     @BeforeAll
     public static void init() {
+        String classpathStr = System.getProperty("java.class.path");
+        System.out.print(classpathStr);
+
         TestUtils.loadLibraries();
+        try {
+            if (!PhotonTargetingJniLoader.load()) fail();
+        } catch (UnsatisfiedLinkError | IOException e) {
+            e.printStackTrace();
+            fail(e);
+        }
     }
 
     private static class TestSource extends VisionSource {
@@ -122,6 +134,22 @@ public class VisionModuleManagerTest {
         @Override
         public double getMaxExposureRaw() {
             return 1234;
+        }
+
+        @Override
+        public void setAutoWhiteBalance(boolean autowb) {}
+
+        @Override
+        public void setWhiteBalanceTemp(double temp) {}
+
+        @Override
+        public double getMaxWhiteBalanceTemp() {
+            return 1;
+        }
+
+        @Override
+        public double getMinWhiteBalanceTemp() {
+            return 2;
         }
     }
 

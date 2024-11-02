@@ -28,7 +28,8 @@ export const useSettingsStore = defineStore("settings", {
       hardwareModel: undefined,
       hardwarePlatform: undefined,
       mrCalWorking: true,
-      rknnSupported: false
+      availableModels: {},
+      supportedBackends: []
     },
     network: {
       ntServerAddress: "",
@@ -77,7 +78,7 @@ export const useSettingsStore = defineStore("settings", {
       return this.general.gpuAcceleration !== undefined;
     },
     networkInterfaceNames(): string[] {
-      return this.network.networkInterfaceNames.map((i) => i.connName);
+      return this.network.networkInterfaceNames.map((i) => i.devName);
     }
   },
   actions: {
@@ -105,7 +106,8 @@ export const useSettingsStore = defineStore("settings", {
         hardwarePlatform: data.general.hardwarePlatform || undefined,
         gpuAcceleration: data.general.gpuAcceleration || undefined,
         mrCalWorking: data.general.mrCalWorking,
-        rknnSupported: data.general.rknnSupported
+        availableModels: data.general.availableModels || undefined,
+        supportedBackends: data.general.supportedBackends || []
       };
       this.lighting = data.lighting;
       this.network = data.networkSettings;

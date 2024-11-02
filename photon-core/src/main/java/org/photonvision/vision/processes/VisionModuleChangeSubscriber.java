@@ -18,7 +18,9 @@
 package org.photonvision.vision.processes;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Point;
 import org.photonvision.common.dataflow.DataChangeSubscriber;
@@ -39,6 +41,8 @@ import org.photonvision.vision.target.RobotOffsetPointOperation;
 public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
     private final VisionModule parentModule;
     private final Logger logger;
+    private List<VisionModuleChange<?>> settingChanges = new ArrayList<>();
+    private final ReentrantLock changeListLock = new ReentrantLock();
 
     public VisionModuleChangeSubscriber(VisionModule parentModule) {
         this.parentModule = parentModule;
@@ -54,28 +58,47 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
         if (event instanceof IncomingWebSocketEvent) {
             var wsEvent = (IncomingWebSocketEvent<?>) event;
 
-            // Camera index -1 means a "multicast event" (i.e. the event is received by all cameras)
+            // Camera index -1 means a "multicast event" (i.e. the event is received by all
+            // cameras)
             if (wsEvent.cameraIndex != null
                     && (wsEvent.cameraIndex == parentModule.moduleIndex || wsEvent.cameraIndex == -1)) {
                 logger.trace("Got PSC event - propName: " + wsEvent.propertyName);
+                changeListLock.lock();
+                try {
+                    getSettingChanges()
+                            .add(
+                                    new VisionModuleChange(
+                                            wsEvent.propertyName,
+                                            wsEvent.data,
+                                            parentModule.pipelineManager.getCurrentPipeline().getSettings(),
+                                            wsEvent.originContext));
+                } finally {
+                    changeListLock.unlock();
+                }
+            }
+        }
+    }
 
-                var propName = wsEvent.propertyName;
-                var newPropValue = wsEvent.data;
-                var currentSettings = parentModule.pipelineManager.getCurrentPipeline().getSettings();
+    public List<VisionModuleChange<?>> getSettingChanges() {
+        return settingChanges;
+    }
 
-                // special case for non-PipelineSetting changes
+    public void processSettingChanges() {
+        // special case for non-PipelineSetting changes
+        changeListLock.lock();
+        try {
+            for (var change : settingChanges) {
+                var propName = change.getPropName();
+                var newPropValue = change.getNewPropValue();
+                var currentSettings = change.getCurrentSettings();
+                var originContext = change.getOriginContext();
                 switch (propName) {
-                        //                    case "cameraNickname": // rename camera
-                        //                        var newNickname = (String) newPropValue;
-                        //                        logger.info("Changing nickname to " + newNickname);
-                        //                        parentModule.setCameraNickname(newNickname);
-                        //                        return;
                     case "pipelineName": // rename current pipeline
                         logger.info("Changing nick to " + newPropValue);
                         parentModule.pipelineManager.getCurrentPipelineSettings().pipelineNickname =
                                 (String) newPropValue;
                         parentModule.saveAndBroadcastAll();
-                        return;
+                        continue;
                     case "newPipelineInfo": // add new pipeline
                         var typeName = (Pair<String, PipelineType>) newPropValue;
                         var type = typeName.getRight();
@@ -86,23 +109,23 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         var addedSettings = parentModule.pipelineManager.addPipeline(type);
                         addedSettings.pipelineNickname = name;
                         parentModule.saveAndBroadcastAll();
-                        return;
+                        continue;
                     case "deleteCurrPipeline":
                         var indexToDelete = parentModule.pipelineManager.getRequestedIndex();
                         logger.info("Deleting current pipe at index " + indexToDelete);
                         int newIndex = parentModule.pipelineManager.removePipeline(indexToDelete);
                         parentModule.setPipeline(newIndex);
                         parentModule.saveAndBroadcastAll();
-                        return;
+                        continue;
                     case "changePipeline": // change active pipeline
                         var index = (Integer) newPropValue;
                         if (index == parentModule.pipelineManager.getRequestedIndex()) {
                             logger.debug("Skipping pipeline change, index " + index + " already active");
-                            return;
+                            continue;
                         }
                         parentModule.setPipeline(index);
                         parentModule.saveAndBroadcastAll();
-                        return;
+                        continue;
                     case "startCalibration":
                         try {
                             var data =
@@ -113,25 +136,25 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         } catch (Exception e) {
                             logger.error("Error deserailizing start-cal request", e);
                         }
-                        return;
+                        continue;
                     case "saveInputSnapshot":
                         parentModule.saveInputSnapshot();
-                        return;
+                        continue;
                     case "saveOutputSnapshot":
                         parentModule.saveOutputSnapshot();
-                        return;
+                        continue;
                     case "takeCalSnapshot":
                         parentModule.takeCalibrationSnapshot();
-                        return;
+                        continue;
                     case "duplicatePipeline":
                         int idx = parentModule.pipelineManager.duplicatePipeline((Integer) newPropValue);
                         parentModule.setPipeline(idx);
                         parentModule.saveAndBroadcastAll();
-                        return;
+                        continue;
                     case "calibrationUploaded":
                         if (newPropValue instanceof CameraCalibrationCoefficients)
                             parentModule.addCalibrationToConfig((CameraCalibrationCoefficients) newPropValue);
-                        return;
+                        continue;
                     case "robotOffsetPoint":
                         if (currentSettings instanceof AdvancedPipelineSettings) {
                             var curAdvSettings = (AdvancedPipelineSettings) currentSettings;
@@ -176,14 +199,14 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                                 }
                             }
                         }
-                        return;
+                        continue;
                     case "changePipelineType":
                         parentModule.changePipelineType((Integer) newPropValue);
                         parentModule.saveAndBroadcastAll();
-                        return;
+                        continue;
                     case "isDriverMode":
                         parentModule.setDriverMode((Boolean) newPropValue);
-                        return;
+                        continue;
                 }
 
                 // special case for camera settables
@@ -202,33 +225,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                 }
 
                 try {
-                    var propField = currentSettings.getClass().getField(propName);
-                    var propType = propField.getType();
-
-                    if (propType.isEnum()) {
-                        var actual = propType.getEnumConstants()[(int) newPropValue];
-                        propField.set(currentSettings, actual);
-                    } else if (propType.isAssignableFrom(DoubleCouple.class)) {
-                        var orig = (ArrayList<Number>) newPropValue;
-                        var actual = new DoubleCouple(orig.get(0), orig.get(1));
-                        propField.set(currentSettings, actual);
-                    } else if (propType.isAssignableFrom(IntegerCouple.class)) {
-                        var orig = (ArrayList<Number>) newPropValue;
-                        var actual = new IntegerCouple(orig.get(0).intValue(), orig.get(1).intValue());
-                        propField.set(currentSettings, actual);
-                    } else if (propType.equals(Double.TYPE)) {
-                        propField.setDouble(currentSettings, ((Number) newPropValue).doubleValue());
-                    } else if (propType.equals(Integer.TYPE)) {
-                        propField.setInt(currentSettings, (Integer) newPropValue);
-                    } else if (propType.equals(Boolean.TYPE)) {
-                        if (newPropValue instanceof Integer) {
-                            propField.setBoolean(currentSettings, (Integer) newPropValue != 0);
-                        } else {
-                            propField.setBoolean(currentSettings, (Boolean) newPropValue);
-                        }
-                    } else {
-                        propField.set(newPropValue, newPropValue);
-                    }
+                    setProperty(currentSettings, propName, newPropValue);
                     logger.trace("Set prop " + propName + " to value " + newPropValue);
                 } catch (NoSuchFieldException | IllegalAccessException e) {
                     logger.error(
@@ -237,14 +234,60 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                                     + " with value "
                                     + newPropValue
                                     + " on "
-                                    + currentSettings,
-                            e);
+                                    + currentSettings
+                                    + " | "
+                                    + e.getClass().getSimpleName());
                 } catch (Exception e) {
                     logger.error("Unknown exception when setting PSC prop!", e);
                 }
 
-                parentModule.saveAndBroadcastSelective(wsEvent.originContext, propName, newPropValue);
+                parentModule.saveAndBroadcastSelective(originContext, propName, newPropValue);
             }
+            getSettingChanges().clear();
+        } finally {
+            changeListLock.unlock();
+        }
+    }
+
+    /**
+     * Sets the value of a property in the given object using reflection. This method should not be
+     * used generally and is only known to be correct in the context of `onDataChangeEvent`.
+     *
+     * @param currentSettings The object whose property needs to be set.
+     * @param propName The name of the property to be set.
+     * @param newPropValue The new value to be assigned to the property.
+     * @throws IllegalAccessException If the field cannot be accessed.
+     * @throws NoSuchFieldException If the field does not exist.
+     * @throws Exception If an some other unknown exception occurs while setting the property.
+     */
+    protected static void setProperty(Object currentSettings, String propName, Object newPropValue)
+            throws IllegalAccessException, NoSuchFieldException, Exception {
+        var propField = currentSettings.getClass().getField(propName);
+        var propType = propField.getType();
+
+        if (propType.isEnum()) {
+            var actual = propType.getEnumConstants()[(int) newPropValue];
+            propField.set(currentSettings, actual);
+        } else if (propType.isAssignableFrom(DoubleCouple.class)) {
+            var orig = (ArrayList<Number>) newPropValue;
+            var actual = new DoubleCouple(orig.get(0), orig.get(1));
+            propField.set(currentSettings, actual);
+        } else if (propType.isAssignableFrom(IntegerCouple.class)) {
+            var orig = (ArrayList<Number>) newPropValue;
+            var actual = new IntegerCouple(orig.get(0).intValue(), orig.get(1).intValue());
+            propField.set(currentSettings, actual);
+        } else if (propType.equals(Double.TYPE)) {
+            propField.setDouble(currentSettings, ((Number) newPropValue).doubleValue());
+        } else if (propType.equals(Integer.TYPE)) {
+            propField.setInt(currentSettings, (Integer) newPropValue);
+        } else if (propType.equals(Boolean.TYPE)) {
+            if (newPropValue instanceof Integer) {
+                propField.setBoolean(currentSettings, (Integer) newPropValue != 0);
+            } else {
+                propField.setBoolean(currentSettings, (Boolean) newPropValue);
+            }
+        } else {
+            propField.set(currentSettings, newPropValue);
         }
     }
 }

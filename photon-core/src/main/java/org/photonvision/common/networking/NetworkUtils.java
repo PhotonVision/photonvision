@@ -102,13 +102,16 @@ public class NetworkUtils {
                     Pattern.compile("GENERAL.CONNECTION:(.*)\nGENERAL.DEVICE:(.*)\nGENERAL.TYPE:(.*)");
             Matcher matcher = pattern.matcher(out);
             while (matcher.find()) {
-                ret.add(new NMDeviceInfo(matcher.group(1), matcher.group(2), matcher.group(3)));
+                if (!matcher.group(2).equals("lo")) {
+                    // only include non-loopback devices
+                    ret.add(new NMDeviceInfo(matcher.group(1), matcher.group(2), matcher.group(3)));
+                }
             }
         } catch (IOException e) {
-            logger.error("Could not get active NM ifaces!", e);
+            logger.error("Could not get active network interfaces!", e);
         }
 
-        logger.debug("Found network interfaces:\n" + ret);
+        logger.debug("Found network interfaces: " + ret);
 
         allInterfaces = ret;
         return ret;
@@ -123,8 +126,14 @@ public class NetworkUtils {
     }
 
     public static List<NMDeviceInfo> getAllWiredInterfaces() {
-        return getAllActiveInterfaces().stream()
-                .filter(it -> it.nmType == NMType.NMTYPE_ETHERNET)
+        return getAllInterfaces().stream()
+                .filter(it -> it.nmType.equals(NMType.NMTYPE_ETHERNET))
+                .collect(Collectors.toList());
+    }
+
+    public static List<NMDeviceInfo> getAllActiveWiredInterfaces() {
+        return getAllWiredInterfaces().stream()
+                .filter(it -> !it.connName.isBlank())
                 .collect(Collectors.toList());
     }
 
@@ -135,5 +144,27 @@ public class NetworkUtils {
             }
         }
         return null;
+    }
+
+    public static NMDeviceInfo getNMinfoForDevName(String devName) {
+        for (NMDeviceInfo info : getAllActiveInterfaces()) {
+            if (info.devName.equals(devName)) {
+                return info;
+            }
+        }
+        logger.warn("Could not find a match for network device " + devName);
+        return null;
+    }
+
+    public static boolean connDoesNotExist(String connName) {
+        var shell = new ShellExec(true, true);
+        try {
+            // set nmcli back to DHCP, and re-run dhclient -- this ought to grab a new IP address
+            shell.executeBashCommand("nmcli -f GENERAL.STATE connection show \"" + connName + "\"");
+            return (shell.getExitCode() == 10);
+        } catch (Exception e) {
+            logger.error("Exception from nmcli!");
+        }
+        return false;
     }
 }

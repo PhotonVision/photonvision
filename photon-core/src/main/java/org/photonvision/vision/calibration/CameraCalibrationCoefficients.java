@@ -22,18 +22,18 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Arrays;
 import java.util.List;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
 import org.opencv.core.Size;
+import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.opencv.Releasable;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CameraCalibrationCoefficients implements Releasable {
     @JsonProperty("resolution")
-    public final Size resolution;
+    public final Size unrotatedImageSize;
 
     @JsonProperty("cameraIntrinsics")
     public final JsonMatOfDouble cameraIntrinsics;
@@ -56,9 +56,6 @@ public class CameraCalibrationCoefficients implements Releasable {
 
     @JsonProperty("lensmodel")
     public final CameraLensModel lensmodel;
-
-    @JsonIgnore private final double[] intrinsicsArr = new double[9];
-    @JsonIgnore private final double[] distCoeffsArr = new double[5];
 
     /**
      * Contains all camera calibration data for a particular resolution of a camera. Designed for use
@@ -88,7 +85,7 @@ public class CameraCalibrationCoefficients implements Releasable {
             @JsonProperty("calobjectSize") Size calobjectSize,
             @JsonProperty("calobjectSpacing") double calobjectSpacing,
             @JsonProperty("lensmodel") CameraLensModel lensmodel) {
-        this.resolution = resolution;
+        this.unrotatedImageSize = resolution;
         this.cameraIntrinsics = cameraIntrinsics;
         this.distCoeffs = distCoeffs;
         this.calobjectWarp = calobjectWarp;
@@ -101,10 +98,93 @@ public class CameraCalibrationCoefficients implements Releasable {
             observations = List.of();
         }
         this.observations = observations;
+    }
 
-        // do this once so gets are quick
-        getCameraIntrinsicsMat().get(0, 0, intrinsicsArr);
-        getDistCoeffsMat().get(0, 0, distCoeffsArr);
+    public CameraCalibrationCoefficients rotateCoefficients(ImageRotationMode rotation) {
+        if (rotation == ImageRotationMode.DEG_0) {
+            return this;
+        }
+        Mat rotatedIntrinsics = getCameraIntrinsicsMat().clone();
+        Mat rotatedDistCoeffs = getDistCoeffsMat().clone();
+        double cx = getCameraIntrinsicsMat().get(0, 2)[0];
+        double cy = getCameraIntrinsicsMat().get(1, 2)[0];
+        double fx = getCameraIntrinsicsMat().get(0, 0)[0];
+        double fy = getCameraIntrinsicsMat().get(1, 1)[0];
+
+        // only adjust p1 and p2 the rest are radial distortion coefficients
+
+        double p1 = getDistCoeffsMat().get(0, 2)[0];
+        double p2 = getDistCoeffsMat().get(0, 3)[0];
+
+        // A bunch of horrifying opaque rotation black magic. See image-rotation.md for more details.
+        switch (rotation) {
+            case DEG_0:
+                break;
+            case DEG_270_CCW:
+                // FX
+                rotatedIntrinsics.put(0, 0, fy);
+                // FY
+                rotatedIntrinsics.put(1, 1, fx);
+
+                // CX
+                rotatedIntrinsics.put(0, 2, unrotatedImageSize.height - cy);
+                // CY
+                rotatedIntrinsics.put(1, 2, cx);
+
+                // P1
+                rotatedDistCoeffs.put(0, 2, p2);
+                // P2
+                rotatedDistCoeffs.put(0, 3, -p1);
+
+                break;
+            case DEG_180_CCW:
+                // CX
+                rotatedIntrinsics.put(0, 2, unrotatedImageSize.width - cx);
+                // CY
+                rotatedIntrinsics.put(1, 2, unrotatedImageSize.height - cy);
+
+                // P1
+                rotatedDistCoeffs.put(0, 2, -p1);
+                // P2
+                rotatedDistCoeffs.put(0, 3, -p2);
+                break;
+            case DEG_90_CCW:
+                // FX
+                rotatedIntrinsics.put(0, 0, fy);
+                // FY
+                rotatedIntrinsics.put(1, 1, fx);
+
+                // CX
+                rotatedIntrinsics.put(0, 2, cy);
+                // CY
+                rotatedIntrinsics.put(1, 2, unrotatedImageSize.width - cx);
+
+                // P1
+                rotatedDistCoeffs.put(0, 2, -p2);
+                // P2
+                rotatedDistCoeffs.put(0, 3, p1);
+
+                break;
+        }
+
+        JsonMatOfDouble newIntrinsics = JsonMatOfDouble.fromMat(rotatedIntrinsics);
+
+        JsonMatOfDouble newDistCoeffs = JsonMatOfDouble.fromMat(rotatedDistCoeffs);
+
+        rotatedIntrinsics.release();
+        rotatedDistCoeffs.release();
+
+        var rotatedImageSize = new Size(unrotatedImageSize.height, unrotatedImageSize.width);
+
+        return new CameraCalibrationCoefficients(
+                rotatedImageSize,
+                newIntrinsics,
+                newDistCoeffs,
+                calobjectWarp,
+                observations,
+                calobjectSize,
+                calobjectSpacing,
+                lensmodel);
     }
 
     @JsonIgnore
@@ -119,12 +199,12 @@ public class CameraCalibrationCoefficients implements Releasable {
 
     @JsonIgnore
     public double[] getIntrinsicsArr() {
-        return intrinsicsArr;
+        return cameraIntrinsics.data;
     }
 
     @JsonIgnore
     public double[] getDistCoeffsArr() {
-        return distCoeffsArr;
+        return distCoeffs.data;
     }
 
     @JsonIgnore
@@ -138,55 +218,10 @@ public class CameraCalibrationCoefficients implements Releasable {
         distCoeffs.release();
     }
 
-    public static CameraCalibrationCoefficients parseFromCalibdbJson(JsonNode json) {
-        // camera_matrix is a row major, array of arrays
-        var cam_matrix = json.get("camera_matrix");
-
-        double[] cam_arr =
-                new double[] {
-                    cam_matrix.get(0).get(0).doubleValue(),
-                    cam_matrix.get(0).get(1).doubleValue(),
-                    cam_matrix.get(0).get(2).doubleValue(),
-                    cam_matrix.get(1).get(0).doubleValue(),
-                    cam_matrix.get(1).get(1).doubleValue(),
-                    cam_matrix.get(1).get(2).doubleValue(),
-                    cam_matrix.get(2).get(0).doubleValue(),
-                    cam_matrix.get(2).get(1).doubleValue(),
-                    cam_matrix.get(2).get(2).doubleValue()
-                };
-
-        var dist_coefs = json.get("distortion_coefficients");
-
-        double[] dist_array =
-                new double[] {
-                    dist_coefs.get(0).doubleValue(),
-                    dist_coefs.get(1).doubleValue(),
-                    dist_coefs.get(2).doubleValue(),
-                    dist_coefs.get(3).doubleValue(),
-                    dist_coefs.get(4).doubleValue(),
-                };
-
-        var cam_jsonmat = new JsonMatOfDouble(3, 3, cam_arr);
-        var distortion_jsonmat = new JsonMatOfDouble(1, 5, dist_array);
-
-        var width = json.get("img_size").get(0).doubleValue();
-        var height = json.get("img_size").get(1).doubleValue();
-
-        return new CameraCalibrationCoefficients(
-                new Size(width, height),
-                cam_jsonmat,
-                distortion_jsonmat,
-                new double[0],
-                List.of(),
-                new Size(0, 0),
-                0,
-                CameraLensModel.LENSMODEL_OPENCV);
-    }
-
     @Override
     public String toString() {
         return "CameraCalibrationCoefficients [resolution="
-                + resolution
+                + unrotatedImageSize
                 + ", cameraIntrinsics="
                 + cameraIntrinsics
                 + ", distCoeffs="
@@ -195,16 +230,12 @@ public class CameraCalibrationCoefficients implements Releasable {
                 + observations.size()
                 + ", calobjectWarp="
                 + Arrays.toString(calobjectWarp)
-                + ", intrinsicsArr="
-                + Arrays.toString(intrinsicsArr)
-                + ", distCoeffsArr="
-                + Arrays.toString(distCoeffsArr)
                 + "]";
     }
 
     public UICameraCalibrationCoefficients cloneWithoutObservations() {
         return new UICameraCalibrationCoefficients(
-                resolution,
+                unrotatedImageSize,
                 cameraIntrinsics,
                 distCoeffs,
                 calobjectWarp,

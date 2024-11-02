@@ -25,36 +25,23 @@
 #include <frc/geometry/Transform3d.h>
 #include <wpi/SmallVector.h>
 
-#include "photon/dataflow/structures/Packet.h"
+#include "photon/struct/PhotonTrackedTargetStruct.h"
 
 namespace photon {
 /**
  * Represents a tracked target within a pipeline.
  */
-class PhotonTrackedTarget {
+class PhotonTrackedTarget : public PhotonTrackedTarget_PhotonStruct {
+  using Base = PhotonTrackedTarget_PhotonStruct;
+
  public:
-  /**
-   * Constructs an empty target.
-   */
   PhotonTrackedTarget() = default;
 
-  /**
-   * Constructs a target.
-   * @param yaw The yaw of the target.
-   * @param pitch The pitch of the target.
-   * @param area The area of the target.
-   * @param skew The skew of the target.
-   * @param pose The camera-relative pose of the target.
-   * @param alternatePose The alternate camera-relative pose of the target.
-   * @param minAreaRectCorners The corners of the bounding rectangle.
-   * @param detectedCorners All detected corners
-   */
-  PhotonTrackedTarget(
-      double yaw, double pitch, double area, double skew, int fiducialID,
-      int objDetectCassId, float objDetectConf, const frc::Transform3d& pose,
-      const frc::Transform3d& alternatePose, double ambiguity,
-      const wpi::SmallVector<std::pair<double, double>, 4> minAreaRectCorners,
-      const std::vector<std::pair<double, double>> detectedCorners);
+  explicit PhotonTrackedTarget(Base&& data) : Base(data) {}
+
+  template <typename... Args>
+  explicit PhotonTrackedTarget(Args&&... args)
+      : Base{std::forward<Args>(args)...} {}
 
   /**
    * Returns the target yaw (positive-left).
@@ -103,8 +90,7 @@ class PhotonTrackedTarget {
    * down), in no particular order, of the minimum area bounding rectangle of
    * this target
    */
-  const wpi::SmallVector<std::pair<double, double>, 4>& GetMinAreaRectCorners()
-      const {
+  const std::vector<photon::TargetCorner>& GetMinAreaRectCorners() const {
     return minAreaRectCorners;
   }
 
@@ -119,13 +105,13 @@ class PhotonTrackedTarget {
    * V + Y     |       |
    *           0 ----- 1
    */
-  const std::vector<std::pair<double, double>>& GetDetectedCorners() const {
+  const std::vector<photon::TargetCorner>& GetDetectedCorners() const {
     return detectedCorners;
   }
 
   /**
    * Get the ratio of best:alternate pose reprojection errors, called ambiguity.
-   * This is betweeen 0 and 1 (0 being no ambiguity, and 1 meaning both have the
+   * This is between 0 and 1 (0 being no ambiguity, and 1 meaning both have the
    * same reprojection error). Numbers above 0.2 are likely to be ambiguous. -1
    * if invalid.
    */
@@ -149,22 +135,9 @@ class PhotonTrackedTarget {
     return altCameraToTarget;
   }
 
-  bool operator==(const PhotonTrackedTarget& other) const;
-
-  friend Packet& operator<<(Packet& packet, const PhotonTrackedTarget& target);
-  friend Packet& operator>>(Packet& packet, PhotonTrackedTarget& target);
-
-  double yaw = 0;
-  double pitch = 0;
-  double area = 0;
-  double skew = 0;
-  int fiducialId;
-  int objDetectId;
-  float objDetectConf;
-  frc::Transform3d bestCameraToTarget;
-  frc::Transform3d altCameraToTarget;
-  double poseAmbiguity;
-  wpi::SmallVector<std::pair<double, double>, 4> minAreaRectCorners;
-  std::vector<std::pair<double, double>> detectedCorners;
+  friend bool operator==(PhotonTrackedTarget const&,
+                         PhotonTrackedTarget const&) = default;
 };
 }  // namespace photon
+
+#include "photon/serde/PhotonTrackedTargetSerde.h"
