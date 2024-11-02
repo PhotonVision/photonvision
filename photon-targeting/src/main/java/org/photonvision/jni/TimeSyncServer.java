@@ -18,6 +18,7 @@
 package org.photonvision.jni;
 
 public class TimeSyncServer {
+    private final Object mutex = new Object();
     private long handle;
 
     public TimeSyncServer(int port) {
@@ -25,7 +26,13 @@ public class TimeSyncServer {
     }
 
     public void start() {
-        TimeSyncServer.start(handle);
+        synchronized (mutex) {
+            if (handle > 0) {
+                TimeSyncServer.start(handle);
+            } else {
+                System.err.println("TimeSyncServer: use after free?");
+            }
+        }
     }
 
     public void stop() {

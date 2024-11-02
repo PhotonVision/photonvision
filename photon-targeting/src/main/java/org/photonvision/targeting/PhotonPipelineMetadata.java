@@ -30,7 +30,7 @@ public class PhotonPipelineMetadata implements PhotonStructSerializable<PhotonPi
     // Mirror of the heartbeat entry -- monotonically increasing
     public long sequenceID;
 
-    // Time from last Time Sync Pong received and the construction of this metadata
+    // Time from last Time Sync Pong received and the construction of this metadata, in uS
     public long timeSinceLastPong;
 
     public PhotonPipelineMetadata(
@@ -73,12 +73,14 @@ public class PhotonPipelineMetadata implements PhotonStructSerializable<PhotonPi
 
     @Override
     public String toString() {
-        return "PhotonPipelineMetadata [sequenceID="
-                + sequenceID
-                + ", captureTimestampMicros="
+        return "PhotonPipelineMetadata [captureTimestampMicros="
                 + captureTimestampMicros
                 + ", publishTimestampMicros="
                 + publishTimestampMicros
+                + ", sequenceID="
+                + sequenceID
+                + ", timeSinceLastPong="
+                + timeSinceLastPong
                 + "]";
     }
 
@@ -86,9 +88,10 @@ public class PhotonPipelineMetadata implements PhotonStructSerializable<PhotonPi
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + (int) (sequenceID ^ (sequenceID >>> 32));
         result = prime * result + (int) (captureTimestampMicros ^ (captureTimestampMicros >>> 32));
         result = prime * result + (int) (publishTimestampMicros ^ (publishTimestampMicros >>> 32));
+        result = prime * result + (int) (sequenceID ^ (sequenceID >>> 32));
+        result = prime * result + (int) (timeSinceLastPong ^ (timeSinceLastPong >>> 32));
         return result;
     }
 
@@ -98,9 +101,10 @@ public class PhotonPipelineMetadata implements PhotonStructSerializable<PhotonPi
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         PhotonPipelineMetadata other = (PhotonPipelineMetadata) obj;
-        if (sequenceID != other.sequenceID) return false;
         if (captureTimestampMicros != other.captureTimestampMicros) return false;
         if (publishTimestampMicros != other.publishTimestampMicros) return false;
+        if (sequenceID != other.sequenceID) return false;
+        if (timeSinceLastPong != other.timeSinceLastPong) return false;
         return true;
     }
 

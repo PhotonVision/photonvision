@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.photonvision.UnitTestUtils.waitForSequenceNumber;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -63,7 +64,6 @@ import org.photonvision.jni.WpilibLoader;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
-import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 class VisionSystemSimTest {
@@ -108,27 +108,6 @@ class VisionSystemSimTest {
         inst = null;
 
         HAL.shutdown();
-    }
-
-    private PhotonPipelineResult waitForSequenceNumber(PhotonCamera camera, int seq) {
-        assertTrue(camera.heartbeatEntry.getTopic().getHandle() != 0);
-
-        System.out.println(
-                "Waiting for seq=" + seq + " on " + camera.heartbeatEntry.getTopic().getName());
-        // wait up to 1 second for a new result
-        for (int i = 0; i < 100; i++) {
-            var res = camera.getLatestResult();
-            if (res.metadata.sequenceID == seq) {
-                return res;
-            }
-
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        throw new RuntimeException("Never saw sequence number " + seq);
     }
 
     @Test
@@ -247,7 +226,8 @@ class VisionSystemSimTest {
 
         assertTrue(waitForSequenceNumber(camera, 1).hasTargets());
 
-        // Pitched back camera should mean target goes out of view below the robot as distance increases
+        // Pitched back camera should mean target goes out of view below the robot as
+        // distance increases
         robotPose = new Pose2d(new Translation2d(0, 0), Rotation2d.fromDegrees(5));
         visionSysSim.update(robotPose);
 
@@ -350,7 +330,8 @@ class VisionSystemSimTest {
         assertTrue(res.hasTargets());
         var tgt = res.getBestTarget();
 
-        // Since the camera is level with the target, a positive-upward point will mean the target is in
+        // Since the camera is level with the target, a positive-upward point will mean
+        // the target is in
         // the
         // lower half of the image
         // which should produce negative pitch.
@@ -358,7 +339,8 @@ class VisionSystemSimTest {
     }
 
     private static Stream<Arguments> testDistanceCalcArgs() {
-        // Arbitrary and fairly random assortment of distances, camera pitches, and heights
+        // Arbitrary and fairly random assortment of distances, camera pitches, and
+        // heights
         return Stream.of(
                 Arguments.of(5, -15.98, 0),
                 Arguments.of(6, -15.98, 1),
@@ -382,7 +364,8 @@ class VisionSystemSimTest {
     @ParameterizedTest
     @MethodSource("testDistanceCalcArgs")
     public void testDistanceCalc(double testDist, double testPitch, double testHeight) {
-        // Assume dist along ground and tgt height the same. Iterate over other parameters.
+        // Assume dist along ground and tgt height the same. Iterate over other
+        // parameters.
 
         final var targetPose =
                 new Pose3d(new Translation3d(15.98, 0, 1), new Rotation3d(0, 0, Math.PI * 0.98));
@@ -406,10 +389,13 @@ class VisionSystemSimTest {
 
         visionSysSim.update(robotPose);
 
-        // Note that target 2d yaw/pitch accuracy is hindered by two factors in photonvision:
-        // 1. These are calculated with the average of the minimum area rectangle, which does not
+        // Note that target 2d yaw/pitch accuracy is hindered by two factors in
+        // photonvision:
+        // 1. These are calculated with the average of the minimum area rectangle, which
+        // does not
         // actually find the target center because of perspective distortion.
-        // 2. Yaw and pitch are calculated separately which gives incorrect pitch values.
+        // 2. Yaw and pitch are calculated separately which gives incorrect pitch
+        // values.
 
         var res = waitForSequenceNumber(camera, 1);
         assertTrue(res.hasTargets());

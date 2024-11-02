@@ -31,9 +31,9 @@ public class TimeSyncClient {
         public long pingsSent;
         // incoming count
         public long pongsReceived;
-        // when we last heard back from the server
+        // when we last heard back from the server, uS, in local time base
         public long lastPongTime;
-        // RTT2, time from ping send to pong recieve at the client
+        // RTT2, time from ping send to pong receive at the client, uS
         public long rtt2;
 
         public PingMetadata(
@@ -87,10 +87,8 @@ public class TimeSyncClient {
         this.port = port;
         this.interval = interval;
 
-        synchronized (mutex) {
-            this.handle = TimeSyncClient.create(server, port, interval);
-            TimeSyncClient.start(handle);
-        }
+        this.handle = TimeSyncClient.create(server, port, interval);
+        TimeSyncClient.start(handle);
     }
 
     public void setServer(String newServer) {
@@ -121,7 +119,12 @@ public class TimeSyncClient {
      */
     public long getOffset() {
         synchronized (mutex) {
-            return TimeSyncClient.getOffset(handle);
+            if (handle > 0) {
+                return TimeSyncClient.getOffset(handle);
+            }
+
+            System.err.println("TimeSyncClient: use after free?");
+            return 0;
         }
     }
 
@@ -136,7 +139,12 @@ public class TimeSyncClient {
 
     public PingMetadata getPingMetadata() {
         synchronized (mutex) {
-            return TimeSyncClient.getLatestMetadata(handle);
+            if (handle > 0) {
+                return TimeSyncClient.getLatestMetadata(handle);
+            }
+
+            System.err.println("TimeSyncClient: use after free?");
+            return new PingMetadata(0, 0, 0, 0, 0);
         }
     }
 
