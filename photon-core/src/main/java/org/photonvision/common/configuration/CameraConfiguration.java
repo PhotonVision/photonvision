@@ -1,18 +1,16 @@
 /*
  * Copyright (C) Photon Vision.
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see <https://www.gnu.org/licenses/>.
  */
 
 package org.photonvision.common.configuration;
@@ -84,15 +82,7 @@ public class CameraConfiguration {
         this.calibrations = new ArrayList<>();
         this.otherPaths = alternates;
 
-        logger.debug(
-                "Creating USB camera configuration for "
-                        + cameraType
-                        + " "
-                        + baseName
-                        + " (AKA "
-                        + nickname
-                        + ") at "
-                        + path);
+        logger.debug("Creating USB camera configuration for " + this.toShortString());
     }
 
     @JsonCreator
@@ -120,15 +110,7 @@ public class CameraConfiguration {
         this.usbPID = usbPID;
         this.usbVID = usbVID;
 
-        logger.debug(
-                "Creating camera configuration for "
-                        + cameraType
-                        + " "
-                        + baseName
-                        + " (AKA "
-                        + nickname
-                        + ") at "
-                        + path);
+        logger.debug("Loaded camera configuration for " + toShortString());
     }
 
     public void addPipelineSettings(List<CVPipelineSettings> settings) {
@@ -187,6 +169,30 @@ public class CameraConfiguration {
     @JsonIgnore
     public Optional<String> getUSBPath() {
         return Arrays.stream(otherPaths).filter(path -> path.contains("/by-path/")).findFirst();
+    }
+
+    public String toShortString() {
+        return "CameraConfiguration [baseName="
+                + baseName
+                + ", uniqueName="
+                + uniqueName
+                + ", nickname="
+                + nickname
+                + ", path="
+                + path
+                + ", otherPaths="
+                + Arrays.toString(otherPaths)
+                + ", cameraType="
+                + cameraType
+                + ", cameraQuirks="
+                + cameraQuirks
+                + ", FOV="
+                + FOV
+                + "]"
+                + ", PID="
+                + usbPID
+                + ", VID="
+                + usbVID;
     }
 
     @Override
