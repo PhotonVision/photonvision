@@ -35,6 +35,10 @@ public class QueuedFileLogger {
             newBuffer = QueuedFileLogger.getNewLines(m_handle);
         }
 
+        if (newBuffer == null) {
+            return new String[0];
+        }
+
         return newBuffer.split("\n");
     }
 
