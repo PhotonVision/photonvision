@@ -80,12 +80,14 @@ public class NetworkUtils {
 
     public static List<NMDeviceInfo> getAllInterfaces() {
         long now = System.currentTimeMillis();
-        if (now - lastReadTimestamp < 5000) return allInterfaces;
-        else lastReadTimestamp = now;
+        if (now - lastReadTimestamp < 5000)
+            return allInterfaces;
+        else
+            lastReadTimestamp = now;
 
         var ret = new ArrayList<NMDeviceInfo>();
 
-        if (!Platform.isLinux()) {
+        if (!Platform.getCurrentPlatform().isLinux()) {
             // Can only determine interface name on Linux, give up
             return ret;
         }
@@ -98,8 +100,7 @@ public class NetworkUtils {
             if (out == null) {
                 return new ArrayList<>();
             }
-            Pattern pattern =
-                    Pattern.compile("GENERAL.CONNECTION:(.*)\nGENERAL.DEVICE:(.*)\nGENERAL.TYPE:(.*)");
+            Pattern pattern = Pattern.compile("GENERAL.CONNECTION:(.*)\nGENERAL.DEVICE:(.*)\nGENERAL.TYPE:(.*)");
             Matcher matcher = pattern.matcher(out);
             while (matcher.find()) {
                 if (!matcher.group(2).equals("lo")) {
@@ -118,7 +119,8 @@ public class NetworkUtils {
     }
 
     public static List<NMDeviceInfo> getAllActiveInterfaces() {
-        // Seems like if an interface exists but isn't actually connected, the connection name will be
+        // Seems like if an interface exists but isn't actually connected, the
+        // connection name will be
         // an empty string. Check here and only return connections with non-empty names
         return getAllInterfaces().stream()
                 .filter(it -> !it.connName.trim().isEmpty())
@@ -159,7 +161,8 @@ public class NetworkUtils {
     public static boolean connDoesNotExist(String connName) {
         var shell = new ShellExec(true, true);
         try {
-            // set nmcli back to DHCP, and re-run dhclient -- this ought to grab a new IP address
+            // set nmcli back to DHCP, and re-run dhclient -- this ought to grab a new IP
+            // address
             shell.executeBashCommand("nmcli -f GENERAL.STATE connection show \"" + connName + "\"");
             return (shell.getExitCode() == 10);
         } catch (Exception e) {

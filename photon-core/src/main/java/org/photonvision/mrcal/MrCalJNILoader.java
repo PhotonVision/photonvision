@@ -32,7 +32,8 @@ public class MrCalJNILoader extends PhotonJNICommon {
     }
 
     public static synchronized MrCalJNILoader getInstance() {
-        if (instance == null) instance = new MrCalJNILoader();
+        if (instance == null)
+            instance = new MrCalJNILoader();
 
         return instance;
     }
@@ -41,8 +42,9 @@ public class MrCalJNILoader extends PhotonJNICommon {
         // Force load opencv
         TestUtils.loadLibraries();
 
-        // Library naming is dumb and has "lib" appended for Windows when it ought not to
-        if (Platform.isWindows()) {
+        // Library naming is dumb and has "lib" appended for Windows when it ought not
+        // to
+        if (Platform.getCurrentPlatform().isWindows()) {
             // Order is correct to match dependencies of libraries
             forceLoad(
                     MrCalJNILoader.getInstance(),

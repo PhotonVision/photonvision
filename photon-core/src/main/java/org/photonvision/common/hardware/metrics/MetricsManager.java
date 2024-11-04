@@ -43,11 +43,11 @@ public class MetricsManager {
     public void setConfig(HardwareConfig config) {
         if (config.hasCommandsConfigured()) {
             cmds = new FileCmds();
-        } else if (Platform.isRaspberryPi()) {
+        } else if (Platform.getCurrentPlatform().isRaspberryPi()) {
             cmds = new PiCmds(); // Pi's can use a hardcoded command set
-        } else if (Platform.isRK3588()) {
+        } else if (Platform.getCurrentPlatform().isRK3588()) {
             cmds = new RK3588Cmds(); // RK3588 chipset hardcoded command set
-        } else if (Platform.isLinux()) {
+        } else if (Platform.getCurrentPlatform().isLinux()) {
             cmds = new LinuxCmds(); // Linux/Unix platforms assume a nominal command set
         } else {
             cmds = new CmdBase(); // default - base has no commands
@@ -57,7 +57,8 @@ public class MetricsManager {
     }
 
     public String safeExecute(String str) {
-        if (str.isEmpty()) return "";
+        if (str.isEmpty())
+            return "";
         try {
             return execute(str);
         } catch (Exception e) {
@@ -68,7 +69,8 @@ public class MetricsManager {
     private String cpuMemSave = null;
 
     public String getMemory() {
-        if (cmds.cpuMemoryCommand.isEmpty()) return "";
+        if (cmds.cpuMemoryCommand.isEmpty())
+            return "";
         if (cpuMemSave == null) {
             // save the value and only run it once
             cpuMemSave = execute(cmds.cpuMemoryCommand);

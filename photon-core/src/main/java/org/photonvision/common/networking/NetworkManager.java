@@ -39,7 +39,8 @@ import org.photonvision.common.util.TimedTaskManager;
 public class NetworkManager {
     private static final Logger logger = new Logger(NetworkManager.class, LogGroup.General);
 
-    private NetworkManager() {}
+    private NetworkManager() {
+    }
 
     private static class SingletonHolder {
         private static final NetworkManager INSTANCE = new NetworkManager();
@@ -59,7 +60,7 @@ public class NetworkManager {
             return;
         }
 
-        if (!Platform.isLinux()) {
+        if (!Platform.getCurrentPlatform().isLinux()) {
             logger.info("Not managing network on non-Linux platforms.");
             return;
         }
@@ -79,9 +80,11 @@ public class NetworkManager {
         var config = ConfigManager.getInstance().getConfig().getNetworkConfig();
         if (physicalDevices.stream().noneMatch(it -> (it.devName.equals(config.networkManagerIface)))) {
             try {
-                // if the configured interface isn't in the list of available ones, select one that is
+                // if the configured interface isn't in the list of available ones, select one
+                // that is
                 var iFace = physicalDevices.stream().findFirst().orElseThrow();
-                logger.warn("The configured interface doesn't match any available interface. Applying configuration to " + iFace.devName);
+                logger.warn("The configured interface doesn't match any available interface. Applying configuration to "
+                        + iFace.devName);
                 // update NetworkConfig with found interface
                 config.networkManagerIface = iFace.devName;
                 ConfigManager.getInstance().requestSave();
@@ -96,7 +99,8 @@ public class NetworkManager {
             }
         }
 
-        logger.info("Setting " + config.connectionType + " with team " + config.ntServerAddress + " on " + config.networkManagerIface);
+        logger.info("Setting " + config.connectionType + " with team " + config.ntServerAddress + " on "
+                + config.networkManagerIface);
 
         // always set hostname (unless it's blank)
         if (!config.hostname.isBlank()) {
@@ -129,22 +133,19 @@ public class NetworkManager {
             var shell = new ShellExec(true, false);
             shell.executeBashCommand("cat /etc/hostname | tr -d \" \\t\\n\\r\"");
             var oldHostname = shell.getOutput().replace("\n", "");
-            logger.debug("Old host name: >" + oldHostname +"<");
-            logger.debug("New host name: >" + hostname +"<");
+            logger.debug("Old host name: >" + oldHostname + "<");
+            logger.debug("New host name: >" + hostname + "<");
 
             if (!oldHostname.equals(hostname)) {
-                var setHostnameRetCode =
-                        shell.executeBashCommand(
-                                "echo $NEW_HOSTNAME > /etc/hostname".replace("$NEW_HOSTNAME", hostname));
-                setHostnameRetCode =
-                        shell.executeBashCommand("hostnamectl set-hostname " + hostname);
+                var setHostnameRetCode = shell.executeBashCommand(
+                        "echo $NEW_HOSTNAME > /etc/hostname".replace("$NEW_HOSTNAME", hostname));
+                setHostnameRetCode = shell.executeBashCommand("hostnamectl set-hostname " + hostname);
 
                 // Add to /etc/hosts
-                var addHostRetCode =
-                        shell.executeBashCommand(
-                                String.format(
-                                        "sed -i \"s/127.0.1.1.*%s/127.0.1.1\\t%s/g\" /etc/hosts",
-                                        oldHostname, hostname));
+                var addHostRetCode = shell.executeBashCommand(
+                        String.format(
+                                "sed -i \"s/127.0.1.1.*%s/127.0.1.1\\t%s/g\" /etc/hosts",
+                                oldHostname, hostname));
 
                 shell.executeBashCommand("systemctl restart avahi-daemon.service");
 
@@ -169,29 +170,28 @@ public class NetworkManager {
         String connName = "dhcp-" + config.networkManagerIface;
 
         String addDHCPcommand = """
-            nmcli connection add
-            con-name "${connection}"
-            ifname "${interface}"
-            type ethernet
-            autoconnect no
-            ipv4.method auto
-            ipv6.method disabled
-            """;
+                nmcli connection add
+                con-name "${connection}"
+                ifname "${interface}"
+                type ethernet
+                autoconnect no
+                ipv4.method auto
+                ipv6.method disabled
+                """;
         addDHCPcommand = addDHCPcommand.replaceAll("[\\n]", " ");
 
         var shell = new ShellExec();
         try {
             if (NetworkUtils.connDoesNotExist(connName)) {
                 // create connection
-                logger.info("Creating the DHCP connection " + connName );
+                logger.info("Creating the DHCP connection " + connName);
                 shell.executeBashCommand(
-                    addDHCPcommand
-                        .replace("${connection}", connName)
-                        .replace("${interface}", config.networkManagerIface)
-                    );
+                        addDHCPcommand
+                                .replace("${connection}", connName)
+                                .replace("${interface}", config.networkManagerIface));
             }
             // activate it
-            logger.info("Activating the DHCP connection " + connName );
+            logger.info("Activating the DHCP connection " + connName);
             shell.executeBashCommand("nmcli connection up \"${connection}\"".replace("${connection}", connName), false);
         } catch (Exception e) {
             logger.error("Exception while setting DHCP!", e);
@@ -201,16 +201,16 @@ public class NetworkManager {
     private void setConnectionStatic(NetworkConfig config) {
         String connName = "static-" + config.networkManagerIface;
         String addStaticCommand = """
-            nmcli connection add
-            con-name "${connection}"
-            ifname "${interface}"
-            type ethernet
-            autoconnect no
-            ipv4.addresses ${ipaddr}/8
-            ipv4.gateway ${gateway}
-            ipv4.method "manual"
-            ipv6.method "disabled"
-            """;
+                nmcli connection add
+                con-name "${connection}"
+                ifname "${interface}"
+                type ethernet
+                autoconnect no
+                ipv4.addresses ${ipaddr}/8
+                ipv4.gateway ${gateway}
+                ipv4.method "manual"
+                ipv6.method "disabled"
+                """;
         addStaticCommand = addStaticCommand.replaceAll("[\\n]", " ");
 
         String modStaticCommand = "nmcli connection mod \"${connection}\" ipv4.addresses ${ipaddr}/8 ipv4.gateway ${gateway}";
@@ -222,33 +222,31 @@ public class NetworkManager {
 
         // guess at the gateway from the staticIp
         String[] parts = config.staticIp.split("\\.");
-        parts[parts.length-1] = "1";
+        parts[parts.length - 1] = "1";
         String gateway = String.join(".", parts);
 
         var shell = new ShellExec();
         try {
             if (NetworkUtils.connDoesNotExist(connName)) {
                 // create connection
-                logger.info("Creating the Static connection " + connName );
+                logger.info("Creating the Static connection " + connName);
                 shell.executeBashCommand(
-                    addStaticCommand
-                        .replace("${connection}", connName)
-                        .replace("${interface}", config.networkManagerIface)
-                        .replace("${ipaddr}", config.staticIp)
-                        .replace("${gateway}", gateway)
-                    );
+                        addStaticCommand
+                                .replace("${connection}", connName)
+                                .replace("${interface}", config.networkManagerIface)
+                                .replace("${ipaddr}", config.staticIp)
+                                .replace("${gateway}", gateway));
             } else {
                 // modify it in case the static IP address is different
-                logger.info("Modifying the Static connection " + connName );
+                logger.info("Modifying the Static connection " + connName);
                 shell.executeBashCommand(
-                    modStaticCommand
-                        .replace("${connection}", connName)
-                        .replace("${ipaddr}", config.staticIp)
-                        .replace("${gateway}", gateway)
-                    );
+                        modStaticCommand
+                                .replace("${connection}", connName)
+                                .replace("${ipaddr}", config.staticIp)
+                                .replace("${gateway}", gateway));
             }
             // activate it
-            logger.info("Activating the Static connection " + connName );
+            logger.info("Activating the Static connection " + connName);
             shell.executeBashCommand("nmcli connection up \"${connection}\"".replace("${connection}", connName), false);
         } catch (Exception e) {
             logger.error("Error while setting static IP!", e);
@@ -268,7 +266,10 @@ public class NetworkManager {
             return;
         }
         logger.debug("Watching network interface at path: " + path);
-        var last = new Object() {boolean carrier = true; boolean exceptionLogged = false;};
+        var last = new Object() {
+            boolean carrier = true;
+            boolean exceptionLogged = false;
+        };
         Runnable task = () -> {
             try {
                 boolean carrier = Files.readString(path).trim().equals("1");
@@ -283,14 +284,14 @@ public class NetworkManager {
                 }
                 last.carrier = carrier;
                 last.exceptionLogged = false;
-                } catch (Exception e) {
-                    if (!last.exceptionLogged) {
-                        // Log the exception only once, but keep trying
-                        logger.error("Could not check network status for " + devName, e);
-                        last.exceptionLogged = true;
-                    }
+            } catch (Exception e) {
+                if (!last.exceptionLogged) {
+                    // Log the exception only once, but keep trying
+                    logger.error("Could not check network status for " + devName, e);
+                    last.exceptionLogged = true;
                 }
-            };
+            }
+        };
 
         TimedTaskManager.getInstance().addTask(taskName, task, millisInterval);
     }

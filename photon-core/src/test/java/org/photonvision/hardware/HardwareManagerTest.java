@@ -31,7 +31,7 @@ public class HardwareManagerTest {
 
     @Test
     public void managementTest() throws InterruptedException {
-        Assumptions.assumeTrue(Platform.isRaspberryPi());
+        Assumptions.assumeTrue(Platform.getCurrentPlatform().isRaspberryPi());
         var socket = new PigpioSocket();
         try {
             socket.gpioWrite(18, false);

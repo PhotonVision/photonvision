@@ -33,11 +33,11 @@ import org.photonvision.common.util.file.JacksonUtils;
 public class ScriptManager {
     private static final Logger logger = new Logger(ScriptManager.class, LogGroup.General);
 
-    private ScriptManager() {}
+    private ScriptManager() {
+    }
 
     private static final List<ScriptEvent> events = new ArrayList<>();
-    private static final LinkedBlockingDeque<ScriptEventType> queuedEvents =
-            new LinkedBlockingDeque<>(25);
+    private static final LinkedBlockingDeque<ScriptEventType> queuedEvents = new LinkedBlockingDeque<>(25);
 
     public static void initialize() {
         ScriptConfigManager.initialize();
@@ -65,11 +65,10 @@ public class ScriptManager {
         }
 
         private void handleEvent(ScriptEventType eventType) {
-            var toRun =
-                    events.parallelStream()
-                            .filter(e -> e.config.eventType == eventType)
-                            .findFirst()
-                            .orElse(null);
+            var toRun = events.parallelStream()
+                    .filter(e -> e.config.eventType == eventType)
+                    .findFirst()
+                    .orElse(null);
             if (toRun != null) {
                 try {
                     toRun.run();
@@ -81,11 +80,12 @@ public class ScriptManager {
     }
 
     protected static class ScriptConfigManager {
-        //        protected static final Path scriptConfigPath =
+        // protected static final Path scriptConfigPath =
         // Paths.get(ConfigManager.SettingsPath.toString(), "scripts.json");
         static final Path scriptConfigPath = Paths.get(""); // TODO: Waiting on config
 
-        private ScriptConfigManager() {}
+        private ScriptConfigManager() {
+        }
 
         static boolean fileExists() {
             return Files.exists(scriptConfigPath);
@@ -128,7 +128,7 @@ public class ScriptManager {
     }
 
     public static void queueEvent(ScriptEventType eventType) {
-        if (Platform.isLinux()) {
+        if (Platform.getCurrentPlatform().isLinux()) {
             try {
                 queuedEvents.putLast(eventType);
                 logger.info("Queued event: " + eventType.name());
