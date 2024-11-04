@@ -54,7 +54,7 @@ public enum Platform {
     LINUX_ARM32("Linux ARM32", "linuxarm32", false, OSType.LINUX, false), // ODROID XU4, C1+
     UNKNOWN("Unsupported Platform", "", false, OSType.UNKNOWN, false);
 
-    private enum OSType {
+    public enum OSType {
         WINDOWS,
         LINUX,
         MACOS,
@@ -123,7 +123,7 @@ public enum Platform {
     private static final String UnknownPlatformString =
             String.format("Unknown Platform. OS: %s, Architecture: %s", OS_NAME, OS_ARCH);
 
-    private static Platform getCurrentPlatform() {
+    public static Platform getCurrentPlatform() {
         if (RuntimeDetector.isWindows()) {
             if (RuntimeDetector.is32BitIntel()) {
                 return WINDOWS_32;

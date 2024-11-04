@@ -17,14 +17,14 @@
 
 package org.photonvision.vision.processes;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
@@ -498,6 +498,43 @@ public class VisionSourceManagerTest {
             assertEquals(
                     1, ret1.stream().filter(it -> testPath.equals(it.cameraConfiguration.path)).count());
         }
+    }
+
+    @Test
+    public void testNoOtherPaths() {
+        Logger.setLevel(LogGroup.Camera, LogLevel.DEBUG);
+
+        // List of known cameras
+        var cameraInfos = new ArrayList<CameraInfo>();
+
+        var inst = new VisionSourceManager();
+        ConfigManager.getInstance().clearConfig();
+        ConfigManager.getInstance().load();
+        ConfigManager.getInstance().getConfig().getNetworkConfig().matchCamerasOnlyByPath = false;
+
+        // Match empty camera infos
+        inst.tryMatchCamImpl(cameraInfos);
+
+        CameraInfo info1 =
+                new CameraInfo(0, "/dev/video0", "Arducam OV2311 USB Camera", new String[] {}, 3141, 25446);
+
+        cameraInfos.add(info1);
+
+        // Match two "new" cameras
+        var ret1 = inst.tryMatchCamImpl(cameraInfos, Platform.LINUX_64);
+
+        // Our cameras should be "known"
+        assertFalse(inst.knownCameras.contains(info1));
+        assertEquals(0, inst.knownCameras.size());
+        assertEquals(null, ret1);
+
+        // Match two "new" cameras
+        var ret2 = inst.tryMatchCamImpl(cameraInfos, Platform.WINDOWS_64);
+
+        // Our cameras should be "known"
+        assertTrue(inst.knownCameras.contains(info1));
+        assertEquals(1, inst.knownCameras.size());
+        assertEquals(1, ret2.size());
     }
 
     @Test

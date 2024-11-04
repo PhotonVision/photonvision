@@ -30,6 +30,7 @@ import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.hardware.Platform;
+import org.photonvision.common.hardware.Platform.OSType;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
@@ -128,20 +129,26 @@ public class VisionSourceManager {
         return tryMatchCamImpl(null);
     }
 
+    protected List<VisionSource> tryMatchCamImpl(ArrayList<CameraInfo> cameraInfos) {
+        return tryMatchCamImpl(cameraInfos, Platform.getCurrentPlatform());
+    }
+
     /**
      * @param cameraInfos Used to feed camera info for unit tests.
      * @return New VisionSources.
      */
-    protected List<VisionSource> tryMatchCamImpl(ArrayList<CameraInfo> cameraInfos) {
+    protected List<VisionSource> tryMatchCamImpl(
+            ArrayList<CameraInfo> cameraInfos, Platform platform) {
         boolean createSources = true;
         List<CameraInfo> connectedCameras;
         if (cameraInfos == null) {
             // Detect USB cameras using CSCore
-            connectedCameras = new ArrayList<>(filterAllowedDevices(getConnectedUSBCameras()));
+            connectedCameras = new ArrayList<>(filterAllowedDevices(getConnectedUSBCameras(), platform));
             // Detect CSI cameras using libcamera
-            connectedCameras.addAll(new ArrayList<>(filterAllowedDevices(getConnectedCSICameras())));
+            connectedCameras.addAll(
+                    new ArrayList<>(filterAllowedDevices(getConnectedCSICameras(), platform)));
         } else {
-            connectedCameras = new ArrayList<>(filterAllowedDevices(cameraInfos));
+            connectedCameras = new ArrayList<>(filterAllowedDevices(cameraInfos, platform));
             createSources =
                     false; // Dont create sources if we are using supplied camerainfo for unit tests.
         }
@@ -317,8 +324,7 @@ public class VisionSourceManager {
                     matchCamerasByStrategy(
                             detectedCameraList,
                             unloadedConfigs,
-                            new CameraMatchingOptions(false, true, true, true,
-        CameraType.UsbCamera)));
+                            new CameraMatchingOptions(false, true, true, true, CameraType.UsbCamera)));
         }
 
         logger.info("Matching USB cameras by usb port & USB VID/PID...");
@@ -522,7 +528,7 @@ public class VisionSourceManager {
      * @param allDevices
      * @return list of devices with blacklisted or ignore devices removed.
      */
-    private List<CameraInfo> filterAllowedDevices(List<CameraInfo> allDevices) {
+    private List<CameraInfo> filterAllowedDevices(List<CameraInfo> allDevices, Platform platform) {
         List<CameraInfo> filteredDevices = new ArrayList<>();
         for (var device : allDevices) {
             if (deviceBlacklist.contains(device.name)) {
@@ -531,9 +537,13 @@ public class VisionSourceManager {
             } else if (device.name.matches(ignoredCamerasRegex)) {
                 logger.trace("Skipping ignored device: \"" + device.name + "\" at \"" + device.path);
             } else if (device.getIsV4lCsiCamera()) {
-            } else if (device.otherPaths.length == 0 && !Platform.isWindows() && device.cameraType == CameraType.UsbCamera) {
-                logger.trace("Skipping device with no other paths: \"" + device.name + "\" at \"" + device.path); 
-                // If cscore hasnt passed this other paths aka a path by id or a path as in usb port then we cant guarantee it is a valid camera.
+            } else if (device.otherPaths.length == 0
+                    && platform.osType == OSType.LINUX
+                    && device.cameraType == CameraType.UsbCamera) {
+                logger.trace(
+                        "Skipping device with no other paths: \"" + device.name + "\" at \"" + device.path);
+                // If cscore hasnt passed this other paths aka a path by id or a path as in usb port then we
+                // cant guarantee it is a valid camera.
             } else {
                 filteredDevices.add(device);
                 logger.trace(
@@ -547,7 +557,6 @@ public class VisionSourceManager {
             List<CameraConfiguration> camConfigs, boolean createSources) {
         var cameraSources = new ArrayList<VisionSource>();
         for (var configuration : camConfigs) {
-
             // In unit tests, create dummy
             if (!createSources) {
                 cameraSources.add(new TestSource(configuration));
@@ -566,10 +575,8 @@ public class VisionSourceManager {
                         && !newCam.getSettables().videoModes.isEmpty()) {
                     cameraSources.add(newCam);
                 }
-                
             }
             logger.debug("Creating VisionSource for " + configuration.toShortString());
-
         }
         return cameraSources;
     }
