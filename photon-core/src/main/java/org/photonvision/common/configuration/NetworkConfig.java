@@ -39,25 +39,22 @@ public class NetworkConfig {
     public boolean shouldPublishProto = false;
 
     /**
-     * If we should ONLY match cameras by path, and NEVER only by base-name. For now
-     * default to false
+     * If we should ONLY match cameras by path, and NEVER only by base-name. For now default to false
      * to preserve old matching logic.
      *
-     * <p>
-     * This also disables creating new CameraConfigurations for detected "new"
-     * cameras.
+     * <p>This also disables creating new CameraConfigurations for detected "new" cameras.
      */
     public boolean matchCamerasOnlyByPath = false;
 
-    @JsonIgnore
-    public static final String NM_IFACE_STRING = "${interface}";
-    @JsonIgnore
-    public static final String NM_IP_STRING = "${ipaddr}";
+    @JsonIgnore public static final String NM_IFACE_STRING = "${interface}";
+    @JsonIgnore public static final String NM_IP_STRING = "${ipaddr}";
 
     public String networkManagerIface = "";
     // TODO: remove these strings if no longer needed
-    public String setStaticCommand = "nmcli con mod ${interface} ipv4.addresses ${ipaddr}/8 ipv4.method \"manual\" ipv6.method \"disabled\"";
-    public String setDHCPcommand = "nmcli con mod ${interface} ipv4.method \"auto\" ipv6.method \"disabled\"";
+    public String setStaticCommand =
+            "nmcli con mod ${interface} ipv4.addresses ${ipaddr}/8 ipv4.method \"manual\" ipv6.method \"disabled\"";
+    public String setDHCPcommand =
+            "nmcli con mod ${interface} ipv4.method \"auto\" ipv6.method \"disabled\"";
 
     public NetworkConfig() {
         // We can (usually) manage networking on Linux devices, and if we can, we should
@@ -68,7 +65,8 @@ public class NetworkConfig {
 
     @JsonCreator
     public NetworkConfig(
-            @JsonProperty("ntServerAddress") @JsonAlias({ "ntServerAddress", "teamNumber" }) String ntServerAddress,
+            @JsonProperty("ntServerAddress") @JsonAlias({"ntServerAddress", "teamNumber"})
+                    String ntServerAddress,
             @JsonProperty("connectionType") NetworkMode connectionType,
             @JsonProperty("staticIp") String staticIp,
             @JsonProperty("hostname") String hostname,

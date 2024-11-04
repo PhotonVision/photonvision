@@ -34,12 +34,11 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public class FileUtils {
-    private FileUtils() {
-    }
+    private FileUtils() {}
 
     private static final Logger logger = new Logger(FileUtils.class, LogGroup.General);
-    private static final Set<PosixFilePermission> allReadWriteExecutePerms = new HashSet<>(
-            Arrays.asList(PosixFilePermission.values()));
+    private static final Set<PosixFilePermission> allReadWriteExecutePerms =
+            new HashSet<>(Arrays.asList(PosixFilePermission.values()));
 
     public static boolean deleteDirectory(Path path) {
         try {
@@ -114,7 +113,8 @@ public class FileUtils {
     public static void setFilePerms(Path path) throws IOException {
         if (Platform.getCurrentPlatform().getCurrentPlatform().isLinux()) {
             File thisFile = path.toFile();
-            Set<PosixFilePermission> perms = Files.readAttributes(path, PosixFileAttributes.class).permissions();
+            Set<PosixFilePermission> perms =
+                    Files.readAttributes(path, PosixFileAttributes.class).permissions();
             if (!perms.equals(allReadWriteExecutePerms)) {
                 logger.info("Setting perms on" + path);
                 Files.setPosixFilePermissions(path, perms);

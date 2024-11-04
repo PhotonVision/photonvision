@@ -244,7 +244,7 @@ public class Main {
             pipeline2022.pipelineNickname = "OuterPort";
             pipeline2022.targetModel = TargetModel.k2020HighGoalOuter;
             pipeline2022.inputShouldShow = true;
-            //        camConf2020.calibrations.add(TestUtils.get2020LifeCamCoeffs(true));
+            // camConf2020.calibrations.add(TestUtils.get2020LifeCamCoeffs(true));
 
             var psList2022 = new ArrayList<CVPipelineSettings>();
             psList2022.add(pipeline2022);
@@ -354,7 +354,9 @@ public class Main {
                         + PhotonVersion.versionString
                         + " on "
                         + Platform.getPlatformName()
-                        + (Platform.isRaspberryPi() ? (" (Pi " + PiVersion.getPiVersion() + ")") : ""));
+                        + (Platform.getCurrentPlatform().isRaspberryPi()
+                                ? (" (Pi " + PiVersion.getPiVersion() + ")")
+                                : ""));
 
         try {
             if (!handleArgs(args)) {
@@ -364,7 +366,8 @@ public class Main {
             logger.error("Failed to parse command-line options!", e);
         }
 
-        // We don't want to trigger an exit in test mode or smoke test. This is specifically for MacOS.
+        // We don't want to trigger an exit in test mode or smoke test. This is
+        // specifically for MacOS.
         if (!(Platform.isSupported() || isSmoketest || isTestMode)) {
             logger.error("This platform is unsupported!");
             System.exit(1);
@@ -402,14 +405,14 @@ public class Main {
         }
 
         try {
-            if (Platform.isRaspberryPi()) {
+            if (Platform.getCurrentPlatform().isRaspberryPi()) {
                 LibCameraJNILoader.forceLoad();
             }
         } catch (IOException e) {
             logger.error("Failed to load libcamera-JNI!", e);
         }
         try {
-            if (Platform.isRK3588()) {
+            if (Platform.getCurrentPlatform().isRK3588()) {
                 RknnDetectorJNI.forceLoad();
             } else {
                 logger.error("Platform does not support RKNN based machine learning!");

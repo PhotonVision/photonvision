@@ -32,8 +32,7 @@ public class HardwareTest {
     public void testHardware() {
         MetricsManager mm = new MetricsManager();
 
-        if (!Platform.getCurrentPlatform().isRaspberryPi())
-            return;
+        if (!Platform.getCurrentPlatform().isRaspberryPi()) return;
 
         System.out.println("Testing on platform: " + Platform.getPlatformName());
 
@@ -82,14 +81,12 @@ public class HardwareTest {
 
     @Test
     public void testBlink() {
-        if (!Platform.getCurrentPlatform().isRaspberryPi())
-            return;
+        if (!Platform.getCurrentPlatform().isRaspberryPi()) return;
         GPIOBase pwm = new PigpioPin(18);
         pwm.blink(125, 3);
         var startms = System.currentTimeMillis();
         while (true) {
-            if (System.currentTimeMillis() - startms > 4500)
-                break;
+            if (System.currentTimeMillis() - startms > 4500) break;
         }
     }
 }

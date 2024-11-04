@@ -44,12 +44,10 @@ public enum PiVersion {
     }
 
     private static PiVersion calcPiVersion() {
-        if (!Platform.getCurrentPlatform().isRaspberryPi())
-            return PiVersion.UNKNOWN;
+        if (!Platform.getCurrentPlatform().isRaspberryPi()) return PiVersion.UNKNOWN;
         String piString = getPiVersionString();
         for (PiVersion p : PiVersion.values()) {
-            if (piString.toLowerCase().contains(p.identifier))
-                return p;
+            if (piString.toLowerCase().contains(p.identifier)) return p;
         }
         return UNKNOWN;
     }
@@ -58,8 +56,7 @@ public enum PiVersion {
     // Versions here:
     // https://github.com/raspberrypi/linux/blob/rpi-5.10.y/arch/arm/boot/dts/bcm2710-rpi-cm3.dts
     private static String getPiVersionString() {
-        if (!Platform.getCurrentPlatform().isRaspberryPi())
-            return "";
+        if (!Platform.getCurrentPlatform().isRaspberryPi()) return "";
         try {
             shell.executeBashCommand("cat /proc/device-tree/model");
         } catch (IOException e) {

@@ -57,8 +57,7 @@ public class MetricsManager {
     }
 
     public String safeExecute(String str) {
-        if (str.isEmpty())
-            return "";
+        if (str.isEmpty()) return "";
         try {
             return execute(str);
         } catch (Exception e) {
@@ -69,8 +68,7 @@ public class MetricsManager {
     private String cpuMemSave = null;
 
     public String getMemory() {
-        if (cmds.cpuMemoryCommand.isEmpty())
-            return "";
+        if (cmds.cpuMemoryCommand.isEmpty()) return "";
         if (cpuMemSave == null) {
             // save the value and only run it once
             cpuMemSave = execute(cmds.cpuMemoryCommand);

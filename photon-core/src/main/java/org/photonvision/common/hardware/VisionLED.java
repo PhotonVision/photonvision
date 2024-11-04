@@ -155,8 +155,7 @@ public class VisionLED {
             }
             setInternal(newLedMode, true);
 
-            if (modeConsumer != null)
-                modeConsumer.accept(newLedMode.value);
+            if (modeConsumer != null) modeConsumer.accept(newLedMode.value);
         }
     }
 

@@ -96,7 +96,8 @@ public class RequestHandler {
 
         ConfigManager.getInstance().setWriteTaskEnabled(false);
         ConfigManager.getInstance().disableFlushOnShutdown();
-        // We want to delete the -whole- zip file, so we need to teardown loggers for now
+        // We want to delete the -whole- zip file, so we need to teardown loggers for
+        // now
         logger.info("Writing new settings zip (logs may be truncated)...");
         Logger.closeAllLoggers();
         if (ConfigManager.saveUploadedSettingsZip(tempFilePath.get())) {
@@ -411,7 +412,7 @@ public class RequestHandler {
     }
 
     public static void onLogExportRequest(Context ctx) {
-        if (!Platform.isLinux()) {
+        if (!Platform.getCurrentPlatform().isLinux()) {
             ctx.status(405);
             ctx.result("Logs can only be exported on a Linux platform");
             // INFO only log because this isn't ERROR worthy
@@ -580,7 +581,8 @@ public class RequestHandler {
             return;
         }
 
-        // encode as jpeg to save even more space. reduces size of a 1280p image from 300k to 25k
+        // encode as jpeg to save even more space. reduces size of a 1280p image from
+        // 300k to 25k
         var jpegBytes = new MatOfByte();
         Mat img = null;
         try {
@@ -760,7 +762,7 @@ public class RequestHandler {
         TimedTaskManager.getInstance()
                 .addOneShotTask(
                         () -> {
-                            if (Platform.isLinux()) {
+                            if (Platform.getCurrentPlatform().isLinux()) {
                                 try {
                                     new ShellExec().executeBashCommand("systemctl restart photonvision.service");
                                 } catch (IOException e) {

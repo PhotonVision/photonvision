@@ -25,39 +25,48 @@ import java.nio.file.Paths;
 
 @SuppressWarnings("unused")
 public class Platform {
-
     // WPILib Supported (JNI)
-    public static Platform WINDOWS_64 = new Platform("Windows x64", "winx64", false, OSType.WINDOWS, true);
-    public static Platform LINUX_32 = new Platform("Linux x86", "linuxx64", false, OSType.LINUX, true);
-    public static Platform LINUX_64 = new Platform("Linux x64", "linuxx64", false, OSType.LINUX, true);
-    public static Platform LINUX_RASPBIAN32 = new Platform(
-            "Linux Raspbian 32-bit",
-            "linuxarm32",
-            true,
-            OSType.LINUX,
-            true); // Raspberry Pi 3/4 with a 32-bit image
-    public static Platform LINUX_RASPBIAN64 = new Platform(
-            "Linux Raspbian 64-bit",
-            "linuxarm64",
-            true,
-            OSType.LINUX,
-            true); // Raspberry Pi 3/4 with a 64-bit image
-    public static Platform LINUX_RK3588_64 = new Platform("Linux AARCH 64-bit with RK3588", "linuxarm64", false,
-            OSType.LINUX, true);
-    public static Platform LINUX_AARCH64 = new Platform(
-            "Linux AARCH64", "linuxarm64", false, OSType.LINUX, true); // Jetson Nano, Jetson TX2
+    public static Platform WINDOWS_64 =
+            new Platform("Windows x64", "winx64", false, OSType.WINDOWS, true);
+    public static Platform LINUX_32 =
+            new Platform("Linux x86", "linuxx64", false, OSType.LINUX, true);
+    public static Platform LINUX_64 =
+            new Platform("Linux x64", "linuxx64", false, OSType.LINUX, true);
+    public static Platform LINUX_RASPBIAN32 =
+            new Platform(
+                    "Linux Raspbian 32-bit",
+                    "linuxarm32",
+                    true,
+                    OSType.LINUX,
+                    true); // Raspberry Pi 3/4 with a 32-bit image
+    public static Platform LINUX_RASPBIAN64 =
+            new Platform(
+                    "Linux Raspbian 64-bit",
+                    "linuxarm64",
+                    true,
+                    OSType.LINUX,
+                    true); // Raspberry Pi 3/4 with a 64-bit image
+    public static Platform LINUX_RK3588_64 =
+            new Platform("Linux AARCH 64-bit with RK3588", "linuxarm64", false, OSType.LINUX, true);
+    public static Platform LINUX_AARCH64 =
+            new Platform(
+                    "Linux AARCH64", "linuxarm64", false, OSType.LINUX, true); // Jetson Nano, Jetson TX2
 
     // PhotonVision Supported (Manual build/install)
-    public static Platform LINUX_ARM64 = new Platform("Linux ARM64", "linuxarm64", false, OSType.LINUX, true); // ODROID
-                                                                                                               // C2, N2
+    public static Platform LINUX_ARM64 =
+            new Platform("Linux ARM64", "linuxarm64", false, OSType.LINUX, true); // ODROID
+    // C2, N2
 
     // Completely unsupported
-    public static Platform WINDOWS_32 = new Platform("Windows x86", "windowsx64", false, OSType.WINDOWS, false);
+    public static Platform WINDOWS_32 =
+            new Platform("Windows x86", "windowsx64", false, OSType.WINDOWS, false);
     public static Platform MACOS = new Platform("Mac OS", "osxuniversal", false, OSType.MACOS, false);
-    public static Platform LINUX_ARM32 = new Platform("Linux ARM32", "linuxarm32", false, OSType.LINUX, false); // ODROID
-                                                                                                                // XU4,
-                                                                                                                // C1+
-    public static Platform UNKNOWN = new Platform("Unsupported Platform", "", false, OSType.UNKNOWN, false);
+    public static Platform LINUX_ARM32 =
+            new Platform("Linux ARM32", "linuxarm32", false, OSType.LINUX, false); // ODROID
+    // XU4,
+    // C1+
+    public static Platform UNKNOWN =
+            new Platform("Unsupported Platform", "", false, OSType.UNKNOWN, false);
 
     private enum OSType {
         WINDOWS,
@@ -102,7 +111,6 @@ public class Platform {
         this.isStretch = fileHasText("/etc/os-release", "Stretch");
         this.isBuster = fileHasText("/etc/os-release", "Buster");
         this.isRK3588 = isOrangePi || isCoolPi4b;
-
     }
 
     public Platform(
@@ -170,11 +178,10 @@ public class Platform {
     // Debug info related to unknown platforms for debug help
     private static final String OS_NAME = System.getProperty("os.name");
     private static final String OS_ARCH = System.getProperty("os.arch");
-    private static final String UnknownPlatformString = String.format("Unknown Platform. OS: %s, Architecture: %s",
-            OS_NAME, OS_ARCH);
+    private static final String UnknownPlatformString =
+            String.format("Unknown Platform. OS: %s, Architecture: %s", OS_NAME, OS_ARCH);
 
     public static Platform getCurrentPlatform() {
-
         if (currentPlatform != null) {
             return currentPlatform;
         }

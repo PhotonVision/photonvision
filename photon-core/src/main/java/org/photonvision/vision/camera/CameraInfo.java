@@ -82,31 +82,22 @@ public class CameraInfo extends UsbCameraInfo {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
         CameraInfo other = (CameraInfo) obj;
 
         // Windows device number is not significant. See
         // https://github.com/wpilibsuite/allwpilib/blob/4b94a64b06057c723d6fcafeb1a45f55a70d179a/cscore/src/main/native/windows/UsbCameraImpl.cpp#L1128
         if (!Platform.getCurrentPlatform().isWindows()) {
-            if (dev != other.dev)
-                return false;
+            if (dev != other.dev) return false;
         }
 
-        if (!path.equals(other.path))
-            return false;
-        if (!name.equals(other.name))
-            return false;
-        if (!Arrays.asList(this.getUSBPath()).contains(other.getUSBPath()))
-            return false;
-        if (vendorId != other.vendorId)
-            return false;
-        if (productId != other.productId)
-            return false;
+        if (!path.equals(other.path)) return false;
+        if (!name.equals(other.name)) return false;
+        if (!Arrays.asList(this.getUSBPath()).contains(other.getUSBPath())) return false;
+        if (vendorId != other.vendorId) return false;
+        if (productId != other.productId) return false;
 
         // Don't trust super.equals, as it compares references. Should PR this to
         // allwpilib at some

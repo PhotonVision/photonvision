@@ -32,8 +32,7 @@ public class MrCalJNILoader extends PhotonJNICommon {
     }
 
     public static synchronized MrCalJNILoader getInstance() {
-        if (instance == null)
-            instance = new MrCalJNILoader();
+        if (instance == null) instance = new MrCalJNILoader();
 
         return instance;
     }

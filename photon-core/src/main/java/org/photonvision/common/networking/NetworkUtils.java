@@ -80,10 +80,8 @@ public class NetworkUtils {
 
     public static List<NMDeviceInfo> getAllInterfaces() {
         long now = System.currentTimeMillis();
-        if (now - lastReadTimestamp < 5000)
-            return allInterfaces;
-        else
-            lastReadTimestamp = now;
+        if (now - lastReadTimestamp < 5000) return allInterfaces;
+        else lastReadTimestamp = now;
 
         var ret = new ArrayList<NMDeviceInfo>();
 
@@ -100,7 +98,8 @@ public class NetworkUtils {
             if (out == null) {
                 return new ArrayList<>();
             }
-            Pattern pattern = Pattern.compile("GENERAL.CONNECTION:(.*)\nGENERAL.DEVICE:(.*)\nGENERAL.TYPE:(.*)");
+            Pattern pattern =
+                    Pattern.compile("GENERAL.CONNECTION:(.*)\nGENERAL.DEVICE:(.*)\nGENERAL.TYPE:(.*)");
             Matcher matcher = pattern.matcher(out);
             while (matcher.find()) {
                 if (!matcher.group(2).equals("lo")) {
