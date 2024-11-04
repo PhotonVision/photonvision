@@ -40,6 +40,7 @@ public class AprilTagDetectionPipeParams {
         int result = 1;
         result = prime * result + ((family == null) ? 0 : family.hashCode());
         result = prime * result + ((detectorParams == null) ? 0 : detectorParams.hashCode());
+        result = prime * result + ((quadParams == null) ? 0 : quadParams.hashCode());
         return result;
     }
 
@@ -50,27 +51,12 @@ public class AprilTagDetectionPipeParams {
         if (getClass() != obj.getClass()) return false;
         AprilTagDetectionPipeParams other = (AprilTagDetectionPipeParams) obj;
         if (family != other.family) return false;
-
-        boolean sameQuadParams = false;
-        boolean sameDetectorParams = false;
         if (detectorParams == null) {
-            if (other.detectorParams == null) {
-                sameDetectorParams = true;
-            } else {
-                return false;
-            }
-        } else {
-            sameDetectorParams = detectorParams.equals(other.detectorParams);
-        }
+            if (other.detectorParams != null) return false;
+        } else if (!detectorParams.equals(other.detectorParams)) return false;
         if (quadParams == null) {
-            if (other.quadParams == null) {
-                sameQuadParams = true;
-            } else {
-                return false;
-            }
-        } else {
-            sameQuadParams = quadParams.equals(other.quadParams);
-        }
-        return (sameDetectorParams) && (sameQuadParams);
+            if (other.quadParams != null) return false;
+        } else if (!quadParams.equals(other.quadParams)) return false;
+        return true;
     }
 }
