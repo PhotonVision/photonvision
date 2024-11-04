@@ -62,7 +62,7 @@ public class VisionSourceManagerTest {
         config4.usbVID = 5;
         config4.usbPID = 6;
 
-        CameraInfo info1 = new CameraInfo(0, "dev/video0", "testVideo", new String[0], 1, 2);
+        CameraInfo info1 = new CameraInfo(0, "dev/video0", "testVideo", new String[]{"/usb/path/0"}, 1, 2);
 
         cameraInfos.add(info1);
 
@@ -73,7 +73,7 @@ public class VisionSourceManagerTest {
         assertTrue(inst.knownCameras.contains(info1));
         assertEquals(2, inst.unmatchedLoadedConfigs.size());
 
-        CameraInfo info2 = new CameraInfo(0, "dev/video1", "secondTestVideo", new String[0], 2, 3);
+        CameraInfo info2 = new CameraInfo(0, "dev/video1", "secondTestVideo", new String[]{"/usb/path/1"}, 2, 3);
 
         cameraInfos.add(info2);
 
@@ -388,6 +388,7 @@ public class VisionSourceManagerTest {
                     new CameraInfo(
                             0, "/dev/video11", "Arducam OV2311 USB Camera", CAM1_OLD_PATHS, 3141, 25446);
             CameraInfo info2 =
+
                     new CameraInfo(
                             0, "/dev/video12", "Arducam OV2311 USB Camera", CAM2_NEW_PATH, 3141, 25446);
 
