@@ -424,24 +424,26 @@ public class RequestHandler {
             ShellExec shell = new ShellExec();
             var tempPath = Files.createTempFile("photonvision-journalctl", ".txt");
             var tempPath2 = Files.createTempFile("photonvision-kernelogs", ".txt");
-            shell.executeBashCommand("journalctl -u photonvision.service > " + tempPath.toAbsolutePath() + " && journalctl -k > " + tempPath2.toAbsolutePath());
+            shell.executeBashCommand(
+                    "journalctl -u photonvision.service > "
+                            + tempPath.toAbsolutePath()
+                            + " && journalctl -k > "
+                            + tempPath2.toAbsolutePath());
 
             while (!shell.isOutputCompleted()) {
                 // TODO: add timeout
             }
 
-
             if (shell.getExitCode() == 0) {
                 // Wrote to the temp file! Zip and yeet it to the client
 
-            var out = Files.createTempFile("photonvision-logs", "zip").toFile();
+                var out = Files.createTempFile("photonvision-logs", "zip").toFile();
 
-            try {
-                ZipUtil.packEntries(new File[]{tempPath.toFile(), tempPath2.toFile()}, out);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
+                try {
+                    ZipUtil.packEntries(new File[] {tempPath.toFile(), tempPath2.toFile()}, out);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
                 var stream = new FileInputStream(out);
                 ctx.contentType("application/zip");
