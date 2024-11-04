@@ -89,7 +89,16 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         config.quadDecimate = settings.decimate;
 
         var quadParams = new AprilTagDetector.QuadThresholdParameters();
+        // 5 was the default minClusterPixels in WPILib prior to 2025
+        // increasing it causes detection problems when decimate > 1
         quadParams.minClusterPixels = 5;
+        // these are the same as the values in WPILib 2025
+        // setting them here to prevent upstream changes from changing behavior of the detector
+        quadParams.maxNumMaxima = 10;
+        quadParams.criticalAngle = 45 * Math.PI / 180.0;
+        quadParams.maxLineFitMSE = 10.0f;
+        quadParams.minWhiteBlackDiff = 5;
+        quadParams.deglitch = false;
 
         aprilTagDetectionPipe.setParams(
                 new AprilTagDetectionPipeParams(settings.tagFamily, config, quadParams));
