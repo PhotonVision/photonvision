@@ -437,6 +437,10 @@ public class Main {
         Logger.setLevel(LogGroup.General, logLevel);
         logger.info("Logging initialized in debug mode.");
 
+        // after native libraries are loaded :(
+        Logger.addKlongListener();
+
+        // Add CSCore->Photon logger
         PvCSCoreLogger.getInstance();
 
         logger.debug("Loading ConfigManager...");

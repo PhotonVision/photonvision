@@ -19,16 +19,14 @@ package wpiutil_extras;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
+import edu.wpi.first.hal.HAL;
 import java.io.IOException;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.photonvision.jni.PhotonTargetingJniLoader;
 import org.photonvision.jni.QueuedFileLogger;
 import org.photonvision.jni.WpilibLoader;
-
-import edu.wpi.first.hal.HAL;
 
 public class FileLoggerTest {
     @BeforeAll
@@ -50,8 +48,8 @@ public class FileLoggerTest {
 
     @Test
     public void smoketest() throws InterruptedException {
-        var logger = new QueuedFileLogger("/home/matt/github/photonvision/foobar.txt");
-        for(int i = 0; i < 100; i++) {
+        var logger = new QueuedFileLogger("/var/log/kern.log");
+        for (int i = 0; i < 100; i++) {
             Thread.sleep(1000);
 
             for (var line : logger.getNewlines()) {

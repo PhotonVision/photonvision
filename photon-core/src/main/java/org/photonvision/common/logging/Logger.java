@@ -17,7 +17,9 @@
 
 package org.photonvision.common.logging;
 
+import edu.wpi.first.util.RuntimeDetector;
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -29,9 +31,40 @@ import org.photonvision.common.configuration.PathManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.util.TimedTaskManager;
+import org.photonvision.jni.QueuedFileLogger;
 
-@SuppressWarnings("unused")
+/** TODO: get rid of static {} blocks and refactor to singleton pattern */
 public class Logger {
+    private static final HashMap<LogGroup, LogLevel> levelMap = new HashMap<>();
+    private static final List<LogAppender> currentAppenders = new ArrayList<>();
+
+    private static final UILogAppender uiLogAppender = new UILogAppender();
+
+    // TODO why's the logger care about this? split it out
+    private static KernelLogListener klogListener = null;
+
+    static {
+        levelMap.put(LogGroup.Camera, LogLevel.INFO);
+        levelMap.put(LogGroup.General, LogLevel.INFO);
+        levelMap.put(LogGroup.WebServer, LogLevel.INFO);
+        levelMap.put(LogGroup.Data, LogLevel.INFO);
+        levelMap.put(LogGroup.VisionModule, LogLevel.INFO);
+        levelMap.put(LogGroup.Config, LogLevel.INFO);
+        levelMap.put(LogGroup.CSCore, LogLevel.TRACE);
+        levelMap.put(LogGroup.NetworkTables, LogLevel.DEBUG);
+        levelMap.put(LogGroup.System, LogLevel.DEBUG);
+
+        currentAppenders.add(new ConsoleLogAppender());
+        currentAppenders.add(uiLogAppender);
+        addFileAppender(PathManager.getInstance().getLogPath());
+
+        cleanLogs(PathManager.getInstance().getLogsDir());
+    }
+
+    public static void addKlongListener() {
+        klogListener = new KernelLogListener();
+    }
+
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_BLACK = "\u001B[30m";
     public static final String ANSI_RED = "\u001B[31m";
@@ -49,8 +82,6 @@ public class Logger {
 
     private static final List<Pair<String, LogLevel>> uiBacklog = new ArrayList<>();
     private static boolean connected = false;
-
-    private static final UILogAppender uiLogAppender = new UILogAppender();
 
     private final String className;
     private final LogGroup group;
@@ -87,27 +118,6 @@ public class Logger {
                 .append(logMessage);
         if (color) builder.append(ANSI_RESET);
         return builder.toString();
-    }
-
-    private static final HashMap<LogGroup, LogLevel> levelMap = new HashMap<>();
-    private static final List<LogAppender> currentAppenders = new ArrayList<>();
-
-    static {
-        levelMap.put(LogGroup.Camera, LogLevel.INFO);
-        levelMap.put(LogGroup.General, LogLevel.INFO);
-        levelMap.put(LogGroup.WebServer, LogLevel.INFO);
-        levelMap.put(LogGroup.Data, LogLevel.INFO);
-        levelMap.put(LogGroup.VisionModule, LogLevel.INFO);
-        levelMap.put(LogGroup.Config, LogLevel.INFO);
-        levelMap.put(LogGroup.CSCore, LogLevel.TRACE);
-        levelMap.put(LogGroup.NetworkTables, LogLevel.DEBUG);
-    }
-
-    static {
-        currentAppenders.add(new ConsoleLogAppender());
-        currentAppenders.add(uiLogAppender);
-        addFileAppender(PathManager.getInstance().getLogPath());
-        cleanLogs(PathManager.getInstance().getLogsDir());
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -285,6 +295,38 @@ public class Logger {
             return sw.toString();
         } catch (IOException ioe) {
             throw new IllegalStateException(ioe);
+        }
+    }
+
+    private static class KernelLogListener {
+        QueuedFileLogger listener = null;
+        Logger logger = new Logger(KernelLogListener.class, LogGroup.General);
+
+        public KernelLogListener() {
+            if (RuntimeDetector.isLinux()) {
+                logger.info("Listening for klogs on /var/log/dmesg ! Boot logs:");
+
+                try {
+                    var bootlog = Files.readAllLines(Path.of("/var/log/dmesg"));
+                    for (var line : bootlog) {
+                        logger.log(line, LogLevel.DEBUG);
+                    }
+                } catch (IOException e) {
+                    logger.error("Couldn't read /var/log/dmesg - not printing boot logs");
+                }
+
+                listener = new QueuedFileLogger("/var/log/kern.log");
+            } else {
+                System.out.println("NOT for klogs");
+            }
+
+            TimedTaskManager.getInstance().addTask("outputPrintk", this::outputNewPrintks, 1000);
+        }
+
+        public void outputNewPrintks() {
+            for (var msg : listener.getNewlines()) {
+                logger.log(msg, LogLevel.DEBUG);
+            }
         }
     }
 

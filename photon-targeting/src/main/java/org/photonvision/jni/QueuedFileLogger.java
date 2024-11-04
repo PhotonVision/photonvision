@@ -27,7 +27,7 @@ public class QueuedFileLogger {
     public String[] getNewlines() {
         String newBuffer = null;
 
-        synchronized(this) {
+        synchronized (this) {
             if (m_handle == 0) {
                 System.err.println("QueuedFileLogger use after free");
                 return new String[0];
@@ -44,7 +44,7 @@ public class QueuedFileLogger {
     }
 
     public void stop() {
-        synchronized(this) {
+        synchronized (this) {
             if (m_handle != 0) {
                 QueuedFileLogger.destroy(m_handle);
                 m_handle = 0;
@@ -53,6 +53,8 @@ public class QueuedFileLogger {
     }
 
     private static native long create(String path);
+
     private static native void destroy(long handle);
+
     private static native String getNewLines(long handle);
 }
