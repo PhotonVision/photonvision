@@ -23,10 +23,12 @@ import org.photonvision.vision.apriltag.AprilTagFamily;
 public class AprilTagDetectionPipeParams {
     public final AprilTagFamily family;
     public final AprilTagDetector.Config detectorParams;
+    public final AprilTagDetector.QuadThresholdParameters quadParams;
 
-    public AprilTagDetectionPipeParams(AprilTagFamily tagFamily, AprilTagDetector.Config config) {
+    public AprilTagDetectionPipeParams(AprilTagFamily tagFamily, AprilTagDetector.Config config, AprilTagDetector.QuadThresholdParameters quadParams) {
         this.family = tagFamily;
         this.detectorParams = config;
+        this.quadParams = quadParams;
     }
 
     @Override
@@ -45,8 +47,28 @@ public class AprilTagDetectionPipeParams {
         if (getClass() != obj.getClass()) return false;
         AprilTagDetectionPipeParams other = (AprilTagDetectionPipeParams) obj;
         if (family != other.family) return false;
+
+        boolean sameQuadParams = false;
+        boolean sameDetectorParams = false;
         if (detectorParams == null) {
-            return other.detectorParams == null;
-        } else return detectorParams.equals(other.detectorParams);
+            if (other.detectorParams == null) {
+                sameDetectorParams = true;
+            } else {
+                return false;
+            }
+        } else {
+            sameDetectorParams = detectorParams.equals(other.detectorParams);
+        }
+        if (quadParams == null) {
+            if (other.quadParams == null) {
+                sameQuadParams = true;
+            } else {
+                return false;
+            }
+        } else {
+            sameQuadParams = quadParams.equals(other.quadParams);
+        }
+        return (sameDetectorParams) && (sameQuadParams);
+
     }
 }
