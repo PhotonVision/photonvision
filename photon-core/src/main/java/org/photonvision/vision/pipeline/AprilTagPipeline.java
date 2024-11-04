@@ -91,8 +91,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         var quadParams = new AprilTagDetector.QuadThresholdParameters();
         quadParams.minClusterPixels = 5;
 
-        aprilTagDetectionPipe.setParams(new AprilTagDetectionPipeParams(settings.tagFamily, config, quadParams));
-
+        aprilTagDetectionPipe.setParams(
+                new AprilTagDetectionPipeParams(settings.tagFamily, config, quadParams));
 
         if (frameStaticProperties.cameraCalibration != null) {
             var cameraMatrix = frameStaticProperties.cameraCalibration.getCameraIntrinsicsMat();

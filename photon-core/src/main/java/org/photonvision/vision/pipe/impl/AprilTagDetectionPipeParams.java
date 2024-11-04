@@ -25,7 +25,10 @@ public class AprilTagDetectionPipeParams {
     public final AprilTagDetector.Config detectorParams;
     public final AprilTagDetector.QuadThresholdParameters quadParams;
 
-    public AprilTagDetectionPipeParams(AprilTagFamily tagFamily, AprilTagDetector.Config config, AprilTagDetector.QuadThresholdParameters quadParams) {
+    public AprilTagDetectionPipeParams(
+            AprilTagFamily tagFamily,
+            AprilTagDetector.Config config,
+            AprilTagDetector.QuadThresholdParameters quadParams) {
         this.family = tagFamily;
         this.detectorParams = config;
         this.quadParams = quadParams;
@@ -69,6 +72,5 @@ public class AprilTagDetectionPipeParams {
             sameQuadParams = quadParams.equals(other.quadParams);
         }
         return (sameDetectorParams) && (sameQuadParams);
-
     }
 }
