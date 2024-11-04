@@ -325,9 +325,10 @@ public class VisionSourceManager {
                         unloadedConfigs,
                         new CameraMatchingOptions(true, true, true, false, CameraType.UsbCamera)));
 
-        // On windows, the v4l path is actually useful and tells us the port the camera is physically
+        // On windows, the v4l path is actually useful and tells us the port the camera
+        // is physically
         // connected to which is neat
-        if (Platform.isWindows() && !matchCamerasOnlyByPath) {
+        if (Platform.getCurrentPlatform().isWindows() && !matchCamerasOnlyByPath) {
             logger.info("Matching USB cameras by windows-path & USB VID/PID only...");
             cameraConfigurations.addAll(
                     matchCamerasByStrategy(
@@ -343,8 +344,10 @@ public class VisionSourceManager {
                         unloadedConfigs,
                         new CameraMatchingOptions(true, true, false, false, CameraType.UsbCamera)));
 
-        // Legacy migration -- VID/PID will be unset, so we have to try with our most relaxed strategy
-        // at least once. We _should_ still have a valid USB path (assuming cameras have not moved), so
+        // Legacy migration -- VID/PID will be unset, so we have to try with our most
+        // relaxed strategy
+        // at least once. We _should_ still have a valid USB path (assuming cameras have
+        // not moved), so
         // try that first, then fallback to base name only beloow
         logger.info("Matching USB cameras by base-name & usb port...");
         cameraConfigurations.addAll(
@@ -417,7 +420,8 @@ public class VisionSourceManager {
         logger.debug("Matching with options " + matchingOptions.toString());
 
         for (CameraConfiguration config : unloadedConfigsCopy) {
-            // Only run match path by id if the camera type is allowed. This allows us to specify matching
+            // Only run match path by id if the camera type is allowed. This allows us to
+            // specify matching
             // behavior per-camera-type
             if (matchingOptions.allowedTypes.contains(config.cameraType)) {
                 logger.debug(
@@ -567,10 +571,11 @@ public class VisionSourceManager {
                 continue;
             }
 
-            boolean is_pi = Platform.isRaspberryPi();
+            boolean is_pi = Platform.getCurrentPlatform().isRaspberryPi();
 
             if (configuration.cameraType == CameraType.ZeroCopyPicam && is_pi) {
-                // If the camera was loaded from libcamera then create its source using libcamera.
+                // If the camera was loaded from libcamera then create its source using
+                // libcamera.
                 var piCamSrc = new LibcameraGpuSource(configuration);
                 cameraSources.add(piCamSrc);
             } else {

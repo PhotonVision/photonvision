@@ -61,7 +61,7 @@ public class VisionLED {
         this.ledPins = ledPins.stream().mapToInt(i -> i).toArray();
         ledPins.forEach(
                 pin -> {
-                    if (Platform.isRaspberryPi()) {
+                    if (Platform.getCurrentPlatform().isRaspberryPi()) {
                         visionLEDs.add(new PigpioPin(pin));
                     } else {
                         visionLEDs.add(new CustomGPIO(pin));
@@ -87,7 +87,7 @@ public class VisionLED {
     }
 
     private void blinkImpl(int pulseLengthMillis, int blinkCount) {
-        if (Platform.isRaspberryPi()) {
+        if (Platform.getCurrentPlatform().isRaspberryPi()) {
             try {
                 setStateImpl(false); // hack to ensure hardware PWM has stopped before trying to blink
                 pigpioSocket.generateAndSendWaveform(pulseLengthMillis, blinkCount, ledPins);
@@ -104,7 +104,7 @@ public class VisionLED {
     }
 
     private void setStateImpl(boolean state) {
-        if (Platform.isRaspberryPi()) {
+        if (Platform.getCurrentPlatform().isRaspberryPi()) {
             try {
                 // stop any active blink
                 pigpioSocket.waveTxStop();

@@ -81,7 +81,7 @@ public class ScriptManager {
     }
 
     protected static class ScriptConfigManager {
-        //        protected static final Path scriptConfigPath =
+        // protected static final Path scriptConfigPath =
         // Paths.get(ConfigManager.SettingsPath.toString(), "scripts.json");
         static final Path scriptConfigPath = Paths.get(""); // TODO: Waiting on config
 
@@ -128,7 +128,7 @@ public class ScriptManager {
     }
 
     public static void queueEvent(ScriptEventType eventType) {
-        if (Platform.isLinux()) {
+        if (Platform.getCurrentPlatform().isLinux()) {
             try {
                 queuedEvents.putLast(eventType);
                 logger.info("Queued event: " + eventType.name());

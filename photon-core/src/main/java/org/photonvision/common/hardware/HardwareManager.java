@@ -87,7 +87,7 @@ public class HardwareManager {
 
         CustomGPIO.setConfig(hardwareConfig);
 
-        if (Platform.isRaspberryPi()) {
+        if (Platform.getCurrentPlatform().isRaspberryPi()) {
             pigpioSocket = new PigpioSocket();
         } else {
             pigpioSocket = null;
@@ -149,7 +149,7 @@ public class HardwareManager {
     }
 
     public boolean restartDevice() {
-        if (Platform.isLinux()) {
+        if (Platform.getCurrentPlatform().isLinux()) {
             try {
                 return shellExec.executeBashCommand("reboot now") == 0;
             } catch (IOException e) {

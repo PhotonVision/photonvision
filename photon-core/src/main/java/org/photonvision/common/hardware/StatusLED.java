@@ -35,7 +35,7 @@ public class StatusLED {
             }
         }
 
-        if (Platform.isRaspberryPi()) {
+        if (Platform.getCurrentPlatform().isRaspberryPi()) {
             redLED = new PigpioPin(statusLedPins.get(0));
             greenLED = new PigpioPin(statusLedPins.get(1));
             blueLED = new PigpioPin(statusLedPins.get(2));

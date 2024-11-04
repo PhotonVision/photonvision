@@ -89,7 +89,7 @@ public class CameraInfo extends UsbCameraInfo {
 
         // Windows device number is not significant. See
         // https://github.com/wpilibsuite/allwpilib/blob/4b94a64b06057c723d6fcafeb1a45f55a70d179a/cscore/src/main/native/windows/UsbCameraImpl.cpp#L1128
-        if (!Platform.isWindows()) {
+        if (!Platform.getCurrentPlatform().isWindows()) {
             if (dev != other.dev) return false;
         }
 
@@ -99,7 +99,8 @@ public class CameraInfo extends UsbCameraInfo {
         if (vendorId != other.vendorId) return false;
         if (productId != other.productId) return false;
 
-        // Don't trust super.equals, as it compares references. Should PR this to allwpilib at some
+        // Don't trust super.equals, as it compares references. Should PR this to
+        // allwpilib at some
         // point
         return true;
     }

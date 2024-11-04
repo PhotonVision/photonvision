@@ -63,7 +63,7 @@ public class NeuralNetworkModelManager {
     private NeuralNetworkModelManager() {
         ArrayList<NeuralNetworkBackend> backends = new ArrayList<>();
 
-        if (Platform.isRK3588()) {
+        if (Platform.getCurrentPlatform().isRK3588()) {
             backends.add(NeuralNetworkBackend.RKNN);
         }
 
@@ -245,7 +245,8 @@ public class NeuralNetworkModelManager {
             logger.error("Failed to discover models at " + modelsFolder.getAbsolutePath(), e);
         }
 
-        // After loading all of the models, sort them by name to ensure a consistent ordering
+        // After loading all of the models, sort them by name to ensure a consistent
+        // ordering
         models.forEach(
                 (backend, backendModels) ->
                         backendModels.sort((a, b) -> a.getName().compareTo(b.getName())));

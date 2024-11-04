@@ -57,7 +57,8 @@ public class NetworkConfig {
             "nmcli con mod ${interface} ipv4.method \"auto\" ipv6.method \"disabled\"";
 
     public NetworkConfig() {
-        // We can (usually) manage networking on Linux devices, and if we can, we should try to. Command
+        // We can (usually) manage networking on Linux devices, and if we can, we should
+        // try to. Command
         // line inhibitions happen at a level above this class
         setShouldManage(deviceCanManageNetwork());
     }
@@ -122,7 +123,7 @@ public class NetworkConfig {
 
     @JsonIgnore
     private boolean deviceCanManageNetwork() {
-        return Platform.isLinux();
+        return Platform.getCurrentPlatform().isLinux();
     }
 
     @Override

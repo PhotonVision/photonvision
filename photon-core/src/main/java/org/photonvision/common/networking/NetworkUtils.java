@@ -85,7 +85,7 @@ public class NetworkUtils {
 
         var ret = new ArrayList<NMDeviceInfo>();
 
-        if (!Platform.isLinux()) {
+        if (!Platform.getCurrentPlatform().isLinux()) {
             // Can only determine interface name on Linux, give up
             return ret;
         }
@@ -118,7 +118,8 @@ public class NetworkUtils {
     }
 
     public static List<NMDeviceInfo> getAllActiveInterfaces() {
-        // Seems like if an interface exists but isn't actually connected, the connection name will be
+        // Seems like if an interface exists but isn't actually connected, the
+        // connection name will be
         // an empty string. Check here and only return connections with non-empty names
         return getAllInterfaces().stream()
                 .filter(it -> !it.connName.trim().isEmpty())
@@ -159,7 +160,8 @@ public class NetworkUtils {
     public static boolean connDoesNotExist(String connName) {
         var shell = new ShellExec(true, true);
         try {
-            // set nmcli back to DHCP, and re-run dhclient -- this ought to grab a new IP address
+            // set nmcli back to DHCP, and re-run dhclient -- this ought to grab a new IP
+            // address
             shell.executeBashCommand("nmcli -f GENERAL.STATE connection show \"" + connName + "\"");
             return (shell.getExitCode() == 10);
         } catch (Exception e) {

@@ -27,7 +27,7 @@ public class PlatformUtils {
 
     @SuppressWarnings("StatementWithEmptyBody")
     private static boolean checkForRoot() {
-        if (Platform.isLinux()) {
+        if (Platform.getCurrentPlatform().isLinux()) {
             try {
                 shell.executeBashCommand("id -u");
             } catch (IOException e) {

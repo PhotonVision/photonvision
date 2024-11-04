@@ -24,35 +24,49 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 @SuppressWarnings("unused")
-public enum Platform {
+public class Platform {
     // WPILib Supported (JNI)
-    WINDOWS_64("Windows x64", "winx64", false, OSType.WINDOWS, true),
-    LINUX_32("Linux x86", "linuxx64", false, OSType.LINUX, true),
-    LINUX_64("Linux x64", "linuxx64", false, OSType.LINUX, true),
-    LINUX_RASPBIAN32(
-            "Linux Raspbian 32-bit",
-            "linuxarm32",
-            true,
-            OSType.LINUX,
-            true), // Raspberry Pi 3/4 with a 32-bit image
-    LINUX_RASPBIAN64(
-            "Linux Raspbian 64-bit",
-            "linuxarm64",
-            true,
-            OSType.LINUX,
-            true), // Raspberry Pi 3/4 with a 64-bit image
-    LINUX_RK3588_64("Linux AARCH 64-bit with RK3588", "linuxarm64", false, OSType.LINUX, true),
-    LINUX_AARCH64(
-            "Linux AARCH64", "linuxarm64", false, OSType.LINUX, true), // Jetson Nano, Jetson TX2
+    public static Platform WINDOWS_64 =
+            new Platform("Windows x64", "winx64", false, OSType.WINDOWS, true);
+    public static Platform LINUX_32 =
+            new Platform("Linux x86", "linuxx64", false, OSType.LINUX, true);
+    public static Platform LINUX_64 =
+            new Platform("Linux x64", "linuxx64", false, OSType.LINUX, true);
+    public static Platform LINUX_RASPBIAN32 =
+            new Platform(
+                    "Linux Raspbian 32-bit",
+                    "linuxarm32",
+                    true,
+                    OSType.LINUX,
+                    true); // Raspberry Pi 3/4 with a 32-bit image
+    public static Platform LINUX_RASPBIAN64 =
+            new Platform(
+                    "Linux Raspbian 64-bit",
+                    "linuxarm64",
+                    true,
+                    OSType.LINUX,
+                    true); // Raspberry Pi 3/4 with a 64-bit image
+    public static Platform LINUX_RK3588_64 =
+            new Platform("Linux AARCH 64-bit with RK3588", "linuxarm64", false, OSType.LINUX, true);
+    public static Platform LINUX_AARCH64 =
+            new Platform(
+                    "Linux AARCH64", "linuxarm64", false, OSType.LINUX, true); // Jetson Nano, Jetson TX2
 
     // PhotonVision Supported (Manual build/install)
-    LINUX_ARM64("Linux ARM64", "linuxarm64", false, OSType.LINUX, true), // ODROID C2, N2
+    public static Platform LINUX_ARM64 =
+            new Platform("Linux ARM64", "linuxarm64", false, OSType.LINUX, true); // ODROID
+    // C2, N2
 
     // Completely unsupported
-    WINDOWS_32("Windows x86", "windowsx64", false, OSType.WINDOWS, false),
-    MACOS("Mac OS", "osxuniversal", false, OSType.MACOS, false),
-    LINUX_ARM32("Linux ARM32", "linuxarm32", false, OSType.LINUX, false), // ODROID XU4, C1+
-    UNKNOWN("Unsupported Platform", "", false, OSType.UNKNOWN, false);
+    public static Platform WINDOWS_32 =
+            new Platform("Windows x86", "windowsx64", false, OSType.WINDOWS, false);
+    public static Platform MACOS = new Platform("Mac OS", "osxuniversal", false, OSType.MACOS, false);
+    public static Platform LINUX_ARM32 =
+            new Platform("Linux ARM32", "linuxarm32", false, OSType.LINUX, false); // ODROID
+    // XU4,
+    // C1+
+    public static Platform UNKNOWN =
+            new Platform("Unsupported Platform", "", false, OSType.UNKNOWN, false);
 
     private enum OSType {
         WINDOWS,
@@ -66,6 +80,14 @@ public enum Platform {
     public final boolean isPi;
     public final OSType osType;
     public final boolean isSupported;
+
+    private final boolean isPiSBC;
+    private final boolean isJetsonSBC;
+    private final boolean isOrangePi;
+    private final boolean isCoolPi4b;
+    private final boolean isStretch;
+    private final boolean isBuster;
+    private final boolean isRK3588;
 
     // Set once at init, shouldn't be needed after.
     private static final Platform currentPlatform = getCurrentPlatform();
@@ -81,21 +103,57 @@ public enum Platform {
         this.osType = osType;
         this.isSupported = isSupported;
         this.nativeLibraryFolderName = nativeLibFolderName;
+
+        this.isPiSBC = fileHasText("/proc/cpuinfo", "Raspberry Pi");
+        this.isJetsonSBC = fileHasText("/proc/device-tree/model", "NVIDIA Jetson");
+        this.isOrangePi = fileHasText("/proc/device-tree/model", "Orange Pi 5");
+        this.isCoolPi4b = fileHasText("/proc/device-tree/model", "CoolPi 4B");
+        this.isStretch = fileHasText("/etc/os-release", "Stretch");
+        this.isBuster = fileHasText("/etc/os-release", "Buster");
+        this.isRK3588 = isOrangePi || isCoolPi4b;
+    }
+
+    public Platform(
+            String description,
+            String nativeLibFolderName,
+            boolean isPi,
+            OSType osType,
+            boolean isSupported,
+            boolean isPiSBC,
+            boolean isJetsonSBC,
+            boolean isOrangePi,
+            boolean isCoolPi4b,
+            boolean isStretch,
+            boolean isBuster,
+            boolean isRK3588) {
+        this.description = description;
+        this.isPi = isPi;
+        this.osType = osType;
+        this.isSupported = isSupported;
+        this.nativeLibraryFolderName = nativeLibFolderName;
+
+        this.isPiSBC = isPiSBC;
+        this.isJetsonSBC = isJetsonSBC;
+        this.isOrangePi = isOrangePi;
+        this.isCoolPi4b = isCoolPi4b;
+        this.isStretch = isStretch;
+        this.isBuster = isBuster;
+        this.isRK3588 = isRK3588;
     }
 
     //////////////////////////////////////////////////////
     // Public API
 
     // Checks specifically if unix shell and API are supported
-    public static boolean isLinux() {
-        return currentPlatform.osType == OSType.LINUX;
+    public boolean isLinux() {
+        return osType == OSType.LINUX;
     }
 
-    public static boolean isRK3588() {
-        return Platform.isOrangePi() || Platform.isCoolPi4b();
+    public boolean isRK3588() {
+        return isOrangePi() || isCoolPi4b();
     }
 
-    public static boolean isRaspberryPi() {
+    public boolean isRaspberryPi() {
         return currentPlatform.isPi;
     }
 
@@ -123,7 +181,11 @@ public enum Platform {
     private static final String UnknownPlatformString =
             String.format("Unknown Platform. OS: %s, Architecture: %s", OS_NAME, OS_ARCH);
 
-    private static Platform getCurrentPlatform() {
+    public static Platform getCurrentPlatform() {
+        if (currentPlatform != null) {
+            return currentPlatform;
+        }
+
         if (RuntimeDetector.isWindows()) {
             if (RuntimeDetector.is32BitIntel()) {
                 return WINDOWS_32;
@@ -141,7 +203,7 @@ public enum Platform {
         }
 
         if (RuntimeDetector.isLinux()) {
-            if (isPiSBC()) {
+            if (isCurrentPiSBC()) {
                 if (RuntimeDetector.isArm32()) {
                     return LINUX_RASPBIAN32;
                 } else if (RuntimeDetector.isArm64()) {
@@ -150,7 +212,7 @@ public enum Platform {
                     // Unknown/exotic installation
                     return UNKNOWN;
                 }
-            } else if (isJetsonSBC()) {
+            } else if (isCurrentJetsonSBC()) {
                 if (RuntimeDetector.isArm64()) {
                     // TODO - do we need to check OS version?
                     return LINUX_AARCH64;
@@ -164,7 +226,7 @@ public enum Platform {
                 return LINUX_32;
             } else if (RuntimeDetector.isArm64()) {
                 // TODO - os detection needed?
-                if (isOrangePi()) {
+                if (isCurrentOrangePi()) {
                     return LINUX_RK3588_64;
                 } else {
                     return LINUX_AARCH64;
@@ -182,32 +244,40 @@ public enum Platform {
     }
 
     // Check for various known SBC types
-    private static boolean isPiSBC() {
+    private static boolean isCurrentPiSBC() {
         return fileHasText("/proc/cpuinfo", "Raspberry Pi");
     }
 
-    private static boolean isOrangePi() {
+    public boolean isPiSBC() {
+        return isPiSBC;
+    }
+
+    private static boolean isCurrentOrangePi() {
         return fileHasText("/proc/device-tree/model", "Orange Pi 5");
     }
 
-    private static boolean isCoolPi4b() {
-        return fileHasText("/proc/device-tree/model", "CoolPi 4B");
+    public boolean isOrangePi() {
+        return isOrangePi;
     }
 
-    private static boolean isJetsonSBC() {
-        // https://forums.developer.nvidia.com/t/how-to-recognize-jetson-nano-device/146624
+    public boolean isCoolPi4b() {
+        return isCoolPi4b;
+    }
+
+    public boolean isJetsonSBC() {
+        return isJetsonSBC;
+    }
+
+    private static boolean isCurrentJetsonSBC() {
         return fileHasText("/proc/device-tree/model", "NVIDIA Jetson");
     }
 
-    // Checks for various names of linux OS
-    private static boolean isStretch() {
-        // TODO - this is a total guess
-        return fileHasText("/etc/os-release", "Stretch");
+    public boolean isStretch() {
+        return isStretch;
     }
 
-    private static boolean isBuster() {
-        // TODO - this is a total guess
-        return fileHasText("/etc/os-release", "Buster");
+    public boolean isBuster() {
+        return isBuster;
     }
 
     private static boolean fileHasText(String filename, String text) {
@@ -226,8 +296,7 @@ public enum Platform {
         }
     }
 
-    public static boolean isWindows() {
-        var p = getCurrentPlatform();
-        return (p == WINDOWS_32 || p == WINDOWS_64);
+    public boolean isWindows() {
+        return (osType == OSType.WINDOWS);
     }
 }
