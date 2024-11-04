@@ -25,11 +25,12 @@ public class QueuedFileLogger {
     }
 
     public String[] getNewlines() {
-        String newBuffer;
+        String newBuffer = null;
 
         synchronized(this) {
             if (m_handle == 0) {
-                throw new RuntimeException("QueuedFileLogger use after free");
+                System.err.println("QueuedFileLogger use after free");
+                return new String[0];
             }
 
             newBuffer = QueuedFileLogger.getNewLines(m_handle);

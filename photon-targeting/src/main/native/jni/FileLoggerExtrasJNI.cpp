@@ -35,12 +35,12 @@ struct QueuedFileLogger {
   explicit QueuedFileLogger(std::string_view file)
       : logger{file, std::bind(&QueuedFileLogger::callback, this,
                                std::placeholders::_1)} {
-    fmt::println("Watching {}", file);
+    // fmt::println("Watching {}", file);
   }
 
   void callback(std::string_view newline) {
     std::lock_guard lock{m_mutex};
-    fmt::println("FileLogger got: {}", newline);
+    // fmt::println("FileLogger got: {}", newline);
     m_data.insert(m_data.end(), newline.begin(), newline.end());
   }
 

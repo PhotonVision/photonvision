@@ -55,8 +55,10 @@ public class FileLoggerTest {
             Thread.sleep(1000);
 
             for (var line : logger.getNewlines()) {
-                System.out.println(line);
+                System.out.println(" ->:" + line);
             }
         }
+
+        logger.stop();
     }
 }
