@@ -144,14 +144,8 @@ public class VisionSourceManager {
             // Detect CSI cameras using libcamera
             connectedCameras.addAll(new ArrayList<>(filterAllowedDevices(getConnectedCSICameras())));
         } else {
-<<<<<<< Updated upstream
             connectedCameras = new ArrayList<>(filterAllowedDevices(cameraInfos));
-            createSources =
-                    false; // Dont create sources if we are using supplied camerainfo for unit tests.
-=======
-            connectedCameras = new ArrayList<>(filterAllowedDevices(cameraInfos, platform));
             createSources = false; // Dont create sources if we are using supplied camerainfo for unit tests.
->>>>>>> Stashed changes
         }
 
         // Return no new sources because there are no new sources
@@ -188,16 +182,9 @@ public class VisionSourceManager {
         unmatchedLoadedConfigs.removeAll(matchedCameras);
         if (!unmatchedLoadedConfigs.isEmpty() && !hasWarned) {
             logger.warn(
-<<<<<<< Updated upstream
-                    () ->
-                            "After matching, "
-                                    + unmatchedLoadedConfigs.size()
-                                    + " configs remained unmatched. Is your camera disconnected?");
-=======
                     () -> "After matching, "
                             + unmatchedLoadedConfigs.size()
-                            + " config(s) remained unmatched. Is your camera disconnected?");
->>>>>>> Stashed changes
+                            + " configs remained unmatched. Is your camera disconnected?");
             logger.warn(
                     "Unloaded configs: "
                             + unmatchedLoadedConfigs.stream()
@@ -574,17 +561,6 @@ public class VisionSourceManager {
             } else if (device.name.matches(ignoredCamerasRegex)) {
                 logger.trace("Skipping ignored device: \"" + device.name + "\" at \"" + device.path);
             } else if (device.getIsV4lCsiCamera()) {
-<<<<<<< Updated upstream
-=======
-            } else if (device.otherPaths.length == 0
-                    && platform.isLinux()
-                    && device.cameraType == CameraType.UsbCamera) {
-                logger.trace(
-                        "Skipping device with no other paths: \"" + device.name + "\" at \"" + device.path);
-                // If cscore hasnt passed this other paths aka a path by id or a path as in usb
-                // port then we
-                // cant guarantee it is a valid camera.
->>>>>>> Stashed changes
             } else {
                 filteredDevices.add(device);
                 logger.trace(

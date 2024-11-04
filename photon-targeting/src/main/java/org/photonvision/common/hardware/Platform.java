@@ -173,16 +173,12 @@ public class Platform {
     private static final String UnknownPlatformString = String.format("Unknown Platform. OS: %s, Architecture: %s",
             OS_NAME, OS_ARCH);
 
-<<<<<<< Updated upstream
-    private static Platform getCurrentPlatform() {
-=======
     public static Platform getCurrentPlatform() {
 
         if (currentPlatform != null) {
             return currentPlatform;
         }
 
->>>>>>> Stashed changes
         if (RuntimeDetector.isWindows()) {
             if (RuntimeDetector.is32BitIntel()) {
                 return WINDOWS_32;
