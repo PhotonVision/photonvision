@@ -1,0 +1,2 @@
+class PhotonCameraSim:
+    pass
