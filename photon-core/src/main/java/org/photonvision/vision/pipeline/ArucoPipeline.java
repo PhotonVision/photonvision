@@ -95,14 +95,18 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
                         yield Objdetect.DICT_APRILTAG_36h11;
                     }
                     case kTag25h9 -> Objdetect.DICT_APRILTAG_25h9;
-                        // TODO: Somebody please approve that this is the desired behavior
+                        // TODO: explicitly drop support for these
                     case kTag16h5,
-                                    kTagCircle21h7,
-                                    kTagCircle49h12,
-                                    kTagCustom48h11,
-                                    kTagStandard41h12,
-                                    kTagStandard52h13 ->
-                            Objdetect.DICT_APRILTAG_16h5;
+                            kTagCircle21h7,
+                            kTagCircle49h12,
+                            kTagCustom48h11,
+                            kTagStandard41h12,
+                            kTagStandard52h13 -> {
+                        // 2024 tag, 6.5in
+                        tagWidth = Units.inchesToMeters(6.5);
+                        tagModel = TargetModel.kAprilTag36h11;
+                        yield Objdetect.DICT_APRILTAG_36h11;
+                    }
                 };
 
         int threshMinSize = Math.max(3, settings.threshWinSizes.getFirst());
