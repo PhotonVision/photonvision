@@ -23,7 +23,7 @@ class PhotonCameraSim:
         self.videoSimProcEnabled: bool = True
 
         self.cam: PhotonCamera = camera
-        self.props = props if props else PERFECT_90DEG()
+        self.prop = props if props else PERFECT_90DEG()
 
         self.minTargetAreaPercent: float = 0.0
         self.maxSightRange: float = 1.e99
