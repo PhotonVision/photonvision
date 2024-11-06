@@ -60,7 +60,7 @@ class VisionSystemSim:
                 self.bufferLength
             )
             self.camTrfMap[cameraSim].addSample(
-                wpilib.Timer.getFPGATimestamp(), Pose3d + robotToCamera
+                wpilib.Timer.getFPGATimestamp(), Pose3d() + robotToCamera
             )
 
     def clearCameras(self) -> None:
