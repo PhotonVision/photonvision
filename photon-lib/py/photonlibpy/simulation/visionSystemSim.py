@@ -50,7 +50,7 @@ class VisionSystemSim:
         return self.camSimMap.get(name, None)
 
     def getCameraSims(self) -> list[PhotonCameraSim]:
-        return self.camSimMap.values()
+        return [*self.camSimMap.values()]
 
     def addCamera(self, cameraSim: PhotonCameraSim, robotToCamera: Transform3d) -> None:
         name = cameraSim.getCamera().getName()
