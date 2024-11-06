@@ -60,6 +60,7 @@ setup(
         "wpilib<2025,>=2024.0.0b2",
         "robotpy-wpimath<2025,>=2024.0.0b2",
         "robotpy-apriltag<2025,>=2024.0.0b2",
+        "robotpy-cscore<2025,>=2024.0.0.b2",
         "pyntcore<2025,>=2024.0.0b2",
     ],
     description=descriptionStr,
