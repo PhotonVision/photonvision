@@ -11,8 +11,15 @@ import numpy as np
 
 import typing
 
+
 class PhotonCameraSim:
-    def __init__(self, camera: PhotonCamera, props: SimCameraProperties | None = None, minTargetAreaPercent: float | None = None, maxSightRange: meters | None = None):
+    def __init__(
+        self,
+        camera: PhotonCamera,
+        props: SimCameraProperties | None = None,
+        minTargetAreaPercent: float | None = None,
+        maxSightRange: meters | None = None,
+    ):
         self.videoSimRaw: cs.CvSource
         self.videoSimFrameRaw: np.ndarray
         self.videoSimRawEnabled: bool = True
@@ -26,7 +33,7 @@ class PhotonCameraSim:
         self.prop = props if props else PERFECT_90DEG()
 
         self.minTargetAreaPercent: float = 0.0
-        self.maxSightRange: float = 1.e99
+        self.maxSightRange: float = 1.0e99
 
         if minTargetAreaPercent is not None and maxSightRange is not None:
             self.minTargetAreaPercent = minTargetAreaPercent
@@ -47,24 +54,25 @@ class PhotonCameraSim:
 
     def getVideoSimRaw(self) -> cs.CvSource:
         return self.videoSimRaw
-    
+
     def getVideoSimFrameRaw(self) -> np.ndarray:
         return self.videoSimFrameRaw
 
     def canSeeTargetPose(self, camPose: Pose3d, target: VisionTargetSim) -> bool:
-        raise "Not yet implemented"
+        raise Exception("Not yet implemented")
 
     def canSeeCorner(self, points: list[tuple[float, float]]) -> bool:
-        raise "Not yet implemented"
-  
-    def consumeNextEntryTime(self)-> float | None:
-        raise "Not yet implemented"
+
+        raise Exception("Not yet implemented")
+
+    def consumeNextEntryTime(self) -> float | None:
+        raise Exception("Not yet implemented")
 
     def setMinTargetAreaPercent(self, areaPercent: float) -> None:
         self.minTargetAreaPercent = areaPercent
 
     def setMinTargetAreaPixels(self, areaPx: float) -> None:
-        self.minTargetAreaPercent = areaPx / self.prop.getResArea() * 100.
+        self.minTargetAreaPercent = areaPx / self.prop.getResArea() * 100.0
 
     def setMaxSightRange(self, range: meters) -> None:
         self.maxSightRange = range
@@ -74,15 +82,19 @@ class PhotonCameraSim:
 
     def enableDrawWireframe(self, enabled: bool) -> None:
         self.videoSimWireframeEnabled = enabled
-    
+
     def setWireframeResolution(self, resolution: float) -> None:
         self.videoSimWireframeResolution = resolution
 
     def enableProcessedStream(self, enabled: bool) -> None:
         self.videoSimProcEnabled = enabled
-    
-    def process(latency: seconds, cameraPose: Pose3d, targets: list[VisionTargetSim]) -> PhotonPipelineResult:
-        raise "Not yet implemented"
 
-    def submitProcessedFrame(self, result: PhotonPipelineResult, receiveTimestamp: float | None):
-        raise "Not yet implemented"
+    def process(
+        latency: seconds, cameraPose: Pose3d, targets: list[VisionTargetSim]
+    ) -> PhotonPipelineResult:
+        raise Exception("Not yet implemented")
+
+    def submitProcessedFrame(
+        self, result: PhotonPipelineResult, receiveTimestamp: float | None
+    ):
+        raise Exception("Not yet implemented")
