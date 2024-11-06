@@ -33,7 +33,6 @@ import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
-import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.PipelineType;
 import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.target.RobotOffsetPointOperation;
