@@ -62,7 +62,7 @@ You can also get the pipeline latency from a pipeline result using the `getLaten
       // Get the pipeline latency.
       units::second_t latency = result.GetLatency();
 
-    .. code-block:: Python
+   .. code-block:: Python
 
         # Coming Soon!
 ```
