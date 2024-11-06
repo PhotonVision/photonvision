@@ -73,7 +73,23 @@ class PhotonCameraSim:
         return True
 
     def consumeNextEntryTime(self) -> float | None:
-        raise Exception("Not yet implemented")
+        now = wpilib.Timer.getFPGATimestamp() * 1e6
+        timestamp = 0
+        iter = 0
+        while now >= self.nextNtEntryTime:
+            timestamp = int(self.nextNtEntryTime)
+            frameTime = int(self.prop.estSecUntilNextFrame() * 1e6)
+            self.nextNtEntryTime += frameTime
+
+            iter += 1
+            if iter > 50:
+                timestamp = now
+                self.nextNtEntryTime = now + frameTime
+
+        if timestamp != 0:
+            return timestamp
+
+        return None
 
     def setMinTargetAreaPercent(self, areaPercent: float) -> None:
         self.minTargetAreaPercent = areaPercent
