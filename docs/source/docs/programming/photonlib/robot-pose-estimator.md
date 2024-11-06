@@ -24,7 +24,7 @@ The API documentation can be found in here: [Java](https://github.wpilib.org/all
       // The parameter for LoadAPrilTagLayoutField will be different depending on the game.
       frc::AprilTagFieldLayout aprilTagFieldLayout = frc::LoadAprilTagLayoutField(frc::AprilTagField::k2024Crescendo);
 
-    .. code-block:: Python
+   .. code-block:: Python
 
         # Coming Soon!
 
@@ -81,7 +81,7 @@ The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (s
       photonlib::RobotPoseEstimator estimator(
           aprilTags, photonlib::CLOSEST_TO_REFERENCE_POSE, cameras);
 
-    .. code-block:: Python
+   .. code-block:: Python
 
         kRobotToCam = wpimath.geometry.Transform3d(
             wpimath.geometry.Translation3d(0.5, 0.0, 0.5),
@@ -123,7 +123,9 @@ Calling `update()` on your `PhotonPoseEstimator` will return an `EstimatedRobotP
         }
       }
 
-    .. code-block:: Python
+   .. code-block:: Python
+
+      # Coming Soon!
 
 
 
