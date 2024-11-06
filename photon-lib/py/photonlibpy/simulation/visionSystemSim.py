@@ -112,7 +112,7 @@ class VisionSystemSim:
         else:
             return False
 
-    def resetCameraTransforms(self, cameraSim: PhotonCameraSim | None = None) -> bool:
+    def resetCameraTransforms(self, cameraSim: PhotonCameraSim | None = None) -> None:
         now = wpilib.Timer.getFPGATimestamp()
 
         def resetSingleCamera(self, cameraSim: PhotonCameraSim) -> bool:
