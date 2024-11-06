@@ -4,7 +4,8 @@ from .targetModel import AprilTag36h11
 
 from wpilib import Field2d
 from wpimath.geometry import Pose2d, Pose3d, Transform3d
-from wpimath.interpolation import TimeInterpolatablePose3dBuffer
+# TODO Use buffer when available upstream
+# from wpimath.interpolation import TimeInterpolatablePose3dBuffer
 from wpimath.units import seconds
 
 from robotpy_apriltag import AprilTagFieldLayout
@@ -12,10 +13,24 @@ from robotpy_apriltag import AprilTagFieldLayout
 import wpilib
 import typing
 
+class TimeInterpolatablePose3dBuffer:
+    def __init__(self, bufferLength: seconds):
+        self.pose: Pose3d = Pose3d()
+
+    def addSample(self, timestamp: seconds, sample: Pose3d):
+        self.pose = sample
+
+    def sample(self, timestamp: seconds) -> Pose3d:
+        return self.pose
+
+    def clear(self):
+        pass
+
+
 
 class VisionSystemSim:
     def __init__(self, visionSystemName: str):
-        self.dbgField: Field2d
+        self.dbgField: Field2d = Field2d()
         self.bufferLength: seconds = 1.5
 
         self.camSimMap: typing.Dict[str, PhotonCameraSim] = {}
@@ -125,7 +140,7 @@ class VisionSystemSim:
         else:
             return self.targetSets[targetType]
 
-    def addVisionTargets(self, targets, targetType: str = "targets") -> None:
+    def addVisionTargets(self, targets: list[VisionTargetSim], targetType: str = "targets") -> None:
         if targetType not in self.targetSets:
             self.targetSets[targetType] = targets
         else:
@@ -135,9 +150,9 @@ class VisionSystemSim:
         targets: list[VisionTargetSim] = []
         for tag in layout.getTags():
             targets.append(
-                VisionTargetSim(layout.getTagPose(tag.ID()), AprilTag36h11(), tag.ID())
+                VisionTargetSim(layout.getTagPose(tag.ID), AprilTag36h11(), tag.ID)
             )
-        self.addVisionTargets("apriltag", targets)
+        self.addVisionTargets(targets, "apriltag")
 
     def clearVisionTargets(self) -> None:
         self.targetSets.clear()
@@ -182,7 +197,7 @@ class VisionSystemSim:
 
         now = wpilib.Timer.getFPGATimestamp()
         self.robotPoseBuffer.addSample(now, robotPose)
-        self.dbgField.setRobotPose(robotPose.ToPose2d())
+        self.dbgField.setRobotPose(robotPose.toPose2d())
 
         allTargets: list[VisionTargetSim] = []
         for targets in self.targetSets.values():
