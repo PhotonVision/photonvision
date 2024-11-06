@@ -1,2 +1,0 @@
-class VisionTargetSystem:
-    pass
