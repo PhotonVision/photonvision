@@ -133,6 +133,37 @@ jobs:
         with:
           name: built-docs
           path: docs/build/html
+
+  build-photonlib-vendorjson:
+    name: "Build Vendor JSON"
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+
+      # grab all tags
+      - run: git fetch --tags --force
+
+      # Generate the JSON and give it the ""standard""" name maven gives it
+      - run: |
+          chmod +x gradlew
+          ./gradlew photon-lib:generateVendorJson
+          export VERSION=$(git describe --tags --match=v*)
+          mv photon-lib/build/generated/vendordeps/photonlib.json photon-lib/build/generated/vendordeps/photonlib-$(git describe --tags --match=v*).json
+
+      # Upload it here so it shows up in releases
+      - uses: actions/upload-artifact@v4
+        with:
+          name: photonlib-vendor-json
+          path: photon-lib/build/generated/vendordeps/photonlib-*.json
+
   build-photonlib-host:
     env:
       MACOSX_DEPLOYMENT_TARGET: 13
@@ -493,7 +524,7 @@ jobs:
           name: image-${{ matrix.image_suffix }}
           path: photonvision*.xz
   release:
-    needs: [build-package, build-image, combine]
+    needs: [build-package, build-image, combine, build-photonlib-vendorjson]
     runs-on: ubuntu-22.04
     steps:
       # Download all fat JARs
@@ -511,6 +542,10 @@ jobs:
         with:
           merge-multiple: true
           pattern: image-*
+      # Download maven
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: photonlib-vendor-json
 
       - run: find
       # Push to dev release
