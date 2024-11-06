@@ -2,6 +2,7 @@ from .simCameraProperties import SimCameraProperties, PERFECT_90DEG
 from .visionTargetSim import VisionTargetSim
 from ..photonCamera import PhotonCamera
 from ..targeting import PhotonPipelineResult
+from ..estimation.cameraTargetRelation import CameraTargetRelation
 
 from wpimath.geometry import Pose3d
 from wpimath.units import meters, seconds
@@ -59,7 +60,15 @@ class PhotonCameraSim:
         return self.videoSimFrameRaw
 
     def canSeeTargetPose(self, camPose: Pose3d, target: VisionTargetSim) -> bool:
-        raise Exception("Not yet implemented")
+        rel = CameraTargetRelation(camPose, target.getPose())
+        return (
+            abs(rel.camToTargYaw.degrees()) < self.prop.getHorizFOV().degrees() / 2.0
+            and abs(rel.camToTargPitch.degrees())
+            < self.prop.getVertFOV().degrees() / 2.0
+            and not target.getModel().getIsPlanar()
+            or abs(rel.targtoCamAngle.degrees()) < 90
+            and rel.camToTarg.translation().norm() <= self.maxSightRange
+        )
 
     def canSeeCorner(self, points: list[tuple[float, float]]) -> bool:
         for pt in points:
