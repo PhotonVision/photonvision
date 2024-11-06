@@ -97,7 +97,7 @@ class TargetModel:
 
         self.vertices = verts
 
-    def GetFieldVertices(self, targetPose: Pose3d) -> List[Translation3d]:
+    def getFieldVertices(self, targetPose: Pose3d) -> List[Translation3d]:
         # TODO This was changed from a RotTrlTransform3d. Is this fine?
         basisChange = Transform3d(targetPose.translation(), targetPose.rotation())
 
@@ -121,13 +121,13 @@ class TargetModel:
         )
         return Pose3d(tgtTrl, orientToCam)
 
-    def GetVertices(self) -> List[Translation3d]:
+    def getVertices(self) -> List[Translation3d]:
         return self.vertices
 
-    def GetIsPlanar(self) -> bool:
+    def getIsPlanar(self) -> bool:
         return self.isPlanar
 
-    def GetIsSpherical(self) -> bool:
+    def getIsSpherical(self) -> bool:
         return self.isSpherical
 
 
