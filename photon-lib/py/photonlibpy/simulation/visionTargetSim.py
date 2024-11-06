@@ -1,4 +1,4 @@
-from .targetModel import TargetModel
+from ..estimation.targetModel import TargetModel
 
 from wpimath.geometry import Pose3d, Translation3d
 

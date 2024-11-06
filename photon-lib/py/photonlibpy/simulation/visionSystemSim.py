@@ -1,9 +1,10 @@
 from .photonCameraSim import PhotonCameraSim
 from .visionTargetSim import VisionTargetSim
-from .targetModel import AprilTag36h11
+from ..estimation.targetModel import AprilTag36h11
 
 from wpilib import Field2d
 from wpimath.geometry import Pose2d, Pose3d, Transform3d
+
 # TODO Use buffer when available upstream
 # from wpimath.interpolation import TimeInterpolatablePose3dBuffer
 from wpimath.units import seconds
@@ -12,6 +13,7 @@ from robotpy_apriltag import AprilTagFieldLayout
 
 import wpilib
 import typing
+
 
 class TimeInterpolatablePose3dBuffer:
     def __init__(self, bufferLength: seconds):
@@ -25,7 +27,6 @@ class TimeInterpolatablePose3dBuffer:
 
     def clear(self):
         pass
-
 
 
 class VisionSystemSim:
@@ -140,7 +141,9 @@ class VisionSystemSim:
         else:
             return self.targetSets[targetType]
 
-    def addVisionTargets(self, targets: list[VisionTargetSim], targetType: str = "targets") -> None:
+    def addVisionTargets(
+        self, targets: list[VisionTargetSim], targetType: str = "targets"
+    ) -> None:
         if targetType not in self.targetSets:
             self.targetSets[targetType] = targets
         else:
