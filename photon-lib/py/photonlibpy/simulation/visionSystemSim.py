@@ -152,9 +152,10 @@ class VisionSystemSim:
     def addAprilTags(self, layout: AprilTagFieldLayout) -> None:
         targets: list[VisionTargetSim] = []
         for tag in layout.getTags():
-            targets.append(
-                VisionTargetSim(layout.getTagPose(tag.ID), AprilTag36h11(), tag.ID)
-            )
+            tag_pose = layout.getTagPose(tag.ID)
+            # TODO this was done to make the python gods happy. Confirm that this is desired or if types dont matter
+            assert tag_pose is not None
+            targets.append(VisionTargetSim(tag_pose, AprilTag36h11(), tag.ID))
         self.addVisionTargets(targets, "apriltag")
 
     def clearVisionTargets(self) -> None:
