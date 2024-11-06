@@ -19,19 +19,19 @@ class VisionTargetSim:
     def __eq__(self, other) -> bool:
         # Use 1 inch and 1 degree tolerance
         return (
-            abs(self.pose.translation().X() - other.GetPose().translation().X())
+            abs(self.pose.translation().X() - other.getPose().translation().X())
             < 0.0254
-            and abs(self.pose.translation().Y() - other.GetPose().translation().Y())
+            and abs(self.pose.translation().Y() - other.getPose().translation().Y())
             < 0.0254
-            and abs(self.pose.translation().Z() - other.GetPose().translation().Z())
+            and abs(self.pose.translation().Z() - other.getPose().translation().Z())
             < 0.0254
-            and abs(self.pose.rotation().X() - other.GetPose().rotation().X())
+            and abs(self.pose.rotation().X() - other.getPose().rotation().X())
             < math.radians(1)
-            and abs(self.pose.rotation().Y() - other.GetPose().rotation().Y())
+            and abs(self.pose.rotation().Y() - other.getPose().rotation().Y())
             < math.radians(1)
-            and abs(self.pose.rotation().Z() - other.GetPose().rotation().Z())
+            and abs(self.pose.rotation().Z() - other.getPose().rotation().Z())
             < math.radians(1)
-            and self.model.GetIsPlanar() == other.GetModel().GetIsPlanar()
+            and self.model.getIsPlanar() == other.getModel().getIsPlanar()
         )
 
     def setPose(self, newPose: Pose3d) -> None:
@@ -47,4 +47,4 @@ class VisionTargetSim:
         return self.model
 
     def getFieldVertices(self) -> list[Translation3d]:
-        return self.model.GetFieldVertices(self.pose)
+        return self.model.getFieldVertices(self.pose)
