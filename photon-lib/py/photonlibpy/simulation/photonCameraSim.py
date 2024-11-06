@@ -52,13 +52,13 @@ class PhotonCameraSim:
         return self.videoSimFrameRaw
 
     def canSeeTargetPose(self, camPose: Pose3d, target: VisionTargetSim) -> bool:
-        pass
+        raise "Not yet implemented"
 
     def canSeeCorner(self, points: list[tuple[float, float]]) -> bool:
-        pass
+        raise "Not yet implemented"
   
     def consumeNextEntryTime(self)-> float | None:
-        pass
+        raise "Not yet implemented"
 
     def setMinTargetAreaPercent(self, areaPercent: float) -> None:
         self.minTargetAreaPercent = areaPercent
@@ -82,7 +82,7 @@ class PhotonCameraSim:
         self.videoSimProcEnabled = enabled
     
     def process(latency: seconds, cameraPose: Pose3d, targets: list[VisionTargetSim]) -> PhotonPipelineResult:
-        pass
+        raise "Not yet implemented"
 
     def submitProcessedFrame(self, result: PhotonPipelineResult, receiveTimestamp: float | None):
-        pass
+        raise "Not yet implemented"
