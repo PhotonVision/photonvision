@@ -62,8 +62,15 @@ class PhotonCameraSim:
         raise Exception("Not yet implemented")
 
     def canSeeCorner(self, points: list[tuple[float, float]]) -> bool:
+        for pt in points:
+            if not (
+                abs((max(pt[0], min(pt[0], self.prop.getResWidth()))) - pt[0]) < 1e-4
+            ) or not (
+                abs((max(pt[1], min(pt[1], self.prop.getResHeight()))) - pt[1]) < 1e-4
+            ):
+                return False
 
-        raise Exception("Not yet implemented")
+        return True
 
     def consumeNextEntryTime(self) -> float | None:
         raise Exception("Not yet implemented")
