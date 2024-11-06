@@ -112,7 +112,7 @@ class PhotonCameraSim:
     def enableProcessedStream(self, enabled: bool) -> None:
         self.videoSimProcEnabled = enabled
 
-    def process(
+    def process(self,
         latency: seconds, cameraPose: Pose3d, targets: list[VisionTargetSim]
     ) -> PhotonPipelineResult:
         raise Exception("Not yet implemented")
