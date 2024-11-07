@@ -15,6 +15,8 @@ class PhotonPipelineMetadata:
     # Mirror of the heartbeat entry -- monotonically increasing
     sequenceID: int = -1
 
+    timeSinceLastPong: int = -1
+
     photonStruct: "PhotonPipelineMetadataSerde" = None
 
 
