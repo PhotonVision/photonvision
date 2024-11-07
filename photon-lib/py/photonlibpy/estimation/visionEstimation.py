@@ -1,4 +1,4 @@
-from . import TargetModel
+from . import OpenCVHelp, TargetModel
 from ..targeting import PhotonTrackedTarget, PnpResult, TargetCorner
 
 from wpimath.geometry import Pose3d, Transform3d, Translation3d
@@ -51,6 +51,7 @@ class VisionEstimation:
                     corners += currentCorners
 
         if len(knownTags) == 0 or len(corners) == 0 or len(corners) % 4 != 0:
+            print(f"{len(corners)}")
             return None
 
         points = OpenCVHelp.cornersToPoints(corners)

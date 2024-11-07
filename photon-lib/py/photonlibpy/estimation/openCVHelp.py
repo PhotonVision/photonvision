@@ -45,7 +45,7 @@ class OpenCVHelp:
 
     @staticmethod
     def avgPoint(points: list[Tuple[float, float]]) -> Tuple[float, float]:
-        pass
+        raise Exception("not implemented")
         """
   if (points.size() == 0) {
     return cv::Point2f{};
@@ -56,32 +56,14 @@ class OpenCVHelp:
         """
 
     @staticmethod
-    def pointsToTargetCorners(points: list[Tuple[float, float]]) -> list[TargetCorner]:
-        pass
-
-    """
-  std::vector<photon::TargetCorner> retVal;
-  retVal.reserve(points.size());
-  for (size_t i = 0; i < points.size(); i++) {
-    retVal.emplace_back(photon::TargetCorner{points[i].x, points[i].y});
-  }
-  return retVal;
-}
-    """
+    def pointsToTargetCorners(points: np.ndarray) -> list[TargetCorner]:
+        corners = [TargetCorner(p[0, 0], p[0, 1]) for p in points]
+        return corners
 
     @staticmethod
-    def pointsToCorners(points: np.ndarray) -> np.ndarray:
-        pass
-
-    """
-  std::vector<std::pair<float, float>> retVal;
-  retVal.reserve(points.size());
-  for (size_t i = 0; i < points.size(); i++) {
-    retVal.emplace_back(std::make_pair(points[i].x, points[i].y));
-  }
-  return retVal;
-}
-    """
+    def cornersToPoints(corners: list[TargetCorner]) -> np.ndarray:
+        points = [[[c.x, c.y]] for c in corners]
+        return np.array(points)
 
     @staticmethod
     def projectPoints(
@@ -145,5 +127,7 @@ class OpenCVHelp:
             return None
 
         # We have no alternative so set it to best as well
-        result = PnpResult(best=best, bestReprojError=error, alt=best, altReprojError=error)
+        result = PnpResult(
+            best=best, bestReprojError=error, alt=best, altReprojError=error
+        )
         return result

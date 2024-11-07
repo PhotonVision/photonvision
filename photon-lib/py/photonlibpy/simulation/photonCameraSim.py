@@ -333,6 +333,7 @@ class PhotonCameraSim:
                     area=areaPercent,
                     skew=math.degrees(centerRot.X()),
                     fiducialId=tgt.fiducialId,
+                    detectedCorners=cornersFloat,
                     bestCameraToTarget=pnpSim.best if pnpSim else Transform3d(),
                     altCameraToTarget=pnpSim.alt if pnpSim else Transform3d(),
                     poseAmbiguity=pnpSim.ambiguity if pnpSim else -1,
