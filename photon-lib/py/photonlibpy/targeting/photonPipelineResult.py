@@ -29,7 +29,7 @@ class PhotonPipelineResult:
     # Python users beware! We don't currently run a Time Sync Server, so these timestamps are in
     # an arbitrary timebase. This is not true in C++ or Java.
     metadata: PhotonPipelineMetadata = field(default_factory=PhotonPipelineMetadata)
-    multiTagResult: Optional[MultiTargetPNPResult] = None
+    multitagResult: Optional[MultiTargetPNPResult] = None
 
     def getLatencyMillis(self) -> float:
         return (
