@@ -2,11 +2,13 @@ from wpimath.geometry import Pose3d, Rotation3d, Translation3d, Transform3d
 
 from typing import Self
 
+
 class RotTrlTransform3d:
-    def __init__(self, rot: Rotation3d = Rotation3d(), trl: Translation3d = Translation3d()):
+    def __init__(
+        self, rot: Rotation3d = Rotation3d(), trl: Translation3d = Translation3d()
+    ):
         self.rot = rot
         self.trl = trl
-
 
     def inverse(self) -> Self:
         invRot = -self.rot
@@ -24,7 +26,6 @@ class RotTrlTransform3d:
 
     def apply(self, trlToApply: Translation3d) -> Translation3d:
         return trlToApply.rotateBy(self.rot) + self.trl
-
 
     @classmethod
     def makeRelativeTo(cls, pose: Pose3d) -> Self:

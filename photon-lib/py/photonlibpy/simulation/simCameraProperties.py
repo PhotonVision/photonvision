@@ -358,11 +358,9 @@ class SimCameraProperties:
     def estSecUntilNextFrame(self) -> seconds:
         return self.frameSpeed + max(0.0, self.estLatency() - self.frameSpeed)
 
-
     @classmethod
     def PERFECT_90DEG(cls) -> typing.Self:
         return cls()
-
 
     @classmethod
     def PI4_LIFECAM_320_240(cls) -> typing.Self:
@@ -398,7 +396,6 @@ class SimCameraProperties:
         prop.setLatencyStdDev(10.0e-3)
         return prop
 
-
     @classmethod
     def PI4_LIFECAM_640_480(cls) -> typing.Self:
         prop = cls()
@@ -432,7 +429,6 @@ class SimCameraProperties:
         prop.setAvgLatency(65.0e-3)
         prop.setLatencyStdDev(15.0e-3)
         return prop
-
 
     @classmethod
     def LL2_640_480(cls) -> typing.Self:
@@ -468,7 +464,6 @@ class SimCameraProperties:
         prop.setLatencyStdDev(8.0e-3)
         return prop
 
-
     @classmethod
     def LL2_960_720(cls) -> typing.Self:
         prop = cls()
@@ -502,7 +497,6 @@ class SimCameraProperties:
         prop.setAvgLatency(50.0e-3)
         prop.setLatencyStdDev(15.0e-3)
         return prop
-
 
     @classmethod
     def LL2_1280_720(cls) -> typing.Self:

@@ -52,7 +52,6 @@ class PhotonCameraSim:
             robotpy_apriltag.AprilTagField.k2024Crescendo
         )
 
-
         if (
             camera is not None
             and props is None
@@ -151,9 +150,14 @@ class PhotonCameraSim:
         assert points.shape[1] == 1
         assert points.shape[2] == 2
         for pt in points:
-            x = pt[0,0]
-            y = pt[0,1]
-            if x < 0 or x > self.prop.getResWidth() or y < 0 or y > self.prop.getResHeight():
+            x = pt[0, 0]
+            y = pt[0, 1]
+            if (
+                x < 0
+                or x > self.prop.getResWidth()
+                or y < 0
+                or y > self.prop.getResHeight()
+            ):
                 return False
 
         return True
@@ -207,6 +211,7 @@ class PhotonCameraSim:
         # Sort targets by distance to camera - furthest to closest
         def distance(target: VisionTargetSim):
             return target.getPose().translation().distance(cameraPose.translation())
+
         targets.sort(key=distance, reverse=True)
 
         visibleTgts: list[
@@ -224,65 +229,68 @@ class PhotonCameraSim:
             isSpherical = tgt.getModel().getIsSpherical()
             if isSpherical:
                 model = tgt.getModel()
-                fieldCorners = model.getFieldVertices(TargetModel.getOrientedPose(
-                    tgt.getPose().translation(), cameraPose.translation()
-                ))
-            
+                fieldCorners = model.getFieldVertices(
+                    TargetModel.getOrientedPose(
+                        tgt.getPose().translation(), cameraPose.translation()
+                    )
+                )
+
             imagePoints = OpenCVHelp.projectPoints(
                 self.prop.getIntrinsics(),
                 self.prop.getDistCoeffs(),
                 camRt,
-                fieldCorners)
+                fieldCorners,
+            )
 
             if isSpherical:
                 # TODO Implement this
                 """
-      cv::Point2d center = OpenCVHelp::AvgPoint(imagePoints);
-      int l = 0;
-      int t = 0;
-      int b = 0;
-      int r = 0;
-      for (int i = 0; i < 4; i++) {
-        if (imagePoints[i].x < imagePoints[l].x) {
-          l = i;
-        }
-      }
-      cv::Point2d lc = imagePoints[l];
-      std::array<double, 4> angles{};
-      t = (l + 1) % 4;
-      b = (l + 1) % 4;
-      for (int i = 0; i < 4; i++) {
-        if (i == l) {
-          continue;
-        }
-        cv::Point2d ic = imagePoints[i];
-        angles[i] = std::atan2(lc.y - ic.y, ic.x - lc.x);
-        if (angles[i] >= angles[t]) {
-          t = i;
-        }
-        if (angles[i] <= angles[b]) {
-          b = i;
-        }
-      }
-      for (int i = 0; i < 4; i++) {
-        if (i != t && i != l && i != b) {
-          r = i;
-        }
-      }
-      cv::RotatedRect rect{
-          cv::Point2d{center.x, center.y},
-          cv::Size2d{imagePoints[r].x - lc.x,
-                     imagePoints[b].y - imagePoints[t].y},
-          units::radian_t{-angles[r]}.convert<units::degrees>().to<float>()};
-      std::vector<cv::Point2f> points{};
-      rect.points(points);
+                cv::Point2d center = OpenCVHelp::AvgPoint(imagePoints);
+                int l = 0;
+                int t = 0;
+                int b = 0;
+                int r = 0;
+                for (int i = 0; i < 4; i++) {
+                  if (imagePoints[i].x < imagePoints[l].x) {
+                    l = i;
+                  }
+                }
+                cv::Point2d lc = imagePoints[l];
+                std::array<double, 4> angles{};
+                t = (l + 1) % 4;
+                b = (l + 1) % 4;
+                for (int i = 0; i < 4; i++) {
+                  if (i == l) {
+                    continue;
+                  }
+                  cv::Point2d ic = imagePoints[i];
+                  angles[i] = std::atan2(lc.y - ic.y, ic.x - lc.x);
+                  if (angles[i] >= angles[t]) {
+                    t = i;
+                  }
+                  if (angles[i] <= angles[b]) {
+                    b = i;
+                  }
+                }
+                for (int i = 0; i < 4; i++) {
+                  if (i != t && i != l && i != b) {
+                    r = i;
+                  }
+                }
+                cv::RotatedRect rect{
+                    cv::Point2d{center.x, center.y},
+                    cv::Size2d{imagePoints[r].x - lc.x,
+                               imagePoints[b].y - imagePoints[t].y},
+                    units::radian_t{-angles[r]}.convert<units::degrees>().to<float>()};
+                std::vector<cv::Point2f> points{};
+                rect.points(points);
 
-      // Can't find an easier way to convert from Point2f to Point2d
-      imagePoints.clear();
-      std::transform(points.begin(), points.end(),
-                     std::back_inserter(imagePoints),
-                     [](const cv::Point2f& p) { return (cv::Point2d)p; });
-                
+                // Can't find an easier way to convert from Point2f to Point2d
+                imagePoints.clear();
+                std::transform(points.begin(), points.end(),
+                               std::back_inserter(imagePoints),
+                               [](const cv::Point2f& p) { return (cv::Point2d)p; });
+
                 """
                 pass
 
@@ -294,33 +302,42 @@ class PhotonCameraSim:
             centerRot = self.prop.getPixelRot(centerPt)
             areaPercent = self.prop.getContourAreaPercent(noisyTargetCorners)
 
-            if not self.canSeeCorner(noisyTargetCorners) or not areaPercent >= self.minTargetAreaPercent:
+            if (
+                not self.canSeeCorner(noisyTargetCorners)
+                or not areaPercent >= self.minTargetAreaPercent
+            ):
                 continue
 
-            pnpSim : PnpResult | None = None
+            pnpSim: PnpResult | None = None
             if tgt.fiducialId >= 0 and len(tgt.getFieldVertices()) == 4:
-                pnpSim = OpenCVHelp.solvePNP_SQPNP(self.prop.getIntrinsics(),
-                self.prop.getDistCoeffs(), tgt.getModel().getVertices(), noisyTargetCorners)
-            
-            #tempCorners = OpenCVHelp.pointsToCorners(minAreaRectPts)
+                pnpSim = OpenCVHelp.solvePNP_SQPNP(
+                    self.prop.getIntrinsics(),
+                    self.prop.getDistCoeffs(),
+                    tgt.getModel().getVertices(),
+                    noisyTargetCorners,
+                )
+
+            # tempCorners = OpenCVHelp.pointsToCorners(minAreaRectPts)
             smallVec: list[TargetCorner] = []
 
-            #for corner in tempCorners:
+            # for corner in tempCorners:
             for corner in minAreaRectPts:
                 smallVec.append(TargetCorner(corner[0], corner[1]))
 
             cornersFloat = OpenCVHelp.pointsToTargetCorners(noisyTargetCorners)
 
-            detectableTgts.append(PhotonTrackedTarget(
-                yaw=math.degrees(-centerRot.Z()),
-                pitch=math.degrees(-centerRot.Y()),
-                area=areaPercent,
-                skew=math.degrees(centerRot.X()),
-                fiducialId=tgt.fiducialId,
-                bestCameraToTarget= pnpSim.best if pnpSim else Transform3d(),
-                altCameraToTarget= pnpSim.alt if pnpSim else Transform3d(),
-                poseAmbiguity= pnpSim.ambiguity if pnpSim else -1,
-            ))
+            detectableTgts.append(
+                PhotonTrackedTarget(
+                    yaw=math.degrees(-centerRot.Z()),
+                    pitch=math.degrees(-centerRot.Y()),
+                    area=areaPercent,
+                    skew=math.degrees(centerRot.X()),
+                    fiducialId=tgt.fiducialId,
+                    bestCameraToTarget=pnpSim.best if pnpSim else Transform3d(),
+                    altCameraToTarget=pnpSim.alt if pnpSim else Transform3d(),
+                    poseAmbiguity=pnpSim.ambiguity if pnpSim else -1,
+                )
+            )
 
         # Video streams disabled for now
         if self.enableRawStream:
@@ -335,14 +352,19 @@ class PhotonCameraSim:
 
         multiTagResults: MultiTargetPNPResult | None = None
 
-        visibleLayoutTags = VisionEstimation.getVisibleLayoutTags(detectableTgts, self.tagLayout)
+        visibleLayoutTags = VisionEstimation.getVisibleLayoutTags(
+            detectableTgts, self.tagLayout
+        )
 
         if len(visibleLayoutTags) > 1:
             usedIds = [tag.ID for tag in visibleLayoutTags]
             usedIds.sort()
             pnpResult = VisionEstimation.estimateCamPosePNP(
-                self.prop.getIntrinsics(), self.prop.getDistCoeffs(),
-                detectableTgts, self.tagLayout, TargetModel.AprilTag36h11()
+                self.prop.getIntrinsics(),
+                self.prop.getDistCoeffs(),
+                detectableTgts,
+                self.tagLayout,
+                TargetModel.AprilTag36h11(),
             )
             if pnpResult is not None:
                 multiTagResults = MultiTargetPNPResult(pnpResult, usedIds)

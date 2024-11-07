@@ -90,11 +90,15 @@ class OpenCVHelp:
         camRt: RotTrlTransform3d,
         objectTranslations: list[Translation3d],
     ) -> np.ndarray:
-   
+
         objectPoints = OpenCVHelp.translationToTVec(objectTranslations)
         rvec = OpenCVHelp.rotationToRVec(camRt.getRotation())
-        tvec = OpenCVHelp.translationToTVec([camRt.getTranslation(),])
-  
+        tvec = OpenCVHelp.translationToTVec(
+            [
+                camRt.getTranslation(),
+            ]
+        )
+
         pts, _ = cv.projectPoints(objectPoints, rvec, tvec, cameraMatrix, distCoeffs)
         return pts
 
@@ -106,33 +110,39 @@ class OpenCVHelp:
     def rotationEDNToNWU(rot: Rotation3d) -> Rotation3d:
         return -EDN_TO_NWU + (rot + EDN_TO_NWU)
 
-
     @staticmethod
     def tVecToTranslation(tvecInput: np.ndarray) -> Translation3d:
-        return OpenCVHelp.translationEDNToNWU(Translation3d(tvecInput[0],
-            tvecInput[1],tvecInput[2]))
-        
+        return OpenCVHelp.translationEDNToNWU(
+            Translation3d(tvecInput[0], tvecInput[1], tvecInput[2])
+        )
+
     @staticmethod
     def rVecToRotation(rvecInput: np.ndarray) -> Rotation3d:
-        return OpenCVHelp.rotationEDNToNWU(Rotation3d(rvecInput[0],rvecInput[1],rvecInput[2]))
-  
-
+        return OpenCVHelp.rotationEDNToNWU(
+            Rotation3d(rvecInput[0], rvecInput[1], rvecInput[2])
+        )
 
     @staticmethod
-    def solvePNP_SQPNP(cameraMatrix: np.ndarray, distCoeffs: np.ndarray,
-         modelTrls: list[Translation3d], imagePoints: np.ndarray) -> PnpResult | None :
+    def solvePNP_SQPNP(
+        cameraMatrix: np.ndarray,
+        distCoeffs: np.ndarray,
+        modelTrls: list[Translation3d],
+        imagePoints: np.ndarray,
+    ) -> PnpResult | None:
         objectMat = OpenCVHelp.translationToTVec(modelTrls)
 
         retval, rvecs, tvecs, reprojectionError = cv.solvePnPGeneric(
-            objectMat, imagePoints, cameraMatrix, distCoeffs, flags= cv.SOLVEPNP_SQPNP)
+            objectMat, imagePoints, cameraMatrix, distCoeffs, flags=cv.SOLVEPNP_SQPNP
+        )
 
-        error = reprojectionError[0,0]
-        best = Transform3d(OpenCVHelp.tVecToTranslation(tvecs[0]),
-                            OpenCVHelp.rVecToRotation(rvecs[0]))
+        error = reprojectionError[0, 0]
+        best = Transform3d(
+            OpenCVHelp.tVecToTranslation(tvecs[0]), OpenCVHelp.rVecToRotation(rvecs[0])
+        )
 
         if math.isnan(error):
             print("SolvePNP_Square failed!")
             return None
 
-        result = PnpResult(best = best, bestReprojError=error)
+        result = PnpResult(best=best, bestReprojError=error)
         return result
