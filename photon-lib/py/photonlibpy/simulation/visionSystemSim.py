@@ -1,6 +1,6 @@
 from .photonCameraSim import PhotonCameraSim
 from .visionTargetSim import VisionTargetSim
-from ..estimation.targetModel import AprilTag36h11
+from ..estimation import TargetModel
 
 from wpilib import Field2d
 from wpimath.geometry import Pose2d, Pose3d, Transform3d
@@ -155,7 +155,7 @@ class VisionSystemSim:
             tag_pose = layout.getTagPose(tag.ID)
             # TODO this was done to make the python gods happy. Confirm that this is desired or if types dont matter
             assert tag_pose is not None
-            targets.append(VisionTargetSim(tag_pose, AprilTag36h11(), tag.ID))
+            targets.append(VisionTargetSim(tag_pose, TargetModel.AprilTag36h11(), tag.ID))
         self.addVisionTargets(targets, "apriltag")
 
     def clearVisionTargets(self) -> None:
@@ -241,4 +241,4 @@ class VisionSystemSim:
             self.dbgField.getObject("visibleTargetPoses").setPoses(visTgtPoses2d)
 
         if len(cameraPoses2d) != 0:
-            self.dbgField.GetObject("cameras").setPoses(cameraPoses2d)
+            self.dbgField.getObject("cameras").setPoses(cameraPoses2d)
