@@ -1,12 +1,16 @@
 # Quick Configure
 
-## Variables to configure
+## Settings to configure
+
+### Team number
+
+In order for photonvision to connect to the roborio it needs to know your team number.
 
 ### Network Hostname
 
 Rename each device from the default "Photonvision" to a unique hostname (e.g., "Photon-OrangePi-Left" or "Photon-RPi5-Back"). This helps differentiate multiple coprocessors on your network, making it easier to manage them.
 
-### Pipeline Settings
+## Pipeline Settings
 
 #### Apriltag
 
