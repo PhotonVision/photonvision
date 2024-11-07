@@ -46,6 +46,7 @@ class MessageType(TypedDict):
     # C++ helpers
     cpp_include: str
     # python shim types
+    python_encode_shim: str
     python_decode_shim: str
     # Java import name
     java_import: str
