@@ -65,6 +65,10 @@ public class KernelLogLogger {
     }
 
     public void outputNewPrintks() {
+        if (listener == null) {
+            return;
+        }
+
         for (var msg : listener.getNewlines()) {
             // We currently set all logs to debug regardless of their actual level
             logger.log(msg, LogLevel.DEBUG);
