@@ -135,7 +135,8 @@ class PhotonCamera:
         return ret
 
     def getLatestResult(self) -> PhotonPipelineResult:
-        self._versionCheck()
+        # TODO this breaks with the new sim stuff
+        # self._versionCheck()
 
         now = RobotController.getFPGATime()
         packetWithTimestamp = self._rawBytesEntry.getAtomic()

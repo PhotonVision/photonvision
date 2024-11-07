@@ -372,7 +372,7 @@ class PhotonCameraSim:
         self.heartbeatCounter += 1
         return PhotonPipelineResult(
             metadata=PhotonPipelineMetadata(
-                self.heartbeatCounter, latency * 1e6, 1000000
+                self.heartbeatCounter, int(latency * 1e6), 1000000
             ),
             targets=detectableTgts,
             multiTagResult=multiTagResults,
@@ -387,11 +387,8 @@ class PhotonCameraSim:
 
         self.ts.latencyMillisEntry.set(result.getLatencyMillis(), receiveTimestamp)
 
-        #### TODO Create and send out Packet
-        # newPacket = Packet()
-        # newPacket.Pack(result)
-        #
-        # self.ts.rawBytesEntry.set(newPacket.getData(), receiveTimestamp)
+        newPacket = PhotonPipelineResult.photonStruct.pack(result)
+        self.ts.rawBytesEntry.set(newPacket.getData(), receiveTimestamp)
 
         hasTargets = result.hasTargets()
         self.ts.hasTargetEntry.set(hasTargets, receiveTimestamp)
