@@ -3,7 +3,7 @@ from ..generated.PhotonPipelineResultSerde import PhotonPipelineResultSerde
 from wpimath.geometry import Transform3d
 
 PhotonPipelineResult_TYPE_STRING = (
-    "photonstruct:PhotonPipelineResult:" + PhotonPipelineResultSerde.MESSAGE_FORMAT
+    "photonstruct:PhotonPipelineResult:" + PhotonPipelineResultSerde.MESSAGE_VERSION
 )
 
 
