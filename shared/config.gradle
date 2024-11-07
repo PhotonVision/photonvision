@@ -85,7 +85,7 @@ ext.appendDebugPathToBinaries = { binaries ->
     }
 }
 
-def licenseFile = file("$rootDir/LICENCE")
+def licenseFile = file("$rootDir/LICENSE")
 
 // Create ZIP tasks for each component.
 ext.createComponentZipTasks = { components, names, base, type, project, func ->
