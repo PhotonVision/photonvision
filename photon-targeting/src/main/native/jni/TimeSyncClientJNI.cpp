@@ -20,20 +20,10 @@
 #include <cstdio>
 #include <string>
 
+#include "jni_utils.h"
 #include "net/TimeSyncClient.h"
 
 using namespace wpi::tsp;
-
-#define CHECK_PTR(ptr)                                               \
-  if (!ptr) {                                                        \
-    fmt::println("Got invalid pointer?? {}:{}", __FILE__, __LINE__); \
-    return;                                                          \
-  }
-#define CHECK_PTR_RETURN(ptr, default)                               \
-  if (!ptr) {                                                        \
-    fmt::println("Got invalid pointer?? {}:{}", __FILE__, __LINE__); \
-    return default;                                                  \
-  }
 
 /**
  * Finds a class and keeps it as a global reference.

@@ -15,16 +15,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.common.logging;
+#pragma once
 
-public enum LogGroup {
-    Camera,
-    WebServer,
-    VisionModule,
-    Data,
-    General,
-    Config,
-    CSCore,
-    NetworkTables,
-    System,
-}
+#define CHECK_PTR(ptr)                                               \
+  if (!ptr) {                                                        \
+    fmt::println("Got invalid pointer?? {}:{}", __FILE__, __LINE__); \
+    return;                                                          \
+  }
+#define CHECK_PTR_RETURN(ptr, default)                               \
+  if (!ptr) {                                                        \
+    fmt::println("Got invalid pointer?? {}:{}", __FILE__, __LINE__); \
+    return default;                                                  \
+  }

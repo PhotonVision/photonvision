@@ -30,8 +30,34 @@ import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.util.TimedTaskManager;
 
-@SuppressWarnings("unused")
+/** TODO: get rid of static {} blocks and refactor to singleton pattern */
 public class Logger {
+    private static final HashMap<LogGroup, LogLevel> levelMap = new HashMap<>();
+    private static final List<LogAppender> currentAppenders = new ArrayList<>();
+
+    private static final UILogAppender uiLogAppender = new UILogAppender();
+
+    // // TODO why's the logger care about this? split it out
+    // private static KernelLogLogger klogListener = null;
+
+    static {
+        levelMap.put(LogGroup.Camera, LogLevel.INFO);
+        levelMap.put(LogGroup.General, LogLevel.INFO);
+        levelMap.put(LogGroup.WebServer, LogLevel.INFO);
+        levelMap.put(LogGroup.Data, LogLevel.INFO);
+        levelMap.put(LogGroup.VisionModule, LogLevel.INFO);
+        levelMap.put(LogGroup.Config, LogLevel.INFO);
+        levelMap.put(LogGroup.CSCore, LogLevel.TRACE);
+        levelMap.put(LogGroup.NetworkTables, LogLevel.DEBUG);
+        levelMap.put(LogGroup.System, LogLevel.DEBUG);
+
+        currentAppenders.add(new ConsoleLogAppender());
+        currentAppenders.add(uiLogAppender);
+        addFileAppender(PathManager.getInstance().getLogPath());
+
+        cleanLogs(PathManager.getInstance().getLogsDir());
+    }
+
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_BLACK = "\u001B[30m";
     public static final String ANSI_RED = "\u001B[31m";
@@ -49,8 +75,6 @@ public class Logger {
 
     private static final List<Pair<String, LogLevel>> uiBacklog = new ArrayList<>();
     private static boolean connected = false;
-
-    private static final UILogAppender uiLogAppender = new UILogAppender();
 
     private final String className;
     private final LogGroup group;
@@ -87,27 +111,6 @@ public class Logger {
                 .append(logMessage);
         if (color) builder.append(ANSI_RESET);
         return builder.toString();
-    }
-
-    private static final HashMap<LogGroup, LogLevel> levelMap = new HashMap<>();
-    private static final List<LogAppender> currentAppenders = new ArrayList<>();
-
-    static {
-        levelMap.put(LogGroup.Camera, LogLevel.INFO);
-        levelMap.put(LogGroup.General, LogLevel.INFO);
-        levelMap.put(LogGroup.WebServer, LogLevel.INFO);
-        levelMap.put(LogGroup.Data, LogLevel.INFO);
-        levelMap.put(LogGroup.VisionModule, LogLevel.INFO);
-        levelMap.put(LogGroup.Config, LogLevel.INFO);
-        levelMap.put(LogGroup.CSCore, LogLevel.TRACE);
-        levelMap.put(LogGroup.NetworkTables, LogLevel.DEBUG);
-    }
-
-    static {
-        currentAppenders.add(new ConsoleLogAppender());
-        currentAppenders.add(uiLogAppender);
-        addFileAppender(PathManager.getInstance().getLogPath());
-        cleanLogs(PathManager.getInstance().getLogsDir());
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")

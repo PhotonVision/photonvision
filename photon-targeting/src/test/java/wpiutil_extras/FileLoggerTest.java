@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net;
+package wpiutil_extras;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -25,14 +25,15 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.photonvision.jni.PhotonTargetingJniLoader;
-import org.photonvision.jni.TimeSyncClient;
-import org.photonvision.jni.TimeSyncServer;
+import org.photonvision.jni.QueuedFileLogger;
 import org.photonvision.jni.WpilibLoader;
 
-public class TimeSyncTest {
+public class FileLoggerTest {
     @BeforeAll
     public static void load_wpilib() throws UnsatisfiedLinkError, IOException {
-        WpilibLoader.loadLibraries();
+        if (!WpilibLoader.loadLibraries()) {
+            fail();
+        }
         if (!PhotonTargetingJniLoader.load()) {
             fail();
         }
@@ -47,23 +48,15 @@ public class TimeSyncTest {
 
     @Test
     public void smoketest() throws InterruptedException {
-        // NetworkTableInstance.getDefault().stopClient();
-        // NetworkTableInstance.getDefault().startServer();
+        var logger = new QueuedFileLogger("/var/log/kern.log");
+        for (int i = 0; i < 100; i++) {
+            Thread.sleep(1000);
 
-        var server = new TimeSyncServer(5810);
-
-        System.err.println("Waiting: PID=" + ProcessHandle.current().pid());
-
-        server.start();
-
-        var client = new TimeSyncClient("127.0.0.1", 5810, 0.5);
-
-        for (int i = 0; i < 5; i++) {
-            Thread.sleep(100);
-            System.out.println(client.getPingMetadata());
+            for (var line : logger.getNewlines()) {
+                System.out.println(" ->:" + line);
+            }
         }
 
-        server.stop();
-        client.stop();
+        logger.stop();
     }
 }

@@ -53,6 +53,7 @@ import org.photonvision.common.util.file.ProgramDirectoryUtilities;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.processes.VisionModuleManager;
+import org.zeroturnaround.zip.ZipUtil;
 
 public class RequestHandler {
     // Treat all 2XX calls as "INFO"
@@ -422,20 +423,34 @@ public class RequestHandler {
         try {
             ShellExec shell = new ShellExec();
             var tempPath = Files.createTempFile("photonvision-journalctl", ".txt");
-            shell.executeBashCommand("journalctl -u photonvision.service > " + tempPath.toAbsolutePath());
+            var tempPath2 = Files.createTempFile("photonvision-kernelogs", ".txt");
+            shell.executeBashCommand(
+                    "journalctl -u photonvision.service > "
+                            + tempPath.toAbsolutePath()
+                            + " && journalctl -k > "
+                            + tempPath2.toAbsolutePath());
 
             while (!shell.isOutputCompleted()) {
                 // TODO: add timeout
             }
 
             if (shell.getExitCode() == 0) {
-                // Wrote to the temp file! Add it to the ctx
-                var stream = new FileInputStream(tempPath.toFile());
-                ctx.contentType("text/plain");
-                ctx.header("Content-Disposition", "attachment; filename=\"photonvision-journalctl.txt\"");
-                ctx.status(200);
+                // Wrote to the temp file! Zip and yeet it to the client
+
+                var out = Files.createTempFile("photonvision-logs", "zip").toFile();
+
+                try {
+                    ZipUtil.packEntries(new File[] {tempPath.toFile(), tempPath2.toFile()}, out);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                var stream = new FileInputStream(out);
+                ctx.contentType("application/zip");
+                ctx.header("Content-Disposition", "attachment; filename=\"photonvision-logs.zip\"");
                 ctx.result(stream);
-                logger.info("Uploading settings with size " + stream.available());
+                ctx.status(200);
+                logger.info("Outputting log ZIP with size " + stream.available());
             } else {
                 ctx.status(500);
                 ctx.result("The journalctl service was unable to export logs");
