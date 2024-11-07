@@ -13,7 +13,7 @@ class RotTrlTransform3d:
     def inverse(self) -> Self:
         invRot = -self.rot
         invTrl = -(self.trl.rotateBy(invRot))
-        return RotTrlTransform3d(invRot, invTrl)
+        return type(self)(invRot, invTrl)
 
     def getTransform(self) -> Transform3d:
         return Transform3d(self.trl, self.rot)
