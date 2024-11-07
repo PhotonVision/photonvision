@@ -144,5 +144,6 @@ class OpenCVHelp:
             print("SolvePNP_Square failed!")
             return None
 
-        result = PnpResult(best=best, bestReprojError=error)
+        # We have no alternative so set it to best as well
+        result = PnpResult(best=best, bestReprojError=error, alt=best, altReprojError=error)
         return result
