@@ -59,7 +59,7 @@ jobs:
           pattern: photonlib-vendor-json
       - uses: peter-evans/repository-dispatch@v3
         if: |
-          github.repository == 'PhotonVision/photonvision' &&
+          github.repository == 'mcm001/photonvision' &&
           startsWith(github.ref, 'refs/tags/v')
         with:
           token: ${{ secrets.VENDOR_JSON_REPO_PUSH_TOKEN }}
