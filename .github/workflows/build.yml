@@ -542,7 +542,7 @@ jobs:
         with:
           merge-multiple: true
           pattern: image-*
-      # Download maven
+      # Download our vendor JSON
       - uses: actions/download-artifact@v4
         with:
           pattern: photonlib-vendor-json
@@ -580,3 +580,22 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  dispatch:
+    name: dispatch
+    needs: [build-photonlib-vendorjson]
+    runs-on: ubuntu-22.04
+    steps:
+      # Download our vendor JSON
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: photonlib-vendor-json
+      - uses: peter-evans/repository-dispatch@v3
+        if: |
+          github.repository == 'PhotonVision/photonvision' &&
+          startsWith(github.ref, 'refs/tags/v')
+        with:
+          token: ${{ secrets.VENDOR_JSON_REPO_PUSH_TOKEN }}
+          repository: PhotonVision/vendor-json-repo
+          event-type: tag
+          client-payload: '{"run_id": "${{ github.event.workflow_run.id }}", "package_version": "${{ github.ref_name }}"}'
