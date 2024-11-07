@@ -4,6 +4,7 @@ plugins {
 
 import java.nio.file.Path
 
+ext.licenseFile = file("$rootDir/LICENSE")
 apply from: "${rootDir}/shared/common.gradle"
 
 wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()

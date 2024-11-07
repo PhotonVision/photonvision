@@ -9,6 +9,7 @@ ext {
     includePhotonTargeting = true
     // Include the generated Version file
     generatedHeaders = "src/generate/native/include"
+    licenseFile = file("LICENSE")
 }
 
 apply plugin: 'cpp'
