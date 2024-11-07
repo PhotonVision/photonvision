@@ -325,23 +325,29 @@ class SimCameraProperties:
         else:
             return (None, None)
 
-    def estPixelNoise(
-        self, points: list[typing.Tuple[float, float]]
-    ) -> list[typing.Tuple[float, float]]:
+    def estPixelNoise(self, points: np.ndarray) -> np.ndarray:
+        assert points.shape[1] == 1, points.shape
+        assert points.shape[2] == 2, points.shape
         if self.avgErrorPx == 0 and self.errorStdDevPx == 0:
             return points
 
-        noisyPts: list[typing.Tuple[float, float]] = []
+        noisyPts: list[list] = []
         for p in points:
-            error = self.avgErrorPx + np.random.normal(0.0, 1.0, 1) * self.errorStdDevPx
+            error = (
+                self.avgErrorPx + np.random.normal(0.0, 1.0, 1)[0] * self.errorStdDevPx
+            )
             errorAngle = np.random.uniform(0.0, 1.0) * 2.0 * math.pi - math.pi
             noisyPts.append(
-                (
-                    float(p[0] + error * math.cos(errorAngle)),
-                    float(p[1] + error * math.sin(errorAngle)),
-                )
+                [
+                    [
+                        float(p[0, 0] + error * math.cos(errorAngle)),
+                        float(p[0, 1] + error * math.sin(errorAngle)),
+                    ]
+                ]
             )
-        return noisyPts
+        retval = np.array(noisyPts, dtype=np.float32)
+        assert points.shape == retval.shape, retval
+        return retval
 
     def estLatency(self) -> seconds:
         return max(
@@ -353,175 +359,181 @@ class SimCameraProperties:
         return self.frameSpeed + max(0.0, self.estLatency() - self.frameSpeed)
 
 
-def PERFECT_90DEG() -> SimCameraProperties:
-    return SimCameraProperties()
+    @classmethod
+    def PERFECT_90DEG(cls) -> typing.Self:
+        return cls()
 
 
-def PI4_LIFECAM_320_240() -> SimCameraProperties:
-    prop = SimCameraProperties()
-    prop.setCalibration(
-        320,
-        240,
-        newCamIntrinsics=np.array(
-            [
-                [328.2733242048587, 0.0, 164.8190261141906],
-                [0.0, 318.0609794305216, 123.8633838438093],
-                [0.0, 0.0, 1.0],
-            ]
-        ),
-        newDistCoeffs=np.array(
-            [
+    @classmethod
+    def PI4_LIFECAM_320_240(cls) -> typing.Self:
+        prop = cls()
+        prop.setCalibration(
+            320,
+            240,
+            newCamIntrinsics=np.array(
                 [
-                    0.09957946553445934,
-                    -0.9166265114485799,
-                    0.0019519890627236526,
-                    -0.0036071725380870333,
-                    1.5627234622420942,
-                    0,
-                    0,
-                    0,
+                    [328.2733242048587, 0.0, 164.8190261141906],
+                    [0.0, 318.0609794305216, 123.8633838438093],
+                    [0.0, 0.0, 1.0],
                 ]
-            ]
-        ),
-    )
-    prop.setCalibError(0.21, 0.0124)
-    prop.setFPS(30.0)
-    prop.setAvgLatency(30.0e-3)
-    prop.setLatencyStdDev(10.0e-3)
-    return prop
-
-
-def PI4_LIFECAM_640_480() -> SimCameraProperties:
-    prop = SimCameraProperties()
-    prop.setCalibration(
-        640,
-        480,
-        newCamIntrinsics=np.array(
-            [
-                [669.1428078983059, 0.0, 322.53377249329213],
-                [0.0, 646.9843137061716, 241.26567383784163],
-                [0.0, 0.0, 1.0],
-            ]
-        ),
-        newDistCoeffs=np.array(
-            [
+            ),
+            newDistCoeffs=np.array(
                 [
-                    0.12788470750464645,
-                    -1.2350335805796528,
-                    0.0024990767286192732,
-                    -0.0026958287600230705,
-                    2.2951386729115537,
-                    0,
-                    0,
-                    0,
+                    [
+                        0.09957946553445934,
+                        -0.9166265114485799,
+                        0.0019519890627236526,
+                        -0.0036071725380870333,
+                        1.5627234622420942,
+                        0,
+                        0,
+                        0,
+                    ]
                 ]
-            ]
-        ),
-    )
-    prop.setCalibError(0.26, 0.046)
-    prop.setFPS(15.0)
-    prop.setAvgLatency(65.0e-3)
-    prop.setLatencyStdDev(15.0e-3)
-    return prop
+            ),
+        )
+        prop.setCalibError(0.21, 0.0124)
+        prop.setFPS(30.0)
+        prop.setAvgLatency(30.0e-3)
+        prop.setLatencyStdDev(10.0e-3)
+        return prop
 
 
-def LL2_640_480() -> SimCameraProperties:
-    prop = SimCameraProperties()
-    prop.setCalibration(
-        640,
-        480,
-        newCamIntrinsics=np.array(
-            [
-                [511.22843367007755, 0.0, 323.62049380211096],
-                [0.0, 514.5452336723849, 261.8827920543568],
-                [0.0, 0.0, 1.0],
-            ]
-        ),
-        newDistCoeffs=np.array(
-            [
+    @classmethod
+    def PI4_LIFECAM_640_480(cls) -> typing.Self:
+        prop = cls()
+        prop.setCalibration(
+            640,
+            480,
+            newCamIntrinsics=np.array(
                 [
-                    0.1917469998873756,
-                    -0.5142936883324216,
-                    0.012461562046896614,
-                    0.0014084973492408186,
-                    0.35160648971214437,
-                    0,
-                    0,
-                    0,
+                    [669.1428078983059, 0.0, 322.53377249329213],
+                    [0.0, 646.9843137061716, 241.26567383784163],
+                    [0.0, 0.0, 1.0],
                 ]
-            ]
-        ),
-    )
-    prop.setCalibError(0.25, 0.05)
-    prop.setFPS(15.0)
-    prop.setAvgLatency(35.0e-3)
-    prop.setLatencyStdDev(8.0e-3)
-    return prop
-
-
-def LL2_960_720() -> SimCameraProperties:
-    prop = SimCameraProperties()
-    prop.setCalibration(
-        960,
-        720,
-        newCamIntrinsics=np.array(
-            [
-                [769.6873145148892, 0.0, 486.1096609458122],
-                [0.0, 773.8164483705323, 384.66071662358354],
-                [0.0, 0.0, 1.0],
-            ]
-        ),
-        newDistCoeffs=np.array(
-            [
+            ),
+            newDistCoeffs=np.array(
                 [
-                    0.189462064814501,
-                    -0.49903003669627627,
-                    0.007468423590519429,
-                    0.002496885298683693,
-                    0.3443122090208624,
-                    0,
-                    0,
-                    0,
+                    [
+                        0.12788470750464645,
+                        -1.2350335805796528,
+                        0.0024990767286192732,
+                        -0.0026958287600230705,
+                        2.2951386729115537,
+                        0,
+                        0,
+                        0,
+                    ]
                 ]
-            ]
-        ),
-    )
-    prop.setCalibError(0.35, 0.10)
-    prop.setFPS(10.0)
-    prop.setAvgLatency(50.0e-3)
-    prop.setLatencyStdDev(15.0e-3)
-    return prop
+            ),
+        )
+        prop.setCalibError(0.26, 0.046)
+        prop.setFPS(15.0)
+        prop.setAvgLatency(65.0e-3)
+        prop.setLatencyStdDev(15.0e-3)
+        return prop
 
 
-def LL2_1280_720() -> SimCameraProperties:
-    prop = SimCameraProperties()
-    prop.setCalibration(
-        1280,
-        720,
-        newCamIntrinsics=np.array(
-            [
-                [1011.3749416937393, 0.0, 645.4955139388737],
-                [0.0, 1008.5391755084075, 508.32877656020196],
-                [0.0, 0.0, 1.0],
-            ]
-        ),
-        newDistCoeffs=np.array(
-            [
+    @classmethod
+    def LL2_640_480(cls) -> typing.Self:
+        prop = cls()
+        prop.setCalibration(
+            640,
+            480,
+            newCamIntrinsics=np.array(
                 [
-                    0.13730101577061535,
-                    -0.2904345656989261,
-                    8.32475714507539e-4,
-                    -3.694397782014239e-4,
-                    0.09487962227027584,
-                    0,
-                    0,
-                    0,
+                    [511.22843367007755, 0.0, 323.62049380211096],
+                    [0.0, 514.5452336723849, 261.8827920543568],
+                    [0.0, 0.0, 1.0],
                 ]
-            ]
-        ),
-    )
-    prop.setCalibError(0.37, 0.06)
-    prop.setFPS(7.0)
-    prop.setAvgLatency(60.0e-3)
-    prop.setLatencyStdDev(20.0e-3)
-    return prop
+            ),
+            newDistCoeffs=np.array(
+                [
+                    [
+                        0.1917469998873756,
+                        -0.5142936883324216,
+                        0.012461562046896614,
+                        0.0014084973492408186,
+                        0.35160648971214437,
+                        0,
+                        0,
+                        0,
+                    ]
+                ]
+            ),
+        )
+        prop.setCalibError(0.25, 0.05)
+        prop.setFPS(15.0)
+        prop.setAvgLatency(35.0e-3)
+        prop.setLatencyStdDev(8.0e-3)
+        return prop
+
+
+    @classmethod
+    def LL2_960_720(cls) -> typing.Self:
+        prop = cls()
+        prop.setCalibration(
+            960,
+            720,
+            newCamIntrinsics=np.array(
+                [
+                    [769.6873145148892, 0.0, 486.1096609458122],
+                    [0.0, 773.8164483705323, 384.66071662358354],
+                    [0.0, 0.0, 1.0],
+                ]
+            ),
+            newDistCoeffs=np.array(
+                [
+                    [
+                        0.189462064814501,
+                        -0.49903003669627627,
+                        0.007468423590519429,
+                        0.002496885298683693,
+                        0.3443122090208624,
+                        0,
+                        0,
+                        0,
+                    ]
+                ]
+            ),
+        )
+        prop.setCalibError(0.35, 0.10)
+        prop.setFPS(10.0)
+        prop.setAvgLatency(50.0e-3)
+        prop.setLatencyStdDev(15.0e-3)
+        return prop
+
+
+    @classmethod
+    def LL2_1280_720(cls) -> typing.Self:
+        prop = cls()
+        prop.setCalibration(
+            1280,
+            720,
+            newCamIntrinsics=np.array(
+                [
+                    [1011.3749416937393, 0.0, 645.4955139388737],
+                    [0.0, 1008.5391755084075, 508.32877656020196],
+                    [0.0, 0.0, 1.0],
+                ]
+            ),
+            newDistCoeffs=np.array(
+                [
+                    [
+                        0.13730101577061535,
+                        -0.2904345656989261,
+                        8.32475714507539e-4,
+                        -3.694397782014239e-4,
+                        0.09487962227027584,
+                        0,
+                        0,
+                        0,
+                    ]
+                ]
+            ),
+        )
+        prop.setCalibError(0.37, 0.06)
+        prop.setFPS(7.0)
+        prop.setAvgLatency(60.0e-3)
+        prop.setLatencyStdDev(20.0e-3)
+        return prop
