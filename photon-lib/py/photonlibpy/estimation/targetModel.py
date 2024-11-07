@@ -1,6 +1,6 @@
 from wpimath.geometry import Pose3d, Translation3d, Transform3d, Rotation3d, Rotation2d
 import math
-from typing import List
+from typing import List, Self
 
 from wpimath.units import meters
 
@@ -130,10 +130,10 @@ class TargetModel:
     def getIsSpherical(self) -> bool:
         return self.isSpherical
 
+    @classmethod
+    def AprilTag36h11(cls) -> Self:
+        return cls(width=6.5 * 0.0254, height=6.5 * 0.0254)
 
-def AprilTag36h11():
-    return TargetModel(width=6.5 * 0.0254, height=6.5 * 0.0254)
-
-
-def AprilTag16h5():
-    return TargetModel(width=6.0 * 0.0254, height=6.0 * 0.0254)
+    @classmethod
+    def AprilTag16h5(cls) -> Self:
+        return cls(width=6.0 * 0.0254, height=6.0 * 0.0254)
