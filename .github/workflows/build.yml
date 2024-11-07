@@ -65,4 +65,4 @@ jobs:
           token: ${{ secrets.VENDOR_JSON_REPO_PUSH_TOKEN }}
           repository: PhotonVision/vendor-json-repo
           event-type: tag
-          client-payload: '{"run_id": "${{ github.event.workflow_run.id }}", "package_version": "${{ github.ref_name }}"}'
+          client-payload: '{"run_id": "${{ github.run_id }}", "package_version": "${{ github.ref_name }}"}'
