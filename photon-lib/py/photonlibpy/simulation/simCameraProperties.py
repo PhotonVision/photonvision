@@ -1,3 +1,5 @@
+from ..estimation import RotTrlTransform3d
+
 from wpimath.geometry import (
     Rotation2d,
     Rotation3d,
@@ -229,11 +231,10 @@ class SimCameraProperties:
         )
 
     def getVisibleLine(
-        self, camRt: Transform3d, a: Translation3d, b: Translation3d
+        self, camRt: RotTrlTransform3d, a: Translation3d, b: Translation3d
     ) -> typing.Tuple[float | None, float | None]:
-        # Original header has camRt: RotTrlTransform3d
-        relA = camRt + Transform3d(a, Rotation3d())
-        relB = camRt + Transform3d(b, Rotation3d())
+        relA = camRt.apply(a)
+        relB = camRt.apply(b)
 
         if relA.X() <= 0.0 and relB.X() <= 0.0:
             return (None, None)
