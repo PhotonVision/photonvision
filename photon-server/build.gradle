@@ -25,6 +25,10 @@ application {
     mainClass = 'org.photonvision.Main'
 }
 
+jar {
+    from file("$rootDir/LICENSE")
+}
+
 shadowJar {
     archiveBaseName = "photonvision"
     archiveVersion = project.version as String
