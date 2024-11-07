@@ -317,10 +317,7 @@ class PhotonCameraSim:
                     noisyTargetCorners,
                 )
 
-            # tempCorners = OpenCVHelp.pointsToCorners(minAreaRectPts)
             smallVec: list[TargetCorner] = []
-
-            # for corner in tempCorners:
             for corner in minAreaRectPts:
                 smallVec.append(TargetCorner(corner[0], corner[1]))
 
@@ -334,6 +331,7 @@ class PhotonCameraSim:
                     skew=math.degrees(centerRot.X()),
                     fiducialId=tgt.fiducialId,
                     detectedCorners=cornersFloat,
+                    minAreaRectCorners=smallVec,
                     bestCameraToTarget=pnpSim.best if pnpSim else Transform3d(),
                     altCameraToTarget=pnpSim.alt if pnpSim else Transform3d(),
                     poseAmbiguity=pnpSim.ambiguity if pnpSim else -1,
