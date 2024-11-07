@@ -126,9 +126,6 @@ class OpenCVHelp:
         retval, rvecs, tvecs, reprojectionError = cv.solvePnPGeneric(
             objectMat, imagePoints, cameraMatrix, distCoeffs, flags= cv.SOLVEPNP_SQPNP)
 
-        if retval != 1:
-            return None
-
         error = reprojectionError[0,0]
         best = Transform3d(OpenCVHelp.tVecToTranslation(tvecs[0]),
                             OpenCVHelp.rVecToRotation(rvecs[0]))
