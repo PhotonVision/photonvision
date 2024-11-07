@@ -105,7 +105,6 @@ class PhotonCameraSim:
             (self.prop.getResWidth(), self.prop.getResHeight())
         )
 
-        # TODO what is the syntax to get and set the right nt subtable here
         self.ts.subTable = self.cam._cameraTable
         self.ts.updateEntries()
 
