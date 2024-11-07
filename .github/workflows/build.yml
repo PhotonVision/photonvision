@@ -53,10 +53,6 @@ jobs:
     needs: [build-photonlib-vendorjson]
     runs-on: ubuntu-22.04
     steps:
-      # Download our vendor JSON
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: photonlib-vendor-json
       - uses: peter-evans/repository-dispatch@v3
         # if: |
         #   github.repository == 'mcm001/photonvision' &&
