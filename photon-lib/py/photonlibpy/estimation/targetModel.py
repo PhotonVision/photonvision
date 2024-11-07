@@ -1,4 +1,5 @@
 from wpimath.geometry import Pose3d, Translation3d, Transform3d, Rotation3d, Rotation2d
+from . import RotTrlTransform3d
 import math
 from typing import List, Self
 
@@ -98,16 +99,12 @@ class TargetModel:
         self.vertices = verts
 
     def getFieldVertices(self, targetPose: Pose3d) -> List[Translation3d]:
-        # TODO This was changed from a RotTrlTransform3d. Is this fine?
-        basisChange = Transform3d(targetPose.translation(), targetPose.rotation())
+        basisChange = RotTrlTransform3d(targetPose.rotation(), targetPose.translation())
 
         retVal = []
 
         for vert in self.vertices:
-            # TODO This is the equivalent operation without the RotTrlTransform3d class
-            retVal.append(
-                vert.rotateBy(basisChange.rotation()) + basisChange.translation()
-            )
+            retVal.append(basisChange.apply(vert))
 
         return retVal
 

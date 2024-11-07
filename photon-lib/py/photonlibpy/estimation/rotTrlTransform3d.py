@@ -22,6 +22,9 @@ class RotTrlTransform3d:
     def getRotation(self) -> Rotation3d:
         return self.rot
 
+    def apply(self, trlToApply: Translation3d) -> Translation3d:
+        return trlToApply.rotateBy(self.rot) + self.trl
+
 
     @classmethod
     def makeRelativeTo(cls, pose: Pose3d) -> Self:
