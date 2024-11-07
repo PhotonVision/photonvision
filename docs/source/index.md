@@ -2,12 +2,18 @@
 :alt: PhotonVision
 ```
 
-Welcome to the official documentation of PhotonVision! PhotonVision is the free, fast, and easy-to-use vision processing solution for the *FIRST* Robotics Competition. PhotonVision is designed to get vision working on your robot *quickly*, without the significant cost of other similar solutions. PhotonVision supports a variety of COTS hardware, including the Raspberry Pi 3 and 4, the [Gloworm smart camera](https://photonvision.github.io/gloworm-docs/docs/quickstart/#finding-gloworm), the [SnakeEyes Pi hat](https://www.playingwithfusion.com/productview.php?pdid=133), and the Orange Pi 5.
+Welcome to the official documentation of PhotonVision! PhotonVision is the free, fast, and easy-to-use vision processing solution for the _FIRST_ Robotics Competition. PhotonVision is designed to get vision working on your robot _quickly_, without the significant cost of other similar solutions. PhotonVision supports a variety of COTS hardware, including the Raspberry Pi 3 and 4, the [Gloworm smart camera](https://photonvision.github.io/gloworm-docs/docs/quickstart/#finding-gloworm), the [SnakeEyes Pi hat](https://www.playingwithfusion.com/productview.php?pdid=133), and the Orange Pi 5.
 
 # Content
 
 ```{eval-rst}
 .. grid:: 2
+
+    .. grid-item-card::  Quick Start
+        :link: docs/quick-start/index
+        :link-type: doc
+
+        Quick start to using Photonvision.
 
     .. grid-item-card::  Getting Started
         :link: docs/installation/index
@@ -15,15 +21,16 @@ Welcome to the official documentation of PhotonVision! PhotonVision is the free,
 
         Get started with installing PhotonVision, creating a pipeline, and tuning it for usage in competitions.
 
+```
+
+```{eval-rst}
+.. grid:: 2
+
     .. grid-item-card::  Programming Reference and PhotonLib
         :link: docs/programming/index
         :link-type: doc
 
         Learn more about PhotonLib, our vendor dependency which makes it easier for teams to retrieve vision data, make various calculations, and more.
-```
-
-```{eval-rst}
-.. grid:: 2
 
     .. grid-item-card::  Integration
         :link: docs/integration/index
@@ -31,21 +38,26 @@ Welcome to the official documentation of PhotonVision! PhotonVision is the free,
 
         Pick how to use vision processing results to control a physical robot.
 
+```
+
+```{eval-rst}
+.. grid:: 2
+
     .. grid-item-card::  Code Examples
         :link: docs/examples/index
         :link-type: doc
 
         View various step by step guides on how to use data from PhotonVision in your code, along with game-specific examples.
-```
-
-```{eval-rst}
-.. grid:: 2
 
     .. grid-item-card::  Hardware
         :link: docs/hardware/index
         :link-type: doc
 
         Select appropriate hardware for high-quality and easy vision target detection.
+```
+
+```{eval-rst}
+.. grid:: 2
 
     .. grid-item-card::  Contributing
         :link: docs/contributing/index
@@ -77,6 +89,7 @@ PhotonVision is licensed under the [GNU GPL v3](https://www.gnu.org/licenses/gpl
 :maxdepth: 0
 
 docs/description
+docs/quick-start/index
 docs/hardware/index
 docs/installation/index
 docs/settings
