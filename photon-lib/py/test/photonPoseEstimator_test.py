@@ -57,7 +57,7 @@ def test_lowestAmbiguityStrategy():
 
     cameraOne = PhotonCameraInjector()
     cameraOne.result = PhotonPipelineResult(
-        11 * 1e6,
+        int(11 * 1e6),
         [
             PhotonTrackedTarget(
                 3.0,
@@ -127,7 +127,7 @@ def test_lowestAmbiguityStrategy():
             ),
         ],
         None,
-        metadata=PhotonPipelineMetadata(0, 2 * 1e3, 0),
+        metadata=PhotonPipelineMetadata(0, int(2 * 1e3), 0),
     )
 
     estimator = PhotonPoseEstimator(
@@ -146,7 +146,7 @@ def test_lowestAmbiguityStrategy():
 def test_multiTagOnCoprocStrategy():
     cameraOne = PhotonCameraInjector()
     cameraOne.result = PhotonPipelineResult(
-        11 * 1e6,
+        int(11 * 1e6),
         # There needs to be at least one target present for pose estimation to work
         # Doesn't matter which/how many targets for this test
         [
@@ -176,7 +176,7 @@ def test_multiTagOnCoprocStrategy():
         multiTagResult=MultiTargetPNPResult(
             PnpResult(True, Transform3d(1, 3, 2, Rotation3d()))
         ),
-        metadata=PhotonPipelineMetadata(0, 2 * 1e3, 0),
+        metadata=PhotonPipelineMetadata(0, int(2 * 1e3), 0),
     )
 
     estimator = PhotonPoseEstimator(
@@ -200,7 +200,7 @@ def test_cacheIsInvalidated():
 
     cameraOne = PhotonCameraInjector()
     result = PhotonPipelineResult(
-        20 * 1e6,
+        int(20 * 1e6),
         [
             PhotonTrackedTarget(
                 3.0,
@@ -225,7 +225,7 @@ def test_cacheIsInvalidated():
                 0.7,
             )
         ],
-        metadata=PhotonPipelineMetadata(0, 2 * 1e3, 0),
+        metadata=PhotonPipelineMetadata(0, int(2 * 1e3), 0),
     )
 
     estimator = PhotonPoseEstimator(
