@@ -61,7 +61,7 @@ inline constexpr std::string_view bfw =
     "\n\n";
 
 // bit of a hack -- start a TimeSync server on port 5810 (hard-coded). We want
-// to avoid doing this from static initialization
+// to avoid calling this from static initialization
 static void InitTspServer() {
   // We dont impose requirements about not calling the PhotonCamera constructor
   // from different threads, so i guess we need this?
@@ -128,8 +128,9 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
   HAL_Report(HALUsageReporting::kResourceType_PhotonCamera, InstanceCount);
   InstanceCount++;
 
-  // Not sure if this is safe or not, since PhotonCamera can still be
-  // constructed statically by user code?
+  // The Robot class is actually created here:
+  // https://github.com/wpilibsuite/allwpilib/blob/811b1309683e930a1ce69fae818f943ff161b7a5/wpilibc/src/main/native/include/frc/RobotBase.h#L33
+  // so we should be fine to call this from the ctor
   InitTspServer();
 }
 
