@@ -13,8 +13,8 @@ class PhotonTrackedTarget:
     fiducialId: int = -1
     bestCameraToTarget: Transform3d = field(default_factory=Transform3d)
     altCameraToTarget: Transform3d = field(default_factory=Transform3d)
-    minAreaRectCorners: list[TargetCorner] | None = None
-    detectedCorners: list[TargetCorner] | None = None
+    minAreaRectCorners: list[TargetCorner] = field(default_factory=list[TargetCorner])
+    detectedCorners: list[TargetCorner] = field(default_factory=list[TargetCorner])
     poseAmbiguity: float = 0.0
 
     def getYaw(self) -> float:
@@ -35,10 +35,10 @@ class PhotonTrackedTarget:
     def getPoseAmbiguity(self) -> float:
         return self.poseAmbiguity
 
-    def getMinAreaRectCorners(self) -> list[TargetCorner] | None:
+    def getMinAreaRectCorners(self) -> list[TargetCorner]:
         return self.minAreaRectCorners
 
-    def getDetectedCorners(self) -> list[TargetCorner] | None:
+    def getDetectedCorners(self) -> list[TargetCorner]:
         return self.detectedCorners
 
     def getBestCameraToTarget(self) -> Transform3d:
