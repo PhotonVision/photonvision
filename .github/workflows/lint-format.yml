@@ -64,6 +64,7 @@ jobs:
       - run: |
           chmod +x gradlew
           ./gradlew spotlessCheck
+        name: Run spotless
 
   client-lint-format:
     name: "PhotonClient Lint and Formatting"
