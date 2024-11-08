@@ -269,7 +269,7 @@ class PhotonPoseEstimator:
     def _multiTagOnCoprocStrategy(
         self, result: PhotonPipelineResult
     ) -> Optional[EstimatedRobotPose]:
-        if result.multitagResult.estimatedPose.isPresent:
+        if result.multitagResult is not None:
             best_tf = result.multitagResult.estimatedPose.best
             best = (
                 Pose3d()
