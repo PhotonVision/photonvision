@@ -10,8 +10,7 @@ def zipBaseName = "_GROUP_org_photonvision_${baseArtifactId}_ID_${baseArtifactId
 def jniBaseName = "_GROUP_edu_wpi_first_${nativeName}_ID_${nativeName}-jni_CLS"
 def jniCvStaticBaseName = "_GROUP_edu_wpi_first_${nativeName}_ID_${nativeName}-jnicvstatic_CLS"
 
-def licenseFile = file("$rootDir/LICENCE")
-
+def licenseFile = ext.licenseFile
 // Quick hack to make this name visible to photon-lib for combined
 ext.zipBaseName = zipBaseName
 ext.artifactGroupId = artifactGroupId

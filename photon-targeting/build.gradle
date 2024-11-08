@@ -8,6 +8,7 @@ apply plugin: 'edu.wpi.first.NativeUtils'
 apply plugin: 'edu.wpi.first.WpilibTools'
 apply plugin: 'edu.wpi.first.GradleJni'
 
+ext.licenseFile = file("$rootDir/LICENSE")
 apply from: "${rootDir}/shared/config.gradle"
 apply from: "${rootDir}/shared/javacommon.gradle"
 
