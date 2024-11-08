@@ -135,6 +135,9 @@ def test_lowestAmbiguityStrategy():
     )
 
     estimatedPose = estimator.update()
+
+    assert estimatedPose is not None
+    
     pose = estimatedPose.estimatedPose
 
     assertEquals(11 - 0.002, estimatedPose.timestampSeconds, 1e-3)
@@ -187,6 +190,9 @@ def test_multiTagOnCoprocStrategy():
     )
 
     estimatedPose = estimator.update()
+
+    assert estimatedPose is not None
+
     pose = estimatedPose.estimatedPose
 
     assertEquals(11 - 2e-3, estimatedPose.timestampSeconds, 1e-3)
@@ -257,6 +263,9 @@ def test_cacheIsInvalidated():
     # Update should cache the current timestamp (20) again
     cameraOne.result = result
     estimatedPose = estimator.update()
+
+    assert estimatedPose is not None
+
     assertEquals(20, estimatedPose.timestampSeconds, 0.01)
     assertEquals(20 - 2e-3, estimator._poseCacheTimestampSeconds, 1e-3)
 
