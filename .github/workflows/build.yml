@@ -165,6 +165,7 @@ jobs:
       - run: |
           chmod +x gradlew
           ./gradlew photon-targeting:build photon-lib:build -i
+        name: Build with Gradle
       - run: ./gradlew photon-lib:publish photon-targeting:publish
         name: Publish
         env:
