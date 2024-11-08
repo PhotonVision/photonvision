@@ -126,8 +126,8 @@ def test_lowestAmbiguityStrategy():
                 0.4,
             ),
         ],
-        None,
         metadata=PhotonPipelineMetadata(0, int(2 * 1e3), 0),
+        multitagResult=None,
     )
 
     estimator = PhotonPoseEstimator(
@@ -176,10 +176,10 @@ def test_multiTagOnCoprocStrategy():
                 0.7,
             )
         ],
-        multiTagResult=MultiTargetPNPResult(
+        metadata=PhotonPipelineMetadata(0, int(2 * 1e3), 0),
+        multitagResult=MultiTargetPNPResult(
             PnpResult(True, Transform3d(1, 3, 2, Rotation3d()))
         ),
-        metadata=PhotonPipelineMetadata(0, int(2 * 1e3), 0),
     )
 
     estimator = PhotonPoseEstimator(
