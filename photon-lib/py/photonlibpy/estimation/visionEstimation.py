@@ -51,7 +51,6 @@ class VisionEstimation:
                     corners += currentCorners
 
         if len(knownTags) == 0 or len(corners) == 0 or len(corners) % 4 != 0:
-            print(f"{len(corners)}")
             return None
 
         points = OpenCVHelp.cornersToPoints(corners)
