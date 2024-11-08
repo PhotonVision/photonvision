@@ -178,7 +178,7 @@ def test_multiTagOnCoprocStrategy():
         ],
         metadata=PhotonPipelineMetadata(0, int(2 * 1e3), 0),
         multitagResult=MultiTargetPNPResult(
-            PnpResult(True, Transform3d(1, 3, 2, Rotation3d()))
+            PnpResult(Transform3d(1, 3, 2, Rotation3d()))
         ),
     )
 
