@@ -137,7 +137,7 @@ def test_lowestAmbiguityStrategy():
     estimatedPose = estimator.update()
 
     assert estimatedPose is not None
-    
+
     pose = estimatedPose.estimatedPose
 
     assertEquals(11 - 0.002, estimatedPose.timestampSeconds, 1e-3)
