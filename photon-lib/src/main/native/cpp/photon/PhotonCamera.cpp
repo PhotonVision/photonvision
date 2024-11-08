@@ -60,10 +60,21 @@ inline constexpr std::string_view bfw =
     ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
     "\n\n";
 
-// bit of a hack -- start a TimeSync server on port 5810 (hard-coded)
-static std::mutex g_timeSyncServerMutex;
-static bool g_timeSyncServerStarted;
-static wpi::tsp::TimeSyncServer timesyncServer{5810};
+// bit of a hack -- start a TimeSync server on port 5810 (hard-coded). We want
+// to avoid doing this from static initialization
+static void InitTspServer() {
+  // We dont impose requirements about not calling the PhotonCamera constructor
+  // from different threads, so i guess we need this?
+  static std::mutex g_timeSyncServerMutex;
+  static bool g_timeSyncServerStarted{false};
+  static wpi::tsp::TimeSyncServer timesyncServer{5810};
+
+  std::lock_guard lock{g_timeSyncServerMutex};
+  if (!g_timeSyncServerStarted) {
+    timesyncServer.Start();
+    g_timeSyncServerStarted = true;
+  }
+}
 
 namespace photon {
 
@@ -117,13 +128,9 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
   HAL_Report(HALUsageReporting::kResourceType_PhotonCamera, InstanceCount);
   InstanceCount++;
 
-  {
-    std::lock_guard lock{g_timeSyncServerMutex};
-    if (!g_timeSyncServerStarted) {
-      timesyncServer.Start();
-      g_timeSyncServerStarted = true;
-    }
-  }
+  // Not sure if this is safe or not, since PhotonCamera can still be
+  // constructed statically by user code?
+  InitTspServer();
 }
 
 PhotonCamera::PhotonCamera(const std::string_view cameraName)
