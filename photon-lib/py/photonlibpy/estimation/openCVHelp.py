@@ -7,7 +7,7 @@ import cv2 as cv
 import numpy as np
 import math
 
-from typing import Tuple
+from typing import Any, Tuple
 
 
 NWU_TO_EDN = Rotation3d(np.array([[0, -1, 0], [0, 0, -1], [1, 0, 0]]))
@@ -45,15 +45,12 @@ class OpenCVHelp:
 
     @staticmethod
     def avgPoint(points: list[Tuple[float, float]]) -> Tuple[float, float]:
-        raise Exception("not implemented")
-        """
-  if (points.size() == 0) {
-    return cv::Point2f{};
-  }
-  cv::reduce(points, points, 0, cv::REDUCE_AVG);
-  return points[0];
-}        
-        """
+        x = 0.0
+        y = 0.0
+        for p in points:
+            x += p[0]
+            y += p[1]
+        return (x / len(points), y / len(points))
 
     @staticmethod
     def pointsToTargetCorners(points: np.ndarray) -> list[TargetCorner]:
@@ -85,6 +82,18 @@ class OpenCVHelp:
         return pts
 
     @staticmethod
+    def reorderCircular(elements: list[Any], backwards: bool, shiftStart: int) -> list[Any]:
+        size = len(elements)
+        reordered = []
+        dir = -1 if backwards else 1
+        for i in range(size):
+            index = (i * dir + shiftStart * dir) % size
+            if index < 0:
+                index += size
+            reordered.append(elements[index])
+        return reordered
+    
+    @staticmethod
     def translationEDNToNWU(trl: Translation3d) -> Translation3d:
         return trl.rotateBy(EDN_TO_NWU)
 
@@ -111,7 +120,9 @@ class OpenCVHelp:
         modelTrls: list[Translation3d],
         imagePoints: np.ndarray,
     ) -> PnpResult | None:
-        objectMat = OpenCVHelp.translationToTVec(modelTrls)
+        modelTrls = OpenCVHelp.reorderCircular(modelTrls, True, -1)
+        imagePoints = np.array(OpenCVHelp.reorderCircular(imagePoints, True, -1))
+        objectMat = np.array(OpenCVHelp.translationToTVec(modelTrls))
 
         retval, rvecs, tvecs, reprojectionError = cv.solvePnPGeneric(
             objectMat, imagePoints, cameraMatrix, distCoeffs, flags=cv.SOLVEPNP_SQPNP
