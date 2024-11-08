@@ -171,7 +171,8 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     @Override
     public void setBrightness(int brightness) {
         try {
-            camera.setBrightness(brightness);
+            //camera.setBrightness(brightness);
+	    softSet("brightness", brightness);
             this.lastBrightness = brightness;
         } catch (VideoException e) {
             logger.error("Failed to set camera brightness!", e);
@@ -214,10 +215,10 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
 
                 for (VideoMode videoMode : modes) {
                     // Filter grey modes
-                    if (videoMode.pixelFormat == PixelFormat.kGray
-                            || videoMode.pixelFormat == PixelFormat.kUnknown) {
-                        continue;
-                    }
+                    //if (videoMode.pixelFormat == PixelFormat.kGray
+                    //        || videoMode.pixelFormat == PixelFormat.kUnknown) {
+                    //    continue;
+                    //}
 
                     if (configuration.cameraQuirks.hasQuirk(CameraQuirk.FPSCap100)) {
                         if (videoMode.fps > 100) {

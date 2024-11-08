@@ -64,7 +64,7 @@ public class USBCameraSource extends VisionSource {
 
         if (getCameraConfiguration().cameraQuirks.hasQuirks()) {
             logger.info("Quirky camera detected: " + getCameraConfiguration().cameraQuirks.baseName);
-        }
+        } else logger.info("no quirks for:" + config.usbVID + ":" + config.usbPID + ":" + config.baseName + ".");
 
         // Aid to the development team - record the properties available for whatever the user plugged
         // in

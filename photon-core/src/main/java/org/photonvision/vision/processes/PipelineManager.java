@@ -262,7 +262,11 @@ public class PipelineManager {
                 currentUserPipeline =
                         new AprilTagPipeline((AprilTagPipelineSettings) desiredPipelineSettings);
                 break;
-
+            case AprilTagCuda:
+                logger.debug("Creating AprilTagCuda pipeline");
+                currentUserPipeline =
+                        new AprilTagCudaPipeline((AprilTagCudaPipelineSettings) desiredPipelineSettings);
+                break;
             case Aruco:
                 logger.debug("Creating Aruco Pipeline");
                 currentUserPipeline = new ArucoPipeline((ArucoPipelineSettings) desiredPipelineSettings);
@@ -357,6 +361,12 @@ public class PipelineManager {
             case AprilTag:
                 {
                     var added = new AprilTagPipelineSettings();
+                    added.pipelineNickname = nickname;
+                    return added;
+                }
+            case AprilTagCuda:
+                {
+                    var added = new AprilTagCudaPipelineSettings();
                     added.pipelineNickname = nickname;
                     return added;
                 }

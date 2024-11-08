@@ -86,6 +86,9 @@ public class QuirkyCamera {
                             CameraQuirk.ArduCamCamera,
                             CameraQuirk.Gain,
                             CameraQuirk.ArduOV9782Controls),
+		    // Innomaker OV9281 Jetson Orin MIPI
+                    new QuirkyCamera(-1, -1, "vi-output, ov9281 10-0060", "vi-output,_ov9821_10-0060", CameraQuirk.Gain),
+                    new QuirkyCamera(-1, -1, "vi-output, ov9281 9-0060", "vi-output,_ov9821_9-0060", CameraQuirk.Gain),
                     // Innomaker OV9281
                     new QuirkyCamera(
                             0x0c45, 0x636d, "USB Camera", "Innomaker OV9281", CameraQuirk.InnoOV9281Controls));
