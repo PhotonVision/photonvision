@@ -53,7 +53,9 @@ class PhotonCamera:
         self._cameraTable = photonvision_root_table.getSubTable(cameraName)
         self._path = self._cameraTable.getPath()
         self._rawBytesEntry = self._cameraTable.getRawTopic("rawBytes").subscribe(
-            "rawBytes", bytes([]), ntcore.PubSubOptions(periodic=0.01, sendAll=True)
+            f"photonstruct:PhotonPipelineResult:{PhotonPipelineResult.photonStruct.MESSAGE_VERSION}",
+            bytes([]),
+            ntcore.PubSubOptions(periodic=0.01, sendAll=True),
         )
 
         self._driverModePublisher = self._cameraTable.getBooleanTopic(
@@ -122,7 +124,7 @@ class PhotonCamera:
                 pkt = Packet(byteList)
                 newResult = PhotonPipelineResult.photonStruct.unpack(pkt)
                 # NT4 allows us to correct the timestamp based on when the message was sent
-                newResult.ntReceiveTimestampMicros = timestamp / 1e6
+                newResult.ntReceiveTimestampMicros = timestamp
                 ret.append(newResult)
 
         return ret
@@ -226,6 +228,7 @@ class PhotonCamera:
 
         versionString = self.versionEntry.get(defaultValue="")
         localUUID = PhotonPipelineResult.photonStruct.MESSAGE_VERSION
+
         remoteUUID = self._rawBytesEntry.getTopic().getProperty("message_uuid")
 
         if remoteUUID is None or len(remoteUUID) == 0:
@@ -233,7 +236,11 @@ class PhotonCamera:
                 f"PhotonVision coprocessor at path {self._path} has not reported a message interface UUID - is your coprocessor's camera started?",
                 True,
             )
-        elif localUUID != remoteUUID:
+
+        # ntcore hands us a JSON string with leading/trailing quotes - remove those
+        remoteUUID = remoteUUID.replace('"', "")
+
+        if localUUID != remoteUUID:
             # Verified version mismatch
 
             bfw = """

@@ -7,6 +7,8 @@
     type: int64
   - name: publishTimestampMicros
     type: int64
+  - name: timeSinceLastPong
+    type: int64
 
 - name: Transform3d
   shimmed: True

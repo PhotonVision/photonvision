@@ -28,7 +28,7 @@ public enum CameraLensModel {
     /** Mrcal steriographic lens model. See LENSMODEL_STEREOGRAPHIC in the mrcal docs */
     LENSMODEL_STERIOGRAPHIC,
     /**
-     * Mrcal splined-steriographic lens model. See LENSMODEL_SPLINED_STEREOGRAPHIC_ in the mrcal docs
+     * Mrcal splined-steriographic lens model. See LENSMODEL_SPLINED_STEREOGRAPHIC in the mrcal docs
      */
     LENSMODEL_SPLINED_STERIOGRAPHIC
 }

@@ -30,6 +30,7 @@ import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.hardware.Platform;
+import org.photonvision.common.hardware.Platform.OSType;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
@@ -128,20 +129,26 @@ public class VisionSourceManager {
         return tryMatchCamImpl(null);
     }
 
+    protected List<VisionSource> tryMatchCamImpl(ArrayList<CameraInfo> cameraInfos) {
+        return tryMatchCamImpl(cameraInfos, Platform.getCurrentPlatform());
+    }
+
     /**
      * @param cameraInfos Used to feed camera info for unit tests.
      * @return New VisionSources.
      */
-    protected List<VisionSource> tryMatchCamImpl(ArrayList<CameraInfo> cameraInfos) {
+    protected List<VisionSource> tryMatchCamImpl(
+            ArrayList<CameraInfo> cameraInfos, Platform platform) {
         boolean createSources = true;
         List<CameraInfo> connectedCameras;
         if (cameraInfos == null) {
             // Detect USB cameras using CSCore
-            connectedCameras = new ArrayList<>(filterAllowedDevices(getConnectedUSBCameras()));
+            connectedCameras = new ArrayList<>(filterAllowedDevices(getConnectedUSBCameras(), platform));
             // Detect CSI cameras using libcamera
-            connectedCameras.addAll(new ArrayList<>(filterAllowedDevices(getConnectedCSICameras())));
+            connectedCameras.addAll(
+                    new ArrayList<>(filterAllowedDevices(getConnectedCSICameras(), platform)));
         } else {
-            connectedCameras = new ArrayList<>(filterAllowedDevices(cameraInfos));
+            connectedCameras = new ArrayList<>(filterAllowedDevices(cameraInfos, platform));
             createSources =
                     false; // Dont create sources if we are using supplied camerainfo for unit tests.
         }
@@ -162,7 +169,7 @@ public class VisionSourceManager {
         // All cameras are already loaded return no new sources.
         if (connectedCameras.isEmpty()) return null;
 
-        logger.debug("Matching " + connectedCameras.size() + " new cameras!");
+        logger.debug("Matching " + connectedCameras.size() + " new camera(s)!");
 
         // Debug prints
         for (var info : connectedCameras) {
@@ -170,7 +177,7 @@ public class VisionSourceManager {
         }
 
         if (!unmatchedLoadedConfigs.isEmpty())
-            logger.debug("Trying to match " + unmatchedLoadedConfigs.size() + " unmatched configs...");
+            logger.debug("Trying to match " + unmatchedLoadedConfigs.size() + " unmatched config(s)...");
 
         // Match camera configs to physical cameras
         List<CameraConfiguration> matchedCameras =
@@ -182,7 +189,7 @@ public class VisionSourceManager {
                     () ->
                             "After matching, "
                                     + unmatchedLoadedConfigs.size()
-                                    + " configs remained unmatched. Is your camera disconnected?");
+                                    + " config(s) remained unmatched. Is your camera disconnected?");
             logger.warn(
                     "Unloaded configs: "
                             + unmatchedLoadedConfigs.stream()
@@ -233,7 +240,7 @@ public class VisionSourceManager {
         if (checkUSBPath && savedConfig.getUSBPath().isEmpty()) {
             logger.debug(
                     "WARN: Camera has empty USB path, but asked to match by name: "
-                            + camCfgToString(savedConfig));
+                            + savedConfig.toShortString());
         }
 
         return (CameraInfo physicalCamera) -> {
@@ -275,22 +282,6 @@ public class VisionSourceManager {
                 detectedCamInfos,
                 loadedCamConfigs,
                 ConfigManager.getInstance().getConfig().getNetworkConfig().matchCamerasOnlyByPath);
-    }
-
-    private static final String camCfgToString(CameraConfiguration c) {
-        return new StringBuilder()
-                .append("[baseName=")
-                .append(c.baseName)
-                .append(", uniqueName=")
-                .append(c.uniqueName)
-                .append(", otherPaths=")
-                .append(Arrays.toString(c.otherPaths))
-                .append(", vid=")
-                .append(c.usbVID)
-                .append(", pid=")
-                .append(c.usbPID)
-                .append("]")
-                .toString();
     }
 
     /**
@@ -423,7 +414,7 @@ public class VisionSourceManager {
                 logger.debug(
                         String.format(
                                 "Trying to find a match for loaded camera %s (%s) with camera config: %s",
-                                config.baseName, config.uniqueName, camCfgToString(config)));
+                                config.baseName, config.uniqueName, config.toShortString()));
 
                 // Get matcher and filter against it, picking out the first match
                 Predicate<CameraInfo> matches =
@@ -463,7 +454,7 @@ public class VisionSourceManager {
             List<CameraConfiguration> loadedConfigs) {
         List<CameraConfiguration> ret = new ArrayList<CameraConfiguration>();
         logger.debug(
-                "After matching loaded configs, these configs remained unmatched: "
+                "After matching loaded configs, these cameras remained unmatched: "
                         + detectedCameraList.stream()
                                 .map(n -> String.valueOf(n))
                                 .collect(Collectors.joining("-", "{", "}")));
@@ -535,9 +526,9 @@ public class VisionSourceManager {
      * Filter out any blacklisted or ignored devices.
      *
      * @param allDevices
-     * @return list of devices with blacklisted or ingore devices removed.
+     * @return list of devices with blacklisted or ignore devices removed.
      */
-    private List<CameraInfo> filterAllowedDevices(List<CameraInfo> allDevices) {
+    private List<CameraInfo> filterAllowedDevices(List<CameraInfo> allDevices, Platform platform) {
         List<CameraInfo> filteredDevices = new ArrayList<>();
         for (var device : allDevices) {
             if (deviceBlacklist.contains(device.name)) {
@@ -546,6 +537,13 @@ public class VisionSourceManager {
             } else if (device.name.matches(ignoredCamerasRegex)) {
                 logger.trace("Skipping ignored device: \"" + device.name + "\" at \"" + device.path);
             } else if (device.getIsV4lCsiCamera()) {
+            } else if (device.otherPaths.length == 0
+                    && platform.osType == OSType.LINUX
+                    && device.cameraType == CameraType.UsbCamera) {
+                logger.trace(
+                        "Skipping device with no other paths: \"" + device.name + "\" at \"" + device.path);
+                // If cscore hasnt passed this other paths aka a path by id or a path as in usb port then we
+                // cant guarantee it is a valid camera.
             } else {
                 filteredDevices.add(device);
                 logger.trace(
@@ -559,8 +557,6 @@ public class VisionSourceManager {
             List<CameraConfiguration> camConfigs, boolean createSources) {
         var cameraSources = new ArrayList<VisionSource>();
         for (var configuration : camConfigs) {
-            logger.debug("Creating VisionSource for " + camCfgToString(configuration));
-
             // In unit tests, create dummy
             if (!createSources) {
                 cameraSources.add(new TestSource(configuration));
@@ -580,6 +576,7 @@ public class VisionSourceManager {
                     cameraSources.add(newCam);
                 }
             }
+            logger.debug("Creating VisionSource for " + configuration.toShortString());
         }
         return cameraSources;
     }

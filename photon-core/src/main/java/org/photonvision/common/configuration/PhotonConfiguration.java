@@ -114,13 +114,23 @@ public class PhotonConfiguration {
         cameraConfigurations.put(name, config);
     }
 
+    /**
+     * Delete a camera by its unique name
+     *
+     * @param name The camera name (usually unique name)
+     * @return True if the camera configuration was removed
+     */
+    public boolean removeCameraConfig(String name) {
+        return cameraConfigurations.remove(name) != null;
+    }
+
     public Map<String, Object> toHashMap() {
         Map<String, Object> map = new HashMap<>();
         var settingsSubmap = new HashMap<String, Object>();
 
         // Hack active interfaces into networkSettings
         var netConfigMap = networkConfig.toHashMap();
-        netConfigMap.put("networkInterfaceNames", NetworkUtils.getAllWiredInterfaces());
+        netConfigMap.put("networkInterfaceNames", NetworkUtils.getAllActiveWiredInterfaces());
         netConfigMap.put("networkingDisabled", NetworkManager.getInstance().networkingIsDisabled);
 
         settingsSubmap.put("networkSettings", netConfigMap);
@@ -181,5 +191,22 @@ public class PhotonConfiguration {
         public boolean isCSICamera;
         public double minExposureRaw;
         public double maxExposureRaw;
+        public double minWhiteBalanceTemp;
+        public double maxWhiteBalanceTemp;
+    }
+
+    @Override
+    public String toString() {
+        return "PhotonConfiguration [\n  hardwareConfig="
+                + hardwareConfig
+                + "\n  hardwareSettings="
+                + hardwareSettings
+                + "\n  networkConfig="
+                + networkConfig
+                + "\n  atfl="
+                + atfl
+                + "\n  cameraConfigurations="
+                + cameraConfigurations
+                + "\n]";
     }
 }

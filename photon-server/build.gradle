@@ -11,6 +11,9 @@ apply from: "${rootDir}/shared/common.gradle"
 dependencies {
     implementation project(':photon-core')
 
+    // Zip
+    implementation 'org.zeroturnaround:zt-zip:1.14'
+
     // Needed for Javalin Runtime Logging
     implementation "org.slf4j:slf4j-simple:2.0.7"
 }
@@ -20,6 +23,10 @@ version versionString + (project.hasProperty('pionly') ? "-raspi" : "")
 
 application {
     mainClass = 'org.photonvision.Main'
+}
+
+jar {
+    from file("$rootDir/LICENSE")
 }
 
 shadowJar {
@@ -71,7 +78,7 @@ remotes {
 task findDeployTarget {
     doLast {
         if(project.hasProperty('tgtIP')){
-            //If user specificed IP, default to using the PI profile
+            //If user specified IP, default to using the PI profile
             // but adjust hostname to match the provided IP address
             findDeployTarget.ext.rmt = remotes.pi
             findDeployTarget.ext.rmt.host=tgtIP

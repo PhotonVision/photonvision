@@ -53,6 +53,7 @@ import org.photonvision.common.util.file.ProgramDirectoryUtilities;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.processes.VisionModuleManager;
+import org.zeroturnaround.zip.ZipUtil;
 
 public class RequestHandler {
     // Treat all 2XX calls as "INFO"
@@ -94,16 +95,18 @@ public class RequestHandler {
             return;
         }
 
+        ConfigManager.getInstance().setWriteTaskEnabled(false);
+        ConfigManager.getInstance().disableFlushOnShutdown();
+        // We want to delete the -whole- zip file, so we need to teardown loggers for now
+        logger.info("Writing new settings zip (logs may be truncated)...");
+        Logger.closeAllLoggers();
         if (ConfigManager.saveUploadedSettingsZip(tempFilePath.get())) {
             ctx.status(200);
             ctx.result("Successfully saved the uploaded settings zip, rebooting...");
-            logger.info("Successfully saved the uploaded settings zip, rebooting...");
-            ConfigManager.getInstance().disableFlushOnShutdown();
             restartProgram();
         } else {
             ctx.status(500);
             ctx.result("There was an error while saving the uploaded zip file");
-            logger.error("There was an error while saving the uploaded zip file");
         }
     }
 
@@ -420,20 +423,34 @@ public class RequestHandler {
         try {
             ShellExec shell = new ShellExec();
             var tempPath = Files.createTempFile("photonvision-journalctl", ".txt");
-            shell.executeBashCommand("journalctl -u photonvision.service > " + tempPath.toAbsolutePath());
+            var tempPath2 = Files.createTempFile("photonvision-kernelogs", ".txt");
+            shell.executeBashCommand(
+                    "journalctl -u photonvision.service > "
+                            + tempPath.toAbsolutePath()
+                            + " && journalctl -k > "
+                            + tempPath2.toAbsolutePath());
 
             while (!shell.isOutputCompleted()) {
                 // TODO: add timeout
             }
 
             if (shell.getExitCode() == 0) {
-                // Wrote to the temp file! Add it to the ctx
-                var stream = new FileInputStream(tempPath.toFile());
-                ctx.contentType("text/plain");
-                ctx.header("Content-Disposition", "attachment; filename=\"photonvision-journalctl.txt\"");
-                ctx.status(200);
+                // Wrote to the temp file! Zip and yeet it to the client
+
+                var out = Files.createTempFile("photonvision-logs", "zip").toFile();
+
+                try {
+                    ZipUtil.packEntries(new File[] {tempPath.toFile(), tempPath2.toFile()}, out);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                var stream = new FileInputStream(out);
+                ctx.contentType("application/zip");
+                ctx.header("Content-Disposition", "attachment; filename=\"photonvision-logs.zip\"");
                 ctx.result(stream);
-                logger.info("Uploading settings with size " + stream.available());
+                ctx.status(200);
+                logger.info("Outputting log ZIP with size " + stream.available());
             } else {
                 ctx.status(500);
                 ctx.result("The journalctl service was unable to export logs");
@@ -568,8 +585,8 @@ public class RequestHandler {
                         .stream()
                         .filter(
                                 it ->
-                                        Math.abs(it.resolution.width - width) < 1e-4
-                                                && Math.abs(it.resolution.height - height) < 1e-4)
+                                        Math.abs(it.unrotatedImageSize.width - width) < 1e-4
+                                                && Math.abs(it.unrotatedImageSize.height - height) < 1e-4)
                         .findFirst()
                         .orElse(null);
 
@@ -617,8 +634,8 @@ public class RequestHandler {
                 cc.calibrations.stream()
                         .filter(
                                 it ->
-                                        Math.abs(it.resolution.width - width) < 1e-4
-                                                && Math.abs(it.resolution.height - height) < 1e-4)
+                                        Math.abs(it.unrotatedImageSize.width - width) < 1e-4
+                                                && Math.abs(it.unrotatedImageSize.height - height) < 1e-4)
                         .findFirst()
                         .orElse(null);
 
@@ -770,5 +787,47 @@ public class RequestHandler {
                             }
                         },
                         0);
+    }
+
+    public static void onNukeConfigDirectory(Context ctx) {
+        ConfigManager.getInstance().setWriteTaskEnabled(false);
+        ConfigManager.getInstance().disableFlushOnShutdown();
+
+        Logger.closeAllLoggers();
+        if (ConfigManager.nukeConfigDirectory()) {
+            ctx.status(200);
+            ctx.result("Successfully nuked config dir");
+            restartProgram();
+        } else {
+            ctx.status(500);
+            ctx.result("There was an error while nuking the config directory");
+        }
+    }
+
+    public static void onNukeOneCamera(Context ctx) {
+        try {
+            var payload = kObjectMapper.readTree(ctx.bodyInputStream());
+            var name = payload.get("cameraUniqueName").asText();
+            logger.warn("Deleting camera name " + name);
+
+            var cameraDir = ConfigManager.getInstance().getCalibrationImageSavePath(name).toFile();
+            if (cameraDir.exists()) {
+                FileUtils.deleteDirectory(cameraDir);
+            }
+
+            // prevent -anyone- else from writing camera configs -- but flush first
+            ConfigManager.getInstance().saveToDisk();
+            ConfigManager.getInstance().setWriteTaskEnabled(false);
+            ConfigManager.getInstance().disableFlushOnShutdown();
+            // remove the config from the global config and force-flush
+            ConfigManager.getInstance().getConfig().removeCameraConfig(name);
+            ConfigManager.getInstance().saveToDisk();
+            ctx.status(200);
+            restartProgram();
+        } catch (IOException e) {
+            // todo
+            logger.error("asdf", e);
+            ctx.status(500);
+        }
     }
 }

@@ -50,12 +50,16 @@ public abstract class VisionSourceSettables {
 
     public abstract void setAutoExposure(boolean cameraAutoExposure);
 
+    public abstract void setWhiteBalanceTemp(double temp);
+
+    public abstract void setAutoWhiteBalance(boolean autowb);
+
     public abstract void setBrightness(int brightness);
 
     public abstract void setGain(int gain);
 
     // Pretty uncommon so instead of abstract this is just a no-op by default
-    // Overriden by cameras with AWB gain support
+    // Overriddenn by cameras with AWB gain support
     public void setRedGain(int red) {}
 
     public void setBlueGain(int blue) {}
@@ -114,8 +118,8 @@ public abstract class VisionSourceSettables {
                         configuration.calibrations.stream()
                                 .filter(
                                         it ->
-                                                it.resolution.width == videoMode.width
-                                                        && it.resolution.height == videoMode.height)
+                                                it.unrotatedImageSize.width == videoMode.width
+                                                        && it.unrotatedImageSize.height == videoMode.height)
                                 .findFirst()
                                 .orElse(null));
     }
@@ -123,4 +127,8 @@ public abstract class VisionSourceSettables {
     public FrameStaticProperties getFrameStaticProperties() {
         return frameStaticProperties;
     }
+
+    public abstract double getMinWhiteBalanceTemp();
+
+    public abstract double getMaxWhiteBalanceTemp();
 }

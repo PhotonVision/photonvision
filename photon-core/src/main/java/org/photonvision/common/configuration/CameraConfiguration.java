@@ -84,15 +84,7 @@ public class CameraConfiguration {
         this.calibrations = new ArrayList<>();
         this.otherPaths = alternates;
 
-        logger.debug(
-                "Creating USB camera configuration for "
-                        + cameraType
-                        + " "
-                        + baseName
-                        + " (AKA "
-                        + nickname
-                        + ") at "
-                        + path);
+        logger.debug("Creating USB camera configuration for " + this.toShortString());
     }
 
     @JsonCreator
@@ -120,15 +112,7 @@ public class CameraConfiguration {
         this.usbPID = usbPID;
         this.usbVID = usbVID;
 
-        logger.debug(
-                "Creating camera configuration for "
-                        + cameraType
-                        + " "
-                        + baseName
-                        + " (AKA "
-                        + nickname
-                        + ") at "
-                        + path);
+        logger.debug("Loaded camera configuration for " + toShortString());
     }
 
     public void addPipelineSettings(List<CVPipelineSettings> settings) {
@@ -158,12 +142,23 @@ public class CameraConfiguration {
         pipelineSettings = settings;
     }
 
+    /**
+     * Replace a calibration in our list with the same unrotatedImageSize with a new one, or add it if
+     * none exists yet. If we are replacing an existing calibration, the old one will be "released"
+     * and the underlying data matrices will become invalid.
+     *
+     * @param calibration The calibration to add.
+     */
     public void addCalibration(CameraCalibrationCoefficients calibration) {
-        logger.info("adding calibration " + calibration.resolution);
+        logger.info("adding calibration " + calibration.unrotatedImageSize);
         calibrations.stream()
-                .filter(it -> it.resolution.equals(calibration.resolution))
+                .filter(it -> it.unrotatedImageSize.equals(calibration.unrotatedImageSize))
                 .findAny()
-                .ifPresent(calibrations::remove);
+                .ifPresent(
+                        (it) -> {
+                            it.release();
+                            calibrations.remove(it);
+                        });
         calibrations.add(calibration);
     }
 
@@ -176,6 +171,30 @@ public class CameraConfiguration {
     @JsonIgnore
     public Optional<String> getUSBPath() {
         return Arrays.stream(otherPaths).filter(path -> path.contains("/by-path/")).findFirst();
+    }
+
+    public String toShortString() {
+        return "CameraConfiguration [baseName="
+                + baseName
+                + ", uniqueName="
+                + uniqueName
+                + ", nickname="
+                + nickname
+                + ", path="
+                + path
+                + ", otherPaths="
+                + Arrays.toString(otherPaths)
+                + ", cameraType="
+                + cameraType
+                + ", cameraQuirks="
+                + cameraQuirks
+                + ", FOV="
+                + FOV
+                + "]"
+                + ", PID="
+                + usbPID
+                + ", VID="
+                + usbVID;
     }
 
     @Override

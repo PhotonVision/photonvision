@@ -43,6 +43,8 @@ public class DrawCalibrationPipe
 
     @Override
     protected Void process(Pair<Mat, List<TrackedTarget>> in) {
+        if (!params.drawAllSnapshots) return null;
+
         var image = in.getLeft();
 
         var imgSz = image.size();
@@ -82,9 +84,11 @@ public class DrawCalibrationPipe
 
     public static class DrawCalibrationPipeParams {
         private final FrameDivisor divisor;
+        public boolean drawAllSnapshots;
 
-        public DrawCalibrationPipeParams(FrameDivisor divisor) {
+        public DrawCalibrationPipeParams(FrameDivisor divisor, boolean drawSnapshots) {
             this.divisor = divisor;
+            this.drawAllSnapshots = drawSnapshots;
         }
     }
 }

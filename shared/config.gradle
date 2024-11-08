@@ -1,5 +1,3 @@
-apply plugin: "edu.wpi.first.NativeUtils"
-
 // Configure Native-Utils WPI Plugin
 nativeUtils.addWpiNativeUtils()
 nativeUtils.withCrossRoboRIO()
@@ -10,7 +8,7 @@ nativeUtils.withCrossLinuxArm64()
 nativeUtils.wpi.configureDependencies {
     wpiVersion = wpilibVersion
     wpimathVersion = wpimathVersion
-    opencvYear = 'frc2024'
+    opencvYear = 'frc'+openCVYear
     opencvVersion = openCVversion
     googleTestYear = "frc2024"
     googleTestVersion = "1.14.0-1"
@@ -86,8 +84,6 @@ ext.appendDebugPathToBinaries = { binaries ->
         }
     }
 }
-
-def licenseFile = file("$rootDir/LICENCE")
 
 // Create ZIP tasks for each component.
 ext.createComponentZipTasks = { components, names, base, type, project, func ->

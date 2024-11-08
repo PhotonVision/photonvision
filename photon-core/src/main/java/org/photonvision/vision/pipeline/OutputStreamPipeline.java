@@ -114,8 +114,12 @@ public class OutputStreamPipeline {
         resizeImagePipe.setParams(
                 new ResizeImagePipe.ResizeImageParams(settings.streamingFrameDivisor));
 
-        drawCalibrationPipe.setParams(
-                new DrawCalibrationPipe.DrawCalibrationPipeParams(settings.streamingFrameDivisor));
+        if (settings instanceof Calibration3dPipelineSettings) {
+            drawCalibrationPipe.setParams(
+                    new DrawCalibrationPipe.DrawCalibrationPipeParams(
+                            settings.streamingFrameDivisor,
+                            ((Calibration3dPipelineSettings) settings).drawAllSnapshots));
+        }
     }
 
     public CVPipelineResult process(

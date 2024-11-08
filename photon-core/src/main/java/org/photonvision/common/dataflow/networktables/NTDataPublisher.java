@@ -20,7 +20,7 @@ package org.photonvision.common.dataflow.networktables;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent;
-import edu.wpi.first.util.WPIUtilJNI;
+import edu.wpi.first.networktables.NetworkTablesJNI;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -146,13 +146,19 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
                             List.of(),
                             result.inputAndOutputFrame);
         else acceptedResult = result;
-        var now = WPIUtilJNI.now();
-        var captureMicros = MathUtils.nanosToMicros(acceptedResult.getImageCaptureTimestampNanos());
+        var now = NetworkTablesJNI.now();
+        var captureMicros = MathUtils.nanosToMicros(result.getImageCaptureTimestampNanos());
+
+        var offset = NetworkTablesManager.getInstance().getOffset();
+
+        // Transform the metadata timestamps from the local nt::Now timebase to the Time Sync Server's
+        // timebase
         var simplified =
                 new PhotonPipelineResult(
                         acceptedResult.sequenceID,
-                        captureMicros,
-                        now,
+                        captureMicros + offset,
+                        now + offset,
+                        NetworkTablesManager.getInstance().getTimeSinceLastPong(),
                         TrackedTarget.simpleFromTrackedTargets(acceptedResult.targets),
                         acceptedResult.multiTagResult);
 

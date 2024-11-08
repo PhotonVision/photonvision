@@ -15,6 +15,8 @@ class PhotonPipelineMetadata:
     # Mirror of the heartbeat entry -- monotonically increasing
     sequenceID: int = -1
 
+    timeSinceLastPong: int = -1
+
     photonStruct: "PhotonPipelineMetadataSerde" = None
 
 
@@ -24,6 +26,8 @@ class PhotonPipelineResult:
     ntReceiveTimestampMicros: int = -1
 
     targets: list[PhotonTrackedTarget] = field(default_factory=list)
+    # Python users beware! We don't currently run a Time Sync Server, so these timestamps are in
+    # an arbitrary timebase. This is not true in C++ or Java.
     metadata: PhotonPipelineMetadata = field(default_factory=PhotonPipelineMetadata)
     multiTagResult: Optional[MultiTargetPNPResult] = None
 

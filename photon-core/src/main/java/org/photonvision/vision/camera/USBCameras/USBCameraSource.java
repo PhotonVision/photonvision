@@ -147,6 +147,7 @@ public class USBCameraSource extends VisionSource {
         }
 
         settables.setUpExposureProperties();
+        settables.setUpWhiteBalanceProperties();
 
         return settables;
     }

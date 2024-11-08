@@ -41,7 +41,7 @@ class PhotonPipelineResult : public PhotonPipelineResult_PhotonStruct {
   PhotonPipelineResult() : Base() {}
   explicit PhotonPipelineResult(Base&& data) : Base(data) {}
 
-  // Don't forget to deal with our ntRecieveTimestamp
+  // Don't forget to deal with our ntReceiveTimestamp
   PhotonPipelineResult(const PhotonPipelineResult& other)
       : Base(other), ntReceiveTimestamp(other.ntReceiveTimestamp) {}
   PhotonPipelineResult(PhotonPipelineResult& other)

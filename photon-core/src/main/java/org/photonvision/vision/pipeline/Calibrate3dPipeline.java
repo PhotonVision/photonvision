@@ -230,7 +230,6 @@ public class Calibrate3dPipeline
                                 settings.boardWidth,
                                 settings.boardHeight,
                                 settings.boardType,
-                                settings.useMrCal,
                                 settings.useOldPattern,
                                 settings.tagFamily));
 
