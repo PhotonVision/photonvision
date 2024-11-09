@@ -14,7 +14,7 @@ In order to use PhotonVision, you need a coprocessor and a camera. Other than th
   - PhotonVision isn't very RAM intensive, but you'll need at least 2GB to run the OS and PhotonVision.
 - The following IO:
   - At least 1 USB or MIPI-CSI port for the camera
-    - Note that we only support using the Raspberry Pi's MIPI-CSI port, other MIPI-CSI ports from other coprocessors will not work.
+    - Note that we only support using the Raspberry Pi's MIPI-CSI port, other MIPI-CSI ports from other coprocessors will probably not work.
   - Ethernet port for networking
 
 ### Coprocessor Recommendations

@@ -11,7 +11,7 @@ If you’re not using cameras in 3D mode, calibration is optional, but it can st
 
 ## Prepare the Calibration Target
 
-- Measure Accurately: Use calipers to measure the actual size of the squares and markers. Precise measurements are crucial for effective calibration.
+- Measure Accurately: Use calipers to measure the actual size of the squares and markers. Accurate measurements are crucial for effective calibration.
 - Ensure Flatness: The calibration board must be perfectly flat, without any wrinkles or bends, to avoid introducing errors into the calibration process.
 
 ## Calibrate your Camera

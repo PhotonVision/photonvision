@@ -5,6 +5,8 @@
 
 common-setups
 quick-install
+wiring
+networking
 camera-calibration
 quick-configure
 ```

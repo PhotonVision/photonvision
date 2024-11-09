@@ -10,7 +10,7 @@
 ## SD Cards
 
 - 8GB or larger micro SD card
-  - Many teams have found that an industrial micro sd card are much more stable in competition. One example is the sandisk Indusrial 16GB micro SD card.
+  - Many teams have found that an industrial micro sd card are much more stable in competition. One example is the SanDisk industrial 16GB micro SD card.
 
 ## Cameras
 

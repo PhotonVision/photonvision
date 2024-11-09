@@ -11,7 +11,7 @@ After imaging your coprocessor, run an ethernet cable from your coprocessor to a
 PhotonVision _STRONGLY_ recommends the usage of a network switch on your robot. This is because the second radio port on the current FRC radios is known to be buggy and cause frequent connection issues that are detrimental during competition. An in-depth guide on how to install a network switch can be found [on FRC 900's website](https://team900.org/blog/ZebraSwitch/).
 
 ```{image} images/networking-diagram.png
-:alt: Correctly set static IP
+:alt: Wiring using a network switch and the old open mesh radio
 ```
 
 ## Digital Networking
@@ -23,7 +23,7 @@ Only use a static IP when connected to the **robot radio**, and never when testi
 :::
 
 1. Ensure your robot is on and you are connected to the robot network.
-2. Navigate to `photonvision.local:5800` (this may be different if you are using a Limelight) in your browser.
+2. Navigate to `photonvision.local:5800`in your browser.
 3. Open the settings tab on the left pane.
 4. Under the Networking section, set your team number.
 5. Change your IP to Static.
