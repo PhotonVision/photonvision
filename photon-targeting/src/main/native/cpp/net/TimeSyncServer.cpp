@@ -105,7 +105,6 @@ wpi::tsp::TimeSyncServer::TimeSyncServer(int port,
       m_port(port) {}
 
 void wpi::tsp::TimeSyncServer::Start() {
-  m_loopRunner.ExecSync([this](uv::Loop&) {});
   m_loopRunner.ExecSync([this](uv::Loop&) {
     m_udp = {wpi::uv::Udp::Create(m_loopRunner.GetLoop(), AF_INET)};
     m_udp->Bind("0.0.0.0", m_port);
