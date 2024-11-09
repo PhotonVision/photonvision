@@ -53,6 +53,7 @@ class TimeSyncServer {
   wpi::Logger m_logger;
   std::function<uint64_t()> m_timeProvider;
   SharedUdpPtr m_udp;
+  int m_port;
 
   std::thread m_listener;
 

@@ -156,17 +156,11 @@ wpi::tsp::TimeSyncClient::TimeSyncClient(std::string_view server,
                                          std::function<uint64_t()> timeProvider)
     : m_logger(::ClientLoggerFunc),
       m_timeProvider(timeProvider),
-      m_udp{wpi::uv::Udp::Create(m_loopRunner.GetLoop(), AF_INET)},
-      m_pingTimer{wpi::uv::Timer::Create(m_loopRunner.GetLoop())},
+      m_udp{},
+      m_pingTimer{},
       m_serverIP{server},
       m_serverPort{remote_port},
       m_loopDelay(ping_delay) {
-  struct sockaddr_in serverAddr;
-  uv::NameToAddr(m_serverIP, m_serverPort, &serverAddr);
-
-  m_loopRunner.ExecSync(
-      [this, serverAddr](uv::Loop&) { m_udp->Connect(serverAddr); });
-
   // fmt::println("Starting client (with server address {}:{})", server,
   //              remote_port);
 }
@@ -175,6 +169,13 @@ void wpi::tsp::TimeSyncClient::Start() {
   // fmt::println("Connecting received");
 
   m_loopRunner.ExecSync([this](uv::Loop&) {
+    struct sockaddr_in serverAddr;
+    uv::NameToAddr(m_serverIP, m_serverPort, &serverAddr);
+
+    m_udp = {wpi::uv::Udp::Create(m_loopRunner.GetLoop(), AF_INET)};
+    m_pingTimer = {wpi::uv::Timer::Create(m_loopRunner.GetLoop())};
+
+    m_udp->Connect(serverAddr);
     m_udp->received.connect(&wpi::tsp::TimeSyncClient::UdpCallback, this);
     m_udp->StartRecv();
   });

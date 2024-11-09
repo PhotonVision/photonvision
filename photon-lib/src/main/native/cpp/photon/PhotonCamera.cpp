@@ -60,10 +60,21 @@ inline constexpr std::string_view bfw =
     ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
     "\n\n";
 
-// bit of a hack -- start a TimeSync server on port 5810 (hard-coded)
-static std::mutex g_timeSyncServerMutex;
-static bool g_timeSyncServerStarted;
-static wpi::tsp::TimeSyncServer timesyncServer{5810};
+// bit of a hack -- start a TimeSync server on port 5810 (hard-coded). We want
+// to avoid calling this from static initialization
+static void InitTspServer() {
+  // We dont impose requirements about not calling the PhotonCamera constructor
+  // from different threads, so i guess we need this?
+  static std::mutex g_timeSyncServerMutex;
+  static bool g_timeSyncServerStarted{false};
+  static wpi::tsp::TimeSyncServer timesyncServer{5810};
+
+  std::lock_guard lock{g_timeSyncServerMutex};
+  if (!g_timeSyncServerStarted) {
+    timesyncServer.Start();
+    g_timeSyncServerStarted = true;
+  }
+}
 
 namespace photon {
 
@@ -117,13 +128,10 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
   HAL_Report(HALUsageReporting::kResourceType_PhotonCamera, InstanceCount);
   InstanceCount++;
 
-  {
-    std::lock_guard lock{g_timeSyncServerMutex};
-    if (!g_timeSyncServerStarted) {
-      timesyncServer.Start();
-      g_timeSyncServerStarted = true;
-    }
-  }
+  // The Robot class is actually created here:
+  // https://github.com/wpilibsuite/allwpilib/blob/811b1309683e930a1ce69fae818f943ff161b7a5/wpilibc/src/main/native/include/frc/RobotBase.h#L33
+  // so we should be fine to call this from the ctor
+  InitTspServer();
 }
 
 PhotonCamera::PhotonCamera(const std::string_view cameraName)

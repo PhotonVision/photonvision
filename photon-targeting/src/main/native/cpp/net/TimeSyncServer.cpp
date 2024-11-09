@@ -101,13 +101,13 @@ wpi::tsp::TimeSyncServer::TimeSyncServer(int port,
                                          std::function<uint64_t()> timeProvider)
     : m_logger{::ServerLoggerFunc},
       m_timeProvider{timeProvider},
-      m_udp{wpi::uv::Udp::Create(m_loopRunner.GetLoop(), AF_INET)} {
-  m_loopRunner.ExecSync(
-      [this, port](uv::Loop&) { m_udp->Bind("0.0.0.0", port); });
-}
+      m_udp{},
+      m_port(port) {}
 
 void wpi::tsp::TimeSyncServer::Start() {
   m_loopRunner.ExecSync([this](uv::Loop&) {
+    m_udp = {wpi::uv::Udp::Create(m_loopRunner.GetLoop(), AF_INET)};
+    m_udp->Bind("0.0.0.0", m_port);
     m_udp->received.connect(&wpi::tsp::TimeSyncServer::UdpCallback, this);
     m_udp->StartRecv();
   });
