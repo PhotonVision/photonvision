@@ -19,6 +19,9 @@ class NTTopicSet:
         self.rawBytesEntry = self.subTable.getRawTopic("rawBytes").publish(
             PhotonPipelineResult_TYPE_STRING, options
         )
+        self.rawBytesEntry.getTopic().setProperty(
+            "message_uuid", PhotonPipelineResultSerde.MESSAGE_VERSION
+        )
         self.pipelineIndexPublisher = self.subTable.getIntegerTopic(
             "pipelineIndexState"
         ).publish()
