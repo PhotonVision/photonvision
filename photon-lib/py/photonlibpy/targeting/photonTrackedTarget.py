@@ -16,6 +16,8 @@ class PhotonTrackedTarget:
     minAreaRectCorners: list[TargetCorner] = field(default_factory=list[TargetCorner])
     detectedCorners: list[TargetCorner] = field(default_factory=list[TargetCorner])
     poseAmbiguity: float = 0.0
+    objDetectId: int = -1
+    objDetectConf: float = 0.0
 
     def getYaw(self) -> float:
         return self.yaw
