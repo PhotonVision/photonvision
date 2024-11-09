@@ -22,37 +22,51 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public enum Platform {
     // WPILib Supported (JNI)
-    WINDOWS_64("Windows x64", "winx64", false, OSType.WINDOWS, true),
-    LINUX_32("Linux x86", "linuxx64", false, OSType.LINUX, true),
-    LINUX_64("Linux x64", "linuxx64", false, OSType.LINUX, true),
+    WINDOWS_64("Windows x64", Platform::getUnknownModel, "winx64", false, OSType.WINDOWS, true),
+    LINUX_32("Linux x86", Platform::getUnknownModel, "linuxx64", false, OSType.LINUX, true),
+    LINUX_64("Linux x64", Platform::getUnknownModel, "linuxx64", false, OSType.LINUX, true),
     LINUX_RASPBIAN32(
             "Linux Raspbian 32-bit",
+            Platform::getLinuxDeviceTreeModel,
             "linuxarm32",
             true,
             OSType.LINUX,
             true), // Raspberry Pi 3/4 with a 32-bit image
     LINUX_RASPBIAN64(
             "Linux Raspbian 64-bit",
+            Platform::getLinuxDeviceTreeModel,
             "linuxarm64",
             true,
             OSType.LINUX,
             true), // Raspberry Pi 3/4 with a 64-bit image
-    LINUX_RK3588_64("Linux AARCH 64-bit with RK3588", "linuxarm64", false, OSType.LINUX, true),
+    LINUX_RK3588_64(
+            "Linux AARCH 64-bit with RK3588",
+            Platform::getLinuxDeviceTreeModel,
+            "linuxarm64",
+            false,
+            OSType.LINUX,
+            true),
     LINUX_AARCH64(
-            "Linux AARCH64", "linuxarm64", false, OSType.LINUX, true), // Jetson Nano, Jetson TX2
+            "Linux AARCH64",
+            Platform::getLinuxDeviceTreeModel,
+            "linuxarm64",
+            false,
+            OSType.LINUX,
+            true), // Jetson Nano, Jetson TX2
 
     // PhotonVision Supported (Manual build/install)
-    LINUX_ARM64("Linux ARM64", "linuxarm64", false, OSType.LINUX, true), // ODROID C2, N2
+    LINUX_ARM64("Linux ARM64", Platform::getLinuxDeviceTreeModel, "linuxarm64", false, OSType.LINUX, true), // ODROID C2, N2
 
     // Completely unsupported
-    WINDOWS_32("Windows x86", "windowsx64", false, OSType.WINDOWS, false),
-    MACOS("Mac OS", "osxuniversal", false, OSType.MACOS, false),
-    LINUX_ARM32("Linux ARM32", "linuxarm32", false, OSType.LINUX, false), // ODROID XU4, C1+
-    UNKNOWN("Unsupported Platform", "", false, OSType.UNKNOWN, false);
+    WINDOWS_32("Windows x86", Platform::getUnknownModel, "windowsx64", false, OSType.WINDOWS, false),
+    MACOS("Mac OS", Platform::getUnknownModel, "osxuniversal", false, OSType.MACOS, false),
+    LINUX_ARM32("Linux ARM32", Platform::getUnknownModel, "linuxarm32", false, OSType.LINUX, false), // ODROID XU4, C1+
+    UNKNOWN("Unsupported Platform", Platform::getUnknownModel, "", false, OSType.UNKNOWN, false);
 
     public enum OSType {
         WINDOWS,
@@ -62,6 +76,7 @@ public enum Platform {
     }
 
     public final String description;
+    public final String hardwareModel;
     public final String nativeLibraryFolderName;
     public final boolean isPi;
     public final OSType osType;
@@ -72,11 +87,13 @@ public enum Platform {
 
     Platform(
             String description,
+            Supplier<String> getHardwareModel,
             String nativeLibFolderName,
             boolean isPi,
             OSType osType,
             boolean isSupported) {
         this.description = description;
+        this.hardwareModel = getHardwareModel.get();
         this.isPi = isPi;
         this.osType = osType;
         this.isSupported = isSupported;
@@ -107,6 +124,10 @@ public enum Platform {
         }
     }
 
+    public static String getHardwareModel() {
+        return currentPlatform.hardwareModel;
+    }
+
     public static String getNativeLibraryFolderName() {
         return currentPlatform.nativeLibraryFolderName;
     }
@@ -122,6 +143,7 @@ public enum Platform {
     private static final String OS_ARCH = System.getProperty("os.arch");
     private static final String UnknownPlatformString =
             String.format("Unknown Platform. OS: %s, Architecture: %s", OS_NAME, OS_ARCH);
+    private static final String UnknownDeviceModelString = "Unknown";
 
     public static Platform getCurrentPlatform() {
         if (RuntimeDetector.isWindows()) {
@@ -197,6 +219,22 @@ public enum Platform {
     private static boolean isJetsonSBC() {
         // https://forums.developer.nvidia.com/t/how-to-recognize-jetson-nano-device/146624
         return fileHasText("/proc/device-tree/model", "NVIDIA Jetson");
+    }
+
+    static String getLinuxDeviceTreeModel() {
+        var deviceTreeModelPath = Paths.get("/proc/device-tree/model");
+        try {
+            if (Files.exists(deviceTreeModelPath)) {
+                return Files.readString(deviceTreeModelPath).trim();
+            }
+        } catch (Exception ex) {
+            return UnknownDeviceModelString;
+        }
+        return UnknownDeviceModelString;
+    }
+
+    static String getUnknownModel() {
+        return UnknownDeviceModelString;
     }
 
     // Checks for various names of linux OS
