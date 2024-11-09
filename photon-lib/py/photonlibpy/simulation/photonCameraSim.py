@@ -12,9 +12,8 @@ from ..targeting import (
 from ..estimation import OpenCVHelp, RotTrlTransform3d, TargetModel, VisionEstimation
 from ..estimation.cameraTargetRelation import CameraTargetRelation
 from ..networktables.NTTopicSet import NTTopicSet
-from ..packet import Packet
 
-from wpimath.geometry import Pose3d, Transform3d, Translation3d
+from wpimath.geometry import Pose3d, Transform3d
 from wpimath.units import meters, seconds
 
 import robotpy_apriltag
