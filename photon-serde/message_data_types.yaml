@@ -18,7 +18,7 @@ int32:
   java_type: int
   cpp_type: int32_t
   java_decode_method: decodeInt
-  java_encode_shim: encodeBoolean
+  java_encode_shim: encodeInt
 int64:
   len: 8
   java_type: long
