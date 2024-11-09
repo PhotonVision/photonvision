@@ -20,6 +20,7 @@ import robotpy_apriltag
 
 import wpilib
 
+import cv2 as cv
 import cscore as cs
 import numpy as np
 
@@ -242,56 +243,39 @@ class PhotonCameraSim:
             )
 
             if isSpherical:
-                # TODO Implement this
-                """
-                cv::Point2d center = OpenCVHelp::AvgPoint(imagePoints);
-                int l = 0;
-                int t = 0;
-                int b = 0;
-                int r = 0;
-                for (int i = 0; i < 4; i++) {
-                  if (imagePoints[i].x < imagePoints[l].x) {
-                    l = i;
-                  }
-                }
-                cv::Point2d lc = imagePoints[l];
-                std::array<double, 4> angles{};
-                t = (l + 1) % 4;
-                b = (l + 1) % 4;
-                for (int i = 0; i < 4; i++) {
-                  if (i == l) {
-                    continue;
-                  }
-                  cv::Point2d ic = imagePoints[i];
-                  angles[i] = std::atan2(lc.y - ic.y, ic.x - lc.x);
-                  if (angles[i] >= angles[t]) {
-                    t = i;
-                  }
-                  if (angles[i] <= angles[b]) {
-                    b = i;
-                  }
-                }
-                for (int i = 0; i < 4; i++) {
-                  if (i != t && i != l && i != b) {
-                    r = i;
-                  }
-                }
-                cv::RotatedRect rect{
-                    cv::Point2d{center.x, center.y},
-                    cv::Size2d{imagePoints[r].x - lc.x,
-                               imagePoints[b].y - imagePoints[t].y},
-                    units::radian_t{-angles[r]}.convert<units::degrees>().to<float>()};
-                std::vector<cv::Point2f> points{};
-                rect.points(points);
+                center = OpenCVHelp.avgPoint(imagePoints)
+                l: int = 0
+                for i in range(4):
+                    if imagePoints[i, 0, 0] < imagePoints[l, 0, 0].x:
+                        l = i
 
-                // Can't find an easier way to convert from Point2f to Point2d
-                imagePoints.clear();
-                std::transform(points.begin(), points.end(),
-                               std::back_inserter(imagePoints),
-                               [](const cv::Point2f& p) { return (cv::Point2d)p; });
-
-                """
-                pass
+                lc = imagePoints[l]
+                angles = [
+                    0.0,
+                ] * 4
+                t = (l + 1) % 4
+                b = (l + 1) % 4
+                for i in range(4):
+                    if i == l:
+                        continue
+                    ic = imagePoints[i]
+                    angles[i] = math.atan2(lc[0, 1] - ic[0, 1], ic[0, 0] - lc[0, 0])
+                    if angles[i] >= angles[t]:
+                        t = i
+                    if angles[i] <= angles[b]:
+                        b = i
+                for i in range(4):
+                    if i != t and i != l and i != b:
+                        r = i
+                rect = cv.RotatedRect(
+                    center,
+                    (
+                        imagePoints[r, 0, 0] - lc[0, 0],
+                        imagePoints[b, 0, 1] - imagePoints[t, 0, 1],
+                    ),
+                    -angles[r],
+                )
+                imagePoints = rect.points()
 
             visibleTgts.append((tgt, imagePoints))
             noisyTargetCorners = self.prop.estPixelNoise(imagePoints)
