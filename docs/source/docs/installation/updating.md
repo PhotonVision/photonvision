@@ -1,4 +1,4 @@
-## Installing Pre-Release Versions
+# Installing Pre-Release Versions
 
 Pre-release/development version of PhotonVision can be tested by installing/downloading artifacts from Github Actions (see below), which are built automatically on commits to open pull requests and to PhotonVision's `master` branch, or by {ref}`compiling PhotonVision locally <docs/contributing/building-photon:Build Instructions>`.
 
