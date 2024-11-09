@@ -8,8 +8,8 @@ class PnpResult:
     best: Transform3d = field(default_factory=Transform3d)
     alt: Transform3d = field(default_factory=Transform3d)
     ambiguity: float = 0.0
-    bestReprojError: float = 0.0
-    altReprojError: float = 0.0
+    bestReprojErr: float = 0.0
+    altReprojErr: float = 0.0
 
     photonStruct: "PNPResultSerde" = None
 
