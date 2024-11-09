@@ -151,7 +151,11 @@ public class PhotonConfiguration {
         generalSubmap.put("availableModels", NeuralNetworkModelManager.getInstance().getModels());
         generalSubmap.put(
                 "supportedBackends", NeuralNetworkModelManager.getInstance().getSupportedBackends());
-        generalSubmap.put("hardwareModel", hardwareConfig.deviceName.isEmpty() ? Platform.getHardwareModel() : hardwareConfig.deviceName);
+        generalSubmap.put(
+                "hardwareModel",
+                hardwareConfig.deviceName.isEmpty()
+                        ? Platform.getHardwareModel()
+                        : hardwareConfig.deviceName);
         generalSubmap.put("hardwarePlatform", Platform.getPlatformName());
         settingsSubmap.put("general", generalSubmap);
         // AprilTagFieldLayout

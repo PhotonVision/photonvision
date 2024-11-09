@@ -60,12 +60,24 @@ public enum Platform {
             true), // Jetson Nano, Jetson TX2
 
     // PhotonVision Supported (Manual build/install)
-    LINUX_ARM64("Linux ARM64", Platform::getLinuxDeviceTreeModel, "linuxarm64", false, OSType.LINUX, true), // ODROID C2, N2
+    LINUX_ARM64(
+            "Linux ARM64",
+            Platform::getLinuxDeviceTreeModel,
+            "linuxarm64",
+            false,
+            OSType.LINUX,
+            true), // ODROID C2, N2
 
     // Completely unsupported
     WINDOWS_32("Windows x86", Platform::getUnknownModel, "windowsx64", false, OSType.WINDOWS, false),
     MACOS("Mac OS", Platform::getUnknownModel, "osxuniversal", false, OSType.MACOS, false),
-    LINUX_ARM32("Linux ARM32", Platform::getUnknownModel, "linuxarm32", false, OSType.LINUX, false), // ODROID XU4, C1+
+    LINUX_ARM32(
+            "Linux ARM32",
+            Platform::getUnknownModel,
+            "linuxarm32",
+            false,
+            OSType.LINUX,
+            false), // ODROID XU4, C1+
     UNKNOWN("Unsupported Platform", Platform::getUnknownModel, "", false, OSType.UNKNOWN, false);
 
     public enum OSType {
