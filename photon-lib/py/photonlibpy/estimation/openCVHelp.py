@@ -82,7 +82,9 @@ class OpenCVHelp:
         return pts
 
     @staticmethod
-    def reorderCircular(elements: list[Any], backwards: bool, shiftStart: int) -> list[Any]:
+    def reorderCircular(
+        elements: list[Any], backwards: bool, shiftStart: int
+    ) -> list[Any]:
         size = len(elements)
         reordered = []
         dir = -1 if backwards else 1
@@ -92,7 +94,7 @@ class OpenCVHelp:
                 index += size
             reordered.append(elements[index])
         return reordered
-    
+
     @staticmethod
     def translationEDNToNWU(trl: Translation3d) -> Translation3d:
         return trl.rotateBy(EDN_TO_NWU)
@@ -114,7 +116,7 @@ class OpenCVHelp:
         )
 
     @staticmethod
-    def solvePNP_SQPNP(
+    def solvePNP_Square(
         cameraMatrix: np.ndarray,
         distCoeffs: np.ndarray,
         modelTrls: list[Translation3d],
@@ -122,6 +124,64 @@ class OpenCVHelp:
     ) -> PnpResult | None:
         modelTrls = OpenCVHelp.reorderCircular(modelTrls, True, -1)
         imagePoints = np.array(OpenCVHelp.reorderCircular(imagePoints, True, -1))
+        objectMat = np.array(OpenCVHelp.translationToTVec(modelTrls))
+
+        alt: Transform3d | None = None
+        for tries in range(2):
+            retval, rvecs, tvecs, reprojectionError = cv.solvePnPGeneric(
+                objectMat,
+                imagePoints,
+                cameraMatrix,
+                distCoeffs,
+                flags=cv.SOLVEPNP_IPPE_SQUARE,
+            )
+
+            best = Transform3d(
+                OpenCVHelp.tVecToTranslation(tvecs[0]),
+                OpenCVHelp.rVecToRotation(rvecs[0]),
+            )
+            if len(tvecs) > 1:
+                alt = Transform3d(
+                    OpenCVHelp.tVecToTranslation(tvecs[1]),
+                    OpenCVHelp.rVecToRotation(rvecs[1]),
+                )
+
+            if not math.isnan(reprojectionError[0]):
+                break
+            else:
+                pt = imagePoints[0]
+                pt[0, 0] -= 0.001
+                pt[0, 1] -= 0.001
+                imagePoints[0] = pt
+
+        if math.isnan(reprojectionError[0]):
+            print("SolvePNP_Square failed!")
+            return None
+
+        if alt:
+            return PnpResult(
+                best=best,
+                bestReprojError=reprojectionError[0],
+                alt=alt,
+                altReprojError=reprojectionError[1],
+                ambiguity=reprojectionError[0] / reprojectionError[1],
+            )
+        else:
+            # We have no alternative so set it to best as well
+            return PnpResult(
+                best=best,
+                bestReprojError=reprojectionError[0],
+                alt=best,
+                altReprojError=reprojectionError[0],
+            )
+
+    @staticmethod
+    def solvePNP_SQPNP(
+        cameraMatrix: np.ndarray,
+        distCoeffs: np.ndarray,
+        modelTrls: list[Translation3d],
+        imagePoints: np.ndarray,
+    ) -> PnpResult | None:
         objectMat = np.array(OpenCVHelp.translationToTVec(modelTrls))
 
         retval, rvecs, tvecs, reprojectionError = cv.solvePnPGeneric(
@@ -134,7 +194,6 @@ class OpenCVHelp:
         )
 
         if math.isnan(error):
-            print("SolvePNP_Square failed!")
             return None
 
         # We have no alternative so set it to best as well

@@ -310,7 +310,7 @@ class PhotonCameraSim:
 
             pnpSim: PnpResult | None = None
             if tgt.fiducialId >= 0 and len(tgt.getFieldVertices()) == 4:
-                pnpSim = OpenCVHelp.solvePNP_SQPNP(
+                pnpSim = OpenCVHelp.solvePNP_Square(
                     self.prop.getIntrinsics(),
                     self.prop.getDistCoeffs(),
                     tgt.getModel().getVertices(),
