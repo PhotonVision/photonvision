@@ -133,7 +133,7 @@ jobs:
         with:
           name: built-docs
           path: docs/build/html
-  
+
   build-photonlib-vendorjson:
     name: "Build Vendor JSON"
     runs-on: ubuntu-22.04
