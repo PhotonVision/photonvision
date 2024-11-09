@@ -24,7 +24,7 @@ Use the 1.18.11 version of [Balena Etcher](https://github.com/balena-io/etcher/r
 
 Limelights have a different installation processes. Simply connect the limelight to your computer using a usb c cable. Select the compute module. If it doesn’t show up after 30s try using another USB port, initialization may take a while. If prompted, install the recommended missing drivers.
 
-Unless otherwise noted, to update PhotonVision after the initial installation, use the offline update option in the settings page with the downloaded .jar file from the latest release.
+Unless otherwise noted in release notes, to update PhotonVision after the initial installation, use the offline update option in the settings page with the downloaded jar file from the latest release.
 
 :::{note}
 Limelight 2, 2+, and 3 will need a [custom hardware config file](https://github.com/PhotonVision/photonvision/tree/master/docs/source/docs/installation/sw_install/files) for lighting to work. Currently only limelight 2 and 2+ files are available.
