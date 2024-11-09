@@ -334,10 +334,8 @@ class SimCameraProperties:
 
         noisyPts: list[list] = []
         for p in points:
-            error = (
-                self.avgErrorPx + np.random.normal(0.0, 1.0, 1)[0] * self.errorStdDevPx
-            )
-            errorAngle = np.random.uniform(0.0, 1.0) * 2.0 * math.pi - math.pi
+            error = np.random.normal(self.avgErrorPx, self.errorStdDevPx, 1)[0]
+            errorAngle = np.random.uniform(-math.pi, math.pi)
             noisyPts.append(
                 [
                     [
@@ -529,6 +527,142 @@ class SimCameraProperties:
         )
         prop.setCalibError(0.37, 0.06)
         prop.setFPS(7.0)
+        prop.setAvgLatency(60.0e-3)
+        prop.setLatencyStdDev(20.0e-3)
+        return prop
+
+    @classmethod
+    def OV9281_640_480(cls) -> typing.Self:
+        prop = cls()
+        prop.setCalibration(
+            640,
+            480,
+            newCamIntrinsics=np.array(
+                [
+                    [627.1573807284262, 0, 307.79423851611824],
+                    [0, 626.6621595938243, 219.02625533911998],
+                    [0, 0, 1],
+                ]
+            ),
+            newDistCoeffs=np.array(
+                [
+                    [
+                        0.054834081023049625,
+                        -0.15994111706817074,
+                        -0.0017587106009926158,
+                        -0.0014671022483263552,
+                        0.049742166267499596,
+                        0,
+                        0,
+                        0,
+                    ],
+                ]
+            ),
+        )
+        prop.setCalibError(0.25, 0.05)
+        prop.setFPS(30.0)
+        prop.setAvgLatency(60.0e-3)
+        prop.setLatencyStdDev(20.0e-3)
+        return prop
+
+    @classmethod
+    def OV9281_800_600(cls) -> typing.Self:
+        prop = cls()
+        prop.setCalibration(
+            800,
+            600,
+            newCamIntrinsics=np.array(
+                [
+                    [783.9467259105329, 0, 384.7427981451478],
+                    [0, 783.3276994922804, 273.7828191739],
+                    [0, 0, 1],
+                ]
+            ),
+            newDistCoeffs=np.array(
+                [
+                    [
+                        0.054834081023049625,
+                        -0.15994111706817074,
+                        -0.0017587106009926158,
+                        -0.0014671022483263552,
+                        0.049742166267499596,
+                        0,
+                        0,
+                        0,
+                    ],
+                ]
+            ),
+        )
+        prop.setCalibError(0.25, 0.05)
+        prop.setFPS(25.0)
+        prop.setAvgLatency(60.0e-3)
+        prop.setLatencyStdDev(20.0e-3)
+        return prop
+
+    @classmethod
+    def OV9281_1280_720(cls) -> typing.Self:
+        prop = cls()
+        prop.setCalibration(
+            1280,
+            720,
+            newCamIntrinsics=np.array(
+                [
+                    [940.7360710926395, 0, 615.5884770322365],
+                    [0, 939.9932393907364, 328.53938300868],
+                    [0, 0, 1],
+                ]
+            ),
+            newDistCoeffs=np.array(
+                [
+                    [
+                        0.054834081023049625,
+                        -0.15994111706817074,
+                        -0.0017587106009926158,
+                        -0.0014671022483263552,
+                        0.049742166267499596,
+                        0,
+                        0,
+                        0,
+                    ],
+                ]
+            ),
+        )
+        prop.setCalibError(0.25, 0.05)
+        prop.setFPS(15.0)
+        prop.setAvgLatency(60.0e-3)
+        prop.setLatencyStdDev(20.0e-3)
+        return prop
+
+    @classmethod
+    def OV9281_1920_1080(cls) -> typing.Self:
+        prop = cls()
+        prop.setCalibration(
+            1920,
+            1080,
+            newCamIntrinsics=np.array(
+                [
+                    [1411.1041066389591, 0, 923.3827155483548],
+                    [0, 1409.9898590861046, 492.80907451301994],
+                    [0, 0, 1],
+                ]
+            ),
+            newDistCoeffs=np.array(
+                [
+                    [
+                        0.054834081023049625,
+                        -0.15994111706817074,
+                        -0.0017587106009926158,
+                        -0.0014671022483263552,
+                        0.049742166267499596,
+                        0,
+                        0,
+                        0,
+                    ],
+                ]
+            ),
+        )
+        prop.setCalibError(0.25, 0.05)
+        prop.setFPS(10.0)
         prop.setAvgLatency(60.0e-3)
         prop.setLatencyStdDev(20.0e-3)
         return prop
