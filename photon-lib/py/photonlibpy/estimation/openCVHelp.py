@@ -159,18 +159,18 @@ class OpenCVHelp:
         if alt:
             return PnpResult(
                 best=best,
-                bestReprojError=reprojectionError[0],
+                bestReprojErr=reprojectionError[0],
                 alt=alt,
-                altReprojError=reprojectionError[1],
+                altReprojErr=reprojectionError[1],
                 ambiguity=reprojectionError[0] / reprojectionError[1],
             )
         else:
             # We have no alternative so set it to best as well
             return PnpResult(
                 best=best,
-                bestReprojError=reprojectionError[0],
+                bestReprojErr=reprojectionError[0],
                 alt=best,
-                altReprojError=reprojectionError[0],
+                altReprojErr=reprojectionError[0],
             )
 
     @staticmethod
@@ -195,7 +195,5 @@ class OpenCVHelp:
             return None
 
         # We have no alternative so set it to best as well
-        result = PnpResult(
-            best=best, bestReprojError=error, alt=best, altReprojError=error
-        )
+        result = PnpResult(best=best, bestReprojErr=error, alt=best, altReprojErr=error)
         return result

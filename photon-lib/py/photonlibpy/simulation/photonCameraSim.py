@@ -373,7 +373,7 @@ class PhotonCameraSim:
                 self.heartbeatCounter, int(latency * 1e6), 1000000
             ),
             targets=detectableTgts,
-            multiTagResult=multiTagResults,
+            multitagResult=multiTagResults,
         )
 
     def submitProcessedFrame(
