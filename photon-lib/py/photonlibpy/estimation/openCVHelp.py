@@ -111,9 +111,7 @@ class OpenCVHelp:
 
     @staticmethod
     def rVecToRotation(rvecInput: np.ndarray) -> Rotation3d:
-        return OpenCVHelp.rotationEDNToNWU(
-            Rotation3d(rvecInput[0], rvecInput[1], rvecInput[2])
-        )
+        return OpenCVHelp.rotationEDNToNWU(Rotation3d(rvecInput))
 
     @staticmethod
     def solvePNP_Square(
