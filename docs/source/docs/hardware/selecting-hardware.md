@@ -45,6 +45,10 @@ For AprilTag detection, we recommend you use a global shutter camera that has ~1
 
 Another cause of image distortion is 'rolling shutter.' This occurs when the camera captures pixels sequentially from top to bottom, which can also lead to distortion if the camera or object is moving.
 
+```{image} images/rollingshutter.gif
+:align: center
+```
+
 ### Using Multiple Cameras
 
 Using multiple cameras on your robot will help you detect more AprilTags at once and improve your pose estimation as a result. In order to use multiple cameras, you will need to create multiple PhotonPoseEstimators and add all of their measurements to a single drivetrain pose estimator. Please note that the accuracy of your robot to camera transform is especially important when using multiple cameras as any error in the transform will cause your pose estimations to "fight" each other. For more information, see {ref}`the programming reference. <docs/programming/index:programming reference>`.
