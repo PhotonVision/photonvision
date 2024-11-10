@@ -128,7 +128,7 @@ public enum Platform {
     private static final String UnknownPlatformString =
             String.format("Unknown Platform. OS: %s, Architecture: %s", OS_NAME, OS_ARCH);
 
-    public static synchronized Platform getCurrentPlatform() {
+    public static Platform getCurrentPlatform() {
         String OS_NAME;
         if (Platform.OS_NAME != null) {
           OS_NAME = Platform.OS_NAME;
