@@ -19,18 +19,15 @@ from enum import Enum
 from typing import List
 
 import ntcore
+# magical import to make serde stuff work
+import photonlibpy.generated  # noqa
 import wpilib
 from wpilib import RobotController, Timer
 
-# magical import to make serde stuff work
-import photonlibpy.generated  # noqa
-
 from .packet import Packet
 from .targeting.photonPipelineResult import PhotonPipelineResult
-from .version import (  # type: ignore[import-untyped]
-    PHOTONLIB_VERSION,
-    PHOTONVISION_VERSION,
-)
+from .version import (PHOTONLIB_VERSION,  # type: ignore[import-untyped]
+                      PHOTONVISION_VERSION)
 
 
 class VisionLEDMode(Enum):
