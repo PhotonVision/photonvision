@@ -1,10 +1,19 @@
-import ntcore as nt 
+import ntcore as nt
 from photonlibpy.photonCamera import PhotonCamera, setVersionCheckEnabled
 
-from wpimath.geometry import Pose3d, Translation3d, Rotation3d, Transform3d, Rotation2d, Pose2d, Translation2d
+from wpimath.geometry import (
+    Pose3d,
+    Translation3d,
+    Rotation3d,
+    Transform3d,
+    Rotation2d,
+    Pose2d,
+    Translation2d,
+)
 from photonlibpy.simulation import VisionSystemSim, PhotonCameraSim, VisionTargetSim
 from photonlibpy.estimation import TargetModel
 import math
+
 
 def setupCommon() -> None:
 
@@ -20,12 +29,13 @@ def test_VisibilityCupidShuffle():
     visionSysSim = VisionSystemSim("Test")
     camera = PhotonCamera("camera")
     cameraSim = PhotonCameraSim(camera)
-    visionSysSim.addCamera(cameraSim,Transform3d())
-  
+    visionSysSim.addCamera(cameraSim, Transform3d())
+
     cameraSim.prop.setCalibration(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
 
-    visionSysSim.addVisionTargets([VisionTargetSim(
-      targetPose, TargetModel(width=1.0, height=1.0), 3)])
+    visionSysSim.addVisionTargets(
+        [VisionTargetSim(targetPose, TargetModel(width=1.0, height=1.0), 3)]
+    )
 
     # To the right, to the right
     robotPose = Pose2d(Translation2d(5.0, 0.0), Rotation2d.fromDegrees(-70.0))
@@ -35,41 +45,45 @@ def test_VisibilityCupidShuffle():
 
     # To the right, to the right
     robotPose = Pose2d(Translation2d(5.0, 0.0), Rotation2d.fromDegrees(-95.0))
-    visionSysSim.update(robotPose);
-    assertFalse(camera.getLatestResult().hasTargets());
+    visionSysSim.update(robotPose)
+    assertFalse(camera.getLatestResult().hasTargets())
 
     # To the left, to the left
     robotPose = Pose2d(Translation2d(5.0, 0.0), Rotation2d.fromDegrees(90.0))
-    visionSysSim.update(robotPose);
+    visionSysSim.update(robotPose)
     assertFalse(camera.getLatestResult().hasTargets())
 
     # To the left, to the left
     robotPose = Pose2d(Translation2d(5.0, 0.0), Rotation2d.fromDegrees(65.0))
-    visionSysSim.update(robotPose);
+    visionSysSim.update(robotPose)
     assertFalse(camera.getLatestResult().hasTargets())
 
     # Now kick, now kick
     robotPose = Pose2d(Translation2d(2.0, 0.0), Rotation2d.fromDegrees(5.0))
-    visionSysSim.update(robotPose);
+    visionSysSim.update(robotPose)
     assertTrue(camera.getLatestResult().hasTargets())
 
     # Now kick, now kick
     robotPose = Pose2d(Translation2d(2.0, 0.0), Rotation2d.fromDegrees(-5.0))
-    visionSysSim.update(robotPose);
+    visionSysSim.update(robotPose)
     assertTrue(camera.getLatestResult().hasTargets())
 
     # Now walk it by yourself
     robotPose = Pose2d(Translation2d(2.0, 0.0), Rotation2d.fromDegrees(-179.0))
-    visionSysSim.update(robotPose);
+    visionSysSim.update(robotPose)
     assertFalse(camera.getLatestResult().hasTargets())
 
     # Now walk it by yourself
-    visionSysSim.adjustCamera(cameraSim, Transform3d(Translation3d(), Rotation3d(0, 0, math.pi)))
+    visionSysSim.adjustCamera(
+        cameraSim, Transform3d(Translation3d(), Rotation3d(0, 0, math.pi))
+    )
     visionSysSim.update(robotPose)
     assertTrue(camera.getLatestResult().hasTargets())
 
+
 def assertFalse(expected):
     assert not expected
+
 
 def assertTrue(expected):
     assert expected
