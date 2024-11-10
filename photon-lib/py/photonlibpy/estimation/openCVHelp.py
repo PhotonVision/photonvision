@@ -33,7 +33,10 @@ class OpenCVHelp:
         for translation in translations:
             trl = OpenCVHelp.translationNWUtoEDN(translation)
             retVal.append([trl.X(), trl.Y(), trl.Z()])
-        return np.array(retVal)
+        return np.array(
+            retVal,
+            dtype=np.float32,
+        )
 
     @staticmethod
     def rotationToRVec(rotation: Rotation3d) -> np.ndarray:
@@ -41,7 +44,10 @@ class OpenCVHelp:
         rot = OpenCVHelp.rotationNWUtoEDN(rotation)
         rotVec = rot.getQuaternion().toRotationVector()
         retVal.append(rotVec)
-        return np.array(retVal)
+        return np.array(
+            retVal,
+            dtype=np.float32,
+        )
 
     @staticmethod
     def avgPoint(points: list[Tuple[float, float]]) -> Tuple[float, float]:
