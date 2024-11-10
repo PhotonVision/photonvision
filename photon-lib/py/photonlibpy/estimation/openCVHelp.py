@@ -6,7 +6,7 @@ import numpy as np
 from wpimath.geometry import Rotation3d, Transform3d, Translation3d
 
 from ..targeting import PnpResult, TargetCorner
-from . import RotTrlTransform3d
+from .rotTrlTransform3d import RotTrlTransform3d
 
 NWU_TO_EDN = Rotation3d(np.array([[0, -1, 0], [0, 0, -1], [1, 0, 0]]))
 EDN_TO_NWU = Rotation3d(np.array([[0, 0, 1], [-1, 0, 0], [0, -1, 0]]))
