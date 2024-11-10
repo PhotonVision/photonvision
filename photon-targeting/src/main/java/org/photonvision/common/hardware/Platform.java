@@ -149,8 +149,8 @@ public enum Platform {
     }
 
     public static boolean isAthena() {
-      File runRobotFile = new File("/usr/local/frc/bin/frcRunRobot.sh");
-      return runRobotFile.exists();
+        File runRobotFile = new File("/usr/local/frc/bin/frcRunRobot.sh");
+        return runRobotFile.exists();
     }
 
     //////////////////////////////////////////////////////
@@ -165,16 +165,16 @@ public enum Platform {
     public static Platform getCurrentPlatform() {
         String OS_NAME;
         if (Platform.OS_NAME != null) {
-          OS_NAME = Platform.OS_NAME;
+            OS_NAME = Platform.OS_NAME;
         } else {
-          OS_NAME = System.getProperty("os.name");
+            OS_NAME = System.getProperty("os.name");
         }
 
         String OS_ARCH;
         if (Platform.OS_ARCH != null) {
-          OS_ARCH = Platform.OS_ARCH;
+            OS_ARCH = Platform.OS_ARCH;
         } else {
-          OS_ARCH = System.getProperty("os.arch");
+            OS_ARCH = System.getProperty("os.arch");
         }
 
         if (OS_NAME.startsWith("Windows")) {
