@@ -15,11 +15,11 @@ Welcome to the official documentation of PhotonVision! PhotonVision is the free,
 
         Quick start to using Photonvision.
 
-    .. grid-item-card::  Getting Started
-        :link: docs/installation/index
+    .. grid-item-card::  Advanced Installation
+        :link: docs/advanced-installation/index
         :link-type: doc
 
-        Get started with installing PhotonVision, creating a pipeline, and tuning it for usage in competitions.
+        Get started with installing PhotonVision on non-supported hardware.
 
 ```
 
@@ -91,7 +91,7 @@ PhotonVision is licensed under the [GNU GPL v3](https://www.gnu.org/licenses/gpl
 docs/description
 docs/quick-start/index
 docs/hardware/index
-docs/installation/index
+docs/advanced-installation/index
 docs/settings
 ```
 

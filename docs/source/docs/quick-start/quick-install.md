@@ -7,7 +7,7 @@
   - Orange Pi 5
   - Limelight
 
-For installing on non-supported devices {ref}`see. <docs/installation/sw_install/index:Software Installation>`
+For installing on non-supported devices {ref}`see. <docs/advanced-installation/sw_install/index:Software Installation>`
 
 [Download](https://github.com/PhotonVision/photonvision/releases/latest) the latest preconfigured image of photonvision for your coprocessor
 
@@ -29,7 +29,7 @@ Limelights have a different installation processes. Simply connect the limelight
 Unless otherwise noted in release notes, to update PhotonVision after the initial installation, use the offline update option in the settings page with the downloaded jar file from the latest release.
 
 :::{note}
-Limelight 2, 2+, and 3 will need a [custom hardware config file](https://github.com/PhotonVision/photonvision/tree/master/docs/source/docs/installation/sw_install/files) for lighting to work. Currently only limelight 2 and 2+ files are available.
+Limelight 2, 2+, and 3 will need a [custom hardware config file](https://github.com/PhotonVision/photonvision/tree/master/docs/source/docs/advanced-installation/sw_install/files) for lighting to work. Currently only limelight 2 and 2+ files are available.
 :::
 
 :::{note}
