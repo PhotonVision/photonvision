@@ -164,7 +164,7 @@ class VisionSystemSim:
         self.targetSets.clear()
 
     def clearAprilTags(self) -> None:
-        self.removeVisionTargets("apriltag")
+        self.removeVisionTargetType("apriltag")
 
     def removeVisionTargetType(self, targetType: str) -> None:
         del self.targetSets[targetType]
