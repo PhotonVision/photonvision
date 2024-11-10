@@ -197,8 +197,8 @@ class SimCameraProperties:
     def getPixelRot(self, point: typing.Tuple[int, int]) -> Rotation3d:
         return Rotation3d(
             0.0,
-            self.getPixelPitch(point[0]).radians(),
-            self.getPixelYaw(point[1]).radians(),
+            self.getPixelPitch(point[1]).radians(),
+            self.getPixelYaw(point[0]).radians(),
         )
 
     def getCorrectedPixelRot(self, point: typing.Tuple[float, float]) -> Rotation3d:
