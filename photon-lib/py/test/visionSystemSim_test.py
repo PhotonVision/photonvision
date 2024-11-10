@@ -20,8 +20,6 @@ import math
 import pytest
 
 from wpimath.units import meters, feetToMeters
-from robotpy_apriltag import AprilTag, AprilTagFieldLayout
-
 
 @pytest.fixture(autouse=True)
 def setupCommon() -> None:
