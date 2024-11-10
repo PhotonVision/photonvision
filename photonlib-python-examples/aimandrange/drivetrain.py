@@ -24,11 +24,12 @@
 
 
 import math
+
+import swervemodule
 import wpilib
 import wpilib.simulation
 import wpimath.geometry
 import wpimath.kinematics
-import swervemodule
 
 kMaxSpeed = 3.0  # 3 meters per second
 kMaxAngularSpeed = math.pi  # 1/2 rotation per second
