@@ -75,7 +75,6 @@ class OpenCVHelp:
         camRt: RotTrlTransform3d,
         objectTranslations: list[Translation3d],
     ) -> np.ndarray:
-
         objectPoints = OpenCVHelp.translationToTVec(objectTranslations)
         rvec = OpenCVHelp.rotationToRVec(camRt.getRotation())
         tvec = OpenCVHelp.translationToTVec(
@@ -89,7 +88,7 @@ class OpenCVHelp:
 
     @staticmethod
     def reorderCircular(
-        elements: list[Any], backwards: bool, shiftStart: int
+        elements: list[Any] | np.ndarray, backwards: bool, shiftStart: int
     ) -> list[Any]:
         size = len(elements)
         reordered = []
@@ -111,9 +110,7 @@ class OpenCVHelp:
 
     @staticmethod
     def tVecToTranslation(tvecInput: np.ndarray) -> Translation3d:
-        return OpenCVHelp.translationEDNToNWU(
-            Translation3d(tvecInput[0], tvecInput[1], tvecInput[2])
-        )
+        return OpenCVHelp.translationEDNToNWU(Translation3d(tvecInput))
 
     @staticmethod
     def rVecToRotation(rvecInput: np.ndarray) -> Rotation3d:
@@ -150,7 +147,7 @@ class OpenCVHelp:
                     OpenCVHelp.rVecToRotation(rvecs[1]),
                 )
 
-            if not math.isnan(reprojectionError[0]):
+            if not math.isnan(reprojectionError[0, 0]):
                 break
             else:
                 pt = imagePoints[0]
@@ -158,17 +155,17 @@ class OpenCVHelp:
                 pt[0, 1] -= 0.001
                 imagePoints[0] = pt
 
-        if math.isnan(reprojectionError[0]):
+        if math.isnan(reprojectionError[0, 0]):
             print("SolvePNP_Square failed!")
             return None
 
         if alt:
             return PnpResult(
                 best=best,
-                bestReprojErr=reprojectionError[0],
+                bestReprojErr=reprojectionError[0, 0],
                 alt=alt,
-                altReprojErr=reprojectionError[1],
-                ambiguity=reprojectionError[0] / reprojectionError[1],
+                altReprojErr=reprojectionError[1, 0],
+                ambiguity=reprojectionError[0, 0] / reprojectionError[1, 0],
             )
         else:
             # We have no alternative so set it to best as well

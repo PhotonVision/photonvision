@@ -16,7 +16,6 @@ import cv2 as cv
 
 
 class SimCameraProperties:
-
     def __init__(self, path: str | None = None, width: int = 0, height: int = 0):
         self.resWidth: int = -1
         self.resHeight: int = -1
@@ -42,7 +41,7 @@ class SimCameraProperties:
         *,
         fovDiag: Rotation2d | None = None,
         newCamIntrinsics: np.ndarray | None = None,
-        newDistCoeffs: np.ndarray | None = None
+        newDistCoeffs: np.ndarray | None = None,
     ):
         # Should be an inverted XOR on the args to differentiate between the signatures
 
@@ -349,7 +348,7 @@ class SimCameraProperties:
 
     def estLatency(self) -> seconds:
         return max(
-            float(self.avgLatency + np.random.normal(0.0, 1.0, 1) * self.latencyStdDev),
+            float(np.random.normal(self.avgLatency, self.latencyStdDev, 1)[0]),
             0.0,
         )
 
