@@ -27,6 +27,10 @@ PhotonVision _STRONGLY_ recommends the usage of a network switch on your robot. 
 :::
 ::::
 
+## Network Hostname
+
+Rename each device from the default "Photonvision" to a unique hostname (e.g., "Photon-OrangePi-Left" or "Photon-RPi5-Back"). This helps differentiate multiple coprocessors on your network, making it easier to manage them.
+
 ## Digital Networking
 
 PhotonVision _STRONGLY_ recommends the usage of Static IPs as it increases reliability on the field and when using PhotonVision in general. To properly set up your static IP, follow the steps below:
