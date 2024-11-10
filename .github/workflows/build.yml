@@ -133,6 +133,37 @@ jobs:
         with:
           name: built-docs
           path: docs/build/html
+
+  build-photonlib-vendorjson:
+    name: "Build Vendor JSON"
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+
+      # grab all tags
+      - run: git fetch --tags --force
+
+      # Generate the JSON and give it the ""standard""" name maven gives it
+      - run: |
+          chmod +x gradlew
+          ./gradlew photon-lib:generateVendorJson
+          export VERSION=$(git describe --tags --match=v*)
+          mv photon-lib/build/generated/vendordeps/photonlib.json photon-lib/build/generated/vendordeps/photonlib-$(git describe --tags --match=v*).json
+
+      # Upload it here so it shows up in releases
+      - uses: actions/upload-artifact@v4
+        with:
+          name: photonlib-vendor-json
+          path: photon-lib/build/generated/vendordeps/photonlib-*.json
+
   build-photonlib-host:
     env:
       MACOSX_DEPLOYMENT_TARGET: 13
@@ -507,6 +538,11 @@ jobs:
         with:
           merge-multiple: true
           pattern: photonlib-offline
+      # Download vendor json
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          pattern: photonlib-vendor-json
       # Download all images
       - uses: actions/download-artifact@v4
         with:
@@ -546,3 +582,18 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  dispatch:
+    name: dispatch
+    needs: [build-photonlib-vendorjson]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: peter-evans/repository-dispatch@v3
+        if: |
+          github.repository == 'PhotonVision/photonvision' &&
+          startsWith(github.ref, 'refs/tags/v')
+        with:
+          token: ${{ secrets.VENDOR_JSON_REPO_PUSH_TOKEN }}
+          repository: PhotonVision/vendor-json-repo
+          event-type: tag
+          client-payload: '{"run_id": "${{ github.run_id }}", "package_version": "${{ github.ref_name }}"}'
