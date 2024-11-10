@@ -18,6 +18,7 @@
 package org.photonvision.common.hardware;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -147,6 +148,11 @@ public enum Platform {
         return currentPlatform.isSupported;
     }
 
+    public static boolean isAthena() {
+      File runRobotFile = new File("/usr/local/frc/bin/frcRunRobot.sh");
+      return runRobotFile.exists();
+    }
+
     //////////////////////////////////////////////////////
 
     // Debug info related to unknown platforms for debug help
@@ -156,7 +162,21 @@ public enum Platform {
             String.format("Unknown Platform. OS: %s, Architecture: %s", OS_NAME, OS_ARCH);
     private static final String UnknownDeviceModelString = "Unknown";
 
-    public static Platform getCurrentPlatform() {
+    public static synchronized Platform getCurrentPlatform() {
+        String OS_NAME;
+        if (Platform.OS_NAME != null) {
+          OS_NAME = Platform.OS_NAME;
+        } else {
+          OS_NAME = System.getProperty("os.name");
+        }
+
+        String OS_ARCH;
+        if (Platform.OS_ARCH != null) {
+          OS_ARCH = Platform.OS_ARCH;
+        } else {
+          OS_ARCH = System.getProperty("os.arch");
+        }
+
         if (OS_NAME.startsWith("Windows")) {
             if (OS_ARCH.equals("x86") || OS_ARCH.equals("i386")) {
                 return WINDOWS_32;
