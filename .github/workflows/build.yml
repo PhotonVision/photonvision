@@ -100,11 +100,11 @@ jobs:
       - name: Gradle Coverage
         run: ./gradlew jacocoTestReport
       - name: Publish Coverage Report
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           file: ./photon-server/build/reports/jacoco/test/jacocoTestReport.xml
       - name: Publish Core Coverage Report
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           file: ./photon-core/build/reports/jacoco/test/jacocoTestReport.xml
   build-offline-docs:
@@ -529,14 +529,14 @@ jobs:
       # Upload all jars and xz archives
       # Split into two uploads to work around max size limits in action-gh-releases
       # https://github.com/softprops/action-gh-release/issues/353
-      - uses: softprops/action-gh-release@v2.0.8
+      - uses: softprops/action-gh-release@v2.0.9
         with:
           files: |
             **/*orangepi5*.xz
         if: startsWith(github.ref, 'refs/tags/v')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: softprops/action-gh-release@v2.0.8
+      - uses: softprops/action-gh-release@v2.0.9
         with:
           files: |
             **/!(*orangepi5*).xz
