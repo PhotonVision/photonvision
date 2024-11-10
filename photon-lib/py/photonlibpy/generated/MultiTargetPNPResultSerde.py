@@ -20,8 +20,8 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from ..targeting import *
 from ..packet import Packet
+from ..targeting import *
 
 
 class MultiTargetPNPResultSerde:

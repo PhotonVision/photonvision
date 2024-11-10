@@ -17,8 +17,9 @@
 
 import struct
 from typing import Any, Optional, Type
-from wpimath.geometry import Transform3d, Translation3d, Rotation3d, Quaternion
+
 import wpilib
+from wpimath.geometry import Quaternion, Rotation3d, Transform3d, Translation3d
 
 
 class Packet:
