@@ -17,15 +17,20 @@
 
 from enum import Enum
 from typing import List
+
 import ntcore
-from wpilib import RobotController, Timer
-import wpilib
-from .packet import Packet
-from .targeting.photonPipelineResult import PhotonPipelineResult
-from .version import PHOTONVISION_VERSION, PHOTONLIB_VERSION  # type: ignore[import-untyped]
 
 # magical import to make serde stuff work
 import photonlibpy.generated  # noqa
+import wpilib
+from wpilib import RobotController, Timer
+
+from .packet import Packet
+from .targeting.photonPipelineResult import PhotonPipelineResult
+from .version import (  # type: ignore[import-untyped]
+    PHOTONLIB_VERSION,
+    PHOTONVISION_VERSION,
+)
 
 
 class VisionLEDMode(Enum):

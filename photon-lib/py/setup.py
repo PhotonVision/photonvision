@@ -1,5 +1,7 @@
-from setuptools import setup, find_packages
-import subprocess, re
+import re
+import subprocess
+
+from setuptools import find_packages, setup
 
 gitDescribeResult = (
     subprocess.check_output(["git", "describe", "--tags", "--match=v*", "--always"])
