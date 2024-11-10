@@ -163,7 +163,7 @@ class PhotonCameraSim:
         return True
 
     def consumeNextEntryTime(self) -> float | None:
-        now = wpilib.Timer.getFPGATimestamp() * 1e6
+        now = int(wpilib.Timer.getFPGATimestamp() * 1e6)
         timestamp = 0
         iter = 0
         while now >= self.nextNtEntryTime:
