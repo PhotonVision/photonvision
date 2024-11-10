@@ -197,18 +197,18 @@ class PhotonCameraSim:
         self.maxSightRange = range
 
     def enableRawStream(self, enabled: bool) -> None:
-        raise ("Raw stream not implemented")
+        raise Exception("Raw stream not implemented")
         # self.videoSimRawEnabled = enabled
 
     def enableDrawWireframe(self, enabled: bool) -> None:
-        raise ("Wireframe not implemented")
+        raise Exception("Wireframe not implemented")
         # self.videoSimWireframeEnabled = enabled
 
     def setWireframeResolution(self, resolution: float) -> None:
         self.videoSimWireframeResolution = resolution
 
     def enableProcessedStream(self, enabled: bool) -> None:
-        raise ("Processed stream not implemented")
+        raise Exception("Processed stream not implemented")
         # self.videoSimProcEnabled = enabled
 
     def process(
