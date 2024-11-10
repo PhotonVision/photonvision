@@ -4,27 +4,13 @@ import wpilib
 from robotpy_apriltag import AprilTagFieldLayout
 from wpilib import Field2d
 from wpimath.geometry import Pose2d, Pose3d, Transform3d
-# TODO Use buffer when available upstream
-# from wpimath.interpolation import TimeInterpolatablePose3dBuffer
+# TODO(auscompgeek): update import path when RobotPy re-exports are fixed
+from wpimath.interpolation._interpolation import TimeInterpolatablePose3dBuffer
 from wpimath.units import seconds
 
 from ..estimation import TargetModel
 from .photonCameraSim import PhotonCameraSim
 from .visionTargetSim import VisionTargetSim
-
-
-class TimeInterpolatablePose3dBuffer:
-    def __init__(self, bufferLength: seconds):
-        self.pose: Pose3d = Pose3d()
-
-    def addSample(self, timestamp: seconds, sample: Pose3d):
-        self.pose = sample
-
-    def sample(self, timestamp: seconds) -> Pose3d:
-        return self.pose
-
-    def clear(self):
-        pass
 
 
 class VisionSystemSim:
