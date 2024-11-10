@@ -72,8 +72,8 @@ class VisionEstimation:
                 best=Transform3d(o, bestPose),
                 alt=Transform3d(o, altPose),
                 ambiguity=camToTag.ambiguity,
-                bestReprojError=camToTag.bestReprojErr,
-                altReprojError=camToTag.altReprojErr,
+                bestReprojErr=camToTag.bestReprojErr,
+                altReprojErr=camToTag.altReprojErr,
             )
             return result
         else:
