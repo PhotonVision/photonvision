@@ -175,6 +175,7 @@ class PhotonCameraSim:
             if iter > 50:
                 timestamp = now
                 self.nextNtEntryTime = now + frameTime
+                break
 
         if timestamp != 0:
             return timestamp
