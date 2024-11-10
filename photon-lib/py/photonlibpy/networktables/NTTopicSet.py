@@ -1,6 +1,7 @@
 import ntcore as nt
-from ..generated.PhotonPipelineResultSerde import PhotonPipelineResultSerde
 from wpimath.geometry import Transform3d
+
+from ..generated.PhotonPipelineResultSerde import PhotonPipelineResultSerde
 
 PhotonPipelineResult_TYPE_STRING = (
     "photonstruct:PhotonPipelineResult:" + PhotonPipelineResultSerde.MESSAGE_VERSION

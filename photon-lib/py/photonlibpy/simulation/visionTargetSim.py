@@ -1,8 +1,8 @@
-from ..estimation.targetModel import TargetModel
+import math
 
 from wpimath.geometry import Pose3d, Translation3d
 
-import math
+from ..estimation.targetModel import TargetModel
 
 
 class VisionTargetSim:

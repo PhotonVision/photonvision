@@ -1,6 +1,6 @@
-from wpimath.geometry import Pose3d, Rotation3d, Translation3d, Transform3d
-
 from typing import Self
+
+from wpimath.geometry import Pose3d, Rotation3d, Transform3d, Translation3d
 
 
 class RotTrlTransform3d:
