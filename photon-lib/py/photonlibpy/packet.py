@@ -16,11 +16,10 @@
 ###############################################################################
 
 import struct
-from typing import Any, Generic, Optional, Protocol, TypeVar
+from typing import Generic, Optional, Protocol, TypeVar
 
 import wpilib
 from wpimath.geometry import Quaternion, Rotation3d, Transform3d, Translation3d
-
 
 T = TypeVar("T")
 

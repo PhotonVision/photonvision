@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import ClassVar, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar, Optional
 
 from .multiTargetPNPResult import MultiTargetPNPResult
 from .photonTrackedTarget import PhotonTrackedTarget

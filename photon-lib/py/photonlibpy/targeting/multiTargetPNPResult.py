@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import ClassVar, TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 from wpimath.geometry import Transform3d
 

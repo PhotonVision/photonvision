@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import ClassVar, TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 if TYPE_CHECKING:
     from .. import generated
