@@ -138,11 +138,16 @@ class PhotonCameraSim:
     def canSeeTargetPose(self, camPose: Pose3d, target: VisionTargetSim) -> bool:
         rel = CameraTargetRelation(camPose, target.getPose())
         return (
-            abs(rel.camToTargYaw.degrees()) < self.prop.getHorizFOV().degrees() / 2.0
-            and abs(rel.camToTargPitch.degrees())
-            < self.prop.getVertFOV().degrees() / 2.0
-            and not target.getModel().getIsPlanar()
-            or abs(rel.targtoCamAngle.degrees()) < 90
+            (
+                abs(rel.camToTargYaw.degrees())
+                < self.prop.getHorizFOV().degrees() / 2.0
+                and abs(rel.camToTargPitch.degrees())
+                < self.prop.getVertFOV().degrees() / 2.0
+            )
+            and (
+                not target.getModel().getIsPlanar()
+                or abs(rel.targtoCamAngle.degrees()) < 90
+            )
             and rel.camToTarg.translation().norm() <= self.maxSightRange
         )
 
