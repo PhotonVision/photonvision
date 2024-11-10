@@ -41,7 +41,7 @@ When detecting AprilTags, it's important to minimize 'motion blur' as much as po
 When using an Orange pi 5 with an OV9782 teams will usually change the following settings.
 
 - Resolution:
-  - Resolutions larger than 640x640 may not result in any more accurate detection and may lower performance.
+  - Resolutions larger than 640x640 may not result in any more accurate detection and may lower {ref}`performance<docs/objectDetection/about-object-detection:Letterboxing>`.
 - Confidence:
   - 0.75 - 0.95 Depending on if you want detection of warn game pieces or low false positives.
 - White Balance Temperature:
