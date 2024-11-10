@@ -62,6 +62,8 @@ setup(
         "robotpy-apriltag<2025,>=2024.0.0b2",
         "robotpy-cscore<2025,>=2024.0.0.b2",
         "pyntcore<2025,>=2024.0.0b2",
+        "robotpy-opencv;platform_machine=='roborio'",
+        "opencv-python;platform_machine!='roborio'",
     ],
     description=descriptionStr,
     url="https://photonvision.org",
