@@ -1,9 +1,13 @@
 from dataclasses import dataclass, field
+from typing import ClassVar, TYPE_CHECKING
 
 from wpimath.geometry import Transform3d
 
 from ..packet import Packet
 from .TargetCorner import TargetCorner
+
+if TYPE_CHECKING:
+    from .. import generated
 
 
 @dataclass
@@ -59,4 +63,4 @@ class PhotonTrackedTarget:
             retList.append(TargetCorner(cx, cy))
         return retList
 
-    photonStruct: "PhotonTrackedTargetSerde" = None
+    photonStruct: ClassVar["generated.PhotonTrackedTargetSerde"]

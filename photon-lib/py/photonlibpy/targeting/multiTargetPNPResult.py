@@ -1,8 +1,12 @@
 from dataclasses import dataclass, field
+from typing import ClassVar, TYPE_CHECKING
 
 from wpimath.geometry import Transform3d
 
 from ..packet import Packet
+
+if TYPE_CHECKING:
+    from .. import generated
 
 
 @dataclass
@@ -13,7 +17,7 @@ class PnpResult:
     bestReprojErr: float = 0.0
     altReprojErr: float = 0.0
 
-    photonStruct: "PNPResultSerde" = None
+    photonStruct: ClassVar["generated.PnpResultSerde"]
 
 
 @dataclass
@@ -33,4 +37,4 @@ class MultiTargetPNPResult:
                 self.fiducialIDsUsed.append(fidId)
         return packet
 
-    photonStruct: "MultiTargetPNPResultSerde" = None
+    photonStruct: ClassVar["generated.MultiTargetPNPResultSerde"]

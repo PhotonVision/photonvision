@@ -1,8 +1,11 @@
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import ClassVar, Optional, TYPE_CHECKING
 
 from .multiTargetPNPResult import MultiTargetPNPResult
 from .photonTrackedTarget import PhotonTrackedTarget
+
+if TYPE_CHECKING:
+    from .. import generated
 
 
 @dataclass
@@ -17,7 +20,7 @@ class PhotonPipelineMetadata:
 
     timeSinceLastPong: int = -1
 
-    photonStruct: "PhotonPipelineMetadataSerde" = None
+    photonStruct: ClassVar["generated.PhotonPipelineMetadataSerde"]
 
 
 @dataclass
@@ -57,7 +60,7 @@ class PhotonPipelineResult:
     def hasTargets(self) -> bool:
         return len(self.targets) > 0
 
-    def getBestTarget(self) -> PhotonTrackedTarget:
+    def getBestTarget(self) -> Optional[PhotonTrackedTarget]:
         """
         Returns the best target in this pipeline result. If there are no targets, this method will
         return null. The best target is determined by the target sort mode in the PhotonVision UI.
@@ -66,4 +69,4 @@ class PhotonPipelineResult:
             return None
         return self.getTargets()[0]
 
-    photonStruct: "PhotonPipelineResultSerde" = None
+    photonStruct: ClassVar["generated.PhotonPipelineResultSerde"]
