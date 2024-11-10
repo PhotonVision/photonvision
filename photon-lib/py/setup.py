@@ -57,6 +57,7 @@ setup(
     packages=find_packages(),
     version=versionString,
     install_requires=[
+        "numpy~=1.25",
         "wpilib<2025,>=2024.0.0b2",
         "robotpy-wpimath<2025,>=2024.0.0b2",
         "robotpy-apriltag<2025,>=2024.0.0b2",
