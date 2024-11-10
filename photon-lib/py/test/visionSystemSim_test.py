@@ -80,6 +80,31 @@ def test_VisibilityCupidShuffle():
     visionSysSim.update(robotPose)
     assertTrue(camera.getLatestResult().hasTargets())
 
+def test_NotVisibleVert1():
+    setupCommon()
+
+    targetPose = Pose3d(Translation3d(15.98, 0.0, 2.0), Rotation3d(0, 0, math.pi))
+
+    visionSysSim = VisionSystemSim("Test")
+    camera = PhotonCamera("camera")
+    cameraSim = PhotonCameraSim(camera)
+    visionSysSim.addCamera(cameraSim, Transform3d())
+
+    cameraSim.prop.setCalibration(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
+
+    visionSysSim.addVisionTargets(
+        [VisionTargetSim(targetPose, TargetModel(width=3.0, height=3.0), 3)]
+    )
+
+    robotPose = Pose2d(Translation2d(5.0, 0.0), Rotation2d.fromDegrees(5.0))
+
+    visionSysSim.update(robotPose)
+    assertTrue(camera.getLatestResult().hasTargets())
+
+    visionSysSim.adjustCamera(cameraSim, Transform3d(Translation3d(0.0, 0.0, 5000.0), Rotation3d(0.0, 0.0, math.pi)))
+    visionSysSim.update(robotPose)
+    assertFalse(camera.getLatestResult().hasTargets())
+
 
 def assertFalse(expected):
     assert not expected
