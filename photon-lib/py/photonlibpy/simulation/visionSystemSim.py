@@ -186,7 +186,10 @@ class VisionSystemSim:
         return self.robotPoseBuffer.sample(timestamp)
 
     def resetRobotPose(self, robotPose: Pose2d | Pose3d) -> None:
-        robotPose = Pose3d(robotPose)  # Force to Pose3d
+        if type(robotPose) is Pose2d:
+            robotPose = Pose3d(robotPose)
+        assert type(robotPose) is Pose3d
+
         self.robotPoseBuffer.clear()
         self.robotPoseBuffer.addSample(wpilib.Timer.getFPGATimestamp(), robotPose)
 
@@ -194,7 +197,10 @@ class VisionSystemSim:
         return self.dbgField
 
     def update(self, robotPose: Pose2d | Pose3d) -> None:
-        robotPose = Pose3d(robotPose)
+        if type(robotPose) is Pose2d:
+            robotPose = Pose3d(robotPose)
+        assert type(robotPose) is Pose3d
+
         for targetType, targets in self.targetSets.items():
             posesToAdd: list[Pose2d] = []
             for target in targets:
