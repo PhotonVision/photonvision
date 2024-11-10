@@ -2,7 +2,7 @@
 
 ## Physical Networking
 
-:::{note}
+:::{warning}
 When using PhotonVision off robot, you _MUST_ plug the coprocessor into a physical router/radio. You can then connect your laptop/device used to view the webdashboard to the same network. Any other networking setup will not work and will not be supported in any capacity.
 :::
 

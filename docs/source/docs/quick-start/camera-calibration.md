@@ -1,6 +1,10 @@
 # Camera Calibration
 
-If you’re not using cameras in 3D mode, calibration is optional, but it can still offer benefits. Calibrating cameras helps refine the pitch and yaw values, leading to more accurate positional data in every mode.
+:::{important}
+In order to detect AprilTags and use 3D mode, your camera must be calibrated at the desired resolution! Inaccurate calibration will lead to poor performance.
+:::
+
+If you’re not using cameras in 3D mode, calibration is optional, but it can still offer benefits. Calibrating cameras helps refine the pitch and yaw values, leading to more accurate positional data in every mode. {ref}`For a more in-depth view<docs/calibration/calibration:Calibrating Your Camera>`.
 
 ## Print the Calibration Target
 

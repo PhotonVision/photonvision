@@ -6,6 +6,10 @@
 
 In order for photonvision to connect to the roborio it needs to know your team number.
 
+### Camera Names
+
+You **must** rename your cameras to ensure that every camera has a unique name. This is how we will identify cameras in robot code.
+
 ## Pipeline Settings
 
 ### Apriltag
