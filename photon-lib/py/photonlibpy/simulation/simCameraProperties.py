@@ -22,13 +22,13 @@ class SimCameraProperties:
         self.resHeight: int = -1
         self.camIntrinsics: np.ndarray = np.zeros((3, 3))  # [3,3]
         self.distCoeffs: np.ndarray = np.zeros((8, 1))  # [8,1]
-        self.avgErrorPx: float
-        self.errorStdDevPx: float
+        self.avgErrorPx: float = 0.0
+        self.errorStdDevPx: float = 0.0
         self.frameSpeed: seconds = 0.0
         self.exposureTime: seconds = 0.0
         self.avgLatency: seconds = 0.0
         self.latencyStdDev: seconds = 0.0
-        self.viewplanes: list[np.ndarray]  # [3,1]
+        self.viewplanes: list[np.ndarray] = []  # [3,1]
 
         if path is None:
             self.setCalibration(960, 720, fovDiag=Rotation2d(math.radians(90.0)))
