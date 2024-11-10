@@ -7,14 +7,16 @@
   - Orange Pi 5
   - Limelight
 
+For installing on non-supported devices {ref}`see. <docs/installation/sw_install/index:Software Installation>`
+
 [Download](https://github.com/PhotonVision/photonvision/releases/latest) the latest preconfigured image of photonvision for your coprocessor
 
-| Coprocessor          | Image filename                                       | Jar                                   |
-| -------------------- | ---------------------------------------------------- | ------------------------------------- |
-| OrangePi 5           | photonvision-{version}-linuxarm64_orangepi5.img.xz   | photonvision-{version}-linuxarm64.jar |
-| Raspberry Pi 3, 4, 5 | photonvision-{version}-linuxarm64_RaspberryPi.img.xz | photonvision-{version}-linuxarm64.jar |
-| Limelight 2          | photonvision-{version}-linuxarm64_limelight2.img.xz  | photonvision-{version}-linuxarm64.jar |
-| Limelight 3          | photonvision-{version}-linuxarm64_limelight3.img.xz  | photonvision-{version}-linuxarm64.jar |
+| Coprocessor          | Image filename                                                                                                                                                                     | Jar                                                                                                                                                  |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OrangePi 5           | [photonvision-{version}-linuxarm64_orangepi5.img.xz](https://github.com/PhotonVision/photonvision/releases/latest/download/photonvision-v2024.3.1-linuxarm64_orangepi5.img.xz)     | [photonvision-{version}-linuxarm64.jar](https://github.com/PhotonVision/photonvision/releases/latest/download/photonvision-v2024.3.1-linuxarm64.jar) |
+| Raspberry Pi 3, 4, 5 | [photonvision-{version}-linuxarm64_RaspberryPi.img.xz](https://github.com/PhotonVision/photonvision/releases/latest/download/photonvision-v2024.3.1-linuxarm64_RaspberryPi.img.xz) | [photonvision-{version}-linuxarm64.jar](https://github.com/PhotonVision/photonvision/releases/latest/download/photonvision-v2024.3.1-linuxarm64.jar) |
+| Limelight 2          | [photonvision-{version}-linuxarm64_limelight2.img.xz](https://github.com/PhotonVision/photonvision/releases/latest/download/photonvision-v2024.3.1-linuxarm64_limelight2.img.xz)   | [photonvision-{version}-linuxarm64.jar](https://github.com/PhotonVision/photonvision/releases/latest/download/photonvision-v2024.3.1-linuxarm64.jar) |
+| Limelight 3          | [photonvision-{version}-linuxarm64_limelight3.img.xz](https://github.com/PhotonVision/photonvision/releases/latest/download/photonvision-v2024.3.1-linuxarm64_limelight3.img.xz)   | [photonvision-{version}-linuxarm64.jar](https://github.com/PhotonVision/photonvision/releases/latest/download/photonvision-v2024.3.1-linuxarm64.jar) |
 
 :::{warning}
 Balena Etcher 1.18.11 is a known working version. Other versions may cause issues such as bootlooping (the system will repeatedly boot and restart) when imaging your device.

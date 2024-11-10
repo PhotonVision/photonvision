@@ -5,7 +5,7 @@
 - Orange Pi 5 4GB
   - Able to process two object detection streams at once while also processing 1 to 2 apriltag streams at 1280x800 (30fps).
 - Raspberry Pi 5 2GB
-  - A good Cheaper option. Doesn't provide object detection. Able to process 2 apriltag streams at 1280x800 (30fps).
+  - A good cheaper option. Doesn't support object detection. Able to process 2 apriltag streams at 1280x800 (30fps).
 
 ## SD Cards
 
@@ -20,13 +20,14 @@
 
 - Object Detection
 
-  - Arducam OV9782 works well with its global shutter, but other fixed-focus color UVC USB webcams are also effective for object detection.
+  - Arducam OV9782 works well with its global shutter,
+  - Most other fixed-focus color UVC USB webcams.
 
 - Driver Camera
   - OV9281
   - OV9782
   - Pi Camera Module V1
-  - Any other fixed-focus UVC USB webcams
+  - Most other fixed-focus UVC USB webcams
 
 ## Power
 

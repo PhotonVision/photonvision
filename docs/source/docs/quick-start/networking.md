@@ -6,13 +6,26 @@
 When using PhotonVision off robot, you _MUST_ plug the coprocessor into a physical router/radio. You can then connect your laptop/device used to view the webdashboard to the same network. Any other networking setup will not work and will not be supported in any capacity.
 :::
 
-After imaging your coprocessor, run an ethernet cable from your coprocessor to a router/radio and power on your coprocessor by plugging it into the wall. Then connect whatever device you're using to view the webdashboard to the same network and navigate to photonvision.local:5800.
+::::{tab-set}
 
-PhotonVision _STRONGLY_ recommends the usage of a network switch on your robot. This is because the second radio port on the current FRC radios is known to be buggy and cause frequent connection issues that are detrimental during competition. An in-depth guide on how to install a network switch can be found [on FRC 900's website](https://team900.org/blog/ZebraSwitch/).
+:::{tab-item} New Radio (2025 - present)
+
+```{image} images/networking-diagram-vividhosting.png
+:alt: Wiring using a network switch and the new vivid hosting radio
+```
+
+:::
+
+:::{tab-item} Old Radio (pre 2025)
+
+PhotonVision _STRONGLY_ recommends the usage of a network switch on your robot. This is because the second radio port on the old FRC radios is known to be buggy and cause frequent connection issues that are detrimental during competition. An in-depth guide on how to install a network switch can be found [on FRC 900's website](https://team900.org/blog/ZebraSwitch/).
 
 ```{image} images/networking-diagram.png
 :alt: Wiring using a network switch and the old open mesh radio
 ```
+
+:::
+::::
 
 ## Digital Networking
 

@@ -26,15 +26,16 @@ When using an Orange pi 5 with an OV9281 teams will usually change the following
   - Adjust these to achieve good brightness without flicker and low motion blur. This may vary based on lighting conditions in your competition environment.
 - Enable MultiTag
 
-#### AprilTags and Motion Blur
+#### AprilTags and Motion Blur and Rolling Shutter
 
-When detecting AprilTags, you want to reduce the "motion blur" as much as possible. Motion blur is the visual streaking/smearing on the camera stream as a result of movement of the camera or object of focus. You want to mitigate this as much as possible because your robot is constantly moving and you want to be able to read as many tags as you possibly can. The possible solutions to this include:
+When detecting AprilTags, it's important to minimize 'motion blur' as much as possible. Motion blur appears as visual streaking or smearing in the camera feed, resulting from the movement of either the camera or the object in focus. Reducing this effect is essential, as the robot is often in motion, and a clearer image allows for detecting as many tags as possible. This is not to be confused with rolling shutter.
 
-1. Cranking your exposure as low as it goes and increasing your gain/brightness. This will decrease the effects of motion blur and increase FPS.
-2. Using a global shutter (as opposed to rolling shutter) camera. This should eliminate most, if not all motion blur.
-3. Only rely on tags when not moving.
+- Fixes
+  - Lower your exposure as low as possible. Using gain and brightness to account for lack of brightness.
+- Other Options:
+  - Don't use/rely vision measurements while moving.
 
-```{image} images/motionblur.gif
+```{image} images/motionblur.png
 :align: center
 ```
 
