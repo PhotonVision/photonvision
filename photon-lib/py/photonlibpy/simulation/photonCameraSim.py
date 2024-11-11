@@ -42,7 +42,6 @@ class PhotonCameraSim:
         self.videoSimWireframeEnabled: bool = False
         self.videoSimWireframeResolution: float = 0.1
         self.videoSimProcEnabled: bool = True
-        self.ts = NTTopicSet()
         self.heartbeatCounter: int = 0
         self.nextNtEntryTime = int(wpilib.Timer.getFPGATimestamp() * 1e6)
         self.tagLayout = robotpy_apriltag.loadAprilTagLayoutField(
@@ -101,7 +100,7 @@ class PhotonCameraSim:
             (self.prop.getResWidth(), self.prop.getResHeight())
         )
 
-        self.ts.subTable = self.cam._cameraTable
+        self.ts = NTTopicSet("photonvision", self.cam.getName())
         self.ts.updateEntries()
 
         # Handle this last explicitly for this function signature because the other constructor is called in the initialiser list
