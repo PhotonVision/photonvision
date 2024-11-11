@@ -216,9 +216,7 @@ class PhotonCameraSim:
 
         targets.sort(key=distance, reverse=True)
 
-        visibleTgts: list[
-            typing.Tuple[VisionTargetSim, np.ndarray]
-        ] = []
+        visibleTgts: list[typing.Tuple[VisionTargetSim, np.ndarray]] = []
         detectableTgts: list[PhotonTrackedTarget] = []
 
         camRt = RotTrlTransform3d.makeRelativeTo(cameraPose)
@@ -271,7 +269,7 @@ class PhotonCameraSim:
                     if i != t and i != l and i != b:
                         r = i
                 rect = cv.RotatedRect(
-                    (center[0,0], center[0,1]),
+                    (center[0, 0], center[0, 1]),
                     (
                         imagePoints[r, 0, 0] - lc[0, 0],
                         imagePoints[b, 0, 1] - imagePoints[t, 0, 1],

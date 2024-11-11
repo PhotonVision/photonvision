@@ -1,5 +1,5 @@
 import math
-from typing import Any, Tuple
+from typing import Any
 
 import cv2 as cv
 import numpy as np
@@ -126,8 +126,8 @@ class OpenCVHelp:
         objectMat = np.array(OpenCVHelp.translationToTVec(modelTrls))
 
         alt: Transform3d | None = None
-        reprojectionError : cv.typing.MatLike | None = None
-        best : Transform3d = Transform3d()
+        reprojectionError: cv.typing.MatLike | None = None
+        best: Transform3d = Transform3d()
         alt: Transform3d | None = None
 
         for tries in range(2):
@@ -149,7 +149,9 @@ class OpenCVHelp:
                     OpenCVHelp.rVecToRotation(rvecs[1]),
                 )
 
-            if reprojectionError is not None and not math.isnan(reprojectionError[0, 0]):
+            if reprojectionError is not None and not math.isnan(
+                reprojectionError[0, 0]
+            ):
                 break
             else:
                 pt = imagePoints[0]
@@ -160,7 +162,7 @@ class OpenCVHelp:
         if reprojectionError is None or math.isnan(reprojectionError[0, 0]):
             print("SolvePNP_Square failed!")
             return None
-        
+
         if alt:
             return PnpResult(
                 best=best,

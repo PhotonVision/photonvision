@@ -172,9 +172,7 @@ class SimCameraProperties:
         return self.latencyStdDev
 
     def getContourAreaPercent(self, points: np.ndarray) -> float:
-        return (
-            cv.contourArea(cv.convexHull(points)) / self.getResArea() * 100.0
-        )
+        return cv.contourArea(cv.convexHull(points)) / self.getResArea() * 100.0
 
     def getPixelYaw(self, pixelX: float) -> Rotation2d:
         fx = self.camIntrinsics[0, 0]
