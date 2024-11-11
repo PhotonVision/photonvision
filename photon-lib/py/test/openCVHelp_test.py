@@ -11,7 +11,6 @@ from wpimath.geometry import Pose3d, Rotation3d, Translation3d
 
 @pytest.fixture(autouse=True)
 def setupCommon() -> None:
-
     nt.NetworkTableInstance.getDefault().startServer()
     setVersionCheckEnabled(False)
 
@@ -26,9 +25,6 @@ def test_TrlConvert():
     assert result.Z() == pytest.approx(trl.Z(), 0.005)
 
 
-
-
-
 def test_RotConvert():
     rot = Rotation3d(0.5, 1, -1)
     rvec = OpenCVHelp.rotationToRVec(rot)
@@ -40,7 +36,6 @@ def test_RotConvert():
 
 
 def test_Projection():
-
     prop = SimCameraProperties()
 
     target = VisionTargetSim(
@@ -60,7 +55,7 @@ def test_Projection():
     circulation = 0.0
     for i in range(0, len(imagePoints)):
         xDiff = imagePoints[(i + 1) % 4][0][0] - imagePoints[i][0][0]
-        ySum = imagePoints[(i + 1) % 4][0][1] - imagePoints[i][0][1]
+        ySum = imagePoints[(i + 1) % 4][0][1] + imagePoints[i][0][1]
         circulation += xDiff * ySum
 
     assert circulation > 0, "2d fiducial points aren't counter-clockwise"
