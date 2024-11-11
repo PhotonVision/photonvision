@@ -26,11 +26,14 @@
 namespace photon {
 class RotTrlTransform3d {
  public:
-  RotTrlTransform3d(const frc::Rotation3d& rot, const frc::Translation3d& trl)
-      : trl(trl), rot(rot) {}
+  RotTrlTransform3d(const frc::Rotation3d& newRot,
+                    const frc::Translation3d& newTrl)
+      : trl{newTrl}, rot{newRot} {}
+
   RotTrlTransform3d(const frc::Pose3d& initial, const frc::Pose3d& last)
-      : trl(last.Translation() - initial.Translation().RotateBy(rot)),
-        rot(last.Rotation() - initial.Rotation()) {}
+      : trl{last.Translation() - initial.Translation().RotateBy(
+                                     last.Rotation() - initial.Rotation())},
+        rot{last.Rotation() - initial.Rotation()} {}
   explicit RotTrlTransform3d(const frc::Transform3d& trf)
       : RotTrlTransform3d(trf.Rotation(), trf.Translation()) {}
   RotTrlTransform3d()
