@@ -198,7 +198,7 @@ public class NetworkManager {
             shell.executeBashCommand(
                 modDHCPCommand
                     .replace("${connection}", connName)
-            );            
+            );
             // activate it
             logger.info("Activating the DHCP connection " + connName );
             shell.executeBashCommand("nmcli connection up \"${connection}\"".replace("${connection}", connName), false);
