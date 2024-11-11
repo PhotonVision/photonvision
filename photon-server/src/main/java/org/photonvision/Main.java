@@ -29,6 +29,7 @@ import org.apache.commons.cli.*;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
+import org.photonvision.common.configuration.PathManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.PiVersion;
@@ -96,6 +97,11 @@ public class Main {
                 false,
                 "Clears PhotonVision pipeline and networking settings. Preserves log files");
         options.addOption(
+                "d",
+                "config-dir",
+                true,
+                "Path to the config directory. By default, $(cwd)/photonvision_config");
+        options.addOption(
                 "s",
                 "smoketest",
                 false,
@@ -108,40 +114,45 @@ public class Main {
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp("java -jar photonvision.jar [options]", options);
             return false; // exit program
-        } else {
-            if (cmd.hasOption("debug")) {
-                printDebugLogs = true;
-                logger.info("Enabled debug logging");
-            }
+        }
 
-            if (cmd.hasOption("test-mode")) {
-                isTestMode = true;
-                logger.info("Running in test mode - Cameras will not be used");
+        if (cmd.hasOption("debug")) {
+            printDebugLogs = true;
+            logger.info("Enabled debug logging");
+        }
 
-                if (cmd.hasOption("path")) {
-                    Path p = Path.of(System.getProperty("PATH_PREFIX", "") + cmd.getOptionValue("path"));
-                    logger.info("Loading from Path " + p.toAbsolutePath().toString());
-                    testModeFolder = p;
-                }
-            }
+        if (cmd.hasOption("test-mode")) {
+            isTestMode = true;
+            logger.info("Running in test mode - Cameras will not be used");
 
-            if (cmd.hasOption("ignore-cameras")) {
-                VisionSourceManager.getInstance()
-                        .setIgnoredCamerasRegex(cmd.getOptionValue("ignore-cameras"));
-            }
-
-            if (cmd.hasOption("disable-networking")) {
-                NetworkManager.getInstance().networkingIsDisabled = true;
-            }
-
-            if (cmd.hasOption("clear-config")) {
-                ConfigManager.getInstance().clearConfig();
-            }
-
-            if (cmd.hasOption("smoketest")) {
-                isSmoketest = true;
+            if (cmd.hasOption("path")) {
+                Path p = Path.of(System.getProperty("PATH_PREFIX", "") + cmd.getOptionValue("path"));
+                logger.info("Loading from Path " + p.toAbsolutePath().toString());
+                testModeFolder = p;
             }
         }
+
+        if (cmd.hasOption("ignore-cameras")) {
+            VisionSourceManager.getInstance()
+                    .setIgnoredCamerasRegex(cmd.getOptionValue("ignore-cameras"));
+        }
+
+        if (cmd.hasOption("disable-networking")) {
+            NetworkManager.getInstance().networkingIsDisabled = true;
+        }
+
+        if (cmd.hasOption("clear-config")) {
+            ConfigManager.getInstance().clearConfig();
+        }
+
+        if (cmd.hasOption("smoketest")) {
+            isSmoketest = true;
+        }
+
+        if (cmd.hasOption("config-dir")) {
+            PathManager.setRootFolder(Path.of(cmd.getOptionValue("config-dir")));
+        }
+
         return true;
     }
 
