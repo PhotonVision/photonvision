@@ -172,7 +172,7 @@ public class NetworkUtils {
         var shell = new ShellExec(true, true);
         try {
             // set nmcli back to DHCP, and re-run dhclient -- this ought to grab a new IP address
-            shell.executeBashCommand("nmcli -f GENERAL.STATE connection show \"" + connName + "\"");
+            shell.executeBashCommand("nmcli -g GENERAL.STATE connection show \"" + connName + "\"");
             return (shell.getExitCode() == 10);
         } catch (Exception e) {
             logger.error("Exception from nmcli!");
