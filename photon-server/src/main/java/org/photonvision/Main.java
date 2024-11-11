@@ -475,8 +475,6 @@ public class Main {
             VisionSourceManager.getInstance()
                     .registerLoadedConfigs(
                             ConfigManager.getInstance().getConfig().getCameraConfigurations().values());
-
-            VisionSourceManager.getInstance().registerTimedTask();
         } else {
             if (testModeFolder == null) {
                 addTestModeSources();
