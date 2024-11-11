@@ -8,10 +8,41 @@
 
 This diagram shows how to use the recommended regulator to power a coprocessor.
 
-```{image} images/pololu-diagram.png
-:alt: A flowchart-type diagram showing how to connect wires from the PDP or PDH to
-:  the recommended voltage regulator and then a Coprocessor.
+::::{tab-set}
+
+:::{tab-item} Orange Pi 5 Zinc V
+
+```{image} images/OrangePiZinc.png
+:alt: Wiring the opi5 to the pdp using the Redux Robotics Zinc V
 ```
+
+:::
+
+:::{tab-item} Orange Pi 5 Pololu
+
+```{image} images/OrangePiPololu.png
+:alt: Wiring the opi5 to the pdp using the Pololu S13V30F5
+```
+
+:::
+
+:::{tab-item} Raspberry Pi 5 Zinc V
+
+```{image} images/RPIZinc.png
+:alt: Wiring the RPI5 to the pdp using the Redux Robotics Zinc V
+```
+
+:::
+
+:::{tab-item} Raspberry Pi 5 Zinc V
+
+```{image} images/RPIPololu.png
+:alt: Wiring the RPI5 to the pdp using the Pololu S13V30F5
+```
+
+:::
+
+::::
 
 ## Coprocessor with Passive POE (Pi with SnakeEyes and Limelight)
 
