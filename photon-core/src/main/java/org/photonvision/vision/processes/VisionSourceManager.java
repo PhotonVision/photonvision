@@ -36,10 +36,10 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.raspi.LibCameraJNILoader;
-import org.photonvision.vision.camera.CameraInfo;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.LibcameraGpuSource;
+import org.photonvision.vision.camera.PvCameraInfo;
 import org.photonvision.vision.camera.TestSource;
 import org.photonvision.vision.camera.USBCameras.USBCameraSource;
 
@@ -47,7 +47,7 @@ public class VisionSourceManager {
     private static final Logger logger = new Logger(VisionSourceManager.class, LogGroup.Camera);
     private static final List<String> deviceBlacklist = List.of("bcm2835-isp");
 
-    final List<CameraInfo> knownCameras = new CopyOnWriteArrayList<>();
+    final List<PvCameraInfo> knownCameras = new CopyOnWriteArrayList<>();
 
     final List<CameraConfiguration> unmatchedLoadedConfigs = new CopyOnWriteArrayList<>();
     private boolean hasWarned;
@@ -87,10 +87,10 @@ public class VisionSourceManager {
      *
      * @return a list containing usbcamerainfo.
      */
-    protected List<CameraInfo> getConnectedUSBCameras() {
-        List<CameraInfo> cameraInfos =
+    protected List<PvCameraInfo> getConnectedUSBCameras() {
+        List<PvCameraInfo> cameraInfos =
                 List.of(UsbCamera.enumerateUsbCameras()).stream()
-                        .map(c -> new CameraInfo(c))
+                        .map(c -> new PvCameraInfo(c))
                         .collect(Collectors.toList());
         return cameraInfos;
     }
@@ -100,13 +100,13 @@ public class VisionSourceManager {
      *
      * @return a list containing csicamerainfo.
      */
-    protected List<CameraInfo> getConnectedCSICameras() {
-        List<CameraInfo> cameraInfos = new ArrayList<CameraInfo>();
+    protected List<PvCameraInfo> getConnectedCSICameras() {
+        List<PvCameraInfo> cameraInfos = new ArrayList<PvCameraInfo>();
         if (LibCameraJNILoader.isSupported())
             for (String path : LibCameraJNI.getCameraNames()) {
                 String name = LibCameraJNI.getSensorModel(path).getFriendlyName();
                 cameraInfos.add(
-                        new CameraInfo(-1, path, name, new String[] {}, -1, -1, CameraType.ZeroCopyPicam));
+                        new PvCameraInfo(-1, path, name, new String[] {}, -1, -1, CameraType.ZeroCopyPicam));
             }
         return cameraInfos;
     }
@@ -129,7 +129,7 @@ public class VisionSourceManager {
         return tryMatchCamImpl(null);
     }
 
-    protected List<VisionSource> tryMatchCamImpl(ArrayList<CameraInfo> cameraInfos) {
+    protected List<VisionSource> tryMatchCamImpl(ArrayList<PvCameraInfo> cameraInfos) {
         return tryMatchCamImpl(cameraInfos, Platform.getCurrentPlatform());
     }
 
@@ -138,9 +138,9 @@ public class VisionSourceManager {
      * @return New VisionSources.
      */
     protected List<VisionSource> tryMatchCamImpl(
-            ArrayList<CameraInfo> cameraInfos, Platform platform) {
+            ArrayList<PvCameraInfo> cameraInfos, Platform platform) {
         boolean createSources = true;
-        List<CameraInfo> connectedCameras;
+        List<PvCameraInfo> connectedCameras;
         if (cameraInfos == null) {
             // Detect USB cameras using CSCore
             connectedCameras = new ArrayList<>(filterAllowedDevices(getConnectedUSBCameras(), platform));
@@ -226,12 +226,12 @@ public class VisionSourceManager {
      * @param savedConfig The saved camera configuration to match against
      * @param checkUSBPath If we should compare the USB port/bus IDs
      * @param checkVidPid If we should compare USB VID and PID
-     * @param checkBaseName If we should compare {@link CameraInfo#getBaseName}
+     * @param checkBaseName If we should compare {@link PvCameraInfo#getBaseName}
      * @param checkPath If we should check {@link CameraInfo::path} (eg /dev/videoN on Linux, or
      *     ?/usb#vid_05c8&pid_03df&mi_00#7&fa76035&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global
      *     on Windows)
      */
-    private final Predicate<CameraInfo> getCameraMatcher(
+    private final Predicate<PvCameraInfo> getCameraMatcher(
             final CameraConfiguration savedConfig,
             boolean checkUSBPath,
             boolean checkVidPid,
@@ -243,7 +243,7 @@ public class VisionSourceManager {
                             + savedConfig.toShortString());
         }
 
-        return (CameraInfo physicalCamera) -> {
+        return (PvCameraInfo physicalCamera) -> {
             var matches = true;
 
             if (checkUSBPath) {
@@ -277,7 +277,7 @@ public class VisionSourceManager {
      * @return the matched configurations.
      */
     public List<CameraConfiguration> matchCameras(
-            List<CameraInfo> detectedCamInfos, List<CameraConfiguration> loadedCamConfigs) {
+            List<PvCameraInfo> detectedCamInfos, List<CameraConfiguration> loadedCamConfigs) {
         return matchCameras(
                 detectedCamInfos,
                 loadedCamConfigs,
@@ -294,7 +294,7 @@ public class VisionSourceManager {
      * @return the matched configurations.
      */
     public List<CameraConfiguration> matchCameras(
-            List<CameraInfo> detectedCamInfos,
+            List<PvCameraInfo> detectedCamInfos,
             List<CameraConfiguration> loadedCamConfigs,
             boolean matchCamerasOnlyByPath) {
         var detectedCameraList = new ArrayList<>(detectedCamInfos);
@@ -371,7 +371,7 @@ public class VisionSourceManager {
                 logger.warn(
                         "Not creating 'new' Photon CameraConfigurations for ["
                                 + detectedCamInfos.stream()
-                                        .map(CameraInfo::toString)
+                                        .map(PvCameraInfo::toString)
                                         .collect(Collectors.joining(";"))
                                 + "], disabled by user");
             }
@@ -396,7 +396,7 @@ public class VisionSourceManager {
      * @return All matched or created new configs
      */
     private List<CameraConfiguration> matchCamerasByStrategy(
-            List<CameraInfo> detectedCamInfos,
+            List<PvCameraInfo> detectedCamInfos,
             List<CameraConfiguration> unloadedConfigs,
             CameraMatchingOptions matchingOptions) {
         List<CameraConfiguration> ret = new ArrayList<CameraConfiguration>();
@@ -417,7 +417,7 @@ public class VisionSourceManager {
                                 config.baseName, config.uniqueName, config.toShortString()));
 
                 // Get matcher and filter against it, picking out the first match
-                Predicate<CameraInfo> matches =
+                Predicate<PvCameraInfo> matches =
                         getCameraMatcher(
                                 config,
                                 matchingOptions.checkUSBPath,
@@ -449,7 +449,7 @@ public class VisionSourceManager {
      * (unique in the set of (loaded configs, unloaded configs, loaded vision modules) at least)
      */
     private List<CameraConfiguration> createConfigsForCameras(
-            List<CameraInfo> detectedCameraList,
+            List<PvCameraInfo> detectedCameraList,
             List<CameraConfiguration> unloadedCamConfigs,
             List<CameraConfiguration> loadedConfigs) {
         List<CameraConfiguration> ret = new ArrayList<CameraConfiguration>();
@@ -458,7 +458,7 @@ public class VisionSourceManager {
                         + detectedCameraList.stream()
                                 .map(n -> String.valueOf(n))
                                 .collect(Collectors.joining("-", "{", "}")));
-        for (CameraInfo info : detectedCameraList) {
+        for (PvCameraInfo info : detectedCameraList) {
             // create new camera config for all new cameras
             String baseName = info.getBaseName();
             String uniqueName = info.getHumanReadableName();
@@ -486,7 +486,7 @@ public class VisionSourceManager {
         return ret;
     }
 
-    private CameraConfiguration mergeInfoIntoConfig(CameraConfiguration cfg, CameraInfo info) {
+    private CameraConfiguration mergeInfoIntoConfig(CameraConfiguration cfg, PvCameraInfo info) {
         if (!cfg.path.equals(info.path)) {
             logger.debug("Updating path config from " + cfg.path + " to " + info.path);
             cfg.path = info.path;
@@ -528,8 +528,8 @@ public class VisionSourceManager {
      * @param allDevices
      * @return list of devices with blacklisted or ignore devices removed.
      */
-    private List<CameraInfo> filterAllowedDevices(List<CameraInfo> allDevices, Platform platform) {
-        List<CameraInfo> filteredDevices = new ArrayList<>();
+    private List<PvCameraInfo> filterAllowedDevices(List<PvCameraInfo> allDevices, Platform platform) {
+        List<PvCameraInfo> filteredDevices = new ArrayList<>();
         for (var device : allDevices) {
             if (deviceBlacklist.contains(device.name)) {
                 logger.trace(
@@ -603,5 +603,32 @@ public class VisionSourceManager {
     private boolean containsName(final String uniqueName) {
         return VisionModuleManager.getInstance().getModules().stream()
                 .anyMatch(camera -> camera.visionSource.cameraConfiguration.uniqueName.equals(uniqueName));
+    }
+
+    // TODO: merge with our other UiCameraConfiration
+    public static class UiCameraConfig {
+        String uniqueName;
+
+        UiCameraConfig(CameraConfiguration c) {
+            this.uniqueName = c.uniqueName;
+        }
+    }
+
+    public static class UiVsmState {
+        public List<PvCameraInfo> knownCameras;
+        public List<UiCameraConfig> unmatchedLoadedConfigs;
+
+        public UiVsmState(
+                List<PvCameraInfo> knownCameras, List<CameraConfiguration> _unmatchedLoadedConfigs) {
+            this.knownCameras = knownCameras;
+            this.unmatchedLoadedConfigs = new ArrayList<>();
+            for (var config : _unmatchedLoadedConfigs) {
+                this.unmatchedLoadedConfigs.add(new UiCameraConfig(config));
+            }
+        }
+    }
+
+    public UiVsmState getState() {
+        return new UiVsmState(this.knownCameras, this.unmatchedLoadedConfigs);
     }
 }

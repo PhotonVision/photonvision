@@ -35,6 +35,7 @@ import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.processes.VisionSource;
+import org.photonvision.vision.processes.VisionSourceManager;
 
 public class PhotonConfiguration {
     private final HardwareConfig hardwareConfig;
@@ -161,6 +162,8 @@ public class PhotonConfiguration {
         // AprilTagFieldLayout
         settingsSubmap.put("atfl", this.atfl);
 
+        settingsSubmap.put("visionSourceManagerState", VisionSourceManager.getInstance().getState());
+
         map.put(
                 "cameraSettings",
                 VisionModuleManager.getInstance().getModules().stream()
@@ -178,21 +181,22 @@ public class PhotonConfiguration {
     }
 
     public static class UICameraConfiguration {
-        @SuppressWarnings("unused")
-        public double fov;
+        // Path to the camera device. On Linux, this is a special file in /dev/v4l/by-id or /dev/videoN. This is the path we hand to CSCore to do auto-reconnect on
+        public String cameraPath;
 
+        public List<UICameraCalibrationCoefficients> calibrations;
+        public int currentPipelineIndex;
+        public HashMap<String, Object> currentPipelineSettings;
+        public double fov;
+        public int inputStreamPort;
+        public boolean isFovConfigurable = true;
+        public boolean isCSICamera;
         public String nickname;
         public String uniqueName;
-        public HashMap<String, Object> currentPipelineSettings;
-        public int currentPipelineIndex;
+        public int outputStreamPort;
         public List<String> pipelineNicknames;
         public HashMap<Integer, HashMap<String, Object>> videoFormatList;
-        public int outputStreamPort;
-        public int inputStreamPort;
-        public List<UICameraCalibrationCoefficients> calibrations;
-        public boolean isFovConfigurable = true;
         public QuirkyCamera cameraQuirks;
-        public boolean isCSICamera;
         public double minExposureRaw;
         public double maxExposureRaw;
         public double minWhiteBalanceTemp;

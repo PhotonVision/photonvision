@@ -22,16 +22,16 @@ import java.util.Arrays;
 import java.util.Optional;
 import org.photonvision.common.hardware.Platform;
 
-public class CameraInfo extends UsbCameraInfo {
+public class PvCameraInfo extends UsbCameraInfo {
     public final CameraType cameraType;
 
-    public CameraInfo(
+    public PvCameraInfo(
             int dev, String path, String name, String[] otherPaths, int vendorId, int productId) {
         super(dev, path, name, otherPaths, vendorId, productId);
         cameraType = CameraType.UsbCamera;
     }
 
-    public CameraInfo(
+    public PvCameraInfo(
             int dev,
             String path,
             String name,
@@ -43,7 +43,7 @@ public class CameraInfo extends UsbCameraInfo {
         this.cameraType = cameraType;
     }
 
-    public CameraInfo(UsbCameraInfo info) {
+    public PvCameraInfo(UsbCameraInfo info) {
         super(info.dev, info.path, info.name, info.otherPaths, info.vendorId, info.productId);
         cameraType = CameraType.UsbCamera;
     }
@@ -85,7 +85,7 @@ public class CameraInfo extends UsbCameraInfo {
         if (this == obj) return true;
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
-        CameraInfo other = (CameraInfo) obj;
+        PvCameraInfo other = (PvCameraInfo) obj;
 
         // Windows device number is not significant. See
         // https://github.com/wpilibsuite/allwpilib/blob/4b94a64b06057c723d6fcafeb1a45f55a70d179a/cscore/src/main/native/windows/UsbCameraImpl.cpp#L1128

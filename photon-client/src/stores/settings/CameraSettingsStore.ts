@@ -88,6 +88,8 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
   actions: {
     updateCameraSettingsFromWebsocket(data: WebsocketCameraSettingsUpdate[]) {
       const configuredCameras = data.map<CameraSettings>((d) => ({
+        cameraPath: d.cameraPath,
+
         nickname: d.nickname,
         uniqueName: d.uniqueName,
         fov: {

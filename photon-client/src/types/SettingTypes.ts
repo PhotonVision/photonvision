@@ -56,6 +56,24 @@ export type ConfigurableNetworkSettings = Omit<
   "canManage" | "networkInterfaceNames" | "networkingDisabled"
 >;
 
+export interface UiCameraConfiguration {}
+export interface CameraConfiguration {}
+
+export interface PvCameraInfo {
+  cameraType: string; // CameraType -- todo
+  dev: number;
+  path: string;
+  name: string;
+  otherPaths: string[];
+  vendorId: number;
+  productId: number;
+}
+
+export interface VisionSourceManagerState {
+  knownCameras: PvCameraInfo[];
+  unmatchedLoadedConfigs: CameraConfiguration[];
+}
+
 export interface LightingSettings {
   supported: boolean;
   brightness: number;
@@ -173,6 +191,8 @@ export interface QuirkyCamera {
 }
 
 export interface CameraSettings {
+  cameraPath: string;
+
   nickname: string;
   uniqueName: string;
 

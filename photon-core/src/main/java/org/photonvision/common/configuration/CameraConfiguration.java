@@ -197,6 +197,19 @@ public class CameraConfiguration {
                 + usbVID;
     }
 
+    /**
+     *  cscore will auto-reconnect to the camera path we give it. v4l does not guarantee that if i
+     *  swap cameras around, the same /dev/videoN ID will be assigned to that camera. So instead
+     *  default to pinning to a particular USB port, or by "path" (appears to be a global identifier
+     *  on Windows).
+     * 
+     * This represents our best guess at an immutable path to detect a camera at.
+     */
+    @JsonIgnore
+    public String getUsbPathOrDefault() {
+        return getUSBPath().orElse(path);
+    }
+
     @Override
     public String toString() {
         return "CameraConfiguration [baseName="

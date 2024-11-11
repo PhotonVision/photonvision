@@ -28,8 +28,8 @@ import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.vision.camera.CameraInfo;
 import org.photonvision.vision.camera.CameraType;
+import org.photonvision.vision.camera.PvCameraInfo;
 
 public class VisionSourceManagerTest {
     @Test
@@ -37,7 +37,7 @@ public class VisionSourceManagerTest {
         Logger.setLevel(LogGroup.Camera, LogLevel.DEBUG);
 
         var inst = new VisionSourceManager();
-        var cameraInfos = new ArrayList<CameraInfo>();
+        var cameraInfos = new ArrayList<PvCameraInfo>();
         ConfigManager.getInstance().clearConfig();
         ConfigManager.getInstance().load();
 
@@ -62,8 +62,8 @@ public class VisionSourceManagerTest {
         config4.usbVID = 5;
         config4.usbPID = 6;
 
-        CameraInfo info1 =
-                new CameraInfo(0, "dev/video0", "testVideo", new String[] {"/usb/path/0"}, 1, 2);
+        PvCameraInfo info1 =
+                new PvCameraInfo(0, "dev/video0", "testVideo", new String[] {"/usb/path/0"}, 1, 2);
 
         cameraInfos.add(info1);
 
@@ -74,8 +74,8 @@ public class VisionSourceManagerTest {
         assertTrue(inst.knownCameras.contains(info1));
         assertEquals(2, inst.unmatchedLoadedConfigs.size());
 
-        CameraInfo info2 =
-                new CameraInfo(0, "dev/video1", "secondTestVideo", new String[] {"/usb/path/1"}, 2, 3);
+        PvCameraInfo info2 =
+                new PvCameraInfo(0, "dev/video1", "secondTestVideo", new String[] {"/usb/path/1"}, 2, 3);
 
         cameraInfos.add(info2);
 
@@ -88,11 +88,11 @@ public class VisionSourceManagerTest {
         assertTrue(inst.knownCameras.contains(info2));
         assertEquals(2, inst.unmatchedLoadedConfigs.size());
 
-        CameraInfo info3 =
-                new CameraInfo(0, "dev/video2", "thirdTestVideo", new String[] {"by-id/123"}, 3, 4);
+        PvCameraInfo info3 =
+                new PvCameraInfo(0, "dev/video2", "thirdTestVideo", new String[] {"by-id/123"}, 3, 4);
 
-        CameraInfo info4 =
-                new CameraInfo(0, "dev/video3", "fourthTestVideo", new String[] {"by-id/321"}, 5, 6);
+        PvCameraInfo info4 =
+                new PvCameraInfo(0, "dev/video3", "fourthTestVideo", new String[] {"by-id/321"}, 5, 6);
 
         cameraInfos.add(info4);
 
@@ -133,8 +133,8 @@ public class VisionSourceManagerTest {
         assertEquals(cam3.nickname, config3.nickname);
         assertEquals(cam4.nickname, config4.nickname);
 
-        CameraInfo info5 =
-                new CameraInfo(
+        PvCameraInfo info5 =
+                new PvCameraInfo(
                         2,
                         "/dev/video2",
                         "Left Camera",
@@ -149,8 +149,8 @@ public class VisionSourceManagerTest {
 
         assertTrue(inst.knownCameras.contains(info5));
 
-        CameraInfo info6 =
-                new CameraInfo(
+        PvCameraInfo info6 =
+                new PvCameraInfo(
                         3,
                         "dev/video3",
                         "Right Camera",
@@ -168,8 +168,8 @@ public class VisionSourceManagerTest {
         // RPI 5 CSI Tests
 
         // CSI CAMERAS SHOULD NOT BE LOADED LIKE THIS THEY SHOULD GO THROUGH LIBCAM.
-        CameraInfo info7 =
-                new CameraInfo(
+        PvCameraInfo info7 =
+                new PvCameraInfo(
                         4,
                         "dev/video4",
                         "CSICAM-DEV", // Typically rp1-cfe for unit test changed to CSICAM-DEV
@@ -181,8 +181,8 @@ public class VisionSourceManagerTest {
 
         assertTrue(!inst.knownCameras.contains(info7)); // This camera should not be recognized/used.
 
-        CameraInfo info8 =
-                new CameraInfo(
+        PvCameraInfo info8 =
+                new PvCameraInfo(
                         5,
                         "dev/video8",
                         "CSICAM-DEV", // Typically rp1-cfe for unit test changed to CSICAM-DEV
@@ -194,8 +194,8 @@ public class VisionSourceManagerTest {
 
         assertTrue(!inst.knownCameras.contains(info8)); // This camera should not be recognized/used.
 
-        CameraInfo info9 =
-                new CameraInfo(
+        PvCameraInfo info9 =
+                new PvCameraInfo(
                         6,
                         "dev/video9",
                         "CSICAM-DEV", // Typically rp1-cfe for unit test changed to CSICAM-DEV
@@ -210,8 +210,8 @@ public class VisionSourceManagerTest {
         assertEquals(0, inst.unmatchedLoadedConfigs.size());
 
         // RPI LIBCAMERA CSI CAMERA TESTS
-        CameraInfo info10 =
-                new CameraInfo(
+        PvCameraInfo info10 =
+                new PvCameraInfo(
                         -1,
                         "/base/soc/i2c0mux/i2c@0/ov9281@60",
                         "OV9281", // Typically rp1-cfe for unit test changed to CSICAM-DEV
@@ -226,8 +226,8 @@ public class VisionSourceManagerTest {
         assertEquals(7, inst.knownCameras.size());
         assertEquals(0, inst.unmatchedLoadedConfigs.size());
 
-        CameraInfo info11 =
-                new CameraInfo(
+        PvCameraInfo info11 =
+                new PvCameraInfo(
                         -1,
                         "/base/soc/i2c0mux/i2c@1/ov9281@60",
                         "OV9281", // Typically rp1-cfe for unit test changed to CSICAM-DEV
@@ -242,8 +242,8 @@ public class VisionSourceManagerTest {
         assertEquals(8, inst.knownCameras.size());
         assertEquals(0, inst.unmatchedLoadedConfigs.size());
 
-        CameraInfo info12 =
-                new CameraInfo(
+        PvCameraInfo info12 =
+                new PvCameraInfo(
                         -1,
                         " /base/axi/pcie@120000/rp1/i2c@80000/ov5647@36",
                         "Camera Module v1",
@@ -258,8 +258,8 @@ public class VisionSourceManagerTest {
         assertEquals(9, inst.knownCameras.size());
         assertEquals(0, inst.unmatchedLoadedConfigs.size());
 
-        CameraInfo info13 =
-                new CameraInfo(
+        PvCameraInfo info13 =
+                new PvCameraInfo(
                         -1,
                         "/base/axi/pcie@120000/rp1/i2c@88000/imx708@1a",
                         "Camera Module v3",
@@ -319,14 +319,14 @@ public class VisionSourceManagerTest {
 
         // Camera attached to new port, but strict matching disabled
         {
-            CameraInfo info1 =
-                    new CameraInfo(
+            PvCameraInfo info1 =
+                    new PvCameraInfo(
                             0, "/dev/video11", "Arducam OV2311 USB Camera", CAM1_OLD_PATHS, 3141, 25446);
-            CameraInfo info2 =
-                    new CameraInfo(
+            PvCameraInfo info2 =
+                    new PvCameraInfo(
                             0, "/dev/video12", "Arducam OV2311 USB Camera", CAM2_NEW_PATH, 3141, 25446);
 
-            var cameraInfos = new ArrayList<CameraInfo>();
+            var cameraInfos = new ArrayList<PvCameraInfo>();
             cameraInfos.add(info1);
             cameraInfos.add(info2);
             List<VisionSource> ret1 = inst.tryMatchCamImpl(cameraInfos);
@@ -386,14 +386,14 @@ public class VisionSourceManagerTest {
         {
             // Give our cameras new "paths" to fake the windows logic out. this should not
             // affect strict matching
-            CameraInfo info1 =
-                    new CameraInfo(
+            PvCameraInfo info1 =
+                    new PvCameraInfo(
                             0, "/dev/video11", "Arducam OV2311 USB Camera", CAM1_OLD_PATHS, 3141, 25446);
-            CameraInfo info2 =
-                    new CameraInfo(
+            PvCameraInfo info2 =
+                    new PvCameraInfo(
                             0, "/dev/video12", "Arducam OV2311 USB Camera", CAM2_NEW_PATH, 3141, 25446);
 
-            var cameraInfos = new ArrayList<CameraInfo>();
+            var cameraInfos = new ArrayList<PvCameraInfo>();
             cameraInfos.add(info1);
             cameraInfos.add(info2);
             List<VisionSource> ret1 = inst.tryMatchCamImpl(cameraInfos);
@@ -414,14 +414,14 @@ public class VisionSourceManagerTest {
 
         // Now move our camera back
         {
-            CameraInfo info1 =
-                    new CameraInfo(
+            PvCameraInfo info1 =
+                    new PvCameraInfo(
                             0, "/dev/video11", "Arducam OV2311 USB Camera", CAM1_OLD_PATHS, 3141, 25446);
-            CameraInfo info2 =
-                    new CameraInfo(
+            PvCameraInfo info2 =
+                    new PvCameraInfo(
                             0, "/dev/video12", "Arducam OV2311 USB Camera", CAM2_OLD_PATH, 3141, 25446);
 
-            var cameraInfos = new ArrayList<CameraInfo>();
+            var cameraInfos = new ArrayList<PvCameraInfo>();
             cameraInfos.add(info1);
             cameraInfos.add(info2);
             List<VisionSource> ret1 = inst.tryMatchCamImpl(cameraInfos);
@@ -440,15 +440,15 @@ public class VisionSourceManagerTest {
         Logger.setLevel(LogGroup.Camera, LogLevel.DEBUG);
 
         // List of known cameras
-        var cameraInfos = new ArrayList<CameraInfo>();
+        var cameraInfos = new ArrayList<PvCameraInfo>();
 
         var inst = new VisionSourceManager();
         ConfigManager.getInstance().clearConfig();
         ConfigManager.getInstance().load();
         ConfigManager.getInstance().getConfig().getNetworkConfig().matchCamerasOnlyByPath = false;
 
-        CameraInfo info1 =
-                new CameraInfo(
+        PvCameraInfo info1 =
+                new PvCameraInfo(
                         -1,
                         "/base/soc/i2c0mux/i2c@0/ov9281@60",
                         "OV9281", // Typically rp1-cfe for unit test changed to CSICAM-DEV
@@ -457,8 +457,8 @@ public class VisionSourceManagerTest {
                         -1,
                         CameraType.ZeroCopyPicam);
 
-        CameraInfo info2 =
-                new CameraInfo(
+        PvCameraInfo info2 =
+                new PvCameraInfo(
                         -1,
                         "/base/soc/i2c0mux/i2c@1/ov9281@60",
                         "OV9281", // Typically rp1-cfe for unit test changed to CSICAM-DEV
@@ -507,7 +507,7 @@ public class VisionSourceManagerTest {
         Logger.setLevel(LogGroup.Camera, LogLevel.DEBUG);
 
         // List of known cameras
-        var cameraInfos = new ArrayList<CameraInfo>();
+        var cameraInfos = new ArrayList<PvCameraInfo>();
 
         var inst = new VisionSourceManager();
         ConfigManager.getInstance().clearConfig();
@@ -517,8 +517,8 @@ public class VisionSourceManagerTest {
         // Match empty camera infos
         inst.tryMatchCamImpl(cameraInfos);
 
-        CameraInfo info1 =
-                new CameraInfo(0, "/dev/video0", "Arducam OV2311 USB Camera", new String[] {}, 3141, 25446);
+        PvCameraInfo info1 =
+                new PvCameraInfo(0, "/dev/video0", "Arducam OV2311 USB Camera", new String[] {}, 3141, 25446);
 
         cameraInfos.add(info1);
 
@@ -544,7 +544,7 @@ public class VisionSourceManagerTest {
         Logger.setLevel(LogGroup.Camera, LogLevel.DEBUG);
 
         // List of known cameras
-        var cameraInfos = new ArrayList<CameraInfo>();
+        var cameraInfos = new ArrayList<PvCameraInfo>();
 
         var inst = new VisionSourceManager();
         ConfigManager.getInstance().clearConfig();
@@ -554,8 +554,8 @@ public class VisionSourceManagerTest {
         // Match empty camera infos
         inst.tryMatchCamImpl(cameraInfos);
 
-        CameraInfo info1 =
-                new CameraInfo(
+        PvCameraInfo info1 =
+                new PvCameraInfo(
                         0,
                         "/dev/video0",
                         "Arducam OV2311 USB Camera",
@@ -568,8 +568,8 @@ public class VisionSourceManagerTest {
                         },
                         3141,
                         25446);
-        CameraInfo info2 =
-                new CameraInfo(
+        PvCameraInfo info2 =
+                new PvCameraInfo(
                         0,
                         "/dev/video2",
                         "Arducam OV2311 USB Camera",
@@ -611,9 +611,9 @@ public class VisionSourceManagerTest {
         }
 
         // duplicate cameras, same info, new ref
-        var duplicateCameraInfos = new ArrayList<CameraInfo>();
-        CameraInfo info1_dup =
-                new CameraInfo(
+        var duplicateCameraInfos = new ArrayList<PvCameraInfo>();
+        PvCameraInfo info1_dup =
+                new PvCameraInfo(
                         0,
                         "/dev/video0",
                         "Arducam OV2311 USB Camera",
@@ -626,8 +626,8 @@ public class VisionSourceManagerTest {
                         },
                         3141,
                         25446);
-        CameraInfo info2_dup =
-                new CameraInfo(
+        PvCameraInfo info2_dup =
+                new PvCameraInfo(
                         0,
                         "/dev/video2",
                         "Arducam OV2311 USB Camera",
@@ -650,9 +650,9 @@ public class VisionSourceManagerTest {
 
         // duplicate cameras this simulates unplugging one and plugging the other in where v4l assigns
         // the same by-id path to the other camera
-        var duplicateCameraInfos1 = new ArrayList<CameraInfo>();
-        CameraInfo info3_dup =
-                new CameraInfo(
+        var duplicateCameraInfos1 = new ArrayList<PvCameraInfo>();
+        PvCameraInfo info3_dup =
+                new PvCameraInfo(
                         0,
                         "/dev/video0",
                         "Arducam OV2311 USB Camera",
@@ -662,8 +662,8 @@ public class VisionSourceManagerTest {
                         },
                         3141,
                         25446);
-        CameraInfo info4_dup =
-                new CameraInfo(
+        PvCameraInfo info4_dup =
+                new PvCameraInfo(
                         0,
                         "/dev/video2",
                         "Arducam OV2311 USB Camera",
