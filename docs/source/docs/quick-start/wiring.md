@@ -2,7 +2,7 @@
 
 ## Coprocessor with regulator
 
-1. **IT IS STRONGLY RECOMMENDED** to use one of the recommended power regulators to prevent vision from cutting out from voltage drops while operating the robot. We recommend wiring the regulator directly to the power header pins or using a locking USB C cable. If neither of these work for you at least heavily hot glue the connector.
+1. **IT IS STRONGLY RECOMMENDED** to use one of the recommended power regulators to prevent vision from cutting out from voltage drops while operating the robot. We recommend wiring the regulator directly to the power header pins or using a locking USB C cable. In any case we recommend hot gluing the connector.
 
 2. Run an ethernet cable from your Pi to your network switch / radio.
 
