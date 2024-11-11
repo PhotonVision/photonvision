@@ -18,7 +18,7 @@ This diagram shows how to use the recommended regulator to power a coprocessor.
 
 :::
 
-:::{tab-item} Orange Pi 5 Pololu
+:::{tab-item} Orange Pi 5 Pololu S13V30F5
 
 ```{image} images/OrangePiPololu.png
 :alt: Wiring the opi5 to the pdp using the Pololu S13V30F5
@@ -34,7 +34,7 @@ This diagram shows how to use the recommended regulator to power a coprocessor.
 
 :::
 
-:::{tab-item} Raspberry Pi 5 Zinc V
+:::{tab-item} Raspberry Pi 5 Pololu S13V30F5
 
 ```{image} images/RPIPololu.png
 :alt: Wiring the RPI5 to the pdp using the Pololu S13V30F5
