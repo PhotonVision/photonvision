@@ -84,7 +84,11 @@ class VisionSystemSim:
         if robotToCamera is None:
             return None
         else:
-            return self.getRobotPose(time) + robotToCamera
+            pose = self.getRobotPose(time)
+            if pose:
+                return pose + robotToCamera
+            else:
+                return None
 
     def adjustCamera(
         self, cameraSim: PhotonCameraSim, robotToCamera: Transform3d
@@ -167,7 +171,7 @@ class VisionSystemSim:
 
     def getRobotPose(
         self, timestamp: seconds = wpilib.Timer.getFPGATimestamp()
-    ) -> Pose3d:
+    ) -> Pose3d | None:
         return self.robotPoseBuffer.sample(timestamp)
 
     def resetRobotPose(self, robotPose: Pose2d | Pose3d) -> None:
@@ -216,9 +220,10 @@ class VisionSystemSim:
             timestampCapture = timestampNt * 1.0e-6 - latency
 
             lateRobotPose = self.getRobotPose(timestampCapture)
-            lateCameraPose = lateRobotPose + self.getRobotToCamera(
-                camSim, timestampCapture
-            )
+            robotToCamera = self.getRobotToCamera(camSim, timestampCapture)
+            if lateRobotPose is None or robotToCamera is None:
+                return None
+            lateCameraPose = lateRobotPose + robotToCamera
             cameraPoses2d.append(lateCameraPose.toPose2d())
 
             camResult = camSim.process(latency, lateCameraPose, allTargets)

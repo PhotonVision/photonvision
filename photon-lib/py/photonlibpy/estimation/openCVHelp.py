@@ -48,13 +48,13 @@ class OpenCVHelp:
         )
 
     @staticmethod
-    def avgPoint(points: list[Tuple[float, float]]) -> Tuple[float, float]:
+    def avgPoint(points: np.ndarray) -> np.ndarray:
         x = 0.0
         y = 0.0
         for p in points:
-            x += p[0]
-            y += p[1]
-        return (x / len(points), y / len(points))
+            x += p[0, 0]
+            y += p[0, 1]
+        return np.array([[x / len(points), y / len(points)]])
 
     @staticmethod
     def pointsToTargetCorners(points: np.ndarray) -> list[TargetCorner]:
@@ -126,6 +126,10 @@ class OpenCVHelp:
         objectMat = np.array(OpenCVHelp.translationToTVec(modelTrls))
 
         alt: Transform3d | None = None
+        reprojectionError : cv.typing.MatLike | None = None
+        best : Transform3d = Transform3d()
+        alt: Transform3d | None = None
+
         for tries in range(2):
             retval, rvecs, tvecs, reprojectionError = cv.solvePnPGeneric(
                 objectMat,
@@ -145,7 +149,7 @@ class OpenCVHelp:
                     OpenCVHelp.rVecToRotation(rvecs[1]),
                 )
 
-            if not math.isnan(reprojectionError[0, 0]):
+            if reprojectionError is not None and not math.isnan(reprojectionError[0, 0]):
                 break
             else:
                 pt = imagePoints[0]
@@ -153,10 +157,10 @@ class OpenCVHelp:
                 pt[0, 1] -= 0.001
                 imagePoints[0] = pt
 
-        if math.isnan(reprojectionError[0, 0]):
+        if reprojectionError is None or math.isnan(reprojectionError[0, 0]):
             print("SolvePNP_Square failed!")
             return None
-
+        
         if alt:
             return PnpResult(
                 best=best,

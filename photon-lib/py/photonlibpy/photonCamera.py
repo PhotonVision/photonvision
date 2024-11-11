@@ -231,7 +231,7 @@ class PhotonCamera:
         versionString = self.versionEntry.get(defaultValue="")
         localUUID = PhotonPipelineResult.photonStruct.MESSAGE_VERSION
 
-        remoteUUID = self._rawBytesEntry.getTopic().getProperty("message_uuid")
+        remoteUUID = str(self._rawBytesEntry.getTopic().getProperty("message_uuid"))
 
         if not remoteUUID:
             wpilib.reportWarning(

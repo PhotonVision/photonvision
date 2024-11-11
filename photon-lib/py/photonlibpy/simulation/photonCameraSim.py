@@ -218,7 +218,7 @@ class PhotonCameraSim:
         targets.sort(key=distance, reverse=True)
 
         visibleTgts: list[
-            typing.Tuple[VisionTargetSim, list[typing.Tuple[float, float]]]
+            typing.Tuple[VisionTargetSim, np.ndarray]
         ] = []
         detectableTgts: list[PhotonTrackedTarget] = []
 
@@ -258,6 +258,7 @@ class PhotonCameraSim:
                 ] * 4
                 t = (l + 1) % 4
                 b = (l + 1) % 4
+                r = 0
                 for i in range(4):
                     if i == l:
                         continue
@@ -271,14 +272,14 @@ class PhotonCameraSim:
                     if i != t and i != l and i != b:
                         r = i
                 rect = cv.RotatedRect(
-                    center,
+                    (center[0,0], center[0,1]),
                     (
                         imagePoints[r, 0, 0] - lc[0, 0],
                         imagePoints[b, 0, 1] - imagePoints[t, 0, 1],
                     ),
                     -angles[r],
                 )
-                imagePoints = rect.points()
+                imagePoints = np.array([[p[0], p[1], p[2]] for p in rect.points()])
 
             visibleTgts.append((tgt, imagePoints))
             noisyTargetCorners = self.prop.estPixelNoise(imagePoints)
@@ -385,6 +386,7 @@ class PhotonCameraSim:
             self.ts.targetSkewEntry.set(0.0, receiveTimestamp)
         else:
             bestTarget = result.getBestTarget()
+            assert bestTarget
 
             self.ts.targetPitchEntry.set(bestTarget.getPitch(), receiveTimestamp)
             self.ts.targetYawEntry.set(bestTarget.getYaw(), receiveTimestamp)

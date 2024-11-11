@@ -171,9 +171,9 @@ class SimCameraProperties:
     def getLatencyStdDev(self) -> seconds:
         return self.latencyStdDev
 
-    def getContourAreaPercent(self, points: list[typing.Tuple[float, float]]) -> float:
+    def getContourAreaPercent(self, points: np.ndarray) -> float:
         return (
-            cv.contourArea(cv.convexHull(np.array(points))) / self.getResArea() * 100.0
+            cv.contourArea(cv.convexHull(points)) / self.getResArea() * 100.0
         )
 
     def getPixelYaw(self, pixelX: float) -> Rotation2d:
@@ -188,14 +188,14 @@ class SimCameraProperties:
         yOffset = cy - pixelY
         return Rotation2d(fy, -yOffset)
 
-    def getPixelRot(self, point: typing.Tuple[int, int]) -> Rotation3d:
+    def getPixelRot(self, point: cv.typing.Point2f) -> Rotation3d:
         return Rotation3d(
             0.0,
             self.getPixelPitch(point[1]).radians(),
             self.getPixelYaw(point[0]).radians(),
         )
 
-    def getCorrectedPixelRot(self, point: typing.Tuple[float, float]) -> Rotation3d:
+    def getCorrectedPixelRot(self, point: cv.typing.Point2f) -> Rotation3d:
         fx = self.camIntrinsics[0, 0]
         cx = self.camIntrinsics[0, 2]
         xOffset = cx - point[0]
