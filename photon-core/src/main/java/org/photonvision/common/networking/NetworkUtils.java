@@ -156,18 +156,6 @@ public class NetworkUtils {
         return null;
     }
 
-    public static boolean connExists(String connName) {
-        var shell = new ShellExec(true, true);
-        try {
-            // set nmcli back to DHCP, and re-run dhclient -- this ought to grab a new IP address
-            shell.executeBashCommand("nmcli -g GENERAL.STATE connection show \"" + connName + "\"");
-            return (shell.getExitCode() == 0);
-        } catch (Exception e) {
-            logger.error("Exception from nmcli!");
-        }
-        return false;
-    }
-
     public static boolean connDoesNotExist(String connName) {
         var shell = new ShellExec(true, true);
         try {
