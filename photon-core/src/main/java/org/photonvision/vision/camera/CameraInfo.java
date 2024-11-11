@@ -19,105 +19,204 @@ package org.photonvision.vision.camera;
 
 import edu.wpi.first.cscore.UsbCameraInfo;
 import java.util.Arrays;
-import java.util.Optional;
+
+import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.hardware.Platform;
 
-public class CameraInfo extends UsbCameraInfo {
-    public final CameraType cameraType;
-
-    public CameraInfo(
-            int dev, String path, String name, String[] otherPaths, int vendorId, int productId) {
-        super(dev, path, name, otherPaths, vendorId, productId);
-        cameraType = CameraType.UsbCamera;
-    }
-
-    public CameraInfo(
-            int dev,
-            String path,
-            String name,
-            String[] otherPaths,
-            int vendorId,
-            int productId,
-            CameraType cameraType) {
-        super(dev, path, name, otherPaths, vendorId, productId);
-        this.cameraType = cameraType;
-    }
-
-    public CameraInfo(UsbCameraInfo info) {
-        super(info.dev, info.path, info.name, info.otherPaths, info.vendorId, info.productId);
-        cameraType = CameraType.UsbCamera;
-    }
-
+public sealed interface CameraInfo {
     /**
-     * @return True, if this camera is reported from V4L and is a CSI camera.
+     * @return The path of the camera. This is the path that is used to open the camera.
      */
-    public boolean getIsV4lCsiCamera() {
-        return (Arrays.stream(otherPaths).anyMatch(it -> it.contains("csi-video"))
-                || getBaseName().equals("unicam"));
-    }
+    String path();
 
     /**
      * @return The base name of the camera aka the name as just ascii.
      */
-    public String getBaseName() {
-        return name.replaceAll("[^\\x00-\\x7F]", "");
-    }
+    String name();
 
     /**
      * @return Returns a human readable name
      */
-    public String getHumanReadableName() {
-        return getBaseName().replaceAll(" ", "_");
+    default String humanReadableName() {
+        return name().replaceAll(" ", "_");
     }
 
     /**
-     * Get a unique descriptor of the USB port this camera is attached to. EG
-     * "/dev/v4l/by-path/platform-fc800000.usb-usb-0:1.3:1.0-video-index0"
+     * If the camera is a USB camera this method returns
+     * a unique descriptor of the USB port this camera is attached to. EG
+     * "/dev/v4l/by-path/platform-fc800000.usb-usb-0:1.3:1.0-video-index0".
+     * If the camera is a CSI camera this method returns the path of the camera.
      *
-     * @return
+     * @return The unique path of the camera
      */
-    public Optional<String> getUSBPath() {
-        return Arrays.stream(otherPaths).filter(path -> path.contains("/by-path/")).findFirst();
-    }
+    String uniquePath();
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
-        CameraInfo other = (CameraInfo) obj;
+    String[] otherPaths();
 
-        // Windows device number is not significant. See
-        // https://github.com/wpilibsuite/allwpilib/blob/4b94a64b06057c723d6fcafeb1a45f55a70d179a/cscore/src/main/native/windows/UsbCameraImpl.cpp#L1128
-        if (!Platform.isWindows()) {
-            if (dev != other.dev) return false;
+    CameraType type();
+
+    public static final class PVUsbCameraInfo extends UsbCameraInfo implements CameraInfo {
+
+        private PVUsbCameraInfo(
+                int dev, String path, String name, String[] otherPaths, int vendorId, int productId) {
+            super(dev, path, name, otherPaths, vendorId, productId);
         }
 
-        if (!path.equals(other.path)) return false;
-        if (!name.equals(other.name)) return false;
-        if (!Arrays.asList(this.getUSBPath()).contains(other.getUSBPath())) return false;
-        if (vendorId != other.vendorId) return false;
-        if (productId != other.productId) return false;
+        private PVUsbCameraInfo(UsbCameraInfo info) {
+            super(info.dev, info.path, info.name, info.otherPaths, info.vendorId, info.productId);
+        }
 
-        // Don't trust super.equals, as it compares references. Should PR this to allwpilib at some
-        // point
-        return true;
+        @Override
+        public String path() {
+            return super.path;
+        }
+
+        @Override
+        public String name() {
+            return super.name.replaceAll("[^\\x00-\\x7F]", "");
+        }
+
+        @Override
+        public String uniquePath() {
+            return Arrays.stream(super.otherPaths).filter(path -> path.contains("/by-path/")).findFirst()
+                    .orElse(path());
+        }
+
+        @Override
+        public String[] otherPaths() {
+            return super.otherPaths;
+        }
+
+        @Override
+        public CameraType type() {
+            return CameraType.UsbCamera;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (obj == null) return false;
+            if (getClass() != obj.getClass()) return false;
+            PVUsbCameraInfo other = (PVUsbCameraInfo) obj;
+
+            // Windows device number is not significant. See
+            // https://github.com/wpilibsuite/allwpilib/blob/4b94a64b06057c723d6fcafeb1a45f55a70d179a/cscore/src/main/native/windows/UsbCameraImpl.cpp#L1128
+            if (!Platform.isWindows()) {
+                if (dev != other.dev) return false;
+            }
+
+            if (!path.equals(other.path)) return false;
+            if (!name.equals(other.name)) return false;
+            if (!this.uniquePath().contains(other.uniquePath())) return false;
+            if (vendorId != other.vendorId) return false;
+            if (productId != other.productId) return false;
+
+            // Don't trust super.equals, as it compares references. Should PR this to allwpilib at some point
+            return true;
+        }
     }
 
-    @Override
-    public String toString() {
-        return "CameraInfo [cameraType="
-                + cameraType
-                + ", baseName="
-                + getBaseName()
-                + ", vid="
-                + vendorId
-                + ", pid="
-                + productId
-                + ", path="
-                + path
-                + ", otherPaths="
-                + Arrays.toString(otherPaths)
-                + "]";
+    public static final class PVCSICameraInfo implements CameraInfo {
+        public final String path;
+        public final String baseName;
+
+        private PVCSICameraInfo(String path, String baseName) {
+            this.path = path;
+            this.baseName = baseName;
+        }
+
+        @Override
+        public String path() {
+            return path;
+        }
+
+        @Override
+        public String name() {
+            return baseName.replaceAll("[^\\x00-\\x7F]", "");
+        }
+
+        @Override
+        public String uniquePath() {
+            return path();
+        }
+
+        @Override
+        public String[] otherPaths() {
+            return new String[0];
+        }
+
+        @Override
+        public CameraType type() {
+            return CameraType.ZeroCopyPicam;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (obj == null) return false;
+            if (getClass() != obj.getClass()) return false;
+            PVCSICameraInfo other = (PVCSICameraInfo) obj;
+
+            if (!path.equals(other.path)) return false;
+            if (!baseName.equals(other.baseName)) return false;
+
+            return true;
+        }
+    }
+
+    public static final class PVReconstructedCameraInfo implements CameraInfo {
+        private final String path;
+        private final String name;
+        private final String[] otherPaths;
+        private final CameraType type;
+
+        public PVReconstructedCameraInfo(String path, String name, String[] otherPaths, CameraType type) {
+            this.path = path;
+            this.name = name;
+            this.otherPaths = otherPaths;
+            this.type = type;
+        }
+
+        @Override
+        public String path() {
+            return path;
+        }
+
+        @Override
+        public String name() {
+            return name;
+        }
+
+        @Override
+        public String uniquePath() {
+            return path;
+        }
+
+        @Override
+        public String[] otherPaths() {
+            return otherPaths;
+        }
+
+        @Override
+        public CameraType type() {
+            return type;
+        }
+    }
+
+    public static CameraInfo fromUsbCameraInfo(UsbCameraInfo info) {
+        return new PVUsbCameraInfo(info);
+    }
+
+    public static CameraInfo fromUsbCameraInfo(
+        int dev, String path, String name, String[] otherPaths, int vendorId, int productId) {
+        return new PVUsbCameraInfo(dev, path, name, otherPaths, vendorId, productId);
+    }
+
+    public static CameraInfo fromCSICameraInfo(String path, String baseName) {
+        return new PVCSICameraInfo(path, baseName);
+    }
+
+    public static CameraInfo fromCameraConfig(CameraConfiguration config) {
+        return new PVReconstructedCameraInfo(config.path, config.baseName, config.otherPaths, config.cameraType);
     }
 }

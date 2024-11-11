@@ -174,12 +174,12 @@ public class VisionModuleManagerTest {
 
         var testSource = new TestSource(ffp, conf);
 
-        var modules = VisionModuleManager.getInstance().addSources(List.of(testSource));
+        var module = VisionModuleManager.getInstance().addSource(testSource);
         var module0DataConsumer = new TestDataConsumer();
 
         VisionModuleManager.getInstance().visionModules.get(0).addResultConsumer(module0DataConsumer);
 
-        modules.forEach(VisionModule::start);
+        module.start();
 
         sleep(1500);
 
@@ -224,9 +224,10 @@ public class VisionModuleManagerTest {
         var conf5 = new CameraConfiguration("Right", "dev/video2");
         USBCameraSource usbSimulation2 = new MockUsbCameraSource(conf5, 0x6366, 0x0c45);
 
-        var modules =
-                vmm.addSources(
-                        List.of(testSource, testSource2, testSource3, usbSimulation, usbSimulation2));
+        var modules = List.of(testSource, testSource2, testSource3, usbSimulation, usbSimulation2)
+                .stream()
+                .map(vmm::addSource)
+                .collect(Collectors.toList());
 
         System.out.println(
                 Arrays.toString(

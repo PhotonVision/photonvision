@@ -22,20 +22,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.hardware.Platform.OSType;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.vision.camera.CameraInfo;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.LibcameraGpuSource;
-import org.photonvision.vision.camera.TestSource;
 import org.photonvision.vision.camera.USBCameras.USBCameraSource;
 
 public class VisionSourceManager {
@@ -43,6 +45,9 @@ public class VisionSourceManager {
 
     private static final List<String> deviceBlacklist = List.of("bcm2835-isp");
     private String ignoredCamerasRegex = "";
+
+    private final AtomicBoolean configsLoaded = new AtomicBoolean(false);
+    private final ConcurrentHashMap<String, CameraInfo> cameraInfoMap = new ConcurrentHashMap<>();
 
     private static class SingletonHolder {
         private static final VisionSourceManager INSTANCE = new VisionSourceManager();
@@ -52,10 +57,12 @@ public class VisionSourceManager {
         return SingletonHolder.INSTANCE;
     }
 
-    VisionSourceManager() {}
+    VisionSourceManager() {
+        TimedTaskManager.getInstance().addTask("CameraDeviceExplorer", this::discoverNewDevices, 5000);
+    }
 
-    void registerLoadedConfigs(CameraConfiguration... configs) {
-        registerLoadedConfigs(Arrays.asList(configs));
+    void clearConfigState() {
+        configsLoaded.set(false);
     }
 
     /**
@@ -65,47 +72,64 @@ public class VisionSourceManager {
      * @param configs The loaded camera configs.
      */
     public void registerLoadedConfigs(Collection<CameraConfiguration> configs) {
+        if (!configsLoaded.compareAndSet(false, true)) {
+            logger.warn("Attempted to register loaded configs after they were already loaded");
+            return;
+        }
         logger.info("Registering loaded camera configs");
-        var loadedConfigs = new CopyOnWriteArrayList<>(configs);
-        var allDevices = new ArrayList<CameraInfo>();
-        allDevices.addAll(getConnectedUSBCameras());
-        allDevices.addAll(getConnectedCSICameras());
-        allDevices = filterAllowedDevices(allDevices, Platform.getCurrentPlatform());
 
-        for (var info : allDevices) {
-            var matchingConfig = loadedConfigs.stream()
-                            .filter(config -> config.path.equals(info.path))
-                            .findFirst();
-            if (matchingConfig.isPresent()) {
-                var config = matchingConfig.get();
-                logger.info("Found loaded config for camera " + config.uniqueName);
-                config = mergeInfoIntoConfig(config, info);
-            } else {
-                var config = createConfigForCameras(info, loadedConfigs);
-                config = mergeInfoIntoConfig(config, info);
-                loadedConfigs.add(config);
-            }
-        }
-
-        var modules = VisionModuleManager.getInstance().addSources(
-                loadVisionSourcesFromCamConfigs(loadedConfigs, true));
-
-        logger.info("Loaded " + loadedConfigs.size() + " camera configs");
-
-        for (var module : modules) {
-            logger.info("Starting vision module for camera " + module.visionSource.cameraConfiguration.uniqueName);
-            module.start();
-        }
+        configs.stream()
+                .map(VisionSourceManager::loadVisionSourceFromCamConfig)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(VisionModuleManager.getInstance()::addSource)
+                .forEach(module -> {
+                    var config = module.visionSource.cameraConfiguration;
+                    cameraInfoMap.put(config.uniqueName, CameraInfo.fromCameraConfig(config));
+                    module.start();
+                });
 
         logger.info("Finished registering loaded camera configs");
     }
 
-    public CameraConfiguration addNewVisionSource(CameraInfo info) {
-        var config = createConfigForCameras(info, new ArrayList<>());
-        VisionModuleManager.getInstance().addSources(
-                loadVisionSourcesFromCamConfigs(List.of(config), true))
-                .forEach(m -> m.start());
-        return config;
+    public Optional<CameraConfiguration> configureNewVisionSource(String uniqueName) {
+        boolean alreadyUsed = VisionModuleManager.getInstance().getModules().stream()
+                .anyMatch(module -> module.visionSource.cameraConfiguration.uniqueName.equals(uniqueName));
+        var cfg = Optional.ofNullable(cameraInfoMap.get(uniqueName))
+            .filter(u -> !alreadyUsed)
+            .map(info -> createConfigForCameras(info, uniqueName));
+        cfg.flatMap(VisionSourceManager::loadVisionSourceFromCamConfig)
+            .map(VisionModuleManager.getInstance()::addSource)
+            .ifPresent(VisionModule::start);
+
+        return cfg;
+    }
+
+    protected void discoverNewDevices() {
+        if (!configsLoaded.get()) {
+            logger.debug("Not discovering new devices because configs are not loaded");
+            return;
+        }
+
+        List<CameraInfo> devices = filterAllowedDevices(getConnectedCameras(), Platform.getCurrentPlatform());
+
+        List<String> infoNames = cameraInfoMap.values().stream()
+            .map(CameraInfo::name)
+            .collect(Collectors.toList());
+        List<CameraInfo> filteredDevices = devices.stream()
+                .filter(d -> !infoNames.contains(d.name()))
+                .collect(Collectors.toList());
+        for (var device : filteredDevices) {
+            var uniqueName = uniqueName(device.name(), cameraInfoMap.keySet());
+            cameraInfoMap.put(uniqueName, device);
+        }
+    }
+
+    protected List<CameraInfo> getConnectedCameras() {
+        List<CameraInfo> cameraInfos = new ArrayList<>();
+        cameraInfos.addAll(getConnectedUSBCameras());
+        cameraInfos.addAll(getConnectedCSICameras());
+        return cameraInfos;
     }
 
     /**
@@ -116,7 +140,7 @@ public class VisionSourceManager {
     protected List<CameraInfo> getConnectedUSBCameras() {
         List<CameraInfo> cameraInfos =
                 List.of(UsbCamera.enumerateUsbCameras()).stream()
-                        .map(c -> new CameraInfo(c))
+                        .map(c -> CameraInfo.fromUsbCameraInfo(c))
                         .collect(Collectors.toList());
         return cameraInfos;
     }
@@ -131,10 +155,20 @@ public class VisionSourceManager {
         if (LibCameraJNILoader.isSupported())
             for (String path : LibCameraJNI.getCameraNames()) {
                 String name = LibCameraJNI.getSensorModel(path).getFriendlyName();
-                cameraInfos.add(
-                        new CameraInfo(-1, path, name, new String[] {}, -1, -1, CameraType.ZeroCopyPicam));
+                cameraInfos.add(CameraInfo.fromCSICameraInfo(path, name));
             }
         return cameraInfos;
+    }
+
+    private String uniqueName(String name, Collection<String> takenNames) {
+        if (!takenNames.contains(name)) {
+            return name;
+        }
+        int i = 1;
+        while (takenNames.contains(name + i)) {
+            i++;
+        }
+        return String.format("%s (%d)", name, i);
     }
 
     /**
@@ -143,60 +177,22 @@ public class VisionSourceManager {
      */
     private CameraConfiguration createConfigForCameras(
             CameraInfo info,
-            List<CameraConfiguration> loadedConfigs) {
+            String uniqueName) {
         // create new camera config for all new cameras
-        String baseName = info.getBaseName();
-        String uniqueName = info.getHumanReadableName();
-
-        int suffix = 0;
-        while (containsName(loadedConfigs, uniqueName)
-                || containsName(uniqueName)) {
-            suffix++;
-            uniqueName = String.format("%s (%d)", uniqueName, suffix);
-        }
+        String baseName = info.name();
 
         logger.info("Creating a new camera config for camera " + uniqueName);
 
-        String nickname = uniqueName;
+        String[] otherPaths = {};
+        if (info instanceof CameraInfo.PVUsbCameraInfo usbInfo) {
+            otherPaths = usbInfo.otherPaths;
+        }
 
-        CameraConfiguration configuration =
-                new CameraConfiguration(baseName, uniqueName, nickname, info.path, info.otherPaths);
+        CameraConfiguration configuration = new CameraConfiguration(baseName, uniqueName, uniqueName, info.path(), otherPaths);
 
-        configuration.cameraType = info.cameraType;
+        configuration.cameraType = info.type();
 
         return configuration;
-    }
-
-    private CameraConfiguration mergeInfoIntoConfig(CameraConfiguration cfg, CameraInfo info) {
-        if (!cfg.path.equals(info.path)) {
-            logger.debug("Updating path config from " + cfg.path + " to " + info.path);
-            cfg.path = info.path;
-        }
-        cfg.otherPaths = info.otherPaths;
-        cfg.cameraType = info.cameraType;
-
-        if (cfg.otherPaths.length != info.otherPaths.length) {
-            logger.debug(
-                    "Updating otherPath config from "
-                            + Arrays.toString(cfg.otherPaths)
-                            + " to "
-                            + Arrays.toString(info.otherPaths));
-            cfg.otherPaths = info.otherPaths.clone();
-        } else {
-            for (int i = 0; i < info.otherPaths.length; i++) {
-                if (!cfg.otherPaths[i].equals(info.otherPaths[i])) {
-                    logger.debug(
-                            "Updating otherPath config from "
-                                    + Arrays.toString(cfg.otherPaths)
-                                    + " to "
-                                    + Arrays.toString(info.otherPaths));
-                    cfg.otherPaths = info.otherPaths.clone();
-                    break;
-                }
-            }
-        }
-
-        return cfg;
     }
 
     public void setIgnoredCamerasRegex(String ignoredCamerasRegex) {
@@ -212,77 +208,59 @@ public class VisionSourceManager {
     private ArrayList<CameraInfo> filterAllowedDevices(List<CameraInfo> allDevices, Platform platform) {
         ArrayList<CameraInfo> filteredDevices = new ArrayList<>();
         for (var device : allDevices) {
-            if (deviceBlacklist.contains(device.name)) {
+            boolean valid = false;
+            if (deviceBlacklist.contains(device.name())) {
                 logger.trace(
-                        "Skipping blacklisted device: \"" + device.name + "\" at \"" + device.path + "\"");
-            } else if (device.name.matches(ignoredCamerasRegex)) {
-                logger.trace("Skipping ignored device: \"" + device.name + "\" at \"" + device.path);
-            } else if (device.getIsV4lCsiCamera()) {
-            } else if (device.otherPaths.length == 0
+                        "Skipping blacklisted device: \"" + device.name() + "\" at \"" + device.path() + "\"");
+            } else if (device.name().matches(ignoredCamerasRegex)) {
+                logger.trace("Skipping ignored device: \"" + device.name() + "\" at \"" + device.path());
+            } else if (device instanceof CameraInfo.PVUsbCameraInfo usbDevice) {
+                if (usbDevice.otherPaths.length == 0
                     && platform.osType == OSType.LINUX
-                    && device.cameraType == CameraType.UsbCamera) {
-                logger.trace(
-                        "Skipping device with no other paths: \"" + device.name + "\" at \"" + device.path);
-                // If cscore hasnt passed this other paths aka a path by id or a path as in usb port then we
-                // cant guarantee it is a valid camera.
+                    && device.type() == CameraType.UsbCamera) {
+                    logger.trace(
+                            "Skipping device with no other paths: \""
+                                    + device.name()
+                                    + "\" at \""
+                                    + device.path());
+                } else if (Arrays.stream(usbDevice.otherPaths).anyMatch(it -> it.contains("csi-video"))
+                            || usbDevice.name().equals("unicam")) {
+                    logger.trace(
+                            "Skipping CSI device from CSCore: \""
+                                    + device.name()
+                                    + "\" at \""
+                                    + device.path()
+                                    + "\"");
+                } else {
+                    valid = true;
+                }
             } else {
+                valid = true;
+            }
+            if (valid) {
                 filteredDevices.add(device);
-                logger.trace(
-                        "Adding local video device - \"" + device.name + "\" at \"" + device.path + "\"");
+                logger.trace("Adding local video device - \"" + device.name() + "\" at \"" + device.path() + "\"");
             }
         }
         return filteredDevices;
     }
 
-    private static List<VisionSource> loadVisionSourcesFromCamConfigs(
-            List<CameraConfiguration> camConfigs, boolean createSources) {
-        var cameraSources = new ArrayList<VisionSource>();
-        for (var configuration : camConfigs) {
-            // In unit tests, create dummy
-            if (!createSources) {
-                cameraSources.add(new TestSource(configuration));
-                continue;
-            }
+    private static Optional<VisionSource> loadVisionSourceFromCamConfig(CameraConfiguration configuration) {
+        VisionSource source = null;
+        boolean is_pi = Platform.isRaspberryPi();
 
-            boolean is_pi = Platform.isRaspberryPi();
-
-            if (configuration.cameraType == CameraType.ZeroCopyPicam && is_pi) {
-                // If the camera was loaded from libcamera then create its source using libcamera.
-                var piCamSrc = new LibcameraGpuSource(configuration);
-                cameraSources.add(piCamSrc);
-            } else {
-                var newCam = new USBCameraSource(configuration);
-                if (!newCam.getCameraQuirks().hasQuirk(CameraQuirk.CompletelyBroken)
-                        && !newCam.getSettables().videoModes.isEmpty()) {
-                    cameraSources.add(newCam);
-                }
+        if (configuration.cameraType == CameraType.ZeroCopyPicam && is_pi) {
+            // If the camera was loaded from libcamera then create its source using libcamera.
+            var piCamSrc = new LibcameraGpuSource(configuration);
+            source = piCamSrc;
+        } else {
+            var newCam = new USBCameraSource(configuration);
+            if (!newCam.getCameraQuirks().hasQuirk(CameraQuirk.CompletelyBroken)
+                    && !newCam.getSettables().videoModes.isEmpty()) {
+                source = newCam;
             }
-            logger.debug("Creating VisionSource for " + configuration.toShortString());
         }
-        return cameraSources;
-    }
-
-    /**
-     * Check if a given config list contains the given unique name.
-     *
-     * @param configList A list of camera configs.
-     * @param uniqueName The unique name.
-     * @return If the list of configs contains the unique name.
-     */
-    private boolean containsName(
-            final List<CameraConfiguration> configList, final String uniqueName) {
-        return configList.stream()
-                .anyMatch(configuration -> configuration.uniqueName.equals(uniqueName));
-    }
-
-    /**
-     * Check if the current list of known cameras contains the given unique name.
-     *
-     * @param uniqueName The unique name.
-     * @return If the list of cameras contains the unique name.
-     */
-    private boolean containsName(final String uniqueName) {
-        return VisionModuleManager.getInstance().getModules().stream()
-                .anyMatch(camera -> camera.visionSource.cameraConfiguration.uniqueName.equals(uniqueName));
+        logger.debug("Creating VisionSource for " + configuration.toShortString());
+        return Optional.ofNullable(source);
     }
 }
