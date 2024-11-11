@@ -18,9 +18,6 @@
 package org.photonvision.common.logging;
 
 import edu.wpi.first.util.RuntimeDetector;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.jni.QueuedFileLogger;
 
@@ -43,17 +40,6 @@ public class KernelLogLogger {
 
     public KernelLogLogger() {
         if (RuntimeDetector.isLinux()) {
-            logger.info("Listening for klogs on /var/log/dmesg ! Boot logs:");
-
-            try {
-                var bootlog = Files.readAllLines(Path.of("/var/log/dmesg"));
-                for (var line : bootlog) {
-                    logger.log(line, LogLevel.DEBUG);
-                }
-            } catch (IOException e) {
-                logger.error("Couldn't read /var/log/dmesg - not printing boot logs");
-            }
-
             listener = new QueuedFileLogger("/var/log/kern.log");
         } else {
             System.out.println("NOT for klogs");
