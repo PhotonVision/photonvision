@@ -26,7 +26,7 @@
 - Driver Camera
   - OV9281
   - OV9782
-  - Pi Camera Module V1
+  - Pi Camera Module V1 {ref}`(More setup info)<docs/hardware/picamconfig:Pi Camera Configuration>`
   - Most other fixed-focus UVC USB webcams
 
 ## Power
