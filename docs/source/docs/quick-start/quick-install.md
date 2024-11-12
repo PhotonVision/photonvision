@@ -24,7 +24,7 @@ Balena Etcher 1.18.11 is a known working version. Other versions may cause issue
 
 Use the 1.18.11 version of [Balena Etcher](https://github.com/balena-io/etcher/releases/tag/v1.18.11) to flash the image onto the coprocessors micro sd card. Select the downloaded `.img.xz` file, select your microSD card, and flash.
 
-Limelights have a different installation processes. Simply connect the limelight to your computer using a usb c cable. Select the compute module. If it doesn’t show up after 30s try using another USB port, initialization may take a while. If prompted, install the recommended missing drivers. Select the image, and flash.
+Limelights have a different installation processes. Simply connect the limelight to your computer using the proper usb cable. Select the compute module. If it doesn’t show up after 30s try using another USB port, initialization may take a while. If prompted, install the recommended missing drivers. Select the image, and flash.
 
 Unless otherwise noted in release notes, to update PhotonVision after the initial installation, use the offline update option in the settings page with the downloaded jar file from the latest release.
 
