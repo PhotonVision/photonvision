@@ -21,7 +21,7 @@ The directory structure is outlined below.
 - imgSaves
   - Contains images saved with the input/output save commands.
 - logs
-  - Contains timestamped logs in the format {code}`photonvision-YYYY-MM-D_HH-MM-SS.log`. Note that on Pi these timestamps will likely be significantly behind the real time.
+  - Contains timestamped logs in the format {code}`photonvision-YYYY-MM-D_HH-MM-SS.log`. These timestamps will likely be significantly behind the real time. Coprocessors on the robot have no way to get current time.
 - hardwareSettings.json
   - Contains hardware settings. Currently this includes only the LED brightness.
 - networkSettings.json
