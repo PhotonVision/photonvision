@@ -10,6 +10,10 @@ When using PhotonVision off robot, you _MUST_ plug the coprocessor into a physic
 
 :::{tab-item} New Radio (2025 - present)
 
+```{danger}
+Ensure that DIP switches 1 and 2 are turned off; otherwise, the radio PoE feature will fry your coprocessor. [More info.](https://frc-radio.vivid-hosting.net/getting-started/passive-power-over-ethernet-poe-for-downstream-devices)
+```
+
 ```{image} images/networking-diagram-vividhosting.png
 :alt: Wiring using a network switch and the new vivid hosting radio
 ```
@@ -18,7 +22,7 @@ When using PhotonVision off robot, you _MUST_ plug the coprocessor into a physic
 
 :::{tab-item} Old Radio (pre 2025)
 
-PhotonVision _STRONGLY_ recommends the usage of a network switch on your robot. This is because the second radio port on the old FRC radios is known to be buggy and cause frequent connection issues that are detrimental during competition. An in-depth guide on how to install a network switch can be found [on FRC 900's website](https://team900.org/blog/ZebraSwitch/).
+PhotonVision _STRONGLY_ recommends the usage of a network switch on your robot. This is because the second radio port on the old FRC radios is known to be buggy and cause frequent connection issues that are detrimental during competition. An in-depth guide on how to install a network switch can be found [on FRC 900's website](https://zebracorns.org/blog/ZebraSwitch/).
 
 ```{image} images/networking-diagram.png
 :alt: Wiring using a network switch and the old open mesh radio
