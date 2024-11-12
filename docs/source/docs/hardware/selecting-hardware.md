@@ -1,6 +1,6 @@
 # Selecting Hardware
 
-In order to use PhotonVision, you need a coprocessor and a camera. Other than the recommended hardware found in the quick start guide, this page will help you select hardware that should work for photonvision even though it is not supported/recommended.
+In order to use PhotonVision, you need a coprocessor and a camera. Other than the recommended hardware found in the {ref}`quick start guide<docs/quick-start/common-setups:Common Hardware Setups>`, this page will help you select hardware that should work for photonvision even though it is not supported/recommended.
 
 ## Choosing a Coprocessor
 
