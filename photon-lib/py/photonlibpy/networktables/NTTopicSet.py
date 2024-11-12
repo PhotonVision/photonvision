@@ -10,8 +10,10 @@ PhotonPipelineResult_TYPE_STRING = (
 
 class NTTopicSet:
 
-    def __init__(self) -> None:
-        self.subTable = nt.NetworkTableInstance.getDefault()
+    def __init__(self, tableName: str, cameraName: str) -> None:
+        instance = nt.NetworkTableInstance.getDefault()
+        photonvision_root_table = instance.getTable(tableName)
+        self.subTable = photonvision_root_table.getSubTable(cameraName)
 
     def updateEntries(self) -> None:
         options = nt.PubSubOptions()

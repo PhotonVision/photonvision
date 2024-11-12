@@ -42,7 +42,6 @@ class PhotonCameraSim:
         self.videoSimWireframeEnabled: bool = False
         self.videoSimWireframeResolution: float = 0.1
         self.videoSimProcEnabled: bool = True
-        self.ts = NTTopicSet()
         self.heartbeatCounter: int = 0
         self.nextNtEntryTime = int(wpilib.Timer.getFPGATimestamp() * 1e6)
         self.tagLayout = robotpy_apriltag.loadAprilTagLayoutField(
@@ -101,7 +100,7 @@ class PhotonCameraSim:
             (self.prop.getResWidth(), self.prop.getResHeight())
         )
 
-        self.ts.subTable = self.cam._cameraTable
+        self.ts = NTTopicSet("photonvision", self.cam.getName())
         self.ts.updateEntries()
 
         # Handle this last explicitly for this function signature because the other constructor is called in the initialiser list
@@ -217,9 +216,7 @@ class PhotonCameraSim:
 
         targets.sort(key=distance, reverse=True)
 
-        visibleTgts: list[
-            typing.Tuple[VisionTargetSim, list[typing.Tuple[float, float]]]
-        ] = []
+        visibleTgts: list[typing.Tuple[VisionTargetSim, np.ndarray]] = []
         detectableTgts: list[PhotonTrackedTarget] = []
 
         camRt = RotTrlTransform3d.makeRelativeTo(cameraPose)
@@ -258,6 +255,7 @@ class PhotonCameraSim:
                 ] * 4
                 t = (l + 1) % 4
                 b = (l + 1) % 4
+                r = 0
                 for i in range(4):
                     if i == l:
                         continue
@@ -271,14 +269,14 @@ class PhotonCameraSim:
                     if i != t and i != l and i != b:
                         r = i
                 rect = cv.RotatedRect(
-                    center,
+                    (center[0, 0], center[0, 1]),
                     (
                         imagePoints[r, 0, 0] - lc[0, 0],
                         imagePoints[b, 0, 1] - imagePoints[t, 0, 1],
                     ),
                     -angles[r],
                 )
-                imagePoints = rect.points()
+                imagePoints = np.array([[p[0], p[1], p[2]] for p in rect.points()])
 
             visibleTgts.append((tgt, imagePoints))
             noisyTargetCorners = self.prop.estPixelNoise(imagePoints)
@@ -385,6 +383,7 @@ class PhotonCameraSim:
             self.ts.targetSkewEntry.set(0.0, receiveTimestamp)
         else:
             bestTarget = result.getBestTarget()
+            assert bestTarget
 
             self.ts.targetPitchEntry.set(bestTarget.getPitch(), receiveTimestamp)
             self.ts.targetYawEntry.set(bestTarget.getYaw(), receiveTimestamp)
