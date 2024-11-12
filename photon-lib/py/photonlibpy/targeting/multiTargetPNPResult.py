@@ -27,14 +27,4 @@ class MultiTargetPNPResult:
     estimatedPose: PnpResult = field(default_factory=PnpResult)
     fiducialIDsUsed: list[int] = field(default_factory=list)
 
-    def createFromPacket(self, packet: Packet) -> Packet:
-        self.estimatedPose = PnpResult()
-        self.estimatedPose.createFromPacket(packet)
-        self.fiducialIDsUsed = []
-        for _ in range(MultiTargetPNPResult._MAX_IDS):
-            fidId = packet.decode16()
-            if fidId >= 0:
-                self.fiducialIDsUsed.append(fidId)
-        return packet
-
     photonStruct: ClassVar["generated.MultiTargetPNPResultSerde"]
