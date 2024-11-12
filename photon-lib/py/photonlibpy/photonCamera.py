@@ -19,11 +19,11 @@ from enum import Enum
 from typing import List
 
 import ntcore
-import wpilib
-from wpilib import RobotController, Timer
 
 # magical import to make serde stuff work
 import photonlibpy.generated  # noqa
+import wpilib
+from wpilib import RobotController, Timer
 
 from .packet import Packet
 from .targeting.photonPipelineResult import PhotonPipelineResult
