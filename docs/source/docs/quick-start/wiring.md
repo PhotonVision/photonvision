@@ -28,7 +28,7 @@ This diagram shows how to use the recommended regulator to power a coprocessor.
 
 :::{tab-item} Raspberry Pi 5 Zinc V
 
-```{image} images/RPIZinc.png
+```{image} images/RPiZinc.png
 :alt: Wiring the RPI5 to the pdp using the Redux Robotics Zinc V
 ```
 
@@ -36,7 +36,7 @@ This diagram shows how to use the recommended regulator to power a coprocessor.
 
 :::{tab-item} Raspberry Pi 5 Pololu S13V30F5
 
-```{image} images/RPIPololu.png
+```{image} images/RPiPololu.png
 :alt: Wiring the RPI5 to the pdp using the Pololu S13V30F5
 ```
 
