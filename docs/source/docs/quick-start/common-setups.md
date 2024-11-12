@@ -2,6 +2,10 @@
 
 ## Coprocessors
 
+:::{note}
+The Orange Pi 5 is the only currently supported device for object detection.
+:::
+
 - Orange Pi 5 4GB
   - Able to process two object detection streams at once while also processing 1 to 2 apriltag streams at 1280x800 (30fps).
 - Raspberry Pi 5 2GB
