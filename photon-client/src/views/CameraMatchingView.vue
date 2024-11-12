@@ -3,6 +3,7 @@ import MetricsCard from "@/components/settings/MetricsCard.vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { inject } from "vue";
+import { useStateStore } from "@/stores/StateStore";
 
 const formatUrl = (port) => `http://${inject("backendHostname")}:${port}/stream.mjpg`;
 </script>
@@ -48,7 +49,12 @@ const formatUrl = (port) => `http://${inject("backendHostname")}:${port}/stream.
                 </tr>
                 <tr>
                   <td>Frames Processed</td>
-                  <td>todo</td>
+                  <td>
+                    {{ useStateStore().backendResults[index].sequenceID }} ({{
+                      useStateStore().backendResults[index].fps
+                    }}
+                    FPS)
+                  </td>
                 </tr>
                 <tr>
                   <td>Connected?</td>
@@ -99,7 +105,13 @@ const formatUrl = (port) => `http://${inject("backendHostname")}:${port}/stream.
                 <tr>
                   <td>USB Path(s)</td>
                   <td>
-                    {{ [camera.path].concat(camera.otherPaths).join("\n") }}
+                    <span
+                      v-for="(path, idx) in [camera.path].concat(camera.otherPaths)"
+                      :key="idx"
+                      style="display: block"
+                    >
+                      {{ path }}
+                    </span>
                   </td>
                 </tr>
                 <tr>

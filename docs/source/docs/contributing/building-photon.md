@@ -290,5 +290,5 @@ Then, run the examples:
 Using the [GitHub CLI](https://cli.github.com/), we can download artifacts from pipelines by run ID and name:
 
 ```
-~/photonvision$ gh run download 11759699679 -n jar-Linux 
+~/photonvision$ gh run download 11759699679 -n jar-Linux
 ```

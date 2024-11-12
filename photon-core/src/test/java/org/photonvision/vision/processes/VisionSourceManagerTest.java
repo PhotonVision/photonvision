@@ -518,7 +518,8 @@ public class VisionSourceManagerTest {
         inst.tryMatchCamImpl(cameraInfos);
 
         PvCameraInfo info1 =
-                new PvCameraInfo(0, "/dev/video0", "Arducam OV2311 USB Camera", new String[] {}, 3141, 25446);
+                new PvCameraInfo(
+                        0, "/dev/video0", "Arducam OV2311 USB Camera", new String[] {}, 3141, 25446);
 
         cameraInfos.add(info1);
 

@@ -528,7 +528,8 @@ public class VisionSourceManager {
      * @param allDevices
      * @return list of devices with blacklisted or ignore devices removed.
      */
-    private List<PvCameraInfo> filterAllowedDevices(List<PvCameraInfo> allDevices, Platform platform) {
+    private List<PvCameraInfo> filterAllowedDevices(
+            List<PvCameraInfo> allDevices, Platform platform) {
         List<PvCameraInfo> filteredDevices = new ArrayList<>();
         for (var device : allDevices) {
             if (deviceBlacklist.contains(device.name)) {

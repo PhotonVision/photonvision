@@ -181,7 +181,8 @@ public class PhotonConfiguration {
     }
 
     public static class UICameraConfiguration {
-        // Path to the camera device. On Linux, this is a special file in /dev/v4l/by-id or /dev/videoN. This is the path we hand to CSCore to do auto-reconnect on
+        // Path to the camera device. On Linux, this is a special file in /dev/v4l/by-id or /dev/videoN.
+        // This is the path we hand to CSCore to do auto-reconnect on
         public String cameraPath;
 
         public List<UICameraCalibrationCoefficients> calibrations;

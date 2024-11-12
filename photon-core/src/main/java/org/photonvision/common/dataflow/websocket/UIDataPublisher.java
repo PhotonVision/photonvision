@@ -46,6 +46,7 @@ public class UIDataPublisher implements CVPipelineResultConsumer {
         if (lastUIResultUpdateTime + 1000.0 / 10.0 > now) return;
 
         var dataMap = new HashMap<String, Object>();
+        dataMap.put("sequenceID", result.sequenceID);
         dataMap.put("fps", result.fps);
         dataMap.put("latency", result.getLatencyMillis());
         var uiTargets = new ArrayList<HashMap<String, Object>>(result.targets.size());

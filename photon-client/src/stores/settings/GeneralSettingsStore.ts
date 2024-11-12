@@ -74,7 +74,17 @@ export const useSettingsStore = defineStore("settings", {
       tags: []
     },
     visionSourceManagerState: {
-      knownCameras: [],
+      knownCameras: [
+        {
+          cameraType: "USBCamera",
+          dev: 1,
+          name: "foobar",
+          otherPaths: ["asdf", "bfdsa"],
+          path: "/some/path",
+          vendorId: 1,
+          productId: 2
+        }
+      ],
       unmatchedLoadedConfigs: []
     }
   }),
