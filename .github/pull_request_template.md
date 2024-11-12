@@ -7,7 +7,7 @@ Fun screenshots ir a cool video or something are super helpful as well. If this 
 ## Meta
 
 Merge checklist:
-- [ ] Pull Request title is [short, imperitive summary](https://cbea.ms/git-commit/) of proposed changes
+- [ ] Pull Request title is [short, imperative summary](https://cbea.ms/git-commit/) of proposed changes
 - [ ] The description documents the _what_ and _why_
 - [ ] If this PR touches photon-serde, all messages have been regenerated and hashes have not changed unexpectedly
 - [ ] If this PR touches configuration, this is backwards compatible with settings back to v2024.3.1
