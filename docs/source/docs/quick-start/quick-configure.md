@@ -12,9 +12,9 @@ You **must** rename your cameras to ensure that every camera has a unique name. 
 
 ## Pipeline Settings
 
-### Apriltag
+### AprilTag
 
-When using an Orange pi 5 with an arducam OV9281 teams will usually change the following settings.
+When using an Orange Pi 5 with an Arducam OV9281 teams will usually change the following settings. For more info on AprilTag settings please review {ref}`this<docs/apriltag-pipelines/2D-tracking-tuning:2D AprilTag Tuning / Tracking>`.
 
 - Resolution:
   - 1280x800
@@ -42,7 +42,7 @@ When detecting AprilTags, it's important to minimize 'motion blur' as much as po
 
 ### Object Detection
 
-When using an Orange pi 5 with an OV9782 teams will usually change the following settings.
+When using an Orange Pi 5 with an OV9782 teams will usually change the following settings. For more info on object detection settings please review {ref}`this<docs/objectDetection/about-object-detection:About Object Detection>`.
 
 - Resolution:
   - Resolutions larger than 640x640 may not result in any more accurate detection and may lower {ref}`performance<docs/objectDetection/about-object-detection:Letterboxing>`.

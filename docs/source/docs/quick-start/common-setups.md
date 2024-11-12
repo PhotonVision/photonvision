@@ -7,9 +7,9 @@ The Orange Pi 5 is the only currently supported device for object detection.
 :::
 
 - Orange Pi 5 4GB
-  - Able to process two object detection streams at once while also processing 1 to 2 apriltag streams at 1280x800 (30fps).
+  - Able to process two object detection streams at once while also processing 1 to 2 AprilTag streams at 1280x800 (30fps).
 - Raspberry Pi 5 2GB
-  - A good cheaper option. Doesn't support object detection. Able to process 2 apriltag streams at 1280x800 (30fps).
+  - A good cheaper option. Doesn't support object detection. Able to process 2 AprilTag streams at 1280x800 (30fps).
 
 ## SD Cards
 
@@ -18,13 +18,13 @@ The Orange Pi 5 is the only currently supported device for object detection.
 
 ## Cameras
 
-- Apriltag
+- AprilTag
 
   - Innomaker or Arducam OV9281 UVC USB cameras.
 
 - Object Detection
 
-  - Arducam OV9782 works well with its global shutter,
+  - Arducam OV9782 works well with its global shutter.
   - Most other fixed-focus color UVC USB webcams.
 
 - Driver Camera

@@ -29,7 +29,7 @@ For installation on any other co-processors, we recommend reading the {ref}`adva
 
 PhotonVision can be updated by downloading the latest jar file, copying it onto the processor, and restarting the service.
 
-For example, from another computer, run the following commands. Substitute the correct username for "\[user\]" (e.g. Raspberry Pi uses "pi", Orange Pi uses "orangepi".)
+For example, from another computer, run the following commands. Substitute the correct username for "\[user\]" ( Provided images use username "pi")
 
 ```bash
 $ scp [jar name].jar [user]@photonvision.local:~/

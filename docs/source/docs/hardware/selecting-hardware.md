@@ -23,7 +23,7 @@ When selecting a coprocessor, it is important to consider various factors, parti
 
 ## Choosing a Camera
 
-PhotonVision works with Pi Cameras and most USB Cameras. Other cameras such as webcams, virtual cameras, etc. are not officially supported and may not work. It is important to note that fisheye cameras should only be used as a driver camera / gamepeice detection and not for detecting targets / apriltags.
+PhotonVision works with Pi Cameras and most USB Cameras. Other cameras such as webcams, virtual cameras, etc. are not officially supported and may not work. It is important to note that fisheye cameras should only be used as a driver camera / gamepeice detection and not for detecting targets / AprilTags.
 
 PhotonVision relies on [CSCore](https://github.com/wpilibsuite/allwpilib/tree/main/cscore) to detect and process cameras, so camera support is determined based off compatibility with CScore along with native support for the camera within your OS (ex. [V4L compatibility](https://en.wikipedia.org/wiki/Video4Linux) if using a Linux machine like a Raspberry Pi).
 
