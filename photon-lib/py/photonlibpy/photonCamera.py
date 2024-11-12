@@ -233,12 +233,13 @@ class PhotonCamera:
 
         remoteUUID = self._rawBytesEntry.getTopic().getProperty("message_uuid")
 
-        if remoteUUID is None or len(remoteUUID) == 0:
+        if not remoteUUID:
             wpilib.reportWarning(
                 f"PhotonVision coprocessor at path {self._path} has not reported a message interface UUID - is your coprocessor's camera started?",
                 True,
             )
 
+        assert isinstance(remoteUUID, str)
         # ntcore hands us a JSON string with leading/trailing quotes - remove those
         remoteUUID = remoteUUID.replace('"', "")
 
