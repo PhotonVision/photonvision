@@ -34,7 +34,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.raspi.LibCameraJNILoader;
-import org.photonvision.vision.camera.CameraInfo;
+import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.LibcameraGpuSource;
@@ -47,7 +47,7 @@ public class VisionSourceManager {
     private String ignoredCamerasRegex = "";
 
     private final AtomicBoolean configsLoaded = new AtomicBoolean(false);
-    private final ConcurrentHashMap<String, CameraInfo> cameraInfoMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, PVCameraInfo> cameraInfoMap = new ConcurrentHashMap<>();
 
     private static class SingletonHolder {
         private static final VisionSourceManager INSTANCE = new VisionSourceManager();
@@ -85,7 +85,7 @@ public class VisionSourceManager {
                 .map(VisionModuleManager.getInstance()::addSource)
                 .forEach(module -> {
                     var config = module.visionSource.cameraConfiguration;
-                    cameraInfoMap.put(config.uniqueName, CameraInfo.fromCameraConfig(config));
+                    cameraInfoMap.put(config.uniqueName, PVCameraInfo.fromCameraConfig(config));
                     module.start();
                 });
 
@@ -111,12 +111,12 @@ public class VisionSourceManager {
             return;
         }
 
-        List<CameraInfo> devices = filterAllowedDevices(getConnectedCameras(), Platform.getCurrentPlatform());
+        List<PVCameraInfo> devices = filterAllowedDevices(getConnectedCameras(), Platform.getCurrentPlatform());
 
         List<String> infoNames = cameraInfoMap.values().stream()
-            .map(CameraInfo::name)
+            .map(PVCameraInfo::name)
             .collect(Collectors.toList());
-        List<CameraInfo> filteredDevices = devices.stream()
+        List<PVCameraInfo> filteredDevices = devices.stream()
                 .filter(d -> !infoNames.contains(d.name()))
                 .collect(Collectors.toList());
         for (var device : filteredDevices) {
@@ -125,8 +125,8 @@ public class VisionSourceManager {
         }
     }
 
-    protected List<CameraInfo> getConnectedCameras() {
-        List<CameraInfo> cameraInfos = new ArrayList<>();
+    protected List<PVCameraInfo> getConnectedCameras() {
+        List<PVCameraInfo> cameraInfos = new ArrayList<>();
         cameraInfos.addAll(getConnectedUSBCameras());
         cameraInfos.addAll(getConnectedCSICameras());
         return cameraInfos;
@@ -137,10 +137,10 @@ public class VisionSourceManager {
      *
      * @return a list containing usbcamerainfo.
      */
-    protected List<CameraInfo> getConnectedUSBCameras() {
-        List<CameraInfo> cameraInfos =
+    protected List<PVCameraInfo> getConnectedUSBCameras() {
+        List<PVCameraInfo> cameraInfos =
                 List.of(UsbCamera.enumerateUsbCameras()).stream()
-                        .map(c -> CameraInfo.fromUsbCameraInfo(c))
+                        .map(c -> PVCameraInfo.fromUsbCameraInfo(c))
                         .collect(Collectors.toList());
         return cameraInfos;
     }
@@ -150,12 +150,12 @@ public class VisionSourceManager {
      *
      * @return a list containing csicamerainfo.
      */
-    protected List<CameraInfo> getConnectedCSICameras() {
-        List<CameraInfo> cameraInfos = new ArrayList<CameraInfo>();
+    protected List<PVCameraInfo> getConnectedCSICameras() {
+        List<PVCameraInfo> cameraInfos = new ArrayList<PVCameraInfo>();
         if (LibCameraJNILoader.isSupported())
             for (String path : LibCameraJNI.getCameraNames()) {
                 String name = LibCameraJNI.getSensorModel(path).getFriendlyName();
-                cameraInfos.add(CameraInfo.fromCSICameraInfo(path, name));
+                cameraInfos.add(PVCameraInfo.fromCSICameraInfo(path, name));
             }
         return cameraInfos;
     }
@@ -176,7 +176,7 @@ public class VisionSourceManager {
      * (unique in the set of (loaded configs, unloaded configs, loaded vision modules) at least)
      */
     private CameraConfiguration createConfigForCameras(
-            CameraInfo info,
+            PVCameraInfo info,
             String uniqueName) {
         // create new camera config for all new cameras
         String baseName = info.name();
@@ -184,7 +184,7 @@ public class VisionSourceManager {
         logger.info("Creating a new camera config for camera " + uniqueName);
 
         String[] otherPaths = {};
-        if (info instanceof CameraInfo.PVUsbCameraInfo usbInfo) {
+        if (info instanceof PVCameraInfo.PVUsbCameraInfo usbInfo) {
             otherPaths = usbInfo.otherPaths;
         }
 
@@ -205,8 +205,8 @@ public class VisionSourceManager {
      * @param allDevices
      * @return list of devices with blacklisted or ignore devices removed.
      */
-    private ArrayList<CameraInfo> filterAllowedDevices(List<CameraInfo> allDevices, Platform platform) {
-        ArrayList<CameraInfo> filteredDevices = new ArrayList<>();
+    private ArrayList<PVCameraInfo> filterAllowedDevices(List<PVCameraInfo> allDevices, Platform platform) {
+        ArrayList<PVCameraInfo> filteredDevices = new ArrayList<>();
         for (var device : allDevices) {
             boolean valid = false;
             if (deviceBlacklist.contains(device.name())) {
@@ -214,7 +214,7 @@ public class VisionSourceManager {
                         "Skipping blacklisted device: \"" + device.name() + "\" at \"" + device.path() + "\"");
             } else if (device.name().matches(ignoredCamerasRegex)) {
                 logger.trace("Skipping ignored device: \"" + device.name() + "\" at \"" + device.path());
-            } else if (device instanceof CameraInfo.PVUsbCameraInfo usbDevice) {
+            } else if (device instanceof PVCameraInfo.PVUsbCameraInfo usbDevice) {
                 if (usbDevice.otherPaths.length == 0
                     && platform.osType == OSType.LINUX
                     && device.type() == CameraType.UsbCamera) {

@@ -23,7 +23,7 @@ import java.util.Arrays;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.hardware.Platform;
 
-public sealed interface CameraInfo {
+public sealed interface PVCameraInfo {
     /**
      * @return The path of the camera. This is the path that is used to open the camera.
      */
@@ -55,7 +55,7 @@ public sealed interface CameraInfo {
 
     CameraType type();
 
-    public static final class PVUsbCameraInfo extends UsbCameraInfo implements CameraInfo {
+    public static final class PVUsbCameraInfo extends UsbCameraInfo implements PVCameraInfo {
 
         private PVUsbCameraInfo(
                 int dev, String path, String name, String[] otherPaths, int vendorId, int productId) {
@@ -116,7 +116,7 @@ public sealed interface CameraInfo {
         }
     }
 
-    public static final class PVCSICameraInfo implements CameraInfo {
+    public static final class PVCSICameraInfo implements PVCameraInfo {
         public final String path;
         public final String baseName;
 
@@ -164,7 +164,7 @@ public sealed interface CameraInfo {
         }
     }
 
-    public static final class PVReconstructedCameraInfo implements CameraInfo {
+    public static final class PVReconstructedCameraInfo implements PVCameraInfo {
         private final String path;
         private final String name;
         private final String[] otherPaths;
@@ -203,20 +203,20 @@ public sealed interface CameraInfo {
         }
     }
 
-    public static CameraInfo fromUsbCameraInfo(UsbCameraInfo info) {
+    public static PVCameraInfo fromUsbCameraInfo(UsbCameraInfo info) {
         return new PVUsbCameraInfo(info);
     }
 
-    public static CameraInfo fromUsbCameraInfo(
+    public static PVCameraInfo fromUsbCameraInfo(
         int dev, String path, String name, String[] otherPaths, int vendorId, int productId) {
         return new PVUsbCameraInfo(dev, path, name, otherPaths, vendorId, productId);
     }
 
-    public static CameraInfo fromCSICameraInfo(String path, String baseName) {
+    public static PVCameraInfo fromCSICameraInfo(String path, String baseName) {
         return new PVCSICameraInfo(path, baseName);
     }
 
-    public static CameraInfo fromCameraConfig(CameraConfiguration config) {
+    public static PVCameraInfo fromCameraConfig(CameraConfiguration config) {
         return new PVReconstructedCameraInfo(config.path, config.baseName, config.otherPaths, config.cameraType);
     }
 }

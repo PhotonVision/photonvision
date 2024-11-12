@@ -28,7 +28,7 @@ import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.vision.camera.CameraInfo;
+import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.camera.CameraType;
 
 import edu.wpi.first.cscore.UsbCameraInfo;
