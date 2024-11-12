@@ -10,8 +10,12 @@ If you’re not using cameras in 3D mode, calibration is optional, but it can st
 
 - Downloaded from our [demo site](https://demo.photonvision.org/#/cameras), or directly from your coprocessors cameras tab.
 - Use the Charuco calibration board:
-  - Layout: 8x8 grid of 1-inch squares.
-  - Markers: 4x4 dictionary with 0.75-inch markers.
+  - Board Type: Charuco
+  - Tag Family: 4x4
+  - Pattern Spacing: 1.00in
+  - Marker Size: 0.75in
+  - Board Height : 8
+  - Board Width : 8
 
 ## Prepare the Calibration Target
 
