@@ -3,8 +3,6 @@ from typing import TYPE_CHECKING, ClassVar
 
 from wpimath.geometry import Transform3d
 
-from ..packet import Packet
-
 if TYPE_CHECKING:
     from .. import generated
 
