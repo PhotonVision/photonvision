@@ -41,7 +41,7 @@
       "artifactId": "photontargeting-jni",
       "version": "${photon_version}",
       "skipInvalidPlatforms": true,
-      "isJar": false,
+      "isJar": true,
       "validPlatforms": [
         "windowsx86-64",
         "linuxathena",
