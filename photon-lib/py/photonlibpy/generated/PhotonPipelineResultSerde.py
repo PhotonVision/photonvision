@@ -26,10 +26,10 @@ from ..packet import Packet
 from ..targeting import *  # noqa
 
 if TYPE_CHECKING:
-    from ..targeting import PhotonPipelineResult  # noqa
-    from ..targeting import PhotonPipelineMetadata  # noqa
-    from ..targeting import PhotonTrackedTarget  # noqa
-    from ..targeting import MultiTargetPNPResult  # noqa
+    from ..targeting import MultiTargetPNPResult
+    from ..targeting import PhotonPipelineMetadata
+    from ..targeting import PhotonPipelineResult
+    from ..targeting import PhotonTrackedTarget
 
 
 class PhotonPipelineResultSerde:

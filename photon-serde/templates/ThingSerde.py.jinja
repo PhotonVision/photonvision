@@ -26,10 +26,14 @@ from ..packet import Packet
 from ..targeting import *  # noqa
 
 if TYPE_CHECKING:
-    from ..targeting import {{ name }}  # noqa
-{%- for field in fields -%}
-{%- if not field.type | is_shimmed and not field.type | is_intrinsic %}
-    from ..targeting import {{ field.type }}  # noqa
+{%- set ns = namespace(types=[]) -%}
+{%- for field in fields|unique(attribute="type")-%}
+    {%- set _ = ns.types.append(field.type) -%}
+{%- endfor -%}
+{% set _ = ns.types.append(name) -%}
+{%- for type in ns.types|sort%}
+{%- if not type | is_shimmed and not type | is_intrinsic %}
+    from ..targeting import {{ type }}
 {%- endif %}
 {%- endfor%}
 

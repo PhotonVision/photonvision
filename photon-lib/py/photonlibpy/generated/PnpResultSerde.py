@@ -26,7 +26,7 @@ from ..packet import Packet
 from ..targeting import *  # noqa
 
 if TYPE_CHECKING:
-    from ..targeting import PnpResult  # noqa
+    from ..targeting import PnpResult
 
 
 class PnpResultSerde:

@@ -26,9 +26,8 @@ from ..packet import Packet
 from ..targeting import *  # noqa
 
 if TYPE_CHECKING:
-    from ..targeting import PhotonTrackedTarget  # noqa
-    from ..targeting import TargetCorner  # noqa
-    from ..targeting import TargetCorner  # noqa
+    from ..targeting import PhotonTrackedTarget
+    from ..targeting import TargetCorner
 
 
 class PhotonTrackedTargetSerde:

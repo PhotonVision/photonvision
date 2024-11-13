@@ -26,8 +26,8 @@ from ..packet import Packet
 from ..targeting import *  # noqa
 
 if TYPE_CHECKING:
-    from ..targeting import MultiTargetPNPResult  # noqa
-    from ..targeting import PnpResult  # noqa
+    from ..targeting import MultiTargetPNPResult
+    from ..targeting import PnpResult
 
 
 class MultiTargetPNPResultSerde:
