@@ -35,7 +35,7 @@ class TargetCornerSerde:
     MESSAGE_FORMAT = "float64 x;float64 y;"
 
     @staticmethod
-    def pack(value: 'TargetCorner' ) -> 'Packet':
+    def pack(value: "TargetCorner") -> "Packet":
         ret = Packet()
 
         # x is of intrinsic type float64
@@ -45,9 +45,8 @@ class TargetCornerSerde:
         ret.encodeDouble(value.y)
         return ret
 
-
     @staticmethod
-    def unpack(packet: 'Packet') -> 'TargetCorner':
+    def unpack(packet: "Packet") -> "TargetCorner":
         ret = TargetCorner()
 
         # x is of intrinsic type float64

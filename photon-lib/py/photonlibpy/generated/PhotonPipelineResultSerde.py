@@ -38,11 +38,13 @@ class PhotonPipelineResultSerde:
     MESSAGE_FORMAT = "PhotonPipelineMetadata:ac0a45f686457856fb30af77699ea356 metadata;PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 targets[?];optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b multitagResult;"
 
     @staticmethod
-    def pack(value: 'PhotonPipelineResult' ) -> 'Packet':
+    def pack(value: "PhotonPipelineResult") -> "Packet":
         ret = Packet()
 
         # metadata is of non-intrinsic type PhotonPipelineMetadata
-        ret.encodeBytes(PhotonPipelineMetadata.photonStruct.pack(value.metadata).getData())
+        ret.encodeBytes(
+            PhotonPipelineMetadata.photonStruct.pack(value.metadata).getData()
+        )
 
         # targets is a custom VLA!
         ret.encodeList(value.targets, PhotonTrackedTarget.photonStruct)
@@ -51,9 +53,8 @@ class PhotonPipelineResultSerde:
         ret.encodeOptional(value.multitagResult, MultiTargetPNPResult.photonStruct)
         return ret
 
-
     @staticmethod
-    def unpack(packet: 'Packet') -> 'PhotonPipelineResult':
+    def unpack(packet: "Packet") -> "PhotonPipelineResult":
         ret = PhotonPipelineResult()
 
         # metadata is of non-intrinsic type PhotonPipelineMetadata

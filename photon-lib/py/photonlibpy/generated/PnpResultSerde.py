@@ -35,7 +35,7 @@ class PnpResultSerde:
     MESSAGE_FORMAT = "Transform3d best;Transform3d alt;float64 bestReprojErr;float64 altReprojErr;float64 ambiguity;"
 
     @staticmethod
-    def pack(value: 'PnpResult' ) -> 'Packet':
+    def pack(value: "PnpResult") -> "Packet":
         ret = Packet()
 
         ret.encodeTransform(value.best)
@@ -52,9 +52,8 @@ class PnpResultSerde:
         ret.encodeDouble(value.ambiguity)
         return ret
 
-
     @staticmethod
-    def unpack(packet: 'Packet') -> 'PnpResult':
+    def unpack(packet: "Packet") -> "PnpResult":
         ret = PnpResult()
 
         ret.best = packet.decodeTransform()
