@@ -6,9 +6,10 @@ import { inject } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 
 const formatUrl = (port) => `http://${inject("backendHostname")}:${port}/stream.mjpg`;
+const host = inject<string>("backendHost");
 const activateCamera = (camera: string) => {
-  const url = new URL(`http://${inject("backendHostname")}/api/utils/assignCamera`);
-  url.searchParams.set("camera", camera);
+  const url = new URL(`http://${host}/api/utils/assignCamera`);
+  url.searchParams.set("uniqueName", camera);
 
   fetch(url.toString(), {
     method: "POST",

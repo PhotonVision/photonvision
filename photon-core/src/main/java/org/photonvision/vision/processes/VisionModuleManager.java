@@ -73,10 +73,10 @@ public class VisionModuleManager {
 
         // Big list, which should contain every vision source (currently loaded plus the new ones being
         // added)
-        List<Integer> bigList = this.getModules()
-                .stream()
-                .map(it -> it.visionSource.cameraConfiguration.streamIndex)
-                .collect(Collectors.toList());
+        List<Integer> bigList =
+                this.getModules().stream()
+                        .map(it -> it.visionSource.cameraConfiguration.streamIndex)
+                        .collect(Collectors.toList());
 
         int idx = 0;
         while (bigList.contains(idx)) {

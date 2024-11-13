@@ -36,12 +36,12 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.raspi.LibCameraJNILoader;
-import org.photonvision.vision.camera.PVCameraInfo;
-import org.photonvision.vision.camera.UniqueCameraSummary;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.LibcameraGpuSource;
+import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.camera.USBCameras.USBCameraSource;
+import org.photonvision.vision.camera.UniqueCameraSummary;
 
 public class VisionSourceManager {
     private static final Logger logger = new Logger(VisionSourceManager.class, LogGroup.Camera);
@@ -86,39 +86,44 @@ public class VisionSourceManager {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .map(VisionModuleManager.getInstance()::addSource)
-                .forEach(module -> {
-                    var config = module.visionSource.cameraConfiguration;
-                    cameraInfoMap.put(config.uniqueName, PVCameraInfo.fromCameraConfig(config));
-                    module.start();
-                });
+                .forEach(
+                        module -> {
+                            var config = module.visionSource.cameraConfiguration;
+                            cameraInfoMap.put(config.uniqueName, PVCameraInfo.fromCameraConfig(config));
+                            module.start();
+                        });
 
         logger.info("Finished registering loaded camera configs");
     }
 
     public Optional<CameraConfiguration> configureNewVisionSource(String uniqueName) {
-        var cfg = Optional.ofNullable(cameraInfoMap.get(uniqueName))
-            .filter(u -> VisionModuleManager.getInstance()
-                .getModules()
-                .stream()
-                .anyMatch(module -> module.uniqueName().equals(uniqueName))
-            )
-            .map(info -> createConfigForCameras(info, uniqueName));
+        var cfg =
+                Optional.ofNullable(cameraInfoMap.get(uniqueName))
+                        .filter(
+                                u ->
+                                        VisionModuleManager.getInstance().getModules().stream()
+                                                .noneMatch(module -> module.uniqueName().equals(uniqueName)))
+                        .map(info -> createConfigForCameras(info, uniqueName));
         cfg.flatMap(VisionSourceManager::loadVisionSourceFromCamConfig)
-            .map(VisionModuleManager.getInstance()::addSource)
-            .ifPresent(VisionModule::start);
+                .map(VisionModuleManager.getInstance()::addSource)
+                .ifPresent(
+                        it -> {
+                            it.start();
+                            it.saveAndBroadcastAll();
+                        });
 
         return cfg;
     }
 
     protected List<UniqueCameraSummary> getUniqueUnusedCameras() {
-        List<String> activeUniqueNames =  VisionModuleManager.getInstance().getModules()
-            .stream()
-            .map(module -> module.uniqueName())
-            .collect(Collectors.toList());
+        List<String> activeUniqueNames =
+                VisionModuleManager.getInstance().getModules().stream()
+                        .map(module -> module.uniqueName())
+                        .collect(Collectors.toList());
         return cameraInfoMap.entrySet().stream()
-            .filter(entry -> !activeUniqueNames.contains(entry.getKey()))
-            .map(entry -> new UniqueCameraSummary(entry.getKey(), entry.getValue()))
-            .collect(Collectors.toList());
+                .filter(entry -> !activeUniqueNames.contains(entry.getKey()))
+                .map(entry -> new UniqueCameraSummary(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
     }
 
     protected void discoverNewDevices() {
@@ -129,14 +134,17 @@ public class VisionSourceManager {
 
         int prevSize = cameraInfoMap.size();
 
-        List<PVCameraInfo> devices = filterAllowedDevices(getConnectedCameras(), Platform.getCurrentPlatform());
+        List<PVCameraInfo> devices =
+                filterAllowedDevices(getConnectedCameras(), Platform.getCurrentPlatform());
 
-        List<String> infoNames = cameraInfoMap.values().stream()
-            .map(ci -> ci.uniquePath() + String.join(",", ci.otherPaths()))
-            .collect(Collectors.toList());
-        List<PVCameraInfo> filteredDevices = devices.stream()
-                .filter(d -> !infoNames.contains(d.uniquePath() + String.join(",", d.otherPaths())))
-                .collect(Collectors.toList());
+        List<String> infoNames =
+                cameraInfoMap.values().stream()
+                        .map(ci -> ci.uniquePath() + String.join(",", ci.otherPaths()))
+                        .collect(Collectors.toList());
+        List<PVCameraInfo> filteredDevices =
+                devices.stream()
+                        .filter(d -> !infoNames.contains(d.uniquePath() + String.join(",", d.otherPaths())))
+                        .collect(Collectors.toList());
         for (var device : filteredDevices) {
             var uniqueName = uniqueName(device.name(), cameraInfoMap.keySet());
             cameraInfoMap.put(uniqueName, device);
@@ -144,10 +152,11 @@ public class VisionSourceManager {
 
         if (prevSize != cameraInfoMap.size()) {
             logger.info("Discovered new devices: " + cameraInfoMap.size());
-
-            DataChangeService.getInstance()
-                .publishEvent(OutgoingUIEvent.wrappedOf("discoveredCameras", getUniqueUnusedCameras()));
         }
+
+        // hack - always publish
+        DataChangeService.getInstance()
+                .publishEvent(OutgoingUIEvent.wrappedOf("discoveredCameras", getUniqueUnusedCameras()));
     }
 
     protected List<PVCameraInfo> getConnectedCameras() {
@@ -200,9 +209,7 @@ public class VisionSourceManager {
      * Create new {@link CameraConfiguration}s for unmatched cameras, and assign them a unique name
      * (unique in the set of (loaded configs, unloaded configs, loaded vision modules) at least)
      */
-    private CameraConfiguration createConfigForCameras(
-            PVCameraInfo info,
-            String uniqueName) {
+    private static CameraConfiguration createConfigForCameras(PVCameraInfo info, String uniqueName) {
         // create new camera config for all new cameras
         String baseName = info.name();
 
@@ -213,7 +220,8 @@ public class VisionSourceManager {
             otherPaths = usbInfo.otherPaths;
         }
 
-        CameraConfiguration configuration = new CameraConfiguration(baseName, uniqueName, uniqueName, info.path(), otherPaths);
+        CameraConfiguration configuration =
+                new CameraConfiguration(baseName, uniqueName, uniqueName, info.path(), otherPaths);
 
         configuration.cameraType = info.type();
 
@@ -230,7 +238,8 @@ public class VisionSourceManager {
      * @param allDevices
      * @return list of devices with blacklisted or ignore devices removed.
      */
-    private ArrayList<PVCameraInfo> filterAllowedDevices(List<PVCameraInfo> allDevices, Platform platform) {
+    private ArrayList<PVCameraInfo> filterAllowedDevices(
+            List<PVCameraInfo> allDevices, Platform platform) {
         ArrayList<PVCameraInfo> filteredDevices = new ArrayList<>();
         for (var device : allDevices) {
             boolean valid = false;
@@ -241,15 +250,15 @@ public class VisionSourceManager {
                 logger.trace("Skipping ignored device: \"" + device.name() + "\" at \"" + device.path());
             } else if (device instanceof PVCameraInfo.PVUsbCameraInfo usbDevice) {
                 if (usbDevice.otherPaths.length == 0
-                    && platform.osType == OSType.LINUX
-                    && device.type() == CameraType.UsbCamera) {
+                        && platform.osType == OSType.LINUX
+                        && device.type() == CameraType.UsbCamera) {
                     logger.trace(
                             "Skipping device with no other paths: \""
                                     + device.name()
                                     + "\" at \""
                                     + device.path());
                 } else if (Arrays.stream(usbDevice.otherPaths).anyMatch(it -> it.contains("csi-video"))
-                            || usbDevice.name().equals("unicam")) {
+                        || usbDevice.name().equals("unicam")) {
                     logger.trace(
                             "Skipping CSI device from CSCore: \""
                                     + device.name()
@@ -264,13 +273,15 @@ public class VisionSourceManager {
             }
             if (valid) {
                 filteredDevices.add(device);
-                logger.trace("Adding local video device - \"" + device.name() + "\" at \"" + device.path() + "\"");
+                logger.trace(
+                        "Adding local video device - \"" + device.name() + "\" at \"" + device.path() + "\"");
             }
         }
         return filteredDevices;
     }
 
-    private static Optional<VisionSource> loadVisionSourceFromCamConfig(CameraConfiguration configuration) {
+    private static Optional<VisionSource> loadVisionSourceFromCamConfig(
+            CameraConfiguration configuration) {
         VisionSource source = null;
         boolean is_pi = Platform.isRaspberryPi();
 

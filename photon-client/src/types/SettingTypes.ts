@@ -232,6 +232,8 @@ export interface CameraSettingsChangeRequest {
 }
 
 export const PlaceholderCameraSettings: CameraSettings = {
+  cameraPath: "/dev/null",
+
   nickname: "Placeholder Camera",
   uniqueName: "Placeholder Name",
   fov: {

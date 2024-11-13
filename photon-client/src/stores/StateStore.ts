@@ -24,7 +24,7 @@ interface StateStore {
   logMessages: LogMessage[];
   currentCameraIndex: number;
 
-  backendResults: Record<string, PipelineResult>;
+  backendResults: Record<number, PipelineResult>;
   multitagResultBuffer: Record<string, MultitagResult[]>;
 
   colorPickingMode: boolean;
@@ -62,7 +62,7 @@ export const useStateStore = defineStore("state", {
       currentCameraIndex: 0,
 
       backendResults: {
-        "foobar": {
+        0: {
           classNames: [],
           fps: 1,
           latency: 2,

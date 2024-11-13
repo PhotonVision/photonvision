@@ -184,8 +184,8 @@ public class Main {
 
             ConfigManager.getInstance().unloadCameraConfigs();
             collectedSources.stream()
-                .map(VisionModuleManager.getInstance()::addSource)
-                .forEach(VisionModule::start);
+                    .map(VisionModuleManager.getInstance()::addSource)
+                    .forEach(VisionModule::start);
             ConfigManager.getInstance().addCameraConfigurations(collectedSources);
         } catch (IOException e) {
             logger.error("Path does not exist!");
@@ -348,8 +348,8 @@ public class Main {
 
         ConfigManager.getInstance().unloadCameraConfigs();
         collectedSources.stream()
-            .map(VisionModuleManager.getInstance()::addSource)
-            .forEach(VisionModule::start);
+                .map(VisionModuleManager.getInstance()::addSource)
+                .forEach(VisionModule::start);
         ConfigManager.getInstance().addCameraConfigurations(collectedSources);
     }
 

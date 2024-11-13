@@ -19,7 +19,6 @@ package org.photonvision.vision.camera;
 
 import edu.wpi.first.cscore.UsbCameraInfo;
 import java.util.Arrays;
-
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.hardware.Platform;
 
@@ -42,9 +41,8 @@ public sealed interface PVCameraInfo {
     }
 
     /**
-     * If the camera is a USB camera this method returns
-     * a unique descriptor of the USB port this camera is attached to. EG
-     * "/dev/v4l/by-path/platform-fc800000.usb-usb-0:1.3:1.0-video-index0".
+     * If the camera is a USB camera this method returns a unique descriptor of the USB port this
+     * camera is attached to. EG "/dev/v4l/by-path/platform-fc800000.usb-usb-0:1.3:1.0-video-index0".
      * If the camera is a CSI camera this method returns the path of the camera.
      *
      * @return The unique path of the camera
@@ -56,7 +54,6 @@ public sealed interface PVCameraInfo {
     CameraType type();
 
     public static final class PVUsbCameraInfo extends UsbCameraInfo implements PVCameraInfo {
-
         private PVUsbCameraInfo(
                 int dev, String path, String name, String[] otherPaths, int vendorId, int productId) {
             super(dev, path, name, otherPaths, vendorId, productId);
@@ -78,7 +75,9 @@ public sealed interface PVCameraInfo {
 
         @Override
         public String uniquePath() {
-            return Arrays.stream(super.otherPaths).filter(path -> path.contains("/by-path/")).findFirst()
+            return Arrays.stream(super.otherPaths)
+                    .filter(path -> path.contains("/by-path/"))
+                    .findFirst()
                     .orElse(path());
         }
 
@@ -111,7 +110,8 @@ public sealed interface PVCameraInfo {
             if (vendorId != other.vendorId) return false;
             if (productId != other.productId) return false;
 
-            // Don't trust super.equals, as it compares references. Should PR this to allwpilib at some point
+            // Don't trust super.equals, as it compares references. Should PR this to allwpilib at some
+            // point
             return true;
         }
     }
@@ -170,7 +170,8 @@ public sealed interface PVCameraInfo {
         private final String[] otherPaths;
         private final CameraType type;
 
-        public PVReconstructedCameraInfo(String path, String name, String[] otherPaths, CameraType type) {
+        public PVReconstructedCameraInfo(
+                String path, String name, String[] otherPaths, CameraType type) {
             this.path = path;
             this.name = name;
             this.otherPaths = otherPaths;
@@ -208,7 +209,7 @@ public sealed interface PVCameraInfo {
     }
 
     public static PVCameraInfo fromUsbCameraInfo(
-        int dev, String path, String name, String[] otherPaths, int vendorId, int productId) {
+            int dev, String path, String name, String[] otherPaths, int vendorId, int productId) {
         return new PVUsbCameraInfo(dev, path, name, otherPaths, vendorId, productId);
     }
 
@@ -217,6 +218,7 @@ public sealed interface PVCameraInfo {
     }
 
     public static PVCameraInfo fromCameraConfig(CameraConfiguration config) {
-        return new PVReconstructedCameraInfo(config.path, config.baseName, config.otherPaths, config.cameraType);
+        return new PVReconstructedCameraInfo(
+                config.path, config.baseName, config.otherPaths, config.cameraType);
     }
 }
