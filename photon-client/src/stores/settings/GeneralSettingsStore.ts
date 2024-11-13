@@ -4,7 +4,8 @@ import type {
   GeneralSettings,
   LightingSettings,
   MetricData,
-  NetworkSettings
+  NetworkSettings,
+  VisionSourceManagerState
 } from "@/types/SettingTypes";
 import { NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
@@ -17,7 +18,7 @@ interface GeneralSettingsStore {
   network: NetworkSettings;
   lighting: LightingSettings;
   metrics: MetricData;
-  currentFieldLayout: AprilTagFieldLayout;
+  visionSourceManagerState: VisionSourceManagerState;
 }
 
 export const useSettingsStore = defineStore("settings", {
@@ -71,6 +72,20 @@ export const useSettingsStore = defineStore("settings", {
         width: 8.2296
       },
       tags: []
+    },
+    visionSourceManagerState: {
+      knownCameras: [
+        {
+          cameraType: "USBCamera",
+          dev: 1,
+          name: "foobar",
+          otherPaths: ["asdf", "bfdsa"],
+          path: "/some/path",
+          vendorId: 1,
+          productId: 2
+        }
+      ],
+      unmatchedLoadedConfigs: []
     }
   }),
   getters: {
@@ -112,6 +127,8 @@ export const useSettingsStore = defineStore("settings", {
       this.lighting = data.lighting;
       this.network = data.networkSettings;
       this.currentFieldLayout = data.atfl;
+
+      this.visionSourceManagerState = data.visionSourceManagerState;
     },
     updateGeneralSettings(payload: Required<ConfigurableNetworkSettings>) {
       return axios.post("/settings/general", payload);

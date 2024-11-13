@@ -284,3 +284,11 @@ Then, run the examples:
 > cd photonlib-python-examples
 > run.bat <example name>
 ```
+
+#### Downloading Pipeline Artifacts
+
+Using the [GitHub CLI](https://cli.github.com/), we can download artifacts from pipelines by run ID and name:
+
+```
+~/photonvision$ gh run download 11759699679 -n jar-Linux
+```
