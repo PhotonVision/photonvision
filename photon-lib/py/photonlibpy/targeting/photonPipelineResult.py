@@ -5,7 +5,8 @@ from .multiTargetPNPResult import MultiTargetPNPResult
 from .photonTrackedTarget import PhotonTrackedTarget
 
 if TYPE_CHECKING:
-    from .. import generated
+    from ..generated.PhotonPipelineMetadataSerde import PhotonPipelineMetadataSerde
+    from ..generated.PhotonPipelineResultSerde import PhotonPipelineResultSerde
 
 
 @dataclass
@@ -20,7 +21,7 @@ class PhotonPipelineMetadata:
 
     timeSinceLastPong: int = -1
 
-    photonStruct: ClassVar["generated.PhotonPipelineMetadataSerde"]
+    photonStruct: ClassVar["PhotonPipelineMetadataSerde"]
 
 
 @dataclass
@@ -69,4 +70,4 @@ class PhotonPipelineResult:
             return None
         return self.getTargets()[0]
 
-    photonStruct: ClassVar["generated.PhotonPipelineResultSerde"]
+    photonStruct: ClassVar["PhotonPipelineResultSerde"]

@@ -41,7 +41,9 @@ class PhotonCameraSim:
         self.videoSimRawEnabled: bool = False
         self.videoSimWireframeEnabled: bool = False
         self.videoSimWireframeResolution: float = 0.1
-        self.videoSimProcEnabled: bool = True
+        self.videoSimProcEnabled: bool = (
+            False  # TODO switch this back to default True when the functionality is enabled
+        )
         self.heartbeatCounter: int = 0
         self.nextNtEntryTime = int(wpilib.Timer.getFPGATimestamp() * 1e6)
         self.tagLayout = AprilTagFieldLayout.loadField(AprilTagField.k2024Crescendo)
@@ -191,19 +193,19 @@ class PhotonCameraSim:
         self.maxSightRange = range
 
     def enableRawStream(self, enabled: bool) -> None:
+        self.videoSimRawEnabled = enabled
         raise Exception("Raw stream not implemented")
-        # self.videoSimRawEnabled = enabled
 
     def enableDrawWireframe(self, enabled: bool) -> None:
+        self.videoSimWireframeEnabled = enabled
         raise Exception("Wireframe not implemented")
-        # self.videoSimWireframeEnabled = enabled
 
     def setWireframeResolution(self, resolution: float) -> None:
         self.videoSimWireframeResolution = resolution
 
     def enableProcessedStream(self, enabled: bool) -> None:
+        self.videoSimProcEnabled = enabled
         raise Exception("Processed stream not implemented")
-        # self.videoSimProcEnabled = enabled
 
     def process(
         self, latency: seconds, cameraPose: Pose3d, targets: list[VisionTargetSim]
@@ -321,13 +323,13 @@ class PhotonCameraSim:
             )
 
         # Video streams disabled for now
-        if self.enableRawStream:
+        if self.videoSimRawEnabled:
             # VideoSimUtil::UpdateVideoProp(videoSimRaw, prop);
             # cv::Size videoFrameSize{prop.GetResWidth(), prop.GetResHeight()};
             # cv::Mat blankFrame = cv::Mat::zeros(videoFrameSize, CV_8UC1);
             # blankFrame.assignTo(videoSimFrameRaw);
             pass
-        if self.enableProcessedStream:
+        if self.videoSimProcEnabled:
             # VideoSimUtil::UpdateVideoProp(videoSimProcessed, prop);
             pass
 

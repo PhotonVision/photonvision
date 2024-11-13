@@ -128,7 +128,6 @@ class OpenCVHelp:
         alt: Transform3d | None = None
         reprojectionError: cv.typing.MatLike | None = None
         best: Transform3d = Transform3d()
-        alt: Transform3d | None = None
 
         for tries in range(2):
             retval, rvecs, tvecs, reprojectionError = cv.solvePnPGeneric(

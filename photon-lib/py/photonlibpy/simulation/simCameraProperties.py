@@ -49,6 +49,8 @@ class SimCameraProperties:
             raise Exception("not a correct function sig")
 
         if has_fov_args:
+            # really convince python we are doing the right thing
+            assert fovDiag is not None
             if fovDiag.degrees() < 1.0 or fovDiag.degrees() > 179.0:
                 fovDiag = Rotation2d.fromDegrees(
                     max(min(fovDiag.degrees(), 179.0), 1.0)

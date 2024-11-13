@@ -228,8 +228,8 @@ class VisionSystemSim:
 
             camResult = camSim.process(latency, lateCameraPose, allTargets)
             camSim.submitProcessedFrame(camResult, timestampNt)
-            for target in camResult.getTargets():
-                trf = target.getBestCameraToTarget()
+            for tgt in camResult.getTargets():
+                trf = tgt.getBestCameraToTarget()
                 if trf == Transform3d():
                     continue
 

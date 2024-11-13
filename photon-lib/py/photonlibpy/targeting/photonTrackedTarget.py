@@ -7,7 +7,7 @@ from ..packet import Packet
 from .TargetCorner import TargetCorner
 
 if TYPE_CHECKING:
-    from .. import generated
+    from ..generated.PhotonTrackedTargetSerde import PhotonTrackedTargetSerde
 
 
 @dataclass
@@ -63,4 +63,4 @@ class PhotonTrackedTarget:
             retList.append(TargetCorner(cx, cy))
         return retList
 
-    photonStruct: ClassVar["generated.PhotonTrackedTargetSerde"]
+    photonStruct: ClassVar["PhotonTrackedTargetSerde"]
