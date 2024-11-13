@@ -54,7 +54,9 @@ jobs:
         uses: liskin/gh-problem-matcher-wrap@v3
         with:
           linters: mypy
-          run: mypy --show-column-numbers --exclude=build photon-lib
+          run: |
+            cd photon-lib/py
+            mypy --show-column-numbers --exclude=build .
 
 
       - name: Upload artifacts
