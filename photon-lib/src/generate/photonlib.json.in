@@ -35,19 +35,6 @@
         "linuxx86-64",
         "osxuniversal"
       ]
-    },
-    {
-      "groupId": "org.photonvision",
-      "artifactId": "photontargeting-jni",
-      "version": "${photon_version}",
-      "skipInvalidPlatforms": true,
-      "isJar": true,
-      "validPlatforms": [
-        "windowsx86-64",
-        "linuxathena",
-        "linuxx86-64",
-        "osxuniversal"
-      ]
     }
   ],
   "cppDependencies": [
