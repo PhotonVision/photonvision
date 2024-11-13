@@ -29,7 +29,8 @@ public class PhotonTargetingJniLoader {
     public static boolean isWorking = false;
 
     public static boolean load() throws IOException, UnsatisfiedLinkError {
-        if (isWorking) return true;
+        if (isWorking)
+            return true;
         isWorking = load_();
         return isWorking;
     }
@@ -43,7 +44,7 @@ public class PhotonTargetingJniLoader {
         for (var libraryName : List.of("photontargeting", "photontargetingJNI")) {
             try {
                 RuntimeLoader.loadLibrary(libraryName);
-                return true;
+                continue;
             } catch (Exception e) {
                 System.out.println("Direct library load failed; falling back to extraction");
             }
