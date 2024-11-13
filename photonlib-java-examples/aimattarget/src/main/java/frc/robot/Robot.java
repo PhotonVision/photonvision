@@ -35,7 +35,6 @@ import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.drivetrain.SwerveDrive;
 import org.photonvision.PhotonCamera;
-import org.photonvision.timesync.TimeSyncSingleton;
 
 public class Robot extends TimedRobot {
     private SwerveDrive drivetrain;
@@ -51,9 +50,6 @@ public class Robot extends TimedRobot {
         drivetrain = new SwerveDrive();
         camera = new PhotonCamera(kCameraName);
 
-        if (!TimeSyncSingleton.load()) {
-            System.exit(-111);
-        }
         visionSim = new VisionSim(camera);
 
         controller = new XboxController(0);

@@ -29,8 +29,7 @@ public class PhotonTargetingJniLoader {
     public static boolean isWorking = false;
 
     public static boolean load() throws IOException, UnsatisfiedLinkError {
-        if (isWorking)
-            return true;
+        if (isWorking) return true;
         isWorking = load_();
         return isWorking;
     }
