@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 {% set _ = ns.types.append(name) -%}
 {%- for type in ns.types|sort%}
 {%- if not type | is_shimmed and not type | is_intrinsic %}
-    from ..targeting import {{ type }}
+    from ..targeting import {{ type }}  # noqa
 {%- endif %}
 {%- endfor%}
 

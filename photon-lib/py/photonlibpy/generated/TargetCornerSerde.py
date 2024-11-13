@@ -26,7 +26,7 @@ from ..packet import Packet
 from ..targeting import *  # noqa
 
 if TYPE_CHECKING:
-    from ..targeting import TargetCorner
+    from ..targeting import TargetCorner  # noqa
 
 
 class TargetCornerSerde:
@@ -35,7 +35,7 @@ class TargetCornerSerde:
     MESSAGE_FORMAT = "float64 x;float64 y;"
 
     @staticmethod
-    def pack(value: "TargetCorner") -> "Packet":
+    def pack(value: 'TargetCorner' ) -> 'Packet':
         ret = Packet()
 
         # x is of intrinsic type float64
@@ -45,8 +45,9 @@ class TargetCornerSerde:
         ret.encodeDouble(value.y)
         return ret
 
+
     @staticmethod
-    def unpack(packet: "Packet") -> "TargetCorner":
+    def unpack(packet: 'Packet') -> 'TargetCorner':
         ret = TargetCorner()
 
         # x is of intrinsic type float64

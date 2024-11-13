@@ -26,7 +26,7 @@ from ..packet import Packet
 from ..targeting import *  # noqa
 
 if TYPE_CHECKING:
-    from ..targeting import PhotonPipelineMetadata
+    from ..targeting import PhotonPipelineMetadata  # noqa
 
 
 class PhotonPipelineMetadataSerde:
@@ -35,7 +35,7 @@ class PhotonPipelineMetadataSerde:
     MESSAGE_FORMAT = "int64 sequenceID;int64 captureTimestampMicros;int64 publishTimestampMicros;int64 timeSinceLastPong;"
 
     @staticmethod
-    def pack(value: "PhotonPipelineMetadata") -> "Packet":
+    def pack(value: 'PhotonPipelineMetadata' ) -> 'Packet':
         ret = Packet()
 
         # sequenceID is of intrinsic type int64
@@ -51,8 +51,9 @@ class PhotonPipelineMetadataSerde:
         ret.encodeLong(value.timeSinceLastPong)
         return ret
 
+
     @staticmethod
-    def unpack(packet: "Packet") -> "PhotonPipelineMetadata":
+    def unpack(packet: 'Packet') -> 'PhotonPipelineMetadata':
         ret = PhotonPipelineMetadata()
 
         # sequenceID is of intrinsic type int64

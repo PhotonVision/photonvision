@@ -26,8 +26,8 @@ from ..packet import Packet
 from ..targeting import *  # noqa
 
 if TYPE_CHECKING:
-    from ..targeting import MultiTargetPNPResult
-    from ..targeting import PnpResult
+    from ..targeting import MultiTargetPNPResult  # noqa
+    from ..targeting import PnpResult  # noqa
 
 
 class MultiTargetPNPResultSerde:
@@ -36,7 +36,7 @@ class MultiTargetPNPResultSerde:
     MESSAGE_FORMAT = "PnpResult:ae4d655c0a3104d88df4f5db144c1e86 estimatedPose;int16 fiducialIDsUsed[?];"
 
     @staticmethod
-    def pack(value: "MultiTargetPNPResult") -> "Packet":
+    def pack(value: 'MultiTargetPNPResult' ) -> 'Packet':
         ret = Packet()
 
         # estimatedPose is of non-intrinsic type PnpResult
@@ -46,8 +46,9 @@ class MultiTargetPNPResultSerde:
         ret.encodeShortList(value.fiducialIDsUsed)
         return ret
 
+
     @staticmethod
-    def unpack(packet: "Packet") -> "MultiTargetPNPResult":
+    def unpack(packet: 'Packet') -> 'MultiTargetPNPResult':
         ret = MultiTargetPNPResult()
 
         # estimatedPose is of non-intrinsic type PnpResult
