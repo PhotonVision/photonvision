@@ -69,9 +69,12 @@ export interface PvCameraInfo {
   productId: number;
 }
 
-export interface VisionSourceManagerState {
-  knownCameras: PvCameraInfo[];
-  unmatchedLoadedConfigs: CameraConfiguration[];
+export interface UniqueCameraSummary {
+  uniqueName: string;
+  name: string;
+  path: string;
+  otherPaths: string[];
+  type: string;
 }
 
 export interface LightingSettings {

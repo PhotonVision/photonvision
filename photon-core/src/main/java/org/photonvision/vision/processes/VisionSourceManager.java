@@ -27,6 +27,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration;
+import org.photonvision.common.dataflow.DataChangeService;
+import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.hardware.Platform.OSType;
 import org.photonvision.common.logging.LogGroup;
@@ -35,6 +37,7 @@ import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.vision.camera.PVCameraInfo;
+import org.photonvision.vision.camera.UniqueCameraSummary;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.LibcameraGpuSource;
@@ -93,10 +96,12 @@ public class VisionSourceManager {
     }
 
     public Optional<CameraConfiguration> configureNewVisionSource(String uniqueName) {
-        boolean alreadyUsed = VisionModuleManager.getInstance().getModules().stream()
-                .anyMatch(module -> module.visionSource.cameraConfiguration.uniqueName.equals(uniqueName));
         var cfg = Optional.ofNullable(cameraInfoMap.get(uniqueName))
-            .filter(u -> !alreadyUsed)
+            .filter(u -> VisionModuleManager.getInstance()
+                .getModules()
+                .stream()
+                .anyMatch(module -> module.uniqueName().equals(uniqueName))
+            )
             .map(info -> createConfigForCameras(info, uniqueName));
         cfg.flatMap(VisionSourceManager::loadVisionSourceFromCamConfig)
             .map(VisionModuleManager.getInstance()::addSource)
@@ -105,23 +110,43 @@ public class VisionSourceManager {
         return cfg;
     }
 
+    protected List<UniqueCameraSummary> getUniqueUnusedCameras() {
+        List<String> activeUniqueNames =  VisionModuleManager.getInstance().getModules()
+            .stream()
+            .map(module -> module.uniqueName())
+            .collect(Collectors.toList());
+        return cameraInfoMap.entrySet().stream()
+            .filter(entry -> !activeUniqueNames.contains(entry.getKey()))
+            .map(entry -> new UniqueCameraSummary(entry.getKey(), entry.getValue()))
+            .collect(Collectors.toList());
+    }
+
     protected void discoverNewDevices() {
         if (!configsLoaded.get()) {
             logger.debug("Not discovering new devices because configs are not loaded");
             return;
         }
 
+        int prevSize = cameraInfoMap.size();
+
         List<PVCameraInfo> devices = filterAllowedDevices(getConnectedCameras(), Platform.getCurrentPlatform());
 
         List<String> infoNames = cameraInfoMap.values().stream()
-            .map(PVCameraInfo::name)
+            .map(ci -> ci.uniquePath() + String.join(",", ci.otherPaths()))
             .collect(Collectors.toList());
         List<PVCameraInfo> filteredDevices = devices.stream()
-                .filter(d -> !infoNames.contains(d.name()))
+                .filter(d -> !infoNames.contains(d.uniquePath() + String.join(",", d.otherPaths())))
                 .collect(Collectors.toList());
         for (var device : filteredDevices) {
             var uniqueName = uniqueName(device.name(), cameraInfoMap.keySet());
             cameraInfoMap.put(uniqueName, device);
+        }
+
+        if (prevSize != cameraInfoMap.size()) {
+            logger.info("Discovered new devices: " + cameraInfoMap.size());
+
+            DataChangeService.getInstance()
+                .publishEvent(OutgoingUIEvent.wrappedOf("discoveredCameras", getUniqueUnusedCameras()));
         }
     }
 

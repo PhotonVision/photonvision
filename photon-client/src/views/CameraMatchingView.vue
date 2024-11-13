@@ -6,6 +6,14 @@ import { inject } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 
 const formatUrl = (port) => `http://${inject("backendHostname")}:${port}/stream.mjpg`;
+const activateCamera = (camera: string) => {
+  const url = new URL(`http://${inject("backendHostname")}/api/utils/assignCamera`);
+  url.searchParams.set("camera", camera);
+
+  fetch(url.toString(), {
+    method: "POST",
+  });
+}
 </script>
 
 <template>
@@ -68,14 +76,14 @@ const formatUrl = (port) => `http://${inject("backendHostname")}:${port}/stream.
     </v-card>
     <v-card dark class="mb-3 pr-6 pb-3" style="background-color: #006492">
       <v-card-title>
-        <span> USB Cameras </span>
+        <span> Unassigned Cameras </span>
       </v-card-title>
 
       <v-row class="ml-3">
         <v-card
           dark
           class="camera-card pa-4 mb-4 mr-3"
-          v-for="(camera, index) in useSettingsStore().visionSourceManagerState.knownCameras"
+          v-for="(camera, index) in useStateStore().discoveredCameras"
           :value="index"
         >
           <v-card-title class="pb-8">{{ camera.name }}</v-card-title>
@@ -83,27 +91,19 @@ const formatUrl = (port) => `http://${inject("backendHostname")}:${port}/stream.
             <v-simple-table dense height="100%" class="camera-card-table mt-2">
               <tbody>
                 <tr>
-                  <td>USB Product String Descriptor</td>
+                  <td>Product Name</td>
                   <td>
                     {{ camera.name }}
                   </td>
                 </tr>
                 <tr>
-                  <td>USB Vendor ID</td>
-                  <td>0x{{ camera.vendorId.toString(16).padStart(4, "0") }}</td>
-                </tr>
-                <tr>
-                  <td>USB Product ID</td>
-                  <td>0x{{ camera.productId.toString(16).padStart(4, "0") }}</td>
-                </tr>
-                <tr>
                   <td>Type</td>
                   <td>
-                    {{ camera.cameraType }}
+                    {{ camera.type }}
                   </td>
                 </tr>
                 <tr>
-                  <td>USB Path(s)</td>
+                  <td>Path(s)</td>
                   <td>
                     <span
                       v-for="(path, idx) in [camera.path].concat(camera.otherPaths)"
@@ -115,9 +115,9 @@ const formatUrl = (port) => `http://${inject("backendHostname")}:${port}/stream.
                   </td>
                 </tr>
                 <tr>
-                  <td>Device Number</td>
+                  <td>Actions</td>
                   <td>
-                    {{ camera.dev }}
+                    <v-btn @click="activateCamera(camera.uniqueName)" color="primary">Activate</v-btn>
                   </td>
                 </tr>
               </tbody>

@@ -183,7 +183,9 @@ public class Main {
                             .collect(Collectors.toList());
 
             ConfigManager.getInstance().unloadCameraConfigs();
-            VisionModuleManager.getInstance().addSources(collectedSources).forEach(VisionModule::start);
+            collectedSources.stream()
+                .map(VisionModuleManager.getInstance()::addSource)
+                .forEach(VisionModule::start);
             ConfigManager.getInstance().addCameraConfigurations(collectedSources);
         } catch (IOException e) {
             logger.error("Path does not exist!");
@@ -345,7 +347,9 @@ public class Main {
         // collectedSources.add(fvs2019);
 
         ConfigManager.getInstance().unloadCameraConfigs();
-        VisionModuleManager.getInstance().addSources(collectedSources).forEach(VisionModule::start);
+        collectedSources.stream()
+            .map(VisionModuleManager.getInstance()::addSource)
+            .forEach(VisionModule::start);
         ConfigManager.getInstance().addCameraConfigurations(collectedSources);
     }
 

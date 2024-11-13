@@ -644,4 +644,8 @@ public class VisionModule {
         visionSource.remakeSettables();
         saveAndBroadcastAll();
     }
+
+    public String uniqueName() {
+        return this.visionSource.cameraConfiguration.uniqueName;
+    }
 }

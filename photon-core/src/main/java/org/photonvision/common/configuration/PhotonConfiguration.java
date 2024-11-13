@@ -35,7 +35,6 @@ import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.processes.VisionSource;
-import org.photonvision.vision.processes.VisionSourceManager;
 
 public class PhotonConfiguration {
     private final HardwareConfig hardwareConfig;
@@ -161,8 +160,6 @@ public class PhotonConfiguration {
         settingsSubmap.put("general", generalSubmap);
         // AprilTagFieldLayout
         settingsSubmap.put("atfl", this.atfl);
-
-        settingsSubmap.put("visionSourceManagerState", VisionSourceManager.getInstance().getState());
 
         map.put(
                 "cameraSettings",
