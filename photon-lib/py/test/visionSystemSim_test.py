@@ -25,7 +25,7 @@ def setupCommon() -> None:
     setVersionCheckEnabled(False)
 
 
-def test_VisibilityCupidShuffle():
+def test_VisibilityCupidShuffle() -> None:
 
     targetPose = Pose3d(Translation3d(15.98, 0.0, 2.0), Rotation3d(0, 0, math.pi))
 
@@ -83,7 +83,7 @@ def test_VisibilityCupidShuffle():
     assert camera.getLatestResult().hasTargets()
 
 
-def test_NotVisibleVert1():
+def test_NotVisibleVert1() -> None:
 
     targetPose = Pose3d(Translation3d(15.98, 0.0, 2.0), Rotation3d(0, 0, math.pi))
 
@@ -111,7 +111,7 @@ def test_NotVisibleVert1():
     assert not camera.getLatestResult().hasTargets()
 
 
-def test_NotVisibleVert2():
+def test_NotVisibleVert2() -> None:
 
     targetPose = Pose3d(Translation3d(15.98, 0.0, 2.0), Rotation3d(0, 0, math.pi))
 
@@ -138,7 +138,7 @@ def test_NotVisibleVert2():
     assert not camera.getLatestResult().hasTargets()
 
 
-def test_NotVisibleTargetSize():
+def test_NotVisibleTargetSize() -> None:
     targetPose = Pose3d(Translation3d(15.98, 0.0, 1.0), Rotation3d(0, 0, math.pi))
 
     visionSysSim = VisionSystemSim("Test")
@@ -161,7 +161,7 @@ def test_NotVisibleTargetSize():
     assert not camera.getLatestResult().hasTargets()
 
 
-def test_NotVisibleTooFarLeds():
+def test_NotVisibleTooFarLeds() -> None:
 
     targetPose = Pose3d(Translation3d(15.98, 0.0, 1.0), Rotation3d(0, 0, math.pi))
 
@@ -189,7 +189,7 @@ def test_NotVisibleTooFarLeds():
 @pytest.mark.parametrize(
     "expected_yaw", [-10.0, -5.0, -2.0, -1.0, 0.0, 5.0, 7.0, 10.23]
 )
-def test_YawAngles(expected_yaw):
+def test_YawAngles(expected_yaw) -> None:
 
     targetPose = Pose3d(
         Translation3d(15.98, 0.0, 1.0), Rotation3d(0.0, 0.0, 3.0 * math.pi / 4.0)
@@ -211,14 +211,15 @@ def test_YawAngles(expected_yaw):
 
     result = camera.getLatestResult()
 
-    assert result.hasTargets()
-    assert result.getBestTarget().getYaw() == pytest.approx(expected_yaw, abs=0.25)
+    bestTarget = result.getBestTarget()
+    assert bestTarget is not None
+    assert bestTarget.getYaw() == pytest.approx(expected_yaw, abs=0.25)
 
 
 @pytest.mark.parametrize(
     "expected_pitch", [-10.0, -5.0, -2.0, -1.0, 0.0, 5.0, 7.0, 10.23]
 )
-def test_PitchAngles(expected_pitch):
+def test_PitchAngles(expected_pitch) -> None:
 
     targetPose = Pose3d(
         Translation3d(15.98, 0.0, 0.0), Rotation3d(0, 0, 3.0 * math.pi / 4.0)
@@ -245,8 +246,9 @@ def test_PitchAngles(expected_pitch):
 
     result = camera.getLatestResult()
 
-    assert result.hasTargets()
-    assert result.getBestTarget().getPitch() == pytest.approx(expected_pitch, abs=0.25)
+    bestTarget = result.getBestTarget()
+    assert bestTarget is not None
+    assert bestTarget.getPitch() == pytest.approx(expected_pitch, abs=0.25)
 
 
 @pytest.mark.parametrize(
@@ -271,7 +273,7 @@ def test_PitchAngles(expected_pitch):
         (19.52, -15.98, 1.1),
     ],
 )
-def test_distanceCalc(distParam, pitchParam, heightParam):
+def test_distanceCalc(distParam, pitchParam, heightParam) -> None:
     distParam = feetToMeters(distParam)
     pitchParam = math.radians(pitchParam)
     heightParam = feetToMeters(heightParam)
@@ -301,10 +303,8 @@ def test_distanceCalc(distParam, pitchParam, heightParam):
 
     result = camera.getLatestResult()
 
-    assert result.hasTargets()
-
     target = result.getBestTarget()
-
+    assert target is not None
     assert target.getYaw() == pytest.approx(0.0, abs=0.5)
 
     # TODO Enable when PhotonUtils is ported
@@ -314,7 +314,7 @@ def test_distanceCalc(distParam, pitchParam, heightParam):
     # assert dist == pytest.approx(distParam, abs=0.25)
 
 
-def test_MultipleTargets():
+def test_MultipleTargets() -> None:
     targetPoseL = Pose3d(Translation3d(15.98, 2.0, 0.0), Rotation3d(0.0, 0.0, math.pi))
     targetPoseC = Pose3d(Translation3d(15.98, 0.0, 0.0), Rotation3d(0.0, 0.0, math.pi))
     targetPoseR = Pose3d(Translation3d(15.98, -2.0, 0.0), Rotation3d(0.0, 0.0, math.pi))
@@ -415,7 +415,7 @@ def test_MultipleTargets():
     assert len(tgtList) == 11
 
 
-def test_PoseEstimation():
+def test_PoseEstimation() -> None:
     visionSysSim = VisionSystemSim("Test")
     camera = PhotonCamera("camera")
     cameraSim = PhotonCameraSim(camera)
