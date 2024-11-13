@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING, ClassVar
 from wpimath.geometry import Transform3d
 
 if TYPE_CHECKING:
-    from ..generated.PnpResultSerde import PnpResultSerde
     from ..generated.MultiTargetPNPResultSerde import MultiTargetPNPResultSerde
+    from ..generated.PnpResultSerde import PnpResultSerde
 
 
 @dataclass
