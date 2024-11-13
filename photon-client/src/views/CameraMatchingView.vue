@@ -12,9 +12,9 @@ const activateCamera = (camera: string) => {
   url.searchParams.set("uniqueName", camera);
 
   fetch(url.toString(), {
-    method: "POST",
+    method: "POST"
   });
-}
+};
 </script>
 
 <template>
