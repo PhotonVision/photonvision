@@ -4,7 +4,7 @@ import typing
 import cscore as cs
 import cv2 as cv
 import numpy as np
-import robotpy_apriltag
+from robotpy_apriltag import AprilTagField, AprilTagFieldLayout
 import wpilib
 from wpimath.geometry import Pose3d, Transform3d
 from wpimath.units import meters, seconds
@@ -44,9 +44,7 @@ class PhotonCameraSim:
         self.videoSimProcEnabled: bool = True
         self.heartbeatCounter: int = 0
         self.nextNtEntryTime = int(wpilib.Timer.getFPGATimestamp() * 1e6)
-        self.tagLayout = robotpy_apriltag.loadAprilTagLayoutField(
-            robotpy_apriltag.AprilTagField.k2024Crescendo
-        )
+        self.tagLayout = AprilTagFieldLayout.loadField(AprilTagField.k2024Crescendo)
 
         if (
             camera is not None
