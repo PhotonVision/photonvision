@@ -20,9 +20,9 @@ class VisionSystemSim:
         self.bufferLength: seconds = 1.5
 
         self.camSimMap: typing.Dict[str, PhotonCameraSim] = {}
-        self.camTrfMap: typing.Dict[
-            PhotonCameraSim, TimeInterpolatablePose3dBuffer
-        ] = {}
+        self.camTrfMap: typing.Dict[PhotonCameraSim, TimeInterpolatablePose3dBuffer] = (
+            {}
+        )
         self.robotPoseBuffer: TimeInterpolatablePose3dBuffer = (
             TimeInterpolatablePose3dBuffer(self.bufferLength)
         )

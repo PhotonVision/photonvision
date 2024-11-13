@@ -17,7 +17,7 @@ class TargetModel:
         diameter: meters | None = None,
         verts: List[Translation3d] | None = None
     ):
-        
+
         self.vertices: List[Translation3d] = []
 
         if (
