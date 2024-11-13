@@ -75,7 +75,10 @@ addTaskToCopyAllOutputs(cppHeadersZip)
 
 model {
     publishing {
-        def cppTaskList = createComponentZipTasks($.components, [nativeName, "${nativeName}JNI"], zipBaseName, Zip, project, includeStandardZipFormat)
+        def cppTaskList = createComponentZipTasks($.components, [
+            nativeName,
+            "${nativeName}JNI"
+        ], zipBaseName, Zip, project, includeStandardZipFormat)
 
         // From https://github.com/wpilibsuite/allwpilib/blob/1c220ebc607daa8da7d983b8f17bc40323633cb2/shared/jni/publish.gradle#L80C9-L100C11
         def jniTaskList = createComponentZipTasks($.components, ["${nativeName}JNI"], jniBaseName, Jar, project, { task, value ->
