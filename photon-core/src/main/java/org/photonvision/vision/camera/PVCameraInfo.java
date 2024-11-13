@@ -20,7 +20,6 @@ package org.photonvision.vision.camera;
 import edu.wpi.first.cscore.UsbCameraInfo;
 import java.util.Arrays;
 import org.photonvision.common.configuration.CameraConfiguration;
-import org.photonvision.common.hardware.Platform;
 
 public sealed interface PVCameraInfo {
     /**
@@ -52,6 +51,15 @@ public sealed interface PVCameraInfo {
     String[] otherPaths();
 
     CameraType type();
+
+    default boolean equals(PVCameraInfo other) {
+        // return path().equals(other.path())
+        //     && name().equals(other.name())
+        //     && type().equals(other.type())
+        //     && uniquePath().equals(other.uniquePath())
+        //     && Arrays.equals(otherPaths(), other.otherPaths());
+        return uniquePath().equals(other.uniquePath());
+    }
 
     public static final class PVUsbCameraInfo extends UsbCameraInfo implements PVCameraInfo {
         private PVUsbCameraInfo(
@@ -95,24 +103,10 @@ public sealed interface PVCameraInfo {
         public boolean equals(Object obj) {
             if (this == obj) return true;
             if (obj == null) return false;
-            if (getClass() != obj.getClass()) return false;
-            PVUsbCameraInfo other = (PVUsbCameraInfo) obj;
-
-            // Windows device number is not significant. See
-            // https://github.com/wpilibsuite/allwpilib/blob/4b94a64b06057c723d6fcafeb1a45f55a70d179a/cscore/src/main/native/windows/UsbCameraImpl.cpp#L1128
-            if (!Platform.isWindows()) {
-                if (dev != other.dev) return false;
+            if (obj instanceof PVCameraInfo info) {
+                return equals(info);
             }
-
-            if (!path.equals(other.path)) return false;
-            if (!name.equals(other.name)) return false;
-            if (!this.uniquePath().contains(other.uniquePath())) return false;
-            if (vendorId != other.vendorId) return false;
-            if (productId != other.productId) return false;
-
-            // Don't trust super.equals, as it compares references. Should PR this to allwpilib at some
-            // point
-            return true;
+            return false;
         }
     }
 
@@ -154,13 +148,10 @@ public sealed interface PVCameraInfo {
         public boolean equals(Object obj) {
             if (this == obj) return true;
             if (obj == null) return false;
-            if (getClass() != obj.getClass()) return false;
-            PVCSICameraInfo other = (PVCSICameraInfo) obj;
-
-            if (!path.equals(other.path)) return false;
-            if (!baseName.equals(other.baseName)) return false;
-
-            return true;
+            if (obj instanceof PVCameraInfo info) {
+                return equals(info);
+            }
+            return false;
         }
     }
 
@@ -201,6 +192,16 @@ public sealed interface PVCameraInfo {
         @Override
         public CameraType type() {
             return type;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (obj == null) return false;
+            if (obj instanceof PVCameraInfo info) {
+                return equals(info);
+            }
+            return false;
         }
     }
 

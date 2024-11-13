@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.hardware.Platform;
@@ -112,7 +113,18 @@ public class VisionSourceManager {
                             it.saveAndBroadcastAll();
                         });
 
+        DataChangeService.getInstance()
+            .publishEvent(OutgoingUIEvent.wrappedOf("discoveredCameras", getUniqueUnusedCameras()));
+
         return cfg;
+    }
+
+    public void forgetVisionSource(String uniqueName) {
+        cameraInfoMap.remove(uniqueName);
+        VisionModuleManager.getInstance().visionModules.removeIf(
+            module -> module.uniqueName().equals(uniqueName)
+        );
+        ConfigManager.getInstance().getConfig().getCameraConfigurations().remove(uniqueName);
     }
 
     protected List<UniqueCameraSummary> getUniqueUnusedCameras() {
@@ -134,20 +146,29 @@ public class VisionSourceManager {
 
         int prevSize = cameraInfoMap.size();
 
-        List<PVCameraInfo> devices =
+        List<PVCameraInfo> seenInfos =
                 filterAllowedDevices(getConnectedCameras(), Platform.getCurrentPlatform());
+                Collection<PVCameraInfo> knownInfos = cameraInfoMap.values();
 
-        List<String> infoNames =
-                cameraInfoMap.values().stream()
-                        .map(ci -> ci.uniquePath() + String.join(",", ci.otherPaths()))
+        List<PVCameraInfo> newDevices =
+                seenInfos.stream()
+                        .filter(d -> !knownInfos.contains(d))
                         .collect(Collectors.toList());
-        List<PVCameraInfo> filteredDevices =
-                devices.stream()
-                        .filter(d -> !infoNames.contains(d.uniquePath() + String.join(",", d.otherPaths())))
+        List<PVCameraInfo> removedDevices =
+                knownInfos.stream()
+                        .filter(d -> !seenInfos.contains(d)
+                            && !newDevices.contains(d)
+                            && !(d instanceof PVCameraInfo.PVReconstructedCameraInfo))
                         .collect(Collectors.toList());
-        for (var device : filteredDevices) {
+
+
+        for (var device : newDevices) {
             var uniqueName = uniqueName(device.name(), cameraInfoMap.keySet());
             cameraInfoMap.put(uniqueName, device);
+        }
+
+        for (var device : removedDevices) {
+            cameraInfoMap.values().removeIf(d -> d.equals(device));
         }
 
         if (prevSize != cameraInfoMap.size()) {
