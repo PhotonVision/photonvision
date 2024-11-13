@@ -4,8 +4,8 @@ import typing
 import cscore as cs
 import cv2 as cv
 import numpy as np
-from robotpy_apriltag import AprilTagField, AprilTagFieldLayout
 import wpilib
+from robotpy_apriltag import AprilTagField, AprilTagFieldLayout
 from wpimath.geometry import Pose3d, Transform3d
 from wpimath.units import meters, seconds
 
