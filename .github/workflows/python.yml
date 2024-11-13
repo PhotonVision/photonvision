@@ -55,8 +55,7 @@ jobs:
         with:
           linters: mypy
           run: |
-            cd photon-lib/py
-            mypy --show-column-numbers --exclude=build .
+            mypy --show-column-numbers --config-file photon-lib/py/pyproject.toml photon-lib
 
 
       - name: Upload artifacts
