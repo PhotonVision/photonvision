@@ -22,6 +22,11 @@
 
 from ..packet import Packet
 from ..targeting import *
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..targeting import MultiTargetPNPResult
+    from ..targeting import PnpResult
 
 
 class MultiTargetPNPResultSerde:

@@ -22,6 +22,13 @@
 
 from ..packet import Packet
 from ..targeting import *
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..targeting import PhotonPipelineResult
+    from ..targeting import PhotonPipelineMetadata
+    from ..targeting import PhotonTrackedTarget
+    from ..targeting import MultiTargetPNPResult
 
 
 class PhotonPipelineResultSerde:

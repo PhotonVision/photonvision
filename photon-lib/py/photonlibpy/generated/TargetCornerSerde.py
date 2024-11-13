@@ -22,6 +22,10 @@
 
 from ..packet import Packet
 from ..targeting import *
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..targeting import TargetCorner
 
 
 class TargetCornerSerde:

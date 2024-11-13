@@ -4,7 +4,8 @@ from typing import TYPE_CHECKING, ClassVar
 from wpimath.geometry import Transform3d
 
 if TYPE_CHECKING:
-    from .. import generated
+    from ..generated.PnpResultSerde import PnpResultSerde
+    from ..generated.MultiTargetPNPResultSerde import MultiTargetPNPResultSerde
 
 
 @dataclass
@@ -15,7 +16,7 @@ class PnpResult:
     bestReprojErr: float = 0.0
     altReprojErr: float = 0.0
 
-    photonStruct: ClassVar["generated.PnpResultSerde"]
+    photonStruct: ClassVar["PnpResultSerde"]
 
 
 @dataclass
@@ -25,4 +26,4 @@ class MultiTargetPNPResult:
     estimatedPose: PnpResult = field(default_factory=PnpResult)
     fiducialIDsUsed: list[int] = field(default_factory=list)
 
-    photonStruct: ClassVar["generated.MultiTargetPNPResultSerde"]
+    photonStruct: ClassVar["MultiTargetPNPResultSerde"]

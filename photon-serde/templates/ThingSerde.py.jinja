@@ -20,11 +20,20 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from ..targeting import *
 from ..packet import Packet
+from ..targeting import *
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..targeting import {{ name }}
+{%- for field in fields -%}
+{%- if not field.type | is_shimmed and not field.type | is_intrinsic %}
+    from ..targeting import {{ field.type }}
+{%- endif %}
+{%- endfor%}
+
 
 class {{ name }}Serde:
-
     # Message definition md5sum. See photon_packet.adoc for details
     MESSAGE_VERSION = "{{ message_hash }}"
     MESSAGE_FORMAT = "{{ message_fmt }}"
