@@ -33,7 +33,11 @@ PhotonVision _STRONGLY_ recommends the usage of a network switch on your robot. 
 
 ## Network Hostname
 
-Rename each device from the default "Photonvision" to a unique hostname (e.g., "Photon-OrangePi-Left" or "Photon-RPi5-Back"). This helps differentiate multiple coprocessors on your network, making it easier to manage them.
+Rename each device from the default "Photonvision" to a unique hostname (e.g., "Photon-OrangePi-Left" or "Photon-RPi5-Back"). This helps differentiate multiple coprocessors on your network, making it easier to manage them. Navigate to the settings page and scroll down to the network section. You will find the hostname is set to "photonvision" by default, this can only contain letters (A-Z), numeric characters (0-9), and the minus sign (-).
+
+```{image} images/editHostname.png
+:alt: The hostname can be edited in the settings page under the network section.
+```
 
 ## Digital Networking
 
