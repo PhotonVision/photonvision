@@ -49,9 +49,9 @@ When detecting AprilTags, it's important to minimize 'motion blur' as much as po
 When using an Orange Pi 5 with an OV9782 teams will usually change the following settings. For more info on object detection settings please review {ref}`this<docs/objectDetection/about-object-detection:About Object Detection>`.
 
 - Resolution:
-  - Resolutions larger than 640x640 may not result in any more accurate detection and may lower {ref}`performance<docs/objectDetection/about-object-detection:Letterboxing>`.
+  - Resolutions higher than 640x640 may not result in any higher detection accuracy and may lower {ref}`performance<docs/objectDetection/about-object-detection:Letterboxing>`.
 - Confidence:
-  - 0.75 - 0.95 Depending on if you want detection of warn game pieces or low false positives.
+  - 0.75 - 0.95 Lower values are fpr detecting warn game pieces or less ideal game pieces. Higher for less warn, more ideal game pieces.
 - White Balance Temperature:
   - Adjust this to achieve better color accuracy. This may be needed to increase confidence.
 - Set arducam specific camera type selector to OV9782
