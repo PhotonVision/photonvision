@@ -20,9 +20,9 @@ class VisionSystemSim:
         self.bufferLength: seconds = 1.5
 
         self.camSimMap: typing.Dict[str, PhotonCameraSim] = {}
-        self.camTrfMap: typing.Dict[PhotonCameraSim, TimeInterpolatablePose3dBuffer] = (
-            {}
-        )
+        self.camTrfMap: typing.Dict[
+            PhotonCameraSim, TimeInterpolatablePose3dBuffer
+        ] = {}
         self.robotPoseBuffer: TimeInterpolatablePose3dBuffer = (
             TimeInterpolatablePose3dBuffer(self.bufferLength)
         )
@@ -228,8 +228,8 @@ class VisionSystemSim:
 
             camResult = camSim.process(latency, lateCameraPose, allTargets)
             camSim.submitProcessedFrame(camResult, timestampNt)
-            for target in camResult.getTargets():
-                trf = target.getBestCameraToTarget()
+            for tgt in camResult.getTargets():
+                trf = tgt.getBestCameraToTarget()
                 if trf == Transform3d():
                     continue
 
