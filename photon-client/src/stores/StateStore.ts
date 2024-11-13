@@ -61,7 +61,16 @@ export const useStateStore = defineStore("state", {
       logMessages: [],
       currentCameraIndex: 0,
 
-      backendResults: {},
+      backendResults: {
+        "foobar": {
+          classNames: [],
+          fps: 1,
+          latency: 2,
+          sequenceID: 3,
+          targets: [],
+          multitagResult: undefined
+        }
+      },
       multitagResultBuffer: {},
 
       colorPickingMode: false,
