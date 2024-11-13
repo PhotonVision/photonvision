@@ -17,7 +17,6 @@
 
 package org.photonvision.jni;
 
-import edu.wpi.first.util.RuntimeDetector;
 import edu.wpi.first.util.RuntimeLoader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -30,8 +29,7 @@ public class PhotonTargetingJniLoader {
     public static boolean isWorking = false;
 
     public static boolean load() throws IOException, UnsatisfiedLinkError {
-        if (isWorking)
-            return true;
+        if (isWorking) return true;
         isWorking = load_();
         return isWorking;
     }

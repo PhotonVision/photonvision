@@ -35,10 +35,11 @@ import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.drivetrain.SwerveDrive;
 import org.photonvision.PhotonCamera;
+import org.photonvision.timesync.TimeSyncSingleton;
 
 public class Robot extends TimedRobot {
     private SwerveDrive drivetrain;
-    private VisionSim visionSim;
+    // private VisionSim visionSim;
     private PhotonCamera camera;
 
     private final double VISION_TURN_kP = 0.01;
@@ -50,7 +51,10 @@ public class Robot extends TimedRobot {
         drivetrain = new SwerveDrive();
         camera = new PhotonCamera(kCameraName);
 
-        visionSim = new VisionSim(camera);
+        if (!TimeSyncSingleton.load()) {
+            System.exit(-111);
+        }
+        // visionSim = new VisionSim(camera);
 
         controller = new XboxController(0);
     }
@@ -122,11 +126,11 @@ public class Robot extends TimedRobot {
         drivetrain.simulationPeriodic();
 
         // Update camera simulation
-        visionSim.simulationPeriodic(drivetrain.getSimPose());
+        // visionSim.simulationPeriodic(drivetrain.getSimPose());
 
-        var debugField = visionSim.getSimDebugField();
-        debugField.getObject("EstimatedRobot").setPose(drivetrain.getPose());
-        debugField.getObject("EstimatedRobotModules").setPoses(drivetrain.getModulePoses());
+        // var debugField = visionSim.getSimDebugField();
+        // debugField.getObject("EstimatedRobot").setPose(drivetrain.getPose());
+        // debugField.getObject("EstimatedRobotModules").setPoses(drivetrain.getModulePoses());
 
         // Calculate battery voltage sag due to current draw
         RoboRioSim.setVInVoltage(
@@ -139,6 +143,6 @@ public class Robot extends TimedRobot {
         // The first pose in an autonomous path is often a good choice.
         var startPose = new Pose2d(1, 1, new Rotation2d());
         drivetrain.resetPose(startPose, true);
-        visionSim.resetSimPose(startPose);
+        // visionSim.resetSimPose(startPose);
     }
 }

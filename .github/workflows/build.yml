@@ -66,13 +66,13 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew copyPhotonlib -x check
-          ./gradlew build -x check
+          ./gradlew build
       - name: Build C++ examples
         working-directory: photonlib-cpp-examples
         run: |
           chmod +x gradlew
           ./gradlew copyPhotonlib -x check
-          ./gradlew build -x check
+          ./gradlew build
   build-gradle:
     name: "Gradle Build"
     runs-on: ubuntu-22.04
