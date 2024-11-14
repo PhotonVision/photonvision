@@ -70,16 +70,12 @@ public class ConfigManager {
         if (INSTANCE == null) {
             Path rootFolder = PathManager.getInstance().getRootFolder();
             switch (m_saveStrat) {
-                case SQL:
-                    INSTANCE = new ConfigManager(rootFolder, new SqlConfigProvider(rootFolder));
-                    break;
-                case LEGACY:
-                    INSTANCE = new ConfigManager(rootFolder, new LegacyConfigProvider(rootFolder));
-                    break;
-                case ATOMIC_ZIP:
-                    // not yet done, fall through
-                default:
-                    break;
+                case SQL -> INSTANCE = new ConfigManager(rootFolder, new SqlConfigProvider(rootFolder));
+                case LEGACY ->
+                        INSTANCE = new ConfigManager(rootFolder, new LegacyConfigProvider(rootFolder));
+                case ATOMIC_ZIP -> {
+                    // TODO: Not done yet
+                }
             }
         }
         return INSTANCE;

@@ -298,17 +298,12 @@ public class PhotonCamera implements AutoCloseable {
      */
     public VisionLEDMode getLEDMode() {
         int value = (int) ledModeState.get(-1);
-        switch (value) {
-            case 0:
-                return VisionLEDMode.kOff;
-            case 1:
-                return VisionLEDMode.kOn;
-            case 2:
-                return VisionLEDMode.kBlink;
-            case -1:
-            default:
-                return VisionLEDMode.kDefault;
-        }
+        return switch (value) {
+            case 0 -> VisionLEDMode.kOff;
+            case 1 -> VisionLEDMode.kOn;
+            case 2 -> VisionLEDMode.kBlink;
+            default -> VisionLEDMode.kDefault;
+        };
     }
 
     /**

@@ -134,25 +134,17 @@ public class VisionLED {
         var newLedModeRaw = (int) entryNotification.valueData.value.getInteger();
         logger.debug("Got LED mode " + newLedModeRaw);
         if (newLedModeRaw != currentLedMode.value) {
-            VisionLEDMode newLedMode;
-            switch (newLedModeRaw) {
-                case -1:
-                    newLedMode = VisionLEDMode.kDefault;
-                    break;
-                case 0:
-                    newLedMode = VisionLEDMode.kOff;
-                    break;
-                case 1:
-                    newLedMode = VisionLEDMode.kOn;
-                    break;
-                case 2:
-                    newLedMode = VisionLEDMode.kBlink;
-                    break;
-                default:
-                    logger.warn("User supplied invalid LED mode, falling back to Default");
-                    newLedMode = VisionLEDMode.kDefault;
-                    break;
-            }
+            VisionLEDMode newLedMode =
+                    switch (newLedModeRaw) {
+                        case -1 -> newLedMode = VisionLEDMode.kDefault;
+                        case 0 -> newLedMode = VisionLEDMode.kOff;
+                        case 1 -> newLedMode = VisionLEDMode.kOn;
+                        case 2 -> newLedMode = VisionLEDMode.kBlink;
+                        default -> {
+                            logger.warn("User supplied invalid LED mode, falling back to Default");
+                            yield VisionLEDMode.kDefault;
+                        }
+                    };
             setInternal(newLedMode, true);
 
             if (modeConsumer != null) modeConsumer.accept(newLedMode.value);
@@ -164,18 +156,10 @@ public class VisionLED {
 
         if (fromNT) {
             switch (newLedMode) {
-                case kDefault:
-                    setStateImpl(pipelineModeSupplier.getAsBoolean());
-                    break;
-                case kOff:
-                    setStateImpl(false);
-                    break;
-                case kOn:
-                    setStateImpl(true);
-                    break;
-                case kBlink:
-                    blinkImpl(85, -1);
-                    break;
+                case kDefault -> setStateImpl(pipelineModeSupplier.getAsBoolean());
+                case kOff -> setStateImpl(false);
+                case kOn -> setStateImpl(true);
+                case kBlink -> blinkImpl(85, -1);
             }
             currentLedMode = newLedMode;
             logger.info(
@@ -183,18 +167,10 @@ public class VisionLED {
         } else {
             if (currentLedMode == VisionLEDMode.kDefault) {
                 switch (newLedMode) {
-                    case kDefault:
-                        setStateImpl(pipelineModeSupplier.getAsBoolean());
-                        break;
-                    case kOff:
-                        setStateImpl(false);
-                        break;
-                    case kOn:
-                        setStateImpl(true);
-                        break;
-                    case kBlink:
-                        blinkImpl(85, -1);
-                        break;
+                    case kDefault -> setStateImpl(pipelineModeSupplier.getAsBoolean());
+                    case kOff -> setStateImpl(false);
+                    case kOn -> setStateImpl(true);
+                    case kBlink -> blinkImpl(85, -1);
                 }
             }
             logger.info("Changing LED internal state to " + newLedMode.toString());
