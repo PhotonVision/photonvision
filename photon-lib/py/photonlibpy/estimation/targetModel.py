@@ -107,7 +107,7 @@ class TargetModel:
         retVal = []
 
         for vert in self.vertices:
-            retVal.append(basisChange.apply(vert))
+            retVal.append(basisChange.applyTranslation(vert))
 
         return retVal
 

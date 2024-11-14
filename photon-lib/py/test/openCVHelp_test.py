@@ -93,103 +93,113 @@ def test_Projection():
     # ), "2d yaw doesn't match 3d"
 
 
-# TODO Enble after Pose3d overload equivalent of apply is implemented in RotTrlTransform3d
-# def test_SolvePNP_SQUARE():
-#     prop = SimCameraProperties()
+def test_SolvePNP_SQUARE():
+    prop = SimCameraProperties()
 
-#     # square AprilTag target
-#     target = VisionTargetSim(
-#         Pose3d(Translation3d(5.0, 0.5, 1.0), Rotation3d(0.0, 0.0, math.pi)),
-#         TargetModel.AprilTag16h5(),
-#         4774,
-#     )
-#     cameraPose = Pose3d(Translation3d(), Rotation3d())
-#     camRt = RotTrlTransform3d.makeRelativeTo(cameraPose)
+    # square AprilTag target
+    target = VisionTargetSim(
+        Pose3d(Translation3d(5.0, 0.5, 1.0), Rotation3d(0.0, 0.0, math.pi)),
+        TargetModel.AprilTag16h5(),
+        4774,
+    )
+    cameraPose = Pose3d(Translation3d(), Rotation3d())
+    camRt = RotTrlTransform3d.makeRelativeTo(cameraPose)
 
-#     # target relative to camera
-#     relTarget = camRt.apply(target.getPose())
+    # target relative to camera
+    relTarget = camRt.applyPose(target.getPose())
 
-#     # simulate solvePNP estimation
-#     targetCorners = OpenCVHelp.projectPoints(
-#         prop.getIntrinsics(), prop.getDistCoeffs(), camRt, target.getFieldVertices()
-#     )
+    # simulate solvePNP estimation
+    targetCorners = OpenCVHelp.projectPoints(
+        prop.getIntrinsics(), prop.getDistCoeffs(), camRt, target.getFieldVertices()
+    )
 
-#     pnpSim = OpenCVHelp.solvePNP_Square(
-#         prop.getIntrinsics(),
-#         prop.getDistCoeffs(),
-#         target.getModel().vertices,
-#         targetCorners,
-#     )
+    pnpSim = OpenCVHelp.solvePNP_Square(
+        prop.getIntrinsics(),
+        prop.getDistCoeffs(),
+        target.getModel().vertices,
+        targetCorners,
+    )
 
-#     assert pnpSim is not None
+    assert pnpSim is not None
 
-#     # check solvePNP estimation accuracy
-#     assert relTarget.rotation().X() == pytest.approx(pnpSim.best.rotation().X(), 0.25)
-#     assert relTarget.rotation().Y() == pytest.approx(pnpSim.best.rotation().Y(), 0.25)
-#     assert relTarget.rotation().Z() == pytest.approx(pnpSim.best.rotation().Z(), 0.25)
+    # check solvePNP estimation accuracy
+    assert relTarget.rotation().X() == pytest.approx(
+        pnpSim.best.rotation().X(), abs=0.25
+    )
+    assert relTarget.rotation().Y() == pytest.approx(
+        pnpSim.best.rotation().Y(), abs=0.25
+    )
+    assert relTarget.rotation().Z() == pytest.approx(
+        pnpSim.best.rotation().Z(), abs=0.25
+    )
 
-#     assert relTarget.translation().X() == pytest.approx(
-#         pnpSim.best.translation().X(), 0.005
-#     )
-#     assert relTarget.translation().Y() == pytest.approx(
-#         pnpSim.best.translation().Y(), 0.005
-#     )
-#     assert relTarget.translation().Z() == pytest.approx(
-#         pnpSim.best.translation().Z(), 0.005
-#     )
+    assert relTarget.translation().X() == pytest.approx(
+        pnpSim.best.translation().X(), abs=0.005
+    )
+    assert relTarget.translation().Y() == pytest.approx(
+        pnpSim.best.translation().Y(), abs=0.005
+    )
+    assert relTarget.translation().Z() == pytest.approx(
+        pnpSim.best.translation().Z(), abs=0.005
+    )
 
 
-# TODO Enble after Pose3d overload equivalent of apply is implemented in RotTrlTransform3d
-# def test_SolvePNP_SQPNP():
-#     prop = SimCameraProperties()
+def test_SolvePNP_SQPNP():
+    prop = SimCameraProperties()
 
-#     # (for targets with arbitrary number of non-colinear points > 2)
-#     target = VisionTargetSim(
-#         Pose3d(Translation3d(5.0, 0.5, 1.0), Rotation3d(0.0, 0.0, math.pi)),
-#         TargetModel(
-#             verts=[
-#                 Translation3d(0.0, 0.0, 0.0),
-#                 Translation3d(1.0, 0.0, 0.0),
-#                 Translation3d(0.0, 1.0, 0.0),
-#                 Translation3d(0.0, 0.0, 1.0),
-#                 Translation3d(0.125, 0.25, 0.5),
-#                 Translation3d(0.0, 0.0, -1.0),
-#                 Translation3d(0.0, -1.0, 0.0),
-#                 Translation3d(-1.0, 0.0, 0.0),
-#             ]
-#         ),
-#         4774,
-#     )
-#     cameraPose = Pose3d(Translation3d(), Rotation3d())
-#     camRt = RotTrlTransform3d.makeRelativeTo(cameraPose)
-#     # target relative to camera
-#     relTarget = camRt.apply(target.getPose())
+    # (for targets with arbitrary number of non-colinear points > 2)
+    target = VisionTargetSim(
+        Pose3d(Translation3d(5.0, 0.5, 1.0), Rotation3d(0.0, 0.0, math.pi)),
+        TargetModel(
+            verts=[
+                Translation3d(0.0, 0.0, 0.0),
+                Translation3d(1.0, 0.0, 0.0),
+                Translation3d(0.0, 1.0, 0.0),
+                Translation3d(0.0, 0.0, 1.0),
+                Translation3d(0.125, 0.25, 0.5),
+                Translation3d(0.0, 0.0, -1.0),
+                Translation3d(0.0, -1.0, 0.0),
+                Translation3d(-1.0, 0.0, 0.0),
+            ]
+        ),
+        4774,
+    )
+    cameraPose = Pose3d(Translation3d(), Rotation3d())
+    camRt = RotTrlTransform3d.makeRelativeTo(cameraPose)
+    # target relative to camera
+    relTarget = camRt.applyPose(target.getPose())
 
-#     # simulate solvePNP estimation
-#     targetCorners = OpenCVHelp.projectPoints(
-#         prop.getIntrinsics(), prop.getDistCoeffs(), camRt, target.getFieldVertices()
-#     )
+    # simulate solvePNP estimation
+    targetCorners = OpenCVHelp.projectPoints(
+        prop.getIntrinsics(), prop.getDistCoeffs(), camRt, target.getFieldVertices()
+    )
 
-#     pnpSim = OpenCVHelp.solvePNP_SQPNP(
-#         prop.getIntrinsics(),
-#         prop.getDistCoeffs(),
-#         target.getModel().vertices,
-#         targetCorners,
-#     )
+    pnpSim = OpenCVHelp.solvePNP_SQPNP(
+        prop.getIntrinsics(),
+        prop.getDistCoeffs(),
+        target.getModel().vertices,
+        targetCorners,
+    )
 
-#     assert pnpSim is not None
+    assert pnpSim is not None
 
-#     # check solvePNP estimation accuracy
-#     assert relTarget.rotation().X() == pytest.approx(pnpSim.best.rotation().X(), 0.25)
-#     assert relTarget.rotation().Y() == pytest.approx(pnpSim.best.rotation().Y(), 0.25)
-#     assert relTarget.rotation().Z() == pytest.approx(pnpSim.best.rotation().Z(), 0.25)
+    # check solvePNP estimation accuracy
+    assert relTarget.rotation().X() == pytest.approx(
+        pnpSim.best.rotation().X(), abs=0.25
+    )
+    assert relTarget.rotation().Y() == pytest.approx(
+        pnpSim.best.rotation().Y(), abs=0.25
+    )
+    assert relTarget.rotation().Z() == pytest.approx(
+        pnpSim.best.rotation().Z(), abs=0.25
+    )
 
-#     assert relTarget.translation().X() == pytest.approx(
-#         pnpSim.best.translation().X(), 0.005
-#     )
-#     assert relTarget.translation().Y() == pytest.approx(
-#         pnpSim.best.translation().Y(), 0.005
-#     )
-#     assert relTarget.translation().Z() == pytest.approx(
-#         pnpSim.best.translation().Z(), 0.005
-#     )
+    assert relTarget.translation().X() == pytest.approx(
+        pnpSim.best.translation().X(), abs=0.005
+    )
+    assert relTarget.translation().Y() == pytest.approx(
+        pnpSim.best.translation().Y(), abs=0.005
+    )
+    assert relTarget.translation().Z() == pytest.approx(
+        pnpSim.best.translation().Z(), abs=0.005
+    )
