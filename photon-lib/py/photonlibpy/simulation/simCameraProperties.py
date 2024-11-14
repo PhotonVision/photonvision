@@ -226,8 +226,8 @@ class SimCameraProperties:
     def getVisibleLine(
         self, camRt: RotTrlTransform3d, a: Translation3d, b: Translation3d
     ) -> typing.Tuple[float | None, float | None]:
-        relA = camRt.apply(a)
-        relB = camRt.apply(b)
+        relA = camRt.applyTranslation(a)
+        relB = camRt.applyTranslation(b)
 
         if relA.X() <= 0.0 and relB.X() <= 0.0:
             return (None, None)
@@ -279,7 +279,7 @@ class SimCameraProperties:
                     ipts[i] = None
                     break
 
-            if not ipts[i]:
+            if ipts[i] is None:
                 continue
 
             for j in range(i - 1, 0 - 1):
