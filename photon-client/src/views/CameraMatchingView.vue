@@ -7,9 +7,17 @@ import { useStateStore } from "@/stores/StateStore";
 
 const formatUrl = (port) => `http://${inject("backendHostname")}:${port}/stream.mjpg`;
 const host = inject<string>("backendHost");
-const activateCamera = (camera: string) => {
+const activateCamera = (cameraUniqueName: string) => {
   const url = new URL(`http://${host}/api/utils/assignCamera`);
-  url.searchParams.set("uniqueName", camera);
+  url.searchParams.set("uniqueName", cameraUniqueName);
+
+  fetch(url.toString(), {
+    method: "POST"
+  });
+};
+const deactivateCamera = (cameraUniqueName: string) => {
+  const url = new URL(`http://${host}/api/utils/unassignCamera`);
+  url.searchParams.set("uniqueName", cameraUniqueName);
 
   fetch(url.toString(), {
     method: "POST"
@@ -68,6 +76,12 @@ const activateCamera = (camera: string) => {
                 <tr>
                   <td>Connected?</td>
                   <td>Via [USB, CSI, totally bjork]</td>
+                </tr>
+                <tr>
+                  <td>Actions</td>
+                  <td>
+                    <v-btn @click="deactivateCamera(module.uniqueName)" color="primary">Deactivate</v-btn>
+                  </td>
                 </tr>
               </tbody>
             </v-simple-table>

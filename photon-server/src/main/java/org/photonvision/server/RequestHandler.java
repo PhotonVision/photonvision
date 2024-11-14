@@ -843,4 +843,16 @@ public class RequestHandler {
 
         ctx.result("Successfully assigned camera with unique name: " + uniqueName);
     }
+
+    public static void onUnassignCameraRequest(Context ctx) {
+        logger.info(ctx.queryString().toString());
+
+        String uniqueName = ctx.queryParam("uniqueName");
+
+        VisionSourceManager.getInstance().deactivateVisionSource(uniqueName);
+
+        ctx.status(200);
+
+        ctx.result("Successfully assigned camera with unique name: " + uniqueName);
+    }
 }
