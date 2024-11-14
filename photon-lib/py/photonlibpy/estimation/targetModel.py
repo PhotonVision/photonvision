@@ -18,6 +18,8 @@ class TargetModel:
         verts: List[Translation3d] | None = None
     ):
 
+        self.vertices: List[Translation3d] = []
+
         if (
             width is not None
             and height is not None
@@ -88,7 +90,7 @@ class TargetModel:
 
         self.isSpherical = False
         if len(verts) <= 2:
-            self.vertices: List[Translation3d] = []
+            self.vertices = []
             self.isPlanar = False
         else:
             cornersPlaner = True

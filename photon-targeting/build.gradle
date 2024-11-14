@@ -146,6 +146,8 @@ model {
             }
 
             binaries.all {
+                lib library: nativeName, linkage: 'shared'
+                lib library: "${nativeName}JNI", linkage: 'shared'
                 it.tasks.withType(CppCompile) {
                     it.dependsOn generateProto
                 }

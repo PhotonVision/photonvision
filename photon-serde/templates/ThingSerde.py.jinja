@@ -20,11 +20,25 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from ..targeting import *
+from typing import TYPE_CHECKING
+
 from ..packet import Packet
+from ..targeting import *  # noqa
+
+if TYPE_CHECKING:
+{%- set ns = namespace(types=[]) -%}
+{%- for field in fields|unique(attribute="type")-%}
+    {%- set _ = ns.types.append(field.type) -%}
+{%- endfor -%}
+{% set _ = ns.types.append(name) -%}
+{%- for type in ns.types|sort%}
+{%- if not type | is_shimmed and not type | is_intrinsic %}
+    from ..targeting import {{ type }}  # noqa
+{%- endif %}
+{%- endfor%}
+
 
 class {{ name }}Serde:
-
     # Message definition md5sum. See photon_packet.adoc for details
     MESSAGE_VERSION = "{{ message_hash }}"
     MESSAGE_FORMAT = "{{ message_fmt }}"

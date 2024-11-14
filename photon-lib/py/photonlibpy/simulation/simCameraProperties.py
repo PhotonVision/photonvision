@@ -49,6 +49,8 @@ class SimCameraProperties:
             raise Exception("not a correct function sig")
 
         if has_fov_args:
+            # really convince python we are doing the right thing
+            assert fovDiag is not None
             if fovDiag.degrees() < 1.0 or fovDiag.degrees() > 179.0:
                 fovDiag = Rotation2d.fromDegrees(
                     max(min(fovDiag.degrees(), 179.0), 1.0)
@@ -171,10 +173,8 @@ class SimCameraProperties:
     def getLatencyStdDev(self) -> seconds:
         return self.latencyStdDev
 
-    def getContourAreaPercent(self, points: list[typing.Tuple[float, float]]) -> float:
-        return (
-            cv.contourArea(cv.convexHull(np.array(points))) / self.getResArea() * 100.0
-        )
+    def getContourAreaPercent(self, points: np.ndarray) -> float:
+        return cv.contourArea(cv.convexHull(points)) / self.getResArea() * 100.0
 
     def getPixelYaw(self, pixelX: float) -> Rotation2d:
         fx = self.camIntrinsics[0, 0]
@@ -188,14 +188,14 @@ class SimCameraProperties:
         yOffset = cy - pixelY
         return Rotation2d(fy, -yOffset)
 
-    def getPixelRot(self, point: typing.Tuple[int, int]) -> Rotation3d:
+    def getPixelRot(self, point: cv.typing.Point2f) -> Rotation3d:
         return Rotation3d(
             0.0,
             self.getPixelPitch(point[1]).radians(),
             self.getPixelYaw(point[0]).radians(),
         )
 
-    def getCorrectedPixelRot(self, point: typing.Tuple[float, float]) -> Rotation3d:
+    def getCorrectedPixelRot(self, point: cv.typing.Point2f) -> Rotation3d:
         fx = self.camIntrinsics[0, 0]
         cx = self.camIntrinsics[0, 2]
         xOffset = cx - point[0]

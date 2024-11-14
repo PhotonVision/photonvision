@@ -16,10 +16,10 @@ class VisionEstimation:
             id = tag.getFiducialId()
             maybePose = layout.getTagPose(id)
             if maybePose:
-                tag = AprilTag()
-                tag.ID = id
-                tag.pose = maybePose
-                retVal.append(tag)
+                aprilTag = AprilTag()
+                aprilTag.ID = id
+                aprilTag.pose = maybePose
+                retVal.append(aprilTag)
         return retVal
 
     @staticmethod

@@ -424,10 +424,13 @@ public class RequestHandler {
             ShellExec shell = new ShellExec();
             var tempPath = Files.createTempFile("photonvision-journalctl", ".txt");
             var tempPath2 = Files.createTempFile("photonvision-kernelogs", ".txt");
+            // In the command below:
+            //   dmesg = output all kernel logs since current boot
+            //   cat /var/log/kern.log = output all kernal logs since first boot
             shell.executeBashCommand(
                     "journalctl -u photonvision.service > "
                             + tempPath.toAbsolutePath()
-                            + " && journalctl -k > "
+                            + " && dmesg > "
                             + tempPath2.toAbsolutePath());
 
             while (!shell.isOutputCompleted()) {
