@@ -2,7 +2,6 @@ import math
 
 import numpy as np
 import pytest
-
 from photonlibpy.estimation import RotTrlTransform3d
 from photonlibpy.simulation import SimCameraProperties
 from wpimath.geometry import Rotation2d, Translation3d
