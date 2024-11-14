@@ -31,7 +31,7 @@ class PhotonCameraSim:
     def __init__(
         self,
         camera: PhotonCamera,
-        props: SimCameraProperties | None = None,
+        props: SimCameraProperties = SimCameraProperties.PERFECT_90DEG(),
         minTargetAreaPercent: float | None = None,
         maxSightRange: meters | None = None,
     ):
@@ -47,30 +47,6 @@ class PhotonCameraSim:
         self.heartbeatCounter: int = 0
         self.nextNtEntryTime = int(wpilib.Timer.getFPGATimestamp() * 1e6)
         self.tagLayout = AprilTagFieldLayout.loadField(AprilTagField.k2024Crescendo)
-
-        if (
-            camera is not None
-            and props is None
-            and minTargetAreaPercent is None
-            and maxSightRange is None
-        ):
-            props = SimCameraProperties.PERFECT_90DEG()
-        elif (
-            camera is not None
-            and props is not None
-            and minTargetAreaPercent is not None
-            and maxSightRange is not None
-        ):
-            pass
-        elif (
-            camera is not None
-            and props is not None
-            and minTargetAreaPercent is None
-            and maxSightRange is None
-        ):
-            pass
-        else:
-            raise Exception("Invalid Constructor Called")
 
         self.cam = camera
         self.prop = props
@@ -104,12 +80,7 @@ class PhotonCameraSim:
         self.ts.updateEntries()
 
         # Handle this last explicitly for this function signature because the other constructor is called in the initialiser list
-        if (
-            camera is not None
-            and props is not None
-            and minTargetAreaPercent is not None
-            and maxSightRange is not None
-        ):
+        if minTargetAreaPercent is not None and maxSightRange is not None:
             self.minTargetAreaPercent = minTargetAreaPercent
             self.maxSightRange = maxSightRange
 
