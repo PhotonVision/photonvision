@@ -32,7 +32,7 @@ def test_VisibilityCupidShuffle() -> None:
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
 
-    cameraSim.prop.setCalibration(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
+    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
 
     visionSysSim.addVisionTargets(
         [
@@ -93,7 +93,7 @@ def test_NotVisibleVert1() -> None:
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
 
-    cameraSim.prop.setCalibration(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
+    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
 
     visionSysSim.addVisionTargets(
         [
@@ -128,7 +128,7 @@ def test_NotVisibleVert2() -> None:
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, robotToCamera)
 
-    cameraSim.prop.setCalibration(4774, 4774, fovDiag=Rotation2d.fromDegrees(80.0))
+    cameraSim.prop.setCalibrationFromFOV(4774, 4774, fovDiag=Rotation2d.fromDegrees(80.0))
     visionSysSim.addVisionTargets(
         [
             VisionTargetSim(
@@ -154,7 +154,7 @@ def test_NotVisibleTargetSize() -> None:
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
 
-    cameraSim.prop.setCalibration(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
+    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
     cameraSim.setMinTargetAreaPixels(20.0)
     visionSysSim.addVisionTargets(
         [
@@ -181,7 +181,7 @@ def test_NotVisibleTooFarLeds() -> None:
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
 
-    cameraSim.prop.setCalibration(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
+    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
     cameraSim.setMinTargetAreaPixels(1.0)
     cameraSim.setMaxSightRange(10.0)
     visionSysSim.addVisionTargets(
@@ -214,7 +214,7 @@ def test_YawAngles(expected_yaw) -> None:
     cameraSim = PhotonCameraSim(camera)
 
     visionSysSim.addCamera(cameraSim, Transform3d())
-    cameraSim.prop.setCalibration(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
+    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
     cameraSim.setMinTargetAreaPixels(0.0)
     visionSysSim.addVisionTargets(
         [
@@ -248,7 +248,7 @@ def test_PitchAngles(expected_pitch) -> None:
     camera = PhotonCamera("camera")
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
-    cameraSim.prop.setCalibration(640, 480, fovDiag=Rotation2d.fromDegrees(120.0))
+    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(120.0))
     cameraSim.setMinTargetAreaPixels(0.0)
     visionSysSim.addVisionTargets(
         [
@@ -314,7 +314,7 @@ def test_distanceCalc(distParam, pitchParam, heightParam) -> None:
     cameraSim = PhotonCameraSim(camera)
 
     visionSysSim.addCamera(cameraSim, Transform3d())
-    cameraSim.prop.setCalibration(640, 480, fovDiag=Rotation2d.fromDegrees(160.0))
+    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(160.0))
     cameraSim.setMinTargetAreaPixels(0.0)
     visionSysSim.adjustCamera(cameraSim, robotToCamera)
     visionSysSim.addVisionTargets(
@@ -348,7 +348,7 @@ def test_MultipleTargets() -> None:
     camera = PhotonCamera("camera")
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
-    cameraSim.prop.setCalibration(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
+    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
     cameraSim.setMinTargetAreaPixels(20.0)
 
     visionSysSim.addVisionTargets(
@@ -445,7 +445,7 @@ def test_PoseEstimation() -> None:
     camera = PhotonCamera("camera")
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
-    cameraSim.prop.setCalibration(640, 480, fovDiag=Rotation2d.fromDegrees(90.0))
+    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(90.0))
     cameraSim.setMinTargetAreaPixels(20.0)
 
     tagList: list[AprilTag] = []
@@ -519,7 +519,7 @@ def test_PoseEstimationRotated() -> None:
     camera = PhotonCamera("camera")
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, robotToCamera)
-    cameraSim.prop.setCalibration(640, 480, fovDiag=Rotation2d.fromDegrees(90.0))
+    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(90.0))
     cameraSim.setMinTargetAreaPixels(20.0)
 
     tagList: list[AprilTag] = []
