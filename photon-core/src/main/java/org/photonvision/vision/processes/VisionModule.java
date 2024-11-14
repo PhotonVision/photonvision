@@ -33,6 +33,7 @@ import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.PhotonConfiguration;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.dataflow.DataChangeService;
+import org.photonvision.common.dataflow.DataChangeService.SubscriberHandle;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NTDataPublisher;
 import org.photonvision.common.dataflow.statusLEDs.StatusLEDConsumer;
@@ -70,6 +71,7 @@ public class VisionModule {
     private final VisionRunner visionRunner;
     private final StreamRunnable streamRunnable;
     private final VisionModuleChangeSubscriber changeSubscriber;
+    private final SubscriberHandle changeSubscriberHandle;
     private final LinkedList<CVPipelineResultConsumer> resultConsumers = new LinkedList<>();
     // Raw result consumers run before any drawing has been done by the
     // OutputStreamPipeline
@@ -133,7 +135,7 @@ public class VisionModule {
         this.streamRunnable = new StreamRunnable(new OutputStreamPipeline());
         this.moduleIndex = index;
 
-        DataChangeService.getInstance().addSubscriber(changeSubscriber);
+        changeSubscriberHandle = DataChangeService.getInstance().addSubscriber(changeSubscriber);
 
         createStreams();
 
@@ -299,8 +301,17 @@ public class VisionModule {
     }
 
     public void start() {
+        visionSource.cameraConfiguration.deactivated = false;
         visionRunner.startProcess();
         streamRunnable.start();
+    }
+
+    public void stop() {
+        visionSource.cameraConfiguration.deactivated = true;
+        visionRunner.stopProcess();
+        streamRunnable.interrupt();
+        changeSubscriberHandle.stop();
+        setVisionLEDs(false);
     }
 
     public void setFov(double fov) {

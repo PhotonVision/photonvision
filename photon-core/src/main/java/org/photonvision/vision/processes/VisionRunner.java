@@ -72,6 +72,10 @@ public class VisionRunner {
         visionProcessThread.start();
     }
 
+    public void stopProcess() {
+        visionProcessThread.interrupt();
+    }
+
     private void update() {
         while (!Thread.interrupted()) {
             changeSubscriber.processSettingChanges();

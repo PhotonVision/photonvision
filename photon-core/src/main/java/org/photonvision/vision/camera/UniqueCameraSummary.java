@@ -33,7 +33,7 @@ public class UniqueCameraSummary {
         this.type = type.name();
     }
 
-    public UniqueCameraSummary(String uniqueName, PVCameraInfo info) {
+    public UniqueCameraSummary(String uniqueName, PVCameraDevice info) {
         this(uniqueName, info.name(), info.path(), info.otherPaths(), info.type());
     }
 }

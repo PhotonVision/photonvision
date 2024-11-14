@@ -21,7 +21,7 @@ import edu.wpi.first.cscore.UsbCameraInfo;
 import java.util.Arrays;
 import org.photonvision.common.configuration.CameraConfiguration;
 
-public sealed interface PVCameraInfo {
+public sealed interface PVCameraDevice {
     /**
      * @return The path of the camera. This is the path that is used to open the camera.
      */
@@ -52,7 +52,7 @@ public sealed interface PVCameraInfo {
 
     CameraType type();
 
-    default boolean equals(PVCameraInfo other) {
+    default boolean equals(PVCameraDevice other) {
         // return path().equals(other.path())
         //     && name().equals(other.name())
         //     && type().equals(other.type())
@@ -61,7 +61,7 @@ public sealed interface PVCameraInfo {
         return uniquePath().equals(other.uniquePath());
     }
 
-    public static final class PVUsbCameraInfo extends UsbCameraInfo implements PVCameraInfo {
+    public static final class PVUsbCameraInfo extends UsbCameraInfo implements PVCameraDevice {
         private PVUsbCameraInfo(
                 int dev, String path, String name, String[] otherPaths, int vendorId, int productId) {
             super(dev, path, name, otherPaths, vendorId, productId);
@@ -103,14 +103,14 @@ public sealed interface PVCameraInfo {
         public boolean equals(Object obj) {
             if (this == obj) return true;
             if (obj == null) return false;
-            if (obj instanceof PVCameraInfo info) {
+            if (obj instanceof PVCameraDevice info) {
                 return equals(info);
             }
             return false;
         }
     }
 
-    public static final class PVCSICameraInfo implements PVCameraInfo {
+    public static final class PVCSICameraInfo implements PVCameraDevice {
         public final String path;
         public final String baseName;
 
@@ -148,14 +148,14 @@ public sealed interface PVCameraInfo {
         public boolean equals(Object obj) {
             if (this == obj) return true;
             if (obj == null) return false;
-            if (obj instanceof PVCameraInfo info) {
+            if (obj instanceof PVCameraDevice info) {
                 return equals(info);
             }
             return false;
         }
     }
 
-    public static final class PVReconstructedCameraInfo implements PVCameraInfo {
+    public static final class PVReconstructedCameraInfo implements PVCameraDevice {
         private final String path;
         private final String name;
         private final String[] otherPaths;
@@ -198,27 +198,27 @@ public sealed interface PVCameraInfo {
         public boolean equals(Object obj) {
             if (this == obj) return true;
             if (obj == null) return false;
-            if (obj instanceof PVCameraInfo info) {
+            if (obj instanceof PVCameraDevice info) {
                 return equals(info);
             }
             return false;
         }
     }
 
-    public static PVCameraInfo fromUsbCameraInfo(UsbCameraInfo info) {
+    public static PVCameraDevice fromUsbCameraInfo(UsbCameraInfo info) {
         return new PVUsbCameraInfo(info);
     }
 
-    public static PVCameraInfo fromUsbCameraInfo(
+    public static PVCameraDevice fromUsbCameraInfo(
             int dev, String path, String name, String[] otherPaths, int vendorId, int productId) {
         return new PVUsbCameraInfo(dev, path, name, otherPaths, vendorId, productId);
     }
 
-    public static PVCameraInfo fromCSICameraInfo(String path, String baseName) {
+    public static PVCameraDevice fromCSICameraInfo(String path, String baseName) {
         return new PVCSICameraInfo(path, baseName);
     }
 
-    public static PVCameraInfo fromCameraConfig(CameraConfiguration config) {
+    public static PVCameraDevice fromCameraConfig(CameraConfiguration config) {
         return new PVReconstructedCameraInfo(
                 config.path, config.baseName, config.otherPaths, config.cameraType);
     }

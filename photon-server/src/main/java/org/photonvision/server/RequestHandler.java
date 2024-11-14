@@ -837,7 +837,7 @@ public class RequestHandler {
 
         String uniqueName = ctx.queryParam("uniqueName");
 
-        VisionSourceManager.getInstance().configureNewVisionSource(uniqueName);
+        VisionSourceManager.getInstance().activateVisionSource(uniqueName);
 
         ctx.status(200);
 

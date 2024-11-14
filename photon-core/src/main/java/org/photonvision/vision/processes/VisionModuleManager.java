@@ -64,6 +64,12 @@ public class VisionModuleManager {
         return module;
     }
 
+    public void removeModule(VisionModule module) {
+        visionModules.remove(module);
+        module.stop();
+        module.saveAndBroadcastAll();
+    }
+
     private int newCameraIndex() {
         // We won't necessarily have already added all the cameras we need to at this point
         // But by operating on the list, we have a fairly good idea of which we need to change,

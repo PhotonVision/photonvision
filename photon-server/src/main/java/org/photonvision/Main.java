@@ -125,11 +125,6 @@ public class Main {
                 }
             }
 
-            if (cmd.hasOption("ignore-cameras")) {
-                VisionSourceManager.getInstance()
-                        .setIgnoredCamerasRegex(cmd.getOptionValue("ignore-cameras"));
-            }
-
             if (cmd.hasOption("disable-networking")) {
                 NetworkManager.getInstance().networkingIsDisabled = true;
             }
