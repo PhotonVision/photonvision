@@ -106,8 +106,6 @@ model {
                 }
 
                 if (binary.targetPlatform.name == platName) {
-
-
                     // only include release binaries (hard coded for now)
                     def isDebug = binary.buildType.name.contains('debug')
                     if (!isDebug) {
@@ -190,6 +188,27 @@ model {
 }
 
 apply from: "${rootDir}/shared/javacpp/publish.gradle"
+
+// quickly hack our raw jar into publishing
+def rawjavaJar = tasks.register("rawjavaJar", Jar) {
+    dependsOn classes
+    includeEmptyDirs = false
+    from sourceSets.main.output
+    archiveClassifier = 'raw'
+}
+
+publishing {
+    publications {
+        rawjava(MavenPublication) {
+            artifact (rawjavaJar) {
+                classifier = null
+            }
+            artifactId = "${nativeName}-rawjava"
+            groupId artifactGroupId
+            version pubVersion
+        }
+    }
+}
 
 // Add photon serde headers to our published sources
 cppHeadersZip {
