@@ -150,7 +150,7 @@ def test_SolvePNP_SQPNP():
     # (for targets with arbitrary number of non-colinear points > 2)
     target = VisionTargetSim(
         Pose3d(Translation3d(5.0, 0.5, 1.0), Rotation3d(0.0, 0.0, math.pi)),
-        TargetModel(
+        TargetModel.createArbitrary(
             verts=[
                 Translation3d(0.0, 0.0, 0.0),
                 Translation3d(1.0, 0.0, 0.0),

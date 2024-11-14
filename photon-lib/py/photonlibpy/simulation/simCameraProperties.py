@@ -11,7 +11,7 @@ from ..estimation import RotTrlTransform3d
 
 
 class SimCameraProperties:
-    def __init__(self, path: str | None = None, width: int = 0, height: int = 0):
+    def __init__(self):
         self.resWidth: int = -1
         self.resHeight: int = -1
         self.camIntrinsics: np.ndarray = np.zeros((3, 3))  # [3,3]
@@ -24,59 +24,41 @@ class SimCameraProperties:
         self.latencyStdDev: seconds = 0.0
         self.viewplanes: list[np.ndarray] = []  # [3,1]
 
-        if path is None:
-            self.setCalibration(960, 720, fovDiag=Rotation2d(math.radians(90.0)))
-        else:
-            raise Exception("not yet implemented")
+        self.setCalibrationFromFOV(960, 720, fovDiag=Rotation2d(math.radians(90.0)))
 
-    def setCalibration(
+    def setCalibrationFromFOV(
+        self, width: int, height: int, fovDiag: Rotation2d
+    ) -> None:
+        if fovDiag.degrees() < 1.0 or fovDiag.degrees() > 179.0:
+            fovDiag = Rotation2d.fromDegrees(max(min(fovDiag.degrees(), 179.0), 1.0))
+            logging.error("Requested invalid FOV! Clamping between (1, 179) degrees...")
+
+        resDiag = math.sqrt(width * width + height * height)
+        diagRatio = math.tan(fovDiag.radians() / 2.0)
+        fovWidth = Rotation2d(math.atan((diagRatio * (width / resDiag)) * 2))
+        fovHeight = Rotation2d(math.atan(diagRatio * (height / resDiag)) * 2)
+
+        newDistCoeffs = np.zeros((8, 1))
+
+        cx = width / 2.0 - 0.5
+        cy = height / 2.0 - 0.5
+
+        fx = cx / math.tan(fovWidth.radians() / 2.0)
+        fy = cy / math.tan(fovHeight.radians() / 2.0)
+
+        newCamIntrinsics = np.array([[fx, 0.0, cx], [0.0, fy, cy], [0.0, 0.0, 1.0]])
+
+        self.setCalibrationFromIntrinsics(
+            width, height, newCamIntrinsics, newDistCoeffs
+        )
+
+    def setCalibrationFromIntrinsics(
         self,
         width: int,
         height: int,
-        *,
-        fovDiag: Rotation2d | None = None,
-        newCamIntrinsics: np.ndarray | None = None,
-        newDistCoeffs: np.ndarray | None = None,
-    ):
-        # Should be an inverted XOR on the args to differentiate between the signatures
-
-        has_fov_args = fovDiag is not None
-        has_matrix_args = newCamIntrinsics is not None and newDistCoeffs is not None
-
-        if (has_fov_args and has_matrix_args) or (
-            not has_matrix_args and not has_fov_args
-        ):
-            raise Exception("not a correct function sig")
-
-        if has_fov_args:
-            # really convince python we are doing the right thing
-            assert fovDiag is not None
-            if fovDiag.degrees() < 1.0 or fovDiag.degrees() > 179.0:
-                fovDiag = Rotation2d.fromDegrees(
-                    max(min(fovDiag.degrees(), 179.0), 1.0)
-                )
-                logging.error(
-                    "Requested invalid FOV! Clamping between (1, 179) degrees..."
-                )
-
-            resDiag = math.sqrt(width * width + height * height)
-            diagRatio = math.tan(fovDiag.radians() / 2.0)
-            fovWidth = Rotation2d(math.atan((diagRatio * (width / resDiag)) * 2))
-            fovHeight = Rotation2d(math.atan(diagRatio * (height / resDiag)) * 2)
-
-            newDistCoeffs = np.zeros((8, 1))
-
-            cx = width / 2.0 - 0.5
-            cy = height / 2.0 - 0.5
-
-            fx = cx / math.tan(fovWidth.radians() / 2.0)
-            fy = cy / math.tan(fovHeight.radians() / 2.0)
-
-            newCamIntrinsics = np.array([[fx, 0.0, cx], [0.0, fy, cy], [0.0, 0.0, 1.0]])
-
-        # really convince python we are doing the right thing
-        assert newCamIntrinsics is not None
-        assert newDistCoeffs is not None
+        newCamIntrinsics: np.ndarray,
+        newDistCoeffs: np.ndarray,
+    ) -> None:
 
         self.resWidth = width
         self.resHeight = height
@@ -357,7 +339,7 @@ class SimCameraProperties:
     @classmethod
     def PI4_LIFECAM_320_240(cls) -> typing.Self:
         prop = cls()
-        prop.setCalibration(
+        prop.setCalibrationFromIntrinsics(
             320,
             240,
             newCamIntrinsics=np.array(
@@ -391,7 +373,7 @@ class SimCameraProperties:
     @classmethod
     def PI4_LIFECAM_640_480(cls) -> typing.Self:
         prop = cls()
-        prop.setCalibration(
+        prop.setCalibrationFromIntrinsics(
             640,
             480,
             newCamIntrinsics=np.array(
@@ -425,7 +407,7 @@ class SimCameraProperties:
     @classmethod
     def LL2_640_480(cls) -> typing.Self:
         prop = cls()
-        prop.setCalibration(
+        prop.setCalibrationFromIntrinsics(
             640,
             480,
             newCamIntrinsics=np.array(
@@ -459,7 +441,7 @@ class SimCameraProperties:
     @classmethod
     def LL2_960_720(cls) -> typing.Self:
         prop = cls()
-        prop.setCalibration(
+        prop.setCalibrationFromIntrinsics(
             960,
             720,
             newCamIntrinsics=np.array(
@@ -493,7 +475,7 @@ class SimCameraProperties:
     @classmethod
     def LL2_1280_720(cls) -> typing.Self:
         prop = cls()
-        prop.setCalibration(
+        prop.setCalibrationFromIntrinsics(
             1280,
             720,
             newCamIntrinsics=np.array(
@@ -527,7 +509,7 @@ class SimCameraProperties:
     @classmethod
     def OV9281_640_480(cls) -> typing.Self:
         prop = cls()
-        prop.setCalibration(
+        prop.setCalibrationFromIntrinsics(
             640,
             480,
             newCamIntrinsics=np.array(
@@ -561,7 +543,7 @@ class SimCameraProperties:
     @classmethod
     def OV9281_800_600(cls) -> typing.Self:
         prop = cls()
-        prop.setCalibration(
+        prop.setCalibrationFromIntrinsics(
             800,
             600,
             newCamIntrinsics=np.array(
@@ -595,7 +577,7 @@ class SimCameraProperties:
     @classmethod
     def OV9281_1280_720(cls) -> typing.Self:
         prop = cls()
-        prop.setCalibration(
+        prop.setCalibrationFromIntrinsics(
             1280,
             720,
             newCamIntrinsics=np.array(
@@ -629,7 +611,7 @@ class SimCameraProperties:
     @classmethod
     def OV9281_1920_1080(cls) -> typing.Self:
         prop = cls()
-        prop.setCalibration(
+        prop.setCalibrationFromIntrinsics(
             1920,
             1080,
             newCamIntrinsics=np.array(

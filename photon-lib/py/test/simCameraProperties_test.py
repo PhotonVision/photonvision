@@ -10,14 +10,8 @@ from wpimath.geometry import Rotation2d, Translation3d
 @pytest.fixture(autouse=True)
 def scp() -> SimCameraProperties:
     props = SimCameraProperties()
-    props.setCalibration(1000, 1000, fovDiag=Rotation2d(math.radians(90.0)))
+    props.setCalibrationFromFOV(1000, 1000, fovDiag=Rotation2d(math.radians(90.0)))
     return props
-
-
-def test_Constructor() -> None:
-    SimCameraProperties()
-    with pytest.raises(Exception):
-        SimCameraProperties("4774")
 
 
 def test_GetPixelYaw(scp) -> None:
