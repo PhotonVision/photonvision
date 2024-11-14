@@ -8,86 +8,67 @@ from . import RotTrlTransform3d
 
 
 class TargetModel:
-    def __init__(
-        self,
-        *,
-        width: meters | None = None,
-        height: meters | None = None,
-        length: meters | None = None,
-        diameter: meters | None = None,
-        verts: List[Translation3d] | None = None
-    ):
 
+    def __init__(self):
         self.vertices: List[Translation3d] = []
+        self.isPlanar = False
+        self.isSpherical = False
 
-        if (
-            width is not None
-            and height is not None
-            and length is None
-            and diameter is None
-            and verts is None
-        ):
-            self.isPlanar = True
-            self.isSpherical = False
-            self.vertices = [
-                Translation3d(0.0, -width / 2.0, -height / 2.0),
-                Translation3d(0.0, width / 2.0, -height / 2.0),
-                Translation3d(0.0, width / 2.0, height / 2.0),
-                Translation3d(0.0, -width / 2.0, height / 2.0),
-            ]
+    @classmethod
+    def createPlanar(cls, width: meters, height: meters) -> Self:
+        tm = cls()
 
-            return
+        tm.isPlanar = True
+        tm.isSpherical = False
+        tm.vertices = [
+            Translation3d(0.0, -width / 2.0, -height / 2.0),
+            Translation3d(0.0, width / 2.0, -height / 2.0),
+            Translation3d(0.0, width / 2.0, height / 2.0),
+            Translation3d(0.0, -width / 2.0, height / 2.0),
+        ]
+        return tm
 
-        elif (
-            length is not None
-            and width is not None
-            and height is not None
-            and diameter is None
-            and verts is None
-        ):
-            verts = [
-                Translation3d(length / 2.0, -width / 2.0, -height / 2.0),
-                Translation3d(length / 2.0, width / 2.0, -height / 2.0),
-                Translation3d(length / 2.0, width / 2.0, height / 2.0),
-                Translation3d(length / 2.0, -width / 2.0, height / 2.0),
-                Translation3d(-length / 2.0, -width / 2.0, height / 2.0),
-                Translation3d(-length / 2.0, width / 2.0, height / 2.0),
-                Translation3d(-length / 2.0, width / 2.0, -height / 2.0),
-                Translation3d(-length / 2.0, -width / 2.0, -height / 2.0),
-            ]
-            # Handle the rest of this in the "default" case
-        elif (
-            diameter is not None
-            and width is None
-            and height is None
-            and length is None
-            and verts is None
-        ):
-            self.isPlanar = False
-            self.isSpherical = True
-            self.vertices = [
-                Translation3d(0.0, -diameter / 2.0, 0.0),
-                Translation3d(0.0, 0.0, -diameter / 2.0),
-                Translation3d(0.0, diameter / 2.0, 0.0),
-                Translation3d(0.0, 0.0, diameter / 2.0),
-            ]
-            return
-        elif (
-            verts is not None
-            and width is None
-            and height is None
-            and length is None
-            and diameter is None
-        ):
-            # Handle this in the "default" case
-            pass
-        else:
-            raise Exception("Not a valid overload")
+    @classmethod
+    def createCuboid(cls, length: meters, width: meters, height: meters) -> Self:
+        tm = cls()
+        verts = [
+            Translation3d(length / 2.0, -width / 2.0, -height / 2.0),
+            Translation3d(length / 2.0, width / 2.0, -height / 2.0),
+            Translation3d(length / 2.0, width / 2.0, height / 2.0),
+            Translation3d(length / 2.0, -width / 2.0, height / 2.0),
+            Translation3d(-length / 2.0, -width / 2.0, height / 2.0),
+            Translation3d(-length / 2.0, width / 2.0, height / 2.0),
+            Translation3d(-length / 2.0, width / 2.0, -height / 2.0),
+            Translation3d(-length / 2.0, -width / 2.0, -height / 2.0),
+        ]
 
-        # TODO maybe remove this if there is a better/preferred way
-        # make the python type checking gods happy
-        assert verts is not None
+        tm._common_construction(verts)
 
+        return tm
+
+    @classmethod
+    def createSpheroid(cls, diameter: meters) -> Self:
+        tm = cls()
+
+        tm.isPlanar = False
+        tm.isSpherical = True
+        tm.vertices = [
+            Translation3d(0.0, -diameter / 2.0, 0.0),
+            Translation3d(0.0, 0.0, -diameter / 2.0),
+            Translation3d(0.0, diameter / 2.0, 0.0),
+            Translation3d(0.0, 0.0, diameter / 2.0),
+        ]
+
+        return tm
+
+    @classmethod
+    def createArbitrary(cls, verts: List[Translation3d]) -> Self:
+        tm = cls()
+        tm._common_construction(verts)
+
+        return tm
+
+    def _common_construction(self, verts: List[Translation3d]) -> None:
         self.isSpherical = False
         if len(verts) <= 2:
             self.vertices = []
@@ -132,8 +113,8 @@ class TargetModel:
 
     @classmethod
     def AprilTag36h11(cls) -> Self:
-        return cls(width=6.5 * 0.0254, height=6.5 * 0.0254)
+        return cls.createPlanar(width=6.5 * 0.0254, height=6.5 * 0.0254)
 
     @classmethod
     def AprilTag16h5(cls) -> Self:
-        return cls(width=6.0 * 0.0254, height=6.0 * 0.0254)
+        return cls.createPlanar(width=6.0 * 0.0254, height=6.0 * 0.0254)
