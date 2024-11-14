@@ -17,7 +17,6 @@
 
 #pragma once
 
-#include <fmt/core.h>
 #include <wpinet/EventLoopRunner.h>
 #include <wpinet/UDPClient.h>
 #include <wpinet/uv/Buffer.h>
@@ -38,6 +37,7 @@
 
 #include <frc/filter/MedianFilter.h>
 #include <wpi/Logger.h>
+#include <wpi/print.h>
 #include <wpi/static_circular_buffer.h>
 #include <wpi/struct/Struct.h>
 

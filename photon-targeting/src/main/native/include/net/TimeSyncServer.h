@@ -17,7 +17,6 @@
 
 #pragma once
 
-#include <fmt/core.h>
 #include <wpinet/EventLoopRunner.h>
 #include <wpinet/UDPClient.h>
 #include <wpinet/uv/Buffer.h>
@@ -37,6 +36,7 @@
 #include <thread>
 
 #include <wpi/Logger.h>
+#include <wpi/print.h>
 #include <wpi/struct/Struct.h>
 
 #include "TimeSyncStructs.h"

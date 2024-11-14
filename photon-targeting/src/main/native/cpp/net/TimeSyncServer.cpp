@@ -17,7 +17,6 @@
 
 #include "net/TimeSyncServer.h"
 
-#include <fmt/core.h>
 #include <wpinet/UDPClient.h>
 #include <wpinet/uv/util.h>
 
@@ -31,6 +30,7 @@
 #include <thread>
 
 #include <wpi/Logger.h>
+#include <wpi/print.h>
 #include <wpi/struct/Struct.h>
 
 #include "ntcore_cpp.h"
@@ -59,7 +59,7 @@ static void ServerLoggerFunc(unsigned int level, const char* file,
 void wpi::tsp::TimeSyncServer::UdpCallback(uv::Buffer& data, size_t n,
                                            const sockaddr& sender,
                                            unsigned flags) {
-  // fmt::println("TimeSyncServer got ping!");
+  // wpi::println("TimeSyncServer got ping!");
 
   TspPing ping{wpi::UnpackStruct<TspPing>(data.bytes())};
 
@@ -85,7 +85,7 @@ void wpi::tsp::TimeSyncServer::UdpCallback(uv::Buffer& data, size_t n,
   wpi::uv::Buffer pongBuf{pongData};
   int sent =
       m_udp->TrySend(sender, wpi::SmallVector<wpi::uv::Buffer, 1>{pongBuf});
-  // fmt::println("Pong ret: {}", sent);
+  // wpi::println("Pong ret: {}", sent);
   if (static_cast<size_t>(sent) != wpi::Struct<TspPong>::GetSize()) {
     WPI_ERROR(m_logger, "Didn't send the whole pong back?");
     return;

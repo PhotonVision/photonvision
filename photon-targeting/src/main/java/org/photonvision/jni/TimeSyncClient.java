@@ -104,7 +104,7 @@ public class TimeSyncClient {
 
     public void stop() {
         synchronized (mutex) {
-            if (handle > 0) {
+            if (handle != 0) {
                 TimeSyncClient.stop(handle);
                 handle = 0;
             }
@@ -119,7 +119,7 @@ public class TimeSyncClient {
      */
     public long getOffset() {
         synchronized (mutex) {
-            if (handle > 0) {
+            if (handle != 0) {
                 return TimeSyncClient.getOffset(handle);
             }
 
@@ -139,7 +139,7 @@ public class TimeSyncClient {
 
     public PingMetadata getPingMetadata() {
         synchronized (mutex) {
-            if (handle > 0) {
+            if (handle != 0) {
                 return TimeSyncClient.getLatestMetadata(handle);
             }
 
