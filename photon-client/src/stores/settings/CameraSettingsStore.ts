@@ -128,11 +128,12 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         minWhiteBalanceTemp: d.minWhiteBalanceTemp,
         maxWhiteBalanceTemp: d.maxWhiteBalanceTemp
       }));
-      
+
       // Clamp index to between 0 and [length - 1]
-      useStateStore().currentCameraIndex = Math.max(0, Math.min(
-        useStateStore().currentCameraIndex, configuredCameras.length - 1
-      ));
+      useStateStore().currentCameraIndex = Math.max(
+        0,
+        Math.min(useStateStore().currentCameraIndex, configuredCameras.length - 1)
+      );
 
       this.cameras = configuredCameras.length > 0 ? configuredCameras : [PlaceholderCameraSettings];
     },

@@ -92,8 +92,7 @@ public class VisionModuleManagerTest {
         }
 
         @Override
-        public void release() {
-        }
+        public void release() {}
     }
 
     private static class TestSettables extends VisionSourceSettables {

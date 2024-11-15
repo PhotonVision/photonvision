@@ -33,7 +33,18 @@ const deactivateCamera = (cameraUniqueName: string) => {
         <span class="ml-3">Active Vision Modules</span>
       </v-card-title>
 
-      <v-banner class="pa-2 ma-3" v-if="useCameraSettingsStore().cameras.length === 0 || (useCameraSettingsStore().cameras.length === 1 && useCameraSettingsStore().cameras[0] == PlaceholderCameraSettings)" rounded dark color="red">No VisionModules created :( Activate a camera to get started!</v-banner>
+      <v-banner
+        class="pa-2 ma-3"
+        v-if="
+          useCameraSettingsStore().cameras.length === 0 ||
+          (useCameraSettingsStore().cameras.length === 1 &&
+            useCameraSettingsStore().cameras[0] == PlaceholderCameraSettings)
+        "
+        rounded
+        dark
+        color="red"
+        >No VisionModules created :( Activate a camera to get started!</v-banner
+      >
       <v-row class="ml-3">
         <v-card
           dark
@@ -98,7 +109,9 @@ const deactivateCamera = (cameraUniqueName: string) => {
       </v-card-title>
 
       <v-row class="ml-3 mb-0">
-        <v-banner v-if="useStateStore().discoveredCameras.length === 0" rounded dark color="red">No cameras connected :( Plug one in to get started!</v-banner>
+        <v-banner v-if="useStateStore().discoveredCameras.length === 0" rounded dark color="red"
+          >No cameras connected :( Plug one in to get started!</v-banner
+        >
         <v-card
           dark
           class="camera-card pa-4 mb-4 mr-3"

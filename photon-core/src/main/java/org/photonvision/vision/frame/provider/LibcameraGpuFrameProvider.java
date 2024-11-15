@@ -134,6 +134,5 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
     }
 
     @Override
-    public void release() {
-    }
+    public void release() {}
 }

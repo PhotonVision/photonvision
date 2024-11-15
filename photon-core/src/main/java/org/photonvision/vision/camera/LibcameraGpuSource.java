@@ -101,6 +101,5 @@ public class LibcameraGpuSource extends VisionSource {
     }
 
     @Override
-    public void release() {
-    }
+    public void release() {}
 }

@@ -48,7 +48,6 @@ export type WebsocketVideoFormat = Record<
 // Companion to UICameraConfiguration in Java
 export interface WebsocketCameraSettingsUpdate {
   cameraPath: string;
-  streamIndex: number;
   calibrations: CameraCalibrationResult[];
   currentPipelineIndex: number;
   currentPipelineSettings: ActivePipelineSettings;

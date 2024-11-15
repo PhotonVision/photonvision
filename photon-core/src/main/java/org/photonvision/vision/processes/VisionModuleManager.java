@@ -19,9 +19,6 @@ package org.photonvision.vision.processes;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
-import javax.sql.rowset.spi.SyncResolver;
-
 import org.photonvision.common.configuration.PhotonConfiguration.UICameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -61,7 +58,9 @@ public class VisionModuleManager {
         visionSource.cameraConfiguration.streamIndex = newCameraIndex();
 
         var pipelineManager = new PipelineManager(visionSource.getCameraConfiguration());
-        var module = new VisionModule(pipelineManager, visionSource, visionSource.cameraConfiguration.streamIndex);
+        var module =
+                new VisionModule(
+                        pipelineManager, visionSource, visionSource.cameraConfiguration.streamIndex);
         visionModules.add(module);
 
         return module;

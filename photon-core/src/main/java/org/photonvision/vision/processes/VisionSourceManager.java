@@ -18,7 +18,6 @@
 package org.photonvision.vision.processes;
 
 import edu.wpi.first.cscore.UsbCamera;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,7 +27,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
@@ -52,7 +50,8 @@ public class VisionSourceManager {
 
     private static final List<String> deviceBlacklist = List.of("bcm2835-isp");
 
-    private final ConcurrentHashMap<String, PVCameraDevice> cameraDeviceMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, PVCameraDevice> cameraDeviceMap =
+            new ConcurrentHashMap<>();
 
     private static class SingletonHolder {
         private static final VisionSourceManager INSTANCE = new VisionSourceManager();
@@ -94,13 +93,16 @@ public class VisionSourceManager {
     public void activateVisionSource(String uniqueName) {
         // Check if the camera is already in use by another module
         final Predicate<PVCameraDevice> isNotUsedInModule =
-                info -> VisionModuleManager.getInstance().getModules().stream()
+                info ->
+                        VisionModuleManager.getInstance().getModules().stream()
                                 .noneMatch(module -> module.uniqueName().equals(uniqueName));
         // transform the camera info all the way to a VisionModule and then start it
         Optional.ofNullable(cameraDeviceMap.get(uniqueName))
                 .filter(isNotUsedInModule)
                 // If we have an old config floating around, try to re-use it
-                .map(info -> configFromUniqueName(uniqueName).orElse(createConfigForCameras(info, uniqueName)))
+                .map(
+                        info ->
+                                configFromUniqueName(uniqueName).orElse(createConfigForCameras(info, uniqueName)))
                 .flatMap(VisionSourceManager::loadVisionSourceFromCamConfig)
                 .map(VisionModuleManager.getInstance()::addSource)
                 .ifPresent(
@@ -109,7 +111,6 @@ public class VisionSourceManager {
                             it.saveAndBroadcastAll();
                         });
 
-        
         // We have a new camera! Tell the world about it
         DataChangeService.getInstance()
                 .publishEvent(
@@ -121,11 +122,10 @@ public class VisionSourceManager {
 
     public void deactivateVisionSource(String uniqueName) {
         if (cameraDeviceMap.remove(uniqueName) == null) return;
-        VisionModuleManager.getInstance().visionModules
-            .stream()
-            .filter(module -> module.uniqueName().equals(uniqueName))
-            .findFirst()
-            .ifPresent(VisionModuleManager.getInstance()::removeModule);
+        VisionModuleManager.getInstance().visionModules.stream()
+                .filter(module -> module.uniqueName().equals(uniqueName))
+                .findFirst()
+                .ifPresent(VisionModuleManager.getInstance()::removeModule);
 
         pushUiUpdate();
     }
@@ -149,10 +149,7 @@ public class VisionSourceManager {
         // Find all infos that have been seen but weren't known before
         seenInfos.stream()
                 .filter(d -> !knownInfos.contains(d))
-                .forEach(d -> cameraDeviceMap.put(
-                    uniqueName(d.name(), cameraDeviceMap.keySet()),
-                    d
-                ));
+                .forEach(d -> cameraDeviceMap.put(uniqueName(d.name(), cameraDeviceMap.keySet()), d));
 
         knownInfos.removeIf(d -> !seenInfos.contains(d));
 
@@ -177,10 +174,11 @@ public class VisionSourceManager {
         if (LibCameraJNILoader.isSupported()) {
             // find all CSI cameras (Raspberry Pi cameras)
             Stream.of(LibCameraJNI.getCameraNames())
-                    .map(path -> {
-                        String name = LibCameraJNI.getSensorModel(path).getFriendlyName();
-                        return PVCameraDevice.fromCSICameraInfo(path, name);
-                    })
+                    .map(
+                            path -> {
+                                String name = LibCameraJNI.getSensorModel(path).getFriendlyName();
+                                return PVCameraDevice.fromCSICameraInfo(path, name);
+                            })
                     .forEach(cameraInfos::add);
         }
         return cameraInfos;
@@ -197,12 +195,14 @@ public class VisionSourceManager {
         return String.format("%s (%d)", name, i);
     }
 
-    private static CameraConfiguration createConfigForCameras(PVCameraDevice info, String uniqueName) {
+    private static CameraConfiguration createConfigForCameras(
+            PVCameraDevice info, String uniqueName) {
         // create new camera config for all new cameras
         logger.info("Creating a new camera config for camera " + uniqueName);
 
-        CameraConfiguration configuration = new CameraConfiguration(
-            info.name(), uniqueName, uniqueName, info.path(), info.otherPaths());
+        CameraConfiguration configuration =
+                new CameraConfiguration(
+                        info.name(), uniqueName, uniqueName, info.path(), info.otherPaths());
         configuration.cameraType = info.type();
 
         if (info instanceof PVCameraDevice.PVUsbCameraInfo usbInfo) {
@@ -214,7 +214,8 @@ public class VisionSourceManager {
     }
 
     private static Optional<CameraConfiguration> configFromUniqueName(String uniqueName) {
-        return Optional.ofNullable(ConfigManager.getInstance().getConfig().getCameraConfigurations().get(uniqueName));
+        return Optional.ofNullable(
+                ConfigManager.getInstance().getConfig().getCameraConfigurations().get(uniqueName));
     }
 
     private static List<PVCameraDevice> filterAllowedDevices(List<PVCameraDevice> allDevices) {

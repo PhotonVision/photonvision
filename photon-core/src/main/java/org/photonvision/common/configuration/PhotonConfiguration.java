@@ -185,8 +185,6 @@ public class PhotonConfiguration {
         /** See {@link CameraConfiguration#deactivated} */
         public boolean deactivated;
 
-        public int streamIndex;
-
         public List<UICameraCalibrationCoefficients> calibrations;
         public int currentPipelineIndex;
         public HashMap<String, Object> currentPipelineSettings;
