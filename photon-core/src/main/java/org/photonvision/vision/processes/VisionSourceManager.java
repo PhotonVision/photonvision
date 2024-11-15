@@ -63,7 +63,7 @@ public class VisionSourceManager {
     }
 
     VisionSourceManager() {
-        TimedTaskManager.getInstance().addTask("CameraDeviceExplorer", this::discoverNewDevices, 5000);
+        TimedTaskManager.getInstance().addTask("CameraDeviceExplorer", this::discoverNewDevices, 1000);
     }
 
     /**
@@ -99,6 +99,7 @@ public class VisionSourceManager {
         // transform the camera info all the way to a VisionModule and then start it
         Optional.ofNullable(cameraDeviceMap.get(uniqueName))
                 .filter(isNotUsedInModule)
+                // If we have an old config floating around, try to re-use it
                 .map(info -> configFromUniqueName(uniqueName).orElse(createConfigForCameras(info, uniqueName)))
                 .flatMap(VisionSourceManager::loadVisionSourceFromCamConfig)
                 .map(VisionModuleManager.getInstance()::addSource)
@@ -125,12 +126,6 @@ public class VisionSourceManager {
             .filter(module -> module.uniqueName().equals(uniqueName))
             .findFirst()
             .ifPresent(VisionModuleManager.getInstance()::removeModule);
-
-        // We removed a camera! Tell the world about it
-        DataChangeService.getInstance()
-                .publishEvent(
-                        new OutgoingUIEvent<>(
-                                "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
 
         pushUiUpdate();
     }

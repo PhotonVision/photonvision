@@ -19,6 +19,9 @@ package org.photonvision.vision.processes;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import javax.sql.rowset.spi.SyncResolver;
+
 import org.photonvision.common.configuration.PhotonConfiguration.UICameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -54,23 +57,23 @@ public class VisionModuleManager {
         return visionModules.get(i);
     }
 
-    public VisionModule addSource(VisionSource visionSources) {
-        visionSources.cameraConfiguration.streamIndex = newCameraIndex();
+    public synchronized VisionModule addSource(VisionSource visionSource) {
+        visionSource.cameraConfiguration.streamIndex = newCameraIndex();
 
-        var pipelineManager = new PipelineManager(visionSources.getCameraConfiguration());
-        var module = new VisionModule(pipelineManager, visionSources, visionModules.size());
+        var pipelineManager = new PipelineManager(visionSource.getCameraConfiguration());
+        var module = new VisionModule(pipelineManager, visionSource, visionSource.cameraConfiguration.streamIndex);
         visionModules.add(module);
 
         return module;
     }
 
-    public void removeModule(VisionModule module) {
+    public synchronized void removeModule(VisionModule module) {
         visionModules.remove(module);
         module.stop();
         module.saveAndBroadcastAll();
     }
 
-    private int newCameraIndex() {
+    private synchronized int newCameraIndex() {
         // We won't necessarily have already added all the cameras we need to at this point
         // But by operating on the list, we have a fairly good idea of which we need to change,
         // but it's not guaranteed that we change the correct one
@@ -104,7 +107,7 @@ public class VisionModuleManager {
         }
     }
 
-    public UiVmmState getState() {
+    public synchronized UiVmmState getState() {
         return new UiVmmState(
                 this.visionModules.stream()
                         .map(VisionModule::toUICameraConfig)

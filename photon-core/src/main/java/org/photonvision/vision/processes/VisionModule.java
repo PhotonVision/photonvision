@@ -259,7 +259,7 @@ public class VisionModule {
 
         @Override
         public void run() {
-            while (true) {
+            while (!Thread.interrupted()) {
                 final Frame m_frame;
                 final AdvancedPipelineSettings settings;
                 final List<TrackedTarget> targets;
@@ -293,7 +293,8 @@ public class VisionModule {
                     try {
                         Thread.sleep(1);
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        logger.warn("StreamRunnable was interrupted - exiting");
+                        return;
                     }
                 }
             }
@@ -308,9 +309,22 @@ public class VisionModule {
 
     public void stop() {
         visionSource.cameraConfiguration.deactivated = true;
-        visionSource.release();
         visionRunner.stopProcess();
-        streamRunnable.interrupt();
+
+        try {
+            streamRunnable.interrupt();
+            streamRunnable.join();
+        } catch (InterruptedException e) {
+            logger.error("Exception killing process thread", e);
+        }
+
+        visionSource.release();
+
+        inputVideoStreamer.close();
+        outputVideoStreamer.close();
+        inputFrameSaver.close();
+        outputFrameSaver.close();
+
         changeSubscriberHandle.stop();
         setVisionLEDs(false);
     }

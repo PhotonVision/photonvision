@@ -73,7 +73,12 @@ public class VisionRunner {
     }
 
     public void stopProcess() {
-        visionProcessThread.interrupt();
+        try {
+            visionProcessThread.interrupt();
+            visionProcessThread.join();
+        } catch (InterruptedException e) {
+            logger.error("Exception killing process thread", e);
+        }
     }
 
     private void update() {

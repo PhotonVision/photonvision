@@ -169,4 +169,8 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
                 matchTypes[MathUtil.clamp((int) matchType.value, 0, matchTypes.length - 1)];
         return matchTypeStr + "-" + matchNum.value + "-" + eventName.value;
     }
+
+    public void close() {
+        // troododfa;lkjadsf;lkfdsaj otgooadflsk;j
+    }
 }

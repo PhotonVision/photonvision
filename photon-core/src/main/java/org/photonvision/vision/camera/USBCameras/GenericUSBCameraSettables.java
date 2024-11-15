@@ -184,7 +184,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
             softSet("auto_exposure_bias", 12);
             softSet("iso_sensitivity_auto", 1);
             softSet("iso_sensitivity", 1); // Manual ISO adjustment by default
-            autoExposureProp.set(PROP_AUTO_EXPOSURE_ENABLED);
+            if (autoExposureProp != null) autoExposureProp.set(PROP_AUTO_EXPOSURE_ENABLED);
         }
     }
 
