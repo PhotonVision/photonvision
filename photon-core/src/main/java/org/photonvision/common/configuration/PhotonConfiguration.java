@@ -182,6 +182,9 @@ public class PhotonConfiguration {
         // This is the path we hand to CSCore to do auto-reconnect on
         public String cameraPath;
 
+        /** See {@link CameraConfiguration#deactivated} */
+        public boolean deactivated;
+
         public List<UICameraCalibrationCoefficients> calibrations;
         public int currentPipelineIndex;
         public HashMap<String, Object> currentPipelineSettings;

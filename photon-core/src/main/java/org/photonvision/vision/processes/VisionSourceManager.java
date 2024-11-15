@@ -108,6 +108,13 @@ public class VisionSourceManager {
                             it.saveAndBroadcastAll();
                         });
 
+        
+        // We have a new camera! Tell the world about it
+        DataChangeService.getInstance()
+                .publishEvent(
+                        new OutgoingUIEvent<>(
+                                "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
+
         pushUiUpdate();
     }
 
@@ -118,6 +125,12 @@ public class VisionSourceManager {
             .filter(module -> module.uniqueName().equals(uniqueName))
             .findFirst()
             .ifPresent(VisionModuleManager.getInstance()::removeModule);
+
+        // We removed a camera! Tell the world about it
+        DataChangeService.getInstance()
+                .publishEvent(
+                        new OutgoingUIEvent<>(
+                                "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
 
         pushUiUpdate();
     }

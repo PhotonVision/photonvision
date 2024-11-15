@@ -531,9 +531,10 @@ public class VisionModule {
     public PhotonConfiguration.UICameraConfiguration toUICameraConfig() {
         var ret = new PhotonConfiguration.UICameraConfiguration();
 
-        ret.cameraPath = visionSource.getCameraConfiguration().getUsbPathOrDefault();
+        var config = visionSource.getCameraConfiguration();
+        ret.cameraPath = config.getUsbPathOrDefault();
         ret.fov = visionSource.getSettables().getFOV();
-        ret.isCSICamera = visionSource.getCameraConfiguration().cameraType == CameraType.ZeroCopyPicam;
+        ret.isCSICamera = config.cameraType == CameraType.ZeroCopyPicam;
         ret.nickname = visionSource.getSettables().getConfiguration().nickname;
         ret.uniqueName = visionSource.getSettables().getConfiguration().uniqueName;
         ret.currentPipelineSettings =
@@ -545,6 +546,8 @@ public class VisionModule {
         ret.maxExposureRaw = visionSource.getSettables().getMaxExposureRaw();
         ret.minWhiteBalanceTemp = visionSource.getSettables().getMinWhiteBalanceTemp();
         ret.maxWhiteBalanceTemp = visionSource.getSettables().getMaxWhiteBalanceTemp();
+
+        ret.deactivated = config.deactivated;
 
         // TODO refactor into helper method
         var temp = new HashMap<Integer, HashMap<String, Object>>();

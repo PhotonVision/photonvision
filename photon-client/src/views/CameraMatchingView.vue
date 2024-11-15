@@ -4,6 +4,7 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { inject } from "vue";
 import { useStateStore } from "@/stores/StateStore";
+import { PlaceholderCameraSettings } from "@/types/SettingTypes";
 
 const formatUrl = (port) => `http://${inject("backendHostname")}:${port}/stream.mjpg`;
 const host = inject<string>("backendHost");
@@ -32,11 +33,13 @@ const deactivateCamera = (cameraUniqueName: string) => {
         <span class="ml-3">Active Vision Modules</span>
       </v-card-title>
 
+      <v-banner class="ma-2" v-if="useCameraSettingsStore().cameras.length === 0 || (useCameraSettingsStore().cameras.length === 1 && useCameraSettingsStore().cameras[0] == PlaceholderCameraSettings)" rounded dark color="red">No cameras connected :( Plug one in to get started!</v-banner>
       <v-row class="ml-3">
         <v-card
           dark
           class="camera-card pa-4 mb-4 mr-3"
           v-for="(module, index) in useCameraSettingsStore().cameras"
+          v-if="module !== PlaceholderCameraSettings"
           :value="index"
         >
           <v-card-title class="pb-8">{{ module.nickname }}</v-card-title>
@@ -80,7 +83,7 @@ const deactivateCamera = (cameraUniqueName: string) => {
                 <tr>
                   <td>Actions</td>
                   <td>
-                    <v-btn @click="deactivateCamera(module.uniqueName)" color="primary">Deactivate</v-btn>
+                    <v-btn class="ma-2" @click="deactivateCamera(module.uniqueName)" color="primary">Deactivate</v-btn>
                   </td>
                 </tr>
               </tbody>
@@ -94,7 +97,8 @@ const deactivateCamera = (cameraUniqueName: string) => {
         <span> Unassigned Cameras </span>
       </v-card-title>
 
-      <v-row class="ml-3">
+      <v-row class="ml-3 mb-0">
+        <v-banner v-if="useStateStore().discoveredCameras.length === 0" rounded dark color="red">No cameras connected :( Plug one in to get started!</v-banner>
         <v-card
           dark
           class="camera-card pa-4 mb-4 mr-3"
@@ -132,7 +136,7 @@ const deactivateCamera = (cameraUniqueName: string) => {
                 <tr>
                   <td>Actions</td>
                   <td>
-                    <v-btn @click="activateCamera(camera.uniqueName)" color="primary">Activate</v-btn>
+                    <v-btn class="ma-2" @click="activateCamera(camera.uniqueName)" color="primary">Activate</v-btn>
                   </td>
                 </tr>
               </tbody>
