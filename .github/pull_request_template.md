@@ -2,7 +2,7 @@
 
 What changed? Why? (the code + comments should speak for itself on the "how")
 
-Fun screenshots ir a cool video or something are super helpful as well. If this touches platform-specific behavior, this is where test evidence should be collected.
+Fun screenshots or a cool video or something are super helpful as well. If this touches platform-specific behavior, this is where test evidence should be collected.
 
 Any issues this pull request closes or pull requests this supersedes should be linked with `Closes #issuenumber`.
 
