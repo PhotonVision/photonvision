@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import MetricsCard from "@/components/settings/MetricsCard.vue";
-import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { inject } from "vue";
 import { useStateStore } from "@/stores/StateStore";

@@ -2,6 +2,8 @@
 import { computed, getCurrentInstance } from "vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
+import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import { PlaceholderCameraSettings } from "@/types/SettingTypes";
 
 const compact = computed<boolean>({
   get: () => {
@@ -14,6 +16,13 @@ const compact = computed<boolean>({
 
 // Vuetify2 doesn't yet support the useDisplay API so this is required to access the prop when using the Composition API
 const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndUp || false);
+
+const needsCamerasConfigured = computed<boolean>(() => {
+  const ret = useCameraSettingsStore().cameras.length === 0 || useCameraSettingsStore().cameras[0] === PlaceholderCameraSettings;
+  console.log(ret);
+  return ret;
+});
+
 </script>
 
 <template>
@@ -55,8 +64,12 @@ const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.bre
         <v-list-item-icon>
           <v-icon>mdi-notebook</v-icon>
         </v-list-item-icon>
-        <v-list-item-content>
-          <v-list-item-title>Camera Configs</v-list-item-title>
+        <v-list-item-content v-if="needsCamerasConfigured">
+          <v-list-item-title>Needs Camera Matching! needs matching</v-list-item-title>
+        </v-list-item-content>
+        <v-list-item-content v-if="!needsCamerasConfigured">
+        </v-list-item-content>
+          <v-list-item-title>Camera Matching</v-list-item-title>
         </v-list-item-content>
       </v-list-item>
       <v-list-item link to="/docs">
@@ -126,5 +139,21 @@ const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.bre
   width: 100%;
   height: 70px;
   object-fit: contain;
+}
+
+.cameraicon {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.9);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(0.9);
+  }
 }
 </style>
