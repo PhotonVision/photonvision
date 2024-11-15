@@ -103,13 +103,24 @@ const deactivateCamera = (cameraUniqueName: string) => {
         </v-card>
       </v-row>
     </v-card>
-    <v-card dark class="mb-3 pr-6 pb-3" style="background-color: #006492">
+
+    <!-- Show this card if there are unmatched discovered cameras, or if no cameras have been matched -->
+    <v-card
+      dark
+      class="mb-3 pr-6 pb-3"
+      style="background-color: #006492"
+      v-if="useStateStore().discoveredCameras.length !== 0 || useCameraSettingsStore().cameras.length === 0"
+    >
       <v-card-title>
         <span> Unassigned Cameras </span>
       </v-card-title>
 
       <v-row class="ml-3 mb-0">
-        <v-banner v-if="useStateStore().discoveredCameras.length === 0" rounded dark color="red"
+        <v-banner
+          v-if="useStateStore().discoveredCameras.length === 0 && useCameraSettingsStore().cameras.length === 0"
+          rounded
+          dark
+          color="red"
           >No cameras connected :( Plug one in to get started!</v-banner
         >
         <v-card

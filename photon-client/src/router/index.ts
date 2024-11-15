@@ -36,7 +36,7 @@ const router = new VueRouter({
     },
     {
       path: "/cameraConfigs",
-      name: "Camera Configs",
+      name: "Camera Matching",
       component: CameraMatchingView
     },
     {
