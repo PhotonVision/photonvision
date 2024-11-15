@@ -6,7 +6,16 @@ from ..estimation.targetModel import TargetModel
 
 
 class VisionTargetSim:
+    """Describes a vision target located somewhere on the field that your vision system can detect."""
+
     def __init__(self, pose: Pose3d, model: TargetModel, id: int = -1):
+        """Describes a fiducial tag located somewhere on the field that your vision system can detect.
+
+        :param pose:  Pose3d of the tag in field-relative coordinates
+        :param model: TargetModel which describes the shape of the target(tag)
+        :param id:    The ID of this fiducial tag
+        """
+
         self.pose: Pose3d = pose
         self.model: TargetModel = model
         self.fiducialId: int = id
@@ -47,4 +56,5 @@ class VisionTargetSim:
         return self.model
 
     def getFieldVertices(self) -> list[Translation3d]:
+        """This target's vertices offset from its field pose."""
         return self.model.getFieldVertices(self.pose)
