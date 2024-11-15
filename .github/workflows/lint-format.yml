@@ -61,9 +61,7 @@ jobs:
         with:
           java-version: 17
           distribution: temurin
-      - run: |
-          chmod +x gradlew
-          ./gradlew spotlessCheck
+      - run: ./gradlew spotlessCheck
         name: Run spotless
 
   client-lint-format:
