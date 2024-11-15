@@ -146,6 +146,8 @@ public class VisionSourceManager {
                     d
                 ));
 
+        knownInfos.removeIf(d -> !seenInfos.contains(d));
+
         // this is only ran every 5 seconds so we can afford to publish every time
         pushUiUpdate();
     }

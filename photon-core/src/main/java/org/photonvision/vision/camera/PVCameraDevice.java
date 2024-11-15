@@ -53,11 +53,6 @@ public sealed interface PVCameraDevice {
     CameraType type();
 
     default boolean equals(PVCameraDevice other) {
-        // return path().equals(other.path())
-        //     && name().equals(other.name())
-        //     && type().equals(other.type())
-        //     && uniquePath().equals(other.uniquePath())
-        //     && Arrays.equals(otherPaths(), other.otherPaths());
         return uniquePath().equals(other.uniquePath());
     }
 
@@ -181,7 +176,10 @@ public sealed interface PVCameraDevice {
 
         @Override
         public String uniquePath() {
-            return path;
+            return Arrays.stream(otherPaths())
+                    .filter(path -> path.contains("/by-path/"))
+                    .findFirst()
+                    .orElse(path());
         }
 
         @Override
