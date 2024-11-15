@@ -10,7 +10,7 @@ This diagram shows how to use the recommended regulator to power a coprocessor.
 
 ::::{tab-set}
 
-:::{tab-item} OPI 5 Zinc V USB C
+:::{tab-item} Orange Pi Zinc V USB C
 
 ```{image} images/OrangePiZincUSBC.png
 :alt: Wiring the opi5 to the pdp using the Redux Robotics Zinc V and usb c
@@ -34,7 +34,7 @@ This diagram shows how to use the recommended regulator to power a coprocessor.
 
 :::
 
-:::{tab-item} OPI 5 Pololu S13V30F5 Pigtail
+:::{tab-item} Orange Pi 5 Pololu S13V30F5 Pigtail
 
 ```{image} images/OrangePiPololuPigtail.png
 :alt: Wiring the opi5 to the pdp using the Pololu S13V30F5 and a usb c pigtail
@@ -42,7 +42,7 @@ This diagram shows how to use the recommended regulator to power a coprocessor.
 
 :::
 
-:::{tab-item} RPI 5 Zinc V USB C
+:::{tab-item} Raspberry Pi 5 Zinc V USB C
 
 ```{image} images/RPiZincUSBC.png
 :alt: Wiring the RPI5 to the pdp using the Redux Robotics Zinc V and usb c
@@ -66,7 +66,7 @@ This diagram shows how to use the recommended regulator to power a coprocessor.
 
 :::
 
-:::{tab-item} RPI 5 Pololu S13V30F5 Pigtail
+:::{tab-item} Raspberry Pi 5 Pololu S13V30F5 Pigtail
 
 ```{image} images/RPiPololuPigtail.png
 :alt: Wiring the RPI5 to the pdp using the Pololu S13V30F5 and a usb c pigtail
