@@ -217,7 +217,9 @@ public class USBCameraSource extends VisionSource {
     }
 
     @Override
-    public void close() {
+    public void release() {
+        CameraServer.removeCamera(camera.getName());
+        CameraServer.removeServer(cvSink.getName());
         cvSink.close();
         camera.close();
         usbFrameProvider = null;

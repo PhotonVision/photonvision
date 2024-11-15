@@ -19,9 +19,10 @@ package org.photonvision.vision.frame;
 
 import java.util.function.Supplier;
 import org.photonvision.vision.opencv.ImageRotationMode;
+import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.impl.HSVPipe;
 
-public abstract class FrameProvider implements Supplier<Frame> {
+public abstract class FrameProvider implements Supplier<Frame>, Releasable {
     protected int sequenceID = 0;
 
     public abstract String getName();

@@ -132,4 +132,8 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
     public void requestFrameCopies(boolean copyInput, boolean copyOutput) {
         LibCameraJNI.setFramesToCopy(settables.r_ptr, copyInput, copyOutput);
     }
+
+    @Override
+    public void release() {
+    }
 }

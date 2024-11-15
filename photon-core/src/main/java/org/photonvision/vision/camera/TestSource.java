@@ -79,6 +79,12 @@ public class TestSource extends VisionSource {
                 // TODO Auto-generated method stub
                 throw new UnsupportedOperationException("Unimplemented method 'requestHsvSettings'");
             }
+
+            @Override
+            public void release() {
+                // TODO Auto-generated method stub
+                throw new UnsupportedOperationException("Unimplemented method 'release'");
+            }
         };
     }
 
@@ -100,7 +106,7 @@ public class TestSource extends VisionSource {
     }
 
     @Override
-    public void close() {
+    public void release() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'close'");
     }

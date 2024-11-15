@@ -60,4 +60,9 @@ public class USBFrameProvider extends CpuImageProcessor {
     public String getName() {
         return "USBFrameProvider - " + cvSink.getName();
     }
+
+    @Override
+    public void release() {
+        cvSink.close();
+    }
 }

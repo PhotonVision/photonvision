@@ -90,6 +90,10 @@ public class VisionModuleManagerTest {
         public void remakeSettables() {
             return;
         }
+
+        @Override
+        public void release() {
+        }
     }
 
     private static class TestSettables extends VisionSourceSettables {

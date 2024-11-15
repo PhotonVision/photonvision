@@ -86,8 +86,8 @@ public class FileVisionSource extends VisionSource {
     }
 
     @Override
-    public void close() {
-        frameProvider.close();
+    public void release() {
+        frameProvider.release();
     }
 
     private static class FileSourceSettables extends VisionSourceSettables {
