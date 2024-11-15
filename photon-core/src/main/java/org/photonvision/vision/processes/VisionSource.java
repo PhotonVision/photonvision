@@ -40,4 +40,6 @@ public abstract class VisionSource {
     public abstract boolean hasLEDs();
 
     public abstract void remakeSettables();
+
+    public abstract void close();
 }

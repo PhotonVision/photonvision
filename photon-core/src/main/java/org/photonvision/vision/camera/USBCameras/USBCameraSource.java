@@ -217,6 +217,13 @@ public class USBCameraSource extends VisionSource {
     }
 
     @Override
+    public void close() {
+        cvSink.close();
+        camera.close();
+        usbFrameProvider = null;
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null) return false;

@@ -308,6 +308,7 @@ public class VisionModule {
 
     public void stop() {
         visionSource.cameraConfiguration.deactivated = true;
+        visionSource.close();
         visionRunner.stopProcess();
         streamRunnable.interrupt();
         changeSubscriberHandle.stop();

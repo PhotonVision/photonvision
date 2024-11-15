@@ -118,4 +118,8 @@ public class FileFrameProvider extends CpuImageProcessor {
     public String getName() {
         return "FileFrameProvider" + thisIndex + " - " + path.getFileName();
     }
+
+    public void close() {
+        originalFrame.release();
+    }
 }
