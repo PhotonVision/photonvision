@@ -1,6 +1,6 @@
-# Installation & Setup
+# Advanced Installation
 
-This page will help you install PhotonVision on your coprocessor, wire it, and properly setup the networking in order to start tracking targets.
+This page will help you install PhotonVision on non-supported coprocessor.
 
 ## Step 1: Software Install
 
@@ -14,25 +14,5 @@ You only need to install PhotonVision on the coprocessor/device that is being us
 :maxdepth: 3
 
 sw_install/index
-updating
-```
-
-## Step 2: Wiring
-
-This section will walk you through how to wire your coprocessor to get power.
-
-```{toctree}
-:maxdepth: 1
-
-wiring
-```
-
-## Step 3: Networking
-
-This section will walk you though how to connect your coprocessor to a network. This section is very important (and easy to get wrong), so we recommend you read it thoroughly.
-
-```{toctree}
-:maxdepth: 1
-
-networking
+prerelease-software
 ```
