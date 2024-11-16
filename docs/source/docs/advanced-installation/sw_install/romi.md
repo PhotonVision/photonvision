@@ -11,7 +11,7 @@ SSH into the Raspberry Pi (using Windows command line, or a tool like [Putty](ht
 :::.. The following paragraph can be restored when WPILibPi becomes compatible with the current version of PhotonVision. 
 :::.. Follow the process for installing PhotonVision on {ref}`"Other Debian-Based Co-Processor Installation" <docs/advanced-installation/sw_install/other-coprocessors:Other Debian-Based Co-Processor Installation>`. As it mentions, this will require an internet connection so connecting the Raspberry Pi to an internet-connected router via an Ethernet cable will be the easiest solution. The pi must remain writable while you are following these steps! 
 
-:::..Temporary instructions explaiining how to install the older version of PhotonVision on a Romi. Remove when no longer needed.
+:::..Temporary instructions explaining how to install the older version of PhotonVision on a Romi. Remove when no longer needed.
 :::{attention}
 The version of WPILibPi for the Romi is 2023.2.1, which is not compatible with the current version of PhotonVision. **If you are using WPILibPi 2023.2.1 on your Romi, you must install PhotonVision v2023.4.2 or earlier!**
 
