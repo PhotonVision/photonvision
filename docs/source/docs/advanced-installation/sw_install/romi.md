@@ -8,7 +8,7 @@ The WPILibPi image includes FRCVision, which reserves USB cameras; to use Photon
 
 SSH into the Raspberry Pi (using Windows command line, or a tool like [Putty](https://www.chiark.greenend.org.uk/~sgtatham/putty/) ) at the Romi's default address `10.0.0.2`. The default user is `pi`, and the password is `raspberry`.
 
-:::.. The following paragraph can be restored when WPILibPi is becomes compatible with the current version of PhotonVision. 
+:::.. The following paragraph can be restored when WPILibPi becomes compatible with the current version of PhotonVision. 
 :::.. Follow the process for installing PhotonVision on {ref}`"Other Debian-Based Co-Processor Installation" <docs/advanced-installation/sw_install/other-coprocessors:Other Debian-Based Co-Processor Installation>`. As it mentions, this will require an internet connection so connecting the Raspberry Pi to an internet-connected router via an Ethernet cable will be the easiest solution. The pi must remain writable while you are following these steps! 
 
 :::..Temporary instructions explaiining how to install the older version of PhotonVision on a Romi. Remove when no longer needed.
