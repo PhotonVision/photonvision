@@ -9,6 +9,13 @@ PhotonPipelineResult_TYPE_STRING = (
 
 
 class NTTopicSet:
+    """This class is a wrapper around all per-pipeline NT topics that PhotonVision should be publishing
+    It's split here so the sim and real-camera implementations can share a common implementation of
+    the naming and registration of the NT content.
+
+    However, we do expect that the actual logic which fills out values in the entries will be
+    different for sim vs. real camera
+    """
 
     def __init__(self, tableName: str, cameraName: str) -> None:
         instance = nt.NetworkTableInstance.getDefault()
