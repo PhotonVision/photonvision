@@ -161,39 +161,39 @@ myst_enable_extensions = ["colon_fence"]
 
 # Add Github Token to all Github API Requests made by any extension anywhere
 
-import http.client
+# import http.client
 
 
-original_send = http.client.HTTPConnection.send
+# original_send = http.client.HTTPConnection.send
 
 
-def new_send(self, data):
-    try:
-        headers = dict(
-            (a.lower(), b)
-            for a, b in (
-                header.split(b":", 1) for header in data.strip().split(b"\r\n")[1:]
-            )
-        )
+# def new_send(self, data):
+#     try:
+#         headers = dict(
+#             (a.lower(), b)
+#             for a, b in (
+#                 header.split(b":", 1) for header in data.strip().split(b"\r\n")[1:]
+#             )
+#         )
 
-        new_data = data
-        if b"api.github.com" in headers[b"host"]:
-            if b"authorization" not in headers:
-                if github_token := os.environ.get("GITHUB_TOKEN", None):
-                    new_data = (
-                        new_data[:-2]  # Remove the last CRLF
-                        + b"Authorization: Bearer "
-                        + github_token.encode("ascii")
-                        + b"\r\n\r\n"
-                    )
+#         new_data = data
+#         if b"api.github.com" in headers[b"host"]:
+#             if b"authorization" not in headers:
+#                 if github_token := os.environ.get("GITHUB_TOKEN", None):
+#                     new_data = (
+#                         new_data[:-2]  # Remove the last CRLF
+#                         + b"Authorization: Bearer "
+#                         + github_token.encode("ascii")
+#                         + b"\r\n\r\n"
+#                     )
 
-        original_send(self, new_data)
-    except Exception as e:
-        original_send(self, data)
-        print(
-            f"Intercepting a http(s) request failed. Running original request for header: {data}"
-        )
-        print(f"The exception is: {e}")
+#         original_send(self, new_data)
+#     except Exception as e:
+#         original_send(self, data)
+#         print(
+#             f"Intercepting a http(s) request failed. Running original request for header: {data}"
+#         )
+#         print(f"The exception is: {e}")
 
 
-http.client.HTTPConnection.send = new_send
+# http.client.HTTPConnection.send = new_send
