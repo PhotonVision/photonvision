@@ -17,6 +17,7 @@
 
 package org.photonvision;
 
+import edu.wpi.first.hal.HAL;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,6 +33,7 @@ import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.PiVersion;
 import org.photonvision.common.hardware.Platform;
+import org.photonvision.common.logging.KernelLogLogger;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
@@ -39,6 +41,7 @@ import org.photonvision.common.logging.PvCSCoreLogger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.numbers.IntegerCouple;
+import org.photonvision.jni.PhotonTargetingJniLoader;
 import org.photonvision.jni.RknnDetectorJNI;
 import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.raspi.LibCameraJNILoader;
@@ -379,7 +382,25 @@ public class Main {
             logger.error("Failed to load native libraries!", e);
             System.exit(1);
         }
-        logger.info("Native libraries loaded.");
+        logger.info("WPI JNI libraries loaded.");
+
+        try {
+            boolean success = PhotonTargetingJniLoader.load();
+
+            if (!success) {
+                logger.error("Failed to load native libraries! Giving up :(");
+                System.exit(1);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to load photon-targeting JNI!", e);
+            System.exit(1);
+        }
+        logger.info("photon-targeting JNI libraries loaded.");
+
+        if (!HAL.initialize(500, 0)) {
+            logger.error("Failed to initialize the HAL! Giving up :(");
+            System.exit(1);
+        }
 
         try {
             if (Platform.isRaspberryPi()) {
@@ -417,6 +438,10 @@ public class Main {
         Logger.setLevel(LogGroup.General, logLevel);
         logger.info("Logging initialized in debug mode.");
 
+        // Add Linux kernel log->Photon logger
+        KernelLogLogger.getInstance();
+
+        // Add CSCore->Photon logger
         PvCSCoreLogger.getInstance();
 
         logger.debug("Loading ConfigManager...");
@@ -438,6 +463,7 @@ public class Main {
         logger.debug("Loading NetworkTablesManager...");
         NetworkTablesManager.getInstance()
                 .setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
+        NetworkTablesManager.getInstance().registerTimedTasks();
 
         if (isSmoketest) {
             logger.info("PhotonVision base functionality loaded -- smoketest complete");

@@ -38,11 +38,6 @@ public class MultiTargetPNPResultProto
     }
 
     @Override
-    public Protobuf<?, ?>[] getNested() {
-        return new Protobuf<?, ?>[] {PnpResult.proto};
-    }
-
-    @Override
     public ProtobufMultiTargetPNPResult createMessage() {
         return ProtobufMultiTargetPNPResult.newInstance();
     }

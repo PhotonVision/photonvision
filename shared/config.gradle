@@ -8,11 +8,11 @@ nativeUtils.withCrossLinuxArm64()
 nativeUtils.wpi.configureDependencies {
     wpiVersion = wpilibVersion
     wpimathVersion = wpimathVersion
-    opencvYear = 'frc2024'
+    opencvYear = 'frc'+openCVYear
     opencvVersion = openCVversion
     googleTestYear = "frc2024"
     googleTestVersion = "1.14.0-1"
-    niLibVersion = "2024.2.1"
+    niLibVersion = "2025.0.0"
 }
 
 // Configure warnings and errors
@@ -84,8 +84,6 @@ ext.appendDebugPathToBinaries = { binaries ->
         }
     }
 }
-
-def licenseFile = file("$rootDir/LICENCE")
 
 // Create ZIP tasks for each component.
 ext.createComponentZipTasks = { components, names, base, type, project, func ->

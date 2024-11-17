@@ -38,11 +38,6 @@ public class PhotonPipelineResultProto
     }
 
     @Override
-    public Protobuf<?, ?>[] getNested() {
-        return new Protobuf<?, ?>[] {PhotonTrackedTarget.proto, MultiTargetPNPResult.proto};
-    }
-
-    @Override
     public ProtobufPhotonPipelineResult createMessage() {
         return ProtobufPhotonPipelineResult.newInstance();
     }
@@ -53,6 +48,7 @@ public class PhotonPipelineResultProto
                 msg.getSequenceId(),
                 msg.getCaptureTimestampMicros(),
                 msg.getNtPublishTimestampMicros(),
+                msg.getTimeSinceLastPongMicros(),
                 PhotonTrackedTarget.proto.unpack(msg.getTargets()),
                 msg.hasMultiTargetResult()
                         ? Optional.of(MultiTargetPNPResult.proto.unpack(msg.getMultiTargetResult()))
@@ -73,5 +69,6 @@ public class PhotonPipelineResultProto
         msg.setSequenceId(value.metadata.getSequenceID());
         msg.setCaptureTimestampMicros(value.metadata.getCaptureTimestampMicros());
         msg.setNtPublishTimestampMicros(value.metadata.getPublishTimestampMicros());
+        msg.setTimeSinceLastPongMicros(value.metadata.timeSinceLastPong);
     }
 }

@@ -142,7 +142,7 @@ export interface CameraCalibrationResult {
   distCoeffs: JsonMatOfDouble;
   observations: BoardObservation[];
   calobjectWarp?: number[];
-  // We might have to omit observations for bandwith, so backend will send us this
+  // We might have to omit observations for bandwidth, so backend will send us this
   numSnapshots: number;
   meanErrors: number[];
 }

@@ -330,7 +330,8 @@ PhotonPipelineResult PhotonCameraSim::Process(
   heartbeatCounter++;
   return PhotonPipelineResult{
       PhotonPipelineMetadata{heartbeatCounter, 0,
-                             units::microsecond_t{latency}.to<int64_t>()},
+                             units::microsecond_t{latency}.to<int64_t>(),
+                             1000000},
       detectableTgts, multiTagResults};
 }
 void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result) {

@@ -1,6 +1,7 @@
-from time import sleep
-import ntcore
 import argparse
+from time import sleep
+
+import ntcore
 from tabulate import tabulate
 
 

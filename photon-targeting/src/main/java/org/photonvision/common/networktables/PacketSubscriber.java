@@ -90,6 +90,13 @@ public class PacketSubscriber<T> implements AutoCloseable {
     public String getInterfaceUUID() {
         // ntcore hands us a JSON string with leading/trailing quotes - remove those
         var uuidStr = subscriber.getTopic().getProperty("message_uuid");
+
+        // "null" can be returned if the property does not exist. From system knowledge, uuid can never
+        // be the string literal "null".
+        if (uuidStr.equals("null")) {
+            return "";
+        }
+
         return uuidStr.replace("\"", "");
     }
 

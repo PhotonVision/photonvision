@@ -20,13 +20,38 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from ..targeting import *
+from typing import TYPE_CHECKING
+
+from ..packet import Packet
+from ..targeting import *  # noqa
+
+if TYPE_CHECKING:
+    from ..targeting import MultiTargetPNPResult  # noqa
+    from ..targeting import PhotonPipelineMetadata  # noqa
+    from ..targeting import PhotonPipelineResult  # noqa
+    from ..targeting import PhotonTrackedTarget  # noqa
 
 
 class PhotonPipelineResultSerde:
     # Message definition md5sum. See photon_packet.adoc for details
-    MESSAGE_VERSION = "5eeaa293d0c69aea90eaddea786a2b3b"
-    MESSAGE_FORMAT = "PhotonPipelineMetadata:626e70461cbdb274fb43ead09c255f4e metadata;PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 targets[?];optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b multitagResult;"
+    MESSAGE_VERSION = "4b2ff16a964b5e2bf04be0c1454d91c4"
+    MESSAGE_FORMAT = "PhotonPipelineMetadata:ac0a45f686457856fb30af77699ea356 metadata;PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 targets[?];optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b multitagResult;"
+
+    @staticmethod
+    def pack(value: "PhotonPipelineResult") -> "Packet":
+        ret = Packet()
+
+        # metadata is of non-intrinsic type PhotonPipelineMetadata
+        ret.encodeBytes(
+            PhotonPipelineMetadata.photonStruct.pack(value.metadata).getData()
+        )
+
+        # targets is a custom VLA!
+        ret.encodeList(value.targets, PhotonTrackedTarget.photonStruct)
+
+        # multitagResult is optional! it better not be a VLA too
+        ret.encodeOptional(value.multitagResult, MultiTargetPNPResult.photonStruct)
+        return ret
 
     @staticmethod
     def unpack(packet: "Packet") -> "PhotonPipelineResult":

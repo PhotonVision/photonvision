@@ -17,14 +17,14 @@
 
 package org.photonvision.vision.processes;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
@@ -62,7 +62,8 @@ public class VisionSourceManagerTest {
         config4.usbVID = 5;
         config4.usbPID = 6;
 
-        CameraInfo info1 = new CameraInfo(0, "dev/video0", "testVideo", new String[0], 1, 2);
+        CameraInfo info1 =
+                new CameraInfo(0, "dev/video0", "testVideo", new String[] {"/usb/path/0"}, 1, 2);
 
         cameraInfos.add(info1);
 
@@ -73,7 +74,8 @@ public class VisionSourceManagerTest {
         assertTrue(inst.knownCameras.contains(info1));
         assertEquals(2, inst.unmatchedLoadedConfigs.size());
 
-        CameraInfo info2 = new CameraInfo(0, "dev/video1", "secondTestVideo", new String[0], 2, 3);
+        CameraInfo info2 =
+                new CameraInfo(0, "dev/video1", "secondTestVideo", new String[] {"/usb/path/1"}, 2, 3);
 
         cameraInfos.add(info2);
 
@@ -297,7 +299,7 @@ public class VisionSourceManagerTest {
                 new CameraConfiguration(
                         "Arducam OV2311 USB Camera",
                         "Arducam OV2311 USB Camera",
-                        "fromt-left",
+                        "front-left",
                         "/dev/video0",
                         CAM1_OLD_PATHS);
         camera1_saved_config.usbVID = 3141;
@@ -306,7 +308,7 @@ public class VisionSourceManagerTest {
                 new CameraConfiguration(
                         "Arducam OV2311 USB Camera",
                         "Arducam OV2311 USB Camera (1)",
-                        "fromt-left",
+                        "front-left",
                         "/dev/video2",
                         CAM2_OLD_PATH);
         camera2_saved_config.usbVID = 3141;
@@ -362,7 +364,7 @@ public class VisionSourceManagerTest {
                 new CameraConfiguration(
                         "Arducam OV2311 USB Camera",
                         "Arducam OV2311 USB Camera (1)",
-                        "fromt-left",
+                        "front-left",
                         "/dev/video0",
                         CAM1_OLD_PATHS);
         camera1_saved_config.usbVID = 3141;
@@ -371,7 +373,7 @@ public class VisionSourceManagerTest {
                 new CameraConfiguration(
                         "Arducam OV2311 USB Camera",
                         "Arducam OV2311 USB Camera (1)",
-                        "fromt-left",
+                        "front-left",
                         "/dev/video2",
                         CAM2_OLD_PATH);
         camera2_saved_config.usbVID = 3141;
@@ -501,6 +503,43 @@ public class VisionSourceManagerTest {
     }
 
     @Test
+    public void testNoOtherPaths() {
+        Logger.setLevel(LogGroup.Camera, LogLevel.DEBUG);
+
+        // List of known cameras
+        var cameraInfos = new ArrayList<CameraInfo>();
+
+        var inst = new VisionSourceManager();
+        ConfigManager.getInstance().clearConfig();
+        ConfigManager.getInstance().load();
+        ConfigManager.getInstance().getConfig().getNetworkConfig().matchCamerasOnlyByPath = false;
+
+        // Match empty camera infos
+        inst.tryMatchCamImpl(cameraInfos);
+
+        CameraInfo info1 =
+                new CameraInfo(0, "/dev/video0", "Arducam OV2311 USB Camera", new String[] {}, 3141, 25446);
+
+        cameraInfos.add(info1);
+
+        // Match two "new" cameras
+        var ret1 = inst.tryMatchCamImpl(cameraInfos, Platform.LINUX_64);
+
+        // Our cameras should be "known"
+        assertFalse(inst.knownCameras.contains(info1));
+        assertEquals(0, inst.knownCameras.size());
+        assertEquals(null, ret1);
+
+        // Match two "new" cameras
+        var ret2 = inst.tryMatchCamImpl(cameraInfos, Platform.WINDOWS_64);
+
+        // Our cameras should be "known"
+        assertTrue(inst.knownCameras.contains(info1));
+        assertEquals(1, inst.knownCameras.size());
+        assertEquals(1, ret2.size());
+    }
+
+    @Test
     public void testIdenticalCameras() {
         Logger.setLevel(LogGroup.Camera, LogLevel.DEBUG);
 
@@ -571,7 +610,7 @@ public class VisionSourceManagerTest {
                     ret1.stream().filter(it -> thisName.equals(it.cameraConfiguration.uniqueName)).count());
         }
 
-        // duplciate cameras, same info, new ref
+        // duplicate cameras, same info, new ref
         var duplicateCameraInfos = new ArrayList<CameraInfo>();
         CameraInfo info1_dup =
                 new CameraInfo(
@@ -609,7 +648,7 @@ public class VisionSourceManagerTest {
         assertTrue(inst.knownCameras.contains(info2_dup));
         assertEquals(2, inst.knownCameras.size());
 
-        // duplciate cameras this simulates unplugging one and plugging the other in where v4l assigns
+        // duplicate cameras this simulates unplugging one and plugging the other in where v4l assigns
         // the same by-id path to the other camera
         var duplicateCameraInfos1 = new ArrayList<CameraInfo>();
         CameraInfo info3_dup =

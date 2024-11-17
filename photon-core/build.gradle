@@ -4,6 +4,7 @@ plugins {
 
 import java.nio.file.Path
 
+ext.licenseFile = file("$rootDir/LICENSE")
 apply from: "${rootDir}/shared/common.gradle"
 
 wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()
@@ -24,7 +25,7 @@ nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
-nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())
+nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv("frc" + openCVYear, wpi.versions.opencvVersion.get())
 
 dependencies {
     // JOGL stuff (currently we only distribute for aarch64, which is Pi 4)
@@ -64,9 +65,13 @@ dependencies {
 }
 
 task writeCurrentVersion {
-    def versionFileIn = file("${rootDir}/shared/PhotonVersion.java.in")
-    writePhotonVersionFile(versionFileIn, Path.of("$projectDir", "src", "main", "java", "org", "photonvision", "PhotonVersion.java"),
-            versionString)
+    doLast {
+        def versionFileIn = file("${rootDir}/shared/PhotonVersion.java.in")
+        writePhotonVersionFile(versionFileIn, Path.of("$buildDir", "generated", "java", "org", "photonvision", "PhotonVersion.java"),
+                versionString)
+    }
 }
+// https://github.com/wpilibsuite/allwpilib/blob/main/wpilibj/build.gradle#L52
+sourceSets.main.java.srcDir "${buildDir}/generated/java/"
 
-build.dependsOn writeCurrentVersion
+compileJava.dependsOn writeCurrentVersion

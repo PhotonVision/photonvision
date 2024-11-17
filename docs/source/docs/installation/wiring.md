@@ -40,3 +40,4 @@ The regulator comes with optional screw terminals that may be used to connect th
 :::
 
 Once you have wired your coprocessor, you are now ready to install PhotonVision.
+

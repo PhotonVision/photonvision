@@ -15,7 +15,7 @@ Like Rosmsg. But worse.
 The code for a single type is split across 3 files. Let's look at PnpResult:
 - [The struct definition](src/struct/pnpresult_struct.h): This is the data the object holds. Auto-generated. The data this object holds can be primitives or other, fully-deserialized types (like Vec2)
 - [The user class](src/targeting/pnpresult_struct.h): This is the fully-deserialized PnpResult type. This contains extra functions users might need to expose like `Amgiguity`, or other computed helper things.
-- [The serde interface](src/serde/pnpresult_struct.h): This is a template specilization for converting the user class to/from bytes
+- [The serde interface](src/serde/pnpresult_struct.h): This is a template specialization for converting the user class to/from bytes
 
 ## Prior art
 

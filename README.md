@@ -47,7 +47,7 @@ If you're cross-compiling, you'll need the wpilib toolchain installed. This can 
 
 ## Out-of-Source Dependencies
 
-PhotonVision uses the following additonal out-of-source repositories for building code.
+PhotonVision uses the following additional out-of-source repositories for building code.
 
 - Base system images for Raspberry Pi & Orange Pi: https://github.com/PhotonVision/photon-image-modifier
 - C++ driver for Raspberry Pi CSI cameras: https://github.com/PhotonVision/photon-libcamera-gl-driver

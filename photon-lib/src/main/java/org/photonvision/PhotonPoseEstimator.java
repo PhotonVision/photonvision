@@ -408,7 +408,7 @@ public class PhotonPoseEstimator {
                             result.getTargets(),
                             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR));
         } else {
-            // We can nver fall back on another multitag strategy
+            // We can never fall back on another multitag strategy
             return update(result, Optional.empty(), Optional.empty(), this.multiTagFallbackStrategy);
         }
     }
