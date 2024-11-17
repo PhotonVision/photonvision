@@ -145,9 +145,9 @@ sphinx_tabs_valid_builders = ["epub", "linkcheck"]
 # These should be periodically checked by hand to ensure that they are still functional
 linkcheck_ignore = [R"https://www.raspberrypi.com/software/", R"http://10\..+"]
 
-token = os.environ.get("GITHUB_TOKEN", None)
-if token:
-    linkcheck_auth = [(R"https://github.com/.+", token)]
+# token = os.environ.get("GITHUB_TOKEN", None)
+# if token:
+#     linkcheck_auth = [(R"https://github.com/.+", token)]
 
 # MyST configuration (https://myst-parser.readthedocs.io/en/latest/configuration.html)
 myst_enable_extensions = ["colon_fence"]
