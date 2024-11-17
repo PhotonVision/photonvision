@@ -17,7 +17,6 @@
 
 #pragma once
 
-#include <fmt/core.h>
 #include <wpinet/EventLoopRunner.h>
 #include <wpinet/UDPClient.h>
 #include <wpinet/uv/Buffer.h>

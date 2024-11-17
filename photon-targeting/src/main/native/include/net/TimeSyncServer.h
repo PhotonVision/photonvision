@@ -36,7 +36,6 @@
 #include <thread>
 
 #include <wpi/Logger.h>
-#include <wpi/print.h>
 #include <wpi/struct/Struct.h>
 
 #include "TimeSyncStructs.h"
