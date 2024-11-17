@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.photonvision.UnitTestUtils.waitForSequenceNumber;
 
 import edu.wpi.first.apriltag.AprilTag;
@@ -56,6 +57,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.photonvision.common.hardware.Platform;
 import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.estimation.VisionEstimation;
@@ -74,15 +76,19 @@ class VisionSystemSimTest {
 
     @BeforeAll
     public static void setUp() {
-        WpilibLoader.loadLibraries();
+        assertTrue(WpilibLoader.loadLibraries());
+
         try {
-            if (!PhotonTargetingJniLoader.load()) fail();
+            assertTrue(PhotonTargetingJniLoader.load());
         } catch (UnsatisfiedLinkError | IOException e) {
             e.printStackTrace();
             fail(e);
         }
 
         OpenCVHelp.forceLoadOpenCV();
+
+        // See #1574 - flakey on windows
+        assumeTrue(!Platform.isWindows());
     }
 
     @BeforeEach

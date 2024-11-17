@@ -68,7 +68,6 @@ public class WpilibLoader {
                     "ntcorejni",
                     "wpinetjni",
                     "wpiHaljni",
-                    "wpi",
                     "cscorejni",
                     "apriltagjni");
 
