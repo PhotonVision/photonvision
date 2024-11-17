@@ -76,9 +76,10 @@ class VisionSystemSimTest {
 
     @BeforeAll
     public static void setUp() {
-        WpilibLoader.loadLibraries();
+        assertTrue(WpilibLoader.loadLibraries());
+
         try {
-            if (!PhotonTargetingJniLoader.load()) fail();
+            assertTrue(PhotonTargetingJniLoader.load());
         } catch (UnsatisfiedLinkError | IOException e) {
             e.printStackTrace();
             fail(e);
