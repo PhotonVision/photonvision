@@ -2,7 +2,7 @@
 
 ## Off-Robot Wiring
 
-Plugging your coprocessor into the wall via a power brick will suffice for off robot wiring.
+Plugging your coprocessor into the wall via a power brick will suffice for off-robot wiring.
 
 :::{note}
 Please make sure your chosen power supply can provide enough power for your coprocessor. Undervolting (where enough power isn't being supplied) can cause many issues.
@@ -17,7 +17,7 @@ We recommend users use the [SnakeEyes Pi Hat](https://www.playingwithfusion.com/
 ### Recommended: Coprocessor with Passive POE (Gloworm, Pi with SnakeEyes, Limelight)
 
 1. Plug the [passive POE injector](https://www.revrobotics.com/rev-11-1210/) into the coprocessor and wire it to PDP/PDH (NOT the VRM).
-2. Add a breaker to relevant slot in your PDP/PDH
+2. Add a breaker to the relevant slot in your PDP/PDH.
 3. Run an ethernet cable from the passive POE injector to your network switch / radio (we *STRONGLY* recommend the usage of a network switch, see the [networking](networking.md) section for more info.)
 
 ### Coprocessor without Passive POE
