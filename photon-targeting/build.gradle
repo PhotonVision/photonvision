@@ -64,7 +64,6 @@ model {
             nativeUtils.useRequiredLibrary(it, "wpiutil_shared")
             nativeUtils.useRequiredLibrary(it, "wpimath_shared")
             nativeUtils.useRequiredLibrary(it, "wpinet_shared")
-            nativeUtils.useRequiredLibrary(it, "wpilibc_shared")
             nativeUtils.useRequiredLibrary(it, "ntcore_shared")
         }
         "${nativeName}JNI"(JniNativeLibrarySpec) {
@@ -107,8 +106,6 @@ model {
                 }
 
                 if (binary.targetPlatform.name == platName) {
-
-
                     // only include release binaries (hard coded for now)
                     def isDebug = binary.buildType.name.contains('debug')
                     if (!isDebug) {
@@ -146,6 +143,8 @@ model {
             }
 
             binaries.all {
+                lib library: nativeName, linkage: 'shared'
+                lib library: "${nativeName}JNI", linkage: 'shared'
                 it.tasks.withType(CppCompile) {
                     it.dependsOn generateProto
                 }
@@ -190,6 +189,27 @@ model {
 
 apply from: "${rootDir}/shared/javacpp/publish.gradle"
 
+// quickly hack our raw jar into publishing
+def rawjavaJar = tasks.register("rawjavaJar", Jar) {
+    dependsOn classes
+    includeEmptyDirs = false
+    from sourceSets.main.output
+    archiveClassifier = 'raw'
+}
+
+publishing {
+    publications {
+        rawjava(MavenPublication) {
+            artifact (rawjavaJar) {
+                classifier = null
+            }
+            artifactId = "${nativeName}-rawjava"
+            groupId artifactGroupId
+            version pubVersion
+        }
+    }
+}
+
 // Add photon serde headers to our published sources
 cppHeadersZip {
     from('src/generated/main/native/include') {
@@ -215,7 +235,6 @@ def nativeTasks = wpilibTools.createExtractionTasks {
 
 nativeTasks.addToSourceSetResources(sourceSets.test)
 
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpilibc")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")

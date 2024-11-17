@@ -2,28 +2,53 @@
 
 ## Physical Networking
 
-:::{note}
-When using PhotonVision off robot, you *MUST* plug the coprocessor into a physical router/radio. You can then connect your laptop/device used to view the webdashboard to the same network. Any other networking setup will not work and will not be supported in any capacity.
+:::{warning}
+When using PhotonVision off robot, you _MUST_ plug the coprocessor into a physical router/radio. You can then connect your laptop/device used to view the webdashboard to the same network. Any other networking setup will not work and will not be supported in any capacity.
 :::
 
-After imaging your coprocessor, run an ethernet cable from your coprocessor to a router/radio and power on your coprocessor by plugging it into the wall. Then connect whatever device you're using to view the webdashboard to the same network and navigate to photonvision.local:5800.
+::::{tab-set}
 
-PhotonVision *STRONGLY* recommends the usage of a network switch on your robot. This is because the second radio port on the current FRC radios is known to be buggy and cause frequent connection issues that are detrimental during competition. An in-depth guide on how to install a network switch can be found [on FRC 900's website](https://team900.org/blog/ZebraSwitch/).
+:::{tab-item} New Radio (2025 - present)
+
+```{danger}
+Ensure that DIP switches 1 and 2 are turned off; otherwise, the radio PoE feature will fry your coprocessor. [More info.](https://frc-radio.vivid-hosting.net/getting-started/passive-power-over-ethernet-poe-for-downstream-devices)
+```
+
+```{image} images/networking-diagram-vividhosting.png
+:alt: Wiring using a network switch and the new vivid hosting radio
+```
+
+:::
+
+:::{tab-item} Old Radio (pre 2025)
+
+PhotonVision _STRONGLY_ recommends the usage of a network switch on your robot. This is because the second radio port on the old FRC radios is known to be buggy and cause frequent connection issues that are detrimental during competition. An in-depth guide on how to install a network switch can be found [on FRC 900's website](https://zebracorns.org/blog/ZebraSwitch/).
 
 ```{image} images/networking-diagram.png
-:alt: Correctly set static IP
+:alt: Wiring using a network switch and the old open mesh radio
+```
+
+:::
+::::
+
+## Network Hostname
+
+Rename each device from the default "Photonvision" to a unique hostname (e.g., "Photon-OrangePi-Left" or "Photon-RPi5-Back"). This helps differentiate multiple coprocessors on your network, making it easier to manage them. Navigate to the settings page and scroll down to the network section. You will find the hostname is set to "photonvision" by default, this can only contain letters (A-Z), numeric characters (0-9), and the minus sign (-).
+
+```{image} images/editHostname.png
+:alt: The hostname can be edited in the settings page under the network section.
 ```
 
 ## Digital Networking
 
-PhotonVision *STRONGLY* recommends the usage of Static IPs as it increases reliability on the field and when using PhotonVision in general. To properly set up your static IP, follow the steps below:
+PhotonVision _STRONGLY_ recommends the usage of Static IPs as it increases reliability on the field and when using PhotonVision in general. To properly set up your static IP, follow the steps below:
 
 :::{warning}
 Only use a static IP when connected to the **robot radio**, and never when testing at home, unless you are well versed in networking or have the relevant "know how".
 :::
 
 1. Ensure your robot is on and you are connected to the robot network.
-2. Navigate to `photonvision.local:5800` (this may be different if you are using a Gloworm / Limelight) in your browser.
+2. Navigate to `photonvision.local:5800`in your browser.
 3. Open the settings tab on the left pane.
 4. Under the Networking section, set your team number.
 5. Change your IP to Static.

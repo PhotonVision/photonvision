@@ -27,7 +27,7 @@ public class TimeSyncServer {
 
     public void start() {
         synchronized (mutex) {
-            if (handle > 0) {
+            if (handle != 0) {
                 TimeSyncServer.start(handle);
             } else {
                 System.err.println("TimeSyncServer: use after free?");
@@ -36,7 +36,7 @@ public class TimeSyncServer {
     }
 
     public void stop() {
-        if (handle > 0) {
+        if (handle != 0) {
             TimeSyncServer.stop(handle);
             handle = 0;
         }

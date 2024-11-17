@@ -23,13 +23,13 @@ $ sudo reboot now
 Your co-processor will require an Internet connection for this process to work correctly.
 :::
 
-For installation on any other co-processors, we recommend reading the {ref}`advanced command line documentation <docs/installation/sw_install/advanced-cmd:Advanced Command Line Usage>`.
+For installation on any other co-processors, we recommend reading the {ref}`advanced command line documentation <docs/advanced-installation/sw_install/advanced-cmd:Advanced Command Line Usage>`.
 
 ## Updating PhotonVision
 
 PhotonVision can be updated by downloading the latest jar file, copying it onto the processor, and restarting the service.
 
-For example, from another computer, run the following commands. Substitute the correct username for "\[user\]" (e.g. Raspberry Pi uses "pi", Orange Pi uses "orangepi".)
+For example, from another computer, run the following commands. Substitute the correct username for "\[user\]" ( Provided images use username "pi")
 
 ```bash
 $ scp [jar name].jar [user]@photonvision.local:~/

@@ -39,8 +39,20 @@ jobs:
           name: built-client
           path: photon-client/dist/
   build-examples:
-    name: "Build Examples"
-    runs-on: ubuntu-22.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2022
+            architecture: x64
+          - os: macos-14
+            architecture: aarch64
+          - os: ubuntu-22.04
+
+    name: "Photonlib - Build Examples - ${{ matrix.os }}"
+    runs-on: ${{ matrix.os }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -60,19 +72,19 @@ jobs:
       - name: Publish photonlib to maven local
         run: |
           chmod +x gradlew
-          ./gradlew publishtomavenlocal -x check
+          ./gradlew photon-targeting:publishtomavenlocal photon-lib:publishtomavenlocal -x check
       - name: Build Java examples
         working-directory: photonlib-java-examples
         run: |
           chmod +x gradlew
           ./gradlew copyPhotonlib -x check
-          ./gradlew build -x check
+          ./gradlew build
       - name: Build C++ examples
         working-directory: photonlib-cpp-examples
         run: |
           chmod +x gradlew
           ./gradlew copyPhotonlib -x check
-          ./gradlew build -x check
+          ./gradlew build
   build-gradle:
     name: "Gradle Build"
     runs-on: ubuntu-22.04
@@ -585,7 +597,7 @@ jobs:
 
   dispatch:
     name: dispatch
-    needs: [build-photonlib-vendorjson]
+    needs: [build-photonlib-vendorjson, release]
     runs-on: ubuntu-22.04
     steps:
       - uses: peter-evans/repository-dispatch@v3

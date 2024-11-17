@@ -2,7 +2,7 @@
 
 Hardware in the loop simulation is using a physical device, such as a supported co-processor running PhotonVision, to enhance simulation capabilities. This is useful for developing and validating code before the camera is attached to a robot, as well as reducing the work required to use WPILib simulation with PhotonVision.
 
-Before continuing, ensure PhotonVision is installed on your device. Instructions can be found {ref}`here <docs/installation/index:Installation & Setup>` for all devices.
+Before continuing, ensure PhotonVision is installed on your device. Instructions can be found {ref}`here <docs/advanced-installation/index:Advanced Installation>` for all devices.
 
 Your coprocessor and computer running simulation will have to be connected to the same network, like a home router. Connecting the coprocessor directly to the computer will not work.
 
@@ -26,9 +26,11 @@ Ethernet adapter Ethernet:
    Subnet Mask . . . . . . . . . . . : 255.255.255.0
    Default Gateway . . . . . . . . . : 192.168.254.254
 ```
+
 :::
 
 ```{image} images/coproc-client-to-desktop-sim.png
+
 ```
 
 No code changes are required, PhotonLib should function similarly to normal operation.
@@ -36,4 +38,5 @@ No code changes are required, PhotonLib should function similarly to normal oper
 Now launch simulation, and you should be able to see the PhotonVision table on your simulation's NetworkTables dashboard.
 
 ```{image} images/hardware-in-the-loop-sim.png
+
 ```

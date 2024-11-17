@@ -88,6 +88,7 @@ model {
                 }
                 if(project.hasProperty('includePhotonTargeting')) {
                     lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
+                    lib project: ':photon-targeting', library: 'photontargetingJNI', linkage: 'shared'
                 }
             }
 

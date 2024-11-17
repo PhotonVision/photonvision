@@ -1,16 +1,5 @@
 # Software Installation
 
-## Supported Coprocessors
-
-```{toctree}
-:maxdepth: 1
-
-raspberry-pi
-limelight
-orange-pi
-snakeyes
-```
-
 ## Desktop Environments
 
 ```{toctree}
@@ -29,5 +18,4 @@ mac-os
 other-coprocessors
 advanced-cmd
 romi
-gloworm
 ```

@@ -28,7 +28,7 @@ import drivetrain
 import wpilib
 import wpimath.geometry
 from photonlibpy import PhotonCamera, PhotonPoseEstimator, PoseStrategy
-from robotpy_apriltag import AprilTagField, loadAprilTagLayoutField
+from robotpy_apriltag import AprilTagField, AprilTagFieldLayout
 
 kRobotToCam = wpimath.geometry.Transform3d(
     wpimath.geometry.Translation3d(0.5, 0.0, 0.5),
@@ -43,7 +43,7 @@ class MyRobot(wpilib.TimedRobot):
         self.swerve = drivetrain.Drivetrain()
         self.cam = PhotonCamera("YOUR CAMERA NAME")
         self.camPoseEst = PhotonPoseEstimator(
-            loadAprilTagLayoutField(AprilTagField.k2024Crescendo),
+            AprilTagFieldLayout.loadField(AprilTagField.k2024Crescendo),
             PoseStrategy.LOWEST_AMBIGUITY,
             self.cam,
             kRobotToCam,
