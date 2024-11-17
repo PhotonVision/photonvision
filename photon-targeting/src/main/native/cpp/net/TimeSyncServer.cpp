@@ -97,10 +97,9 @@ void wpi::tsp::TimeSyncServer::UdpCallback(uv::Buffer& data, size_t n,
   //          pong.client_time, pong.server_time);
 }
 
-wpi::tsp::TimeSyncServer::TimeSyncServer(int port,
-                                         std::function<uint64_t()> timeProvider)
+wpi::tsp::TimeSyncServer::TimeSyncServer(int port)
     : m_logger{::ServerLoggerFunc},
-      m_timeProvider{timeProvider},
+      m_timeProvider{nt::Now},
       m_udp{},
       m_port(port) {}
 

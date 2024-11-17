@@ -152,10 +152,9 @@ void wpi::tsp::TimeSyncClient::UdpCallback(uv::Buffer& buf, size_t nbytes,
 
 wpi::tsp::TimeSyncClient::TimeSyncClient(std::string_view server,
                                          int remote_port,
-                                         std::chrono::milliseconds ping_delay,
-                                         std::function<uint64_t()> timeProvider)
+                                         std::chrono::milliseconds ping_delay)
     : m_logger(::ClientLoggerFunc),
-      m_timeProvider(timeProvider),
+      m_timeProvider(nt::Now),
       m_udp{},
       m_pingTimer{},
       m_serverIP{server},
