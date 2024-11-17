@@ -63,7 +63,6 @@ setup(
         "robotpy-apriltag<2026,>=2025.0.0b1",
         "robotpy-cscore<2026,>=2025.0.0b1",
         "pyntcore<2026,>=2025.0.0b1",
-        "robotpy-opencv;platform_machine=='roborio'",
         "opencv-python;platform_machine!='roborio'",
     ],
     description=descriptionStr,
