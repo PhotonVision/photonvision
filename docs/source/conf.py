@@ -138,9 +138,11 @@ suppress_warnings = ["epub.unknown_project_files"]
 
 sphinx_tabs_valid_builders = ["epub", "linkcheck"]
 
+# -- Options for linkcheck -------------------------------------------------
+
 # Excluded links for linkcheck
 # These should be periodically checked by hand to ensure that they are still functional
-linkcheck_ignore = ["https://www.raspberrypi.com/software/"]
+linkcheck_ignore = [R"https://www.raspberrypi.com/software/", R"http://10\..*"]
 
 # MyST configuration (https://myst-parser.readthedocs.io/en/latest/configuration.html)
 myst_enable_extensions = ["colon_fence"]
