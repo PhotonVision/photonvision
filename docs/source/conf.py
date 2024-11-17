@@ -144,7 +144,8 @@ sphinx_tabs_valid_builders = ["epub", "linkcheck"]
 # These should be periodically checked by hand to ensure that they are still functional
 linkcheck_ignore = [R"https://www.raspberrypi.com/software/", R"http://10\..+"]
 
-print("Github Token: ", os.environ.get("GITHUB_TOKEN", None))
+
+import os
 
 token = os.environ.get("GITHUB_TOKEN", None)
 
@@ -161,7 +162,7 @@ myst_enable_extensions = ["colon_fence"]
 # Add Github Token to all Github API Requests made by any extension anywhere
 
 import http.client
-import os
+
 
 original_send = http.client.HTTPConnection.send
 
