@@ -65,9 +65,13 @@ dependencies {
 }
 
 task writeCurrentVersion {
-    def versionFileIn = file("${rootDir}/shared/PhotonVersion.java.in")
-    writePhotonVersionFile(versionFileIn, Path.of("$projectDir", "src", "main", "java", "org", "photonvision", "PhotonVersion.java"),
-            versionString)
+    doLast {
+        def versionFileIn = file("${rootDir}/shared/PhotonVersion.java.in")
+        writePhotonVersionFile(versionFileIn, Path.of("$buildDir", "generated", "java", "org", "photonvision", "PhotonVersion.java"),
+                versionString)
+    }
 }
+// https://github.com/wpilibsuite/allwpilib/blob/main/wpilibj/build.gradle#L52
+sourceSets.main.java.srcDir "${buildDir}/generated/java/"
 
-build.dependsOn writeCurrentVersion
+compileJava.dependsOn writeCurrentVersion
