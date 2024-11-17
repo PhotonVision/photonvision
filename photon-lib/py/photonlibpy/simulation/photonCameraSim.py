@@ -418,9 +418,14 @@ class PhotonCameraSim:
 
         # put this simulated data to NT
         self.heartbeatCounter += 1
+        now_micros = wpilib.Timer.getFPGATimestamp() * 1e6
         return PhotonPipelineResult(
             metadata=PhotonPipelineMetadata(
-                self.heartbeatCounter, int(latency * 1e6), 1000000
+                self.heartbeatCounter,
+                int(now_micros - latency * 1e6),
+                int(now_micros),
+                # Pretend like we heard a pong recently
+                int(np.random.uniform(950, 1050)),
             ),
             targets=detectableTgts,
             multitagResult=multiTagResults,
