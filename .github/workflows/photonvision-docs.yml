@@ -11,9 +11,10 @@ on:
     paths:
       - 'docs/**'
       - '.github/**'
+
 env:
-  GITHUB_TOKEN: ${{ github.token }}
-  
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
   build:
     runs-on: ubuntu-22.04
