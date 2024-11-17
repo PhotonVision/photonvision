@@ -42,8 +42,10 @@ import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.pipe.impl.FindBoardCornersPipe.FindBoardCornersPipeResult;
 
 public class Calibrate3dPipe
-        extends
-        CVPipe<Calibrate3dPipe.CalibrationInput, CameraCalibrationCoefficients, Calibrate3dPipe.CalibratePipeParams> {
+        extends CVPipe<
+                Calibrate3dPipe.CalibrationInput,
+                CameraCalibrationCoefficients,
+                Calibrate3dPipe.CalibratePipeParams> {
     public static class CalibrationInput {
         final List<FindBoardCornersPipe.FindBoardCornersPipeResult> observations;
         final FrameStaticProperties imageProps;
@@ -74,37 +76,40 @@ public class Calibrate3dPipe
     /**
      * Runs the process for the pipe.
      *
-     * @param in Input for pipe processing. In the format (Input image, object
-     *           points, image points)
+     * @param in Input for pipe processing. In the format (Input image, object points, image points)
      * @return Result of processing.
      */
     @Override
     protected CameraCalibrationCoefficients process(CalibrationInput in) {
-        var filteredIn = in.observations.stream()
-                .filter(
-                        it -> it != null
-                                && it.imagePoints != null
-                                && it.objectPoints != null
-                                && it.size != null)
-                .collect(Collectors.toList());
+        var filteredIn =
+                in.observations.stream()
+                        .filter(
+                                it ->
+                                        it != null
+                                                && it.imagePoints != null
+                                                && it.objectPoints != null
+                                                && it.size != null)
+                        .collect(Collectors.toList());
 
         CameraCalibrationCoefficients ret;
         var start = System.nanoTime();
 
         if (MrCalJNILoader.getInstance().isLoaded() && params.useMrCal) {
             logger.debug("Calibrating with mrcal!");
-            ret = calibrateMrcal(
-                    filteredIn,
-                    in.imageProps.horizontalFocalLength,
-                    in.imageProps.verticalFocalLength,
-                    in.imageSavePath);
+            ret =
+                    calibrateMrcal(
+                            filteredIn,
+                            in.imageProps.horizontalFocalLength,
+                            in.imageProps.verticalFocalLength,
+                            in.imageSavePath);
         } else {
             logger.debug("Calibrating with opencv!");
-            ret = calibrateOpenCV(
-                    filteredIn,
-                    in.imageProps.horizontalFocalLength,
-                    in.imageProps.verticalFocalLength,
-                    in.imageSavePath);
+            ret =
+                    calibrateOpenCV(
+                            filteredIn,
+                            in.imageProps.horizontalFocalLength,
+                            in.imageProps.verticalFocalLength,
+                            in.imageSavePath);
         }
         var dt = System.nanoTime() - start;
 
@@ -119,8 +124,7 @@ public class Calibrate3dPipe
                             + "\ndistortionCoeffs:\n"
                             + Arrays.toString(ret.distCoeffs.data)
                             + "\n");
-        else
-            logger.info("Calibration failed! Review log for more details");
+        else logger.info("Calibration failed! Review log for more details");
 
         return ret;
     }
@@ -130,8 +134,10 @@ public class Calibrate3dPipe
             double fxGuess,
             double fyGuess,
             Path imageSavePath) {
-        List<MatOfPoint3f> objPointsIn = in.stream().map(it -> it.objectPoints).collect(Collectors.toList());
-        List<MatOfPoint2f> imgPointsIn = in.stream().map(it -> it.imagePoints).collect(Collectors.toList());
+        List<MatOfPoint3f> objPointsIn =
+                in.stream().map(it -> it.objectPoints).collect(Collectors.toList());
+        List<MatOfPoint2f> imgPointsIn =
+                in.stream().map(it -> it.imagePoints).collect(Collectors.toList());
         List<MatOfFloat> levelsArr = in.stream().map(it -> it.levels).collect(Collectors.toList());
 
         if (objPointsIn.size() != imgPointsIn.size() || objPointsIn.size() != levelsArr.size()) {
@@ -162,7 +168,7 @@ public class Calibrate3dPipe
         // initial camera matrix guess
         double cx = (in.get(0).size.width / 2.0) - 0.5;
         double cy = (in.get(0).size.width / 2.0) - 0.5;
-        cameraMatrix.put(0, 0, new double[] { fxGuess, 0, cx, 0, fyGuess, cy, 0, 0, 1 });
+        cameraMatrix.put(0, 0, new double[] {fxGuess, 0, cx, 0, fyGuess, cy, 0, 0, 1});
 
         try {
             // FindBoardCorners pipe outputs all the image points, object points, and frames
@@ -190,8 +196,9 @@ public class Calibrate3dPipe
         JsonMatOfDouble cameraMatrixMat = JsonMatOfDouble.fromMat(cameraMatrix);
         JsonMatOfDouble distortionCoefficientsMat = JsonMatOfDouble.fromMat(distortionCoefficients);
 
-        var observations = createObservations(
-                in, cameraMatrix, distortionCoefficients, rvecs, tvecs, null, imageSavePath);
+        var observations =
+                createObservations(
+                        in, cameraMatrix, distortionCoefficients, rvecs, tvecs, null, imageSavePath);
 
         cameraMatrix.release();
         distortionCoefficients.release();
@@ -216,10 +223,11 @@ public class Calibrate3dPipe
             double fxGuess,
             double fyGuess,
             Path imageSavePath) {
-        List<MatOfPoint2f> corner_locations = in.stream().map(it -> it.imagePoints).map(MatOfPoint2f::new)
-                .collect(Collectors.toList());
+        List<MatOfPoint2f> corner_locations =
+                in.stream().map(it -> it.imagePoints).map(MatOfPoint2f::new).collect(Collectors.toList());
 
-        List<MatOfFloat> levels = in.stream().map(it -> it.levels).map(MatOfFloat::new).collect(Collectors.toList());
+        List<MatOfFloat> levels =
+                in.stream().map(it -> it.levels).map(MatOfFloat::new).collect(Collectors.toList());
 
         int imageWidth = (int) in.get(0).size.width;
         int imageHeight = (int) in.get(0).size.height;
@@ -230,40 +238,42 @@ public class Calibrate3dPipe
         }
         System.out.println("Calibrating with " + count + " points");
 
-        MrCalResult result = MrCalJNI.calibrateCamera(
-                corner_locations,
-                levels,
-                params.boardWidth,
-                params.boardHeight,
-                params.squareSize,
-                imageWidth,
-                imageHeight,
-                (fxGuess + fyGuess) / 2.0);
+        MrCalResult result =
+                MrCalJNI.calibrateCamera(
+                        corner_locations,
+                        levels,
+                        params.boardWidth,
+                        params.boardHeight,
+                        params.squareSize,
+                        imageWidth,
+                        imageHeight,
+                        (fxGuess + fyGuess) / 2.0);
 
         levels.forEach(MatOfFloat::release);
         corner_locations.forEach(MatOfPoint2f::release);
 
         // intrinsics are fx fy cx cy from mrcal
-        JsonMatOfDouble cameraMatrixMat = new JsonMatOfDouble(
-                3,
-                3,
-                CvType.CV_64FC1,
-                new double[] {
-                        // fx 0 cx
-                        result.intrinsics[0],
-                        0,
-                        result.intrinsics[2],
-                        // 0 fy cy
-                        0,
-                        result.intrinsics[1],
-                        result.intrinsics[3],
-                        // 0 0 1
-                        0,
-                        0,
-                        1
-                });
-        JsonMatOfDouble distortionCoefficientsMat = new JsonMatOfDouble(1, 8, CvType.CV_64FC1,
-                Arrays.copyOfRange(result.intrinsics, 4, 12));
+        JsonMatOfDouble cameraMatrixMat =
+                new JsonMatOfDouble(
+                        3,
+                        3,
+                        CvType.CV_64FC1,
+                        new double[] {
+                            // fx 0 cx
+                            result.intrinsics[0],
+                            0,
+                            result.intrinsics[2],
+                            // 0 fy cy
+                            0,
+                            result.intrinsics[1],
+                            result.intrinsics[3],
+                            // 0 0 1
+                            0,
+                            0,
+                            1
+                        });
+        JsonMatOfDouble distortionCoefficientsMat =
+                new JsonMatOfDouble(1, 8, CvType.CV_64FC1, Arrays.copyOfRange(result.intrinsics, 4, 12));
 
         // Calculate optimized board poses manually. We get this for free from mrcal
         // too, but that's not JNIed (yet)
@@ -310,14 +320,15 @@ public class Calibrate3dPipe
             tvecs.add(tvec);
         }
 
-        List<BoardObservation> observations = createObservations(
-                in,
-                cameraMatrixMat.getAsMat(),
-                distortionCoefficientsMat.getAsMatOfDouble(),
-                rvecs,
-                tvecs,
-                new double[] { result.warp_x, result.warp_y },
-                imageSavePath);
+        List<BoardObservation> observations =
+                createObservations(
+                        in,
+                        cameraMatrixMat.getAsMat(),
+                        distortionCoefficientsMat.getAsMatOfDouble(),
+                        rvecs,
+                        tvecs,
+                        new double[] {result.warp_x, result.warp_y},
+                        imageSavePath);
 
         rvecs.forEach(Mat::release);
         tvecs.forEach(Mat::release);
@@ -326,7 +337,7 @@ public class Calibrate3dPipe
                 in.get(0).size,
                 cameraMatrixMat,
                 distortionCoefficientsMat,
-                new double[] { result.warp_x, result.warp_y },
+                new double[] {result.warp_x, result.warp_y},
                 observations,
                 new Size(params.boardWidth, params.boardHeight),
                 params.squareSize,
