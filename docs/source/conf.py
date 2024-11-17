@@ -10,7 +10,8 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
+import os
+
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
@@ -144,56 +145,9 @@ sphinx_tabs_valid_builders = ["epub", "linkcheck"]
 # These should be periodically checked by hand to ensure that they are still functional
 linkcheck_ignore = [R"https://www.raspberrypi.com/software/", R"http://10\..+"]
 
-
-import os
-
 token = os.environ.get("GITHUB_TOKEN", None)
-
 if token:
-    linkcheck_auth = [
-        (R"https://github.com/.+", token)
-        ]
-else:
-    print("Token not found ******************************************************************************")
+    linkcheck_auth = [(R"https://github.com/.+", token)]
 
 # MyST configuration (https://myst-parser.readthedocs.io/en/latest/configuration.html)
 myst_enable_extensions = ["colon_fence"]
-
-# Add Github Token to all Github API Requests made by any extension anywhere
-
-# import http.client
-
-
-# original_send = http.client.HTTPConnection.send
-
-
-# def new_send(self, data):
-#     try:
-#         headers = dict(
-#             (a.lower(), b)
-#             for a, b in (
-#                 header.split(b":", 1) for header in data.strip().split(b"\r\n")[1:]
-#             )
-#         )
-
-#         new_data = data
-#         if b"api.github.com" in headers[b"host"]:
-#             if b"authorization" not in headers:
-#                 if github_token := os.environ.get("GITHUB_TOKEN", None):
-#                     new_data = (
-#                         new_data[:-2]  # Remove the last CRLF
-#                         + b"Authorization: Bearer "
-#                         + github_token.encode("ascii")
-#                         + b"\r\n\r\n"
-#                     )
-
-#         original_send(self, new_data)
-#     except Exception as e:
-#         original_send(self, data)
-#         print(
-#             f"Intercepting a http(s) request failed. Running original request for header: {data}"
-#         )
-#         print(f"The exception is: {e}")
-
-
-# http.client.HTTPConnection.send = new_send
