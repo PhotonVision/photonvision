@@ -8,7 +8,7 @@ In order for photonvision to connect to the roborio it needs to know your team n
 
 ### Camera Nickname
 
-You **must** nickname your cameras in photonvision to ensure that every camera has a unique name. This is how we will identify cameras in robot code. The camera can be nicknamed using the edit button next to the camera name in the upper right of the Dashboard tab.
+You **must** nickname your cameras in PhotonVision to ensure that every camera has a unique name. This is how you will identify cameras in robot code. The camera can be nicknamed using the edit button next to the camera name in the upper right of the Dashboard tab.
 
 ```{image} images/editCameraName.png
 :align: center
