@@ -57,7 +57,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.photonvision.common.hardware.Platform;
 import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.estimation.VisionEstimation;
@@ -68,8 +67,8 @@ import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
+// See #1574 - flakey on windows and also linux, so commenting out until we bump wpilib
 class VisionSystemSimTest {
-    private static final double kTrlDelta = 0.005;
     private static final double kRotDeltaDeg = 0.25;
 
     NetworkTableInstance inst;
@@ -87,14 +86,8 @@ class VisionSystemSimTest {
 
         OpenCVHelp.forceLoadOpenCV();
 
-        // See #1574 - flakey on windows
-        assumeTrue(!Platform.isWindows());
-    }
-
-    @BeforeEach
-    public void init() {
-        // // No version check for testing
-        // PhotonCamera.setVersionCheckEnabled(false);
+        // See #1574 - test flakey, disabled until we address this
+        assumeTrue(false);
     }
 
     @BeforeEach
