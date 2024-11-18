@@ -145,8 +145,7 @@ public class Calibrate3dPipe
             return null;
         }
 
-        // And delete rows depending on the level -- otherwise, level has no impact for
-        // opencv
+        // And delete rows depending on the level -- otherwise, level has no impact for opencv
         List<Mat> objPoints = new ArrayList<>();
         List<Mat> imgPoints = new ArrayList<>();
         for (int i = 0; i < objPointsIn.size(); i++) {
@@ -232,12 +231,6 @@ public class Calibrate3dPipe
         int imageWidth = (int) in.get(0).size.width;
         int imageHeight = (int) in.get(0).size.height;
 
-        int count = 0;
-        for (MatOfPoint2f ps : corner_locations) {
-            count += ps.toArray().length;
-        }
-        System.out.println("Calibrating with " + count + " points");
-
         MrCalResult result =
                 MrCalJNI.calibrateCamera(
                         corner_locations,
@@ -284,10 +277,8 @@ public class Calibrate3dPipe
             var rvec = new Mat();
             var tvec = new Mat();
 
-            // If the calibration points contain points that are negative then we need to
-            // exclude them,
-            // they are considered points that we dont want to use in calibration/solvepnp.
-            // These points
+            // If the calibration points contain points that are negative then we need to exclude them,
+            // they are considered points that we dont want to use in calibration/solvepnp. These points
             // are required prior to this to allow mrcal to work.
             Point3[] oPoints = o.objectPoints.toArray();
             Point[] iPoints = o.imagePoints.toArray();
@@ -355,8 +346,7 @@ public class Calibrate3dPipe
         List<Mat> objPoints = in.stream().map(it -> it.objectPoints).collect(Collectors.toList());
         List<Mat> imgPts = in.stream().map(it -> it.imagePoints).collect(Collectors.toList());
 
-        // Clear the calibration image folder of any old images before we save the new
-        // ones.
+        // Clear the calibration image folder of any old images before we save the new ones.
 
         try {
             FileUtils.cleanDirectory(imageSavePath.toFile());
