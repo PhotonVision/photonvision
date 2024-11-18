@@ -167,7 +167,7 @@ public class NetworkTablesManager {
                     .publishEvent(
                             new OutgoingUIEvent<>(
                                     "fullsettings",
-                                    UiPhotonConfiguration.toHashMap(ConfigManager.getInstance().getConfig())));
+                                    UiPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
         } catch (IOException e) {
             logger.error("Error deserializing atfl!");
             logger.error(atfl_json);

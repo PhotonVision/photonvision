@@ -491,7 +491,7 @@ public class VisionModule {
                 .publishEvent(
                         new OutgoingUIEvent<>(
                                 "fullsettings",
-                                UiPhotonConfiguration.toHashMap(ConfigManager.getInstance().getConfig())));
+                                UiPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
     }
 
     void saveAndBroadcastSelective(WsContext originContext, String propertyName, Object value) {

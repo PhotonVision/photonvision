@@ -233,7 +233,7 @@ public class PipelineManager {
                 .publishEvent(
                         new OutgoingUIEvent<>(
                                 "fullsettings",
-                                UiPhotonConfiguration.toHashMap(ConfigManager.getInstance().getConfig())));
+                                UiPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
     }
 
     /**

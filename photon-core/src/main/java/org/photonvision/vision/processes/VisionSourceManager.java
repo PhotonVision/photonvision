@@ -124,7 +124,7 @@ public class VisionSourceManager {
                 .publishEvent(
                         new OutgoingUIEvent<>(
                                 "fullsettings",
-                                UiPhotonConfiguration.toHashMap(ConfigManager.getInstance().getConfig())));
+                                UiPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
     }
 
     protected List<VisionSource> tryMatchCamImpl() {
