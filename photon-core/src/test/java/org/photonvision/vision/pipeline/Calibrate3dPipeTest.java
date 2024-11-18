@@ -126,7 +126,7 @@ public class Calibrate3dPipeTest {
     @CartesianTest
     public void calibrateTestMatrix(
             @Enum(CalibrationDatasets.class) CalibrationDatasets dataset,
-            @Values(booleans = {true}) boolean useMrCal) {
+            @Values(booleans = {true, false}) boolean useMrCal) {
         // Pi3 and V1.3 camera
         String squareBase = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
         String charucoBase = TestUtils.getCharucoBoardImagesPath().toAbsolutePath().toString();
@@ -230,23 +230,21 @@ public class Calibrate3dPipeTest {
 
         for (var file : directoryListing) {
             if (file.isFile()) {
-                for (int i = 0; i < 42; i++) { // 42 is just too many
-                    calibration3dPipeline.takeSnapshot();
-                    var frame =
-                            new Frame(
-                                    0,
-                                    new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
-                                    new CVMat(),
-                                    FrameThresholdType.NONE,
-                                    new FrameStaticProperties((int) imgRes.width, (int) imgRes.height, 67, null));
-                    var output = calibration3dPipeline.run(frame, QuirkyCamera.DefaultCamera);
+                calibration3dPipeline.takeSnapshot();
+                var frame =
+                        new Frame(
+                                0,
+                                new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
+                                new CVMat(),
+                                FrameThresholdType.NONE,
+                                new FrameStaticProperties((int) imgRes.width, (int) imgRes.height, 67, null));
+                var output = calibration3dPipeline.run(frame, QuirkyCamera.DefaultCamera);
 
-                    // TestUtils.showImage(output.inputAndOutputFrame.processedImage.getMat(),
-                    // file.getName(),
-                    // 1);
-                    output.release();
-                    frame.release();
-                }
+                // TestUtils.showImage(output.inputAndOutputFrame.processedImage.getMat(),
+                // file.getName(),
+                // 1);
+                output.release();
+                frame.release();
             }
         }
 

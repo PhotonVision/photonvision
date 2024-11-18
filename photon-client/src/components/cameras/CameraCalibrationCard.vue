@@ -82,6 +82,11 @@ const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.Charuco);
 const useOldPattern = ref(false);
 const tagFamily = ref<CalibrationTagFamilies>(CalibrationTagFamilies.Dict_4X4_1000);
 
+// Emperical testing - with stack size limit of 1MB, we can handle at -least- 700k points
+const tooManyPoints = computed(
+  () => useStateStore().calibrationData.imageCount * patternWidth.value * patternHeight.value > 700000
+);
+
 const downloadCalibBoard = () => {
   const doc = new JsPDF({ unit: "in", format: "letter" });
 
@@ -413,12 +418,17 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           </v-col>
         </v-row>
         <v-row>
+          <v-col v-if="tooManyPoints" :cols="12">
+            <v-banner rounded color="red" text-color="white" class="mt-3" icon="mdi-alert-circle-outline">
+              Too many corners - finish calibration now!
+            </v-banner>
+          </v-col>
           <v-col :cols="6">
             <v-btn
               small
               color="secondary"
               style="width: 100%"
-              :disabled="!settingsValid"
+              :disabled="!settingsValid || tooManyPoints"
               @click="isCalibrating ? useCameraSettingsStore().takeCalibrationSnapshot() : startCalibration()"
             >
               <v-icon left class="calib-btn-icon"> {{ isCalibrating ? "mdi-camera" : "mdi-flag-outline" }} </v-icon>
