@@ -152,7 +152,8 @@ const downloadCalibBoard = () => {
   doc.save(`calibrationTarget-${CalibrationBoardTypes[boardType.value]}.pdf`);
 };
 
-const isCalibrating = ref(false);
+const isCalibrating = computed(() => useCameraSettingsStore().currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.Calib3d);
+
 const startCalibration = () => {
   useCameraSettingsStore().startPnPCalibration({
     squareSizeIn: squareSizeIn.value,
@@ -165,7 +166,7 @@ const startCalibration = () => {
   });
   // The Start PnP method already handles updating the backend so only a store update is required
   useCameraSettingsStore().currentCameraSettings.currentPipelineIndex = WebsocketPipelineType.Calib3d;
-  isCalibrating.value = true;
+  // isCalibrating.value = true;
   calibCanceled.value = false;
 };
 const showCalibEndDialog = ref(false);
@@ -187,7 +188,8 @@ const endCalibration = () => {
       calibSuccess.value = false;
     })
     .finally(() => {
-      isCalibrating.value = false;
+      // isCalibrating.value = false;
+      // backend deals with this for us 
     });
 };
 
