@@ -246,6 +246,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
         <v-row style="display: flex; flex-direction: column" class="mt-4">
           <v-card-subtitle v-show="!isCalibrating" class="pl-3 pa-0 ma-0"> Configure New Calibration</v-card-subtitle>
           <v-form ref="form" v-model="settingsValid" class="pl-4 mb-10 pr-5">
+            <!-- TODO: the default videoFormatIndex is 0, but the list of unique video mode indexes might not include 0. getUniqueVideoResolutionStrings indexing is also different from the normal video mode indexing -->
             <pv-select
               v-model="useStateStore().calibrationData.videoFormatIndex"
               label="Resolution"
