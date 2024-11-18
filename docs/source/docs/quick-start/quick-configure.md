@@ -51,7 +51,7 @@ When using an Orange Pi 5 with an OV9782 teams will usually change the following
 - Resolution:
   - Resolutions higher than 640x640 may not result in any higher detection accuracy and may lower {ref}`performance<docs/objectDetection/about-object-detection:Letterboxing>`.
 - Confidence:
-  - 0.75 - 0.95 Lower values are fpr detecting worn game pieces or less ideal game pieces. Higher for less worn, more ideal game pieces.
+  - 0.75 - 0.95 Lower values are for detecting worn game pieces or less ideal game pieces. Higher for less worn, more ideal game pieces.
 - White Balance Temperature:
   - Adjust this to achieve better color accuracy. This may be needed to increase confidence.
 - Set arducam specific camera type selector to OV9782
