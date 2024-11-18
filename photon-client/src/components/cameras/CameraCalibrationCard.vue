@@ -152,7 +152,9 @@ const downloadCalibBoard = () => {
   doc.save(`calibrationTarget-${CalibrationBoardTypes[boardType.value]}.pdf`);
 };
 
-const isCalibrating = computed(() => useCameraSettingsStore().currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.Calib3d);
+const isCalibrating = computed(
+  () => useCameraSettingsStore().currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.Calib3d
+);
 
 const startCalibration = () => {
   useCameraSettingsStore().startPnPCalibration({
@@ -173,6 +175,8 @@ const showCalibEndDialog = ref(false);
 const calibCanceled = ref(false);
 const calibSuccess = ref<boolean | undefined>(undefined);
 const endCalibration = () => {
+  calibSuccess.value = undefined;
+
   if (!useStateStore().calibrationData.hasEnoughImages) {
     calibCanceled.value = true;
   }
@@ -189,7 +193,7 @@ const endCalibration = () => {
     })
     .finally(() => {
       // isCalibrating.value = false;
-      // backend deals with this for us 
+      // backend deals with this for us
     });
 };
 
@@ -484,10 +488,12 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 process.</v-card-text
               >
             </template>
-            <template v-else-if="isCalibrating">
+            <!-- No result reported yet -->
+            <template v-else-if="calibSuccess === undefined">
               <v-progress-circular indeterminate :size="70" :width="8" color="accent" />
               <v-card-text>Camera is being calibrated. This process may take several minutes...</v-card-text>
             </template>
+            <!-- Got positive result -->
             <template v-else-if="calibSuccess">
               <v-icon color="green" size="70"> mdi-check-bold </v-icon>
               <v-card-text>
