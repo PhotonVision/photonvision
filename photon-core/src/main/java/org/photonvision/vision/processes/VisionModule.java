@@ -30,13 +30,14 @@ import java.util.stream.Collectors;
 import org.opencv.core.Size;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
-import org.photonvision.common.configuration.PhotonConfiguration;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NTDataPublisher;
 import org.photonvision.common.dataflow.statusLEDs.StatusLEDConsumer;
+import org.photonvision.common.dataflow.websocket.UICameraConfiguration;
 import org.photonvision.common.dataflow.websocket.UIDataPublisher;
+import org.photonvision.common.dataflow.websocket.UiPhotonConfiguration;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -489,7 +490,8 @@ public class VisionModule {
         DataChangeService.getInstance()
                 .publishEvent(
                         new OutgoingUIEvent<>(
-                                "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
+                                "fullsettings",
+                                UiPhotonConfiguration.toHashMap(ConfigManager.getInstance().getConfig())));
     }
 
     void saveAndBroadcastSelective(WsContext originContext, String propertyName, Object value) {
@@ -516,8 +518,8 @@ public class VisionModule {
         saveAndBroadcastAll();
     }
 
-    public PhotonConfiguration.UICameraConfiguration toUICameraConfig() {
-        var ret = new PhotonConfiguration.UICameraConfiguration();
+    public UICameraConfiguration toUICameraConfig() {
+        var ret = new UICameraConfiguration();
 
         ret.fov = visionSource.getSettables().getFOV();
         ret.isCSICamera = visionSource.getCameraConfiguration().cameraType == CameraType.ZeroCopyPicam;
