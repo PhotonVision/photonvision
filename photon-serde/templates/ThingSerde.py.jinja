@@ -70,7 +70,6 @@ class {{ name }}Serde:
 {% endfor%}
         return ret
 
-
     @staticmethod
     def unpack(packet: "Packet") -> "{{ name }}":
         ret = {{ name }}()
