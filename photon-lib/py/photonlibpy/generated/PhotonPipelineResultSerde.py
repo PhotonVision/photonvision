@@ -42,15 +42,13 @@ class PhotonPipelineResultSerde:
         ret = Packet()
 
         # metadata is of non-intrinsic type PhotonPipelineMetadata
-        ret.encodeBytes(
-            PhotonPipelineMetadata.photonStruct.pack(value.metadata).getData()
-        )
+        ret.encodeBytes(PhotonPipelineMetadata.photonStruct.pack(value.metadata).getData())  # fmt: skip
 
         # targets is a custom VLA!
-        ret.encodeList(value.targets, PhotonTrackedTarget.photonStruct)
+        ret.encodeList(value.targets, PhotonTrackedTarget.photonStruct)  # fmt: skip
 
         # multitagResult is optional! it better not be a VLA too
-        ret.encodeOptional(value.multitagResult, MultiTargetPNPResult.photonStruct)
+        ret.encodeOptional(value.multitagResult, MultiTargetPNPResult.photonStruct)  # fmt: skip
         return ret
 
     @staticmethod
@@ -58,13 +56,13 @@ class PhotonPipelineResultSerde:
         ret = PhotonPipelineResult()
 
         # metadata is of non-intrinsic type PhotonPipelineMetadata
-        ret.metadata = PhotonPipelineMetadata.photonStruct.unpack(packet)
+        ret.metadata = PhotonPipelineMetadata.photonStruct.unpack(packet)  # fmt: skip
 
         # targets is a custom VLA!
-        ret.targets = packet.decodeList(PhotonTrackedTarget.photonStruct)
+        ret.targets = packet.decodeList(PhotonTrackedTarget.photonStruct)  # fmt: skip
 
         # multitagResult is optional! it better not be a VLA too
-        ret.multitagResult = packet.decodeOptional(MultiTargetPNPResult.photonStruct)
+        ret.multitagResult = packet.decodeOptional(MultiTargetPNPResult.photonStruct)  # fmt: skip
 
         return ret
 

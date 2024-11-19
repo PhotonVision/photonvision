@@ -39,10 +39,10 @@ class TargetCornerSerde:
         ret = Packet()
 
         # x is of intrinsic type float64
-        ret.encodeDouble(value.x)
+        ret.encodeDouble(value.x)  # fmt: skip
 
         # y is of intrinsic type float64
-        ret.encodeDouble(value.y)
+        ret.encodeDouble(value.y)  # fmt: skip
         return ret
 
     @staticmethod
@@ -50,10 +50,10 @@ class TargetCornerSerde:
         ret = TargetCorner()
 
         # x is of intrinsic type float64
-        ret.x = packet.decodeDouble()
+        ret.x = packet.decodeDouble()  # fmt: skip
 
         # y is of intrinsic type float64
-        ret.y = packet.decodeDouble()
+        ret.y = packet.decodeDouble()  # fmt: skip
 
         return ret
 
