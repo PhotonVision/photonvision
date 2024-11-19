@@ -17,7 +17,6 @@ interface GeneralSettingsStore {
   network: NetworkSettings;
   lighting: LightingSettings;
   metrics: MetricData;
-  currentFieldLayout: AprilTagFieldLayout;
 }
 
 export const useSettingsStore = defineStore("settings", {

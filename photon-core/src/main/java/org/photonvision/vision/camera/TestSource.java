@@ -29,8 +29,6 @@ import org.photonvision.vision.processes.VisionSourceSettables;
 
 /** Dummy class for unit testing the vision source manager */
 public class TestSource extends VisionSource {
-    private FrameProvider usbFrameProvider;
-
     public TestSource(CameraConfiguration config) {
         super(config);
 
@@ -81,6 +79,12 @@ public class TestSource extends VisionSource {
                 // TODO Auto-generated method stub
                 throw new UnsupportedOperationException("Unimplemented method 'requestHsvSettings'");
             }
+
+            @Override
+            public void release() {
+                // TODO Auto-generated method stub
+                throw new UnsupportedOperationException("Unimplemented method 'release'");
+            }
         };
     }
 
@@ -99,5 +103,11 @@ public class TestSource extends VisionSource {
     @Override
     public boolean hasLEDs() {
         return false; // Assume USB cameras do not have photonvision-controlled LEDs
+    }
+
+    @Override
+    public void release() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'close'");
     }
 }

@@ -29,6 +29,25 @@ import org.photonvision.common.logging.Logger;
 public class DataChangeService {
     private static final Logger logger = new Logger(DataChangeService.class, LogGroup.WebServer);
 
+    public static class SubscriberHandle {
+        private final int[] idxs;
+
+        private SubscriberHandle(int[] idxs) {
+            this.idxs = idxs;
+        }
+
+        private SubscriberHandle(int idx) {
+            this.idxs = new int[] {idx};
+        }
+
+        public void stop() {
+            for (int idx : idxs) {
+                if (idx < 0) continue;
+                getInstance().subscribers.set(idx, null);
+            }
+        }
+    }
+
     private static class ThreadSafeSingleton {
         private static final DataChangeService INSTANCE = new DataChangeService();
     }
@@ -60,6 +79,7 @@ public class DataChangeService {
             try {
                 var taken = eventQueue.take();
                 for (var sub : subscribers) {
+                    if (sub == null) continue;
                     if (sub.wantedSources.contains(taken.sourceType)
                             && sub.wantedDestinations.contains(taken.destType)) {
                         sub.onDataChangeEvent(taken);
@@ -72,9 +92,10 @@ public class DataChangeService {
         }
     }
 
-    public void addSubscriber(DataChangeSubscriber subscriber) {
+    public SubscriberHandle addSubscriber(DataChangeSubscriber subscriber) {
         if (!subscribers.addIfAbsent(subscriber)) {
             logger.warn("Attempted to add already added subscriber!");
+            return new SubscriberHandle(-1);
         } else {
             logger.debug(
                     () -> {
@@ -89,13 +110,16 @@ public class DataChangeService {
 
                         return "Added subscriber - " + "Sources: " + sources + ", Destinations: " + dests;
                     });
+            return new SubscriberHandle(subscribers.size() - 1);
         }
     }
 
-    public void addSubscribers(DataChangeSubscriber... subs) {
-        for (var sub : subs) {
-            addSubscriber(sub);
+    public SubscriberHandle addSubscribers(DataChangeSubscriber... subs) {
+        int[] idxs = new int[subs.length];
+        for (int i = 0; i < subs.length; i++) {
+            idxs[i] = addSubscriber(subs[i]).idxs[0];
         }
+        return new SubscriberHandle(idxs);
     }
 
     public void publishEvent(DataChangeEvent event) {

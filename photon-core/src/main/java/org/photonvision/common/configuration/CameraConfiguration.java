@@ -48,6 +48,8 @@ public class CameraConfiguration {
     /** Can be either path (ex /dev/videoX) or index (ex 1). */
     public String path = "";
 
+    public boolean deactivated = false;
+
     public QuirkyCamera cameraQuirks;
 
     @JsonIgnore public String[] otherPaths = {};
@@ -92,9 +94,10 @@ public class CameraConfiguration {
             @JsonProperty("baseName") String baseName,
             @JsonProperty("uniqueName") String uniqueName,
             @JsonProperty("nickname") String nickname,
-            @JsonProperty("FOV") double FOV,
             @JsonProperty("path") String path,
+            @JsonProperty("deactivated") boolean deactivated,
             @JsonProperty("cameraType") CameraType cameraType,
+            @JsonProperty("FOV") double FOV,
             @JsonProperty("cameraQuirks") QuirkyCamera cameraQuirks,
             @JsonProperty("calibration") List<CameraCalibrationCoefficients> calibrations,
             @JsonProperty("currentPipelineIndex") int currentPipelineIndex,
@@ -109,8 +112,8 @@ public class CameraConfiguration {
         this.cameraQuirks = cameraQuirks;
         this.calibrations = calibrations != null ? calibrations : new ArrayList<>();
         this.currentPipelineIndex = currentPipelineIndex;
-        this.usbPID = usbPID;
         this.usbVID = usbVID;
+        this.usbPID = usbPID;
 
         logger.debug("Loaded camera configuration for " + toShortString());
     }
@@ -191,10 +194,22 @@ public class CameraConfiguration {
                 + ", FOV="
                 + FOV
                 + "]"
-                + ", PID="
-                + usbPID
                 + ", VID="
-                + usbVID;
+                + usbVID
+                + ", PID="
+                + usbPID;
+    }
+
+    /**
+     * cscore will auto-reconnect to the camera path we give it. v4l does not guarantee that if i swap
+     * cameras around, the same /dev/videoN ID will be assigned to that camera. So instead default to
+     * pinning to a particular USB port, or by "path" (appears to be a global identifier on Windows).
+     *
+     * <p>This represents our best guess at an immutable path to detect a camera at.
+     */
+    @JsonIgnore
+    public String getUsbPathOrDefault() {
+        return getUSBPath().orElse(path);
     }
 
     @Override

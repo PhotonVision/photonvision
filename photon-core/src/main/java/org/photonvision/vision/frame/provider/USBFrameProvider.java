@@ -45,8 +45,8 @@ public class USBFrameProvider extends CpuImageProcessor {
         // We allocate memory so we don't fill a Mat in use by another thread (memory model is easier)
         var mat = new CVMat();
         // This is from wpi::Now, or WPIUtilJNI.now(). The epoch from grabFrame is uS since
-        // Hal::initialize was called
-        long captureTimeNs = cvSink.grabFrame(mat.getMat()) * 1000;
+        // Hal::initialize was called. Timeout is in seconds
+        long captureTimeNs = cvSink.grabFrame(mat.getMat(), 1.0) * 1000;
 
         if (captureTimeNs == 0) {
             var error = cvSink.getError();
@@ -59,5 +59,10 @@ public class USBFrameProvider extends CpuImageProcessor {
     @Override
     public String getName() {
         return "USBFrameProvider - " + cvSink.getName();
+    }
+
+    @Override
+    public void release() {
+        cvSink.close();
     }
 }

@@ -56,6 +56,27 @@ export type ConfigurableNetworkSettings = Omit<
   "canManage" | "networkInterfaceNames" | "networkingDisabled"
 >;
 
+export interface UiCameraConfiguration {}
+export interface CameraConfiguration {}
+
+export interface PvCameraInfo {
+  cameraType: string; // CameraType -- todo
+  dev: number;
+  path: string;
+  name: string;
+  otherPaths: string[];
+  vendorId: number;
+  productId: number;
+}
+
+export interface UniqueCameraSummary {
+  uniqueName: string;
+  name: string;
+  path: string;
+  otherPaths: string[];
+  type: string;
+}
+
 export interface LightingSettings {
   supported: boolean;
   brightness: number;
@@ -173,6 +194,8 @@ export interface QuirkyCamera {
 }
 
 export interface CameraSettings {
+  cameraPath: string;
+
   nickname: string;
   uniqueName: string;
 
@@ -209,6 +232,8 @@ export interface CameraSettingsChangeRequest {
 }
 
 export const PlaceholderCameraSettings: CameraSettings = {
+  cameraPath: "/dev/null",
+
   nickname: "Placeholder Camera",
   uniqueName: "Placeholder Name",
   fov: {

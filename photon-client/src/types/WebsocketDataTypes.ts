@@ -5,7 +5,8 @@ import type {
   LogLevel,
   MetricData,
   NetworkSettings,
-  QuirkyCamera
+  QuirkyCamera,
+  UniqueCameraSummary
 } from "@/types/SettingTypes";
 import type { ActivePipelineSettings } from "@/types/PipelineTypes";
 import type { AprilTagFieldLayout, PipelineResult } from "@/types/PhotonTrackingTypes";
@@ -44,7 +45,9 @@ export type WebsocketVideoFormat = Record<
   }
 >;
 
+// Companion to UICameraConfiguration in Java
 export interface WebsocketCameraSettingsUpdate {
+  cameraPath: string;
   calibrations: CameraCalibrationResult[];
   currentPipelineIndex: number;
   currentPipelineSettings: ActivePipelineSettings;
@@ -98,6 +101,7 @@ export interface IncomingWebsocketData {
   mutatePipelineSettings?: Partial<ActivePipelineSettings>;
   cameraIndex?: number; // Sent when mutating pipeline settings to check against currently active
   calibrationData?: WebsocketCalibrationData;
+  discoveredCameras?: UniqueCameraSummary[];
 }
 
 export enum WebsocketPipelineType {

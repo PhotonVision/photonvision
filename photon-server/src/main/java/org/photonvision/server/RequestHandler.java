@@ -53,6 +53,7 @@ import org.photonvision.common.util.file.ProgramDirectoryUtilities;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.processes.VisionModuleManager;
+import org.photonvision.vision.processes.VisionSourceManager;
 import org.zeroturnaround.zip.ZipUtil;
 
 public class RequestHandler {
@@ -832,5 +833,29 @@ public class RequestHandler {
             logger.error("asdf", e);
             ctx.status(500);
         }
+    }
+
+    public static void onAssignCameraRequest(Context ctx) {
+        logger.info(ctx.queryString().toString());
+
+        String uniqueName = ctx.queryParam("uniqueName");
+
+        VisionSourceManager.getInstance().activateVisionSource(uniqueName);
+
+        ctx.status(200);
+
+        ctx.result("Successfully assigned camera with unique name: " + uniqueName);
+    }
+
+    public static void onUnassignCameraRequest(Context ctx) {
+        logger.info(ctx.queryString().toString());
+
+        String uniqueName = ctx.queryParam("uniqueName");
+
+        VisionSourceManager.getInstance().deactivateVisionSource(uniqueName);
+
+        ctx.status(200);
+
+        ctx.result("Successfully assigned camera with unique name: " + uniqueName);
     }
 }

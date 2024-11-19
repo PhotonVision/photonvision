@@ -125,11 +125,6 @@ public class Main {
                 }
             }
 
-            if (cmd.hasOption("ignore-cameras")) {
-                VisionSourceManager.getInstance()
-                        .setIgnoredCamerasRegex(cmd.getOptionValue("ignore-cameras"));
-            }
-
             if (cmd.hasOption("disable-networking")) {
                 NetworkManager.getInstance().networkingIsDisabled = true;
             }
@@ -183,7 +178,9 @@ public class Main {
                             .collect(Collectors.toList());
 
             ConfigManager.getInstance().unloadCameraConfigs();
-            VisionModuleManager.getInstance().addSources(collectedSources).forEach(VisionModule::start);
+            collectedSources.stream()
+                    .map(VisionModuleManager.getInstance()::addSource)
+                    .forEach(VisionModule::start);
             ConfigManager.getInstance().addCameraConfigurations(collectedSources);
         } catch (IOException e) {
             logger.error("Path does not exist!");
@@ -345,7 +342,9 @@ public class Main {
         // collectedSources.add(fvs2019);
 
         ConfigManager.getInstance().unloadCameraConfigs();
-        VisionModuleManager.getInstance().addSources(collectedSources).forEach(VisionModule::start);
+        collectedSources.stream()
+                .map(VisionModuleManager.getInstance()::addSource)
+                .forEach(VisionModule::start);
         ConfigManager.getInstance().addCameraConfigurations(collectedSources);
     }
 
@@ -475,8 +474,6 @@ public class Main {
             VisionSourceManager.getInstance()
                     .registerLoadedConfigs(
                             ConfigManager.getInstance().getConfig().getCameraConfigurations().values());
-
-            VisionSourceManager.getInstance().registerTimedTask();
         } else {
             if (testModeFolder == null) {
                 addTestModeSources();

@@ -178,21 +178,26 @@ public class PhotonConfiguration {
     }
 
     public static class UICameraConfiguration {
-        @SuppressWarnings("unused")
-        public double fov;
+        // Path to the camera device. On Linux, this is a special file in /dev/v4l/by-id or /dev/videoN.
+        // This is the path we hand to CSCore to do auto-reconnect on
+        public String cameraPath;
 
+        /** See {@link CameraConfiguration#deactivated} */
+        public boolean deactivated;
+
+        public List<UICameraCalibrationCoefficients> calibrations;
+        public int currentPipelineIndex;
+        public HashMap<String, Object> currentPipelineSettings;
+        public double fov;
+        public int inputStreamPort;
+        public boolean isFovConfigurable = true;
+        public boolean isCSICamera;
         public String nickname;
         public String uniqueName;
-        public HashMap<String, Object> currentPipelineSettings;
-        public int currentPipelineIndex;
+        public int outputStreamPort;
         public List<String> pipelineNicknames;
         public HashMap<Integer, HashMap<String, Object>> videoFormatList;
-        public int outputStreamPort;
-        public int inputStreamPort;
-        public List<UICameraCalibrationCoefficients> calibrations;
-        public boolean isFovConfigurable = true;
         public QuirkyCamera cameraQuirks;
-        public boolean isCSICamera;
         public double minExposureRaw;
         public double maxExposureRaw;
         public double minWhiteBalanceTemp;

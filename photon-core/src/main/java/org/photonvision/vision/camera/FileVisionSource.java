@@ -85,6 +85,11 @@ public class FileVisionSource extends VisionSource {
         return false; // Assume USB cameras do not have photonvision-controlled LEDs
     }
 
+    @Override
+    public void release() {
+        frameProvider.release();
+    }
+
     private static class FileSourceSettables extends VisionSourceSettables {
         private final VideoMode videoMode;
 

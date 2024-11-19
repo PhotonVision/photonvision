@@ -136,6 +136,8 @@ public class Server {
         app.get("/api/utils/getCalibrationJSON", RequestHandler::onCalibrationExportRequest);
         app.post("/api/utils/nukeConfigDirectory", RequestHandler::onNukeConfigDirectory);
         app.post("/api/utils/nukeOneCamera", RequestHandler::onNukeOneCamera);
+        app.post("/api/utils/assignCamera", RequestHandler::onAssignCameraRequest);
+        app.post("/api/utils/unassignCamera", RequestHandler::onUnassignCameraRequest);
 
         // Calibration
         app.post("/api/calibration/end", RequestHandler::onCalibrationEndRequest);
