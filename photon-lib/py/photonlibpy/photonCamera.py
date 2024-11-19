@@ -298,43 +298,42 @@ class PhotonCamera:
 
         # Check mdef UUID
         localUUID = PhotonPipelineResult.photonStruct.MESSAGE_VERSION
-        remoteUUID = str(self._rawBytesEntry.getTopic().getProperty("message_uuid"))
+        remoteUUID = self._rawBytesEntry.getTopic().getProperty("message_uuid")
 
-        if not remoteUUID:
+        if remoteUUID is None:
             wpilib.reportWarning(
                 f"PhotonVision coprocessor at path {self._path} has not reported a message interface UUID - is your coprocessor's camera started?",
                 True,
             )
+        else:
+            # ntcore hands us a JSON string with leading/trailing quotes - remove those
+            remoteUUID = str(remoteUUID).replace('"', "")
 
-        assert isinstance(remoteUUID, str)
-        # ntcore hands us a JSON string with leading/trailing quotes - remove those
-        remoteUUID = remoteUUID.replace('"', "")
+            if localUUID != remoteUUID:
+                # Verified version mismatch
 
-        if localUUID != remoteUUID:
-            # Verified version mismatch
+                bfw = """
+                \n\n\n
+                >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                >>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                >>>
+                >>> You are running an incompatible version
+                >>> of PhotonVision on your coprocessor!
+                >>>
+                >>> This is neither tested nor supported.
+                >>> You MUST update PhotonVision,
+                >>> PhotonLib, or both.
+                >>>
+                >>> Your code will now crash.
+                >>> We hope your day gets better.
+                >>>
+                >>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                \n\n
+                """
 
-            bfw = """
-            \n\n\n
-            >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-            >>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            >>>
-            >>> You are running an incompatible version
-            >>> of PhotonVision on your coprocessor!
-            >>>
-            >>> This is neither tested nor supported.
-            >>> You MUST update PhotonVision,
-            >>> PhotonLib, or both.
-            >>>
-            >>> Your code will now crash.
-            >>> We hope your day gets better.
-            >>>
-            >>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-            \n\n
-            """
+                wpilib.reportWarning(bfw)
 
-            wpilib.reportWarning(bfw)
-
-            errText = f"Photonlibpy version {PHOTONLIB_VERSION} (With message UUID {localUUID}) does not match coprocessor version {versionString} (with message UUID {remoteUUID}). Please install photonlibpy version {versionString}, or update your coprocessor to {PHOTONLIB_VERSION}."
-            wpilib.reportError(errText, True)
-            raise Exception(errText)
+                errText = f"Photonlibpy version {PHOTONLIB_VERSION} (With message UUID {localUUID}) does not match coprocessor version {versionString} (with message UUID {remoteUUID}). Please install photonlibpy version {versionString}, or update your coprocessor to {PHOTONLIB_VERSION}."
+                wpilib.reportError(errText, True)
+                raise Exception(errText)
