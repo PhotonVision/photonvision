@@ -40,7 +40,7 @@ const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.bre
           <v-icon>mdi-camera</v-icon>
         </v-list-item-icon>
         <v-list-item-content>
-          <v-list-item-title>Cameras</v-list-item-title>
+          <v-list-item-title>Camera</v-list-item-title>
         </v-list-item-content>
       </v-list-item>
       <v-list-item link to="/settings">
@@ -49,6 +49,14 @@ const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.bre
         </v-list-item-icon>
         <v-list-item-content>
           <v-list-item-title>Settings</v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+      <v-list-item link to="/cameraConfigs">
+        <v-list-item-icon>
+          <v-icon>mdi-notebook</v-icon>
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-list-item-title>Camera Configs</v-list-item-title>
         </v-list-item-content>
       </v-list-item>
       <v-list-item link to="/docs">

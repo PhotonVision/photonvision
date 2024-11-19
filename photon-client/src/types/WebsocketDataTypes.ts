@@ -5,7 +5,8 @@ import type {
   LogLevel,
   MetricData,
   NetworkSettings,
-  QuirkyCamera
+  QuirkyCamera,
+  VisionSourceManagerState
 } from "@/types/SettingTypes";
 import type { ActivePipelineSettings } from "@/types/PipelineTypes";
 import type { AprilTagFieldLayout, PipelineResult } from "@/types/PhotonTrackingTypes";
@@ -21,6 +22,7 @@ export interface WebsocketSettingsUpdate {
   lighting: Required<LightingSettings>;
   networkSettings: NetworkSettings;
   atfl: AprilTagFieldLayout;
+  visionSourceManagerState: VisionSourceManagerState;
 }
 
 export interface WebsocketNumberPair {
@@ -44,7 +46,10 @@ export type WebsocketVideoFormat = Record<
   }
 >;
 
+// Companion to UICameraConfiguration in Java
 export interface WebsocketCameraSettingsUpdate {
+  cameraPath: string;
+
   calibrations: CameraCalibrationResult[];
   currentPipelineIndex: number;
   currentPipelineSettings: ActivePipelineSettings;
