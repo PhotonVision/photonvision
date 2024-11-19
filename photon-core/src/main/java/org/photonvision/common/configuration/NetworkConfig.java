@@ -89,6 +89,21 @@ public class NetworkConfig {
         setShouldManage(shouldManage);
     }
 
+    public NetworkConfig(NetworkConfig config) {
+        this(
+                config.ntServerAddress,
+                config.connectionType,
+                config.staticIp,
+                config.hostname,
+                config.runNTServer,
+                config.shouldManage,
+                config.shouldPublishProto,
+                config.networkManagerIface,
+                config.setStaticCommand,
+                config.setDHCPcommand,
+                config.matchCamerasOnlyByPath);
+    }
+
     public Map<String, Object> toHashMap() {
         try {
             var ret = new ObjectMapper().convertValue(this, JacksonUtils.UIMap.class);
