@@ -8,7 +8,7 @@ In order for photonvision to connect to the roborio it needs to know your team n
 
 ### Camera Nickname
 
-You **must** nickname your cameras in photonvision to ensure that every camera has a unique name. This is how we will identify cameras in robot code. The camera can be nickname using the edit button next to the camera name in the upper right of the Dashboard tab.
+You **must** nickname your cameras in PhotonVision to ensure that every camera has a unique name. This is how you will identify cameras in robot code. The camera can be nicknamed using the edit button next to the camera name in the upper right of the Dashboard tab.
 
 ```{image} images/editCameraName.png
 :align: center
@@ -38,7 +38,7 @@ When detecting AprilTags, it's important to minimize 'motion blur' as much as po
 - Fixes
   - Lower your exposure as low as possible. Using gain and brightness to account for lack of brightness.
 - Other Options:
-  - Don't use/rely vision measurements while moving.
+  - Don't use/rely on vision measurements while moving.
 
 ```{image} images/motionblur.png
 :align: center
@@ -51,7 +51,7 @@ When using an Orange Pi 5 with an OV9782 teams will usually change the following
 - Resolution:
   - Resolutions higher than 640x640 may not result in any higher detection accuracy and may lower {ref}`performance<docs/objectDetection/about-object-detection:Letterboxing>`.
 - Confidence:
-  - 0.75 - 0.95 Lower values are fpr detecting warn game pieces or less ideal game pieces. Higher for less warn, more ideal game pieces.
+  - 0.75 - 0.95 Lower values are for detecting worn game pieces or less ideal game pieces. Higher for less worn, more ideal game pieces.
 - White Balance Temperature:
   - Adjust this to achieve better color accuracy. This may be needed to increase confidence.
 - Set arducam specific camera type selector to OV9782
