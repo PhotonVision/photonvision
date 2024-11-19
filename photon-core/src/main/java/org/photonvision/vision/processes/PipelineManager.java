@@ -26,7 +26,7 @@ import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
-import org.photonvision.common.dataflow.websocket.UiPhotonConfiguration;
+import org.photonvision.common.dataflow.websocket.UIPhotonConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipeline.*;
@@ -233,7 +233,7 @@ public class PipelineManager {
                 .publishEvent(
                         new OutgoingUIEvent<>(
                                 "fullsettings",
-                                UiPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
     }
 
     /**

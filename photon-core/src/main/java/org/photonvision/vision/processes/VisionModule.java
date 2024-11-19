@@ -37,7 +37,7 @@ import org.photonvision.common.dataflow.networktables.NTDataPublisher;
 import org.photonvision.common.dataflow.statusLEDs.StatusLEDConsumer;
 import org.photonvision.common.dataflow.websocket.UICameraConfiguration;
 import org.photonvision.common.dataflow.websocket.UIDataPublisher;
-import org.photonvision.common.dataflow.websocket.UiPhotonConfiguration;
+import org.photonvision.common.dataflow.websocket.UIPhotonConfiguration;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -491,7 +491,7 @@ public class VisionModule {
                 .publishEvent(
                         new OutgoingUIEvent<>(
                                 "fullsettings",
-                                UiPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
     }
 
     void saveAndBroadcastSelective(WsContext originContext, String propertyName, Object value) {

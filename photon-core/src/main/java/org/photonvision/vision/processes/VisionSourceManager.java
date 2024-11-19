@@ -29,7 +29,7 @@ import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
-import org.photonvision.common.dataflow.websocket.UiPhotonConfiguration;
+import org.photonvision.common.dataflow.websocket.UIPhotonConfiguration;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.hardware.Platform.OSType;
 import org.photonvision.common.logging.LogGroup;
@@ -124,7 +124,7 @@ public class VisionSourceManager {
                 .publishEvent(
                         new OutgoingUIEvent<>(
                                 "fullsettings",
-                                UiPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
     }
 
     protected List<VisionSource> tryMatchCamImpl() {

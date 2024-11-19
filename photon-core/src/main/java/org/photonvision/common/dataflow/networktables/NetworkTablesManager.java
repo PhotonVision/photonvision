@@ -32,7 +32,7 @@ import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
-import org.photonvision.common.dataflow.websocket.UiPhotonConfiguration;
+import org.photonvision.common.dataflow.websocket.UIPhotonConfiguration;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
@@ -167,7 +167,7 @@ public class NetworkTablesManager {
                     .publishEvent(
                             new OutgoingUIEvent<>(
                                     "fullsettings",
-                                    UiPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+                                    UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
         } catch (IOException e) {
             logger.error("Error deserializing atfl!");
             logger.error(atfl_json);
