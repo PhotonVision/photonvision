@@ -16,6 +16,7 @@ on:
       - '**'
       - '!docs/**'
       - '.github/**'
+  merge_group:
 
 jobs:
   build-client:

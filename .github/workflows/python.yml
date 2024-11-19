@@ -18,6 +18,7 @@ on:
       - '**'
       - '!docs/**'
       - '.github/**'
+  merge_group:
 
 jobs:
   buildAndDeploy:
