@@ -44,7 +44,7 @@ class {{ name }}Serde:
     MESSAGE_FORMAT = "{{ message_fmt }}"
 
     @staticmethod
-    def pack(value: "{{ name }}" ) -> "Packet":
+    def pack(value: "{{ name }}") -> "Packet":
         ret = Packet()
 {% for field in fields -%}
 {%- if field.type | is_shimmed %}
