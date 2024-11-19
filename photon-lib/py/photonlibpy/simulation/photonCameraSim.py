@@ -432,17 +432,18 @@ class PhotonCameraSim:
         )
 
     def submitProcessedFrame(
-        self, result: PhotonPipelineResult, receiveTimestamp: float | None
+        self,
+        result: PhotonPipelineResult,
+        receiveTimestamp: float = wpilib.Timer.getFPGATimestamp() * 1e6,
     ):
         """Simulate one processed frame of vision data, putting one result to NT. Image capture timestamp
         overrides :meth:`.PhotonPipelineResult.getTimestampSeconds` for more
         precise latency simulation.
 
         :param result:           The pipeline result to submit
-        :param receiveTimestamp: The (sim) timestamp when this result was read by NT in microseconds. If not passed image capture time is assumed be (current time - latency)
+        :param receiveTimestamp: The (sim) timestamp when this result was read by NT in microseconds. If not passed image capture time is assumed be the current FPGA timestamp
         """
-        if receiveTimestamp is None:
-            receiveTimestamp = wpilib.Timer.getFPGATimestamp() * 1e6
+        # handle type conversion to int internally
         receiveTimestamp = int(receiveTimestamp)
 
         self.ts.latencyMillisEntry.set(result.getLatencyMillis(), receiveTimestamp)
