@@ -109,7 +109,7 @@ spotless {
 }
 
 wrapper {
-    gradleVersion '8.4'
+    gradleVersion '8.11'
 }
 
 ext.getCurrentArch = {
