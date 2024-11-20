@@ -17,7 +17,6 @@
 
 #include "net/TimeSyncClient.h"
 
-#include <fmt/core.h>
 #include <wpinet/UDPClient.h>
 #include <wpinet/uv/util.h>
 
@@ -32,6 +31,7 @@
 
 #include <Eigen/Core>
 #include <wpi/Logger.h>
+#include <wpi/print.h>
 #include <wpi/struct/Struct.h>
 
 #include "ntcore_cpp.h"
@@ -58,7 +58,7 @@ static void ClientLoggerFunc(unsigned int level, const char* file,
 }
 
 void wpi::tsp::TimeSyncClient::Tick() {
-  // fmt::println("wpi::tsp::TimeSyncClient::Tick");
+  // wpi::println("wpi::tsp::TimeSyncClient::Tick");
   // Regardless of if we've gotten a pong back yet, we'll ping again. this is
   // pretty naive but should be "fine" for now?
 
@@ -101,15 +101,15 @@ void wpi::tsp::TimeSyncClient::UdpCallback(uv::Buffer& buf, size_t nbytes,
       wpi::UnpackStruct<TspPong>(buf.bytes()),
   };
 
-  // fmt::println("->[client] Got pong: {} {} {} {}", pong.version,
+  // wpi::println("->[client] Got pong: {} {} {} {}", pong.version,
   //              pong.message_id, pong.client_time, pong.server_time);
 
   if (pong.version != 1) {
-    fmt::println("Bad version from server?");
+    wpi::println("Bad version from server?");
     return;
   }
   if (pong.message_id != 2) {
-    fmt::println("Bad message id from server?");
+    wpi::println("Bad message id from server?");
     return;
   }
 
@@ -131,7 +131,7 @@ void wpi::tsp::TimeSyncClient::UdpCallback(uv::Buffer& buf, size_t nbytes,
 
   auto filtered = m_lastOffsets.Calculate(serverTimeOffsetUs);
 
-  // fmt::println("Ping-ponged! RTT2 {} uS, offset {}/filtered offset {} uS",
+  // wpi::println("Ping-ponged! RTT2 {} uS, offset {}/filtered offset {} uS",
   // rtt2,
   //              serverTimeOffsetUs, filtered);
 
@@ -144,29 +144,28 @@ void wpi::tsp::TimeSyncClient::UdpCallback(uv::Buffer& buf, size_t nbytes,
   }
 
   using std::cout;
-  // fmt::println("Ping-ponged! RTT2 {} uS, offset {} uS", rtt2,
+  // wpi::println("Ping-ponged! RTT2 {} uS, offset {} uS", rtt2,
   //              serverTimeOffsetUs);
-  // fmt::println("Estimated server time {} s",
+  // wpi::println("Estimated server time {} s",
   //              (m_timeProvider() + serverTimeOffsetUs) / 1000000.0);
 }
 
 wpi::tsp::TimeSyncClient::TimeSyncClient(std::string_view server,
                                          int remote_port,
-                                         std::chrono::milliseconds ping_delay,
-                                         std::function<uint64_t()> timeProvider)
+                                         std::chrono::milliseconds ping_delay)
     : m_logger(::ClientLoggerFunc),
-      m_timeProvider(timeProvider),
+      m_timeProvider(nt::Now),
       m_udp{},
       m_pingTimer{},
       m_serverIP{server},
       m_serverPort{remote_port},
       m_loopDelay(ping_delay) {
-  // fmt::println("Starting client (with server address {}:{})", server,
+  // wpi::println("Starting client (with server address {}:{})", server,
   //              remote_port);
 }
 
 void wpi::tsp::TimeSyncClient::Start() {
-  // fmt::println("Connecting received");
+  // wpi::println("Connecting received");
 
   m_loopRunner.ExecSync([this](uv::Loop&) {
     struct sockaddr_in serverAddr;
@@ -180,7 +179,7 @@ void wpi::tsp::TimeSyncClient::Start() {
     m_udp->StartRecv();
   });
 
-  // fmt::println("Starting pinger");
+  // wpi::println("Starting pinger");
   using namespace std::chrono_literals;
   m_pingTimer->timeout.connect(&wpi::tsp::TimeSyncClient::Tick, this);
 

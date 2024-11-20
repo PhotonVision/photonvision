@@ -16,9 +16,17 @@
 ###############################################################################
 
 import struct
-from typing import Any, Optional, Type
-from wpimath.geometry import Transform3d, Translation3d, Rotation3d, Quaternion
+from typing import Generic, Optional, Protocol, TypeVar
+
 import wpilib
+from wpimath.geometry import Quaternion, Rotation3d, Transform3d, Translation3d
+
+T = TypeVar("T")
+
+
+class Serde(Generic[T], Protocol):
+    def pack(self, value: T) -> "Packet": ...
+    def unpack(self, packet: "Packet") -> T: ...
 
 
 class Packet:
@@ -33,9 +41,9 @@ class Packet:
         self.readPos = 0
         self.outOfBytes = False
 
-    def clear(self):
+    def clear(self) -> None:
         """Clears the packet and resets the read and write positions."""
-        self.packetData = [0] * self.size
+        self.packetData = bytes(self.size)
         self.readPos = 0
         self.outOfBytes = False
 
@@ -157,7 +165,7 @@ class Packet:
             ret.append(self.decodeDouble())
         return ret
 
-    def decodeShortList(self) -> list[float]:
+    def decodeShortList(self) -> list[int]:
         """
         * Returns a decoded array of shorts from the packet.
         """
@@ -186,14 +194,14 @@ class Packet:
 
         return Transform3d(translation, rotation)
 
-    def decodeList(self, serde: Type):
+    def decodeList(self, serde: Serde[T]) -> list[T]:
         retList = []
         arr_len = self.decode8()
         for _ in range(arr_len):
             retList.append(serde.unpack(self))
         return retList
 
-    def decodeOptional(self, serde: Type) -> Optional[Any]:
+    def decodeOptional(self, serde: Serde[T]) -> Optional[T]:
         if self.decodeBoolean():
             return serde.unpack(self)
         else:
@@ -280,7 +288,7 @@ class Packet:
         self.encodeDouble(quaternion.Y())
         self.encodeDouble(quaternion.Z())
 
-    def encodeList(self, values: list[Any], serde: Type):
+    def encodeList(self, values: list[T], serde: Serde[T]):
         """
         Encodes a list of items using a specific serializer and appends it to the packet.
         """
@@ -290,7 +298,7 @@ class Packet:
             self.packetData = self.packetData + packed.getData()
             self.size = len(self.packetData)
 
-    def encodeOptional(self, value: Optional[Any], serde: Type):
+    def encodeOptional(self, value: Optional[T], serde: Serde[T]):
         """
         Encodes an optional value using a specific serializer.
         """

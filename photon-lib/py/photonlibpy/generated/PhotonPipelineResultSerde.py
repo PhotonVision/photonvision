@@ -20,8 +20,16 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from ..targeting import *
+from typing import TYPE_CHECKING
+
 from ..packet import Packet
+from ..targeting import *  # noqa
+
+if TYPE_CHECKING:
+    from ..targeting import MultiTargetPNPResult  # noqa
+    from ..targeting import PhotonPipelineMetadata  # noqa
+    from ..targeting import PhotonPipelineResult  # noqa
+    from ..targeting import PhotonTrackedTarget  # noqa
 
 
 class PhotonPipelineResultSerde:

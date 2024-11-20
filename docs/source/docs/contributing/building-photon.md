@@ -139,25 +139,7 @@ The `deploy` command is tested against Raspberry Pi coprocessors. Other similar 
 
 ### Using PhotonLib Builds
 
-The build process includes the following task:
-
-```{eval-rst}
-.. tab-set::
-
-   .. tab-item:: Linux
-
-      ``./gradlew generateVendorJson``
-
-   .. tab-item:: macOS
-
-      ``./gradlew generateVendorJson``
-
-   .. tab-item:: Windows (cmd)
-
-      ``gradlew generateVendorJson``
-```
-
-This generates a vendordep JSON of your local build at `photon-lib/build/generated/vendordeps/photonlib.json`.
+The build process automatically generates a vendordep JSON of your local build at `photon-lib/build/generated/vendordeps/photonlib.json`.
 
 The photonlib source can be published to your local maven repository after building:
 
@@ -247,17 +229,15 @@ You can run one of the many built in examples straight from the command line, to
 
 #### Running C++/Java
 
-PhotonLib must first be published to your local maven repository, then the copy PhotonLib task will copy the generated vendordep json file into each example. After that, the simulateJava/simulateNative task can be used like a normal robot project. Robot simulation with attached debugger is technically possible by using simulateExternalJava and modifying the launch script it exports, though not yet supported.
+PhotonLib must first be published to your local maven repository. This will also copy the generated vendordep json file into each example. After that, the simulateJava/simulateNative task can be used like a normal robot project. Robot simulation with attached debugger is technically possible by using simulateExternalJava and modifying the launch script it exports, though not yet supported.
 
 ```
 ~/photonvision$ ./gradlew publishToMavenLocal
 
 ~/photonvision$ cd photonlib-java-examples
-~/photonvision/photonlib-java-examples$ ./gradlew copyPhotonlib
 ~/photonvision/photonlib-java-examples$ ./gradlew <example-name>:simulateJava
 
 ~/photonvision$ cd photonlib-cpp-examples
-~/photonvision/photonlib-cpp-examples$ ./gradlew copyPhotonlib
 ~/photonvision/photonlib-cpp-examples$ ./gradlew <example-name>:simulateNative
 ```
 
@@ -283,4 +263,12 @@ Then, run the examples:
 ```
 > cd photonlib-python-examples
 > run.bat <example name>
+```
+
+#### Downloading Pipeline Artifacts
+
+Using the [GitHub CLI](https://cli.github.com/), we can download artifacts from pipelines by run ID and name:
+
+```
+~/photonvision$ gh run download 11759699679 -n jar-Linux
 ```

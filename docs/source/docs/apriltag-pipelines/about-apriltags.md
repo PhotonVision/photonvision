@@ -1,4 +1,4 @@
-# About Apriltags
+# About AprilTags
 
 ```{image} images/pv-apriltag.png
 :align: center

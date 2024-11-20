@@ -1,6 +1,5 @@
 # Simulation Support in PhotonLib in Java
 
-
 ## What Is Simulated?
 
 Simulation is a powerful tool for validating robot code without access to a physical robot. Read more about [simulation in WPILib](https://docs.wpilib.org/en/stable/docs/software/wpilib-tools/robot-simulation/introduction.html).
@@ -8,18 +7,18 @@ Simulation is a powerful tool for validating robot code without access to a phys
 In Java, PhotonLib can simulate cameras on the field and generate target data approximating what would be seen in reality. This simulation attempts to include the following:
 
 - Camera Properties
-    - Field of Vision
-    - Lens distortion
-    - Image noise
-    - Framerate
-    - Latency
+  - Field of Vision
+  - Lens distortion
+  - Image noise
+  - Framerate
+  - Latency
 - Target Data
-    - Detected / minimum-area-rectangle corners
-    - Center yaw/pitch
-    - Contour image area percentage
-    - Fiducial ID
-    - Fiducial ambiguity
-    - Fiducial solvePNP transform estimation
+  - Detected / minimum-area-rectangle corners
+  - Center yaw/pitch
+  - Contour image area percentage
+  - Fiducial ID
+  - Fiducial ambiguity
+  - Fiducial solvePNP transform estimation
 - Camera Raw/Processed Streams (grayscale)
 
 :::{note}
@@ -29,7 +28,7 @@ Simulation does NOT include the following:
 - Image Thresholding Process (camera gain, brightness, etc)
 - Pipeline switching
 - Snapshots
-:::
+  :::
 
 This scope was chosen to balance fidelity of the simulation with the ease of setup, in a way that would best benefit most teams.
 
@@ -226,7 +225,7 @@ Each `VisionSystemSim` has its own built-in `Field2d` for displaying object pose
 ```
 
 :::{figure} images/SimExampleField.png
-*A* `VisionSystemSim`*'s internal* `Field2d` *customized with target images and colors*
+_A_ `VisionSystemSim`_'s internal_ `Field2d` _customized with target images and colors_
 :::
 
 A `PhotonCameraSim` can also draw and publish generated camera frames to a MJPEG stream similar to an actual PhotonVision process.
@@ -245,8 +244,8 @@ A `PhotonCameraSim` can also draw and publish generated camera frames to a MJPEG
       cameraSim.enableDrawWireframe(true);
 ```
 
-These streams follow the port order mentioned in {ref}`docs/installation/networking:Camera Stream Ports`. For example, a single simulated camera will have its raw stream at `localhost:1181` and processed stream at `localhost:1182`, which can also be found in the CameraServer tab of Shuffleboard like a normal camera stream.
+These streams follow the port order mentioned in {ref}`docs/quick-start/networking:Camera Stream Ports`. For example, a single simulated camera will have its raw stream at `localhost:1181` and processed stream at `localhost:1182`, which can also be found in the CameraServer tab of Shuffleboard like a normal camera stream.
 
 :::{figure} images/SimExampleFrame.png
-*A frame from the processed stream of a simulated camera viewing some 2023 AprilTags with the field wireframe enabled*
+_A frame from the processed stream of a simulated camera viewing some 2023 AprilTags with the field wireframe enabled_
 :::

@@ -19,6 +19,7 @@
 #include <vector>
 
 #include <units/angle.h>
+#include <wpi/print.h>
 
 #include "gtest/gtest.h"
 #include "photon/dataflow/structures/Packet.h"
@@ -141,7 +142,7 @@ TEST(PacketTest, PhotonPipelineResult) {
   auto t3 = std::chrono::steady_clock::now();
   EXPECT_EQ(result2, b2);
 
-  fmt::println(
+  wpi::println(
       "Pack {} unpack {} packet length {}",
       std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count(),
       std::chrono::duration_cast<std::chrono::nanoseconds>(t3 - t2).count(),

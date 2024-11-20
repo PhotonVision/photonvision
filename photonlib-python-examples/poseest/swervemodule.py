@@ -23,12 +23,13 @@
 ###################################################################################
 
 import math
+
 import wpilib
 import wpilib.simulation
-import wpimath.kinematics
+import wpimath.controller
 import wpimath.filter
 import wpimath.geometry
-import wpimath.controller
+import wpimath.kinematics
 import wpimath.trajectory
 import wpimath.units
 

@@ -305,6 +305,7 @@ void PhotonCamera::VerifyVersion() {
       FRC_ReportError(frc::warn::Warning,
                       "Cannot find property message_uuid for PhotonCamera {}",
                       path);
+      return;
     }
     std::string remote_uuid{remote_uuid_json};
 

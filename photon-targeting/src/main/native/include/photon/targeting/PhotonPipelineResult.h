@@ -21,12 +21,12 @@
 #include <string>
 #include <utility>
 
-#include <frc/Errors.h>
 #include <units/time.h>
 #include <wpi/SmallVector.h>
 
 #include "MultiTargetPNPResult.h"
 #include "PhotonTrackedTarget.h"
+#include "fmt/base.h"
 #include "photon/dataflow/structures/Packet.h"
 #include "photon/struct/PhotonPipelineResultStruct.h"
 
@@ -73,9 +73,9 @@ class PhotonPipelineResult : public PhotonPipelineResult_PhotonStruct {
    */
   PhotonTrackedTarget GetBestTarget() const {
     if (!HasTargets() && !HAS_WARNED) {
-      FRC_ReportError(
-          frc::warn::Warning, "{}",
-          "This PhotonPipelineResult object has no targets associated with it! "
+      fmt::println(
+          "WARNING: This PhotonPipelineResult object has no targets associated "
+          "with it! "
           "Please check HasTargets() before calling this method. For more "
           "information, please review the PhotonLib documentation at "
           "http://docs.photonvision.org");
