@@ -1,3 +1,4 @@
+import logging
 import math
 from typing import Any
 
@@ -243,7 +244,7 @@ class OpenCVHelp:
 
         # solvePnP failed
         if reprojectionError is None or math.isnan(reprojectionError[0, 0]):
-            print("SolvePNP_Square failed!")
+            logging.getLogger().error("SolvePNP_Square failed!")
             return None
 
         if alt:
@@ -303,6 +304,7 @@ class OpenCVHelp:
         )
 
         if math.isnan(error):
+            logging.getLogger().error("SolvePNP_SQPNP failed!")
             return None
 
         # We have no alternative so set it to best as well
