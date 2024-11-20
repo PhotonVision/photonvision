@@ -95,7 +95,7 @@ class PhotonCameraSim:
             (self.prop.getResWidth(), self.prop.getResHeight())
         )
 
-        self.ts = NTTopicSet("photonvision", self.cam.getName())
+        self.ts = NTTopicSet(self.cam._cameraTable)
         self.ts.updateEntries()
 
         # Handle this last explicitly for this function signature because the other constructor is called in the initialiser list
