@@ -32,9 +32,11 @@
  import org.photonvision.vision.target.TargetModel;
  import org.photonvision.vision.target.TargetOffsetPointEdge;
  import org.photonvision.vision.target.TargetOrientation;
- 
- import edu.wpi.first.networktables.IntegerArraySubscriber;
- import edu.wpi.first.networktables.NetworkTableEvent;
+
+import edu.wpi.first.networktables.IntegerArrayPublisher;
+import edu.wpi.first.networktables.IntegerArraySubscriber;
+import edu.wpi.first.networktables.IntegerPublisher;
+import edu.wpi.first.networktables.NetworkTableEvent;
  
  public class AdvancedPipelineSettings extends CVPipelineSettings {
  
@@ -103,6 +105,8 @@
  
      private final NTDataChangeListener dynamicCropListener;
      private IntegerArraySubscriber dynamicCropRequest;
+         private final IntegerArrayPublisher ledModeState;
+
  
      public int dynamic_x = 0;
      public int dynamic_y = 0;
@@ -112,19 +116,16 @@
  
      public AdvancedPipelineSettings() {
          ledMode = true;
-         var params = new long[4];
-     params[0] = 0;
-     params[1] = 0;
-     params[2] = 400;
-     params[3] = 400;
+        
  
      
          dynamicCropRequest =
                  NetworkTablesManager.getInstance()
                          .kRootTable
                          .getIntegerArrayTopic("dynamicCropRequest")
-                         .subscribe(params);
- 
+                         .subscribe(null);
+                ledModeState =
+                         NetworkTablesManager.getInstance().kRootTable.getIntegerArrayTopic("dynamicCropState").publish();
          dynamicCropListener = new NTDataChangeListener(
                                  NetworkTablesManager.getInstance()
                                  .kRootTable.getInstance(),
@@ -137,8 +138,8 @@
      }
      
      public Rect getDynamicCrop() {
-         return new Rect(0, 0, 500, 500);
-         // return new Rect(dynamic_x, dynamic_y, dynamic_width, dynamic_height);
+        
+         return new Rect(dynamic_x, dynamic_y, dynamic_width, dynamic_height);
      }
      private void setDynamicCrop(NetworkTableEvent entryNotification){
          long[] coords = (long[]) entryNotification.valueData.value.getIntegerArray();
@@ -147,6 +148,8 @@
          dynamic_y = (int) coords[1];
          dynamic_width = (int) coords[2];
          dynamic_height = (int) coords[3];
+         
+         ledModeState.accept(coords);
      }
  
      @Override
