@@ -127,8 +127,11 @@ public class Robot extends TimedRobot {
         gpLauncher.simulationPeriodic();
 
         // Calculate battery voltage sag due to current draw
-        RoboRioSim.setVInVoltage(
-                BatterySim.calculateDefaultBatteryLoadedVoltage(drivetrain.getCurrentDraw()));
+        var batteryVoltage = BatterySim.calculateDefaultBatteryLoadedVoltage(drivetrain.getCurrentDraw());
+
+        // Using max(0.1, voltage) here isn't a *physically correct* solution,
+        // but it avoids problems with battery voltage measuring 0.
+        RoboRioSim.setVInVoltage(Math.max(0.1, batteryVoltage));
     }
 
     public void resetPose() {
