@@ -12,6 +12,8 @@ from .rotTrlTransform3d import RotTrlTransform3d
 NWU_TO_EDN = Rotation3d(np.array([[0, -1, 0], [0, 0, -1], [1, 0, 0]]))
 EDN_TO_NWU = Rotation3d(np.array([[0, 0, 1], [-1, 0, 0], [0, -1, 0]]))
 
+logger = logging.getLogger(__name__)
+
 
 class OpenCVHelp:
     @staticmethod
@@ -244,7 +246,7 @@ class OpenCVHelp:
 
         # solvePnP failed
         if reprojectionError is None or math.isnan(reprojectionError[0, 0]):
-            logging.getLogger().error("SolvePNP_Square failed!")
+            logger.error("SolvePNP_Square failed!")
             return None
 
         if alt:
@@ -304,7 +306,7 @@ class OpenCVHelp:
         )
 
         if math.isnan(error):
-            logging.getLogger().error("SolvePNP_SQPNP failed!")
+            logger.error("SolvePNP_SQPNP failed!")
             return None
 
         # We have no alternative so set it to best as well
