@@ -588,6 +588,7 @@ public class VisionModule {
         // Pipelines like DriverMode and Calibrate3dPipeline have null output frames
         if (result.inputAndOutputFrame != null
                 && (pipelineManager.getCurrentPipelineSettings() instanceof AdvancedPipelineSettings)) {
+                    
             streamRunnable.updateData(
                     result.inputAndOutputFrame,
                     (AdvancedPipelineSettings) pipelineManager.getCurrentPipelineSettings(),

@@ -15,62 +15,62 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.vision.pipe.impl;
+ package org.photonvision.vision.pipe.impl;
 
-import edu.wpi.first.apriltag.AprilTagDetection;
-import edu.wpi.first.apriltag.AprilTagDetector;
-import java.util.List;
-import org.photonvision.vision.opencv.CVMat;
-import org.photonvision.vision.opencv.Releasable;
-import org.photonvision.vision.pipe.CVPipe;
-
-public class AprilTagDetectionPipe
-        extends CVPipe<CVMat, List<AprilTagDetection>, AprilTagDetectionPipeParams>
-        implements Releasable {
-    private AprilTagDetector m_detector = new AprilTagDetector();
-
-    public AprilTagDetectionPipe() {
-        super();
-
-        m_detector.addFamily("tag16h5");
-        m_detector.addFamily("tag36h11");
-    }
-
-    @Override
-    protected List<AprilTagDetection> process(CVMat in) {
-        if (in.getMat().empty()) {
-            return List.of();
-        }
-
-        if (m_detector == null) {
-            throw new RuntimeException("Apriltag detector was released!");
-        }
-
-        var ret = m_detector.detect(in.getMat());
-
-        if (ret == null) {
-            return List.of();
-        }
-
-        return List.of(ret);
-    }
-
-    @Override
-    public void setParams(AprilTagDetectionPipeParams newParams) {
-        if (this.params == null || !this.params.equals(newParams)) {
-            m_detector.setConfig(newParams.detectorParams);
-            m_detector.setQuadThresholdParameters(newParams.quadParams);
-
-            m_detector.clearFamilies();
-            m_detector.addFamily(newParams.family.getNativeName());
-        }
-
-        super.setParams(newParams);
-    }
-
-    @Override
-    public void release() {
-        m_detector.close();
-        m_detector = null;
-    }
-}
+ import edu.wpi.first.apriltag.AprilTagDetection;
+ import edu.wpi.first.apriltag.AprilTagDetector;
+ import java.util.List;
+ import org.photonvision.vision.opencv.CVMat;
+ import org.photonvision.vision.opencv.Releasable;
+ import org.photonvision.vision.pipe.CVPipe;
+ 
+ public class AprilTagDetectionPipe
+         extends CVPipe<CVMat, List<AprilTagDetection>, AprilTagDetectionPipeParams>
+         implements Releasable {
+     private AprilTagDetector m_detector = new AprilTagDetector();
+ 
+     public AprilTagDetectionPipe() {
+         super();
+ 
+         m_detector.addFamily("tag16h5");
+         m_detector.addFamily("tag36h11");
+     }
+ 
+     @Override
+     protected List<AprilTagDetection> process(CVMat in) {
+         if (in.getMat().empty()) {
+             return List.of();
+         }
+ 
+         if (m_detector == null) {
+             throw new RuntimeException("Apriltag detector was released!");
+         }
+ 
+         var ret = m_detector.detect(in.getMat());
+ 
+         if (ret == null) {
+             return List.of();
+         }
+ 
+         return List.of(ret);
+     }
+ 
+     @Override
+     public void setParams(AprilTagDetectionPipeParams newParams) {
+         if (this.params == null || !this.params.equals(newParams)) {
+             m_detector.setConfig(newParams.detectorParams);
+ 
+             m_detector.clearFamilies();
+             m_detector.addFamily(newParams.family.getNativeName());
+         }
+ 
+         super.setParams(newParams);
+     }
+ 
+     @Override
+     public void release() {
+         m_detector.close();
+         m_detector = null;
+     }
+ }
+ 
