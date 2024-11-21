@@ -9,6 +9,8 @@ from wpimath.units import hertz, seconds
 
 from ..estimation import RotTrlTransform3d
 
+logger = logging.getLogger(__name__)
+
 
 class SimCameraProperties:
     """Calibration and performance values for this camera.
@@ -46,7 +48,7 @@ class SimCameraProperties:
     ) -> None:
         if fovDiag.degrees() < 1.0 or fovDiag.degrees() > 179.0:
             fovDiag = Rotation2d.fromDegrees(max(min(fovDiag.degrees(), 179.0), 1.0))
-            logging.error("Requested invalid FOV! Clamping between (1, 179) degrees...")
+            logger.error("Requested invalid FOV! Clamping between (1, 179) degrees...")
 
         resDiag = math.sqrt(width * width + height * height)
         diagRatio = math.tan(fovDiag.radians() / 2.0)
