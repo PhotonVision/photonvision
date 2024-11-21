@@ -54,26 +54,26 @@ public class {{ name }}Serde implements PacketSerde<{{name}}> {
     @Override
     public void pack(Packet packet, {{ name }} value) {
 {%- for field in fields -%}
-    {%- if field.type | is_shimmed %}
+{%- if field.type | is_shimmed %}
         {{ get_message_by_name(field.type).java_encode_shim }}(packet, value.{{ field.name }});
-    {%- elif field.optional == True %}
+{%- elif field.optional == True %}
         // {{ field.name }} is optional! it better not be a VLA too
         packet.encodeOptional(value.{{ field.name }});
-    {%- elif field.vla == True and field.type | is_intrinsic %}
+{%- elif field.vla == True and field.type | is_intrinsic %}
         // {{ field.name }} is a intrinsic VLA!
         packet.encode(value.{{ field.name }});
-    {%- elif field.vla == True %}
+{%- elif field.vla == True %}
         // {{ field.name }} is a custom VLA!
         packet.encodeList(value.{{ field.name }});
-    {%- elif field.type | is_intrinsic %}
+{%- elif field.type | is_intrinsic %}
         // field {{ field.name }} is of intrinsic type {{ field.type }}
         packet.encode(({{ type_map[field.type].java_type }}) value.{{ field.name }});
-    {%- else %}
+{%- else %}
         // field {{ field.name }} is of non-intrinsic type {{ field.type }}
         {{ field.type }}.photonStruct.pack(packet, value.{{ field.name }});
-    {%- endif %}
-    {%- if not loop.last %}
-    {% endif -%}
+{%- endif %}
+{%- if not loop.last %}
+{% endif -%}
 {% endfor%}
     }
 
@@ -81,26 +81,26 @@ public class {{ name }}Serde implements PacketSerde<{{name}}> {
     public {{ name }} unpack(Packet packet) {
         var ret = new {{ name }}();
 {% for field in fields -%}
-    {%- if field.type | is_shimmed %}
+{%- if field.type | is_shimmed %}
         ret.{{ field.name }} = {{ get_message_by_name(field.type).java_decode_shim }}(packet);
-    {%- elif field.optional == True %}
+{%- elif field.optional == True %}
         // {{ field.name }} is optional! it better not be a VLA too
         ret.{{ field.name }} = packet.decodeOptional({{ field.type }}.photonStruct);
-    {%- elif field.vla == True and not field.type | is_intrinsic %}
+{%- elif field.vla == True and not field.type | is_intrinsic %}
         // {{ field.name }} is a custom VLA!
         ret.{{ field.name }} = packet.decodeList({{ field.type }}.photonStruct);
-    {%- elif field.vla == True and field.type | is_intrinsic %}
+{%- elif field.vla == True and field.type | is_intrinsic %}
         // {{ field.name }} is a custom VLA!
         ret.{{ field.name }} = packet.decode{{ type_map[field.type].java_type.title() }}List();
-    {%- elif field.type | is_intrinsic %}
+{%- elif field.type | is_intrinsic %}
         // {{ field.name }} is of intrinsic type {{ field.type }}
         ret.{{field.name}} = packet.{{ type_map[field.type].java_decode_method }}();
-    {%- else %}
+{%- else %}
         // {{ field.name }} is of non-intrinsic type {{ field.type }}
         ret.{{field.name}} = {{ field.type }}.photonStruct.unpack(packet);
-    {%- endif %}
-    {%- if not loop.last %}
-    {% endif -%}
+{%- endif %}
+{%- if not loop.last %}
+{% endif -%}
 {% endfor%}
 
         return ret;
