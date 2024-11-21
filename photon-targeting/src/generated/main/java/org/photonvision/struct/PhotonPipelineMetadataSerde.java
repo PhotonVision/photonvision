@@ -34,6 +34,7 @@ import edu.wpi.first.util.struct.Struct;
  * Auto-generated serialization/deserialization helper for PhotonPipelineMetadata
  */
 public class PhotonPipelineMetadataSerde implements PacketSerde<PhotonPipelineMetadata> {
+
     @Override
     public final String getInterfaceUUID() { return "ac0a45f686457856fb30af77699ea356"; }
     @Override
@@ -51,13 +52,13 @@ public class PhotonPipelineMetadataSerde implements PacketSerde<PhotonPipelineMe
     public void pack(Packet packet, PhotonPipelineMetadata value) {
         // field sequenceID is of intrinsic type int64
         packet.encode((long) value.sequenceID);
-
+    
         // field captureTimestampMicros is of intrinsic type int64
         packet.encode((long) value.captureTimestampMicros);
-
+    
         // field publishTimestampMicros is of intrinsic type int64
         packet.encode((long) value.publishTimestampMicros);
-
+    
         // field timeSinceLastPong is of intrinsic type int64
         packet.encode((long) value.timeSinceLastPong);
     }
@@ -68,13 +69,13 @@ public class PhotonPipelineMetadataSerde implements PacketSerde<PhotonPipelineMe
 
         // sequenceID is of intrinsic type int64
         ret.sequenceID = packet.decodeLong();
-
+    
         // captureTimestampMicros is of intrinsic type int64
         ret.captureTimestampMicros = packet.decodeLong();
-
+    
         // publishTimestampMicros is of intrinsic type int64
         ret.publishTimestampMicros = packet.decodeLong();
-
+    
         // timeSinceLastPong is of intrinsic type int64
         ret.timeSinceLastPong = packet.decodeLong();
 
@@ -84,12 +85,14 @@ public class PhotonPipelineMetadataSerde implements PacketSerde<PhotonPipelineMe
     @Override
     public PacketSerde<?>[] getNestedPhotonMessages() {
         return new PacketSerde<?>[] {
+            
         };
     }
 
     @Override
     public Struct<?>[] getNestedWpilibMessages() {
         return new Struct<?>[] {
+            
         };
     }
 }
