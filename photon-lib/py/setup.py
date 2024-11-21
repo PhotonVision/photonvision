@@ -55,6 +55,7 @@ descriptionStr = f"Pure-python implementation of PhotonLib for interfacing with 
 setup(
     name="photonlibpy",
     packages=find_packages(),
+    package_data={"photonlibpy": ["py.typed"]},
     version=versionString,
     install_requires=[
         "numpy~=2.1",
