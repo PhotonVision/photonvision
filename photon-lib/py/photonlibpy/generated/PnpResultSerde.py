@@ -38,36 +38,36 @@ class PnpResultSerde:
     def pack(value: "PnpResult") -> "Packet":
         ret = Packet()
 
-        ret.encodeTransform(value.best)  # fmt: skip
+        ret.encodeTransform(value.best)
 
-        ret.encodeTransform(value.alt)  # fmt: skip
+        ret.encodeTransform(value.alt)
 
         # bestReprojErr is of intrinsic type float64
-        ret.encodeDouble(value.bestReprojErr)  # fmt: skip
+        ret.encodeDouble(value.bestReprojErr)
 
         # altReprojErr is of intrinsic type float64
-        ret.encodeDouble(value.altReprojErr)  # fmt: skip
+        ret.encodeDouble(value.altReprojErr)
 
         # ambiguity is of intrinsic type float64
-        ret.encodeDouble(value.ambiguity)  # fmt: skip
+        ret.encodeDouble(value.ambiguity)
         return ret
 
     @staticmethod
     def unpack(packet: "Packet") -> "PnpResult":
         ret = PnpResult()
 
-        ret.best = packet.decodeTransform()  # fmt: skip
+        ret.best = packet.decodeTransform()
 
-        ret.alt = packet.decodeTransform()  # fmt: skip
+        ret.alt = packet.decodeTransform()
 
         # bestReprojErr is of intrinsic type float64
-        ret.bestReprojErr = packet.decodeDouble()  # fmt: skip
+        ret.bestReprojErr = packet.decodeDouble()
 
         # altReprojErr is of intrinsic type float64
-        ret.altReprojErr = packet.decodeDouble()  # fmt: skip
+        ret.altReprojErr = packet.decodeDouble()
 
         # ambiguity is of intrinsic type float64
-        ret.ambiguity = packet.decodeDouble()  # fmt: skip
+        ret.ambiguity = packet.decodeDouble()
 
         return ret
 

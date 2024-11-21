@@ -40,10 +40,10 @@ class MultiTargetPNPResultSerde:
         ret = Packet()
 
         # estimatedPose is of non-intrinsic type PnpResult
-        ret.encodeBytes(PnpResult.photonStruct.pack(value.estimatedPose).getData())  # fmt: skip
+        ret.encodeBytes(PnpResult.photonStruct.pack(value.estimatedPose).getData())
 
         # fiducialIDsUsed is a custom VLA!
-        ret.encodeShortList(value.fiducialIDsUsed)  # fmt: skip
+        ret.encodeShortList(value.fiducialIDsUsed)
         return ret
 
     @staticmethod
@@ -51,10 +51,10 @@ class MultiTargetPNPResultSerde:
         ret = MultiTargetPNPResult()
 
         # estimatedPose is of non-intrinsic type PnpResult
-        ret.estimatedPose = PnpResult.photonStruct.unpack(packet)  # fmt: skip
+        ret.estimatedPose = PnpResult.photonStruct.unpack(packet)
 
         # fiducialIDsUsed is a custom VLA!
-        ret.fiducialIDsUsed = packet.decodeShortList()  # fmt: skip
+        ret.fiducialIDsUsed = packet.decodeShortList()
 
         return ret
 

@@ -40,38 +40,38 @@ class PhotonTrackedTargetSerde:
         ret = Packet()
 
         # yaw is of intrinsic type float64
-        ret.encodeDouble(value.yaw)  # fmt: skip
+        ret.encodeDouble(value.yaw)
 
         # pitch is of intrinsic type float64
-        ret.encodeDouble(value.pitch)  # fmt: skip
+        ret.encodeDouble(value.pitch)
 
         # area is of intrinsic type float64
-        ret.encodeDouble(value.area)  # fmt: skip
+        ret.encodeDouble(value.area)
 
         # skew is of intrinsic type float64
-        ret.encodeDouble(value.skew)  # fmt: skip
+        ret.encodeDouble(value.skew)
 
         # fiducialId is of intrinsic type int32
-        ret.encodeInt(value.fiducialId)  # fmt: skip
+        ret.encodeInt(value.fiducialId)
 
         # objDetectId is of intrinsic type int32
-        ret.encodeInt(value.objDetectId)  # fmt: skip
+        ret.encodeInt(value.objDetectId)
 
         # objDetectConf is of intrinsic type float32
-        ret.encodeFloat(value.objDetectConf)  # fmt: skip
+        ret.encodeFloat(value.objDetectConf)
 
-        ret.encodeTransform(value.bestCameraToTarget)  # fmt: skip
+        ret.encodeTransform(value.bestCameraToTarget)
 
-        ret.encodeTransform(value.altCameraToTarget)  # fmt: skip
+        ret.encodeTransform(value.altCameraToTarget)
 
         # poseAmbiguity is of intrinsic type float64
-        ret.encodeDouble(value.poseAmbiguity)  # fmt: skip
+        ret.encodeDouble(value.poseAmbiguity)
 
         # minAreaRectCorners is a custom VLA!
-        ret.encodeList(value.minAreaRectCorners, TargetCorner.photonStruct)  # fmt: skip
+        ret.encodeList(value.minAreaRectCorners, TargetCorner.photonStruct)
 
         # detectedCorners is a custom VLA!
-        ret.encodeList(value.detectedCorners, TargetCorner.photonStruct)  # fmt: skip
+        ret.encodeList(value.detectedCorners, TargetCorner.photonStruct)
         return ret
 
     @staticmethod
@@ -79,38 +79,38 @@ class PhotonTrackedTargetSerde:
         ret = PhotonTrackedTarget()
 
         # yaw is of intrinsic type float64
-        ret.yaw = packet.decodeDouble()  # fmt: skip
+        ret.yaw = packet.decodeDouble()
 
         # pitch is of intrinsic type float64
-        ret.pitch = packet.decodeDouble()  # fmt: skip
+        ret.pitch = packet.decodeDouble()
 
         # area is of intrinsic type float64
-        ret.area = packet.decodeDouble()  # fmt: skip
+        ret.area = packet.decodeDouble()
 
         # skew is of intrinsic type float64
-        ret.skew = packet.decodeDouble()  # fmt: skip
+        ret.skew = packet.decodeDouble()
 
         # fiducialId is of intrinsic type int32
-        ret.fiducialId = packet.decodeInt()  # fmt: skip
+        ret.fiducialId = packet.decodeInt()
 
         # objDetectId is of intrinsic type int32
-        ret.objDetectId = packet.decodeInt()  # fmt: skip
+        ret.objDetectId = packet.decodeInt()
 
         # objDetectConf is of intrinsic type float32
-        ret.objDetectConf = packet.decodeFloat()  # fmt: skip
+        ret.objDetectConf = packet.decodeFloat()
 
-        ret.bestCameraToTarget = packet.decodeTransform()  # fmt: skip
+        ret.bestCameraToTarget = packet.decodeTransform()
 
-        ret.altCameraToTarget = packet.decodeTransform()  # fmt: skip
+        ret.altCameraToTarget = packet.decodeTransform()
 
         # poseAmbiguity is of intrinsic type float64
-        ret.poseAmbiguity = packet.decodeDouble()  # fmt: skip
+        ret.poseAmbiguity = packet.decodeDouble()
 
         # minAreaRectCorners is a custom VLA!
-        ret.minAreaRectCorners = packet.decodeList(TargetCorner.photonStruct)  # fmt: skip
+        ret.minAreaRectCorners = packet.decodeList(TargetCorner.photonStruct)
 
         # detectedCorners is a custom VLA!
-        ret.detectedCorners = packet.decodeList(TargetCorner.photonStruct)  # fmt: skip
+        ret.detectedCorners = packet.decodeList(TargetCorner.photonStruct)
 
         return ret
 

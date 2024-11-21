@@ -39,16 +39,16 @@ class PhotonPipelineMetadataSerde:
         ret = Packet()
 
         # sequenceID is of intrinsic type int64
-        ret.encodeLong(value.sequenceID)  # fmt: skip
+        ret.encodeLong(value.sequenceID)
 
         # captureTimestampMicros is of intrinsic type int64
-        ret.encodeLong(value.captureTimestampMicros)  # fmt: skip
+        ret.encodeLong(value.captureTimestampMicros)
 
         # publishTimestampMicros is of intrinsic type int64
-        ret.encodeLong(value.publishTimestampMicros)  # fmt: skip
+        ret.encodeLong(value.publishTimestampMicros)
 
         # timeSinceLastPong is of intrinsic type int64
-        ret.encodeLong(value.timeSinceLastPong)  # fmt: skip
+        ret.encodeLong(value.timeSinceLastPong)
         return ret
 
     @staticmethod
@@ -56,16 +56,16 @@ class PhotonPipelineMetadataSerde:
         ret = PhotonPipelineMetadata()
 
         # sequenceID is of intrinsic type int64
-        ret.sequenceID = packet.decodeLong()  # fmt: skip
+        ret.sequenceID = packet.decodeLong()
 
         # captureTimestampMicros is of intrinsic type int64
-        ret.captureTimestampMicros = packet.decodeLong()  # fmt: skip
+        ret.captureTimestampMicros = packet.decodeLong()
 
         # publishTimestampMicros is of intrinsic type int64
-        ret.publishTimestampMicros = packet.decodeLong()  # fmt: skip
+        ret.publishTimestampMicros = packet.decodeLong()
 
         # timeSinceLastPong is of intrinsic type int64
-        ret.timeSinceLastPong = packet.decodeLong()  # fmt: skip
+        ret.timeSinceLastPong = packet.decodeLong()
 
         return ret
 
