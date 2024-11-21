@@ -18,28 +18,39 @@ package org.photonvision.vision.pipe.impl;
 
 import edu.wpi.first.math.MathUtil;
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class CropPipe extends CVPipe<CVMat, CVMat, Rect> {
+    public Rect dynamiRect;
+
     public CropPipe() {
-        this.params = new Rect(0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE);
+        Rect full_screen = new Rect(0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE);
+
+        this.params = full_screen;
+        dynamiRect = full_screen;
     }
 
     @Override
     protected CVMat process(CVMat in) {
         Mat mat = in.getMat();
-        if (fullyCovers(params, mat)) {
-            return in;
-        }
+        // if (fullyCovers(params, mat)) {
+        //     return in;
+        // }
+        Rect proccesor = false ? this.params : dynamiRect;
 
-        int x = MathUtil.clamp(params.x, 0, mat.width());
-        int y = MathUtil.clamp(params.y, 0, mat.height());
-        int width = MathUtil.clamp(params.width, 0, mat.width() - x);
-        int height = MathUtil.clamp(params.height, 0, mat.height() - y);
+        int x = MathUtil.clamp(proccesor.x, 0, mat.width());
+        int y = MathUtil.clamp(proccesor.y, 0, mat.height());
+        int width = MathUtil.clamp(proccesor.width, 0, mat.width() - x);
+        int height = MathUtil.clamp(proccesor.height, 0, mat.height() - y);
 
         return new CVMat(mat.submat(y, y + height, x, x + width));
+    }
+
+    public void setDynamicRect(Rect newDynamicCropp) {
+        dynamiRect = newDynamicCropp;
     }
 
     /**
@@ -51,5 +62,11 @@ public class CropPipe extends CVPipe<CVMat, CVMat, Rect> {
      */
     public static boolean fullyCovers(Rect rect, Mat mat) {
         return rect.x <= 0 && rect.y <= 0 && rect.width >= mat.width() && rect.height >= mat.height();
+    }
+
+    private boolean isDynamicInvalid() {
+        return !this.params.contains(new Point(dynamiRect.x, dynamiRect.y))
+                || this.params.height < dynamiRect.height
+                || this.params.width < dynamiRect.width;
     }
 }

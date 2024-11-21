@@ -78,7 +78,7 @@ export const useSettingsStore = defineStore("settings", {
       return this.general.gpuAcceleration !== undefined;
     },
     networkInterfaceNames(): string[] {
-      return this.network.networkInterfaceNames.map((i) => i.devName);
+      return this.network.networkInterfaceNames.map((i) => i.connName);
     }
   },
   actions: {

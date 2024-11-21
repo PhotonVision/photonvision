@@ -77,7 +77,6 @@ export interface PipelineSettings {
   hsvSaturation: WebsocketNumberPair | [number, number];
   pipelineType: PipelineType;
   contourIntersection: number;
-
   cameraAutoWhiteBalance: boolean;
   cameraWhiteBalanceTemp: number;
   static_x: number;
@@ -326,34 +325,16 @@ export const DefaultObjectDetectionPipelineSettings: ObjectDetectionPipelineSett
   model: ""
 };
 
-export interface Calibration3dPipelineSettings extends PipelineSettings {
-  drawAllSnapshots: boolean;
-}
-export type ConfigurableCalibration3dPipelineSettings = Partial<Omit<Calibration3dPipelineSettings, "pipelineType">> &
-  ConfigurablePipelineSettings;
-export const DefaultCalibration3dPipelineSettings: Calibration3dPipelineSettings = {
-  ...DefaultPipelineSettings,
-  pipelineType: PipelineType.ObjectDetection,
-  cameraGain: 20,
-  targetModel: TargetModel.InfiniteRechargeHighGoalOuter,
-  ledMode: true,
-  outputShowMultipleTargets: false,
-  cameraExposureRaw: 6,
-  drawAllSnapshots: false
-};
-
 export type ActivePipelineSettings =
   | ReflectivePipelineSettings
   | ColoredShapePipelineSettings
   | AprilTagPipelineSettings
   | ArucoPipelineSettings
-  | ObjectDetectionPipelineSettings
-  | Calibration3dPipelineSettings;
+  | ObjectDetectionPipelineSettings;
 
 export type ActiveConfigurablePipelineSettings =
   | ConfigurableReflectivePipelineSettings
   | ConfigurableColoredShapePipelineSettings
   | ConfigurableAprilTagPipelineSettings
   | ConfigurableArucoPipelineSettings
-  | ConfigurableObjectDetectionPipelineSettings
-  | ConfigurableCalibration3dPipelineSettings;
+  | ConfigurableObjectDetectionPipelineSettings;

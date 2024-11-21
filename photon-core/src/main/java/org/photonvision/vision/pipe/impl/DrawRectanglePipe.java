@@ -26,43 +26,56 @@ import org.photonvision.vision.pipe.MutatingPipe;
 
 public class DrawRectanglePipe
         extends MutatingPipe<Mat, DrawRectanglePipe.DrawRectanglePipeParams> {
-    Scalar color;
+    Scalar staticColor;
+    Scalar dynamicColor;
 
-    public DrawRectanglePipe(Scalar color) {
+    public DrawRectanglePipe(Scalar staticColor, Scalar dynamicColor) {
         super();
         this.params = new DrawRectanglePipeParams();
-        this.color = color;
+        this.staticColor = staticColor;
+        this.dynamicColor = dynamicColor;
     }
 
     @Override
     protected Void process(Mat in) {
         // Draw nothing if the rectangle fully covers the image
-        if (CropPipe.fullyCovers(params.rect, in)) {
+        if (CropPipe.fullyCovers(params.static_rect, in)) {
             return null;
         }
 
-        int x = MathUtil.clamp(params.rect.x, 0, in.width());
-        int y = MathUtil.clamp(params.rect.y, 0, in.height());
-        int width = MathUtil.clamp(params.rect.width, 0, in.width() - x);
-        int height = MathUtil.clamp(params.rect.height, 0, in.height() - y);
-        Rect rect = new Rect(x, y, width, height);
+        int static_x = MathUtil.clamp(params.static_rect.x, 0, in.width());
+        int static_y = MathUtil.clamp(params.static_rect.y, 0, in.height());
+        int static_width = MathUtil.clamp(params.static_rect.width, 0, in.width() - static_x);
+        int static_height = MathUtil.clamp(params.static_rect.height, 0, in.height() - static_y);
+        Rect static_rect = new Rect(static_x, static_y, static_width, static_height);
 
-        Imgproc.rectangle(in, rect, this.color, params.thickness);
+        int dynamic_x = MathUtil.clamp(params.dynamic_rect.x, 0, in.width());
+        int dynamic_y = MathUtil.clamp(params.dynamic_rect.y, 0, in.height());
+        int dynamic_width = MathUtil.clamp(params.dynamic_rect.width, 0, in.width() - dynamic_x);
+        int dynamic_height = MathUtil.clamp(params.dynamic_rect.height, 0, in.height() - dynamic_y);
+        Rect dynamic_rect = new Rect(dynamic_x, dynamic_y, dynamic_width, dynamic_height);
+
+        Imgproc.rectangle(in, static_rect, this.staticColor, params.thickness);
+        Imgproc.rectangle(in, dynamic_rect, this.dynamicColor, params.thickness);
+
         return null;
     }
 
     public static class DrawRectanglePipeParams {
-        public Rect rect = new Rect(0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE);
+        public Rect static_rect = new Rect(0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE);
+        public Rect dynamic_rect = new Rect(0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE);
         public int thickness = 2;
 
         public DrawRectanglePipeParams() {}
 
-        public DrawRectanglePipeParams(Rect rect) {
-            this.rect = rect;
+        public DrawRectanglePipeParams(Rect static_rect, Rect dynamic_rect) {
+            this.static_rect = static_rect;
+            this.dynamic_rect = dynamic_rect;
         }
 
-        public DrawRectanglePipeParams(int x, int y, int width, int height) {
-            this(new Rect(x, y, width, height));
+        public DrawRectanglePipeParams(
+                int x, int y, int width, int height, int x2, int y2, int width2, int height2) {
+            this(new Rect(x, y, width, height), new Rect(x2, y2, width2, height2));
         }
     }
 }

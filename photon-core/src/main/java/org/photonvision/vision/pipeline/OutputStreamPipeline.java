@@ -26,6 +26,7 @@ import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.pipe.impl.*;
 import org.photonvision.vision.pipe.impl.DrawRectanglePipe.DrawRectanglePipeParams;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
 
 /**
@@ -47,7 +48,8 @@ public class OutputStreamPipeline {
     private final ResizeImagePipe resizeImagePipe = new ResizeImagePipe();
 
     private static final Scalar yellow = new Scalar(0, 255, 255);
-    private final DrawRectanglePipe drawStaticCropPipe = new DrawRectanglePipe(yellow);
+    private static final Scalar red = new Scalar(0, 0, 255);
+    private final DrawRectanglePipe drawStaticCropPipe = new DrawRectanglePipe(yellow, red);
 
     private final long[] pipeProfileNanos = new long[12];
 
@@ -112,7 +114,7 @@ public class OutputStreamPipeline {
                 new Draw3dArucoPipe.Draw3dArucoParams(
                         settings.outputShouldDraw,
                         frameStaticProperties.cameraCalibration,
-                        settings.targetModel,
+                        TargetModel.kAprilTag6in_16h5,
                         settings.streamingFrameDivisor);
         draw3dArucoPipe.setParams(draw3dArucoParams);
 

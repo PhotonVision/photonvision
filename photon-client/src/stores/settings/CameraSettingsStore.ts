@@ -51,9 +51,6 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     cameraNames(): string[] {
       return this.cameras.map((c) => c.nickname);
     },
-    cameraUniqueNames(): string[] {
-      return this.cameras.map((c) => c.nickname);
-    },
     currentCameraName(): string {
       return this.cameraNames[useStateStore().currentCameraIndex];
     },
@@ -77,12 +74,6 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     },
     maxExposureRaw(): number {
       return this.currentCameraSettings.maxExposureRaw;
-    },
-    minWhiteBalanceTemp(): number {
-      return this.currentCameraSettings.minWhiteBalanceTemp;
-    },
-    maxWhiteBalanceTemp(): number {
-      return this.currentCameraSettings.maxWhiteBalanceTemp;
     }
   },
   actions: {
@@ -122,9 +113,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         pipelineNicknames: d.pipelineNicknames,
         currentPipelineIndex: d.currentPipelineIndex,
         pipelineSettings: d.currentPipelineSettings,
-        cameraQuirks: d.cameraQuirks,
-        minWhiteBalanceTemp: d.minWhiteBalanceTemp,
-        maxWhiteBalanceTemp: d.maxWhiteBalanceTemp
+        cameraQuirks: d.cameraQuirks
       }));
       this.cameras = configuredCameras.length > 0 ? configuredCameras : [PlaceholderCameraSettings];
     },
@@ -339,6 +328,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         patternWidth: number;
         patternHeight: number;
         boardType: CalibrationBoardTypes;
+        useMrCal: boolean;
         useOldPattern: boolean;
         tagFamily: CalibrationTagFamilies;
       },

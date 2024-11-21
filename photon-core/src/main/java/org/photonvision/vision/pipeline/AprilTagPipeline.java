@@ -29,6 +29,7 @@ import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.math.MathUtils;
@@ -52,7 +53,8 @@ import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 
 public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipelineSettings> {
-    private final CropPipe cropPipe = new CropPipe();
+    private final CropPipe staticCropPipe = new CropPipe();
+
     private final AprilTagDetectionPipe aprilTagDetectionPipe = new AprilTagDetectionPipe();
     private final AprilTagPoseEstimatorPipe singleTagPoseEstimatorPipe =
             new AprilTagPoseEstimatorPipe();
@@ -74,7 +76,9 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
     @Override
     protected void setPipeParamsImpl() {
         Rect staticCrop = settings.getStaticCrop();
-        cropPipe.setParams(staticCrop);
+
+        staticCropPipe.setParams(staticCrop);
+        staticCropPipe.setDynamicRect(settings.getDynamicCrop());
 
         // Sanitize thread count - not supported to have fewer than 1 threads
         settings.threads = Math.max(1, settings.threads);
@@ -95,20 +99,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         config.quadSigma = (float) settings.blur;
         config.quadDecimate = settings.decimate;
 
-        var quadParams = new AprilTagDetector.QuadThresholdParameters();
-        // 5 was the default minClusterPixels in WPILib prior to 2025
-        // increasing it causes detection problems when decimate > 1
-        quadParams.minClusterPixels = 5;
-        // these are the same as the values in WPILib 2025
-        // setting them here to prevent upstream changes from changing behavior of the detector
-        quadParams.maxNumMaxima = 10;
-        quadParams.criticalAngle = 45 * Math.PI / 180.0;
-        quadParams.maxLineFitMSE = 10.0f;
-        quadParams.minWhiteBlackDiff = 5;
-        quadParams.deglitch = false;
-
-        aprilTagDetectionPipe.setParams(
-                new AprilTagDetectionPipeParams(settings.tagFamily, config, quadParams));
+        aprilTagDetectionPipe.setParams(new AprilTagDetectionPipeParams(settings.tagFamily, config));
 
         if (frameStaticProperties.cameraCalibration != null) {
             var cameraMatrix = frameStaticProperties.cameraCalibration.getCameraIntrinsicsMat();
@@ -140,6 +131,11 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
             // We asked for a GREYSCALE frame, but didn't get one -- best we can do is give up
             return new CVPipelineResult(frame.sequenceID, 0, 0, List.of(), frame);
         }
+        staticCropPipe.setDynamicRect(settings.getDynamicCrop());
+        CVPipeResult<CVMat> croppedFrame = staticCropPipe.run(frame.processedImage);
+        //  System.out.println("After cropping: " + croppedFrame.output.getMat().cols() + ", " +
+        // croppedFrame.output.getMat().rows());
+        sumPipeNanosElapsed += croppedFrame.nanosElapsed;
 
         CVPipeResult<CVMat> croppedFrame = cropPipe.run(frame.processedImage);
         sumPipeNanosElapsed += croppedFrame.nanosElapsed;
@@ -167,8 +163,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                     new TrackedTarget(
                             detection,
                             null,
-                            new TargetCalculationParameters(
-                                    false, null, null, null, null, frameStaticProperties));
+                            new TargetCalculationParameters(false, null, null, null, null, frameStaticProperties),
+                            new Point(settings.getStaticCrop().x, settings.getStaticCrop().y));
 
             targetList.add(target);
         }
@@ -226,7 +222,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                                 detection,
                                 tagPoseEstimate,
                                 new TargetCalculationParameters(
-                                        false, null, null, null, null, frameStaticProperties));
+                                        false, null, null, null, null, frameStaticProperties),
+                                new Point(settings.getStaticCrop().x, settings.getStaticCrop().y));
 
                 var correctedBestPose =
                         MathUtils.convertOpenCVtoPhotonTransform(target.getBestCameraToTarget3d());

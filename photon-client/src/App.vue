@@ -76,24 +76,6 @@ if (!is_demo) {
   }
 }
 
-/* Custom scrollbar styles */
-::-webkit-scrollbar {
-  width: 12px;
-}
-
-::-webkit-scrollbar-track {
-  background: #232c37;
-}
-
-::-webkit-scrollbar-thumb {
-  background-color: #ffd843;
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background-color: #e4c33c;
-}
-
 .main-container {
   background-color: #232c37;
   padding: 0 !important;

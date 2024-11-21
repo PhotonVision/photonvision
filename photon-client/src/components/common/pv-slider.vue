@@ -25,22 +25,9 @@ const emit = defineEmits<{
   (e: "input", value: number): void;
 }>();
 
-// Debounce function
-function debounce(func: (...args: any[]) => void, wait: number) {
-  let timeout: ReturnType<typeof setTimeout>;
-  return function (...args: any[]) {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(this, args), wait);
-  };
-}
-
-const debouncedEmit = debounce((v: number) => {
-  emit("input", v);
-}, 20);
-
 const localValue = computed({
   get: () => props.value,
-  set: (v) => debouncedEmit(parseFloat(v as unknown as string))
+  set: (v) => emit("input", parseFloat(v as unknown as string))
 });
 </script>
 

@@ -33,6 +33,7 @@ import edu.wpi.first.math.numbers.*;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.DoubleArraySubscriber;
+import edu.wpi.first.networktables.IntegerArrayPublisher;
 import edu.wpi.first.networktables.IntegerEntry;
 import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.IntegerSubscriber;
@@ -70,6 +71,7 @@ public class PhotonCamera implements AutoCloseable {
     DoubleArraySubscriber cameraIntrinsicsSubscriber;
     DoubleArraySubscriber cameraDistortionSubscriber;
     MultiSubscriber topicNameSubscriber;
+    IntegerArrayPublisher dynamicCropRequest;
     NetworkTable rootPhotonTable;
 
     @Override
@@ -87,6 +89,7 @@ public class PhotonCamera implements AutoCloseable {
         pipelineIndexRequest.close();
         cameraIntrinsicsSubscriber.close();
         cameraDistortionSubscriber.close();
+        dynamicCropRequest.close();
         topicNameSubscriber.close();
     }
 
@@ -145,6 +148,7 @@ public class PhotonCamera implements AutoCloseable {
 
         ledModeRequest = rootPhotonTable.getIntegerTopic("ledModeRequest").publish();
         ledModeState = rootPhotonTable.getIntegerTopic("ledModeState").subscribe(-1);
+        dynamicCropRequest = rootPhotonTable.getIntegerArrayTopic("dynamicCropRequest").publish();
         versionEntry = rootPhotonTable.getStringTopic("version").subscribe("");
 
         // Existing is enough to make this multisubscriber do its thing
@@ -289,6 +293,16 @@ public class PhotonCamera implements AutoCloseable {
      */
     public void setPipelineIndex(int index) {
         pipelineIndexRequest.set(index);
+    }
+
+    /**
+     * Sets the dynamic crop rectangle to optimize frame usage.
+     *
+     * @param params the params of the new target cropped image to process in the following order -
+     *     {x, y, w, h} (x and y are top left corner).
+     */
+    public void setDynamicCrop(long[] params) {
+        dynamicCropRequest.set(params);
     }
 
     /**

@@ -83,8 +83,12 @@ public class TrackedTarget implements Releasable {
     public TrackedTarget(
             AprilTagDetection tagDetection,
             AprilTagPoseEstimate tagPose,
-            TargetCalculationParameters params) {
-        m_targetOffsetPoint = new Point(tagDetection.getCenterX(), tagDetection.getCenterY());
+            TargetCalculationParameters params,
+            Point croppedOffset) {
+        m_targetOffsetPoint =
+                new Point(
+                        tagDetection.getCenterX() + croppedOffset.x,
+                        tagDetection.getCenterY() + croppedOffset.y);
         m_robotOffsetPoint = new Point();
         var yawPitch =
                 TargetCalculations.calculateYawPitch(
@@ -137,10 +141,10 @@ public class TrackedTarget implements Releasable {
         double[] corners = tagDetection.getCorners();
         Point[] cornerPoints =
                 new Point[] {
-                    new Point(corners[0], corners[1]),
-                    new Point(corners[2], corners[3]),
-                    new Point(corners[4], corners[5]),
-                    new Point(corners[6], corners[7])
+                    new Point(corners[0] + croppedOffset.x, corners[1] + croppedOffset.y),
+                    new Point(corners[2] + croppedOffset.x, corners[3] + croppedOffset.y),
+                    new Point(corners[4] + croppedOffset.x, corners[5] + croppedOffset.y),
+                    new Point(corners[6] + croppedOffset.x, corners[7] + croppedOffset.y)
                 };
         m_targetCorners = List.of(cornerPoints);
         MatOfPoint contourMat = new MatOfPoint(cornerPoints);

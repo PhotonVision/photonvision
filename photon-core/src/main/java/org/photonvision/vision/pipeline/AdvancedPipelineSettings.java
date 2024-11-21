@@ -17,9 +17,14 @@
 
 package org.photonvision.vision.pipeline;
 
+import edu.wpi.first.networktables.IntegerArrayPublisher;
+import edu.wpi.first.networktables.IntegerArraySubscriber;
+import edu.wpi.first.networktables.NetworkTableEvent;
 import java.util.Objects;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
+import org.photonvision.common.dataflow.networktables.NTDataChangeListener;
+import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.vision.opencv.ContourGroupingMode;
@@ -32,10 +37,6 @@ import org.photonvision.vision.target.TargetOffsetPointEdge;
 import org.photonvision.vision.target.TargetOrientation;
 
 public class AdvancedPipelineSettings extends CVPipelineSettings {
-    public AdvancedPipelineSettings() {
-        ledMode = true;
-    }
-
     public IntegerCouple hsvHue = new IntegerCouple(50, 180);
     public IntegerCouple hsvSaturation = new IntegerCouple(50, 255);
     public IntegerCouple hsvValue = new IntegerCouple(50, 255);
@@ -81,7 +82,7 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
 
     // 3d settings
     public boolean solvePNPEnabled = false;
-    @SuppressSettingCopy public TargetModel targetModel = TargetModel.k2020HighGoalOuter;
+    public TargetModel targetModel = TargetModel.k2020HighGoalOuter;
 
     // Corner detection settings
     public CornerDetectionPipe.DetectionStrategy cornerDetectionStrategy =
@@ -97,8 +98,52 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
     public int static_width = Integer.MAX_VALUE;
     public int static_height = Integer.MAX_VALUE;
 
+    private final NTDataChangeListener dynamicCropListener;
+    private IntegerArraySubscriber dynamicCropRequest;
+    private final IntegerArrayPublisher ledModeState;
+
+    public int dynamic_x = 0;
+    public int dynamic_y = 0;
+    public int dynamic_width = Integer.MAX_VALUE;
+    public int dynamic_height = Integer.MAX_VALUE;
+
+    public AdvancedPipelineSettings() {
+        ledMode = true;
+
+        dynamicCropRequest =
+                NetworkTablesManager.getInstance()
+                        .kRootTable
+                        .getIntegerArrayTopic("dynamicCropRequest")
+                        .subscribe(null);
+        ledModeState =
+                NetworkTablesManager.getInstance()
+                        .kRootTable
+                        .getIntegerArrayTopic("dynamicCropState")
+                        .publish();
+        dynamicCropListener =
+                new NTDataChangeListener(
+                        NetworkTablesManager.getInstance().kRootTable.getInstance(),
+                        dynamicCropRequest,
+                        this::setDynamicCrop);
+    }
+
     public Rect getStaticCrop() {
         return new Rect(static_x, static_y, static_width, static_height);
+    }
+
+    public Rect getDynamicCrop() {
+        return new Rect(dynamic_x, dynamic_y, dynamic_width, dynamic_height);
+    }
+
+    private void setDynamicCrop(NetworkTableEvent entryNotification) {
+        long[] coords = (long[]) entryNotification.valueData.value.getIntegerArray();
+        System.out.println("CHANGED");
+        dynamic_x = (int) coords[0];
+        dynamic_y = (int) coords[1];
+        dynamic_width = (int) coords[2];
+        dynamic_height = (int) coords[3];
+
+        ledModeState.accept(coords);
     }
 
     @Override
@@ -139,7 +184,11 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
                 && static_x == that.static_x
                 && static_y == that.static_y
                 && static_width == that.static_width
-                && static_height == that.static_height;
+                && static_height == that.static_height
+                && dynamic_x == that.dynamic_x
+                && dynamic_y == that.dynamic_y
+                && dynamic_height == that.dynamic_height
+                && dynamic_width == that.dynamic_width;
     }
 
     @Override
