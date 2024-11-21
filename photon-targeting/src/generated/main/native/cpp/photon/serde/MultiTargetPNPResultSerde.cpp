@@ -24,15 +24,15 @@ namespace photon {
 using StructType = SerdeType<MultiTargetPNPResult>;
 
 void StructType::Pack(Packet& packet, const MultiTargetPNPResult& value) {
-    packet.Pack<photon::PnpResult>(value.estimatedPose);
-    packet.Pack<std::vector<int16_t>>(value.fiducialIDsUsed);
+  packet.Pack<photon::PnpResult>(value.estimatedPose);
+  packet.Pack<std::vector<int16_t>>(value.fiducialIDsUsed);
 }
 
 MultiTargetPNPResult StructType::Unpack(Packet& packet) {
-    return MultiTargetPNPResult{ MultiTargetPNPResult_PhotonStruct{
-        .estimatedPose = packet.Unpack<photon::PnpResult>(),
-        .fiducialIDsUsed = packet.Unpack<std::vector<int16_t>>(),
-    }};
+  return MultiTargetPNPResult{ MultiTargetPNPResult_PhotonStruct{
+    .estimatedPose = packet.Unpack<photon::PnpResult>(),
+    .fiducialIDsUsed = packet.Unpack<std::vector<int16_t>>(),
+  }};
 }
 
 } // namespace photon

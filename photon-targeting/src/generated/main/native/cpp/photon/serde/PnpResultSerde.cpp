@@ -24,21 +24,21 @@ namespace photon {
 using StructType = SerdeType<PnpResult>;
 
 void StructType::Pack(Packet& packet, const PnpResult& value) {
-    packet.Pack<frc::Transform3d>(value.best);
-    packet.Pack<frc::Transform3d>(value.alt);
-    packet.Pack<double>(value.bestReprojErr);
-    packet.Pack<double>(value.altReprojErr);
-    packet.Pack<double>(value.ambiguity);
+  packet.Pack<frc::Transform3d>(value.best);
+  packet.Pack<frc::Transform3d>(value.alt);
+  packet.Pack<double>(value.bestReprojErr);
+  packet.Pack<double>(value.altReprojErr);
+  packet.Pack<double>(value.ambiguity);
 }
 
 PnpResult StructType::Unpack(Packet& packet) {
-    return PnpResult{ PnpResult_PhotonStruct{
-        .best = packet.Unpack<frc::Transform3d>(),
-        .alt = packet.Unpack<frc::Transform3d>(),
-        .bestReprojErr = packet.Unpack<double>(),
-        .altReprojErr = packet.Unpack<double>(),
-        .ambiguity = packet.Unpack<double>(),
-    }};
+  return PnpResult{ PnpResult_PhotonStruct{
+    .best = packet.Unpack<frc::Transform3d>(),
+    .alt = packet.Unpack<frc::Transform3d>(),
+    .bestReprojErr = packet.Unpack<double>(),
+    .altReprojErr = packet.Unpack<double>(),
+    .ambiguity = packet.Unpack<double>(),
+  }};
 }
 
 } // namespace photon

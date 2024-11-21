@@ -51,15 +51,15 @@ public class PnpResultSerde implements PacketSerde<PnpResult> {
     @Override
     public void pack(Packet packet, PnpResult value) {
         PacketUtils.packTransform3d(packet, value.best);
-    
+
         PacketUtils.packTransform3d(packet, value.alt);
-    
+
         // field bestReprojErr is of intrinsic type float64
         packet.encode((double) value.bestReprojErr);
-    
+
         // field altReprojErr is of intrinsic type float64
         packet.encode((double) value.altReprojErr);
-    
+
         // field ambiguity is of intrinsic type float64
         packet.encode((double) value.ambiguity);
     }
@@ -69,15 +69,15 @@ public class PnpResultSerde implements PacketSerde<PnpResult> {
         var ret = new PnpResult();
 
         ret.best = PacketUtils.unpackTransform3d(packet);
-    
+
         ret.alt = PacketUtils.unpackTransform3d(packet);
-    
+
         // bestReprojErr is of intrinsic type float64
         ret.bestReprojErr = packet.decodeDouble();
-    
+
         // altReprojErr is of intrinsic type float64
         ret.altReprojErr = packet.decodeDouble();
-    
+
         // ambiguity is of intrinsic type float64
         ret.ambiguity = packet.decodeDouble();
 

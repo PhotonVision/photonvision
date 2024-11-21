@@ -52,7 +52,7 @@ public class TargetCornerSerde implements PacketSerde<TargetCorner> {
     public void pack(Packet packet, TargetCorner value) {
         // field x is of intrinsic type float64
         packet.encode((double) value.x);
-    
+
         // field y is of intrinsic type float64
         packet.encode((double) value.y);
     }
@@ -63,7 +63,7 @@ public class TargetCornerSerde implements PacketSerde<TargetCorner> {
 
         // x is of intrinsic type float64
         ret.x = packet.decodeDouble();
-    
+
         // y is of intrinsic type float64
         ret.y = packet.decodeDouble();
 

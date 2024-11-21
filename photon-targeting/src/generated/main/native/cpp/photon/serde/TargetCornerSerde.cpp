@@ -24,15 +24,15 @@ namespace photon {
 using StructType = SerdeType<TargetCorner>;
 
 void StructType::Pack(Packet& packet, const TargetCorner& value) {
-    packet.Pack<double>(value.x);
-    packet.Pack<double>(value.y);
+  packet.Pack<double>(value.x);
+  packet.Pack<double>(value.y);
 }
 
 TargetCorner StructType::Unpack(Packet& packet) {
-    return TargetCorner{ TargetCorner_PhotonStruct{
-        .x = packet.Unpack<double>(),
-        .y = packet.Unpack<double>(),
-    }};
+  return TargetCorner{ TargetCorner_PhotonStruct{
+    .x = packet.Unpack<double>(),
+    .y = packet.Unpack<double>(),
+  }};
 }
 
 } // namespace photon
