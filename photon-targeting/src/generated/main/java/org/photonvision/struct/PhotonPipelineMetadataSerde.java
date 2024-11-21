@@ -34,6 +34,7 @@ import edu.wpi.first.util.struct.Struct;
  * Auto-generated serialization/deserialization helper for PhotonPipelineMetadata
  */
 public class PhotonPipelineMetadataSerde implements PacketSerde<PhotonPipelineMetadata> {
+
     @Override
     public final String getInterfaceUUID() { return "ac0a45f686457856fb30af77699ea356"; }
     @Override
@@ -84,12 +85,14 @@ public class PhotonPipelineMetadataSerde implements PacketSerde<PhotonPipelineMe
     @Override
     public PacketSerde<?>[] getNestedPhotonMessages() {
         return new PacketSerde<?>[] {
+            
         };
     }
 
     @Override
     public Struct<?>[] getNestedWpilibMessages() {
         return new Struct<?>[] {
+            
         };
     }
 }
