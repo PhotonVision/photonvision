@@ -147,7 +147,8 @@ public class Robot extends TimedRobot {
         debugField.getObject("EstimatedRobotModules").setPoses(drivetrain.getModulePoses());
 
         // Calculate battery voltage sag due to current draw
-        var batteryVoltage = BatterySim.calculateDefaultBatteryLoadedVoltage(drivetrain.getCurrentDraw());
+        var batteryVoltage =
+                BatterySim.calculateDefaultBatteryLoadedVoltage(drivetrain.getCurrentDraw());
 
         // Using max(0.1, voltage) here isn't a *physically correct* solution,
         // but it avoids problems with battery voltage measuring 0.
