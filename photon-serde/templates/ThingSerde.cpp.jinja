@@ -24,21 +24,21 @@ namespace photon {
 using StructType = SerdeType<{{ name }}>;
 
 void StructType::Pack(Packet& packet, const {{ name }}& value) {
-    {% for field in fields -%}
-    packet.Pack<{{ field | get_qualified_name }}>(value.{{ field.name }});
-    {%- if not loop.last %}
-    {% endif -%}
-    {% endfor %}
+  {% for field in fields -%}
+  packet.Pack<{{ field | get_qualified_name }}>(value.{{ field.name }});
+  {%- if not loop.last %}
+  {% endif -%}
+  {% endfor %}
 }
 
 {{ name }} StructType::Unpack(Packet& packet) {
-    return {{ name }}{ {{ name }}_PhotonStruct{
-        {% for field in fields -%}
-        .{{ field.name}} = packet.Unpack<{{ field | get_qualified_name }}>(),
-        {%- if not loop.last %}
-        {% endif -%}
-        {% endfor %}
-    }};
+  return {{ name }}{ {{ name }}_PhotonStruct{
+    {% for field in fields -%}
+    .{{ field.name}} = packet.Unpack<{{ field | get_qualified_name }}>(),
+    {%- if not loop.last %}
+    {% endif -%}
+    {% endfor %}
+  }};
 }
 
 } // namespace photon
