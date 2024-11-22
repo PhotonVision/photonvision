@@ -14,8 +14,8 @@ The Orange Pi 5 is the only currently supported device for object detection.
 ## SD Cards
 
 :::{important}
-It is highly reccomnded that you use an industrial micro SD card, as they solve issues that many teams face when using any other kind of micro SD card, such as corruption 
-when suddenly shut off, which industrial micro SD cards have protections against.
+It is highly recommended that you use an industrial micro SD card, as they offer far greater protection against corruption from improper shutdowns, like most cards
+face every time the robot is turned off.
 :::
 
 - 8GB or larger micro SD card
