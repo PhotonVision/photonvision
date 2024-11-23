@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.opencv.core.Mat;
+import org.opencv.core.Rect;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.Objdetect;
 import org.photonvision.common.configuration.ConfigManager;
@@ -52,6 +53,7 @@ import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
+import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.*;
 import org.photonvision.vision.pipe.impl.ArucoPoseEstimatorPipe.ArucoPoseEstimatorPipeParams;
@@ -61,6 +63,7 @@ import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 
 public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSettings> {
+    private CropPipe cropPipe = new CropPipe();
     private ArucoDetectionPipe arucoDetectionPipe = new ArucoDetectionPipe();
     private ArucoPoseEstimatorPipe singleTagPoseEstimatorPipe = new ArucoPoseEstimatorPipe();
     private final MultiTargetPNPPipe multiTagPNPPipe = new MultiTargetPNPPipe();
@@ -78,6 +81,9 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
 
     @Override
     protected void setPipeParamsImpl() {
+        Rect staticCrop = settings.getStaticCrop();
+        cropPipe.setParams(staticCrop);
+
         var params = new ArucoDetectionPipeParams();
         // sanitize and record settings
 
@@ -142,15 +148,22 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
             return new CVPipelineResult(frame.sequenceID, 0, 0, List.of(), frame);
         }
 
+        CVPipeResult<CVMat> croppedFrame = cropPipe.run(frame.processedImage);
+        sumPipeNanosElapsed += croppedFrame.nanosElapsed;
+
         CVPipeResult<List<ArucoDetectionResult>> tagDetectionPipeResult;
-        tagDetectionPipeResult = arucoDetectionPipe.run(frame.processedImage);
+        tagDetectionPipeResult = arucoDetectionPipe.run(croppedFrame.output);
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
 
         // If we want to debug the thresholding steps, draw the first step to the color image
         if (settings.debugThreshold) {
+            // crop the color image to match the thresholded image
+            CVPipeResult<CVMat> croppedColor = cropPipe.run(frame.colorImage);
+            sumPipeNanosElapsed += croppedColor.nanosElapsed;
+
             drawThresholdFrame(
-                    frame.processedImage.getMat(),
-                    frame.colorImage.getMat(),
+                    croppedFrame.output.getMat(),
+                    croppedColor.output.getMat(),
                     settings.threshWinSizes.getFirst(),
                     settings.threshConstant);
         }
