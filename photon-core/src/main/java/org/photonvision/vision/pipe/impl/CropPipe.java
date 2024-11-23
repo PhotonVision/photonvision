@@ -39,7 +39,7 @@ public class CropPipe extends CVPipe<CVMat, CVMat, Rect> {
         // if (fullyCovers(params, mat)) {
         //     return in;
         // }
-        Rect proccesor = true ? this.params : dynamiRect;
+        Rect proccesor = false ? this.params : dynamiRect;
 
         int x = MathUtil.clamp(proccesor.x, 0, mat.width());
         int y = MathUtil.clamp(proccesor.y, 0, mat.height());
@@ -62,7 +62,7 @@ public class CropPipe extends CVPipe<CVMat, CVMat, Rect> {
         return rect.x <= 0 && rect.y <= 0 && rect.width >= mat.width() && rect.height >= mat.height();
     }
 
-    private boolean isDynamicValid(){
-        return this.params.contains(new Point(dynamiRect.x,dynamiRect.y)) && this.params.area() > dynamiRect.area();
+    private boolean isDynamicInvalid(){
+        return !this.params.contains(new Point(dynamiRect.x,dynamiRect.y)) || this.params.height < dynamiRect.height || this.params.width < dynamiRect.width;
     }
 }

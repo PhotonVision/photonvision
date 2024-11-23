@@ -136,7 +136,7 @@ import org.opencv.core.Rect;
              // We asked for a GREYSCALE frame, but didn't get one -- best we can do is give up
              return new CVPipelineResult(frame.sequenceID, 0, 0, List.of(), frame);
          }
-         
+         staticCropPipe.setDynamicRect(settings.getDynamicCrop());
          CVPipeResult<CVMat> croppedFrame = staticCropPipe.run(frame.processedImage);
         //  System.out.println("After cropping: " + croppedFrame.output.getMat().cols() + ", " + croppedFrame.output.getMat().rows());
          sumPipeNanosElapsed += croppedFrame.nanosElapsed;

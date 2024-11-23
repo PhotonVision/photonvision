@@ -73,7 +73,16 @@ public class Robot extends TimedRobot {
     public void disabledPeriodic() {
         // drivetrain.stop();
     }
-
+    @Override
+    public void autonomousInit() {
+        var params = new long[4];
+        params[0] = 0;
+        params[1] = 0;
+        params[2] = 800;
+        params[3] = 800;
+    
+            camera.setDynamicCrop(params);
+    }
     @Override
     public void teleopInit() {
         var params = new long[4];
