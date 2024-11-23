@@ -64,7 +64,7 @@ class PhotonCameraSim:
             False  # TODO switch this back to default True when the functionality is enabled
         )
         self.heartbeatCounter: int = 0
-        self.nextNtEntryTime = int(wpilib.Timer.getFPGATimestamp() * 1e6)
+        self.nextNtEntryTime = wpilib.Timer.getFPGATimestamp()
         self.tagLayout = AprilTagFieldLayout.loadField(AprilTagField.k2024Crescendo)
 
         self.cam = camera
@@ -173,20 +173,20 @@ class PhotonCameraSim:
     def consumeNextEntryTime(self) -> float | None:
         """Determine if this camera should process a new frame based on performance metrics and the time
         since the last update. This returns an Optional which is either empty if no update should occur
-        or a Long of the timestamp in microseconds of when the frame which should be received by NT. If
+        or a float of the timestamp in seconds of when the frame which should be received by NT. If
         a timestamp is returned, the last frame update time becomes that timestamp.
 
-        :returns: Optional long which is empty while blocked or the NT entry timestamp in microseconds if
+        :returns: Optional float which is empty while blocked or the NT entry timestamp in seconds if
                   ready
         """
         # check if this camera is ready for another frame update
-        now = int(wpilib.Timer.getFPGATimestamp() * 1e6)
+        now = wpilib.Timer.getFPGATimestamp()
         timestamp = 0
         iter = 0
         # prepare next latest update
         while now >= self.nextNtEntryTime:
-            timestamp = int(self.nextNtEntryTime)
-            frameTime = int(self.prop.estSecUntilNextFrame() * 1e6)
+            timestamp = self.nextNtEntryTime
+            frameTime = self.prop.estSecUntilNextFrame()
             self.nextNtEntryTime += frameTime
 
             # if frame time is very small, avoid blocking
@@ -432,7 +432,9 @@ class PhotonCameraSim:
         )
 
     def submitProcessedFrame(
-        self, result: PhotonPipelineResult, receiveTimestamp: float | None
+        self,
+        result: PhotonPipelineResult,
+        receiveTimestamp_us: float = wpilib.Timer.getFPGATimestamp() * 1e6,
     ):
         """Simulate one processed frame of vision data, putting one result to NT. Image capture timestamp
         overrides :meth:`.PhotonPipelineResult.getTimestampSeconds` for more
@@ -441,44 +443,43 @@ class PhotonCameraSim:
         :param result:           The pipeline result to submit
         :param receiveTimestamp: The (sim) timestamp when this result was read by NT in microseconds. If not passed image capture time is assumed be (current time - latency)
         """
-        if receiveTimestamp is None:
-            receiveTimestamp = wpilib.Timer.getFPGATimestamp() * 1e6
-        receiveTimestamp = int(receiveTimestamp)
+        receiveTimestamp_us = int(receiveTimestamp_us)
 
-        self.ts.latencyMillisEntry.set(result.getLatencyMillis(), receiveTimestamp)
+        self.ts.latencyMillisEntry.set(result.getLatencyMillis(), receiveTimestamp_us)
 
         newPacket = PhotonPipelineResult.photonStruct.pack(result)
-        self.ts.rawBytesEntry.set(newPacket.getData(), receiveTimestamp)
+        self.ts.rawBytesEntry.set(newPacket.getData(), receiveTimestamp_us)
 
         hasTargets = result.hasTargets()
-        self.ts.hasTargetEntry.set(hasTargets, receiveTimestamp)
+        self.ts.hasTargetEntry.set(hasTargets, receiveTimestamp_us)
         if not hasTargets:
-            self.ts.targetPitchEntry.set(0.0, receiveTimestamp)
-            self.ts.targetYawEntry.set(0.0, receiveTimestamp)
-            self.ts.targetAreaEntry.set(0.0, receiveTimestamp)
-            self.ts.targetPoseEntry.set(Transform3d(), receiveTimestamp)
-            self.ts.targetSkewEntry.set(0.0, receiveTimestamp)
+            self.ts.targetPitchEntry.set(0.0, receiveTimestamp_us)
+            self.ts.targetYawEntry.set(0.0, receiveTimestamp_us)
+            self.ts.targetAreaEntry.set(0.0, receiveTimestamp_us)
+            self.ts.targetPoseEntry.set(Transform3d(), receiveTimestamp_us)
+            self.ts.targetSkewEntry.set(0.0, receiveTimestamp_us)
         else:
             bestTarget = result.getBestTarget()
             assert bestTarget
 
-            self.ts.targetPitchEntry.set(bestTarget.getPitch(), receiveTimestamp)
-            self.ts.targetYawEntry.set(bestTarget.getYaw(), receiveTimestamp)
-            self.ts.targetAreaEntry.set(bestTarget.getArea(), receiveTimestamp)
-            self.ts.targetSkewEntry.set(bestTarget.getSkew(), receiveTimestamp)
+            self.ts.targetPitchEntry.set(bestTarget.getPitch(), receiveTimestamp_us)
+            self.ts.targetYawEntry.set(bestTarget.getYaw(), receiveTimestamp_us)
+            self.ts.targetAreaEntry.set(bestTarget.getArea(), receiveTimestamp_us)
+            self.ts.targetSkewEntry.set(bestTarget.getSkew(), receiveTimestamp_us)
 
             self.ts.targetPoseEntry.set(
-                bestTarget.getBestCameraToTarget(), receiveTimestamp
+                bestTarget.getBestCameraToTarget(), receiveTimestamp_us
             )
 
-            intrinsics = self.prop.getIntrinsics()
-            intrinsicsView = intrinsics.flatten().tolist()
-            self.ts.cameraIntrinsicsPublisher.set(intrinsicsView, receiveTimestamp)
+        intrinsics = self.prop.getIntrinsics()
+        intrinsicsView = intrinsics.flatten().tolist()
+        self.ts.cameraIntrinsicsPublisher.set(intrinsicsView, receiveTimestamp_us)
 
-            distortion = self.prop.getDistCoeffs()
-            distortionView = distortion.flatten().tolist()
-            self.ts.cameraDistortionPublisher.set(distortionView, receiveTimestamp)
+        distortion = self.prop.getDistCoeffs()
+        distortionView = distortion.flatten().tolist()
+        self.ts.cameraDistortionPublisher.set(distortionView, receiveTimestamp_us)
 
-            self.ts.heartbeatPublisher.set(self.heartbeatCounter, receiveTimestamp)
+        self.ts.heartbeatPublisher.set(self.heartbeatCounter, receiveTimestamp_us)
+        self.heartbeatCounter += 1
 
-            self.ts.subTable.getInstance().flush()
+        self.ts.subTable.getInstance().flush()

@@ -467,7 +467,7 @@ class SimCameraProperties:
 
     def estSecUntilNextFrame(self) -> seconds:
         """
-        :returns: Estimate how long until the next frame should be processed in milliseconds
+        :returns: Estimate how long until the next frame should be processed in seconds
         """
         # // exceptional processing latency blocks the next frame
         return self.frameSpeed + max(0.0, self.estLatency() - self.frameSpeed)
