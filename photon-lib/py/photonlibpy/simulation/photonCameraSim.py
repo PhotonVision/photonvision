@@ -181,7 +181,7 @@ class PhotonCameraSim:
         """
         # check if this camera is ready for another frame update
         now = wpilib.Timer.getFPGATimestamp()
-        timestamp = 0
+        timestamp = 0.0
         iter = 0
         # prepare next latest update
         while now >= self.nextNtEntryTime:
