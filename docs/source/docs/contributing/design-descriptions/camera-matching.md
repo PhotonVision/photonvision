@@ -110,4 +110,3 @@ When a new camera (ie, one we can't match by-path to a deserialized CameraConfig
 <br>WHEN I request the VisionModule be ACTIVATED
 <br>AND the CameraConfiguration's DISABLED flag is TRUE
 <br>THEN a VisionModule will be created and started for the camera
-

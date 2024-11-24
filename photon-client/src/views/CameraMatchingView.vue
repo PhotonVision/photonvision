@@ -73,14 +73,14 @@ const unmatchedCameras = computed(() => {
                   <td>
                     {{ module.cameraPath }}
                   </td>
+                </tr>
+
                 <tr>
                   <td>USB Info</td>
                   <td>
-                    Product {{ module.cameraQuirks.baseName }} 
-                    VID {{ module.cameraQuirks.usbVid }} 
-                    PID {{ module.cameraQuirks.usbPid }}
+                    Product {{ module.cameraQuirks.baseName }} VID {{ module.cameraQuirks.usbVid }} PID
+                    {{ module.cameraQuirks.usbPid }}
                   </td>
-                </tr>
                 </tr>
                 <tr>
                   <td>Streams:</td>
@@ -112,7 +112,12 @@ const unmatchedCameras = computed(() => {
                 </tr>
                 <tr>
                   <td>Calibrations</td>
-                  <td>{{ module.completeCalibrations.map(it => getResolutionString(it.resolution)).join(", ") || "Not calibrated" }}</td>
+                  <td>
+                    {{
+                      module.completeCalibrations.map((it) => getResolutionString(it.resolution)).join(", ") ||
+                      "Not calibrated"
+                    }}
+                  </td>
                 </tr>
                 <tr>
                   <td>Actions</td>
@@ -181,7 +186,11 @@ const unmatchedCameras = computed(() => {
                 </tr>
                 <tr>
                   <td>Calibrations</td>
-                  <td> {{ camera.calibrations.map(it => getResolutionString(it.resolution)).join(", ") || "Not calibrated" }}</td>
+                  <td>
+                    {{
+                      camera.calibrations.map((it) => getResolutionString(it.resolution)).join(", ") || "Not calibrated"
+                    }}
+                  </td>
                 </tr>
                 <tr>
                   <td>Actions</td>
@@ -252,10 +261,9 @@ const unmatchedCameras = computed(() => {
         </v-card>
       </v-row>
 
-<span class="pa-3">
-      {{ JSON.stringify(useStateStore().vsmState.allConnectedCameras, null) }}
-</span>
-
+      <span class="pa-3">
+        {{ JSON.stringify(useStateStore().vsmState.allConnectedCameras, null) }}
+      </span>
     </v-card>
   </div>
 </template>
