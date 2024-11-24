@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { AprilTagPipelineSettings, type ColoredShapePipelineSettings, PipelineType } from "@/types/PipelineTypes";
+import { type AprilTagPipelineSettings, type ColoredShapePipelineSettings, PipelineType } from "@/types/PipelineTypes";
 import PvSlider from "@/components/common/pv-slider.vue";
 import { computed, getCurrentInstance } from "vue";
 import { useStateStore } from "@/stores/StateStore";
@@ -19,7 +19,7 @@ const static_y = computed<number>({
 });
 const static_width = computed<number>({
   get: () => currentPipelineSettings.value.static_width || frame_width.value,
-  set: (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ static_width: value }, false)
+  set: (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ static_width: value - static_x.value }, false)
 });
 const static_height = computed<number>({
   get: () => currentPipelineSettings.value.static_height || frame_height.value,
@@ -31,13 +31,14 @@ const interactiveCols = computed(() =>
     ? 9
     : 8
 );
+
 </script>
 <template>
-  <div v-if="currentPipelineSettings.pipelineType === PipelineType.ColoredShape">
+  <div v-if="currentPipelineSettings.pipelineType === PipelineType.AprilTag">
     <!-- static crop -->
     <span>Static Crop</span>
     <pv-slider
-      v-model="static_x"
+      v-model="currentPipelineSettings.static_x"
       class="pt-2"
       :slider-cols="interactiveCols"
       label="X"
@@ -46,28 +47,31 @@ const interactiveCols = computed(() =>
       :max="frame_width"
     />
     <pv-slider
-      v-model="static_y"
+      v-model="currentPipelineSettings.static_y"
       :slider-cols="interactiveCols"
       label="Y"
       tooltip="The Y coordinate of the top left corner of the statically cropped area"
       :min="0"
       :max="frame_height"
+
     />
     <pv-slider
-      v-model="static_width"
+      v-model="currentPipelineSettings.static_width"
       :slider-cols="interactiveCols"
       label="Width"
       tooltip="The width of the statically cropped area"
       :min="1"
       :max="frame_width"
+
     />
     <pv-slider
-      v-model="static_height"
+      v-model="currentPipelineSettings.static_height"
       :slider-cols="interactiveCols"
       label="Height"
       tooltip="The height of the statically cropped area"
       :min="1"
       :max="frame_height"
+
     />
   </div>
 </template>

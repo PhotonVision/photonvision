@@ -27,7 +27,10 @@ const allTabs = Object.freeze({
     tabName: "Input",
     component: InputTab
   },
-  
+  cropTab:{
+    tabName: "Crop",
+    component: CropTab
+  },
   thresholdTab: {
     tabName: "Threshold",
     component: ThresholdTab
