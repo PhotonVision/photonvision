@@ -1,5 +1,6 @@
 import { type ActivePipelineSettings, DefaultAprilTagPipelineSettings } from "@/types/PipelineTypes";
 import type { Pose3d } from "@/types/PhotonTrackingTypes";
+import type { WebsocketCameraSettingsUpdate } from "./WebsocketDataTypes";
 
 export interface GeneralSettings {
   version?: string;
@@ -56,19 +57,6 @@ export type ConfigurableNetworkSettings = Omit<
   "canManage" | "networkInterfaceNames" | "networkingDisabled"
 >;
 
-export interface UiCameraConfiguration {}
-export interface CameraConfiguration {}
-
-export interface PvCameraInfo {
-  cameraType: string; // CameraType -- todo
-  dev: number;
-  path: string;
-  name: string;
-  otherPaths: string[];
-  vendorId: number;
-  productId: number;
-}
-
 export interface UniqueCameraSummary {
   uniqueName: string;
   name: string;
@@ -79,8 +67,8 @@ export interface UniqueCameraSummary {
 
 export interface VsmState {
   activeCameras: UniqueCameraSummary[];
-  disabledCameras: UniqueCameraSummary[];
-  unmatchedCameras: UniqueCameraSummary[];
+  disabledCameras: WebsocketCameraSettingsUpdate[];
+  allConnectedCameras: UniqueCameraSummary[];
 }
 
 export interface LightingSettings {
@@ -199,7 +187,7 @@ export interface QuirkyCamera {
   quirks: Record<ValidQuirks, boolean>;
 }
 
-export interface CameraSettings {
+export interface UiCameraConfiguration {
   cameraPath: string;
 
   nickname: string;
@@ -237,7 +225,7 @@ export interface CameraSettingsChangeRequest {
   quirksToChange: Record<ValidQuirks, boolean>;
 }
 
-export const PlaceholderCameraSettings: CameraSettings = {
+export const PlaceholderCameraSettings: UiCameraConfiguration = {
   cameraPath: "/dev/null",
 
   nickname: "Placeholder Camera",

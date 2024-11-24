@@ -18,9 +18,10 @@ const compact = computed<boolean>({
 const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndUp || false);
 
 const needsCamerasConfigured = computed<boolean>(() => {
-  return useCameraSettingsStore().cameras.length === 0 || useCameraSettingsStore().cameras[0] === PlaceholderCameraSettings;
+  return (
+    useCameraSettingsStore().cameras.length === 0 || useCameraSettingsStore().cameras[0] === PlaceholderCameraSettings
+  );
 });
-
 </script>
 
 <template>
@@ -42,20 +43,20 @@ const needsCamerasConfigured = computed<boolean>(() => {
           <v-list-item-title>Dashboard</v-list-item-title>
         </v-list-item-content>
       </v-list-item>
-      <v-list-item ref="camerasTabOpener" link to="/cameras">
-        <v-list-item-icon>
-          <v-icon>mdi-camera</v-icon>
-        </v-list-item-icon>
-        <v-list-item-content>
-          <v-list-item-title>Camera</v-list-item-title>
-        </v-list-item-content>
-      </v-list-item>
       <v-list-item link to="/settings">
         <v-list-item-icon>
           <v-icon>mdi-cog</v-icon>
         </v-list-item-icon>
         <v-list-item-content>
           <v-list-item-title>Settings</v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+      <v-list-item ref="camerasTabOpener" link to="/cameras">
+        <v-list-item-icon>
+          <v-icon>mdi-camera</v-icon>
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-list-item-title>Camera</v-list-item-title>
         </v-list-item-content>
       </v-list-item>
       <v-list-item link to="/cameraConfigs">
@@ -66,7 +67,6 @@ const needsCamerasConfigured = computed<boolean>(() => {
           <v-list-item-title>Needs Camera Matching! needs matching</v-list-item-title>
         </v-list-item-content>
         <v-list-item-content v-if="!needsCamerasConfigured">
-        </v-list-item-content>
           <v-list-item-title>Camera Matching</v-list-item-title>
         </v-list-item-content>
       </v-list-item>

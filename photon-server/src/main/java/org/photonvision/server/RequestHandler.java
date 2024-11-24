@@ -846,7 +846,6 @@ public class RequestHandler {
             ctx.status(403);
         }
 
-
         ctx.result("Successfully assigned camera with unique name: " + uniqueName);
     }
 
@@ -860,7 +859,6 @@ public class RequestHandler {
         } else {
             ctx.status(403);
         }
-
 
         ctx.result("Successfully assigned camera with unique name: " + uniqueName);
     }

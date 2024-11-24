@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
 import org.opencv.core.Size;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
@@ -589,7 +588,7 @@ public class VisionModule {
         ret.calibrations =
                 visionSource.getSettables().getConfiguration().calibrations.stream()
                         .map(CameraCalibrationCoefficients::cloneWithoutObservations)
-                        .collect(Collectors.toList());
+                        .toList();
 
         ret.isFovConfigurable =
                 !(ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV());

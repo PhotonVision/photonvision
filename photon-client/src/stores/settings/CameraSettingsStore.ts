@@ -3,7 +3,7 @@ import type {
   CalibrationTagFamilies,
   CalibrationBoardTypes,
   CameraCalibrationResult,
-  CameraSettings,
+  UiCameraConfiguration,
   CameraSettingsChangeRequest,
   Resolution,
   RobotOffsetType,
@@ -18,7 +18,7 @@ import axios from "axios";
 import { resolutionsAreEqual } from "@/lib/PhotonUtils";
 
 interface CameraSettingsStore {
-  cameras: CameraSettings[];
+  cameras: UiCameraConfiguration[];
 }
 
 export const useCameraSettingsStore = defineStore("cameraSettings", {
@@ -27,7 +27,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
   }),
   getters: {
     // TODO update types to update this value being undefined. This would be a decently large change.
-    currentCameraSettings(): CameraSettings {
+    currentCameraSettings(): UiCameraConfiguration {
       return this.cameras[useStateStore().currentCameraIndex];
     },
     currentPipelineSettings(): ActivePipelineSettings {
@@ -87,7 +87,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
   },
   actions: {
     updateCameraSettingsFromWebsocket(data: WebsocketCameraSettingsUpdate[]) {
-      const configuredCameras = data.map<CameraSettings>((d) => ({
+      const configuredCameras = data.map<UiCameraConfiguration>((d) => ({
         cameraPath: d.cameraPath,
 
         nickname: d.nickname,

@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import org.photonvision.common.configuration.PhotonConfiguration.UICameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
@@ -241,5 +242,25 @@ public class CameraConfiguration {
                 + ", driveModeSettings="
                 + driveModeSettings
                 + "]";
+    }
+
+    /**
+     * UICameraConfiguration has some stuff particular to VisionModule, but enough of it's common to
+     * warrant this helper
+     */
+    public UICameraConfiguration toUiConfig() {
+        var ret = new UICameraConfiguration();
+
+        ret.cameraPath = getUsbPathOrDefault();
+        ret.nickname = nickname;
+        ret.uniqueName = uniqueName;
+        ret.deactivated = deactivated;
+        ret.isCSICamera = cameraType == CameraType.ZeroCopyPicam;
+        ret.pipelineNicknames = pipelineSettings.stream().map(it -> it.pipelineNickname).toList();
+        ret.cameraQuirks = cameraQuirks;
+        ret.calibrations =
+                calibrations.stream().map(CameraCalibrationCoefficients::cloneWithoutObservations).toList();
+
+        return ret;
     }
 }
