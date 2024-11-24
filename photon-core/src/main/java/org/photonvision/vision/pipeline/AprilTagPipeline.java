@@ -21,7 +21,8 @@
  import edu.wpi.first.apriltag.AprilTagDetector;
  import edu.wpi.first.apriltag.AprilTagPoseEstimate;
  import edu.wpi.first.apriltag.AprilTagPoseEstimator.Config;
- import edu.wpi.first.math.geometry.CoordinateSystem;
+import edu.wpi.first.math.Pair;
+import edu.wpi.first.math.geometry.CoordinateSystem;
  import edu.wpi.first.math.geometry.Pose3d;
  import edu.wpi.first.math.geometry.Rotation3d;
  import edu.wpi.first.math.geometry.Transform3d;
@@ -49,7 +50,8 @@ import org.opencv.core.Rect;
  import org.photonvision.vision.pipe.impl.AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams;
  import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
  import org.photonvision.vision.pipe.impl.CropPipe;
- import org.photonvision.vision.pipe.impl.MultiTargetPNPPipe;
+import org.photonvision.vision.pipe.impl.CropPipeParams;
+import org.photonvision.vision.pipe.impl.MultiTargetPNPPipe;
  import org.photonvision.vision.pipe.impl.MultiTargetPNPPipe.MultiTargetPNPPipeParams;
  import org.photonvision.vision.pipeline.result.CVPipelineResult;
  import org.photonvision.vision.target.TrackedTarget;
@@ -79,11 +81,11 @@ import org.opencv.core.Rect;
  
      @Override
      protected void setPipeParamsImpl() {
-         Rect staticCrop = settings.getStaticCrop();
          
- 
-         staticCropPipe.setParams(staticCrop);
-         staticCropPipe.setDynamicRect(settings.getDynamicCrop());
+         
+        
+         staticCropPipe.setParams(new CropPipeParams(settings.getStaticCrop(),settings.getDynamicCrop()));
+         
          
          // Sanitize thread count - not supported to have fewer than 1 threads
          settings.threads = Math.max(1, settings.threads);
@@ -136,9 +138,9 @@ import org.opencv.core.Rect;
              // We asked for a GREYSCALE frame, but didn't get one -- best we can do is give up
              return new CVPipelineResult(frame.sequenceID, 0, 0, List.of(), frame);
          }
-         staticCropPipe.setDynamicRect(settings.getDynamicCrop());
+        //  staticCropPipe.setDynamicRect(settings.getDynamicCrop());
          CVPipeResult<CVMat> croppedFrame = staticCropPipe.run(frame.processedImage);
-        //  System.out.println("After cropping: " + croppedFrame.output.getMat().cols() + ", " + croppedFrame.output.getMat().rows());
+        
          sumPipeNanosElapsed += croppedFrame.nanosElapsed;
  
          CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult;

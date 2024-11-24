@@ -19,6 +19,7 @@ package org.photonvision.vision.processes;
 
 import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.cscore.VideoException;
+import edu.wpi.first.cscore.VideoMode;
 import edu.wpi.first.math.util.Units;
 import io.javalin.websocket.WsContext;
 import java.util.ArrayList;
@@ -101,10 +102,10 @@ public class VisionModule {
                         LogGroup.VisionModule);
 
         cameraQuirks = visionSource.getCameraConfiguration().cameraQuirks;
-
+        
         if (visionSource.getCameraConfiguration().cameraQuirks == null)
             visionSource.getCameraConfiguration().cameraQuirks = QuirkyCamera.DefaultCamera;
-
+        
         // We don't show gain if the config says it's -1. So check here to make sure
         // it's non-negative if it _is_ supported
         if (cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
@@ -131,7 +132,9 @@ public class VisionModule {
                         this::consumeResult,
                         this.cameraQuirks,
                         getChangeSubscriber());
-        this.streamRunnable = new StreamRunnable(new OutputStreamPipeline());
+        VideoMode videoMode = visionSource.getSettables().getAllVideoModes().get(index);
+
+        this.streamRunnable = new StreamRunnable(new OutputStreamPipeline(), videoMode.width, videoMode.height);
         this.moduleIndex = index;
 
         DataChangeService.getInstance().addSubscriber(changeSubscriber);
@@ -228,12 +231,15 @@ public class VisionModule {
         private final Object frameLock = new Object();
         private Frame latestFrame;
         private AdvancedPipelineSettings settings = new AdvancedPipelineSettings();
+        
         private List<TrackedTarget> targets = new ArrayList<>();
 
         private boolean shouldRun = false;
 
-        public StreamRunnable(OutputStreamPipeline outputStreamPipeline) {
+        public StreamRunnable(OutputStreamPipeline outputStreamPipeline, int width, int height) {
             this.outputStreamPipeline = outputStreamPipeline;
+            settings.screenWidth = width;
+            settings.screenHeight = height;
         }
 
         public void updateData(

@@ -100,8 +100,8 @@ import edu.wpi.first.networktables.NetworkTableEvent;
      // Static cropping settings
      public int static_x = 0;
      public int static_y = 0;
-     public int static_width = Integer.MAX_VALUE;
-     public int static_height = Integer.MAX_VALUE;
+     public int static_width = 0;
+     public int static_height = 0;
  
      private final NTDataChangeListener dynamicCropListener;
      private IntegerArraySubscriber dynamicCropRequest;
@@ -110,15 +110,18 @@ import edu.wpi.first.networktables.NetworkTableEvent;
  
      public int dynamic_x = 0;
      public int dynamic_y = 0;
-     public int dynamic_width = Integer.MAX_VALUE;
-     public int dynamic_height = Integer.MAX_VALUE;
+     public int dynamic_width = 0;
+     public int dynamic_height = 0;
+
+    public int screenHeight;
+    public int screenWidth;
  
  
      public AdvancedPipelineSettings() {
          ledMode = true;
         
  
-     
+        
          dynamicCropRequest =
                  NetworkTablesManager.getInstance()
                          .kRootTable
@@ -131,6 +134,8 @@ import edu.wpi.first.networktables.NetworkTableEvent;
                                  .kRootTable.getInstance(),
                                  dynamicCropRequest,
                                  this::setDynamicCrop);
+        static_height = screenHeight;
+        static_width = screenWidth;
          
      }
      public Rect getStaticCrop() {

@@ -69,8 +69,7 @@ public class ColoredShapePipeline
 
     @Override
     protected void setPipeParamsImpl() {
-        Rect staticCrop = settings.getStaticCrop();
-        cropPipe.setParams(staticCrop);
+        cropPipe.setParams(new CropPipeParams(settings.getStaticCrop(),settings.getDynamicCrop()));
 
         DualOffsetValues dualOffsetValues =
                 new DualOffsetValues(

@@ -17,29 +17,25 @@
 package org.photonvision.vision.pipe.impl;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.Pair;
+
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.CVPipe;
 
-public class CropPipe extends CVPipe<CVMat, CVMat, Rect> {
-    public Rect dynamiRect;
+public class CropPipe extends CVPipe<CVMat, CVMat, CropPipeParams> {
     
-    public CropPipe() {
-        Rect full_screen = new Rect(0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE);
-
-        this.params = full_screen;
-        dynamiRect = full_screen;
-    }
+    
 
     @Override
     protected CVMat process(CVMat in) {
         Mat mat = in.getMat();
-        // if (fullyCovers(params, mat)) {
-        //     return in;
-        // }
-        Rect proccesor = false ? this.params : dynamiRect;
+        if (fullyCovers(params.staticCrop, mat)) {
+            return in;
+        }
+        Rect proccesor = true ? this.params.staticCrop : this.params.staticCrop;
 
         int x = MathUtil.clamp(proccesor.x, 0, mat.width());
         int y = MathUtil.clamp(proccesor.y, 0, mat.height());
@@ -49,7 +45,7 @@ public class CropPipe extends CVPipe<CVMat, CVMat, Rect> {
         return new CVMat(mat.submat(y, y + height, x, x + width));
     }
     public void setDynamicRect(Rect newDynamicCropp){
-        dynamiRect = newDynamicCropp;
+        this.params.dynamicCrop = newDynamicCropp;
     }
     /**
      * Returns true if the given rectangle fully covers some given image.
@@ -61,8 +57,13 @@ public class CropPipe extends CVPipe<CVMat, CVMat, Rect> {
     public static boolean fullyCovers(Rect rect, Mat mat) {
         return rect.x <= 0 && rect.y <= 0 && rect.width >= mat.width() && rect.height >= mat.height();
     }
-
+    @Override
+    public void setParams(CropPipeParams params) {
+        this.params = params;
+    }
     private boolean isDynamicInvalid(){
-        return !this.params.contains(new Point(dynamiRect.x,dynamiRect.y)) || this.params.height < dynamiRect.height || this.params.width < dynamiRect.width;
+        return !this.params.staticCrop.contains(new Point(this.params.dynamicCrop.x,this.params.dynamicCrop.y)) ||
+        this.params.staticCrop.height < this.params.dynamicCrop.height ||
+          this.params.staticCrop.width < this.params.dynamicCrop.width;
     }
 }
