@@ -77,12 +77,9 @@ export interface PipelineSettings {
   hsvSaturation: WebsocketNumberPair | [number, number];
   pipelineType: PipelineType;
   contourIntersection: number;
+
   cameraAutoWhiteBalance: boolean;
   cameraWhiteBalanceTemp: number;
-  static_x: number;
-  static_y: number;
-  static_width: number;
-  static_height: number;
 }
 export type ConfigurablePipelineSettings = Partial<
   Omit<
@@ -148,12 +145,6 @@ export const DefaultPipelineSettings: Omit<
   cameraWhiteBalanceTemp: 4000,
   cameraMinExposureRaw: 1,
   cameraMaxExposureRaw: 2
-  cameraMinExposureRaw: 0,
-  cameraMaxExposureRaw: 0,
-  static_x: 0,
-  static_y: 0,
-  static_width: 0,
-  static_height: 0
 };
 
 export interface ReflectivePipelineSettings extends PipelineSettings {
@@ -217,6 +208,10 @@ export const DefaultColoredShapePipelineSettings: ColoredShapePipelineSettings =
 };
 
 export interface AprilTagPipelineSettings extends PipelineSettings {
+  static_x: number;
+  static_y: number;
+  static_width: number;
+  static_height: number;
   pipelineType: PipelineType.AprilTag;
   hammingDist: number;
   numIterations: number;
@@ -253,7 +248,11 @@ export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
   threads: 4,
   tagFamily: AprilTagFamily.Family36h11,
   doMultiTarget: false,
-  doSingleTargetAlways: false
+  doSingleTargetAlways: false,
+  static_x: 0,
+  static_y: 0,
+  static_width: 0,
+  static_height: 0
 };
 
 export interface ArucoPipelineSettings extends PipelineSettings {
@@ -325,16 +324,34 @@ export const DefaultObjectDetectionPipelineSettings: ObjectDetectionPipelineSett
   model: ""
 };
 
+export interface Calibration3dPipelineSettings extends PipelineSettings {
+  drawAllSnapshots: boolean;
+}
+export type ConfigurableCalibration3dPipelineSettings = Partial<Omit<Calibration3dPipelineSettings, "pipelineType">> &
+  ConfigurablePipelineSettings;
+export const DefaultCalibration3dPipelineSettings: Calibration3dPipelineSettings = {
+  ...DefaultPipelineSettings,
+  pipelineType: PipelineType.ObjectDetection,
+  cameraGain: 20,
+  targetModel: TargetModel.InfiniteRechargeHighGoalOuter,
+  ledMode: true,
+  outputShowMultipleTargets: false,
+  cameraExposureRaw: 6,
+  drawAllSnapshots: false
+};
+
 export type ActivePipelineSettings =
   | ReflectivePipelineSettings
   | ColoredShapePipelineSettings
   | AprilTagPipelineSettings
   | ArucoPipelineSettings
-  | ObjectDetectionPipelineSettings;
+  | ObjectDetectionPipelineSettings
+  | Calibration3dPipelineSettings;
 
 export type ActiveConfigurablePipelineSettings =
   | ConfigurableReflectivePipelineSettings
   | ConfigurableColoredShapePipelineSettings
   | ConfigurableAprilTagPipelineSettings
   | ConfigurableArucoPipelineSettings
-  | ConfigurableObjectDetectionPipelineSettings;
+  | ConfigurableObjectDetectionPipelineSettings
+  | ConfigurableCalibration3dPipelineSettings;

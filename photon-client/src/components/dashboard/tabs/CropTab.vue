@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { type ColoredShapePipelineSettings, PipelineType } from "@/types/PipelineTypes";
+import { AprilTagPipelineSettings, type ColoredShapePipelineSettings, PipelineType } from "@/types/PipelineTypes";
 import PvSlider from "@/components/common/pv-slider.vue";
 import { computed, getCurrentInstance } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-const currentPipelineSettings = computed<ColoredShapePipelineSettings>(
-  () => useCameraSettingsStore().currentPipelineSettings as ColoredShapePipelineSettings
+const currentPipelineSettings = computed<AprilTagPipelineSettings>(
+  () => useCameraSettingsStore().currentPipelineSettings as AprilTagPipelineSettings
 );
 const frame_width = computed(() => useCameraSettingsStore().currentVideoFormat.resolution.width);
 const frame_height = computed(() => useCameraSettingsStore().currentVideoFormat.resolution.height);
