@@ -196,7 +196,6 @@ const unmatchedCameras = computed(() => {
       </v-row>
     </v-card>
 
-    <!-- Show this card if there are unmatched discovered cameras, or if no cameras have been matched -->
     <v-card dark class="mb-3 pr-6 pb-3" style="background-color: #006492">
       <v-card-title>
         <span> Unassigned Cameras </span>
@@ -252,6 +251,11 @@ const unmatchedCameras = computed(() => {
           </v-card-text>
         </v-card>
       </v-row>
+
+<span class="pa-3">
+      {{ JSON.stringify(useStateStore().vsmState.allConnectedCameras, null) }}
+</span>
+
     </v-card>
   </div>
 </template>

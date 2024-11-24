@@ -37,3 +37,77 @@ Deactivating a camera will release the native resources it owns, and return the 
 When a new camera (ie, one we can't match by-path to a deserialized CameraConfiguration) is activated, we'll create and spin up a new Vision Module for it.
 
 ![](https://www.plantuml.com/plantuml/svg/VP9BYnD158NtzIikirAmoSPL8s5YH1n8SB1duYQRsrtNcGlrAElHadzlLVgXXP9LACvNvvmwwViGqSUabN3vbmTsQ2BSVQSUdX_k00CahgKJ1xO6EflyG714Wo_ah-GOz7_HevL9KOrgVSDrTgk9VRUtVfA6C5XFjNpWVa1D7g-4Maut2ir5X4ZSR7Ft5huH3f57Z0II0_QA94msPzDV81d-cGWCQX82LOJdxYCuwoEmWHH8G9cWsIPkuSlJqoFyG5R9ao0ZXIXIZcbXxwaax4eKGVNm8DO2OrWpvWvN-sOxFRw5huxCh41_EPkrp9l-qZYChsy5m0GtKt2vGH9Exm-BOobMGlRTGnsoxlTlJc5BJYPNgWgOuUNL7_vK_aIHXhYOEMyT-SWKCbLDyzbduj7RaINv8ix_py6Y95bF9YJzjTcyiixmJag85ax7eyZdnMApsSdYeQ-VGDXibXijT15z14E_5b6CbJ9EiRdsG26mUJaRnuuK6te7yTKJoY3koSYarMy0)
+
+# Camera Matching Requirements
+
+## Definitions
+- VALID USB PATH: a path in the form `/dev/v4l/by-path/[UUID]`
+- VIDEO DEVICE PATH: a CSCore-provided identifier derived from the V4L path `/dev/video[N]` on Linux, or an opaque string on Windows
+- UNIQUE NAME: an identifier that is unique within the set of all deserialized CameraConfigurations and unmatched USB cameras
+  - I don't love this, it means that a USB camera matched to a VisionModule will share a UNIQUE NAME, right?
+- DESERIALIZED CAMERA CONFIGURATIONS: The set of camera configurations loaded from disk and provided to the VisionSourceManager. This configuration data structure includes the UNIQUE NAME
+- CURRENTLY ACTIVE CAMERAS: The set of VisionModules currently active and processing vision data, and associated metadata
+
+## Startup:
+
+- GIVEN An emtpy set of deserialized Camera Configurations
+<br>WHEN PhotonVision starts
+<br>THEN no VisionModules will be started
+
+- GIVEN A valid set of deserialized Camera Configurations
+<br>WHEN PhotonVision starts
+<br>THEN VisionModules will be started FOR EACH un-DISABLED config
+
+- GIVEN A valid set of deserialized Camera Configurations
+<br>WHEN PhotonVision starts
+<br>THEN VisionModules will NOT be started FOR EACH DISABLED config
+
+- GIVEN A CameraConfiguration with a VALID USB PATH
+<br>WHEN a VisionModule is created
+<br>THEN The VisionModule shall open the camera using the USB path
+
+- GIVEN A CameraConfiguration without a valid USB path
+<br>WHEN a VisionModule is created
+<br>THEN The VisionModule shall open the camera using the VIDEO DEVICE PATH
+
+## Camera (re)enumeration:
+
+- GIVEN a NEW USB CAMERA is avaliable for enumeration
+<br>WHEN a USB camera is discovered by VisionSourceManager
+<br>AND the USB camera's VIDEO DEVICE PATH is not in the set of DESERIALIZED CAMERA CONFIGURATIONS
+<br>THEN a UNIQUE NAME will be assigned to the camera info
+
+- GIVEN a NEW USB CAMERA is avaliable for enumeration
+<br>WHEN a USB camera is discovered by VisionSourceManager
+<br>AND the USB camera's VIDEO DEVICE PATH is in the set of DESERIALIZED CAMERA CONFIGURATIONS
+<br>THEN a UNIQUE NAME equal to the matching DESERIALIZED CAMERA CONFIGURATION will be assigned to the camera info
+  - This is a weird case. How -should- we handle this? see above
+
+## Creating from a new camera
+
+- Given: A UNIQUE NAME from a NEW USB CAMERA
+<br>WHEN I request a new VisionModule is created for this NEW USB CAMREA
+<br>AND the camera has a VALID USB PATH
+<br>AND the camera's VALID USB PATH is not in use by any CURRENTLY ACTIVE CAMERAS
+<br>THEN a NEW VisionModule will be started for the NEW USB CAMERA using the VALID USB PATH
+
+- Given: A UNIQUE NAME from a NEW USB CAMERA
+<br>WHEN I request a new VisionModule is created for this NEW USB CAMREA
+<br>AND the camera does not have a VALID USB PATH
+<br>AND the camera's VIDEO DEVICE PATH is not in use by any CURRENTLY ACTIVE CAMERAS
+<br>THEN a NEW VisionModule will be started for the NEW USB CAMERA using the VIDEO DEVICE PATH
+
+## Deactivate
+
+- Given: A UNIQUE NAME from a CURRENTLY ACTIVE CAMERA
+<br>WHEN I request the VisionModule be DEACTIVATED
+<br>THEN the VisionModule will be stopped for the given CURRENTLY ACTIVE CAMERA
+<br>AND the CameraConfiguration DISABLED flag will be set to TRUE
+
+## Reactivate
+
+- Given: A UNIQUE NAME from a DESERIALIZED CAMERA CONFIGURATIONS
+<br>WHEN I request the VisionModule be ACTIVATED
+<br>AND the CameraConfiguration's DISABLED flag is TRUE
+<br>THEN a VisionModule will be created and started for the camera
+

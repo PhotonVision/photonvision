@@ -229,6 +229,8 @@ public class VisionSourceManager {
         List<PVCameraDevice> seenInfos = filterAllowedDevices(getConnectedCameras());
         Collection<PVCameraDevice> knownInfos = cameraDeviceMap.values();
 
+        logger.info(cameraDeviceMap.keySet().toString());
+
         // Find all infos that have been seen but weren't known before
         seenInfos.stream()
                 .filter(d -> !knownInfos.contains(d))
