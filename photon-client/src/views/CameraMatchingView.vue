@@ -48,7 +48,7 @@ const deactivateCamera = (cameraUniqueName: string) => {
           dark
           class="camera-card pa-4 mb-4 mr-3"
           v-for="(module, index) in useCameraSettingsStore().cameras"
-          v-if="!useStateStore().backendConnected || module !== PlaceholderCameraSettings"
+          v-if="module !== PlaceholderCameraSettings"
           :value="index"
         >
           <v-card-title class="pb-8">{{ module.nickname }}</v-card-title>
@@ -102,16 +102,76 @@ const deactivateCamera = (cameraUniqueName: string) => {
       </v-row>
     </v-card>
 
+    <v-card
+      dark
+      class="mb-3 pr-6 pb-3"
+      style="background-color: #006492"
+    >
+      <v-card-title>
+        <span> Disabled Vision Modules </span>
+      </v-card-title>
+
+      <span class="ml-3" v-if="useStateStore().vsmState.disabledCameras.length === 0">No unassigned cameras to show :)</span>
+
+      <v-row class="ml-3 mb-0">
+        <v-card
+          dark
+          class="camera-card pa-4 mb-4 mr-3"
+          v-for="(camera, index) in useStateStore().vsmState.disabledCameras"
+          :value="index"
+        >
+          <v-card-title class="pb-8">{{ camera.name }}</v-card-title>
+          <v-card-text>
+            <v-simple-table dense height="100%" class="camera-card-table mt-2">
+              <tbody>
+                <tr>
+                  <td>Product Name</td>
+                  <td>
+                    {{ camera.name }}
+                  </td>
+                </tr>
+                <tr>
+                  <td>Type</td>
+                  <td>
+                    {{ camera.type }}
+                  </td>
+                </tr>
+                <tr>
+                  <td>Path(s)</td>
+                  <td>
+                    <span
+                      v-for="(path, idx) in [camera.path].concat(camera.otherPaths)"
+                      :key="idx"
+                      style="display: block"
+                    >
+                      {{ path }}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Actions</td>
+                  <td>
+                    <v-btn class="ma-2" @click="activateCamera(camera.uniqueName)" color="primary">Activate</v-btn>
+                  </td>
+                </tr>
+              </tbody>
+            </v-simple-table>
+          </v-card-text>
+        </v-card>
+      </v-row>
+    </v-card>
+
     <!-- Show this card if there are unmatched discovered cameras, or if no cameras have been matched -->
     <v-card
       dark
       class="mb-3 pr-6 pb-3"
       style="background-color: #006492"
-      v-if="useStateStore().vsmState.unmatchedCameras.length !== 0 || useCameraSettingsStore().cameras.length === 0"
     >
       <v-card-title>
         <span> Unassigned Cameras </span>
       </v-card-title>
+
+      <span class="ml-3" v-if="useStateStore().vsmState.unmatchedCameras.length === 0">No unassigned cameras to show :)</span>
 
       <v-row class="ml-3 mb-0">
         <v-banner
