@@ -101,5 +101,7 @@ public class LibcameraGpuSource extends VisionSource {
     }
 
     @Override
-    public void release() {}
+    public void release() {
+        throw new RuntimeException("Release is unimplemented - you should do that...");
+    }
 }

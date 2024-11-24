@@ -38,7 +38,10 @@ extensions = [
     "myst_parser",
     "sphinx.ext.mathjax",
     "sphinx.ext.graphviz",
+    "sphinxcontrib.plantuml",
 ]
+
+plantuml = "java -jar /path/to/plantuml.jar"
 
 # Configure OpenGraph support
 

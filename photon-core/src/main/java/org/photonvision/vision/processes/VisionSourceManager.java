@@ -61,7 +61,7 @@ public class VisionSourceManager {
         return SingletonHolder.INSTANCE;
     }
 
-    VisionSourceManager() {
+    public void registerTimedTasks() {
         TimedTaskManager.getInstance().addTask("CameraDeviceExplorer", this::discoverNewDevices, 1000);
     }
 
