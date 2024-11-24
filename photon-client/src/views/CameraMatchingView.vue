@@ -7,7 +7,7 @@ import { PlaceholderCameraSettings } from "@/types/SettingTypes";
 const formatUrl = (port) => `http://${inject("backendHostname")}:${port}/stream.mjpg`;
 const host = inject<string>("backendHost");
 const activateCamera = (cameraUniqueName: string) => {
-  const url = new URL(`http://${host}/api/utils/assignCamera`);
+  const url = new URL(`http://${host}/api/utils/assignUnmatchedCamera`);
   url.searchParams.set("uniqueName", cameraUniqueName);
 
   fetch(url.toString(), {
@@ -48,7 +48,7 @@ const deactivateCamera = (cameraUniqueName: string) => {
           dark
           class="camera-card pa-4 mb-4 mr-3"
           v-for="(module, index) in useCameraSettingsStore().cameras"
-          v-if="module !== PlaceholderCameraSettings"
+          v-if="!useStateStore().backendConnected || module !== PlaceholderCameraSettings"
           :value="index"
         >
           <v-card-title class="pb-8">{{ module.nickname }}</v-card-title>
@@ -107,7 +107,7 @@ const deactivateCamera = (cameraUniqueName: string) => {
       dark
       class="mb-3 pr-6 pb-3"
       style="background-color: #006492"
-      v-if="useStateStore().discoveredCameras.length !== 0 || useCameraSettingsStore().cameras.length === 0"
+      v-if="useStateStore().vsmState.unmatchedCameras.length !== 0 || useCameraSettingsStore().cameras.length === 0"
     >
       <v-card-title>
         <span> Unassigned Cameras </span>
@@ -115,7 +115,7 @@ const deactivateCamera = (cameraUniqueName: string) => {
 
       <v-row class="ml-3 mb-0">
         <v-banner
-          v-if="useStateStore().discoveredCameras.length === 0 && useCameraSettingsStore().cameras.length === 0"
+          v-if="useStateStore().vsmState.unmatchedCameras.length === 0 && useCameraSettingsStore().cameras.length === 0"
           rounded
           dark
           color="red"
@@ -124,7 +124,7 @@ const deactivateCamera = (cameraUniqueName: string) => {
         <v-card
           dark
           class="camera-card pa-4 mb-4 mr-3"
-          v-for="(camera, index) in useStateStore().discoveredCameras"
+          v-for="(camera, index) in useStateStore().vsmState.unmatchedCameras"
           :value="index"
         >
           <v-card-title class="pb-8">{{ camera.name }}</v-card-title>

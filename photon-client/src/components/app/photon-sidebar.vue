@@ -18,9 +18,7 @@ const compact = computed<boolean>({
 const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndUp || false);
 
 const needsCamerasConfigured = computed<boolean>(() => {
-  const ret = useCameraSettingsStore().cameras.length === 0 || useCameraSettingsStore().cameras[0] === PlaceholderCameraSettings;
-  console.log(ret);
-  return ret;
+  return useCameraSettingsStore().cameras.length === 0 || useCameraSettingsStore().cameras[0] === PlaceholderCameraSettings;
 });
 
 </script>

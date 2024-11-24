@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import type { LogMessage, UniqueCameraSummary } from "@/types/SettingTypes";
+import type { LogMessage, UniqueCameraSummary, VsmState } from "@/types/SettingTypes";
 import type { AutoReconnectingWebsocket } from "@/lib/AutoReconnectingWebsocket";
 import type { MultitagResult, PipelineResult } from "@/types/PhotonTrackingTypes";
 import type {
@@ -43,7 +43,7 @@ interface StateStore {
     timeout: number;
   };
 
-  discoveredCameras: UniqueCameraSummary[];
+  vsmState: VsmState;
 }
 
 export const useStateStore = defineStore("state", {
@@ -89,7 +89,11 @@ export const useStateStore = defineStore("state", {
         timeout: 2000
       },
 
-      discoveredCameras: []
+      vsmState: {
+        activeCameras: [],
+        disabledCameras: [],
+        unmatchedCameras: [],
+      }
     };
   },
   getters: {
@@ -149,8 +153,8 @@ export const useStateStore = defineStore("state", {
         hasEnoughImages: data.hasEnough
       };
     },
-    updateDiscoveredCameras(data: UniqueCameraSummary[]) {
-      this.discoveredCameras = data;
+    updateDiscoveredCameras(data: VsmState) {
+      this.vsmState = data;
     },
     showSnackbarMessage(data: { message: string; color: string; timeout?: number }) {
       this.snackbarData = {

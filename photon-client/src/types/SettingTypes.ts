@@ -77,6 +77,12 @@ export interface UniqueCameraSummary {
   type: string;
 }
 
+export interface VsmState {
+  activeCameras: UniqueCameraSummary[];
+  disabledCameras: UniqueCameraSummary[];
+  unmatchedCameras: UniqueCameraSummary[];
+}
+
 export interface LightingSettings {
   supported: boolean;
   brightness: number;

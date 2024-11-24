@@ -90,26 +90,34 @@ public class VisionSourceManager {
         logger.info("Finished registering loaded camera configs");
     }
 
-    public void activateVisionSource(String uniqueName) {
+    
+    /**
+     * Reactivate a previously created vision source
+     * @param uniqueName
+     */
+    public boolean reactivateMatchedCamera(String uniqueName) {
+        // Make sure we have an old, currently -inactive- camera around
+        var deactivatedConfig = Optional.ofNullable(ConfigManager.getInstance().getConfig().getCameraConfigurations().get(uniqueName));
+        if (deactivatedConfig.isEmpty() || !deactivatedConfig.get().deactivated) {
+            return false;
+        }
+        
         // Check if the camera is already in use by another module
-        final Predicate<PVCameraDevice> isNotUsedInModule =
-                info ->
-                        VisionModuleManager.getInstance().getModules().stream()
-                                .noneMatch(module -> module.uniqueName().equals(uniqueName));
+        if (VisionModuleManager.getInstance().getModules().stream()
+                                .anyMatch(module -> module.uniqueName().equals(uniqueName))){
+            return false;
+        }
+
         // transform the camera info all the way to a VisionModule and then start it
-        Optional.ofNullable(cameraDeviceMap.get(uniqueName))
-                .filter(isNotUsedInModule)
-                // If we have an old config floating around, try to re-use it
-                .map(
-                        info ->
-                                configFromUniqueName(uniqueName).orElse(createConfigForCameras(info, uniqueName)))
+        var created = deactivatedConfig
                 .flatMap(VisionSourceManager::loadVisionSourceFromCamConfig)
                 .map(VisionModuleManager.getInstance()::addSource)
-                .ifPresent(
+                .map(
                         it -> {
                             it.start();
                             it.saveAndBroadcastAll();
-                        });
+                            return it;
+                        }).isPresent();
 
         // We have a new camera! Tell the world about it
         DataChangeService.getInstance()
@@ -118,27 +126,88 @@ public class VisionSourceManager {
                                 "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
 
         pushUiUpdate();
+
+        return created;
     }
 
-    public void deactivateVisionSource(String uniqueName) {
-        if (cameraDeviceMap.remove(uniqueName) == null) return;
-        VisionModuleManager.getInstance().visionModules.stream()
-                .filter(module -> module.uniqueName().equals(uniqueName))
-                .findFirst()
-                .ifPresent(VisionModuleManager.getInstance()::removeModule);
+
+    /**
+     * Assign a camera that currently has no associated CameraConfiguration loaded
+     * @param uniqueName
+     */
+    public boolean assignUnmatchedCamera(String uniqueName) {
+        // Check if the camera is already in use by another module
+        final Predicate<PVCameraDevice> isNotUsedInModule =
+                info ->
+                        VisionModuleManager.getInstance().getModules().stream()
+                                .noneMatch(module -> module.uniqueName().equals(uniqueName));
+        // transform the camera info all the way to a VisionModule and then start it
+        var created = Optional.ofNullable(cameraDeviceMap.get(uniqueName))
+                .filter(isNotUsedInModule)
+                // Make sure we aren't going to overwrite
+                .map(
+                        info ->
+                                configFromUniqueName(uniqueName).orElse(createConfigForCameras(info, uniqueName)))
+                .flatMap(VisionSourceManager::loadVisionSourceFromCamConfig)
+                .map(VisionModuleManager.getInstance()::addSource)
+                .map(
+                        it -> {
+                            it.start();
+                            it.saveAndBroadcastAll();
+                            return it;
+                        }).isPresent();
+
+        // We have a new camera! Tell the world about it
+        DataChangeService.getInstance()
+                .publishEvent(
+                        new OutgoingUIEvent<>(
+                                "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
 
         pushUiUpdate();
+
+        return created;
     }
 
-    protected List<UniqueCameraSummary> getUniqueUnusedCameras() {
-        List<String> activeUniqueNames =
-                VisionModuleManager.getInstance().getModules().stream()
-                        .map(module -> module.uniqueName())
-                        .collect(Collectors.toList());
-        return cameraDeviceMap.entrySet().stream()
-                .filter(entry -> !activeUniqueNames.contains(entry.getKey()))
-                .map(entry -> new UniqueCameraSummary(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList());
+    public boolean deactivateVisionSource(String uniqueName) {
+        if (cameraDeviceMap.remove(uniqueName) == null) return false;
+        var removed = VisionModuleManager.getInstance().visionModules.stream()
+                .filter(module -> module.uniqueName().equals(uniqueName))
+                .findFirst()
+                .map(it -> {VisionModuleManager.getInstance().removeModule(it); return it;}).isPresent();
+
+        pushUiUpdate();
+
+        return removed;
+    }
+
+    // Jackson does use these
+    @SuppressWarnings("unused")
+    private static class VisionSourceManagerState {
+        public List<UniqueCameraSummary> activeCameras;
+        public List<UniqueCameraSummary> disabledCameras;
+        public List<UniqueCameraSummary> unmatchedCameras;
+    }
+
+    protected VisionSourceManagerState getVsmState() {
+        var ret = new VisionSourceManagerState();
+
+
+        ret.activeCameras = ConfigManager.getInstance().getConfig().getCameraConfigurations().values().stream()
+                        .filter(it -> !it.deactivated)
+                        .map(it -> new UniqueCameraSummary(it.uniqueName, cameraDeviceMap.get(it.uniqueName)))
+                        .toList();
+        ret.disabledCameras = ConfigManager.getInstance().getConfig().getCameraConfigurations().values().stream()
+                        .filter(it -> it.deactivated)
+                        .map(it -> new UniqueCameraSummary(it.uniqueName, cameraDeviceMap.get(it.uniqueName)))
+                        .toList();
+
+        // transform the camera info all the way to a VisionModule and then start it
+        ret.unmatchedCameras = cameraDeviceMap.entrySet().stream()
+            .filter(item -> !ConfigManager.getInstance().getConfig().getCameraConfigurations().keySet().contains(item.getKey()))
+            .map(item -> new UniqueCameraSummary(item.getKey(), item.getValue()))
+            .toList();
+
+        return ret;
     }
 
     protected void discoverNewDevices() {
@@ -157,9 +226,10 @@ public class VisionSourceManager {
         pushUiUpdate();
     }
 
+
     protected void pushUiUpdate() {
         DataChangeService.getInstance()
-                .publishEvent(OutgoingUIEvent.wrappedOf("discoveredCameras", getUniqueUnusedCameras()));
+                .publishEvent(OutgoingUIEvent.wrappedOf("discoveredCameras", getVsmState()));
     }
 
     protected static List<PVCameraDevice> getConnectedCameras() {

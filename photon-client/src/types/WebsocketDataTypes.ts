@@ -6,7 +6,7 @@ import type {
   MetricData,
   NetworkSettings,
   QuirkyCamera,
-  UniqueCameraSummary
+  VsmState
 } from "@/types/SettingTypes";
 import type { ActivePipelineSettings } from "@/types/PipelineTypes";
 import type { AprilTagFieldLayout, PipelineResult } from "@/types/PhotonTrackingTypes";
@@ -101,7 +101,7 @@ export interface IncomingWebsocketData {
   mutatePipelineSettings?: Partial<ActivePipelineSettings>;
   cameraIndex?: number; // Sent when mutating pipeline settings to check against currently active
   calibrationData?: WebsocketCalibrationData;
-  discoveredCameras?: UniqueCameraSummary[];
+  discoveredCameras?: VsmState;
 }
 
 export enum WebsocketPipelineType {

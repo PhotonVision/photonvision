@@ -835,14 +835,32 @@ public class RequestHandler {
         }
     }
 
-    public static void onAssignCameraRequest(Context ctx) {
+    public static void onActivateMatchedCameraRequest(Context ctx) {
         logger.info(ctx.queryString().toString());
 
         String uniqueName = ctx.queryParam("uniqueName");
 
-        VisionSourceManager.getInstance().activateVisionSource(uniqueName);
+        if (VisionSourceManager.getInstance().reactivateMatchedCamera(uniqueName)) {
+            ctx.status(200);
+        } else {
+            ctx.status(403);
+        }
 
-        ctx.status(200);
+
+        ctx.result("Successfully assigned camera with unique name: " + uniqueName);
+    }
+
+    public static void onAssignUnmatchedCameraRequest(Context ctx) {
+        logger.info(ctx.queryString().toString());
+
+        String uniqueName = ctx.queryParam("uniqueName");
+
+        if (VisionSourceManager.getInstance().assignUnmatchedCamera(uniqueName)) {
+            ctx.status(200);
+        } else {
+            ctx.status(403);
+        }
+
 
         ctx.result("Successfully assigned camera with unique name: " + uniqueName);
     }
@@ -852,7 +870,11 @@ public class RequestHandler {
 
         String uniqueName = ctx.queryParam("uniqueName");
 
-        VisionSourceManager.getInstance().deactivateVisionSource(uniqueName);
+        if (VisionSourceManager.getInstance().deactivateVisionSource(uniqueName)) {
+            ctx.status(200);
+        } else {
+            ctx.status(403);
+        }
 
         ctx.status(200);
 
