@@ -50,8 +50,11 @@ public class VisionSourceManager {
 
     private static final List<String> deviceBlacklist = List.of("bcm2835-isp");
 
+    private final ConcurrentHashMap<String, CameraConfiguration> deserializedConfigs = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, PVCameraDevice> cameraDeviceMap =
             new ConcurrentHashMap<>();
+
+    public VisionModuleManager vmm = new VisionModuleManager();
 
     private static class SingletonHolder {
         private static final VisionSourceManager INSTANCE = new VisionSourceManager();
@@ -73,16 +76,24 @@ public class VisionSourceManager {
      */
     public void registerLoadedConfigs(Collection<CameraConfiguration> configs) {
         logger.info("Registering loaded camera configs");
+        
+        for (var config : configs) {
+            if (this.deserializedConfigs.containsKey(config.uniqueName)) {
+                logger.error("Duplicate unique name for config " + config.uniqueName + " -- not overwriting");
+            } else {
+                this.deserializedConfigs.put(config.uniqueName, config);
+            }
+        }
 
         configs.stream()
                 .filter(config -> !config.deactivated)
-                .map(VisionSourceManager::loadVisionSourceFromCamConfig)
+                .map(this::loadVisionSourceFromCamConfig)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .map(VisionModuleManager.getInstance()::addSource)
+                .map(vmm::addSource)
                 .forEach(
                         module -> {
-                            var config = module.visionSource.cameraConfiguration;
+                            var config = module.getCameraConfiguration();
                             cameraDeviceMap.put(config.uniqueName, PVCameraDevice.fromCameraConfig(config));
                             module.start();
                         });
@@ -99,22 +110,22 @@ public class VisionSourceManager {
         // Make sure we have an old, currently -inactive- camera around
         var deactivatedConfig =
                 Optional.ofNullable(
-                        ConfigManager.getInstance().getConfig().getCameraConfigurations().get(uniqueName));
+                        this.deserializedConfigs.get(uniqueName));
         if (deactivatedConfig.isEmpty() || !deactivatedConfig.get().deactivated) {
             return false;
         }
 
         // Check if the camera is already in use by another module
-        if (VisionModuleManager.getInstance().getModules().stream()
-                .anyMatch(module -> module.uniqueName().equals(uniqueName))) {
+        if (this.deserializedConfigs.keySet().stream()
+                .anyMatch(it->it.equals(uniqueName))) {
             return false;
         }
 
         // transform the camera info all the way to a VisionModule and then start it
         var created =
                 deactivatedConfig
-                        .flatMap(VisionSourceManager::loadVisionSourceFromCamConfig)
-                        .map(VisionModuleManager.getInstance()::addSource)
+                        .flatMap(this::loadVisionSourceFromCamConfig)
+                        .map(vmm::addSource)
                         .map(
                                 it -> {
                                     it.start();
@@ -143,7 +154,7 @@ public class VisionSourceManager {
         // Check if the camera is already in use by another module
         final Predicate<PVCameraDevice> isNotUsedInModule =
                 info ->
-                        VisionModuleManager.getInstance().getModules().stream()
+                        vmm.getModules().stream()
                                 .noneMatch(module -> module.uniqueName().equals(uniqueName));
         // transform the camera info all the way to a VisionModule and then start it
         var created =
@@ -154,8 +165,8 @@ public class VisionSourceManager {
                                 info ->
                                         configFromUniqueName(uniqueName)
                                                 .orElse(createConfigForCameras(info, uniqueName)))
-                        .flatMap(VisionSourceManager::loadVisionSourceFromCamConfig)
-                        .map(VisionModuleManager.getInstance()::addSource)
+                        .flatMap(this::loadVisionSourceFromCamConfig)
+                        .map(vmm::addSource)
                         .map(
                                 it -> {
                                     it.start();
@@ -178,12 +189,12 @@ public class VisionSourceManager {
     public boolean deactivateVisionSource(String uniqueName) {
         if (cameraDeviceMap.remove(uniqueName) == null) return false;
         var removed =
-                VisionModuleManager.getInstance().visionModules.stream()
+                vmm.getModules().stream()
                         .filter(module -> module.uniqueName().equals(uniqueName))
                         .findFirst()
                         .map(
                                 it -> {
-                                    VisionModuleManager.getInstance().removeModule(it);
+                                    vmm.removeModule(it);
                                     return it;
                                 })
                         .isPresent();
@@ -195,7 +206,7 @@ public class VisionSourceManager {
 
     // Jackson does use these
     @SuppressWarnings("unused")
-    private static class VisionSourceManagerState {
+    static class VisionSourceManagerState {
         public List<UniqueCameraSummary> activeCameras;
         public List<UICameraConfiguration> disabledCameras;
         public List<UniqueCameraSummary> allConnectedCameras;
@@ -205,12 +216,12 @@ public class VisionSourceManager {
         var ret = new VisionSourceManagerState();
 
         ret.activeCameras =
-                ConfigManager.getInstance().getConfig().getCameraConfigurations().values().stream()
+                this.deserializedConfigs.values().stream()
                         .filter(it -> !it.deactivated)
                         .map(it -> new UniqueCameraSummary(it.uniqueName, cameraDeviceMap.get(it.uniqueName)))
                         .toList();
         ret.disabledCameras =
-                ConfigManager.getInstance().getConfig().getCameraConfigurations().values().stream()
+                this.deserializedConfigs.values().stream()
                         .filter(it -> it.deactivated)
                         .map(CameraConfiguration::toUiConfig)
                         .toList();
@@ -247,7 +258,7 @@ public class VisionSourceManager {
                 .publishEvent(OutgoingUIEvent.wrappedOf("discoveredCameras", getVsmState()));
     }
 
-    protected static List<PVCameraDevice> getConnectedCameras() {
+    protected List<PVCameraDevice> getConnectedCameras() {
         List<PVCameraDevice> cameraInfos = new ArrayList<>();
         // find all connected cameras
         // cscore can return usb and csi cameras but csi are filtered out
@@ -298,9 +309,9 @@ public class VisionSourceManager {
         return configuration;
     }
 
-    private static Optional<CameraConfiguration> configFromUniqueName(String uniqueName) {
+    private Optional<CameraConfiguration> configFromUniqueName(String uniqueName) {
         return Optional.ofNullable(
-                ConfigManager.getInstance().getConfig().getCameraConfigurations().get(uniqueName));
+                this.deserializedConfigs.get(uniqueName));
     }
 
     private static List<PVCameraDevice> filterAllowedDevices(List<PVCameraDevice> allDevices) {
@@ -343,7 +354,7 @@ public class VisionSourceManager {
         return filteredDevices;
     }
 
-    private static Optional<VisionSource> loadVisionSourceFromCamConfig(
+    protected Optional<VisionSource> loadVisionSourceFromCamConfig(
             CameraConfiguration configuration) {
         VisionSource source = null;
 
@@ -369,4 +380,8 @@ public class VisionSourceManager {
         }
         return Optional.ofNullable(source);
     }
+
+	public List<VisionModule> getVisionModules() {
+        return vmm.getModules();
+	}
 }

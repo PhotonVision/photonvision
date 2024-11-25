@@ -35,6 +35,7 @@ import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.processes.VisionSource;
+import org.photonvision.vision.processes.VisionSourceManager;
 
 public class PhotonConfiguration {
     private final HardwareConfig hardwareConfig;
@@ -163,7 +164,7 @@ public class PhotonConfiguration {
 
         map.put(
                 "cameraSettings",
-                VisionModuleManager.getInstance().getModules().stream()
+                VisionSourceManager.getInstance().getVisionModules().stream()
                         .map(VisionModule::toUICameraConfig)
                         .map(SerializationUtils::objectToHashMap)
                         .collect(Collectors.toList()));

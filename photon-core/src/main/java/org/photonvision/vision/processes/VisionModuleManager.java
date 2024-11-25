@@ -27,15 +27,7 @@ import org.photonvision.common.logging.Logger;
 public class VisionModuleManager {
     private final Logger logger = new Logger(VisionModuleManager.class, LogGroup.VisionModule);
 
-    private static class ThreadSafeSingleton {
-        private static final VisionModuleManager INSTANCE = new VisionModuleManager();
-    }
-
-    public static VisionModuleManager getInstance() {
-        return VisionModuleManager.ThreadSafeSingleton.INSTANCE;
-    }
-
-    protected final List<VisionModule> visionModules = new ArrayList<>();
+    private final List<VisionModule> visionModules = new ArrayList<>();
 
     VisionModuleManager() {}
 
@@ -83,7 +75,7 @@ public class VisionModuleManager {
         // added)
         List<Integer> bigList =
                 this.getModules().stream()
-                        .map(it -> it.visionSource.cameraConfiguration.streamIndex)
+                        .map(it -> it.getCameraConfiguration().streamIndex)
                         .collect(Collectors.toList());
 
         int idx = 0;

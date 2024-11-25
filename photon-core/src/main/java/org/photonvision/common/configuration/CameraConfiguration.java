@@ -79,13 +79,13 @@ public class CameraConfiguration {
     }
 
     public CameraConfiguration(
-            String baseName, String uniqueName, String nickname, String path, String[] alternates) {
+            String baseName, String uniqueName, String nickname, String path, String[] otherPaths) {
         this.baseName = baseName;
         this.uniqueName = uniqueName;
         this.nickname = nickname;
         this.path = path;
         this.calibrations = new ArrayList<>();
-        this.otherPaths = alternates;
+        this.otherPaths = otherPaths;
 
         logger.debug("Creating USB camera configuration for " + this.toShortString());
     }

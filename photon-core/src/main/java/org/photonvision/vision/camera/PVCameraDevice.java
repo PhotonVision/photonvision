@@ -207,11 +207,6 @@ public sealed interface PVCameraDevice {
         return new PVUsbCameraInfo(info);
     }
 
-    public static PVCameraDevice fromUsbCameraInfo(
-            int dev, String path, String name, String[] otherPaths, int vendorId, int productId) {
-        return new PVUsbCameraInfo(dev, path, name, otherPaths, vendorId, productId);
-    }
-
     public static PVCameraDevice fromCSICameraInfo(String path, String baseName) {
         return new PVCSICameraInfo(path, baseName);
     }

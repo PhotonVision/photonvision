@@ -179,7 +179,7 @@ public class Main {
 
             ConfigManager.getInstance().unloadCameraConfigs();
             collectedSources.stream()
-                    .map(VisionModuleManager.getInstance()::addSource)
+                    .map(VisionSourceManager.getInstance().vmm::addSource)
                     .forEach(VisionModule::start);
             ConfigManager.getInstance().addCameraConfigurations(collectedSources);
         } catch (IOException e) {
@@ -343,7 +343,7 @@ public class Main {
 
         ConfigManager.getInstance().unloadCameraConfigs();
         collectedSources.stream()
-                .map(VisionModuleManager.getInstance()::addSource)
+                .map(VisionSourceManager.getInstance().vmm::addSource)
                 .forEach(VisionModule::start);
         ConfigManager.getInstance().addCameraConfigurations(collectedSources);
     }

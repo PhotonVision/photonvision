@@ -509,7 +509,7 @@ public class VisionModule {
                         getStateAsCameraConfig(), visionSource.getSettables().getConfiguration().uniqueName);
     }
 
-    void saveAndBroadcastAll() {
+    public void saveAndBroadcastAll() {
         saveModule();
         DataChangeService.getInstance()
                 .publishEvent(
@@ -675,5 +675,9 @@ public class VisionModule {
 
     public String uniqueName() {
         return this.visionSource.cameraConfiguration.uniqueName;
+    }
+
+    public CameraConfiguration getCameraConfiguration() {
+        return this.visionSource.cameraConfiguration;
     }
 }

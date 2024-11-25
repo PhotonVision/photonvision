@@ -169,6 +169,8 @@ public class VisionModuleManagerTest {
     public void setupManager() {
         ConfigManager.getInstance().load();
 
+        var vmm = new VisionModuleManager();
+
         var conf = new CameraConfiguration("Foo", "Bar");
         var ffp =
                 new FileFrameProvider(
@@ -177,10 +179,10 @@ public class VisionModuleManagerTest {
 
         var testSource = new TestSource(ffp, conf);
 
-        var module = VisionModuleManager.getInstance().addSource(testSource);
+        var module = vmm.addSource(testSource);
         var module0DataConsumer = new TestDataConsumer();
 
-        VisionModuleManager.getInstance().visionModules.get(0).addResultConsumer(module0DataConsumer);
+        module.addResultConsumer(module0DataConsumer);
 
         module.start();
 
@@ -235,11 +237,11 @@ public class VisionModuleManagerTest {
         System.out.println(
                 Arrays.toString(
                         modules.stream()
-                                .map(it -> it.visionSource.getCameraConfiguration().streamIndex)
+                                .map(it -> it.getCameraConfiguration().streamIndex)
                                 .toArray()));
         var idxs =
                 modules.stream()
-                        .map(it -> it.visionSource.getCameraConfiguration().streamIndex)
+                        .map(it -> it.getCameraConfiguration().streamIndex)
                         .collect(Collectors.toList());
 
         assertTrue(usbSimulation.equals(usbSimulation));

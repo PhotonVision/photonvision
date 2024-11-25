@@ -91,13 +91,19 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
                 findProperty(
                         "raw_exposure_absolute", "raw_exposure_time_absolute", "exposure", "raw_Exposure");
 
+        if (expProp.isEmpty()) {
+            logger.warn("Could not find expoosure proiperty");
+            return;
+        } else {
+            exposureAbsProp = expProp.get();
+            this.minExposure = exposureAbsProp.getMin();
+            this.maxExposure = exposureAbsProp.getMax();
+        }
+
         // Photonvision needs to be able to control auto exposure. Make sure we can
         // first.
         var autoExpProp = findProperty("exposure_auto", "auto_exposure");
 
-        exposureAbsProp = expProp.get();
-        this.minExposure = exposureAbsProp.getMin();
-        this.maxExposure = exposureAbsProp.getMax();
 
         if (autoExpProp.isPresent()) {
             autoExposureProp = autoExpProp.get();
