@@ -31,7 +31,8 @@ import java.util.Arrays;
         property = "type")
 @JsonSubTypes({
     @JsonSubTypes.Type(value = PVCameraInfo.PVUsbCameraInfo.class),
-    @JsonSubTypes.Type(value = PVCameraInfo.PVCSICameraInfo.class)
+    @JsonSubTypes.Type(value = PVCameraInfo.PVCSICameraInfo.class),
+    @JsonSubTypes.Type(value = PVCameraInfo.PVFileCameraInfo.class)
 })
 public sealed interface PVCameraInfo {
     /**
@@ -210,6 +211,7 @@ public sealed interface PVCameraInfo {
         }
     }
 
+    @JsonTypeName("PVFileCameraInfo")
     public static final class PVFileCameraInfo implements PVCameraInfo {
         private String path;
         private String filename;
