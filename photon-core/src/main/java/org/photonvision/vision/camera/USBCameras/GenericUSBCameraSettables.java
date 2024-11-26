@@ -104,7 +104,6 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         // first.
         var autoExpProp = findProperty("exposure_auto", "auto_exposure");
 
-
         if (autoExpProp.isPresent()) {
             autoExposureProp = autoExpProp.get();
         }

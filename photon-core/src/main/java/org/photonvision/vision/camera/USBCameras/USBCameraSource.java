@@ -49,14 +49,18 @@ public class USBCameraSource extends VisionSource {
         camera = new UsbCamera(config.nickname, config.getUsbPathOrDefault());
         cvSink = CameraServer.getVideo(this.camera);
 
-        // set vid/pid if not done already for future matching
-        if (config.usbVID <= 0) config.usbVID = this.camera.getInfo().vendorId;
-        if (config.usbPID <= 0) config.usbPID = this.camera.getInfo().productId;
+        // TODO - I don't need this, do I?
+        // // set vid/pid if not done already for future matching
+        // if (config.usbVID <= 0) config.usbVID = this.camera.getInfo().vendorId;
+        // if (config.usbPID <= 0) config.usbPID = this.camera.getInfo().productId;
 
+        // todo - why tf do we delegate this to USBCameraSource? Quirks are part of the CameraConfig??
         if (getCameraConfiguration().cameraQuirks == null) {
             getCameraConfiguration().cameraQuirks =
                     QuirkyCamera.getQuirkyCamera(
-                            camera.getInfo().vendorId, camera.getInfo().productId, config.baseName);
+                            camera.getInfo().vendorId,
+                            camera.getInfo().productId,
+                            config.matchedCameraInfo.name());
         }
 
         if (getCameraConfiguration().cameraQuirks.hasQuirks()) {

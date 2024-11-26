@@ -32,8 +32,8 @@ public class TestSource extends VisionSource {
     public TestSource(CameraConfiguration config) {
         super(config);
 
-        getCameraConfiguration().cameraQuirks =
-                QuirkyCamera.getQuirkyCamera(config.usbVID, config.usbVID, config.baseName);
+        // Disable camera quirk detection using this fun hack
+        getCameraConfiguration().cameraQuirks = QuirkyCamera.getQuirkyCamera(-1, -1, "");
     }
 
     @Override

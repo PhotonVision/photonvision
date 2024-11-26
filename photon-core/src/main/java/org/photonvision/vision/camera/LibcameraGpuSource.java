@@ -36,7 +36,7 @@ public class LibcameraGpuSource extends VisionSource {
 
     public LibcameraGpuSource(CameraConfiguration configuration) {
         super(configuration);
-        if (configuration.cameraType != CameraType.ZeroCopyPicam) {
+        if (configuration.matchedCameraInfo.type() != CameraType.ZeroCopyPicam) {
             throw new IllegalArgumentException(
                     "GPUAcceleratedPicamSource only accepts CameraConfigurations with type Picam");
         }

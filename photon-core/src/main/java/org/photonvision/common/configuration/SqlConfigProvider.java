@@ -19,6 +19,7 @@ package org.photonvision.common.configuration;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.cscore.UsbCameraInfo;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -30,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.photonvision.common.configuration.CameraConfiguration.LegacyCameraConfigStruct;
 import org.photonvision.common.configuration.DatabaseSchema.Columns;
 import org.photonvision.common.configuration.DatabaseSchema.Tables;
 import org.photonvision.common.logging.LogGroup;
@@ -165,7 +167,8 @@ public class SqlConfigProvider extends ConfigProvider {
         if (userVersion < expectedVersion) {
             // older database, run migrations
 
-            // first, check to see if this is one of the ones from 2024 beta that need special handling
+            // first, check to see if this is one of the ones from 2024 beta that need
+            // special handling
             if (userVersion == 0 && getSchemaVersion() > 0) {
                 String sql =
                         "SELECT COUNT(*) AS CNTREC FROM pragma_table_info('cameras') WHERE name='otherpaths_json';";
@@ -238,7 +241,8 @@ public class SqlConfigProvider extends ConfigProvider {
             try {
                 conn.close();
             } catch (SQLException e) {
-                // TODO, does the file still save if the SQL connection isn't closed correctly? If so,
+                // TODO, does the file still save if the SQL connection isn't closed correctly?
+                // If so,
                 // return false here.
                 logger.error("SQL Err closing connection while saving to disk: ", e);
             }
@@ -365,12 +369,11 @@ public class SqlConfigProvider extends ConfigProvider {
             // Replace this camera's row with the new settings
             var sqlString =
                     String.format(
-                            "REPLACE INTO %s (%s, %s, %s, %s, %s) VALUES (?,?,?,?,?);",
+                            "REPLACE INTO %s (%s, %s, %s, %s) VALUES (?,?,?,?);",
                             Tables.CAMERAS,
                             Columns.CAM_UNIQUE_NAME,
                             Columns.CAM_CONFIG_JSON,
                             Columns.CAM_DRIVERMODE_JSON,
-                            Columns.CAM_OTHERPATHS_JSON,
                             Columns.CAM_PIPELINE_JSONS);
 
             for (var c : config.getCameraConfigurations().entrySet()) {
@@ -380,7 +383,6 @@ public class SqlConfigProvider extends ConfigProvider {
                 statement.setString(1, c.getKey());
                 statement.setString(2, JacksonUtils.serializeToString(config));
                 statement.setString(3, JacksonUtils.serializeToString(config.driveModeSettings));
-                statement.setString(4, JacksonUtils.serializeToString(config.otherPaths));
 
                 // Serializing a list of abstract classes sucks. Instead, make it into an array
                 // of strings, which we can later unpack back into individual settings
@@ -397,7 +399,7 @@ public class SqlConfigProvider extends ConfigProvider {
                                         })
                                 .filter(Objects::nonNull)
                                 .collect(Collectors.toList());
-                statement.setString(5, JacksonUtils.serializeToString(settings));
+                statement.setString(4, JacksonUtils.serializeToString(settings));
 
                 statement.executeUpdate();
             }
@@ -433,7 +435,8 @@ public class SqlConfigProvider extends ConfigProvider {
     // In the future, this may not be needed. A better architecture would involve
     // manipulating the RAM representation of configuration when new .json files
     // are uploaded in the UI, and eliminate all other usages of saveOneFile().
-    // But, seeing as it's Dec 28 and kickoff is nigh, we put this here and moved on.
+    // But, seeing as it's Dec 28 and kickoff is nigh, we put this here and moved
+    // on.
     // Thank you for coming to my TED talk.
     private boolean skipSavingHWCfg = false;
     private boolean skipSavingHWSet = false;
@@ -586,14 +589,32 @@ public class SqlConfigProvider extends ConfigProvider {
                 List<String> dummyList = new ArrayList<>();
 
                 var uniqueName = result.getString(Columns.CAM_UNIQUE_NAME);
-                var config =
-                        JacksonUtils.deserialize(
-                                result.getString(Columns.CAM_CONFIG_JSON), CameraConfiguration.class);
+
+                // A horrifying hack to keep backward compat with otherpaths
+                // We -really- need to delete this -stupid- otherpaths column. I hate it.
+                var configStr = result.getString(Columns.CAM_CONFIG_JSON);
+                CameraConfiguration config = JacksonUtils.deserialize(configStr, CameraConfiguration.class);
+
+                if (config.matchedCameraInfo == null) {
+                    logger.info("Legacy CameraConfiguration detected - upgrading");
+
+                    // manually create the matchedCameraInfo ourselves. Need to upgrade:
+                    // baseName, path, otherPaths, cameraType, usbvid/pid -> matchedCameraInfo
+                    config.matchedCameraInfo =
+                            JacksonUtils.deserialize(configStr, LegacyCameraConfigStruct.class).matchedCameraInfo;
+
+                    // Except that otherPaths used to be its own column. so hack that in here as well
+                    var otherPaths =
+                            JacksonUtils.deserialize(
+                                    result.getString(Columns.CAM_OTHERPATHS_JSON), String[].class);
+                    if (config.matchedCameraInfo instanceof UsbCameraInfo usbInfo) {
+                        usbInfo.otherPaths = otherPaths;
+                    }
+                }
+
                 var driverMode =
                         JacksonUtils.deserialize(
                                 result.getString(Columns.CAM_DRIVERMODE_JSON), DriverModePipelineSettings.class);
-                var otherPaths =
-                        JacksonUtils.deserialize(result.getString(Columns.CAM_OTHERPATHS_JSON), String[].class);
                 List<?> pipelineSettings =
                         JacksonUtils.deserialize(
                                 result.getString(Columns.CAM_PIPELINE_JSONS), dummyList.getClass());
@@ -607,7 +628,6 @@ public class SqlConfigProvider extends ConfigProvider {
 
                 config.pipelineSettings = loadedSettings;
                 config.driveModeSettings = driverMode;
-                config.otherPaths = otherPaths;
                 loadedConfigurations.put(uniqueName, config);
             }
         } catch (SQLException | IOException e) {

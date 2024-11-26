@@ -41,7 +41,7 @@ import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.LibcameraGpuSource;
-import org.photonvision.vision.camera.PVCameraDevice;
+import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.camera.USBCameras.USBCameraSource;
 import org.photonvision.vision.camera.UniqueCameraSummary;
 
@@ -50,11 +50,12 @@ public class VisionSourceManager {
 
     private static final List<String> deviceBlacklist = List.of("bcm2835-isp");
 
-    private final ConcurrentHashMap<String, CameraConfiguration> deserializedConfigs = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, PVCameraDevice> cameraDeviceMap =
-            new ConcurrentHashMap<>();
-
-    public VisionModuleManager vmm = new VisionModuleManager();
+    // Jackson does use these members even if your IDE claims otherwise
+    static class VisionSourceManagerState {
+        public List<UniqueCameraSummary> activeCameras;
+        public List<UICameraConfiguration> disabledCameras;
+        public List<UniqueCameraSummary> allConnectedCameras;
+    }
 
     private static class SingletonHolder {
         private static final VisionSourceManager INSTANCE = new VisionSourceManager();
@@ -63,6 +64,13 @@ public class VisionSourceManager {
     public static VisionSourceManager getInstance() {
         return SingletonHolder.INSTANCE;
     }
+
+    public VisionModuleManager vmm = new VisionModuleManager();
+
+    // TODO - delete these. and replace ConcurrentHashMap with syncronization
+    private final ConcurrentHashMap<String, CameraConfiguration> deserializedConfigs =
+            new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, PVCameraInfo> cameraDeviceMap = new ConcurrentHashMap<>();
 
     public void registerTimedTasks() {
         TimedTaskManager.getInstance().addTask("CameraDeviceExplorer", this::discoverNewDevices, 1000);
@@ -76,29 +84,6 @@ public class VisionSourceManager {
      */
     public void registerLoadedConfigs(Collection<CameraConfiguration> configs) {
         logger.info("Registering loaded camera configs");
-        
-        for (var config : configs) {
-            if (this.deserializedConfigs.containsKey(config.uniqueName)) {
-                logger.error("Duplicate unique name for config " + config.uniqueName + " -- not overwriting");
-            } else {
-                this.deserializedConfigs.put(config.uniqueName, config);
-            }
-        }
-
-        configs.stream()
-                .filter(config -> !config.deactivated)
-                .map(this::loadVisionSourceFromCamConfig)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .map(vmm::addSource)
-                .forEach(
-                        module -> {
-                            var config = module.getCameraConfiguration();
-                            cameraDeviceMap.put(config.uniqueName, PVCameraDevice.fromCameraConfig(config));
-                            module.start();
-                        });
-
-        logger.info("Finished registering loaded camera configs");
     }
 
     /**
@@ -108,16 +93,13 @@ public class VisionSourceManager {
      */
     public boolean reactivateMatchedCamera(String uniqueName) {
         // Make sure we have an old, currently -inactive- camera around
-        var deactivatedConfig =
-                Optional.ofNullable(
-                        this.deserializedConfigs.get(uniqueName));
+        var deactivatedConfig = Optional.ofNullable(this.deserializedConfigs.get(uniqueName));
         if (deactivatedConfig.isEmpty() || !deactivatedConfig.get().deactivated) {
             return false;
         }
 
         // Check if the camera is already in use by another module
-        if (this.deserializedConfigs.keySet().stream()
-                .anyMatch(it->it.equals(uniqueName))) {
+        if (this.deserializedConfigs.keySet().stream().anyMatch(it -> it.equals(uniqueName))) {
             return false;
         }
 
@@ -152,10 +134,9 @@ public class VisionSourceManager {
      */
     public boolean assignUnmatchedCamera(String uniqueName) {
         // Check if the camera is already in use by another module
-        final Predicate<PVCameraDevice> isNotUsedInModule =
+        final Predicate<PVCameraInfo> isNotUsedInModule =
                 info ->
-                        vmm.getModules().stream()
-                                .noneMatch(module -> module.uniqueName().equals(uniqueName));
+                        vmm.getModules().stream().noneMatch(module -> module.uniqueName().equals(uniqueName));
         // transform the camera info all the way to a VisionModule and then start it
         var created =
                 Optional.ofNullable(cameraDeviceMap.get(uniqueName))
@@ -204,14 +185,6 @@ public class VisionSourceManager {
         return removed;
     }
 
-    // Jackson does use these
-    @SuppressWarnings("unused")
-    static class VisionSourceManagerState {
-        public List<UniqueCameraSummary> activeCameras;
-        public List<UICameraConfiguration> disabledCameras;
-        public List<UniqueCameraSummary> allConnectedCameras;
-    }
-
     protected VisionSourceManagerState getVsmState() {
         var ret = new VisionSourceManagerState();
 
@@ -237,8 +210,8 @@ public class VisionSourceManager {
 
     protected void discoverNewDevices() {
         // Get all connected cameras
-        List<PVCameraDevice> seenInfos = filterAllowedDevices(getConnectedCameras());
-        Collection<PVCameraDevice> knownInfos = cameraDeviceMap.values();
+        List<PVCameraInfo> seenInfos = filterAllowedDevices(getConnectedCameras());
+        Collection<PVCameraInfo> knownInfos = cameraDeviceMap.values();
 
         logger.info(cameraDeviceMap.keySet().toString());
 
@@ -258,12 +231,12 @@ public class VisionSourceManager {
                 .publishEvent(OutgoingUIEvent.wrappedOf("discoveredCameras", getVsmState()));
     }
 
-    protected List<PVCameraDevice> getConnectedCameras() {
-        List<PVCameraDevice> cameraInfos = new ArrayList<>();
+    protected List<PVCameraInfo> getConnectedCameras() {
+        List<PVCameraInfo> cameraInfos = new ArrayList<>();
         // find all connected cameras
         // cscore can return usb and csi cameras but csi are filtered out
         Stream.of(UsbCamera.enumerateUsbCameras())
-                .map(c -> PVCameraDevice.fromUsbCameraInfo(c))
+                .map(c -> PVCameraInfo.fromUsbCameraInfo(c))
                 .filter(c -> !(String.join("", c.otherPaths()).contains("csi-video")))
                 .filter(c -> !c.name().equals("unicam"))
                 .forEach(cameraInfos::add);
@@ -273,7 +246,7 @@ public class VisionSourceManager {
                     .map(
                             path -> {
                                 String name = LibCameraJNI.getSensorModel(path).getFriendlyName();
-                                return PVCameraDevice.fromCSICameraInfo(path, name);
+                                return PVCameraInfo.fromCSICameraInfo(path, name);
                             })
                     .forEach(cameraInfos::add);
         }
@@ -291,38 +264,28 @@ public class VisionSourceManager {
         return String.format("%s (%d)", name, i);
     }
 
-    private static CameraConfiguration createConfigForCameras(
-            PVCameraDevice info, String uniqueName) {
+    private static CameraConfiguration createConfigForCameras(PVCameraInfo info, String uniqueName) {
         // create new camera config for all new cameras
         logger.info("Creating a new camera config for camera " + uniqueName);
 
-        CameraConfiguration configuration =
-                new CameraConfiguration(
-                        info.name(), uniqueName, uniqueName, info.path(), info.otherPaths());
-        configuration.cameraType = info.type();
-
-        if (info instanceof PVCameraDevice.PVUsbCameraInfo usbInfo) {
-            configuration.usbVID = usbInfo.vendorId;
-            configuration.usbPID = usbInfo.productId;
-        }
+        CameraConfiguration configuration = new CameraConfiguration(info);
 
         return configuration;
     }
 
     private Optional<CameraConfiguration> configFromUniqueName(String uniqueName) {
-        return Optional.ofNullable(
-                this.deserializedConfigs.get(uniqueName));
+        return Optional.ofNullable(this.deserializedConfigs.get(uniqueName));
     }
 
-    private static List<PVCameraDevice> filterAllowedDevices(List<PVCameraDevice> allDevices) {
+    private static List<PVCameraInfo> filterAllowedDevices(List<PVCameraInfo> allDevices) {
         Platform platform = Platform.getCurrentPlatform();
-        ArrayList<PVCameraDevice> filteredDevices = new ArrayList<>();
+        ArrayList<PVCameraInfo> filteredDevices = new ArrayList<>();
         for (var device : allDevices) {
             boolean valid = false;
             if (deviceBlacklist.contains(device.name())) {
                 logger.trace(
                         "Skipping blacklisted device: \"" + device.name() + "\" at \"" + device.path() + "\"");
-            } else if (device instanceof PVCameraDevice.PVUsbCameraInfo usbDevice) {
+            } else if (device instanceof PVCameraInfo.PVUsbCameraInfo usbDevice) {
                 if (usbDevice.otherPaths.length == 0
                         && platform.osType == OSType.LINUX
                         && device.type() == CameraType.UsbCamera) {
@@ -358,7 +321,7 @@ public class VisionSourceManager {
             CameraConfiguration configuration) {
         VisionSource source = null;
 
-        if (configuration.cameraType == CameraType.ZeroCopyPicam) {
+        if (configuration.matchedCameraInfo.type() == CameraType.ZeroCopyPicam) {
             // If the camera was loaded from libcamera then create its source using libcamera.
             var piCamSrc = new LibcameraGpuSource(configuration);
             source = piCamSrc;
@@ -374,14 +337,14 @@ public class VisionSourceManager {
                     "Failed to create VisionSource for camera "
                             + configuration.toShortString()
                             + " with type "
-                            + configuration.cameraType);
+                            + configuration.matchedCameraInfo.type());
         } else {
             logger.debug("Creating VisionSource for " + configuration.toShortString());
         }
         return Optional.ofNullable(source);
     }
 
-	public List<VisionModule> getVisionModules() {
+    public List<VisionModule> getVisionModules() {
         return vmm.getModules();
-	}
+    }
 }

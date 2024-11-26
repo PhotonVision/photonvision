@@ -52,7 +52,6 @@ import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.common.util.file.ProgramDirectoryUtilities;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
-import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.processes.VisionSourceManager;
 import org.zeroturnaround.zip.ZipUtil;
 
@@ -582,7 +581,8 @@ public class RequestHandler {
         var observationIdx = Integer.parseInt(ctx.queryParam("snapshotIdx"));
 
         CameraCalibrationCoefficients calList =
-                VisionSourceManager.getInstance().vmm
+                VisionSourceManager.getInstance()
+                        .vmm
                         .getModule(idx)
                         .getStateAsCameraConfig()
                         .calibrations

@@ -20,15 +20,16 @@ package org.photonvision.common.configuration;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import edu.wpi.first.cscore.UsbCameraInfo;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
+import java.util.UUID;
 import org.photonvision.common.configuration.PhotonConfiguration.UICameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraType;
+import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.DriverModePipelineSettings;
@@ -37,86 +38,108 @@ import org.photonvision.vision.processes.PipelineManager;
 public class CameraConfiguration {
     private static final Logger logger = new Logger(CameraConfiguration.class, LogGroup.Camera);
 
-    /** Name as reported by CSCore */
-    public String baseName = "";
-
-    /** Name used to title the subfolder of this config */
+    /** A UUID (within the program) to identify this particular configuration */
     public String uniqueName = "";
+
+    /**
+     * The info of the camera we last matched to. We still match by unique path (where we can), but
+     * this is useful to provide warnings to users
+     */
+    public PVCameraInfo matchedCameraInfo;
 
     /** User-set nickname */
     public String nickname = "";
 
-    /** Can be either path (ex /dev/videoX) or index (ex 1). */
-    public String path = "";
-
+    /** Deactivated vision modules do not open camera hardware or lock USB ports */
     public boolean deactivated = false;
 
     public QuirkyCamera cameraQuirks;
 
-    @JsonIgnore public String[] otherPaths = {};
-
-    @JsonProperty("usbVID")
-    public int usbVID = -1;
-
-    @JsonProperty("usbPID")
-    public int usbPID = -1;
-
-    public CameraType cameraType = CameraType.UsbCamera;
     public double FOV = 70;
-    public final List<CameraCalibrationCoefficients> calibrations;
+    public List<CameraCalibrationCoefficients> calibrations = new ArrayList<>();
     public int currentPipelineIndex = 0;
 
     public int streamIndex = 0; // 0 index means ports [1181, 1182], 1 means [1183, 1184], etc...
 
-    @JsonIgnore // this ignores the pipes as we serialize them to their own subfolder
-    public List<CVPipelineSettings> pipelineSettings = new ArrayList<>();
+    // Ignore the pipes, as we serialize them to their own column to hack around
+    // polymorphic lists
+    @JsonIgnore public List<CVPipelineSettings> pipelineSettings = new ArrayList<>();
 
     @JsonIgnore
     public DriverModePipelineSettings driveModeSettings = new DriverModePipelineSettings();
 
-    public CameraConfiguration(String baseName, String path) {
-        this(baseName, baseName, baseName, path, new String[0]);
-    }
-
-    public CameraConfiguration(
-            String baseName, String uniqueName, String nickname, String path, String[] otherPaths) {
-        this.baseName = baseName;
+    public CameraConfiguration(PVCameraInfo cameraInfo, String uniqueName, String nickname) {
+        this.matchedCameraInfo = cameraInfo;
         this.uniqueName = uniqueName;
         this.nickname = nickname;
-        this.path = path;
         this.calibrations = new ArrayList<>();
-        this.otherPaths = otherPaths;
 
         logger.debug("Creating USB camera configuration for " + this.toShortString());
     }
 
+    // Shiny new constructor
     @JsonCreator
     public CameraConfiguration(
-            @JsonProperty("baseName") String baseName,
             @JsonProperty("uniqueName") String uniqueName,
+            @JsonProperty("matchedCameraInfo") PVCameraInfo matchedCameraInfo,
             @JsonProperty("nickname") String nickname,
-            @JsonProperty("path") String path,
             @JsonProperty("deactivated") boolean deactivated,
-            @JsonProperty("cameraType") CameraType cameraType,
-            @JsonProperty("FOV") double FOV,
             @JsonProperty("cameraQuirks") QuirkyCamera cameraQuirks,
-            @JsonProperty("calibration") List<CameraCalibrationCoefficients> calibrations,
-            @JsonProperty("currentPipelineIndex") int currentPipelineIndex,
-            @JsonProperty("usbVID") int usbVID,
-            @JsonProperty("usbPID") int usbPID) {
-        this.baseName = baseName;
+            @JsonProperty("FOV") double FOV,
+            @JsonProperty("calibrations") List<CameraCalibrationCoefficients> calibrations,
+            @JsonProperty("currentPipelineIndex") int currentPipelineIndex) {
         this.uniqueName = uniqueName;
+        this.matchedCameraInfo = matchedCameraInfo;
         this.nickname = nickname;
-        this.FOV = FOV;
-        this.path = path;
-        this.cameraType = cameraType;
+        this.deactivated = deactivated;
         this.cameraQuirks = cameraQuirks;
+        this.FOV = FOV;
         this.calibrations = calibrations != null ? calibrations : new ArrayList<>();
         this.currentPipelineIndex = currentPipelineIndex;
-        this.usbVID = usbVID;
-        this.usbPID = usbPID;
+    }
 
-        logger.debug("Loaded camera configuration for " + toShortString());
+    // Special case constructor for use with File sources
+    public CameraConfiguration(String uniqueName, PVCameraInfo camInfo) {
+        this.uniqueName = uniqueName;
+        this.matchedCameraInfo = camInfo;
+        this.nickname = camInfo.humanReadableName();
+        this.calibrations = new ArrayList<>();
+        this.cameraQuirks = null; // we'll deal with this later. TODO: should we not just do it now?
+    }
+
+    /**
+     * Constructor for when we don't know anything about the camera yet. Generates a UUID for the
+     * unique name
+     */
+    public CameraConfiguration(PVCameraInfo camInfo) {
+        this(UUID.randomUUID().toString(), camInfo);
+    }
+
+    public static class LegacyCameraConfigStruct {
+        PVCameraInfo matchedCameraInfo;
+
+        /** Legacy constructor for compat with 2024.3.1 */
+        @JsonCreator
+        public LegacyCameraConfigStruct(
+                @JsonProperty("baseName") String baseName,
+                @JsonProperty("path") String path,
+                @JsonProperty("otherPaths") String[] otherPaths,
+                @JsonProperty("cameraType") CameraType cameraType,
+                @JsonProperty("usbVID") int usbVID,
+                @JsonProperty("usbPID") int usbPID) {
+            if (cameraType == CameraType.UsbCamera) {
+                this.matchedCameraInfo =
+                        PVCameraInfo.fromUsbCameraInfo(
+                                new UsbCameraInfo(-1, path, baseName, otherPaths, usbVID, usbPID));
+            } else if (cameraType == CameraType.ZeroCopyPicam) {
+                this.matchedCameraInfo = PVCameraInfo.fromCSICameraInfo(path, baseName);
+            } else {
+                // wtf
+                logger.error("Camera type is invalid");
+                this.matchedCameraInfo = null;
+                return;
+            }
+        }
     }
 
     public void addPipelineSettings(List<CVPipelineSettings> settings) {
@@ -167,41 +190,6 @@ public class CameraConfiguration {
     }
 
     /**
-     * Get a unique descriptor of the USB port this camera is attached to. EG
-     * "/dev/v4l/by-path/platform-fc800000.usb-usb-0:1.3:1.0-video-index0"
-     *
-     * @return
-     */
-    @JsonIgnore
-    public Optional<String> getUSBPath() {
-        return Arrays.stream(otherPaths).filter(path -> path.contains("/by-path/")).findFirst();
-    }
-
-    public String toShortString() {
-        return "CameraConfiguration [baseName="
-                + baseName
-                + ", uniqueName="
-                + uniqueName
-                + ", nickname="
-                + nickname
-                + ", path="
-                + path
-                + ", otherPaths="
-                + Arrays.toString(otherPaths)
-                + ", cameraType="
-                + cameraType
-                + ", cameraQuirks="
-                + cameraQuirks
-                + ", FOV="
-                + FOV
-                + "]"
-                + ", VID="
-                + usbVID
-                + ", PID="
-                + usbPID;
-    }
-
-    /**
      * cscore will auto-reconnect to the camera path we give it. v4l does not guarantee that if i swap
      * cameras around, the same /dev/videoN ID will be assigned to that camera. So instead default to
      * pinning to a particular USB port, or by "path" (appears to be a global identifier on Windows).
@@ -210,23 +198,35 @@ public class CameraConfiguration {
      */
     @JsonIgnore
     public String getUsbPathOrDefault() {
-        return getUSBPath().orElse(path);
+        return matchedCameraInfo.uniquePath();
+    }
+
+    public String toShortString() {
+        return "CameraConfiguration [uniqueName="
+                + uniqueName
+                + ", matchedCameraInfo="
+                + matchedCameraInfo
+                + ", nickname="
+                + nickname
+                + ", deactivated="
+                + deactivated
+                + ", cameraQuirks="
+                + cameraQuirks
+                + ", FOV="
+                + FOV
+                + "]";
     }
 
     @Override
     public String toString() {
-        return "CameraConfiguration [baseName="
-                + baseName
-                + ", uniqueName="
+        return "CameraConfiguration [uniqueName="
                 + uniqueName
+                + ", matchedCameraInfo="
+                + matchedCameraInfo
                 + ", nickname="
                 + nickname
-                + ", path="
-                + path
-                + ", otherPaths="
-                + Arrays.toString(otherPaths)
-                + ", cameraType="
-                + cameraType
+                + ", deactivated="
+                + deactivated
                 + ", cameraQuirks="
                 + cameraQuirks
                 + ", FOV="
@@ -255,7 +255,7 @@ public class CameraConfiguration {
         ret.nickname = nickname;
         ret.uniqueName = uniqueName;
         ret.deactivated = deactivated;
-        ret.isCSICamera = cameraType == CameraType.ZeroCopyPicam;
+        ret.isCSICamera = matchedCameraInfo.type() == CameraType.ZeroCopyPicam;
         ret.pipelineNicknames = pipelineSettings.stream().map(it -> it.pipelineNickname).toList();
         ret.cameraQuirks = cameraQuirks;
         ret.calibrations =

@@ -547,7 +547,7 @@ public class VisionModule {
         var config = visionSource.getCameraConfiguration();
         ret.cameraPath = config.getUsbPathOrDefault();
         ret.fov = visionSource.getSettables().getFOV();
-        ret.isCSICamera = config.cameraType == CameraType.ZeroCopyPicam;
+        ret.isCSICamera = config.matchedCameraInfo.type() == CameraType.ZeroCopyPicam;
         ret.nickname = visionSource.getSettables().getConfiguration().nickname;
         ret.uniqueName = visionSource.getSettables().getConfiguration().uniqueName;
         ret.currentPipelineSettings =

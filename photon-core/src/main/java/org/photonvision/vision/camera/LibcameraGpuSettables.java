@@ -64,7 +64,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
         videoModes = new HashMap<>();
 
-        sensorModel = LibCameraJNI.getSensorModel(configuration.path);
+        sensorModel = LibCameraJNI.getSensorModel(configuration.matchedCameraInfo.path());
 
         if (sensorModel == LibCameraJNI.SensorModel.IMX219) {
             // Settings for the IMX219 sensor, which is used on the Pi Camera Module v2
@@ -213,7 +213,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
             logger.debug("Creating libcamera");
             r_ptr =
                     LibCameraJNI.createCamera(
-                            getConfiguration().path,
+                            getConfiguration().matchedCameraInfo.path(),
                             mode.width,
                             mode.height,
                             (m_rotationMode == ImageRotationMode.DEG_180_CCW ? 180 : 0));

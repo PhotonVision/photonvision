@@ -17,11 +17,23 @@
 
 package org.photonvision.vision.camera;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import edu.wpi.first.cscore.UsbCameraInfo;
 import java.util.Arrays;
-import org.photonvision.common.configuration.CameraConfiguration;
 
-public sealed interface PVCameraDevice {
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.WRAPPER_ARRAY,
+        property = "type")
+@JsonSubTypes({
+    @JsonSubTypes.Type(value = PVCameraInfo.PVUsbCameraInfo.class),
+    @JsonSubTypes.Type(value = PVCameraInfo.PVCSICameraInfo.class)
+})
+public sealed interface PVCameraInfo {
     /**
      * @return The path of the camera. This is the path that is used to open the camera.
      */
@@ -44,6 +56,10 @@ public sealed interface PVCameraDevice {
      * camera is attached to. EG "/dev/v4l/by-path/platform-fc800000.usb-usb-0:1.3:1.0-video-index0".
      * If the camera is a CSI camera this method returns the path of the camera.
      *
+     * <p>If we are on Windows, this will return the opaque path as described by
+     * MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK (see
+     * https://learn.microsoft.com/en-us/windows/win32/medfound/mf-devsource-attribute-source-type-vidcap-symbolic-link)
+     *
      * @return The unique path of the camera
      */
     String uniquePath();
@@ -52,13 +68,20 @@ public sealed interface PVCameraDevice {
 
     CameraType type();
 
-    default boolean equals(PVCameraDevice other) {
+    default boolean equals(PVCameraInfo other) {
         return uniquePath().equals(other.uniquePath());
     }
 
-    public static final class PVUsbCameraInfo extends UsbCameraInfo implements PVCameraDevice {
-        private PVUsbCameraInfo(
-                int dev, String path, String name, String[] otherPaths, int vendorId, int productId) {
+    @JsonTypeName("PVUsbCameraInfo")
+    public static final class PVUsbCameraInfo extends UsbCameraInfo implements PVCameraInfo {
+        @JsonCreator
+        public PVUsbCameraInfo(
+                @JsonProperty("dev") int dev,
+                @JsonProperty("path") String path,
+                @JsonProperty("name") String name,
+                @JsonProperty("otherPaths") String[] otherPaths,
+                @JsonProperty("vendorId") int vendorId,
+                @JsonProperty("productId") int productId) {
             super(dev, path, name, otherPaths, vendorId, productId);
         }
 
@@ -98,18 +121,40 @@ public sealed interface PVCameraDevice {
         public boolean equals(Object obj) {
             if (this == obj) return true;
             if (obj == null) return false;
-            if (obj instanceof PVCameraDevice info) {
+            if (obj instanceof PVCameraInfo info) {
                 return equals(info);
             }
             return false;
         }
+
+        @Override
+        public String toString() {
+            return "PVUsbCameraInfo[dev="
+                    + super.dev
+                    + ", path='"
+                    + super.path
+                    + "', name='"
+                    + super.name
+                    + "', otherPaths="
+                    + Arrays.toString(super.otherPaths)
+                    + ", vid="
+                    + super.vendorId
+                    + ", pid="
+                    + super.productId
+                    + ", uniquePath='"
+                    + uniquePath()
+                    + "']";
+        }
     }
 
-    public static final class PVCSICameraInfo implements PVCameraDevice {
+    @JsonTypeName("PVCSICameraInfo")
+    public static final class PVCSICameraInfo implements PVCameraInfo {
         public final String path;
         public final String baseName;
 
-        private PVCSICameraInfo(String path, String baseName) {
+        @JsonCreator
+        public PVCSICameraInfo(
+                @JsonProperty("path") String path, @JsonProperty("baseName") String baseName) {
             this.path = path;
             this.baseName = baseName;
         }
@@ -143,25 +188,33 @@ public sealed interface PVCameraDevice {
         public boolean equals(Object obj) {
             if (this == obj) return true;
             if (obj == null) return false;
-            if (obj instanceof PVCameraDevice info) {
+            if (obj instanceof PVCameraInfo info) {
                 return equals(info);
             }
             return false;
         }
+
+        @Override
+        public String toString() {
+            return "PvCsiCameraInfo[basename="
+                    + baseName
+                    + ", path='"
+                    + path
+                    + "', uniquePath='"
+                    + uniquePath()
+                    + "']";
+        }
     }
 
-    public static final class PVReconstructedCameraInfo implements PVCameraDevice {
-        private final String path;
-        private final String name;
-        private final String[] otherPaths;
-        private final CameraType type;
+    public static final class PVFileCameraInfo implements PVCameraInfo {
+        private String path;
+        private String filename;
 
-        public PVReconstructedCameraInfo(
-                String path, String name, String[] otherPaths, CameraType type) {
+        @JsonCreator
+        public PVFileCameraInfo(
+                @JsonProperty("path") String path, @JsonProperty("filename") String filename) {
             this.path = path;
-            this.name = name;
-            this.otherPaths = otherPaths;
-            this.type = type;
+            this.filename = filename;
         }
 
         @Override
@@ -171,48 +224,49 @@ public sealed interface PVCameraDevice {
 
         @Override
         public String name() {
-            return name;
+            return filename;
         }
 
         @Override
         public String uniquePath() {
-            return Arrays.stream(otherPaths())
-                    .filter(path -> path.contains("/by-path/"))
-                    .findFirst()
-                    .orElse(path());
+            return path();
         }
 
         @Override
         public String[] otherPaths() {
-            return otherPaths;
+            return new String[0];
         }
 
         @Override
         public CameraType type() {
-            return type;
+            return CameraType.FileCamera;
         }
 
         @Override
         public boolean equals(Object obj) {
             if (this == obj) return true;
             if (obj == null) return false;
-            if (obj instanceof PVCameraDevice info) {
+            if (obj instanceof PVFileCameraInfo info) {
                 return equals(info);
             }
             return false;
         }
+
+        @Override
+        public String toString() {
+            return "PvCsiCameraInfo[filename=" + filename + ", path='" + path + "']";
+        }
     }
 
-    public static PVCameraDevice fromUsbCameraInfo(UsbCameraInfo info) {
+    public static PVCameraInfo fromUsbCameraInfo(UsbCameraInfo info) {
         return new PVUsbCameraInfo(info);
     }
 
-    public static PVCameraDevice fromCSICameraInfo(String path, String baseName) {
+    public static PVCameraInfo fromCSICameraInfo(String path, String baseName) {
         return new PVCSICameraInfo(path, baseName);
     }
 
-    public static PVCameraDevice fromCameraConfig(CameraConfiguration config) {
-        return new PVReconstructedCameraInfo(
-                config.path, config.baseName, config.otherPaths, config.cameraType);
+    public static PVCameraInfo fromFileInfo(String path, String baseName) {
+        return new PVFileCameraInfo(path, baseName);
     }
 }
