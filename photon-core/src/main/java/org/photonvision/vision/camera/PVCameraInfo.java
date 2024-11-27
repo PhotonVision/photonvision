@@ -27,8 +27,8 @@ import java.util.Arrays;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
-        include = JsonTypeInfo.As.WRAPPER_ARRAY,
-        property = "type")
+        include = JsonTypeInfo.As.PROPERTY,
+        property = "cameraTypename")
 @JsonSubTypes({
     @JsonSubTypes.Type(value = PVCameraInfo.PVUsbCameraInfo.class),
     @JsonSubTypes.Type(value = PVCameraInfo.PVCSICameraInfo.class),

@@ -30,10 +30,13 @@ const usbInfoForCam = (uniqueName) => {
 
 const unmatchedCameras = computed(() => {
   const allCameras = useStateStore().vsmState.allConnectedCameras;
-  const used = (uniqueName: string) =>
-    useStateStore().vsmState.activeCameras.filter((it) => it.uniqueName == uniqueName).length > 0 ||
-    useStateStore().vsmState.disabledCameras.filter((it) => it.uniqueName == uniqueName).length > 0;
-  return allCameras.filter((it) => !used(it.uniqueName));
+
+  // const used = (uniqueName: string) =>
+  //   useStateStore().vsmState.activeCameras.filter((it) => it.uniqueName == uniqueName).length > 0 ||
+  //   useStateStore().vsmState.disabledCameras.filter((it) => it.uniqueName == uniqueName).length > 0;
+  // return allCameras.filter((it) => !used(it.uniqueName));
+
+  return allCameras;
 });
 </script>
 
@@ -49,7 +52,7 @@ const unmatchedCameras = computed(() => {
         v-if="
           useCameraSettingsStore().cameras.length === 0 ||
           (useCameraSettingsStore().cameras.length === 1 &&
-            useCameraSettingsStore().cameras[0] == PlaceholderCameraSettings)
+            JSON.stringify(useCameraSettingsStore().cameras[0]) === (JSON.stringify(PlaceholderCameraSettings)))
         "
         rounded
         dark
@@ -61,10 +64,12 @@ const unmatchedCameras = computed(() => {
           dark
           class="camera-card pa-4 mb-4 mr-3"
           v-for="(module, index) in useCameraSettingsStore().cameras"
-          v-if="module !== PlaceholderCameraSettings"
+          v-if="JSON.stringify(module) !== (JSON.stringify(PlaceholderCameraSettings))"
           :value="index"
         >
           <v-card-title class="pb-8">{{ module.nickname }}</v-card-title>
+
+
           <v-card-text>
             <v-simple-table dense height="100%" class="camera-card-table mt-2">
               <tbody>
@@ -132,6 +137,7 @@ const unmatchedCameras = computed(() => {
       </v-row>
     </v-card>
 
+    <!-- 
     <v-card dark class="mb-3 pr-6 pb-3" style="background-color: #006492">
       <v-card-title>
         <span> Disabled Vision Modules </span>
@@ -205,6 +211,8 @@ const unmatchedCameras = computed(() => {
       </v-row>
     </v-card>
 
+    -->
+
     <v-card dark class="mb-3 pr-6 pb-3" style="background-color: #006492">
       <v-card-title>
         <span> Unassigned Cameras </span>
@@ -221,6 +229,7 @@ const unmatchedCameras = computed(() => {
           >No cameras connected :( Plug one in to get started!</v-banner
         >
         <v-card dark class="camera-card pa-4 mb-4 mr-3" v-for="(camera, index) in unmatchedCameras" :value="index">
+          {{ camera }}
           <v-card-title class="pb-8">{{ camera.name }}</v-card-title>
           <v-card-text>
             <v-simple-table dense height="100%" class="camera-card-table mt-2">
@@ -228,13 +237,20 @@ const unmatchedCameras = computed(() => {
                 <tr>
                   <td>Product Name</td>
                   <td>
-                    {{ camera.name }}
+                    {{ camera.name  }}
                   </td>
                 </tr>
                 <tr>
                   <td>Type</td>
                   <td>
-                    {{ camera.type }}
+                    {{ camera.cameraTypename }}
+                  </td>
+                </tr>
+                <tr>
+                  <td>USB Info</td>
+                  <td>
+                    Product {{ camera.name }}, VID {{ camera.vendorId }}, PID
+                    {{ camera.productId }}
                   </td>
                 </tr>
                 <tr>
@@ -264,7 +280,7 @@ const unmatchedCameras = computed(() => {
       <span class="pa-3">
         {{ JSON.stringify(useStateStore().vsmState.allConnectedCameras, null) }}
       </span>
-    </v-card>
+    </v-card> 
   </div>
 </template>
 

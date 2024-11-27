@@ -57,18 +57,31 @@ export type ConfigurableNetworkSettings = Omit<
   "canManage" | "networkInterfaceNames" | "networkingDisabled"
 >;
 
-export interface UniqueCameraSummary {
-  uniqueName: string;
-  name: string;
-  path: string;
-  otherPaths: string[];
-  type: string;
+export interface PVCameraInfoBase {
+  cameraTypename: string;
 }
 
+export interface PVUsbCameraInfo extends PVCameraInfoBase {
+  dev: number;
+  name: string;
+  otherPaths: string[];
+  path: string;
+  vendorId: number;
+  productId: number;
+}
+export interface PVCSICameraInfo extends PVCameraInfoBase {
+  basNname: string;
+  path: string;
+}
+
+export type PVCameraInfo =
+  | PVUsbCameraInfo
+  | PVCSICameraInfo;
+
 export interface VsmState {
-  activeCameras: UniqueCameraSummary[];
-  disabledCameras: WebsocketCameraSettingsUpdate[];
-  allConnectedCameras: UniqueCameraSummary[];
+  // activeCameras: UniqueCameraSummary[];
+  // disabledCameras: WebsocketCameraSettingsUpdate[];
+  allConnectedCameras: PVCameraInfo[];
 }
 
 export interface LightingSettings {
