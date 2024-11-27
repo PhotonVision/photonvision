@@ -38,7 +38,7 @@ import org.photonvision.vision.processes.PipelineManager;
 public class CameraConfiguration {
     private static final Logger logger = new Logger(CameraConfiguration.class, LogGroup.Camera);
 
-    /** A UUID (within the program) to identify this particular configuration */
+    /** A unique name (ostensibly an opaque UUID) to identify this particular configuration */
     public String uniqueName = "";
 
     /**

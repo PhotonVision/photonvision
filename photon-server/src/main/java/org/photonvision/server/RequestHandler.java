@@ -840,7 +840,7 @@ public class RequestHandler {
 
         String uniqueName = ctx.queryParam("uniqueName");
 
-        if (VisionSourceManager.getInstance().reactivateMatchedCamera(uniqueName)) {
+        if (VisionSourceManager.getInstance().reactivateDisabledCameraConfig(uniqueName)) {
             ctx.status(200);
         } else {
             ctx.status(403);

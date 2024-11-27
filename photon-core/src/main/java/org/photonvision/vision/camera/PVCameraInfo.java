@@ -129,7 +129,9 @@ public sealed interface PVCameraInfo {
 
         @Override
         public String toString() {
-            return "PVUsbCameraInfo[dev="
+            return "PVUsbCameraInfo[type="
+                    + type()
+                    + ", dev="
                     + super.dev
                     + ", path='"
                     + super.path
@@ -196,7 +198,9 @@ public sealed interface PVCameraInfo {
 
         @Override
         public String toString() {
-            return "PvCsiCameraInfo[basename="
+            return "PVCsiCameraInfo[type="
+                    + type()
+                    + ", basename="
                     + baseName
                     + ", path='"
                     + path
@@ -254,7 +258,13 @@ public sealed interface PVCameraInfo {
 
         @Override
         public String toString() {
-            return "PvCsiCameraInfo[filename=" + filename + ", path='" + path + "']";
+            return "PVFileCameraInfo[type="
+                    + type()
+                    + ", filename="
+                    + filename
+                    + ", path='"
+                    + path
+                    + "']";
         }
     }
 
