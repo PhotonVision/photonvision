@@ -15,4 +15,5 @@ You only need to install PhotonVision on the coprocessor/device that is being us
 
 sw_install/index
 prerelease-software
+orangepi-nvme
 ```
