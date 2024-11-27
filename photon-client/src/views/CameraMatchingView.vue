@@ -52,7 +52,7 @@ const unmatchedCameras = computed(() => {
         v-if="
           useCameraSettingsStore().cameras.length === 0 ||
           (useCameraSettingsStore().cameras.length === 1 &&
-            JSON.stringify(useCameraSettingsStore().cameras[0]) === (JSON.stringify(PlaceholderCameraSettings)))
+            JSON.stringify(useCameraSettingsStore().cameras[0]) === JSON.stringify(PlaceholderCameraSettings))
         "
         rounded
         dark
@@ -64,11 +64,10 @@ const unmatchedCameras = computed(() => {
           dark
           class="camera-card pa-4 mb-4 mr-3"
           v-for="(module, index) in useCameraSettingsStore().cameras"
-          v-if="JSON.stringify(module) !== (JSON.stringify(PlaceholderCameraSettings))"
+          v-if="JSON.stringify(module) !== JSON.stringify(PlaceholderCameraSettings)"
           :value="index"
         >
           <v-card-title class="pb-8">{{ module.nickname }}</v-card-title>
-
 
           <v-card-text>
             <v-simple-table dense height="100%" class="camera-card-table mt-2">
@@ -237,7 +236,7 @@ const unmatchedCameras = computed(() => {
                 <tr>
                   <td>Product Name</td>
                   <td>
-                    {{ camera.name  }}
+                    {{ camera.name }}
                   </td>
                 </tr>
                 <tr>
@@ -280,7 +279,7 @@ const unmatchedCameras = computed(() => {
       <span class="pa-3">
         {{ JSON.stringify(useStateStore().vsmState.allConnectedCameras, null) }}
       </span>
-    </v-card> 
+    </v-card>
   </div>
 </template>
 

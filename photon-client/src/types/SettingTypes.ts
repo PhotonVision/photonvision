@@ -58,7 +58,11 @@ export type ConfigurableNetworkSettings = Omit<
 >;
 
 export interface PVCameraInfoBase {
-  cameraTypename: string;
+  /*
+  Huge hack. In Jackson, this is set based on the underlying type -- this
+  then maps to one of the 3 subclasses here below. Not sure how to best deal with this.
+  */
+  cameraTypename: "PVUsbCameraInfo" | "PVCSICameraInfo" | "PVFileCameraInfo";
 }
 
 export interface PVUsbCameraInfo extends PVCameraInfoBase {
@@ -70,13 +74,15 @@ export interface PVUsbCameraInfo extends PVCameraInfoBase {
   productId: number;
 }
 export interface PVCSICameraInfo extends PVCameraInfoBase {
-  basNname: string;
+  baseName: string;
   path: string;
 }
+export interface PVFileCameraInfo extends PVCameraInfoBase {
+  path: string;
+  name: string;
+}
 
-export type PVCameraInfo =
-  | PVUsbCameraInfo
-  | PVCSICameraInfo;
+export type PVCameraInfo = PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo;
 
 export interface VsmState {
   // activeCameras: UniqueCameraSummary[];

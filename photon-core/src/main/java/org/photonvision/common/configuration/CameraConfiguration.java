@@ -197,7 +197,7 @@ public class CameraConfiguration {
      * <p>This represents our best guess at an immutable path to detect a camera at.
      */
     @JsonIgnore
-    public String getUsbPathOrDefault() {
+    public String getDevicePath() {
         return matchedCameraInfo.uniquePath();
     }
 
@@ -251,7 +251,7 @@ public class CameraConfiguration {
     public UICameraConfiguration toUiConfig() {
         var ret = new UICameraConfiguration();
 
-        ret.cameraPath = getUsbPathOrDefault();
+        ret.cameraPath = getDevicePath();
         ret.nickname = nickname;
         ret.uniqueName = uniqueName;
         ret.deactivated = deactivated;

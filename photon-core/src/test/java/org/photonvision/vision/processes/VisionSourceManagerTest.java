@@ -103,9 +103,6 @@ public class VisionSourceManagerTest {
         List<CameraConfiguration> configs = List.of();
         vsm.registerLoadedConfigs(configs);
 
-        // instead of registering a timed task, tick ourselves
-        vsm.discoverNewDevices();
-
         // And make assertions about the current matching state
         // assertEquals(0, vsm.getVsmState().activeCameras.size());
         // assertEquals(0, vsm.getVsmState().disabledCameras.size());

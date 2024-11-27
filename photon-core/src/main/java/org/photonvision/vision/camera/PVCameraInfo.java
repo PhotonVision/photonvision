@@ -214,13 +214,13 @@ public sealed interface PVCameraInfo {
     @JsonTypeName("PVFileCameraInfo")
     public static final class PVFileCameraInfo implements PVCameraInfo {
         private String path;
-        private String filename;
+        private String name;
 
         @JsonCreator
         public PVFileCameraInfo(
                 @JsonProperty("path") String path, @JsonProperty("filename") String filename) {
             this.path = path;
-            this.filename = filename;
+            this.name = filename;
         }
 
         @Override
@@ -230,7 +230,7 @@ public sealed interface PVCameraInfo {
 
         @Override
         public String name() {
-            return filename;
+            return name;
         }
 
         @Override
@@ -260,13 +260,7 @@ public sealed interface PVCameraInfo {
 
         @Override
         public String toString() {
-            return "PVFileCameraInfo[type="
-                    + type()
-                    + ", filename="
-                    + filename
-                    + ", path='"
-                    + path
-                    + "']";
+            return "PVFileCameraInfo[type=" + type() + ", filename=" + name + ", path='" + path + "']";
         }
     }
 

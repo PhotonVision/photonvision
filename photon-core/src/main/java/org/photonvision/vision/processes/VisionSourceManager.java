@@ -43,6 +43,17 @@ import org.photonvision.vision.camera.LibcameraGpuSource;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.camera.USBCameras.USBCameraSource;
 
+/**
+ * This class manages starting up VisionModules for serialized devices ({@link
+ * VisionSourceManager#loadVisionSourceFromCamConfig}), as well as handling requests from users to
+ * disable (release the camera device, but keep the configuration around) ({@link
+ * VisionSourceManager#deactivateVisionSource}), reactivate (recreate a VisionModule from a saved
+ * and currently disabled configuration) ({@link
+ * VisionSourceManager#reactivateDisabledCameraConfig}), and create a new VisionModule from a {@link
+ * PVCameraInfo} ({@link VisionSourceManager#assignUnmatchedCamera}).
+ *
+ * <p>We now require user interaction for pretty much every operation this undretakes.
+ */
 public class VisionSourceManager {
     private static final Logger logger = new Logger(VisionSourceManager.class, LogGroup.Camera);
 
@@ -70,7 +81,7 @@ public class VisionSourceManager {
     public VisionModuleManager vmm = new VisionModuleManager();
 
     public void registerTimedTasks() {
-        TimedTaskManager.getInstance().addTask("CameraDeviceExplorer", this::discoverNewDevices, 1000);
+        TimedTaskManager.getInstance().addTask("CameraDeviceExplorer", this::pushUiUpdate, 1000);
     }
 
     /**
@@ -138,6 +149,20 @@ public class VisionSourceManager {
             return false;
         }
 
+        // Check if the camera is already in use by another module
+        if (vmm.getModules().stream()
+                .anyMatch(
+                        module ->
+                                module
+                                        .getCameraConfiguration()
+                                        .matchedCameraInfo
+                                        .uniquePath()
+                                        .equals(deactivatedConfig.get().matchedCameraInfo.uniquePath()))) {
+            logger.error(
+                    "Camera unique-path already in use by active VisionModule! Cannot reactivate "
+                            + deactivatedConfig.get().nickname);
+        }
+
         // transform the camera info all the way to a VisionModule and then start it
         var created =
                 deactivatedConfig
@@ -163,49 +188,38 @@ public class VisionSourceManager {
     }
 
     /**
-     * Assign a camera that currently has no associated CameraConfiguration loaded. TODO: determine
-     * how we should be addressing unmatched cameras - it seems quirky to assign a unique name to
-     * PVCameraInfos, we should instead have the backend hand us sufficient data to reconstruct the
-     * PVCameraInfo ourselves.
+     * Assign a camera that currently has no associated CameraConfiguration loaded.
      *
      * @param uniqueName
      */
-    public synchronized boolean assignUnmatchedCamera(String uniqueName) {
-        return false;
+    public synchronized boolean assignUnmatchedCamera(PVCameraInfo cameraInfo) {
+        // Check if the camera is already in use by another module
+        if (vmm.getModules().stream()
+                .anyMatch(
+                        module ->
+                                module
+                                        .getCameraConfiguration()
+                                        .matchedCameraInfo
+                                        .uniquePath()
+                                        .equals(cameraInfo.uniquePath()))) {
+            logger.error(
+                    "Camera unique-path already in use by active VisionModule! Cannot add " + cameraInfo);
+        }
 
-        // // Check if the camera is already in use by another module
-        // final Predicate<PVCameraInfo> isNotUsedInModule =
-        //         info ->
-        //                 vmm.getModules().stream().noneMatch(module ->
-        // module.uniqueName().equals(uniqueName));
-        // // transform the camera info all the way to a VisionModule and then start it
-        // var created =
-        //         Optional.ofNullable(cameraDeviceMap.get(uniqueName))
-        //                 .filter(isNotUsedInModule)
-        //                 // Make sure we aren't going to overwrite
-        //                 .map(
-        //                         info ->
-        //                                 configFromUniqueName(uniqueName)
-        //                                         .orElse(createConfigForCameras(info, uniqueName)))
-        //                 .map(this::loadVisionSourceFromCamConfig)
-        //                 .map(vmm::addSource)
-        //                 .map(
-        //                         it -> {
-        //                             it.start();
-        //                             it.saveAndBroadcastAll();
-        //                             return it;
-        //                         })
-        //                 .isPresent();
-        // // We have a new camera! Tell the world about it
-        // DataChangeService.getInstance()
-        //         .publishEvent(
-        //                 new OutgoingUIEvent<>(
-        //                         "fullsettings",
-        // ConfigManager.getInstance().getConfig().toHashMap()));
+        var source = loadVisionSourceFromCamConfig(new CameraConfiguration(cameraInfo));
+        var module = vmm.addSource(source);
 
-        // pushUiUpdate();
+        module.start();
 
-        // return created;
+        // We have a new camera! Tell the world about it
+        DataChangeService.getInstance()
+                .publishEvent(
+                        new OutgoingUIEvent<>(
+                                "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
+
+        pushUiUpdate();
+
+        return true;
     }
 
     public synchronized boolean deactivateVisionSource(String uniqueName) {
@@ -254,30 +268,6 @@ public class VisionSourceManager {
         return ret;
     }
 
-    /**
-     * TODO: determine how we should be addressing unmatched cameras - it seems quirky to assign a
-     * unique name to PVCameraInfos, we should instead have the backend hand us sufficient data to
-     * reconstruct the PVCameraInfo ourselves.
-     */
-    protected synchronized void discoverNewDevices() {
-        // Get all connected cameras
-        // List<PVCameraInfo> seenInfos = filterAllowedDevices(getConnectedCameras());
-        // Collection<PVCameraInfo> knownInfos = cameraDeviceMap.values();
-
-        // logger.info(cameraDeviceMap.keySet().toString());
-
-        // // Find all infos that have been seen but weren't known before
-        // seenInfos.stream()
-        //         .filter(d -> !knownInfos.contains(d))
-        //         .forEach(d -> cameraDeviceMap.put(uniqueName(d.name(), cameraDeviceMap.keySet()),
-        // d));
-
-        // knownInfos.removeIf(d -> !seenInfos.contains(d));
-
-        // this is only ran every 5 seconds so we can afford to publish every time
-        pushUiUpdate();
-    }
-
     protected void pushUiUpdate() {
         DataChangeService.getInstance()
                 .publishEvent(OutgoingUIEvent.wrappedOf("discoveredCameras", getVsmState()));
@@ -305,30 +295,6 @@ public class VisionSourceManager {
         cameraInfos.add(PVCameraInfo.fromCSICameraInfo("/dev/some/path/for/my/csi/camera", "raspivid"));
         return cameraInfos;
     }
-
-    private static String uniqueName(String name, Collection<String> takenNames) {
-        if (!takenNames.contains(name)) {
-            return name;
-        }
-        int i = 1;
-        while (takenNames.contains(name + i)) {
-            i++;
-        }
-        return String.format("%s (%d)", name, i);
-    }
-
-    private static CameraConfiguration createConfigForCameras(PVCameraInfo info, String uniqueName) {
-        // create new camera config for all new cameras
-        logger.info("Creating a new camera config for camera " + uniqueName);
-
-        CameraConfiguration configuration = new CameraConfiguration(info);
-
-        return configuration;
-    }
-
-    // private Optional<CameraConfiguration> configFromUniqueName(String uniqueName) {
-    //     return Optional.ofNullable(this.deserializedConfigs.get(uniqueName));
-    // }
 
     private static List<PVCameraInfo> filterAllowedDevices(List<PVCameraInfo> allDevices) {
         Platform platform = Platform.getCurrentPlatform();

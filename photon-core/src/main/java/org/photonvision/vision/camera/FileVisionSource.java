@@ -42,7 +42,7 @@ public class FileVisionSource extends VisionSource {
         frameProvider =
                 new FileFrameProvider(
                         // TODO - create new File/replay camera info type
-                        Path.of(cameraConfiguration.getUsbPathOrDefault()),
+                        Path.of(cameraConfiguration.getDevicePath()),
                         cameraConfiguration.FOV,
                         FileFrameProvider.MAX_FPS,
                         calibration);

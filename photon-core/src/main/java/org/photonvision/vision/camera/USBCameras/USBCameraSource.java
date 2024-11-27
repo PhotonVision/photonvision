@@ -46,7 +46,7 @@ public class USBCameraSource extends VisionSource {
 
         logger = new Logger(USBCameraSource.class, config.nickname, LogGroup.Camera);
 
-        camera = new UsbCamera(config.nickname, config.getUsbPathOrDefault());
+        camera = new UsbCamera(config.nickname, config.getDevicePath());
         cvSink = CameraServer.getVideo(this.camera);
 
         // TODO - I don't need this, do I?
