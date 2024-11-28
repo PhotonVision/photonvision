@@ -2,7 +2,7 @@
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { computed, inject } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import { PlaceholderCameraSettings } from "@/types/SettingTypes";
+import { PlaceholderCameraSettings, PVCameraInfo, type UiCameraConfiguration } from "@/types/SettingTypes";
 import { getResolutionString } from "@/lib/PhotonUtils";
 
 const formatUrl = (port) => `http://${inject("backendHostname")}:${port}/stream.mjpg`;
@@ -24,8 +24,28 @@ const deactivateCamera = (cameraUniqueName: string) => {
   });
 };
 
-const usbInfoForCam = (uniqueName) => {
-  return useStateStore().vsmState.allConnectedCameras.find((it) => it.uniqueName === uniqueName);
+const uniquePathForCamera = (info: PVCameraInfo) => {
+  if ("PVUsbCameraInfo" in info) {
+    return info.PVUsbCameraInfo!.uniquePath;
+  }
+  if ("PVCSICameraInfo" in info) {
+    return info.PVCSICameraInfo!.uniquePath;
+  }
+  if ("PVFileCameraInfo" in info) {
+    return info.PVFileCameraInfo!.uniquePath;
+  }
+
+  // TODO - wut
+  return "";
+};
+
+/**
+ * Check if a module's matched camera's unique path is present in any of the list of currently connected cameras
+ * @param module
+ */
+const isCameraConnected = (module: UiCameraConfiguration) => {
+  const connectedCameras = useStateStore().vsmState.allConnectedCameras.map((it) => uniquePathForCamera(it));
+  return uniquePathForCamera(module.matchedCameraInfo) in connectedCameras;
 };
 
 const unmatchedCameras = computed(() => {
@@ -79,13 +99,27 @@ const unmatchedCameras = computed(() => {
                   </td>
                 </tr>
 
-                <tr>
-                  <td>USB Info</td>
+                <tr v-if="module.matchedCameraInfo.PVUsbCameraInfo">
+                  <td>USB Camera Info</td>
                   <td>
                     Product {{ module.cameraQuirks.baseName }} VID {{ module.cameraQuirks.usbVid }} PID
                     {{ module.cameraQuirks.usbPid }}
                   </td>
                 </tr>
+                <tr v-if="module.matchedCameraInfo.PVCSICameraInfo">
+                  <td>CSI Camera Info</td>
+                  <td>
+                    Product {{ module.cameraQuirks.baseName }} VID {{ module.cameraQuirks.usbVid }} PID
+                    {{ module.cameraQuirks.usbPid }}
+                  </td>
+                </tr>
+                <tr v-if="module.matchedCameraInfo.PVFileCameraInfo">
+                  <td>File Camera Info</td>
+                  <td>
+                    {{ module.matchedCameraInfo.PVFileCameraInfo }}
+                  </td>
+                </tr>
+
                 <tr>
                   <td>Streams:</td>
                   <td>
@@ -112,7 +146,7 @@ const unmatchedCameras = computed(() => {
                 </tr>
                 <tr>
                   <td>Connected?</td>
-                  <td>Via [USB, CSI, totally bjork] -- TODO implement</td>
+                  <td>{{ isCameraConnected(module) }}</td>
                 </tr>
                 <tr>
                   <td>Calibrations</td>

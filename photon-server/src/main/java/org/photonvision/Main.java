@@ -189,15 +189,15 @@ public class Main {
 
         CameraConfiguration camConf2024 =
                 ConfigManager.getInstance().getConfig().getCameraConfigurations().get("WPI2024");
-        if (camConf2024 == null) {
+        if (camConf2024 == null || true) {
             camConf2024 =
                     new CameraConfiguration(
                             PVCameraInfo.fromFileInfo(
-                                    "WPI2024",
                                     TestUtils.getResourcesFolderPath(true)
                                             .resolve("testimages")
                                             .resolve(TestUtils.WPI2024Images.kSpeakerCenter_143in.path)
-                                            .toString()));
+                                            .toString(),
+                                    "WPI2024"));
 
             camConf2024.FOV = TestUtils.WPI2024Images.FOV;
             // same camera as 2023

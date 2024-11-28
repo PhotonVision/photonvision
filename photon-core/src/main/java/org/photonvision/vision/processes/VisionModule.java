@@ -545,6 +545,7 @@ public class VisionModule {
         var ret = new PhotonConfiguration.UICameraConfiguration();
 
         var config = visionSource.getCameraConfiguration();
+        ret.matchedCameraInfo = config.matchedCameraInfo;
         ret.cameraPath = config.getDevicePath();
         ret.fov = visionSource.getSettables().getFOV();
         ret.isCSICamera = config.matchedCameraInfo.type() == CameraType.ZeroCopyPicam;

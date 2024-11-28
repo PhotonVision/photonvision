@@ -52,6 +52,7 @@ import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.common.util.file.ProgramDirectoryUtilities;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
+import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.processes.VisionSourceManager;
 import org.zeroturnaround.zip.ZipUtil;
 
@@ -852,15 +853,21 @@ public class RequestHandler {
     public static void onAssignUnmatchedCameraRequest(Context ctx) {
         logger.info(ctx.queryString().toString());
 
-        String uniqueName = ctx.queryParam("uniqueName");
+        PVCameraInfo camera;
+        try {
+            camera = JacksonUtils.deserialize(ctx.queryParam("uniqueName"), PVCameraInfo.class);
+        } catch (IOException e) {
+            ctx.status(401);
+            return;
+        }
 
-        if (VisionSourceManager.getInstance().assignUnmatchedCamera(uniqueName)) {
+        if (VisionSourceManager.getInstance().assignUnmatchedCamera(camera)) {
             ctx.status(200);
         } else {
             ctx.status(403);
         }
 
-        ctx.result("Successfully assigned camera with unique name: " + uniqueName);
+        ctx.result("Successfully assigned camera: " + camera);
     }
 
     public static void onUnassignCameraRequest(Context ctx) {

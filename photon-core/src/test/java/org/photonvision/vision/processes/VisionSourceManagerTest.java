@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -76,6 +75,7 @@ public class VisionSourceManagerTest {
 
     @BeforeEach
     public void createVsm() {
+        ConfigManager.getInstance().clearConfig();
         vsm = new TestVsm();
     }
 
@@ -130,7 +130,7 @@ public class VisionSourceManagerTest {
     }
 
     @Test
-    public void testFileVisionSource() throws InterruptedException {
+    public void testFileVisionSource() throws InterruptedException, IOException {
         var fileCamera1 =
                 PVCameraInfo.fromFileInfo(
                         TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false)
@@ -144,6 +144,8 @@ public class VisionSourceManagerTest {
         vsm.registerLoadedConfigs(configs);
 
         vsm.assignUnmatchedCamera(fileCamera1);
+
+        System.out.println(JacksonUtils.serializeToString(ConfigManager.getInstance().getConfig()));
 
         // And make assertions about the current matching state
         assertEquals(1, vsm.getVsmState().allConnectedCameras.size());

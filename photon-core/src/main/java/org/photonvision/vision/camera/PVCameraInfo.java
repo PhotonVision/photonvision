@@ -18,6 +18,7 @@
 package org.photonvision.vision.camera;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -25,10 +26,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import edu.wpi.first.cscore.UsbCameraInfo;
 import java.util.Arrays;
 
-@JsonTypeInfo(
-        use = JsonTypeInfo.Id.NAME,
-        include = JsonTypeInfo.As.PROPERTY,
-        property = "cameraTypename")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.WRAPPER_OBJECT)
 @JsonSubTypes({
     @JsonSubTypes.Type(value = PVCameraInfo.PVUsbCameraInfo.class),
     @JsonSubTypes.Type(value = PVCameraInfo.PVCSICameraInfo.class),
@@ -36,7 +34,7 @@ import java.util.Arrays;
 })
 public sealed interface PVCameraInfo {
     /**
-     * @return The path of the camera. This is the path that is used to open the camera.
+     * @return The path of the camera.
      */
     String path();
 
@@ -63,6 +61,7 @@ public sealed interface PVCameraInfo {
      *
      * @return The unique path of the camera
      */
+    @JsonGetter(value = "uniquePath")
     String uniquePath();
 
     String[] otherPaths();
@@ -213,14 +212,13 @@ public sealed interface PVCameraInfo {
 
     @JsonTypeName("PVFileCameraInfo")
     public static final class PVFileCameraInfo implements PVCameraInfo {
-        private String path;
-        private String name;
+        public final String path;
+        public final String name;
 
         @JsonCreator
-        public PVFileCameraInfo(
-                @JsonProperty("path") String path, @JsonProperty("filename") String filename) {
+        public PVFileCameraInfo(@JsonProperty("path") String path, @JsonProperty("name") String name) {
             this.path = path;
-            this.name = filename;
+            this.name = name;
         }
 
         @Override

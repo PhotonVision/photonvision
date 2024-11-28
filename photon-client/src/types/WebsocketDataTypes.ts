@@ -5,6 +5,7 @@ import type {
   LogLevel,
   MetricData,
   NetworkSettings,
+  PVCameraInfo,
   QuirkyCamera,
   VsmState
 } from "@/types/SettingTypes";
@@ -65,6 +66,7 @@ export interface WebsocketCameraSettingsUpdate {
   maxExposureRaw: number;
   minWhiteBalanceTemp: number;
   maxWhiteBalanceTemp: number;
+  matchedCameraInfo: PVCameraInfo;
 }
 export interface WebsocketNTUpdate {
   connected: boolean;

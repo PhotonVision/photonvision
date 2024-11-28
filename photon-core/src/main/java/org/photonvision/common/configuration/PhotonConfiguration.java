@@ -31,6 +31,7 @@ import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.vision.calibration.UICameraCalibrationCoefficients;
+import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionSource;
@@ -165,7 +166,6 @@ public class PhotonConfiguration {
                 "cameraSettings",
                 VisionSourceManager.getInstance().getVisionModules().stream()
                         .map(VisionModule::toUICameraConfig)
-                        .map(SerializationUtils::objectToHashMap)
                         .collect(Collectors.toList()));
         map.put("settings", settingsSubmap);
 
@@ -202,6 +202,7 @@ public class PhotonConfiguration {
         public double maxExposureRaw;
         public double minWhiteBalanceTemp;
         public double maxWhiteBalanceTemp;
+        public PVCameraInfo matchedCameraInfo;
     }
 
     @Override

@@ -251,6 +251,7 @@ public class CameraConfiguration {
     public UICameraConfiguration toUiConfig() {
         var ret = new UICameraConfiguration();
 
+        ret.matchedCameraInfo = matchedCameraInfo;
         ret.cameraPath = getDevicePath();
         ret.nickname = nickname;
         ret.uniqueName = uniqueName;

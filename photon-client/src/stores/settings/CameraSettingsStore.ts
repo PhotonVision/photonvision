@@ -126,7 +126,8 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         pipelineSettings: d.currentPipelineSettings,
         cameraQuirks: d.cameraQuirks,
         minWhiteBalanceTemp: d.minWhiteBalanceTemp,
-        maxWhiteBalanceTemp: d.maxWhiteBalanceTemp
+        maxWhiteBalanceTemp: d.maxWhiteBalanceTemp,
+        matchedCameraInfo: d.matchedCameraInfo
       }));
 
       // Clamp index to between 0 and [length - 1]

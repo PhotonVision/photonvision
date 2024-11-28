@@ -65,24 +65,38 @@ export interface PVCameraInfoBase {
   cameraTypename: "PVUsbCameraInfo" | "PVCSICameraInfo" | "PVFileCameraInfo";
 }
 
-export interface PVUsbCameraInfo extends PVCameraInfoBase {
+export interface PVUsbCameraInfo {
   dev: number;
   name: string;
   otherPaths: string[];
   path: string;
   vendorId: number;
   productId: number;
+
+  // In Java, PVCameraInfo provides a uniquePath property so we can have one Source of Truth here
+  uniquePath: string;
 }
-export interface PVCSICameraInfo extends PVCameraInfoBase {
+export interface PVCSICameraInfo {
   baseName: string;
   path: string;
+
+  // In Java, PVCameraInfo provides a uniquePath property so we can have one Source of Truth here
+  uniquePath: string;
 }
-export interface PVFileCameraInfo extends PVCameraInfoBase {
+export interface PVFileCameraInfo {
   path: string;
   name: string;
+
+  // In Java, PVCameraInfo provides a uniquePath property so we can have one Source of Truth here
+  uniquePath: string;
 }
 
-export type PVCameraInfo = PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo;
+// This camera info will only ever hold one of its members - the others should be undefined.
+export class PVCameraInfo {
+  PVUsbCameraInfo: PVUsbCameraInfo | undefined;
+  PVCSICameraInfo: PVCSICameraInfo | undefined;
+  PVFileCameraInfo: PVFileCameraInfo | undefined;
+}
 
 export interface VsmState {
   // activeCameras: UniqueCameraSummary[];
@@ -237,6 +251,8 @@ export interface UiCameraConfiguration {
 
   minWhiteBalanceTemp: number;
   maxWhiteBalanceTemp: number;
+
+  matchedCameraInfo: PVCameraInfo;
 }
 
 export interface CameraSettingsChangeRequest {
@@ -345,7 +361,16 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = {
   minExposureRaw: 1,
   maxExposureRaw: 100,
   minWhiteBalanceTemp: 2000,
-  maxWhiteBalanceTemp: 10000
+  maxWhiteBalanceTemp: 10000,
+  matchedCameraInfo: {
+    PVFileCameraInfo: {
+      name: "Foobar",
+      path: "/dev/foobar",
+      uniquePath: "/dev/foobar2"
+    },
+    PVCSICameraInfo: undefined,
+    PVUsbCameraInfo: undefined
+  }
 };
 
 export enum CalibrationBoardTypes {
