@@ -107,7 +107,9 @@ public class FileFrameProvider extends CpuImageProcessor implements Releasable {
             try {
                 Thread.sleep(millisDelay);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                System.err.println("FileFrameProvider interrupted - not busywaiting");
+                // throw back up the stack
+                throw new RuntimeException(e);
             }
         }
 

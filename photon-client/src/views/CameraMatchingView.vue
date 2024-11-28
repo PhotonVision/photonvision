@@ -136,7 +136,7 @@ const unmatchedCameras = computed(() => {
       </v-row>
     </v-card>
 
-    <!-- 
+    <!--
     <v-card dark class="mb-3 pr-6 pb-3" style="background-color: #006492">
       <v-card-title>
         <span> Disabled Vision Modules </span>

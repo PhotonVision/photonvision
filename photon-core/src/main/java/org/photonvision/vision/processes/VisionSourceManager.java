@@ -69,13 +69,11 @@ public class VisionSourceManager {
 
     // Jackson does use these members even if your IDE claims otherwise
     public static class VisionSourceManagerState {
-        // public List<UniqueCameraSummary> activeCameras;
-        // public List<UICameraConfiguration> disabledCameras;
         public List<PVCameraInfo> allConnectedCameras;
     }
 
     // Map of (unique name) -> (all CameraConfigurations) that have been registered
-    private final HashMap<String, CameraConfiguration> disabledCameraConfigs = new HashMap<>();
+    protected final HashMap<String, CameraConfiguration> disabledCameraConfigs = new HashMap<>();
 
     // The subset of cameras that are "active", converted to VisionModules
     public VisionModuleManager vmm = new VisionModuleManager();
