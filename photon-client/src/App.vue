@@ -40,8 +40,8 @@ if (!is_demo) {
       if (data.calibrationData !== undefined) {
         useStateStore().updateCalibrationStateValuesFromWebsocket(data.calibrationData);
       }
-      if (data.discoveredCameras !== undefined) {
-        useStateStore().updateDiscoveredCameras(data.discoveredCameras);
+      if (data.visionSourceManager !== undefined) {
+        useStateStore().updateDiscoveredCameras(data.visionSourceManager);
       }
     },
     () => {

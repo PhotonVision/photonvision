@@ -101,7 +101,7 @@ export interface IncomingWebsocketData {
   mutatePipelineSettings?: Partial<ActivePipelineSettings>;
   cameraIndex?: number; // Sent when mutating pipeline settings to check against currently active
   calibrationData?: WebsocketCalibrationData;
-  discoveredCameras?: VsmState;
+  visionSourceManager?: VsmState;
 }
 
 export enum WebsocketPipelineType {

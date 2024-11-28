@@ -268,7 +268,7 @@ public class VisionSourceManager {
 
     protected void pushUiUpdate() {
         DataChangeService.getInstance()
-                .publishEvent(OutgoingUIEvent.wrappedOf("discoveredCameras", getVsmState()));
+                .publishEvent(OutgoingUIEvent.wrappedOf("visionSourceManager", getVsmState()));
     }
 
     protected List<PVCameraInfo> getConnectedCameras() {
