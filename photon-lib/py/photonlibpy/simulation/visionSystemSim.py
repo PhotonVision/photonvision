@@ -305,7 +305,7 @@ class VisionSystemSim:
             timestampNt = optTimestamp
             latency = camSim.prop.estLatency()
             # the image capture timestamp in seconds of this result
-            timestampCapture = timestampNt * 1.0e-6 - latency
+            timestampCapture = timestampNt - latency
 
             # use camera pose from the image capture timestamp
             lateRobotPose = self.getRobotPose(timestampCapture)
@@ -318,7 +318,8 @@ class VisionSystemSim:
             # process a PhotonPipelineResult with visible targets
             camResult = camSim.process(latency, lateCameraPose, allTargets)
             # publish this info to NT at estimated timestamp of receive
-            camSim.submitProcessedFrame(camResult, timestampNt)
+            # needs a timestamp in microseconds
+            camSim.submitProcessedFrame(camResult, timestampNt * 1.0e6)
             # display debug results
             for tgt in camResult.getTargets():
                 trf = tgt.getBestCameraToTarget()
