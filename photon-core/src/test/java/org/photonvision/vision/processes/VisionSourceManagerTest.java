@@ -145,8 +145,6 @@ public class VisionSourceManagerTest {
 
         vsm.assignUnmatchedCamera(fileCamera1);
 
-        Thread.sleep(200);
-
         // And make assertions about the current matching state
         assertEquals(1, vsm.getVsmState().allConnectedCameras.size());
         assertEquals(1, vsm.vmm.getModules().size());
