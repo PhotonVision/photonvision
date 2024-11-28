@@ -350,12 +350,12 @@ public class Main {
             System.exit(0);
         }
 
+        // todo - should test mode just add test mode sources, but still allow local usb cameras to be added?
         if (!isTestMode) {
             logger.debug("Loading VisionSourceManager...");
             VisionSourceManager.getInstance()
                     .registerLoadedConfigs(
                             ConfigManager.getInstance().getConfig().getCameraConfigurations().values());
-            VisionSourceManager.getInstance().registerTimedTasks();
         } else {
             if (testModeFolder == null) {
                 addTestModeSources();
@@ -363,6 +363,9 @@ public class Main {
                 addTestModeFromFolder();
             }
         }
+        
+        // We still want to publish our (potentially fake) camera info
+        VisionSourceManager.getInstance().registerTimedTasks();
 
         logger.info("Starting server...");
         HardwareManager.getInstance().setRunning(true);

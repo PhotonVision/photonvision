@@ -248,18 +248,6 @@ public class VisionSourceManager {
     protected synchronized VisionSourceManagerState getVsmState() {
         var ret = new VisionSourceManagerState();
 
-        // ret.activeCameras =
-        //         this.deserializedConfigs.values().stream()
-        //                 .filter(it -> !it.deactivated)
-        //                 .map(it -> new UniqueCameraSummary(it.uniqueName,
-        // cameraDeviceMap.get(it.uniqueName)))
-        //                 .toList();
-        // ret.disabledCameras =
-        //         this.deserializedConfigs.values().stream()
-        //                 .filter(it -> it.deactivated)
-        //                 .map(CameraConfiguration::toUiConfig)
-        //                 .toList();
-
         // transform the camera info all the way to a VisionModule and then start it
         ret.allConnectedCameras = filterAllowedDevices(getConnectedCameras());
 
@@ -290,7 +278,10 @@ public class VisionSourceManager {
                             })
                     .forEach(cameraInfos::add);
         }
+        
+        // huge hack
         cameraInfos.add(PVCameraInfo.fromCSICameraInfo("/dev/some/path/for/my/csi/camera", "raspivid"));
+
         return cameraInfos;
     }
 
