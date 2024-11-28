@@ -19,12 +19,9 @@ package org.photonvision;
 
 import edu.wpi.first.hal.HAL;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 import org.apache.commons.cli.*;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
@@ -46,14 +43,11 @@ import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.server.Server;
 import org.photonvision.vision.apriltag.AprilTagFamily;
-import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.PipelineProfiler;
-import org.photonvision.vision.processes.VisionModule;
-import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceManager;
 import org.photonvision.vision.target.TargetModel;
 
@@ -135,55 +129,6 @@ public class Main {
         return true;
     }
 
-    private static void addTestModeFromFolder() {
-        ConfigManager.getInstance().load();
-
-        try {
-            List<VisionSource> collectedSources =
-                    Files.list(testModeFolder)
-                            .filter(p -> p.toFile().isFile())
-                            .map(
-                                    p -> {
-                                        try {
-                                            CameraConfiguration camConf =
-                                                    new CameraConfiguration(
-                                                            PVCameraInfo.fromFileInfo(
-                                                                    p.getFileName().toString(), p.toAbsolutePath().toString()));
-                                            camConf.FOV = TestUtils.WPI2019Image.FOV; // Good guess?
-                                            camConf.addCalibration(TestUtils.get2020LifeCamCoeffs(false));
-
-                                            var pipeSettings = new AprilTagPipelineSettings();
-                                            pipeSettings.pipelineNickname = p.getFileName().toString();
-                                            pipeSettings.outputShowMultipleTargets = true;
-                                            pipeSettings.inputShouldShow = true;
-                                            pipeSettings.outputShouldShow = false;
-                                            pipeSettings.solvePNPEnabled = true;
-
-                                            var aprilTag = new AprilTagPipelineSettings();
-                                            var psList = new ArrayList<CVPipelineSettings>();
-                                            psList.add(aprilTag);
-                                            camConf.pipelineSettings = psList;
-
-                                            return new FileVisionSource(camConf);
-                                        } catch (Exception e) {
-                                            logger.error("Couldn't load image " + p.getFileName().toString(), e);
-                                            return null;
-                                        }
-                                    })
-                            .filter(Objects::nonNull)
-                            .collect(Collectors.toList());
-
-            ConfigManager.getInstance().unloadCameraConfigs();
-            collectedSources.stream()
-                    .map(VisionSourceManager.getInstance().vmm::addSource)
-                    .forEach(VisionModule::start);
-            ConfigManager.getInstance().addCameraConfigurations(collectedSources);
-        } catch (IOException e) {
-            logger.error("Path does not exist!");
-            System.exit(1);
-        }
-    }
-
     private static void addTestModeSources() {
         ConfigManager.getInstance().load();
 
@@ -216,17 +161,11 @@ public class Main {
             camConf2024.pipelineSettings = psList2024;
         }
 
-        var collectedSources = new ArrayList<VisionSource>();
-
-        var fvs2024 = new FileVisionSource(camConf2024);
-
-        collectedSources.add(fvs2024);
+        var cameraConfigs = List.of(camConf2024);
 
         ConfigManager.getInstance().unloadCameraConfigs();
-        collectedSources.stream()
-                .map(VisionSourceManager.getInstance().vmm::addSource)
-                .forEach(VisionModule::start);
-        ConfigManager.getInstance().addCameraConfigurations(collectedSources);
+        cameraConfigs.stream().forEach(ConfigManager.getInstance()::addCameraConfiguration);
+        VisionSourceManager.getInstance().registerLoadedConfigs(cameraConfigs);
     }
 
     public static void main(String[] args) {
@@ -350,7 +289,8 @@ public class Main {
             System.exit(0);
         }
 
-        // todo - should test mode just add test mode sources, but still allow local usb cameras to be added?
+        // todo - should test mode just add test mode sources, but still allow local usb cameras to be
+        // added?
         if (!isTestMode) {
             logger.debug("Loading VisionSourceManager...");
             VisionSourceManager.getInstance()
@@ -359,12 +299,9 @@ public class Main {
         } else {
             if (testModeFolder == null) {
                 addTestModeSources();
-            } else {
-                addTestModeFromFolder();
             }
         }
-        
-        // We still want to publish our (potentially fake) camera info
+
         VisionSourceManager.getInstance().registerTimedTasks();
 
         logger.info("Starting server...");

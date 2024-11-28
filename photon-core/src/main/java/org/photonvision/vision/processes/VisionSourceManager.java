@@ -278,9 +278,12 @@ public class VisionSourceManager {
                             })
                     .forEach(cameraInfos::add);
         }
-        
-        // huge hack
-        cameraInfos.add(PVCameraInfo.fromCSICameraInfo("/dev/some/path/for/my/csi/camera", "raspivid"));
+
+        // FileVisionSources are a bit quirky. They aren't enumerated by the above, but i still want my
+        // UI to work
+        disabledCameraConfigs.values().stream().forEach(it -> cameraInfos.add(it.matchedCameraInfo));
+        vmm.getModules().stream()
+                .forEach(it -> cameraInfos.add(it.getCameraConfiguration().matchedCameraInfo));
 
         return cameraInfos;
     }
@@ -338,6 +341,8 @@ public class VisionSourceManager {
                     case FileCamera -> new FileVisionSource(configuration);
                 };
 
+
+            VisionSourceManager.getInstance().registerTimedTasks();
         logger.debug("Creating VisionSource for " + configuration.toShortString());
         return source;
     }

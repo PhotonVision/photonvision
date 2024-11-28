@@ -41,16 +41,20 @@ const uniquePathForCamera = (info: PVCameraInfo) => {
 };
 
 /**
- * Find the PVCameraInfo currently occupying the same uniquepath as the the given module 
+ * Find the PVCameraInfo currently occupying the same uniquepath as the the given module
  */
 const getMatchedDevice = (module: UiCameraConfiguration) => {
-  return useStateStore().vsmState.allConnectedCameras.find(it => uniquePathForCamera(it) === uniquePathForCamera(module.matchedCameraInfo)) || {
-    PVFileCameraInfo: {
-      name: "!",
-      path: "!",
-      uniquePath: "!"
+  return (
+    useStateStore().vsmState.allConnectedCameras.find(
+      (it) => uniquePathForCamera(it) === uniquePathForCamera(module.matchedCameraInfo)
+    ) || {
+      PVFileCameraInfo: {
+        name: "!",
+        path: "!",
+        uniquePath: "!"
+      }
     }
-  };
+  );
 };
 
 /**
@@ -81,16 +85,27 @@ const unmatchedCameras = computed(() => {
         <span class="ml-3">Active Vision Modules</span>
       </v-card-title>
 
-      <v-banner class="pa-2 ma-3" v-if="
-        useCameraSettingsStore().cameras.length === 0 ||
-        (useCameraSettingsStore().cameras.length === 1 &&
-          JSON.stringify(useCameraSettingsStore().cameras[0]) === JSON.stringify(PlaceholderCameraSettings))
-      " rounded dark color="red">No VisionModules created :( Activate a camera to get started!</v-banner>
+      <v-banner
+        class="pa-2 ma-3"
+        v-if="
+          useCameraSettingsStore().cameras.length === 0 ||
+          (useCameraSettingsStore().cameras.length === 1 &&
+            JSON.stringify(useCameraSettingsStore().cameras[0]) === JSON.stringify(PlaceholderCameraSettings))
+        "
+        rounded
+        dark
+        color="red"
+        >No VisionModules created :( Activate a camera to get started!</v-banner
+      >
       <v-row class="ml-3">
-        <v-card dark class="camera-card pa-4 mb-4 mr-3" v-for="(module, index) in useCameraSettingsStore().cameras"
-          v-if="JSON.stringify(module) !== JSON.stringify(PlaceholderCameraSettings)" :value="index">
+        <v-card
+          dark
+          class="camera-card pa-4 mb-4 mr-3"
+          v-for="(module, index) in useCameraSettingsStore().cameras"
+          v-if="JSON.stringify(module) !== JSON.stringify(PlaceholderCameraSettings)"
+          :value="index"
+        >
           <v-card-title class="pb-8">{{ module.nickname }}</v-card-title>
-
 
           <v-row>
             <v-col cols="6">
@@ -117,7 +132,9 @@ const unmatchedCameras = computed(() => {
                   <td>Streams:</td>
                   <td>
                     <a :href="formatUrl(module.stream.inputPort)" target="_blank"> Input Stream </a>/<a
-                      :href="formatUrl(module.stream.outputPort)" target="_blank">
+                      :href="formatUrl(module.stream.outputPort)"
+                      target="_blank"
+                    >
                       Output Stream
                     </a>
                   </td>
@@ -156,6 +173,7 @@ const unmatchedCameras = computed(() => {
                 </tr>
               </tbody>
             </v-simple-table>
+            <photon-camera-stream id="output-camera-stream" stream-type="Processed" style="width: 100%; height: auto" />
           </v-card-text>
         </v-card>
       </v-row>
@@ -245,57 +263,29 @@ const unmatchedCameras = computed(() => {
       <span class="ml-3" v-if="unmatchedCameras.length === 0">No unassigned cameras to show :)</span>
 
       <v-row class="ml-3 mb-0">
-        <v-banner v-if="unmatchedCameras.length === 0 && useCameraSettingsStore().cameras.length === 0" rounded dark
-          color="red">No cameras connected :( Plug one in to get started!</v-banner>
-        <v-card dark class="camera-card pa-4 mb-4 mr-3" v-for="(camera, index) in unmatchedCameras" :value="index">
-          {{ camera }}
-          <v-card-title class="pb-8">{{ camera.name }}</v-card-title>
-          <v-card-text>
-            <v-simple-table dense height="100%" class="camera-card-table mt-2">
-              <tbody>
-                <tr>
-                  <td>Product Name</td>
-                  <td>
-                    {{ camera.name }}
-                  </td>
-                </tr>
-                <tr>
-                  <td>Type</td>
-                  <td>
-                    {{ camera.cameraTypename }}
-                  </td>
-                </tr>
-                <tr>
-                  <td>USB Info</td>
-                  <td>
-                    Product {{ camera.name }}, VID {{ camera.vendorId }}, PID
-                    {{ camera.productId }}
-                  </td>
-                </tr>
-                <tr>
-                  <td>Path(s)</td>
-                  <td>
-                    <span v-for="(path, idx) in [camera.path].concat(camera.otherPaths)" :key="idx"
-                      style="display: block">
-                      {{ path }}
-                    </span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>Actions</td>
-                  <td>
-                    <v-btn class="ma-2" @click="activateCamera(camera.uniqueName)" color="primary">Activate</v-btn>
-                  </td>
-                </tr>
-              </tbody>
-            </v-simple-table>
-          </v-card-text>
-        </v-card>
-      </v-row>
+        <v-banner
+          v-if="unmatchedCameras.length === 0 && useCameraSettingsStore().cameras.length === 0"
+          rounded
+          dark
+          color="red"
+          >No cameras connected :( Plug one in to get started!</v-banner
+        >
 
-      <span class="pa-3">
-        {{ JSON.stringify(useStateStore().vsmState.allConnectedCameras, null) }}
-      </span>
+        <div v-for="(camera, index) in unmatchedCameras" :key="index">
+          <PvCameraInfoCard :camera="camera" />
+
+          <v-simple-table dense height="100%" class="camera-card-table mt-2">
+            <tbody>
+              <tr>
+                <td>Actions</td>
+                <td>
+                  <v-btn class="ma-2" @click="activateCamera(camera)" color="primary">Activate</v-btn>
+                </td>
+              </tr>
+            </tbody>
+          </v-simple-table>
+        </div>
+      </v-row>
     </v-card>
   </div>
 </template>

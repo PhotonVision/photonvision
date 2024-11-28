@@ -18,8 +18,8 @@ const cameraInfoFor = (camera: PVCameraInfo) => {
   if (camera.PVFileCameraInfo) {
     return camera.PVFileCameraInfo;
   }
-  return {}
-}
+  return {};
+};
 </script>
 
 <template>
