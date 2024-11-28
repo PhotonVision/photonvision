@@ -29,11 +29,11 @@ const uniquePathForCamera = (info: PVCameraInfo) => {
   if (info.PVUsbCameraInfo) {
     return info.PVUsbCameraInfo.uniquePath;
   }
-  if (info.PVUsbCameraInfo) {
-    return info.PVUsbCameraInfo.uniquePath;
+  if (info.PVCSICameraInfo) {
+    return info.PVCSICameraInfo.uniquePath;
   }
-  if (info.PVUsbCameraInfo) {
-    return info.PVUsbCameraInfo.uniquePath;
+  if (info.PVFileCameraInfo) {
+    return info.PVFileCameraInfo.uniquePath;
   }
 
   // TODO - wut
@@ -62,19 +62,17 @@ const getMatchedDevice = (module: UiCameraConfiguration) => {
  * @param module
  */
 const isCameraConnected = (module: UiCameraConfiguration) => {
-  const connectedCameras = useStateStore().vsmState.allConnectedCameras.map((it) => uniquePathForCamera(it));
-  return uniquePathForCamera(module.matchedCameraInfo) in connectedCameras;
+  return useStateStore()
+    .vsmState.allConnectedCameras.map((it) => uniquePathForCamera(it))
+    .includes(uniquePathForCamera(module.matchedCameraInfo));
 };
 
 const unmatchedCameras = computed(() => {
-  const allCameras = useStateStore().vsmState.allConnectedCameras;
+  const activeVmCameraInfos = useCameraSettingsStore().cameras.map((it) => uniquePathForCamera(it.matchedCameraInfo));
 
-  // const used = (uniqueName: string) =>
-  //   useStateStore().vsmState.activeCameras.filter((it) => it.uniqueName == uniqueName).length > 0 ||
-  //   useStateStore().vsmState.disabledCameras.filter((it) => it.uniqueName == uniqueName).length > 0;
-  // return allCameras.filter((it) => !used(it.uniqueName));
-
-  return allCameras;
+  return useStateStore().vsmState.allConnectedCameras.filter(
+    (it) => !activeVmCameraInfos.includes(uniquePathForCamera(it))
+  );
 });
 </script>
 
@@ -119,61 +117,73 @@ const unmatchedCameras = computed(() => {
           </v-row>
 
           <v-card-text>
-            <v-simple-table dense height="100%" class="camera-card-table mt-2">
-              <tbody>
-                <tr>
-                  <td>Device Path</td>
-                  <td>
-                    {{ module.cameraPath }}
-                  </td>
-                </tr>
+            <v-row>
+              <v-col cols="8">
+                <v-simple-table dense height="100%" class="camera-card-table mt-2">
+                  <tbody>
+                    <tr>
+                      <td>Device Path</td>
+                      <td>
+                        {{ module.cameraPath }}
+                      </td>
+                    </tr>
 
-                <tr>
-                  <td>Streams:</td>
-                  <td>
-                    <a :href="formatUrl(module.stream.inputPort)" target="_blank"> Input Stream </a>/<a
-                      :href="formatUrl(module.stream.outputPort)"
-                      target="_blank"
-                    >
-                      Output Stream
-                    </a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>Pipelines</td>
-                  <td>{{ module.pipelineNicknames.join(", ") }}</td>
-                </tr>
-                <tr>
-                  <td>Frames Processed</td>
-                  <td>
-                    {{ useStateStore().backendResults[index].sequenceID }} ({{
-                      useStateStore().backendResults[index].fps
-                    }}
-                    FPS)
-                  </td>
-                </tr>
-                <tr>
-                  <td>Connected?</td>
-                  <td>{{ isCameraConnected(module) }}</td>
-                </tr>
-                <tr>
-                  <td>Calibrations</td>
-                  <td>
-                    {{
-                      module.completeCalibrations.map((it) => getResolutionString(it.resolution)).join(", ") ||
-                      "Not calibrated"
-                    }}
-                  </td>
-                </tr>
-                <tr>
-                  <td>Actions</td>
-                  <td>
-                    <v-btn class="ma-2" @click="deactivateCamera(module.uniqueName)" color="primary">Deactivate</v-btn>
-                  </td>
-                </tr>
-              </tbody>
-            </v-simple-table>
-            <photon-camera-stream id="output-camera-stream" stream-type="Processed" style="width: 100%; height: auto" />
+                    <tr>
+                      <td>Streams:</td>
+                      <td>
+                        <a :href="formatUrl(module.stream.inputPort)" target="_blank"> Input Stream </a>/<a
+                          :href="formatUrl(module.stream.outputPort)"
+                          target="_blank"
+                        >
+                          Output Stream
+                        </a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Pipelines</td>
+                      <td>{{ module.pipelineNicknames.join(", ") }}</td>
+                    </tr>
+                    <tr>
+                      <td>Frames Processed</td>
+                      <td>
+                        {{ useStateStore().backendResults[index].sequenceID }} ({{
+                          useStateStore().backendResults[index].fps
+                        }}
+                        FPS)
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Connected?</td>
+                      <td>{{ isCameraConnected(module) }}</td>
+                    </tr>
+                    <tr>
+                      <td>Calibrations</td>
+                      <td>
+                        {{
+                          module.completeCalibrations.map((it) => getResolutionString(it.resolution)).join(", ") ||
+                          "Not calibrated"
+                        }}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Actions</td>
+                      <td>
+                        <v-btn class="ma-2" @click="deactivateCamera(module.uniqueName)" color="primary"
+                          >Deactivate</v-btn
+                        >
+                      </td>
+                    </tr>
+                  </tbody>
+                </v-simple-table>
+              </v-col>
+              <v-col cols="4">
+                <photon-camera-stream
+                  id="output-camera-stream"
+                  stream-type="Processed"
+                  style="width: 100%; height: auto"
+                />
+              </v-col>
+            </v-row>
           </v-card-text>
         </v-card>
       </v-row>
