@@ -29,6 +29,8 @@ import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.math.MathUtils;
@@ -164,11 +166,12 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
             // (TODO: Address circular dependencies. Multitag only requires corners and IDs, this should
             // not be necessary.)
             TrackedTarget target =
-                    new TrackedTarget(
-                            detection,
-                            null,
-                            new TargetCalculationParameters(
-                                    false, null, null, null, null, frameStaticProperties));
+                     new TrackedTarget(
+                             detection,
+                             null,
+                             new TargetCalculationParameters(
+                                     false, null, null, null, null, frameStaticProperties),
+                                     new Point(settings.getStaticCrop().x,settings.getStaticCrop().y));
 
             targetList.add(target);
         }
@@ -222,11 +225,13 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                 // populate the target list
                 // Challenge here is that TrackedTarget functions with OpenCV Contour
                 TrackedTarget target =
-                        new TrackedTarget(
-                                detection,
-                                tagPoseEstimate,
-                                new TargetCalculationParameters(
-                                        false, null, null, null, null, frameStaticProperties));
+                         new TrackedTarget(
+                                 detection,
+                                 tagPoseEstimate,
+                                 new TargetCalculationParameters(
+                                         false, null, null, null, null, frameStaticProperties),
+                                         new Point(settings.getStaticCrop().x,settings.getStaticCrop().y)
+                                         );
 
                 var correctedBestPose =
                         MathUtils.convertOpenCVtoPhotonTransform(target.getBestCameraToTarget3d());

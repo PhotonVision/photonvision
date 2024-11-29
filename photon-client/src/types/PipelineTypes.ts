@@ -148,9 +148,7 @@ export const DefaultPipelineSettings: Omit<
   cameraAutoWhiteBalance: false,
   cameraWhiteBalanceTemp: 4000,
   cameraMinExposureRaw: 1,
-  cameraMaxExposureRaw: 2
-  cameraMinExposureRaw: 0,
-  cameraMaxExposureRaw: 0,
+  cameraMaxExposureRaw: 2,
   static_x: 0,
   static_y: 0,
   static_width: 0,
