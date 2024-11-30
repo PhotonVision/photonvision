@@ -28,6 +28,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.PhotonConfiguration.UICameraConfiguration;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.hardware.Platform;
@@ -69,6 +70,7 @@ public class VisionSourceManager {
 
     // Jackson does use these members even if your IDE claims otherwise
     public static class VisionSourceManagerState {
+        public List<UICameraConfiguration> disabledConfigs;
         public List<PVCameraInfo> allConnectedCameras;
     }
 
@@ -142,8 +144,9 @@ public class VisionSourceManager {
      */
     public synchronized boolean reactivateDisabledCameraConfig(String uniqueName) {
         // Make sure we have an old, currently -inactive- camera around
-        var deactivatedConfig = Optional.ofNullable(this.disabledCameraConfigs.get(uniqueName));
+        var deactivatedConfig = Optional.ofNullable(this.disabledCameraConfigs.remove(uniqueName));
         if (deactivatedConfig.isEmpty() || !deactivatedConfig.get().deactivated) {
+            // Not in map, give up
             return false;
         }
 
@@ -173,6 +176,11 @@ public class VisionSourceManager {
                                     return it;
                                 })
                         .isPresent();
+
+        if (!created) {
+            // Couldn't create a VM for this config - restore state
+            this.disabledCameraConfigs.put(uniqueName, deactivatedConfig.get());
+        }
 
         // We have a new camera! Tell the world about it
         DataChangeService.getInstance()
@@ -240,6 +248,8 @@ public class VisionSourceManager {
         // And stuff it into our list of disabled camera configs
         disabledCameraConfigs.put(removedConfig.get().uniqueName, removedConfig.get());
 
+        logger.info("Disabled the VisionModule for " + removedConfig.get().nickname);
+
         pushUiUpdate();
 
         return true;
@@ -248,8 +258,8 @@ public class VisionSourceManager {
     protected synchronized VisionSourceManagerState getVsmState() {
         var ret = new VisionSourceManagerState();
 
-        // transform the camera info all the way to a VisionModule and then start it
         ret.allConnectedCameras = filterAllowedDevices(getConnectedCameras());
+        ret.disabledConfigs = disabledCameraConfigs.values().stream().map(it->it.toUiConfig()).toList();
 
         return ret;
     }
@@ -280,7 +290,7 @@ public class VisionSourceManager {
         }
 
         // FileVisionSources are a bit quirky. They aren't enumerated by the above, but i still want my
-        // UI to work
+        // UI to look like it ought to work
         disabledCameraConfigs.values().stream().forEach(it -> cameraInfos.add(it.matchedCameraInfo));
         vmm.getModules().stream()
                 .forEach(it -> cameraInfos.add(it.getCameraConfiguration().matchedCameraInfo));

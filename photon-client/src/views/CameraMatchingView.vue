@@ -8,9 +8,18 @@ import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
 
 const formatUrl = (port) => `http://${inject("backendHostname")}:${port}/stream.mjpg`;
 const host = inject<string>("backendHost");
-const activateCamera = (cameraUniqueName: string) => {
+
+const reactivateModule = (moduleUniqueName: string) => {
+  const url = new URL(`http://${host}/api/utils/activateMatchedCamera`);
+  url.searchParams.set("uniqueName", moduleUniqueName);
+
+  fetch(url.toString(), {
+    method: "POST"
+  });
+};
+const activateCamera = (cameraInfo: PVCameraInfo) => {
   const url = new URL(`http://${host}/api/utils/assignUnmatchedCamera`);
-  url.searchParams.set("uniqueName", cameraUniqueName);
+  url.searchParams.set("cameraInfo", JSON.stringify(cameraInfo));
 
   fetch(url.toString(), {
     method: "POST"
@@ -59,21 +68,27 @@ const getMatchedDevice = (module: UiCameraConfiguration) => {
 
 /**
  * Check if a module's matched camera's unique path is present in any of the list of currently connected cameras
- * @param module
+ * @param cameraInfo: The camera info we want to know if is connected, by unique path
  */
-const isCameraConnected = (module: UiCameraConfiguration) => {
+const isCameraConnected = (cameraInfo: PVCameraInfo) => {
   return useStateStore()
     .vsmState.allConnectedCameras.map((it) => uniquePathForCamera(it))
-    .includes(uniquePathForCamera(module.matchedCameraInfo));
+    .includes(uniquePathForCamera(cameraInfo));
 };
 
 const unmatchedCameras = computed(() => {
-  const activeVmCameraInfos = useCameraSettingsStore().cameras.map((it) => uniquePathForCamera(it.matchedCameraInfo));
+  const activeVmPaths = useCameraSettingsStore().cameras.map((it) => uniquePathForCamera(it.matchedCameraInfo));
+  const disabledVmPaths = useStateStore().vsmState.disabledConfigs.map((it) =>
+    uniquePathForCamera(it.matchedCameraInfo)
+  );
 
   return useStateStore().vsmState.allConnectedCameras.filter(
-    (it) => !activeVmCameraInfos.includes(uniquePathForCamera(it))
+    (it) => !activeVmPaths.includes(uniquePathForCamera(it)) && !disabledVmPaths.includes(uniquePathForCamera(it))
   );
 });
+
+const activeVisionModules = computed(() => useCameraSettingsStore().cameras);
+const disabledVisionModules = computed(() => useStateStore().vsmState.disabledConfigs);
 </script>
 
 <template>
@@ -99,24 +114,23 @@ const unmatchedCameras = computed(() => {
         <v-card
           dark
           class="camera-card pa-4 mb-4 mr-3"
-          v-for="(module, index) in useCameraSettingsStore().cameras"
+          v-for="(module, index) in activeVisionModules"
           v-if="JSON.stringify(module) !== JSON.stringify(PlaceholderCameraSettings)"
           :value="index"
         >
           <v-card-title class="pb-8">{{ module.nickname }}</v-card-title>
-
-          <v-row>
-            <v-col cols="6">
-              <span>Saved camera info:</span>
-              <PvCameraInfoCard :camera="module.matchedCameraInfo" />
-            </v-col>
-            <v-col cols="6">
-              <span>Matched camera info:</span>
-              <PvCameraInfoCard :camera="getMatchedDevice(module)" />
-            </v-col>
-          </v-row>
-
           <v-card-text>
+            <v-row>
+              <v-col cols="6">
+                <span>Saved camera info:</span>
+                <PvCameraInfoCard :camera="module.matchedCameraInfo" />
+              </v-col>
+              <v-col cols="6">
+                <span>Matched camera info:</span>
+                <PvCameraInfoCard :camera="getMatchedDevice(module)" />
+              </v-col>
+            </v-row>
+
             <v-row>
               <v-col cols="8">
                 <v-simple-table dense height="100%" class="camera-card-table mt-2">
@@ -154,7 +168,7 @@ const unmatchedCameras = computed(() => {
                     </tr>
                     <tr>
                       <td>Connected?</td>
-                      <td>{{ isCameraConnected(module) }}</td>
+                      <td>{{ isCameraConnected(module.matchedCameraInfo) }}</td>
                     </tr>
                     <tr>
                       <td>Calibrations</td>
@@ -189,71 +203,49 @@ const unmatchedCameras = computed(() => {
       </v-row>
     </v-card>
 
-    <!--
     <v-card dark class="mb-3 pr-6 pb-3" style="background-color: #006492">
       <v-card-title>
         <span> Disabled Vision Modules </span>
       </v-card-title>
 
-      <span class="ml-3" v-if="useStateStore().vsmState.disabledCameras.length === 0"
-        >No unassigned cameras to show :)</span
-      >
+      <span class="ml-3" v-if="disabledVisionModules.length === 0">No unassigned cameras to show :)</span>
 
       <v-row class="ml-3 mb-0">
-        <v-card
-          dark
-          class="camera-card pa-4 mb-4 mr-3"
-          v-for="(camera, index) in useStateStore().vsmState.disabledCameras"
-          :value="index"
-        >
-          <v-card-title class="pb-8">{{ camera.nickname }}</v-card-title>
+        <v-card dark class="camera-card pa-4 mb-4 mr-3" v-for="(module, index) in disabledVisionModules" :value="index">
+          <v-card-title class="pb-8">{{ module.nickname }}</v-card-title>
           <v-card-text>
+            <span>Matched to camera:</span>
+            <PvCameraInfoCard :camera="module.matchedCameraInfo" />
+
             <v-simple-table dense height="100%" class="camera-card-table mt-2">
               <tbody>
                 <tr>
-                  <td>Product Name</td>
+                  <td>Device Path</td>
                   <td>
-                    {{ usbInfoForCam(camera.uniqueName)?.name }}
+                    {{ module.cameraPath }}
                   </td>
                 </tr>
-                <tr>
-                  <td>USB Info</td>
-                  <td>VID {{ camera.cameraQuirks.usbVid }} PID {{ camera.cameraQuirks.usbPid }}</td>
-                </tr>
-                <tr>
-                  <td>Type</td>
-                  <td>{{ camera.isCSICamera ? "CSI" : "USB" }} Camera</td>
-                </tr>
-                <tr>
-                  <td>Path(s)</td>
-                  <td>
-                    <span
-                      v-for="(path, idx) in [usbInfoForCam(camera.uniqueName)?.path].concat(
-                        usbInfoForCam(camera.uniqueName)?.otherPaths
-                      )"
-                      :key="idx"
-                      style="display: block"
-                    >
-                      {{ path }}
-                    </span>
-                  </td>
-                </tr>
+
                 <tr>
                   <td>Pipelines</td>
-                  <td>{{ camera.pipelineNicknames.join(", ") }}</td>
+                  <td>{{ module.pipelineNicknames.join(", ") }}</td>
+                </tr>
+                <tr>
+                  <td>Connected?</td>
+                  <td>{{ isCameraConnected(module.matchedCameraInfo) }}</td>
                 </tr>
                 <tr>
                   <td>Calibrations</td>
                   <td>
                     {{
-                      camera.calibrations.map((it) => getResolutionString(it.resolution)).join(", ") || "Not calibrated"
+                      module.calibrations.map((it) => getResolutionString(it.resolution)).join(", ") || "Not calibrated"
                     }}
                   </td>
                 </tr>
                 <tr>
                   <td>Actions</td>
                   <td>
-                    <v-btn class="ma-2" @click="activateCamera(camera.uniqueName)" color="primary">Activate</v-btn>
+                    <v-btn class="ma-2" @click="reactivateModule(module.uniqueName)" color="primary">Reactivate</v-btn>
                   </td>
                 </tr>
               </tbody>
@@ -262,8 +254,6 @@ const unmatchedCameras = computed(() => {
         </v-card>
       </v-row>
     </v-card>
-
-    -->
 
     <v-card dark class="mb-3 pr-6 pb-3" style="background-color: #006492">
       <v-card-title>

@@ -855,7 +855,7 @@ public class RequestHandler {
 
         PVCameraInfo camera;
         try {
-            camera = JacksonUtils.deserialize(ctx.queryParam("uniqueName"), PVCameraInfo.class);
+            camera = JacksonUtils.deserialize(ctx.queryParam("cameraInfo"), PVCameraInfo.class);
         } catch (IOException e) {
             ctx.status(401);
             return;
