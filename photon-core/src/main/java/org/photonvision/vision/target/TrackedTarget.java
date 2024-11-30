@@ -175,14 +175,16 @@ public class TrackedTarget implements Releasable {
     public int getClassID() {
         return m_classId;
     }
-    
+
     public TrackedTarget(
             AprilTagDetection tagDetection,
             AprilTagPoseEstimate tagPose,
             TargetCalculationParameters params,
-            Point croppedOffset
-            ) {
-        m_targetOffsetPoint = new Point(tagDetection.getCenterX() + croppedOffset.x, tagDetection.getCenterY() + croppedOffset.y);
+            Point croppedOffset) {
+        m_targetOffsetPoint =
+                new Point(
+                        tagDetection.getCenterX() + croppedOffset.x,
+                        tagDetection.getCenterY() + croppedOffset.y);
         m_robotOffsetPoint = new Point();
         var yawPitch =
                 TargetCalculations.calculateYawPitch(
