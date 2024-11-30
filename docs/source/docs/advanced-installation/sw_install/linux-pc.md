@@ -15,7 +15,7 @@ $ sudo apt-get install openjdk-17-jdk
 ```
 
 :::{warning}
-Using a JDK other than JDK11 will cause issues when running PhotonVision and is not supported.
+Using a JDK other than JDK17 will cause issues when running PhotonVision and is not supported.
 :::
 
 ## Downloading the Latest Stable Release of PhotonVision
