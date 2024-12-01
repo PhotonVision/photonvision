@@ -482,7 +482,7 @@ jobs:
           - os: ubuntu-22.04
             artifact-name: LinuxArm64
             image_suffix: rock5c
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0-beta-6/photonvision_rock5c.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0-beta-7/photonvision_rock5c.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
 
