@@ -70,7 +70,7 @@ import org.photonvision.common.logging.LogLevel;
         }
 
         String syslogMessage = String.format(
-            "<%d>1 %s %s %s %s %s - %s", 
+            "<%d>1 %s %s %s %s %s - %s",
             getPriority(level),
             timestamp,
             hostname,
