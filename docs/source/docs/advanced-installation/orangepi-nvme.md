@@ -19,13 +19,25 @@ Follow the {ref}`Quick-Start <docs/quick-start/quick-install:Quick Install>` ins
 
 :::
 
+:::{note}
+
+You will need access to your Orange Pi's console.
+You can access the console directly by plugging in a keyboard to a USB port and connecting the Orange Pi to an external monitor through its HDMI port, or via SSH (default username is `pi`, default password is `raspberry`):
+
+```
+ssh pi@photonvision.local
+```
+
+:::
+
 ## Installing PhotonVision on an SSD
 
 The following instructions are taken from the `ubuntu-rockchip` [wiki](https://github.com/Joshua-Riek/ubuntu-rockchip/wiki/Ubuntu-24.04-LTS#install-u-boot-to-the-spi-flash).
 
 ### 0. Install the SSD into your Orange Pi
 
-Install the NVME SSD into the M.2 slot on the bottom of the Orange Pi. Secure with a nut and bolt or standoff.
+Install the NVME SSD into the M.2 slot on the bottom of the Orange Pi.
+Secure with a nut and bolt or standoff.
 
 Reboot the Orange Pi after installing.
 
