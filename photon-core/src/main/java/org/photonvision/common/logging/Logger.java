@@ -29,10 +29,7 @@ import org.photonvision.common.configuration.PathManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.util.TimedTaskManager;
-import com.cloudbees.syslog.Facility;
-import com.cloudbees.syslog.MessageFormat;
-import com.cloudbees.syslog.Severity;
-import com.cloudbees.syslog.sender.UdpSyslogMessageSender;
+import org.photonvision.common.logging.syslog.UdpSyslogClient;
 
 /** TODO: get rid of static {} blocks and refactor to singleton pattern */
 public class Logger {
@@ -57,7 +54,7 @@ public class Logger {
 
         currentAppenders.add(new ConsoleLogAppender());
         currentAppenders.add(uiLogAppender);
-        currentAppenders.add(new SyslogAppender("SomeCoprocessor", "172.22.11.2"));
+        currentAppenders.add(new SyslogAppender("172.22.11.2"));
 
         addFileAppender(PathManager.getInstance().getLogPath());
 
@@ -185,9 +182,7 @@ public class Logger {
     // TODO: profile
     private static void log(String message, LogLevel level, LogGroup group, String clazz) {
         for (var a : currentAppenders) {
-            var shouldColor = a instanceof ConsoleLogAppender;
-            var formattedMessage = format(message, level, group, clazz, shouldColor);
-            a.log(formattedMessage, level);
+            a.log(message, level, group, clazz);
         }
         if (!connected) {
             synchronized (uiBacklog) {
@@ -300,6 +295,15 @@ public class Logger {
     private interface LogAppender {
         void log(String message, LogLevel level);
 
+        default void log(String message, LogLevel level, LogGroup group, String clazz) {
+            var formattedMessage = format(message, level, group, clazz, this.shouldColor());
+            this.log(formattedMessage, level);
+        }
+
+        default boolean shouldColor() {
+            return false;
+        }
+
         /** Release any file or other resources currently held by the Logger */
         default void shutdown() {}
     }
@@ -308,6 +312,11 @@ public class Logger {
         @Override
         public void log(String message, LogLevel level) {
             System.out.println(message);
+        }
+
+        @Override
+        public boolean shouldColor() {
+            return true;
         }
     }
 
@@ -324,46 +333,38 @@ public class Logger {
     }
 
     private static class SyslogAppender implements LogAppender {
-        private UdpSyslogMessageSender messageSender = new UdpSyslogMessageSender();
+        private UdpSyslogClient messageSender = null;
 
-        private Severity ConvertLogLevel(LogLevel level) {
-            switch (level) {
-                case DEBUG:
-                    return Severity.DEBUG;
-                case ERROR:
-                    return Severity.ERROR;
-                case INFO:
-                    return Severity.INFORMATIONAL;
-                case TRACE:
-                    return Severity.DEBUG;
-                case WARN:
-                    return Severity.WARNING;
-                default:
-                    return Severity.INFORMATIONAL;
+        public SyslogAppender(String ip) {
+            this(ip, 514);
+        }
+
+        public SyslogAppender(String ip, int port) {
+            try {
+                messageSender = new UdpSyslogClient("photonvision", ip, port);
+            } catch(Exception e) {
+                System.out.println("Failed to start syslog server syslog: " + e.toString());
             }
-        }
-
-        public SyslogAppender(String hostname, String ip) {
-            this(hostname, ip, 514);
-        }
-
-        public SyslogAppender(String hostname, String ip, int port) {
-            messageSender.setDefaultMessageHostname(hostname);
-            messageSender.setDefaultAppName("photonvision");
-            messageSender.setDefaultFacility(Facility.USER);
-            messageSender.setDefaultSeverity(Severity.INFORMATIONAL);
-            messageSender.setSyslogServerHostname(ip);
-            messageSender.setSyslogServerPort(port);
-            messageSender.setMessageFormat(MessageFormat.RFC_5424);
         }
 
         @Override
         public void log(String message, LogLevel level) {
-            messageSender.setDefaultSeverity(ConvertLogLevel(level));
-            try {
-                messageSender.sendMessage(message);
-            } catch (IOException e) {
+            if (messageSender != null) {
+                messageSender.sendMessage(message, level);
             }
+        }
+
+        @Override
+        public void log(String message, LogLevel level, LogGroup group, String clazz) {
+            if (messageSender != null) {
+                messageSender.sendMessage(message, clazz, group.toString(), level);
+            }
+        }
+
+        @Override
+        public void shutdown() {
+            messageSender.close();
+            messageSender = null;
         }
     }
 
