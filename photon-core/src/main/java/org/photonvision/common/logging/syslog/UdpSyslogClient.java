@@ -26,21 +26,28 @@ import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.photonvision.common.logging.LogLevel;
 
  public class UdpSyslogClient implements Closeable {
-    private final InetAddress address;
-    private final int port;
+    private InetAddress address;
+    private int port;
     private final DatagramSocket socket;
     private final String appName;
+    private final ReentrantLock lock = new ReentrantLock();
 
     private static final int USER_FACILITY = 1;
 
     public UdpSyslogClient(String appName, String address, int port) throws UnknownHostException, SocketException {
         this.port = port;
         this.appName = appName;
-        this.address = InetAddress.getByName(address);
+        try {
+            this.address = InetAddress.getByName(address);
+        } catch (Exception e) {
+            this.address = null;
+        }
+
         socket = new DatagramSocket();
     }
 
@@ -49,27 +56,54 @@ import org.photonvision.common.logging.LogLevel;
     }
 
     public void sendMessage(String message, String processId, String messageId, LogLevel level) {
-        try {
-            String timestamp = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
-    
-            String syslogMessage = String.format(
-                "<%d>1 %s %s %s %s %s - %s", 
-                getPriority(level),
-                timestamp,
-                InetAddress.getLocalHost().getHostName(),
-                appName,
-                processId != null ? processId : "-",
-                messageId != null ? messageId : "-",
-                message);
-    
-            byte[] messageBytes = syslogMessage.getBytes(StandardCharsets.UTF_8);
-    
-            // Send the message using UDP
-            DatagramPacket packet = new DatagramPacket(messageBytes, messageBytes.length, address, port);
+        if (address == null) {
+            return;
+        }
 
-            // TODO: Does this need to be concerned with thread safety?
+        String timestamp = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
+
+        String hostname;
+        try {
+            hostname = InetAddress.getLocalHost().getHostName();
+        } catch (Exception e) {
+            hostname = "pv-host";
+        }
+
+        String syslogMessage = String.format(
+            "<%d>1 %s %s %s %s %s - %s", 
+            getPriority(level),
+            timestamp,
+            hostname,
+            appName,
+            processId != null ? processId : "-",
+            messageId != null ? messageId : "-",
+            message);
+
+        byte[] messageBytes = syslogMessage.getBytes(StandardCharsets.UTF_8);
+
+        // Send the message using UDP
+        DatagramPacket packet = new DatagramPacket(messageBytes, messageBytes.length, address, port);
+
+        lock.lock();
+        try {
             socket.send(packet);
-        } catch (Exception e) {} // TODO: Should this log somehow? The other implementation does a simple count of sent messages.
+        } catch (Exception e) {
+            // TODO: Somehow track failures
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public synchronized void setIpAddress(String ip) {
+        try {
+            address = InetAddress.getByName(ip);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getIpAddress() {
+        return address.getHostAddress();
     }
 
     private int getPriority(LogLevel level) {

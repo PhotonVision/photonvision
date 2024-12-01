@@ -29,6 +29,10 @@ import org.photonvision.common.configuration.PathManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.util.TimedTaskManager;
+import org.photonvision.jni.WpilibLoader;
+
+import edu.wpi.first.networktables.NetworkTableInstance;
+
 import org.photonvision.common.logging.syslog.UdpSyslogClient;
 
 /** TODO: get rid of static {} blocks and refactor to singleton pattern */
@@ -54,7 +58,7 @@ public class Logger {
 
         currentAppenders.add(new ConsoleLogAppender());
         currentAppenders.add(uiLogAppender);
-        currentAppenders.add(new SyslogAppender("172.22.11.2"));
+        currentAppenders.add(new SyslogAppender());
 
         addFileAppender(PathManager.getInstance().getLogPath());
 
@@ -333,38 +337,74 @@ public class Logger {
     }
 
     private static class SyslogAppender implements LogAppender {
-        private UdpSyslogClient messageSender = null;
+        private UdpSyslogClient syslogClient = null;
 
-        public SyslogAppender(String ip) {
-            this(ip, 514);
-        }
+        static final int SYSLOG_PORT = 514;
 
-        public SyslogAppender(String ip, int port) {
+        private long lastNtCheckMillis = 0;
+        static final long NT_CHECK_PERIOD_MS = 5000;
+
+        public SyslogAppender() {
             try {
-                messageSender = new UdpSyslogClient("photonvision", ip, port);
-            } catch(Exception e) {
-                System.out.println("Failed to start syslog server syslog: " + e.toString());
+                syslogClient = new UdpSyslogClient("photonvision", "", SYSLOG_PORT);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 
         @Override
         public void log(String message, LogLevel level) {
-            if (messageSender != null) {
-                messageSender.sendMessage(message, level);
+            if (syslogClient != null) {
+                checkForIpChange();
+                syslogClient.sendMessage(message, level);
             }
         }
 
         @Override
         public void log(String message, LogLevel level, LogGroup group, String clazz) {
-            if (messageSender != null) {
-                messageSender.sendMessage(message, clazz, group.toString(), level);
+            if (syslogClient != null) {
+                checkForIpChange();
+                syslogClient.sendMessage(message, clazz, group.toString(), level);
             }
         }
 
         @Override
         public void shutdown() {
-            messageSender.close();
-            messageSender = null;
+            syslogClient.close();
+            syslogClient = null;
+        }
+
+        private synchronized boolean shouldUpdateIp() {
+            long now = System.currentTimeMillis();
+
+            if ((now - lastNtCheckMillis) < NT_CHECK_PERIOD_MS) {
+                return false;
+            }
+
+            lastNtCheckMillis = now;
+
+            return true;
+        }
+
+        private void checkForIpChange() {
+            // Need network tables here which requires the shard lib to have loaded
+            if (shouldUpdateIp() && WpilibLoader.hasLoaded()) {
+                NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
+                var conns = ntInstance.getConnections();
+                if (conns.length > 0) {
+                    try {
+                        String ip = conns[0].remote_ip;
+
+                        if (!ip.equals(syslogClient.getIpAddress())) {
+                            System.out.println("Syslog setting IP to " + ip);
+                            syslogClient.setIpAddress(ip);
+                        }
+
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
         }
     }
 
