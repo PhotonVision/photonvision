@@ -162,14 +162,14 @@ def __convert_cal_to_mrcal_cameramodel(
         "lensmodel": model,
         "imagersizes": np.array([imagersize], dtype=np.int32),
         "calobject_warp": (
-            np.array(cal.calobjectWarp) if len(cal.calobjectWarp) > 0 else None
+            np.array(cal.calobjectWarp) if ("calobjectWarp" in dir(cal) and len(cal.calobjectWarp) > 0) else None
         ),
         # We always do all the things
         "do_optimize_intrinsics_core": True,
         "do_optimize_intrinsics_distortions": True,
         "do_optimize_extrinsics": True,
         "do_optimize_frames": True,
-        "do_optimize_calobject_warp": len(cal.calobjectWarp) > 0,
+        "do_optimize_calobject_warp": "calobjectWarp" in dir(cal) and len(cal.calobjectWarp) > 0,
         "do_apply_outlier_rejection": True,
         "do_apply_regularization": True,
         "verbose": False,
@@ -231,8 +231,8 @@ def convert_photon_to_mrcal(photon_cal_json_path: str, output_folder: str):
                 mrcal_file,
                 note="Generated from PhotonVision calibration file: "
                 + photon_cal_json_path
-                + "\nCalobject_warp (m): "
-                + str(camera_cal_data.calobjectWarp),
+                + ("\nCalobject_warp (m): "
+                + str(camera_cal_data.calobjectWarp) if "calobjectWarp" in dir(camera_cal_data) else "")
             )
 
 
