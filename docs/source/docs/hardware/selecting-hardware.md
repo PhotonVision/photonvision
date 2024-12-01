@@ -36,10 +36,6 @@ PhotonVision relies on [CSCore](https://github.com/wpilibsuite/allwpilib/tree/ma
 Logitech Cameras and integrated laptop cameras will not work with PhotonVision due to oddities with their drivers. We recommend using a different camera.
 :::
 
-:::{note}
-We do not currently support the usage of two of the same camera on the same coprocessor. You can only use two or more cameras if they are of different models or they are from Arducam, which has a [tool that allows for cameras to be renamed](https://docs.arducam.com/UVC-Camera/Serial-Number-Tool-Guide/).
-:::
-
 ### Cameras Attributes
 
 For colored shape detection, any non-fisheye camera supported by PhotonVision will work. We recommend a high fps USB camera.
