@@ -37,9 +37,6 @@ dependencies {
     // Zip
     implementation 'org.zeroturnaround:zt-zip:1.14'
 
-    // Syslog
-    implementation "com.cloudbees:syslog-java-client:1.1.7"
-
     implementation "org.xerial:sqlite-jdbc:3.41.0.0"
     implementation("org.photonvision:rknn_jni-jni:$rknnVersion:linuxarm64") {
         transitive = false
