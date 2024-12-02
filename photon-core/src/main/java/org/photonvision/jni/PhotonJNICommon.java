@@ -69,7 +69,8 @@ public abstract class PhotonJNICommon {
                 logger.error("Couldn't load shared object " + libraryName, e);
                 e.printStackTrace();
                 // logger.error(System.getProperty("java.library.path"));
-                break;
+                instance.setLoaded(false);
+                return;
             }
         }
         instance.setLoaded(true);
