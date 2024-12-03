@@ -104,17 +104,6 @@ public class NetworkConfig {
                 config.matchCamerasOnlyByPath);
     }
 
-    public Map<String, Object> toHashMap() {
-        try {
-            var ret = new ObjectMapper().convertValue(this, JacksonUtils.UIMap.class);
-            ret.put("canManage", this.deviceCanManageNetwork());
-            return ret;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new HashMap<>();
-        }
-    }
-
     @JsonIgnore
     public String getPhysicalInterfaceName() {
         return this.networkManagerIface;
