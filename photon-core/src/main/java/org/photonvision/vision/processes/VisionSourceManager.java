@@ -40,9 +40,9 @@ import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.FileVisionSource;
-import org.photonvision.vision.camera.LibcameraGpuSource;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.camera.USBCameras.USBCameraSource;
+import org.photonvision.vision.camera.csi.LibcameraGpuSource;
 
 /**
  * This class manages starting up VisionModules for serialized devices ({@link
@@ -259,7 +259,8 @@ public class VisionSourceManager {
         var ret = new VisionSourceManagerState();
 
         ret.allConnectedCameras = filterAllowedDevices(getConnectedCameras());
-        ret.disabledConfigs = disabledCameraConfigs.values().stream().map(it->it.toUiConfig()).toList();
+        ret.disabledConfigs =
+                disabledCameraConfigs.values().stream().map(it -> it.toUiConfig()).toList();
 
         return ret;
     }
@@ -344,6 +345,7 @@ public class VisionSourceManager {
      * be robust to disconnected sources at boot
      */
     protected VisionSource loadVisionSourceFromCamConfig(CameraConfiguration configuration) {
+        logger.debug("Creating VisionSource for " + configuration.toShortString());
         VisionSource source =
                 switch (configuration.matchedCameraInfo.type()) {
                     case UsbCamera -> new USBCameraSource(configuration);
@@ -351,9 +353,13 @@ public class VisionSourceManager {
                     case FileCamera -> new FileVisionSource(configuration);
                 };
 
+        if (source.getFrameProvider() == null) {
+            logger.error("Frame provider is null?");
+        }
+        if (source.getSettables() == null) {
+            logger.error("Settables are null?");
+        }
 
-            VisionSourceManager.getInstance().registerTimedTasks();
-        logger.debug("Creating VisionSource for " + configuration.toShortString());
         return source;
     }
 

@@ -28,6 +28,7 @@ import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.camera.CameraQuirk;
+import org.photonvision.vision.camera.PVCameraInfo.PVUsbCameraInfo;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.provider.USBFrameProvider;
@@ -39,37 +40,64 @@ public class USBCameraSource extends VisionSource {
     private final UsbCamera camera;
     protected GenericUSBCameraSettables settables;
     protected FrameProvider usbFrameProvider;
-    private final CvSink cvSink;
+
+    /**
+     * We are robust to the camera not yet being connected at construction. CSCore itself caches
+     * properties and video modes on the FIRST connection of a given {@link
+     * edu.wpi.first.cscore.USBCamera} to the underlying hardware, so we just need to cache properties
+     * at our layer once, too. This means we have to defer things like videomode enumeration and
+     * property name quirkiness, too.
+     */
+    private boolean cameraPropertiesCached = false;
+
+    private void onCameraConnected() {
+        // Aid to the development team - record the properties available for whatever the user plugged
+        // in
+        printCameraProperaties();
+
+        settables.onCameraConnected();
+
+        cameraPropertiesCached = true;
+    }
 
     public USBCameraSource(CameraConfiguration config) {
         super(config);
 
         logger = new Logger(USBCameraSource.class, config.nickname, LogGroup.Camera);
 
+        if (!(config.matchedCameraInfo instanceof PVUsbCameraInfo)) {
+            logger.error(
+                    "USBCameraSource matched to a non-USB camera info?? "
+                            + config.matchedCameraInfo.toString());
+        }
+
         camera = new UsbCamera(config.nickname, config.getDevicePath());
-        cvSink = CameraServer.getVideo(this.camera);
 
         // TODO - I don't need this, do I?
         // // set vid/pid if not done already for future matching
         // if (config.usbVID <= 0) config.usbVID = this.camera.getInfo().vendorId;
         // if (config.usbPID <= 0) config.usbPID = this.camera.getInfo().productId;
 
-        // todo - why tf do we delegate this to USBCameraSource? Quirks are part of the CameraConfig??
+        // TODO - why do we delegate this to USBCameraSource? Quirks are part of the CameraConfig??
+        // also TODO - is the config's saved usb info a reasonable guess for quirk detection? seems like
+        // yes to me...
         if (getCameraConfiguration().cameraQuirks == null) {
+            int vid =
+                    (config.matchedCameraInfo instanceof PVUsbCameraInfo)
+                            ? ((PVUsbCameraInfo) config.matchedCameraInfo).vendorId
+                            : -1;
+            int pid =
+                    (config.matchedCameraInfo instanceof PVUsbCameraInfo)
+                            ? ((PVUsbCameraInfo) config.matchedCameraInfo).productId
+                            : -1;
+
             getCameraConfiguration().cameraQuirks =
-                    QuirkyCamera.getQuirkyCamera(
-                            camera.getInfo().vendorId,
-                            camera.getInfo().productId,
-                            config.matchedCameraInfo.name());
+                    QuirkyCamera.getQuirkyCamera(vid, pid, config.matchedCameraInfo.name());
         }
 
         if (getCameraConfiguration().cameraQuirks.hasQuirks()) {
-            logger.info("Quirky camera detected: " + getCameraConfiguration().cameraQuirks.baseName);
+            logger.info("Quirky camera detected: " + getCameraConfiguration().cameraQuirks);
         }
-
-        // Aid to the development team - record the properties available for whatever the user plugged
-        // in
-        printCameraProperaties();
 
         var cameraBroken = getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.CompletelyBroken);
 
@@ -87,16 +115,7 @@ public class USBCameraSource extends VisionSource {
             // Camera is likely to work, set up the Settables
             settables = createSettables(config, camera);
 
-            if (settables.getAllVideoModes().isEmpty()) {
-                // No video modes produced from settables, disable the camera
-                logger.info("Camera " + camera.getPath() + " has no video modes supported by PhotonVision");
-                usbFrameProvider = null;
-
-            } else {
-                // Functional camera, set up the frame provider and configure defaults
-                usbFrameProvider = new USBFrameProvider(cvSink, settables);
-                settables.setAllCamDefaults();
-            }
+            usbFrameProvider = new USBFrameProvider(camera, settables, this::onCameraConnected);
         }
     }
 
@@ -146,9 +165,6 @@ public class USBCameraSource extends VisionSource {
             logger.debug("Using Generic USB Cam Settables");
             settables = new GenericUSBCameraSettables(config, camera);
         }
-
-        settables.setUpExposureProperties();
-        settables.setUpWhiteBalanceProperties();
 
         return settables;
     }
@@ -223,9 +239,8 @@ public class USBCameraSource extends VisionSource {
     @Override
     public void release() {
         CameraServer.removeCamera(camera.getName());
-        CameraServer.removeServer(cvSink.getName());
-        cvSink.close();
         camera.close();
+        usbFrameProvider.release();
         usbFrameProvider = null;
     }
 
@@ -244,9 +259,6 @@ public class USBCameraSource extends VisionSource {
         if (usbFrameProvider == null) {
             if (other.usbFrameProvider != null) return false;
         } else if (!usbFrameProvider.equals(other.usbFrameProvider)) return false;
-        if (cvSink == null) {
-            if (other.cvSink != null) return false;
-        } else if (!cvSink.equals(other.cvSink)) return false;
         if (getCameraConfiguration().cameraQuirks == null) {
             if (other.getCameraConfiguration().cameraQuirks != null) return false;
         } else if (!getCameraConfiguration()
@@ -262,7 +274,6 @@ public class USBCameraSource extends VisionSource {
                 settables,
                 usbFrameProvider,
                 cameraConfiguration,
-                cvSink,
                 getCameraConfiguration().cameraQuirks);
     }
 }

@@ -24,7 +24,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import edu.wpi.first.cscore.UsbCameraInfo;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -50,14 +49,11 @@ public class VisionSourceManagerTest {
         }
 
         public void teardown() {
-            for (var module : this.getVisionModules()) {
-                // release native resources
-                module.stop();
+            // release native resources
+            var uniqueNames = getVisionModules().stream().map(VisionModule::uniqueName).toList();
+            for (var name : uniqueNames) {
+                deactivateVisionSource(name);
             }
-        }
-
-        public HashMap<String, CameraConfiguration> disabledConfigs() {
-            return this.disabledCameraConfigs;
         }
     }
 
@@ -123,10 +119,8 @@ public class VisionSourceManagerTest {
 
         // And make assertions about the current matching state
         assertEquals(0, vsm.getVsmState().allConnectedCameras.size());
+        assertEquals(0, vsm.getVsmState().disabledConfigs.size());
         assertEquals(0, vsm.vmm.getModules().size());
-        assertEquals(0, vsm.disabledConfigs().size());
-
-        vsm.teardown();
     }
 
     @Test
@@ -149,56 +143,53 @@ public class VisionSourceManagerTest {
 
         // And make assertions about the current matching state
         assertEquals(1, vsm.getVsmState().allConnectedCameras.size());
+        assertEquals(0, vsm.getVsmState().disabledConfigs.size());
         assertEquals(1, vsm.vmm.getModules().size());
-        assertEquals(0, vsm.disabledConfigs().size());
     }
 
-    // @Test
-    // public void testEnabledDisabled() {
-    // // GIVEN a VSM
-    // var vsm = new TestVsm();
-    // // AND one enabled camera, and one disabled camera
-    // var enabledCam =
-    // new CameraConfiguration(
-    // "Lifecam HD-3000",
-    // "Lifecam HD-3000",
-    // "Matt's Awesome Camera",
-    // "/dev/video0",
-    // new String[] {"/dev/v4l/by-path/foobar1"});
-    // var disabledCam =
-    // new CameraConfiguration(
-    // "Lifecam HD-3000",
-    // "Lifecam HD-3000 (1)",
-    // "Another Awesome Camera",
-    // "/dev/video1",
-    // new String[] {"/dev/v4l/by-path/foobar2"});
-    // disabledCam.deactivated = true;
-    // vsm.testCameras =
-    // List.of(
-    // PVCameraInfo.fromUsbCameraInfo(
-    // new UsbCameraInfo(
-    // 0,
-    // enabledCam.path,
-    // enabledCam.baseName,
-    // enabledCam.otherPaths,
-    // enabledCam.usbVID,
-    // enabledCam.usbPID)),
-    // PVCameraInfo.fromUsbCameraInfo(
-    // new UsbCameraInfo(
-    // 1,
-    // disabledCam.path,
-    // disabledCam.baseName,
-    // disabledCam.otherPaths,
-    // disabledCam.usbVID,
-    // disabledCam.usbPID)));
-    // // WHEN cameras are loaded from disk
-    // vsm.registerLoadedConfigs(List.of(enabledCam, disabledCam));
-    // vsm.discoverNewDevices();
-    // // the enabled and disabled cameras will be matched
-    // assertEquals(1, vsm.getVsmState().activeCameras.size());
-    // assertEquals(1, vsm.getVsmState().disabledCameras.size());
-    // assertEquals(2, vsm.getVsmState().allConnectedCameras.size());
+    @Test
+    public void testEnabledDisabled() throws InterruptedException {
+        // GIVEN a VSM
+        var vsm = new TestVsm();
+        // AND one enabled camera, and one disabled camera
+        var enabledCam =
+                new CameraConfiguration(
+                        PVCameraInfo.fromUsbCameraInfo(
+                                new UsbCameraInfo(
+                                        0,
+                                        "/dev/video0",
+                                        "Lifecam HD-3000",
+                                        new String[] {"/dev/v4l/by-path/foobar1"},
+                                        5940,
+                                        5940)));
+        enabledCam.deactivated = false;
+        enabledCam.nickname = "Matt's awesome camera 1";
 
-    // vsm.teardown();
-    // }
+        var disabledCam =
+                new CameraConfiguration(
+                        PVCameraInfo.fromUsbCameraInfo(
+                                new UsbCameraInfo(
+                                        1,
+                                        "/dev/video1",
+                                        "Lifecam HD-3000",
+                                        new String[] {"/dev/v4l/by-path/foobar2"},
+                                        5940,
+                                        5940)));
+        enabledCam.deactivated = true;
+        enabledCam.nickname = "Matt's awesome camera 2";
+
+        vsm.testCameras = List.of(enabledCam.matchedCameraInfo, disabledCam.matchedCameraInfo);
+
+        // WHEN cameras are loaded from disk
+        vsm.registerLoadedConfigs(List.of(enabledCam, disabledCam));
+
+        // the enabled and disabled cameras will be matched
+        assertEquals(2, vsm.getVsmState().allConnectedCameras.size());
+        assertEquals(1, vsm.getVsmState().disabledConfigs.size());
+        assertEquals(1, vsm.vmm.getModules().size());
+
+        Thread.sleep(2000);
+
+        vsm.teardown();
+    }
 }

@@ -17,7 +17,10 @@
 
 package org.photonvision.vision.frame.provider;
 
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.CvSink;
+import edu.wpi.first.cscore.UsbCamera;
+
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.opencv.CVMat;
@@ -26,26 +29,39 @@ import org.photonvision.vision.processes.VisionSourceSettables;
 public class USBFrameProvider extends CpuImageProcessor {
     private final Logger logger;
 
+    private UsbCamera camera;
     private final CvSink cvSink;
 
     @SuppressWarnings("SpellCheckingInspection")
     private final VisionSourceSettables settables;
 
-    @SuppressWarnings("SpellCheckingInspection")
-    public USBFrameProvider(CvSink sink, VisionSourceSettables visionSettables) {
-        logger = new Logger(USBFrameProvider.class, sink.getName(), LogGroup.Camera);
+    private Runnable connectedCallback;
 
-        cvSink = sink;
-        cvSink.setEnabled(true);
+    @SuppressWarnings("SpellCheckingInspection")
+    public USBFrameProvider(UsbCamera camera, VisionSourceSettables visionSettables, Runnable connectedCallback) {
+        this.camera = camera;
+        this.cvSink = CameraServer.getVideo(this.camera);
+        this.logger = new Logger(USBFrameProvider.class, visionSettables.getConfiguration().nickname, LogGroup.Camera);
+        this.cvSink.setEnabled(true);
+
         this.settables = visionSettables;
+        this.connectedCallback = connectedCallback;
     }
 
     @Override
     public CapturedFrame getInputMat() {
-        // We allocate memory so we don't fill a Mat in use by another thread (memory model is easier)
+        if (!cameraPropertiesCached && camera.isConnected()) {
+            onCameraConnected();
+        }
+
+        // We allocate memory so we don't fill a Mat in use by another thread (memory
+        // model is easier)
         var mat = new CVMat();
-        // This is from wpi::Now, or WPIUtilJNI.now(). The epoch from grabFrame is uS since
+        // This is from wpi::Now, or WPIUtilJNI.now(). The epoch from grabFrame is uS
+        // since
         // Hal::initialize was called. Timeout is in seconds
+        // TODO - under the hood, this incurs an extra copy. We should avoid this, if we
+        // can.
         long captureTimeNs = cvSink.grabFrame(mat.getMat(), 1.0) * 1000;
 
         if (captureTimeNs == 0) {
@@ -63,6 +79,14 @@ public class USBFrameProvider extends CpuImageProcessor {
 
     @Override
     public void release() {
+        CameraServer.removeServer(cvSink.getName());
         cvSink.close();
+    }
+
+    @Override
+    public void onCameraConnected() {
+        super.onCameraConnected();
+
+        this.connectedCallback.run();
     }
 }
