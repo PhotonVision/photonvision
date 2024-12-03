@@ -82,6 +82,9 @@ public class VisionRunner {
     }
 
     private void update() {
+        // Sync VisionModule state with the first pipeline index
+        visionModule.setPipeline(visionSource.getSettables().getConfiguration().currentPipelineIndex);
+
         while (!Thread.interrupted()) {
             changeSubscriber.processSettingChanges();
             var pipeline = pipelineSupplier.get();

@@ -156,8 +156,6 @@ public class VisionModule {
                 (result) ->
                         lastPipelineResultBestTarget = result.hasTargets() ? result.targets.get(0) : null);
 
-        // Sync VisionModule state with the first pipeline index
-        setPipeline(visionSource.getSettables().getConfiguration().currentPipelineIndex);
 
         // Set vendor FOV
         if (isVendorCamera()) {
