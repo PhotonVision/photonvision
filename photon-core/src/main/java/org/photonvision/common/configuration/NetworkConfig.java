@@ -136,7 +136,7 @@ public class NetworkConfig {
     }
 
     @JsonIgnore
-    private boolean deviceCanManageNetwork() {
+    protected boolean deviceCanManageNetwork() {
         return Platform.isLinux();
     }
 
