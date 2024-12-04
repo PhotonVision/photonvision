@@ -110,12 +110,6 @@ public class NetworkConfig {
         return "\"" + networkManagerIface + "\"";
     }
 
-    @JsonIgnore
-    public boolean shouldManage() {
-        return this.shouldManage;
-    }
-
-    @JsonIgnore
     public void setShouldManage(boolean shouldManage) {
         this.shouldManage = shouldManage && this.deviceCanManageNetwork();
     }
