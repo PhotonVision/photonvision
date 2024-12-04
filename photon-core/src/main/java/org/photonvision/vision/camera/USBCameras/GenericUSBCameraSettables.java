@@ -327,8 +327,6 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
             return new HashMap<>();
         }
 
-        if (videoModes == null) {}
-
         return videoModes;
     }
 

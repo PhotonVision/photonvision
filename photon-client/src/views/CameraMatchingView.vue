@@ -271,7 +271,7 @@ const disabledVisionModules = computed(() => useStateStore().vsmState.disabledCo
           >No cameras connected :( Plug one in to get started!</v-banner
         >
 
-        <div v-for="(camera, index) in unmatchedCameras" :key="index">
+        <v-card class="mb-3" v-for="(camera, index) in unmatchedCameras" :key="index">
           <PvCameraInfoCard :camera="camera" />
 
           <v-simple-table dense height="100%" class="camera-card-table mt-2">
@@ -284,7 +284,7 @@ const disabledVisionModules = computed(() => useStateStore().vsmState.disabledCo
               </tr>
             </tbody>
           </v-simple-table>
-        </div>
+        </v-card>
       </v-row>
     </v-card>
   </div>

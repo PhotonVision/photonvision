@@ -90,8 +90,8 @@ export const useStateStore = defineStore("state", {
       },
 
       vsmState: {
-        disabledCameras: [],
-        allConnectedCameras: []
+        allConnectedCameras: [],
+        disabledConfigs: [],
       }
     };
   },
