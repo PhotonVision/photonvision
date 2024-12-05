@@ -20,14 +20,37 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from ..targeting import *
+from typing import TYPE_CHECKING
+
+from ..packet import Packet
+from ..targeting import *  # noqa
+
+if TYPE_CHECKING:
+    from ..targeting import PnpResult  # noqa
 
 
 class PnpResultSerde:
-
     # Message definition md5sum. See photon_packet.adoc for details
     MESSAGE_VERSION = "ae4d655c0a3104d88df4f5db144c1e86"
     MESSAGE_FORMAT = "Transform3d best;Transform3d alt;float64 bestReprojErr;float64 altReprojErr;float64 ambiguity;"
+
+    @staticmethod
+    def pack(value: "PnpResult") -> "Packet":
+        ret = Packet()
+
+        ret.encodeTransform(value.best)
+
+        ret.encodeTransform(value.alt)
+
+        # bestReprojErr is of intrinsic type float64
+        ret.encodeDouble(value.bestReprojErr)
+
+        # altReprojErr is of intrinsic type float64
+        ret.encodeDouble(value.altReprojErr)
+
+        # ambiguity is of intrinsic type float64
+        ret.encodeDouble(value.ambiguity)
+        return ret
 
     @staticmethod
     def unpack(packet: "Packet") -> "PnpResult":

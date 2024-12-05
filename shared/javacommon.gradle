@@ -13,6 +13,7 @@ def artifactGroupId = 'org.photonvision'
 def javaBaseName = "_GROUP_org_photonvision_${baseArtifactId}_ID_${baseArtifactId}-java_CLS"
 
 def outputsFolder = file("$buildDir/outputs")
+def licenseFile = ext.licenseFile
 
 javadoc {
     options {
@@ -21,20 +22,27 @@ javadoc {
     }
 }
 
+jar {
+    from licenseFile
+}
+
 task sourcesJar(type: Jar, dependsOn: classes) {
     archiveClassifier = 'sources'
     from sourceSets.main.allSource
+    from licenseFile
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
     archiveClassifier = 'javadoc'
     from javadoc.destinationDir
+    from licenseFile
 }
 
 task outputJar(type: Jar, dependsOn: classes) {
     archiveBaseName = javaBaseName
     destinationDirectory = outputsFolder
     from sourceSets.main.output
+    from licenseFile
 }
 
 task outputSourcesJar(type: Jar, dependsOn: classes) {
@@ -42,6 +50,7 @@ task outputSourcesJar(type: Jar, dependsOn: classes) {
     destinationDirectory = outputsFolder
     archiveClassifier = 'sources'
     from sourceSets.main.allSource
+    from licenseFile
 }
 
 task outputJavadocJar(type: Jar, dependsOn: javadoc) {
@@ -49,6 +58,7 @@ task outputJavadocJar(type: Jar, dependsOn: javadoc) {
     destinationDirectory = outputsFolder
     archiveClassifier = 'javadoc'
     from javadoc.destinationDir
+    from licenseFile
 }
 
 artifacts {

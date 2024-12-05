@@ -1,8 +1,12 @@
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import TYPE_CHECKING, ClassVar, Optional
 
 from .multiTargetPNPResult import MultiTargetPNPResult
 from .photonTrackedTarget import PhotonTrackedTarget
+
+if TYPE_CHECKING:
+    from ..generated.PhotonPipelineMetadataSerde import PhotonPipelineMetadataSerde
+    from ..generated.PhotonPipelineResultSerde import PhotonPipelineResultSerde
 
 
 @dataclass
@@ -15,7 +19,9 @@ class PhotonPipelineMetadata:
     # Mirror of the heartbeat entry -- monotonically increasing
     sequenceID: int = -1
 
-    photonStruct: "PhotonPipelineMetadataSerde" = None
+    timeSinceLastPong: int = -1
+
+    photonStruct: ClassVar["PhotonPipelineMetadataSerde"]
 
 
 @dataclass
@@ -24,8 +30,10 @@ class PhotonPipelineResult:
     ntReceiveTimestampMicros: int = -1
 
     targets: list[PhotonTrackedTarget] = field(default_factory=list)
+    # Python users beware! We don't currently run a Time Sync Server, so these timestamps are in
+    # an arbitrary timebase. This is not true in C++ or Java.
     metadata: PhotonPipelineMetadata = field(default_factory=PhotonPipelineMetadata)
-    multiTagResult: Optional[MultiTargetPNPResult] = None
+    multitagResult: Optional[MultiTargetPNPResult] = None
 
     def getLatencyMillis(self) -> float:
         return (
@@ -53,7 +61,7 @@ class PhotonPipelineResult:
     def hasTargets(self) -> bool:
         return len(self.targets) > 0
 
-    def getBestTarget(self) -> PhotonTrackedTarget:
+    def getBestTarget(self) -> Optional[PhotonTrackedTarget]:
         """
         Returns the best target in this pipeline result. If there are no targets, this method will
         return null. The best target is determined by the target sort mode in the PhotonVision UI.
@@ -62,4 +70,4 @@ class PhotonPipelineResult:
             return None
         return self.getTargets()[0]
 
-    photonStruct: "PhotonPipelineResultSerde" = None
+    photonStruct: ClassVar["PhotonPipelineResultSerde"]

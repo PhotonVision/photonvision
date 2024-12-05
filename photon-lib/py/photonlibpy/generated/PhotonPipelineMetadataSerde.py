@@ -20,14 +20,36 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from ..targeting import *
+from typing import TYPE_CHECKING
+
+from ..packet import Packet
+from ..targeting import *  # noqa
+
+if TYPE_CHECKING:
+    from ..targeting import PhotonPipelineMetadata  # noqa
 
 
 class PhotonPipelineMetadataSerde:
-
     # Message definition md5sum. See photon_packet.adoc for details
     MESSAGE_VERSION = "ac0a45f686457856fb30af77699ea356"
     MESSAGE_FORMAT = "int64 sequenceID;int64 captureTimestampMicros;int64 publishTimestampMicros;int64 timeSinceLastPong;"
+
+    @staticmethod
+    def pack(value: "PhotonPipelineMetadata") -> "Packet":
+        ret = Packet()
+
+        # sequenceID is of intrinsic type int64
+        ret.encodeLong(value.sequenceID)
+
+        # captureTimestampMicros is of intrinsic type int64
+        ret.encodeLong(value.captureTimestampMicros)
+
+        # publishTimestampMicros is of intrinsic type int64
+        ret.encodeLong(value.publishTimestampMicros)
+
+        # timeSinceLastPong is of intrinsic type int64
+        ret.encodeLong(value.timeSinceLastPong)
+        return ret
 
     @staticmethod
     def unpack(packet: "Packet") -> "PhotonPipelineMetadata":

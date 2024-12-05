@@ -95,10 +95,15 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         // first.
         var autoExpProp = findProperty("exposure_auto", "auto_exposure");
 
-        exposureAbsProp = expProp.get();
-        autoExposureProp = autoExpProp.get();
-        this.minExposure = exposureAbsProp.getMin();
-        this.maxExposure = exposureAbsProp.getMax();
+        if (expProp.isPresent()) {
+            exposureAbsProp = expProp.get();
+            this.minExposure = exposureAbsProp.getMin();
+            this.maxExposure = exposureAbsProp.getMax();
+        }
+
+        if (autoExpProp.isPresent()) {
+            autoExposureProp = autoExpProp.get();
+        }
     }
 
     public void setAllCamDefaults() {
@@ -169,7 +174,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
             softSet("auto_exposure_bias", 0);
             softSet("iso_sensitivity_auto", 0); // Disable auto ISO adjustment
             softSet("iso_sensitivity", 0); // Manual ISO adjustment
-            autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
+            if (autoExposureProp != null) autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
 
             // Most cameras leave exposure time absolute at the last value from their AE
             // algorithm.
@@ -181,7 +186,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
             softSet("auto_exposure_bias", 12);
             softSet("iso_sensitivity_auto", 1);
             softSet("iso_sensitivity", 1); // Manual ISO adjustment by default
-            autoExposureProp.set(PROP_AUTO_EXPOSURE_ENABLED);
+            if (autoExposureProp != null) autoExposureProp.set(PROP_AUTO_EXPOSURE_ENABLED);
         }
     }
 
@@ -199,7 +204,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     public void setExposureRaw(double exposureRaw) {
         if (exposureRaw >= 0.0) {
             try {
-                autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
+                if (autoExposureProp != null) autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
 
                 int propVal = (int) MathUtil.clamp(exposureRaw, minExposure, maxExposure);
 

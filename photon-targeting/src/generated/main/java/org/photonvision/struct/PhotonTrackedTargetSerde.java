@@ -34,6 +34,7 @@ import edu.wpi.first.math.geometry.Transform3d;
  * Auto-generated serialization/deserialization helper for PhotonTrackedTarget
  */
 public class PhotonTrackedTargetSerde implements PacketSerde<PhotonTrackedTarget> {
+
     @Override
     public final String getInterfaceUUID() { return "cc6dbb5c5c1e0fa808108019b20863f1"; }
     @Override

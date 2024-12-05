@@ -101,7 +101,7 @@ The message format forgoes CRCs (as these are provided by the Ethernet physical 
 Clients may publish statistics to NetworkTables. If they do, they shall publish to a key that is globally unique per participant in the Time Synronization network. If a client implements this, it shall provide the following publishers:
 
 | Key | Type | Notes |
-| ------ | ------ | ---- | ----- |
+| ------ | ------ | ---- |
 | offset_us | Integer | The time offset that, when added to the client's local clock, provides server time |
 | ping_tx_count | Integer | The total number of TSP Ping packets transmitted |
 | ping_rx_count | Integer | The total number of TSP Ping packets received |

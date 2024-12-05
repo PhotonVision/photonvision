@@ -34,6 +34,7 @@ import edu.wpi.first.math.geometry.Transform3d;
  * Auto-generated serialization/deserialization helper for PnpResult
  */
 public class PnpResultSerde implements PacketSerde<PnpResult> {
+
     @Override
     public final String getInterfaceUUID() { return "ae4d655c0a3104d88df4f5db144c1e86"; }
     @Override
@@ -86,6 +87,7 @@ public class PnpResultSerde implements PacketSerde<PnpResult> {
     @Override
     public PacketSerde<?>[] getNestedPhotonMessages() {
         return new PacketSerde<?>[] {
+            
         };
     }
 

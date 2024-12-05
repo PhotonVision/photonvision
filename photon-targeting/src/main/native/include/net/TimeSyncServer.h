@@ -17,7 +17,6 @@
 
 #pragma once
 
-#include <fmt/core.h>
 #include <wpinet/EventLoopRunner.h>
 #include <wpinet/UDPClient.h>
 #include <wpinet/uv/Buffer.h>
@@ -37,6 +36,7 @@
 #include <thread>
 
 #include <wpi/Logger.h>
+#include <wpi/print.h>
 #include <wpi/struct/Struct.h>
 
 #include "TimeSyncStructs.h"
@@ -53,6 +53,7 @@ class TimeSyncServer {
   wpi::Logger m_logger;
   std::function<uint64_t()> m_timeProvider;
   SharedUdpPtr m_udp;
+  int m_port;
 
   std::thread m_listener;
 
@@ -61,8 +62,7 @@ class TimeSyncServer {
                    unsigned flags);
 
  public:
-  explicit TimeSyncServer(int port = 5810,
-                          std::function<uint64_t()> timeProvider = nt::Now);
+  explicit TimeSyncServer(int port = 5810);
 
   /**
    * Start listening for pings

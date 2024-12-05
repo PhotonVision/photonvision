@@ -20,14 +20,59 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from ..targeting import *
+from typing import TYPE_CHECKING
+
+from ..packet import Packet
+from ..targeting import *  # noqa
+
+if TYPE_CHECKING:
+    from ..targeting import PhotonTrackedTarget  # noqa
+    from ..targeting import TargetCorner  # noqa
 
 
 class PhotonTrackedTargetSerde:
-
     # Message definition md5sum. See photon_packet.adoc for details
     MESSAGE_VERSION = "cc6dbb5c5c1e0fa808108019b20863f1"
     MESSAGE_FORMAT = "float64 yaw;float64 pitch;float64 area;float64 skew;int32 fiducialId;int32 objDetectId;float32 objDetectConf;Transform3d bestCameraToTarget;Transform3d altCameraToTarget;float64 poseAmbiguity;TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6 minAreaRectCorners[?];TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6 detectedCorners[?];"
+
+    @staticmethod
+    def pack(value: "PhotonTrackedTarget") -> "Packet":
+        ret = Packet()
+
+        # yaw is of intrinsic type float64
+        ret.encodeDouble(value.yaw)
+
+        # pitch is of intrinsic type float64
+        ret.encodeDouble(value.pitch)
+
+        # area is of intrinsic type float64
+        ret.encodeDouble(value.area)
+
+        # skew is of intrinsic type float64
+        ret.encodeDouble(value.skew)
+
+        # fiducialId is of intrinsic type int32
+        ret.encodeInt(value.fiducialId)
+
+        # objDetectId is of intrinsic type int32
+        ret.encodeInt(value.objDetectId)
+
+        # objDetectConf is of intrinsic type float32
+        ret.encodeFloat(value.objDetectConf)
+
+        ret.encodeTransform(value.bestCameraToTarget)
+
+        ret.encodeTransform(value.altCameraToTarget)
+
+        # poseAmbiguity is of intrinsic type float64
+        ret.encodeDouble(value.poseAmbiguity)
+
+        # minAreaRectCorners is a custom VLA!
+        ret.encodeList(value.minAreaRectCorners, TargetCorner.photonStruct)
+
+        # detectedCorners is a custom VLA!
+        ret.encodeList(value.detectedCorners, TargetCorner.photonStruct)
+        return ret
 
     @staticmethod
     def unpack(packet: "Packet") -> "PhotonTrackedTarget":

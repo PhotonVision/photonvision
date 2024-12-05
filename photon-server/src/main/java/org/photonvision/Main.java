@@ -31,8 +31,10 @@ import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.HardwareManager;
+import org.photonvision.common.hardware.OsImageVersion;
 import org.photonvision.common.hardware.PiVersion;
 import org.photonvision.common.hardware.Platform;
+import org.photonvision.common.logging.KernelLogLogger;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
@@ -352,9 +354,13 @@ public class Main {
         logger.info(
                 "Starting PhotonVision version "
                         + PhotonVersion.versionString
-                        + " on "
+                        + " on platform "
                         + Platform.getPlatformName()
                         + (Platform.isRaspberryPi() ? (" (Pi " + PiVersion.getPiVersion() + ")") : ""));
+
+        if (OsImageVersion.IMAGE_VERSION.isPresent()) {
+            logger.info("PhotonVision image version: " + OsImageVersion.IMAGE_VERSION.get());
+        }
 
         try {
             if (!handleArgs(args)) {
@@ -437,6 +443,10 @@ public class Main {
         Logger.setLevel(LogGroup.General, logLevel);
         logger.info("Logging initialized in debug mode.");
 
+        // Add Linux kernel log->Photon logger
+        KernelLogLogger.getInstance();
+
+        // Add CSCore->Photon logger
         PvCSCoreLogger.getInstance();
 
         logger.debug("Loading ConfigManager...");

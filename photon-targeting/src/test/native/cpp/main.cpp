@@ -15,9 +15,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <hal/HAL.h>
+
 #include "gtest/gtest.h"
 
 int main(int argc, char** argv) {
+  HAL_Initialize(500, 0);
   ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+  int ret = RUN_ALL_TESTS();
+  HAL_Shutdown();
+  return ret;
 }
