@@ -60,9 +60,7 @@ class PhotonCameraSim:
         self.videoSimRawEnabled: bool = False
         self.videoSimWireframeEnabled: bool = False
         self.videoSimWireframeResolution: float = 0.1
-        self.videoSimProcEnabled: bool = (
-            False  # TODO switch this back to default True when the functionality is enabled
-        )
+        self.videoSimProcEnabled: bool = False  # TODO switch this back to default True when the functionality is enabled
         self.heartbeatCounter: int = 0
         self.nextNtEntryTime = wpilib.Timer.getFPGATimestamp()
         self.tagLayout = AprilTagFieldLayout.loadField(AprilTagField.k2024Crescendo)
