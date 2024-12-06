@@ -25,11 +25,8 @@ T = TypeVar("T")
 
 
 class Serde(Generic[T], Protocol):
-    def pack(self, value: T) -> "Packet":
-        pass
-
-    def unpack(self, packet: "Packet") -> T:
-        pass
+    def pack(self, value: T) -> "Packet": ...
+    def unpack(self, packet: "Packet") -> T: ...
 
 
 class Packet:
