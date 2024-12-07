@@ -21,12 +21,8 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.HashMap;
-import java.util.Map;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.networking.NetworkMode;
-import org.photonvision.common.util.file.JacksonUtils;
 
 public class NetworkConfig {
     // Can be an integer team number, or an IP address
@@ -104,17 +100,6 @@ public class NetworkConfig {
                 config.matchCamerasOnlyByPath);
     }
 
-    public Map<String, Object> toHashMap() {
-        try {
-            var ret = new ObjectMapper().convertValue(this, JacksonUtils.UIMap.class);
-            ret.put("canManage", this.deviceCanManageNetwork());
-            return ret;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new HashMap<>();
-        }
-    }
-
     @JsonIgnore
     public String getPhysicalInterfaceName() {
         return this.networkManagerIface;
@@ -125,18 +110,12 @@ public class NetworkConfig {
         return "\"" + networkManagerIface + "\"";
     }
 
-    @JsonIgnore
-    public boolean shouldManage() {
-        return this.shouldManage;
-    }
-
-    @JsonIgnore
     public void setShouldManage(boolean shouldManage) {
         this.shouldManage = shouldManage && this.deviceCanManageNetwork();
     }
 
     @JsonIgnore
-    private boolean deviceCanManageNetwork() {
+    protected boolean deviceCanManageNetwork() {
         return Platform.isLinux();
     }
 

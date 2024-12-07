@@ -113,7 +113,7 @@ public class NetworkManager {
     }
 
     public void reinitialize() {
-        initialize(ConfigManager.getInstance().getConfig().getNetworkConfig().shouldManage());
+        initialize(ConfigManager.getInstance().getConfig().getNetworkConfig().shouldManage);
 
         DataChangeService.getInstance()
                 .publishEvent(
