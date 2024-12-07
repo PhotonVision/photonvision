@@ -80,7 +80,6 @@ class SimCameraProperties:
         newCamIntrinsics: np.ndarray,
         newDistCoeffs: np.ndarray,
     ) -> None:
-
         self.resWidth = width
         self.resHeight = height
         self.camIntrinsics = newCamIntrinsics
@@ -355,7 +354,6 @@ class SimCameraProperties:
 
         # find intersections
         for i, normal in enumerate(self.viewplanes):
-
             # // we want to know the value of t when the line intercepts this plane
             # // parametrized: v = t * ab + a, where v lies on the plane
             # // we can find the projection of a onto the plane normal
