@@ -208,6 +208,10 @@ export const DefaultColoredShapePipelineSettings: ColoredShapePipelineSettings =
 };
 
 export interface AprilTagPipelineSettings extends PipelineSettings {
+  static_x: number;
+  static_y: number;
+  static_width: number;
+  static_height: number;
   pipelineType: PipelineType.AprilTag;
   hammingDist: number;
   numIterations: number;
@@ -244,7 +248,11 @@ export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
   threads: 4,
   tagFamily: AprilTagFamily.Family36h11,
   doMultiTarget: false,
-  doSingleTargetAlways: false
+  doSingleTargetAlways: false,
+  static_x: 0,
+  static_y: 0,
+  static_width: 0,
+  static_height: 0
 };
 
 export interface ArucoPipelineSettings extends PipelineSettings {
