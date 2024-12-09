@@ -4,6 +4,7 @@ import typing
 
 import cv2 as cv
 import numpy as np
+import numpy.typing as npt
 from wpimath.geometry import Rotation2d, Rotation3d, Translation3d
 from wpimath.units import hertz, seconds
 
@@ -31,8 +32,8 @@ class SimCameraProperties:
         """Default constructor which is the same as {@link #PERFECT_90DEG}"""
         self.resWidth: int = -1
         self.resHeight: int = -1
-        self.camIntrinsics: np.ndarray = np.zeros((3, 3))  # [3,3]
-        self.distCoeffs: np.ndarray = np.zeros((8, 1))  # [8,1]
+        self.camIntrinsics: npt.NDArray[np.floating] = np.zeros((3, 3))  # [3,3]
+        self.distCoeffs: npt.NDArray[np.floating] = np.zeros((8, 1))  # [8,1]
         self.avgErrorPx: float = 0.0
         self.errorStdDevPx: float = 0.0
         self.frameSpeed: seconds = 0.0
@@ -172,10 +173,10 @@ class SimCameraProperties:
     def getAspectRatio(self) -> float:
         return 1.0 * self.resWidth / self.resHeight
 
-    def getIntrinsics(self) -> np.ndarray:
+    def getIntrinsics(self) -> npt.NDArray[np.floating]:
         return self.camIntrinsics
 
-    def getDistCoeffs(self) -> np.ndarray:
+    def getDistCoeffs(self) -> npt.NDArray[np.floating]:
         return self.distCoeffs
 
     def getFPS(self) -> hertz:
