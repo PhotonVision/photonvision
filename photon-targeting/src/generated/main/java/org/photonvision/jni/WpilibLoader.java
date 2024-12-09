@@ -65,4 +65,8 @@ public class WpilibLoader {
 
         return has_loaded;
     }
+
+    public static boolean hasLoaded() {
+        return has_loaded;
+    }
 }

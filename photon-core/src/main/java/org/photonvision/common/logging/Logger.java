@@ -29,6 +29,11 @@ import org.photonvision.common.configuration.PathManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.util.TimedTaskManager;
+import org.photonvision.jni.WpilibLoader;
+
+import edu.wpi.first.networktables.NetworkTableInstance;
+
+import org.photonvision.common.logging.syslog.UdpSyslogClient;
 
 /** TODO: get rid of static {} blocks and refactor to singleton pattern */
 public class Logger {
@@ -53,6 +58,8 @@ public class Logger {
 
         currentAppenders.add(new ConsoleLogAppender());
         currentAppenders.add(uiLogAppender);
+        currentAppenders.add(new SyslogAppender());
+
         addFileAppender(PathManager.getInstance().getLogPath());
 
         cleanLogs(PathManager.getInstance().getLogsDir());
@@ -179,9 +186,7 @@ public class Logger {
     // TODO: profile
     private static void log(String message, LogLevel level, LogGroup group, String clazz) {
         for (var a : currentAppenders) {
-            var shouldColor = a instanceof ConsoleLogAppender;
-            var formattedMessage = format(message, level, group, clazz, shouldColor);
-            a.log(formattedMessage, level);
+            a.log(message, level, group, clazz);
         }
         if (!connected) {
             synchronized (uiBacklog) {
@@ -294,6 +299,15 @@ public class Logger {
     private interface LogAppender {
         void log(String message, LogLevel level);
 
+        default void log(String message, LogLevel level, LogGroup group, String clazz) {
+            var formattedMessage = format(message, level, group, clazz, this.shouldColor());
+            this.log(formattedMessage, level);
+        }
+
+        default boolean shouldColor() {
+            return false;
+        }
+
         /** Release any file or other resources currently held by the Logger */
         default void shutdown() {}
     }
@@ -302,6 +316,11 @@ public class Logger {
         @Override
         public void log(String message, LogLevel level) {
             System.out.println(message);
+        }
+
+        @Override
+        public boolean shouldColor() {
+            return true;
         }
     }
 
@@ -314,6 +333,78 @@ public class Logger {
             var superMap = new HashMap<String, Object>();
             superMap.put("logMessage", messageMap);
             DataChangeService.getInstance().publishEvent(OutgoingUIEvent.wrappedOf("log", superMap));
+        }
+    }
+
+    private static class SyslogAppender implements LogAppender {
+        private UdpSyslogClient syslogClient = null;
+
+        static final int SYSLOG_PORT = 514;
+
+        private long lastNtCheckMillis = 0;
+        static final long NT_CHECK_PERIOD_MS = 5000;
+
+        public SyslogAppender() {
+            try {
+                syslogClient = new UdpSyslogClient("photonvision", "", SYSLOG_PORT);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void log(String message, LogLevel level) {
+            if (syslogClient != null) {
+                checkForIpChange();
+                syslogClient.sendMessage(message, level);
+            }
+        }
+
+        @Override
+        public void log(String message, LogLevel level, LogGroup group, String clazz) {
+            if (syslogClient != null) {
+                checkForIpChange();
+                syslogClient.sendMessage(message, clazz, group.toString(), level);
+            }
+        }
+
+        @Override
+        public void shutdown() {
+            syslogClient.close();
+            syslogClient = null;
+        }
+
+        private synchronized boolean shouldUpdateIp() {
+            long now = System.currentTimeMillis();
+
+            if ((now - lastNtCheckMillis) < NT_CHECK_PERIOD_MS) {
+                return false;
+            }
+
+            lastNtCheckMillis = now;
+
+            return true;
+        }
+
+        private void checkForIpChange() {
+            // Need network tables here which requires the shard lib to have loaded
+            if (shouldUpdateIp() && WpilibLoader.hasLoaded()) {
+                NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
+                var conns = ntInstance.getConnections();
+                if (conns.length > 0) {
+                    try {
+                        String ip = conns[0].remote_ip;
+
+                        if (!ip.equals(syslogClient.getIpAddress())) {
+                            System.out.println("Syslog setting IP to " + ip);
+                            syslogClient.setIpAddress(ip);
+                        }
+
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
         }
     }
 
