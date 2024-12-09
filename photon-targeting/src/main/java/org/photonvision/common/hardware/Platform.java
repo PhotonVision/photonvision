@@ -99,6 +99,10 @@ public enum Platform {
         return currentPlatform.isPi;
     }
 
+    public static boolean isJetson() {
+        return Platform.isJetsonSBC();
+    }
+
     public static String getPlatformName() {
         if (currentPlatform.equals(UNKNOWN)) {
             return UnknownPlatformString;

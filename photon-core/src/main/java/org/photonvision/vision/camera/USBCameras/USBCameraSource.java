@@ -93,8 +93,10 @@ public class USBCameraSource extends VisionSource {
 
             } else {
                 // Functional camera, set up the frame provider and configure defaults
+		logger.info("Camera " + camera.getPath() + " might be usable RJS");
                 usbFrameProvider = new USBFrameProvider(cvSink, settables);
                 settables.setAllCamDefaults();
+		logger.info("Camera " + camera.getPath() + " end setAllCamDefaults RJS");
             }
         }
     }
@@ -138,6 +140,7 @@ public class USBCameraSource extends VisionSource {
             logger.debug("Using Arducam OV9782 Settables");
             settables = new ArduOV9782CameraSettables(config, camera);
         } else if (quirks.hasQuirk(CameraQuirk.InnoOV9281Controls)) {
+            logger.debug("Using Innovision OV9782 Settables");
             settables = new InnoOV9281CameraSettables(config, camera);
         } else if (quirks.hasQuirk(CameraQuirk.See3Cam_24CUG)) {
             settables = new See3Cam24CUGSettables(config, camera);
@@ -146,7 +149,9 @@ public class USBCameraSource extends VisionSource {
             settables = new GenericUSBCameraSettables(config, camera);
         }
 
+        logger.debug("pre setupexposurepropeties RJS");
         settables.setUpExposureProperties();
+        logger.debug("post setupexposurepropeties RJS");
 
         return settables;
     }

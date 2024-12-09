@@ -74,6 +74,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     }
 
     protected void setUpExposureProperties() {
+	    logger.debug("start usb setupexposure");
         // Photonvision needs to be able to control absolute exposure. Make sure we can
         // first.
         var expProp =
@@ -84,10 +85,20 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         // first.
         var autoExpProp = findProperty("exposure_auto", "auto_exposure");
 
-        exposureAbsProp = expProp.get();
-        autoExposureProp = autoExpProp.get();
+	if(expProp == null) logger.debug("expProp is null");
+	logger.debug("pre expprop.get");
+       	exposureAbsProp = expProp.get();
+	logger.debug("post expprop.get");
+	if(exposureAbsProp == null) logger.debug("exposureAbsProp is null");
+
+	if(autoExpProp.isPresent()) {
+        	autoExposureProp = autoExpProp.get();
+	}
+	logger.debug("pre getmin");
         this.minExposure = exposureAbsProp.getMin();
+	logger.debug("post getmin");
         this.maxExposure = exposureAbsProp.getMax();
+	logger.debug("end usb setupexposure");
     }
 
     public void setAllCamDefaults() {
@@ -113,7 +124,8 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
             softSet("white_balance_auto_preset", 2); // Auto white-balance disabled
             softSet("white_balance_automatic", 0);
             softSet("white_balance_temperature", whiteBalanceTemperature);
-            autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
+	    if(autoExposureProp != null)
+            	autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
 
             // Most cameras leave exposure time absolute at the last value from their AE
             // algorithm.
@@ -127,7 +139,8 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
             softSet("iso_sensitivity", 1); // Manual ISO adjustment by default
             softSet("white_balance_auto_preset", 1); // Auto white-balance enabled
             softSet("white_balance_automatic", 1);
-            autoExposureProp.set(PROP_AUTO_EXPOSURE_ENABLED);
+	    if(autoExposureProp != null)
+            	autoExposureProp.set(PROP_AUTO_EXPOSURE_ENABLED);
         }
     }
 
@@ -145,7 +158,8 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     public void setExposureRaw(double exposureRaw) {
         if (exposureRaw >= 0.0) {
             try {
-                autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
+	    	if(autoExposureProp != null)
+                	autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
 
                 int propVal = (int) MathUtil.clamp(exposureRaw, minExposure, maxExposure);
 
@@ -216,7 +230,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
                     // Filter grey modes
                     if (videoMode.pixelFormat == PixelFormat.kGray
                             || videoMode.pixelFormat == PixelFormat.kUnknown) {
-                        continue;
+                        //continue;
                     }
 
                     if (configuration.cameraQuirks.hasQuirk(CameraQuirk.FPSCap100)) {

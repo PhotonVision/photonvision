@@ -30,6 +30,7 @@ import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.raspi.LibCameraJNILoader;
+//import org.photonvision.jetson.JetsonMipiJNILoader;
 import org.photonvision.vision.calibration.UICameraCalibrationCoefficients;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.processes.VisionModule;
@@ -137,6 +138,11 @@ public class PhotonConfiguration {
                 LibCameraJNILoader.isSupported()
                         ? "Zerocopy Libcamera Working"
                         : ""); // TODO add support for other types of GPU accel
+        generalSubmap.put(
+                "cudaAcceleration",
+                false //JetsonMipiJNILoader.isSupported()
+                        ? "Jetson Cuda and mipi Working"
+                        : "");
         generalSubmap.put("mrCalWorking", MrCalJNILoader.getInstance().isLoaded());
         generalSubmap.put("availableModels", NeuralNetworkModelManager.getInstance().getModels());
         generalSubmap.put(

@@ -577,8 +577,11 @@ public class VisionSourceManager {
                 var newCam = new USBCameraSource(configuration);
                 if (!newCam.getCameraQuirks().hasQuirk(CameraQuirk.CompletelyBroken)
                         && !newCam.getSettables().videoModes.isEmpty()) {
+                    logger.debug("calling cameraSources.add RJS");
                     cameraSources.add(newCam);
-                }
+                } else {
+                    logger.debug("videoModes must be empty RJS");
+		}
             }
         }
         return cameraSources;
