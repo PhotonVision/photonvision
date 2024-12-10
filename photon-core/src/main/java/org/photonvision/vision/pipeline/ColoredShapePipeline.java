@@ -38,7 +38,7 @@ import org.photonvision.vision.target.TrackedTarget;
 
 public class ColoredShapePipeline
         extends CVPipeline<CVPipelineResult, ColoredShapePipelineSettings> {
-    private final CropPipe cropPipe = new CropPipe();
+    private final CropPipe cropPipe;
     private final SpeckleRejectPipe speckleRejectPipe = new SpeckleRejectPipe();
     private final FindContoursPipe findContoursPipe = new FindContoursPipe();
     private final FindPolygonPipe findPolygonPipe = new FindPolygonPipe();
@@ -60,11 +60,13 @@ public class ColoredShapePipeline
     public ColoredShapePipeline() {
         super(PROCESSING_TYPE);
         settings = new ColoredShapePipelineSettings();
+        cropPipe = new CropPipe(settings.static_width,settings.static_height);
     }
 
     public ColoredShapePipeline(ColoredShapePipelineSettings settings) {
         super(PROCESSING_TYPE);
         this.settings = settings;
+        cropPipe = new CropPipe(settings.static_width,settings.static_height);
     }
 
     @Override

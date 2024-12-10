@@ -38,7 +38,7 @@ import org.photonvision.vision.target.TrackedTarget;
 
 public class ObjectDetectionPipeline
         extends CVPipeline<CVPipelineResult, ObjectDetectionPipelineSettings> {
-    private final CropPipe cropPipe = new CropPipe();
+    private final CropPipe cropPipe;
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
     private final ObjectDetectionPipe objectDetectorPipe = new ObjectDetectionPipe();
     private final SortContoursPipe sortContoursPipe = new SortContoursPipe();
@@ -50,11 +50,13 @@ public class ObjectDetectionPipeline
     public ObjectDetectionPipeline() {
         super(PROCESSING_TYPE);
         settings = new ObjectDetectionPipelineSettings();
+        cropPipe = new CropPipe(settings.static_width,settings.static_height);
     }
 
     public ObjectDetectionPipeline(ObjectDetectionPipelineSettings settings) {
         super(PROCESSING_TYPE);
         this.settings = settings;
+        cropPipe = new CropPipe(settings.static_width,settings.static_height);
     }
 
     @Override
