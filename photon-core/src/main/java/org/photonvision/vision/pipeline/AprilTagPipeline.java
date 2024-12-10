@@ -178,8 +178,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                     new TrackedTarget(
                             detection,
                             null,
-                            new TargetCalculationParameters(false, null, null, null, null, frameStaticProperties),
-                            new Point(settings.getStaticCrop().x, settings.getStaticCrop().y));
+                            new TargetCalculationParameters(false, null, null, null, null, frameStaticProperties));
 
             targetList.add(target);
         }
@@ -239,8 +238,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                                 detection,
                                 tagPoseEstimate,
                                 new TargetCalculationParameters(
-                                        false, null, null, null, null, frameStaticProperties),
-                                new Point(settings.getStaticCrop().x, settings.getStaticCrop().y));
+                                        false, null, null, null, null, frameStaticProperties));
 
                 var correctedBestPose =
                         MathUtils.convertOpenCVtoPhotonTransform(target.getBestCameraToTarget3d());
