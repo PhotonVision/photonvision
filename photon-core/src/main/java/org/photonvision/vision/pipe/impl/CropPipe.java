@@ -26,7 +26,7 @@ import org.photonvision.vision.pipe.CVPipe;
 public class CropPipe extends CVPipe<CVMat, CVMat, Rect> {
     public CropPipe(int width, int height) {
         this.params = new Rect(0, 0, width, height);
-     }
+    }
 
     @Override
     protected CVMat process(CVMat in) {

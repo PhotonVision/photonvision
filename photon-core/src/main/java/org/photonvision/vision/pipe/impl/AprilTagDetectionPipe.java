@@ -19,8 +19,6 @@ package org.photonvision.vision.pipe.impl;
 
 import edu.wpi.first.apriltag.AprilTagDetection;
 import edu.wpi.first.apriltag.AprilTagDetector;
-
-import java.io.ObjectInputFilter.Config;
 import java.util.List;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;
@@ -36,7 +34,6 @@ public class AprilTagDetectionPipe
 
         m_detector.addFamily("tag16h5");
         m_detector.addFamily("tag36h11");
-        
     }
 
     @Override

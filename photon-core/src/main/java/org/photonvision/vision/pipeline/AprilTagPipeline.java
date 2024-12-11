@@ -29,7 +29,6 @@ import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.math.MathUtils;
@@ -47,8 +46,8 @@ import org.photonvision.vision.pipe.impl.AprilTagPoseEstimatorPipe.AprilTagPoseE
 import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
 import org.photonvision.vision.pipe.impl.CropPipe;
 import org.photonvision.vision.pipe.impl.MultiTargetPNPPipe;
-import org.photonvision.vision.pipe.impl.UncropApriltagsPipe;
 import org.photonvision.vision.pipe.impl.MultiTargetPNPPipe.MultiTargetPNPPipeParams;
+import org.photonvision.vision.pipe.impl.UncropApriltagsPipe;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
@@ -67,24 +66,22 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
     public AprilTagPipeline() {
         super(PROCESSING_TYPE);
         settings = new AprilTagPipelineSettings();
-        cropPipe = new CropPipe(settings.static_width,settings.static_height);
-        uncropPipe = new UncropApriltagsPipe(settings.static_width,settings.static_height);
-        
+        cropPipe = new CropPipe(settings.static_width, settings.static_height);
+        uncropPipe = new UncropApriltagsPipe(settings.static_width, settings.static_height);
     }
 
     public AprilTagPipeline(AprilTagPipelineSettings settings) {
         super(PROCESSING_TYPE);
         this.settings = settings;
-        cropPipe = new CropPipe(settings.static_width,settings.static_height);
-        uncropPipe = new UncropApriltagsPipe(settings.static_width,settings.static_height);
-
+        cropPipe = new CropPipe(settings.static_width, settings.static_height);
+        uncropPipe = new UncropApriltagsPipe(settings.static_width, settings.static_height);
     }
 
     @Override
     protected void setPipeParamsImpl() {
         Rect staticCrop = settings.getStaticCrop();
         cropPipe.setParams(staticCrop);
-
+        uncropPipe.setParams(staticCrop);
         // Sanitize thread count - not supported to have fewer than 1 threads
         settings.threads = Math.max(1, settings.threads);
 
@@ -151,12 +148,18 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         }
 
         CVPipeResult<CVMat> croppedFrame = cropPipe.run(frame.processedImage);
-        
+
         sumPipeNanosElapsed += croppedFrame.nanosElapsed;
 
         CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult;
         tagDetectionPipeResult = aprilTagDetectionPipe.run(croppedFrame.output);
-        tagDetectionPipeResult = uncropPipe.run(tagDetectionPipeResult.output);
+
+        if (tagDetectionPipeResult.output.size() > 0) {
+            System.out.println("Before - " + tagDetectionPipeResult.output.get(0).getCenterX());
+            tagDetectionPipeResult = uncropPipe.run(tagDetectionPipeResult.output);
+            System.out.println("After - " + tagDetectionPipeResult.output.get(0).getCenterX());
+        }
+
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
 
         List<AprilTagDetection> detections = tagDetectionPipeResult.output;
@@ -178,13 +181,14 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                     new TrackedTarget(
                             detection,
                             null,
-                            new TargetCalculationParameters(false, null, null, null, null, frameStaticProperties));
+                            new TargetCalculationParameters(
+                                    false, null, null, null, null, frameStaticProperties));
 
             targetList.add(target);
         }
 
         croppedFrame.output.release();
-        
+
         // Do multi-tag pose estimation
         Optional<MultiTargetPNPResult> multiTagResult = Optional.empty();
         if (settings.solvePNPEnabled && settings.doMultiTarget) {

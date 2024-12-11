@@ -15,50 +15,42 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
- package org.photonvision.vision.pipe.impl;
+package org.photonvision.vision.pipe.impl;
 
- import edu.wpi.first.apriltag.AprilTagDetection;
- import edu.wpi.first.apriltag.AprilTagDetector;
-import jogamp.graph.curve.tess.HEdge;
-
+import edu.wpi.first.apriltag.AprilTagDetection;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.opencv.core.Rect;
-import org.photonvision.vision.opencv.CVMat;
- import org.photonvision.vision.opencv.Releasable;
- import org.photonvision.vision.pipe.CVPipe;
- 
- public class UncropApriltagsPipe extends CVPipe<List<AprilTagDetection>, List<AprilTagDetection>, Rect> {
- 
-     public UncropApriltagsPipe(int width, int height) {
+import org.photonvision.vision.pipe.CVPipe;
+
+public class UncropApriltagsPipe
+        extends CVPipe<List<AprilTagDetection>, List<AprilTagDetection>, Rect> {
+
+    public UncropApriltagsPipe(int width, int height) {
         this.params = new Rect(0, 0, width, height);
-     }
- 
-     @Override
-     protected List<AprilTagDetection> process(List<AprilTagDetection> in) {
+    }
+
+    @Override
+    protected List<AprilTagDetection> process(List<AprilTagDetection> in) {
         List<AprilTagDetection> temp = new ArrayList<AprilTagDetection>();
 
         for (AprilTagDetection detection : in) {
             temp.add(
-                new AprilTagDetection(
-                    detection.getFamily(),
-                    detection.getId(),
-                    detection.getHamming(),
-                    detection.getDecisionMargin(),
-                    detection.getHomography(),
-                     detection.getCenterX() +  this.params.x,
-                     detection.getCenterY() +  this.params.y,
-                       offsetCorners(detection))
-                );
+                    new AprilTagDetection(
+                            detection.getFamily(),
+                            detection.getId(),
+                            detection.getHamming(),
+                            detection.getDecisionMargin(),
+                            detection.getHomography(),
+                            detection.getCenterX() + this.params.x,
+                            detection.getCenterY() + this.params.y,
+                            offsetCorners(detection)));
         }
 
-        
-
         return temp;
-     }
-     
-     private double[] offsetCorners(AprilTagDetection detection){
+    }
+
+    private double[] offsetCorners(AprilTagDetection detection) {
         double[] temp = {
             detection.getCornerX(0) + this.params.x,
             detection.getCornerY(0) + this.params.y,
@@ -68,10 +60,8 @@ import org.photonvision.vision.opencv.CVMat;
             detection.getCornerY(2) + this.params.y,
             detection.getCornerX(3) + this.params.x,
             detection.getCornerY(3) + this.params.y,
-            }; 
+        };
 
         return temp;
-     }
- 
- }
- 
+    }
+}

@@ -60,13 +60,13 @@ public class ColoredShapePipeline
     public ColoredShapePipeline() {
         super(PROCESSING_TYPE);
         settings = new ColoredShapePipelineSettings();
-        cropPipe = new CropPipe(settings.static_width,settings.static_height);
+        cropPipe = new CropPipe(settings.static_width, settings.static_height);
     }
 
     public ColoredShapePipeline(ColoredShapePipelineSettings settings) {
         super(PROCESSING_TYPE);
         this.settings = settings;
-        cropPipe = new CropPipe(settings.static_width,settings.static_height);
+        cropPipe = new CropPipe(settings.static_width, settings.static_height);
     }
 
     @Override

@@ -72,13 +72,13 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
     public ArucoPipeline() {
         super(FrameThresholdType.GREYSCALE);
         settings = new ArucoPipelineSettings();
-        cropPipe = new CropPipe(settings.static_width,settings.static_height);
+        cropPipe = new CropPipe(settings.static_width, settings.static_height);
     }
 
     public ArucoPipeline(ArucoPipelineSettings settings) {
         super(FrameThresholdType.GREYSCALE);
         this.settings = settings;
-        cropPipe = new CropPipe(settings.static_width,settings.static_height);
+        cropPipe = new CropPipe(settings.static_width, settings.static_height);
     }
 
     @Override
