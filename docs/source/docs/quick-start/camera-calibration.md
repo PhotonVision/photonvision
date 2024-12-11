@@ -8,7 +8,7 @@ If you’re not using cameras in 3D mode, calibration is optional, but it can st
 
 ## Print the Calibration Target
 
-- Downloaded from our [demo site](http://photonvision.global/), or directly from your coprocessors cameras tab.
+- Downloaded from our [demo site](http://photonvision.global/#/cameras), or directly from your coprocessors cameras tab.
 - Use the Charuco calibration board:
   - Board Type: Charuco
   - Tag Family: 4x4
