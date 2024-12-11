@@ -17,10 +17,11 @@ class NTTopicSet:
     different for sim vs. real camera
     """
 
-    def __init__(self, tableName: str, cameraName: str) -> None:
-        instance = nt.NetworkTableInstance.getDefault()
-        photonvision_root_table = instance.getTable(tableName)
-        self.subTable = photonvision_root_table.getSubTable(cameraName)
+    def __init__(
+        self,
+        ntSubTable: nt.NetworkTable,
+    ) -> None:
+        self.subTable = ntSubTable
 
     def updateEntries(self) -> None:
         options = nt.PubSubOptions()
