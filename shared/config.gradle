@@ -12,7 +12,7 @@ nativeUtils.wpi.configureDependencies {
     opencvVersion = openCVversion
     googleTestYear = "frc2024"
     googleTestVersion = "1.14.0-1"
-    niLibVersion = "2024.2.1"
+    niLibVersion = "2025.0.0"
 }
 
 // Configure warnings and errors
@@ -110,7 +110,7 @@ ext.createComponentZipTasks = { components, names, base, type, project, func ->
             description = 'Creates component archive for platform ' + key
             destinationDirectory = outputsFolder
             archiveClassifier = key
-            archiveBaseName = '_M_' + base
+            archiveBaseName = base
             duplicatesStrategy = 'exclude'
 
             from(licenseFile) {

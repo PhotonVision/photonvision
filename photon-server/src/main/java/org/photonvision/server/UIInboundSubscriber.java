@@ -27,6 +27,7 @@ import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
+import org.photonvision.common.dataflow.websocket.UIPhotonConfiguration;
 import org.photonvision.common.logging.Logger;
 
 public class UIInboundSubscriber extends DataChangeSubscriber {
@@ -43,7 +44,8 @@ public class UIInboundSubscriber extends DataChangeSubscriber {
             if (incomingWSEvent.propertyName.equals("userConnected")
                     || incomingWSEvent.propertyName.equals("sendFullSettings")) {
                 // Send full settings
-                var settings = ConfigManager.getInstance().getConfig().toHashMap();
+                var settings =
+                        UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig());
                 var message =
                         new OutgoingUIEvent<>("fullsettings", settings, incomingWSEvent.originContext);
                 DataChangeService.getInstance().publishEvent(message);

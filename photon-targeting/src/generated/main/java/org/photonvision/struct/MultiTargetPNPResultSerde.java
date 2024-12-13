@@ -34,6 +34,7 @@ import edu.wpi.first.util.struct.Struct;
  * Auto-generated serialization/deserialization helper for MultiTargetPNPResult
  */
 public class MultiTargetPNPResultSerde implements PacketSerde<MultiTargetPNPResult> {
+
     @Override
     public final String getInterfaceUUID() { return "541096947e9f3ca2d3f425ff7b04aa7b"; }
     @Override
@@ -79,6 +80,7 @@ public class MultiTargetPNPResultSerde implements PacketSerde<MultiTargetPNPResu
     @Override
     public Struct<?>[] getNestedWpilibMessages() {
         return new Struct<?>[] {
+            
         };
     }
 }

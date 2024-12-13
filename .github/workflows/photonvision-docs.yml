@@ -11,6 +11,10 @@ on:
     paths:
       - 'docs/**'
       - '.github/**'
+  merge_group:
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   build:

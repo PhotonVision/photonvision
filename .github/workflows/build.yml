@@ -16,6 +16,7 @@ on:
       - '**'
       - '!docs/**'
       - '.github/**'
+  merge_group:
 
 jobs:
   build-client:
@@ -39,8 +40,20 @@ jobs:
           name: built-client
           path: photon-client/dist/
   build-examples:
-    name: "Build Examples"
-    runs-on: ubuntu-22.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2022
+            architecture: x64
+          - os: macos-14
+            architecture: aarch64
+          - os: ubuntu-22.04
+
+    name: "Photonlib - Build Examples - ${{ matrix.os }}"
+    runs-on: ${{ matrix.os }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -56,23 +69,14 @@ jobs:
       - name: Install RoboRIO Toolchain
         run: ./gradlew installRoboRioToolchain
       # Need to publish to maven local first, so that C++ sim can pick it up
-      # Still haven't figured out how to make the vendordep file be copied before trying to build examples
       - name: Publish photonlib to maven local
-        run: |
-          chmod +x gradlew
-          ./gradlew publishtomavenlocal -x check
+        run: ./gradlew photon-targeting:publishtomavenlocal photon-lib:publishtomavenlocal -x check
       - name: Build Java examples
         working-directory: photonlib-java-examples
-        run: |
-          chmod +x gradlew
-          ./gradlew copyPhotonlib -x check
-          ./gradlew build -x check
+        run: ./gradlew build
       - name: Build C++ examples
         working-directory: photonlib-cpp-examples
-        run: |
-          chmod +x gradlew
-          ./gradlew copyPhotonlib -x check
-          ./gradlew build -x check
+        run: ./gradlew build
   build-gradle:
     name: "Gradle Build"
     runs-on: ubuntu-22.04
@@ -92,9 +96,7 @@ jobs:
       - name: Install mrcal deps
         run: sudo apt-get update && sudo apt-get install -y libcholmod3 liblapack3 libsuitesparseconfig5
       - name: Gradle Build
-        run: |
-          chmod +x gradlew
-          ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
+        run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
       - name: Gradle Tests
         run: ./gradlew testHeadless -i --stacktrace
       - name: Gradle Coverage
@@ -153,7 +155,6 @@ jobs:
 
       # Generate the JSON and give it the ""standard""" name maven gives it
       - run: |
-          chmod +x gradlew
           ./gradlew photon-lib:generateVendorJson
           export VERSION=$(git describe --tags --match=v*)
           mv photon-lib/build/generated/vendordeps/photonlib.json photon-lib/build/generated/vendordeps/photonlib-$(git describe --tags --match=v*).json
@@ -193,9 +194,7 @@ jobs:
           distribution: temurin
           architecture: ${{ matrix.architecture }}
       - run: git fetch --tags --force
-      - run: |
-          chmod +x gradlew
-          ./gradlew photon-targeting:build photon-lib:build -i
+      - run: ./gradlew photon-targeting:build photon-lib:build -i
         name: Build with Gradle
       - run: ./gradlew photon-lib:publish photon-targeting:publish
         name: Publish
@@ -236,13 +235,9 @@ jobs:
           git config --global --add safe.directory /__w/photonvision/photonvision
       - name: Build PhotonLib
         # We don't need to run tests, since we specify only non-native platforms
-        run: |
-          chmod +x gradlew
-          ./gradlew photon-targeting:build photon-lib:build ${{ matrix.build-options }} -i -x test
+        run: ./gradlew photon-targeting:build photon-lib:build ${{ matrix.build-options }} -i -x test
       - name: Publish
-        run: |
-          chmod +x gradlew
-          ./gradlew photon-lib:publish photon-targeting:publish ${{ matrix.build-options }}
+        run: ./gradlew photon-lib:publish photon-targeting:publish ${{ matrix.build-options }}
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
         if: github.event_name == 'push' && github.repository_owner == 'photonvision'
@@ -338,13 +333,9 @@ jobs:
         with:
           name: built-docs
           path: photon-server/src/main/resources/web/docs
-      - run: |
-          chmod +x gradlew
-          ./gradlew photon-targeting:jar photon-server:shadowJar -PArchOverride=${{ matrix.arch-override }}
+      - run: ./gradlew photon-targeting:jar photon-server:shadowJar -PArchOverride=${{ matrix.arch-override }}
         if: ${{ (matrix.arch-override != 'none') }}
-      - run: |
-          chmod +x gradlew
-          ./gradlew photon-server:shadowJar
+      - run: ./gradlew photon-server:shadowJar
         if: ${{ (matrix.arch-override == 'none') }}
       - uses: actions/upload-artifact@v4
         with:
@@ -488,6 +479,12 @@ jobs:
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0-beta-6/photonvision_opi5max.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
+          - os: ubuntu-22.04
+            artifact-name: LinuxArm64
+            image_suffix: rock5c
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0-beta-7/photonvision_rock5c.img.xz
+            cpu: cortex-a8
+            image_additional_mb: 1024
 
     runs-on: ${{ matrix.os }}
     name: "Build image - ${{ matrix.image_url }}"
@@ -569,6 +566,7 @@ jobs:
         with:
           files: |
             **/*orangepi5*.xz
+            **/*rock5*.xz
         if: startsWith(github.ref, 'refs/tags/v')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -576,6 +574,7 @@ jobs:
         with:
           files: |
             **/!(*orangepi5*).xz
+            **/!(*rock5*).xz
             **/*.jar
             **/photonlib*.json
             **/photonlib*.zip
@@ -585,7 +584,7 @@ jobs:
 
   dispatch:
     name: dispatch
-    needs: [build-photonlib-vendorjson]
+    needs: [build-photonlib-vendorjson, release]
     runs-on: ubuntu-22.04
     steps:
       - uses: peter-evans/repository-dispatch@v3

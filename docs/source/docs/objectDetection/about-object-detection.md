@@ -7,6 +7,7 @@ PhotonVision supports object detection using neural network accelerator hardware
 For the 2024 season, PhotonVision ships with a **pre-trained NOTE detector** (shown above), as well as a mechanism for swapping in custom models. Future development will focus on enabling lower friction management of multiple custom models.
 
 ```{image} images/notes-ui.png
+
 ```
 
 ## Tracking Objects
@@ -31,6 +32,10 @@ Compared to other pipelines, object detection exposes very few tuning handles. T
 ```
 
 The same area, aspect ratio, and target orientation/sort parameters from {ref}`reflective pipelines <docs/reflectiveAndShape/contour-filtering:Reflective>` are also exposed in the object detection card.
+
+## Letterboxing
+
+Photonvision will letterbox your camera frame to 640x640. This means that if you select a resolution that is larger than 640 it will be scaled down to fit inside a 640x640 frame with black bars if needed. Smaller frames will be scaled up with black bars if needed.
 
 ## Training Custom Models
 

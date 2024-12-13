@@ -20,8 +20,16 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
+from typing import TYPE_CHECKING
+
 from ..packet import Packet
-from ..targeting import *
+from ..targeting import *  # noqa
+
+if TYPE_CHECKING:
+    from ..targeting import MultiTargetPNPResult  # noqa
+    from ..targeting import PhotonPipelineMetadata  # noqa
+    from ..targeting import PhotonPipelineResult  # noqa
+    from ..targeting import PhotonTrackedTarget  # noqa
 
 
 class PhotonPipelineResultSerde:
@@ -34,9 +42,7 @@ class PhotonPipelineResultSerde:
         ret = Packet()
 
         # metadata is of non-intrinsic type PhotonPipelineMetadata
-        ret.encodeBytes(
-            PhotonPipelineMetadata.photonStruct.pack(value.metadata).getData()
-        )
+        ret.encodeBytes(PhotonPipelineMetadata.photonStruct.pack(value.metadata).getData())
 
         # targets is a custom VLA!
         ret.encodeList(value.targets, PhotonTrackedTarget.photonStruct)

@@ -11,4 +11,4 @@ for f in dist/*.whl; do
 done
 
 # Run the test suite
-pytest -rP --full-trace
+pytest -rP
