@@ -64,6 +64,7 @@ import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 
 public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSettings> {
     private CropPipe cropPipe;
+    private final UncropApriltagsPipe uncropPipe;
     private ArucoDetectionPipe arucoDetectionPipe = new ArucoDetectionPipe();
     private ArucoPoseEstimatorPipe singleTagPoseEstimatorPipe = new ArucoPoseEstimatorPipe();
     private final MultiTargetPNPPipe multiTagPNPPipe = new MultiTargetPNPPipe();
@@ -73,12 +74,15 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         super(FrameThresholdType.GREYSCALE);
         settings = new ArucoPipelineSettings();
         cropPipe = new CropPipe(settings.static_width, settings.static_height);
+        uncropPipe = new UncropApriltagsPipe(settings.static_width,settings.static_height);
     }
 
     public ArucoPipeline(ArucoPipelineSettings settings) {
         super(FrameThresholdType.GREYSCALE);
         this.settings = settings;
         cropPipe = new CropPipe(settings.static_width, settings.static_height);
+        uncropPipe = new UncropApriltagsPipe(settings.static_width,settings.static_height);
+
     }
 
     @Override
@@ -154,8 +158,11 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         sumPipeNanosElapsed += croppedFrame.nanosElapsed;
 
         CVPipeResult<List<ArucoDetectionResult>> tagDetectionPipeResult;
+        
+        
         tagDetectionPipeResult = arucoDetectionPipe.run(croppedFrame.output);
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
+        
 
         // If we want to debug the thresholding steps, draw the first step to the color image
         if (settings.debugThreshold) {

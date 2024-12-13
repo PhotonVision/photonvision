@@ -153,11 +153,11 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
         CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult;
         tagDetectionPipeResult = aprilTagDetectionPipe.run(croppedFrame.output);
-
+        
         if (tagDetectionPipeResult.output.size() > 0) {
-            System.out.println("Before - " + tagDetectionPipeResult.output.get(0).getCenterX());
             tagDetectionPipeResult = uncropPipe.run(tagDetectionPipeResult.output);
-            System.out.println("After - " + tagDetectionPipeResult.output.get(0).getCenterX());
+            System.out.println(tagDetectionPipeResult.output.get(0).getHomography()[0]);
+
         }
 
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
@@ -188,6 +188,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         }
 
         croppedFrame.output.release();
+        
 
         // Do multi-tag pose estimation
         Optional<MultiTargetPNPResult> multiTagResult = Optional.empty();
