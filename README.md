@@ -17,7 +17,7 @@ If you are interested in contributing code or documentation to the project, plea
 ## Documentation
 
 - Our main documentation page: [docs.photonvision.org](https://docs.photonvision.org)
-- Photon UI demo: [demo.photonvision.org](https://demo.photonvision.org) (or [manual link](https://photonvision.github.io/photonvision/built-client/))
+- Photon UI demo: [http://photonvision.global/](http://photonvision.global/) (or [manual link](https://photonvision.github.io/photonvision/built-client/))
 - Javadocs: [javadocs.photonvision.org](https://javadocs.photonvision.org) (or [manual link](https://photonvision.github.io/photonvision/built-docs/javadoc/))
 - C++ Doxygen  [cppdocs.photonvision.org](https://cppdocs.photonvision.org) (or [manual link](https://photonvision.github.io/photonvision/built-docs/doxygen/html/))
 
