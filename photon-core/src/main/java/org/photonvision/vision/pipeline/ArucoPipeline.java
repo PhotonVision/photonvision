@@ -74,15 +74,14 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         super(FrameThresholdType.GREYSCALE);
         settings = new ArucoPipelineSettings();
         cropPipe = new CropPipe(settings.static_width, settings.static_height);
-        uncropPipe = new UncropArucoPipe(settings.static_width,settings.static_height);
+        uncropPipe = new UncropArucoPipe(settings.static_width, settings.static_height);
     }
 
     public ArucoPipeline(ArucoPipelineSettings settings) {
         super(FrameThresholdType.GREYSCALE);
         this.settings = settings;
         cropPipe = new CropPipe(settings.static_width, settings.static_height);
-        uncropPipe = new UncropArucoPipe(settings.static_width,settings.static_height);
-
+        uncropPipe = new UncropArucoPipe(settings.static_width, settings.static_height);
     }
 
     @Override
@@ -158,8 +157,7 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         sumPipeNanosElapsed += croppedFrame.nanosElapsed;
 
         CVPipeResult<List<ArucoDetectionResult>> tagDetectionPipeResult;
-        
-        
+
         tagDetectionPipeResult = arucoDetectionPipe.run(croppedFrame.output);
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
         croppedFrame.output.release();

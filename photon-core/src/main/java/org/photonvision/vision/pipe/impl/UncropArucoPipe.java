@@ -2,15 +2,12 @@ package org.photonvision.vision.pipe.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.opencv.core.Rect;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.pipe.CVPipe;
 
-
-public class UncropArucoPipe 
-    extends CVPipe<List<ArucoDetectionResult>, List<ArucoDetectionResult>, Rect> 
-{
+public class UncropArucoPipe
+        extends CVPipe<List<ArucoDetectionResult>, List<ArucoDetectionResult>, Rect> {
 
     public UncropArucoPipe(int width, int height) {
         this.params = new Rect(0, 0, width, height);
@@ -36,11 +33,8 @@ public class UncropArucoPipe
             }
 
             // Create a new ArucoDetectionResult with adjusted coordinates
-            ArucoDetectionResult adjustedDetection = new ArucoDetectionResult(
-                    adjustedXCorners,
-                    adjustedYCorners,
-                    detection.getId()
-            );
+            ArucoDetectionResult adjustedDetection =
+                    new ArucoDetectionResult(adjustedXCorners, adjustedYCorners, detection.getId());
 
             uncroppedDetections.add(adjustedDetection);
         }

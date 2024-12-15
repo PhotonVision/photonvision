@@ -62,7 +62,6 @@ public class UncropApriltagsPipe
         return h;
     }
 
-
     private double[] offsetCorners(AprilTagDetection detection) {
         return new double[] {
             detection.getCornerX(0) + this.params.x,

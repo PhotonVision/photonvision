@@ -33,7 +33,7 @@ public class CropPipe extends CVPipe<CVMat, CVMat, Rect> {
         Mat mat = new Mat();
         in.getMat().copyTo(mat);
         if (fullyCovers(params, mat)) {
-            
+
             return new CVMat(mat);
         }
 

@@ -63,7 +63,6 @@ public class ColoredShapePipeline
         settings = new ColoredShapePipelineSettings();
         cropPipe = new CropPipe(settings.static_width, settings.static_height);
         uncropPipe = new UncropColoredShapePipe(settings.static_width, settings.static_height);
-
     }
 
     public ColoredShapePipeline(ColoredShapePipelineSettings settings) {
@@ -189,9 +188,6 @@ public class ColoredShapePipeline
         CVPipeResult<List<Contour>> findContoursResult =
                 findContoursPipe.run(croppedFrame.output.getMat());
         sumPipeNanosElapsed += findContoursResult.nanosElapsed;
-
-        CVPipeResult<List<Contour>> findContoursPipe = uncropPipe.run(findContoursResult.output);
-        sumPipeNanosElapsed += findContoursPipe.nanosElapsed;
 
         CVPipeResult<List<Contour>> speckleRejectResult =
                 speckleRejectPipe.run(findContoursResult.output);

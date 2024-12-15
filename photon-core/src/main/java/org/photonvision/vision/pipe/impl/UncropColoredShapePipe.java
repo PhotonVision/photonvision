@@ -15,43 +15,56 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
- package org.photonvision.vision.pipe.impl;
+package org.photonvision.vision.pipe.impl;
 
- import java.util.ArrayList;
- import java.util.List;
-
+import java.util.ArrayList;
+import java.util.List;
 import org.opencv.core.MatOfPoint;
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.photonvision.vision.opencv.CVShape;
 import org.photonvision.vision.opencv.Contour;
 import org.photonvision.vision.pipe.CVPipe;
-import org.photonvision.vision.target.PotentialTarget;
-import org.photonvision.vision.target.TrackedTarget;
- 
- /**
-  * A pipe that offsets the coordinates of TrackedTargets (from a ColoredShapePipeline)
-  * back into the original (uncropped) image coordinate system.
-  */
- public class UncropColoredShapePipe
-         extends CVPipe<List<Contour>, List<Contour>, Rect> {
- 
-     public UncropColoredShapePipe(int width, int height) {
-         this.params = new Rect(0, 0, width, height);
-     }
- 
-     @Override
-     protected List<Contour> process(List<Contour> in) {
-         List<Contour> uncroppedTargets = new ArrayList<>();
-        
-        for (Contour target : in) {
-            
-            uncroppedTargets.add(
-                new Contour(new MatOfPoint(target.mat.adjustROI(params.height,-params.height,params.width,-params.width)))
-                );
+
+/**
+ * A pipe that offsets the coordinates of CVShapes (from a ColoredShapePipeline) back into the
+ * original (uncropped) image coordinate system by adjusting their contours.
+ */
+public class UncropColoredShapePipe extends CVPipe<List<CVShape>, List<CVShape>, Rect> {
+
+    public UncropColoredShapePipe(int width, int height) {
+        this.params = new Rect(0, 0, width, height);
+    }
+
+    @Override
+    protected List<CVShape> process(List<CVShape> in) {
+        List<CVShape> uncroppedShapes = new ArrayList<>();
+
+        double dx = this.params.x;
+        double dy = this.params.y;
+
+        for (CVShape shape : in) {
+            Contour originalContour = shape.getContour();
+            Contour shiftedContour = offsetContour(originalContour, dx, dy);
+
+            // Create a new CVShape with the shifted contour and the same shape type
+            CVShape adjustedShape = new CVShape(shiftedContour, shape.shape);
+            uncroppedShapes.add(adjustedShape);
         }
-        
- 
-         return uncroppedTargets;
-     }
- }
- 
+
+        return uncroppedShapes;
+    }
+
+    /** Offsets the given contour by (dx, dy) and returns a new Contour. */
+    private Contour offsetContour(Contour contour, double dx, double dy) {
+        Point[] originalPoints = contour.mat.toArray();
+        Point[] shiftedPoints = new Point[originalPoints.length];
+
+        for (int i = 0; i < originalPoints.length; i++) {
+            shiftedPoints[i] = new Point(originalPoints[i].x + dx, originalPoints[i].y + dy);
+        }
+
+        MatOfPoint newMat = new MatOfPoint(shiftedPoints);
+        return new Contour(newMat);
+    }
+}
