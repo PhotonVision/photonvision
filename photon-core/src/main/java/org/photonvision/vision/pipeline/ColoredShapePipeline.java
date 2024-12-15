@@ -39,6 +39,7 @@ import org.photonvision.vision.target.TrackedTarget;
 public class ColoredShapePipeline
         extends CVPipeline<CVPipelineResult, ColoredShapePipelineSettings> {
     private final CropPipe cropPipe;
+    private final UncropColoredShapePipe uncropPipe;
     private final SpeckleRejectPipe speckleRejectPipe = new SpeckleRejectPipe();
     private final FindContoursPipe findContoursPipe = new FindContoursPipe();
     private final FindPolygonPipe findPolygonPipe = new FindPolygonPipe();
@@ -61,12 +62,15 @@ public class ColoredShapePipeline
         super(PROCESSING_TYPE);
         settings = new ColoredShapePipelineSettings();
         cropPipe = new CropPipe(settings.static_width, settings.static_height);
+        uncropPipe = new UncropColoredShapePipe(settings.static_width, settings.static_height);
+
     }
 
     public ColoredShapePipeline(ColoredShapePipelineSettings settings) {
         super(PROCESSING_TYPE);
         this.settings = settings;
         cropPipe = new CropPipe(settings.static_width, settings.static_height);
+        uncropPipe = new UncropColoredShapePipe(settings.static_width, settings.static_height);
     }
 
     @Override
@@ -186,6 +190,9 @@ public class ColoredShapePipeline
                 findContoursPipe.run(croppedFrame.output.getMat());
         sumPipeNanosElapsed += findContoursResult.nanosElapsed;
 
+        CVPipeResult<List<Contour>> findContoursPipe = uncropPipe.run(findContoursResult.output);
+        sumPipeNanosElapsed += findContoursPipe.nanosElapsed;
+
         CVPipeResult<List<Contour>> speckleRejectResult =
                 speckleRejectPipe.run(findContoursResult.output);
         sumPipeNanosElapsed += speckleRejectResult.nanosElapsed;
@@ -202,6 +209,7 @@ public class ColoredShapePipeline
             sumPipeNanosElapsed += findPolygonsResult.nanosElapsed;
             shapes = findPolygonsResult.output;
         }
+        croppedFrame.output.release();
 
         CVPipeResult<List<CVShape>> filterShapeResult = filterShapesPipe.run(shapes);
         sumPipeNanosElapsed += filterShapeResult.nanosElapsed;

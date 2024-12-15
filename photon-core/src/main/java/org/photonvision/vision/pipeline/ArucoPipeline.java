@@ -64,7 +64,7 @@ import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 
 public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSettings> {
     private CropPipe cropPipe;
-    private final UncropApriltagsPipe uncropPipe;
+    private final UncropArucoPipe uncropPipe;
     private ArucoDetectionPipe arucoDetectionPipe = new ArucoDetectionPipe();
     private ArucoPoseEstimatorPipe singleTagPoseEstimatorPipe = new ArucoPoseEstimatorPipe();
     private final MultiTargetPNPPipe multiTagPNPPipe = new MultiTargetPNPPipe();
@@ -74,14 +74,14 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         super(FrameThresholdType.GREYSCALE);
         settings = new ArucoPipelineSettings();
         cropPipe = new CropPipe(settings.static_width, settings.static_height);
-        uncropPipe = new UncropApriltagsPipe(settings.static_width,settings.static_height);
+        uncropPipe = new UncropArucoPipe(settings.static_width,settings.static_height);
     }
 
     public ArucoPipeline(ArucoPipelineSettings settings) {
         super(FrameThresholdType.GREYSCALE);
         this.settings = settings;
         cropPipe = new CropPipe(settings.static_width, settings.static_height);
-        uncropPipe = new UncropApriltagsPipe(settings.static_width,settings.static_height);
+        uncropPipe = new UncropArucoPipe(settings.static_width,settings.static_height);
 
     }
 
@@ -89,7 +89,7 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
     protected void setPipeParamsImpl() {
         Rect staticCrop = settings.getStaticCrop();
         cropPipe.setParams(staticCrop);
-
+        uncropPipe.setParams(staticCrop);
         var params = new ArucoDetectionPipeParams();
         // sanitize and record settings
 
@@ -162,7 +162,11 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         
         tagDetectionPipeResult = arucoDetectionPipe.run(croppedFrame.output);
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
-        
+        croppedFrame.output.release();
+
+        if (tagDetectionPipeResult.output.size() > 0) {
+            tagDetectionPipeResult = uncropPipe.run(tagDetectionPipeResult.output);
+        }
 
         // If we want to debug the thresholding steps, draw the first step to the color image
         if (settings.debugThreshold) {
