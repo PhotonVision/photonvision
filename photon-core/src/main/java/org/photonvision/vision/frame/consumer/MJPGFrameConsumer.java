@@ -141,7 +141,7 @@ public class MJPGFrameConsumer implements AutoCloseable {
             case kRGB565 -> "RGB565";
             case kBGR -> "BGR";
             case kGray -> "Gray";
-            case kUYVY, kUnknown, kY16 -> "Unknown";
+            case kUYVY, kUnknown, kY16, kBGRA -> "Unknown";
         };
     }
 
