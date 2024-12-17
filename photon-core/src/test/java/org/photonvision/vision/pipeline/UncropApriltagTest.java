@@ -84,21 +84,28 @@ public class UncropApriltagTest {
         Assertions.assertEquals(corners.get(3).x, croppedCorners.get(3).x, acceptedDelta);
         Assertions.assertEquals(corners.get(3).y, croppedCorners.get(3).y, acceptedDelta);
 
+        Assertions.assertEquals(target.getArea(), croppedTarget.getArea(), acceptedDelta);
+        Assertions.assertEquals(target.getSkew(), croppedTarget.getSkew(), acceptedDelta);
+        Assertions.assertEquals(target.getYaw(), croppedTarget.getYaw(), acceptedDelta);
+        Assertions.assertEquals(target.getPitch(), croppedTarget.getPitch(), acceptedDelta);
+
         var pose = target.getBestCameraToTarget3d();
         var croppedPose = croppedTarget.getBestCameraToTarget3d();
+
+        double acceptedPoseDelta = 0.005;
         // Test pose estimate translation and rotation
         Assertions.assertEquals(
-                pose.getTranslation().getX(), croppedPose.getTranslation().getX(), acceptedDelta);
+                pose.getTranslation().getX(), croppedPose.getTranslation().getX(), acceptedPoseDelta);
         Assertions.assertEquals(
-                pose.getTranslation().getY(), croppedPose.getTranslation().getY(), acceptedDelta);
+                pose.getTranslation().getY(), croppedPose.getTranslation().getY(), acceptedPoseDelta);
         Assertions.assertEquals(
-                pose.getTranslation().getZ(), croppedPose.getTranslation().getZ(), acceptedDelta);
+                pose.getTranslation().getZ(), croppedPose.getTranslation().getZ(), acceptedPoseDelta);
         Assertions.assertEquals(
-                pose.getRotation().getX(), croppedPose.getRotation().getX(), acceptedDelta);
+                pose.getRotation().getX(), croppedPose.getRotation().getX(), acceptedPoseDelta);
         Assertions.assertEquals(
-                pose.getRotation().getY(), croppedPose.getRotation().getY(), acceptedDelta);
+                pose.getRotation().getY(), croppedPose.getRotation().getY(), acceptedPoseDelta);
         Assertions.assertEquals(
-                pose.getRotation().getZ(), croppedPose.getRotation().getZ(), acceptedDelta);
+                pose.getRotation().getZ(), croppedPose.getRotation().getZ(), acceptedPoseDelta);
     }
 
     private static void printTestResults(CVPipelineResult pipelineResult) {
