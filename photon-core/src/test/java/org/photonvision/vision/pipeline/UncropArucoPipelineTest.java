@@ -73,25 +73,26 @@ public class UncropArucoPipelineTest {
         // Test corner order
         var corners = target.getTargetCorners();
         var croppedCorners = croppedTarget.getTargetCorners();
+        double acceptedDelta = 0.005;
 
-        Assertions.assertEquals(corners.get(0).x, croppedCorners.get(0).x, 0.1);
-        Assertions.assertEquals(corners.get(0).y, croppedCorners.get(0).y, 0.1);
-        Assertions.assertEquals(corners.get(1).x, croppedCorners.get(1).x, 0.1);
-        Assertions.assertEquals(corners.get(1).y, croppedCorners.get(1).y, 0.1);
-        Assertions.assertEquals(corners.get(2).x, croppedCorners.get(2).x, 0.1);
-        Assertions.assertEquals(corners.get(2).y, croppedCorners.get(2).y, 0.1);
-        Assertions.assertEquals(corners.get(3).x, croppedCorners.get(3).x, 0.1);
-        Assertions.assertEquals(corners.get(3).y, croppedCorners.get(3).y, 0.1);
+        Assertions.assertEquals(corners.get(0).x, croppedCorners.get(0).x, acceptedDelta);
+        Assertions.assertEquals(corners.get(0).y, croppedCorners.get(0).y, acceptedDelta);
+        Assertions.assertEquals(corners.get(1).x, croppedCorners.get(1).x, acceptedDelta);
+        Assertions.assertEquals(corners.get(1).y, croppedCorners.get(1).y, acceptedDelta);
+        Assertions.assertEquals(corners.get(2).x, croppedCorners.get(2).x, acceptedDelta);
+        Assertions.assertEquals(corners.get(2).y, croppedCorners.get(2).y, acceptedDelta);
+        Assertions.assertEquals(corners.get(3).x, croppedCorners.get(3).x, acceptedDelta);
+        Assertions.assertEquals(corners.get(3).y, croppedCorners.get(3).y, acceptedDelta);
 
         var pose = target.getBestCameraToTarget3d();
         var croppedPose = croppedTarget.getBestCameraToTarget3d();
         // Test pose estimate translation and rotation
-        Assertions.assertEquals(pose.getTranslation().getX(), croppedPose.getTranslation().getX(), 0.2);
-        Assertions.assertEquals(pose.getTranslation().getY(), croppedPose.getTranslation().getY(), 0.2);
-        Assertions.assertEquals(pose.getTranslation().getZ(), croppedPose.getTranslation().getZ(), 0.2);
-        Assertions.assertEquals(pose.getRotation().getX(), croppedPose.getRotation().getX(), 0.2);
-        Assertions.assertEquals(pose.getRotation().getY(), croppedPose.getRotation().getY(), 0.2);
-        Assertions.assertEquals(pose.getRotation().getZ(), croppedPose.getRotation().getZ(), 0.2);
+        Assertions.assertEquals(pose.getTranslation().getX(), croppedPose.getTranslation().getX(), acceptedDelta);
+        Assertions.assertEquals(pose.getTranslation().getY(), croppedPose.getTranslation().getY(), acceptedDelta);
+        Assertions.assertEquals(pose.getTranslation().getZ(), croppedPose.getTranslation().getZ(), acceptedDelta);
+        Assertions.assertEquals(pose.getRotation().getX(), croppedPose.getRotation().getX(), acceptedDelta);
+        Assertions.assertEquals(pose.getRotation().getY(), croppedPose.getRotation().getY(), acceptedDelta);
+        Assertions.assertEquals(pose.getRotation().getZ(), croppedPose.getRotation().getZ(), acceptedDelta);
     }
 
     private static void printTestResults(CVPipelineResult pipelineResult) {

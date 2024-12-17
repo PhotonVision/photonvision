@@ -1,6 +1,5 @@
 package org.photonvision.vision.pipeline;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.ConfigManager;
@@ -8,18 +7,16 @@ import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
-import org.photonvision.vision.target.TrackedTarget;
 
 public class UncropColoredShapeTest {
-    
 
     @BeforeEach
     public void setup() {
         TestUtils.loadLibraries();
         ConfigManager.getInstance().load();
     }
-    
-     @Test
+
+    @Test
     public void testReflective() {
         var pipeline = new ReflectivePipeline();
 
@@ -38,24 +35,26 @@ public class UncropColoredShapeTest {
 
         TestUtils.showImage(
                 pipelineResult.inputAndOutputFrame.processedImage.getMat(), "Pipeline output");
-        
+
         pipeline.getSettings().static_x = 100;
 
         CVPipelineResult croppedResults;
-        croppedResults = pipeline.run(frameProvider.get(),QuirkyCamera.DefaultCamera);
+        croppedResults = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
 
         printTestResults(croppedResults);
         var outputPipe = new OutputStreamPipeline();
 
         var ret_cropped =
                 outputPipe.process(
-                    croppedResults.inputAndOutputFrame, pipeline.getSettings(), croppedResults.targets);
+                        croppedResults.inputAndOutputFrame, pipeline.getSettings(), croppedResults.targets);
 
-        TestUtils.showImage(ret_cropped.inputAndOutputFrame.processedImage.getMat(), "Cropped Pipeline output", 999999);
+        TestUtils.showImage(
+                ret_cropped.inputAndOutputFrame.processedImage.getMat(), "Cropped Pipeline output", 999999);
         // TrackedTarget target = pipelineResult.targets.get(0);
         // TrackedTarget cropped = croppedResults.targets.get(0);
 
-        // Assertions.assertEquals(target.getTargetCorners().get(0).x, cropped.getTargetCorners().get(0).x, 1);
+        // Assertions.assertEquals(target.getTargetCorners().get(0).x,
+        // cropped.getTargetCorners().get(0).x, 1);
 
     }
 

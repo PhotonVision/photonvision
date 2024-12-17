@@ -39,6 +39,7 @@ import org.photonvision.vision.target.TrackedTarget;
 public class ObjectDetectionPipeline
         extends CVPipeline<CVPipelineResult, ObjectDetectionPipelineSettings> {
     private final CropPipe cropPipe;
+    private final UncropObjectDetectionPipe uncropPipe;
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
     private final ObjectDetectionPipe objectDetectorPipe = new ObjectDetectionPipe();
     private final SortContoursPipe sortContoursPipe = new SortContoursPipe();
@@ -51,18 +52,21 @@ public class ObjectDetectionPipeline
         super(PROCESSING_TYPE);
         settings = new ObjectDetectionPipelineSettings();
         cropPipe = new CropPipe(settings.static_width, settings.static_height);
+        uncropPipe = new UncropObjectDetectionPipe(settings.static_width, settings.static_height);
     }
 
     public ObjectDetectionPipeline(ObjectDetectionPipelineSettings settings) {
         super(PROCESSING_TYPE);
         this.settings = settings;
         cropPipe = new CropPipe(settings.static_width, settings.static_height);
+        uncropPipe = new UncropObjectDetectionPipe(settings.static_width, settings.static_height);
     }
 
     @Override
     protected void setPipeParamsImpl() {
         Rect staticCrop = settings.getStaticCrop();
         cropPipe.setParams(staticCrop);
+        uncropPipe.setParams(staticCrop);
 
         var params = new ObjectDetectionPipeParams();
         params.confidence = settings.confidence;
@@ -128,6 +132,11 @@ public class ObjectDetectionPipeline
 
         CVPipeResult<List<NeuralNetworkPipeResult>> rknnResult =
                 objectDetectorPipe.run(croppedFrame.output);
+        sumPipeNanosElapsed += rknnResult.nanosElapsed;
+
+        croppedFrame.output.release();
+        rknnResult = uncropPipe.run(rknnResult.output);
+
         sumPipeNanosElapsed += rknnResult.nanosElapsed;
 
         var names = objectDetectorPipe.getClassNames();

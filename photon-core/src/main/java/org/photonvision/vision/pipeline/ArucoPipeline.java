@@ -162,9 +162,8 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
         croppedFrame.output.release();
 
-        if (tagDetectionPipeResult.output.size() > 0) {
-            tagDetectionPipeResult = uncropPipe.run(tagDetectionPipeResult.output);
-        }
+        tagDetectionPipeResult = uncropPipe.run(tagDetectionPipeResult.output);
+        sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
 
         // If we want to debug the thresholding steps, draw the first step to the color image
         if (settings.debugThreshold) {
