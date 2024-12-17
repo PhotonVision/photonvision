@@ -479,6 +479,12 @@ jobs:
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0-beta-6/photonvision_opi5max.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
+          - os: ubuntu-22.04
+            artifact-name: LinuxArm64
+            image_suffix: rock5c
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0-beta-7/photonvision_rock5c.img.xz
+            cpu: cortex-a8
+            image_additional_mb: 1024
 
     runs-on: ${{ matrix.os }}
     name: "Build image - ${{ matrix.image_url }}"
@@ -560,6 +566,7 @@ jobs:
         with:
           files: |
             **/*orangepi5*.xz
+            **/*rock5*.xz
         if: startsWith(github.ref, 'refs/tags/v')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -567,6 +574,7 @@ jobs:
         with:
           files: |
             **/!(*orangepi5*).xz
+            **/!(*rock5*).xz
             **/*.jar
             **/photonlib*.json
             **/photonlib*.zip
