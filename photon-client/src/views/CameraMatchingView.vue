@@ -93,7 +93,7 @@ const disabledVisionModules = computed(() => useStateStore().vsmState.disabledCo
 
 <template>
   <div class="pa-3">
-    <v-card dark class="mb-3 pr-6 pb-3" style="background-color: #006492">
+    <v-card dark class="mb-3 pr-6 pb-3" color="primary">
       <v-card-title style="display: flex; justify-content: space-between">
         <span class="ml-3">Active Vision Modules</span>
       </v-card-title>
@@ -108,12 +108,22 @@ const disabledVisionModules = computed(() => useStateStore().vsmState.disabledCo
         rounded
         dark
         color="red"
-        >No VisionModules created :( Activate a camera to get started!</v-banner
+        >No vision modules created. Activate a camera to get started!</v-banner
       >
-      <v-row class="ml-3">
+      <v-row
+        class="ml-3"
+        v-if="
+          !(
+            useCameraSettingsStore().cameras.length === 0 ||
+            (useCameraSettingsStore().cameras.length === 1 &&
+              JSON.stringify(useCameraSettingsStore().cameras[0]) === JSON.stringify(PlaceholderCameraSettings))
+          )
+        "
+      >
         <v-card
           dark
           class="camera-card pa-4 mb-4 mr-3"
+          color="primary"
           v-for="(module, index) in activeVisionModules"
           v-if="JSON.stringify(module) !== JSON.stringify(PlaceholderCameraSettings)"
           :value="index"
@@ -203,21 +213,21 @@ const disabledVisionModules = computed(() => useStateStore().vsmState.disabledCo
       </v-row>
     </v-card>
 
-    <v-card dark class="mb-3 pr-6 pb-3" style="background-color: #006492">
+    <v-card dark class="mb-3 pr-6 pb-3" color="primary">
       <v-card-title>
         <span> Disabled Vision Modules </span>
       </v-card-title>
 
-      <span class="ml-3" v-if="disabledVisionModules.length === 0">No unassigned cameras to show :)</span>
+      <span class="ml-3" v-if="disabledVisionModules.length === 0">No unassigned cameras to show.</span>
 
-      <v-row class="ml-3 mb-0">
+      <v-row class="ml-3 mb-0" v-if="disabledVisionModules.length > 0">
         <v-card dark class="camera-card pa-4 mb-4 mr-3" v-for="(module, index) in disabledVisionModules" :value="index">
           <v-card-title class="pb-8">{{ module.nickname }}</v-card-title>
           <v-card-text>
             <span>Matched to camera:</span>
             <PvCameraInfoCard :camera="module.matchedCameraInfo" />
 
-            <v-simple-table dense height="100%" class="camera-card-table mt-2">
+            <v-simple-table dense height="100%" class="mt-2">
               <tbody>
                 <tr>
                   <td>Device Path</td>
@@ -255,47 +265,36 @@ const disabledVisionModules = computed(() => useStateStore().vsmState.disabledCo
       </v-row>
     </v-card>
 
-    <v-card dark class="mb-3 pr-6 pb-3" style="background-color: #006492">
+    <v-card dark class="mb-3 pr-6 pb-3" color="primary">
       <v-card-title>
         <span> Unassigned Cameras </span>
       </v-card-title>
 
-      <span class="ml-3" v-if="unmatchedCameras.length === 0">No unassigned cameras to show :)</span>
+      <v-banner
+        class="pa-2 ma-3"
+        v-if="
+          unmatchedCameras.length === 0 &&
+          (useCameraSettingsStore().cameras.length === 0 ||
+            (useCameraSettingsStore().cameras.length === 1 &&
+              JSON.stringify(useCameraSettingsStore().cameras[0]) === JSON.stringify(PlaceholderCameraSettings)))
+        "
+        rounded
+        dark
+        color="red"
+        >No cameras connected. Plug one in to get started!</v-banner
+      >
 
-      <v-row class="ml-3 mb-0">
-        <v-banner
-          v-if="unmatchedCameras.length === 0 && useCameraSettingsStore().cameras.length === 0"
-          rounded
-          dark
-          color="red"
-          >No cameras connected :( Plug one in to get started!</v-banner
-        >
+      <span class="ml-3" v-if="unmatchedCameras.length === 0">No unassigned cameras to show.</span>
 
-        <v-card class="mb-3" v-for="(camera, index) in unmatchedCameras" :key="index">
+      <v-row class="ml-3 mb-0" v-if="unmatchedCameras.length > 0">
+        <v-card class="mb-3 pa-8" v-for="(camera, index) in unmatchedCameras" :key="index" color="primary">
           <PvCameraInfoCard :camera="camera" />
 
-          <v-simple-table dense height="100%" class="camera-card-table mt-2">
-            <tbody>
-              <tr>
-                <td>Actions</td>
-                <td>
-                  <v-btn class="ma-2" @click="activateCamera(camera)" color="primary">Activate</v-btn>
-                </td>
-              </tr>
-            </tbody>
-          </v-simple-table>
+          <v-row justify="end">
+            <v-btn class="ma-2" @click="activateCamera(camera)" color="primary">Activate</v-btn>
+          </v-row>
         </v-card>
       </v-row>
     </v-card>
   </div>
 </template>
-
-<style scoped>
-.camera-card {
-  background-color: #005281 !important;
-}
-
-.camera-card-table {
-  background-color: #b49b0d !important;
-}
-</style>

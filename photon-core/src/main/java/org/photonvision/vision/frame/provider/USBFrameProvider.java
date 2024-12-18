@@ -20,7 +20,6 @@ package org.photonvision.vision.frame.provider;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.CvSink;
 import edu.wpi.first.cscore.UsbCamera;
-
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.opencv.CVMat;
@@ -38,10 +37,13 @@ public class USBFrameProvider extends CpuImageProcessor {
     private Runnable connectedCallback;
 
     @SuppressWarnings("SpellCheckingInspection")
-    public USBFrameProvider(UsbCamera camera, VisionSourceSettables visionSettables, Runnable connectedCallback) {
+    public USBFrameProvider(
+            UsbCamera camera, VisionSourceSettables visionSettables, Runnable connectedCallback) {
         this.camera = camera;
         this.cvSink = CameraServer.getVideo(this.camera);
-        this.logger = new Logger(USBFrameProvider.class, visionSettables.getConfiguration().nickname, LogGroup.Camera);
+        this.logger =
+                new Logger(
+                        USBFrameProvider.class, visionSettables.getConfiguration().nickname, LogGroup.Camera);
         this.cvSink.setEnabled(true);
 
         this.settables = visionSettables;

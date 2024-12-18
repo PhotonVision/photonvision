@@ -61,13 +61,10 @@ const needsCamerasConfigured = computed<boolean>(() => {
       </v-list-item>
       <v-list-item link to="/cameraConfigs">
         <v-list-item-icon>
-          <v-icon>mdi-notebook</v-icon>
+          <v-icon :class="{ 'red--text': needsCamerasConfigured }">mdi-notebook</v-icon>
         </v-list-item-icon>
-        <v-list-item-content v-if="needsCamerasConfigured">
-          <v-list-item-title>Needs Camera Matching! needs matching</v-list-item-title>
-        </v-list-item-content>
-        <v-list-item-content v-if="!needsCamerasConfigured">
-          <v-list-item-title>Camera Matching</v-list-item-title>
+        <v-list-item-content>
+          <v-list-item-title :class="{ 'red--text': needsCamerasConfigured }">Camera Matching</v-list-item-title>
         </v-list-item-content>
       </v-list-item>
       <v-list-item link to="/docs">
