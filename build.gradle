@@ -39,7 +39,7 @@ ext {
     libcameraDriverVersion = "dev-v2023.1.0-15-gc8988b3"
     rknnVersion = "dev-v2024.0.1-4-g0db16ac"
     frcYear = "2025"
-    mrcalVersion = "dev-v2024.0.0-29-g1cbb7aa";
+    mrcalVersion = "v2025.0.0";
 
 
     pubVersion = versionString
