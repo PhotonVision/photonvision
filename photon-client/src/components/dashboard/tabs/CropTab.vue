@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { type AprilTagPipelineSettings, PipelineType } from "@/types/PipelineTypes";
+import { type ActivePipelineSettings, PipelineType } from "@/types/PipelineTypes";
 import PvSlider from "@/components/common/pv-slider.vue";
 import { computed, getCurrentInstance } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-const currentPipelineSettings = computed<AprilTagPipelineSettings>(
-  () => useCameraSettingsStore().currentPipelineSettings as AprilTagPipelineSettings
+const currentPipelineSettings = computed<ActivePipelineSettings>(
+  () => useCameraSettingsStore().currentPipelineSettings as ActivePipelineSettings
 );
 const frame_width = computed(() => useCameraSettingsStore().currentVideoFormat.resolution.width);
 const frame_height = computed(() => useCameraSettingsStore().currentVideoFormat.resolution.height);
@@ -17,7 +17,7 @@ const interactiveCols = computed(() =>
 );
 </script>
 <template>
-  <div v-if="currentPipelineSettings.pipelineType === PipelineType.AprilTag">
+  <div v-if="currentPipelineSettings.pipelineType !== PipelineType.Reflective">
     <!-- static crop -->
     <span>Static Crop</span>
     <pv-slider
