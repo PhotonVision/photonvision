@@ -17,7 +17,7 @@
 
 package org.photonvision.common.logging;
 
-import edu.wpi.first.util.RuntimeDetector;
+import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.jni.QueuedFileLogger;
 
@@ -39,7 +39,7 @@ public class KernelLogLogger {
     Logger logger = new Logger(KernelLogLogger.class, LogGroup.General);
 
     public KernelLogLogger() {
-        if (RuntimeDetector.isLinux()) {
+        if (Platform.isLinux()) {
             listener = new QueuedFileLogger("/var/log/kern.log");
         } else {
             System.out.println("NOT for klogs");
