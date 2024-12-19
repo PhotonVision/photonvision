@@ -18,8 +18,7 @@ const interactiveCols = computed(() =>
 </script>
 <template>
   <div v-if="currentPipelineSettings.pipelineType !== PipelineType.Reflective">
-    <!-- static crop -->
-    <span>Static Crop</span>
+    <v-card-subtitle class="white--text">Static Crop</v-card-subtitle>
     <pv-slider
       v-model="currentPipelineSettings.static_x"
       class="pt-2"

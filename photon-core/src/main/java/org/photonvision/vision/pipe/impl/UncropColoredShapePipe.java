@@ -31,7 +31,6 @@ import org.photonvision.vision.pipe.CVPipe;
  * original (uncropped) image coordinate system by adjusting their contours.
  */
 public class UncropColoredShapePipe extends CVPipe<List<CVShape>, List<CVShape>, Rect> {
-
     public UncropColoredShapePipe(int width, int height) {
         this.params = new Rect(0, 0, width, height);
     }

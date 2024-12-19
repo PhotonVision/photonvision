@@ -25,7 +25,6 @@ import org.photonvision.vision.pipe.CVPipe;
 
 public class UncropApriltagsPipe
         extends CVPipe<List<AprilTagDetection>, List<AprilTagDetection>, Rect> {
-
     public UncropApriltagsPipe(int width, int height) {
         this.params = new Rect(0, 0, width, height);
     }

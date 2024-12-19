@@ -35,15 +35,14 @@ const cameraResolutions = computed(() =>
   )
 );
 const handleResolutionChange = (value: number) => {
-  useCameraSettingsStore().changeCurrentPipelineSetting({ cameraVideoModeIndex: value,
-  }, false);
+  useCameraSettingsStore().changeCurrentPipelineSetting({ cameraVideoModeIndex: value }, false);
   const currResolutions = useCameraSettingsStore().currentVideoFormat.resolution;
-  useCameraSettingsStore().changeCurrentPipelineSetting({ 
+  useCameraSettingsStore().changeCurrentPipelineSetting({
     static_x: 0,
     static_y: 0,
     static_height: currResolutions.height,
-    static_width: currResolutions.width,
-  })
+    static_width: currResolutions.width
+  });
   useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: getNumberOfSkippedDivisors() }, false);
   useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor = 0;
 
