@@ -29,7 +29,7 @@ Limelights have a different installation processes. Simply connect the limelight
 Unless otherwise noted in release notes or if updating from the prior years version, to update PhotonVision after the initial installation, use the offline update option in the settings page with the downloaded jar file from the latest release.
 
 :::{note}
-Limelight 2, 2+, and 3 will need a [custom hardware config file](https://github.com/PhotonVision/photonvision/tree/master/docs/source/docs/advanced-installation/sw_install/files) for lighting to work. Currently only limelight 2 and 2+ files are available.
+Limelight 2, 2+, and 3 will need a [custom hardware config file](https://github.com/PhotonVision/photonvision/tree/main/docs/source/docs/advanced-installation/sw_install/files) for lighting to work. Currently only limelight 2 and 2+ files are available.
 :::
 
 :::{note}

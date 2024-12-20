@@ -60,7 +60,7 @@ Use the `getLatestResult()`/`GetLatestResult()` (Java and C++ respectively) to o
 ```
 
 :::{note}
-Unlike other vision software solutions, using the latest result guarantees that all information is from the same timestamp. This is achievable because the PhotonVision backend sends a byte-packed string of data which is then deserialized by PhotonLib to get target data. For more information, check out the [PhotonLib source code](https://github.com/PhotonVision/photonvision/tree/master/photon-lib).
+Unlike other vision software solutions, using the latest result guarantees that all information is from the same timestamp. This is achievable because the PhotonVision backend sends a byte-packed string of data which is then deserialized by PhotonLib to get target data. For more information, check out the [PhotonLib source code](https://github.com/PhotonVision/photonvision/tree/main/photon-lib).
 :::
 
 ## Checking for Existence of Targets
