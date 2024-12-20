@@ -36,7 +36,7 @@ public abstract class VisionSourceSettables {
                 new Logger(VisionSourceSettables.class, configuration.nickname, LogGroup.VisionModule);
     }
 
-    protected FrameStaticProperties frameStaticProperties;
+    protected FrameStaticProperties frameStaticProperties = null;
     protected HashMap<Integer, VideoMode> videoModes = new HashMap<>();
 
     public CameraConfiguration getConfiguration() {
@@ -120,7 +120,7 @@ public abstract class VisionSourceSettables {
         calculateFrameStaticProps();
     }
 
-    private void calculateFrameStaticProps() {
+    protected void calculateFrameStaticProps() {
         var videoMode = getCurrentVideoMode();
         this.frameStaticProperties =
                 new FrameStaticProperties(

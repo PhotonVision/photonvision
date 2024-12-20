@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { computed, inject } from "vue";
+import { computed, inject, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { PlaceholderCameraSettings, PVCameraInfo, type UiCameraConfiguration } from "@/types/SettingTypes";
 import { getResolutionString } from "@/lib/PhotonUtils";
@@ -89,6 +89,8 @@ const unmatchedCameras = computed(() => {
 
 const activeVisionModules = computed(() => useCameraSettingsStore().cameras);
 const disabledVisionModules = computed(() => useStateStore().vsmState.disabledConfigs);
+
+let isExpanded = ref(false);
 </script>
 
 <template>
@@ -120,96 +122,101 @@ const disabledVisionModules = computed(() => useStateStore().vsmState.disabledCo
           )
         "
       >
-        <v-card
-          dark
-          class="camera-card pa-4 mb-4 mr-3"
-          color="primary"
-          v-for="(module, index) in activeVisionModules"
-          v-if="JSON.stringify(module) !== JSON.stringify(PlaceholderCameraSettings)"
-          :value="index"
-        >
-          <v-card-title class="pb-8">{{ module.nickname }}</v-card-title>
-          <v-card-text>
-            <v-row>
-              <v-col cols="6">
-                <span>Saved camera info:</span>
-                <PvCameraInfoCard :camera="module.matchedCameraInfo" />
-              </v-col>
-              <v-col cols="6">
-                <span>Matched camera info:</span>
-                <PvCameraInfoCard :camera="getMatchedDevice(module)" />
-              </v-col>
-            </v-row>
+        <v-col cols="12">
+          <v-card
+            dark
+            class="camera-card pa-4 mb-4 mr-3"
+            color="secondary"
+            v-for="(module, index) in activeVisionModules"
+            v-if="JSON.stringify(module) !== JSON.stringify(PlaceholderCameraSettings)"
+            :value="index"
+          >
+            <v-card-title class="pb-8">{{ module.nickname }}</v-card-title>
 
-            <v-row>
-              <v-col cols="8">
-                <v-simple-table dense height="100%" class="camera-card-table mt-2">
-                  <tbody>
-                    <tr>
-                      <td>Device Path</td>
-                      <td>
-                        {{ module.cameraPath }}
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>Streams:</td>
-                      <td>
-                        <a :href="formatUrl(module.stream.inputPort)" target="_blank"> Input Stream </a>/<a
-                          :href="formatUrl(module.stream.outputPort)"
-                          target="_blank"
-                        >
-                          Output Stream
-                        </a>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>Pipelines</td>
-                      <td>{{ module.pipelineNicknames.join(", ") }}</td>
-                    </tr>
-                    <tr>
-                      <td>Frames Processed</td>
-                      <td>
-                        {{ useStateStore().backendResults[index].sequenceID }} ({{
-                          useStateStore().backendResults[index].fps
-                        }}
-                        FPS)
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>Connected?</td>
-                      <td>{{ isCameraConnected(module.matchedCameraInfo) }}</td>
-                    </tr>
-                    <tr>
-                      <td>Calibrations</td>
-                      <td>
-                        {{
-                          module.completeCalibrations.map((it) => getResolutionString(it.resolution)).join(", ") ||
-                          "Not calibrated"
-                        }}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>Actions</td>
-                      <td>
-                        <v-btn class="ma-2" @click="deactivateCamera(module.uniqueName)" color="primary"
-                          >Deactivate</v-btn
-                        >
-                      </td>
-                    </tr>
-                  </tbody>
-                </v-simple-table>
-              </v-col>
-              <v-col cols="4">
-                <photon-camera-stream
-                  id="output-camera-stream"
-                  stream-type="Processed"
-                  style="width: 100%; height: auto"
-                />
-              </v-col>
-            </v-row>
-          </v-card-text>
-        </v-card>
+            <v-card-text>
+              <v-btn color="primary" @click="isExpanded = !isExpanded">
+                <v-icon>{{ isExpanded ? "mdi-chevron-up" : "mdi-chevron-down" }} </v-icon>
+                <span>Show Detailed Camera Info</span>
+              </v-btn>
+              <v-expand-transition>
+                <v-row v-if="isExpanded">
+                  <v-col cols="6">
+                    <v-card color="primary">
+                      <span>Saved camera info:</span>
+                      <PvCameraInfoCard :camera="module.matchedCameraInfo" />
+                    </v-card>
+                  </v-col>
+                  <v-col cols="6">
+                    <v-card color="primary">
+                      <span>Matched camera info:</span>
+                      <PvCameraInfoCard :camera="getMatchedDevice(module)" class="m-2" />
+                    </v-card>
+                  </v-col>
+                </v-row>
+              </v-expand-transition>
+              <v-row>
+                <v-col cols="8">
+                  <v-simple-table dark dense height="100%" class="camera-card-table mt-2">
+                    <tbody>
+                      <tr>
+                        <td>Streams:</td>
+                        <td>
+                          <a :href="formatUrl(module.stream.inputPort)" target="_blank"> Input Stream </a>/<a
+                            :href="formatUrl(module.stream.outputPort)"
+                            target="_blank"
+                          >
+                            Output Stream
+                          </a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Pipelines</td>
+                        <td>{{ module.pipelineNicknames.join(", ") }}</td>
+                      </tr>
+                      <tr>
+                        <td>Frames Processed</td>
+                        <td>
+                          {{ useStateStore().backendResults[index].sequenceID }} ({{
+                            useStateStore().backendResults[index].fps
+                          }}
+                          FPS)
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Connected?</td>
+                        <td>{{ isCameraConnected(module.matchedCameraInfo) }}</td>
+                      </tr>
+                      <tr>
+                        <td>Calibrations</td>
+                        <td>
+                          {{
+                            module.completeCalibrations.map((it) => getResolutionString(it.resolution)).join(", ") ||
+                            "Not calibrated"
+                          }}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Actions</td>
+                        <td>
+                          <v-btn class="ma-2 black--text" @click="deactivateCamera(module.uniqueName)" color="accent"
+                            >Deactivate</v-btn
+                          >
+                        </td>
+                      </tr>
+                    </tbody>
+                  </v-simple-table>
+                </v-col>
+                <v-col cols="4">
+                  <photon-camera-stream
+                    id="output-camera-stream"
+                    stream-type="Processed"
+                    style="width: 100%; height: auto"
+                  />
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-card>
+        </v-col>
       </v-row>
     </v-card>
 
@@ -221,11 +228,21 @@ const disabledVisionModules = computed(() => useStateStore().vsmState.disabledCo
       <span class="ml-3" v-if="disabledVisionModules.length === 0">No unassigned cameras to show.</span>
 
       <v-row class="ml-3 mb-0" v-if="disabledVisionModules.length > 0">
-        <v-card dark class="camera-card pa-4 mb-4 mr-3" v-for="(module, index) in disabledVisionModules" :value="index">
+        <v-card
+          dark
+          color="secondary"
+          class="camera-card pa-4 mb-4 mr-3"
+          v-for="(module, index) in disabledVisionModules"
+          :value="index"
+          :key="module"
+        >
           <v-card-title class="pb-8">{{ module.nickname }}</v-card-title>
           <v-card-text>
-            <span>Matched to camera:</span>
-            <PvCameraInfoCard :camera="module.matchedCameraInfo" />
+            <span>Created for camera:</span>
+
+            <v-card color="primary">
+              <PvCameraInfoCard :camera="module.matchedCameraInfo" />
+            </v-card>
 
             <v-simple-table dense height="100%" class="mt-2">
               <tbody>
@@ -255,7 +272,9 @@ const disabledVisionModules = computed(() => useStateStore().vsmState.disabledCo
                 <tr>
                   <td>Actions</td>
                   <td>
-                    <v-btn class="ma-2" @click="reactivateModule(module.uniqueName)" color="primary">Reactivate</v-btn>
+                    <v-btn class="ma-2 black--text" @click="reactivateModule(module.uniqueName)" color="accent"
+                      >Reactivate
+                    </v-btn>
                   </td>
                 </tr>
               </tbody>
@@ -281,20 +300,50 @@ const disabledVisionModules = computed(() => useStateStore().vsmState.disabledCo
         rounded
         dark
         color="red"
-        >No cameras connected. Plug one in to get started!</v-banner
+        >No cameras connected or active. Plug one in or activate an existing one to get started!</v-banner
       >
 
-      <span class="ml-3" v-if="unmatchedCameras.length === 0">No unassigned cameras to show.</span>
-
       <v-row class="ml-3 mb-0" v-if="unmatchedCameras.length > 0">
-        <v-card class="mb-3 pa-8" v-for="(camera, index) in unmatchedCameras" :key="index" color="primary">
-          <PvCameraInfoCard :camera="camera" />
+        <v-card class="mb-3 pa-8" color="secondary" v-for="(camera, index) in unmatchedCameras" :key="index">
+          <v-card color="primary">
+            <PvCameraInfoCard :camera="camera" />
+          </v-card>
 
-          <v-row justify="end">
-            <v-btn class="ma-2" @click="activateCamera(camera)" color="primary">Activate</v-btn>
+          <v-row>
+            <v-btn class="ma-2 mt-5 black--text" @click="activateCamera(camera)" color="accent">Activate Camera</v-btn>
           </v-row>
         </v-card>
       </v-row>
     </v-card>
   </div>
 </template>
+
+<style scoped>
+.v-data-table {
+  background-color: #006492 !important;
+}
+
+a:link {
+  color: rgb(14, 240, 14);
+  background-color: transparent;
+  text-decoration: none;
+}
+
+a:visited {
+  color: pink;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+a:hover {
+  color: red;
+  background-color: transparent;
+  text-decoration: underline;
+}
+
+a:active {
+  color: yellow;
+  background-color: transparent;
+  text-decoration: underline;
+}
+</style>

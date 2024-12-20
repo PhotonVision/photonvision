@@ -401,5 +401,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         cacheVideoModes();
 
         setAllCamDefaults();
+
+        calculateFrameStaticProps();
     }
 }
