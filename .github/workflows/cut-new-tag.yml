@@ -13,6 +13,5 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: actions-ecosystem/action-push-tag@v1
-        with:
-          tag: ${{ github.event.inputs.tag_name }}
+      - run: git tag ${{ github.event.inputs.tag_name }}
+      - run: git push origin ${{ github.event.inputs.tag_name }}
