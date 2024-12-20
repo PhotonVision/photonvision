@@ -1,6 +1,6 @@
 # Aiming at a Target
 
-The following example is from the PhotonLib example repository ([Java](https://github.com/PhotonVision/photonvision/tree/master/photonlib-java-examples/aimattarget)).
+The following example is from the PhotonLib example repository ([Java](https://github.com/PhotonVision/photonvision/tree/main/photonlib-java-examples/aimattarget)).
 
 ## Knowledge and Equipment Needed
 
