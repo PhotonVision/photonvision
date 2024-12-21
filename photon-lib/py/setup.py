@@ -29,7 +29,7 @@ if m:
         split = gitDescribeResult.split("-")
         if len(split) == 3:
             year, commits, sha = split
-            # Chop off leading v from "v2024.1.2", and use "post" for commits to master since
+            # Chop off leading v from "v2024.1.2", and use "post" for commits to main since
             versionString = f"{year[1:]}post{commits}"
             print("using dev release " + versionString)
         else:

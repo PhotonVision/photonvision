@@ -1,13 +1,13 @@
 name: Build
 
 on:
-  # Run on pushes to master and pushed tags, and on pull requests against master, but ignore the docs folder
+  # Run on pushes to main and pushed tags, and on pull requests against main, but ignore the docs folder
   push:
-    branches: [ master ]
+    branches: [ main ]
     tags:
       - 'v*'
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
   merge_group:
 
 jobs:
@@ -205,7 +205,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - container: wpilib/roborio-cross-ubuntu:2024-22.04
+          - container: wpilib/roborio-cross-ubuntu:2025-24.04
             artifact-name: Athena
             build-options: "-Ponlylinuxathena"
           - container: wpilib/raspbian-cross-ubuntu:bullseye-22.04
@@ -557,16 +557,14 @@ jobs:
       - uses: softprops/action-gh-release@v2.0.9
         with:
           files: |
-            **/*orangepi5*.xz
-            **/*rock5*.xz
+            **/@(*orangepi5*|*rock5*).xz
         if: startsWith(github.ref, 'refs/tags/v')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: softprops/action-gh-release@v2.0.9
         with:
           files: |
-            **/!(*orangepi5*).xz
-            **/!(*rock5*).xz
+            **/!(*orangepi5*|*rock5*).xz
             **/*.jar
             **/photonlib*.json
             **/photonlib*.zip
