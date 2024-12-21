@@ -587,11 +587,9 @@ public class VisionModule {
 
         // Pipelines like DriverMode and Calibrate3dPipeline have null output frames
         if (result.inputAndOutputFrame != null
-                && (pipelineManager.getCurrentPipelineSettings() instanceof AdvancedPipelineSettings)) {
-            streamRunnable.updateData(
-                    result.inputAndOutputFrame,
-                    (AdvancedPipelineSettings) pipelineManager.getCurrentPipelineSettings(),
-                    result.targets);
+                && (pipelineManager.getCurrentPipelineSettings()
+                        instanceof AdvancedPipelineSettings settings)) {
+            streamRunnable.updateData(result.inputAndOutputFrame, settings, result.targets);
             // The streamRunnable manages releasing in this case
         } else {
             consumeResults(result.inputAndOutputFrame, result.targets);
@@ -615,9 +613,9 @@ public class VisionModule {
     }
 
     public void setTargetModel(TargetModel targetModel) {
-        var settings = pipelineManager.getCurrentPipeline().getSettings();
-        if (settings instanceof ReflectivePipelineSettings) {
-            ((ReflectivePipelineSettings) settings).targetModel = targetModel;
+        var pipelineSettings = pipelineManager.getCurrentPipeline().getSettings();
+        if (pipelineSettings instanceof ReflectivePipelineSettings settings) {
+            settings.targetModel = targetModel;
             saveAndBroadcastAll();
         } else {
             logger.error("Cannot set target model of non-reflective pipe! Ignoring...");
