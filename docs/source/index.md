@@ -92,7 +92,6 @@ docs/description
 docs/quick-start/index
 docs/hardware/index
 docs/advanced-installation/index
-docs/settings
 ```
 
 ```{toctree}
