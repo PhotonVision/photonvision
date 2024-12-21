@@ -1,6 +1,4 @@
-plugins {
-    id 'edu.wpi.first.WpilibTools' version '1.3.0'
-}
+apply plugin: 'edu.wpi.first.WpilibTools'
 
 import java.nio.file.Path
 
