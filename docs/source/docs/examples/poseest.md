@@ -205,7 +205,9 @@ During simulation, we periodically update the simulated vision system.
 
 The rest is done behind the scenes.
 
-```{image} images/poseest_demo.mp4
-:alt: Simulated swerve drive and vision system working together in teleoperated mode.
-:width: 1200
+```{raw} html
+<video width="85%" controls>
+    <source src="images/poseest_demo.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+</video>
 ```
