@@ -26,5 +26,3 @@ pluginManagement {
         }
     }
 }
-
-rootProject.name = 'aimattarget'
