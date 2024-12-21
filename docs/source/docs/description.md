@@ -2,7 +2,7 @@
 
 ## Description
 
-PhotonVision is a free, fast, and easy-to-use vision processing solution for the _FIRST_ Robotics Competition. PhotonVision is designed to get vision working on your robot _quickly_, without the significant cost of other similar solutions.
+PhotonVision is a free, fast, and easy-to-use vision processing solution for the _FIRST_ Robotics Competition. PhotonVision is designed to get vision working on your robot _quickly_, but with lower cost than other solutions.
 Using PhotonVision, teams can go from setting up a camera and coprocessor to detecting and tracking AprilTags and other targets by simply tuning sliders. With an easy to use interface, comprehensive documentation, and a feature rich vendor dependency, no experience is necessary to use PhotonVision. No matter your resources, using PhotonVision is easy compared to its alternatives.
 
 ## Advantages
@@ -19,19 +19,15 @@ The PhotonVision user interface is simple and modular, making things easier for 
 
 ### PhotonLib Vendor Dependency
 
-The PhotonLib vendor dependency allows you to easily get necessary target data (without having to work directly with NetworkTables) while also providing utility methods to get distance and position on the field. This helps your team focus less on getting data and more on using it to do cool things. This also has the benefit of having a structure that ensures all data is from the same timestamp, which is helpful for latency compensation.
+The PhotonLib vendor dependency allows you to easily get necessary target data (without having to work directly with NetworkTables) while also providing utility methods to get distance and position on the field. A serialization strategy is used to guarantees data coherency, which is helpful for latency compensation. This helps your team focus less on getting data and more on using it to do cool things.
 
 ### User Calibration
 
 Using PhotonVision allows the user to calibrate for their specific camera, which will get you the best tracking results. This is extremely important as every camera (even if it is the same model) will have it's own quirks and user calibration allows for those to be accounted for.
 
-### High FPS Processing
+### Low Latency, High FPS Processing
 
-Compared to alternative solutions, PhotonVision boasts higher frames per second which allows for a smoother video stream and detection of targets to ensure you aren't losing out on any performance.
-
-### Low Latency
-
-PhotonVision provides low latency processing to make sure you get vision measurements as fast as possible, which makes complex vision tasks easier. We guarantee that all measurements are sent from the same timestamp, making life easier for your programmers.
+PhotonVision exposes specalized hardware on select coprocessors to maximize processing speed. This allows for lower-latency detection of targets to ensure you aren't losing out on any performance.
 
 ### Fully Open Source and Active Developer Community
 

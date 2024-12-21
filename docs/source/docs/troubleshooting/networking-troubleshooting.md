@@ -10,16 +10,11 @@ A few issues make up the majority of support requests. Run through this checklis
   - Ethernet straight from a laptop to a coprocessor will not work (most likely), due to the unreliability of link-local connections.
   - Even if there's a switch between your laptop and coprocessor, you'll still want a radio or router in the loop somehow.
   - The FRC radio is the _only_ router we will officially support due to the innumerable variations between routers.
-- (Raspberry Pi, Orange Pi & Limelight only) have you flashed the correct image, and is it up to date?
-  - Limelights 2/2+ should be flashed using the Limelight 2 image (eg, `photonvision-v2024.2.8-linuxarm64_limelight2.img.xz`).
-  - Limelights 3 should be flashed using the Limelight 3 image (eg, `photonvision-v2024.2.8-linuxarm64_limelight3.img.xz`).
-  - Raspberry Pi devices (including Pi 3, Pi 4, CM3 and CM4) should be flashed using the Raspberry Pi image (eg, `photonvision-v2024.2.8-linuxarm64_RaspberryPi.img.xz`).
-  - Orange Pi 5 devices should be flashed using the Orange Pi 5 image (eg, `photonvision-v2024.2.8-linuxarm64_orangepi5.img.xz`).
-  - Orange Pi 5+ devices should be flashed using the Orange Pi 5+ image (eg, `photonvision-v2024.2.8-linuxarm64_orangepi5plus.img.xz`).
-- Is your robot code using a **2024** version of WPILib, and is your coprocessor using the most up to date **2024** release?
-  - 2022, 2023 and 2024 versions of either cannot be mix-and-matched!
-  - Your PhotonVision version can be checked on the {ref}`settings tab<docs/settings:settings>`.
-- Is your team number correctly set on the {ref}`settings tab<docs/settings:settings>`?
+- (Raspberry Pi, Orange Pi & Limelight only) have you flashed the correct image, and is it [up to date](https://github.com/PhotonVision/photonvision/releases/latest)?
+- Is your robot code using a **2025** version of WPILib, and is your coprocessor using the most up to date **2025** release?
+  - 2022, 2023, 2024, and 2025 versions of either cannot be mix-and-matched!
+  - Your PhotonVision version can be checked on the settings tab.
+- Is your team number correctly set on the settings tab?
 
 ### photonvision.local Not Found
 
@@ -35,7 +30,7 @@ Please check that:
 1\. You don't have the NetworkTables Server on (toggleable in the settings tab). Turn this off when doing work on a robot.
 2\. You have your team number set properly in the settings tab.
 3\. Your camera name in the `PhotonCamera` constructor matches the name in the UI.
-4\. You are using the 2024 version of WPILib and RoboRIO image.
+4\. You are using the 2025 version of WPILib and RoboRIO image.
 5\. Your robot is on.
 
 If all of the above are met and you still have issues, feel free to {ref}`contact us <index:contact us>` and provide the following information:
