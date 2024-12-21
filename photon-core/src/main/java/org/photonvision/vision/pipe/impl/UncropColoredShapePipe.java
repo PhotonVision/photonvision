@@ -46,7 +46,6 @@ public class UncropColoredShapePipe extends CVPipe<List<CVShape>, List<CVShape>,
             Contour originalContour = shape.getContour();
             Contour shiftedContour = offsetContour(originalContour, dx, dy);
 
-            // Create a new CVShape with the shifted contour and the same shape type
             CVShape adjustedShape = new CVShape(shiftedContour, shape.shape);
             uncroppedShapes.add(adjustedShape);
         }
@@ -54,7 +53,6 @@ public class UncropColoredShapePipe extends CVPipe<List<CVShape>, List<CVShape>,
         return uncroppedShapes;
     }
 
-    /** Offsets the given contour by (dx, dy) and returns a new Contour. */
     private Contour offsetContour(Contour contour, double dx, double dy) {
         Point[] originalPoints = contour.mat.toArray();
         Point[] shiftedPoints = new Point[originalPoints.length];

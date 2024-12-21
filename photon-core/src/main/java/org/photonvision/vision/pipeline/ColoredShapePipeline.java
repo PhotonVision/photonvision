@@ -77,7 +77,6 @@ public class ColoredShapePipeline
         Rect staticCrop = settings.getStaticCrop();
         cropPipe.setParams(staticCrop);
         uncropPipe.setParams(staticCrop);
-
         DualOffsetValues dualOffsetValues =
                 new DualOffsetValues(
                         settings.offsetDualPointA,
@@ -208,7 +207,9 @@ public class ColoredShapePipeline
         }
         croppedFrame.output.release();
 
-        CVPipeResult<List<CVShape>> filterShapeResult = filterShapesPipe.run(shapes);
+        CVPipeResult<List<CVShape>> shapesRes = uncropPipe.run(shapes);
+        sumPipeNanosElapsed += shapesRes.nanosElapsed;
+        CVPipeResult<List<CVShape>> filterShapeResult = filterShapesPipe.run(shapesRes.output);
         sumPipeNanosElapsed += filterShapeResult.nanosElapsed;
 
         CVPipeResult<List<PotentialTarget>> sortContoursResult =
