@@ -29,6 +29,7 @@ import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.opencv.core.Rect;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.estimation.TargetModel;
@@ -36,19 +37,24 @@ import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
+import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.AprilTagDetectionPipe;
 import org.photonvision.vision.pipe.impl.AprilTagDetectionPipeParams;
 import org.photonvision.vision.pipe.impl.AprilTagPoseEstimatorPipe;
 import org.photonvision.vision.pipe.impl.AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams;
 import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
+import org.photonvision.vision.pipe.impl.CropPipe;
 import org.photonvision.vision.pipe.impl.MultiTargetPNPPipe;
 import org.photonvision.vision.pipe.impl.MultiTargetPNPPipe.MultiTargetPNPPipeParams;
+import org.photonvision.vision.pipe.impl.UncropApriltagsPipe;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 
 public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipelineSettings> {
+    private final CropPipe cropPipe;
+    private final UncropApriltagsPipe uncropPipe;
     private final AprilTagDetectionPipe aprilTagDetectionPipe = new AprilTagDetectionPipe();
     private final AprilTagPoseEstimatorPipe singleTagPoseEstimatorPipe =
             new AprilTagPoseEstimatorPipe();
@@ -60,15 +66,22 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
     public AprilTagPipeline() {
         super(PROCESSING_TYPE);
         settings = new AprilTagPipelineSettings();
+        cropPipe = new CropPipe(settings.static_width, settings.static_height);
+        uncropPipe = new UncropApriltagsPipe(settings.static_width, settings.static_height);
     }
 
     public AprilTagPipeline(AprilTagPipelineSettings settings) {
         super(PROCESSING_TYPE);
         this.settings = settings;
+        cropPipe = new CropPipe(settings.static_width, settings.static_height);
+        uncropPipe = new UncropApriltagsPipe(settings.static_width, settings.static_height);
     }
 
     @Override
     protected void setPipeParamsImpl() {
+        Rect staticCrop = settings.getStaticCrop();
+        cropPipe.setParams(staticCrop);
+        uncropPipe.setParams(staticCrop);
         // Sanitize thread count - not supported to have fewer than 1 threads
         settings.threads = Math.max(1, settings.threads);
 
@@ -134,8 +147,15 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
             return new CVPipelineResult(frame.sequenceID, 0, 0, List.of(), frame);
         }
 
+        CVPipeResult<CVMat> croppedFrame = cropPipe.run(frame.processedImage);
+
+        sumPipeNanosElapsed += croppedFrame.nanosElapsed;
+
         CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult;
-        tagDetectionPipeResult = aprilTagDetectionPipe.run(frame.processedImage);
+        tagDetectionPipeResult = aprilTagDetectionPipe.run(croppedFrame.output);
+        croppedFrame.output.release();
+
+        tagDetectionPipeResult = uncropPipe.run(tagDetectionPipeResult.output);
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
 
         List<AprilTagDetection> detections = tagDetectionPipeResult.output;
