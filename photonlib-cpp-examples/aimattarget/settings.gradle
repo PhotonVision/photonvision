@@ -1,7 +1,5 @@
 import org.gradle.internal.os.OperatingSystem
 
-rootProject.name = 'aimattarget'
-
 pluginManagement {
     repositories {
         mavenLocal()
@@ -28,3 +26,5 @@ pluginManagement {
         }
     }
 }
+
+rootProject.name = 'aimattarget'
