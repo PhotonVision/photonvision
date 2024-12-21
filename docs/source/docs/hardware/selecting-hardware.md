@@ -29,7 +29,7 @@ Vision processing on one camera stream is usually a CPU-bound operation. Some op
 
 Faster CPU's generally result in lower latency, but eventually with diminishing returns. More cores allow for some improvement, especially if multiple camera streams are being processed.
 
-PhotonVision is most commonly tested around Raspbian (Debian-based) operating systems. 
+PhotonVision is most commonly tested around Raspbian (Debian-based) operating systems.
 
 Other coprocessors can be used but may require some extra work / command line usage in order to get it working properly.
 
@@ -41,7 +41,7 @@ Be sure to select a power supply which regulate's the robot's variable battery v
 
 ### Storage Media
 
-Most single-board computer coprocessors use micro SD cards as their storage media. 
+Most single-board computer coprocessors use micro SD cards as their storage media.
 
 Three important considerations include total storage space, read/write speed, and robustness.
 

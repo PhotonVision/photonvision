@@ -15,7 +15,7 @@
 ## During the Competition
 
 - Use the field calibration time given at the start of the event:
-  - Bring your robot to the field at the allotted time. 
+  - Bring your robot to the field at the allotted time.
   - Make sure the field has match-accurate lighting conditions active.
   - Turn on your robot and pull up the dashboard on your driver station.
   - Point your robot at the targets and ensure you get a consistent tracking (you hold one targets consistently, the ceiling lights aren't detected, etc.).
@@ -27,7 +27,7 @@
   - This will contain camera information/calibration, pipeline information, network settings, etc.
   - In the event of software/hardware failures (IE lost SD Card, broken device), you can then use the "Import Settings" button and select "All Settings" to restore your settings.
   - This effectively works as a snapshot of your PhotonVision data that can be restored at any point.
-- Before every match: 
+- Before every match:
   - Check the ethernet and USB connectors are seated fully.
   - Close streaming dashboards when you don't need them to reduce bandwidth.
 - Stream at as low of a resolution as possible while still detecting AprilTags to stay within field bandwidth limits.

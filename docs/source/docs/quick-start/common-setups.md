@@ -18,12 +18,12 @@ The Orange Pi 5 is the only currently supported device for object detection.
 - 8GB or larger micro SD card
 
 :::{important}
-Industrial grade SD cards from major manufacturers are recommended for robotics applications. For example: Sandisk SDSDQAF3-016G-I . 
+Industrial grade SD cards from major manufacturers are recommended for robotics applications. For example: Sandisk SDSDQAF3-016G-I .
 :::
 
 ## Cameras
 
-Innomaker and Arducam are common manufacturers of hardware designed specifically for vision processing. 
+Innomaker and Arducam are common manufacturers of hardware designed specifically for vision processing.
 
 - AprilTag Detection
   - OV9281
