@@ -207,7 +207,7 @@ The rest is done behind the scenes.
 
 ```{raw} html
 <video width="85%" controls>
-    <source src="images/poseest_demo.mp4" type="video/mp4">
+    <source src="../../_static/assets/poseest_demo.mp4" type="video/mp4">
     Your browser does not support the video tag.
 </video>
 ```
