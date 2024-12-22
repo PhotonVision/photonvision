@@ -64,7 +64,7 @@ const localValue = computed({
         >
           <template #append>
             <v-text-field
-              v-model="localValue"
+              v-model.lazy="localValue"
               dark
               color="accent"
               :max="max"
