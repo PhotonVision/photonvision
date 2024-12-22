@@ -56,12 +56,9 @@ public class CropPipe extends CVPipe<CVMat, CVMat, Rect> {
     }
     @Override
     public void setParams(Rect params) {
-        if(params.width < 16 || params.height < 16)
-        {
-            params.width = 16;
-            params.height = 16;
-        }
-        
+        params.height = Math.max(16, params.height);
+        params.width = Math.max(16, params.width);
+
         super.setParams(params);
     }
 }
