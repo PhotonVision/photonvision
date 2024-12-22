@@ -17,7 +17,7 @@ const interactiveCols = computed(() =>
 );
 </script>
 <template>
-  <div v-if="currentPipelineSettings.pipelineType !== PipelineType.Reflective">
+  <div>
     <v-card-subtitle class="white--text">Static Crop</v-card-subtitle>
     <pv-slider
       v-model="currentPipelineSettings.static_x"
@@ -43,7 +43,7 @@ const interactiveCols = computed(() =>
       :slider-cols="interactiveCols"
       label="Width"
       tooltip="The width of the statically cropped area"
-      :min="1"
+      :min="16"
       :max="frame_width"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ static_width: value }, false)"
     />
@@ -52,7 +52,7 @@ const interactiveCols = computed(() =>
       :slider-cols="interactiveCols"
       label="Height"
       tooltip="The height of the statically cropped area"
-      :min="1"
+      :min="16"
       :max="frame_height"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ static_height: value }, false)"
     />

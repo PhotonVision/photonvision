@@ -54,4 +54,14 @@ public class CropPipe extends CVPipe<CVMat, CVMat, Rect> {
     public static boolean fullyCovers(Rect rect, Mat mat) {
         return rect.x <= 0 && rect.y <= 0 && rect.width >= mat.width() && rect.height >= mat.height();
     }
+    @Override
+    public void setParams(Rect params) {
+        if(params.width < 16 || params.height < 16)
+        {
+            params.width = 16;
+            params.height = 16;
+        }
+        
+        super.setParams(params);
+    }
 }
