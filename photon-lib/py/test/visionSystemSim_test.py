@@ -588,6 +588,7 @@ def test_PoseEstimationRotated() -> None:
     assert pose2.Z() == pytest.approx(0.0, abs=0.01)
     assert pose2.rotation().Z() == pytest.approx(math.radians(-5.0), abs=0.01)
 
+
 def test_TagAmbiguity() -> None:
     visionSysSim = VisionSystemSim("Test")
     camera = PhotonCamera("camera")
@@ -595,7 +596,7 @@ def test_TagAmbiguity() -> None:
     visionSysSim.addCamera(cameraSim, Transform3d())
     cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
     cameraSim.setMinTargetAreaPixels(20.0)
-    
+
     targetPose = Pose3d(Translation3d(2.0, 0.0, 0.0), Rotation3d(0, 0, math.pi))
     visionSysSim.addVisionTargets(
         [VisionTargetSim(targetPose, TargetModel.AprilTag36h11(), 3)]

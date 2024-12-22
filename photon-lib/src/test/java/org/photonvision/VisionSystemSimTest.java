@@ -581,8 +581,7 @@ class VisionSystemSimTest {
         cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(80));
         cameraSim.setMinTargetAreaPixels(20.0);
 
-        final var targetPose =
-                new Pose3d(new Translation3d(2, 0, 0), new Rotation3d(0, 0, Math.PI));
+        final var targetPose = new Pose3d(new Translation3d(2, 0, 0), new Rotation3d(0, 0, Math.PI));
         visionSysSim.addVisionTargets(new VisionTargetSim(targetPose, TargetModel.kAprilTag36h11, 3));
 
         var robotPose = Pose2d.kZero;
