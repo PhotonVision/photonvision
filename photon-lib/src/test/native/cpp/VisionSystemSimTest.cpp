@@ -547,3 +547,28 @@ TEST_F(VisionSystemSimTest, TestPoseEstimationRotated) {
   ASSERT_NEAR(units::degree_t{-5}.convert<units::radians>().to<double>(),
               pose2.Rotation().Z().to<double>(), 0.01);
 }
+
+TEST_F(VisionSystemSimTest, TestTagAmbiguity) {
+  photon::VisionSystemSim visionSysSim{"Test"};
+  photon::PhotonCamera camera{"camera"};
+  photon::PhotonCameraSim cameraSim{&camera};
+  visionSysSim.AddCamera(&cameraSim, frc::Transform3d{});
+  cameraSim.prop.SetCalibration(640, 480, frc::Rotation2d{80_deg});
+  cameraSim.SetMinTargetAreaPixels(20.0);
+
+  frc::Pose3d targetPose{
+      frc::Translation3d{2_m, 0_m, 0_m},
+      frc::Rotation3d{0_rad, 0_rad, units::radian_t{std::numbers::pi}}};
+  visionSysSim.AddVisionTargets({photon::VisionTargetSim{
+      targetPose, photon::kAprilTag36h11, 3}});
+
+  frc::Pose2d robotPose{frc::Translation2d{0_m, 0_m}, frc::Rotation2d{0_deg}};
+  visionSysSim.Update(robotPose);
+  double ambiguity = camera.GetLatestResult().GetBestTarget().GetPoseAmbiguity();
+  ASSERT_TRUE(ambiguity > 0.5);
+
+  robotPose = frc::Pose2d{frc::Translation2d{-2_m, -2_m}, frc::Rotation2d{30_deg}};
+  visionSysSim.Update(robotPose);
+  ambiguity = camera.GetLatestResult().GetBestTarget().GetPoseAmbiguity();
+  ASSERT_TRUE(0 < ambiguity && ambiguity < 0.2);
+}

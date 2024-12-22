@@ -136,52 +136,59 @@ class VisionSystemSimTest {
         // To the right, to the right
         var robotPose = new Pose2d(new Translation2d(5, 0), Rotation2d.fromDegrees(-70));
         visionSysSim.update(robotPose);
+        var result = waitForSequenceNumber(camera, 1);
 
-        assertFalse(camera.getLatestResult().hasTargets());
+        assertFalse(result.hasTargets());
 
         // To the right, to the right
         robotPose = new Pose2d(new Translation2d(5, 0), Rotation2d.fromDegrees(-95));
         visionSysSim.update(robotPose);
+        result = waitForSequenceNumber(camera, 2);
 
-        assertFalse(camera.getLatestResult().hasTargets());
+        assertFalse(result.hasTargets());
 
         // To the left, to the left
         robotPose = new Pose2d(new Translation2d(5, 0), Rotation2d.fromDegrees(90));
         visionSysSim.update(robotPose);
+        result = waitForSequenceNumber(camera, 3);
 
-        assertFalse(camera.getLatestResult().hasTargets());
+        assertFalse(result.hasTargets());
 
         // To the left, to the left
         robotPose = new Pose2d(new Translation2d(5, 0), Rotation2d.fromDegrees(65));
         visionSysSim.update(robotPose);
+        result = waitForSequenceNumber(camera, 4);
 
-        assertFalse(camera.getLatestResult().hasTargets());
+        assertFalse(result.hasTargets());
 
         // now kick, now kick
         robotPose = new Pose2d(new Translation2d(2, 0), Rotation2d.fromDegrees(5));
         visionSysSim.update(robotPose);
+        result = waitForSequenceNumber(camera, 5);
 
-        waitForSequenceNumber(camera, 5);
-        assertTrue(camera.getLatestResult().hasTargets());
+        assertTrue(result.hasTargets());
 
         // now kick, now kick
         robotPose = new Pose2d(new Translation2d(2, 0), Rotation2d.fromDegrees(-5));
         visionSysSim.update(robotPose);
+        result = waitForSequenceNumber(camera, 6);
 
-        assertTrue(camera.getLatestResult().hasTargets());
+        assertTrue(result.hasTargets());
 
         // now walk it by yourself
         robotPose = new Pose2d(new Translation2d(2, 0), Rotation2d.fromDegrees(-179));
         visionSysSim.update(robotPose);
+        result = waitForSequenceNumber(camera, 7);
 
-        assertFalse(camera.getLatestResult().hasTargets());
+        assertFalse(result.hasTargets());
 
         // now walk it by yourself
         visionSysSim.adjustCamera(
                 cameraSim, new Transform3d(new Translation3d(), new Rotation3d(0, 0, Math.PI)));
         visionSysSim.update(robotPose);
+        result = waitForSequenceNumber(camera, 8);
 
-        assertTrue(camera.getLatestResult().hasTargets());
+        assertTrue(result.hasTargets());
     }
 
     @Test
@@ -369,7 +376,7 @@ class VisionSystemSimTest {
         final var targetPose =
                 new Pose3d(new Translation3d(15.98, 0, 1), new Rotation3d(0, 0, Math.PI * 0.98));
         final var robotPose =
-                new Pose3d(new Translation3d(15.98 - Units.feetToMeters(testDist), 0, 0), new Rotation3d());
+                new Pose3d(new Translation3d(15.98 - Units.feetToMeters(testDist), 0, 0), Rotation3d.kZero);
         final var robotToCamera =
                 new Transform3d(
                         new Translation3d(0, 0, Units.feetToMeters(testHeight)),
@@ -431,67 +438,67 @@ class VisionSystemSimTest {
         visionSysSim.addVisionTargets(
                 new VisionTargetSim(
                         targetPoseL.transformBy(
-                                new Transform3d(new Translation3d(0, 0, 0.00), new Rotation3d())),
+                                new Transform3d(new Translation3d(0, 0, 0.00), Rotation3d.kZero)),
                         TargetModel.kAprilTag16h5,
                         1));
         visionSysSim.addVisionTargets(
                 new VisionTargetSim(
                         targetPoseC.transformBy(
-                                new Transform3d(new Translation3d(0, 0, 0.00), new Rotation3d())),
+                                new Transform3d(new Translation3d(0, 0, 0.00), Rotation3d.kZero)),
                         TargetModel.kAprilTag16h5,
                         2));
         visionSysSim.addVisionTargets(
                 new VisionTargetSim(
                         targetPoseR.transformBy(
-                                new Transform3d(new Translation3d(0, 0, 0.00), new Rotation3d())),
+                                new Transform3d(new Translation3d(0, 0, 0.00), Rotation3d.kZero)),
                         TargetModel.kAprilTag16h5,
                         3));
         visionSysSim.addVisionTargets(
                 new VisionTargetSim(
                         targetPoseL.transformBy(
-                                new Transform3d(new Translation3d(0, 0, 1.00), new Rotation3d())),
+                                new Transform3d(new Translation3d(0, 0, 1.00), Rotation3d.kZero)),
                         TargetModel.kAprilTag16h5,
                         4));
         visionSysSim.addVisionTargets(
                 new VisionTargetSim(
                         targetPoseC.transformBy(
-                                new Transform3d(new Translation3d(0, 0, 1.00), new Rotation3d())),
+                                new Transform3d(new Translation3d(0, 0, 1.00), Rotation3d.kZero)),
                         TargetModel.kAprilTag16h5,
                         5));
         visionSysSim.addVisionTargets(
                 new VisionTargetSim(
                         targetPoseR.transformBy(
-                                new Transform3d(new Translation3d(0, 0, 1.00), new Rotation3d())),
+                                new Transform3d(new Translation3d(0, 0, 1.00), Rotation3d.kZero)),
                         TargetModel.kAprilTag16h5,
                         6));
         visionSysSim.addVisionTargets(
                 new VisionTargetSim(
                         targetPoseL.transformBy(
-                                new Transform3d(new Translation3d(0, 0, 0.50), new Rotation3d())),
+                                new Transform3d(new Translation3d(0, 0, 0.50), Rotation3d.kZero)),
                         TargetModel.kAprilTag16h5,
                         7));
         visionSysSim.addVisionTargets(
                 new VisionTargetSim(
                         targetPoseC.transformBy(
-                                new Transform3d(new Translation3d(0, 0, 0.50), new Rotation3d())),
+                                new Transform3d(new Translation3d(0, 0, 0.50), Rotation3d.kZero)),
                         TargetModel.kAprilTag16h5,
                         8));
         visionSysSim.addVisionTargets(
                 new VisionTargetSim(
                         targetPoseL.transformBy(
-                                new Transform3d(new Translation3d(0, 0, 0.75), new Rotation3d())),
+                                new Transform3d(new Translation3d(0, 0, 0.75), Rotation3d.kZero)),
                         TargetModel.kAprilTag16h5,
                         9));
         visionSysSim.addVisionTargets(
                 new VisionTargetSim(
                         targetPoseR.transformBy(
-                                new Transform3d(new Translation3d(0, 0, 0.75), new Rotation3d())),
+                                new Transform3d(new Translation3d(0, 0, 0.75), Rotation3d.kZero)),
                         TargetModel.kAprilTag16h5,
                         10));
         visionSysSim.addVisionTargets(
                 new VisionTargetSim(
                         targetPoseL.transformBy(
-                                new Transform3d(new Translation3d(0, 0, 0.25), new Rotation3d())),
+                                new Transform3d(new Translation3d(0, 0, 0.25), Rotation3d.kZero)),
                         TargetModel.kAprilTag16h5,
                         11));
 
@@ -554,7 +561,7 @@ class VisionSystemSimTest {
                 VisionEstimation.estimateCamPosePNP(
                                 camera.getCameraMatrix().get(),
                                 camera.getDistCoeffs().get(),
-                                camera.getLatestResult().getTargets(),
+                                waitForSequenceNumber(camera, 2).getTargets(),
                                 layout,
                                 TargetModel.kAprilTag16h5)
                         .get();
@@ -563,5 +570,29 @@ class VisionSystemSimTest {
         assertEquals(1, pose.getY(), .01);
         assertEquals(0, pose.getZ(), .01);
         assertEquals(Math.toRadians(5), pose.getRotation().getZ(), 0.01);
+    }
+
+    @Test
+    public void testTagAmbiguity() {
+        var visionSysSim = new VisionSystemSim("Test");
+        var camera = new PhotonCamera(inst, "camera");
+        var cameraSim = new PhotonCameraSim(camera);
+        visionSysSim.addCamera(cameraSim, new Transform3d());
+        cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(80));
+        cameraSim.setMinTargetAreaPixels(20.0);
+
+        final var targetPose =
+                new Pose3d(new Translation3d(2, 0, 0), new Rotation3d(0, 0, Math.PI));
+        visionSysSim.addVisionTargets(new VisionTargetSim(targetPose, TargetModel.kAprilTag36h11, 3));
+
+        var robotPose = Pose2d.kZero;
+        visionSysSim.update(robotPose);
+        double ambiguity = waitForSequenceNumber(camera, 1).getBestTarget().getPoseAmbiguity();
+        assertTrue(ambiguity > 0.5, "Tag ambiguity expected to be high");
+
+        robotPose = new Pose2d(-2, -2, Rotation2d.fromDegrees(30));
+        visionSysSim.update(robotPose);
+        ambiguity = waitForSequenceNumber(camera, 2).getBestTarget().getPoseAmbiguity();
+        assertTrue(0 < ambiguity && ambiguity < 0.2, "Tag ambiguity expected to be low");
     }
 }
