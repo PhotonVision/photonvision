@@ -42,13 +42,12 @@ const localValue = computed({
   get: () => props.value,
   set: (v) => debouncedEmit(parseFloat(v as unknown as string))
 });
-
 </script>
 
 <template>
   <div>
     <v-row dense align="center">
-      <v-col :cols="12 - sliderCols -1">
+      <v-col :cols="12 - sliderCols - 1">
         <tooltipped-label :tooltip="tooltip" :label="label" />
       </v-col>
       <v-col :cols="sliderCols">
