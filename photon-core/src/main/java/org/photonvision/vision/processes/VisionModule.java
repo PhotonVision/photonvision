@@ -435,6 +435,9 @@ public class VisionModule {
         logger.info("Setting pipeline to " + index);
         logger.info("Pipeline name: " + pipelineManager.getPipelineNickname(index));
         pipelineManager.setIndex(index);
+
+        VisionSourceSettables settables = visionSource.getSettables();
+
         var pipelineSettings = pipelineManager.getPipelineSettings(index);
 
         if (pipelineSettings == null) {
@@ -442,8 +445,9 @@ public class VisionModule {
             return false;
         }
 
-        visionSource.getSettables().setVideoModeInternal(pipelineSettings.cameraVideoModeIndex);
-        visionSource.getSettables().setBrightness(pipelineSettings.cameraBrightness);
+        visionRunner.runSyncronously(
+                () -> settables.setVideoModeInternal(pipelineSettings.cameraVideoModeIndex));
+        visionRunner.runSyncronously(() -> settables.setBrightness(pipelineSettings.cameraBrightness));
 
         // If manual exposure, force exposure slider to be valid
         if (!pipelineSettings.cameraAutoExposure) {
@@ -451,9 +455,11 @@ public class VisionModule {
                 pipelineSettings.cameraExposureRaw = 10; // reasonable default
         }
 
-        visionSource.getSettables().setExposureRaw(pipelineSettings.cameraExposureRaw);
+        visionRunner.runSyncronously(
+                () -> settables.setExposureRaw(pipelineSettings.cameraExposureRaw));
         try {
-            visionSource.getSettables().setAutoExposure(pipelineSettings.cameraAutoExposure);
+            visionRunner.runSyncronously(
+                    () -> settables.setAutoExposure(pipelineSettings.cameraAutoExposure));
         } catch (VideoException e) {
             logger.error("Unable to set camera auto exposure!");
             logger.error(e.toString());
@@ -461,7 +467,8 @@ public class VisionModule {
         if (cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
             // If the gain is disabled for some reason, re-enable it
             if (pipelineSettings.cameraGain == -1) pipelineSettings.cameraGain = 75;
-            visionSource.getSettables().setGain(Math.max(0, pipelineSettings.cameraGain));
+            visionRunner.runSyncronously(
+                    () -> settables.setGain(Math.max(0, pipelineSettings.cameraGain)));
         } else {
             pipelineSettings.cameraGain = -1;
         }
@@ -470,21 +477,24 @@ public class VisionModule {
             // If the AWB gains are disabled for some reason, re-enable it
             if (pipelineSettings.cameraRedGain == -1) pipelineSettings.cameraRedGain = 11;
             if (pipelineSettings.cameraBlueGain == -1) pipelineSettings.cameraBlueGain = 20;
-            visionSource.getSettables().setRedGain(Math.max(0, pipelineSettings.cameraRedGain));
-            visionSource.getSettables().setBlueGain(Math.max(0, pipelineSettings.cameraBlueGain));
+            visionRunner.runSyncronously(
+                    () -> settables.setRedGain(Math.max(0, pipelineSettings.cameraRedGain)));
+            visionRunner.runSyncronously(
+                    () -> settables.setBlueGain(Math.max(0, pipelineSettings.cameraBlueGain)));
         } else {
             pipelineSettings.cameraRedGain = -1;
             pipelineSettings.cameraBlueGain = -1;
 
             // All other cameras (than picams) should support AWB temp
-            visionSource.getSettables().setWhiteBalanceTemp(pipelineSettings.cameraWhiteBalanceTemp);
-            visionSource.getSettables().setAutoWhiteBalance(pipelineSettings.cameraAutoWhiteBalance);
+            visionRunner.runSyncronously(
+                    () -> settables.setWhiteBalanceTemp(pipelineSettings.cameraWhiteBalanceTemp));
+            visionRunner.runSyncronously(
+                    () -> settables.setAutoWhiteBalance(pipelineSettings.cameraAutoWhiteBalance));
         }
 
         setVisionLEDs(pipelineSettings.ledMode);
 
-        visionSource.getSettables().getConfiguration().currentPipelineIndex =
-                pipelineManager.getRequestedIndex();
+        settables.getConfiguration().currentPipelineIndex = pipelineManager.getRequestedIndex();
 
         return true;
     }

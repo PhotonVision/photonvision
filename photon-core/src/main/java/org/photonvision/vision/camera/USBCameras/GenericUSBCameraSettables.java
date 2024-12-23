@@ -93,7 +93,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
                         "raw_exposure_absolute", "raw_exposure_time_absolute", "exposure", "raw_Exposure");
 
         if (expProp.isEmpty()) {
-            logger.warn("Could not find expoosure proiperty");
+            logger.warn("Could not find exposure property");
             return;
         } else {
             exposureAbsProp = expProp.get();
@@ -313,7 +313,8 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
             videoModes.put(sortedList.indexOf(videoMode), videoMode);
         }
 
-        // If after all that we still have no video modes, not much we can do besides throw up our hands
+        // If after all that we still have no video modes, not much we can do besides
+        // throw up our hands
         if (videoModes.isEmpty()) {
             logger.info("Camera " + camera.getPath() + " has no video modes supported by PhotonVision");
         }
@@ -395,7 +396,8 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
 
         logger.info("Caching cscore properties");
 
-        // Now that our device is actually connected, we can enumerate properties/video modes
+        // Now that our device is actually connected, we can enumerate properties/video
+        // modes
         setUpExposureProperties();
         setUpWhiteBalanceProperties();
         cacheVideoModes();
