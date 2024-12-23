@@ -70,8 +70,6 @@ const localValue = computed({
       <v-col :cols="1">
         <v-text-field
           :value="localValue"
-          @keyup.enter="localValue = $event.target.value"
-          @blur="localValue = $event.target.value"
           dark
           color="accent"
           :max="max"
@@ -84,6 +82,8 @@ const localValue = computed({
           style="width: 45px"
           :step="step"
           hide-spin-buttons="true"
+          @keyup.enter="localValue = $event.target.value"
+          @blur="localValue = $event.target.value"
         />
       </v-col>
     </v-row>
