@@ -446,55 +446,50 @@ public class VisionModule {
         }
 
         visionRunner.runSyncronously(
-                () -> settables.setVideoModeInternal(pipelineSettings.cameraVideoModeIndex));
-        visionRunner.runSyncronously(() -> settables.setBrightness(pipelineSettings.cameraBrightness));
+                () -> {
+                    settables.setVideoModeInternal(pipelineSettings.cameraVideoModeIndex);
+                    settables.setBrightness(pipelineSettings.cameraBrightness);
 
-        // If manual exposure, force exposure slider to be valid
-        if (!pipelineSettings.cameraAutoExposure) {
-            if (pipelineSettings.cameraExposureRaw < 0)
-                pipelineSettings.cameraExposureRaw = 10; // reasonable default
-        }
+                    // If manual exposure, force exposure slider to be valid
+                    if (!pipelineSettings.cameraAutoExposure) {
+                        if (pipelineSettings.cameraExposureRaw < 0)
+                            pipelineSettings.cameraExposureRaw = 10; // reasonable default
+                    }
 
-        visionRunner.runSyncronously(
-                () -> settables.setExposureRaw(pipelineSettings.cameraExposureRaw));
-        try {
-            visionRunner.runSyncronously(
-                    () -> settables.setAutoExposure(pipelineSettings.cameraAutoExposure));
-        } catch (VideoException e) {
-            logger.error("Unable to set camera auto exposure!");
-            logger.error(e.toString());
-        }
-        if (cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
-            // If the gain is disabled for some reason, re-enable it
-            if (pipelineSettings.cameraGain == -1) pipelineSettings.cameraGain = 75;
-            visionRunner.runSyncronously(
-                    () -> settables.setGain(Math.max(0, pipelineSettings.cameraGain)));
-        } else {
-            pipelineSettings.cameraGain = -1;
-        }
+                    settables.setExposureRaw(pipelineSettings.cameraExposureRaw);
+                    try {
+                        settables.setAutoExposure(pipelineSettings.cameraAutoExposure);
+                    } catch (VideoException e) {
+                        logger.error("Unable to set camera auto exposure!");
+                        logger.error(e.toString());
+                    }
+                    if (cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
+                        // If the gain is disabled for some reason, re-enable it
+                        if (pipelineSettings.cameraGain == -1) pipelineSettings.cameraGain = 75;
+                        settables.setGain(Math.max(0, pipelineSettings.cameraGain));
+                    } else {
+                        pipelineSettings.cameraGain = -1;
+                    }
 
-        if (cameraQuirks.hasQuirk(CameraQuirk.AwbRedBlueGain)) {
-            // If the AWB gains are disabled for some reason, re-enable it
-            if (pipelineSettings.cameraRedGain == -1) pipelineSettings.cameraRedGain = 11;
-            if (pipelineSettings.cameraBlueGain == -1) pipelineSettings.cameraBlueGain = 20;
-            visionRunner.runSyncronously(
-                    () -> settables.setRedGain(Math.max(0, pipelineSettings.cameraRedGain)));
-            visionRunner.runSyncronously(
-                    () -> settables.setBlueGain(Math.max(0, pipelineSettings.cameraBlueGain)));
-        } else {
-            pipelineSettings.cameraRedGain = -1;
-            pipelineSettings.cameraBlueGain = -1;
+                    if (cameraQuirks.hasQuirk(CameraQuirk.AwbRedBlueGain)) {
+                        // If the AWB gains are disabled for some reason, re-enable it
+                        if (pipelineSettings.cameraRedGain == -1) pipelineSettings.cameraRedGain = 11;
+                        if (pipelineSettings.cameraBlueGain == -1) pipelineSettings.cameraBlueGain = 20;
+                        settables.setRedGain(Math.max(0, pipelineSettings.cameraRedGain));
+                        settables.setBlueGain(Math.max(0, pipelineSettings.cameraBlueGain));
+                    } else {
+                        pipelineSettings.cameraRedGain = -1;
+                        pipelineSettings.cameraBlueGain = -1;
 
-            // All other cameras (than picams) should support AWB temp
-            visionRunner.runSyncronously(
-                    () -> settables.setWhiteBalanceTemp(pipelineSettings.cameraWhiteBalanceTemp));
-            visionRunner.runSyncronously(
-                    () -> settables.setAutoWhiteBalance(pipelineSettings.cameraAutoWhiteBalance));
-        }
+                        // All other cameras (than picams) should support AWB temp
+                        settables.setWhiteBalanceTemp(pipelineSettings.cameraWhiteBalanceTemp);
+                        settables.setAutoWhiteBalance(pipelineSettings.cameraAutoWhiteBalance);
+                    }
 
-        setVisionLEDs(pipelineSettings.ledMode);
+                    setVisionLEDs(pipelineSettings.ledMode);
 
-        settables.getConfiguration().currentPipelineIndex = pipelineManager.getRequestedIndex();
+                    settables.getConfiguration().currentPipelineIndex = pipelineManager.getRequestedIndex();
+                });
 
         return true;
     }
