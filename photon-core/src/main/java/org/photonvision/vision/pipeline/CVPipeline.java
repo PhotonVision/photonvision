@@ -73,7 +73,12 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
         if (settings == null) {
             throw new RuntimeException("No settings provided for pipeline!");
         }
+
+        frame.m_tracer.addEpoch("CvPipeline::run");
+        ;
         setPipeParams(frame.frameStaticProperties, settings, cameraQuirks);
+        frame.m_tracer.addEpoch("CvPipeline::setPipeParams");
+        ;
 
         // if (frame.image.getMat().empty()) {
         //     //noinspection unchecked

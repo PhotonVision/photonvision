@@ -41,6 +41,7 @@ import org.photonvision.common.dataflow.websocket.UIPhotonConfiguration;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.EpochPublisher;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
@@ -81,6 +82,7 @@ public class VisionModule {
     private final StatusLEDConsumer statusLEDsConsumer;
     protected final int moduleIndex;
     protected final QuirkyCamera cameraQuirks;
+    private final EpochPublisher epochPublisher;
 
     protected TrackedTarget lastPipelineResultBestTarget;
 
@@ -147,6 +149,9 @@ public class VisionModule {
                         this::setPipeline,
                         pipelineManager::getDriverMode,
                         this::setDriverMode);
+        epochPublisher =
+                new EpochPublisher(
+                        visionSource.getSettables().getConfiguration().nickname);
         uiDataConsumer = new UIDataPublisher(index);
         statusLEDsConsumer = new StatusLEDConsumer(index);
         addResultConsumer(ntConsumer);
@@ -583,7 +588,11 @@ public class VisionModule {
     }
 
     private void consumeResult(CVPipelineResult result) {
+        var tracer = result.inputAndOutputFrame.m_tracer;
+
+        tracer.addEpoch("VisionModule::consume start");
         consumePipelineResult(result);
+        tracer.addEpoch("VisionModule::consume pipelineResult");
 
         // Pipelines like DriverMode and Calibrate3dPipeline have null output frames
         if (result.inputAndOutputFrame != null
@@ -597,6 +606,10 @@ public class VisionModule {
             result.release();
             // In this case we don't bother with a separate streaming thread and we release
         }
+        tracer.addEpoch("VisionModule::consume streams");
+
+        // tracer.printEpochs();
+        epochPublisher.consume(tracer);;
     }
 
     private void consumePipelineResult(CVPipelineResult result) {

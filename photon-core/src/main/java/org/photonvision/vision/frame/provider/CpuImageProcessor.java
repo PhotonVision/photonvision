@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.frame.provider;
 
+import org.photonvision.common.util.OrderedTracer;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
@@ -31,15 +32,20 @@ import org.photonvision.vision.pipe.impl.RotateImagePipe;
 
 public abstract class CpuImageProcessor extends FrameProvider {
     protected static class CapturedFrame {
-        CVMat colorImage;
-        FrameStaticProperties staticProps;
-        long captureTimestamp;
+        public final CVMat colorImage;
+        public final FrameStaticProperties staticProps;
+        public final long captureTimestamp;
+        public final OrderedTracer tracer;
 
         public CapturedFrame(
-                CVMat colorImage, FrameStaticProperties staticProps, long captureTimestampNanos) {
+                CVMat colorImage,
+                FrameStaticProperties staticProps,
+                long captureTimestampNanos,
+                OrderedTracer tracer) {
             this.colorImage = colorImage;
             this.staticProps = staticProps;
             this.captureTimestamp = captureTimestampNanos;
+            this.tracer = tracer;
         }
     }
 
@@ -72,6 +78,7 @@ public abstract class CpuImageProcessor extends FrameProvider {
         {
             CVPipeResult<Void> out = m_rImagePipe.run(input.colorImage.getMat());
             sumNanos += out.nanosElapsed;
+            input.tracer.addEpoch("CpuImageProcessor::rotate");
         }
 
         if (!input.colorImage.getMat().empty()) {
@@ -79,12 +86,15 @@ public abstract class CpuImageProcessor extends FrameProvider {
                 var hsvResult = m_hsvPipe.run(input.colorImage.getMat());
                 outputMat = new CVMat(hsvResult.output);
                 sumNanos += hsvResult.nanosElapsed;
+                input.tracer.addEpoch("CpuImageProcessor::processHSV");
             } else if (m_processType == FrameThresholdType.GREYSCALE) {
                 var result = m_grayPipe.run(input.colorImage.getMat());
                 outputMat = new CVMat(result.output);
                 sumNanos += result.nanosElapsed;
+                input.tracer.addEpoch("CpuImageProcessor::processGray");
             } else {
                 outputMat = new CVMat();
+                input.tracer.addEpoch("CpuImageProcessor::processNone");
             }
 
             ++sequenceID;
@@ -99,7 +109,8 @@ public abstract class CpuImageProcessor extends FrameProvider {
                 outputMat,
                 m_processType,
                 input.captureTimestamp,
-                input.staticProps.rotate(m_rImagePipe.getParams().rotation));
+                input.staticProps.rotate(m_rImagePipe.getParams().rotation),
+                input.tracer);
     }
 
     @Override

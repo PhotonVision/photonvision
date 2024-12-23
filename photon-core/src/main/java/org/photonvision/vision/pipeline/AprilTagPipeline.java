@@ -127,6 +127,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
     @Override
     protected CVPipelineResult process(Frame frame, AprilTagPipelineSettings settings) {
+        frame.m_tracer.addEpoch("AtagPL::process start");
+
         long sumPipeNanosElapsed = 0L;
 
         if (frame.type != FrameThresholdType.GREYSCALE) {
@@ -137,6 +139,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult;
         tagDetectionPipeResult = aprilTagDetectionPipe.run(frame.processedImage);
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
+        frame.m_tracer.addEpoch("AtagPL::process tagDetect");
 
         List<AprilTagDetection> detections = tagDetectionPipeResult.output;
         List<AprilTagDetection> usedDetections = new ArrayList<>();
@@ -162,6 +165,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
             targetList.add(target);
         }
+        frame.m_tracer.addEpoch("AtagPL::process filter");
 
         // Do multi-tag pose estimation
         Optional<MultiTargetPNPResult> multiTagResult = Optional.empty();
@@ -170,6 +174,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
             sumPipeNanosElapsed += multiTagOutput.nanosElapsed;
             multiTagResult = multiTagOutput.output;
         }
+        frame.m_tracer.addEpoch("AtagPL::process multitagPoseEst");
 
         // Do single-tag pose estimation
         if (settings.solvePNPEnabled) {
@@ -231,6 +236,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                 targetList.add(target);
             }
         }
+        frame.m_tracer.addEpoch("AtagPL::process collectResults");
 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
