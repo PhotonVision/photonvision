@@ -149,9 +149,7 @@ public class VisionModule {
                         this::setPipeline,
                         pipelineManager::getDriverMode,
                         this::setDriverMode);
-        epochPublisher =
-                new EpochPublisher(
-                        visionSource.getSettables().getConfiguration().nickname);
+        epochPublisher = new EpochPublisher(visionSource.getSettables().getConfiguration().nickname);
         uiDataConsumer = new UIDataPublisher(index);
         statusLEDsConsumer = new StatusLEDConsumer(index);
         addResultConsumer(ntConsumer);
@@ -609,7 +607,8 @@ public class VisionModule {
         tracer.addEpoch("VisionModule::consume streams");
 
         // tracer.printEpochs();
-        epochPublisher.consume(tracer);;
+        epochPublisher.consume(tracer);
+        ;
     }
 
     private void consumePipelineResult(CVPipelineResult result) {

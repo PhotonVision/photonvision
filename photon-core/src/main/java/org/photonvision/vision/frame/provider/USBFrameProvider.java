@@ -51,7 +51,7 @@ public class USBFrameProvider extends CpuImageProcessor {
         // Hal::initialize was called
         long captureTimeNs = cvSink.grabFrame(mat.getMat()) * 1000;
 
-        tracer.addEpoch("UsbFrameProvider::grabFrrame");
+        tracer.addEpoch("UsbFrameProvider::grabFrame");
 
         if (captureTimeNs == 0) {
             var error = cvSink.getError();
