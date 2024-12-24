@@ -82,10 +82,20 @@ const performanceRecommendation = computed<string>(() => {
     <v-divider style="border-color: white" />
     <v-row class="stream-viewer-container pa-3">
       <v-col v-if="value.includes(0)" class="stream-view">
-        <photon-camera-stream id="input-camera-stream" stream-type="Raw" style="width: 100%; height: auto" />
+        <photon-camera-stream
+          id="input-camera-stream"
+          :camera-settings="useCameraSettingsStore().currentCameraSettings"
+          stream-type="Raw"
+          style="width: 100%; height: auto"
+        />
       </v-col>
       <v-col v-if="value.includes(1)" class="stream-view">
-        <photon-camera-stream id="output-camera-stream" stream-type="Processed" style="width: 100%; height: auto" />
+        <photon-camera-stream
+          id="output-camera-stream"
+          :camera-settings="useCameraSettingsStore().currentCameraSettings"
+          stream-type="Processed"
+          style="width: 100%; height: auto"
+        />
       </v-col>
     </v-row>
   </v-card>

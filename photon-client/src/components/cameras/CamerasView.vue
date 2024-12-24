@@ -86,6 +86,7 @@ const fpsTooLow = computed<boolean>(() => {
         <photon-camera-stream
           v-if="value.includes(0)"
           id="input-camera-stream"
+          :camera-settings="useCameraSettingsStore().currentCameraSettings"
           stream-type="Raw"
           style="max-width: 100%"
         />
@@ -94,6 +95,7 @@ const fpsTooLow = computed<boolean>(() => {
         <photon-camera-stream
           v-if="value.includes(1)"
           id="output-camera-stream"
+          :camera-settings="useCameraSettingsStore().currentCameraSettings"
           stream-type="Processed"
           style="max-width: 100%"
         />

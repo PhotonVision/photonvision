@@ -162,7 +162,7 @@ let isExpanded = ref(false);
                         <td>Streams:</td>
                         <td>
                           <a :href="formatUrl(module.stream.inputPort)" target="_blank"> Input Stream </a> /
-                          <a :href="formatUrl(module.stream.outputPort)" target="_blank" > Output Stream </a>
+                          <a :href="formatUrl(module.stream.outputPort)" target="_blank"> Output Stream </a>
                         </td>
                       </tr>
                       <tr>
@@ -203,11 +203,10 @@ let isExpanded = ref(false);
                   </v-simple-table>
                 </v-col>
                 <v-col cols="4">
-                  <!-- TODO - we really really need to be using photon-camera-stream -->
-                  <!-- <img :src="`http://${inject('backendHostname')}:${module.stream.outputPort}/stream.mjpg`" style="width: 100%;" /> -->
                   <photon-camera-stream
                     id="output-camera-stream"
-                    stream-type="Processed"
+                    :camera-settings="module"
+                    stream-type="Raw"
                     style="width: 100%; height: auto"
                   />
                 </v-col>
@@ -263,7 +262,8 @@ let isExpanded = ref(false);
                   <td>Calibrations</td>
                   <td>
                     {{
-                      module.calibrations.map((it2) => getResolutionString(it2.resolution)).join(", ") || "Not calibrated"
+                      module.calibrations.map((it2) => getResolutionString(it2.resolution)).join(", ") ||
+                      "Not calibrated"
                     }}
                   </td>
                 </tr>
