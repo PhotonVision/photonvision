@@ -25,6 +25,7 @@ import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.camera.QuirkyCamera;
+import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
@@ -59,7 +60,6 @@ public class UncropApriltagTest {
         CVPipelineResult pipelineResult;
         pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
 
-        printTestResults(pipelineResult);
 
         // Draw on input
         var outputPipe = new OutputStreamPipeline();
@@ -69,13 +69,27 @@ public class UncropApriltagTest {
 
         TestUtils.showImage(ret.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
 
-        pipeline.getSettings().static_x = 100;
 
-        CVPipelineResult croppedResults;
-        croppedResults = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
+        
+
+
+        // these numbers are not *accurate*, but they are known and expected
+        var target = pipelineResult.targets.get(0);
+
+        testResultsElements(100,target,frameProvider.get(),pipeline,outputPipe);
+        testResultsElements(200,target,frameProvider.get(),pipeline,outputPipe);
+        testResultsElements(250,target,frameProvider.get(),pipeline,outputPipe);
+        
+         
+    }
+
+    private static void testResultsElements(int amountCropping, TrackedTarget target, Frame frame, AprilTagPipeline pipeline, OutputStreamPipeline outputPipe){
+        
+        pipeline.getSettings().static_x = amountCropping;
+        var croppedResults = pipeline.run(frame, QuirkyCamera.DefaultCamera);
 
         printTestResults(croppedResults);
-
+        
         var ret_cropped =
                 outputPipe.process(
                         croppedResults.inputAndOutputFrame, pipeline.getSettings(), croppedResults.targets);
@@ -83,9 +97,7 @@ public class UncropApriltagTest {
         TestUtils.showImage(
                 ret_cropped.inputAndOutputFrame.processedImage.getMat(), "Cropped Pipeline output", 999999);
         // these numbers are not *accurate*, but they are known and expected
-        var target = pipelineResult.targets.get(0);
         var croppedTarget = croppedResults.targets.get(0);
-
         // Test corner order
         var corners = target.getTargetCorners();
         var croppedCorners = croppedTarget.getTargetCorners();
@@ -104,7 +116,6 @@ public class UncropApriltagTest {
         Assertions.assertEquals(target.getSkew(), croppedTarget.getSkew(), acceptedDelta);
         Assertions.assertEquals(target.getYaw(), croppedTarget.getYaw(), acceptedDelta);
         Assertions.assertEquals(target.getPitch(), croppedTarget.getPitch(), acceptedDelta);
-
         var pose = target.getBestCameraToTarget3d();
         var croppedPose = croppedTarget.getBestCameraToTarget3d();
 
@@ -122,8 +133,10 @@ public class UncropApriltagTest {
                 pose.getRotation().getY(), croppedPose.getRotation().getY(), acceptedPoseDelta);
         Assertions.assertEquals(
                 pose.getRotation().getZ(), croppedPose.getRotation().getZ(), acceptedPoseDelta);
+        Assertions.assertEquals(target.getPoseAmbiguity(),croppedTarget.getPoseAmbiguity(), acceptedPoseDelta);
+        // System.out.println("Ambiguiti: " + target.getPoseAmbiguity());
+        // System.out.println("Cropped Ambiguiti: " + croppedTarget.getPoseAmbiguity());
     }
-
     private static void printTestResults(CVPipelineResult pipelineResult) {
         double fps = 1000 / pipelineResult.getLatencyMillis();
         System.out.println(
