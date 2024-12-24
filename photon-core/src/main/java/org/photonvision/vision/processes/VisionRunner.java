@@ -24,6 +24,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.dataflow.DataChangeService;
+import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.camera.QuirkyCamera;
@@ -89,6 +93,8 @@ public class VisionRunner {
 
     public Future<Void> runSyncronously(Runnable runnable) {
         CompletableFuture<Void> future = new CompletableFuture<>();
+
+        synchronized(runnableList) {
         runnableList.add(
                 () -> {
                     try {
@@ -98,11 +104,14 @@ public class VisionRunner {
                         future.completeExceptionally(ex);
                     }
                 });
+            }
         return future;
     }
 
     public <T> Future<T> runSyncronously(Callable<T> callable) {
         CompletableFuture<T> future = new CompletableFuture<>();
+
+        synchronized(runnableList) {
         runnableList.add(
                 () -> {
                     try {
@@ -112,20 +121,34 @@ public class VisionRunner {
                         future.completeExceptionally(ex);
                     }
                 });
+        }
+
         return future;
     }
 
     private void update() {
+        // wait for the camera to connect
+        while (!frameSupplier.checkCameraConnected() && !Thread.interrupted()) {
+            // yield
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                return;
+            }
+        }
+
         while (!Thread.interrupted()) {
             changeSubscriber.processSettingChanges();
-            for (var runnable : runnableList) {
-                try {
-                    runnable.run();
-                } catch (Exception ex) {
-                    logger.error("Exception running runnable", ex);
+            synchronized(runnableList) {
+                for (var runnable : runnableList) {
+                    try {
+                        runnable.run();
+                    } catch (Exception ex) {
+                        logger.error("Exception running runnable", ex);
+                    }
                 }
+                runnableList.clear();
             }
-            runnableList.clear();
 
             var pipeline = pipelineSupplier.get();
 

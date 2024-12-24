@@ -33,6 +33,8 @@ public abstract class FrameProvider implements Supplier<Frame>, Releasable {
         cameraPropertiesCached = true;
     }
 
+    public abstract boolean checkCameraConnected();
+
     public abstract String getName();
 
     /** Ask the camera to produce a certain kind of processed image (e.g. HSV or greyscale) */

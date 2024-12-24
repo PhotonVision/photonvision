@@ -51,6 +51,16 @@ public class USBFrameProvider extends CpuImageProcessor {
     }
 
     @Override
+    public boolean checkCameraConnected() {
+        boolean connected = camera.isConnected();
+        if (!cameraPropertiesCached && connected) {
+            onCameraConnected();
+        }
+
+        return connected;
+    }
+
+    @Override
     public CapturedFrame getInputMat() {
         if (!cameraPropertiesCached && camera.isConnected()) {
             onCameraConnected();

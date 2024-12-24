@@ -67,8 +67,6 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         this.configuration = configuration;
         this.camera = camera;
 
-        getAllVideoModes();
-
         // TODO - how should this work post-refactor???
         if (!configuration.cameraQuirks.hasQuirk(CameraQuirk.StickyFPS)) {
             if (!videoModes.isEmpty()) {
@@ -324,7 +322,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     public HashMap<Integer, VideoMode> getAllVideoModes() {
         if (!cameraPropertiesCached) {
             // Device hasn't connected at least once, best I can do is given up
-            logger.warn("Device hasn't connected, cannot enumerate video modes");
+            logger.error("Device hasn't connected, cannot enumerate video modes", new RuntimeException());
             return new HashMap<>();
         }
 

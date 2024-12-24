@@ -38,16 +38,7 @@ public class USBCameraSource extends VisionSource {
     private final Logger logger;
     private final UsbCamera camera;
     protected GenericUSBCameraSettables settables;
-    protected FrameProvider usbFrameProvider;
-
-    /**
-     * We are robust to the camera not yet being connected at construction. CSCore itself caches
-     * properties and video modes on the FIRST connection of a given {@link
-     * edu.wpi.first.cscore.USBCamera} to the underlying hardware, so we just need to cache properties
-     * at our layer once, too. This means we have to defer things like videomode enumeration and
-     * property name quirkiness, too.
-     */
-    private boolean cameraPropertiesCached = false;
+    protected USBFrameProvider usbFrameProvider;
 
     private void onCameraConnected() {
         // Aid to the development team - record the properties available for whatever the user plugged
@@ -55,8 +46,6 @@ public class USBCameraSource extends VisionSource {
         printCameraProperaties();
 
         settables.onCameraConnected();
-
-        cameraPropertiesCached = true;
     }
 
     public USBCameraSource(CameraConfiguration config) {

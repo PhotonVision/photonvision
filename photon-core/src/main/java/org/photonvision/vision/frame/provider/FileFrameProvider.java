@@ -126,4 +126,9 @@ public class FileFrameProvider extends CpuImageProcessor implements Releasable {
     public void release() {
         originalFrame.release();
     }
+
+    @Override
+    public boolean checkCameraConnected() {
+        return true;
+    }
 }

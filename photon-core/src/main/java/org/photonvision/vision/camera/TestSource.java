@@ -85,6 +85,11 @@ public class TestSource extends VisionSource {
                 // TODO Auto-generated method stub
                 throw new UnsupportedOperationException("Unimplemented method 'release'");
             }
+
+            @Override
+            public boolean checkCameraConnected() {
+                return true;
+            }
         };
     }
 

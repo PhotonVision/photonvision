@@ -137,4 +137,9 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
     public void release() {
         throw new RuntimeException("Release is unimplemented - you should do that...");
     }
+
+    @Override
+    public boolean checkCameraConnected() {
+        throw new RuntimeException("Release is unimplemented - you should do that...");
+    }
 }

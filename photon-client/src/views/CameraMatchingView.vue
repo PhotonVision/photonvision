@@ -161,12 +161,8 @@ let isExpanded = ref(false);
                       <tr>
                         <td>Streams:</td>
                         <td>
-                          <a :href="formatUrl(module.stream.inputPort)" target="_blank"> Input Stream </a>/<a
-                            :href="formatUrl(module.stream.outputPort)"
-                            target="_blank"
-                          >
-                            Output Stream
-                          </a>
+                          <a :href="formatUrl(module.stream.inputPort)" target="_blank"> Input Stream </a> /
+                          <a :href="formatUrl(module.stream.outputPort)" target="_blank" > Output Stream </a>
                         </td>
                       </tr>
                       <tr>
@@ -234,7 +230,7 @@ let isExpanded = ref(false);
           class="camera-card pa-4 mb-4 mr-3"
           v-for="(module, index) in disabledVisionModules"
           :value="index"
-          :key="module"
+          :key="module.uniqueName"
         >
           <v-card-title class="pb-8">{{ module.nickname }}</v-card-title>
           <v-card-text>
@@ -265,7 +261,7 @@ let isExpanded = ref(false);
                   <td>Calibrations</td>
                   <td>
                     {{
-                      module.calibrations.map((it) => getResolutionString(it.resolution)).join(", ") || "Not calibrated"
+                      module.calibrations.map((it2) => getResolutionString(it2.resolution)).join(", ") || "Not calibrated"
                     }}
                   </td>
                 </tr>
