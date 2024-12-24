@@ -28,8 +28,8 @@ import org.photonvision.vision.processes.VisionSourceSettables;
 public class USBFrameProvider extends CpuImageProcessor {
     private final Logger logger;
 
-    private UsbCamera camera;
-    private final CvSink cvSink;
+    private UsbCamera camera = null;
+    private CvSink cvSink = null;
 
     @SuppressWarnings("SpellCheckingInspection")
     private final VisionSourceSettables settables;
@@ -83,6 +83,7 @@ public class USBFrameProvider extends CpuImageProcessor {
     public void release() {
         CameraServer.removeServer(cvSink.getName());
         cvSink.close();
+        cvSink = null;
     }
 
     @Override

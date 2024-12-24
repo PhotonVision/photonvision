@@ -34,9 +34,7 @@ import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipeline;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
-/**
- * VisionRunner has a frame supplier, a pipeline supplier, and a result consumer
- */
+/** VisionRunner has a frame supplier, a pipeline supplier, and a result consumer */
 @SuppressWarnings("rawtypes")
 public class VisionRunner {
     private final Logger logger;
@@ -51,12 +49,11 @@ public class VisionRunner {
     private long loopCount;
 
     /**
-     * VisionRunner contains a thread to run a pipeline, given a frame, and will
-     * give the result to
+     * VisionRunner contains a thread to run a pipeline, given a frame, and will give the result to
      * the consumer.
      *
-     * @param frameSupplier          The supplier of the latest frame.
-     * @param pipelineSupplier       The supplier of the current pipeline.
+     * @param frameSupplier The supplier of the latest frame.
+     * @param pipelineSupplier The supplier of the current pipeline.
      * @param pipelineResultConsumer The consumer of the latest result.
      */
     public VisionRunner(
@@ -142,8 +139,9 @@ public class VisionRunner {
             var settings = pipeline.getSettings();
             if (settings instanceof AdvancedPipelineSettings) {
                 var advanced = (AdvancedPipelineSettings) settings;
-                var hsvParams = new HSVPipe.HSVParams(
-                        advanced.hsvHue, advanced.hsvSaturation, advanced.hsvValue, advanced.hueInverted);
+                var hsvParams =
+                        new HSVPipe.HSVParams(
+                                advanced.hsvHue, advanced.hsvSaturation, advanced.hsvValue, advanced.hueInverted);
                 // TODO who should deal with preventing this from happening _every single loop_?
                 frameSupplier.requestHsvSettings(hsvParams);
             }

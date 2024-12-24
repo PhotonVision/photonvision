@@ -192,4 +192,48 @@ public class VisionSourceManagerTest {
 
         vsm.teardown();
     }
+
+    @Test
+    public void testDuplicate() throws InterruptedException, IOException {
+        var fileCamera1 =
+                PVCameraInfo.fromFileInfo(
+                        TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false)
+                                .toAbsolutePath()
+                                .toString(),
+                        "kTag1_640_480");
+        CameraConfiguration camConf1 = new CameraConfiguration(fileCamera1);
+        camConf1.deactivated = true;
+
+        var fileCamera2 =
+                PVCameraInfo.fromFileInfo(
+                        TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kRobots, false)
+                                .toAbsolutePath()
+                                .toString(),
+                        "kTag1_640_480");
+        CameraConfiguration camConf2 = new CameraConfiguration(fileCamera2);
+        camConf2.nickname = camConf1.nickname + " (1)";
+        camConf2.uniqueName += "owo";
+        camConf2.deactivated = true;
+
+        var fileCamera3 =
+                PVCameraInfo.fromFileInfo(
+                        TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false)
+                                .toAbsolutePath()
+                                .toString(),
+                        "kTag1_640_480");
+
+        vsm.testCameras = List.of(fileCamera1, fileCamera2, fileCamera3);
+
+        List<CameraConfiguration> configs = List.of(camConf1, camConf2);
+        vsm.registerLoadedConfigs(configs);
+
+        vsm.assignUnmatchedCamera(fileCamera3);
+
+        System.out.println(JacksonUtils.serializeToString(ConfigManager.getInstance().getConfig()));
+
+        // And make assertions about the current matching state
+        assertEquals(1, vsm.getVsmState().allConnectedCameras.size());
+        assertEquals(0, vsm.getVsmState().disabledConfigs.size());
+        assertEquals(1, vsm.vmm.getModules().size());
+    }
 }

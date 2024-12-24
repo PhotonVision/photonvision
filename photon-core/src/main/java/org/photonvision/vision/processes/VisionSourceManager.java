@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
@@ -343,9 +344,36 @@ public class VisionSourceManager {
      * Convert a configuration into a VisionSource. The VisionSource type is pulled from the {@link
      * CameraConfiguration}'s matchedCameraInfo. We depend on the underlying {@link VisionSource} to
      * be robust to disconnected sources at boot
+     *
+     * <p>Verify that nickname is unique within the set of desesrialized camera configurations, adding
+     * random characters if this isn't the case
      */
     protected VisionSource loadVisionSourceFromCamConfig(CameraConfiguration configuration) {
         logger.debug("Creating VisionSource for " + configuration.toShortString());
+
+        // First, make sure that nickname is globally unique since we use the nickname in NetworkTables.
+        // "Just one more source of truth bro it'll real this time I promise"
+        var currentNicknames = new ArrayList<String>();
+        this.disabledCameraConfigs.values().stream()
+                .map(it -> it.nickname)
+                .forEach(currentNicknames::add);
+        this.vmm.getModules().stream()
+                .map(it -> it.getCameraConfiguration().nickname)
+                .forEach(currentNicknames::add);
+        // while it's a duplicate
+        while (currentNicknames.contains(configuration.nickname)) {
+            // if we already have a number, extract
+            var pattern = Pattern.compile("(^.*) \\(([0-9]+)\\)$");
+            var matcher = pattern.matcher(configuration.nickname);
+            if (matcher.find()) {
+                int oldNumber = Integer.parseInt(matcher.group(2));
+                int newNumber = oldNumber + 1;
+                configuration.nickname = matcher.group(1) + " (" + newNumber + ")";
+            } else {
+                configuration.nickname += " (1)";
+            }
+        }
+
         VisionSource source =
                 switch (configuration.matchedCameraInfo.type()) {
                     case UsbCamera -> new USBCameraSource(configuration);
