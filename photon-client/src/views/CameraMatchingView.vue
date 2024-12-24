@@ -203,6 +203,8 @@ let isExpanded = ref(false);
                   </v-simple-table>
                 </v-col>
                 <v-col cols="4">
+                  <!-- TODO - we really really need to be using photon-camera-stream -->
+                  <!-- <img :src="`http://${inject('backendHostname')}:${module.stream.outputPort}/stream.mjpg`" style="width: 100%;" /> -->
                   <photon-camera-stream
                     id="output-camera-stream"
                     stream-type="Processed"

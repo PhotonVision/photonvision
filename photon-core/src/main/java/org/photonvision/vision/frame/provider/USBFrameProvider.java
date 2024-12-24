@@ -53,7 +53,9 @@ public class USBFrameProvider extends CpuImageProcessor {
     @Override
     public boolean checkCameraConnected() {
         boolean connected = camera.isConnected();
+
         if (!cameraPropertiesCached && connected) {
+            logger.info("Camera connected! running callback");
             onCameraConnected();
         }
 
