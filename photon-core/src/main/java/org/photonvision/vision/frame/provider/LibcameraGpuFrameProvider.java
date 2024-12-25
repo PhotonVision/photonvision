@@ -135,11 +135,19 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
 
     @Override
     public void release() {
-        throw new RuntimeException("Release is unimplemented - you should do that...");
+        LibCameraJNI.stopCamera(settables.r_ptr);
+        LibCameraJNI.destroyCamera(settables.r_ptr);
+        settables.r_ptr = 0;
     }
 
     @Override
     public boolean checkCameraConnected() {
-        throw new RuntimeException("Release is unimplemented - you should do that...");
+        String[] cameraNames = LibCameraJNI.getCameraNames();
+        for (String name : cameraNames) {
+            if (name.equals(settables.getConfiguration().getDevicePath())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

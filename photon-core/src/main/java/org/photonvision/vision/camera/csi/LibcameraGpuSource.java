@@ -34,7 +34,7 @@ public class LibcameraGpuSource extends VisionSource {
     static final Logger logger = new Logger(LibcameraGpuSource.class, LogGroup.Camera);
 
     private final LibcameraGpuSettables settables;
-    private final LibcameraGpuFrameProvider frameProvider;
+    private LibcameraGpuFrameProvider frameProvider;
 
     public LibcameraGpuSource(CameraConfiguration configuration) {
         super(configuration);
@@ -62,16 +62,22 @@ public class LibcameraGpuSource extends VisionSource {
 
     @Override
     public void remakeSettables() {
-        // Nothing to do, settables for this type of VisionSource should never be remade.
+        // Nothing to do, settables for this type of VisionSource should never be
+        // remade.
         return;
     }
 
     /**
-     * On the OV5649 the actual FPS we want to request from the GPU can be higher than the FPS that we
-     * can do after processing. On the IMX219 these FPSes match pretty closely, except for the
-     * 1280x720 mode. We use this to present a rated FPS to the user that's lower than the actual FPS
-     * we request from the GPU. This is important for setting user expectations, and is also used by
-     * the frontend to detect and explain FPS drops. This class should ONLY be used by Picam video
+     * On the OV5649 the actual FPS we want to request from the GPU can be higher
+     * than the FPS that we
+     * can do after processing. On the IMX219 these FPSes match pretty closely,
+     * except for the
+     * 1280x720 mode. We use this to present a rated FPS to the user that's lower
+     * than the actual FPS
+     * we request from the GPU. This is important for setting user expectations, and
+     * is also used by
+     * the frontend to detect and explain FPS drops. This class should ONLY be used
+     * by Picam video
      * modes! This is to make sure it shows up nice in the frontend
      */
     public static class FPSRatedVideoMode extends VideoMode {
@@ -104,6 +110,7 @@ public class LibcameraGpuSource extends VisionSource {
 
     @Override
     public void release() {
-        throw new RuntimeException("Release is unimplemented - you should do that...");
+        frameProvider.release();
+        frameProvider = null;
     }
 }
