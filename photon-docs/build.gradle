@@ -1,4 +1,5 @@
 // From allwpilib/docs. Licensed under the WPILib BSD License
+apply plugin: "java"
 apply plugin: "org.ysb33r.doxygen"
 
 evaluationDependsOn ':photon-targeting'

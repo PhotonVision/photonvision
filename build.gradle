@@ -1,7 +1,6 @@
 import edu.wpi.first.toolchain.*
 
 plugins {
-    id "java"
     id "cpp"
     id "com.diffplug.spotless" version "6.24.0"
     id "edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin" version "2020.2"
