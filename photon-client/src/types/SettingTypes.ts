@@ -253,6 +253,7 @@ export interface UiCameraConfiguration {
   maxWhiteBalanceTemp: number;
 
   matchedCameraInfo: PVCameraInfo;
+  isConnected: boolean;
 }
 
 export interface CameraSettingsChangeRequest {
@@ -370,7 +371,8 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = {
     },
     PVCSICameraInfo: undefined,
     PVUsbCameraInfo: undefined
-  }
+  },
+  isConnected: true
 };
 
 export enum CalibrationBoardTypes {

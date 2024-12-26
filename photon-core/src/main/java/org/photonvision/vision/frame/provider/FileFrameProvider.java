@@ -30,7 +30,8 @@ import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;
 
 /**
- * A {@link FrameProvider} that will read and provide an image from a {@link java.nio.file.Path
+ * A {@link FrameProvider} that will read and provide an image from a
+ * {@link java.nio.file.Path
  * path}.
  */
 public class FileFrameProvider extends CpuImageProcessor implements Releasable {
@@ -49,8 +50,8 @@ public class FileFrameProvider extends CpuImageProcessor implements Releasable {
     /**
      * Instantiates a new FileFrameProvider.
      *
-     * @param path The path of the image to read from.
-     * @param fov The fov of the image.
+     * @param path   The path of the image to read from.
+     * @param fov    The fov of the image.
      * @param maxFPS The max framerate to provide the image at.
      */
     public FileFrameProvider(Path path, double fov, int maxFPS) {
@@ -81,7 +82,7 @@ public class FileFrameProvider extends CpuImageProcessor implements Releasable {
      * Instantiates a new File frame provider.
      *
      * @param pathAsString The path of the image to read from as a string.
-     * @param fov The fov of the image.
+     * @param fov          The fov of the image.
      */
     public FileFrameProvider(String pathAsString, double fov) {
         this(Paths.get(pathAsString), fov, MAX_FPS);
@@ -91,7 +92,7 @@ public class FileFrameProvider extends CpuImageProcessor implements Releasable {
      * Instantiates a new File frame provider.
      *
      * @param path The path of the image to read from.
-     * @param fov The fov of the image.
+     * @param fov  The fov of the image.
      */
     public FileFrameProvider(Path path, double fov) {
         this(path, fov, MAX_FPS);
@@ -129,6 +130,11 @@ public class FileFrameProvider extends CpuImageProcessor implements Releasable {
 
     @Override
     public boolean checkCameraConnected() {
+        return true;
+    }
+
+    @Override
+    public boolean isConnected() {
         return true;
     }
 }

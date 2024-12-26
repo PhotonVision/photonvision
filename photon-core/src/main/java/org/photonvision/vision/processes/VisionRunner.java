@@ -38,7 +38,9 @@ import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipeline;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
-/** VisionRunner has a frame supplier, a pipeline supplier, and a result consumer */
+/**
+ * VisionRunner has a frame supplier, a pipeline supplier, and a result consumer
+ */
 @SuppressWarnings("rawtypes")
 public class VisionRunner {
     private final Logger logger;
@@ -53,11 +55,12 @@ public class VisionRunner {
     private long loopCount;
 
     /**
-     * VisionRunner contains a thread to run a pipeline, given a frame, and will give the result to
+     * VisionRunner contains a thread to run a pipeline, given a frame, and will
+     * give the result to
      * the consumer.
      *
-     * @param frameSupplier The supplier of the latest frame.
-     * @param pipelineSupplier The supplier of the current pipeline.
+     * @param frameSupplier          The supplier of the latest frame.
+     * @param pipelineSupplier       The supplier of the current pipeline.
      * @param pipelineResultConsumer The consumer of the latest result.
      */
     public VisionRunner(
@@ -84,6 +87,7 @@ public class VisionRunner {
 
     public void stopProcess() {
         try {
+            System.out.println("Interrupting vision process thread");
             visionProcessThread.interrupt();
             visionProcessThread.join();
         } catch (InterruptedException e) {
@@ -94,33 +98,33 @@ public class VisionRunner {
     public Future<Void> runSyncronously(Runnable runnable) {
         CompletableFuture<Void> future = new CompletableFuture<>();
 
-        synchronized(runnableList) {
-        runnableList.add(
-                () -> {
-                    try {
-                        runnable.run();
-                        future.complete(null);
-                    } catch (Exception ex) {
-                        future.completeExceptionally(ex);
-                    }
-                });
-            }
+        synchronized (runnableList) {
+            runnableList.add(
+                    () -> {
+                        try {
+                            runnable.run();
+                            future.complete(null);
+                        } catch (Exception ex) {
+                            future.completeExceptionally(ex);
+                        }
+                    });
+        }
         return future;
     }
 
     public <T> Future<T> runSyncronously(Callable<T> callable) {
         CompletableFuture<T> future = new CompletableFuture<>();
 
-        synchronized(runnableList) {
-        runnableList.add(
-                () -> {
-                    try {
-                        T result = callable.call();
-                        future.complete(result);
-                    } catch (Exception ex) {
-                        future.completeExceptionally(ex);
-                    }
-                });
+        synchronized (runnableList) {
+            runnableList.add(
+                    () -> {
+                        try {
+                            T result = callable.call();
+                            future.complete(result);
+                        } catch (Exception ex) {
+                            future.completeExceptionally(ex);
+                        }
+                    });
         }
 
         return future;
@@ -131,6 +135,7 @@ public class VisionRunner {
         while (!frameSupplier.checkCameraConnected() && !Thread.interrupted()) {
             // yield
             try {
+                pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
                 Thread.sleep(100);
             } catch (InterruptedException e) {
                 return;
@@ -139,7 +144,7 @@ public class VisionRunner {
 
         while (!Thread.interrupted()) {
             changeSubscriber.processSettingChanges();
-            synchronized(runnableList) {
+            synchronized (runnableList) {
                 for (var runnable : runnableList) {
                     try {
                         runnable.run();
@@ -162,9 +167,8 @@ public class VisionRunner {
             var settings = pipeline.getSettings();
             if (settings instanceof AdvancedPipelineSettings) {
                 var advanced = (AdvancedPipelineSettings) settings;
-                var hsvParams =
-                        new HSVPipe.HSVParams(
-                                advanced.hsvHue, advanced.hsvSaturation, advanced.hsvValue, advanced.hueInverted);
+                var hsvParams = new HSVPipe.HSVParams(
+                        advanced.hsvHue, advanced.hsvSaturation, advanced.hsvValue, advanced.hueInverted);
                 // TODO who should deal with preventing this from happening _every single loop_?
                 frameSupplier.requestHsvSettings(hsvParams);
             }
@@ -178,6 +182,7 @@ public class VisionRunner {
             if (frame.processedImage.getMat().empty() && frame.colorImage.getMat().empty()) {
                 // give up without increasing loop count
                 // Still feed with blank frames just dont run any pipelines
+
                 pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
                 continue;
             }

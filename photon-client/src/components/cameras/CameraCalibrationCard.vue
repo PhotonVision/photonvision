@@ -20,6 +20,7 @@ const settingsValid = ref(true);
 
 const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
   const uniqueResolutions: VideoFormat[] = [];
+  if (useCameraSettingsStore().currentCameraSettings.validVideoFormats.length === 0) return uniqueResolutions;
   useCameraSettingsStore().currentCameraSettings.validVideoFormats.forEach((format) => {
     const index = uniqueResolutions.findIndex((v) => resolutionsAreEqual(v.resolution, format.resolution));
     const contains = index != -1;
@@ -237,7 +238,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           </v-simple-table>
         </v-row>
         <v-divider />
-        <v-row style="display: flex; flex-direction: column" class="mt-4">
+        <v-row v-if="useCameraSettingsStore().isConnected" style="display: flex; flex-direction: column" class="mt-4">
           <v-card-subtitle v-show="!isCalibrating" class="pl-3 pa-0 ma-0"> Configure New Calibration</v-card-subtitle>
           <v-form ref="form" v-model="settingsValid" class="pl-4 mb-10 pr-5">
             <pv-select

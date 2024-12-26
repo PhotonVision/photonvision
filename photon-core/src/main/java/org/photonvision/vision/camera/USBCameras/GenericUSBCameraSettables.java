@@ -86,9 +86,8 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     protected void setUpExposureProperties() {
         // Photonvision needs to be able to control absolute exposure. Make sure we can
         // first.
-        var expProp =
-                findProperty(
-                        "raw_exposure_absolute", "raw_exposure_time_absolute", "exposure", "raw_Exposure");
+        var expProp = findProperty(
+                "raw_exposure_absolute", "raw_exposure_time_absolute", "exposure", "raw_Exposure");
 
         if (expProp.isEmpty()) {
             logger.warn("Could not find exposure property");
@@ -176,7 +175,8 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
             softSet("auto_exposure_bias", 0);
             softSet("iso_sensitivity_auto", 0); // Disable auto ISO adjustment
             softSet("iso_sensitivity", 0); // Manual ISO adjustment
-            if (autoExposureProp != null) autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
+            if (autoExposureProp != null)
+                autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
 
             // Most cameras leave exposure time absolute at the last value from their AE
             // algorithm.
@@ -188,7 +188,8 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
             softSet("auto_exposure_bias", 12);
             softSet("iso_sensitivity_auto", 1);
             softSet("iso_sensitivity", 1); // Manual ISO adjustment by default
-            if (autoExposureProp != null) autoExposureProp.set(PROP_AUTO_EXPOSURE_ENABLED);
+            if (autoExposureProp != null)
+                autoExposureProp.set(PROP_AUTO_EXPOSURE_ENABLED);
         }
     }
 
@@ -206,7 +207,8 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     public void setExposureRaw(double exposureRaw) {
         if (exposureRaw >= 0.0) {
             try {
-                if (autoExposureProp != null) autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
+                if (autoExposureProp != null)
+                    autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
 
                 int propVal = (int) MathUtil.clamp(exposureRaw, minExposure, maxExposure);
 
@@ -258,7 +260,8 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
                 logger.error("Got a null video mode! Doing nothing...");
                 return;
             }
-            if (camera.setVideoMode(videoMode)) logger.debug("Failed to set video mode!");
+            if (camera.setVideoMode(videoMode))
+                logger.debug("Failed to set video mode!");
         } catch (Exception e) {
             logger.error("Failed to set video mode!", e);
         }
@@ -293,16 +296,14 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         }
 
         // Sort by resolution
-        var sortedList =
-                videoModesList.stream()
-                        .distinct() // remove redundant video mode entries
-                        .sorted(((a, b) -> (b.width + b.height) - (a.width + a.height)))
-                        .collect(Collectors.toList());
+        var sortedList = videoModesList.stream()
+                .distinct() // remove redundant video mode entries
+                .sorted(((a, b) -> (b.width + b.height) - (a.width + a.height)))
+                .collect(Collectors.toList());
         Collections.reverse(sortedList);
 
         // On vendor cameras, respect blacklisted indices
-        var indexBlacklist =
-                ConfigManager.getInstance().getConfig().getHardwareConfig().blacklistedResIndices;
+        var indexBlacklist = ConfigManager.getInstance().getConfig().getHardwareConfig().blacklistedResIndices;
         for (int badIdx : indexBlacklist) {
             sortedList.remove(badIdx);
         }
@@ -322,7 +323,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     public HashMap<Integer, VideoMode> getAllVideoModes() {
         if (!cameraPropertiesCached) {
             // Device hasn't connected at least once, best I can do is given up
-            logger.error("Device hasn't connected, cannot enumerate video modes", new RuntimeException());
+            logger.warn("Device hasn't connected, cannot enumerate video modes");
             return new HashMap<>();
         }
 
@@ -330,7 +331,8 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     }
 
     /**
-     * Forgiving "set this property" action. Produces a debug message but skips properties if they
+     * Forgiving "set this property" action. Produces a debug message but skips
+     * properties if they
      * aren't supported Errors if the property exists but the set fails.
      *
      * @param property
@@ -350,7 +352,8 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     }
 
     /**
-     * Returns the first property with a name in the list. Useful to find gandolf property that goes
+     * Returns the first property with a name in the list. Useful to find gandolf
+     * property that goes
      * by many names in different os/releases/whatever
      *
      * @param options

@@ -83,6 +83,9 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     },
     maxWhiteBalanceTemp(): number {
       return this.currentCameraSettings.maxWhiteBalanceTemp;
+    },
+    isConnected(): boolean {
+      return this.currentCameraSettings.isConnected;
     }
   },
   actions: {
@@ -127,7 +130,8 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         cameraQuirks: d.cameraQuirks,
         minWhiteBalanceTemp: d.minWhiteBalanceTemp,
         maxWhiteBalanceTemp: d.maxWhiteBalanceTemp,
-        matchedCameraInfo: d.matchedCameraInfo
+        matchedCameraInfo: d.matchedCameraInfo,
+        isConnected: d.isConnected
       }));
 
       // Clamp index to between 0 and [length - 1]

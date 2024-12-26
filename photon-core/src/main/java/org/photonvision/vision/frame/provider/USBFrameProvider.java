@@ -41,9 +41,8 @@ public class USBFrameProvider extends CpuImageProcessor {
             UsbCamera camera, VisionSourceSettables visionSettables, Runnable connectedCallback) {
         this.camera = camera;
         this.cvSink = CameraServer.getVideo(this.camera);
-        this.logger =
-                new Logger(
-                        USBFrameProvider.class, visionSettables.getConfiguration().nickname, LogGroup.Camera);
+        this.logger = new Logger(
+                USBFrameProvider.class, visionSettables.getConfiguration().nickname, LogGroup.Camera);
         this.cvSink.setEnabled(true);
 
         this.settables = visionSettables;
@@ -103,5 +102,10 @@ public class USBFrameProvider extends CpuImageProcessor {
         super.onCameraConnected();
 
         this.connectedCallback.run();
+    }
+
+    @Override
+    public boolean isConnected() {
+        return camera.isConnected();
     }
 }

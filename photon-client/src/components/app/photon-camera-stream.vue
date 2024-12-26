@@ -32,6 +32,9 @@ const streamStyle = computed<StyleValue>(() => {
 });
 
 const containerStyle = computed<StyleValue>(() => {
+  if (props.cameraSettings.validVideoFormats.length === 0) {
+    return { aspectRatio: "1/1" };
+  }
   const resolution =
     props.cameraSettings.validVideoFormats[props.cameraSettings.pipelineSettings.cameraVideoModeIndex].resolution;
   const rotation = props.cameraSettings.pipelineSettings.inputImageRotationMode;

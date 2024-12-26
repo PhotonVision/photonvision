@@ -135,13 +135,27 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
 
     @Override
     public void release() {
-        LibCameraJNI.stopCamera(settables.r_ptr);
-        LibCameraJNI.destroyCamera(settables.r_ptr);
-        settables.r_ptr = 0;
+        synchronized (settables.CAMERA_LOCK) {
+            LibCameraJNI.stopCamera(settables.r_ptr);
+            LibCameraJNI.destroyCamera(settables.r_ptr);
+            settables.r_ptr = 0;
+        }
     }
 
     @Override
     public boolean checkCameraConnected() {
+        String[] cameraNames = LibCameraJNI.getCameraNames();
+        for (String name : cameraNames) {
+            if (name.equals(settables.getConfiguration().getDevicePath())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // To our knowledge the camera is always connected (after boot) with csi cameras
+    @Override
+    public boolean isConnected() {
         String[] cameraNames = LibCameraJNI.getCameraNames();
         for (String name : cameraNames) {
             if (name.equals(settables.getConfiguration().getDevicePath())) {

@@ -178,7 +178,8 @@ public class PhotonConfiguration {
     }
 
     public static class UICameraConfiguration {
-        // Path to the camera device. On Linux, this is a special file in /dev/v4l/by-id or /dev/videoN.
+        // Path to the camera device. On Linux, this is a special file in /dev/v4l/by-id
+        // or /dev/videoN.
         // This is the path we hand to CSCore to do auto-reconnect on
         public String cameraPath;
 
@@ -203,6 +204,7 @@ public class PhotonConfiguration {
         public double minWhiteBalanceTemp;
         public double maxWhiteBalanceTemp;
         public PVCameraInfo matchedCameraInfo;
+        public boolean isConnected;
     }
 
     @Override

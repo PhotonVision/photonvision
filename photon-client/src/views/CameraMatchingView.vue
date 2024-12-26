@@ -66,16 +66,6 @@ const getMatchedDevice = (module: UiCameraConfiguration) => {
   );
 };
 
-/**
- * Check if a module's matched camera's unique path is present in any of the list of currently connected cameras
- * @param cameraInfo: The camera info we want to know if is connected, by unique path
- */
-const isCameraConnected = (cameraInfo: PVCameraInfo) => {
-  return useStateStore()
-    .vsmState.allConnectedCameras.map((it) => uniquePathForCamera(it))
-    .includes(uniquePathForCamera(cameraInfo));
-};
-
 const unmatchedCameras = computed(() => {
   const activeVmPaths = useCameraSettingsStore().cameras.map((it) => uniquePathForCamera(it.matchedCameraInfo));
   const disabledVmPaths = useStateStore().vsmState.disabledConfigs.map((it) =>
@@ -169,7 +159,7 @@ let isExpanded = ref(false);
                         <td>Pipelines</td>
                         <td>{{ module.pipelineNicknames.join(", ") }}</td>
                       </tr>
-                      <tr>
+                      <tr v-if="module.isConnected">
                         <td>Frames Processed</td>
                         <td>
                           {{ useStateStore().backendResults[index].sequenceID }} ({{
@@ -180,7 +170,7 @@ let isExpanded = ref(false);
                       </tr>
                       <tr>
                         <td>Connected?</td>
-                        <td>{{ isCameraConnected(module.matchedCameraInfo) }}</td>
+                        <td>{{ module.isConnected }}</td>
                       </tr>
                       <tr>
                         <td>Calibrations</td>
@@ -256,7 +246,7 @@ let isExpanded = ref(false);
                 </tr>
                 <tr>
                   <td>Connected?</td>
-                  <td>{{ isCameraConnected(module.matchedCameraInfo) }}</td>
+                  <td>{{ module.isConnected }}</td>
                 </tr>
                 <tr>
                   <td>Calibrations</td>

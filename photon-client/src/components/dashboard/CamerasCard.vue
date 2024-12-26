@@ -49,14 +49,19 @@ const performanceRecommendation = computed<string>(() => {
       </v-col>
       <v-col class="align-self-center" style="text-align: right; margin-right: 12px; padding-left: 24px">
         <v-chip
+          v-if="useCameraSettingsStore().currentCameraSettings.isConnected"
           label
           :color="fpsTooLow ? 'error' : 'transparent'"
           :text-color="fpsTooLow ? '#C7EA46' : '#ff4d00'"
           style="font-size: 1rem; padding: 0; margin: 0"
         >
-          <span class="pr-1"
-            >Processing @ {{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &ndash;</span
-          ><span>{{ performanceRecommendation }}</span>
+          <span class="pr-1">
+            {{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &ndash;
+            {{ Math.min(Math.round(useStateStore().currentPipelineResults?.latency || 0), 9999) }} ms latency
+          </span>
+        </v-chip>
+        <v-chip v-else label color="transparent" text-color="red" style="font-size: 1rem; padding: 0; margin: 0">
+          <span class="pr-1"> Camera not connected </span>
         </v-chip>
       </v-col>
       <v-col

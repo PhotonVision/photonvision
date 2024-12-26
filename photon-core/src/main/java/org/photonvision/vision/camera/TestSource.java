@@ -38,7 +38,8 @@ public class TestSource extends VisionSource {
 
     @Override
     public void remakeSettables() {
-        // Nothing to do, settables for this type of VisionSource should never be remade.
+        // Nothing to do, settables for this type of VisionSource should never be
+        // remade.
         return;
     }
 
@@ -88,6 +89,11 @@ public class TestSource extends VisionSource {
 
             @Override
             public boolean checkCameraConnected() {
+                return true;
+            }
+
+            @Override
+            public boolean isConnected() {
                 return true;
             }
         };
