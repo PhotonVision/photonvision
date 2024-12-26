@@ -1,10 +1,6 @@
 // From allwpilib/docs. Licensed under the WPILib BSD License
-
-plugins {
-    id 'java'
-    id "org.ysb33r.doxygen" version "1.0.4"
-}
-
+apply plugin: "java"
+apply plugin: "org.ysb33r.doxygen"
 
 evaluationDependsOn ':photon-targeting'
 evaluationDependsOn ':photon-core'
