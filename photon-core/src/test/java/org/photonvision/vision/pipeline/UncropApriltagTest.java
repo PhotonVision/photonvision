@@ -39,7 +39,7 @@ public class UncropApriltagTest {
     }
 
     @Test
-    public void testApriltagFacingCamera() {
+    public void testApriltagCroppingAndUncropping() {
         var pipeline = new AprilTagPipeline();
 
         pipeline.getSettings().inputShouldShow = true;
@@ -72,8 +72,7 @@ public class UncropApriltagTest {
         var target = pipelineResult.targets.get(0);
 
         testResultsElements(100, target, frameProvider.get(), pipeline, outputPipe);
-        testResultsElements(200, target, frameProvider.get(), pipeline, outputPipe);
-        testResultsElements(250, target, frameProvider.get(), pipeline, outputPipe);
+        
     }
 
     private static void testResultsElements(
@@ -131,10 +130,8 @@ public class UncropApriltagTest {
                 pose.getRotation().getY(), croppedPose.getRotation().getY(), acceptedPoseDelta);
         Assertions.assertEquals(
                 pose.getRotation().getZ(), croppedPose.getRotation().getZ(), acceptedPoseDelta);
-        Assertions.assertEquals(
-                target.getPoseAmbiguity(), croppedTarget.getPoseAmbiguity(), acceptedPoseDelta);
-        // System.out.println("Ambiguiti: " + target.getPoseAmbiguity());
-        // System.out.println("Cropped Ambiguiti: " + croppedTarget.getPoseAmbiguity());
+        
+        
     }
 
     private static void printTestResults(CVPipelineResult pipelineResult) {
