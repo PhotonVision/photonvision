@@ -188,6 +188,7 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
                     settings.threshConstant);
         }
 
+        croppedFrame.output.release();
         List<TrackedTarget> targetList = new ArrayList<>();
         for (ArucoDetectionResult detection : tagDetectionPipeResult.output) {
             // Populate target list for multitag

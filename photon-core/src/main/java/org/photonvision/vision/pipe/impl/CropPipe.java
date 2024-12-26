@@ -38,16 +38,7 @@ public class CropPipe extends CVPipe<CVMat, CVMat, Rect> {
         return new CVMat(in.getMat().submat(y, y + height, x, x + width));
     }
 
-    /**
-     * Returns true if the given rectangle fully covers some given image.
-     *
-     * @param rect The rectangle to check.
-     * @param mat The image to check.
-     * @return boolean
-     */
-    public static boolean fullyCovers(Rect rect, Mat mat) {
-        return rect.x <= 0 && rect.y <= 0 && rect.width >= mat.width() && rect.height >= mat.height();
-    }
+
 
     @Override
     public void setParams(Rect params) {

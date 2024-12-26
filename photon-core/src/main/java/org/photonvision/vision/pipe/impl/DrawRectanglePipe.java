@@ -22,6 +22,7 @@ import org.opencv.core.Mat;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
+import org.photonvision.common.util.CroppingUtils;
 import org.photonvision.vision.pipe.MutatingPipe;
 
 public class DrawRectanglePipe
@@ -37,7 +38,7 @@ public class DrawRectanglePipe
     @Override
     protected Void process(Mat in) {
         // Draw nothing if the rectangle fully covers the image
-        if (CropPipe.fullyCovers(params.rect, in)) {
+        if (CroppingUtils.fullyCovers(params.rect, in)) {
             return null;
         }
 
