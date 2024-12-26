@@ -72,7 +72,6 @@ public class UncropApriltagTest {
         var target = pipelineResult.targets.get(0);
 
         testResultsElements(100, target, frameProvider.get(), pipeline, outputPipe);
-        
     }
 
     private static void testResultsElements(
@@ -130,8 +129,6 @@ public class UncropApriltagTest {
                 pose.getRotation().getY(), croppedPose.getRotation().getY(), acceptedPoseDelta);
         Assertions.assertEquals(
                 pose.getRotation().getZ(), croppedPose.getRotation().getZ(), acceptedPoseDelta);
-        
-        
     }
 
     private static void printTestResults(CVPipelineResult pipelineResult) {
