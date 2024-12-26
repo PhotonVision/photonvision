@@ -19,7 +19,6 @@ package org.photonvision.vision.pipeline;
 
 import java.util.Objects;
 import org.opencv.core.Point;
-import org.opencv.core.Rect;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.vision.opencv.ContourGroupingMode;
@@ -91,16 +90,6 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
     public int cornerDetectionSideCount = 4;
     public double cornerDetectionAccuracyPercentage = 10;
 
-    // Static cropping settings
-    public int static_x = 0;
-    public int static_y = 0;
-    public int static_width = Integer.MAX_VALUE;
-    public int static_height = Integer.MAX_VALUE;
-
-    public Rect getStaticCrop() {
-        return new Rect(static_x, static_y, static_width, static_height);
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -135,11 +124,7 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
                 && contourGroupingMode == that.contourGroupingMode
                 && contourIntersection == that.contourIntersection
                 && Objects.equals(targetModel, that.targetModel)
-                && cornerDetectionStrategy == that.cornerDetectionStrategy
-                && static_x == that.static_x
-                && static_y == that.static_y
-                && static_width == that.static_width
-                && static_height == that.static_height;
+                && cornerDetectionStrategy == that.cornerDetectionStrategy;
     }
 
     @Override
