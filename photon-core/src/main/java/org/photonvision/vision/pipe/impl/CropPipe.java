@@ -30,12 +30,12 @@ public class CropPipe extends CVPipe<CVMat, CVMat, Rect> {
 
     @Override
     protected CVMat process(CVMat in) {
-       
+
         int x = MathUtil.clamp(params.x, 0, in.getMat().width());
         int y = MathUtil.clamp(params.y, 0, in.getMat().height());
         int width = MathUtil.clamp(params.width, 0, in.getMat().width() - x);
         int height = MathUtil.clamp(params.height, 0, in.getMat().height() - y);
-        
+
         return new CVMat(in.getMat().submat(y, y + height, x, x + width));
     }
 
@@ -49,6 +49,7 @@ public class CropPipe extends CVPipe<CVMat, CVMat, Rect> {
     public static boolean fullyCovers(Rect rect, Mat mat) {
         return rect.x <= 0 && rect.y <= 0 && rect.width >= mat.width() && rect.height >= mat.height();
     }
+
     @Override
     public void setParams(Rect params) {
         params.height = Math.max(16, params.height);

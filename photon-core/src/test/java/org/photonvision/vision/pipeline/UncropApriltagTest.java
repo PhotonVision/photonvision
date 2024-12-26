@@ -60,7 +60,6 @@ public class UncropApriltagTest {
         CVPipelineResult pipelineResult;
         pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
 
-
         // Draw on input
         var outputPipe = new OutputStreamPipeline();
         var ret =
@@ -69,27 +68,26 @@ public class UncropApriltagTest {
 
         TestUtils.showImage(ret.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
 
-
-        
-
-
         // these numbers are not *accurate*, but they are known and expected
         var target = pipelineResult.targets.get(0);
 
-        testResultsElements(100,target,frameProvider.get(),pipeline,outputPipe);
-        testResultsElements(200,target,frameProvider.get(),pipeline,outputPipe);
-        testResultsElements(250,target,frameProvider.get(),pipeline,outputPipe);
-        
-         
+        testResultsElements(100, target, frameProvider.get(), pipeline, outputPipe);
+        testResultsElements(200, target, frameProvider.get(), pipeline, outputPipe);
+        testResultsElements(250, target, frameProvider.get(), pipeline, outputPipe);
     }
 
-    private static void testResultsElements(int amountCropping, TrackedTarget target, Frame frame, AprilTagPipeline pipeline, OutputStreamPipeline outputPipe){
-        
+    private static void testResultsElements(
+            int amountCropping,
+            TrackedTarget target,
+            Frame frame,
+            AprilTagPipeline pipeline,
+            OutputStreamPipeline outputPipe) {
+
         pipeline.getSettings().static_x = amountCropping;
         var croppedResults = pipeline.run(frame, QuirkyCamera.DefaultCamera);
 
         printTestResults(croppedResults);
-        
+
         var ret_cropped =
                 outputPipe.process(
                         croppedResults.inputAndOutputFrame, pipeline.getSettings(), croppedResults.targets);
@@ -133,10 +131,12 @@ public class UncropApriltagTest {
                 pose.getRotation().getY(), croppedPose.getRotation().getY(), acceptedPoseDelta);
         Assertions.assertEquals(
                 pose.getRotation().getZ(), croppedPose.getRotation().getZ(), acceptedPoseDelta);
-        Assertions.assertEquals(target.getPoseAmbiguity(),croppedTarget.getPoseAmbiguity(), acceptedPoseDelta);
+        Assertions.assertEquals(
+                target.getPoseAmbiguity(), croppedTarget.getPoseAmbiguity(), acceptedPoseDelta);
         // System.out.println("Ambiguiti: " + target.getPoseAmbiguity());
         // System.out.println("Cropped Ambiguiti: " + croppedTarget.getPoseAmbiguity());
     }
+
     private static void printTestResults(CVPipelineResult pipelineResult) {
         double fps = 1000 / pipelineResult.getLatencyMillis();
         System.out.println(
