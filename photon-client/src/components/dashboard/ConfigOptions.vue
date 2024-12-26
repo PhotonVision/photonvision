@@ -136,9 +136,8 @@ const tabGroups = computed<ConfigOption[][]>(() => {
           !((isAprilTag || isAruco || isObjectDetection) && tabConfig.tabName === "Contours") && //Filter out contours if we're doing AprilTags
           !(!isAprilTag && tabConfig.tabName === "AprilTag") && //Filter out apriltag unless we actually are doing AprilTags
           !(!isAruco && tabConfig.tabName === "Aruco") && //Filter out aruco unless we actually are doing Aruco
-          !(!isObjectDetection && tabConfig.tabName === "Object Detection") && 
+          !(!isObjectDetection && tabConfig.tabName === "Object Detection") &&
           !(isReflective && tabConfig.tabName === "Crop")
-          
       )
     )
     .filter((it) => it.length); // Remove empty tab groups
