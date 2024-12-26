@@ -80,7 +80,6 @@ public class UncropApriltagTest {
             Frame frame,
             AprilTagPipeline pipeline,
             OutputStreamPipeline outputPipe) {
-
         pipeline.getSettings().static_x = amountCropping;
         var croppedResults = pipeline.run(frame, QuirkyCamera.DefaultCamera);
 

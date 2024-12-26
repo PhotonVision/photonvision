@@ -30,7 +30,6 @@ public class CropPipe extends CVPipe<CVMat, CVMat, Rect> {
 
     @Override
     protected CVMat process(CVMat in) {
-
         int x = MathUtil.clamp(params.x, 0, in.getMat().width());
         int y = MathUtil.clamp(params.y, 0, in.getMat().height());
         int width = MathUtil.clamp(params.width, 0, in.getMat().width() - x);
