@@ -18,7 +18,6 @@
 package org.photonvision.vision.pipe.impl;
 
 import edu.wpi.first.math.MathUtil;
-import org.opencv.core.Mat;
 import org.opencv.core.Rect;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.CVPipe;
@@ -37,8 +36,6 @@ public class CropPipe extends CVPipe<CVMat, CVMat, Rect> {
 
         return new CVMat(in.getMat().submat(y, y + height, x, x + width));
     }
-
-
 
     @Override
     public void setParams(Rect params) {

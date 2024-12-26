@@ -21,7 +21,7 @@ import org.opencv.core.Mat;
 import org.opencv.core.Rect;
 
 public class CroppingUtils {
-     /**
+    /**
      * Returns true if the given rectangle fully covers some given image.
      *
      * @param rect The rectangle to check.
