@@ -9,7 +9,7 @@ import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
 const formatUrl = (port) => `http://${inject("backendHostname")}:${port}/stream.mjpg`;
 const host = inject<string>("backendHost");
 
-const reactivateModule = (moduleUniqueName: string) => {
+const activateModule = (moduleUniqueName: string) => {
   const url = new URL(`http://${host}/api/utils/activateMatchedCamera`);
   url.searchParams.set("uniqueName", moduleUniqueName);
 
@@ -80,172 +80,172 @@ const unmatchedCameras = computed(() => {
 const activeVisionModules = computed(() => useCameraSettingsStore().cameras);
 const disabledVisionModules = computed(() => useStateStore().vsmState.disabledConfigs);
 
-let isExpanded = ref(false);
+const isExpanded = ref({});
 </script>
 
 <template>
   <div class="pa-3">
-    <v-card dark class="mb-3 pr-6 pb-3" color="primary">
+    <v-card dark class="mb-3" color="primary">
       <v-card-title style="display: flex; justify-content: space-between">
-        <span class="ml-3">Active Vision Modules</span>
+        <span>Active Vision Modules</span>
       </v-card-title>
 
-      <v-banner
-        class="pa-2 ma-3"
-        v-if="
-          useCameraSettingsStore().cameras.length === 0 ||
-          (useCameraSettingsStore().cameras.length === 1 &&
-            JSON.stringify(useCameraSettingsStore().cameras[0]) === JSON.stringify(PlaceholderCameraSettings))
-        "
-        rounded
-        dark
-        color="red"
-        >No vision modules created. Activate a camera to get started!</v-banner
+      <v-card-text v-if="
+        useCameraSettingsStore().cameras.length === 0 ||
+        (useCameraSettingsStore().cameras.length === 1 &&
+          JSON.stringify(useCameraSettingsStore().cameras[0]) === JSON.stringify(PlaceholderCameraSettings))"
       >
-      <v-row
-        class="ml-3"
-        v-if="
-          !(
-            useCameraSettingsStore().cameras.length === 0 ||
-            (useCameraSettingsStore().cameras.length === 1 &&
-              JSON.stringify(useCameraSettingsStore().cameras[0]) === JSON.stringify(PlaceholderCameraSettings))
-          )
-        "
-      >
-        <v-col cols="12">
-          <v-card
-            dark
-            class="camera-card pa-4 mb-4 mr-3"
-            color="secondary"
-            v-for="(module, index) in activeVisionModules"
-            v-if="JSON.stringify(module) !== JSON.stringify(PlaceholderCameraSettings)"
-            :value="index"
-          >
-            <v-card-title class="pb-8">{{ module.nickname }}</v-card-title>
+        <v-banner
+          rounded
+          color="red"
+          icon="mdi-alert"
+        >
+          No active vision modules. Activate a camera to get started!
+        </v-banner>
+      </v-card-text>
 
-            <v-card-text>
-              <v-btn color="primary" @click="isExpanded = !isExpanded">
-                <v-icon>{{ isExpanded ? "mdi-chevron-up" : "mdi-chevron-down" }} </v-icon>
-                <span>Show Detailed Camera Info</span>
-              </v-btn>
-              <v-expand-transition>
-                <v-row v-if="isExpanded">
-                  <v-col cols="6">
-                    <v-card color="primary">
-                      <span>Saved camera info:</span>
-                      <PvCameraInfoCard :camera="module.matchedCameraInfo" />
-                    </v-card>
-                  </v-col>
-                  <v-col cols="6">
-                    <v-card color="primary">
-                      <span>Matched camera info:</span>
-                      <PvCameraInfoCard :camera="getMatchedDevice(module)" class="m-2" />
-                    </v-card>
-                  </v-col>
-                </v-row>
-              </v-expand-transition>
-              <v-row>
-                <v-col cols="8">
-                  <v-simple-table dark dense height="100%" class="camera-card-table mt-2">
-                    <tbody>
-                      <tr>
-                        <td>Streams:</td>
-                        <td>
-                          <a :href="formatUrl(module.stream.inputPort)" target="_blank"> Input Stream </a> /
-                          <a :href="formatUrl(module.stream.outputPort)" target="_blank"> Output Stream </a>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>Pipelines</td>
-                        <td>{{ module.pipelineNicknames.join(", ") }}</td>
-                      </tr>
-                      <tr v-if="module.isConnected">
-                        <td>Frames Processed</td>
-                        <td>
-                          {{ useStateStore().backendResults[index].sequenceID }} ({{
-                            useStateStore().backendResults[index].fps
-                          }}
-                          FPS)
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>Connected?</td>
-                        <td>{{ module.isConnected }}</td>
-                      </tr>
-                      <tr>
-                        <td>Calibrations</td>
-                        <td>
-                          {{
-                            module.completeCalibrations.map((it) => getResolutionString(it.resolution)).join(", ") ||
-                            "Not calibrated"
-                          }}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>Actions</td>
-                        <td>
-                          <v-btn class="ma-2 black--text" @click="deactivateCamera(module.uniqueName)" color="accent"
-                            >Deactivate</v-btn
-                          >
-                        </td>
-                      </tr>
-                    </tbody>
-                  </v-simple-table>
-                </v-col>
-                <v-col cols="4">
-                  <photon-camera-stream
-                    id="output-camera-stream"
-                    :camera-settings="module"
-                    stream-type="Raw"
-                    style="width: 100%; height: auto"
-                  />
-                </v-col>
-              </v-row>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
-    </v-card>
-
-    <v-card dark class="mb-3 pr-6 pb-3" color="primary">
-      <v-card-title>
-        <span> Disabled Vision Modules </span>
-      </v-card-title>
-
-      <span class="ml-3" v-if="disabledVisionModules.length === 0">No unassigned cameras to show.</span>
-
-      <v-row class="ml-3 mb-0" v-if="disabledVisionModules.length > 0">
+      <v-card-text v-else>
         <v-card
           dark
           color="secondary"
-          class="camera-card pa-4 mb-4 mr-3"
+          v-for="(module, index) in activeVisionModules"
+          v-if="JSON.stringify(module) !== JSON.stringify(PlaceholderCameraSettings)"
+          :class="index > 0 ? 'mt-3' : ''"
+          :value="index"
+        >
+          <v-card-title>
+            <v-col cols="8" class="pa-0">
+              <span>{{ module.nickname }}</span>
+            </v-col>
+            <v-col cols="2" class="pa-0 pr-3">
+              <v-btn color="primary" @click="isExpanded[module.uniqueName] = !(isExpanded[module.uniqueName] ?? false)" style="width: 100%;">
+                <v-icon>{{ isExpanded[module.uniqueName] ? "mdi-chevron-up" : "mdi-chevron-down" }} </v-icon>
+                <span>Details</span>
+              </v-btn>
+            </v-col>
+            <v-col cols="2" class="pa-0">
+              <v-btn class="black--text" @click="deactivateCamera(module.uniqueName)" color="accent" style="width: 100%;">
+                Deactivate
+              </v-btn>
+            </v-col>
+          </v-card-title>
+          <v-card-text>
+            <v-row>
+              <v-col cols="8">
+                <v-simple-table dark dense height="100%" class="camera-card-table">
+                  <tbody>
+                    <tr>
+                      <td>Streams:</td>
+                      <td>
+                        <a :href="formatUrl(module.stream.inputPort)" target="_blank"> Input Stream </a> /
+                        <a :href="formatUrl(module.stream.outputPort)" target="_blank"> Output Stream </a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Pipelines</td>
+                      <td>{{ module.pipelineNicknames.join(", ") }}</td>
+                    </tr>
+                    <tr v-if="module.isConnected">
+                      <td>Frames Processed</td>
+                      <td>
+                        {{ useStateStore().backendResults[index].sequenceID }} ({{
+                          useStateStore().backendResults[index].fps
+                        }}
+                        FPS)
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Connected</td>
+                      <td>{{ module.isConnected }}</td>
+                    </tr>
+                    <tr>
+                      <td>Calibrations</td>
+                      <td>
+                        {{
+                          module.completeCalibrations.map((it) => getResolutionString(it.resolution)).join(", ") ||
+                          "Not calibrated"
+                        }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </v-simple-table>
+              </v-col>
+              <v-col cols="4" class="pl-0">
+                <photon-camera-stream
+                  id="output-camera-stream"
+                  :camera-settings="module"
+                  stream-type="Raw"
+                  style="width: 100%; height: auto"
+                />
+              </v-col>
+            </v-row>
+
+            <v-expand-transition>
+              <v-card color="primary" v-if="isExpanded[module.uniqueName] ?? false" class="mt-3">
+                <PvCameraMatchCard :saved="module.matchedCameraInfo" :matched="getMatchedDevice(module)"/>
+              </v-card>
+            </v-expand-transition>
+
+          </v-card-text>
+        </v-card>
+      </v-card-text>
+    </v-card>
+
+    <v-card dark class="mb-3" color="primary">
+      <v-card-title style="display: flex; justify-content: space-between">
+        <span> Disabled Vision Modules </span>
+      </v-card-title>
+
+      <v-card-text v-if="disabledVisionModules.length === 0">
+        <v-banner
+          rounded
+          dark
+          icon="mdi-information">
+          No disabled cameras to show.
+        </v-banner>
+      </v-card-text>
+
+      <v-card-text v-else>
+        <v-card
+          dark
+          color="secondary"
           v-for="(module, index) in disabledVisionModules"
+          :class="index > 0 ? 'mt-3' : ''"
           :value="index"
           :key="module.uniqueName"
         >
-          <v-card-title class="pb-8">{{ module.nickname }}</v-card-title>
+          <v-card-title>
+            <v-col cols="8" class="pa-0">
+              <span>{{ module.nickname }}</span>
+            </v-col>
+            <v-col cols="2" class="pa-0 pr-3">
+              <v-btn color="primary" @click="isExpanded[module.uniqueName] = !(isExpanded[module.uniqueName] ?? false)" style="width: 100%;">
+                <v-icon>{{ isExpanded[module.uniqueName] ? "mdi-chevron-up" : "mdi-chevron-down" }} </v-icon>
+                <span>Details</span>
+              </v-btn>
+            </v-col>
+            <v-col cols="2" class="pa-0">
+                <v-btn class="black--text" @click="activateModule(module.uniqueName)" color="accent" style="width: 100%;">
+                  Activate
+                </v-btn>
+            </v-col>
+          </v-card-title>
+
           <v-card-text>
-            <span>Created for camera:</span>
-
-            <v-card color="primary">
-              <PvCameraInfoCard :camera="module.matchedCameraInfo" />
-            </v-card>
-
-            <v-simple-table dense height="100%" class="mt-2">
+            <v-simple-table dense height="100%">
               <tbody>
                 <tr>
-                  <td>Device Path</td>
+                  <td>Name</td>
                   <td>
-                    {{ module.cameraPath }}
+                    {{ module.cameraQuirks.baseName }}
                   </td>
                 </tr>
-
                 <tr>
                   <td>Pipelines</td>
                   <td>{{ module.pipelineNicknames.join(", ") }}</td>
                 </tr>
                 <tr>
-                  <td>Connected?</td>
+                  <td>Connected</td>
                   <td>{{ module.isConnected }}</td>
                 </tr>
                 <tr>
@@ -257,51 +257,72 @@ let isExpanded = ref(false);
                     }}
                   </td>
                 </tr>
-                <tr>
-                  <td>Actions</td>
-                  <td>
-                    <v-btn class="ma-2 black--text" @click="reactivateModule(module.uniqueName)" color="accent"
-                      >Reactivate
-                    </v-btn>
-                  </td>
-                </tr>
               </tbody>
             </v-simple-table>
+
+            <v-expand-transition>
+              <v-card color="primary" v-if="isExpanded[module.uniqueName] ?? false" class="mt-3">
+                <PvCameraInfoCard :camera="module.matchedCameraInfo" />
+              </v-card>
+            </v-expand-transition>
+
           </v-card-text>
         </v-card>
-      </v-row>
+      </v-card-text>
     </v-card>
 
-    <v-card dark class="mb-3 pr-6 pb-3" color="primary">
+    <v-card dark color="primary">
       <v-card-title>
         <span> Unassigned Cameras </span>
       </v-card-title>
 
-      <v-banner
-        class="pa-2 ma-3"
-        v-if="
-          unmatchedCameras.length === 0 &&
-          (useCameraSettingsStore().cameras.length === 0 ||
-            (useCameraSettingsStore().cameras.length === 1 &&
-              JSON.stringify(useCameraSettingsStore().cameras[0]) === JSON.stringify(PlaceholderCameraSettings)))
-        "
-        rounded
-        dark
-        color="red"
-        >No cameras connected or active. Plug one in or activate an existing one to get started!</v-banner
-      >
+      <v-card-text v-if="unmatchedCameras.length === 0">
+        <v-banner
+          rounded
+          dark
+          icon="mdi-information"
+        >
+          No unassigned cameras. Plug one in to get started!
+        </v-banner>
+      </v-card-text>
 
-      <v-row class="ml-3 mb-0" v-if="unmatchedCameras.length > 0">
-        <v-card class="mb-3 pa-8" color="secondary" v-for="(camera, index) in unmatchedCameras" :key="index">
-          <v-card color="primary">
-            <PvCameraInfoCard :camera="camera" />
-          </v-card>
+      <v-card-text v-else>
+        <v-card
+          color="secondary"
+          v-for="(camera, index) in unmatchedCameras"
+          :class="index > 0 ? 'mt-3' : ''"
+          :key="index"
+        >
+          <v-card-title>
+            <v-row>
+              <v-col cols="8" class="pt-4 pb-4">
+                <v-card-title v-if="camera.PVUsbCameraInfo" class="pa-0">USB Camera</v-card-title>
+                <v-card-title v-else-if="camera.PVCSICameraInfo" class="pa-0 pb-1">CSI Camera</v-card-title>
+                <v-card-title v-else-if="camera.PVFileCameraInfo" class="pa-0 pb-1">File Camera</v-card-title>
+                <v-card-title v-else class="pa-0 pb-1">Unknown Camera</v-card-title>
+              </v-col>
+              <v-col cols="2" class="pl-0">
+                <v-btn color="primary" @click="isExpanded[camera.uniquePath] = !(isExpanded[camera.uniquePath] ?? false)" style="width: 100%;">
+                  <v-icon>{{ isExpanded[camera.uniquePath] ? "mdi-chevron-up" : "mdi-chevron-down" }} </v-icon>
+                  <span>Details</span>
+                </v-btn>
+              </v-col>
+              <v-col cols="2" class="pl-0">
+                <v-btn class="black--text" @click="activateCamera(camera)" color="accent" style="width: 100%;">Activate</v-btn>
+              </v-col>
+            </v-row>
+          </v-card-title>
 
-          <v-row>
-            <v-btn class="ma-2 mt-5 black--text" @click="activateCamera(camera)" color="accent">Activate Camera</v-btn>
-          </v-row>
+          <v-expand-transition>
+            <v-card-text v-if="isExpanded[camera.uniquePath] ?? false">
+              <v-card color="primary">
+                <PvCameraInfoCard :camera="camera" showTitle="false" />
+              </v-card>
+            </v-card-text>
+          </v-expand-transition>
+
         </v-card>
-      </v-row>
+      </v-card-text>
     </v-card>
   </div>
 </template>
