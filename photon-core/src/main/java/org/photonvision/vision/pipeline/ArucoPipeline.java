@@ -177,7 +177,6 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
 
         // If we want to debug the thresholding steps, draw the first step to the color image
         if (settings.debugThreshold) {
-
             drawThresholdFrame(
                     frame.processedImage.getMat(),
                     frame.colorImage.getMat(),
