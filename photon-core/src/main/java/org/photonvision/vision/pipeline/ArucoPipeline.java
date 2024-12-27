@@ -177,18 +177,16 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
 
         // If we want to debug the thresholding steps, draw the first step to the color image
         if (settings.debugThreshold) {
-            // crop the color image to match the thresholded image
-            CVPipeResult<CVMat> croppedColor = cropPipe.run(frame.colorImage);
-            sumPipeNanosElapsed += croppedColor.nanosElapsed;
+            
 
             drawThresholdFrame(
                     croppedFrame.output.getMat(),
-                    croppedColor.output.getMat(),
+                    frame.colorImage.getMat(),
                     settings.threshWinSizes.getFirst(),
                     settings.threshConstant);
+
         }
 
-        croppedFrame.output.release();
         List<TrackedTarget> targetList = new ArrayList<>();
         for (ArucoDetectionResult detection : tagDetectionPipeResult.output) {
             // Populate target list for multitag
