@@ -27,7 +27,7 @@ const interactiveCols = computed(() =>
     <pv-select
       v-model="currentPipelineSettings.tagFamily"
       label="Target family"
-      :items="['AprilTag Family 36h11', 'AprilTag Family 25h9', 'AprilTag Family 16h5']"
+      :items="['AprilTag Family 36h11', 'AprilTag Family 16h5']"
       :select-cols="interactiveCols"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ tagFamily: value }, false)"
     />
