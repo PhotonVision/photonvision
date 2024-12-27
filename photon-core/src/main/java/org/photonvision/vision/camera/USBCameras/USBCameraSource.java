@@ -30,6 +30,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.FrameProvider;
+import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.frame.provider.USBFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceSettables;
@@ -38,7 +39,7 @@ public class USBCameraSource extends VisionSource {
     private final Logger logger;
     private final UsbCamera camera;
     protected GenericUSBCameraSettables settables;
-    protected USBFrameProvider usbFrameProvider;
+    protected FrameProvider usbFrameProvider;
     private final CvSink cvSink;
 
     public USBCameraSource(CameraConfiguration config) {
@@ -169,7 +170,7 @@ public class USBCameraSource extends VisionSource {
         settables.setVideoMode(oldVideoMode);
 
         // Propogate our updated settables over to the frame provider
-        this.usbFrameProvider.updateSettables(this.settables);
+        ((USBFrameProvider)this.usbFrameProvider).updateSettables(this.settables);
     }
 
     private void printCameraProperaties() {
