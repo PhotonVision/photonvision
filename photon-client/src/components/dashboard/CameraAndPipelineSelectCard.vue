@@ -282,7 +282,11 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
           :value="useCameraSettingsStore().currentCameraSettings.currentPipelineIndex"
           label="Pipeline"
           tooltip="Each pipeline runs on a camera output and stores a unique set of processing settings"
-          :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode"
+          :disabled="
+            useCameraSettingsStore().isDriverMode ||
+            useCameraSettingsStore().isCalibrationMode ||
+            !useCameraSettingsStore().hasConnected
+          "
           :items="pipelineNamesWrapper"
           @input="(args) => useCameraSettingsStore().changeCurrentPipelineIndex(args, true)"
         />
@@ -349,7 +353,11 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
           v-model="currentPipelineType"
           label="Type"
           tooltip="Changes the pipeline type, which changes the type of processing that will happen on input frames"
-          :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode"
+          :disabled="
+            useCameraSettingsStore().isDriverMode ||
+            useCameraSettingsStore().isCalibrationMode ||
+            !useCameraSettingsStore().hasConnected
+          "
           :items="pipelineTypesWrapper"
           @input="showPipelineTypeChangeDialog = true"
         />

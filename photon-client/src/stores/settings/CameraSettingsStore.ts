@@ -86,6 +86,9 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     },
     isConnected(): boolean {
       return this.currentCameraSettings.isConnected;
+    },
+    hasConnected(): boolean {
+      return this.currentCameraSettings.hasConnected;
     }
   },
   actions: {
@@ -131,7 +134,8 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         minWhiteBalanceTemp: d.minWhiteBalanceTemp,
         maxWhiteBalanceTemp: d.maxWhiteBalanceTemp,
         matchedCameraInfo: d.matchedCameraInfo,
-        isConnected: d.isConnected
+        isConnected: d.isConnected,
+        hasConnected: d.hasConnected
       }));
 
       // Clamp index to between 0 and [length - 1]

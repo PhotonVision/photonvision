@@ -38,11 +38,16 @@ const processingMode = computed<number>({
       <v-col>
         <p style="color: white">Processing Mode</p>
         <v-btn-toggle v-model="processingMode" mandatory dark class="fill">
-          <v-btn color="secondary">
+          <v-btn color="secondary" :disabled="!useCameraSettingsStore().hasConnected">
             <v-icon left>mdi-square-outline</v-icon>
             <span>2D</span>
           </v-btn>
-          <v-btn color="secondary" :disabled="!useCameraSettingsStore().isCurrentVideoFormatCalibrated">
+          <v-btn
+            color="secondary"
+            :disabled="
+              !useCameraSettingsStore().hasConnected || !useCameraSettingsStore().isCurrentVideoFormatCalibrated
+            "
+          >
             <v-icon left>mdi-cube-outline</v-icon>
             <span>3D</span>
           </v-btn>

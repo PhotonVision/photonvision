@@ -68,6 +68,7 @@ export interface WebsocketCameraSettingsUpdate {
   maxWhiteBalanceTemp: number;
   matchedCameraInfo: PVCameraInfo;
   isConnected: boolean;
+  hasConnected: boolean;
 }
 export interface WebsocketNTUpdate {
   connected: boolean;

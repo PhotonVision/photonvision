@@ -134,13 +134,18 @@ public class VisionRunner {
         // wait for the camera to connect
         while (!frameSupplier.checkCameraConnected() && !Thread.interrupted()) {
             // yield
+            pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
             try {
-                pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
                 Thread.sleep(100);
             } catch (InterruptedException e) {
                 return;
             }
         }
+
+        DataChangeService.getInstance()
+                .publishEvent(
+                        new OutgoingUIEvent<>(
+                                "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
 
         while (!Thread.interrupted()) {
             changeSubscriber.processSettingChanges();

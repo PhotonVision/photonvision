@@ -205,6 +205,7 @@ public class PhotonConfiguration {
         public double maxWhiteBalanceTemp;
         public PVCameraInfo matchedCameraInfo;
         public boolean isConnected;
+        public boolean hasConnected;
     }
 
     @Override

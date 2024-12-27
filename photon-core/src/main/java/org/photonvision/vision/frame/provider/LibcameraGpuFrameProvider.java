@@ -156,12 +156,6 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
     // To our knowledge the camera is always connected (after boot) with csi cameras
     @Override
     public boolean isConnected() {
-        String[] cameraNames = LibCameraJNI.getCameraNames();
-        for (String name : cameraNames) {
-            if (name.equals(settables.getConfiguration().getDevicePath())) {
-                return true;
-            }
-        }
-        return false;
+        return checkCameraConnected();
     }
 }
