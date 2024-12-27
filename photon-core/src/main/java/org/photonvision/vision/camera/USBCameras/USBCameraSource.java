@@ -38,7 +38,7 @@ public class USBCameraSource extends VisionSource {
     private final Logger logger;
     private final UsbCamera camera;
     protected GenericUSBCameraSettables settables;
-    protected FrameProvider usbFrameProvider;
+    protected USBFrameProvider usbFrameProvider;
     private final CvSink cvSink;
 
     public USBCameraSource(CameraConfiguration config) {
@@ -85,6 +85,7 @@ public class USBCameraSource extends VisionSource {
         } else {
             // Camera is likely to work, set up the Settables
             settables = createSettables(config, camera);
+            logger.info("Created settables " + settables);
 
             if (settables.getAllVideoModes().isEmpty()) {
                 // No video modes produced from settables, disable the camera
@@ -160,7 +161,15 @@ public class USBCameraSource extends VisionSource {
         var oldConfig = this.cameraConfiguration;
         var oldCamera = this.camera;
 
+        // Re-create settables
+        var oldVideoMode = this.settables.getCurrentVideoMode();
         this.settables = createSettables(oldConfig, oldCamera);
+
+        // And update FrameStaticProps
+        settables.setVideoMode(oldVideoMode);
+
+        // Propogate our updated settables over to the frame provider
+        this.usbFrameProvider.updateSettables(this.settables);
     }
 
     private void printCameraProperaties() {
