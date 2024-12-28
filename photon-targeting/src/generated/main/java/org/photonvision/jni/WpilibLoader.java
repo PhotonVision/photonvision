@@ -25,13 +25,7 @@ import edu.wpi.first.apriltag.jni.AprilTagJNI;
 import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.cscore.OpenCvLoader;
 import edu.wpi.first.hal.JNIWrapper;
-import edu.wpi.first.math.jni.ArmFeedforwardJNI;
-import edu.wpi.first.math.jni.DAREJNI;
-import edu.wpi.first.math.jni.EigenJNI;
-import edu.wpi.first.math.jni.Ellipse2dJNI;
-import edu.wpi.first.math.jni.Pose3dJNI;
-import edu.wpi.first.math.jni.StateSpaceUtilJNI;
-import edu.wpi.first.math.jni.TrajectoryUtilJNI;
+import edu.wpi.first.math.jni.WPIMathJNI;
 import edu.wpi.first.net.WPINetJNI;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
@@ -48,18 +42,8 @@ public class WpilibLoader {
         OpenCvLoader.Helper.setExtractOnStaticLoad(false);
         JNIWrapper.Helper.setExtractOnStaticLoad(false);
         WPINetJNI.Helper.setExtractOnStaticLoad(false);
+        WPIMathJNI.Helper.setExtractOnStaticLoad(false);
         AprilTagJNI.Helper.setExtractOnStaticLoad(false);
-
-        // wpimathjni is a bit odd, it's all in the wpimathjni shared lib, but the java side stuff has
-        // been split.
-        ArmFeedforwardJNI.Helper.setExtractOnStaticLoad(false);
-        DAREJNI.Helper.setExtractOnStaticLoad(false);
-        EigenJNI.Helper.setExtractOnStaticLoad(false);
-        Ellipse2dJNI.Helper.setExtractOnStaticLoad(false);
-        Pose3dJNI.Helper.setExtractOnStaticLoad(false);
-        StateSpaceUtilJNI.Helper.setExtractOnStaticLoad(false);
-        TrajectoryUtilJNI.Helper.setExtractOnStaticLoad(false);
-
         try {
             CombinedRuntimeLoader.loadLibraries(
                     WpilibLoader.class,
@@ -68,7 +52,6 @@ public class WpilibLoader {
                     "ntcorejni",
                     "wpinetjni",
                     "wpiHaljni",
-                    "wpi",
                     "cscorejni",
                     "apriltagjni");
 

@@ -10,7 +10,8 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
+import os
+
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
@@ -44,7 +45,7 @@ extensions = [
 
 ogp_site_url = "https://docs.photonvision.org/en/latest/"
 ogp_site_name = "PhotonVision Documentation"
-ogp_image = "https://raw.githubusercontent.com/PhotonVision/photonvision-docs/master/source/assets/RectLogo.png"
+ogp_image = "https://raw.githubusercontent.com/PhotonVision/photonvision-docs/main/source/assets/RectLogo.png"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -138,9 +139,15 @@ suppress_warnings = ["epub.unknown_project_files"]
 
 sphinx_tabs_valid_builders = ["epub", "linkcheck"]
 
+# -- Options for linkcheck -------------------------------------------------
+
 # Excluded links for linkcheck
 # These should be periodically checked by hand to ensure that they are still functional
-linkcheck_ignore = ["https://www.raspberrypi.com/software/"]
+linkcheck_ignore = [R"https://www.raspberrypi.com/software/", R"http://10\..+"]
+
+token = os.environ.get("GITHUB_TOKEN", None)
+if token:
+    linkcheck_auth = [(R"https://github.com/.+", token)]
 
 # MyST configuration (https://myst-parser.readthedocs.io/en/latest/configuration.html)
 myst_enable_extensions = ["colon_fence"]

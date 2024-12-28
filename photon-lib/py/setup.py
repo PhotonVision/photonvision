@@ -29,7 +29,7 @@ if m:
         split = gitDescribeResult.split("-")
         if len(split) == 3:
             year, commits, sha = split
-            # Chop off leading v from "v2024.1.2", and use "post" for commits to master since
+            # Chop off leading v from "v2024.1.2", and use "post" for commits to main since
             versionString = f"{year[1:]}post{commits}"
             print("using dev release " + versionString)
         else:
@@ -55,6 +55,7 @@ descriptionStr = f"Pure-python implementation of PhotonLib for interfacing with 
 setup(
     name="photonlibpy",
     packages=find_packages(),
+    package_data={"photonlibpy": ["py.typed"]},
     version=versionString,
     install_requires=[
         "numpy~=2.1",
@@ -63,7 +64,6 @@ setup(
         "robotpy-apriltag<2026,>=2025.0.0b1",
         "robotpy-cscore<2026,>=2025.0.0b1",
         "pyntcore<2026,>=2025.0.0b1",
-        "robotpy-opencv;platform_machine=='roborio'",
         "opencv-python;platform_machine!='roborio'",
     ],
     description=descriptionStr,

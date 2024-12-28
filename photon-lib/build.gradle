@@ -1,6 +1,4 @@
-plugins {
-    id 'edu.wpi.first.WpilibTools' version '1.3.0'
-}
+apply plugin: 'edu.wpi.first.WpilibTools'
 
 import java.nio.file.Path
 
@@ -33,7 +31,7 @@ model {
             sources {
                 cpp {
                     source {
-                        srcDirs 'src/main/native/cpp', "$buildDir/generated/source/proto/main/cpp", "src/generate/native/cpp"
+                        srcDirs 'src/main/native/cpp', "$buildDir/generated/source/proto/main/cpp", "$buildDir/generated/native/cpp"
                         include '**/*.cpp', '**/*.cc'
                     }
                     exportedHeaders {
@@ -161,14 +159,12 @@ task generateVendorJson() {
     def read = photonlibFileInput.text
             .replace('${photon_version}', pubVersion)
             .replace('${frc_year}', frcYear)
-            .replace('${wpilib_version}', wpilibVersion)
     photonlibFileOutput.text = read
 
     outputs.upToDateWhen { false }
 }
 
-build.mustRunAfter generateVendorJson
-publish.mustRunAfter generateVendorJson
+build.dependsOn generateVendorJson
 
 task publishVendorJsonToLocalOutputs(type: Copy) {
     from photonlibFileOutput
@@ -182,17 +178,69 @@ task publishVendorJsonToLocalOutputs(type: Copy) {
     publish.dependsOn it
 }
 
-task writeCurrentVersion {
-    def versionFileIn = file("${rootDir}/shared/PhotonVersion.java.in")
-    writePhotonVersionFile(versionFileIn, Path.of("$projectDir", "src", "main", "java", "org", "photonvision", "PhotonVersion.java"),
-            versionString)
-    versionFileIn = file("${rootDir}/shared/PhotonVersion.cpp.in")
-    writePhotonVersionFile(versionFileIn, Path.of("$projectDir", "src", "generate", "native", "cpp", "PhotonVersion.cpp"),
-            versionString)
+task copyVendorJsonToExamples {
+    outputs.upToDateWhen { false }
+    jar.finalizedBy it
 }
 
-build.mustRunAfter writeCurrentVersion
-cppHeadersZip.dependsOn writeCurrentVersion
+[
+    "photonlib-cpp-examples",
+    "photonlib-java-examples"
+].each { exampleFolder ->
+    file("${rootDir}/${exampleFolder}")
+            .listFiles()
+            .findAll {
+                return (it.isDirectory()
+                        && !it.isHidden()
+                        && !it.name.startsWith(".")
+                        && it.toPath().resolve("build.gradle").toFile().exists())
+            }
+            .collect { it.name }
+            .each { exampleVendordepFolder ->
+                task "copyVendorJsonTo${exampleFolder}-${exampleVendordepFolder}"(type: Copy) {
+                    from photonlibFileOutput
+
+                    into "${rootDir}/${exampleFolder}/${exampleVendordepFolder}/vendordeps/"
+                    outputs.upToDateWhen { false }
+                    copyVendorJsonToExamples.dependsOn it
+                }
+            }
+}
+
+clean {
+    [
+        "photonlib-cpp-examples",
+        "photonlib-java-examples"
+    ].each { exampleFolder ->
+        file("${rootDir}/${exampleFolder}")
+                .listFiles()
+                .findAll {
+                    return (it.isDirectory()
+                            && !it.isHidden()
+                            && !it.name.startsWith(".")
+                            && it.toPath().resolve("build.gradle").toFile().exists())
+                }
+                .collect { it.name }
+                .each { exampleVendordepFolder ->
+                    delete "${rootDir}/${exampleFolder}/${exampleVendordepFolder}/vendordeps/"
+                }
+    }
+}
+
+task writeCurrentVersion {
+    doLast {
+        def versionFileIn = file("${rootDir}/shared/PhotonVersion.java.in")
+        writePhotonVersionFile(versionFileIn, Path.of("$buildDir", "generated", "java", "org", "photonvision", "PhotonVersion.java"),
+                versionString)
+        versionFileIn = file("${rootDir}/shared/PhotonVersion.cpp.in")
+        writePhotonVersionFile(versionFileIn, Path.of("$buildDir", "generated", "native", "cpp", "PhotonVersion.cpp"),
+                versionString)
+    }
+}
+
+// https://github.com/wpilibsuite/allwpilib/blob/main/wpilibj/build.gradle#L52
+sourceSets.main.java.srcDir "${buildDir}/generated/java/"
+compileJava.dependsOn writeCurrentVersion
 
 // Building photon-lib requires photon-targeting to generate its proto files. This technically shouldn't be required but is needed for it to build.
 model {
@@ -206,6 +254,7 @@ model {
             }
             it.binaries.all {
                 it.tasks.withType(CppCompile) {
+                    it.dependsOn writeCurrentVersion
                     it.dependsOn ":photon-targeting:generateProto"
                 }
             }
@@ -243,7 +292,7 @@ if (!project.hasProperty('copyOfflineArtifacts')) {
 tasks.named('cppSourcesZip') {
     dependsOn writeCurrentVersion
 
-    from("$projectDir/src/generate/native/cpp") {
+    from("$buildDir/generated/native/cpp") {
         into '/'
     }
 }
@@ -252,7 +301,6 @@ tasks.named('cppSourcesZip') {
 def zipBaseNameCombined = '_GROUP_org.photonvision_combinedcpp_ID_photonvision-combinedcpp_CLS'
 task combinedCppSourcesZip(type: Zip) {
     dependsOn(':photon-lib:cppSourcesZip', ':photon-targeting:cppSourcesZip')
-    mustRunAfter(':photon-lib:cppHeadersZip', ':photon-targeting:cppHeadersZip')
 
     destinationDirectory = file("$buildDir/outputs")
     archiveBaseName = zipBaseNameCombined
@@ -270,7 +318,6 @@ task combinedCppSourcesZip(type: Zip) {
 }
 task combinedHeadersZip(type: Zip) {
     dependsOn(':photon-lib:cppHeadersZip', ':photon-targeting:cppHeadersZip')
-    mustRunAfter(':photon-lib:cppHeadersZip', ':photon-targeting:cppHeadersZip')
 
     destinationDirectory = file("$buildDir/outputs")
     archiveBaseName = zipBaseNameCombined
@@ -316,7 +363,6 @@ def nativeTasks = wpilibTools.createExtractionTasks {
 
 nativeTasks.addToSourceSetResources(sourceSets.test)
 
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpilibc")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")

@@ -29,14 +29,15 @@ import java.util.function.BiConsumer;
 import org.opencv.core.Size;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
-import org.photonvision.common.configuration.PhotonConfiguration;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.DataChangeService.SubscriberHandle;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NTDataPublisher;
 import org.photonvision.common.dataflow.statusLEDs.StatusLEDConsumer;
+import org.photonvision.common.dataflow.websocket.UICameraConfiguration;
 import org.photonvision.common.dataflow.websocket.UIDataPublisher;
+import org.photonvision.common.dataflow.websocket.UIPhotonConfiguration;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -521,7 +522,8 @@ public class VisionModule {
         DataChangeService.getInstance()
                 .publishEvent(
                         new OutgoingUIEvent<>(
-                                "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
+                                "fullsettings",
+                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
     }
 
     void saveAndBroadcastSelective(WsContext originContext, String propertyName, Object value) {
@@ -548,8 +550,8 @@ public class VisionModule {
         saveAndBroadcastAll();
     }
 
-    public PhotonConfiguration.UICameraConfiguration toUICameraConfig() {
-        var ret = new PhotonConfiguration.UICameraConfiguration();
+    public UICameraConfiguration toUICameraConfig() {
+        var ret = new UICameraConfiguration();
 
         var config = visionSource.getCameraConfiguration();
         ret.matchedCameraInfo = config.matchedCameraInfo;
@@ -628,11 +630,9 @@ public class VisionModule {
 
         // Pipelines like DriverMode and Calibrate3dPipeline have null output frames
         if (result.inputAndOutputFrame != null
-                && (pipelineManager.getCurrentPipelineSettings() instanceof AdvancedPipelineSettings)) {
-            streamRunnable.updateData(
-                    result.inputAndOutputFrame,
-                    (AdvancedPipelineSettings) pipelineManager.getCurrentPipelineSettings(),
-                    result.targets);
+                && (pipelineManager.getCurrentPipelineSettings()
+                        instanceof AdvancedPipelineSettings settings)) {
+            streamRunnable.updateData(result.inputAndOutputFrame, settings, result.targets);
             // The streamRunnable manages releasing in this case
         } else {
             consumeResults(result.inputAndOutputFrame, result.targets);
@@ -656,9 +656,9 @@ public class VisionModule {
     }
 
     public void setTargetModel(TargetModel targetModel) {
-        var settings = pipelineManager.getCurrentPipeline().getSettings();
-        if (settings instanceof ReflectivePipelineSettings) {
-            ((ReflectivePipelineSettings) settings).targetModel = targetModel;
+        var pipelineSettings = pipelineManager.getCurrentPipeline().getSettings();
+        if (pipelineSettings instanceof ReflectivePipelineSettings settings) {
+            settings.targetModel = targetModel;
             saveAndBroadcastAll();
         } else {
             logger.error("Cannot set target model of non-reflective pipe! Ignoring...");

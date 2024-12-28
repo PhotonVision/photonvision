@@ -1,21 +1,14 @@
 name: Photon Code Documentation
 
 on:
-  # Run on pushes to master and pushed tags, and on pull requests against master, but ignore the docs folder
+  # Run on pushes to main and pushed tags, and on pull requests against main, but ignore the docs folder
   push:
-    branches: [ master ]
+    branches: [ main ]
     tags:
       - 'v*'
-    paths:
-      - '**'
-      - '!docs/**'
-      - '.github/**'
   pull_request:
-    branches: [ master ]
-    paths:
-      - '**'
-      - '!docs/**'
-      - '.github/**'
+    branches: [ main ]
+  merge_group:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
@@ -85,7 +78,7 @@ jobs:
 
       - run: find .
       - name: copy file via ssh password
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/main'
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.WEBMASTER_SSH_HOST }}

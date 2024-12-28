@@ -83,7 +83,7 @@ More info on what these parameters mean can be found in [OpenCV's docs](https://
 
 Below these outputs are the snapshots collected for calibration, along with a per-snapshot mean reprojection error. A snapshot with a larger reprojection error might indicate a bad snapshot, due to effects such as motion blur or misidentified chessboard corners.
 
-Calibration images can also be extracted from the downloaded JSON file using [this Python script](https://raw.githubusercontent.com/PhotonVision/photonvision/master/devTools/calibrationUtils.py). This script will unpack calibration images, and also generate a VNL file for use [with mrcal](https://mrcal.secretsauce.net/).
+Calibration images can also be extracted from the downloaded JSON file using [this Python script](https://raw.githubusercontent.com/PhotonVision/photonvision/main/devTools/calibrationUtils.py). This script will unpack calibration images, and also generate a VNL file for use [with mrcal](https://mrcal.secretsauce.net/).
 
 ```
 python3 /path/to/calibrationUtils.py path/to/photon_calibration.json /path/to/output/folder

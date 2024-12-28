@@ -1,9 +1,8 @@
 import math
 
-import ntcore as nt
 import pytest
 from photonlibpy.estimation import TargetModel, VisionEstimation
-from photonlibpy.photonCamera import PhotonCamera, setVersionCheckEnabled
+from photonlibpy.photonCamera import PhotonCamera
 from photonlibpy.simulation import PhotonCameraSim, VisionSystemSim, VisionTargetSim
 from robotpy_apriltag import AprilTag, AprilTagFieldLayout
 from wpimath.geometry import (
@@ -18,12 +17,6 @@ from wpimath.geometry import (
 from wpimath.units import feetToMeters, meters
 
 
-@pytest.fixture(autouse=True)
-def setupCommon() -> None:
-    nt.NetworkTableInstance.getDefault().startServer()
-    setVersionCheckEnabled(False)
-
-
 def test_VisibilityCupidShuffle() -> None:
     targetPose = Pose3d(Translation3d(15.98, 0.0, 2.0), Rotation3d(0, 0, math.pi))
 
@@ -32,6 +25,8 @@ def test_VisibilityCupidShuffle() -> None:
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
 
+    # Set massive FPS so timing isn't an issue
+    cameraSim.prop.setFPS(1e6)
     cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
 
     visionSysSim.addVisionTargets(
@@ -93,6 +88,8 @@ def test_NotVisibleVert1() -> None:
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
 
+    # Set massive FPS so timing isn't an issue
+    cameraSim.prop.setFPS(1e6)
     cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
 
     visionSysSim.addVisionTargets(
@@ -128,6 +125,8 @@ def test_NotVisibleVert2() -> None:
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, robotToCamera)
 
+    # Set massive FPS so timing isn't an issue
+    cameraSim.prop.setFPS(1e6)
     cameraSim.prop.setCalibrationFromFOV(
         4774, 4774, fovDiag=Rotation2d.fromDegrees(80.0)
     )
@@ -156,6 +155,8 @@ def test_NotVisibleTargetSize() -> None:
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
 
+    # Set massive FPS so timing isn't an issue
+    cameraSim.prop.setFPS(1e6)
     cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
     cameraSim.setMinTargetAreaPixels(20.0)
     visionSysSim.addVisionTargets(
@@ -183,6 +184,8 @@ def test_NotVisibleTooFarLeds() -> None:
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
 
+    # Set massive FPS so timing isn't an issue
+    cameraSim.prop.setFPS(1e6)
     cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
     cameraSim.setMinTargetAreaPixels(1.0)
     cameraSim.setMaxSightRange(10.0)
@@ -216,6 +219,9 @@ def test_YawAngles(expected_yaw) -> None:
     cameraSim = PhotonCameraSim(camera)
 
     visionSysSim.addCamera(cameraSim, Transform3d())
+
+    # Set massive FPS so timing isn't an issue
+    cameraSim.prop.setFPS(1e6)
     cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
     cameraSim.setMinTargetAreaPixels(0.0)
     visionSysSim.addVisionTargets(
@@ -250,6 +256,9 @@ def test_PitchAngles(expected_pitch) -> None:
     camera = PhotonCamera("camera")
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
+
+    # Set massive FPS so timing isn't an issue
+    cameraSim.prop.setFPS(1e6)
     cameraSim.prop.setCalibrationFromFOV(
         640, 480, fovDiag=Rotation2d.fromDegrees(120.0)
     )
@@ -316,8 +325,10 @@ def test_distanceCalc(distParam, pitchParam, heightParam) -> None:
     )
     camera = PhotonCamera("camera")
     cameraSim = PhotonCameraSim(camera)
-
     visionSysSim.addCamera(cameraSim, Transform3d())
+
+    # Set massive FPS so timing isn't an issue
+    cameraSim.prop.setFPS(1e6)
     cameraSim.prop.setCalibrationFromFOV(
         640, 480, fovDiag=Rotation2d.fromDegrees(160.0)
     )
@@ -354,6 +365,9 @@ def test_MultipleTargets() -> None:
     camera = PhotonCamera("camera")
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
+
+    # Set massive FPS so timing isn't an issue
+    cameraSim.prop.setFPS(1e6)
     cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
     cameraSim.setMinTargetAreaPixels(20.0)
 
@@ -451,6 +465,9 @@ def test_PoseEstimation() -> None:
     camera = PhotonCamera("camera")
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
+
+    # Set massive FPS so timing isn't an issue
+    cameraSim.prop.setFPS(1e6)
     cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(90.0))
     cameraSim.setMinTargetAreaPixels(20.0)
 
@@ -525,6 +542,9 @@ def test_PoseEstimationRotated() -> None:
     camera = PhotonCamera("camera")
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, robotToCamera)
+
+    # Set massive FPS so timing isn't an issue
+    cameraSim.prop.setFPS(1e6)
     cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(90.0))
     cameraSim.setMinTargetAreaPixels(20.0)
 

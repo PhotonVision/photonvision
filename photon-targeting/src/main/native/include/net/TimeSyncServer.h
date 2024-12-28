@@ -62,8 +62,7 @@ class TimeSyncServer {
                    unsigned flags);
 
  public:
-  explicit TimeSyncServer(int port = 5810,
-                          std::function<uint64_t()> timeProvider = nt::Now);
+  explicit TimeSyncServer(int port = 5810);
 
   /**
    * Start listening for pings

@@ -83,6 +83,11 @@ const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.Charuco);
 const useOldPattern = ref(false);
 const tagFamily = ref<CalibrationTagFamilies>(CalibrationTagFamilies.Dict_4X4_1000);
 
+// Emperical testing - with stack size limit of 1MB, we can handle at -least- 700k points
+const tooManyPoints = computed(
+  () => useStateStore().calibrationData.imageCount * patternWidth.value * patternHeight.value > 700000
+);
+
 const downloadCalibBoard = () => {
   const doc = new JsPDF({ unit: "in", format: "letter" });
 
@@ -153,7 +158,10 @@ const downloadCalibBoard = () => {
   doc.save(`calibrationTarget-${CalibrationBoardTypes[boardType.value]}.pdf`);
 };
 
-const isCalibrating = ref(false);
+const isCalibrating = computed(
+  () => useCameraSettingsStore().currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.Calib3d
+);
+
 const startCalibration = () => {
   useCameraSettingsStore().startPnPCalibration({
     squareSizeIn: squareSizeIn.value,
@@ -166,13 +174,15 @@ const startCalibration = () => {
   });
   // The Start PnP method already handles updating the backend so only a store update is required
   useCameraSettingsStore().currentCameraSettings.currentPipelineIndex = WebsocketPipelineType.Calib3d;
-  isCalibrating.value = true;
+  // isCalibrating.value = true;
   calibCanceled.value = false;
 };
 const showCalibEndDialog = ref(false);
 const calibCanceled = ref(false);
 const calibSuccess = ref<boolean | undefined>(undefined);
 const endCalibration = () => {
+  calibSuccess.value = undefined;
+
   if (!useStateStore().calibrationData.hasEnoughImages) {
     calibCanceled.value = true;
   }
@@ -188,7 +198,8 @@ const endCalibration = () => {
       calibSuccess.value = false;
     })
     .finally(() => {
-      isCalibrating.value = false;
+      // isCalibrating.value = false;
+      // backend deals with this for us
     });
 };
 
@@ -241,6 +252,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
         <v-row v-if="useCameraSettingsStore().isConnected" style="display: flex; flex-direction: column" class="mt-4">
           <v-card-subtitle v-show="!isCalibrating" class="pl-3 pa-0 ma-0"> Configure New Calibration</v-card-subtitle>
           <v-form ref="form" v-model="settingsValid" class="pl-4 mb-10 pr-5">
+            <!-- TODO: the default videoFormatIndex is 0, but the list of unique video mode indexes might not include 0. getUniqueVideoResolutionStrings indexing is also different from the normal video mode indexing -->
             <pv-select
               v-model="useStateStore().calibrationData.videoFormatIndex"
               label="Resolution"
@@ -414,12 +426,17 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           </v-col>
         </v-row>
         <v-row>
+          <v-col v-if="tooManyPoints" :cols="12">
+            <v-banner rounded color="red" text-color="white" class="mt-3" icon="mdi-alert-circle-outline">
+              Too many corners - finish calibration now!
+            </v-banner>
+          </v-col>
           <v-col :cols="6">
             <v-btn
               small
               color="secondary"
               style="width: 100%"
-              :disabled="!settingsValid"
+              :disabled="!settingsValid || tooManyPoints"
               @click="isCalibrating ? useCameraSettingsStore().takeCalibrationSnapshot() : startCalibration()"
             >
               <v-icon left class="calib-btn-icon"> {{ isCalibrating ? "mdi-camera" : "mdi-flag-outline" }} </v-icon>
@@ -483,10 +500,12 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 process.</v-card-text
               >
             </template>
-            <template v-else-if="isCalibrating">
+            <!-- No result reported yet -->
+            <template v-else-if="calibSuccess === undefined">
               <v-progress-circular indeterminate :size="70" :width="8" color="accent" />
               <v-card-text>Camera is being calibrated. This process may take several minutes...</v-card-text>
             </template>
+            <!-- Got positive result -->
             <template v-else-if="calibSuccess">
               <v-icon color="green" size="70"> mdi-check-bold </v-icon>
               <v-card-text>

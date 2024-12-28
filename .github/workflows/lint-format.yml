@@ -1,21 +1,14 @@
 name: Lint and Format
 
 on:
-  # Run on pushes to master and pushed tags, and on pull requests against master, but ignore the docs folder
+  # Run on pushes to main and pushed tags, and on pull requests against main, but ignore the docs folder
   push:
-    branches: [ master ]
+    branches: [ main ]
     tags:
       - 'v*'
-    paths:
-      - '**'
-      - '!docs/**'
-      - '.github/**'
   pull_request:
-    branches: [ master ]
-    paths:
-      - '**'
-      - '!docs/**'
-      - '.github/**'
+    branches: [ main ]
+  merge_group:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
@@ -31,7 +24,7 @@ jobs:
         run: |
           git fetch --prune --unshallow
           git checkout -b pr
-          git branch -f master origin/master
+          git branch -f main origin/main
       - name: Set up Python 3.8
         uses: actions/setup-python@v4
         with:
@@ -61,9 +54,7 @@ jobs:
         with:
           java-version: 17
           distribution: temurin
-      - run: |
-          chmod +x gradlew
-          ./gradlew spotlessCheck
+      - run: ./gradlew spotlessCheck
         name: Run spotless
 
   client-lint-format:
@@ -93,6 +84,6 @@ jobs:
         run: |
           git fetch --prune --unshallow
           git checkout -b pr
-          git branch -f master origin/master
+          git branch -f main origin/main
       - name: Check index.html not changed
-        run: git --no-pager diff --exit-code origin/master photon-server/src/main/resources/web/index.html
+        run: git --no-pager diff --exit-code origin/main photon-server/src/main/resources/web/index.html

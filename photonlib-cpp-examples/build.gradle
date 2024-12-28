@@ -22,9 +22,5 @@ spotless {
     }
     java {
         target "**/*.java"
-        targetExclude("photon-core/src/main/java/org/photonvision/PhotonVersion.java")
-        targetExclude("photon-lib/src/main/java/org/photonvision/PhotonVersion.java")
     }
 }
-
-apply from: "examples.gradle"

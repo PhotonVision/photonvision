@@ -42,9 +42,7 @@ class PhotonPipelineResultSerde:
         ret = Packet()
 
         # metadata is of non-intrinsic type PhotonPipelineMetadata
-        ret.encodeBytes(
-            PhotonPipelineMetadata.photonStruct.pack(value.metadata).getData()
-        )
+        ret.encodeBytes(PhotonPipelineMetadata.photonStruct.pack(value.metadata).getData())
 
         # targets is a custom VLA!
         ret.encodeList(value.targets, PhotonTrackedTarget.photonStruct)

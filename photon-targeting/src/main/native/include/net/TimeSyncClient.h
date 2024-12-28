@@ -74,11 +74,11 @@ class TimeSyncClient {
 
   std::chrono::milliseconds m_loopDelay;
 
-  std::mutex m_offsetMutex;
-  Metadata m_metadata;
+  std::mutex m_offsetMutex{};
+  Metadata m_metadata{};
 
   // We only allow the most recent ping to stay alive, so only keep track of it
-  TspPing m_lastPing;
+  TspPing m_lastPing{};
 
   // 30s is a reasonable guess
   frc::MedianFilter<int64_t> m_lastOffsets{30};
@@ -90,8 +90,7 @@ class TimeSyncClient {
 
  public:
   TimeSyncClient(std::string_view server, int remote_port,
-                 std::chrono::milliseconds ping_delay,
-                 std::function<uint64_t()> timeProvider = nt::Now);
+                 std::chrono::milliseconds ping_delay);
 
   void Start();
   void Stop();

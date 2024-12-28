@@ -8,16 +8,9 @@ on:
     branches: [ master ]
     tags:
       - 'v*'
-    paths:
-      - '**'
-      - '!docs/**'
-      - '.github/**'
   pull_request:
     branches: [ master ]
-    paths:
-      - '**'
-      - '!docs/**'
-      - '.github/**'
+  merge_group:
 
 jobs:
   buildAndDeploy:

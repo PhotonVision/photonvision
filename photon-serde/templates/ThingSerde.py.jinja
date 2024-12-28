@@ -44,7 +44,7 @@ class {{ name }}Serde:
     MESSAGE_FORMAT = "{{ message_fmt }}"
 
     @staticmethod
-    def pack(value: '{{ name }}' ) -> 'Packet':
+    def pack(value: "{{ name }}") -> "Packet":
         ret = Packet()
 {% for field in fields -%}
 {%- if field.type | is_shimmed %}
@@ -60,7 +60,7 @@ class {{ name }}Serde:
         ret.encode{{ type_map[field.type].java_type.title() }}List(value.{{ field.name }})
 {%- elif field.type | is_intrinsic %}
         # {{ field.name }} is of intrinsic type {{ field.type }}
-        ret.{{ type_map[field.type].java_encode_shim }}(value.{{field.name}})
+        ret.{{ type_map[field.type].python_encode_shim }}(value.{{field.name}})
 {%- else %}
         # {{ field.name }} is of non-intrinsic type {{ field.type }}
         ret.encodeBytes({{ field.type }}.photonStruct.pack(value.{{field.name}}).getData())
@@ -70,13 +70,12 @@ class {{ name }}Serde:
 {% endfor%}
         return ret
 
-
     @staticmethod
-    def unpack(packet: 'Packet') -> '{{ name }}':
+    def unpack(packet: "Packet") -> "{{ name }}":
         ret = {{ name }}()
 {% for field in fields -%}
 {%- if field.type | is_shimmed %}
-        ret.{{ field.name }} = {{ get_message_by_name(field.type).python_decode_shim }}()
+        ret.{{ field.name }} = packet.{{ get_message_by_name(field.type).python_decode_shim }}()
 {%- elif field.optional == True %}
         # {{ field.name }} is optional! it better not be a VLA too
         ret.{{ field.name }} = packet.decodeOptional({{ field.type }}.photonStruct)
@@ -88,7 +87,7 @@ class {{ name }}Serde:
         ret.{{ field.name }} = packet.decode{{ type_map[field.type].java_type.title() }}List()
 {%- elif field.type | is_intrinsic %}
         # {{ field.name }} is of intrinsic type {{ field.type }}
-        ret.{{field.name}} = packet.{{ type_map[field.type].java_decode_method }}()
+        ret.{{field.name}} = packet.{{ type_map[field.type].python_decode_shim }}()
 {%- else %}
         # {{ field.name }} is of non-intrinsic type {{ field.type }}
         ret.{{field.name}} = {{ field.type }}.photonStruct.unpack(packet)
@@ -101,4 +100,4 @@ class {{ name }}Serde:
 
 
 # Hack ourselves into the base class
-{{ name }}.photonStruct = {{ name }}Serde()
+{{ name }}.photonStruct = {{ name }}Serde(){{'\n'}}

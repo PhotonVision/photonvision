@@ -21,9 +21,9 @@ import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.cscore.VideoException;
 import edu.wpi.first.cscore.VideoProperty;
-import edu.wpi.first.util.RuntimeDetector;
 import java.util.*;
 import org.photonvision.common.configuration.CameraConfiguration;
+import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.camera.CameraQuirk;
@@ -121,7 +121,7 @@ public class USBCameraSource extends VisionSource {
         GenericUSBCameraSettables settables;
 
         if (quirks.hasQuirk(CameraQuirk.LifeCamControls)) {
-            if (RuntimeDetector.isWindows()) {
+            if (Platform.isWindows()) {
                 logger.debug("Using Microsoft Lifecam 3000 Windows-Specific Settables");
                 settables = new LifeCam3kWindowsCameraSettables(config, camera);
             } else {
@@ -132,7 +132,7 @@ public class USBCameraSource extends VisionSource {
             logger.debug("Using PlayStation Eye Camera Settables");
             settables = new PsEyeCameraSettables(config, camera);
         } else if (quirks.hasQuirk(CameraQuirk.ArduOV2311Controls)) {
-            if (RuntimeDetector.isWindows()) {
+            if (Platform.isWindows()) {
                 logger.debug("Using Arducam OV2311 Windows-Specific Settables");
                 settables = new ArduOV2311WindowsCameraSettables(config, camera);
             } else {
