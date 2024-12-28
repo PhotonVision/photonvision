@@ -90,16 +90,14 @@ const isExpanded = ref({});
         <span>Active Vision Modules</span>
       </v-card-title>
 
-      <v-card-text v-if="
-        useCameraSettingsStore().cameras.length === 0 ||
-        (useCameraSettingsStore().cameras.length === 1 &&
-          JSON.stringify(useCameraSettingsStore().cameras[0]) === JSON.stringify(PlaceholderCameraSettings))"
+      <v-card-text
+        v-if="
+          useCameraSettingsStore().cameras.length === 0 ||
+          (useCameraSettingsStore().cameras.length === 1 &&
+            JSON.stringify(useCameraSettingsStore().cameras[0]) === JSON.stringify(PlaceholderCameraSettings))
+        "
       >
-        <v-banner
-          rounded
-          color="red"
-          icon="mdi-alert"
-        >
+        <v-banner rounded color="red" icon="mdi-alert">
           No active vision modules. Activate a camera to get started!
         </v-banner>
       </v-card-text>
@@ -118,13 +116,22 @@ const isExpanded = ref({});
               <span>{{ module.nickname }}</span>
             </v-col>
             <v-col cols="2" class="pa-0 pr-3">
-              <v-btn color="primary" @click="isExpanded[module.uniqueName] = !(isExpanded[module.uniqueName] ?? false)" style="width: 100%;">
+              <v-btn
+                color="primary"
+                @click="isExpanded[module.uniqueName] = !(isExpanded[module.uniqueName] ?? false)"
+                style="width: 100%"
+              >
                 <v-icon>{{ isExpanded[module.uniqueName] ? "mdi-chevron-up" : "mdi-chevron-down" }} </v-icon>
                 <span>Details</span>
               </v-btn>
             </v-col>
             <v-col cols="2" class="pa-0">
-              <v-btn class="black--text" @click="deactivateCamera(module.uniqueName)" color="accent" style="width: 100%;">
+              <v-btn
+                class="black--text"
+                @click="deactivateCamera(module.uniqueName)"
+                color="accent"
+                style="width: 100%"
+              >
                 Deactivate
               </v-btn>
             </v-col>
@@ -182,10 +189,9 @@ const isExpanded = ref({});
 
             <v-expand-transition>
               <v-card color="primary" v-if="isExpanded[module.uniqueName] ?? false" class="mt-3">
-                <PvCameraMatchCard :saved="module.matchedCameraInfo" :matched="getMatchedDevice(module)"/>
+                <PvCameraMatchCard :saved="module.matchedCameraInfo" :matched="getMatchedDevice(module)" />
               </v-card>
             </v-expand-transition>
-
           </v-card-text>
         </v-card>
       </v-card-text>
@@ -197,12 +203,7 @@ const isExpanded = ref({});
       </v-card-title>
 
       <v-card-text v-if="disabledVisionModules.length === 0">
-        <v-banner
-          rounded
-          dark
-          icon="mdi-information">
-          No disabled cameras to show.
-        </v-banner>
+        <v-banner rounded dark icon="mdi-information"> No disabled cameras to show. </v-banner>
       </v-card-text>
 
       <v-card-text v-else>
@@ -219,15 +220,19 @@ const isExpanded = ref({});
               <span>{{ module.nickname }}</span>
             </v-col>
             <v-col cols="2" class="pa-0 pr-3">
-              <v-btn color="primary" @click="isExpanded[module.uniqueName] = !(isExpanded[module.uniqueName] ?? false)" style="width: 100%;">
+              <v-btn
+                color="primary"
+                @click="isExpanded[module.uniqueName] = !(isExpanded[module.uniqueName] ?? false)"
+                style="width: 100%"
+              >
                 <v-icon>{{ isExpanded[module.uniqueName] ? "mdi-chevron-up" : "mdi-chevron-down" }} </v-icon>
                 <span>Details</span>
               </v-btn>
             </v-col>
             <v-col cols="2" class="pa-0">
-                <v-btn class="black--text" @click="activateModule(module.uniqueName)" color="accent" style="width: 100%;">
-                  Activate
-                </v-btn>
+              <v-btn class="black--text" @click="activateModule(module.uniqueName)" color="accent" style="width: 100%">
+                Activate
+              </v-btn>
             </v-col>
           </v-card-title>
 
@@ -265,7 +270,6 @@ const isExpanded = ref({});
                 <PvCameraInfoCard :camera="module.matchedCameraInfo" />
               </v-card>
             </v-expand-transition>
-
           </v-card-text>
         </v-card>
       </v-card-text>
@@ -277,13 +281,7 @@ const isExpanded = ref({});
       </v-card-title>
 
       <v-card-text v-if="unmatchedCameras.length === 0">
-        <v-banner
-          rounded
-          dark
-          icon="mdi-information"
-        >
-          No unassigned cameras. Plug one in to get started!
-        </v-banner>
+        <v-banner rounded dark icon="mdi-information"> No unassigned cameras. Plug one in to get started! </v-banner>
       </v-card-text>
 
       <v-card-text v-else>
@@ -302,13 +300,19 @@ const isExpanded = ref({});
                 <v-card-title v-else class="pa-0 pb-1">Unknown Camera</v-card-title>
               </v-col>
               <v-col cols="2" class="pl-0">
-                <v-btn color="primary" @click="isExpanded[camera.uniquePath] = !(isExpanded[camera.uniquePath] ?? false)" style="width: 100%;">
+                <v-btn
+                  color="primary"
+                  @click="isExpanded[camera.uniquePath] = !(isExpanded[camera.uniquePath] ?? false)"
+                  style="width: 100%"
+                >
                   <v-icon>{{ isExpanded[camera.uniquePath] ? "mdi-chevron-up" : "mdi-chevron-down" }} </v-icon>
                   <span>Details</span>
                 </v-btn>
               </v-col>
               <v-col cols="2" class="pl-0">
-                <v-btn class="black--text" @click="activateCamera(camera)" color="accent" style="width: 100%;">Activate</v-btn>
+                <v-btn class="black--text" @click="activateCamera(camera)" color="accent" style="width: 100%"
+                  >Activate</v-btn
+                >
               </v-col>
             </v-row>
           </v-card-title>
@@ -316,11 +320,10 @@ const isExpanded = ref({});
           <v-expand-transition>
             <v-card-text v-if="isExpanded[camera.uniquePath] ?? false">
               <v-card color="primary">
-                <PvCameraInfoCard :camera="camera" showTitle="false" />
+                <PvCameraInfoCard :camera="camera" :showTitle="false" />
               </v-card>
             </v-card-text>
           </v-expand-transition>
-
         </v-card>
       </v-card-text>
     </v-card>
