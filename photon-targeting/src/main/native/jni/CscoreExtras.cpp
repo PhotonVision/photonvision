@@ -98,7 +98,7 @@ static inline int GetCVFormat(int wpiFormat) {
     case WPI_PIXFMT_UNKNOWN:
     default:
       return CV_8UC1;
-  };
+  }
 }
 
 #include <cstdio>
@@ -125,12 +125,6 @@ Java_org_photonvision_jni_CscoreExtras_grabRawSinkFrameTimeoutLastTime
     return 0;
   }
 
-  std::printf(
-      "Got RawFrame: width %i height %i stride %i wpi_format %i capacity %lu "
-      "size %lu\n",
-      frame->width, frame->height, frame->stride, frame->pixelFormat,
-      frame->capacity, frame->size);
-
   return rv;
 }
 
@@ -144,12 +138,6 @@ Java_org_photonvision_jni_CscoreExtras_wrapRawFrame
   (JNIEnv*, jclass, jlong framePtr)
 {
   auto* frame = reinterpret_cast<wpi::RawFrame*>(framePtr);
-
-  std::printf(
-      "Wrapping RawFrame: width %i height %i stride %i wpi_format %i capacity "
-      "%lu size %lu\n",
-      frame->width, frame->height, frame->stride, frame->pixelFormat,
-      frame->capacity, frame->size);
 
   return reinterpret_cast<jlong>(new cv::Mat(frame->height, frame->width,
                                              GetCVFormat(frame->pixelFormat),

@@ -33,7 +33,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opencv.core.Mat;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.jni.CscoreExtras;
 import org.photonvision.jni.PhotonTargetingJniLoader;
 import org.photonvision.jni.WpilibLoader;
@@ -62,7 +61,7 @@ public class CscoreExtrasTest {
 
         UsbCamera camera = CameraServer.startAutomaticCapture(2);
 
-        camera.setResolution(640, 480);
+        camera.setVideoMode(PixelFormat.kMJPEG, 1280, 720, 30);
         var cameraMode = camera.getVideoMode();
 
         CvSink cvSink = CameraServer.getVideo(camera);
@@ -70,7 +69,7 @@ public class CscoreExtrasTest {
         CvSource outputStream = CameraServer.putVideo("Detected", 640, 480);
 
         long lastTime = 0;
-        for (int i = 0; i < 10000; i++) {
+        for (long i = 0; i < 10000000; i++) {
             var frame = new RawFrame();
             frame.setInfo(
                     cameraMode.width,
@@ -78,6 +77,7 @@ public class CscoreExtrasTest {
                     // hard-coded 3 channel
                     cameraMode.width * 3,
                     PixelFormat.kBGR);
+
             long time =
                     CscoreExtras.grabRawSinkFrameTimeoutLastTime(
                             cvSink.getHandle(), frame.getNativeObj(), 0.225, lastTime);
@@ -89,12 +89,11 @@ public class CscoreExtrasTest {
                 System.out.println(
                         "Mat is " + mat.cols() + " x " + mat.rows() + " (cols x rows) with type " + mat.type());
 
-                Imgcodecs.imwrite("out.png", mat);
                 outputStream.putFrame(mat);
 
                 mat.release();
             } else {
-                System.err.println("cannot wrap a null mat");
+                System.err.println("Sink produced an error...");
             }
 
             lastTime = time;
