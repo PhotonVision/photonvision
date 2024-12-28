@@ -121,8 +121,6 @@ public class ArucoPoseEstimatorPipe
     public void setParams(ArucoPoseEstimatorPipe.ArucoPoseEstimatorPipeParams newParams) {
         // exact equality check OK here, the number shouldn't change
         if (this.params == null || this.params.tagSize != newParams.tagSize) {
-            System.out.println("asdfasdfasdf");
-
             var tagSize = newParams.tagSize;
 
             // This order is relevant for SOLVEPNP_IPPE_SQUARE
