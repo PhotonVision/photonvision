@@ -152,7 +152,7 @@ const isExpanded = ref({});
                       <td>Pipelines</td>
                       <td>{{ module.pipelineNicknames.join(", ") }}</td>
                     </tr>
-                    <tr v-if="module.isConnected">
+                    <tr v-if="module.isConnected && useStateStore().backendResults[index]">
                       <td>Frames Processed</td>
                       <td>
                         {{ useStateStore().backendResults[index].sequenceID }} ({{

@@ -17,6 +17,7 @@ interface GeneralSettingsStore {
   network: NetworkSettings;
   lighting: LightingSettings;
   metrics: MetricData;
+  currentFieldLayout;
 }
 
 export const useSettingsStore = defineStore("settings", {

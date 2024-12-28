@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, ref, onBeforeUnmount } from "vue";
+import { computed, inject, ref, onBeforeUnmount, onMounted } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import loadingImage from "@/assets/images/loading.svg";
 import type { StyleValue } from "vue/types/jsx";
@@ -73,6 +73,16 @@ const handleFullscreenRequest = () => {
 };
 
 const mjpgStream: any = ref(null);
+
+const handleStreamError = () => {
+  if (streamSrc.value && streamSrc.value !== emptyStreamSrc) {
+    console.error("Error loading stream:", streamSrc.value, " Trying again.");
+    setTimeout(() => {
+      mjpgStream.value.src = streamSrc.value;
+    }, 100);
+  }
+};
+
 onBeforeUnmount(() => {
   if (!mjpgStream.value) return;
   mjpgStream.value["src"] = emptyStreamSrc;
@@ -83,7 +93,6 @@ onBeforeUnmount(() => {
   <div class="stream-container" :style="containerStyle">
     <img :src="loadingImage" class="stream-loading" />
     <img
-      v-show="streamSrc !== emptyStreamSrc"
       :id="id"
       ref="mjpgStream"
       class="stream-video"
@@ -91,6 +100,7 @@ onBeforeUnmount(() => {
       :src="streamSrc"
       :alt="streamDesc"
       :style="streamStyle"
+      @error="handleStreamError"
     />
     <div class="stream-overlay" :style="overlayStyle">
       <pv-icon

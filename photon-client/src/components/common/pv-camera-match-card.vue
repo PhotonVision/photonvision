@@ -12,7 +12,7 @@ const { saved, matched } = defineProps({
   }
 });
 
-const cameraInfoFor = (camera: PVCameraInfo) => {
+const cameraInfoFor = (camera: PVCameraInfo): any => {
   if (camera.PVUsbCameraInfo) {
     return camera.PVUsbCameraInfo;
   }
