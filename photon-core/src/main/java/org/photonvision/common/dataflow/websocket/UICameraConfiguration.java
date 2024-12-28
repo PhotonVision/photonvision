@@ -51,7 +51,7 @@ public class UICameraConfiguration {
     public double minWhiteBalanceTemp;
     public double maxWhiteBalanceTemp;
     public PVCameraInfo matchedCameraInfo;
-    
+
     // Status for if the underlying device is present and such
     public boolean isConnected;
     public boolean hasConnected;

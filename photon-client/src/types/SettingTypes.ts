@@ -255,7 +255,6 @@ export interface UiCameraConfiguration {
   matchedCameraInfo: PVCameraInfo;
   isConnected: boolean;
   hasConnected: boolean;
-
 }
 
 export interface CameraSettingsChangeRequest {

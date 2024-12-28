@@ -86,8 +86,7 @@ public class NetworkConfig {
                 config.shouldPublishProto,
                 config.networkManagerIface,
                 config.setStaticCommand,
-                config.setDHCPcommand,
-                config.matchCamerasOnlyByPath);
+                config.setDHCPcommand);
     }
 
     @JsonIgnore

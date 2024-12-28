@@ -24,10 +24,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
+import org.photonvision.common.dataflow.websocket.UIPhotonConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.camera.QuirkyCamera;
@@ -38,9 +38,7 @@ import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipeline;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
-/**
- * VisionRunner has a frame supplier, a pipeline supplier, and a result consumer
- */
+/** VisionRunner has a frame supplier, a pipeline supplier, and a result consumer */
 @SuppressWarnings("rawtypes")
 public class VisionRunner {
     private final Logger logger;
@@ -55,12 +53,11 @@ public class VisionRunner {
     private long loopCount;
 
     /**
-     * VisionRunner contains a thread to run a pipeline, given a frame, and will
-     * give the result to
+     * VisionRunner contains a thread to run a pipeline, given a frame, and will give the result to
      * the consumer.
      *
-     * @param frameSupplier          The supplier of the latest frame.
-     * @param pipelineSupplier       The supplier of the current pipeline.
+     * @param frameSupplier The supplier of the latest frame.
+     * @param pipelineSupplier The supplier of the current pipeline.
      * @param pipelineResultConsumer The consumer of the latest result.
      */
     public VisionRunner(
@@ -145,7 +142,8 @@ public class VisionRunner {
         DataChangeService.getInstance()
                 .publishEvent(
                         new OutgoingUIEvent<>(
-                                "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
+                                "fullsettings",
+                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
 
         while (!Thread.interrupted()) {
             changeSubscriber.processSettingChanges();

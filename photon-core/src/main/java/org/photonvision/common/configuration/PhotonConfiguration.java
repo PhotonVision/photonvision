@@ -21,21 +21,7 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import org.photonvision.PhotonVersion;
-import org.photonvision.common.hardware.Platform;
-import org.photonvision.common.networking.NetworkManager;
-import org.photonvision.common.networking.NetworkUtils;
-import org.photonvision.common.util.SerializationUtils;
-import org.photonvision.mrcal.MrCalJNILoader;
-import org.photonvision.raspi.LibCameraJNILoader;
-import org.photonvision.vision.calibration.UICameraCalibrationCoefficients;
-import org.photonvision.vision.camera.PVCameraInfo;
-import org.photonvision.vision.camera.QuirkyCamera;
-import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionSource;
-import org.photonvision.vision.processes.VisionSourceManager;
 
 public class PhotonConfiguration {
     private final HardwareConfig hardwareConfig;

@@ -40,20 +40,15 @@ public abstract class FrameProvider implements Supplier<Frame>, Releasable {
     public abstract boolean checkCameraConnected();
 
     /**
-     * Returns if the camera has connected at some point. This is not if it is
-     * currently connected.
+     * Returns if the camera has connected at some point. This is not if it is currently connected.
      */
-
     public boolean hasConnected() {
         return cameraPropertiesCached;
     }
 
     public abstract String getName();
 
-    /**
-     * Ask the camera to produce a certain kind of processed image (e.g. HSV or
-     * greyscale)
-     */
+    /** Ask the camera to produce a certain kind of processed image (e.g. HSV or greyscale) */
     public abstract void requestFrameThresholdType(FrameThresholdType type);
 
     /** Ask the camera to rotate frames it outputs */

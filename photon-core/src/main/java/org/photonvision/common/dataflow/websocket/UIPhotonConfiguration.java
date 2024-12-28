@@ -28,7 +28,6 @@ import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.vision.processes.VisionModule;
-import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.processes.VisionSourceManager;
 
 public class UIPhotonConfiguration {

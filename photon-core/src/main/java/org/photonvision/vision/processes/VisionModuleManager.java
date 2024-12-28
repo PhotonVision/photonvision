@@ -19,7 +19,7 @@ package org.photonvision.vision.processes;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import org.photonvision.common.configuration.PhotonConfiguration.UICameraConfiguration;
+import org.photonvision.common.dataflow.websocket.UICameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 

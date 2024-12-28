@@ -24,7 +24,7 @@ import edu.wpi.first.cscore.UsbCameraInfo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import org.photonvision.common.configuration.PhotonConfiguration.UICameraConfiguration;
+import org.photonvision.common.dataflow.websocket.UICameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
