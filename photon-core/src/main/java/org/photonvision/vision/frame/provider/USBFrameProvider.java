@@ -29,7 +29,7 @@ public class USBFrameProvider extends CpuImageProcessor {
     private final CvSink cvSink;
 
     @SuppressWarnings("SpellCheckingInspection")
-    private final VisionSourceSettables settables;
+    private VisionSourceSettables settables;
 
     @SuppressWarnings("SpellCheckingInspection")
     public USBFrameProvider(CvSink sink, VisionSourceSettables visionSettables) {
@@ -59,5 +59,9 @@ public class USBFrameProvider extends CpuImageProcessor {
     @Override
     public String getName() {
         return "USBFrameProvider - " + cvSink.getName();
+    }
+
+    public void updateSettables(VisionSourceSettables settables) {
+        this.settables = settables;
     }
 }
