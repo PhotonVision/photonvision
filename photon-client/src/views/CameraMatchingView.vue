@@ -181,7 +181,7 @@ const isExpanded = ref({});
                 <photon-camera-stream
                   id="output-camera-stream"
                   :camera-settings="module"
-                  stream-type="Raw"
+                  stream-type="Processed"
                   style="width: 100%; height: auto"
                 />
               </v-col>
