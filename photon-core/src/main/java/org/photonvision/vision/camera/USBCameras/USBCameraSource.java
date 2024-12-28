@@ -38,7 +38,7 @@ public class USBCameraSource extends VisionSource {
     private final Logger logger;
     private final UsbCamera camera;
     protected GenericUSBCameraSettables settables;
-    protected USBFrameProvider usbFrameProvider;
+    protected FrameProvider usbFrameProvider;
 
     private void onCameraConnected() {
         // Aid to the development team - record the properties available for whatever the user plugged
