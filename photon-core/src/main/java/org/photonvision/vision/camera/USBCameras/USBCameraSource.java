@@ -102,6 +102,7 @@ public class USBCameraSource extends VisionSource {
         } else {
             // Camera is likely to work, set up the Settables
             settables = createSettables(config, camera);
+            logger.info("Created settables " + settables);
 
             usbFrameProvider = new USBFrameProvider(camera, settables, this::onCameraConnected);
         }
@@ -165,6 +166,8 @@ public class USBCameraSource extends VisionSource {
         var oldConfig = this.cameraConfiguration;
         var oldCamera = this.camera;
 
+        // Re-create settables
+        var oldVideoMode = this.settables.getCurrentVideoMode();
         this.settables = createSettables(oldConfig, oldCamera);
 
         // Settables only cache videomodes on connect - force this to happen next tick
@@ -173,6 +176,12 @@ public class USBCameraSource extends VisionSource {
         } else {
             this.usbFrameProvider.cameraPropertiesCached = false;
         }
+
+        // And update the settables' FrameStaticProps
+        settables.setVideoMode(oldVideoMode);
+
+        // Propogate our updated settables over to the frame provider
+        ((USBFrameProvider) this.usbFrameProvider).updateSettables(this.settables);
     }
 
     private void printCameraProperaties() {

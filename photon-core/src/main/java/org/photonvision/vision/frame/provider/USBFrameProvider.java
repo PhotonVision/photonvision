@@ -32,7 +32,7 @@ public class USBFrameProvider extends CpuImageProcessor {
     private CvSink cvSink = null;
 
     @SuppressWarnings("SpellCheckingInspection")
-    private final VisionSourceSettables settables;
+    private VisionSourceSettables settables;
 
     private Runnable connectedCallback;
 
@@ -108,5 +108,9 @@ public class USBFrameProvider extends CpuImageProcessor {
     @Override
     public boolean isConnected() {
         return camera.isConnected();
+    }
+
+    public void updateSettables(VisionSourceSettables settables) {
+        this.settables = settables;
     }
 }
