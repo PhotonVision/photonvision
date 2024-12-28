@@ -65,6 +65,7 @@ model {
             nativeUtils.useRequiredLibrary(it, "wpimath_shared")
             nativeUtils.useRequiredLibrary(it, "wpinet_shared")
             nativeUtils.useRequiredLibrary(it, "ntcore_shared")
+            nativeUtils.useRequiredLibrary(it, "cscore_shared")
         }
         "${nativeName}JNI"(JniNativeLibrarySpec) {
 
@@ -88,9 +89,11 @@ model {
             }
 
             nativeUtils.useRequiredLibrary(it, "wpiutil_shared")
+            nativeUtils.useRequiredLibrary(it, "wpimath_shared")
             nativeUtils.useRequiredLibrary(it, "wpinet_shared")
             nativeUtils.useRequiredLibrary(it, "ntcore_shared")
-            nativeUtils.useRequiredLibrary(it, "wpimath_shared")
+            nativeUtils.useRequiredLibrary(it, "cscore_shared")
+            nativeUtils.useRequiredLibrary(it, "opencv_shared")
         }
 
         all {
