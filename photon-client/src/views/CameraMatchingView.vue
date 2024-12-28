@@ -302,10 +302,12 @@ const isExpanded = ref({});
               <v-col cols="2" class="pl-0">
                 <v-btn
                   color="primary"
-                  @click="isExpanded[camera.uniquePath] = !(isExpanded[camera.uniquePath] ?? false)"
+                  @click="isExpanded[uniquePathForCamera(camera)] = !(isExpanded[uniquePathForCamera(camera)] ?? false)"
                   style="width: 100%"
                 >
-                  <v-icon>{{ isExpanded[camera.uniquePath] ? "mdi-chevron-up" : "mdi-chevron-down" }} </v-icon>
+                  <v-icon
+                    >{{ isExpanded[uniquePathForCamera(camera)] ? "mdi-chevron-up" : "mdi-chevron-down" }}
+                  </v-icon>
                   <span>Details</span>
                 </v-btn>
               </v-col>
@@ -318,7 +320,7 @@ const isExpanded = ref({});
           </v-card-title>
 
           <v-expand-transition>
-            <v-card-text v-if="isExpanded[camera.uniquePath] ?? false">
+            <v-card-text v-if="isExpanded[uniquePathForCamera(camera)] ?? false">
               <v-card color="primary">
                 <PvCameraInfoCard :camera="camera" :showTitle="false" />
               </v-card>
