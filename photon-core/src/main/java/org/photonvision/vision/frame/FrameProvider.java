@@ -29,7 +29,7 @@ public abstract class FrameProvider implements Supplier<Frame>, Releasable {
     // extra
     // setup/callbacks once cscore connects to our underlying device for the first
     // time
-    protected boolean cameraPropertiesCached = false;
+    public boolean cameraPropertiesCached = false;
 
     protected void onCameraConnected() {
         cameraPropertiesCached = true;

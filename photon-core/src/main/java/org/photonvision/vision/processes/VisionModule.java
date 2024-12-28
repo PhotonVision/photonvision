@@ -592,7 +592,6 @@ public class VisionModule {
 
         if (videoModes.size() == 0) {
             logger.error("no video modes, guhhhhh");
-            System.exit(1);
         }
 
         ret.videoFormatList = temp;

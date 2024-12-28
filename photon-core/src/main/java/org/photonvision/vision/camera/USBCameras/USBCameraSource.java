@@ -166,6 +166,13 @@ public class USBCameraSource extends VisionSource {
         var oldCamera = this.camera;
 
         this.settables = createSettables(oldConfig, oldCamera);
+
+        // Settables only cache videomodes on connect - force this to happen next tick
+        if (settables.camera.isConnected()) {
+            this.settables.onCameraConnected();
+        } else {
+            this.usbFrameProvider.cameraPropertiesCached = false;
+        }
     }
 
     private void printCameraProperaties() {
