@@ -105,18 +105,11 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
                         tagModel = TargetModel.kAprilTag36h11;
                         yield Objdetect.DICT_APRILTAG_36h11;
                     }
-                    case kTag25h9 -> Objdetect.DICT_APRILTAG_25h9;
-                        // TODO: explicitly drop support for these
-                    case kTag16h5,
-                            kTagCircle21h7,
-                            kTagCircle49h12,
-                            kTagCustom48h11,
-                            kTagStandard41h12,
-                            kTagStandard52h13 -> {
+                    case kTag16h5 -> {
                         // 2024 tag, 6.5in
-                        tagWidth = Units.inchesToMeters(6.5);
-                        tagModel = TargetModel.kAprilTag36h11;
-                        yield Objdetect.DICT_APRILTAG_36h11;
+                        tagWidth = Units.inchesToMeters(6);
+                        tagModel = TargetModel.kAprilTag16h5;
+                        yield Objdetect.DICT_APRILTAG_16h5;
                     }
                 };
 

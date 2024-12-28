@@ -85,6 +85,7 @@ public class USBCameraSource extends VisionSource {
         } else {
             // Camera is likely to work, set up the Settables
             settables = createSettables(config, camera);
+            logger.info("Created settables " + settables);
 
             if (settables.getAllVideoModes().isEmpty()) {
                 // No video modes produced from settables, disable the camera
@@ -160,7 +161,15 @@ public class USBCameraSource extends VisionSource {
         var oldConfig = this.cameraConfiguration;
         var oldCamera = this.camera;
 
+        // Re-create settables
+        var oldVideoMode = this.settables.getCurrentVideoMode();
         this.settables = createSettables(oldConfig, oldCamera);
+
+        // And update FrameStaticProps
+        settables.setVideoMode(oldVideoMode);
+
+        // Propogate our updated settables over to the frame provider
+        ((USBFrameProvider) this.usbFrameProvider).updateSettables(this.settables);
     }
 
     private void printCameraProperaties() {
