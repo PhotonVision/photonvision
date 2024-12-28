@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.photonvision.common.util.OrderedTracer;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.FrameProvider;
@@ -98,6 +99,8 @@ public class FileFrameProvider extends CpuImageProcessor {
 
     @Override
     public CapturedFrame getInputMat() {
+        var tracer = new OrderedTracer();
+
         var out = new CVMat();
         out.copyFrom(originalFrame);
 
@@ -111,7 +114,10 @@ public class FileFrameProvider extends CpuImageProcessor {
         }
 
         lastGetMillis = System.currentTimeMillis();
-        return new CapturedFrame(out, properties, MathUtils.wpiNanoTime());
+
+        tracer.addEpoch("FileFrame::fakeDelay");
+
+        return new CapturedFrame(out, properties, MathUtils.wpiNanoTime(), tracer);
     }
 
     @Override

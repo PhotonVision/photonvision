@@ -87,7 +87,8 @@ public class DriverModePipeline
                         frame.processedImage,
                         frame.colorImage,
                         frame.type,
-                        frame.frameStaticProperties));
+                        frame.frameStaticProperties,
+                        frame.m_tracer));
     }
 
     @Override

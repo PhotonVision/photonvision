@@ -20,6 +20,7 @@ package org.photonvision.vision.frame.provider;
 import org.opencv.core.Mat;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.OrderedTracer;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.vision.camera.LibcameraGpuSettables;
@@ -51,11 +52,15 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
 
     @Override
     public Frame get() {
+        var tracer = new OrderedTracer();
+
         // We need to make sure that other threads don't try to change video modes while
         // we're waiting for a frame
         // System.out.println("GET!");
         synchronized (settables.CAMERA_LOCK) {
+            tracer.addEpoch("Libcam::lockAcquired");
             var p_ptr = LibCameraJNI.awaitNewFrame(settables.r_ptr);
+            tracer.addEpoch("Libcam::gotNewFrame");
 
             if (p_ptr == 0) {
                 logger.error("No new frame from " + settables.getConfiguration().nickname);
@@ -74,6 +79,7 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
 
             var colorMat = new CVMat(new Mat(LibCameraJNI.takeColorFrame(p_ptr)));
             var processedMat = new CVMat(new Mat(LibCameraJNI.takeProcessedFrame(p_ptr)));
+            tracer.addEpoch("Libcam::takeFrames");
 
             // System.out.println("Color mat: " + colorMat.getMat().size());
 
@@ -91,6 +97,7 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
             var latency = (now - capture);
 
             LibCameraJNI.releasePair(p_ptr);
+            tracer.addEpoch("Libcam::releaseFrames");
 
             // Know frame is good -- increment sequence
             ++sequenceID;
@@ -101,7 +108,8 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
                     processedMat,
                     type,
                     MathUtils.wpiNanoTime() - latency,
-                    settables.getFrameStaticProperties().rotate(settables.getRotation()));
+                    settables.getFrameStaticProperties().rotate(settables.getRotation()),
+                    tracer);
         }
     }
 

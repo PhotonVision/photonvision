@@ -161,7 +161,8 @@ public class Calibrate3dPipeline
                         new CVMat(),
                         outputColorCVMat,
                         FrameThresholdType.NONE,
-                        frame.frameStaticProperties),
+                        frame.frameStaticProperties,
+                        frame.m_tracer),
                 getCornersList());
     }
 

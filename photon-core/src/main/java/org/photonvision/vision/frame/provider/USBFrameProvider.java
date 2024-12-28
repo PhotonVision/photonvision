@@ -20,6 +20,7 @@ package org.photonvision.vision.frame.provider;
 import edu.wpi.first.cscore.CvSink;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.OrderedTracer;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.processes.VisionSourceSettables;
 
@@ -42,18 +43,22 @@ public class USBFrameProvider extends CpuImageProcessor {
 
     @Override
     public CapturedFrame getInputMat() {
+        var tracer = new OrderedTracer();
+
         // We allocate memory so we don't fill a Mat in use by another thread (memory model is easier)
         var mat = new CVMat();
         // This is from wpi::Now, or WPIUtilJNI.now(). The epoch from grabFrame is uS since
         // Hal::initialize was called
         long captureTimeNs = cvSink.grabFrame(mat.getMat()) * 1000;
 
+        tracer.addEpoch("UsbFrameProvider::grabFrame");
+
         if (captureTimeNs == 0) {
             var error = cvSink.getError();
             logger.error("Error grabbing image: " + error);
         }
 
-        return new CapturedFrame(mat, settables.getFrameStaticProperties(), captureTimeNs);
+        return new CapturedFrame(mat, settables.getFrameStaticProperties(), captureTimeNs, tracer);
     }
 
     @Override

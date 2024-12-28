@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.frame;
 
+import org.photonvision.common.util.OrderedTracer;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;
@@ -32,19 +33,25 @@ public class Frame implements Releasable {
 
     public final FrameStaticProperties frameStaticProperties;
 
+    // A Frame owns the tracer from frame capture from the underlying device until publish/GC. This
+    // does mean we get extra GC pressure, but w/e
+    public final OrderedTracer m_tracer;
+
     public Frame(
             long sequenceID,
             CVMat color,
             CVMat processed,
             FrameThresholdType type,
             long timestampNanos,
-            FrameStaticProperties frameStaticProperties) {
+            FrameStaticProperties frameStaticProperties,
+            OrderedTracer tracer) {
         this.sequenceID = sequenceID;
         this.colorImage = color;
         this.processedImage = processed;
         this.type = type;
         this.timestampNanos = timestampNanos;
         this.frameStaticProperties = frameStaticProperties;
+        this.m_tracer = tracer;
     }
 
     public Frame(
@@ -52,8 +59,16 @@ public class Frame implements Releasable {
             CVMat color,
             CVMat processed,
             FrameThresholdType processType,
-            FrameStaticProperties frameStaticProperties) {
-        this(sequenceID, color, processed, processType, MathUtils.wpiNanoTime(), frameStaticProperties);
+            FrameStaticProperties frameStaticProperties,
+            OrderedTracer tracer) {
+        this(
+                sequenceID,
+                color,
+                processed,
+                processType,
+                MathUtils.wpiNanoTime(),
+                frameStaticProperties,
+                tracer);
     }
 
     public Frame() {
@@ -63,7 +78,8 @@ public class Frame implements Releasable {
                 new CVMat(),
                 FrameThresholdType.NONE,
                 MathUtils.wpiNanoTime(),
-                new FrameStaticProperties(0, 0, 0, null));
+                new FrameStaticProperties(0, 0, 0, null),
+                new OrderedTracer());
     }
 
     public void copyTo(Frame destFrame) {
