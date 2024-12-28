@@ -101,6 +101,7 @@ public class ArucoDetectionPipe
     @Override
     public void setParams(ArucoDetectionPipeParams newParams) {
         if (this.params == null || !this.params.equals(newParams)) {
+            System.out.println("Changing tag family to " + newParams.tagFamily);
             photonDetector
                     .getDetector()
                     .setDictionary(Objdetect.getPredefinedDictionary(newParams.tagFamily));
