@@ -26,14 +26,35 @@ package frc.robot;
 
 import static org.junit.Assert.fail;
 
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import java.util.List;
 import org.junit.Test;
+import org.photonvision.PhotonCamera;
+import org.photonvision.simulation.PhotonCameraSim;
+import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.timesync.TimeSyncSingleton;
 
 public class JniLoadTest {
     @Test
-    public void smoketest() {
+    public void smoketestTimeSync() {
         if (!TimeSyncSingleton.load()) {
             fail("Could not load TimeSync JNI????????");
         }
+    }
+
+    @Test
+    public void smoketestPhotonCameraSim() {
+        // This will trigger a force load of OpenCV internally - good to smoketest
+        var camera = new PhotonCamera("Hellowo");
+        var cameraProp = new SimCameraProperties();
+        cameraProp.setCalibration(320, 240, Rotation2d.fromDegrees(90));
+
+        var sim = new PhotonCameraSim(camera, cameraProp);
+        sim.enableDrawWireframe(true);
+        sim.enableProcessedStream(true);
+        sim.enableRawStream(true);
+
+        sim.process(0, new Pose3d(), List.of());
     }
 }

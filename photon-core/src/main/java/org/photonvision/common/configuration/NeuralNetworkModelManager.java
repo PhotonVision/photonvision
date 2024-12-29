@@ -205,13 +205,11 @@ public class NeuralNetworkModelManager {
 
         try {
             switch (backend.get()) {
-                case RKNN:
+                case RKNN -> {
                     models.get(backend.get()).add(new RknnModel(model, labels));
                     logger.info(
                             "Loaded model " + model.getName() + " for backend " + backend.get().toString());
-                    break;
-                default:
-                    break;
+                }
             }
         } catch (IllegalArgumentException e) {
             logger.error("Failed to load model " + model.getName(), e);

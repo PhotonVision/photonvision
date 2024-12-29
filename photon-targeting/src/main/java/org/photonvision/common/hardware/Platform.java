@@ -17,8 +17,8 @@
 
 package org.photonvision.common.hardware;
 
-import edu.wpi.first.util.RuntimeDetector;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -148,6 +148,11 @@ public enum Platform {
         return currentPlatform.isSupported;
     }
 
+    public static boolean isAthena() {
+        File runRobotFile = new File("/usr/local/frc/bin/frcRunRobot.sh");
+        return runRobotFile.exists();
+    }
+
     //////////////////////////////////////////////////////
 
     // Debug info related to unknown platforms for debug help
@@ -158,10 +163,24 @@ public enum Platform {
     private static final String UnknownDeviceModelString = "Unknown";
 
     public static Platform getCurrentPlatform() {
-        if (RuntimeDetector.isWindows()) {
-            if (RuntimeDetector.is32BitIntel()) {
+        String OS_NAME;
+        if (Platform.OS_NAME != null) {
+            OS_NAME = Platform.OS_NAME;
+        } else {
+            OS_NAME = System.getProperty("os.name");
+        }
+
+        String OS_ARCH;
+        if (Platform.OS_ARCH != null) {
+            OS_ARCH = Platform.OS_ARCH;
+        } else {
+            OS_ARCH = System.getProperty("os.arch");
+        }
+
+        if (OS_NAME.startsWith("Windows")) {
+            if (OS_ARCH.equals("x86") || OS_ARCH.equals("i386")) {
                 return WINDOWS_32;
-            } else if (RuntimeDetector.is64BitIntel()) {
+            } else if (OS_ARCH.equals("amd64") || OS_ARCH.equals("x86_64")) {
                 return WINDOWS_64;
             } else {
                 // please don't try this
@@ -169,41 +188,41 @@ public enum Platform {
             }
         }
 
-        if (RuntimeDetector.isMac()) {
+        if (OS_NAME.startsWith("Mac")) {
             // TODO - once we have real support, this might have to be more granular
             return MACOS;
         }
 
-        if (RuntimeDetector.isLinux()) {
+        if (OS_NAME.startsWith("Linux")) {
             if (isPiSBC()) {
-                if (RuntimeDetector.isArm32()) {
+                if (OS_ARCH.equals("arm") || OS_ARCH.equals("arm32")) {
                     return LINUX_RASPBIAN32;
-                } else if (RuntimeDetector.isArm64()) {
+                } else if (OS_ARCH.equals("aarch64") || OS_ARCH.equals("arm64")) {
                     return LINUX_RASPBIAN64;
                 } else {
                     // Unknown/exotic installation
                     return UNKNOWN;
                 }
             } else if (isJetsonSBC()) {
-                if (RuntimeDetector.isArm64()) {
+                if (OS_ARCH.equals("aarch64") || OS_ARCH.equals("arm64")) {
                     // TODO - do we need to check OS version?
                     return LINUX_AARCH64;
                 } else {
                     // Unknown/exotic installation
                     return UNKNOWN;
                 }
-            } else if (RuntimeDetector.is64BitIntel()) {
+            } else if (OS_ARCH.equals("amd64") || OS_ARCH.equals("x86_64")) {
                 return LINUX_64;
-            } else if (RuntimeDetector.is32BitIntel()) {
+            } else if (OS_ARCH.equals("x86") || OS_ARCH.equals("i386")) {
                 return LINUX_32;
-            } else if (RuntimeDetector.isArm64()) {
+            } else if (OS_ARCH.equals("aarch64") || OS_ARCH.equals("arm64")) {
                 // TODO - os detection needed?
                 if (isOrangePi()) {
                     return LINUX_RK3588_64;
                 } else {
                     return LINUX_AARCH64;
                 }
-            } else if (RuntimeDetector.isArm32()) {
+            } else if (OS_ARCH.equals("arm") || OS_ARCH.equals("arm32")) {
                 return LINUX_ARM32;
             } else {
                 // Unknown or otherwise unsupported platform

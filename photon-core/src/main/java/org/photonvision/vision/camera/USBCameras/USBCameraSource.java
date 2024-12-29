@@ -22,9 +22,9 @@ import edu.wpi.first.cscore.CvSink;
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.cscore.VideoException;
 import edu.wpi.first.cscore.VideoProperty;
-import edu.wpi.first.util.RuntimeDetector;
 import java.util.*;
 import org.photonvision.common.configuration.CameraConfiguration;
+import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.camera.CameraQuirk;
@@ -85,6 +85,7 @@ public class USBCameraSource extends VisionSource {
         } else {
             // Camera is likely to work, set up the Settables
             settables = createSettables(config, camera);
+            logger.info("Created settables " + settables);
 
             if (settables.getAllVideoModes().isEmpty()) {
                 // No video modes produced from settables, disable the camera
@@ -113,7 +114,7 @@ public class USBCameraSource extends VisionSource {
         GenericUSBCameraSettables settables;
 
         if (quirks.hasQuirk(CameraQuirk.LifeCamControls)) {
-            if (RuntimeDetector.isWindows()) {
+            if (Platform.isWindows()) {
                 logger.debug("Using Microsoft Lifecam 3000 Windows-Specific Settables");
                 settables = new LifeCam3kWindowsCameraSettables(config, camera);
             } else {
@@ -124,7 +125,7 @@ public class USBCameraSource extends VisionSource {
             logger.debug("Using PlayStation Eye Camera Settables");
             settables = new PsEyeCameraSettables(config, camera);
         } else if (quirks.hasQuirk(CameraQuirk.ArduOV2311Controls)) {
-            if (RuntimeDetector.isWindows()) {
+            if (Platform.isWindows()) {
                 logger.debug("Using Arducam OV2311 Windows-Specific Settables");
                 settables = new ArduOV2311WindowsCameraSettables(config, camera);
             } else {
@@ -160,7 +161,15 @@ public class USBCameraSource extends VisionSource {
         var oldConfig = this.cameraConfiguration;
         var oldCamera = this.camera;
 
+        // Re-create settables
+        var oldVideoMode = this.settables.getCurrentVideoMode();
         this.settables = createSettables(oldConfig, oldCamera);
+
+        // And update FrameStaticProps
+        settables.setVideoMode(oldVideoMode);
+
+        // Propogate our updated settables over to the frame provider
+        ((USBFrameProvider) this.usbFrameProvider).updateSettables(this.settables);
     }
 
     private void printCameraProperaties() {

@@ -203,7 +203,7 @@ PhotonPipelineResult PhotonCameraSim::Process(
 
     std::optional<photon::PnpResult> pnpSim = std::nullopt;
     if (tgt.fiducialId >= 0 && tgt.GetFieldVertices().size() == 4) {
-      pnpSim = OpenCVHelp::SolvePNP_SQPNP(
+      pnpSim = OpenCVHelp::SolvePNP_Square(
           prop.GetIntrinsics(), prop.GetDistCoeffs(),
           tgt.GetModel().GetVertices(), noisyTargetCorners);
     }

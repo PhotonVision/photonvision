@@ -84,8 +84,7 @@ public class VisionRunner {
 
             frameSupplier.requestFrameThresholdType(wantedProcessType);
             var settings = pipeline.getSettings();
-            if (settings instanceof AdvancedPipelineSettings) {
-                var advanced = (AdvancedPipelineSettings) settings;
+            if (settings instanceof AdvancedPipelineSettings advanced) {
                 var hsvParams =
                         new HSVPipe.HSVParams(
                                 advanced.hsvHue, advanced.hsvSaturation, advanced.hsvValue, advanced.hueInverted);

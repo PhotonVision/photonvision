@@ -47,7 +47,7 @@ const localValue = computed({
 <template>
   <div>
     <v-row dense align="center">
-      <v-col :cols="12 - sliderCols">
+      <v-col :cols="12 - sliderCols - 1">
         <tooltipped-label :tooltip="tooltip" :label="label" />
       </v-col>
       <v-col :cols="sliderCols">
@@ -61,24 +61,30 @@ const localValue = computed({
           color="accent"
           :disabled="disabled"
           :step="step"
-        >
-          <template #append>
-            <v-text-field
-              v-model="localValue"
-              dark
-              color="accent"
-              :max="max"
-              :min="min"
-              :disabled="disabled"
-              class="mt-0 pt-0"
-              hide-details
-              single-line
-              type="number"
-              style="width: 50px"
-              :step="step"
-            />
-          </template>
-        </v-slider>
+          append-icon="mdi-menu-right"
+          prepend-icon="mdi-menu-left"
+          @click:append="localValue += step"
+          @click:prepend="localValue -= step"
+        />
+      </v-col>
+      <v-col :cols="1">
+        <v-text-field
+          :value="localValue"
+          dark
+          color="accent"
+          :max="max"
+          :min="min"
+          :disabled="disabled"
+          class="mt-0 pt-0"
+          hide-details
+          single-line
+          type="number"
+          style="width: 45px"
+          :step="step"
+          hide-spin-buttons="true"
+          @keyup.enter="localValue = $event.target.value"
+          @blur="localValue = $event.target.value"
+        />
       </v-col>
     </v-row>
   </div>
