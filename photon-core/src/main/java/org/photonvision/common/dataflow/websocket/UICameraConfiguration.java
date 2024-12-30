@@ -19,6 +19,7 @@ package org.photonvision.common.dataflow.websocket;
 
 import java.util.HashMap;
 import java.util.List;
+import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.calibration.UICameraCalibrationCoefficients;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.camera.QuirkyCamera;
@@ -29,7 +30,7 @@ public class UICameraConfiguration {
     // This is the path we hand to CSCore to do auto-reconnect on
     public String cameraPath;
 
-    /** See {@link CameraConfiguration#deactivated} */
+    /** See {@link CameraConfiguration #deactivated} */
     public boolean deactivated;
 
     public String nickname;

@@ -55,7 +55,7 @@ import org.photonvision.vision.camera.csi.LibcameraGpuSource;
  * VisionSourceManager#reactivateDisabledCameraConfig}), and create a new VisionModule from a {@link
  * PVCameraInfo} ({@link VisionSourceManager#assignUnmatchedCamera}).
  *
- * <p>We now require user interaction for pretty much every operation this undretakes.
+ * <p>We now require user interaction for pretty much every operation this undertakes.
  */
 public class VisionSourceManager {
     private static final Logger logger = new Logger(VisionSourceManager.class, LogGroup.Camera);
@@ -199,7 +199,7 @@ public class VisionSourceManager {
     /**
      * Assign a camera that currently has no associated CameraConfiguration loaded.
      *
-     * @param uniqueName
+     * @param cameraInfo
      */
     public synchronized boolean assignUnmatchedCamera(PVCameraInfo cameraInfo) {
         // Check if the camera is already in use by another module
