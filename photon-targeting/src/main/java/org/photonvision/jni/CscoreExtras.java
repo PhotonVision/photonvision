@@ -27,7 +27,7 @@ public class CscoreExtras {
      * CvSource provides a new frame.
      *
      * @param sink Sink handle.
-     * @param nativeObj Pointer to a wpi::RawFrame.
+     * @param framePtr Pointer to a wpi::RawFrame.
      * @param timeout Timeout in seconds.
      * @param lastFrameTime Timestamp of the last frame - used to compare new frames against.
      * @return Frame time, in uS, of the incoming frame.
