@@ -18,24 +18,36 @@
 package org.photonvision.vision.pipe.impl;
 
 import edu.wpi.first.math.filter.LinearFilter;
+import edu.wpi.first.wpilibj.Timer;
+
 import org.apache.commons.lang3.time.StopWatch;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class CalculateFPSPipe
         extends CVPipe<Void, Integer, CalculateFPSPipe.CalculateFPSPipeParams> {
     private final LinearFilter fpsFilter = LinearFilter.movingAverage(20);
-    StopWatch clock = new StopWatch();
+    
+    // roll my own Timer, since this is so trivial
+    double lastTime = -1;
 
     @Override
     protected Integer process(Void in) {
-        if (!clock.isStarted()) {
-            clock.reset();
-            clock.start();
+        if (lastTime < 0) {
+            lastTime = Timer.getFPGATimestamp();
         }
-        clock.stop();
-        var fps = (int) fpsFilter.calculate(1000.0 / clock.getTime());
-        clock.reset();
-        clock.start();
+
+        var now = Timer.getFPGATimestamp();
+        var dtSeconds = now - lastTime;
+        lastTime = now;
+
+        // If < 1 uS between ticks, something is probably wrong
+        int fps;
+        if (dtSeconds < 1e-6) {
+            fps = 0;
+        } else {
+            fps = (int) fpsFilter.calculate(1/dtSeconds);
+        }
+
         return fps;
     }
 

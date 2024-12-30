@@ -62,14 +62,14 @@ public class USBFrameProvider extends CpuImageProcessor {
 
         // This is from wpi::Now, or WPIUtilJNI.now(). The epoch from grabFrame is uS since
         // Hal::initialize was called
-        long captureTimeNs =
+        long captureTimeUs =
                 CscoreExtras.grabRawSinkFrameTimeoutLastTime(
                         cvSink.getHandle(), frame.getNativeObj(), 0.225, lastTime);
-        lastTime = captureTimeNs;
+        lastTime = captureTimeUs;
 
         CVMat ret;
 
-        if (captureTimeNs == 0) {
+        if (captureTimeUs == 0) {
             var error = cvSink.getError();
             logger.error("Error grabbing image: " + error);
 
@@ -81,7 +81,7 @@ public class USBFrameProvider extends CpuImageProcessor {
             ret = new CVMat(mat, frame);
         }
 
-        return new CapturedFrame(ret, settables.getFrameStaticProperties(), captureTimeNs);
+        return new CapturedFrame(ret, settables.getFrameStaticProperties(), captureTimeUs * 1000);
     }
 
     @Override
