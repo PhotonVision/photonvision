@@ -144,4 +144,17 @@ Java_org_photonvision_jni_CscoreExtras_wrapRawFrame
                                              frame->data, frame->stride));
 }
 
+/*
+ * Class:     org_photonvision_jni_CscoreExtras
+ * Method:    getTimestampSourceNative
+ * Signature: (J)I
+ */
+JNIEXPORT jint JNICALL
+Java_org_photonvision_jni_CscoreExtras_getTimestampSourceNative
+  (JNIEnv*, jclass, jlong framePtr)
+{
+  auto* frame = reinterpret_cast<wpi::RawFrame*>(framePtr);
+  return frame->timestampSrc;
+}
+
 }  // extern "C"

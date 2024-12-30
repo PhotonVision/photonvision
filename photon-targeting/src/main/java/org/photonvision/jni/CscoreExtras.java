@@ -17,6 +17,8 @@
 
 package org.photonvision.jni;
 
+import edu.wpi.first.util.RawFrame;
+
 public class CscoreExtras {
     /**
      * Fill {@param framePtr} with the latest image from the source this sink is connected to.
@@ -42,4 +44,10 @@ public class CscoreExtras {
      * @return pointer to a cv::Mat
      */
     public static native long wrapRawFrame(long rawFramePtr);
+
+    private static native int getTimestampSourceNative(long rawFramePtr);
+
+    public static TimestampSource getTimestampSource(RawFrame frame) {
+        return TimestampSource.getFromInt(getTimestampSourceNative(frame.getNativeObj()));
+    }
 }
