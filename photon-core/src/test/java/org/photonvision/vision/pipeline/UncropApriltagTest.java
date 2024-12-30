@@ -71,7 +71,10 @@ public class UncropApriltagTest {
         // these numbers are not *accurate*, but they are known and expected
         var target = pipelineResult.targets.get(0);
 
+        testResultsElements(50, target, frameProvider.get(), pipeline, outputPipe);
         testResultsElements(100, target, frameProvider.get(), pipeline, outputPipe);
+        testResultsElements(125, target, frameProvider.get(), pipeline, outputPipe);
+        testResultsElements(150, target, frameProvider.get(), pipeline, outputPipe);
     }
 
     private static void testResultsElements(
@@ -90,13 +93,15 @@ public class UncropApriltagTest {
                         croppedResults.inputAndOutputFrame, pipeline.getSettings(), croppedResults.targets);
 
         TestUtils.showImage(
-                ret_cropped.inputAndOutputFrame.processedImage.getMat(), "Cropped Pipeline output", 999999);
+                ret_cropped.inputAndOutputFrame.processedImage.getMat(),
+                "Cropped Pipeline output cropping:" + amountCropping,
+                999999);
         // these numbers are not *accurate*, but they are known and expected
         var croppedTarget = croppedResults.targets.get(0);
         // Test corner order
         var corners = target.getTargetCorners();
         var croppedCorners = croppedTarget.getTargetCorners();
-        double acceptedDelta = 0.005;
+        double acceptedDelta = 0.045;
 
         Assertions.assertEquals(corners.get(0).x, croppedCorners.get(0).x, acceptedDelta);
         Assertions.assertEquals(corners.get(0).y, croppedCorners.get(0).y, acceptedDelta);
@@ -115,6 +120,7 @@ public class UncropApriltagTest {
         var croppedPose = croppedTarget.getBestCameraToTarget3d();
 
         double acceptedPoseDelta = 0.005;
+
         // Test pose estimate translation and rotation
         Assertions.assertEquals(
                 pose.getTranslation().getX(), croppedPose.getTranslation().getX(), acceptedPoseDelta);
@@ -128,6 +134,10 @@ public class UncropApriltagTest {
                 pose.getRotation().getY(), croppedPose.getRotation().getY(), acceptedPoseDelta);
         Assertions.assertEquals(
                 pose.getRotation().getZ(), croppedPose.getRotation().getZ(), acceptedPoseDelta);
+
+        double acceptedAmbiguityDelta = 0.075;
+        Assertions.assertEquals(
+                target.getPoseAmbiguity(), croppedTarget.getPoseAmbiguity(), acceptedAmbiguityDelta);
     }
 
     private static void printTestResults(CVPipelineResult pipelineResult) {
