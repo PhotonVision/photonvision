@@ -19,14 +19,12 @@ package org.photonvision.vision.pipe.impl;
 
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.wpilibj.Timer;
-
-import org.apache.commons.lang3.time.StopWatch;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class CalculateFPSPipe
         extends CVPipe<Void, Integer, CalculateFPSPipe.CalculateFPSPipeParams> {
     private final LinearFilter fpsFilter = LinearFilter.movingAverage(20);
-    
+
     // roll my own Timer, since this is so trivial
     double lastTime = -1;
 
@@ -45,7 +43,7 @@ public class CalculateFPSPipe
         if (dtSeconds < 1e-6) {
             fps = 0;
         } else {
-            fps = (int) fpsFilter.calculate(1/dtSeconds);
+            fps = (int) fpsFilter.calculate(1 / dtSeconds);
         }
 
         return fps;
