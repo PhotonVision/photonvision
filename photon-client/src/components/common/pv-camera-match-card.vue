@@ -27,7 +27,7 @@ const cameraInfoFor = (camera: PVCameraInfo): any => {
 </script>
 
 <template>
-  <div class="pa-3">
+  <div>
     <h3 v-if="saved.PVUsbCameraInfo" class="mb-3">USB Camera Info</h3>
     <h3 v-if="saved.PVCSICameraInfo" class="mb-3">CSI Camera Info</h3>
     <h3 v-if="saved.PVFileCameraInfo" class="mb-3">File Camera Info</h3>

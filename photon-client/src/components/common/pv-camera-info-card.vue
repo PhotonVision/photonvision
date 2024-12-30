@@ -13,7 +13,7 @@ const { camera, showTitle } = defineProps({
   }
 });
 
-const cameraInfoFor = (camera: PVCameraInfo) => {
+const cameraInfoFor: any = (camera: PVCameraInfo) => {
   if (camera.PVUsbCameraInfo) {
     return camera.PVUsbCameraInfo;
   }
@@ -28,7 +28,7 @@ const cameraInfoFor = (camera: PVCameraInfo) => {
 </script>
 
 <template>
-  <div class="pa-2">
+  <div>
     <div v-if="showTitle === true">
       <h3 v-if="camera.PVUsbCameraInfo" class="mb-3">USB Camera Info</h3>
       <h3 v-if="camera.PVCSICameraInfo" class="mb-3">CSI Camera Info</h3>
