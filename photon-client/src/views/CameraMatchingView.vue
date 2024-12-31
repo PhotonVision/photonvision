@@ -5,6 +5,7 @@ import { useStateStore } from "@/stores/StateStore";
 import { PlaceholderCameraSettings, PVCameraInfo, type UiCameraConfiguration } from "@/types/SettingTypes";
 import { getResolutionString } from "@/lib/PhotonUtils";
 import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
+import axios from "axios";
 
 const formatUrl = (port) => `http://${inject("backendHostname")}:${port}/stream.mjpg`;
 const host = inject<string>("backendHost");
@@ -32,6 +33,39 @@ const deactivateCamera = (cameraUniqueName: string) => {
   fetch(url.toString(), {
     method: "POST"
   });
+};
+
+const deleteThisCamera = (cameraName: string) => {
+  const payload = {
+    cameraUniqueName: cameraName
+  };
+
+  axios
+    .post("/utils/nukeOneCamera", payload)
+    .then(() => {
+      useStateStore().showSnackbarMessage({
+        message: "Successfully deleted " + cameraName,
+        color: "success"
+      });
+    })
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          message: "The backend is unable to fulfil the request to delete this camera.",
+          color: "error"
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          message: "Error while trying to process the request! The backend didn't respond.",
+          color: "error"
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          message: "An error occurred while trying to process the request.",
+          color: "error"
+        });
+      }
+    });
 };
 
 const cameraInfoFor: any = (camera: PVCameraInfo) => {
@@ -98,11 +132,16 @@ const isExpanded = ref({});
 
 <template>
   <div class="pa-5">
-
     <v-row>
       <!-- Active modules -->
-      <v-col cols="12" sm="6" lg="4" v-for="(module, index) in activeVisionModules" 
-      v-if="JSON.stringify(module) !== JSON.stringify(PlaceholderCameraSettings)" :key="module.uniqueName">
+      <v-col
+        cols="12"
+        sm="6"
+        lg="4"
+        v-for="(module, index) in activeVisionModules"
+        v-if="JSON.stringify(module) !== JSON.stringify(PlaceholderCameraSettings)"
+        :key="module.uniqueName"
+      >
         <v-card dark color="primary">
           <v-card-title>{{ module.nickname }}</v-card-title>
           <v-card-subtitle>Status: <span class="active-status">Active</span></v-card-subtitle>
@@ -145,7 +184,7 @@ const isExpanded = ref({});
               </tbody>
             </v-simple-table>
             <photon-camera-stream
-            class="mt-3"
+              class="mt-3"
               id="output-camera-stream"
               :camera-settings="module"
               stream-type="Processed"
@@ -174,6 +213,12 @@ const isExpanded = ref({});
                   Deactivate
                 </v-btn>
               </v-col>
+              <v-col cols="6">
+                <v-btn class="black--text" @click="deleteThisCamera(module.uniqueName)" color="red" style="width: 100%">
+                  <v-icon left> mdi-bomb </v-icon>
+                  Delete
+                </v-btn>
+              </v-col>
             </v-row>
             <v-expand-transition>
               <div color="primary" v-if="isExpanded[module.uniqueName] ?? false" class="mt-3">
@@ -185,8 +230,7 @@ const isExpanded = ref({});
       </v-col>
 
       <!-- Disabled modules -->
-      <v-col cols="12" sm="6" lg="4" v-for="(module, index) in disabledVisionModules" 
-      :key="module.uniqueName">
+      <v-col cols="12" sm="6" lg="4" v-for="(module, index) in disabledVisionModules" :key="module.uniqueName">
         <v-card dark color="primary">
           <v-card-title>{{ module.nickname }}</v-card-title>
           <v-card-subtitle>Status: <span class="inactive-status">Deactivated</span></v-card-subtitle>
@@ -232,8 +276,19 @@ const isExpanded = ref({});
                 </v-btn>
               </v-col>
               <v-col cols="6">
-                <v-btn class="black--text" @click="activateModule(module.uniqueName)" color="accent" style="width: 100%">
+                <v-btn
+                  class="black--text"
+                  @click="activateModule(module.uniqueName)"
+                  color="accent"
+                  style="width: 100%"
+                >
                   Activate
+                </v-btn>
+              </v-col>
+              <v-col cols="6">
+                <v-btn class="black--text" @click="deleteThisCamera(module.uniqueName)" color="red" style="width: 100%">
+                  <v-icon left> mdi-bomb </v-icon>
+                  Delete
                 </v-btn>
               </v-col>
             </v-row>
@@ -247,8 +302,7 @@ const isExpanded = ref({});
       </v-col>
 
       <!-- Unassigned cameras -->
-      <v-col cols="12" sm="6" lg="4" v-for="(camera, index) in unmatchedCameras"
-      :key="index">
+      <v-col cols="12" sm="6" lg="4" v-for="(camera, index) in unmatchedCameras" :key="index">
         <v-card dark color="primary">
           <v-card-title v-if="camera.PVUsbCameraInfo">USB Camera</v-card-title>
           <v-card-title v-else-if="camera.PVCSICameraInfo">CSI Camera</v-card-title>
@@ -292,26 +346,34 @@ const isExpanded = ref({});
               </v-col>
             </v-row>
           </v-card-text>
-            <v-expand-transition>
-              <v-card-text v-if="isExpanded[uniquePathForCamera(camera)] ?? false" class="pt-0">
-                <PvCameraInfoCard :camera="camera" :showTitle="false" />
-              </v-card-text>
-            </v-expand-transition>
+          <v-expand-transition>
+            <v-card-text v-if="isExpanded[uniquePathForCamera(camera)] ?? false" class="pt-0">
+              <PvCameraInfoCard :camera="camera" :showTitle="false" />
+            </v-card-text>
+          </v-expand-transition>
         </v-card>
       </v-col>
 
       <!-- Info card -->
       <v-col cols="12" sm="6" lg="4">
-        <v-card dark style="background-color: transparent; box-shadow: none; height: 100%; display: flex; flex-direction: column; justify-content: center;">
+        <v-card
+          dark
+          style="
+            background-color: transparent;
+            box-shadow: none;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+          "
+        >
           <v-card-text class="d-flex flex-column align-center justify-center">
             <v-icon size="64" color="primary">mdi-plus</v-icon>
           </v-card-text>
           <v-card-title>Additional plugged in cameras will display here!</v-card-title>
         </v-card>
       </v-col>
-      
     </v-row>
-
   </div>
 </template>
 
@@ -320,7 +382,8 @@ const isExpanded = ref({});
   background-color: #006492 !important;
 }
 
-a:link, .active-status {
+a:link,
+.active-status {
   color: rgb(14, 240, 14);
   background-color: transparent;
   text-decoration: none;
@@ -349,5 +412,4 @@ a:active {
   background-color: transparent;
   text-decoration: underline;
 }
-
 </style>

@@ -227,8 +227,24 @@ public class VisionSourceManager {
 
 		pushUiUpdate();
 
-		return true;
-	}
+        return true;
+    }
+
+    public synchronized boolean deleteVisionSource(String uniqueName) {
+        deactivateVisionSource(uniqueName);
+        var config = disabledCameraConfigs.remove(uniqueName);
+        ConfigManager.getInstance().getConfig().removeCameraConfig(uniqueName);
+        ConfigManager.getInstance().saveToDisk();
+
+        DataChangeService.getInstance()
+                .publishEvent(
+                        new OutgoingUIEvent<>(
+                                "fullsettings",
+                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+        pushUiUpdate();
+
+        return config != null;
+    }
 
 	public synchronized boolean deactivateVisionSource(String uniqueName) {
 		// try to find the module. If we find it, remove it from the VMM

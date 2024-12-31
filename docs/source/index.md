@@ -71,13 +71,12 @@ Welcome to the official documentation of PhotonVision! PhotonVision is the free,
 The source code for all PhotonVision projects is available through our [GitHub organization](https://github.com/PhotonVision).
 
 - [PhotonVision](https://github.com/PhotonVision/photonvision)
-- [PhotonVision ReadTheDocs](https://github.com/PhotonVision/photonvision-docs/)
 
 # Contact Us
 
 To report a bug or submit a feature request in PhotonVision, please [submit an issue on the PhotonVision GitHub](https://github.com/PhotonVision/photonvision) or [contact the developers on Discord](https://discord.com/invite/KS76FrX).
 
-If you find a problem in this documentation, please submit an issue on the [PhotonVision Documentation GitHub](https://github.com/PhotonVision/photonvision-docs).
+If you find a problem in this documentation, please submit an issue on the [PhotonVision Documentation GitHub](https://github.com/PhotonVision/photonvision/tree/main/docs).
 
 # License
 

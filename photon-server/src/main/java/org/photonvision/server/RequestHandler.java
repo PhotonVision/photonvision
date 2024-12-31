@@ -820,15 +820,9 @@ public class RequestHandler {
                 FileUtils.deleteDirectory(cameraDir);
             }
 
-            // prevent -anyone- else from writing camera configs -- but flush first
-            ConfigManager.getInstance().saveToDisk();
-            ConfigManager.getInstance().setWriteTaskEnabled(false);
-            ConfigManager.getInstance().disableFlushOnShutdown();
-            // remove the config from the global config and force-flush
-            ConfigManager.getInstance().getConfig().removeCameraConfig(name);
-            ConfigManager.getInstance().saveToDisk();
+            VisionSourceManager.getInstance().deleteVisionSource(name);
+
             ctx.status(200);
-            restartProgram();
         } catch (IOException e) {
             // todo
             logger.error("asdf", e);
