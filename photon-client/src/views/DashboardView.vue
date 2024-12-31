@@ -6,6 +6,7 @@ import StreamConfigCard from "@/components/dashboard/StreamConfigCard.vue";
 import PipelineConfigCard from "@/components/dashboard/ConfigOptions.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
+import { PlaceholderCameraSettings } from "@/types/SettingTypes";
 
 const cameraViewType = computed<number[]>({
   get: (): number[] => {
@@ -38,7 +39,12 @@ const cameraViewType = computed<number[]>({
   }
 });
 
-const warningShown = ref(true);
+// TODO - deduplicate with needsCamerasConfigured
+const warningShown = computed<boolean>(() => {
+  return (
+    useCameraSettingsStore().cameras.length === 0 || useCameraSettingsStore().cameras[0] === PlaceholderCameraSettings
+  );
+});
 </script>
 
 <template>
@@ -55,7 +61,7 @@ const warningShown = ref(true);
     <PipelineConfigCard />
 
     <!-- TODO - not sure this belongs here -->
-    <v-dialog :persistent="false" v-model="warningShown" width="1500" dark>
+    <v-dialog :persistent="false" v-model="warningShown" v-if="warningShown" max-width="1500" dark>
       <v-card dark flat color="primary">
         <v-card-title>Setup some cameras to get started!</v-card-title>
         <v-card-text>
