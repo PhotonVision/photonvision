@@ -4,6 +4,7 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { PlaceholderCameraSettings } from "@/types/SettingTypes";
+import { useRoute } from "vue2-helpers/vue-router";
 
 const compact = computed<boolean>({
   get: () => {
@@ -59,7 +60,11 @@ const needsCamerasConfigured = computed<boolean>(() => {
           <v-list-item-title>Camera</v-list-item-title>
         </v-list-item-content>
       </v-list-item>
-      <v-list-item link to="/cameraConfigs">
+      <v-list-item
+        link
+        to="/cameraConfigs"
+        :class="{ cameraicon: needsCamerasConfigured && useRoute().path !== '/cameraConfigs' }"
+      >
         <v-list-item-icon>
           <v-icon :class="{ 'red--text': needsCamerasConfigured }">mdi-swap-horizontal-bold</v-icon>
         </v-list-item-icon>
@@ -141,14 +146,12 @@ const needsCamerasConfigured = computed<boolean>(() => {
 }
 
 @keyframes pulse {
-  0% {
-    transform: scale(0.9);
+  0%,
+  100% {
+    transform: scale(0.95);
   }
   50% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(0.9);
+    transform: scale(1.05);
   }
 }
 </style>

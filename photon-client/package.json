@@ -26,6 +26,7 @@
     "vue": "^2.7.14",
     "vue-router": "^3.6.5",
     "vue-virtual-scroll-list": "^2.3.5",
+    "vue2-helpers": "^2.1.1",
     "vuetify": "^2.7.1"
   },
   "devDependencies": {
