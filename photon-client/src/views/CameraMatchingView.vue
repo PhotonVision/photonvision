@@ -138,7 +138,13 @@ const isExpanded = ref({});
   <div class="pa-5">
     <v-row>
       <!-- Active modules -->
-      <v-col cols="12" sm="6" lg="4" v-for="(module, index) in activeVisionModules" :key="module.uniqueName">
+      <v-col
+        cols="12"
+        sm="6"
+        lg="4"
+        v-for="(module, index) in activeVisionModules"
+        :key="`enabled-${module.uniqueName}`"
+      >
         <v-card dark color="primary">
           <v-card-title>{{ module.nickname }}</v-card-title>
           <v-card-subtitle>Status: <span class="active-status">Active</span></v-card-subtitle>
@@ -227,7 +233,7 @@ const isExpanded = ref({});
       </v-col>
 
       <!-- Disabled modules -->
-      <v-col cols="12" sm="6" lg="4" v-for="module in disabledVisionModules" :key="module.uniqueName">
+      <v-col cols="12" sm="6" lg="4" v-for="module in disabledVisionModules" :key="`disabled-${module.uniqueName}`">
         <v-card dark color="primary">
           <v-card-title>{{ module.nickname }}</v-card-title>
           <v-card-subtitle>Status: <span class="inactive-status">Deactivated</span></v-card-subtitle>

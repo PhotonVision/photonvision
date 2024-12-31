@@ -40,7 +40,8 @@ import org.photonvision.vision.target.TargetModel;
 public class ConfigTest {
     private static ConfigManager configMgr;
     private static final CameraConfiguration cameraConfig =
-            new CameraConfiguration(PVCameraInfo.fromFileInfo("TestCamera", "/dev/video420"));
+            new CameraConfiguration(
+                    "TestCamera", PVCameraInfo.fromFileInfo("TestCamera", "/dev/video420"));
     private static ReflectivePipelineSettings REFLECTIVE_PIPELINE_SETTINGS;
     private static ColoredShapePipelineSettings COLORED_SHAPE_PIPELINE_SETTINGS;
     private static AprilTagPipelineSettings APRIL_TAG_PIPELINE_SETTINGS;
