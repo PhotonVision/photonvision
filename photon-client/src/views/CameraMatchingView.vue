@@ -13,6 +13,7 @@ import {
 import { getResolutionString } from "@/lib/PhotonUtils";
 import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
 import axios from "axios";
+import _ from 'lodash';
 
 const formatUrl = (port) => `http://${inject("backendHostname")}:${port}/stream.mjpg`;
 const host = inject<string>("backendHost");
@@ -75,7 +76,7 @@ const deleteThisCamera = (cameraName: string) => {
     });
 };
 
-const cameraInfoFor = (camera: PVCameraInfo): PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo | {} => {
+const cameraInfoFor = (camera: PVCameraInfo): PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo | any => {
   if (camera.PVUsbCameraInfo) {
     return camera.PVUsbCameraInfo;
   }
@@ -152,11 +153,13 @@ const activeVisionModules = computed(() =>
 const disabledVisionModules = computed(() => useStateStore().vsmState.disabledConfigs);
 
 const viewingDetails = ref(false);
+const showCurrentView = ref(false);
 const viewingCamera = ref<PVCameraInfo | null>(null);
 
-const setCameraView = (camera: PVCameraInfo | null) => {
+const setCameraView = (camera: PVCameraInfo | null, showCurrent: boolean = false) => {
   viewingDetails.value = camera !== null;
   viewingCamera.value = camera;
+  showCurrentView.value = showCurrent;
 };
 </script>
 
@@ -173,7 +176,8 @@ const setCameraView = (camera: PVCameraInfo | null) => {
       >
         <v-card dark color="primary">
           <v-card-title>{{ module.nickname }}</v-card-title>
-          <v-card-subtitle>Status: <span class="active-status">Active</span></v-card-subtitle>
+          <v-card-subtitle v-if="_.isEqual(getMatchedDevice(module.matchedCameraInfo), module.matchedCameraInfo)">Status: <span class="active-status">Active</span></v-card-subtitle>
+          <v-card-subtitle v-else>Status: <span class="mismatch-status">Mismatch</span></v-card-subtitle>
           <v-card-text>
             <v-simple-table dark dense>
               <tbody>
@@ -228,7 +232,7 @@ const setCameraView = (camera: PVCameraInfo | null) => {
           <v-card-text class="pt-0">
             <v-row>
               <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
-                <v-btn color="secondary" @click="setCameraView(module.matchedCameraInfo)" style="width: 100%">
+                <v-btn color="secondary" @click="setCameraView(module.matchedCameraInfo, true)" style="width: 100%">
                   <span>Details</span>
                 </v-btn>
               </v-col>
@@ -331,11 +335,11 @@ const setCameraView = (camera: PVCameraInfo | null) => {
             <span v-else-if="camera.PVCSICameraInfo">CSI Camera:</span>
             <span v-else-if="camera.PVFileCameraInfo">File Camera:</span>
             <span v-else>Unknown Camera:</span>
-            &nbsp;<span>{{ cameraInfoFor(camera).name }}</span>
+            &nbsp;<span>{{ cameraInfoFor(camera)?.name ?? cameraInfoFor(camera)?.baseName }}</span>
           </v-card-title>
           <v-card-subtitle>Status: Unassigned</v-card-subtitle>
           <v-card-text>
-            <span style="word-break: break-all">{{ cameraInfoFor(camera).path }}</span>
+            <span style="word-break: break-all">{{ cameraInfoFor(camera)?.path }}</span>
           </v-card-text>
           <v-card-text class="pt-0">
             <v-row>
@@ -374,26 +378,32 @@ const setCameraView = (camera: PVCameraInfo | null) => {
     <v-dialog v-model="viewingDetails">
       <v-card dark flat color="primary" v-if="viewingCamera !== null">
         <v-card-title class="d-flex justify-space-between">
-          <span>{{ cameraInfoFor(viewingCamera)?.name }}</span>
+          <span>{{ cameraInfoFor(viewingCamera)?.name ?? cameraInfoFor(viewingCamera)?.baseName }}</span>
           <v-btn text @click="setCameraView(null)">
             <v-icon>mdi-close-thick</v-icon>
           </v-btn>
         </v-card-title>
         <v-card-text>
-          <!-- TODO - don't just compare json strings. be smart about this. -->
           <v-banner
-            v-show="JSON.stringify(getMatchedDevice(viewingCamera)) != JSON.stringify(viewingCamera)"
+            v-show="_.isEqual(getMatchedDevice(viewingCamera), viewingCamera)"
             rounded
             color="red"
             text-color="white"
             icon="mdi-information-outline"
+            class="mb-3"
           >
-            It looks like a different camera has been connected to this device! Compare the below information carefully.
+            It looks like a different camera has been connected to this device! Compare the following information carefully.
           </v-banner>
-          <span>Saved camera</span>
-          <PvCameraInfoCard :camera="viewingCamera" />
-          <span>Current camera</span>
-          <PvCameraInfoCard :camera="getMatchedDevice(viewingCamera)" />
+          <div v-if="showCurrentView">
+            <h3>Saved camera</h3>
+            <PvCameraInfoCard :camera="viewingCamera" :showTitle="false" />
+            <br />
+            <h3>Current camera</h3>
+            <PvCameraInfoCard :camera="getMatchedDevice(viewingCamera)" :showTitle="false" />
+          </div>
+          <div v-else>
+            <PvCameraInfoCard :camera="viewingCamera" />
+          </div>
         </v-card-text>
       </v-card>
     </v-dialog>
@@ -424,9 +434,10 @@ a:hover {
   text-decoration: underline;
 }
 
-a:active {
+a:active,
+.mismatch-status {
   color: yellow;
   background-color: transparent;
-  text-decoration: underline;
+  text-decoration: none;
 }
 </style>
