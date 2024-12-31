@@ -97,7 +97,7 @@ public class FileVisionSource extends VisionSource {
         frameProvider.release();
     }
 
-    private static class FileSourceSettables extends VisionSourceSettables {
+    public static class FileSourceSettables extends VisionSourceSettables {
         private final VideoMode videoMode;
 
         private final HashMap<Integer, VideoMode> videoModes = new HashMap<>();

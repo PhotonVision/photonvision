@@ -136,4 +136,9 @@ public class FileFrameProvider extends CpuImageProcessor implements Releasable {
     public boolean isConnected() {
         return true;
     }
+
+    @Override
+    public boolean hasConnected() {
+        return true;
+    }
 }
