@@ -59,7 +59,7 @@ const cameraInfoFor: any = (camera: PVCameraInfo) => {
         </tr>
         <tr v-if="cameraInfoFor(camera).path !== undefined && cameraInfoFor(camera).path !== null">
           <td>Path:</td>
-          <td>{{ cameraInfoFor(camera).path }}</td>
+          <td style="word-break: break-all;">{{ cameraInfoFor(camera).path }}</td>
         </tr>
         <tr v-if="cameraInfoFor(camera).otherPaths !== undefined && cameraInfoFor(camera).otherPaths !== null">
           <td>Other Paths:</td>
@@ -67,7 +67,7 @@ const cameraInfoFor: any = (camera: PVCameraInfo) => {
         </tr>
         <tr v-if="cameraInfoFor(camera).uniquePath !== undefined && cameraInfoFor(camera).uniquePath !== null">
           <td>Unique Path:</td>
-          <td>{{ cameraInfoFor(camera).uniquePath }}</td>
+          <td style="word-break: break-all;">{{ cameraInfoFor(camera).uniquePath }}</td>
         </tr>
       </tbody>
     </v-simple-table>

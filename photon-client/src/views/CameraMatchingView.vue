@@ -131,7 +131,13 @@ const activeVisionModules = computed(() =>
 );
 const disabledVisionModules = computed(() => useStateStore().vsmState.disabledConfigs);
 
-const isExpanded = ref({});
+const viewingDetails = ref(false);
+const viewingCamera = ref(null);
+
+const setCameraView = (camera) => {
+  viewingDetails.value = camera !== null;
+  viewingCamera.value = camera;
+};
 </script>
 
 <template>
@@ -149,27 +155,18 @@ const isExpanded = ref({});
           <v-card-title>{{ module.nickname }}</v-card-title>
           <v-card-subtitle>Status: <span class="active-status">Active</span></v-card-subtitle>
           <v-card-text>
-            <v-simple-table dark dense height="100%" class="camera-card-table">
+            <v-simple-table dark dense>
               <tbody>
                 <tr>
                   <td>Streams:</td>
                   <td>
-                    <a :href="formatUrl(module.stream.inputPort)" target="_blank"> Input Stream </a> /
-                    <a :href="formatUrl(module.stream.outputPort)" target="_blank"> Output Stream </a>
+                    <a :href="formatUrl(module.stream.inputPort)" target="_blank" class="active-status"> Input Stream </a> /
+                    <a :href="formatUrl(module.stream.outputPort)" target="_blank" class="active-status"> Output Stream </a>
                   </td>
                 </tr>
                 <tr>
                   <td>Pipelines</td>
                   <td>{{ module.pipelineNicknames.join(", ") }}</td>
-                </tr>
-                <tr v-if="module.isConnected && useStateStore().backendResults[index]">
-                  <td>Frames Processed</td>
-                  <td>
-                    {{ useStateStore().backendResults[index].sequenceID }} ({{
-                      useStateStore().backendResults[index].fps
-                    }}
-                    FPS)
-                  </td>
                 </tr>
                 <tr>
                   <td>Connected</td>
@@ -184,6 +181,15 @@ const isExpanded = ref({});
                     }}
                   </td>
                 </tr>
+                <tr v-if="module.isConnected && useStateStore().backendResults[index]">
+                  <td>Frames Processed</td>
+                  <td>
+                    {{ useStateStore().backendResults[index].sequenceID }} ({{
+                      useStateStore().backendResults[index].fps
+                    }}
+                    FPS)
+                  </td>
+                </tr>
               </tbody>
             </v-simple-table>
             <photon-camera-stream
@@ -196,17 +202,16 @@ const isExpanded = ref({});
           </v-card-text>
           <v-card-text class="pt-0">
             <v-row>
-              <v-col cols="6">
+              <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
                 <v-btn
                   color="secondary"
-                  @click="isExpanded[module.uniqueName] = !(isExpanded[module.uniqueName] ?? false)"
+                  @click="setCameraView(module.matchedCameraInfo)"
                   style="width: 100%"
                 >
-                  <v-icon>{{ isExpanded[module.uniqueName] ? "mdi-chevron-up" : "mdi-chevron-down" }} </v-icon>
                   <span>Details</span>
                 </v-btn>
               </v-col>
-              <v-col cols="6">
+              <v-col cols="6" md="5" class="pr-0">
                 <v-btn
                   class="black--text"
                   @click="deactivateCamera(module.uniqueName)"
@@ -216,18 +221,12 @@ const isExpanded = ref({});
                   Deactivate
                 </v-btn>
               </v-col>
-              <v-col cols="6">
-                <v-btn class="black--text" @click="deleteThisCamera(module.uniqueName)" color="red" style="width: 100%">
-                  <v-icon left> mdi-bomb </v-icon>
-                  Delete
+              <v-col cols="6" md="3">
+                <v-btn class="black--text pa-0" @click="deleteThisCamera(module.uniqueName)" color="red" style="width: 100%">
+                  <v-icon>mdi-trash-can-outline</v-icon>
                 </v-btn>
               </v-col>
             </v-row>
-            <v-expand-transition>
-              <div color="primary" v-if="isExpanded[module.uniqueName] ?? false" class="mt-3">
-                <PvCameraMatchCard :saved="module.matchedCameraInfo" :matched="getMatchedDevice(module)" />
-              </div>
-            </v-expand-transition>
           </v-card-text>
         </v-card>
       </v-col>
@@ -238,7 +237,7 @@ const isExpanded = ref({});
           <v-card-title>{{ module.nickname }}</v-card-title>
           <v-card-subtitle>Status: <span class="inactive-status">Deactivated</span></v-card-subtitle>
           <v-card-text>
-            <v-simple-table dense height="100%">
+            <v-simple-table dense>
               <tbody>
                 <tr>
                   <td>Name</td>
@@ -268,17 +267,16 @@ const isExpanded = ref({});
           </v-card-text>
           <v-card-text class="pt-0">
             <v-row>
-              <v-col cols="6">
+              <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
                 <v-btn
                   color="secondary"
-                  @click="isExpanded[module.uniqueName] = !(isExpanded[module.uniqueName] ?? false)"
+                  @click="setCameraView(module.matchedCameraInfo)"
                   style="width: 100%"
                 >
-                  <v-icon>{{ isExpanded[module.uniqueName] ? "mdi-chevron-up" : "mdi-chevron-down" }} </v-icon>
                   <span>Details</span>
                 </v-btn>
               </v-col>
-              <v-col cols="6">
+              <v-col cols="6" md="5" class="pr-0">
                 <v-btn
                   class="black--text"
                   @click="activateModule(module.uniqueName)"
@@ -288,18 +286,12 @@ const isExpanded = ref({});
                   Activate
                 </v-btn>
               </v-col>
-              <v-col cols="6">
-                <v-btn class="black--text" @click="deleteThisCamera(module.uniqueName)" color="red" style="width: 100%">
-                  <v-icon left> mdi-bomb </v-icon>
-                  Delete
+              <v-col cols="6" md="3">
+                <v-btn class="black--text pa-0" @click="deleteThisCamera(module.uniqueName)" color="red" style="width: 100%">
+                  <v-icon>mdi-trash-can-outline</v-icon>
                 </v-btn>
               </v-col>
             </v-row>
-            <v-expand-transition>
-              <div color="primary" v-if="isExpanded[module.uniqueName] ?? false" class="mt-3">
-                <PvCameraInfoCard :camera="module.matchedCameraInfo" />
-              </div>
-            </v-expand-transition>
           </v-card-text>
         </v-card>
       </v-col>
@@ -307,53 +299,40 @@ const isExpanded = ref({});
       <!-- Unassigned cameras -->
       <v-col cols="12" sm="6" lg="4" v-for="(camera, index) in unmatchedCameras" :key="index">
         <v-card dark color="primary">
-          <v-card-title v-if="camera.PVUsbCameraInfo">USB Camera</v-card-title>
-          <v-card-title v-else-if="camera.PVCSICameraInfo">CSI Camera</v-card-title>
-          <v-card-title v-else-if="camera.PVFileCameraInfo">File Camera</v-card-title>
-          <v-card-title v-else>Unknown Camera</v-card-title>
+          <v-card-title>
+            <span v-if="camera.PVUsbCameraInfo">USB Camera:</span>
+            <span v-else-if="camera.PVCSICameraInfo">CSI Camera:</span>
+            <span v-else-if="camera.PVFileCameraInfo">File Camera:</span>
+            <span v-else>Unknown Camera:</span>
+            &nbsp;<span>{{ cameraInfoFor(camera).name }}</span>
+          </v-card-title>
           <v-card-subtitle>Status: Unassigned</v-card-subtitle>
           <v-card-text>
-            <v-simple-table dense>
-              <tbody>
-                <tr>
-                  <td>Name</td>
-                  <td>
-                    {{ cameraInfoFor(camera).name }}
-                  </td>
-                </tr>
-                <tr>
-                  <td>Path</td>
-                  <td>{{ cameraInfoFor(camera).path }}</td>
-                </tr>
-              </tbody>
-            </v-simple-table>
+            <span style="word-break: break-all;">{{ cameraInfoFor(camera).path }}</span>
           </v-card-text>
           <v-card-text class="pt-0">
             <v-row>
-              <v-col cols="6">
+              <v-col cols="6" class="pr-0">
                 <v-btn
                   color="secondary"
-                  @click="isExpanded[uniquePathForCamera(camera)] = !(isExpanded[uniquePathForCamera(camera)] ?? false)"
+                  @click="setCameraView(camera)"
                   style="width: 100%"
                 >
-                  <v-icon
-                    >{{ isExpanded[uniquePathForCamera(camera)] ? "mdi-chevron-up" : "mdi-chevron-down" }}
-                  </v-icon>
                   <span>Details</span>
                 </v-btn>
               </v-col>
               <v-col cols="6">
-                <v-btn class="black--text" @click="activateCamera(camera)" color="accent" style="width: 100%"
-                  >Activate</v-btn
+                <v-btn
+                  class="black--text"
+                  @click="activateCamera(camera)"
+                  color="accent"
+                  style="width: 100%"
                 >
+                  Activate
+                </v-btn>
               </v-col>
             </v-row>
           </v-card-text>
-          <v-expand-transition>
-            <v-card-text v-if="isExpanded[uniquePathForCamera(camera)] ?? false" class="pt-0">
-              <PvCameraInfoCard :camera="camera" :showTitle="false" />
-            </v-card-text>
-          </v-expand-transition>
         </v-card>
       </v-col>
 
@@ -361,13 +340,11 @@ const isExpanded = ref({});
       <v-col cols="12" sm="6" lg="4">
         <v-card
           dark
+          flat
+          class="pl-6 pr-6 d-flex flex-column justify-center"
           style="
             background-color: transparent;
-            box-shadow: none;
             height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
           "
         >
           <v-card-text class="d-flex flex-column align-center justify-center">
@@ -377,6 +354,21 @@ const isExpanded = ref({});
         </v-card>
       </v-col>
     </v-row>
+
+    <!-- Camera details modal -->
+    <v-dialog v-model="viewingDetails">
+      <v-card dark flat color="primary" v-if="viewingCamera !== null">
+        <v-card-title class="d-flex justify-space-between">
+            <span>{{ cameraInfoFor(viewingCamera)?.name }}</span>
+            <v-btn text @click="setCameraView(null)">
+              <v-icon>mdi-close-thick</v-icon>
+            </v-btn>
+        </v-card-title>
+        <v-card-text>
+          <PvCameraInfoCard :camera="viewingCamera" />
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -392,22 +384,16 @@ a:link,
   text-decoration: none;
 }
 
-a:visited {
-  color: pink;
+.inactive-status {
+  color: red;
   background-color: transparent;
   text-decoration: none;
 }
 
 a:hover {
-  color: red;
+  color: pink;
   background-color: transparent;
   text-decoration: underline;
-}
-
-.inactive-status {
-  color: red;
-  background-color: transparent;
-  text-decoration: none;
 }
 
 a:active {
