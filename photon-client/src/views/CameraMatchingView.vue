@@ -385,7 +385,7 @@ const setCameraView = (camera: PVCameraInfo | null, showCurrent: boolean = false
         </v-card-title>
         <v-card-text>
           <v-banner
-            v-show="_.isEqual(getMatchedDevice(viewingCamera), viewingCamera)"
+            v-show="!_.isEqual(getMatchedDevice(viewingCamera), viewingCamera)"
             rounded
             color="red"
             text-color="white"
