@@ -13,7 +13,7 @@ import {
 import { getResolutionString } from "@/lib/PhotonUtils";
 import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
 import axios from "axios";
-import _ from 'lodash';
+import _ from "lodash";
 
 const formatUrl = (port) => `http://${inject("backendHostname")}:${port}/stream.mjpg`;
 const host = inject<string>("backendHost");
@@ -176,7 +176,9 @@ const setCameraView = (camera: PVCameraInfo | null, showCurrent: boolean = false
       >
         <v-card dark color="primary">
           <v-card-title>{{ module.nickname }}</v-card-title>
-          <v-card-subtitle v-if="_.isEqual(getMatchedDevice(module.matchedCameraInfo), module.matchedCameraInfo)">Status: <span class="active-status">Active</span></v-card-subtitle>
+          <v-card-subtitle v-if="_.isEqual(getMatchedDevice(module.matchedCameraInfo), module.matchedCameraInfo)"
+            >Status: <span class="active-status">Active</span></v-card-subtitle
+          >
           <v-card-subtitle v-else>Status: <span class="mismatch-status">Mismatch</span></v-card-subtitle>
           <v-card-text>
             <v-simple-table dark dense>
@@ -392,7 +394,8 @@ const setCameraView = (camera: PVCameraInfo | null, showCurrent: boolean = false
             icon="mdi-information-outline"
             class="mb-3"
           >
-            It looks like a different camera has been connected to this device! Compare the following information carefully.
+            Camera Mismatched:<br />It looks like a different camera has been connected to this device! Compare the
+            below information carefully.
           </v-banner>
           <div v-if="showCurrentView">
             <h3>Saved camera</h3>
