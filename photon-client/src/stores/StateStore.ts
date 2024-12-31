@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import type { LogMessage, UniqueCameraSummary, VsmState } from "@/types/SettingTypes";
+import type { LogMessage, VsmState } from "@/types/SettingTypes";
 import type { AutoReconnectingWebsocket } from "@/lib/AutoReconnectingWebsocket";
 import type { MultitagResult, PipelineResult } from "@/types/PhotonTrackingTypes";
 import type {

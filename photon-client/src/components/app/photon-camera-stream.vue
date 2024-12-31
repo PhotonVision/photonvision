@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, ref, onBeforeUnmount, onMounted } from "vue";
+import { computed, inject, ref, onBeforeUnmount } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import loadingImage from "@/assets/images/loading.svg";
 import type { StyleValue } from "vue/types/jsx";

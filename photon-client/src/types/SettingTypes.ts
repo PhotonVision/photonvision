@@ -99,7 +99,6 @@ export class PVCameraInfo {
 }
 
 export interface VsmState {
-  // activeCameras: UniqueCameraSummary[];
   disabledConfigs: WebsocketCameraSettingsUpdate[];
   allConnectedCameras: PVCameraInfo[];
 }
