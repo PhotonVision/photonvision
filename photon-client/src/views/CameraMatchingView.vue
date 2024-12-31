@@ -2,7 +2,14 @@
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { computed, inject, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import { PlaceholderCameraSettings, PVCameraInfo, type UiCameraConfiguration } from "@/types/SettingTypes";
+import {
+  PlaceholderCameraSettings,
+  PVCameraInfo,
+  type PVCSICameraInfo,
+  type PVFileCameraInfo,
+  type PVUsbCameraInfo,
+  type UiCameraConfiguration
+} from "@/types/SettingTypes";
 import { getResolutionString } from "@/lib/PhotonUtils";
 import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
 import axios from "axios";
@@ -68,7 +75,7 @@ const deleteThisCamera = (cameraName: string) => {
     });
 };
 
-const cameraInfoFor: any = (camera: PVCameraInfo) => {
+const cameraInfoFor = (camera: PVCameraInfo): PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo | {} => {
   if (camera.PVUsbCameraInfo) {
     return camera.PVUsbCameraInfo;
   }
@@ -99,16 +106,29 @@ const uniquePathForCamera = (info: PVCameraInfo) => {
 /**
  * Find the PVCameraInfo currently occupying the same uniquepath as the the given module
  */
-const getMatchedDevice = (module: UiCameraConfiguration) => {
+const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
+  if (!info) {
+    return {
+      PVFileCameraInfo: {
+        name: "!",
+        path: "!",
+        uniquePath: "!"
+      },
+      PVCSICameraInfo: undefined,
+      PVUsbCameraInfo: undefined
+    };
+  }
   return (
     useStateStore().vsmState.allConnectedCameras.find(
-      (it) => uniquePathForCamera(it) === uniquePathForCamera(module.matchedCameraInfo)
+      (it) => uniquePathForCamera(it) === uniquePathForCamera(info)
     ) || {
       PVFileCameraInfo: {
         name: "!",
         path: "!",
         uniquePath: "!"
-      }
+      },
+      PVCSICameraInfo: undefined,
+      PVUsbCameraInfo: undefined
     }
   );
 };
@@ -132,9 +152,9 @@ const activeVisionModules = computed(() =>
 const disabledVisionModules = computed(() => useStateStore().vsmState.disabledConfigs);
 
 const viewingDetails = ref(false);
-const viewingCamera = ref(null);
+const viewingCamera = ref<PVCameraInfo | null>(null);
 
-const setCameraView = (camera) => {
+const setCameraView = (camera: PVCameraInfo | null) => {
   viewingDetails.value = camera !== null;
   viewingCamera.value = camera;
 };
@@ -160,8 +180,13 @@ const setCameraView = (camera) => {
                 <tr>
                   <td>Streams:</td>
                   <td>
-                    <a :href="formatUrl(module.stream.inputPort)" target="_blank" class="active-status"> Input Stream </a> /
-                    <a :href="formatUrl(module.stream.outputPort)" target="_blank" class="active-status"> Output Stream </a>
+                    <a :href="formatUrl(module.stream.inputPort)" target="_blank" class="active-status">
+                      Input Stream
+                    </a>
+                    /
+                    <a :href="formatUrl(module.stream.outputPort)" target="_blank" class="active-status">
+                      Output Stream
+                    </a>
                   </td>
                 </tr>
                 <tr>
@@ -203,11 +228,7 @@ const setCameraView = (camera) => {
           <v-card-text class="pt-0">
             <v-row>
               <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
-                <v-btn
-                  color="secondary"
-                  @click="setCameraView(module.matchedCameraInfo)"
-                  style="width: 100%"
-                >
+                <v-btn color="secondary" @click="setCameraView(module.matchedCameraInfo)" style="width: 100%">
                   <span>Details</span>
                 </v-btn>
               </v-col>
@@ -222,7 +243,12 @@ const setCameraView = (camera) => {
                 </v-btn>
               </v-col>
               <v-col cols="6" md="3">
-                <v-btn class="black--text pa-0" @click="deleteThisCamera(module.uniqueName)" color="red" style="width: 100%">
+                <v-btn
+                  class="black--text pa-0"
+                  @click="deleteThisCamera(module.uniqueName)"
+                  color="red"
+                  style="width: 100%"
+                >
                   <v-icon>mdi-trash-can-outline</v-icon>
                 </v-btn>
               </v-col>
@@ -268,11 +294,7 @@ const setCameraView = (camera) => {
           <v-card-text class="pt-0">
             <v-row>
               <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
-                <v-btn
-                  color="secondary"
-                  @click="setCameraView(module.matchedCameraInfo)"
-                  style="width: 100%"
-                >
+                <v-btn color="secondary" @click="setCameraView(module.matchedCameraInfo)" style="width: 100%">
                   <span>Details</span>
                 </v-btn>
               </v-col>
@@ -287,7 +309,12 @@ const setCameraView = (camera) => {
                 </v-btn>
               </v-col>
               <v-col cols="6" md="3">
-                <v-btn class="black--text pa-0" @click="deleteThisCamera(module.uniqueName)" color="red" style="width: 100%">
+                <v-btn
+                  class="black--text pa-0"
+                  @click="deleteThisCamera(module.uniqueName)"
+                  color="red"
+                  style="width: 100%"
+                >
                   <v-icon>mdi-trash-can-outline</v-icon>
                 </v-btn>
               </v-col>
@@ -308,26 +335,17 @@ const setCameraView = (camera) => {
           </v-card-title>
           <v-card-subtitle>Status: Unassigned</v-card-subtitle>
           <v-card-text>
-            <span style="word-break: break-all;">{{ cameraInfoFor(camera).path }}</span>
+            <span style="word-break: break-all">{{ cameraInfoFor(camera).path }}</span>
           </v-card-text>
           <v-card-text class="pt-0">
             <v-row>
               <v-col cols="6" class="pr-0">
-                <v-btn
-                  color="secondary"
-                  @click="setCameraView(camera)"
-                  style="width: 100%"
-                >
+                <v-btn color="secondary" @click="setCameraView(camera)" style="width: 100%">
                   <span>Details</span>
                 </v-btn>
               </v-col>
               <v-col cols="6">
-                <v-btn
-                  class="black--text"
-                  @click="activateCamera(camera)"
-                  color="accent"
-                  style="width: 100%"
-                >
+                <v-btn class="black--text" @click="activateCamera(camera)" color="accent" style="width: 100%">
                   Activate
                 </v-btn>
               </v-col>
@@ -342,10 +360,7 @@ const setCameraView = (camera) => {
           dark
           flat
           class="pl-6 pr-6 d-flex flex-column justify-center"
-          style="
-            background-color: transparent;
-            height: 100%;
-          "
+          style="background-color: transparent; height: 100%"
         >
           <v-card-text class="d-flex flex-column align-center justify-center">
             <v-icon size="64" color="primary">mdi-plus</v-icon>
@@ -359,13 +374,26 @@ const setCameraView = (camera) => {
     <v-dialog v-model="viewingDetails">
       <v-card dark flat color="primary" v-if="viewingCamera !== null">
         <v-card-title class="d-flex justify-space-between">
-            <span>{{ cameraInfoFor(viewingCamera)?.name }}</span>
-            <v-btn text @click="setCameraView(null)">
-              <v-icon>mdi-close-thick</v-icon>
-            </v-btn>
+          <span>{{ cameraInfoFor(viewingCamera)?.name }}</span>
+          <v-btn text @click="setCameraView(null)">
+            <v-icon>mdi-close-thick</v-icon>
+          </v-btn>
         </v-card-title>
         <v-card-text>
+          <!-- TODO - don't just compare json strings. be smart about this. -->
+          <v-banner
+            v-show="JSON.stringify(getMatchedDevice(viewingCamera)) != JSON.stringify(viewingCamera)"
+            rounded
+            color="red"
+            text-color="white"
+            icon="mdi-information-outline"
+          >
+            It looks like a different camera has been connected to this device! Compare the below information carefully.
+          </v-banner>
+          <span>Saved camera</span>
           <PvCameraInfoCard :camera="viewingCamera" />
+          <span>Current camera</span>
+          <PvCameraInfoCard :camera="getMatchedDevice(viewingCamera)" />
         </v-card-text>
       </v-card>
     </v-dialog>
