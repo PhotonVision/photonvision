@@ -40,6 +40,8 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
 
         var vidMode = settables.getCurrentVideoMode();
         settables.setVideoMode(vidMode);
+        this.cameraPropertiesCached =
+                true; // Camera properties are not able to be changed so they are always cached
     }
 
     @Override

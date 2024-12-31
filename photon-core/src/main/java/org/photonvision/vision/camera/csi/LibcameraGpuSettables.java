@@ -113,6 +113,8 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         } else if (sensorModel == LibCameraJNI.SensorModel.OV5647) {
             minExposure = 560;
         }
+        this.cameraPropertiesCached =
+                true; // Camera properties are not able to be changed so they are always cached
     }
 
     @Override
