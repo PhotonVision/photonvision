@@ -299,7 +299,7 @@ const isExpanded = ref({});
       </v-col>
 
       <!-- Unassigned cameras -->
-      <v-col cols="12" sm="6" lg="4" v-for="camera in unmatchedCameras">
+      <v-col cols="12" sm="6" lg="4" v-for="(camera, index) in unmatchedCameras" :key="index">
         <v-card dark color="primary">
           <v-card-title v-if="camera.PVUsbCameraInfo">USB Camera</v-card-title>
           <v-card-title v-else-if="camera.PVCSICameraInfo">CSI Camera</v-card-title>
