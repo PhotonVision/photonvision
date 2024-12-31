@@ -124,7 +124,11 @@ const unmatchedCameras = computed(() => {
   );
 });
 
-const activeVisionModules = computed(() => useCameraSettingsStore().cameras);
+const activeVisionModules = computed(() =>
+  useCameraSettingsStore().cameras.filter(
+    (camera) => JSON.stringify(camera) !== JSON.stringify(PlaceholderCameraSettings)
+  )
+);
 const disabledVisionModules = computed(() => useStateStore().vsmState.disabledConfigs);
 
 const isExpanded = ref({});
@@ -134,14 +138,7 @@ const isExpanded = ref({});
   <div class="pa-5">
     <v-row>
       <!-- Active modules -->
-      <v-col
-        cols="12"
-        sm="6"
-        lg="4"
-        v-for="(module, index) in activeVisionModules"
-        v-if="JSON.stringify(module) !== JSON.stringify(PlaceholderCameraSettings)"
-        :key="module.uniqueName"
-      >
+      <v-col cols="12" sm="6" lg="4" v-for="(module, index) in activeVisionModules" :key="module.uniqueName">
         <v-card dark color="primary">
           <v-card-title>{{ module.nickname }}</v-card-title>
           <v-card-subtitle>Status: <span class="active-status">Active</span></v-card-subtitle>
@@ -230,7 +227,7 @@ const isExpanded = ref({});
       </v-col>
 
       <!-- Disabled modules -->
-      <v-col cols="12" sm="6" lg="4" v-for="(module, index) in disabledVisionModules" :key="module.uniqueName">
+      <v-col cols="12" sm="6" lg="4" v-for="module in disabledVisionModules" :key="module.uniqueName">
         <v-card dark color="primary">
           <v-card-title>{{ module.nickname }}</v-card-title>
           <v-card-subtitle>Status: <span class="inactive-status">Deactivated</span></v-card-subtitle>
@@ -302,7 +299,7 @@ const isExpanded = ref({});
       </v-col>
 
       <!-- Unassigned cameras -->
-      <v-col cols="12" sm="6" lg="4" v-for="(camera, index) in unmatchedCameras" :key="index">
+      <v-col cols="12" sm="6" lg="4" v-for="camera in unmatchedCameras">
         <v-card dark color="primary">
           <v-card-title v-if="camera.PVUsbCameraInfo">USB Camera</v-card-title>
           <v-card-title v-else-if="camera.PVCSICameraInfo">CSI Camera</v-card-title>
