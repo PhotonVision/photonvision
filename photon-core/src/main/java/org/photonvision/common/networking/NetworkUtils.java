@@ -18,7 +18,10 @@
 package org.photonvision.common.networking;
 
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.NetworkInterface;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -165,5 +168,38 @@ public class NetworkUtils {
             logger.error("Exception from nmcli!");
         }
         return false;
+    }
+
+    public String getIPAddresses() {
+        String addresses = "";
+        try {
+            var interfaceList = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (var iFace : interfaceList) {
+                if (iFace.isLoopback()) continue;
+                for (var address : iFace.getInterfaceAddresses()) {
+                    if (address.getAddress() instanceof Inet4Address) {
+                        addresses.concat(address.getAddress().toString());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return addresses;
+    }
+
+    public String getIPAddresses(String iFaceName) {
+        String addresses = "";
+        try {
+            var iFace = NetworkInterface.getByName(iFaceName);
+            for (var address : iFace.getInterfaceAddresses()) {
+                if (address.getAddress() instanceof Inet4Address) {
+                    addresses.concat(address.getAddress().toString());
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return addresses;
     }
 }
