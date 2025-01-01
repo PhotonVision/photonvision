@@ -244,13 +244,6 @@ public class NetworkManager {
     // Detects changes in the carrier and reinitializes after re-connect
     private void monitorDevice(String devName, int millisInterval) {
         String taskName = "deviceStatus-" + devName;
-        NetworkInterface iFace;
-        try {
-            iFace = NetworkInterface.getByName(devName);
-        } catch (Exception e) {
-            logger.error("Could not get NetworkInterface " + devName, e);
-            return;
-        }
         if (TimedTaskManager.getInstance().taskActive(taskName)) {
             // task is already running
             return;
@@ -279,17 +272,27 @@ public class NetworkManager {
                                 logger.warn("Interface " + devName + " is disconnected, check Ethernet!");
                             }
                         }
+                        NetworkInterface iFace;
+                        iFace = NetworkInterface.getByName(devName);
                         if (iFace.isUp()) {
                             String tmpAddresses = "";
                             tmpAddresses = iFace.getInterfaceAddresses().toString();
-                            if (last.addresses != tmpAddresses) {
+                            if (!last.addresses.equals(tmpAddresses)) {
                                 // addresses have changed, log the difference
                                 last.addresses = tmpAddresses;
                                 logger.info("Interface " + devName + " has address(es): " + last.addresses);
                             }
                             var conn = NetworkUtils.getActiveConnection(devName);
-                            if (activeConnections.get(devName) != conn) {
-                                logger.warn("Unexpected connection " + conn + "active on " + devName);
+                            if (!conn.equals(activeConnections.get(devName))) {
+                                logger.warn(
+                                        "Unexpected connection "
+                                                + conn
+                                                + " active on "
+                                                + devName
+                                                + ". Expected "
+                                                + activeConnections.get(devName));
+                                logger.info("Reinitializing");
+                                reinitialize();
                             }
                         }
                         last.carrier = carrier;

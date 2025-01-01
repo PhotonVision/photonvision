@@ -73,6 +73,32 @@ public class ShellExec {
     }
 
     /**
+     * Execute a bash command. We can handle complex bash commands including multiple executions (; |
+     * and ||), quotes, expansions ($), escapes (\), e.g.: "cd /abc/def; mv ghi 'older ghi '$(whoami)"
+     * This runs the commands with the default logging.
+     *
+     * @param command Bash command to execute
+     * @return true if bash got started, but your command may have failed.
+     */
+    public int executeBashCommandNoLog(String command, boolean wait) throws IOException {
+        boolean success = false;
+        Runtime r = Runtime.getRuntime();
+        // Use bash -c, so we can handle things like multi commands separated by ; and
+        // things like quotes, $, |, and \. My tests show that command comes as
+        // one argument to bash, so we do not need to quote it to make it one thing.
+        // Also, exec may object if it does not have an executable file as the first thing,
+        // so having bash here makes it happy provided bash is installed and in path.
+        String[] commands = {"bash", "-c", command};
+
+        Process process = r.exec(commands);
+
+        // Consume streams, older jvm's had a memory leak if streams were not read,
+        // some other jvm+OS combinations may block unless streams are consumed.
+        int retcode = doProcess(wait, process);
+        return retcode;
+    }
+
+    /**
      * Execute a command in current folder, and wait for process to end
      *
      * @param command command ("c:/some/folder/script.bat" or "some/folder/script.sh")
