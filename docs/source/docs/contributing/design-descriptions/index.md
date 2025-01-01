@@ -4,4 +4,5 @@
 :maxdepth: 1
 image-rotation
 time-sync
+camera-matching
 ```

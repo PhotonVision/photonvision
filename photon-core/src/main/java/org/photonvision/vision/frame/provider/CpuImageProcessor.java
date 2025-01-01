@@ -99,7 +99,9 @@ public abstract class CpuImageProcessor extends FrameProvider {
                 outputMat,
                 m_processType,
                 input.captureTimestamp,
-                input.staticProps.rotate(m_rImagePipe.getParams().rotation));
+                input.staticProps != null
+                        ? input.staticProps.rotate(m_rImagePipe.getParams().rotation)
+                        : input.staticProps);
     }
 
     @Override

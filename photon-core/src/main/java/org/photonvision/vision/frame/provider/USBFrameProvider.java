@@ -17,7 +17,9 @@
 
 package org.photonvision.vision.frame.provider;
 
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.CvSink;
+import edu.wpi.first.cscore.UsbCamera;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.opencv.CVMat;
@@ -26,27 +28,55 @@ import org.photonvision.vision.processes.VisionSourceSettables;
 public class USBFrameProvider extends CpuImageProcessor {
     private final Logger logger;
 
-    private final CvSink cvSink;
+    private UsbCamera camera = null;
+    private CvSink cvSink = null;
 
     @SuppressWarnings("SpellCheckingInspection")
-    private final VisionSourceSettables settables;
+    private VisionSourceSettables settables;
+
+    private Runnable connectedCallback;
 
     @SuppressWarnings("SpellCheckingInspection")
-    public USBFrameProvider(CvSink sink, VisionSourceSettables visionSettables) {
-        logger = new Logger(USBFrameProvider.class, sink.getName(), LogGroup.Camera);
+    public USBFrameProvider(
+            UsbCamera camera, VisionSourceSettables visionSettables, Runnable connectedCallback) {
+        this.camera = camera;
+        this.cvSink = CameraServer.getVideo(this.camera);
+        this.logger =
+                new Logger(
+                        USBFrameProvider.class, visionSettables.getConfiguration().nickname, LogGroup.Camera);
+        this.cvSink.setEnabled(true);
 
-        cvSink = sink;
-        cvSink.setEnabled(true);
         this.settables = visionSettables;
+        this.connectedCallback = connectedCallback;
+    }
+
+    @Override
+    public boolean checkCameraConnected() {
+        boolean connected = camera.isConnected();
+
+        if (!cameraPropertiesCached && connected) {
+            logger.info("Camera connected! running callback");
+            onCameraConnected();
+        }
+
+        return connected;
     }
 
     @Override
     public CapturedFrame getInputMat() {
-        // We allocate memory so we don't fill a Mat in use by another thread (memory model is easier)
+        if (!cameraPropertiesCached && camera.isConnected()) {
+            onCameraConnected();
+        }
+
+        // We allocate memory so we don't fill a Mat in use by another thread (memory
+        // model is easier)
         var mat = new CVMat();
-        // This is from wpi::Now, or WPIUtilJNI.now(). The epoch from grabFrame is uS since
-        // Hal::initialize was called
-        long captureTimeNs = cvSink.grabFrame(mat.getMat()) * 1000;
+        // This is from wpi::Now, or WPIUtilJNI.now(). The epoch from grabFrame is uS
+        // since
+        // Hal::initialize was called. Timeout is in seconds
+        // TODO - under the hood, this incurs an extra copy. We should avoid this, if we
+        // can.
+        long captureTimeNs = cvSink.grabFrame(mat.getMat(), 1.0) * 1000;
 
         if (captureTimeNs == 0) {
             var error = cvSink.getError();
@@ -59,5 +89,28 @@ public class USBFrameProvider extends CpuImageProcessor {
     @Override
     public String getName() {
         return "USBFrameProvider - " + cvSink.getName();
+    }
+
+    @Override
+    public void release() {
+        CameraServer.removeServer(cvSink.getName());
+        cvSink.close();
+        cvSink = null;
+    }
+
+    @Override
+    public void onCameraConnected() {
+        super.onCameraConnected();
+
+        this.connectedCallback.run();
+    }
+
+    @Override
+    public boolean isConnected() {
+        return camera.isConnected();
+    }
+
+    public void updateSettables(VisionSourceSettables settables) {
+        this.settables = settables;
     }
 }
