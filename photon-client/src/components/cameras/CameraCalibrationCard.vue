@@ -228,22 +228,27 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 <th>Horizontal FOV</th>
                 <th>Vertical FOV</th>
                 <th>Diagonal FOV</th>
+                <th>More Info</th>
               </tr>
             </thead>
-            <tbody>
-              <tr
-                v-for="(value, index) in getUniqueVideoFormatsByResolution()"
-                :key="index"
-                title="Click to get calibration specific information"
-                @click="setSelectedVideoFormat(value)"
-              >
+            <tbody style="cursor: pointer">
+              <tr v-for="(value, index) in getUniqueVideoFormatsByResolution()" :key="index">
                 <td>{{ getResolutionString(value.resolution) }}</td>
+
                 <td>
                   {{ value.mean !== undefined ? (isNaN(value.mean) ? "Unknown" : value.mean.toFixed(2) + "px") : "-" }}
                 </td>
                 <td>{{ value.horizontalFOV !== undefined ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
                 <td>{{ value.verticalFOV !== undefined ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
                 <td>{{ value.diagonalFOV !== undefined ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <td v-bind="attrs" v-on="on" @click="setSelectedVideoFormat(value)">
+                      <v-icon small class="mr-2">mdi-information</v-icon>
+                    </td>
+                  </template>
+                  <span>Click for more info on this calibration.</span>
+                </v-tooltip>
               </tr>
             </tbody>
           </v-simple-table>
