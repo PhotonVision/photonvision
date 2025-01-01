@@ -45,10 +45,35 @@ const warningShown = computed<boolean>(() => {
     useCameraSettingsStore().cameras.length === 0 || useCameraSettingsStore().cameras[0] === PlaceholderCameraSettings
   );
 });
+
+const arducamWarningShown = computed<boolean>(() => {
+  return useCameraSettingsStore().cameras.some(
+    (c) =>
+      c.cameraQuirks?.quirks?.ArduCamCamera === true &&
+      !(
+        c.cameraQuirks?.quirks?.ArduOV2311Controls === true ||
+        c.cameraQuirks?.quirks?.ArduOV9281Controls === true ||
+        c.cameraQuirks?.quirks?.ArduOV9782Controls === true
+      )
+  );
+});
 </script>
 
 <template>
   <v-container class="pa-3" fluid>
+    <v-banner
+      v-model="arducamWarningShown"
+      v-if="arducamWarningShown"
+      rounded
+      color="red"
+      dark
+      class="mb-3"
+      icon="mdi-alert-circle-outline"
+    >
+      <span
+        >Arducam Camera Detected! Please configure the camera model in the <a href="#/cameras">Cameras tab</a>!
+      </span>
+    </v-banner>
     <v-row no-gutters align="center" justify="center">
       <v-col cols="12" class="pb-3 pr-lg-3" lg="8" align-self="stretch">
         <CamerasCard v-model="cameraViewType" />
@@ -61,7 +86,7 @@ const warningShown = computed<boolean>(() => {
     <PipelineConfigCard />
 
     <!-- TODO - not sure this belongs here -->
-    <v-dialog :persistent="false" v-model="warningShown" v-if="warningShown" max-width="1500" dark>
+    <v-dialog :persistent="false" v-model="warningShown" v-if="warningShown" max-width="800" dark>
       <v-card dark flat color="primary">
         <v-card-title>Setup some cameras to get started!</v-card-title>
         <v-card-text>
