@@ -6,6 +6,7 @@ import StreamConfigCard from "@/components/dashboard/StreamConfigCard.vue";
 import PipelineConfigCard from "@/components/dashboard/ConfigOptions.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
+import { PlaceholderCameraSettings } from "@/types/SettingTypes";
 
 const cameraViewType = computed<number[]>({
   get: (): number[] => {
@@ -37,6 +38,13 @@ const cameraViewType = computed<number[]>({
     );
   }
 });
+
+// TODO - deduplicate with needsCamerasConfigured
+const warningShown = computed<boolean>(() => {
+  return (
+    useCameraSettingsStore().cameras.length === 0 || useCameraSettingsStore().cameras[0] === PlaceholderCameraSettings
+  );
+});
 </script>
 
 <template>
@@ -51,5 +59,39 @@ const cameraViewType = computed<number[]>({
       </v-col>
     </v-row>
     <PipelineConfigCard />
+
+    <!-- TODO - not sure this belongs here -->
+    <v-dialog :persistent="false" v-model="warningShown" v-if="warningShown" max-width="1500" dark>
+      <v-card dark flat color="primary">
+        <v-card-title>Setup some cameras to get started!</v-card-title>
+        <v-card-text>
+          No cameras activated - head to the <a href="#/cameraConfigs">Camera matching tab</a> to set some up!
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
+
+<style scoped>
+a:link {
+  color: #ffd843;
+  background-color: transparent;
+  text-decoration: none;
+}
+a:visited {
+  color: #ffd843;
+  background-color: transparent;
+  text-decoration: none;
+}
+a:hover {
+  color: pink;
+  background-color: transparent;
+  text-decoration: underline;
+}
+
+a:active {
+  color: yellow;
+  background-color: transparent;
+  text-decoration: none;
+}
+</style>

@@ -2,6 +2,9 @@
 import { computed, getCurrentInstance } from "vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
+import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import { PlaceholderCameraSettings } from "@/types/SettingTypes";
+import { useRoute } from "vue2-helpers/vue-router";
 
 const compact = computed<boolean>({
   get: () => {
@@ -14,6 +17,12 @@ const compact = computed<boolean>({
 
 // Vuetify2 doesn't yet support the useDisplay API so this is required to access the prop when using the Composition API
 const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndUp || false);
+
+const needsCamerasConfigured = computed<boolean>(() => {
+  return (
+    useCameraSettingsStore().cameras.length === 0 || useCameraSettingsStore().cameras[0] === PlaceholderCameraSettings
+  );
+});
 </script>
 
 <template>
@@ -35,20 +44,32 @@ const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.bre
           <v-list-item-title>Dashboard</v-list-item-title>
         </v-list-item-content>
       </v-list-item>
-      <v-list-item ref="camerasTabOpener" link to="/cameras">
-        <v-list-item-icon>
-          <v-icon>mdi-camera</v-icon>
-        </v-list-item-icon>
-        <v-list-item-content>
-          <v-list-item-title>Cameras</v-list-item-title>
-        </v-list-item-content>
-      </v-list-item>
       <v-list-item link to="/settings">
         <v-list-item-icon>
           <v-icon>mdi-cog</v-icon>
         </v-list-item-icon>
         <v-list-item-content>
           <v-list-item-title>Settings</v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+      <v-list-item ref="camerasTabOpener" link to="/cameras">
+        <v-list-item-icon>
+          <v-icon>mdi-camera</v-icon>
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-list-item-title>Camera</v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+      <v-list-item
+        link
+        to="/cameraConfigs"
+        :class="{ cameraicon: needsCamerasConfigured && useRoute().path !== '/cameraConfigs' }"
+      >
+        <v-list-item-icon>
+          <v-icon :class="{ 'red--text': needsCamerasConfigured }">mdi-swap-horizontal-bold</v-icon>
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-list-item-title :class="{ 'red--text': needsCamerasConfigured }">Camera Matching</v-list-item-title>
         </v-list-item-content>
       </v-list-item>
       <v-list-item link to="/docs">
@@ -118,5 +139,19 @@ const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.bre
   width: 100%;
   height: 70px;
   object-fit: contain;
+}
+
+.cameraicon {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(0.95);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }
 </style>

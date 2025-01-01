@@ -49,6 +49,7 @@ const performanceRecommendation = computed<string>(() => {
       </v-col>
       <v-col class="align-self-center" style="text-align: right; margin-right: 12px; padding-left: 24px">
         <v-chip
+          v-if="useCameraSettingsStore().currentCameraSettings.isConnected"
           label
           :color="fpsTooLow ? 'error' : 'transparent'"
           :text-color="fpsTooLow ? '#C7EA46' : '#ff4d00'"
@@ -57,6 +58,9 @@ const performanceRecommendation = computed<string>(() => {
           <span class="pr-1"
             >Processing @ {{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &ndash;</span
           ><span>{{ performanceRecommendation }}</span>
+        </v-chip>
+        <v-chip v-else label color="transparent" text-color="red" style="font-size: 1rem; padding: 0; margin: 0">
+          <span class="pr-1"> Camera not connected </span>
         </v-chip>
       </v-col>
       <v-col
@@ -82,10 +86,20 @@ const performanceRecommendation = computed<string>(() => {
     <v-divider style="border-color: white" />
     <v-row class="stream-viewer-container pa-3">
       <v-col v-if="value.includes(0)" class="stream-view">
-        <photon-camera-stream id="input-camera-stream" stream-type="Raw" style="width: 100%; height: auto" />
+        <photon-camera-stream
+          id="input-camera-stream"
+          :camera-settings="useCameraSettingsStore().currentCameraSettings"
+          stream-type="Raw"
+          style="width: 100%; height: auto"
+        />
       </v-col>
       <v-col v-if="value.includes(1)" class="stream-view">
-        <photon-camera-stream id="output-camera-stream" stream-type="Processed" style="width: 100%; height: auto" />
+        <photon-camera-stream
+          id="output-camera-stream"
+          :camera-settings="useCameraSettingsStore().currentCameraSettings"
+          stream-type="Processed"
+          style="width: 100%; height: auto"
+        />
       </v-col>
     </v-row>
   </v-card>

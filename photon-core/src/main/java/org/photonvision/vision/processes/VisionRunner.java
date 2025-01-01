@@ -17,8 +17,17 @@
 
 package org.photonvision.vision.processes;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.dataflow.DataChangeService;
+import org.photonvision.common.dataflow.events.OutgoingUIEvent;
+import org.photonvision.common.dataflow.websocket.UIPhotonConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.camera.QuirkyCamera;
@@ -38,6 +47,7 @@ public class VisionRunner {
     private final Supplier<CVPipeline> pipelineSupplier;
     private final Consumer<CVPipelineResult> pipelineResultConsumer;
     private final VisionModuleChangeSubscriber changeSubscriber;
+    private final List<Runnable> runnableList = new ArrayList<Runnable>();
     private final QuirkyCamera cameraQuirks;
 
     private long loopCount;
@@ -72,12 +82,86 @@ public class VisionRunner {
         visionProcessThread.start();
     }
 
+    public void stopProcess() {
+        try {
+            System.out.println("Interrupting vision process thread");
+            visionProcessThread.interrupt();
+            visionProcessThread.join();
+        } catch (InterruptedException e) {
+            logger.error("Exception killing process thread", e);
+        }
+    }
+
+    public Future<Void> runSyncronously(Runnable runnable) {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+
+        synchronized (runnableList) {
+            runnableList.add(
+                    () -> {
+                        try {
+                            runnable.run();
+                            future.complete(null);
+                        } catch (Exception ex) {
+                            future.completeExceptionally(ex);
+                        }
+                    });
+        }
+        return future;
+    }
+
+    public <T> Future<T> runSyncronously(Callable<T> callable) {
+        CompletableFuture<T> future = new CompletableFuture<>();
+
+        synchronized (runnableList) {
+            runnableList.add(
+                    () -> {
+                        try {
+                            T result = callable.call();
+                            future.complete(result);
+                        } catch (Exception ex) {
+                            future.completeExceptionally(ex);
+                        }
+                    });
+        }
+
+        return future;
+    }
+
     private void update() {
+        // wait for the camera to connect
+        while (!frameSupplier.checkCameraConnected() && !Thread.interrupted()) {
+            // yield
+            pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                return;
+            }
+        }
+
+        DataChangeService.getInstance()
+                .publishEvent(
+                        new OutgoingUIEvent<>(
+                                "fullsettings",
+                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+
         while (!Thread.interrupted()) {
             changeSubscriber.processSettingChanges();
+            synchronized (runnableList) {
+                for (var runnable : runnableList) {
+                    try {
+                        runnable.run();
+                    } catch (Exception ex) {
+                        logger.error("Exception running runnable", ex);
+                    }
+                }
+                runnableList.clear();
+            }
+
             var pipeline = pipelineSupplier.get();
 
-            // Tell our camera implementation here what kind of pre-processing we need it to be doing
+            // Tell our camera implementation here what kind of pre-processing we need it to
+            // be doing
             // (pipeline-dependent). I kinda hate how much leak this has...
             // TODO would a callback object be a better fit?
             var wantedProcessType = pipeline.getThresholdType();
@@ -101,14 +185,17 @@ public class VisionRunner {
             if (frame.processedImage.getMat().empty() && frame.colorImage.getMat().empty()) {
                 // give up without increasing loop count
                 // Still feed with blank frames just dont run any pipelines
+
                 pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
                 continue;
             }
 
-            // If the pipeline has changed while we are getting our frame we should scrap that frame it
+            // If the pipeline has changed while we are getting our frame we should scrap
+            // that frame it
             // may result in incorrect frame settings like hsv values
             if (pipeline == pipelineSupplier.get()) {
-                // There's no guarantee the processing type change will occur this tick, so pipelines should
+                // There's no guarantee the processing type change will occur this tick, so
+                // pipelines should
                 // check themselves
                 try {
                     var pipelineResult = pipeline.run(frame, cameraQuirks);

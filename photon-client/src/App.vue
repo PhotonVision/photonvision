@@ -40,6 +40,9 @@ if (!is_demo) {
       if (data.calibrationData !== undefined) {
         useStateStore().updateCalibrationStateValuesFromWebsocket(data.calibrationData);
       }
+      if (data.visionSourceManager !== undefined) {
+        useStateStore().updateDiscoveredCameras(data.visionSourceManager);
+      }
     },
     () => {
       useStateStore().$patch({ backendConnected: false });

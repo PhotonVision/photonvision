@@ -52,7 +52,8 @@ import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.common.util.file.ProgramDirectoryUtilities;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
-import org.photonvision.vision.processes.VisionModuleManager;
+import org.photonvision.vision.camera.PVCameraInfo;
+import org.photonvision.vision.processes.VisionSourceManager;
 import org.zeroturnaround.zip.ZipUtil;
 
 public class RequestHandler {
@@ -395,7 +396,7 @@ public class RequestHandler {
             logger.info("Changing camera FOV to: " + fov);
             logger.info("Changing quirks to: " + settings.quirksToChange.toString());
 
-            var module = VisionModuleManager.getInstance().getModule(index);
+            var module = VisionSourceManager.getInstance().vmm.getModule(index);
             module.setFov(fov);
             module.changeCameraQuirks(settings.quirksToChange);
 
@@ -474,7 +475,7 @@ public class RequestHandler {
         try {
             index = kObjectMapper.readTree(ctx.bodyInputStream()).get("index").asInt();
 
-            var calData = VisionModuleManager.getInstance().getModule(index).endCalibration();
+            var calData = VisionSourceManager.getInstance().vmm.getModule(index).endCalibration();
             if (calData == null) {
                 ctx.result("The calibration process failed");
                 ctx.status(500);
@@ -551,7 +552,7 @@ public class RequestHandler {
             String name = data.get("name").asText();
             int idx = data.get("cameraIndex").asInt();
 
-            VisionModuleManager.getInstance().getModule(idx).setCameraNickname(name);
+            VisionSourceManager.getInstance().vmm.getModule(idx).setCameraNickname(name);
             ctx.status(200);
             ctx.result("Successfully changed the camera name to: " + name);
             logger.info("Successfully changed the camera name to: " + name);
@@ -581,7 +582,8 @@ public class RequestHandler {
         var observationIdx = Integer.parseInt(ctx.queryParam("snapshotIdx"));
 
         CameraCalibrationCoefficients calList =
-                VisionModuleManager.getInstance()
+                VisionSourceManager.getInstance()
+                        .vmm
                         .getModule(idx)
                         .getStateAsCameraConfig()
                         .calibrations
@@ -631,7 +633,7 @@ public class RequestHandler {
         var width = Integer.parseInt(ctx.queryParam("width"));
         var height = Integer.parseInt(ctx.queryParam("height"));
 
-        var cc = VisionModuleManager.getInstance().getModule(idx).getStateAsCameraConfig();
+        var cc = VisionSourceManager.getInstance().vmm.getModule(idx).getStateAsCameraConfig();
 
         CameraCalibrationCoefficients calList =
                 cc.calibrations.stream()
@@ -818,19 +820,63 @@ public class RequestHandler {
                 FileUtils.deleteDirectory(cameraDir);
             }
 
-            // prevent -anyone- else from writing camera configs -- but flush first
-            ConfigManager.getInstance().saveToDisk();
-            ConfigManager.getInstance().setWriteTaskEnabled(false);
-            ConfigManager.getInstance().disableFlushOnShutdown();
-            // remove the config from the global config and force-flush
-            ConfigManager.getInstance().getConfig().removeCameraConfig(name);
-            ConfigManager.getInstance().saveToDisk();
+            VisionSourceManager.getInstance().deleteVisionSource(name);
+
             ctx.status(200);
-            restartProgram();
         } catch (IOException e) {
             // todo
             logger.error("asdf", e);
             ctx.status(500);
         }
+    }
+
+    public static void onActivateMatchedCameraRequest(Context ctx) {
+        logger.info(ctx.queryString().toString());
+
+        String uniqueName = ctx.queryParam("uniqueName");
+
+        if (VisionSourceManager.getInstance().reactivateDisabledCameraConfig(uniqueName)) {
+            ctx.status(200);
+        } else {
+            ctx.status(403);
+        }
+
+        ctx.result("Successfully assigned camera with unique name: " + uniqueName);
+    }
+
+    public static void onAssignUnmatchedCameraRequest(Context ctx) {
+        logger.info(ctx.queryString().toString());
+
+        PVCameraInfo camera;
+        try {
+            camera = JacksonUtils.deserialize(ctx.queryParam("cameraInfo"), PVCameraInfo.class);
+        } catch (IOException e) {
+            ctx.status(401);
+            return;
+        }
+
+        if (VisionSourceManager.getInstance().assignUnmatchedCamera(camera)) {
+            ctx.status(200);
+        } else {
+            ctx.status(403);
+        }
+
+        ctx.result("Successfully assigned camera: " + camera);
+    }
+
+    public static void onUnassignCameraRequest(Context ctx) {
+        logger.info(ctx.queryString().toString());
+
+        String uniqueName = ctx.queryParam("uniqueName");
+
+        if (VisionSourceManager.getInstance().deactivateVisionSource(uniqueName)) {
+            ctx.status(200);
+        } else {
+            ctx.status(403);
+        }
+
+        ctx.status(200);
+
+        ctx.result("Successfully assigned camera with unique name: " + uniqueName);
     }
 }

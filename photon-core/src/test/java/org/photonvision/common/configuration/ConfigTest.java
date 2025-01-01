@@ -30,6 +30,7 @@ import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.file.JacksonUtils;
+import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
@@ -39,7 +40,8 @@ import org.photonvision.vision.target.TargetModel;
 public class ConfigTest {
     private static ConfigManager configMgr;
     private static final CameraConfiguration cameraConfig =
-            new CameraConfiguration("TestCamera", "/dev/video420");
+            new CameraConfiguration(
+                    "TestCamera", PVCameraInfo.fromFileInfo("TestCamera", "/dev/video420"));
     private static ReflectivePipelineSettings REFLECTIVE_PIPELINE_SETTINGS;
     private static ColoredShapePipelineSettings COLORED_SHAPE_PIPELINE_SETTINGS;
     private static AprilTagPipelineSettings APRIL_TAG_PIPELINE_SETTINGS;

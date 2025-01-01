@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.vision.camera;
+package org.photonvision.vision.camera.csi;
 
 import edu.wpi.first.cscore.VideoMode;
 import edu.wpi.first.util.PixelFormat;
@@ -23,6 +23,8 @@ import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.vision.camera.CameraType;
+import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.provider.LibcameraGpuFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
@@ -32,11 +34,11 @@ public class LibcameraGpuSource extends VisionSource {
     static final Logger logger = new Logger(LibcameraGpuSource.class, LogGroup.Camera);
 
     private final LibcameraGpuSettables settables;
-    private final LibcameraGpuFrameProvider frameProvider;
+    private LibcameraGpuFrameProvider frameProvider;
 
     public LibcameraGpuSource(CameraConfiguration configuration) {
         super(configuration);
-        if (configuration.cameraType != CameraType.ZeroCopyPicam) {
+        if (configuration.matchedCameraInfo.type() != CameraType.ZeroCopyPicam) {
             throw new IllegalArgumentException(
                     "GPUAcceleratedPicamSource only accepts CameraConfigurations with type Picam");
         }
@@ -60,7 +62,8 @@ public class LibcameraGpuSource extends VisionSource {
 
     @Override
     public void remakeSettables() {
-        // Nothing to do, settables for this type of VisionSource should never be remade.
+        // Nothing to do, settables for this type of VisionSource should never be
+        // remade.
         return;
     }
 
@@ -98,5 +101,11 @@ public class LibcameraGpuSource extends VisionSource {
     @Override
     public boolean hasLEDs() {
         return (ConfigManager.getInstance().getConfig().getHardwareConfig().ledPins.size() > 0);
+    }
+
+    @Override
+    public void release() {
+        frameProvider.release();
+        frameProvider = null;
     }
 }
