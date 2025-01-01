@@ -93,6 +93,7 @@ public class UncropApriltagTest {
                 ret_cropped.inputAndOutputFrame.processedImage.getMat(), "Cropped Pipeline output", 999999);
         // these numbers are not *accurate*, but they are known and expected
         var croppedTarget = croppedResults.targets.get(0);
+
         // Test corner order
         var corners = target.getTargetCorners();
         var croppedCorners = croppedTarget.getTargetCorners();
@@ -128,6 +129,9 @@ public class UncropApriltagTest {
                 pose.getRotation().getY(), croppedPose.getRotation().getY(), acceptedPoseDelta);
         Assertions.assertEquals(
                 pose.getRotation().getZ(), croppedPose.getRotation().getZ(), acceptedPoseDelta);
+
+        Assertions.assertEquals(
+                target.getPoseAmbiguity(), croppedTarget.getPoseAmbiguity(), acceptedPoseDelta);
     }
 
     private static void printTestResults(CVPipelineResult pipelineResult) {
