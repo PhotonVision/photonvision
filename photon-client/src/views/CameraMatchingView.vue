@@ -7,8 +7,7 @@ import {
   PVCameraInfo,
   type PVCSICameraInfo,
   type PVFileCameraInfo,
-  type PVUsbCameraInfo,
-  type UiCameraConfiguration
+  type PVUsbCameraInfo
 } from "@/types/SettingTypes";
 import { getResolutionString } from "@/lib/PhotonUtils";
 import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
