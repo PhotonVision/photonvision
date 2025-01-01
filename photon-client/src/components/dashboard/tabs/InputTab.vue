@@ -69,7 +69,7 @@ const isStreamResolutionTooHigh = computed(() => {
 
 <template>
   <div>
-    <v-banner v-if="isStreamResolutionTooHigh" rounded color="red" dark class="mt-3" icon="mdi-alert-circle-outline">
+    <v-banner v-if="isStreamResolutionTooHigh" rounded color="red" dark class="mb-3" icon="mdi-alert-circle-outline">
       The selected stream resolution is high and may cause network throttling on a robot. Consider lowering the
       resolution.
     </v-banner>
