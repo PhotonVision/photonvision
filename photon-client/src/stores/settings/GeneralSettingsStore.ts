@@ -10,14 +10,13 @@ import { NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import axios from "axios";
 import type { WebsocketSettingsUpdate } from "@/types/WebsocketDataTypes";
-import type { AprilTagFieldLayout } from "@/types/PhotonTrackingTypes";
 
 interface GeneralSettingsStore {
   general: GeneralSettings;
   network: NetworkSettings;
   lighting: LightingSettings;
   metrics: MetricData;
-  currentFieldLayout: AprilTagFieldLayout;
+  currentFieldLayout;
 }
 
 export const useSettingsStore = defineStore("settings", {

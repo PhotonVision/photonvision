@@ -19,15 +19,24 @@ package org.photonvision.common.dataflow.websocket;
 
 import java.util.HashMap;
 import java.util.List;
+import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.calibration.UICameraCalibrationCoefficients;
+import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.camera.QuirkyCamera;
 
 public class UICameraConfiguration {
-    @SuppressWarnings("unused")
-    public double fov;
+    // Path to the camera device. On Linux, this is a special file in /dev/v4l/by-id
+    // or /dev/videoN.
+    // This is the path we hand to CSCore to do auto-reconnect on
+    public String cameraPath;
+
+    /** See {@link CameraConfiguration #deactivated} */
+    public boolean deactivated;
 
     public String nickname;
     public String uniqueName;
+
+    public double fov;
     public HashMap<String, Object> currentPipelineSettings;
     public int currentPipelineIndex;
     public List<String> pipelineNicknames;
@@ -42,4 +51,9 @@ public class UICameraConfiguration {
     public double maxExposureRaw;
     public double minWhiteBalanceTemp;
     public double maxWhiteBalanceTemp;
+    public PVCameraInfo matchedCameraInfo;
+
+    // Status for if the underlying device is present and such
+    public boolean isConnected;
+    public boolean hasConnected;
 }

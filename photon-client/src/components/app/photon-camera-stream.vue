@@ -1,20 +1,20 @@
 <script setup lang="ts">
 import { computed, inject, ref, onBeforeUnmount } from "vue";
-import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import loadingImage from "@/assets/images/loading.svg";
 import type { StyleValue } from "vue/types/jsx";
 import PvIcon from "@/components/common/pv-icon.vue";
+import type { UiCameraConfiguration } from "@/types/SettingTypes";
 
 const props = defineProps<{
   streamType: "Raw" | "Processed";
   id: string;
+  cameraSettings: UiCameraConfiguration;
 }>();
 
 const emptyStreamSrc = "//:0";
 const streamSrc = computed<string>(() => {
-  const port =
-    useCameraSettingsStore().currentCameraSettings.stream[props.streamType === "Raw" ? "inputPort" : "outputPort"];
+  const port = props.cameraSettings.stream[props.streamType === "Raw" ? "inputPort" : "outputPort"];
 
   if (!useStateStore().backendConnected || port === 0) {
     return emptyStreamSrc;
@@ -32,8 +32,12 @@ const streamStyle = computed<StyleValue>(() => {
 });
 
 const containerStyle = computed<StyleValue>(() => {
-  const resolution = useCameraSettingsStore().currentVideoFormat.resolution;
-  const rotation = useCameraSettingsStore().currentPipelineSettings.inputImageRotationMode;
+  if (props.cameraSettings.validVideoFormats.length === 0) {
+    return { aspectRatio: "1/1" };
+  }
+  const resolution =
+    props.cameraSettings.validVideoFormats[props.cameraSettings.pipelineSettings.cameraVideoModeIndex].resolution;
+  const rotation = props.cameraSettings.pipelineSettings.inputImageRotationMode;
   if (rotation === 1 || rotation === 3) {
     return {
       aspectRatio: `${resolution.height}/${resolution.width}`
@@ -54,9 +58,9 @@ const overlayStyle = computed<StyleValue>(() => {
 
 const handleCaptureClick = () => {
   if (props.streamType === "Raw") {
-    useCameraSettingsStore().saveInputSnapshot();
+    props.cameraSettings.pipelineSettings[props.cameraSettings.currentPipelineIndex].saveInputSnapshot();
   } else {
-    useCameraSettingsStore().saveOutputSnapshot();
+    props.cameraSettings.pipelineSettings[props.cameraSettings.currentPipelineIndex].saveOutputSnapshot();
   }
 };
 const handlePopoutClick = () => {
@@ -69,6 +73,16 @@ const handleFullscreenRequest = () => {
 };
 
 const mjpgStream: any = ref(null);
+
+const handleStreamError = () => {
+  if (streamSrc.value && streamSrc.value !== emptyStreamSrc) {
+    console.error("Error loading stream:", streamSrc.value, " Trying again.");
+    setTimeout(() => {
+      mjpgStream.value.src = streamSrc.value;
+    }, 100);
+  }
+};
+
 onBeforeUnmount(() => {
   if (!mjpgStream.value) return;
   mjpgStream.value["src"] = emptyStreamSrc;
@@ -79,7 +93,6 @@ onBeforeUnmount(() => {
   <div class="stream-container" :style="containerStyle">
     <img :src="loadingImage" class="stream-loading" />
     <img
-      v-show="streamSrc !== emptyStreamSrc"
       :id="id"
       ref="mjpgStream"
       class="stream-video"
@@ -87,6 +100,7 @@ onBeforeUnmount(() => {
       :src="streamSrc"
       :alt="streamDesc"
       :style="streamStyle"
+      @error="handleStreamError"
     />
     <div class="stream-overlay" :style="overlayStyle">
       <pv-icon
