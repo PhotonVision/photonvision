@@ -21,6 +21,7 @@ import java.net.NetworkInterface;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.NoSuchElementException;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
@@ -38,6 +39,7 @@ import org.photonvision.common.util.TimedTaskManager;
 
 public class NetworkManager {
     private static final Logger logger = new Logger(NetworkManager.class, LogGroup.General);
+    private HashMap<String, String> activeConnections = new HashMap<String, String>();
 
     private NetworkManager() {}
 
@@ -72,6 +74,8 @@ public class NetworkManager {
         // Start tasks to monitor the network interface(s)
         var ethernetDevices = NetworkUtils.getAllWiredInterfaces();
         for (NMDeviceInfo deviceInfo : ethernetDevices) {
+            activeConnections.put(
+                    deviceInfo.devName, NetworkUtils.getActiveConnection(deviceInfo.devName));
             monitorDevice(deviceInfo.devName, 5000);
         }
 
@@ -191,6 +195,7 @@ public class NetworkManager {
             logger.info("Activating DHCP connection " + connName);
             shell.executeBashCommand(
                     "nmcli connection up \"${connection}\"".replace("${connection}", connName), false);
+            activeConnections.put(config.networkManagerIface, connName);
         } catch (Exception e) {
             logger.error("Exception while setting DHCP!", e);
         }
@@ -230,6 +235,7 @@ public class NetworkManager {
             logger.info("Activating the Static connection " + connName);
             shell.executeBashCommand(
                     "nmcli connection up \"${connection}\"".replace("${connection}", connName), false);
+            activeConnections.put(config.networkManagerIface, connName);
         } catch (Exception e) {
             logger.error("Error while setting static IP!", e);
         }
@@ -280,6 +286,10 @@ public class NetworkManager {
                                 // addresses have changed, log the difference
                                 last.addresses = tmpAddresses;
                                 logger.info("Interface " + devName + " has address(es): " + last.addresses);
+                            }
+                            var conn = NetworkUtils.getActiveConnection(devName);
+                            if (activeConnections.get(devName) != conn) {
+                                logger.warn("Unexpected connection " + conn + "active on " + devName);
                             }
                         }
                         last.carrier = carrier;

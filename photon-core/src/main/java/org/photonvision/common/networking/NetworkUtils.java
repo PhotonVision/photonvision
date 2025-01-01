@@ -159,6 +159,17 @@ public class NetworkUtils {
         return null;
     }
 
+    public static String getActiveConnection(String devName) {
+        var shell = new ShellExec(true, true);
+        try {
+            shell.executeBashCommand("nmcli -g GENERAL.CONNECTION dev show \"" + devName + "\"");
+            return shell.getOutput().strip();
+        } catch (Exception e) {
+            logger.error("Exception from nmcli!");
+        }
+        return "";
+    }
+
     public static boolean connDoesNotExist(String connName) {
         var shell = new ShellExec(true, true);
         try {
