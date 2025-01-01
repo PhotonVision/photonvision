@@ -126,14 +126,14 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     public void setAutoExposure(boolean cameraAutoExposure) {
         lastAutoExposureActive = cameraAutoExposure;
         LibCameraJNI.setAutoExposure(r_ptr, cameraAutoExposure);
+        if (!cameraAutoExposure) {
+            setExposureRaw(lastManualExposure);
+        }
     }
 
     @Override
     public void setExposureRaw(double exposureRaw) {
-        if (exposureRaw < 0.0 || lastAutoExposureActive) {
-            // Auto-exposure is active right now, don't set anything.
-            return;
-        }
+        LibCameraJNI.setAutoExposure(r_ptr, false);
 
         // Store the exposure for use when we need to recreate the camera.
         lastManualExposure = exposureRaw;
