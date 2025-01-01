@@ -4,7 +4,6 @@ import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import PvSwitch from "@/components/common/pv-switch.vue";
 import PvSelect from "@/components/common/pv-select.vue";
 import { computed, getCurrentInstance } from "vue";
-import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { getResolutionString } from "@/lib/PhotonUtils";
 
@@ -17,17 +16,7 @@ const cameraRotations = computed(() =>
   }))
 );
 
-const streamDivisors = [1, 2, 4, 6];
-const getFilteredStreamDivisors = (): number[] => {
-  const currentResolutionWidth = useCameraSettingsStore().currentVideoFormat.resolution.width;
-  return streamDivisors.filter(
-    (x) =>
-      useCameraSettingsStore().isDriverMode ||
-      !useSettingsStore().gpuAccelerationEnabled ||
-      currentResolutionWidth / x < 400
-  );
-};
-const getNumberOfSkippedDivisors = () => streamDivisors.length - getFilteredStreamDivisors().length;
+const streamDivisors = [1, 2, 4, 6, 8];
 
 const cameraResolutions = computed(() =>
   useCameraSettingsStore().currentCameraSettings.validVideoFormats.map(
@@ -37,8 +26,13 @@ const cameraResolutions = computed(() =>
 const handleResolutionChange = (value: number) => {
   useCameraSettingsStore().changeCurrentPipelineSetting({ cameraVideoModeIndex: value }, false);
 
-  useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: getNumberOfSkippedDivisors() }, false);
-  useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor = 0;
+  const currentResolution = useCameraSettingsStore().currentVideoFormat.resolution;
+  const newDivisorIndex = streamDivisors.findIndex(
+    (divisor) => currentResolution.width / divisor <= 320 && currentResolution.height / divisor <= 240
+  );
+  const newDivisor = newDivisorIndex !== -1 ? newDivisorIndex : 2; // Default to index 2 if no suitable divisor is found
+  useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: newDivisor }, false);
+  useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor = newDivisor;
 
   if (!useCameraSettingsStore().isCurrentVideoFormatCalibrated && !useCameraSettingsStore().isDriverMode) {
     useCameraSettingsStore().changeCurrentPipelineSetting({ solvePNPEnabled: false }, true);
@@ -46,7 +40,6 @@ const handleResolutionChange = (value: number) => {
 };
 
 const streamResolutions = computed(() => {
-  const streamDivisors = getFilteredStreamDivisors();
   const currentResolution = useCameraSettingsStore().currentVideoFormat.resolution;
   return streamDivisors.map(
     (x) =>
@@ -57,10 +50,7 @@ const streamResolutions = computed(() => {
   );
 });
 const handleStreamResolutionChange = (value: number) => {
-  useCameraSettingsStore().changeCurrentPipelineSetting(
-    { streamingFrameDivisor: value + getNumberOfSkippedDivisors() },
-    false
-  );
+  useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: value }, false);
 };
 
 const interactiveCols = computed(() =>
@@ -69,10 +59,20 @@ const interactiveCols = computed(() =>
     ? 9
     : 8
 );
+
+const isStreamResolutionTooHigh = computed(() => {
+  const currentResolution = useCameraSettingsStore().currentVideoFormat.resolution;
+  const divisor = streamDivisors[useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor];
+  return currentResolution.width / divisor > 320 || currentResolution.height / divisor > 240;
+});
 </script>
 
 <template>
   <div>
+    <v-banner v-if="isStreamResolutionTooHigh" rounded color="red" dark class="mt-3" icon="mdi-alert-circle-outline">
+      The selected stream resolution is high and may cause network throttling on a robot. Consider lowering the
+      resolution.
+    </v-banner>
     <pv-slider
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraExposureRaw"
       :disabled="useCameraSettingsStore().currentCameraSettings.pipelineSettings.cameraAutoExposure"
