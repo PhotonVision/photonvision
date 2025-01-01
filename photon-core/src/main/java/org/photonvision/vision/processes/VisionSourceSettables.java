@@ -82,6 +82,10 @@ public abstract class VisionSourceSettables {
     }
 
     public void setVideoMode(VideoMode mode) {
+        if (mode == null) {
+            logger.error("Tried to set video mode to null");
+            return;
+        }
         logger.info(
                 "Setting video mode to "
                         + "FPS: "

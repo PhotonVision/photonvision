@@ -106,10 +106,9 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
           inputPort: d.inputStreamPort,
           outputPort: d.outputStreamPort
         },
-        validVideoFormats: Object.entries(d.videoFormatList)
+        validVideoFormats: d.videoFormatList ? Object.entries(d.videoFormatList)
           .sort(([firstKey], [secondKey]) => parseInt(firstKey) - parseInt(secondKey))
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          .map<VideoFormat>(([k, v], i) => ({
+          .map<VideoFormat>(([, v], i) => ({
             resolution: {
               width: v.width,
               height: v.height
@@ -122,7 +121,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
             verticalFOV: v.verticalFOV,
             standardDeviation: v.standardDeviation,
             mean: v.mean
-          })),
+          })) : [],
         completeCalibrations: d.calibrations,
         isCSICamera: d.isCSICamera,
         minExposureRaw: d.minExposureRaw,
