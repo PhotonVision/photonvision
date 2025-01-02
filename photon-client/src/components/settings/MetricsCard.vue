@@ -9,28 +9,36 @@ interface MetricItem {
   value?: string;
 }
 
-const generalMetrics = computed<MetricItem[]>(() => [
-  {
-    header: "Version",
-    value: useSettingsStore().general.version || "Unknown"
-  },
-  {
-    header: "Hardware Model",
-    value: useSettingsStore().general.hardwareModel || "Unknown"
-  },
-  {
-    header: "Platform",
-    value: useSettingsStore().general.hardwarePlatform || "Unknown"
-  },
-  {
-    header: "IP Address",
-    value: useSettingsStore().metrics.ipAddress || "Unknown"
-  },
-  {
-    header: "GPU Acceleration",
-    value: useSettingsStore().general.gpuAcceleration || "Unknown"
+const generalMetrics = computed<MetricItem[]>(() => {
+  const stats = [
+    {
+      header: "Version",
+      value: useSettingsStore().general.version || "Unknown"
+    },
+    {
+      header: "Hardware Model",
+      value: useSettingsStore().general.hardwareModel || "Unknown"
+    },
+    {
+      header: "Platform",
+      value: useSettingsStore().general.hardwarePlatform || "Unknown"
+    },
+
+    {
+      header: "GPU Acceleration",
+      value: useSettingsStore().general.gpuAcceleration || "Unknown"
+    }
+  ];
+
+  if (!useSettingsStore().network.networkingDisabled) {
+    stats.push({
+      header: "IP Address",
+      value: useSettingsStore().metrics.ipAddress || "Unknown"
+    });
   }
-]);
+
+  return stats;
+});
 
 const platformMetrics = computed<MetricItem[]>(() => {
   const stats = [
