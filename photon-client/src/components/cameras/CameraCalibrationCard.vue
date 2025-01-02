@@ -20,6 +20,7 @@ const settingsValid = ref(true);
 
 const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
   const uniqueResolutions: VideoFormat[] = [];
+  if (useCameraSettingsStore().currentCameraSettings.validVideoFormats.length === 0) return uniqueResolutions;
   useCameraSettingsStore().currentCameraSettings.validVideoFormats.forEach((format) => {
     const index = uniqueResolutions.findIndex((v) => resolutionsAreEqual(v.resolution, format.resolution));
     const contains = index != -1;
@@ -227,28 +228,33 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 <th>Horizontal FOV</th>
                 <th>Vertical FOV</th>
                 <th>Diagonal FOV</th>
+                <th>More Info</th>
               </tr>
             </thead>
-            <tbody>
-              <tr
-                v-for="(value, index) in getUniqueVideoFormatsByResolution()"
-                :key="index"
-                title="Click to get calibration specific information"
-                @click="setSelectedVideoFormat(value)"
-              >
+            <tbody style="cursor: pointer">
+              <tr v-for="(value, index) in getUniqueVideoFormatsByResolution()" :key="index">
                 <td>{{ getResolutionString(value.resolution) }}</td>
+
                 <td>
                   {{ value.mean !== undefined ? (isNaN(value.mean) ? "Unknown" : value.mean.toFixed(2) + "px") : "-" }}
                 </td>
                 <td>{{ value.horizontalFOV !== undefined ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
                 <td>{{ value.verticalFOV !== undefined ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
                 <td>{{ value.diagonalFOV !== undefined ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <td v-bind="attrs" v-on="on" @click="setSelectedVideoFormat(value)">
+                      <v-icon small class="mr-2">mdi-information</v-icon>
+                    </td>
+                  </template>
+                  <span>Click for more info on this calibration.</span>
+                </v-tooltip>
               </tr>
             </tbody>
           </v-simple-table>
         </v-row>
         <v-divider />
-        <v-row style="display: flex; flex-direction: column" class="mt-4">
+        <v-row v-if="useCameraSettingsStore().isConnected" style="display: flex; flex-direction: column" class="mt-4">
           <v-card-subtitle v-show="!isCalibrating" class="pl-3 pa-0 ma-0"> Configure New Calibration</v-card-subtitle>
           <v-form ref="form" v-model="settingsValid" class="pl-4 mb-10 pr-5">
             <!-- TODO: the default videoFormatIndex is 0, but the list of unique video mode indexes might not include 0. getUniqueVideoResolutionStrings indexing is also different from the normal video mode indexing -->

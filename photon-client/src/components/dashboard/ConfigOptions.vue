@@ -153,31 +153,42 @@ onBeforeUpdate(() => {
 
 <template>
   <v-row no-gutters class="tabGroups">
-    <v-col
-      v-for="(tabGroupData, tabGroupIndex) in tabGroups"
-      :key="tabGroupIndex"
-      :class="tabGroupIndex !== tabGroups.length - 1 && 'pr-3'"
-    >
-      <v-card color="primary" height="100%" class="pr-4 pl-4">
-        <v-tabs
-          v-model="selectedTabs[tabGroupIndex]"
-          grow
-          background-color="primary"
-          dark
-          height="48"
-          slider-color="accent"
-        >
-          <v-tab v-for="(tabConfig, index) in tabGroupData" :key="index">
-            {{ tabConfig.tabName }}
-          </v-tab>
-        </v-tabs>
-        <div class="pl-4 pr-4 pt-4 pb-2">
-          <KeepAlive>
-            <Component :is="tabGroupData[selectedTabs[tabGroupIndex]].component" />
-          </KeepAlive>
-        </div>
-      </v-card>
-    </v-col>
+    <template v-if="!useCameraSettingsStore().hasConnected">
+      <v-col v-if="!useCameraSettingsStore().hasConnected" cols="12">
+        <v-card color="error">
+          <v-card-title class="white--text">
+            Camera has not connected. Please check your connection and try again.
+          </v-card-title>
+        </v-card>
+      </v-col>
+    </template>
+    <template v-else>
+      <v-col
+        v-for="(tabGroupData, tabGroupIndex) in tabGroups"
+        :key="tabGroupIndex"
+        :class="tabGroupIndex !== tabGroups.length - 1 && 'pr-3'"
+      >
+        <v-card color="primary" height="100%" class="pr-4 pl-4">
+          <v-tabs
+            v-model="selectedTabs[tabGroupIndex]"
+            grow
+            background-color="primary"
+            dark
+            height="48"
+            slider-color="accent"
+          >
+            <v-tab v-for="(tabConfig, index) in tabGroupData" :key="index">
+              {{ tabConfig.tabName }}
+            </v-tab>
+          </v-tabs>
+          <div class="pl-4 pr-4 pt-4 pb-2">
+            <KeepAlive>
+              <Component :is="tabGroupData[selectedTabs[tabGroupIndex]].component" />
+            </KeepAlive>
+          </div>
+        </v-card>
+      </v-col>
+    </template>
   </v-row>
 </template>
 

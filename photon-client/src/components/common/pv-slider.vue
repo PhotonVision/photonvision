@@ -81,7 +81,7 @@ const localValue = computed({
           type="number"
           style="width: 45px"
           :step="step"
-          hide-spin-buttons="true"
+          :hide-spin-buttons="true"
           @keyup.enter="localValue = $event.target.value"
           @blur="localValue = $event.target.value"
         />

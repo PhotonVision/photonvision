@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import type { LogMessage } from "@/types/SettingTypes";
+import type { LogMessage, VsmState } from "@/types/SettingTypes";
 import type { AutoReconnectingWebsocket } from "@/lib/AutoReconnectingWebsocket";
 import type { MultitagResult, PipelineResult } from "@/types/PhotonTrackingTypes";
 import type {
@@ -24,7 +24,7 @@ interface StateStore {
   logMessages: LogMessage[];
   currentCameraIndex: number;
 
-  backendResults: Record<string, PipelineResult>;
+  backendResults: Record<number, PipelineResult>;
   multitagResultBuffer: Record<string, MultitagResult[]>;
 
   colorPickingMode: boolean;
@@ -42,6 +42,8 @@ interface StateStore {
     color: string;
     timeout: number;
   };
+
+  vsmState: VsmState;
 }
 
 export const useStateStore = defineStore("state", {
@@ -59,7 +61,16 @@ export const useStateStore = defineStore("state", {
       logMessages: [],
       currentCameraIndex: 0,
 
-      backendResults: {},
+      backendResults: {
+        0: {
+          classNames: [],
+          fps: 1,
+          latency: 2,
+          sequenceID: 3,
+          targets: [],
+          multitagResult: undefined
+        }
+      },
       multitagResultBuffer: {},
 
       colorPickingMode: false,
@@ -76,6 +87,11 @@ export const useStateStore = defineStore("state", {
         message: "No Message",
         color: "info",
         timeout: 2000
+      },
+
+      vsmState: {
+        allConnectedCameras: [],
+        disabledConfigs: []
       }
     };
   },
@@ -135,6 +151,9 @@ export const useStateStore = defineStore("state", {
         minimumImageCount: data.minCount,
         hasEnoughImages: data.hasEnough
       };
+    },
+    updateDiscoveredCameras(data: VsmState) {
+      this.vsmState = data;
     },
     showSnackbarMessage(data: { message: string; color: string; timeout?: number }) {
       this.snackbarData = {

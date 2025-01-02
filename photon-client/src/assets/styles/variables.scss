@@ -3,6 +3,11 @@
 $default-font: "Prompt", sans-serif !default;
 $body-font-family: $default-font;
 $heading-font-family: $default-font;
+$body-background: #282c34;
+
+body {
+  background: $body-background;
+}
 
 .v-application {
   font-family: $default-font !important;

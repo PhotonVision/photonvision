@@ -3,7 +3,7 @@ import type {
   CalibrationTagFamilies,
   CalibrationBoardTypes,
   CameraCalibrationResult,
-  CameraSettings,
+  UiCameraConfiguration,
   CameraSettingsChangeRequest,
   Resolution,
   RobotOffsetType,
@@ -18,7 +18,7 @@ import axios from "axios";
 import { resolutionsAreEqual } from "@/lib/PhotonUtils";
 
 interface CameraSettingsStore {
-  cameras: CameraSettings[];
+  cameras: UiCameraConfiguration[];
 }
 
 export const useCameraSettingsStore = defineStore("cameraSettings", {
@@ -27,7 +27,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
   }),
   getters: {
     // TODO update types to update this value being undefined. This would be a decently large change.
-    currentCameraSettings(): CameraSettings {
+    currentCameraSettings(): UiCameraConfiguration {
       return this.cameras[useStateStore().currentCameraIndex];
     },
     currentPipelineSettings(): ActivePipelineSettings {
@@ -52,7 +52,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       return this.cameras.map((c) => c.nickname);
     },
     cameraUniqueNames(): string[] {
-      return this.cameras.map((c) => c.nickname);
+      return this.cameras.map((c) => c.uniqueName);
     },
     currentCameraName(): string {
       return this.cameraNames[useStateStore().currentCameraIndex];
@@ -83,11 +83,19 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     },
     maxWhiteBalanceTemp(): number {
       return this.currentCameraSettings.maxWhiteBalanceTemp;
+    },
+    isConnected(): boolean {
+      return this.currentCameraSettings.isConnected;
+    },
+    hasConnected(): boolean {
+      return this.currentCameraSettings.hasConnected;
     }
   },
   actions: {
     updateCameraSettingsFromWebsocket(data: WebsocketCameraSettingsUpdate[]) {
-      const configuredCameras = data.map<CameraSettings>((d) => ({
+      const configuredCameras = data.map<UiCameraConfiguration>((d) => ({
+        cameraPath: d.cameraPath,
+
         nickname: d.nickname,
         uniqueName: d.uniqueName,
         fov: {
@@ -124,8 +132,18 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         pipelineSettings: d.currentPipelineSettings,
         cameraQuirks: d.cameraQuirks,
         minWhiteBalanceTemp: d.minWhiteBalanceTemp,
-        maxWhiteBalanceTemp: d.maxWhiteBalanceTemp
+        maxWhiteBalanceTemp: d.maxWhiteBalanceTemp,
+        matchedCameraInfo: d.matchedCameraInfo,
+        isConnected: d.isConnected,
+        hasConnected: d.hasConnected
       }));
+
+      // Clamp index to between 0 and [length - 1]
+      useStateStore().currentCameraIndex = Math.max(
+        0,
+        Math.min(useStateStore().currentCameraIndex, configuredCameras.length - 1)
+      );
+
       this.cameras = configuredCameras.length > 0 ? configuredCameras : [PlaceholderCameraSettings];
     },
     /**

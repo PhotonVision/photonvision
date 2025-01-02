@@ -14,7 +14,8 @@ const props = withDefaults(
   }>(),
   {
     disabled: false,
-    labelCols: 2
+    labelCols: 2,
+    switchCols: 8
   }
 );
 
