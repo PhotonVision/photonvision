@@ -169,27 +169,36 @@ public class NetworkManager {
         String connName = "dhcp-" + config.networkManagerIface;
 
         String addDHCPcommand = """
-            nmcli connection add
+            nmcli conn add
             con-name "${connection}"
             ifname "${interface}"
             type ethernet
-            autoconnect no
+            """.replaceAll("[\\n]", " ");
+
+        String modDHCPCommand = """
+            nmcli conn modify "${connection}"
+            autoconnect yes
             ipv4.method auto
+            ipv4.dhcp-timeout infinity
+            ipv4.link-local enabled
             ipv6.method disabled
-            """;
-        addDHCPcommand = addDHCPcommand.replaceAll("[\\n]", " ");
+            """.replaceAll("[\\n]", " ");
 
         var shell = new ShellExec();
         try {
             if (NetworkUtils.connDoesNotExist(connName)) {
-                // create connection
-                logger.info("Creating the DHCP connection " + connName );
+                logger.info("Updating the DHCP connection " + connName );
                 shell.executeBashCommand(
                     addDHCPcommand
                         .replace("${connection}", connName)
                         .replace("${interface}", config.networkManagerIface)
-                    );
+                );
             }
+            logger.info("Updating the DHCP connection " + connName );
+            shell.executeBashCommand(
+                modDHCPCommand
+                    .replace("${connection}", connName)
+            );
             // activate it
             logger.info("Activating the DHCP connection " + connName );
             shell.executeBashCommand("nmcli connection up \"${connection}\"".replace("${connection}", connName), false);
