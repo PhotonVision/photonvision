@@ -1,7 +1,7 @@
-import threading
+import logging
 import socket
 import struct
-import logging
+import threading
 from typing import Callable, Optional
 
 from wpilib import Timer
