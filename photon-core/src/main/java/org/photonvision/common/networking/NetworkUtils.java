@@ -160,8 +160,8 @@ public class NetworkUtils {
     public static String getActiveConnection(String devName) {
         var shell = new ShellExec(true, true);
         try {
-            shell.executeBashCommandNoLog(
-                    "nmcli -g GENERAL.CONNECTION dev show \"" + devName + "\"", true);
+            shell.executeBashCommand(
+                    "nmcli -g GENERAL.CONNECTION dev show \"" + devName + "\"", true, false);
             return shell.getOutput().strip();
         } catch (Exception e) {
             logger.error("Exception from nmcli!");
@@ -172,8 +172,8 @@ public class NetworkUtils {
     public static boolean connDoesNotExist(String connName) {
         var shell = new ShellExec(true, true);
         try {
-            shell.executeBashCommandNoLog(
-                    "nmcli -g GENERAL.STATE connection show \"" + connName + "\"", true);
+            shell.executeBashCommand(
+                    "nmcli -g GENERAL.STATE connection show \"" + connName + "\"", true, false);
             return (shell.getExitCode() == 10);
         } catch (Exception e) {
             logger.error("Exception from nmcli!");

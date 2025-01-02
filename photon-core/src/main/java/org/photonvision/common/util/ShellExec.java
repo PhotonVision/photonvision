@@ -40,10 +40,6 @@ public class ShellExec {
         this.readError = readError;
     }
 
-    public int executeBashCommand(String command) throws IOException {
-        return executeBashCommand(command, true);
-    }
-
     /**
      * Execute a bash command. We can handle complex bash commands including multiple executions (; |
      * and ||), quotes, expansions ($), escapes (\), e.g.: "cd /abc/def; mv ghi 'older ghi '$(whoami)"
@@ -51,25 +47,20 @@ public class ShellExec {
      * @param command Bash command to execute
      * @return true if bash got started, but your command may have failed.
      */
+    public int executeBashCommand(String command) throws IOException {
+        return executeBashCommand(command, true, true);
+    }
+
+    /**
+     * Execute a bash command. We can handle complex bash commands including multiple executions (; |
+     * and ||), quotes, expansions ($), escapes (\), e.g.: "cd /abc/def; mv ghi 'older ghi '$(whoami)"
+     *
+     * @param command Bash command to execute
+     * @param wait true if the command should wait for the proccess to complete
+     * @return true if bash got started, but your command may have failed.
+     */
     public int executeBashCommand(String command, boolean wait) throws IOException {
-        logger.debug("Executing \"" + command + "\"");
-
-        boolean success = false;
-        Runtime r = Runtime.getRuntime();
-        // Use bash -c, so we can handle things like multi commands separated by ; and
-        // things like quotes, $, |, and \. My tests show that command comes as
-        // one argument to bash, so we do not need to quote it to make it one thing.
-        // Also, exec may object if it does not have an executable file as the first thing,
-        // so having bash here makes it happy provided bash is installed and in path.
-        String[] commands = {"bash", "-c", command};
-
-        Process process = r.exec(commands);
-
-        // Consume streams, older jvm's had a memory leak if streams were not read,
-        // some other jvm+OS combinations may block unless streams are consumed.
-        int retcode = doProcess(wait, process);
-        logger.debug("Got exit code " + retcode);
-        return retcode;
+        return executeBashCommand(command, true, true);
     }
 
     /**
@@ -78,9 +69,13 @@ public class ShellExec {
      * This runs the commands with the default logging.
      *
      * @param command Bash command to execute
+     * @param wait true if the command should wait for the proccess to complete
+     * @param debug true if the command and return value should be logged
      * @return true if bash got started, but your command may have failed.
      */
-    public int executeBashCommandNoLog(String command, boolean wait) throws IOException {
+    public int executeBashCommand(String command, boolean wait, boolean debug) throws IOException {
+        if (debug) logger.debug("Executing \"" + command + "\"");
+
         boolean success = false;
         Runtime r = Runtime.getRuntime();
         // Use bash -c, so we can handle things like multi commands separated by ; and
@@ -95,6 +90,7 @@ public class ShellExec {
         // Consume streams, older jvm's had a memory leak if streams were not read,
         // some other jvm+OS combinations may block unless streams are consumed.
         int retcode = doProcess(wait, process);
+        if (debug) logger.debug("Got exit code " + retcode);
         return retcode;
     }
 
