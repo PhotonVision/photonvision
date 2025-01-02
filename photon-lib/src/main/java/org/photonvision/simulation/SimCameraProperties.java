@@ -73,8 +73,10 @@ public class SimCameraProperties {
     private int resHeight;
     private Matrix<N3, N3> camIntrinsics;
     private Matrix<N8, N1> distCoeffs;
-    private double avgErrorPx;
-    private double errorStdDevPx;
+    private double avgErrorPxX;
+    private double errorStdDevPxX;
+    private double avgErrorPxY;
+    private double errorStdDevPxY;
     // performance
     private double frameSpeedMs = 0;
     private double exposureTimeMs = 0;
@@ -138,28 +140,50 @@ public class SimCameraProperties {
                 for (int j = 0; j < jsonDistortNode.size(); j++) {
                     jsonDistortion[j] = jsonDistortNode.get(j).asDouble();
                 }
+
                 var jsonObservations = calib.get("observations");
-                double jsonAvgError = 0;
+                int observationCount = 0;
                 for (int j = 0; j < jsonObservations.size(); j++) {
                     var jsonReprojectionError = jsonObservations.get(j).get("reprojectionErrors");
-                    double reprojectionError = 0;
-                    for (int k = 0; k < jsonReprojectionError.size(); k++) {
-                        var errorX = jsonReprojectionError.get(k).get("x").asDouble();
-                        var errorY = jsonReprojectionError.get(k).get("y").asDouble();
-
-                        reprojectionError += Math.sqrt(errorX * errorX + errorY * errorY);
-                    }
-                    jsonAvgError += reprojectionError / jsonReprojectionError.size();
+                    observationCount += jsonReprojectionError.size();
                 }
-                jsonAvgError /= jsonObservations.size();
-                double jsonErrorStdDev = calib.get("standardDeviation").asDouble();
+
+                double[] jsonErrorX = new double[observationCount];
+                double[] jsonErrorY = new double[observationCount];
+                int observationIndex = 0;
+                for (int j = 0; j < jsonObservations.size(); j++) {
+                    var jsonReprojectionError = jsonObservations.get(j).get("reprojectionErrors");
+                    for (int k = 0; k < jsonReprojectionError.size(); k++) {
+                        jsonErrorX[observationIndex] = jsonReprojectionError.get(k).get("x").asDouble();
+                        jsonErrorY[observationIndex] = jsonReprojectionError.get(k).get("y").asDouble();
+
+                        observationIndex += 1;
+                    }
+                }
+
+                double jsonAvgErrorX = 0;
+                double jsonAvgErrorY = 0;
+                for (int j = 0; j < observationCount; j++) {
+                    jsonAvgErrorX += jsonErrorX[j] / observationCount;
+                    jsonAvgErrorY += jsonErrorY[j] / observationCount;
+                }
+
+                double jsonErrorStdDevX = 0;
+                double jsonErrorStdDevY = 0;
+                for (int j = 0; j < observationCount; j++) {
+                    jsonErrorStdDevX += Math.pow(jsonErrorX[j] - jsonAvgErrorX, 2) / observationCount;
+                    jsonErrorStdDevY += Math.pow(jsonErrorY[j] - jsonAvgErrorY, 2) / observationCount;
+                }
+                jsonErrorStdDevX = Math.sqrt(jsonErrorStdDevX);
+                jsonErrorStdDevY = Math.sqrt(jsonErrorStdDevY);
+
                 // assign the read JSON values to this CameraProperties
                 setCalibration(
                         jsonWidth,
                         jsonHeight,
                         MatBuilder.fill(Nat.N3(), Nat.N3(), jsonIntrinsics),
                         MatBuilder.fill(Nat.N8(), Nat.N1(), jsonDistortion));
-                setCalibError(jsonAvgError, jsonErrorStdDev);
+                setCalibError(jsonAvgErrorX, jsonErrorStdDevX, jsonAvgErrorY, jsonErrorStdDevY);
                 success = true;
             }
         } catch (Exception e) {
@@ -232,9 +256,11 @@ public class SimCameraProperties {
         }
     }
 
-    public void setCalibError(double avgErrorPx, double errorStdDevPx) {
-        this.avgErrorPx = avgErrorPx;
-        this.errorStdDevPx = errorStdDevPx;
+    public void setCalibError(double avgErrorPxX,  double errorStdDevPxX, double avgErrorPxY,  double errorStdDevPxY) {
+        this.avgErrorPxX = avgErrorPxX;
+        this.errorStdDevPxX = errorStdDevPxX;
+        this.avgErrorPxY = avgErrorPxY;
+        this.errorStdDevPxY = errorStdDevPxY;
     }
 
     /**
@@ -573,10 +599,10 @@ public class SimCameraProperties {
         for (int i = 0; i < points.length; i++) {
             var p = points[i];
             // error pixels in random direction
-            double error = avgErrorPx + rand.nextGaussian() * errorStdDevPx;
-            double errorAngle = rand.nextDouble() * 2 * Math.PI - Math.PI;
+            double errorX = avgErrorPxX + rand.nextGaussian() * errorStdDevPxX;
+            double errorY = avgErrorPxY + rand.nextGaussian() * errorStdDevPxY;
             noisyPts[i] =
-                    new Point(p.x + error * Math.cos(errorAngle), p.y + error * Math.sin(errorAngle));
+                    new Point(p.x + errorX, p.y + errorY);
         }
         return noisyPts;
     }
