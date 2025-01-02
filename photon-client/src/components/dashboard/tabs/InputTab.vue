@@ -69,10 +69,6 @@ const isStreamResolutionTooHigh = computed(() => {
 
 <template>
   <div>
-    <v-banner v-if="isStreamResolutionTooHigh" rounded color="red" dark class="mb-3" icon="mdi-alert-circle-outline">
-      The selected stream resolution is high and may cause network throttling on a robot. Consider lowering the
-      resolution.
-    </v-banner>
     <pv-slider
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraExposureRaw"
       :disabled="useCameraSettingsStore().currentCameraSettings.pipelineSettings.cameraAutoExposure"
@@ -165,12 +161,18 @@ const isStreamResolutionTooHigh = computed(() => {
       :select-cols="interactiveCols"
       @input="(args) => handleResolutionChange(args)"
     />
+
     <pv-select
       v-model="useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor"
       label="Stream Resolution"
       tooltip="Resolution to which camera frames are downscaled for streaming to the dashboard"
       :items="streamResolutions"
       :select-cols="interactiveCols"
+      :icon="isStreamResolutionTooHigh ? 'mdi-alert-circle-outline' : ''"
+      :color="isStreamResolutionTooHigh ? 'red' : 'white'"
+      :icon-tooltip="
+        isStreamResolutionTooHigh ? 'Stream resolution is too high and may cause robot network throttling' : ''
+      "
       @input="(args) => handleStreamResolutionChange(args)"
     />
   </div>

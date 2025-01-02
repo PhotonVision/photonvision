@@ -47,10 +47,10 @@ const localValue = computed({
 <template>
   <div>
     <v-row dense align="center">
-      <v-col :cols="12 - sliderCols - 1">
+      <v-col :cols="12 - sliderCols">
         <tooltipped-label :tooltip="tooltip" :label="label" />
       </v-col>
-      <v-col :cols="sliderCols">
+      <v-col :cols="sliderCols - 1">
         <v-slider
           v-model="localValue"
           dark

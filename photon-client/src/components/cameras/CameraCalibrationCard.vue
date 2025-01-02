@@ -386,25 +386,18 @@ const isStreamResolutionTooHigh = computed(() => {
         <v-row v-if="isCalibrating">
           <v-col cols="12" class="pt-0">
             <pv-select
-              v-if="boardType == CalibrationBoardTypes.Charuco"
               v-model="useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor"
               label="Stream Resolution"
               tooltip="Resolution to which camera frames are downscaled for streaming to the dashboard"
               :items="streamResolutions"
               :select-cols="8"
+              :icon="isStreamResolutionTooHigh ? 'mdi-alert-circle-outline' : ''"
+              :color="isStreamResolutionTooHigh ? 'red' : 'white'"
+              :icon-tooltip="
+                isStreamResolutionTooHigh ? 'Stream resolution is too high and may cause robot network throttling' : ''
+              "
               @input="(v) => useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: v }, false)"
             />
-            <v-banner
-              v-if="isStreamResolutionTooHigh"
-              rounded
-              color="red"
-              dark
-              class="mb-3"
-              icon="mdi-alert-circle-outline"
-            >
-              The selected stream resolution is high and may cause network throttling on a robot. Consider lowering the
-              resolution.
-            </v-banner>
             <pv-slider
               v-model="useCameraSettingsStore().currentPipelineSettings.cameraExposureRaw"
               :disabled="useCameraSettingsStore().currentCameraSettings.pipelineSettings.cameraAutoExposure"
@@ -443,6 +436,7 @@ const isStreamResolutionTooHigh = computed(() => {
               v-model="useCameraSettingsStore().currentPipelineSettings.cameraGain"
               label="Camera Gain"
               tooltip="Controls camera gain, similar to brightness"
+              :slider-cols="8"
               :min="0"
               :max="100"
               @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraGain: args }, false)"
