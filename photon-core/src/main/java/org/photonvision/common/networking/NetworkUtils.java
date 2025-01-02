@@ -182,6 +182,9 @@ public class NetworkUtils {
     }
 
     public static String getIPAddresses(String iFaceName) {
+        if (iFaceName == null || iFaceName.isBlank()) {
+            return "";
+        }
         List<String> addresses = new ArrayList<String>();
         try {
             var iFace = NetworkInterface.getByName(iFaceName);
