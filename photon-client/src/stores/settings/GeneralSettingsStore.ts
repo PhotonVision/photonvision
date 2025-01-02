@@ -10,7 +10,6 @@ import { NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import axios from "axios";
 import type { WebsocketSettingsUpdate } from "@/types/WebsocketDataTypes";
-import { isNullOrUndefined } from "node:util";
 
 interface GeneralSettingsStore {
   general: GeneralSettings;
