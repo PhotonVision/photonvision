@@ -123,9 +123,9 @@ public class MetricsManager {
 
     public String getIpAddress() {
         String dev = ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface;
-        logger.debug("Requesting IP addresses for \"" + dev +"\"");
+        logger.debug("Requesting IP addresses for \"" + dev + "\"");
         String addr = NetworkUtils.getIPAddresses(dev);
-        logger.debug("Got value \"" + addr +"\"");
+        logger.debug("Got value \"" + addr + "\"");
         return addr;
     }
 
