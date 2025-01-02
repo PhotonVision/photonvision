@@ -8,6 +8,7 @@ import ThresholdTab from "@/components/dashboard/tabs/ThresholdTab.vue";
 import ContoursTab from "@/components/dashboard/tabs/ContoursTab.vue";
 import AprilTagTab from "@/components/dashboard/tabs/AprilTagTab.vue";
 import ArucoTab from "@/components/dashboard/tabs/ArucoTab.vue";
+import CropTab from "./tabs/CropTab.vue";
 import ObjectDetectionTab from "@/components/dashboard/tabs/ObjectDetectionTab.vue";
 import OutputTab from "@/components/dashboard/tabs/OutputTab.vue";
 import TargetsTab from "@/components/dashboard/tabs/TargetsTab.vue";
@@ -24,6 +25,10 @@ const allTabs = Object.freeze({
   inputTab: {
     tabName: "Input",
     component: InputTab
+  },
+  cropTab: {
+    tabName: "Crop",
+    component: CropTab
   },
   thresholdTab: {
     tabName: "Threshold",
@@ -76,6 +81,7 @@ const getTabGroups = (): ConfigOption[][] => {
     return [
       [
         allTabs.inputTab,
+        allTabs.cropTab,
         allTabs.thresholdTab,
         allTabs.contoursTab,
         allTabs.apriltagTab,
@@ -87,7 +93,7 @@ const getTabGroups = (): ConfigOption[][] => {
     ];
   } else if (lgAndDown) {
     return [
-      [allTabs.inputTab],
+      [allTabs.inputTab, allTabs.cropTab],
       [
         allTabs.thresholdTab,
         allTabs.contoursTab,
@@ -100,7 +106,7 @@ const getTabGroups = (): ConfigOption[][] => {
     ];
   } else if (xl) {
     return [
-      [allTabs.inputTab],
+      [allTabs.inputTab, allTabs.cropTab],
       [allTabs.thresholdTab],
       [allTabs.contoursTab, allTabs.apriltagTab, allTabs.arucoTab, allTabs.objectDetectionTab, allTabs.outputTab],
       [allTabs.targetsTab, allTabs.pnpTab, allTabs.map3dTab]
