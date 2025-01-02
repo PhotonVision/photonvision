@@ -138,12 +138,20 @@ public class SimCameraProperties {
                 for (int j = 0; j < jsonDistortNode.size(); j++) {
                     jsonDistortion[j] = jsonDistortNode.get(j).asDouble();
                 }
-                var jsonViewErrors = calib.get("perViewErrors");
+                var jsonObservations = calib.get("observations");
                 double jsonAvgError = 0;
-                for (int j = 0; j < jsonViewErrors.size(); j++) {
-                    jsonAvgError += jsonViewErrors.get(j).asDouble();
+                for (int j = 0; j < jsonObservations.size(); j++) {
+                    var jsonReprojectionError = jsonObservations.get(j).get("reprojectionErrors");
+                    double reprojectionError = 0;
+                    for (int k = 0; k < jsonReprojectionError.size(); k++) {
+                        var errorX = jsonReprojectionError.get(k).get("x").asDouble();
+                        var errorY = jsonReprojectionError.get(k).get("y").asDouble();
+
+                        reprojectionError += Math.sqrt(errorX * errorX + errorY * errorY);
+                    }
+                    jsonAvgError += reprojectionError / jsonReprojectionError.size();
                 }
-                jsonAvgError /= jsonViewErrors.size();
+                jsonAvgError /= jsonObservations.size();
                 double jsonErrorStdDev = calib.get("standardDeviation").asDouble();
                 // assign the read JSON values to this CameraProperties
                 setCalibration(
