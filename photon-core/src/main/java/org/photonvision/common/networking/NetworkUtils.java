@@ -18,10 +18,8 @@
 package org.photonvision.common.networking;
 
 import java.io.IOException;
-import java.net.Inet4Address;
 import java.net.NetworkInterface;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -183,36 +181,23 @@ public class NetworkUtils {
         return false;
     }
 
-    public String getIPAddresses() {
-        String addresses = "";
-        try {
-            var interfaceList = Collections.list(NetworkInterface.getNetworkInterfaces());
-            for (var iFace : interfaceList) {
-                if (iFace.isLoopback()) continue;
-                for (var address : iFace.getInterfaceAddresses()) {
-                    if (address.getAddress() instanceof Inet4Address) {
-                        addresses.concat(address.getAddress().toString());
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return addresses;
-    }
-
-    public String getIPAddresses(String iFaceName) {
-        String addresses = "";
+    public static String getIPAddresses(String iFaceName) {
+        List<String> addresses = new ArrayList<String>();
         try {
             var iFace = NetworkInterface.getByName(iFaceName);
-            for (var address : iFace.getInterfaceAddresses()) {
-                if (address.getAddress() instanceof Inet4Address) {
-                    addresses.concat(address.getAddress().toString());
+            for (var addr : iFace.getInterfaceAddresses()) {
+                var addrStr = addr.getAddress().toString();
+                if (addrStr.startsWith("/")) {
+                    addrStr = addrStr.substring(1);
                 }
+                addrStr = addrStr + "/" + addr.getNetworkPrefixLength();
+                addresses.add(addrStr);
             }
+            // addresses = iFace.inetAddresses().map(a ->
+            // a.getAddress().toString()).collect(Collectors.joining(","));
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return addresses;
+        return String.join(", ", addresses);
     }
 }

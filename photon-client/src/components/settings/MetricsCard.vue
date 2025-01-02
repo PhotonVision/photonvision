@@ -23,6 +23,10 @@ const generalMetrics = computed<MetricItem[]>(() => [
     value: useSettingsStore().general.hardwarePlatform || "Unknown"
   },
   {
+    header: "IP Address",
+    value: useSettingsStore().metrics.ipAddress || "Unknown"
+  },
+  {
     header: "GPU Acceleration",
     value: useSettingsStore().general.gpuAcceleration || "Unknown"
   }
