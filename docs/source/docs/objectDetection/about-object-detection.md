@@ -35,11 +35,55 @@ The same area, aspect ratio, and target orientation/sort parameters from {ref}`r
 
 ## Letterboxing
 
-Photonvision will letterbox your camera frame to 640x640. This means that if you select a resolution that is larger than 640 it will be scaled down to fit inside a 640x640 frame with black bars if needed. Smaller frames will be scaled up with black bars if needed.
+YOLO models must be fed a square image of the same resolution as the training dataset. To deal with this, PhotonVision will "letterbox" the camera images to 640x640. The image is first resized such that its widest dimension is 640 pixels, and then grey bars are added to pad out the rest of the image.
 
-## Training Custom Models
+## Converting a custom model
 
-Coming soon!
+After training your own YOLOv5s model, you can convert it to an RKNN file for use with PhotonVision. If you have not already trained a model, you can follow the official YOLOv5 training guide [here](https://docs.ultralytics.com/yolov5/tutorials/train_custom_data/)
+
+### Step 1: Exporting the Model to ONNX
+
+Using your trained YOLOv5s model, you will need to export it to ONNX format using airockchip's YOLOv5 fork.
+
+First, download airockchip's YOLOv5 fork along with the onnx to rknn conversion script.
+
+```bash
+git clone https://github.com/airockchip/yolov5.git airockchip-yolov5
+wget https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/master/scripts/onnx2rknn.py
+```
+
+Now install the required packages, make sure you have Python 3.9 and pip downloaded.
+
+```bash
+cd airockchip-yolov5
+pip install -r requirements.txt
+```
+
+#### Export Command
+
+```bash
+python3 export.py --weights '/path/to/model.pt' --rknpu --include 'onnx'
+```
+
+### Step 2: Converting ONNX to RKNN
+
+Using the `onnx2rknn.py` script, convert the ONNX model to an RKNN file. This script was downloaded in a previous step.
+
+#### Conversion Command
+
+First install RKNN Toolkit:
+
+```bash
+pip install rknn-toolkit2
+```
+
+Now, run the script, passing in the ONNX model and a folder containing images from your dataset:
+
+```bash
+python3 onnx2rknn.py /path/to/model.onnx /path/to/export/model.rknn /path/to/dataset/valid/images
+```
+
+If you have any questions about the conversion process, ask in the PhotonVision Discord server.
 
 ## Uploading Custom Models
 
