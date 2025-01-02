@@ -45,7 +45,7 @@ public class ShellExec {
      * and ||), quotes, expansions ($), escapes (\), e.g.: "cd /abc/def; mv ghi 'older ghi '$(whoami)"
      *
      * @param command Bash command to execute
-     * @return true if bash got started, but your command may have failed.
+     * @return process exit code
      */
     public int executeBashCommand(String command) throws IOException {
         return executeBashCommand(command, true, true);
@@ -57,7 +57,7 @@ public class ShellExec {
      *
      * @param command Bash command to execute
      * @param wait true if the command should wait for the proccess to complete
-     * @return true if bash got started, but your command may have failed.
+     * @return process exit code
      */
     public int executeBashCommand(String command, boolean wait) throws IOException {
         return executeBashCommand(command, true, true);
@@ -71,7 +71,7 @@ public class ShellExec {
      * @param command Bash command to execute
      * @param wait true if the command should wait for the proccess to complete
      * @param debug true if the command and return value should be logged
-     * @return true if bash got started, but your command may have failed.
+     * @return process exit code
      */
     public int executeBashCommand(String command, boolean wait, boolean debug) throws IOException {
         if (debug) logger.debug("Executing \"" + command + "\"");
