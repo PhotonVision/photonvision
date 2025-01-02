@@ -25,14 +25,6 @@ class JsonMatOfDoubles:
 
 
 @dataclass
-class JsonMat:
-    rows: int
-    cols: int
-    type: int
-    data: str  # Base64-encoded PNG data
-
-
-@dataclass
 class Point2:
     x: float
     y: float
@@ -84,8 +76,6 @@ class Observation:
     # If we should use this observation when re-calculating camera calibration
     includeObservationInCalibration: bool
     snapshotName: str
-    # The actual image the snapshot is from
-    snapshotData: JsonMat
 
 
 @dataclass
@@ -205,14 +195,6 @@ def convert_photon_to_mrcal(photon_cal_json_path: str, output_folder: str):
         # Create output_folder if not exists
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
-
-        # Decode each image and save it as a png
-        for obs in camera_cal_data.observations:
-            image = obs.snapshotData.data
-            decoded_data = base64.b64decode(image)
-            np_data = np.frombuffer(decoded_data, np.uint8)
-            img = cv2.imdecode(np_data, cv2.IMREAD_UNCHANGED)
-            cv2.imwrite(f"{output_folder}/{obs.snapshotName}", img)
 
         # And create a VNL file for use with mrcal
         with open(f"{output_folder}/corners.vnl", "w+") as vnl_file:
