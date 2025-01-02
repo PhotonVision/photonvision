@@ -128,68 +128,103 @@ public class SimCameraProperties {
                 int jsonWidth = calib.get("resolution").get("width").asInt();
                 int jsonHeight = calib.get("resolution").get("height").asInt();
                 if (jsonWidth != width || jsonHeight != height) continue;
-                // get the relevant calibration values
-                var jsonIntrinsicsNode = calib.get("cameraIntrinsics").get("data");
-                double[] jsonIntrinsics = new double[jsonIntrinsicsNode.size()];
-                for (int j = 0; j < jsonIntrinsicsNode.size(); j++) {
-                    jsonIntrinsics[j] = jsonIntrinsicsNode.get(j).asDouble();
-                }
-                var jsonDistortNode = calib.get("distCoeffs").get("data");
-                double[] jsonDistortion = new double[8];
-                Arrays.fill(jsonDistortion, 0);
-                for (int j = 0; j < jsonDistortNode.size(); j++) {
-                    jsonDistortion[j] = jsonDistortNode.get(j).asDouble();
-                }
-
-                var jsonObservations = calib.get("observations");
-                int observationCount = 0;
-                for (int j = 0; j < jsonObservations.size(); j++) {
-                    var jsonReprojectionError = jsonObservations.get(j).get("reprojectionErrors");
-                    observationCount += jsonReprojectionError.size();
-                }
-
-                double[] jsonErrorX = new double[observationCount];
-                double[] jsonErrorY = new double[observationCount];
-                int observationIndex = 0;
-                for (int j = 0; j < jsonObservations.size(); j++) {
-                    var jsonReprojectionError = jsonObservations.get(j).get("reprojectionErrors");
-                    for (int k = 0; k < jsonReprojectionError.size(); k++) {
-                        jsonErrorX[observationIndex] = jsonReprojectionError.get(k).get("x").asDouble();
-                        jsonErrorY[observationIndex] = jsonReprojectionError.get(k).get("y").asDouble();
-
-                        observationIndex += 1;
-                    }
-                }
-
-                double jsonAvgErrorX = 0;
-                double jsonAvgErrorY = 0;
-                for (int j = 0; j < observationCount; j++) {
-                    jsonAvgErrorX += jsonErrorX[j] / observationCount;
-                    jsonAvgErrorY += jsonErrorY[j] / observationCount;
-                }
-
-                double jsonErrorStdDevX = 0;
-                double jsonErrorStdDevY = 0;
-                for (int j = 0; j < observationCount; j++) {
-                    jsonErrorStdDevX += Math.pow(jsonErrorX[j] - jsonAvgErrorX, 2) / observationCount;
-                    jsonErrorStdDevY += Math.pow(jsonErrorY[j] - jsonAvgErrorY, 2) / observationCount;
-                }
-                jsonErrorStdDevX = Math.sqrt(jsonErrorStdDevX);
-                jsonErrorStdDevY = Math.sqrt(jsonErrorStdDevY);
-
-                // assign the read JSON values to this CameraProperties
-                setCalibration(
-                        jsonWidth,
-                        jsonHeight,
-                        MatBuilder.fill(Nat.N3(), Nat.N3(), jsonIntrinsics),
-                        MatBuilder.fill(Nat.N8(), Nat.N1(), jsonDistortion));
-                setCalibError(jsonAvgErrorX, jsonErrorStdDevX, jsonAvgErrorY, jsonErrorStdDevY);
+                
+                setupCalibration(calib, jsonWidth, jsonHeight);
+                setupCalibrationError(calib);
                 success = true;
             }
         } catch (Exception e) {
             throw new IOException("Invalid calibration JSON");
         }
         if (!success) throw new IOException("Requested resolution not found in calibration");
+    }
+
+    private void setupCalibration(JsonNode calib, int jsonWidth, int jsonHeight) {
+        // get the relevant calibration values
+        var jsonIntrinsicsNode = calib.get("cameraIntrinsics").get("data");
+        double[] jsonIntrinsics = new double[jsonIntrinsicsNode.size()];
+        for (int j = 0; j < jsonIntrinsicsNode.size(); j++) {
+            jsonIntrinsics[j] = jsonIntrinsicsNode.get(j).asDouble();
+        }
+        var jsonDistortNode = calib.get("distCoeffs").get("data");
+        double[] jsonDistortion = new double[8];
+        Arrays.fill(jsonDistortion, 0);
+        for (int j = 0; j < jsonDistortNode.size(); j++) {
+            jsonDistortion[j] = jsonDistortNode.get(j).asDouble();
+        }
+
+        // assign the read JSON values to this CameraProperties
+        setCalibration(
+                jsonWidth,
+                jsonHeight,
+                MatBuilder.fill(Nat.N3(), Nat.N3(), jsonIntrinsics),
+                MatBuilder.fill(Nat.N8(), Nat.N1(), jsonDistortion));
+    }
+
+    private void setupCalibrationError(JsonNode calib) {
+        var jsonViewErrors = calib.get("perViewErrors");
+        var jsonErrorStdDev = calib.get("standardDeviation");
+        double jsonAvgErrorX = 0;
+        double jsonAvgErrorY = 0;
+        double jsonErrorStdDevX = 0;
+        double jsonErrorStdDevY = 0;
+
+        if (jsonViewErrors != null && jsonErrorStdDev != null) {
+            double jsonAvgError = 0;
+            for (int j = 0; j < jsonViewErrors.size(); j++) {
+                jsonAvgError += jsonViewErrors.get(j).asDouble();
+            }
+            jsonAvgError /= jsonViewErrors.size();
+
+            jsonAvgErrorX = jsonAvgError;
+            jsonAvgErrorY = jsonAvgError;
+            jsonErrorStdDevX = jsonErrorStdDev.asDouble();
+            jsonErrorStdDevY = jsonErrorStdDev.asDouble();
+        } else {
+            double jsonAvgError = 0;
+            for (int j = 0; j < jsonViewErrors.size(); j++) {
+                jsonAvgError += jsonViewErrors.get(j).asDouble();
+            }
+            jsonAvgError /= jsonViewErrors.size();
+
+            var jsonObservations = calib.get("observations");
+            int observationCount = 0;
+            for (int j = 0; j < jsonObservations.size(); j++) {
+                var jsonReprojectionError = jsonObservations.get(j).get("reprojectionErrors");
+                observationCount += jsonReprojectionError.size();
+            }
+
+            double[] jsonErrorX = new double[observationCount];
+            double[] jsonErrorY = new double[observationCount];
+            int observationIndex = 0;
+            for (int j = 0; j < jsonObservations.size(); j++) {
+                var jsonReprojectionError = jsonObservations.get(j).get("reprojectionErrors");
+                for (int k = 0; k < jsonReprojectionError.size(); k++) {
+                    jsonErrorX[observationIndex] = jsonReprojectionError.get(k).get("x").asDouble();
+                    jsonErrorY[observationIndex] = jsonReprojectionError.get(k).get("y").asDouble();
+
+                    observationIndex += 1;
+                }
+            }
+
+            double jsonAvgErrorX = 0;
+            double jsonAvgErrorY = 0;
+            for (int j = 0; j < observationCount; j++) {
+                jsonAvgErrorX += jsonErrorX[j] / observationCount;
+                jsonAvgErrorY += jsonErrorY[j] / observationCount;
+            }
+
+            double jsonErrorStdDevX = 0;
+            double jsonErrorStdDevY = 0;
+            for (int j = 0; j < observationCount; j++) {
+                jsonErrorStdDevX += Math.pow(jsonErrorX[j] - jsonAvgErrorX, 2) / observationCount;
+                jsonErrorStdDevY += Math.pow(jsonErrorY[j] - jsonAvgErrorY, 2) / observationCount;
+            }
+            jsonErrorStdDevX = Math.sqrt(jsonErrorStdDevX);
+            jsonErrorStdDevY = Math.sqrt(jsonErrorStdDevY);
+        }
+
+        setCalibError(jsonAvgErrorX, jsonErrorStdDevX, jsonAvgErrorY, jsonErrorStdDevY);
     }
 
     public void setRandomSeed(long seed) {
