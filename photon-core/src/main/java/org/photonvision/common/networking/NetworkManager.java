@@ -63,11 +63,13 @@ public class NetworkManager {
 
         if (!Platform.isLinux()) {
             logger.info("Not managing network on non-Linux platforms.");
+            this.networkingIsDisabled = true;
             return;
         }
 
         if (!PlatformUtils.isRoot()) {
             logger.error("Cannot manage network without root!");
+            this.networkingIsDisabled = true;
             return;
         }
 
