@@ -20,7 +20,8 @@ const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.bre
 
 const needsCamerasConfigured = computed<boolean>(() => {
   return (
-    useCameraSettingsStore().cameras.length === 0 || useCameraSettingsStore().cameras[0] === PlaceholderCameraSettings
+    Object.values(useCameraSettingsStore().cameras).length === 0 ||
+    useCameraSettingsStore().cameras["PlaceHolder Name"] === PlaceholderCameraSettings
   );
 });
 </script>

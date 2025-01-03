@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import PvSelect from "@/components/common/pv-select.vue";
+import PvSelect, { type SelectItem } from "@/components/common/pv-select.vue";
 import PvNumberInput from "@/components/common/pv-number-input.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
@@ -121,7 +121,7 @@ const openExportSettingsPrompt = () => {
 const yesDeleteMySettingsText = ref("");
 const deleteThisCamera = () => {
   const payload = {
-    cameraUniqueName: useCameraSettingsStore().cameraUniqueNames[useStateStore().currentCameraIndex]
+    cameraUniqueName: useStateStore().currentCameraUniqueName
   };
 
   axios
@@ -152,6 +152,12 @@ const deleteThisCamera = () => {
     });
   showDeleteCamera.value = false;
 };
+const wrappedCameras = computed<SelectItem[]>(() =>
+  Object.keys(useCameraSettingsStore().cameras).map((cameraUniqueName) => ({
+    name: useCameraSettingsStore().cameras[cameraUniqueName].nickname,
+    value: cameraUniqueName
+  }))
+);
 </script>
 
 <template>
@@ -159,9 +165,9 @@ const deleteThisCamera = () => {
     <v-card-title>Camera Settings</v-card-title>
     <div class="ml-5">
       <pv-select
-        v-model="useStateStore().currentCameraIndex"
+        v-model="useStateStore().currentCameraUniqueName"
         label="Camera"
-        :items="useCameraSettingsStore().cameraNames"
+        :items="wrappedCameras"
         :select-cols="8"
       />
       <pv-number-input
@@ -213,9 +219,7 @@ const deleteThisCamera = () => {
 
     <v-dialog v-model="showDeleteCamera" dark width="1500">
       <v-card dark class="dialog-container pa-6" color="primary" flat>
-        <v-card-title
-          >Delete camera "{{ useCameraSettingsStore().cameraNames[useStateStore().currentCameraIndex] }}"</v-card-title
-        >
+        <v-card-title>Delete camera "{{ useCameraSettingsStore().currentCameraName }}"</v-card-title>
         <v-row class="pl-3 align-center pa-6">
           <v-col cols="12" md="6">
             <span class="mt-3"> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import PvSelect from "@/components/common/pv-select.vue";
+import PvSelect, { type SelectItem } from "@/components/common/pv-select.vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
@@ -9,10 +9,10 @@ import PvInput from "@/components/common/pv-input.vue";
 import { PipelineType } from "@/types/PipelineTypes";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
-const changeCurrentCameraIndex = (index: number) => {
-  useCameraSettingsStore().setCurrentCameraIndex(index, true);
+const changeCurrentCameraUniqueName = (cameraUniqueName: string) => {
+  useCameraSettingsStore().setCurrentCameraUniqueName(cameraUniqueName, true);
 
-  switch (useCameraSettingsStore().cameras[index].pipelineSettings.pipelineType) {
+  switch (useCameraSettingsStore().cameras[cameraUniqueName].pipelineSettings.pipelineType) {
     case PipelineType.Reflective:
       pipelineType.value = WebsocketPipelineType.Reflective;
       break;
@@ -86,7 +86,7 @@ const cancelCameraNameEdit = () => {
 };
 
 // Pipeline Name Edit
-const pipelineNamesWrapper = computed<{ name: string; value: number }[]>(() => {
+const pipelineNamesWrapper = computed<SelectItem[]>(() => {
   const pipelineNames = useCameraSettingsStore().pipelineNames.map((name, index) => ({ name: name, value: index }));
 
   if (useCameraSettingsStore().isDriverMode) {
@@ -212,7 +212,7 @@ const duplicateCurrentPipeline = () => {
 
 // Change Props whenever the pipeline settings are changed
 useCameraSettingsStore().$subscribe((mutation, state) => {
-  const currentCameraSettings = state.cameras[useStateStore().currentCameraIndex];
+  const currentCameraSettings = state.cameras[useStateStore().currentCameraUniqueName];
 
   switch (currentCameraSettings.pipelineSettings.pipelineType) {
     case PipelineType.Reflective:
@@ -232,6 +232,12 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
       break;
   }
 });
+const wrappedCameras = computed<SelectItem[]>(() =>
+  Object.keys(useCameraSettingsStore().cameras).map((cameraUniqueName) => ({
+    name: useCameraSettingsStore().cameras[cameraUniqueName].nickname,
+    value: cameraUniqueName
+  }))
+);
 </script>
 
 <template>
@@ -240,10 +246,10 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
       <v-col cols="10" class="pa-0">
         <pv-select
           v-if="!isCameraNameEdit"
-          v-model="useStateStore().currentCameraIndex"
+          v-model="useStateStore().currentCameraUniqueName"
           label="Camera"
-          :items="useCameraSettingsStore().cameraNames"
-          @input="changeCurrentCameraIndex"
+          :items="wrappedCameras"
+          @input="changeCurrentCameraUniqueName"
         />
         <pv-input
           v-else

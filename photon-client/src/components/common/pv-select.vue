@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
 
-interface SelectItem {
+export interface SelectItem {
   name: string | number;
   value: string | number;
   disabled?: boolean;
@@ -14,7 +14,7 @@ const props = withDefaults(
     tooltip?: string;
     selectCols?: number;
     // TODO fully update v-model usage in custom components on Vue3 update
-    value: number;
+    value: any;
     disabled?: boolean;
     items: string[] | number[] | SelectItem[];
   }>(),
@@ -25,7 +25,7 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-  (e: "input", value: number): void;
+  (e: "input", value: string): void;
 }>();
 
 const localValue = computed({
