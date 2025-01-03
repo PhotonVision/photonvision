@@ -13,6 +13,7 @@ import { getResolutionString } from "@/lib/PhotonUtils";
 import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
 import axios from "axios";
 import _ from "lodash";
+import PvCameraMatchCard from "@/components/common/pv-camera-match-card.vue";
 
 const formatUrl = (port) => `http://${inject("backendHostname")}:${port}/stream.mjpg`;
 const host = inject<string>("backendHost");
@@ -51,7 +52,7 @@ const deleteThisCamera = (cameraName: string) => {
     .post("/utils/nukeOneCamera", payload)
     .then(() => {
       useStateStore().showSnackbarMessage({
-        message: "Successfully deleted " + cameraName,
+        message: "Camera deleted successfully",
         color: "success"
       });
     })
@@ -152,13 +153,11 @@ const activeVisionModules = computed(() =>
 const disabledVisionModules = computed(() => useStateStore().vsmState.disabledConfigs);
 
 const viewingDetails = ref(false);
-const showCurrentView = ref(false);
 const viewingCamera = ref<PVCameraInfo | null>(null);
 
-const setCameraView = (camera: PVCameraInfo | null, showCurrent: boolean = false) => {
+const setCameraView = (camera: PVCameraInfo | null) => {
   viewingDetails.value = camera !== null;
   viewingCamera.value = camera;
-  showCurrentView.value = showCurrent;
 };
 </script>
 
@@ -185,11 +184,11 @@ const setCameraView = (camera: PVCameraInfo | null, showCurrent: boolean = false
                 <tr>
                   <td>Streams:</td>
                   <td>
-                    <a :href="formatUrl(module.stream.inputPort)" target="_blank" class="active-status">
+                    <a :href="formatUrl(module.stream.inputPort)" target="_blank" class="stream-link">
                       Input Stream
                     </a>
                     /
-                    <a :href="formatUrl(module.stream.outputPort)" target="_blank" class="active-status">
+                    <a :href="formatUrl(module.stream.outputPort)" target="_blank" class="stream-link">
                       Output Stream
                     </a>
                   </td>
@@ -233,7 +232,7 @@ const setCameraView = (camera: PVCameraInfo | null, showCurrent: boolean = false
           <v-card-text class="pt-0">
             <v-row>
               <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
-                <v-btn color="secondary" @click="setCameraView(module.matchedCameraInfo, true)" style="width: 100%">
+                <v-btn color="secondary" @click="setCameraView(module.matchedCameraInfo)" style="width: 100%">
                   <span>Details</span>
                 </v-btn>
               </v-col>
@@ -384,28 +383,21 @@ const setCameraView = (camera: PVCameraInfo | null, showCurrent: boolean = false
             <v-icon>mdi-close-thick</v-icon>
           </v-btn>
         </v-card-title>
-        <v-card-text>
+        <v-card-text v-if="!_.isEqual(getMatchedDevice(viewingCamera), viewingCamera)">
           <v-banner
-            v-show="!_.isEqual(getMatchedDevice(viewingCamera), viewingCamera)"
             rounded
             color="red"
             text-color="white"
             icon="mdi-information-outline"
             class="mb-3"
           >
-            Camera Mismatched:<br />It looks like a different camera has been connected to this device! Compare the
+            It looks like a different camera may have been connected to this device! Compare the
             below information carefully.
           </v-banner>
-          <div v-if="showCurrentView">
-            <h3>Saved camera</h3>
-            <PvCameraInfoCard :camera="viewingCamera" :showTitle="false" />
-            <br />
-            <h3>Current camera</h3>
-            <PvCameraInfoCard :camera="getMatchedDevice(viewingCamera)" :showTitle="false" />
-          </div>
-          <div v-else>
-            <PvCameraInfoCard :camera="viewingCamera" />
-          </div>
+          <PvCameraMatchCard :saved="viewingCamera" :current="getMatchedDevice(viewingCamera)"/>
+        </v-card-text>
+        <v-card-text v-else>
+          <PvCameraInfoCard :camera="viewingCamera" />
         </v-card-text>
       </v-card>
     </v-dialog>
@@ -417,7 +409,6 @@ const setCameraView = (camera: PVCameraInfo | null, showCurrent: boolean = false
   background-color: #006492 !important;
 }
 
-a:link,
 .active-status {
   color: rgb(14, 240, 14);
   background-color: transparent;
@@ -437,6 +428,7 @@ a:hover {
 }
 
 a:active,
+.stream-link,
 .mismatch-status {
   color: yellow;
   background-color: transparent;
