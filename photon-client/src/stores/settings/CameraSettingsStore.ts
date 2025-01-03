@@ -109,6 +109,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         },
         validVideoFormats: Object.entries(d.videoFormatList)
         .sort(([firstKey], [secondKey]) => parseInt(firstKey) - parseInt(secondKey))
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         .map<VideoFormat>(([k, v], i) => ({
           resolution: {
           width: v.width,
