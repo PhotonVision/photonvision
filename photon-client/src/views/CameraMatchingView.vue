@@ -168,13 +168,7 @@ const setCameraView = (camera: PVCameraInfo | null, showCurrent: boolean = false
   <div class="pa-5">
     <v-row>
       <!-- Active modules -->
-      <v-col
-        v-for="(module, index) in activeVisionModules"
-        :key="`enabled-${module.uniqueName}`"
-        cols="12"
-        sm="6"
-        lg="4"
-      >
+      <v-col v-for="module in activeVisionModules" :key="`enabled-${module.uniqueName}`" cols="12" sm="6" lg="4">
         <v-card dark color="primary">
           <v-card-title>{{ module.nickname }}</v-card-title>
           <v-card-subtitle v-if="_.isEqual(getMatchedDevice(module.matchedCameraInfo), module.matchedCameraInfo)"
@@ -213,11 +207,11 @@ const setCameraView = (camera: PVCameraInfo | null, showCurrent: boolean = false
                     }}
                   </td>
                 </tr>
-                <tr v-if="module.isConnected && useStateStore().backendResults[index]">
+                <tr v-if="module.isConnected && useStateStore().backendResults[module.uniqueName]">
                   <td>Frames Processed</td>
                   <td>
-                    {{ useStateStore().backendResults[index].sequenceID }} ({{
-                      useStateStore().backendResults[index].fps
+                    {{ useStateStore().backendResults[module.uniqueName].sequenceID }} ({{
+                      useStateStore().backendResults[module.uniqueName].fps
                     }}
                     FPS)
                   </td>
