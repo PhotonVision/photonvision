@@ -41,17 +41,9 @@ const fpsTooLow = computed<boolean>(() => {
 </script>
 
 <template>
-  <v-card
-    id="camera-settings-camera-view-card"
-    class="camera-settings-camera-view-card mb-3 pb-3 pa-4"
-    color="primary"
-    dark
-  >
-    <v-card-title
-      class="pb-0 mb-2 pl-4 pt-1"
-      style="min-height: 50px; justify-content: space-between; align-content: center"
-    >
-      <div style="display: flex; flex-wrap: wrap">
+  <v-card id="camera-settings-camera-view-card" class="camera-settings-camera-view-card" color="primary" dark>
+    <v-card-title class="justify-space-between align-content-center pa-0 pl-6 pr-6">
+      <div class="d-flex flex-wrap pt-3 pb-3">
         <div>
           <span class="mr-4" style="white-space: nowrap"> Cameras </span>
         </div>
@@ -69,11 +61,10 @@ const fpsTooLow = computed<boolean>(() => {
             </span>
           </v-chip>
           <v-chip v-else label color="transparent" text-color="red" style="font-size: 1rem; padding: 0; margin: 0">
-            <span class="pr-1"> Camera not connected </span>
+            <span class="pr-1">Camera not connected</span>
           </v-chip>
         </div>
       </div>
-
       <div>
         <v-switch
           v-model="driverMode"
@@ -85,7 +76,7 @@ const fpsTooLow = computed<boolean>(() => {
         />
       </div>
     </v-card-title>
-    <div class="stream-container pb-4">
+    <v-card-text class="stream-container">
       <div class="stream">
         <photon-camera-stream
           v-if="value.includes(0)"
@@ -104,10 +95,8 @@ const fpsTooLow = computed<boolean>(() => {
           style="max-width: 100%"
         />
       </div>
-    </div>
-    <v-divider />
-    <div class="pt-4">
-      <p style="color: white">Stream Display</p>
+    </v-card-text>
+    <v-card-text class="pt-0">
       <v-btn-toggle v-model="localValue" :multiple="true" mandatory dark class="fill" style="width: 100%">
         <v-btn
           color="secondary"
@@ -126,7 +115,7 @@ const fpsTooLow = computed<boolean>(() => {
           <span class="mode-btn-label">Processed</span>
         </v-btn>
       </v-btn-toggle>
-    </div>
+    </v-card-text>
   </v-card>
 </template>
 

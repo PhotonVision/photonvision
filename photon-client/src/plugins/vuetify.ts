@@ -11,7 +11,7 @@ const darkTheme: VuetifyThemeVariant = Object.freeze({
   secondary: "#39A4D5",
   accent: "#FFD843",
   background: "#232C37",
-  error: "#FF5252",
+  error: "#b80000",
   info: "#2196F3",
   success: "#4CAF50",
   warning: "#FFC107"
@@ -22,7 +22,7 @@ const lightTheme: VuetifyThemeVariant = Object.freeze({
   secondary: "#39A4D5",
   accent: "#FFD843",
   background: "#232C37",
-  error: "#FF5252",
+  error: "#b80000",
   info: "#2196F3",
   success: "#4CAF50",
   warning: "#FFC107"

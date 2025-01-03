@@ -1,15 +1,10 @@
 <script setup lang="ts">
 import { PVCameraInfo } from "@/types/SettingTypes";
 
-const { camera, showTitle } = defineProps({
+const { camera } = defineProps({
   camera: {
     type: PVCameraInfo,
     required: true
-  },
-  showTitle: {
-    type: Boolean,
-    required: false,
-    default: true
   }
 });
 
@@ -29,12 +24,6 @@ const cameraInfoFor: any = (camera: PVCameraInfo) => {
 
 <template>
   <div>
-    <div v-if="showTitle === true">
-      <h3 v-if="camera.PVUsbCameraInfo" class="mb-3">USB Camera Info</h3>
-      <h3 v-if="camera.PVCSICameraInfo" class="mb-3">CSI Camera Info</h3>
-      <h3 v-if="camera.PVFileCameraInfo" class="mb-3">File Camera Info</h3>
-    </div>
-
     <v-simple-table dense :style="{ backgroundColor: 'var(--v-primary-base)' }">
       <tbody>
         <tr v-if="cameraInfoFor(camera).dev !== undefined && cameraInfoFor(camera).dev !== null">
@@ -44,6 +33,13 @@ const cameraInfoFor: any = (camera: PVCameraInfo) => {
         <tr v-if="cameraInfoFor(camera).name !== undefined && cameraInfoFor(camera).name !== null">
           <td>Name:</td>
           <td>{{ cameraInfoFor(camera).name }}</td>
+        </tr>
+        <tr>
+          <td>Type:</td>
+          <td v-if="camera.PVUsbCameraInfo" class="mb-3">USB Camera</td>
+          <td v-else-if="camera.PVCSICameraInfo" class="mb-3">CSI Camera</td>
+          <td v-else-if="camera.PVFileCameraInfo" class="mb-3">File Camera</td>
+          <td v-else>Unidentified Camera Type</td>
         </tr>
         <tr v-if="cameraInfoFor(camera).baseName !== undefined && cameraInfoFor(camera).baseName !== null">
           <td>Base Name:</td>
