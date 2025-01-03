@@ -19,7 +19,7 @@ const host = inject<string>("backendHost");
 
 const activateModule = (moduleUniqueName: string) => {
   const url = new URL(`http://${host}/api/utils/activateMatchedCamera`);
-  url.searchParams.set("uniqueName", moduleUniqueName);
+  url.searchParams.set("cameraUniqueName", moduleUniqueName);
 
   fetch(url.toString(), {
     method: "POST"
@@ -34,8 +34,9 @@ const activateCamera = (cameraInfo: PVCameraInfo) => {
   });
 };
 const deactivateCamera = (cameraUniqueName: string) => {
+  console.log("Deactivating " + cameraUniqueName);
   const url = new URL(`http://${host}/api/utils/unassignCamera`);
-  url.searchParams.set("uniqueName", cameraUniqueName);
+  url.searchParams.set("cameraUniqueName", cameraUniqueName);
 
   fetch(url.toString(), {
     method: "POST"
