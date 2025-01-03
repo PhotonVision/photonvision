@@ -74,6 +74,16 @@ const calibrationDivisors = computed(() =>
     return (currentRes.width / v >= 300 && currentRes.height / v >= 220) || v === 1;
   })
 );
+const streamResolutions = computed(() => {
+  const currentResolution = useCameraSettingsStore().currentVideoFormat.resolution;
+  return streamDivisors.map(
+    (x) =>
+      `${getResolutionString({
+        width: Math.floor(currentResolution.width / x),
+        height: Math.floor(currentResolution.height / x)
+      })}`
+  );
+});
 
 const squareSizeIn = ref(1);
 const markerSizeIn = ref(0.75);
@@ -211,6 +221,13 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
   selectedVideoFormat.value = format;
   showCalDialog.value = true;
 };
+
+const streamDivisors = [1, 2, 4, 6, 8];
+const isStreamResolutionTooHigh = computed(() => {
+  const currentResolution = useCameraSettingsStore().currentVideoFormat.resolution;
+  const divisor = streamDivisors[useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor];
+  return currentResolution.width / divisor > 320 || currentResolution.height / divisor > 240;
+});
 </script>
 
 <template>
@@ -368,6 +385,19 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
         </v-row>
         <v-row v-if="isCalibrating">
           <v-col cols="12" class="pt-0">
+            <pv-select
+              v-model="useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor"
+              label="Stream Resolution"
+              tooltip="Resolution to which camera frames are downscaled for streaming to the dashboard"
+              :items="streamResolutions"
+              :select-cols="8"
+              :icon="isStreamResolutionTooHigh ? 'mdi-alert-circle-outline' : ''"
+              :color="isStreamResolutionTooHigh ? 'red' : 'white'"
+              :icon-tooltip="
+                isStreamResolutionTooHigh ? 'Stream resolution is too high and may cause robot network throttling' : ''
+              "
+              @input="(v) => useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: v }, false)"
+            />
             <pv-slider
               v-model="useCameraSettingsStore().currentPipelineSettings.cameraExposureRaw"
               :disabled="useCameraSettingsStore().currentCameraSettings.pipelineSettings.cameraAutoExposure"
@@ -406,6 +436,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               v-model="useCameraSettingsStore().currentPipelineSettings.cameraGain"
               label="Camera Gain"
               tooltip="Controls camera gain, similar to brightness"
+              :slider-cols="8"
               :min="0"
               :max="100"
               @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraGain: args }, false)"

@@ -11,7 +11,7 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
         v-model="useSettingsStore().lighting.brightness"
         label="Brightness"
         class="pt-2"
-        :slider-cols="12"
+        :slider-cols="12 - 4"
         :min="0"
         :max="100"
         @input="(args) => useSettingsStore().changeLEDBrightness(args)"
