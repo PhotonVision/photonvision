@@ -95,52 +95,55 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
   actions: {
     updateCameraSettingsFromWebsocket(data: WebsocketCameraSettingsUpdate[]) {
       const configuredCameras = data.reduce<{ [key: string]: UiCameraConfiguration }>((acc, d) => {
-      acc[d.uniqueName] = {
-        cameraPath: d.cameraPath,
-        nickname: d.nickname,
-        uniqueName: d.uniqueName,
-        fov: {
-        value: d.fov,
-        managedByVendor: !d.isFovConfigurable
-        },
-        stream: {
-        inputPort: d.inputStreamPort,
-        outputPort: d.outputStreamPort
-        },
-        validVideoFormats: Object.entries(d.videoFormatList)
-        .sort(([firstKey], [secondKey]) => parseInt(firstKey) - parseInt(secondKey))
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        .map<VideoFormat>(([k, v], i) => ({
-          resolution: {
-          width: v.width,
-          height: v.height
+        acc[d.uniqueName] = {
+          cameraPath: d.cameraPath,
+          nickname: d.nickname,
+          uniqueName: d.uniqueName,
+          fov: {
+            value: d.fov,
+            managedByVendor: !d.isFovConfigurable
           },
-          fps: v.fps,
-          pixelFormat: v.pixelFormat,
-          index: v.index || i,
-          diagonalFOV: v.diagonalFOV,
-          horizontalFOV: v.horizontalFOV,
-          verticalFOV: v.verticalFOV,
-          standardDeviation: v.standardDeviation,
-          mean: v.mean
-        })),
-        completeCalibrations: d.calibrations,
-        isCSICamera: d.isCSICamera,
-        minExposureRaw: d.minExposureRaw,
-        maxExposureRaw: d.maxExposureRaw,
-        pipelineNicknames: d.pipelineNicknames,
-        currentPipelineIndex: d.currentPipelineIndex,
-        pipelineSettings: d.currentPipelineSettings,
-        cameraQuirks: d.cameraQuirks,
-        minWhiteBalanceTemp: d.minWhiteBalanceTemp,
-        maxWhiteBalanceTemp: d.maxWhiteBalanceTemp,
-        matchedCameraInfo: d.matchedCameraInfo,
-        isConnected: d.isConnected,
-        hasConnected: d.hasConnected
-      };
-      return acc;
+          stream: {
+            inputPort: d.inputStreamPort,
+            outputPort: d.outputStreamPort
+          },
+          validVideoFormats: Object.entries(d.videoFormatList)
+            .sort(([firstKey], [secondKey]) => parseInt(firstKey) - parseInt(secondKey))
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            .map<VideoFormat>(([k, v], i) => ({
+              resolution: {
+                width: v.width,
+                height: v.height
+              },
+              fps: v.fps,
+              pixelFormat: v.pixelFormat,
+              index: v.index || i,
+              diagonalFOV: v.diagonalFOV,
+              horizontalFOV: v.horizontalFOV,
+              verticalFOV: v.verticalFOV,
+              standardDeviation: v.standardDeviation,
+              mean: v.mean
+            })),
+          completeCalibrations: d.calibrations,
+          isCSICamera: d.isCSICamera,
+          minExposureRaw: d.minExposureRaw,
+          maxExposureRaw: d.maxExposureRaw,
+          pipelineNicknames: d.pipelineNicknames,
+          currentPipelineIndex: d.currentPipelineIndex,
+          pipelineSettings: d.currentPipelineSettings,
+          cameraQuirks: d.cameraQuirks,
+          minWhiteBalanceTemp: d.minWhiteBalanceTemp,
+          maxWhiteBalanceTemp: d.maxWhiteBalanceTemp,
+          matchedCameraInfo: d.matchedCameraInfo,
+          isConnected: d.isConnected,
+          hasConnected: d.hasConnected
+        };
+        return acc;
       }, {});
-      this.cameras = Object.keys(configuredCameras).length > 0 ? configuredCameras : { [PlaceholderCameraSettings.uniqueName]: PlaceholderCameraSettings };
+      this.cameras =
+        Object.keys(configuredCameras).length > 0
+          ? configuredCameras
+          : { [PlaceholderCameraSettings.uniqueName]: PlaceholderCameraSettings };
 
       // Ensure currentCameraUniqueName is valid
       if (!this.cameras[useStateStore().currentCameraUniqueName]) {
@@ -154,7 +157,10 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      * @param data camera settings to save.
      * @param cameraUniqueNamendex the unique name of the camera.
      */
-    updateCameraSettings(data: CameraSettingsChangeRequest, cameraUniqueName: String = useStateStore().currentCameraUniqueName) {
+    updateCameraSettings(
+      data: CameraSettingsChangeRequest,
+      cameraUniqueName: String = useStateStore().currentCameraUniqueName
+    ) {
       // The camera settings endpoint doesn't actually require all data, instead, it needs key data such as the FOV
       const payload = {
         settings: {
@@ -450,9 +456,16 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       resolution: Resolution,
       cameraUniqueName: string = useStateStore().currentCameraUniqueName
     ): CameraCalibrationResult | undefined {
-      return this.cameras[cameraUniqueName].completeCalibrations.find((v) => resolutionsAreEqual(v.resolution, resolution));
+      return this.cameras[cameraUniqueName].completeCalibrations.find((v) =>
+        resolutionsAreEqual(v.resolution, resolution)
+      );
     },
-    getCalImageUrl(host: string, resolution: Resolution, idx: number, cameraUniqueName = useStateStore().currentCameraUniqueName) {
+    getCalImageUrl(
+      host: string,
+      resolution: Resolution,
+      idx: number,
+      cameraUniqueName = useStateStore().currentCameraUniqueName
+    ) {
       const url = new URL(`http://${host}/api/utils/getCalSnapshot`);
       url.searchParams.set("width", Math.round(resolution.width).toFixed(0));
       url.searchParams.set("height", Math.round(resolution.height).toFixed(0));

@@ -102,7 +102,8 @@ export const useStateStore = defineStore("state", {
       return this.backendResults[this.currentCameraUniqueName.toString()];
     },
     currentMultitagBuffer(): MultitagResult[] | undefined {
-      if (!this.multitagResultBuffer[this.currentCameraUniqueName]) this.multitagResultBuffer[this.currentCameraUniqueName] = [];
+      if (!this.multitagResultBuffer[this.currentCameraUniqueName])
+        this.multitagResultBuffer[this.currentCameraUniqueName] = [];
       return this.multitagResultBuffer[this.currentCameraUniqueName];
     }
   },

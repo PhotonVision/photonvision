@@ -169,11 +169,11 @@ const setCameraView = (camera: PVCameraInfo | null, showCurrent: boolean = false
     <v-row>
       <!-- Active modules -->
       <v-col
+        v-for="(module, index) in activeVisionModules"
+        :key="`enabled-${module.uniqueName}`"
         cols="12"
         sm="6"
         lg="4"
-        v-for="(module, index) in activeVisionModules"
-        :key="`enabled-${module.uniqueName}`"
       >
         <v-card dark color="primary">
           <v-card-title>{{ module.nickname }}</v-card-title>
@@ -225,8 +225,8 @@ const setCameraView = (camera: PVCameraInfo | null, showCurrent: boolean = false
               </tbody>
             </v-simple-table>
             <photon-camera-stream
-              class="mt-3"
               id="output-camera-stream"
+              class="mt-3"
               :camera-settings="module"
               stream-type="Processed"
               style="width: 100%; height: auto"
@@ -235,16 +235,16 @@ const setCameraView = (camera: PVCameraInfo | null, showCurrent: boolean = false
           <v-card-text class="pt-0">
             <v-row>
               <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
-                <v-btn color="secondary" @click="setCameraView(module.matchedCameraInfo, true)" style="width: 100%">
+                <v-btn color="secondary" style="width: 100%" @click="setCameraView(module.matchedCameraInfo, true)">
                   <span>Details</span>
                 </v-btn>
               </v-col>
               <v-col cols="6" md="5" class="pr-0">
                 <v-btn
                   class="black--text"
-                  @click="deactivateCamera(module.uniqueName)"
                   color="accent"
                   style="width: 100%"
+                  @click="deactivateCamera(module.uniqueName)"
                 >
                   Deactivate
                 </v-btn>
@@ -252,9 +252,9 @@ const setCameraView = (camera: PVCameraInfo | null, showCurrent: boolean = false
               <v-col cols="6" md="3">
                 <v-btn
                   class="black--text pa-0"
-                  @click="deleteThisCamera(module.uniqueName)"
                   color="red"
                   style="width: 100%"
+                  @click="deleteThisCamera(module.uniqueName)"
                 >
                   <v-icon>mdi-trash-can-outline</v-icon>
                 </v-btn>
@@ -265,7 +265,7 @@ const setCameraView = (camera: PVCameraInfo | null, showCurrent: boolean = false
       </v-col>
 
       <!-- Disabled modules -->
-      <v-col cols="12" sm="6" lg="4" v-for="module in disabledVisionModules" :key="`disabled-${module.uniqueName}`">
+      <v-col v-for="module in disabledVisionModules" :key="`disabled-${module.uniqueName}`" cols="12" sm="6" lg="4">
         <v-card dark color="primary">
           <v-card-title>{{ module.nickname }}</v-card-title>
           <v-card-subtitle>Status: <span class="inactive-status">Deactivated</span></v-card-subtitle>
@@ -301,16 +301,16 @@ const setCameraView = (camera: PVCameraInfo | null, showCurrent: boolean = false
           <v-card-text class="pt-0">
             <v-row>
               <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
-                <v-btn color="secondary" @click="setCameraView(module.matchedCameraInfo)" style="width: 100%">
+                <v-btn color="secondary" style="width: 100%" @click="setCameraView(module.matchedCameraInfo)">
                   <span>Details</span>
                 </v-btn>
               </v-col>
               <v-col cols="6" md="5" class="pr-0">
                 <v-btn
                   class="black--text"
-                  @click="activateModule(module.uniqueName)"
                   color="accent"
                   style="width: 100%"
+                  @click="activateModule(module.uniqueName)"
                 >
                   Activate
                 </v-btn>
@@ -318,9 +318,9 @@ const setCameraView = (camera: PVCameraInfo | null, showCurrent: boolean = false
               <v-col cols="6" md="3">
                 <v-btn
                   class="black--text pa-0"
-                  @click="deleteThisCamera(module.uniqueName)"
                   color="red"
                   style="width: 100%"
+                  @click="deleteThisCamera(module.uniqueName)"
                 >
                   <v-icon>mdi-trash-can-outline</v-icon>
                 </v-btn>
@@ -331,7 +331,7 @@ const setCameraView = (camera: PVCameraInfo | null, showCurrent: boolean = false
       </v-col>
 
       <!-- Unassigned cameras -->
-      <v-col cols="12" sm="6" lg="4" v-for="(camera, index) in unmatchedCameras" :key="index">
+      <v-col v-for="(camera, index) in unmatchedCameras" :key="index" cols="12" sm="6" lg="4">
         <v-card dark color="primary">
           <v-card-title>
             <span v-if="camera.PVUsbCameraInfo">USB Camera:</span>
@@ -347,12 +347,12 @@ const setCameraView = (camera: PVCameraInfo | null, showCurrent: boolean = false
           <v-card-text class="pt-0">
             <v-row>
               <v-col cols="6" class="pr-0">
-                <v-btn color="secondary" @click="setCameraView(camera)" style="width: 100%">
+                <v-btn color="secondary" style="width: 100%" @click="setCameraView(camera)">
                   <span>Details</span>
                 </v-btn>
               </v-col>
               <v-col cols="6">
-                <v-btn class="black--text" @click="activateCamera(camera)" color="accent" style="width: 100%">
+                <v-btn class="black--text" color="accent" style="width: 100%" @click="activateCamera(camera)">
                   Activate
                 </v-btn>
               </v-col>
@@ -379,7 +379,7 @@ const setCameraView = (camera: PVCameraInfo | null, showCurrent: boolean = false
 
     <!-- Camera details modal -->
     <v-dialog v-model="viewingDetails">
-      <v-card dark flat color="primary" v-if="viewingCamera !== null">
+      <v-card v-if="viewingCamera !== null" dark flat color="primary">
         <v-card-title class="d-flex justify-space-between">
           <span>{{ cameraInfoFor(viewingCamera)?.name ?? cameraInfoFor(viewingCamera)?.baseName }}</span>
           <v-btn text @click="setCameraView(null)">
@@ -400,10 +400,10 @@ const setCameraView = (camera: PVCameraInfo | null, showCurrent: boolean = false
           </v-banner>
           <div v-if="showCurrentView">
             <h3>Saved camera</h3>
-            <PvCameraInfoCard :camera="viewingCamera" :showTitle="false" />
+            <PvCameraInfoCard :camera="viewingCamera" :show-title="false" />
             <br />
             <h3>Current camera</h3>
-            <PvCameraInfoCard :camera="getMatchedDevice(viewingCamera)" :showTitle="false" />
+            <PvCameraInfoCard :camera="getMatchedDevice(viewingCamera)" :show-title="false" />
           </div>
           <div v-else>
             <PvCameraInfoCard :camera="viewingCamera" />
