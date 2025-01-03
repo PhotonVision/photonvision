@@ -62,6 +62,8 @@ public class USBFrameProvider extends CpuImageProcessor {
         return connected;
     }
 
+    int i;
+
     @Override
     public CapturedFrame getInputMat() {
         if (!cameraPropertiesCached && camera.isConnected()) {
@@ -77,6 +79,9 @@ public class USBFrameProvider extends CpuImageProcessor {
         // TODO - under the hood, this incurs an extra copy. We should avoid this, if we
         // can.
         long captureTimeNs = cvSink.grabFrame(mat.getMat(), 1.0) * 1000;
+
+        i = i + 1;
+        if (i % 100 == 0) logger.info("time " + captureTimeNs + " from " + cvSink.getLastFrameTimeSource().name());
 
         if (captureTimeNs == 0) {
             var error = cvSink.getError();
