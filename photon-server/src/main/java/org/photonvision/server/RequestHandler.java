@@ -490,9 +490,9 @@ public class RequestHandler {
 		} catch (JsonProcessingException e) {
 			ctx.status(400);
 			ctx.result(
-					"The 'index' field was not found in the request. Please make sure the index of the vision module is specified with the 'index' key.");
+					"The 'uniqueName' field was not found in the request. Please make sure the uniqueName of the vision module is specified with the 'uniqueName' key.");
 			logger.error(
-					"The 'index' field was not found in the request. Please make sure the index of the vision module is specified with the 'index' key.",
+					"The 'uniqueName' field was not found in the request. Please make sure the uniqueName of the vision module is specified with the 'uniqueName' key.",
 					e);
 		} catch (Exception e) {
 			ctx.status(500);
