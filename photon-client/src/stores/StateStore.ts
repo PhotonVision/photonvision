@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import type { LogMessage, VsmState } from "@/types/SettingTypes";
 import type { AutoReconnectingWebsocket } from "@/lib/AutoReconnectingWebsocket";
 import type { MultitagResult, PipelineResult } from "@/types/PhotonTrackingTypes";
+import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import type {
   WebsocketCalibrationData,
   WebsocketLogMessage,
@@ -22,7 +23,7 @@ interface StateStore {
   showLogModal: boolean;
   sidebarFolded: boolean;
   logMessages: LogMessage[];
-  currentCameraIndex: number;
+  currentCameraUniqueName: string;
 
   backendResults: Record<number, PipelineResult>;
   multitagResultBuffer: Record<string, MultitagResult[]>;
@@ -59,7 +60,7 @@ export const useStateStore = defineStore("state", {
       sidebarFolded:
         localStorage.getItem("sidebarFolded") === null ? false : localStorage.getItem("sidebarFolded") === "true",
       logMessages: [],
-      currentCameraIndex: 0,
+      currentCameraUniqueName: Object.keys(useCameraSettingsStore().cameras)[0],
 
       backendResults: {
         0: {
@@ -97,11 +98,11 @@ export const useStateStore = defineStore("state", {
   },
   getters: {
     currentPipelineResults(): PipelineResult | undefined {
-      return this.backendResults[this.currentCameraIndex.toString()];
+      return this.backendResults[this.currentCameraUniqueName.toString()];
     },
     currentMultitagBuffer(): MultitagResult[] | undefined {
-      if (!this.multitagResultBuffer[this.currentCameraIndex]) this.multitagResultBuffer[this.currentCameraIndex] = [];
-      return this.multitagResultBuffer[this.currentCameraIndex];
+      if (!this.multitagResultBuffer[this.currentCameraUniqueName]) this.multitagResultBuffer[this.currentCameraUniqueName] = [];
+      return this.multitagResultBuffer[this.currentCameraUniqueName];
     }
   },
   actions: {

@@ -9,10 +9,10 @@ import PvInput from "@/components/common/pv-input.vue";
 import { PipelineType } from "@/types/PipelineTypes";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
-const changeCurrentCameraIndex = (index: number) => {
-  useCameraSettingsStore().setCurrentCameraIndex(index, true);
+const changeCurrentCameraUniqueName = (cameraUniqueName: string) => {
+  useCameraSettingsStore().setCurrentCameraUniqueName(cameraUniqueName, true);
 
-  switch (useCameraSettingsStore().cameras[index].pipelineSettings.pipelineType) {
+  switch (useCameraSettingsStore().cameras[cameraUniqueName].pipelineSettings.pipelineType) {
     case PipelineType.Reflective:
       pipelineType.value = WebsocketPipelineType.Reflective;
       break;
@@ -212,7 +212,7 @@ const duplicateCurrentPipeline = () => {
 
 // Change Props whenever the pipeline settings are changed
 useCameraSettingsStore().$subscribe((mutation, state) => {
-  const currentCameraSettings = state.cameras[useStateStore().currentCameraIndex];
+  const currentCameraSettings = state.cameras[useStateStore().currentCameraUniqueName];
 
   switch (currentCameraSettings.pipelineSettings.pipelineType) {
     case PipelineType.Reflective:
@@ -238,14 +238,14 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
   <v-card color="primary">
     <v-row style="padding: 12px 12px 0 24px">
       <v-col cols="10" class="pa-0">
-        <pv-select
+        <!-- <pv-select
           v-if="!isCameraNameEdit"
-          v-model="useStateStore().currentCameraIndex"
+          v-model="useStateStore().currentCameraUniqueName"
           label="Camera"
-          :items="useCameraSettingsStore().cameraNames"
-          @input="changeCurrentCameraIndex"
-        />
-        <pv-input
+            :items="useCameraSettingsStore().cameraNames"
+            @input="(value) => changeCurrentCameraUniqueName(value)"
+        /> -->
+        <!-- <pv-input
           v-else
           v-model="currentCameraName"
           class="pt-2"
@@ -254,7 +254,7 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
           label="Camera"
           @onEnter="saveCameraNameEdit"
           @onEscape="cancelCameraNameEdit"
-        />
+        /> -->
       </v-col>
       <v-col cols="2" style="display: flex; align-items: center; justify-content: center">
         <div v-if="isCameraNameEdit" style="display: flex; gap: 14px">

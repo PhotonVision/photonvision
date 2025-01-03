@@ -121,7 +121,7 @@ const openExportSettingsPrompt = () => {
 const yesDeleteMySettingsText = ref("");
 const deleteThisCamera = () => {
   const payload = {
-    cameraUniqueName: useCameraSettingsStore().cameraUniqueNames[useStateStore().currentCameraIndex]
+    cameraUniqueName: useCameraSettingsStore().cameraUniqueNames[useStateStore().currentCameraUniqueName]
   };
 
   axios
@@ -158,12 +158,12 @@ const deleteThisCamera = () => {
   <v-card class="mb-3 pr-6 pb-3" color="primary" dark>
     <v-card-title>Camera Settings</v-card-title>
     <div class="ml-5">
-      <pv-select
-        v-model="useStateStore().currentCameraIndex"
+      <!-- <pv-select
+        v-model="useStateStore().currentCameraUniqueName"
         label="Camera"
         :items="useCameraSettingsStore().cameraNames"
         :select-cols="8"
-      />
+      /> -->
       <pv-number-input
         v-model="tempSettingsStruct.fov"
         :tooltip="
@@ -214,7 +214,9 @@ const deleteThisCamera = () => {
     <v-dialog v-model="showDeleteCamera" dark width="1500">
       <v-card dark class="dialog-container pa-6" color="primary" flat>
         <v-card-title
-          >Delete camera "{{ useCameraSettingsStore().cameraNames[useStateStore().currentCameraIndex] }}"</v-card-title
+          >Delete camera "{{
+            useCameraSettingsStore().cameraNames[useStateStore().currentCameraUniqueName]
+          }}"</v-card-title
         >
         <v-row class="pl-3 align-center pa-6">
           <v-col cols="12" md="6">

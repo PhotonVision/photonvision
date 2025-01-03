@@ -134,7 +134,9 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
 };
 
 const unmatchedCameras = computed(() => {
-  const activeVmPaths = useCameraSettingsStore().cameras.map((it) => uniquePathForCamera(it.matchedCameraInfo));
+  const activeVmPaths = Object.values(useCameraSettingsStore().cameras).map((it) =>
+    uniquePathForCamera(it.matchedCameraInfo)
+  );
   const disabledVmPaths = useStateStore().vsmState.disabledConfigs.map((it) =>
     uniquePathForCamera(it.matchedCameraInfo)
   );
@@ -145,7 +147,7 @@ const unmatchedCameras = computed(() => {
 });
 
 const activeVisionModules = computed(() =>
-  useCameraSettingsStore().cameras.filter(
+  Object.values(useCameraSettingsStore().cameras).filter(
     (camera) => JSON.stringify(camera) !== JSON.stringify(PlaceholderCameraSettings)
   )
 );
