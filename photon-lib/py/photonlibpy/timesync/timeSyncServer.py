@@ -76,13 +76,6 @@ class TimeSyncServer:
                 pong = TspPong(ping, server_time)
                 udp_socket.sendto(pong.pack(), addr)
 
-                # self.logger.debug(
-                #     f"Incoming Data: { ''.join([format(x, '02x') for x in data]) }"
-                # )
-                # self.logger.debug(
-                #     f"Ponged at {server_time} with { ''.join([format(x, '02x') for x in pong.pack()]) }"
-                # )
-
     def start(self):
         if self._process is not None and self._process.is_alive():
             return  # Nothing to do
