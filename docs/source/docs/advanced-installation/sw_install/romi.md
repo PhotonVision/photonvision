@@ -32,7 +32,7 @@ Next, from the SSH terminal, run `sudo nano /home/pi/runCamera` then arrow down 
 
 ```
 
-After the Romi reboots, you should be able to open the PhotonVision UI at: [`http://10.0.0.2:5800/`](http://10.0.0.2:5800/). From here, you can adjust {ref}`Settings <docs/settings:Settings>` and configure {ref}`Pipelines <docs/pipelines/index:Pipelines>`.
+After the Romi reboots, you should be able to open the PhotonVision UI at: [`http://10.0.0.2:5800/`](http://10.0.0.2:5800/). From here, you can adjust settings and configure {ref}`Pipelines <docs/pipelines/index:Pipelines>`.
 
 :::{warning}
 In order for settings, logs, etc. to be saved / take effect, ensure that PhotonVision is in writable mode.
