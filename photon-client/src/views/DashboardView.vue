@@ -62,8 +62,8 @@ const arducamWarningShown = computed<boolean>(() => {
 <template>
   <v-container class="pa-3" fluid>
     <v-banner
-      v-model="arducamWarningShown"
       v-if="arducamWarningShown"
+      v-model="arducamWarningShown"
       rounded
       color="red"
       dark
@@ -86,7 +86,7 @@ const arducamWarningShown = computed<boolean>(() => {
     <PipelineConfigCard />
 
     <!-- TODO - not sure this belongs here -->
-    <v-dialog :persistent="false" v-model="warningShown" v-if="warningShown" max-width="800" dark>
+    <v-dialog v-if="warningShown" v-model="warningShown" :persistent="false" max-width="800" dark>
       <v-card dark flat color="primary">
         <v-card-title>Setup some cameras to get started!</v-card-title>
         <v-card-text>

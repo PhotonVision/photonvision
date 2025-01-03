@@ -242,7 +242,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 <td>{{ value.verticalFOV !== undefined ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
                 <td>{{ value.diagonalFOV !== undefined ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
                 <v-tooltip bottom>
-                  <template v-slot:activator="{ on, attrs }">
+                  <template #activator="{ on, attrs }">
                     <td v-bind="attrs" v-on="on" @click="setSelectedVideoFormat(value)">
                       <v-icon small class="mr-2">mdi-information</v-icon>
                     </td>
