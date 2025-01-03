@@ -386,7 +386,12 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
         <v-divider />
         <v-card-actions>
           <v-spacer />
-          <v-btn color="#ffd843" :disabled="checkPipelineName(newPipelineName) !== true" @click="createNewPipeline">
+          <v-btn
+            color="#ffd843"
+            class="black--text"
+            :disabled="checkPipelineName(newPipelineName) !== true"
+            @click="createNewPipeline"
+          >
             Save
           </v-btn>
           <v-btn color="error" @click="cancelPipelineCreation"> Cancel </v-btn>
@@ -407,7 +412,9 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
         <v-card-actions>
           <v-spacer />
           <v-btn color="error" @click="confirmDeleteCurrentPipeline"> Yes, I'm sure </v-btn>
-          <v-btn color="#ffd843" @click="showPipelineDeletionConfirmationDialog = false"> No, take me back </v-btn>
+          <v-btn color="#ffd843" class="black--text" @click="showPipelineDeletionConfirmationDialog = false">
+            No, take me back
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -423,7 +430,7 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
         <v-card-actions>
           <v-spacer />
           <v-btn color="error" @click="confirmChangePipelineType"> Yes, I'm sure </v-btn>
-          <v-btn color="#ffd843" @click="cancelChangePipelineType"> No, take me back </v-btn>
+          <v-btn color="#ffd843" class="black--text" @click="cancelChangePipelineType"> No, take me back </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

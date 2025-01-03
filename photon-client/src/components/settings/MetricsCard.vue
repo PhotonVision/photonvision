@@ -109,65 +109,133 @@ onBeforeMount(() => {
 </script>
 
 <template>
-  <v-card dark class="mb-3 pr-6 pb-3" style="background-color: #006492">
-    <v-card-title style="display: flex; justify-content: space-between">
+  <v-card dark class="mb-3" style="background-color: #006492">
+    <v-card-title class="pl-6" style="display: flex; justify-content: space-between">
       <span>Stats</span>
-      <pv-icon icon-name="mdi-reload" color="white" tooltip="Reload Metrics" hover @click="fetchMetrics" />
+      <v-btn text @click="fetchMetrics">
+        <v-icon left class="open-icon"> mdi-reload </v-icon>
+        Last Fetched: {{ metricsLastFetched }}
+      </v-btn>
     </v-card-title>
-    <v-row class="pt-2 pa-4 ma-0 ml-5 pb-1">
-      <v-card-subtitle class="ma-0 pa-0 pb-2" style="font-size: 16px"> General Metrics </v-card-subtitle>
-      <v-simple-table class="metrics-table">
+    <v-divider class="pb-3" />
+    <v-card-text class="pa-6 pt-0 pb-3">
+      <v-card-subtitle class="pa-0" style="font-size: 16px"> General Metrics </v-card-subtitle>
+      <v-simple-table class="metrics-table mt-3">
         <thead>
           <tr>
-            <th v-for="(item, itemIndex) in generalMetrics" :key="itemIndex" class="metric-item metric-item-title">
+            <th
+              v-for="(item, itemIndex) in generalMetrics"
+              :key="itemIndex"
+              class="metric-item metric-item-title"
+              v-bind:class="{
+                tl: itemIndex === 0,
+                tr: itemIndex === generalMetrics.length - 1,
+                t: 0 < itemIndex && itemIndex < generalMetrics.length - 1
+              }"
+            >
               {{ item.header }}
             </th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td v-for="(item, itemIndex) in generalMetrics" :key="itemIndex" class="metric-item">
+            <td
+              v-for="(item, itemIndex) in generalMetrics"
+              :key="itemIndex"
+              class="metric-item"
+              v-bind:class="{
+                bl: itemIndex === 0,
+                br: itemIndex === generalMetrics.length - 1,
+                b: 0 < itemIndex && itemIndex < generalMetrics.length - 1
+              }"
+            >
               {{ item.value }}
             </td>
           </tr>
         </tbody>
       </v-simple-table>
-    </v-row>
-    <v-row class="pa-4 ma-0 ml-5">
-      <v-card-subtitle class="ma-0 pa-0 pb-2" style="font-size: 16px"> Hardware Metrics </v-card-subtitle>
-      <v-simple-table class="metrics-table">
+    </v-card-text>
+    <v-card-text class="pa-6 pt-1">
+      <v-card-subtitle class="pa-0 pb-1" style="font-size: 16px"> Hardware Metrics </v-card-subtitle>
+      <v-simple-table class="metrics-table mt-3">
         <thead>
           <tr>
-            <th v-for="(item, itemIndex) in platformMetrics" :key="itemIndex" class="metric-item metric-item-title">
+            <th
+              v-for="(item, itemIndex) in platformMetrics"
+              :key="itemIndex"
+              class="metric-item metric-item-title"
+              v-bind:class="{
+                tl: itemIndex === 0,
+                tr: itemIndex === platformMetrics.length - 1,
+                t: 0 < itemIndex && itemIndex < platformMetrics.length - 1
+              }"
+            >
               {{ item.header }}
             </th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td v-for="(item, itemIndex) in platformMetrics" :key="itemIndex" class="metric-item">
+            <td
+              v-for="(item, itemIndex) in platformMetrics"
+              :key="itemIndex"
+              class="metric-item"
+              v-bind:class="{
+                bl: itemIndex === 0,
+                br: itemIndex === platformMetrics.length - 1,
+                b: 0 < itemIndex && itemIndex < platformMetrics.length - 1
+              }"
+            >
               <span v-if="useSettingsStore().metrics.cpuUtil !== undefined">{{ item.value }}</span>
               <span v-else>---</span>
             </td>
           </tr>
         </tbody>
       </v-simple-table>
-    </v-row>
-    <div style="text-align: right">
-      <span>Last Fetched: {{ metricsLastFetched }}</span>
-    </div>
+    </v-card-text>
   </v-card>
 </template>
 
 <style scoped lang="scss">
 .metrics-table {
-  border-collapse: separate;
-  border-spacing: 0;
-  border-radius: 5px;
-  margin-bottom: 10px;
-  border: 1px solid white;
   width: 100%;
   text-align: center;
+}
+
+.t {
+  border-top: 1px solid white;
+  border-right: 1px solid white;
+}
+
+.b {
+  border-bottom: 1px solid white;
+  border-right: 1px solid white;
+}
+
+.tl {
+  border-top: 1px solid white;
+  border-left: 1px solid white;
+  border-right: 1px solid white;
+  border-top-left-radius: 5px;
+}
+
+.tr {
+  border-top: 1px solid white;
+  border-right: 1px solid white;
+  border-top-right-radius: 5px;
+}
+
+.bl {
+  border-bottom: 1px solid white;
+  border-left: 1px solid white;
+  border-right: 1px solid white;
+  border-bottom-left-radius: 5px;
+}
+
+.br {
+  border-bottom: 1px solid white;
+  border-right: 1px solid white;
+  border-bottom-right-radius: 5px;
 }
 
 .metric-item {

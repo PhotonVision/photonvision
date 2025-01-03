@@ -12,7 +12,6 @@ import {
 import { getResolutionString } from "@/lib/PhotonUtils";
 import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
 import axios from "axios";
-import _ from "lodash";
 import PvCameraMatchCard from "@/components/common/pv-camera-match-card.vue";
 
 const formatUrl = (port) => `http://${inject("backendHostname")}:${port}/stream.mjpg`;
@@ -26,6 +25,7 @@ const activateModule = (moduleUniqueName: string) => {
     method: "POST"
   });
 };
+
 const activateCamera = (cameraInfo: PVCameraInfo) => {
   const url = new URL(`http://${host}/api/utils/assignUnmatchedCamera`);
   url.searchParams.set("cameraInfo", JSON.stringify(cameraInfo));
@@ -34,6 +34,7 @@ const activateCamera = (cameraInfo: PVCameraInfo) => {
     method: "POST"
   });
 };
+
 const deactivateCamera = (cameraUniqueName: string) => {
   const url = new URL(`http://${host}/api/utils/unassignCamera`);
   url.searchParams.set("uniqueName", cameraUniqueName);
@@ -74,6 +75,27 @@ const deleteThisCamera = (cameraName: string) => {
         });
       }
     });
+};
+
+const camerasMatch = (camera1: PVCameraInfo, camera2: PVCameraInfo) => {
+  if (camera1.PVUsbCameraInfo && camera2.PVUsbCameraInfo)
+    return (
+      camera1.PVUsbCameraInfo.name === camera2.PVUsbCameraInfo.name &&
+      camera1.PVUsbCameraInfo.vendorId === camera2.PVUsbCameraInfo.vendorId &&
+      camera1.PVUsbCameraInfo.productId === camera2.PVUsbCameraInfo.productId &&
+      camera1.PVUsbCameraInfo.uniquePath === camera2.PVUsbCameraInfo.uniquePath
+    );
+  else if (camera1.PVCSICameraInfo && camera2.PVCSICameraInfo)
+    return (
+      camera1.PVCSICameraInfo.uniquePath === camera2.PVCSICameraInfo.uniquePath &&
+      camera1.PVCSICameraInfo.baseName === camera2.PVCSICameraInfo.baseName
+    );
+  else if (camera1.PVFileCameraInfo && camera2.PVFileCameraInfo)
+    return (
+      camera1.PVFileCameraInfo.uniquePath === camera2.PVFileCameraInfo.uniquePath &&
+      camera1.PVFileCameraInfo.name === camera2.PVFileCameraInfo.name
+    );
+  else return false;
 };
 
 const cameraInfoFor = (camera: PVCameraInfo): PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo | any => {
@@ -174,7 +196,7 @@ const setCameraView = (camera: PVCameraInfo | null) => {
       >
         <v-card dark color="primary">
           <v-card-title>{{ module.nickname }}</v-card-title>
-          <v-card-subtitle v-if="_.isEqual(getMatchedDevice(module.matchedCameraInfo), module.matchedCameraInfo)"
+          <v-card-subtitle v-if="camerasMatch(getMatchedDevice(module.matchedCameraInfo), module.matchedCameraInfo)"
             >Status: <span class="active-status">Active</span></v-card-subtitle
           >
           <v-card-subtitle v-else>Status: <span class="mismatch-status">Mismatch</span></v-card-subtitle>
@@ -184,9 +206,7 @@ const setCameraView = (camera: PVCameraInfo | null) => {
                 <tr>
                   <td>Streams:</td>
                   <td>
-                    <a :href="formatUrl(module.stream.inputPort)" target="_blank" class="stream-link">
-                      Input Stream
-                    </a>
+                    <a :href="formatUrl(module.stream.inputPort)" target="_blank" class="stream-link"> Input Stream </a>
                     /
                     <a :href="formatUrl(module.stream.outputPort)" target="_blank" class="stream-link">
                       Output Stream
@@ -247,12 +267,7 @@ const setCameraView = (camera: PVCameraInfo | null) => {
                 </v-btn>
               </v-col>
               <v-col cols="6" md="3">
-                <v-btn
-                  class="black--text pa-0"
-                  @click="deleteThisCamera(module.uniqueName)"
-                  color="red"
-                  style="width: 100%"
-                >
+                <v-btn class="pa-0" @click="deleteThisCamera(module.uniqueName)" color="error" style="width: 100%">
                   <v-icon>mdi-trash-can-outline</v-icon>
                 </v-btn>
               </v-col>
@@ -313,12 +328,7 @@ const setCameraView = (camera: PVCameraInfo | null) => {
                 </v-btn>
               </v-col>
               <v-col cols="6" md="3">
-                <v-btn
-                  class="black--text pa-0"
-                  @click="deleteThisCamera(module.uniqueName)"
-                  color="red"
-                  style="width: 100%"
-                >
+                <v-btn class="pa-0" @click="deleteThisCamera(module.uniqueName)" color="error" style="width: 100%">
                   <v-icon>mdi-trash-can-outline</v-icon>
                 </v-btn>
               </v-col>
@@ -375,7 +385,7 @@ const setCameraView = (camera: PVCameraInfo | null) => {
     </v-row>
 
     <!-- Camera details modal -->
-    <v-dialog v-model="viewingDetails">
+    <v-dialog v-model="viewingDetails" max-width="800">
       <v-card dark flat color="primary" v-if="viewingCamera !== null">
         <v-card-title class="d-flex justify-space-between">
           <span>{{ cameraInfoFor(viewingCamera)?.name ?? cameraInfoFor(viewingCamera)?.baseName }}</span>
@@ -383,21 +393,15 @@ const setCameraView = (camera: PVCameraInfo | null) => {
             <v-icon>mdi-close-thick</v-icon>
           </v-btn>
         </v-card-title>
-        <v-card-text v-if="!_.isEqual(getMatchedDevice(viewingCamera), viewingCamera)">
-          <v-banner
-            rounded
-            color="red"
-            text-color="white"
-            icon="mdi-information-outline"
-            class="mb-3"
-          >
-            It looks like a different camera may have been connected to this device! Compare the
-            below information carefully.
+        <v-card-text v-if="!camerasMatch(getMatchedDevice(viewingCamera), viewingCamera)">
+          <v-banner rounded color="error" text-color="white" icon="mdi-information-outline" class="mb-3">
+            It looks like a different camera may have been connected to this device! Compare the following information
+            carefully.
           </v-banner>
-          <PvCameraMatchCard :saved="viewingCamera" :current="getMatchedDevice(viewingCamera)"/>
+          <PvCameraMatchCard :saved="viewingCamera" :current="getMatchedDevice(viewingCamera)" />
         </v-card-text>
         <v-card-text v-else>
-          <PvCameraInfoCard :camera="viewingCamera" />
+          <PvCameraInfoCard :camera="getMatchedDevice(viewingCamera)" />
         </v-card-text>
       </v-card>
     </v-dialog>
