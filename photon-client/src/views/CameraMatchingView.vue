@@ -170,7 +170,7 @@ const setCameraView = (camera: PVCameraInfo | null, showCurrent: boolean = false
     <v-row>
       <!-- Active modules -->
       <v-col
-        v-for="(module, index) in activeVisionModules"
+        v-for="module in activeVisionModules"
         :key="`enabled-${module.uniqueName}`"
         cols="12"
         sm="6"
