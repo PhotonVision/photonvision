@@ -121,7 +121,7 @@ const openExportSettingsPrompt = () => {
 const yesDeleteMySettingsText = ref("");
 const deleteThisCamera = () => {
   const payload = {
-    cameraUniqueName: useCameraSettingsStore().cameraUniqueNames[useStateStore().currentCameraUniqueName]
+    cameraUniqueName: useStateStore().currentCameraUniqueName
   };
 
   axios
