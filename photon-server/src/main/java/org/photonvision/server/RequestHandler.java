@@ -387,14 +387,14 @@ public class RequestHandler {
 		try {
 			var data = kObjectMapper.readTree(ctx.bodyInputStream());
 
-			String uniqueName = data.get("uniqueName").asText();
+			String cameraUniqueName = data.get("cameraUniqueName").asText();
 			var settings = JacksonUtils.deserialize(data.get("settings").toString(), UICameraSettingsRequest.class);
 			var fov = settings.fov;
 
 			logger.info("Changing camera FOV to: " + fov);
 			logger.info("Changing quirks to: " + settings.quirksToChange.toString());
 
-			var module = VisionSourceManager.getInstance().vmm.getModule(uniqueName);
+			var module = VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName);
 			module.setFov(fov);
 			module.changeCameraQuirks(settings.quirksToChange);
 
@@ -468,18 +468,18 @@ public class RequestHandler {
 	public static void onCalibrationEndRequest(Context ctx) {
 		logger.info("Calibrating camera! This will take a long time...");
 
-		String uniqueName;
+		String cameraUniqueName;
 
 		try {
-			uniqueName = kObjectMapper.readTree(ctx.bodyInputStream()).get("uniqueName").asText();
+			cameraUniqueName = kObjectMapper.readTree(ctx.bodyInputStream()).get("cameraUniqueName").asText();
 
-			var calData = VisionSourceManager.getInstance().vmm.getModule(uniqueName).endCalibration();
+			var calData = VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName).endCalibration();
 			if (calData == null) {
 				ctx.result("The calibration process failed");
 				ctx.status(500);
 				logger.error(
-						"The calibration process failed. Calibration data for module at uniqueName ("
-								+ uniqueName
+						"The calibration process failed. Calibration data for module at cameraUniqueName ("
+								+ cameraUniqueName
 								+ ") was null");
 				return;
 			}
@@ -490,9 +490,9 @@ public class RequestHandler {
 		} catch (JsonProcessingException e) {
 			ctx.status(400);
 			ctx.result(
-					"The 'uniqueName' field was not found in the request. Please make sure the uniqueName of the vision module is specified with the 'uniqueName' key.");
+					"The 'cameraUniqueName' field was not found in the request. Please make sure the cameraUniqueName of the vision module is specified with the 'cameraUniqueName' key.");
 			logger.error(
-					"The 'uniqueName' field was not found in the request. Please make sure the uniqueName of the vision module is specified with the 'uniqueName' key.",
+					"The 'cameraUniqueName' field was not found in the request. Please make sure the cameraUniqueName of the vision module is specified with the 'cameraUniqueName' key.",
 					e);
 		} catch (Exception e) {
 			ctx.status(500);
@@ -546,9 +546,9 @@ public class RequestHandler {
 			var data = kObjectMapper.readTree(ctx.bodyInputStream());
 
 			String name = data.get("name").asText();
-			String uniqueName = data.get("uniqueName").asText();
+			String cameraUniqueName = data.get("cameraUniqueName").asText();
 
-			VisionSourceManager.getInstance().vmm.getModule(uniqueName).setCameraNickname(name);
+			VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName).setCameraNickname(name);
 			ctx.status(200);
 			ctx.result("Successfully changed the camera name to: " + name);
 			logger.info("Successfully changed the camera name to: " + name);
@@ -572,14 +572,14 @@ public class RequestHandler {
 	public static void onCalibrationSnapshotRequest(Context ctx) {
 		logger.info(ctx.queryString().toString());
 
-		String uniqueName = ctx.queryParam("uniqueName");
+		String cameraUniqueName = ctx.queryParam("cameraUniqueName");
 		var width = Integer.parseInt(ctx.queryParam("width"));
 		var height = Integer.parseInt(ctx.queryParam("height"));
 		var observationIdx = Integer.parseInt(ctx.queryParam("snapshotIdx"));
 
 		CameraCalibrationCoefficients calList = VisionSourceManager.getInstance().vmm
 				.getModule(
-						uniqueName)
+						cameraUniqueName)
 				.getStateAsCameraConfig().calibrations
 						.stream()
 						.filter(
@@ -621,11 +621,11 @@ public class RequestHandler {
 	public static void onCalibrationExportRequest(Context ctx) {
 		logger.info(ctx.queryString().toString());
 
-		String uniqueName = ctx.queryParam("uniqueName");
+		String cameraUniqueName = ctx.queryParam("cameraUniqueName");
 		var width = Integer.parseInt(ctx.queryParam("width"));
 		var height = Integer.parseInt(ctx.queryParam("height"));
 
-		var cc = VisionSourceManager.getInstance().vmm.getModule(uniqueName).getStateAsCameraConfig();
+		var cc = VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName).getStateAsCameraConfig();
 
 		CameraCalibrationCoefficients calList = cc.calibrations.stream()
 				.filter(
@@ -825,15 +825,15 @@ public class RequestHandler {
 	public static void onActivateMatchedCameraRequest(Context ctx) {
 		logger.info(ctx.queryString().toString());
 
-		String uniqueName = ctx.queryParam("uniqueName");
+		String cameraUniqueName = ctx.queryParam("cameraUniqueName");
 
-		if (VisionSourceManager.getInstance().reactivateDisabledCameraConfig(uniqueName)) {
+		if (VisionSourceManager.getInstance().reactivateDisabledCameraConfig(cameraUniqueName)) {
 			ctx.status(200);
 		} else {
 			ctx.status(403);
 		}
 
-		ctx.result("Successfully assigned camera with unique name: " + uniqueName);
+		ctx.result("Successfully assigned camera with unique name: " + cameraUniqueName);
 	}
 
 	public static void onAssignUnmatchedCameraRequest(Context ctx) {
@@ -859,9 +859,9 @@ public class RequestHandler {
 	public static void onUnassignCameraRequest(Context ctx) {
 		logger.info(ctx.queryString().toString());
 
-		String uniqueName = ctx.queryParam("uniqueName");
+		String cameraUniqueName = ctx.queryParam("cameraUniqueName");
 
-		if (VisionSourceManager.getInstance().deactivateVisionSource(uniqueName)) {
+		if (VisionSourceManager.getInstance().deactivateVisionSource(cameraUniqueName)) {
 			ctx.status(200);
 		} else {
 			ctx.status(403);
@@ -869,6 +869,6 @@ public class RequestHandler {
 
 		ctx.status(200);
 
-		ctx.result("Successfully assigned camera with unique name: " + uniqueName);
+		ctx.result("Successfully assigned camera with unique name: " + cameraUniqueName);
 	}
 }
