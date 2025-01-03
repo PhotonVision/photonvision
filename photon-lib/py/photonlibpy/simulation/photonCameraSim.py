@@ -64,7 +64,7 @@ class PhotonCameraSim:
         self.videoSimProcEnabled: bool = False
         self.heartbeatCounter: int = 0
         self.nextNtEntryTime = wpilib.Timer.getFPGATimestamp()
-        self.tagLayout = AprilTagFieldLayout.loadField(AprilTagField.k2024Crescendo)
+        self.tagLayout = AprilTagFieldLayout.loadField(AprilTagField.kDefaultField)
 
         self.cam = camera
         self.prop = props
