@@ -164,7 +164,12 @@ const wrappedCameras = computed<SelectItem[]>(() =>
   <v-card class="mb-3 pr-6 pb-3" color="primary" dark>
     <v-card-title>Camera Settings</v-card-title>
     <div class="ml-5">
-      <pv-select v-model="useStateStore().currentCameraUniqueName" label="Camera" :items="wrappedCameras" />
+      <pv-select
+        v-model="useStateStore().currentCameraUniqueName"
+        label="Camera"
+        :items="wrappedCameras"
+        :select-cols="8"
+      />
       <pv-number-input
         v-model="tempSettingsStruct.fov"
         :tooltip="
