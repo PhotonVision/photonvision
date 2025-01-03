@@ -25,88 +25,86 @@ import org.photonvision.common.logging.Logger;
 
 /** VisionModuleManager has many VisionModules, and provides camera configuration data to them. */
 public class VisionModuleManager {
-	private final Logger logger = new Logger(VisionModuleManager.class, LogGroup.VisionModule);
+    private final Logger logger = new Logger(VisionModuleManager.class, LogGroup.VisionModule);
 
-	private final List<VisionModule> visionModules = new ArrayList<>();
+    private final List<VisionModule> visionModules = new ArrayList<>();
 
-	VisionModuleManager() {
-	}
+    VisionModuleManager() {}
 
-	public List<VisionModule> getModules() {
-		return visionModules;
-	}
+    public List<VisionModule> getModules() {
+        return visionModules;
+    }
 
-	public VisionModule getModule(String nickname) {
-		for (var module : visionModules) {
-			if (module.getStateAsCameraConfig().nickname.equals(nickname))
-				return module;
-		}
-		return null;
-	}
+    public VisionModule getModule(String nickname) {
+        for (var module : visionModules) {
+            if (module.getStateAsCameraConfig().nickname.equals(nickname)) return module;
+        }
+        return null;
+    }
 
-	public VisionModule getModule(int i) {
-		return visionModules.get(i);
-	}
+    public VisionModule getModule(int i) {
+        return visionModules.get(i);
+    }
 
-	public synchronized VisionModule addSource(VisionSource visionSource) {
-		visionSource.cameraConfiguration.streamIndex = newCameraIndex();
+    public synchronized VisionModule addSource(VisionSource visionSource) {
+        visionSource.cameraConfiguration.streamIndex = newCameraIndex();
 
-		var pipelineManager = new PipelineManager(visionSource.getCameraConfiguration());
-		var module = new VisionModule(
-				pipelineManager, visionSource);
-		visionModules.add(module);
+        var pipelineManager = new PipelineManager(visionSource.getCameraConfiguration());
+        var module = new VisionModule(pipelineManager, visionSource);
+        visionModules.add(module);
 
-		return module;
-	}
+        return module;
+    }
 
-	public synchronized void removeModule(VisionModule module) {
-		visionModules.remove(module);
-		module.stop();
-		module.saveAndBroadcastAll();
-	}
+    public synchronized void removeModule(VisionModule module) {
+        visionModules.remove(module);
+        module.stop();
+        module.saveAndBroadcastAll();
+    }
 
-	private synchronized int newCameraIndex() {
-		// We won't necessarily have already added all the cameras we need to at this point
-		// But by operating on the list, we have a fairly good idea of which we need to change,
-		// but it's not guaranteed that we change the correct one
-		// The best we can do is try to avoid a case where the stream index runs away to infinity
-		// since we can only stream 5 cameras at once
+    private synchronized int newCameraIndex() {
+        // We won't necessarily have already added all the cameras we need to at this point
+        // But by operating on the list, we have a fairly good idea of which we need to change,
+        // but it's not guaranteed that we change the correct one
+        // The best we can do is try to avoid a case where the stream index runs away to infinity
+        // since we can only stream 5 cameras at once
 
-		// Big list, which should contain every vision source (currently loaded plus the new ones being
-		// added)
-		List<Integer> bigList = this.getModules().stream()
-				.map(it -> it.getCameraConfiguration().streamIndex)
-				.collect(Collectors.toList());
+        // Big list, which should contain every vision source (currently loaded plus the new ones being
+        // added)
+        List<Integer> bigList =
+                this.getModules().stream()
+                        .map(it -> it.getCameraConfiguration().streamIndex)
+                        .collect(Collectors.toList());
 
-		int idx = 0;
-		while (bigList.contains(idx)) {
-			idx++;
-		}
+        int idx = 0;
+        while (bigList.contains(idx)) {
+            idx++;
+        }
 
-		if (idx >= 5) {
-			logger.warn("VisionModuleManager has reached the maximum number of cameras (5).");
-		}
+        if (idx >= 5) {
+            logger.warn("VisionModuleManager has reached the maximum number of cameras (5).");
+        }
 
-		return idx;
-	}
+        return idx;
+    }
 
-	public static class UiVmmState {
-		public final List<UICameraConfiguration> visionModules;
+    public static class UiVmmState {
+        public final List<UICameraConfiguration> visionModules;
 
-		UiVmmState(List<UICameraConfiguration> _v) {
-			this.visionModules = _v;
-		}
-	}
+        UiVmmState(List<UICameraConfiguration> _v) {
+            this.visionModules = _v;
+        }
+    }
 
-	public synchronized UiVmmState getState() {
-		return new UiVmmState(
-				this.visionModules.stream()
-						.map(VisionModule::toUICameraConfig)
-						.map(
-								it -> {
-									it.calibrations = null;
-									return it;
-								})
-						.collect(Collectors.toList()));
-	}
+    public synchronized UiVmmState getState() {
+        return new UiVmmState(
+                this.visionModules.stream()
+                        .map(VisionModule::toUICameraConfig)
+                        .map(
+                                it -> {
+                                    it.calibrations = null;
+                                    return it;
+                                })
+                        .collect(Collectors.toList()));
+    }
 }
