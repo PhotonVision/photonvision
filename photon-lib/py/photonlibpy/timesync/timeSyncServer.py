@@ -62,9 +62,6 @@ class TimeSyncServer:
             udp_socket.bind(("0.0.0.0", self.PORT))
             while True:
                 data, addr = udp_socket.recvfrom(1024)  # Buffer size of 1024 bytes
-                self.logger.debug(
-                    f"Data: { ''.join([format(x, '02x') for x in data]) }"
-                )
 
                 if len(data) < 10:
                     self.logger.error("Too few bytes")
@@ -78,9 +75,13 @@ class TimeSyncServer:
                 server_time = int(self.time_provider() * 1e6)  # Convert to microseconds
                 pong = TspPong(ping, server_time)
                 udp_socket.sendto(pong.pack(), addr)
-                self.logger.debug(
-                    f"Ponged at {server_time} with { ''.join([format(x, '02x') for x in pong.pack()]) }"
-                )
+
+                # self.logger.debug(
+                #     f"Incoming Data: { ''.join([format(x, '02x') for x in data]) }"
+                # )
+                # self.logger.debug(
+                #     f"Ponged at {server_time} with { ''.join([format(x, '02x') for x in pong.pack()]) }"
+                # )
 
     def start(self):
         if self._process is not None and self._process.is_alive():
