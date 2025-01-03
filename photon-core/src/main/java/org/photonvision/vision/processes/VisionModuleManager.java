@@ -53,7 +53,7 @@ public class VisionModuleManager {
 
 		var pipelineManager = new PipelineManager(visionSource.getCameraConfiguration());
 		var module = new VisionModule(
-				pipelineManager, visionSource, visionSource.cameraConfiguration.streamIndex);
+				pipelineManager, visionSource);
 		visionModules.add(module);
 
 		return module;

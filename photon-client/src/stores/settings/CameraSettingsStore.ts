@@ -28,7 +28,8 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
   getters: {
     // TODO update types to update this value being undefined. This would be a decently large change.
     currentCameraSettings(): UiCameraConfiguration {
-      return this.cameras[useStateStore().currentCameraUniqueName];
+      const currentCameraUniqueName = useStateStore().currentCameraUniqueName;
+      return this.cameras[currentCameraUniqueName] || PlaceholderCameraSettings;
     },
     currentPipelineSettings(): ActivePipelineSettings {
       return this.currentCameraSettings.pipelineSettings;
@@ -55,7 +56,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       return Object.values(this.cameras).map((c) => c.uniqueName);
     },
     currentCameraName(): string {
-      return this.cameraNames[useStateStore().currentCameraUniqueName];
+      return this.cameras[useStateStore().currentCameraUniqueName].nickname;
     },
     pipelineNames(): string[] {
       return this.currentCameraSettings.pipelineNicknames;
@@ -139,6 +140,11 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       return acc;
       }, {});
       this.cameras = Object.keys(configuredCameras).length > 0 ? configuredCameras : { [PlaceholderCameraSettings.uniqueName]: PlaceholderCameraSettings };
+
+      // Ensure currentCameraUniqueName is valid
+      if (!this.cameras[useStateStore().currentCameraUniqueName]) {
+        useStateStore().currentCameraUniqueName = Object.keys(this.cameras)[0];
+      }
     },
 
     /**
@@ -305,7 +311,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     /**
      * Change the currently set camera
      *
-     * @param cameraUniqueNamendex the unique name of the camera.
+     * @param cameraUniqueName the unique name of the camera.
      * @param updateStore whether or not to update the store. This is useful if the input field already models the store reference.
      */
     setCurrentCameraUniqueName(cameraUniqueName: string, updateStore = true) {

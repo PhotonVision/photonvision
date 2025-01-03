@@ -22,14 +22,14 @@ import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 public class StatusLEDConsumer implements CVPipelineResultConsumer {
-    private final int index;
+	private final String uniqueName;
 
-    public StatusLEDConsumer(int index) {
-        this.index = index;
-    }
+	public StatusLEDConsumer(String uniqueName) {
+		this.uniqueName = uniqueName;
+	}
 
-    @Override
-    public void accept(CVPipelineResult t) {
-        HardwareManager.getInstance().setTargetsVisibleStatus(this.index, t.hasTargets());
-    }
+	@Override
+	public void accept(CVPipelineResult t) {
+		HardwareManager.getInstance().setTargetsVisibleStatus(this.uniqueName, t.hasTargets());
+	}
 }

@@ -93,7 +93,7 @@ public class VisionModule {
 	MJPGFrameConsumer inputVideoStreamer;
 	MJPGFrameConsumer outputVideoStreamer;
 
-	public VisionModule(PipelineManager pipelineManager, VisionSource visionSource, int index) {
+	public VisionModule(PipelineManager pipelineManager, VisionSource visionSource) {
 		logger = new Logger(
 				VisionModule.class,
 				visionSource.getSettables().getConfiguration().nickname,
@@ -145,8 +145,8 @@ public class VisionModule {
 				this::setPipeline,
 				pipelineManager::getDriverMode,
 				this::setDriverMode);
-		uiDataConsumer = new UIDataPublisher(index);
-		statusLEDsConsumer = new StatusLEDConsumer(index);
+		uiDataConsumer = new UIDataPublisher(visionSource.getSettables().getConfiguration().uniqueName);
+		statusLEDsConsumer = new StatusLEDConsumer(visionSource.getSettables().getConfiguration().uniqueName);
 		addResultConsumer(ntConsumer);
 		addResultConsumer(uiDataConsumer);
 		addResultConsumer(statusLEDsConsumer);

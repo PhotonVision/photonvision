@@ -76,8 +76,6 @@ const arducamWarningShown = computed<boolean>(() => {
       </span>
     </v-banner>
     <v-row no-gutters align="center" justify="center">
-      <span>{{ useCameraSettingsStore().currentCameraName }}</span>
-
       <v-col cols="12" class="pb-3 pr-lg-3" lg="8" align-self="stretch">
         <CamerasCard v-model="cameraViewType" />
       </v-col>

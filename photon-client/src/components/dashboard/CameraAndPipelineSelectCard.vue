@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import PvSelect from "@/components/common/pv-select.vue";
+import PvSelect, { type SelectItem } from "@/components/common/pv-select.vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
@@ -86,7 +86,7 @@ const cancelCameraNameEdit = () => {
 };
 
 // Pipeline Name Edit
-const pipelineNamesWrapper = computed<{ name: string; value: number }[]>(() => {
+const pipelineNamesWrapper = computed<SelectItem[]>(() => {
   const pipelineNames = useCameraSettingsStore().pipelineNames.map((name, index) => ({ name: name, value: index }));
 
   if (useCameraSettingsStore().isDriverMode) {
@@ -232,20 +232,26 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
       break;
   }
 });
+const wrappedCameras = computed<SelectItem[]>(() =>
+  Object.keys(useCameraSettingsStore().cameras).map((cameraUniqueName) => ({
+    name: useCameraSettingsStore().cameras[cameraUniqueName].nickname,
+    value: cameraUniqueName
+  }))
+);
 </script>
 
 <template>
   <v-card color="primary">
     <v-row style="padding: 12px 12px 0 24px">
       <v-col cols="10" class="pa-0">
-        <!-- <pv-select
+        <pv-select
           v-if="!isCameraNameEdit"
           v-model="useStateStore().currentCameraUniqueName"
           label="Camera"
-            :items="useCameraSettingsStore().cameraNames"
-            @input="(value) => changeCurrentCameraUniqueName(value)"
-        /> -->
-        <!-- <pv-input
+          :items="wrappedCameras"
+          @input="changeCurrentCameraUniqueName"
+        />
+        <pv-input
           v-else
           v-model="currentCameraName"
           class="pt-2"
@@ -254,7 +260,7 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
           label="Camera"
           @onEnter="saveCameraNameEdit"
           @onEscape="cancelCameraNameEdit"
-        /> -->
+        />
       </v-col>
       <v-col cols="2" style="display: flex; align-items: center; justify-content: center">
         <div v-if="isCameraNameEdit" style="display: flex; gap: 14px">

@@ -49,6 +49,7 @@ interface StateStore {
 
 export const useStateStore = defineStore("state", {
   state: (): StateStore => {
+    const cameraStore = useCameraSettingsStore();
     return {
       backendConnected: false,
       websocket: undefined,
@@ -60,7 +61,7 @@ export const useStateStore = defineStore("state", {
       sidebarFolded:
         localStorage.getItem("sidebarFolded") === null ? false : localStorage.getItem("sidebarFolded") === "true",
       logMessages: [],
-      currentCameraUniqueName: Object.keys(useCameraSettingsStore().cameras)[0],
+      currentCameraUniqueName: Object.keys(cameraStore.cameras)[0],
 
       backendResults: {
         0: {
