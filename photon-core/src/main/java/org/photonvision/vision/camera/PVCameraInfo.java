@@ -102,6 +102,7 @@ public sealed interface PVCameraInfo {
         @Override
         public String uniquePath() {
             return Arrays.stream(super.otherPaths)
+                    .sorted()
                     .filter(path -> path.contains("/by-path/"))
                     .findFirst()
                     .orElse(path());
