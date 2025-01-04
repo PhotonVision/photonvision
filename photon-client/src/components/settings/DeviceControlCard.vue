@@ -238,8 +238,7 @@ const nukePhotonConfigDirectory = () => {
 
 <template>
   <v-card dark class="mb-3" style="background-color: #006492">
-    <v-card-title class="pl-6">Device Control</v-card-title>
-    <v-divider class="pb-6" />
+    <v-card-title class="pa-6">Device Control</v-card-title>
     <div class="pa-6 pt-0">
       <v-row>
         <v-col cols="12" lg="4" md="6">
