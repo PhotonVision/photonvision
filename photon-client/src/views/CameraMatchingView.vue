@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { computed, inject, ref } from "vue";
+import { computed, inject, onMounted, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import {
   PlaceholderCameraSettings,
@@ -211,6 +211,30 @@ const exportSettings = ref();
 const openExportSettingsPrompt = () => {
   exportSettings.value.click();
 };
+
+const enforceStreamHeight = () => {
+  const streamWidth = document.getElementById("stream-container-0")?.offsetWidth ?? 0;
+  if (streamWidth === 0) return;
+
+  useCameraSettingsStore()
+    .cameras.filter((camera) => JSON.stringify(camera) !== JSON.stringify(PlaceholderCameraSettings))
+    .forEach((element, index) => {
+      let stream = document.getElementById(`outer-output-camera-stream-${index}`);
+      if (!stream) return;
+
+      stream?.classList.remove("tall-stream", "wide-stream", "d-none");
+      let streamRes = element.validVideoFormats[0].resolution.width / element.validVideoFormats[0].resolution.height;
+      let containerRes = streamWidth / 250.0;
+      if (element.pipelineSettings.inputImageRotationMode % 2 == 1) streamRes = 1 / streamRes;
+      if (streamRes > containerRes) stream?.classList.add("wide-stream");
+      else stream?.classList.add("tall-stream");
+    });
+};
+
+onMounted(() => {
+  setTimeout(() => enforceStreamHeight(), 500);
+  window.addEventListener("resize", enforceStreamHeight);
+});
 </script>
 
 <template>
@@ -225,13 +249,13 @@ const openExportSettingsPrompt = () => {
         :key="`enabled-${module.uniqueName}`"
       >
         <v-card dark color="primary">
-          <v-card-title>{{ module.nickname }}</v-card-title>
+          <v-card-title>{{ cameraInfoFor(module.matchedCameraInfo).name }}</v-card-title>
           <v-card-subtitle v-if="camerasMatch(getMatchedDevice(module.matchedCameraInfo), module.matchedCameraInfo)"
             >Status: <span class="active-status">Active</span></v-card-subtitle
           >
           <v-card-subtitle v-else>Status: <span class="mismatch-status">Mismatch</span></v-card-subtitle>
           <v-card-text>
-            <v-simple-table dark dense>
+            <v-simple-table dark dense class="mb-3">
               <tbody>
                 <tr>
                   <td>Streams:</td>
@@ -271,13 +295,19 @@ const openExportSettingsPrompt = () => {
                 </tr>
               </tbody>
             </v-simple-table>
-            <photon-camera-stream
-              class="mt-3"
-              id="output-camera-stream"
-              :camera-settings="module"
-              stream-type="Processed"
-              style="width: 100%; height: auto"
-            />
+            <div
+              class="d-flex flex-column justify-center align-center"
+              style="height: 250px"
+              :id="`stream-container-${index}`"
+            >
+              <photon-camera-stream
+                :camera-settings="module"
+                stream-type="Processed"
+                :outerId="`outer-output-camera-stream-${index}`"
+                :id="`output-camera-stream-${index}`"
+                class="d-none"
+              />
+            </div>
           </v-card-text>
           <v-card-text class="pt-0">
             <v-row>
@@ -526,5 +556,15 @@ a:active,
   color: yellow;
   background-color: transparent;
   text-decoration: none;
+}
+
+.wide-stream {
+  width: 100%;
+  height: auto;
+}
+
+.tall-stream {
+  height: 100%;
+  width: auto;
 }
 </style>
