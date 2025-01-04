@@ -188,16 +188,16 @@ public class NetworkUtils {
         List<String> addresses = new ArrayList<String>();
         try {
             var iFace = NetworkInterface.getByName(iFaceName);
-            for (var addr : iFace.getInterfaceAddresses()) {
-                var addrStr = addr.getAddress().toString();
-                if (addrStr.startsWith("/")) {
-                    addrStr = addrStr.substring(1);
+            if (iFace != null && iFace.isUp()) {
+                for (var addr : iFace.getInterfaceAddresses()) {
+                    var addrStr = addr.getAddress().toString();
+                    if (addrStr.startsWith("/")) {
+                        addrStr = addrStr.substring(1);
+                    }
+                    addrStr = addrStr + "/" + addr.getNetworkPrefixLength();
+                    addresses.add(addrStr);
                 }
-                addrStr = addrStr + "/" + addr.getNetworkPrefixLength();
-                addresses.add(addrStr);
             }
-            // addresses = iFace.inetAddresses().map(a ->
-            // a.getAddress().toString()).collect(Collectors.joining(","));
         } catch (Exception e) {
             e.printStackTrace();
         }
