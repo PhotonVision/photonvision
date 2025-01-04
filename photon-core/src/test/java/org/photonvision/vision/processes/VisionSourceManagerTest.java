@@ -194,6 +194,52 @@ public class VisionSourceManagerTest {
     }
 
     @Test
+    public void testOtherPathsOrderChange() throws InterruptedException {
+        // GIVEN a VSM
+        var vsm = new TestVsm();
+        // AND one enabled camera, and one disabled camera
+        var cam =
+                new CameraConfiguration(
+                        PVCameraInfo.fromUsbCameraInfo(
+                                new UsbCameraInfo(
+                                        0,
+                                        "/dev/video0",
+                                        "Lifecam HD-3000",
+                                        new String[] {"/dev/v4l/by-path/usbv2/foobar1", "/dev/v4l/by-path/usb/foobar1"},
+                                        5940,
+                                        5940)));
+        cam.deactivated = false;
+        cam.nickname = "Matt's awesome camera 1";
+
+        var camOtherPaths =
+                new CameraConfiguration(
+                        PVCameraInfo.fromUsbCameraInfo(
+                                new UsbCameraInfo(
+                                        1,
+                                        "/dev/video1",
+                                        "Lifecam HD-3000",
+                                        new String[] {"/dev/v4l/by-path/usb/foobar1", "/dev/v4l/by-path/usbv2/foobar1"},
+                                        5940,
+                                        5940)));
+        camOtherPaths.deactivated = false;
+        camOtherPaths.nickname = "Matt's awesome camera 1";
+
+        vsm.testCameras = List.of(cam.matchedCameraInfo);
+
+        // WHEN cameras are loaded from disk
+        vsm.registerLoadedConfigs(List.of(camOtherPaths));
+
+        // the enabled and disabled cameras will be matched
+        assertEquals(1, vsm.getVsmState().allConnectedCameras.size());
+        assertEquals(0, vsm.getVsmState().disabledConfigs.size());
+        assertEquals(1, vsm.vmm.getModules().size());
+
+        Thread.sleep(2000);
+
+        vsm.teardown();
+    }
+
+    @Test
     public void testDuplicate() throws InterruptedException, IOException {
         var fileCamera1 =
                 PVCameraInfo.fromFileInfo(
