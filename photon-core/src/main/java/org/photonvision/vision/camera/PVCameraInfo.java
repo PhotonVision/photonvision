@@ -102,7 +102,8 @@ public sealed interface PVCameraInfo {
         @Override
         public String uniquePath() {
             return Arrays.stream(super.otherPaths)
-                    .sorted()
+                    .sorted() // Must sort to ensure a consistent unique path as we can get more than one
+                    // by-path and their order changes at random?
                     .filter(path -> path.contains("/by-path/"))
                     .findFirst()
                     .orElse(path());
