@@ -119,7 +119,11 @@ const openExportSettingsPrompt = () => {
 };
 
 const yesDeleteMySettingsText = ref("");
+const deletingCamera = ref(false);
 const deleteThisCamera = () => {
+  if (deletingCamera.value) return;
+  deletingCamera.value = true;
+
   const payload = {
     cameraUniqueName: useCameraSettingsStore().cameraUniqueNames[useStateStore().currentCameraIndex]
   };
@@ -149,8 +153,11 @@ const deleteThisCamera = () => {
           color: "error"
         });
       }
+    })
+    .finally(() => {
+      deletingCamera.value = false;
+      showDeleteCamera.value = false;
     });
-  showDeleteCamera.value = false;
 };
 </script>
 
@@ -206,7 +213,7 @@ const deleteThisCamera = () => {
     <v-dialog v-model="showDeleteCamera" dark width="800">
       <v-card dark class="dialog-container pa-3 pb-2" color="primary" flat>
         <v-card-title>
-          Delete camera "{{ useCameraSettingsStore().cameraNames[useStateStore().currentCameraIndex] }}"
+          Delete {{ useCameraSettingsStore().cameraNames[useStateStore().currentCameraIndex] }}?
         </v-card-title>
         <v-card-text>
           <v-row class="align-center pt-6">
@@ -246,6 +253,7 @@ const deleteThisCamera = () => {
                   yesDeleteMySettingsText.toLowerCase() !== useCameraSettingsStore().currentCameraName.toLowerCase()
                 "
                 @click="deleteThisCamera"
+                :loading="deletingCamera"
               >
                 <v-icon left class="open-icon"> mdi-trash-can-outline </v-icon>
                 <span class="open-label">DELETE (UNRECOVERABLE)</span>

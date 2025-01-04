@@ -7,44 +7,58 @@ import {
   PVCameraInfo,
   type PVCSICameraInfo,
   type PVFileCameraInfo,
-  type PVUsbCameraInfo
+  type PVUsbCameraInfo,
+  type UiCameraConfiguration
 } from "@/types/SettingTypes";
 import { getResolutionString } from "@/lib/PhotonUtils";
 import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
 import axios from "axios";
 import PvCameraMatchCard from "@/components/common/pv-camera-match-card.vue";
+import type { WebsocketCameraSettingsUpdate } from "@/types/WebsocketDataTypes";
 
 const formatUrl = (port) => `http://${inject("backendHostname")}:${port}/stream.mjpg`;
 const host = inject<string>("backendHost");
 
+const activatingModule = ref(false);
 const activateModule = (moduleUniqueName: string) => {
+  if (activatingModule.value) return;
+  activatingModule.value = true;
   const url = new URL(`http://${host}/api/utils/activateMatchedCamera`);
   url.searchParams.set("uniqueName", moduleUniqueName);
 
   fetch(url.toString(), {
     method: "POST"
-  });
+  }).finally(() => (activatingModule.value = false));
 };
 
-const activateCamera = (cameraInfo: PVCameraInfo) => {
+const assigningCamera = ref(false);
+const assignCamera = (cameraInfo: PVCameraInfo) => {
+  if (assigningCamera.value) return;
+  assigningCamera.value = true;
   const url = new URL(`http://${host}/api/utils/assignUnmatchedCamera`);
   url.searchParams.set("cameraInfo", JSON.stringify(cameraInfo));
 
   fetch(url.toString(), {
     method: "POST"
-  });
+  }).finally(() => (assigningCamera.value = false));
 };
 
-const deactivateCamera = (cameraUniqueName: string) => {
+const deactivatingModule = ref(false);
+const deactivateModule = (cameraUniqueName: string) => {
+  if (deactivatingModule.value) return;
+  deactivatingModule.value = true;
   const url = new URL(`http://${host}/api/utils/unassignCamera`);
   url.searchParams.set("uniqueName", cameraUniqueName);
 
   fetch(url.toString(), {
     method: "POST"
-  });
+  }).finally(() => (deactivatingModule.value = false));
 };
 
+const deletingCamera = ref(false);
 const deleteThisCamera = (cameraName: string) => {
+  if (deletingCamera.value) return;
+  deletingCamera.value = true;
   const payload = {
     cameraUniqueName: cameraName
   };
@@ -74,6 +88,10 @@ const deleteThisCamera = (cameraName: string) => {
           color: "error"
         });
       }
+    })
+    .finally(() => {
+      setCameraDeleting(null);
+      deletingCamera.value = false;
     });
 };
 
@@ -176,10 +194,22 @@ const disabledVisionModules = computed(() => useStateStore().vsmState.disabledCo
 
 const viewingDetails = ref(false);
 const viewingCamera = ref<PVCameraInfo | null>(null);
-
 const setCameraView = (camera: PVCameraInfo | null) => {
   viewingDetails.value = camera !== null;
   viewingCamera.value = camera;
+};
+
+const viewingDeleteCamera = ref(false);
+const cameraToDelete = ref<UiCameraConfiguration | WebsocketCameraSettingsUpdate | null>(null);
+const setCameraDeleting = (camera: UiCameraConfiguration | WebsocketCameraSettingsUpdate | null) => {
+  yesDeleteMySettingsText.value = "";
+  viewingDeleteCamera.value = camera !== null;
+  cameraToDelete.value = camera;
+};
+const yesDeleteMySettingsText = ref("");
+const exportSettings = ref();
+const openExportSettingsPrompt = () => {
+  exportSettings.value.click();
 };
 </script>
 
@@ -259,15 +289,16 @@ const setCameraView = (camera: PVCameraInfo | null) => {
               <v-col cols="6" md="5" class="pr-0">
                 <v-btn
                   class="black--text"
-                  @click="deactivateCamera(module.uniqueName)"
+                  @click="deactivateModule(module.uniqueName)"
                   color="accent"
                   style="width: 100%"
+                  :loading="deactivatingModule"
                 >
                   Deactivate
                 </v-btn>
               </v-col>
               <v-col cols="6" md="3">
-                <v-btn class="pa-0" @click="deleteThisCamera(module.uniqueName)" color="error" style="width: 100%">
+                <v-btn class="pa-0" @click="setCameraDeleting(module)" color="error" style="width: 100%">
                   <v-icon>mdi-trash-can-outline</v-icon>
                 </v-btn>
               </v-col>
@@ -323,12 +354,13 @@ const setCameraView = (camera: PVCameraInfo | null) => {
                   @click="activateModule(module.uniqueName)"
                   color="accent"
                   style="width: 100%"
+                  :loading="activatingModule"
                 >
                   Activate
                 </v-btn>
               </v-col>
               <v-col cols="6" md="3">
-                <v-btn class="pa-0" @click="deleteThisCamera(module.uniqueName)" color="error" style="width: 100%">
+                <v-btn class="pa-0" @click="setCameraDeleting(module)" color="error" style="width: 100%">
                   <v-icon>mdi-trash-can-outline</v-icon>
                 </v-btn>
               </v-col>
@@ -359,7 +391,13 @@ const setCameraView = (camera: PVCameraInfo | null) => {
                 </v-btn>
               </v-col>
               <v-col cols="6">
-                <v-btn class="black--text" @click="activateCamera(camera)" color="accent" style="width: 100%">
+                <v-btn
+                  class="black--text"
+                  @click="assignCamera(camera)"
+                  color="accent"
+                  style="width: 100%"
+                  :loading="assigningCamera"
+                >
                   Activate
                 </v-btn>
               </v-col>
@@ -402,6 +440,57 @@ const setCameraView = (camera: PVCameraInfo | null) => {
         </v-card-text>
         <v-card-text v-else>
           <PvCameraInfoCard :camera="getMatchedDevice(viewingCamera)" />
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+
+    <!-- Camera delete modal -->
+    <v-dialog v-model="viewingDeleteCamera" dark width="800">
+      <v-card dark class="dialog-container pa-3 pb-2" color="primary" flat v-if="cameraToDelete !== null">
+        <v-card-title> Delete {{ cameraToDelete.nickname }}? </v-card-title>
+        <v-card-text>
+          <v-row class="align-center pt-6">
+            <v-col cols="12" md="7">
+              <span class="white--text"> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
+            </v-col>
+            <v-col cols="12" md="5">
+              <v-btn color="secondary" block @click="openExportSettingsPrompt">
+                <v-icon left class="open-icon"> mdi-export </v-icon>
+                <span class="open-label">Backup Settings</span>
+                <a
+                  ref="exportSettings"
+                  style="color: black; text-decoration: none; display: none"
+                  :href="`http://${host}/api/settings/photonvision_config.zip`"
+                  download="photonvision-settings.zip"
+                  target="_blank"
+                />
+              </v-btn>
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-text>
+          <v-row class="align-center pt-6">
+            <v-col cols="12" md="7">
+              <pv-input
+                v-model="yesDeleteMySettingsText"
+                :label="'Type &quot;' + cameraToDelete.nickname + '&quot;:'"
+                :label-cols="12"
+                :input-cols="12"
+              />
+            </v-col>
+            <v-col cols="12" md="5">
+              <v-btn
+                block
+                color="error"
+                :disabled="yesDeleteMySettingsText.toLowerCase() !== cameraToDelete.nickname.toLowerCase()"
+                @click="deleteThisCamera(cameraToDelete.uniqueName)"
+                :loading="deletingCamera"
+              >
+                <v-icon left class="open-icon"> mdi-trash-can-outline </v-icon>
+                <span class="open-label">DELETE (UNRECOVERABLE)</span>
+              </v-btn>
+            </v-col>
+          </v-row>
         </v-card-text>
       </v-card>
     </v-dialog>
