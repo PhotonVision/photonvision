@@ -274,9 +274,8 @@ public class NetworkManager {
                                 logger.warn("Interface " + devName + " is disconnected, check Ethernet!");
                             }
                         }
-                        NetworkInterface iFace;
-                        iFace = NetworkInterface.getByName(devName);
-                        if (iFace.isUp()) {
+                        var iFace = NetworkInterface.getByName(devName);
+                        if (iFace != null && iFace.isUp()) {
                             String tmpAddresses = "";
                             tmpAddresses = iFace.getInterfaceAddresses().toString();
                             if (!last.addresses.equals(tmpAddresses)) {
