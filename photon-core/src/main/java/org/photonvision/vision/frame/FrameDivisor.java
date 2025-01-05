@@ -21,7 +21,8 @@ public enum FrameDivisor {
     NONE(1),
     HALF(2),
     QUARTER(4),
-    SIXTH(6);
+    SIXTH(6),
+    EIGTH(8);
 
     public final Integer value;
 

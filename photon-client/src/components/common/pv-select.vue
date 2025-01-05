@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
+import PvIcon from "@/components/common/pv-icon.vue";
 
 export interface SelectItem {
   name: string | number;
@@ -11,16 +12,21 @@ export interface SelectItem {
 const props = withDefaults(
   defineProps<{
     label?: string;
+    color?: string;
     tooltip?: string;
     selectCols?: number;
     // TODO fully update v-model usage in custom components on Vue3 update
     value: any;
     disabled?: boolean;
     items: string[] | number[] | SelectItem[];
+    icon?: string;
+    iconTooltip?: string;
   }>(),
   {
+    color: "white",
     selectCols: 9,
-    disabled: false
+    disabled: false,
+    icon: ""
   }
 );
 
@@ -52,9 +58,11 @@ const items = computed<SelectItem[]>(() => {
   <div>
     <v-row dense align="center">
       <v-col :cols="12 - selectCols">
-        <tooltipped-label :tooltip="tooltip" :label="label" />
+        <tooltipped-label :tooltip="tooltip" :label="label" :color="color" />
       </v-col>
-      <v-col :cols="selectCols">
+      <v-col :cols="selectCols" class="d-flex align-center">
+        <pv-icon v-if="icon" :iconName="icon" :color="color" :tooltip="iconTooltip" class="mr-2" />
+
         <v-select
           v-model="localValue"
           :items="items"
