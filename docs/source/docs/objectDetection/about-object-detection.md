@@ -10,7 +10,7 @@ For the 2024 season, PhotonVision shipped with a **pre-trained NOTE detector** (
 
 ```
 
-For the 2025 season, we are currently working on training an object detection model and will release it soon.
+For the 2025 season, we do not have plans to release an object detection model ourselves, but if someone in the community is interested in creating one, we would be happy to integrate it.
 
 ## Tracking Objects
 
