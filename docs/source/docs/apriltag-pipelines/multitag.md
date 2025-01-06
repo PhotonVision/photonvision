@@ -51,7 +51,7 @@ The returned field to camera transform is a transform from the fixed field origi
 
 ## Updating the Field Layout
 
-PhotonVision ships by default with the [2024 field layout JSON](https://github.com/wpilibsuite/allwpilib/blob/main/apriltag/src/main/native/resources/edu/wpi/first/apriltag/2024-crescendo.json). The layout can be inspected by navigating to the settings tab and scrolling down to the "AprilTag Field Layout" card, as shown below.
+PhotonVision ships by default with the [2025 field layout JSON](https://github.com/wpilibsuite/allwpilib/blob/main/apriltag/src/main/native/resources/edu/wpi/first/apriltag/2025-reefscape.json). The layout can be inspected by navigating to the settings tab and scrolling down to the "AprilTag Field Layout" card, as shown below.
 
 ```{image} images/field-layout.png
 :alt: The currently saved field layout in the Photon UI
