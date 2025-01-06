@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import PvSelect from "@/components/common/pv-select.vue";
+import PvSelect, { type SelectItem } from "@/components/common/pv-select.vue";
 import PvNumberInput from "@/components/common/pv-number-input.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
@@ -125,7 +125,7 @@ const deleteThisCamera = () => {
   deletingCamera.value = true;
 
   const payload = {
-    cameraUniqueName: useCameraSettingsStore().cameraUniqueNames[useStateStore().currentCameraIndex]
+    cameraUniqueName: useStateStore().currentCameraUniqueName
   };
 
   axios
@@ -159,6 +159,12 @@ const deleteThisCamera = () => {
       showDeleteCamera.value = false;
     });
 };
+const wrappedCameras = computed<SelectItem[]>(() =>
+  Object.keys(useCameraSettingsStore().cameras).map((cameraUniqueName) => ({
+    name: useCameraSettingsStore().cameras[cameraUniqueName].nickname,
+    value: cameraUniqueName
+  }))
+);
 </script>
 
 <template>
@@ -166,9 +172,9 @@ const deleteThisCamera = () => {
     <v-card-title class="pb-0">Camera Settings</v-card-title>
     <v-card-text>
       <pv-select
-        v-model="useStateStore().currentCameraIndex"
+        v-model="useStateStore().currentCameraUniqueName"
         label="Camera"
-        :items="useCameraSettingsStore().cameraNames"
+        :items="wrappedCameras"
         :select-cols="8"
       />
       <pv-number-input

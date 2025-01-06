@@ -213,6 +213,7 @@ public class VisionSourceManager {
                                         .equals(cameraInfo.uniquePath()))) {
             logger.error(
                     "Camera unique-path already in use by active VisionModule! Cannot add " + cameraInfo);
+            return false;
         }
 
         var source = loadVisionSourceFromCamConfig(new CameraConfiguration(cameraInfo));

@@ -24,7 +24,7 @@ const activateModule = (moduleUniqueName: string) => {
   if (activatingModule.value) return;
   activatingModule.value = true;
   const url = new URL(`http://${host}/api/utils/activateMatchedCamera`);
-  url.searchParams.set("uniqueName", moduleUniqueName);
+  url.searchParams.set("cameraUniqueName", moduleUniqueName);
 
   fetch(url.toString(), {
     method: "POST"
@@ -48,7 +48,7 @@ const deactivateModule = (cameraUniqueName: string) => {
   if (deactivatingModule.value) return;
   deactivatingModule.value = true;
   const url = new URL(`http://${host}/api/utils/unassignCamera`);
-  url.searchParams.set("uniqueName", cameraUniqueName);
+  url.searchParams.set("cameraUniqueName", cameraUniqueName);
 
   fetch(url.toString(), {
     method: "POST"
@@ -175,7 +175,9 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
 };
 
 const unmatchedCameras = computed(() => {
-  const activeVmPaths = useCameraSettingsStore().cameras.map((it) => uniquePathForCamera(it.matchedCameraInfo));
+  const activeVmPaths = Object.values(useCameraSettingsStore().cameras).map((it) =>
+    uniquePathForCamera(it.matchedCameraInfo)
+  );
   const disabledVmPaths = useStateStore().vsmState.disabledConfigs.map((it) =>
     uniquePathForCamera(it.matchedCameraInfo)
   );
@@ -186,7 +188,7 @@ const unmatchedCameras = computed(() => {
 });
 
 const activeVisionModules = computed(() =>
-  useCameraSettingsStore().cameras.filter(
+  Object.values(useCameraSettingsStore().cameras).filter(
     (camera) => JSON.stringify(camera) !== JSON.stringify(PlaceholderCameraSettings)
   )
 );
@@ -241,13 +243,7 @@ onMounted(() => {
   <div class="pa-5">
     <v-row>
       <!-- Active modules -->
-      <v-col
-        cols="12"
-        sm="6"
-        lg="4"
-        v-for="(module, index) in activeVisionModules"
-        :key="`enabled-${module.uniqueName}`"
-      >
+      <v-col v-for="module in activeVisionModules" :key="`enabled-${module.uniqueName}`" cols="12" sm="6" lg="4">
         <v-card dark color="primary">
           <v-card-title>{{ cameraInfoFor(module.matchedCameraInfo).name }}</v-card-title>
           <v-card-subtitle v-if="camerasMatch(getMatchedDevice(module.matchedCameraInfo), module.matchedCameraInfo)"
@@ -284,11 +280,11 @@ onMounted(() => {
                     }}
                   </td>
                 </tr>
-                <tr v-if="module.isConnected && useStateStore().backendResults[index]">
+                <tr v-if="module.isConnected && useStateStore().backendResults[module.uniqueName]">
                   <td>Frames Processed</td>
                   <td>
-                    {{ useStateStore().backendResults[index].sequenceID }} ({{
-                      useStateStore().backendResults[index].fps
+                    {{ useStateStore().backendResults[module.uniqueName].sequenceID }} ({{
+                      useStateStore().backendResults[module.uniqueName].fps
                     }}
                     FPS)
                   </td>
@@ -338,7 +334,7 @@ onMounted(() => {
       </v-col>
 
       <!-- Disabled modules -->
-      <v-col cols="12" sm="6" lg="4" v-for="module in disabledVisionModules" :key="`disabled-${module.uniqueName}`">
+      <v-col v-for="module in disabledVisionModules" :key="`disabled-${module.uniqueName}`" cols="12" sm="6" lg="4">
         <v-card dark color="primary">
           <v-card-title>{{ module.nickname }}</v-card-title>
           <v-card-subtitle>Status: <span class="inactive-status">Deactivated</span></v-card-subtitle>
@@ -374,17 +370,17 @@ onMounted(() => {
           <v-card-text class="pt-0">
             <v-row>
               <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
-                <v-btn color="secondary" @click="setCameraView(module.matchedCameraInfo)" style="width: 100%">
+                <v-btn color="secondary" style="width: 100%" @click="setCameraView(module.matchedCameraInfo)">
                   <span>Details</span>
                 </v-btn>
               </v-col>
               <v-col cols="6" md="5" class="pr-0">
                 <v-btn
                   class="black--text"
-                  @click="activateModule(module.uniqueName)"
                   color="accent"
                   style="width: 100%"
                   :loading="activatingModule"
+                  @click="activateModule(module.uniqueName)"
                 >
                   Activate
                 </v-btn>
@@ -400,7 +396,7 @@ onMounted(() => {
       </v-col>
 
       <!-- Unassigned cameras -->
-      <v-col cols="12" sm="6" lg="4" v-for="(camera, index) in unmatchedCameras" :key="index">
+      <v-col v-for="(camera, index) in unmatchedCameras" :key="index" cols="12" sm="6" lg="4">
         <v-card dark color="primary">
           <v-card-title>
             <span v-if="camera.PVUsbCameraInfo">USB Camera:</span>
@@ -416,7 +412,7 @@ onMounted(() => {
           <v-card-text class="pt-0">
             <v-row>
               <v-col cols="6" class="pr-0">
-                <v-btn color="secondary" @click="setCameraView(camera)" style="width: 100%">
+                <v-btn color="secondary" style="width: 100%" @click="setCameraView(camera)">
                   <span>Details</span>
                 </v-btn>
               </v-col>
