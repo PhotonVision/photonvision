@@ -66,7 +66,7 @@ const arducamWarningShown = computed<boolean>(() => {
       v-if="arducamWarningShown"
       v-model="arducamWarningShown"
       rounded
-      color="red"
+      color="error"
       dark
       class="mb-3"
       icon="mdi-alert-circle-outline"

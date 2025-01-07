@@ -9,6 +9,7 @@ import type { UiCameraConfiguration } from "@/types/SettingTypes";
 const props = defineProps<{
   streamType: "Raw" | "Processed";
   id: string;
+  outerId?: string;
   cameraSettings: UiCameraConfiguration;
 }>();
 
@@ -90,7 +91,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="stream-container" :style="containerStyle">
+  <div :id="outerId" class="stream-container" :style="containerStyle">
     <img :src="loadingImage" class="stream-loading" />
     <img
       :id="id"
