@@ -49,24 +49,28 @@ const items = computed<SelectItem[]>(() => {
 </script>
 
 <template>
-  <div>
-    <v-row dense align="center">
-      <v-col :cols="12 - selectCols">
-        <tooltipped-label :tooltip="tooltip" :label="label" />
-      </v-col>
-      <v-col :cols="selectCols">
-        <v-select
-          v-model="localValue"
-          :items="items"
-          item-text="name"
-          item-value="value"
-          item-disabled="disabled"
-          dark
-          color="accent"
-          item-color="secondary"
-          :disabled="disabled"
-        />
-      </v-col>
-    </v-row>
+  <div class="d-flex">
+    <v-col :cols="12 - selectCols" class="d-flex align-center pl-0">
+      <tooltipped-label :tooltip="tooltip" :label="label" />
+    </v-col>
+    <v-col :cols="selectCols" class="d-flex align-center pr-0">
+      <v-select
+        v-model="localValue"
+        :items="items"
+        item-text="name"
+        item-value="value"
+        item-disabled="disabled"
+        dark
+        color="accent"
+        item-color="secondary"
+        :disabled="disabled"
+        hide-details="auto"
+      />
+    </v-col>
   </div>
 </template>
+<style>
+.v-select {
+  padding-top: 0px;
+}
+</style>
