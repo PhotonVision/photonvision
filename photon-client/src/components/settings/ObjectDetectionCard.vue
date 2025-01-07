@@ -17,35 +17,34 @@ const handleObjectDetectionImport = () => {
   useStateStore().showSnackbarMessage({
     message: "Importing Object Detection Model...",
     color: "secondary",
-    timeout: -1,
+    timeout: -1
   });
 
   axios
     .post("/utils/importObjectDetectionModel", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
+      headers: { "Content-Type": "multipart/form-data" }
     })
     .then((response) => {
       useStateStore().showSnackbarMessage({
         message: response.data.text || response.data,
-        color: "success",
+        color: "success"
       });
     })
     .catch((error) => {
       if (error.response) {
         useStateStore().showSnackbarMessage({
           color: "error",
-          message: error.response.data.text || error.response.data,
+          message: error.response.data.text || error.response.data
         });
       } else if (error.request) {
         useStateStore().showSnackbarMessage({
           color: "error",
-          message:
-            "Error while trying to process the request! The backend didn't respond.",
+          message: "Error while trying to process the request! The backend didn't respond."
         });
       } else {
         useStateStore().showSnackbarMessage({
           color: "error",
-          message: "An error occurred while trying to process the request.",
+          message: "An error occurred while trying to process the request."
         });
       }
     });
@@ -61,13 +60,7 @@ const handleObjectDetectionImport = () => {
 //   return supportedBackends.flatMap((backend) => availableModels[backend] || []);
 // });
 //mock supportedModels for testing of GUI
-const supportedModels = [
-  "mobilenet_v1",
-  "mobilenet_v2",
-  "ssd_mobilenet_v1",
-  "ssd_mobilenet_v2",
-  "ssd_mobilenet_v3",
-];
+const supportedModels = ["mobilenet_v1", "mobilenet_v2", "ssd_mobilenet_v1", "ssd_mobilenet_v2", "ssd_mobilenet_v3"];
 </script>
 
 <template>
@@ -76,11 +69,7 @@ const supportedModels = [
     <div class="pa-6 pt-0">
       <v-row>
         <v-col cols="12 ">
-          <v-btn
-            color="secondary"
-            @click="() => (showObjectDetectionImportDialog = true)"
-            class="justify-center"
-          >
+          <v-btn color="secondary" @click="() => (showObjectDetectionImportDialog = true)" class="justify-center">
             <v-icon left class="open-icon"> mdi-import </v-icon>
             <span class="open-label">Import New Model</span>
           </v-btn>
@@ -97,24 +86,15 @@ const supportedModels = [
             <v-card color="primary" dark>
               <v-card-title>Import New Object Detection Model</v-card-title>
               <v-card-text>
-                Upload a new object detection model to this device that can be used in a
-                pipeline. Naming convention is that the labels file ought to have the same
-                name as the RKNN file, with -labels appended to the end. For example, if
-                the RKNN file is named <i>foo.rknn</i>, the labels file should be named
+                Upload a new object detection model to this device that can be used in a pipeline. Naming convention is
+                that the labels file ought to have the same name as the RKNN file, with -labels appended to the end. For
+                example, if the RKNN file is named <i>foo.rknn</i>, the labels file should be named
                 <i>foo-labels.txt</i>.
                 <v-row class="mt-6 ml-4 mr-8">
-                  <v-file-input
-                    label="RKNN File"
-                    v-model="importRKNNFile"
-                    accept=".rknn"
-                  />
+                  <v-file-input label="RKNN File" v-model="importRKNNFile" accept=".rknn" />
                 </v-row>
                 <v-row class="mt-6 ml-4 mr-8">
-                  <v-file-input
-                    label="Labels File"
-                    v-model="importLabelsFile"
-                    accept=".txt"
-                  />
+                  <v-file-input label="Labels File" v-model="importLabelsFile" accept=".txt" />
                 </v-row>
                 <v-row
                   class="mt-12 ml-8 mr-8 mb-1"
