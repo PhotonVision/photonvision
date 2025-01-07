@@ -49,8 +49,8 @@ const currentPipelineSettings = computed<ActivePipelineSettings>(
 const interactiveCols = computed(() =>
   (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) &&
   (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)
-    ? 9
-    : 8
+    ? 8
+    : 7
 );
 </script>
 
@@ -115,7 +115,6 @@ const interactiveCols = computed(() =>
       :disabled="!isTagPipeline || !currentPipelineSettings.doMultiTarget"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ doSingleTargetAlways: value }, false)"
     />
-    <v-divider />
     <table
       v-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode !== RobotOffsetPointMode.None"
       class="metrics-table mt-3 mb-3"

@@ -45,8 +45,7 @@ export const useSettingsStore = defineStore("settings", {
           devName: "eth0"
         }
       ],
-      networkingDisabled: false,
-      matchCamerasOnlyByPath: false
+      networkingDisabled: false
     },
     lighting: {
       supported: true,

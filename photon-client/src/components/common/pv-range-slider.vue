@@ -58,61 +58,59 @@ const checkNumberRange = (v: string): boolean => {
 </script>
 
 <template>
-  <div>
-    <v-row dense align="center">
-      <v-col :cols="12 - sliderCols">
-        <tooltipped-label :tooltip="tooltip" :label="label" />
-      </v-col>
-      <v-col :cols="sliderCols">
-        <v-range-slider
-          v-model="localValue"
-          :max="max"
-          :min="min"
-          :disabled="disabled"
-          hide-details
-          class="align-center"
-          dark
-          :color="inverted ? 'rgba(255, 255, 255, 0.2)' : 'accent'"
-          :track-color="inverted ? 'accent' : undefined"
-          thumb-color="accent"
-          :step="step"
-        >
-          <template #prepend>
-            <v-text-field
-              :value="localValue[0]"
-              dark
-              color="accent"
-              class="mt-0 pt-0"
-              hide-details
-              single-line
-              :max="max"
-              :min="min"
-              :step="step"
-              :rules="[checkNumberRange]"
-              type="number"
-              style="width: 60px"
-              @input="(v) => changeFromSlot(v, 0)"
-            />
-          </template>
-          <template #append>
-            <v-text-field
-              :value="localValue[1]"
-              dark
-              color="accent"
-              class="mt-0 pt-0"
-              hide-details
-              single-line
-              :max="max"
-              :min="min"
-              :step="step"
-              :rules="[checkNumberRange]"
-              type="number"
-              style="width: 60px"
-              @input="(v) => changeFromSlot(v, 1)"
-            />
-          </template>
-        </v-range-slider>
-      </v-col>
-    </v-row>
+  <div class="d-flex">
+    <v-col :cols="12 - sliderCols" class="d-flex align-center pl-0">
+      <tooltipped-label :tooltip="tooltip" :label="label" />
+    </v-col>
+    <v-col :cols="sliderCols" class="pr-0">
+      <v-range-slider
+        v-model="localValue"
+        :max="max"
+        :min="min"
+        :disabled="disabled"
+        hide-details
+        class="align-center"
+        dark
+        :color="inverted ? 'rgba(255, 255, 255, 0.2)' : 'accent'"
+        :track-color="inverted ? 'accent' : undefined"
+        thumb-color="accent"
+        :step="step"
+      >
+        <template #prepend>
+          <v-text-field
+            :value="localValue[0]"
+            dark
+            color="accent"
+            class="mt-0 pt-0"
+            hide-details
+            single-line
+            :max="max"
+            :min="min"
+            :step="step"
+            :rules="[checkNumberRange]"
+            type="number"
+            style="width: 60px"
+            @input="(v) => changeFromSlot(v, 0)"
+          />
+        </template>
+        <template #append>
+          <v-text-field
+            :value="localValue[1]"
+            dark
+            color="accent"
+            class="mt-0 pt-0"
+            hide-details
+            single-line
+            :max="max"
+            :min="min"
+            :step="step"
+            :rules="[checkNumberRange]"
+            type="number"
+            style="width: 60px"
+            @input="(v) => changeFromSlot(v, 1)"
+          />
+        </template>
+      </v-range-slider>
+    </v-col>
   </div>
 </template>
