@@ -55,12 +55,10 @@ const handleObjectDetectionImport = () => {
 };
 
 // Filters out models that are not supported by the current backend, and returns a flattened list.
-// const supportedModels = computed(() => {
-//   const { availableModels, supportedBackends } = useSettingsStore().general;
-//   return supportedBackends.flatMap((backend) => availableModels[backend] || []);
-// });
-//mock supportedModels for testing of GUI
-const supportedModels = ["mobilenet_v1", "mobilenet_v2", "ssd_mobilenet_v1", "ssd_mobilenet_v2", "ssd_mobilenet_v3"];
+const supportedModels = computed(() => {
+  const { availableModels, supportedBackends } = useSettingsStore().general;
+  return supportedBackends.flatMap((backend) => availableModels[backend] || []);
+});
 </script>
 
 <template>
