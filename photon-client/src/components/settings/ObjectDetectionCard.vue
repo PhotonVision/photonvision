@@ -1,11 +1,8 @@
 <script setup lang="ts">
-import { inject, ref } from "vue";
+import { ref } from "vue";
 import PvSelect from "@/components/common/pv-select.vue";
 import axios from "axios";
-import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { type ObjectDetectionPipelineSettings, PipelineType } from "@/types/PipelineTypes";
-import PvSlider from "@/components/common/pv-slider.vue";
-import { computed, getCurrentInstance } from "vue";
+import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
@@ -73,7 +70,7 @@ const supportedModels = computed(() => {
     <v-card-title class="pa-6">Object Detection</v-card-title>
     <div class="pa-6 pt-0">
       <v-row>
-        <v-col cols="12" sm="6">
+        <v-col cols="12">
           <v-btn
             color="secondary"
             @click="() => (showObjectDetectionImportDialog = true)"
@@ -131,15 +128,23 @@ const supportedModels = computed(() => {
             </v-card>
           </v-dialog>
         </v-col>
-        <v-col cols="12" sm="6">
-          <pv-select
-            v-model="selectedModel"
-            label="Model"
-            tooltip="The model used to detect objects in the camera feed"
-            :select-cols="interactiveCols"
-            :items="supportedModels"
-          />
+      </v-row>
+      <v-row>
+        <v-col cols="12">
+          <v-simple-table>
+            <thead>
+              <tr>
+                <th class="text-left">Available Models</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="model in supportedModels" :key="model">
+                <td>{{ model }}</td>
+              </tr>
+            </tbody>
+          </v-simple-table>
         </v-col>
+      </v-row>
     </div>
   </v-card>
 </template>
