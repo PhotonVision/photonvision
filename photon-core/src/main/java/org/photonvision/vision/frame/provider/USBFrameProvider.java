@@ -53,9 +53,16 @@ public class USBFrameProvider extends CpuImageProcessor {
         cvSink.setEnabled(true);
         this.settables = visionSettables;
 
-        useNewBehaviorSub = NetworkTablesManager.getInstance().kRootTable.getBooleanTopic("use_new_cscore_frametime").subscribe(false);
-        useNewBehaviorSub.getTopic().setCached(true);
-        useNewBehaviorSub.getTopic().setRetained(true);
+        var useNewBehaviorTopic = NetworkTablesManager.getInstance().kRootTable.getBooleanTopic("use_new_cscore_frametime");
+        useNewBehaviorTopic.setCached(true);
+        useNewBehaviorTopic.setRetained(true);
+
+        useNewBehaviorSub = useNewBehaviorTopic.subscribe(false);
+
+        // set a default
+        try (var t = useNewBehaviorTopic.publish()) {
+            t.set(false);
+        }
     }
 
     @Override
