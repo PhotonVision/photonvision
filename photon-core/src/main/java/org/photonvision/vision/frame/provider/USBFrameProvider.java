@@ -19,11 +19,8 @@ package org.photonvision.vision.frame.provider;
 
 import edu.wpi.first.cscore.CvSink;
 import edu.wpi.first.networktables.BooleanSubscriber;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.util.PixelFormat;
 import edu.wpi.first.util.RawFrame;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.opencv.core.Mat;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.logging.LogGroup;
@@ -53,7 +50,8 @@ public class USBFrameProvider extends CpuImageProcessor {
         cvSink.setEnabled(true);
         this.settables = visionSettables;
 
-        var useNewBehaviorTopic = NetworkTablesManager.getInstance().kRootTable.getBooleanTopic("use_new_cscore_frametime");
+        var useNewBehaviorTopic =
+                NetworkTablesManager.getInstance().kRootTable.getBooleanTopic("use_new_cscore_frametime");
         useNewBehaviorTopic.setCached(true);
         useNewBehaviorTopic.setRetained(true);
 
