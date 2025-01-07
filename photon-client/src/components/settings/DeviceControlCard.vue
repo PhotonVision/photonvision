@@ -467,7 +467,6 @@ const nukePhotonConfigDirectory = () => {
           </v-btn>
         </v-col>
       </v-row>
-    </div>
 
     <v-dialog v-model="showFactoryReset" width="800" dark>
       <v-card dark color="primary" class="pa-3" flat>
