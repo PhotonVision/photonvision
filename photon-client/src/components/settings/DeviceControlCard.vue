@@ -452,7 +452,6 @@ const nukePhotonConfigDirectory = () => {
               </v-card-text>
             </v-card>
           </v-dialog>
-      </v-row>
       <v-divider class="mt-3 pb-3" />
       <v-row>
         <v-col cols="12">
