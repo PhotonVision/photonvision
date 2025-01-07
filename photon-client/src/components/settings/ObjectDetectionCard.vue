@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import PvSelect from "@/components/common/pv-select.vue";
 import axios from "axios";
-import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
 const showObjectDetectionImportDialog = ref(false);
 const importRKNNFile = ref<File | null>(null);
@@ -59,10 +56,18 @@ const handleObjectDetectionImport = () => {
 };
 
 // Filters out models that are not supported by the current backend, and returns a flattened list.
-const supportedModels = computed(() => {
-  const { availableModels, supportedBackends } = useSettingsStore().general;
-  return supportedBackends.flatMap((backend) => availableModels[backend] || []);
-});
+// const supportedModels = computed(() => {
+//   const { availableModels, supportedBackends } = useSettingsStore().general;
+//   return supportedBackends.flatMap((backend) => availableModels[backend] || []);
+// });
+//mock supportedModels for testing of GUI
+const supportedModels = [
+  "mobilenet_v1",
+  "mobilenet_v2",
+  "ssd_mobilenet_v1",
+  "ssd_mobilenet_v2",
+  "ssd_mobilenet_v3",
+];
 </script>
 
 <template>
@@ -70,10 +75,11 @@ const supportedModels = computed(() => {
     <v-card-title class="pa-6">Object Detection</v-card-title>
     <div class="pa-6 pt-0">
       <v-row>
-        <v-col cols="12">
+        <v-col cols="12 ">
           <v-btn
             color="secondary"
             @click="() => (showObjectDetectionImportDialog = true)"
+            class="justify-center"
           >
             <v-icon left class="open-icon"> mdi-import </v-icon>
             <span class="open-label">Import New Model</span>
@@ -131,8 +137,8 @@ const supportedModels = computed(() => {
       </v-row>
       <v-row>
         <v-col cols="12">
-          <v-simple-table>
-            <thead>
+          <v-simple-table fixed-header height="100%" dense dark>
+            <thead style="font-size: 1.25rem">
               <tr>
                 <th class="text-left">Available Models</th>
               </tr>
@@ -149,7 +155,7 @@ const supportedModels = computed(() => {
   </v-card>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .v-btn {
   width: 100%;
 }
@@ -159,6 +165,43 @@ const supportedModels = computed(() => {
   }
   .open-label {
     display: none;
+  }
+}
+.v-data-table {
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  background-color: #006492 !important;
+
+  th,
+  td {
+    background-color: #006492 !important;
+    font-size: 1rem !important;
+    color: white !important;
+  }
+
+  td {
+    font-family: monospace !important;
+  }
+
+  tbody :hover td {
+    background-color: #005281 !important;
+  }
+
+  ::-webkit-scrollbar {
+    width: 0;
+    height: 0.55em;
+    border-radius: 5px;
+  }
+
+  ::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: #ffd843;
+    border-radius: 10px;
   }
 }
 </style>

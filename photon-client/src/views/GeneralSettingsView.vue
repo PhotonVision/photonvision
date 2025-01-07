@@ -12,8 +12,8 @@ import ApriltagControlCard from "@/components/settings/ApriltagControlCard.vue";
   <div class="pa-3">
     <MetricsCard />
     <DeviceControlCard />
-    <ObjectDetectionCard />
     <NetworkingCard />
+    <ObjectDetectionCard />
     <LightingControlCard v-if="useSettingsStore().lighting.supported" />
     <ApriltagControlCard />
   </div>
