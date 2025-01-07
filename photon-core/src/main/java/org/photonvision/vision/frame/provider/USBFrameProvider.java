@@ -18,10 +18,14 @@
 package org.photonvision.vision.frame.provider;
 
 import edu.wpi.first.cscore.CvSink;
+import edu.wpi.first.networktables.BooleanSubscriber;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.util.PixelFormat;
 import edu.wpi.first.util.RawFrame;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.opencv.core.Mat;
+import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.jni.CscoreExtras;
@@ -38,6 +42,9 @@ public class USBFrameProvider extends CpuImageProcessor {
 
     private long lastTime = 0;
 
+    // subscribers are lightweight, and I'm lazy
+    private final BooleanSubscriber useNewBehaviorSub;
+
     @SuppressWarnings("SpellCheckingInspection")
     public USBFrameProvider(CvSink sink, VisionSourceSettables visionSettables) {
         logger = new Logger(USBFrameProvider.class, sink.getName(), LogGroup.Camera);
@@ -46,12 +53,14 @@ public class USBFrameProvider extends CpuImageProcessor {
         cvSink.setEnabled(true);
         this.settables = visionSettables;
 
-        SmartDashboard.putBoolean("/photonvision/use_old_cscore_behavior", false);
+        useNewBehaviorSub = NetworkTablesManager.getInstance().kRootTable.getBooleanTopic("use_new_cscore_frametime").subscribe(false);
+        useNewBehaviorSub.getTopic().setCached(true);
+        useNewBehaviorSub.getTopic().setRetained(true);
     }
 
     @Override
     public CapturedFrame getInputMat() {
-        if (SmartDashboard.getBoolean("/photonvision/use_old_cscore_behavior", false)) {
+        if (!useNewBehaviorSub.get()) {
             // We allocate memory so we don't fill a Mat in use by another thread (memory model is easier)
             var mat = new CVMat();
             // This is from wpi::Now, or WPIUtilJNI.now(). The epoch from grabFrame is uS since
@@ -67,7 +76,7 @@ public class USBFrameProvider extends CpuImageProcessor {
         } else {
             // We allocate memory so we don't fill a Mat in use by another thread (memory model is easier)
             // TODO - consider a frame pool
-            // TODO - getCurrentVideoMode is a JNI call for us
+            // TODO - getCurrentVideoMode is a JNI call for us, but profiling indicates it's fast
             var cameraMode = settables.getCurrentVideoMode();
             var frame = new RawFrame();
             frame.setInfo(
