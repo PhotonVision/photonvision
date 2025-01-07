@@ -10,20 +10,21 @@ const restartProgram = () => {
     .then(() => {
       useStateStore().showSnackbarMessage({
         message: "Successfully sent program restart request",
-        color: "success"
+        color: "success",
       });
     })
     .catch((error) => {
       // This endpoint always return 204 regardless of outcome
       if (error.request) {
         useStateStore().showSnackbarMessage({
-          message: "Error while trying to process the request! The backend didn't respond.",
-          color: "error"
+          message:
+            "Error while trying to process the request! The backend didn't respond.",
+          color: "error",
         });
       } else {
         useStateStore().showSnackbarMessage({
           message: "An error occurred while trying to process the request.",
-          color: "error"
+          color: "error",
         });
       }
     });
@@ -33,25 +34,27 @@ const restartDevice = () => {
     .post("/utils/restartDevice")
     .then(() => {
       useStateStore().showSnackbarMessage({
-        message: "Successfully dispatched the restart command. It isn't confirmed if a device restart will occur.",
-        color: "success"
+        message:
+          "Successfully dispatched the restart command. It isn't confirmed if a device restart will occur.",
+        color: "success",
       });
     })
     .catch((error) => {
       if (error.response) {
         useStateStore().showSnackbarMessage({
           message: "The backend is unable to fulfil the request to restart the device.",
-          color: "error"
+          color: "error",
         });
       } else if (error.request) {
         useStateStore().showSnackbarMessage({
-          message: "Error while trying to process the request! The backend didn't respond.",
-          color: "error"
+          message:
+            "Error while trying to process the request! The backend didn't respond.",
+          color: "error",
         });
       } else {
         useStateStore().showSnackbarMessage({
           message: "An error occurred while trying to process the request.",
-          color: "error"
+          color: "error",
         });
       }
     });
@@ -73,7 +76,7 @@ const handleOfflineUpdate = () => {
   useStateStore().showSnackbarMessage({
     message: "New Software Upload in Progress...",
     color: "secondary",
-    timeout: -1
+    timeout: -1,
   });
 
   axios
@@ -83,40 +86,44 @@ const handleOfflineUpdate = () => {
         const uploadPercentage = (progress || 0) * 100.0;
         if (uploadPercentage < 99.5) {
           useStateStore().showSnackbarMessage({
-            message: "New Software Upload in Process, " + uploadPercentage.toFixed(2) + "% complete",
+            message:
+              "New Software Upload in Process, " +
+              uploadPercentage.toFixed(2) +
+              "% complete",
             color: "secondary",
-            timeout: -1
+            timeout: -1,
           });
         } else {
           useStateStore().showSnackbarMessage({
             message: "Installing uploaded software...",
             color: "secondary",
-            timeout: -1
+            timeout: -1,
           });
         }
-      }
+      },
     })
     .then((response) => {
       useStateStore().showSnackbarMessage({
         message: response.data.text || response.data,
-        color: "success"
+        color: "success",
       });
     })
     .catch((error) => {
       if (error.response) {
         useStateStore().showSnackbarMessage({
           color: "error",
-          message: error.response.data.text || error.response.data
+          message: error.response.data.text || error.response.data,
         });
       } else if (error.request) {
         useStateStore().showSnackbarMessage({
           color: "error",
-          message: "Error while trying to process the request! The backend didn't respond."
+          message:
+            "Error while trying to process the request! The backend didn't respond.",
         });
       } else {
         useStateStore().showSnackbarMessage({
           color: "error",
-          message: "An error occurred while trying to process the request."
+          message: "An error occurred while trying to process the request.",
         });
       }
     });
@@ -137,7 +144,7 @@ enum ImportType {
   HardwareConfig,
   HardwareSettings,
   NetworkConfig,
-  ApriltagFieldLayout
+  ApriltagFieldLayout,
 }
 const showImportDialog = ref(false);
 const importType = ref<ImportType | number>(-1);
@@ -170,29 +177,30 @@ const handleSettingsImport = () => {
 
   axios
     .post(`/settings${settingsEndpoint}`, formData, {
-      headers: { "Content-Type": "multipart/form-data" }
+      headers: { "Content-Type": "multipart/form-data" },
     })
     .then((response) => {
       useStateStore().showSnackbarMessage({
         message: response.data.text || response.data,
-        color: "success"
+        color: "success",
       });
     })
     .catch((error) => {
       if (error.response) {
         useStateStore().showSnackbarMessage({
           color: "error",
-          message: error.response.data.text || error.response.data
+          message: error.response.data.text || error.response.data,
         });
       } else if (error.request) {
         useStateStore().showSnackbarMessage({
           color: "error",
-          message: "Error while trying to process the request! The backend didn't respond."
+          message:
+            "Error while trying to process the request! The backend didn't respond.",
         });
       } else {
         useStateStore().showSnackbarMessage({
           color: "error",
-          message: "An error occurred while trying to process the request."
+          message: "An error occurred while trying to process the request.",
         });
       }
     });
@@ -200,57 +208,6 @@ const handleSettingsImport = () => {
   showImportDialog.value = false;
   importType.value = -1;
   importFile.value = null;
-};
-
-const showObjectDetectionImportDialog = ref(false);
-const importRKNNFile = ref<File | null>(null);
-const importLabelsFile = ref<File | null>(null);
-
-const handleObjectDetectionImport = () => {
-  if (importRKNNFile.value === null || importLabelsFile.value === null) return;
-
-  const formData = new FormData();
-  formData.append("rknn", importRKNNFile.value);
-  formData.append("labels", importLabelsFile.value);
-
-  useStateStore().showSnackbarMessage({
-    message: "Importing Object Detection Model...",
-    color: "secondary",
-    timeout: -1
-  });
-
-  axios
-    .post("/utils/importObjectDetectionModel", formData, {
-      headers: { "Content-Type": "multipart/form-data" }
-    })
-    .then((response) => {
-      useStateStore().showSnackbarMessage({
-        message: response.data.text || response.data,
-        color: "success"
-      });
-    })
-    .catch((error) => {
-      if (error.response) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: error.response.data.text || error.response.data
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "Error while trying to process the request! The backend didn't respond."
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "An error occurred while trying to process the request."
-        });
-      }
-    });
-
-  showObjectDetectionImportDialog.value = false;
-  importRKNNFile.value = null;
-  importLabelsFile.value = null;
 };
 
 const showFactoryReset = ref(false);
@@ -261,25 +218,27 @@ const nukePhotonConfigDirectory = () => {
     .post("/utils/nukeConfigDirectory")
     .then(() => {
       useStateStore().showSnackbarMessage({
-        message: "Successfully dispatched the reset command. Waiting for backend to start back up",
-        color: "success"
+        message:
+          "Successfully dispatched the reset command. Waiting for backend to start back up",
+        color: "success",
       });
     })
     .catch((error) => {
       if (error.response) {
         useStateStore().showSnackbarMessage({
           message: "The backend is unable to fulfil the request to reset the device.",
-          color: "error"
+          color: "error",
         });
       } else if (error.request) {
         useStateStore().showSnackbarMessage({
-          message: "Error while trying to process the request! The backend didn't respond.",
-          color: "error"
+          message:
+            "Error while trying to process the request! The backend didn't respond.",
+          color: "error",
         });
       } else {
         useStateStore().showSnackbarMessage({
           message: "An error occurred while trying to process the request.",
-          color: "error"
+          color: "error",
         });
       }
     });
@@ -309,7 +268,13 @@ const nukePhotonConfigDirectory = () => {
             <v-icon left class="open-icon"> mdi-upload </v-icon>
             <span class="open-label">Offline Update</span>
           </v-btn>
-          <input ref="offlineUpdate" type="file" accept=".jar" style="display: none" @change="handleOfflineUpdate" />
+          <input
+            ref="offlineUpdate"
+            type="file"
+            accept=".jar"
+            style="display: none"
+            @change="handleOfflineUpdate"
+          />
         </v-col>
       </v-row>
       <v-divider class="mt-3 pb-3" />
@@ -332,7 +297,8 @@ const nukePhotonConfigDirectory = () => {
             <v-card color="primary" dark>
               <v-card-title>Import Settings</v-card-title>
               <v-card-text>
-                Upload and apply previously saved or exported PhotonVision settings to this device
+                Upload and apply previously saved or exported PhotonVision settings to
+                this device
                 <v-row class="mt-6 ml-4">
                   <pv-select
                     v-model="importType"
@@ -343,7 +309,7 @@ const nukePhotonConfigDirectory = () => {
                       'Hardware Config',
                       'Hardware Settings',
                       'Network Config',
-                      'Apriltag Layout'
+                      'Apriltag Layout',
                     ]"
                     :select-cols="10"
                     style="width: 100%"
@@ -353,7 +319,9 @@ const nukePhotonConfigDirectory = () => {
                   <v-file-input
                     v-model="importFile"
                     :disabled="importType === -1"
-                    :error-messages="importType === -1 ? 'Settings type not selected' : ''"
+                    :error-messages="
+                      importType === -1 ? 'Settings type not selected' : ''
+                    "
                     :accept="importType === ImportType.AllSettings ? '.zip' : '.json'"
                   />
                 </v-row>
@@ -362,7 +330,11 @@ const nukePhotonConfigDirectory = () => {
                   style="display: flex; align-items: center; justify-content: center"
                   align="center"
                 >
-                  <v-btn color="secondary" :disabled="importFile === null" @click="handleSettingsImport">
+                  <v-btn
+                    color="secondary"
+                    :disabled="importFile === null"
+                    @click="handleSettingsImport"
+                  >
                     <v-icon left class="open-icon"> mdi-import </v-icon>
                     <span class="open-label">Import Settings</span>
                   </v-btn>
@@ -406,52 +378,6 @@ const nukePhotonConfigDirectory = () => {
           </v-btn>
         </v-col>
       </v-row>
-      <v-row>
-        <v-col cols="12">
-          <v-btn color="secondary" @click="() => (showImportDialog = true)">
-            <v-icon left class="open-icon"> mdi-import </v-icon>
-            <span class="open-label">Import Object Detection Model</span>
-          </v-btn>
-          <v-dialog
-            v-model="showImportDialog"
-            width="600"
-            @input="
-              () => {
-                importRKNNFile = null;
-                importLabelsFile = null;
-              }">
-            <v-card color="primary" dark>
-              <v-card-title>Import Object Detection Model</v-card-title>
-              <v-card-text>
-                Upload a new object detection model to this device that can be used in a pipeline.
-                Naming convention is that the labels file ought to have the same name as the RKNN file, with -labels appended to the end.
-                For example, if the RKNN file is named <i>foo.rknn</i>, the labels file should be named <i>foo-labels.txt</i>.
-                <v-row class="mt-6 ml-4 mr-8">
-                  <v-file-input
-                    label="RKNN File"
-                    v-model="importRKNNFile"
-                    accept=".rknn"
-                  />
-                </v-row>
-                <v-row class="mt-6 ml-4 mr-8">
-                  <v-file-input
-                    label="Labels File"
-                    v-model="importLabelsFile"
-                    accept=".txt"
-                  />
-                </v-row>
-                <v-row
-                  class="mt-12 ml-8 mr-8 mb-1"
-                  style="display: flex; align-items: center; justify-content: center"
-                  align="center">
-                  <v-btn color="secondary" :disabled="importRKNNFile === null || importLabelsFile === null" @click="handleObjectDetectionImport">
-                    <v-icon left class="open-icon"> mdi-import </v-icon>
-                    <span class="open-label">Import Object Detection Model</span>
-                  </v-btn>
-                </v-row>
-              </v-card-text>
-            </v-card>
-          </v-dialog>
       <v-divider class="mt-3 pb-3" />
       <v-row>
         <v-col cols="12">
@@ -467,6 +393,7 @@ const nukePhotonConfigDirectory = () => {
           </v-btn>
         </v-col>
       </v-row>
+    </div>
 
     <v-dialog v-model="showFactoryReset" width="800" dark>
       <v-card dark color="primary" class="pa-3" flat>
@@ -480,10 +407,16 @@ const nukePhotonConfigDirectory = () => {
         <v-card-text class="pt-3">
           <v-row class="align-center white--text">
             <v-col cols="12" md="6">
-              <span class="mt-3"> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
+              <span class="mt-3">
+                This will delete ALL OF YOUR SETTINGS and restart PhotonVision.
+              </span>
             </v-col>
             <v-col cols="12" md="6">
-              <v-btn color="secondary" style="float: right" @click="openExportSettingsPrompt">
+              <v-btn
+                color="secondary"
+                style="float: right"
+                @click="openExportSettingsPrompt"
+              >
                 <v-icon left class="open-icon"> mdi-export </v-icon>
                 <span class="open-label">Backup Settings</span>
                 <a
@@ -514,7 +447,9 @@ const nukePhotonConfigDirectory = () => {
             <v-icon left class="open-icon"> mdi-trash-can-outline </v-icon>
             <span class="open-label">
               {{
-                $vuetify.breakpoint.mdAndUp ? "Delete everything, I have backed up what I need" : "Delete Everything"
+                $vuetify.breakpoint.mdAndUp
+                  ? "Delete everything, I have backed up what I need"
+                  : "Delete Everything"
               }}
             </span>
           </v-btn>
