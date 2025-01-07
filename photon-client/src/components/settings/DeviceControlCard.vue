@@ -206,6 +206,53 @@ const showObjectDetectionImportDialog = ref(false);
 const importRKNNFile = ref<File | null>(null);
 const importLabelsFile = ref<File | null>(null);
 
+const handleObjectDetectionImport = () => {
+  if (importRKNNFile.value === null || importLabelsFile.value === null) return;
+
+  const formData = new FormData();
+  formData.append("rknnData", importRKNNFile.value);
+  formData.append("labelsData", importLabelsFile.value);
+
+  useStateStore().showSnackbarMessage({
+    message: "Importing Object Detection Model...",
+    color: "secondary",
+    timeout: -1
+  });
+
+  axios
+    .post("/utils/importObjectDetectionModel", formData, {
+      headers: { "Content-Type": "multipart/form-data" }
+    })
+    .then((response) => {
+      useStateStore().showSnackbarMessage({
+        message: response.data.text || response.data,
+        color: "success"
+      });
+    })
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: error.response.data.text || error.response.data
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "Error while trying to process the request! The backend didn't respond."
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "An error occurred while trying to process the request."
+        });
+      }
+    });
+
+  showObjectDetectionImportDialog.value = false;
+  importRKNNFile.value = null;
+  importLabelsFile.value = null;
+};
+
 const showFactoryReset = ref(false);
 const expected = "Delete Everything";
 const yesDeleteMySettingsText = ref("");
