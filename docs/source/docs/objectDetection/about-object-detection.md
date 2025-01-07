@@ -43,4 +43,4 @@ Coming soon!
 PhotonVision currently ONLY supports YOLOv5 models trained and converted to `.rknn` format for RK3588 CPUs! Other models require different post-processing code and will NOT work. The model conversion process is also highly particular. Proceed with care.
 :::
 
-Use a program like WinSCP or FileZilla to access your coprocessor's filesystem, and copy the new `.rknn` model file into /home/pi. Next, SSH into the coprocessor and `sudo mv /path/to/new/model.rknn /opt/photonvision/photonvision_config/models/NEW-MODEL-NAME.rknn`. Repeat this process with the labels file, which should contain one line per label the model outputs with no training newline. Next, restart PhotonVision via the web UI.
+In the settings, under ``Device Control``, there's an option to upload a new object detection model.  When uploading the files, ensure that that the labels file has the same name as the RKNN file, with ``-labels`` appended to the end.  For example, if the RKNN file is named ``foo.rknn``, the labels file should be named ``foo-labels.txt``.  The labels file should contain one line per label the model outputs with no training newline.

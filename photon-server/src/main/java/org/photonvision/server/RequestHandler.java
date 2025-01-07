@@ -575,6 +575,7 @@ public class RequestHandler {
                 labelsFile.content().transferTo(out);
             }
 
+            ctx.status(200).result("Successfully uploaded object detection model");
         } catch (Exception e) {
             ctx.status(500).result("Error processing files: " + e.getMessage());
         }
