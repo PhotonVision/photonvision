@@ -197,6 +197,11 @@ public class ConfigManager {
         requestSave();
     }
 
+    public void addCameraConfiguration(CameraConfiguration config) {
+        getConfig().addCameraConfig(config);
+        requestSave();
+    }
+
     public void saveModule(CameraConfiguration config, String uniqueName) {
         getConfig().addCameraConfig(uniqueName, config);
         requestSave();

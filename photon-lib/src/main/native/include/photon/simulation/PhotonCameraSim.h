@@ -108,7 +108,7 @@ class PhotonCameraSim {
   double minTargetAreaPercent;
 
   frc::AprilTagFieldLayout tagLayout{
-      frc::AprilTagFieldLayout::LoadField(frc::AprilTagField::k2024Crescendo)};
+      frc::AprilTagFieldLayout::LoadField(frc::AprilTagField::kDefaultField)};
 
   cs::CvSource videoSimRaw;
   cv::Mat videoSimFrameRaw{};

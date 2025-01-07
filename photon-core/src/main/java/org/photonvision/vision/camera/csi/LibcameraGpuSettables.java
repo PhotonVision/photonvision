@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.vision.camera;
+package org.photonvision.vision.camera.csi;
 
 import edu.wpi.first.cscore.VideoMode;
 import edu.wpi.first.math.MathUtil;
@@ -25,7 +25,7 @@ import java.util.HashMap;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.LibCameraJNI;
-import org.photonvision.vision.camera.LibcameraGpuSource.FPSRatedVideoMode;
+import org.photonvision.vision.camera.csi.LibcameraGpuSource.FPSRatedVideoMode;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.processes.VisionSourceSettables;
 
@@ -64,7 +64,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
         videoModes = new HashMap<>();
 
-        sensorModel = LibCameraJNI.getSensorModel(configuration.path);
+        sensorModel = LibCameraJNI.getSensorModel(configuration.matchedCameraInfo.path());
 
         if (sensorModel == LibCameraJNI.SensorModel.IMX219) {
             // Settings for the IMX219 sensor, which is used on the Pi Camera Module v2
@@ -113,6 +113,8 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         } else if (sensorModel == LibCameraJNI.SensorModel.OV5647) {
             minExposure = 560;
         }
+        this.cameraPropertiesCached =
+                true; // Camera properties are not able to be changed so they are always cached
     }
 
     @Override
@@ -122,16 +124,19 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
     @Override
     public void setAutoExposure(boolean cameraAutoExposure) {
+        logger.debug("Setting auto exposure to " + cameraAutoExposure);
         lastAutoExposureActive = cameraAutoExposure;
         LibCameraJNI.setAutoExposure(r_ptr, cameraAutoExposure);
+        if (!cameraAutoExposure) {
+            setExposureRaw(lastManualExposure);
+        }
     }
 
     @Override
     public void setExposureRaw(double exposureRaw) {
-        if (exposureRaw < 0.0 || lastAutoExposureActive) {
-            // Auto-exposure is active right now, don't set anything.
-            return;
-        }
+        logger.debug("Setting exposure to " + exposureRaw);
+
+        LibCameraJNI.setAutoExposure(r_ptr, false);
 
         // Store the exposure for use when we need to recreate the camera.
         lastManualExposure = exposureRaw;
@@ -213,7 +218,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
             logger.debug("Creating libcamera");
             r_ptr =
                     LibCameraJNI.createCamera(
-                            getConfiguration().path,
+                            getConfiguration().matchedCameraInfo.path(),
                             mode.width,
                             mode.height,
                             (m_rotationMode == ImageRotationMode.DEG_180_CCW ? 180 : 0));

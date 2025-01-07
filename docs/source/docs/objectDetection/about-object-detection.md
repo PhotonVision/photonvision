@@ -4,11 +4,7 @@
 
 PhotonVision supports object detection using neural network accelerator hardware built into Orange Pi 5/5+ coprocessors. The Neural Processing Unit, or NPU, is [used by PhotonVision](https://github.com/PhotonVision/rknn_jni/tree/main) to massively accelerate certain math operations like those needed for running ML-based object detection.
 
-For the 2024 season, PhotonVision ships with a **pre-trained NOTE detector** (shown above), as well as a mechanism for swapping in custom models. Future development will focus on enabling lower friction management of multiple custom models.
-
-```{image} images/notes-ui.png
-
-```
+For the 2025 season, PhotonVision does not currently ship with a pre-trained detector.  If teams are interested in using object detection, they can follow the custom process outlined {ref}`below <docs/objectDetection/about-object-detection:Uploading Custom Models>`.
 
 ## Tracking Objects
 
@@ -47,6 +43,4 @@ Coming soon!
 PhotonVision currently ONLY supports YOLOv5 models trained and converted to `.rknn` format for RK3588 CPUs! Other models require different post-processing code and will NOT work. The model conversion process is also highly particular. Proceed with care.
 :::
 
-Our [pre-trained NOTE model](https://github.com/PhotonVision/photonvision/blob/main/photon-server/src/main/resources/models/note-640-640-yolov5s.rknn) is automatically extracted from the JAR when PhotonVision starts, only if a file named “note-640-640-yolov5s.rknn” and "labels.txt" does not exist in the folder `photonvision_config/models/`. This technically allows power users to replace the model and label files with new ones without rebuilding Photon from source and uploading a new JAR.
-
-Use a program like WinSCP or FileZilla to access your coprocessor's filesystem, and copy the new `.rknn` model file into /home/pi. Next, SSH into the coprocessor and `sudo mv /path/to/new/model.rknn /opt/photonvision/photonvision_config/models/note-640-640-yolov5s.rknn`. Repeat this process with the labels file, which should contain one line per label the model outputs with no training newline. Next, restart PhotonVision via the web UI.
+Use a program like WinSCP or FileZilla to access your coprocessor's filesystem, and copy the new `.rknn` model file into /home/pi. Next, SSH into the coprocessor and `sudo mv /path/to/new/model.rknn /opt/photonvision/photonvision_config/models/NEW-MODEL-NAME.rknn`. Repeat this process with the labels file, which should contain one line per label the model outputs with no training newline. Next, restart PhotonVision via the web UI.

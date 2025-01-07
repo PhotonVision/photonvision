@@ -28,7 +28,7 @@ import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.vision.processes.VisionModule;
-import org.photonvision.vision.processes.VisionModuleManager;
+import org.photonvision.vision.processes.VisionSourceManager;
 
 public class UIPhotonConfiguration {
     public List<UICameraConfiguration> cameraSettings;
@@ -62,7 +62,7 @@ public class UIPhotonConfiguration {
                                         : c.getHardwareConfig().deviceName,
                                 Platform.getPlatformName()),
                         c.getApriltagFieldLayout()),
-                VisionModuleManager.getInstance().getModules().stream()
+                VisionSourceManager.getInstance().getVisionModules().stream()
                         .map(VisionModule::toUICameraConfig)
                         .collect(Collectors.toList()));
     }
