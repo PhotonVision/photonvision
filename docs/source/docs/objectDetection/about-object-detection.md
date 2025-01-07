@@ -44,3 +44,4 @@ PhotonVision currently ONLY supports YOLOv5 models trained and converted to `.rk
 :::
 
 In the settings, under ``Device Control``, there's an option to upload a new object detection model.  When uploading the files, ensure that that the labels file has the same name as the RKNN file, with ``-labels`` appended to the end.  For example, if the RKNN file is named ``foo.rknn``, the labels file should be named ``foo-labels.txt``.  The labels file should contain one line per label the model outputs with no training newline.
+
