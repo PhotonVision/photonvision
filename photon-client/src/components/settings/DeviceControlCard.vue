@@ -373,7 +373,7 @@ const nukePhotonConfigDirectory = () => {
     </div>
 
     <v-dialog v-model="showFactoryReset" width="800" dark>
-      <v-card dark color="primary" class="pa-6" flat>
+      <v-card dark color="primary" class="pa-3" flat>
         <v-card-title style="justify-content: center" class="pb-6">
           <span class="open-label">
             <v-icon right color="error" class="open-icon ma-1">mdi-nuke</v-icon>
@@ -405,8 +405,8 @@ const nukePhotonConfigDirectory = () => {
           <pv-input
             v-model="yesDeleteMySettingsText"
             :label="'Type &quot;' + expected + '&quot;:'"
-            :label-cols="2"
-            :input-cols="10"
+            :label-cols="6"
+            :input-cols="6"
           />
         </v-card-text>
         <v-card-text>

@@ -242,7 +242,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
 
 <template>
   <v-card color="primary">
-    <v-row style="padding: 12px 12px 0 24px">
+    <v-row style="padding: 20px 12px 0 30px">
       <v-col cols="10" class="pa-0">
         <pv-select
           v-if="!isCameraNameEdit"
@@ -281,7 +281,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         />
       </v-col>
     </v-row>
-    <v-row style="padding: 0 12px 0 24px">
+    <v-row style="padding: 0 12px 0 30px">
       <v-col cols="10" class="pa-0">
         <pv-select
           v-if="!isPipelineNameEdit"
@@ -353,7 +353,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         />
       </v-col>
     </v-row>
-    <v-row style="padding: 0 12px 12px 24px">
+    <v-row style="padding: 0 12px 24px 30px">
       <v-col cols="10" class="pa-0">
         <pv-select
           v-model="currentPipelineType"

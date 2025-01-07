@@ -31,26 +31,24 @@ const localValue = computed({
 </script>
 
 <template>
-  <div>
-    <v-row dense align="center">
-      <v-col :cols="labelCols">
-        <tooltipped-label :tooltip="tooltip" :label="label" />
-      </v-col>
-      <v-col>
-        <v-text-field
-          v-model="localValue"
-          dark
-          class="mt-0 pt-0"
-          hide-details
-          single-line
-          color="accent"
-          type="number"
-          style="width: 70px"
-          :step="step"
-          :disabled="disabled"
-          :rules="rules"
-        />
-      </v-col>
-    </v-row>
+  <div class="d-flex">
+    <v-col :cols="labelCols" class="d-flex pl-0 align-center">
+      <tooltipped-label :tooltip="tooltip" :label="label" />
+    </v-col>
+    <v-col class="pr-0">
+      <v-text-field
+        v-model="localValue"
+        dark
+        class="mt-0 pt-0"
+        hide-details
+        single-line
+        color="accent"
+        type="number"
+        style="width: 70px"
+        :step="step"
+        :disabled="disabled"
+        :rules="rules"
+      />
+    </v-col>
   </div>
 </template>

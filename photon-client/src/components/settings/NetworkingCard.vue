@@ -155,7 +155,7 @@ watchEffect(() => {
           ]"
         />
         <v-banner
-          v-show="!isValidNetworkTablesIP(tempSettingsStruct.ntServerAddress) && !tempSettingsStruct.runNTServer"
+          v-if="!isValidNetworkTablesIP(tempSettingsStruct.ntServerAddress) && !tempSettingsStruct.runNTServer"
           rounded
           color="error"
           text-color="white"
@@ -211,7 +211,6 @@ watchEffect(() => {
           label="Manage Device Networking"
           tooltip="If enabled, Photon will manage device hostname and network settings."
           :label-cols="4"
-          class="pt-2"
         />
         <pv-select
           v-show="!useSettingsStore().network.networkingDisabled"
@@ -227,7 +226,7 @@ watchEffect(() => {
           :items="useSettingsStore().networkInterfaceNames"
         />
         <v-banner
-          v-show="
+          v-if="
             !useSettingsStore().networkInterfaceNames.length &&
             tempSettingsStruct.shouldManage &&
             useSettingsStore().network.canManage &&
@@ -244,11 +243,10 @@ watchEffect(() => {
           v-model="tempSettingsStruct.runNTServer"
           label="Run NetworkTables Server (Debugging Only)"
           tooltip="If enabled, this device will create a NT server. This is useful for home debugging, but should be disabled on-robot."
-          class="mt-3 mb-2"
           :label-cols="4"
         />
         <v-banner
-          v-show="tempSettingsStruct.runNTServer"
+          v-if="tempSettingsStruct.runNTServer"
           rounded
           color="error"
           text-color="white"
@@ -262,14 +260,12 @@ watchEffect(() => {
           v-model="tempSettingsStruct.shouldPublishProto"
           label="Also Publish Protobuf"
           tooltip="If enabled, Photon will publish all pipeline results in both the Packet and Protobuf formats. This is useful for visualizing pipeline results from NT viewers such as glass and logging software such as AdvantageScope. Note: photon-lib will ignore this value and is not recommended on the field for performance."
-          class="mt-3 mb-2"
           :label-cols="4"
         />
         <v-banner
-          v-show="tempSettingsStruct.shouldPublishProto"
+          v-if="tempSettingsStruct.shouldPublishProto"
           rounded
           color="error"
-          class="mb-3"
           text-color="white"
           icon="mdi-information-outline"
         >

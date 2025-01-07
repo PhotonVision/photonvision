@@ -169,8 +169,8 @@ const wrappedCameras = computed<SelectItem[]>(() =>
 
 <template>
   <v-card class="mb-3" color="primary" dark>
-    <v-card-title class="pb-0">Camera Settings</v-card-title>
-    <v-card-text>
+    <v-card-title class="pa-6 pb-0">Camera Settings</v-card-title>
+    <v-card-text class="pa-6 pt-3">
       <pv-select
         v-model="useStateStore().currentCameraUniqueName"
         label="Camera"
@@ -200,33 +200,31 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         ]"
         :select-cols="8"
       />
-      <v-row>
-        <v-col cols="6">
-          <v-btn block small color="secondary" :disabled="!settingsHaveChanged()" @click="saveCameraSettings">
-            <v-icon left> mdi-content-save </v-icon>
-            Save Changes
-          </v-btn>
-        </v-col>
-        <v-col cols="6">
-          <v-btn block small color="error" @click="() => (showDeleteCamera = true)">
-            <v-icon left> mdi-trash-can-outline </v-icon>
-            Delete Camera
-          </v-btn>
-        </v-col>
-      </v-row>
+    </v-card-text>
+    <v-card-text class="d-flex pa-6 pt-0">
+      <v-col cols="6" class="pa-0 pr-2">
+        <v-btn block small color="secondary" :disabled="!settingsHaveChanged()" @click="saveCameraSettings">
+          <v-icon left> mdi-content-save </v-icon>
+          Save Changes
+        </v-btn>
+      </v-col>
+      <v-col cols="6" class="pa-0 pl-2">
+        <v-btn block small color="error" @click="() => (showDeleteCamera = true)">
+          <v-icon left> mdi-trash-can-outline </v-icon>
+          Delete Camera
+        </v-btn>
+      </v-col>
     </v-card-text>
 
     <v-dialog v-model="showDeleteCamera" dark width="800">
       <v-card dark class="dialog-container pa-3 pb-2" color="primary" flat>
-        <v-card-title>
-          Delete {{ useCameraSettingsStore().cameraNames[useStateStore().currentCameraIndex] }}?
-        </v-card-title>
+        <v-card-title> Delete {{ useCameraSettingsStore().currentCameraSettings.nickname }}? </v-card-title>
         <v-card-text>
           <v-row class="align-center pt-6">
-            <v-col cols="12" md="7">
+            <v-col cols="12" md="6">
               <span class="white--text"> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
             </v-col>
-            <v-col cols="12" md="5">
+            <v-col cols="12" md="6">
               <v-btn color="secondary" block @click="openExportSettingsPrompt">
                 <v-icon left class="open-icon"> mdi-export </v-icon>
                 <span class="open-label">Backup Settings</span>
@@ -242,30 +240,26 @@ const wrappedCameras = computed<SelectItem[]>(() =>
           </v-row>
         </v-card-text>
         <v-card-text>
-          <v-row class="align-center pt-6">
-            <v-col cols="12" md="7">
-              <pv-input
-                v-model="yesDeleteMySettingsText"
-                :label="'Type &quot;' + useCameraSettingsStore().currentCameraName + '&quot;:'"
-                :label-cols="12"
-                :input-cols="12"
-              />
-            </v-col>
-            <v-col cols="12" md="5">
-              <v-btn
-                block
-                color="error"
-                :disabled="
-                  yesDeleteMySettingsText.toLowerCase() !== useCameraSettingsStore().currentCameraName.toLowerCase()
-                "
-                @click="deleteThisCamera"
-                :loading="deletingCamera"
-              >
-                <v-icon left class="open-icon"> mdi-trash-can-outline </v-icon>
-                <span class="open-label">DELETE (UNRECOVERABLE)</span>
-              </v-btn>
-            </v-col>
-          </v-row>
+          <pv-input
+            v-model="yesDeleteMySettingsText"
+            :label="'Type &quot;' + useCameraSettingsStore().currentCameraName + '&quot;:'"
+            :label-cols="6"
+            :input-cols="6"
+          />
+        </v-card-text>
+        <v-card-text>
+          <v-btn
+            block
+            color="error"
+            :disabled="
+              yesDeleteMySettingsText.toLowerCase() !== useCameraSettingsStore().currentCameraName.toLowerCase()
+            "
+            @click="deleteThisCamera"
+            :loading="deletingCamera"
+          >
+            <v-icon left class="open-icon"> mdi-trash-can-outline </v-icon>
+            <span class="open-label">DELETE (UNRECOVERABLE)</span>
+          </v-btn>
         </v-card-text>
       </v-card>
     </v-dialog>

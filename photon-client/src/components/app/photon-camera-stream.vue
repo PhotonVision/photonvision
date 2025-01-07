@@ -9,7 +9,7 @@ import type { UiCameraConfiguration } from "@/types/SettingTypes";
 const props = defineProps<{
   streamType: "Raw" | "Processed";
   id: string;
-  outerId: string | undefined;
+  outerId?: string;
   cameraSettings: UiCameraConfiguration;
 }>();
 

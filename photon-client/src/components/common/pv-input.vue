@@ -48,26 +48,24 @@ const handleKeydown = ({ key }) => {
 </script>
 
 <template>
-  <div>
-    <v-row dense align="center">
-      <v-col :cols="labelCols || 12 - inputCols">
-        <tooltipped-label :tooltip="tooltip" :label="label" />
-      </v-col>
+  <div class="d-flex">
+    <v-col :cols="labelCols || 12 - inputCols" class="d-flex align-center pl-0">
+      <tooltipped-label :tooltip="tooltip" :label="label" />
+    </v-col>
 
-      <v-col :cols="inputCols">
-        <v-text-field
-          v-model="localValue"
-          dark
-          dense
-          color="accent"
-          :placeholder="placeholder"
-          :disabled="disabled"
-          :error-messages="errorMessage"
-          :rules="rules"
-          class="mt-1 pt-2"
-          @keydown="handleKeydown"
-        />
-      </v-col>
-    </v-row>
+    <v-col :cols="inputCols" class="d-flex align-center pr-0">
+      <v-text-field
+        v-model="localValue"
+        dark
+        dense
+        color="accent"
+        :placeholder="placeholder"
+        :disabled="disabled"
+        :error-messages="errorMessage"
+        :rules="rules"
+        @keydown="handleKeydown"
+        hide-details="auto"
+      />
+    </v-col>
   </div>
 </template>

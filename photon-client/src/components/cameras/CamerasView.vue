@@ -43,7 +43,7 @@ const fpsTooLow = computed<boolean>(() => {
 <template>
   <v-card id="camera-settings-camera-view-card" class="camera-settings-camera-view-card" color="primary" dark>
     <v-card-title class="justify-space-between align-content-center pa-0 pl-6 pr-6">
-      <div class="d-flex flex-wrap pt-3 pb-3">
+      <div class="d-flex flex-wrap pt-4 pb-4">
         <div>
           <span class="mr-4" style="white-space: nowrap"> Cameras </span>
         </div>
@@ -65,14 +65,15 @@ const fpsTooLow = computed<boolean>(() => {
           </v-chip>
         </div>
       </div>
-      <div>
+      <div class="d-flex align-center">
         <v-switch
           v-model="driverMode"
           :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
           label="Driver Mode"
           style="margin-left: auto"
           color="accent"
-          class="pt-2"
+          class="pt-2 pb-2"
+          hide-details="auto"
         />
       </div>
     </v-card-title>

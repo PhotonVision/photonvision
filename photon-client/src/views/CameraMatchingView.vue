@@ -28,7 +28,10 @@ const activateModule = (moduleUniqueName: string) => {
 
   fetch(url.toString(), {
     method: "POST"
-  }).finally(() => (activatingModule.value = false));
+  }).finally(() => {
+    activatingModule.value = false;
+    setTimeout(() => enforceStreamHeight(), 1000);
+  });
 };
 
 const assigningCamera = ref(false);
@@ -40,7 +43,10 @@ const assignCamera = (cameraInfo: PVCameraInfo) => {
 
   fetch(url.toString(), {
     method: "POST"
-  }).finally(() => (assigningCamera.value = false));
+  }).finally(() => {
+    assigningCamera.value = false;
+    setTimeout(() => enforceStreamHeight(), 1000);
+  });
 };
 
 const deactivatingModule = ref(false);
@@ -218,8 +224,8 @@ const enforceStreamHeight = () => {
   const streamWidth = document.getElementById("stream-container-0")?.offsetWidth ?? 0;
   if (streamWidth === 0) return;
 
-  useCameraSettingsStore()
-    .cameras.filter((camera) => JSON.stringify(camera) !== JSON.stringify(PlaceholderCameraSettings))
+  Object.values(useCameraSettingsStore().cameras)
+    .filter((camera) => JSON.stringify(camera) !== JSON.stringify(PlaceholderCameraSettings))
     .forEach((element, index) => {
       let stream = document.getElementById(`outer-output-camera-stream-${index}`);
       if (!stream) return;
@@ -234,7 +240,7 @@ const enforceStreamHeight = () => {
 };
 
 onMounted(() => {
-  setTimeout(() => enforceStreamHeight(), 500);
+  setTimeout(() => enforceStreamHeight(), 1000);
   window.addEventListener("resize", enforceStreamHeight);
 });
 </script>
@@ -243,7 +249,13 @@ onMounted(() => {
   <div class="pa-5">
     <v-row>
       <!-- Active modules -->
-      <v-col v-for="module in activeVisionModules" :key="`enabled-${module.uniqueName}`" cols="12" sm="6" lg="4">
+      <v-col
+        v-for="(module, index) in activeVisionModules"
+        :key="`enabled-${module.uniqueName}`"
+        cols="12"
+        sm="6"
+        lg="4"
+      >
         <v-card dark color="primary">
           <v-card-title>{{ cameraInfoFor(module.matchedCameraInfo).name }}</v-card-title>
           <v-card-subtitle v-if="camerasMatch(getMatchedDevice(module.matchedCameraInfo), module.matchedCameraInfo)"
@@ -476,10 +488,10 @@ onMounted(() => {
         <v-card-title> Delete {{ cameraToDelete.nickname }}? </v-card-title>
         <v-card-text>
           <v-row class="align-center pt-6">
-            <v-col cols="12" md="7">
+            <v-col cols="12" md="6">
               <span class="white--text"> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
             </v-col>
-            <v-col cols="12" md="5">
+            <v-col cols="12" md="6">
               <v-btn color="secondary" block @click="openExportSettingsPrompt">
                 <v-icon left class="open-icon"> mdi-export </v-icon>
                 <span class="open-label">Backup Settings</span>
@@ -495,28 +507,24 @@ onMounted(() => {
           </v-row>
         </v-card-text>
         <v-card-text>
-          <v-row class="align-center pt-6">
-            <v-col cols="12" md="7">
-              <pv-input
-                v-model="yesDeleteMySettingsText"
-                :label="'Type &quot;' + cameraToDelete.nickname + '&quot;:'"
-                :label-cols="12"
-                :input-cols="12"
-              />
-            </v-col>
-            <v-col cols="12" md="5">
-              <v-btn
-                block
-                color="error"
-                :disabled="yesDeleteMySettingsText.toLowerCase() !== cameraToDelete.nickname.toLowerCase()"
-                @click="deleteThisCamera(cameraToDelete.uniqueName)"
-                :loading="deletingCamera"
-              >
-                <v-icon left class="open-icon"> mdi-trash-can-outline </v-icon>
-                <span class="open-label">DELETE (UNRECOVERABLE)</span>
-              </v-btn>
-            </v-col>
-          </v-row>
+          <pv-input
+            v-model="yesDeleteMySettingsText"
+            :label="'Type &quot;' + cameraToDelete.nickname + '&quot;:'"
+            :label-cols="6"
+            :input-cols="6"
+          />
+        </v-card-text>
+        <v-card-text>
+          <v-btn
+            block
+            color="error"
+            :disabled="yesDeleteMySettingsText.toLowerCase() !== cameraToDelete.nickname.toLowerCase()"
+            @click="deleteThisCamera(cameraToDelete.uniqueName)"
+            :loading="deletingCamera"
+          >
+            <v-icon left class="open-icon"> mdi-trash-can-outline </v-icon>
+            <span class="open-label">DELETE (UNRECOVERABLE)</span>
+          </v-btn>
         </v-card-text>
       </v-card>
     </v-dialog>
