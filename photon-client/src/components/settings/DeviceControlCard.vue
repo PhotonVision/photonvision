@@ -202,6 +202,10 @@ const handleSettingsImport = () => {
   importFile.value = null;
 };
 
+const showObjectDetectionImportDialog = ref(false);
+const importRKNNFile = ref<File | null>(null);
+const importLabelsFile = ref<File | null>(null);
+
 const showFactoryReset = ref(false);
 const expected = "Delete Everything";
 const yesDeleteMySettingsText = ref("");
@@ -354,6 +358,53 @@ const nukePhotonConfigDirectory = () => {
             <span class="open-label">View program logs</span>
           </v-btn>
         </v-col>
+      </v-row>
+      <v-row>
+        <v-col cols="12">
+          <v-btn color="secondary" @click="() => (showImportDialog = true)">
+            <v-icon left class="open-icon"> mdi-import </v-icon>
+            <span class="open-label">Import Object Detection Model</span>
+          </v-btn>
+          <v-dialog
+            v-model="showImportDialog"
+            width="600"
+            @input="
+              () => {
+                importRKNNFile = null;
+                importLabelsFile = null;
+              }">
+            <v-card color="primary" dark>
+              <v-card-title>Import Object Detection Model</v-card-title>
+              <v-card-text>
+                Upload a new object detection model to this device that can be used in a pipeline.
+                Naming convention is that the labels file ought to have the same name as the RKNN file, with -labels appended to the end.
+                For example, if the RKNN file is named <i>foo.rknn</i>, the labels file should be named <i>foo-labels.txt</i>.
+                <v-row class="mt-6 ml-4 mr-8">
+                  <v-file-input
+                    label="RKNN File"
+                    v-model="importRKNNFile"
+                    accept=".rknn"
+                  />
+                </v-row>
+                <v-row class="mt-6 ml-4 mr-8">
+                  <v-file-input
+                    label="Labels File"
+                    v-model="importLabelsFile"
+                    accept=".txt"
+                  />
+                </v-row>
+                <v-row
+                  class="mt-12 ml-8 mr-8 mb-1"
+                  style="display: flex; align-items: center; justify-content: center"
+                  align="center">
+                  <v-btn color="secondary" :disabled="importRKNNFile === null || importLabelsFile === null" @click="handleObjectDetectionImport">
+                    <v-icon left class="open-icon"> mdi-import </v-icon>
+                    <span class="open-label">Import Object Detection Model</span>
+                  </v-btn>
+                </v-row>
+              </v-card-text>
+            </v-card>
+          </v-dialog>
       </v-row>
       <v-divider class="mt-3 pb-3" />
       <v-row>
