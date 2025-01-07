@@ -18,6 +18,7 @@
 package org.photonvision.jni;
 
 import edu.wpi.first.util.RawFrame;
+import edu.wpi.first.util.TimestampSource;
 
 public class CscoreExtras {
     /**
