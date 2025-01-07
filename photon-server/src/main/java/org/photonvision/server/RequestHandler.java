@@ -98,7 +98,8 @@ public class RequestHandler {
 
         ConfigManager.getInstance().setWriteTaskEnabled(false);
         ConfigManager.getInstance().disableFlushOnShutdown();
-        // We want to delete the -whole- zip file, so we need to teardown loggers for now
+        // We want to delete the -whole- zip file, so we need to teardown loggers for
+        // now
         logger.info("Writing new settings zip (logs may be truncated)...");
         Logger.closeAllLoggers();
         if (ConfigManager.saveUploadedSettingsZip(tempFilePath.get())) {
@@ -326,8 +327,7 @@ public class RequestHandler {
         }
 
         try {
-            Path filePath =
-                    Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), "photonvision.jar");
+            Path filePath = Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), "photonvision.jar");
             File targetFile = new File(filePath.toString());
             var stream = new FileOutputStream(targetFile);
 
@@ -389,8 +389,7 @@ public class RequestHandler {
             var data = kObjectMapper.readTree(ctx.bodyInputStream());
 
             String cameraUniqueName = data.get("cameraUniqueName").asText();
-            var settings =
-                    JacksonUtils.deserialize(data.get("settings").toString(), UICameraSettingsRequest.class);
+            var settings = JacksonUtils.deserialize(data.get("settings").toString(), UICameraSettingsRequest.class);
             var fov = settings.fov;
 
             logger.info("Changing camera FOV to: " + fov);
@@ -444,7 +443,7 @@ public class RequestHandler {
                 var out = Files.createTempFile("photonvision-logs", "zip").toFile();
 
                 try {
-                    ZipUtil.packEntries(new File[] {tempPath.toFile(), tempPath2.toFile()}, out);
+                    ZipUtil.packEntries(new File[] { tempPath.toFile(), tempPath2.toFile() }, out);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -473,11 +472,9 @@ public class RequestHandler {
         String cameraUniqueName;
 
         try {
-            cameraUniqueName =
-                    kObjectMapper.readTree(ctx.bodyInputStream()).get("cameraUniqueName").asText();
+            cameraUniqueName = kObjectMapper.readTree(ctx.bodyInputStream()).get("cameraUniqueName").asText();
 
-            var calData =
-                    VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName).endCalibration();
+            var calData = VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName).endCalibration();
             if (calData == null) {
                 ctx.result("The calibration process failed");
                 ctx.status(500);
@@ -510,16 +507,14 @@ public class RequestHandler {
             var data = kObjectMapper.readTree(ctx.bodyInputStream());
 
             String cameraUniqueName = data.get("cameraUniqueName").asText();
-            var coeffs =
-                    kObjectMapper.convertValue(data.get("calibration"), CameraCalibrationCoefficients.class);
+            var coeffs = kObjectMapper.convertValue(data.get("calibration"), CameraCalibrationCoefficients.class);
 
-            var uploadCalibrationEvent =
-                    new IncomingWebSocketEvent<>(
-                            DataChangeDestination.DCD_ACTIVEMODULE,
-                            "calibrationUploaded",
-                            coeffs,
-                            cameraUniqueName,
-                            null);
+            var uploadCalibrationEvent = new IncomingWebSocketEvent<>(
+                    DataChangeDestination.DCD_ACTIVEMODULE,
+                    "calibrationUploaded",
+                    coeffs,
+                    cameraUniqueName,
+                    null);
             DataChangeService.getInstance().publishEvent(uploadCalibrationEvent);
 
             ctx.status(200);
@@ -541,6 +536,49 @@ public class RequestHandler {
         // TODO, check if this was successful or not
         ctx.status(204);
         restartProgram();
+    }
+
+    public static void onObjectDetectionModelImportRequest(Context ctx) {
+        try {
+            // Retrieve the uploaded files
+            var modelFile = ctx.uploadedFile("rknn");
+            var labelsFile = ctx.uploadedFile("labels");
+
+            if (modelFile == null || labelsFile == null) {
+                ctx.status(400);
+                ctx.result(
+                        "No File was sent with the request. Make sure that the model and labels files are sent at the keys 'rknn' and 'labels'");
+                logger.error(
+                        "No File was sent with the request. Make sure that the model and labels files are sent at the keys 'rknn' and 'labels'");
+                return;
+            }
+
+            if (!modelFile.extension().contains("rknn") || !labelsFile.extension().contains("txt")) {
+                ctx.status(400);
+                ctx.result(
+                        "The uploaded files were not of type 'rknn' and 'txt'. The uploaded files should be a .rknn and .txt file.");
+                logger.error(
+                        "The uploaded files were not of type 'rknn' and 'txt'. The uploaded files should be a .rknn and .txt file.");
+                return;
+            }
+
+            // dump files into /opt/photonvision/photonvision_config/models/
+
+            var modelPath = Paths.get(ConfigManager.getInstance().getModelsDirectory().toString(), modelFile.filename());
+            var labelsPath = Paths.get(ConfigManager.getInstance().getModelsDirectory().toString(), labelsFile.filename());
+
+            try (FileOutputStream out = new FileOutputStream(modelPath.toFile())) {
+                modelFile.content().transferTo(out);
+            }
+            
+            try (FileOutputStream out = new FileOutputStream(labelsPath.toFile())) {
+                labelsFile.content().transferTo(out);
+            }
+
+        } catch (Exception e) {
+            ctx.status(500).result("Error processing files: " + e.getMessage());
+        }
+
     }
 
     public static void onDeviceRestartRequest(Context ctx) {
@@ -583,32 +621,28 @@ public class RequestHandler {
         var height = Integer.parseInt(ctx.queryParam("height"));
         var observationIdx = Integer.parseInt(ctx.queryParam("snapshotIdx"));
 
-        CameraCalibrationCoefficients calList =
-                VisionSourceManager.getInstance()
-                        .vmm
-                        .getModule(cameraUniqueName)
-                        .getStateAsCameraConfig()
-                        .calibrations
-                        .stream()
-                        .filter(
-                                it ->
-                                        Math.abs(it.unrotatedImageSize.width - width) < 1e-4
-                                                && Math.abs(it.unrotatedImageSize.height - height) < 1e-4)
-                        .findFirst()
-                        .orElse(null);
+        CameraCalibrationCoefficients calList = VisionSourceManager.getInstance().vmm
+                .getModule(cameraUniqueName)
+                .getStateAsCameraConfig().calibrations
+                .stream()
+                .filter(
+                        it -> Math.abs(it.unrotatedImageSize.width - width) < 1e-4
+                                && Math.abs(it.unrotatedImageSize.height - height) < 1e-4)
+                .findFirst()
+                .orElse(null);
 
         if (calList == null || calList.observations.size() < observationIdx) {
             ctx.status(404);
             return;
         }
 
-        // encode as jpeg to save even more space. reduces size of a 1280p image from 300k to 25k
+        // encode as jpeg to save even more space. reduces size of a 1280p image from
+        // 300k to 25k
         var jpegBytes = new MatOfByte();
         Mat img = null;
         try {
-            img =
-                    Imgcodecs.imread(
-                            calList.observations.get(observationIdx).snapshotDataLocation.toString());
+            img = Imgcodecs.imread(
+                    calList.observations.get(observationIdx).snapshotDataLocation.toString());
         } catch (Exception e) {
             ctx.status(500);
             ctx.result("Unable to read calibration image");
@@ -635,17 +669,14 @@ public class RequestHandler {
         var width = Integer.parseInt(ctx.queryParam("width"));
         var height = Integer.parseInt(ctx.queryParam("height"));
 
-        var cc =
-                VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName).getStateAsCameraConfig();
+        var cc = VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName).getStateAsCameraConfig();
 
-        CameraCalibrationCoefficients calList =
-                cc.calibrations.stream()
-                        .filter(
-                                it ->
-                                        Math.abs(it.unrotatedImageSize.width - width) < 1e-4
-                                                && Math.abs(it.unrotatedImageSize.height - height) < 1e-4)
-                        .findFirst()
-                        .orElse(null);
+        CameraCalibrationCoefficients calList = cc.calibrations.stream()
+                .filter(
+                        it -> Math.abs(it.unrotatedImageSize.width - width) < 1e-4
+                                && Math.abs(it.unrotatedImageSize.height - height) < 1e-4)
+                .findFirst()
+                .orElse(null);
 
         if (calList == null) {
             ctx.status(404);
@@ -668,7 +699,8 @@ public class RequestHandler {
             try {
                 for (File cameraDir : cameraDirs) {
                     var cameraSnapshots = cameraDir.listFiles();
-                    if (cameraSnapshots == null) continue;
+                    if (cameraSnapshots == null)
+                        continue;
 
                     String cameraUniqueName = cameraDir.getName();
 
@@ -699,18 +731,19 @@ public class RequestHandler {
 
     public static void onCameraCalibImagesRequest(Context ctx) {
         try {
-            HashMap<String, HashMap<String, ArrayList<HashMap<String, Object>>>> snapshots =
-                    new HashMap<>();
+            HashMap<String, HashMap<String, ArrayList<HashMap<String, Object>>>> snapshots = new HashMap<>();
 
             var cameraDirs = ConfigManager.getInstance().getCalibDir().toFile().listFiles();
             if (cameraDirs != null) {
                 var camData = new HashMap<String, ArrayList<HashMap<String, Object>>>();
                 for (var cameraDir : cameraDirs) {
                     var resolutionDirs = cameraDir.listFiles();
-                    if (resolutionDirs == null) continue;
+                    if (resolutionDirs == null)
+                        continue;
                     for (var resolutionDir : resolutionDirs) {
                         var calibImages = resolutionDir.listFiles();
-                        if (calibImages == null) continue;
+                        if (calibImages == null)
+                            continue;
                         var resolutionImages = new ArrayList<HashMap<String, Object>>();
                         for (var calibImg : calibImages) {
                             var snapshotData = new HashMap<String, Object>();
@@ -748,8 +781,7 @@ public class RequestHandler {
      * @return Temporary file. Empty if the temporary file was unable to be created.
      */
     private static Optional<File> handleTempFileCreation(UploadedFile file) {
-        var tempFilePath =
-                new File(Path.of(System.getProperty("java.io.tmpdir"), file.filename()).toString());
+        var tempFilePath = new File(Path.of(System.getProperty("java.io.tmpdir"), file.filename()).toString());
         boolean makeDirsRes = tempFilePath.getParentFile().mkdirs();
 
         if (!makeDirsRes && !(tempFilePath.getParentFile().exists())) {
@@ -776,7 +808,8 @@ public class RequestHandler {
     }
 
     /**
-     * Restart the running program. Note that this doesn't actually restart the program itself,
+     * Restart the running program. Note that this doesn't actually restart the
+     * program itself,
      * instead, it relies on systemd or an equivalent.
      */
     private static void restartProgram() {

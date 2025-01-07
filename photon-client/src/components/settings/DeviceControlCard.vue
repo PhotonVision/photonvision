@@ -210,8 +210,8 @@ const handleObjectDetectionImport = () => {
   if (importRKNNFile.value === null || importLabelsFile.value === null) return;
 
   const formData = new FormData();
-  formData.append("rknnData", importRKNNFile.value);
-  formData.append("labelsData", importLabelsFile.value);
+  formData.append("rknn", importRKNNFile.value);
+  formData.append("labels", importLabelsFile.value);
 
   useStateStore().showSnackbarMessage({
     message: "Importing Object Detection Model...",
