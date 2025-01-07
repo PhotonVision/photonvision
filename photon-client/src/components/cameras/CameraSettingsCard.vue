@@ -254,8 +254,8 @@ const wrappedCameras = computed<SelectItem[]>(() =>
             :disabled="
               yesDeleteMySettingsText.toLowerCase() !== useCameraSettingsStore().currentCameraName.toLowerCase()
             "
-            @click="deleteThisCamera"
             :loading="deletingCamera"
+            @click="deleteThisCamera"
           >
             <v-icon left class="open-icon"> mdi-trash-can-outline </v-icon>
             <span class="open-label">DELETE (UNRECOVERABLE)</span>

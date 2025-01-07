@@ -304,15 +304,15 @@ onMounted(() => {
               </tbody>
             </v-simple-table>
             <div
+              :id="`stream-container-${index}`"
               class="d-flex flex-column justify-center align-center"
               style="height: 250px"
-              :id="`stream-container-${index}`"
             >
               <photon-camera-stream
+                :id="`output-camera-stream-${index}`"
                 :camera-settings="module"
                 stream-type="Processed"
-                :outerId="`outer-output-camera-stream-${index}`"
-                :id="`output-camera-stream-${index}`"
+                :outer-id="`outer-output-camera-stream-${index}`"
                 class="d-none"
               />
             </div>
@@ -320,23 +320,23 @@ onMounted(() => {
           <v-card-text class="pt-0">
             <v-row>
               <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
-                <v-btn color="secondary" @click="setCameraView(module.matchedCameraInfo)" style="width: 100%">
+                <v-btn color="secondary" style="width: 100%" @click="setCameraView(module.matchedCameraInfo)">
                   <span>Details</span>
                 </v-btn>
               </v-col>
               <v-col cols="6" md="5" class="pr-0">
                 <v-btn
                   class="black--text"
-                  @click="deactivateModule(module.uniqueName)"
                   color="accent"
                   style="width: 100%"
                   :loading="deactivatingModule"
+                  @click="deactivateModule(module.uniqueName)"
                 >
                   Deactivate
                 </v-btn>
               </v-col>
               <v-col cols="6" md="3">
-                <v-btn class="pa-0" @click="setCameraDeleting(module)" color="error" style="width: 100%">
+                <v-btn class="pa-0" color="error" style="width: 100%" @click="setCameraDeleting(module)">
                   <v-icon>mdi-trash-can-outline</v-icon>
                 </v-btn>
               </v-col>
@@ -398,7 +398,7 @@ onMounted(() => {
                 </v-btn>
               </v-col>
               <v-col cols="6" md="3">
-                <v-btn class="pa-0" @click="setCameraDeleting(module)" color="error" style="width: 100%">
+                <v-btn class="pa-0" color="error" style="width: 100%" @click="setCameraDeleting(module)">
                   <v-icon>mdi-trash-can-outline</v-icon>
                 </v-btn>
               </v-col>
@@ -431,10 +431,10 @@ onMounted(() => {
               <v-col cols="6">
                 <v-btn
                   class="black--text"
-                  @click="assignCamera(camera)"
                   color="accent"
                   style="width: 100%"
                   :loading="assigningCamera"
+                  @click="assignCamera(camera)"
                 >
                   Activate
                 </v-btn>
@@ -462,7 +462,7 @@ onMounted(() => {
 
     <!-- Camera details modal -->
     <v-dialog v-model="viewingDetails" max-width="800">
-      <v-card dark flat color="primary" v-if="viewingCamera !== null">
+      <v-card v-if="viewingCamera !== null" dark flat color="primary">
         <v-card-title class="d-flex justify-space-between">
           <span>{{ cameraInfoFor(viewingCamera)?.name ?? cameraInfoFor(viewingCamera)?.baseName }}</span>
           <v-btn text @click="setCameraView(null)">
@@ -484,7 +484,7 @@ onMounted(() => {
 
     <!-- Camera delete modal -->
     <v-dialog v-model="viewingDeleteCamera" dark width="800">
-      <v-card dark class="dialog-container pa-3 pb-2" color="primary" flat v-if="cameraToDelete !== null">
+      <v-card v-if="cameraToDelete !== null" dark class="dialog-container pa-3 pb-2" color="primary" flat>
         <v-card-title> Delete {{ cameraToDelete.nickname }}? </v-card-title>
         <v-card-text>
           <v-row class="align-center pt-6">
@@ -519,8 +519,8 @@ onMounted(() => {
             block
             color="error"
             :disabled="yesDeleteMySettingsText.toLowerCase() !== cameraToDelete.nickname.toLowerCase()"
-            @click="deleteThisCamera(cameraToDelete.uniqueName)"
             :loading="deletingCamera"
+            @click="deleteThisCamera(cameraToDelete.uniqueName)"
           >
             <v-icon left class="open-icon"> mdi-trash-can-outline </v-icon>
             <span class="open-label">DELETE (UNRECOVERABLE)</span>

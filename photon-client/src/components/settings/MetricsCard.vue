@@ -2,7 +2,6 @@
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { computed, onBeforeMount, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import PvIcon from "@/components/common/pv-icon.vue";
 
 interface MetricItem {
   header: string;
@@ -138,7 +137,7 @@ onBeforeMount(() => {
               v-for="(item, itemIndex) in generalMetrics"
               :key="itemIndex"
               class="metric-item metric-item-title"
-              v-bind:class="{
+              :class="{
                 tl: itemIndex === 0,
                 tr: itemIndex === generalMetrics.length - 1,
                 t: 0 < itemIndex && itemIndex < generalMetrics.length - 1
@@ -154,7 +153,7 @@ onBeforeMount(() => {
               v-for="(item, itemIndex) in generalMetrics"
               :key="itemIndex"
               class="metric-item"
-              v-bind:class="{
+              :class="{
                 bl: itemIndex === 0,
                 br: itemIndex === generalMetrics.length - 1,
                 b: 0 < itemIndex && itemIndex < generalMetrics.length - 1
@@ -175,7 +174,7 @@ onBeforeMount(() => {
               v-for="(item, itemIndex) in platformMetrics"
               :key="itemIndex"
               class="metric-item metric-item-title"
-              v-bind:class="{
+              :class="{
                 tl: itemIndex === 0,
                 tr: itemIndex === platformMetrics.length - 1,
                 t: 0 < itemIndex && itemIndex < platformMetrics.length - 1
@@ -191,7 +190,7 @@ onBeforeMount(() => {
               v-for="(item, itemIndex) in platformMetrics"
               :key="itemIndex"
               class="metric-item"
-              v-bind:class="{
+              :class="{
                 bl: itemIndex === 0,
                 br: itemIndex === platformMetrics.length - 1,
                 b: 0 < itemIndex && itemIndex < platformMetrics.length - 1

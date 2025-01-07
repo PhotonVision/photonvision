@@ -63,8 +63,8 @@ const handleKeydown = ({ key }) => {
         :disabled="disabled"
         :error-messages="errorMessage"
         :rules="rules"
-        @keydown="handleKeydown"
         hide-details="auto"
+        @keydown="handleKeydown"
       />
     </v-col>
   </div>
