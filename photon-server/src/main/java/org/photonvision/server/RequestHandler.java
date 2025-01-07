@@ -568,7 +568,22 @@ public class RequestHandler {
                 return;
             }
 
-            // dump files into /opt/photonvision/photonvision_config/models/
+            // verify naming convention
+            // this check will need to be modified if different model types are added
+            String expectedLabelsFileName = modelFile.filename().replace(".rknn", "-labels.txt");
+
+            if (!labelsFile.filename().equals(expectedLabelsFileName)) {
+                ctx.status(400);
+                ctx.result(
+                        "The labels file name does not follow the naming convention. Expected: "
+                                + expectedLabelsFileName);
+                logger.error(
+                        "The labels file name does not follow the naming convention. Expected: "
+                                + expectedLabelsFileName);
+                return;
+            }
+
+            // dump files into models directory
 
             var modelPath =
                     Paths.get(
