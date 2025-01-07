@@ -58,11 +58,6 @@ public class USBFrameProvider extends CpuImageProcessor {
         useNewBehaviorTopic.setRetained(true);
 
         useNewBehaviorSub = useNewBehaviorTopic.subscribe(false);
-
-        // set a default
-        try (var t = useNewBehaviorTopic.publish()) {
-            t.set(false);
-        }
     }
 
     @Override
@@ -81,6 +76,7 @@ public class USBFrameProvider extends CpuImageProcessor {
 
             return new CapturedFrame(mat, settables.getFrameStaticProperties(), captureTimeNs);
         } else {
+            logger.info("asdf");
             // We allocate memory so we don't fill a Mat in use by another thread (memory model is easier)
             // TODO - consider a frame pool
             // TODO - getCurrentVideoMode is a JNI call for us, but profiling indicates it's fast
