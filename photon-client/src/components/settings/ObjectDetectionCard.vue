@@ -91,14 +91,11 @@ const handleObjectDetectionDeletion = (model: String) => {
 };
 
 // Filters out models that are not supported by the current backend, and returns a flattened list.
-// const supportedModels = computed(() => {
-//   const { availableModels, supportedBackends } = useSettingsStore().general;
-//   return supportedBackends.flatMap((backend) => availableModels[backend] || []);
-// });
+const supportedModels = computed(() => {
+  const { availableModels, supportedBackends } = useSettingsStore().general;
+  return supportedBackends.flatMap((backend) => availableModels[backend] || []);
+});
 
-const supportedModels = {
-  availableModels: ["model1", "model2", "model3"]
-};
 </script>
 
 <template>
