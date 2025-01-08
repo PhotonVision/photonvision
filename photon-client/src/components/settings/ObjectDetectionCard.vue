@@ -94,15 +94,10 @@ const handleDeletion = () => {
 };
 
 // Filters out models that are not supported by the current backend, and returns a flattened list.
-// const supportedModels = computed(() => {
-//   const { availableModels, supportedBackends } = useSettingsStore().general;
-//   return supportedBackends.flatMap((backend) => availableModels[backend] || []);
-// });
-
-//filler for testing
-const supportedModels = {
-  models: ["model1", "model2", "model3", "model4", "model5"]
-};
+const supportedModels = computed(() => {
+  const { availableModels, supportedBackends } = useSettingsStore().general;
+  return supportedBackends.flatMap((backend) => availableModels[backend] || []);
+});
 
 const showNameEditDialog = ref(false);
 const nameEditModel = ref<String | null>(null);
