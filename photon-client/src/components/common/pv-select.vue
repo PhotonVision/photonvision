@@ -69,8 +69,9 @@ const items = computed<SelectItem[]>(() => {
     </v-col>
   </div>
 </template>
-<style>
+<style scoped>
 .v-select {
   padding-top: 0px;
+  margin-top: 0px;
 }
 </style>

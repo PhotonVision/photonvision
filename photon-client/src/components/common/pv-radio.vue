@@ -47,3 +47,9 @@ const localValue = computed({
     </v-col>
   </div>
 </template>
+<style scoped>
+.v-input--radio-group {
+  padding-top: 0;
+  margin-top: 0;
+}
+</style>
