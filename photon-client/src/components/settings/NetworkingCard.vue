@@ -140,7 +140,7 @@ watchEffect(() => {
     <v-card-title class="pa-6">Global Settings</v-card-title>
     <div class="pa-6 pt-0">
       <v-divider class="pb-3" />
-      <v-card-title class="pl-0 pb-3">Networking</v-card-title>
+      <v-card-title class="pl-0 pt-3 pb-3">Networking</v-card-title>
       <v-form ref="form" v-model="settingsValid">
         <pv-input
           v-model="tempSettingsStruct.ntServerAddress"
@@ -203,7 +203,7 @@ watchEffect(() => {
           "
         />
         <v-divider class="mt-3 pb-3" />
-        <v-card-title class="pl-0 pb-3">Advanced Networking</v-card-title>
+        <v-card-title class="pl-0 pt-3 pb-3">Advanced Networking</v-card-title>
         <pv-switch
           v-show="!useSettingsStore().network.networkingDisabled"
           v-model="tempSettingsStruct.shouldManage"
@@ -255,7 +255,7 @@ watchEffect(() => {
           This mode is intended for debugging; it should be off for proper usage. PhotonLib will NOT work!
         </v-banner>
         <v-divider class="mt-3 pb-3" />
-        <v-card-title class="pl-0 pb-3">Miscellaneous</v-card-title>
+        <v-card-title class="pl-0 pt-3 pb-3">Miscellaneous</v-card-title>
         <pv-switch
           v-model="tempSettingsStruct.shouldPublishProto"
           label="Also Publish Protobuf"
