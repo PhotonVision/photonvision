@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,13 +43,20 @@ import org.photonvision.vision.objects.RknnModel;
 /**
  * Manages the loading of neural network models.
  *
- * <p>Models are loaded from the filesystem at the <code>modelsFolder</code> location. PhotonVision
- * also supports shipping pre-trained models as resources in the JAR. If the model has already been
+ * <p>
+ * Models are loaded from the filesystem at the <code>modelsFolder</code>
+ * location. PhotonVision
+ * also supports shipping pre-trained models as resources in the JAR. If the
+ * model has already been
  * extracted to the filesystem, it will not be extracted again.
  *
- * <p>Each model must have a corresponding <code>labels</code> file. The labels file format is
- * simply a list of string names per label, one label per line. The labels file must have the same
- * name as the model file, but with the suffix <code>-labels.txt</code> instead of <code>.rknn
+ * <p>
+ * Each model must have a corresponding <code>labels</code> file. The labels
+ * file format is
+ * simply a list of string names per label, one label per line. The labels file
+ * must have the same
+ * name as the model file, but with the suffix <code>-labels.txt</code> instead
+ * of <code>.rknn
  * </code>.
  */
 public class NeuralNetworkModelManager {
@@ -109,16 +117,19 @@ public class NeuralNetworkModelManager {
     /**
      * Stores model information, such as the model file, labels, and version.
      *
-     * <p>The first model in the list is the default model.
+     * <p>
+     * The first model in the list is the default model.
      */
     private Map<NeuralNetworkBackend, ArrayList<Model>> models;
 
     /**
-     * Retrieves the deep neural network models available, in a format that can be used by the
+     * Retrieves the deep neural network models available, in a format that can be
+     * used by the
      * frontend.
      *
-     * @return A map containing the available models, where the key is the backend and the value is a
-     *     list of model names.
+     * @return A map containing the available models, where the key is the backend
+     *         and the value is a
+     *         list of model names.
      */
     public HashMap<String, ArrayList<String>> getModels() {
         HashMap<String, ArrayList<String>> modelMap = new HashMap<>();
@@ -137,13 +148,17 @@ public class NeuralNetworkModelManager {
     }
 
     /**
-     * Retrieves the model with the specified name, assuming it is available under a supported
+     * Retrieves the model with the specified name, assuming it is available under a
+     * supported
      * backend.
      *
-     * <p>If this method returns `Optional.of(..)` then the model should be safe to load.
+     * <p>
+     * If this method returns `Optional.of(..)` then the model should be safe to
+     * load.
      *
      * @param modelName the name of the model to retrieve
-     * @return an Optional containing the model if found, or an empty Optional if not found
+     * @return an Optional containing the model if found, or an empty Optional if
+     *         not found
      */
     public Optional<Model> getModel(String modelName) {
         if (models == null) {
@@ -153,8 +168,8 @@ public class NeuralNetworkModelManager {
         // Check if the model exists in any supported backend
         for (NeuralNetworkBackend backend : supportedBackends) {
             if (models.containsKey(backend)) {
-                Optional<Model> model =
-                        models.get(backend).stream().filter(m -> m.getName().equals(modelName)).findFirst();
+                Optional<Model> model = models.get(backend).stream().filter(m -> m.getName().equals(modelName))
+                        .findFirst();
                 if (model.isPresent()) {
                     return model;
                 }
@@ -162,6 +177,129 @@ public class NeuralNetworkModelManager {
         }
 
         return Optional.empty();
+    }
+
+    /**
+     * Adds and saves a new model to the models directory.
+     * 
+     * <p>
+     * {@link}{@link NeuralNetworkModelManager#discoverModels(File)} should always
+     * be called after calling this function.
+     * 
+     * @param model  the model file
+     * @param labels the labels file
+     * @return true if the model was added, false otherwise
+     */
+    public boolean addNewModel(File model, File labels) {
+        if (model == null || labels == null) {
+            return false;
+        }
+
+        if (!model.exists() || !labels.exists()) {
+            return false;
+        }
+
+        var modelPath = Paths.get(
+                ConfigManager.getInstance().getModelsDirectory().toString(), model.getName());
+        var labelsPath = Paths.get(
+                ConfigManager.getInstance().getModelsDirectory().toString(),
+                labels.getName());
+
+        try {
+            Files.copy(model.toPath(), modelPath);
+            Files.copy(labels.toPath(), labelsPath, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            logger.error("Failed to copy model or labels file", e);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Deletes a model from the models directory.
+     * 
+     * <p>
+     * {@link}{@link NeuralNetworkModelManager#discoverModels(File)} should always
+     * be called after calling this function.
+     * 
+     * @param modelName
+     * @return true if the model was deleted, false otherwise
+     */
+    public boolean deleteModel(String modelName) {
+        if (models == null) {
+            return false;
+        }
+
+        // Delete the model and labels files
+        for (NeuralNetworkBackend backend : supportedBackends) {
+            if (models.containsKey(backend)) {
+                Optional<Model> model = models.get(backend).stream().filter(m -> m.getName().equals(modelName))
+                        .findFirst();
+                if (model.isPresent()) {
+                    var modelPath = Paths.get(
+                            ConfigManager.getInstance().getModelsDirectory().toString(), model.get().getName());
+                    var labelsPath = Paths.get(
+                            ConfigManager.getInstance().getModelsDirectory().toString(),
+                            model.get().getName().replace(".rknn", "-labels.txt"));
+
+                    try {
+                        Files.delete(modelPath);
+                        Files.delete(labelsPath);
+                    } catch (IOException e) {
+                        logger.error("Failed to delete model or labels file", e);
+                        return false;
+                    }
+
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Changes the name of a model.
+     * 
+     * <p>
+     * {@link}{@link NeuralNetworkModelManager#discoverModels(File)} should always
+     * be called after calling this function.
+     * 
+     * @param oldName
+     * @param newName
+     * @return true if the model name was succesfully changed, false otherwise
+     */
+    public boolean editModelName(String oldName, String newName) {
+        if (models == null) {
+            return false;
+        }
+
+        for (NeuralNetworkBackend backend : supportedBackends) {
+            if (models.containsKey(backend)) {
+                Optional<Model> model = models.get(backend).stream().filter(m -> m.getName().equals(oldName))
+                        .findFirst();
+                if (model.isPresent()) {
+                    var oldModelPath = Paths.get(ConfigManager.getInstance().getModelsDirectory().toString(), oldName);
+                    var oldLabelsPath = Paths.get(ConfigManager.getInstance().getModelsDirectory().toString(),
+                            oldName.replace(".rknn", "-labels.txt"));
+                    var newModelPath = Paths.get(ConfigManager.getInstance().getModelsDirectory().toString(), newName);
+                    var newLabelsPath = Paths.get(ConfigManager.getInstance().getModelsDirectory().toString(),
+                            newName.replace(".rknn", "-labels.txt"));
+
+                    try {
+                        Files.move(oldModelPath, newModelPath);
+                        Files.move(oldLabelsPath, newLabelsPath);
+                        return true;
+                    } catch (IOException e) {
+                        logger.error("Failed to rename model or labels file", e);
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     /** The default model when no model is specified. */
@@ -188,10 +326,9 @@ public class NeuralNetworkModelManager {
             return;
         }
 
-        Optional<NeuralNetworkBackend> backend =
-                Arrays.stream(NeuralNetworkBackend.values())
-                        .filter(b -> b.format.equals(modelExtension))
-                        .findFirst();
+        Optional<NeuralNetworkBackend> backend = Arrays.stream(NeuralNetworkBackend.values())
+                .filter(b -> b.format.equals(modelExtension))
+                .findFirst();
 
         if (!backend.isPresent()) {
             logger.warn("Model " + model.getName() + " has an unknown extension.");
@@ -243,10 +380,10 @@ public class NeuralNetworkModelManager {
             logger.error("Failed to discover models at " + modelsFolder.getAbsolutePath(), e);
         }
 
-        // After loading all of the models, sort them by name to ensure a consistent ordering
+        // After loading all of the models, sort them by name to ensure a consistent
+        // ordering
         models.forEach(
-                (backend, backendModels) ->
-                        backendModels.sort((a, b) -> a.getName().compareTo(b.getName())));
+                (backend, backendModels) -> backendModels.sort((a, b) -> a.getName().compareTo(b.getName())));
 
         // Log
         StringBuilder sb = new StringBuilder();
@@ -272,8 +409,7 @@ public class NeuralNetworkModelManager {
         String resource = "models";
 
         try {
-            String jarPath =
-                    getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+            String jarPath = getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
             try (JarFile jarFile = new JarFile(jarPath)) {
                 Enumeration<JarEntry> entries = jarFile.entries();
                 while (entries.hasMoreElements()) {
@@ -281,8 +417,8 @@ public class NeuralNetworkModelManager {
                     if (!entry.getName().startsWith(resource + "/") || entry.isDirectory()) {
                         continue;
                     }
-                    Path outputPath =
-                            modelsDirectory.toPath().resolve(entry.getName().substring(resource.length() + 1));
+                    Path outputPath = modelsDirectory.toPath()
+                            .resolve(entry.getName().substring(resource.length() + 1));
 
                     if (Files.exists(outputPath)) {
                         logger.info("Skipping extraction of DNN resource: " + entry.getName());

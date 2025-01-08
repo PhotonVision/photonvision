@@ -569,8 +569,7 @@ public class RequestHandler {
 
             Pattern modelPattern = Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov[58][a-z]*\\.rknn$");
 
-            Pattern labelsPattern =
-                    Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov[58][a-z]*-labels\\.txt$");
+            Pattern labelsPattern = Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov[58][a-z]*-labels\\.txt$");
 
             if (!modelPattern.matcher(modelFile.filename()).matches()
                     || !labelsPattern.matcher(labelsFile.filename()).matches()) {
@@ -580,19 +579,12 @@ public class RequestHandler {
                 return;
             }
 
-            // TODO move into neural network manager
+            File tmpModel = Files.createTempFile(modelFile.filename(), ".rknn").toFile();
+            File tmpLabels = Files.createTempFile(labelsFile.filename(), ".txt").toFile();
 
-            var modelPath = Paths.get(
-                    ConfigManager.getInstance().getModelsDirectory().toString(), modelFile.filename());
-            var labelsPath = Paths.get(
-                    ConfigManager.getInstance().getModelsDirectory().toString(), labelsFile.filename());
-
-            try (FileOutputStream out = new FileOutputStream(modelPath.toFile())) {
-                modelFile.content().transferTo(out);
-            }
-
-            try (FileOutputStream out = new FileOutputStream(labelsPath.toFile())) {
-                labelsFile.content().transferTo(out);
+            if (!NeuralNetworkModelManager.getInstance().addNewModel(tmpModel, tmpLabels)) {
+                ctx.status(500).result("Error processing files: Check logs for more information");
+                return;
             }
 
             NeuralNetworkModelManager.getInstance()
@@ -609,14 +601,13 @@ public class RequestHandler {
             var data = kObjectMapper.readTree(ctx.bodyInputStream());
             String modelName = data.get("modelName").asText();
 
-            var modelPath = Paths.get(
-                    ConfigManager.getInstance().getModelsDirectory().toString(), modelName + ".rknn");
-            var labelsPath = Paths.get(
-                    ConfigManager.getInstance().getModelsDirectory().toString(),
-                    modelName + "-labels.txt");
+            if (!NeuralNetworkModelManager.getInstance().deleteModel(modelName)) {
+                ctx.status(500).result("Error deleting model: Check logs for more information");
+                return;
+            }
 
-            Files.deleteIfExists(modelPath);
-            Files.deleteIfExists(labelsPath);
+            NeuralNetworkModelManager.getInstance()
+                    .discoverModels(ConfigManager.getInstance().getModelsDirectory());
 
             ctx.status(200).result("Successfully deleted object detection model " + modelName);
         } catch (Exception e) {
@@ -624,8 +615,8 @@ public class RequestHandler {
         }
     }
 
-    //TODO make this work
-    public static void onEditObjectDetectionModelRequest(Context ctx) {
+    // TODO make this work
+    public static void onEditObjectDetectionModelNameRequest(Context ctx) {
         try {
             var data = kObjectMapper.readTree(ctx.bodyInputStream());
             String modelName = data.get("model").asText();
@@ -636,30 +627,25 @@ public class RequestHandler {
                 return;
             }
 
-            if (newModelName.contains(" ")) {
-                ctx.status(400).result("The new model name must not contain spaces");
+            // verify naming convention
+            // this check will need to be modified if different model types are added
+
+            Pattern modelPattern = Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov[58][a-z]*");
+
+            if (!modelPattern.matcher(newModelName).matches()) {
+                ctx.status(400);
+                ctx.result("The new name does not follow the naming conventions.");
+                logger.error("The new name does not follow the naming conventions.");
                 return;
             }
 
-            var modelPath = Paths.get(
-                    ConfigManager.getInstance().getModelsDirectory().toString(), modelName + ".rknn");
-            var labelsPath = Paths.get(
-                    ConfigManager.getInstance().getModelsDirectory().toString(),
-                    modelName + "-labels.txt");
-
-            var newModelPath = Paths.get(
-                    ConfigManager.getInstance().getModelsDirectory().toString(), newModelName + ".rknn");
-            var newLabelsPath = Paths.get(
-                    ConfigManager.getInstance().getModelsDirectory().toString(),
-                    newModelName + "-labels.txt");
-
-            if (Files.exists(newModelPath) || Files.exists(newLabelsPath)) {
-                ctx.status(400).result("A model with the new name already exists");
+            if (!NeuralNetworkModelManager.getInstance().editModelName(modelName, newModelName)) {
+                ctx.status(500).result("Error editing model: Check logs for more information");
                 return;
             }
 
-            Files.move(modelPath, newModelPath);
-            Files.move(labelsPath, newLabelsPath);
+            NeuralNetworkModelManager.getInstance()
+                    .discoverModels(ConfigManager.getInstance().getModelsDirectory());
 
             ctx.status(200).result("Successfully edited object detection model " + modelName);
         } catch (Exception e) {
