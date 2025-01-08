@@ -36,6 +36,9 @@ class PhotonCameraSim:
         self,
         camera: PhotonCamera,
         props: SimCameraProperties = SimCameraProperties.PERFECT_90DEG(),
+        tagLayout: AprilTagFieldLayout = AprilTagFieldLayout.loadField(
+            AprilTagField.kDefaultField
+        ),
         minTargetAreaPercent: float | None = None,
         maxSightRange: meters | None = None,
     ):
@@ -64,7 +67,7 @@ class PhotonCameraSim:
         self.videoSimProcEnabled: bool = False
         self.heartbeatCounter: int = 0
         self.nextNtEntryTime = wpilib.Timer.getFPGATimestamp()
-        self.tagLayout = AprilTagFieldLayout.loadField(AprilTagField.kDefaultField)
+        self.tagLayout = tagLayout
 
         self.cam = camera
         self.prop = props

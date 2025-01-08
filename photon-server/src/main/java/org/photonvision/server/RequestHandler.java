@@ -585,7 +585,6 @@ public class RequestHandler {
                 logger.error("The uploaded object detection model files were not named correctly.");
                 return;
             }
-
             File tmpModel = Files.createTempFile(modelFile.filename(), ".rknn").toFile();
             File tmpLabels = Files.createTempFile(labelsFile.filename(), ".txt").toFile();
 
@@ -622,7 +621,6 @@ public class RequestHandler {
         }
     }
 
-    // TODO make this work
     public static void onEditObjectDetectionModelNameRequest(Context ctx) {
         try {
             var data = kObjectMapper.readTree(ctx.bodyInputStream());
@@ -649,6 +647,7 @@ public class RequestHandler {
             if (!NeuralNetworkModelManager.getInstance().editModelName(modelName, newModelName)) {
                 ctx.status(500).result("Error editing model: Check logs for more information");
                 return;
+
             }
 
             NeuralNetworkModelManager.getInstance()
