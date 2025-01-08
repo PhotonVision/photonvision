@@ -205,9 +205,24 @@ const cancelChangePipelineType = () => {
   showPipelineTypeChangeDialog.value = false;
 };
 
-// Pipeline duplication'
+// Pipeline duplication
 const duplicateCurrentPipeline = () => {
   useCameraSettingsStore().duplicatePipeline(useCameraSettingsStore().currentCameraSettings.currentPipelineIndex);
+  showDuplicatePipelineRenameDialog.value = true;
+};
+const newDuplicatePipelineName = ref("");
+const showDuplicatePipelineRenameDialog = ref(false);
+const duplicatePipelineRename = () => {
+  useCameraSettingsStore().changeCurrentPipelineNickname(
+    newDuplicatePipelineName.value,
+    true,
+    useCameraSettingsStore().currentCameraSettings.uniqueName
+  );
+  showDuplicatePipelineRenameDialog.value = false;
+  newDuplicatePipelineName.value = "";
+};
+const cancelDuplicatePipelineRename = () => {
+  showDuplicatePipelineRenameDialog.value = false;
 };
 
 // Change Props whenever the pipeline settings are changed
@@ -437,6 +452,37 @@ const wrappedCameras = computed<SelectItem[]>(() =>
           <v-spacer />
           <v-btn color="error" @click="confirmChangePipelineType"> Yes, I'm sure </v-btn>
           <v-btn color="#ffd843" class="black--text" @click="cancelChangePipelineType"> No, take me back </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog v-model="showDuplicatePipelineRenameDialog" dark width="500">
+      <v-card dark color="primary">
+        <v-card-title> Rename Pipeline </v-card-title>
+        <v-card-text>
+          Rename the duplicated pipeline. If you wish to use the default name
+          <code>{{ useCameraSettingsStore().currentCameraSettings.pipelineNicknames[useCameraSettingsStore().currentCameraSettings.currentPipelineIndex] }}</code
+          >, press cancel.
+          <pv-input
+            v-model="newDuplicatePipelineName"
+            placeholder="Pipeline Name"
+            :label-cols="3"
+            :input-cols="12 - 3"
+            label="Pipeline Name"
+            :rules="[(v) => checkPipelineName(v)]"
+          />
+        </v-card-text>
+        <v-divider />
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="#ffd843"
+            class="black--text"
+            :disabled="checkPipelineName(newDuplicatePipelineName) !== true"
+            @click="duplicatePipelineRename"
+          >
+            Rename
+          </v-btn>
+          <v-btn color="error" @click="cancelDuplicatePipelineRename"> Cancel </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

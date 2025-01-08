@@ -224,7 +224,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      *
      * @param newName the new nickname for the camera.
      * @param updateStore whether or not to update the store. This is useful if the input field already models the store reference.
-     * @param cameraUniqueNamendex the unique name of the camera.
+     * @param cameraUniqueNameIndex the unique name of the camera.
      */
     changeCurrentPipelineNickname(
       newName: string,
