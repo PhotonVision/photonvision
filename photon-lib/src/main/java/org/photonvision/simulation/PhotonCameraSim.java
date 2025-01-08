@@ -129,7 +129,7 @@ public class PhotonCameraSim implements AutoCloseable {
      * @param prop Properties of this camera such as FOV and FPS
      */
     public PhotonCameraSim(PhotonCamera camera, SimCameraProperties prop) {
-      this(camera, prop, AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField));
+        this(camera, prop, AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField));
     }
 
     /**
@@ -142,7 +142,8 @@ public class PhotonCameraSim implements AutoCloseable {
      * @param prop Properties of this camera such as FOV and FPS
      * @param tagLayout The {@link AprilTagFieldLayout} used to solve for tag positions.
      */
-    public PhotonCameraSim(PhotonCamera camera, SimCameraProperties prop, AprilTagFieldLayout tagLayout) {
+    public PhotonCameraSim(
+            PhotonCamera camera, SimCameraProperties prop, AprilTagFieldLayout tagLayout) {
         this.cam = camera;
         this.prop = prop;
         this.tagLayout = tagLayout;
