@@ -647,7 +647,6 @@ public class RequestHandler {
             if (!NeuralNetworkModelManager.getInstance().editModelName(modelName, newModelName)) {
                 ctx.status(500).result("Error editing model: Check logs for more information");
                 return;
-
             }
 
             NeuralNetworkModelManager.getInstance()

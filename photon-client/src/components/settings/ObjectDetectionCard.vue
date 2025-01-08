@@ -4,13 +4,11 @@ import axios from "axios";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
-
 const showImportDialog = ref(false);
 const importRKNNFile = ref<File | null>(null);
 const importLabelsFile = ref<File | null>(null);
 
 const handleImport = () => {
-
   if (importRKNNFile.value === null || importLabelsFile.value === null) return;
 
   const formData = new FormData();
@@ -52,13 +50,11 @@ const handleImport = () => {
       }
     });
 
-
   showImportDialog.value = false;
 
   importRKNNFile.value = null;
   importLabelsFile.value = null;
 };
-
 
 const deleteModel = ref<String | null>(null);
 const showDeletionDialog = ref(false);
@@ -97,7 +93,6 @@ const handleDeletion = () => {
       }
     });
 };
-
 
 // Filters out models that are not supported by the current backend, and returns a flattened list.
 const supportedModels = computed(() => {
@@ -152,7 +147,6 @@ const handleNameEdit = () => {
   nameEditModel.value = null;
   newName.value = null;
 };
-
 </script>
 
 <template>
