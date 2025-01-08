@@ -37,6 +37,7 @@ import org.opencv.core.MatOfInt;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
+import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.dataflow.DataChangeDestination;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
@@ -577,7 +578,7 @@ public class RequestHandler {
                 return;
             }
 
-            // dump files into models directory
+            // TODO move into neural network manager
 
             var modelPath = Paths.get(
                     ConfigManager.getInstance().getModelsDirectory().toString(), modelFile.filename());
@@ -591,6 +592,9 @@ public class RequestHandler {
             try (FileOutputStream out = new FileOutputStream(labelsPath.toFile())) {
                 labelsFile.content().transferTo(out);
             }
+
+            NeuralNetworkModelManager.getInstance()
+                    .discoverModels(ConfigManager.getInstance().getModelsDirectory());
 
             ctx.status(200).result("Successfully uploaded object detection model");
         } catch (Exception e) {
