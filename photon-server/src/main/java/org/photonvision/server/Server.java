@@ -129,7 +129,6 @@ public class Server {
         app.post("/api/utils/offlineUpdate", RequestHandler::onOfflineUpdateRequest);
         app.post(
                 "/api/utils/importObjectDetectionModel",
-
                 RequestHandler::onImportObjectDetectionModelRequest);
         app.post(
                 "api/utils/deleteObjectDetectionModel",
