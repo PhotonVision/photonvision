@@ -4,11 +4,11 @@ import axios from "axios";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
-const showObjectDetectionImportDialog = ref(false);
+const showImportDialog = ref(false);
 const importRKNNFile = ref<File | null>(null);
 const importLabelsFile = ref<File | null>(null);
 
-const handleObjectDetectionImport = () => {
+const handleImport = () => {
   if (importRKNNFile.value === null || importLabelsFile.value === null) return;
 
   const formData = new FormData();
@@ -50,12 +50,14 @@ const handleObjectDetectionImport = () => {
       }
     });
 
-  showObjectDetectionImportDialog.value = false;
+  showImportDialog.value = false;
   importRKNNFile.value = null;
   importLabelsFile.value = null;
 };
 
-const handleObjectDetectionDeletion = (model: String) => {
+const deleteModel = ref<String | null>(null);
+
+const handleDeletion = () => {
   useStateStore().showSnackbarMessage({
     message: "Deleting Object Detection Model...",
     color: "secondary",
@@ -63,7 +65,7 @@ const handleObjectDetectionDeletion = (model: String) => {
   });
 
   axios
-    .post("/utils/deleteObjectDetectionModel", { model })
+    .post("/utils/deleteObjectDetectionModel", { model: deleteModel.value })
     .then((response) => {
       useStateStore().showSnackbarMessage({
         message: response.data.text || response.data,
@@ -91,11 +93,63 @@ const handleObjectDetectionDeletion = (model: String) => {
 };
 
 // Filters out models that are not supported by the current backend, and returns a flattened list.
-const supportedModels = computed(() => {
-  const { availableModels, supportedBackends } = useSettingsStore().general;
-  return supportedBackends.flatMap((backend) => availableModels[backend] || []);
-});
+// const supportedModels = computed(() => {
+//   const { availableModels, supportedBackends } = useSettingsStore().general;
+//   return supportedBackends.flatMap((backend) => availableModels[backend] || []);
+// });
 
+//filler for testing
+const supportedModels = {
+  models: ["model1", "model2", "model3", "model4", "model5"]
+};
+
+const showNameEditDialog = ref(false);
+const nameEditModel = ref<String | null>(null);
+const newName = ref<String | null>(null);
+
+const handleNameEdit = () => {
+  useStateStore().showSnackbarMessage({
+    message: "Editing Object Detection Model Name...",
+    color: "secondary",
+    timeout: -1
+  });
+
+  var formData = new FormData();
+
+  formData.append("model", nameEditModel.value);
+  formData.append("newName", newName.value);
+
+  axios
+    .post("/utils/editObjectDetectionModelName", formData)
+    .then((response) => {
+      useStateStore().showSnackbarMessage({
+        message: response.data.text || response.data,
+        color: "success"
+      });
+    })
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: error.response.data.text || error.response.data
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "Error while trying to process the request! The backend didn't respond."
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "An error occurred while trying to process the request."
+        });
+      }
+    });
+
+  showNameEditDialog.value = false;
+  nameEditModel.value = null;
+  newName.value = null;
+};
 </script>
 
 <template>
@@ -104,12 +158,12 @@ const supportedModels = computed(() => {
     <div class="pa-6 pt-0">
       <v-row>
         <v-col cols="12 ">
-          <v-btn color="secondary" @click="() => (showObjectDetectionImportDialog = true)" class="justify-center">
+          <v-btn color="secondary" @click="() => (showImportDialog = true)" class="justify-center">
             <v-icon left class="open-icon"> mdi-import </v-icon>
             <span class="open-label">Import New Model</span>
           </v-btn>
           <v-dialog
-            v-model="showObjectDetectionImportDialog"
+            v-model="showImportDialog"
             width="600"
             @input="
               () => {
@@ -139,7 +193,7 @@ const supportedModels = computed(() => {
                   <v-btn
                     color="secondary"
                     :disabled="importRKNNFile === null || importLabelsFile === null"
-                    @click="handleObjectDetectionImport"
+                    @click="handleImport"
                   >
                     <v-icon left class="open-icon"> mdi-import </v-icon>
                     <span class="open-label">Import Object Detection Model</span>
@@ -162,12 +216,54 @@ const supportedModels = computed(() => {
               <tr v-for="model in supportedModels" :key="model">
                 <td>{{ model }}</td>
                 <td>
-                  <v-btn color="error" @click="() => (handleObjectDetectionDeletion(model))">
+                  <v-btn color="secondary" @click="() => ((nameEditModel = model), (showNameEditDialog = true))">
+                    <v-icon left class="open-icon"> mdi-pencil </v-icon>
+                  </v-btn>
+                </td>
+                <td>
+                  <v-btn color="error" @click="() => (handleDeletion, (deleteModel = model))">
                     <v-icon left class="open-icon"> mdi-delete </v-icon>
+                  </v-btn>
                 </td>
               </tr>
             </tbody>
           </v-simple-table>
+          <v-dialog
+            v-model="showNameEditDialog"
+            width="600"
+            @input="
+              () => {
+                newName = null;
+              }
+            "
+          >
+            <v-card color="primary" dark>
+              <v-card-title>Edit Object Detection Model Name</v-card-title>
+              <v-card-text>
+                Change the name of <code>{{ nameEditModel }}</code>. The new name must be unique, and contain no spaces.
+                <v-row class="mt-6 ml-4 mr-8">
+                  <v-text-field
+                    v-model="newName"
+                    label="New Name"
+                    outlined
+                    dense
+                    clearable
+                    required
+                  ></v-text-field>
+                </v-row>
+                <v-row
+                  class="mt-12 ml-8 mr-8 mb-1"
+                  style="display: flex; align-items: center; justify-content: center"
+                  align="center"
+                >
+                  <v-btn color="secondary" :disabled="newName === null" @click="handleNameEdit">
+                    <v-icon left class="open-icon"> mdi-pencil </v-icon>
+                    <span class="open-label">Edit Object Detection Model Name</span>
+                  </v-btn>
+                </v-row>
+              </v-card-text>
+            </v-card>
+          </v-dialog>
         </v-col>
       </v-row>
     </div>

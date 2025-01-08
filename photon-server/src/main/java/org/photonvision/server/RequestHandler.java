@@ -538,7 +538,7 @@ public class RequestHandler {
         restartProgram();
     }
 
-    public static void onObjectDetectionModelImportRequest(Context ctx) {
+    public static void onImportObjectDetectionModelRequest(Context ctx) {
         try {
             // Retrieve the uploaded files
             var modelFile = ctx.uploadedFile("rknn");
@@ -615,6 +615,49 @@ public class RequestHandler {
             ctx.status(200).result("Successfully deleted object detection model " + modelName);
         } catch (Exception e) {
             ctx.status(500).result("Error deleting model: " + e.getMessage());
+        }
+    }
+
+    //TODO make this work
+    public static void onEditObjectDetectionModelRequest(Context ctx) {
+        try {
+            var data = kObjectMapper.readTree(ctx.bodyInputStream());
+            String modelName = data.get("model").asText();
+            String newModelName = data.get("newName").asText();
+
+            if (modelName.equals(newModelName)) {
+                ctx.status(400).result("The new model name must be different from the old model name");
+                return;
+            }
+
+            if (newModelName.contains(" ")) {
+                ctx.status(400).result("The new model name must not contain spaces");
+                return;
+            }
+
+            var modelPath = Paths.get(
+                    ConfigManager.getInstance().getModelsDirectory().toString(), modelName + ".rknn");
+            var labelsPath = Paths.get(
+                    ConfigManager.getInstance().getModelsDirectory().toString(),
+                    modelName + "-labels.txt");
+
+            var newModelPath = Paths.get(
+                    ConfigManager.getInstance().getModelsDirectory().toString(), newModelName + ".rknn");
+            var newLabelsPath = Paths.get(
+                    ConfigManager.getInstance().getModelsDirectory().toString(),
+                    newModelName + "-labels.txt");
+
+            if (Files.exists(newModelPath) || Files.exists(newLabelsPath)) {
+                ctx.status(400).result("A model with the new name already exists");
+                return;
+            }
+
+            Files.move(modelPath, newModelPath);
+            Files.move(labelsPath, newLabelsPath);
+
+            ctx.status(200).result("Successfully edited object detection model " + modelName);
+        } catch (Exception e) {
+            ctx.status(500).result("Error editing model: " + e.getMessage());
         }
     }
 
