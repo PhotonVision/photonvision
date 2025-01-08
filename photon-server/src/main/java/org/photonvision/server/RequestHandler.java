@@ -29,6 +29,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
 import org.opencv.core.Mat;
@@ -565,16 +566,17 @@ public class RequestHandler {
 
             // verify naming convention
             // this check will need to be modified if different model types are added
-            String expectedLabelsFileName = modelFile.filename().replace(".rknn", "-labels.txt");
 
-            if (!labelsFile.filename().equals(expectedLabelsFileName)) {
+            Pattern modelPattern = Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov[58][a-z]*\\.rknn$");
+
+            Pattern labelsPattern =
+                    Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov[58][a-z]*-labels\\.txt$");
+
+            if (!modelPattern.matcher(modelFile.filename()).matches()
+                    || !labelsPattern.matcher(labelsFile.filename()).matches()) {
                 ctx.status(400);
-                ctx.result(
-                        "The labels file name does not follow the naming convention. Expected: "
-                                + expectedLabelsFileName);
-                logger.error(
-                        "The labels file name does not follow the naming convention. Expected: "
-                                + expectedLabelsFileName);
+                ctx.result("The uploaded files were not named correctly.");
+                logger.error("The uploaded object detection model files were not named correctly.");
                 return;
             }
 

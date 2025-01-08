@@ -10,10 +10,10 @@ For the 2025 season, PhotonVision does not currently ship with a pre-trained det
 
 Before you get started with object detection, ensure that you have followed the previous sections on installation, wiring, and networking. Next, open the Web UI, go to the top right card, and switch to the “Object Detection” type. You should see a screen similar to the image above.
 
-PhotonVision currently ships with a NOTE detector based on a [YOLOv5 model](https://docs.ultralytics.com/yolov5/). This model is trained to detect one or more object "classes" (such as cars, stoplights, or in our case, NOTES) in an input image. For each detected object, the model outputs a bounding box around where in the image the object is located, what class the object belongs to, and a unitless confidence between 0 and 1.
+PhotonVision does not currently ship with a pretrained model. Models are trained to detect one or more object "classes" (such as cars, stoplights) in an input image. For each detected object, the model outputs a bounding box around where in the image the object is located, what class the object belongs to, and a unitless confidence between 0 and 1.
 
 :::{note}
-This model output means that while its fairly easy to say that "this rectangle probably contains a NOTE", we don't have any information about the NOTE's orientation or location. Further math in user code would be required to make estimates about where an object is physically located relative to the camera.
+This model output means that while its fairly easy to say that "this rectangle probably contains an object", we don't have any information about the object's orientation or location. Further math in user code would be required to make estimates about where an object is physically located relative to the camera.
 :::
 
 ## Tuning and Filtering
@@ -40,7 +40,7 @@ Coming soon!
 ## Uploading Custom Models
 
 :::{warning}
-PhotonVision currently ONLY supports 640x640 YOLOv5 models trained and converted to `.rknn` format for RK3588 CPUs! Other models require different post-processing code and will NOT work. The model conversion process is also highly particular. Proceed with care.
+PhotonVision currently ONLY supports 640x640 YOLOv5 & YOLOv8 models trained and converted to `.rknn` format for RK3588 CPUs! Other models require different post-processing code and will NOT work. The model conversion process is also highly particular. Proceed with care.
 :::
 
 In the settings, under `Device Control`, there's an option to upload a new object detection model. Naming convention

@@ -180,8 +180,8 @@ const handleNameEdit = () => {
                 should be <code>name-verticalResolution-horizontalResolution-modelType</code>. Additionally, the labels
                 file ought to have the same name as the RKNN file, with <code>-labels</code> appended to the end. For
                 example, if the RKNN file is named <code>note-640-640-yolov5s.rknn</code>, the labels file should be
-                named <code>note-640-640-yolov5s-labels.txt</code>. Note that ONLY 640x640 YOLOv5 models trained and
-                converted to `.rknn` format for RK3588 CPUs are currently supported!
+                named <code>note-640-640-yolov5s-labels.txt</code>. Note that ONLY 640x640 YOLOv5 & YOLOv8 models
+                trained and converted to `.rknn` format for RK3588 CPUs are currently supported!
                 <v-row class="mt-6 ml-4 mr-8">
                   <v-file-input label="RKNN File" v-model="importRKNNFile" accept=".rknn" />
                 </v-row>
