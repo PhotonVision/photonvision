@@ -77,7 +77,7 @@ const interactiveCols = computed(() =>
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraAutoExposure"
       class="pt-2"
       label="Auto Exposure"
-      :switch-cols="interactiveCols === 8 ? 9 : interactiveCols"
+      :switch-cols="interactiveCols"
       tooltip="Enables or Disables camera automatic adjustment for current lighting conditions"
       @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraAutoExposure: args }, false)"
     />
@@ -132,14 +132,13 @@ const interactiveCols = computed(() =>
     />
     <pv-switch
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraAutoWhiteBalance"
-      class="pt-2"
       label="Auto White Balance"
-      :switch-cols="interactiveCols === 8 ? 9 : interactiveCols"
+      :switch-cols="interactiveCols"
       tooltip="Enables or Disables camera automatic adjustment for current lighting conditions"
       @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraAutoWhiteBalance: args }, false)"
     />
     <pv-slider
-      v-if="!useCameraSettingsStore().currentPipelineSettings.cameraAutoWhiteBalance"
+      :disabled="useCameraSettingsStore().currentPipelineSettings.cameraAutoWhiteBalance"
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraWhiteBalanceTemp"
       label="White Balance Temperature"
       :min="useCameraSettingsStore().minWhiteBalanceTemp"
@@ -152,7 +151,7 @@ const interactiveCols = computed(() =>
       label="Orientation"
       tooltip="Rotates the camera stream. Rotation not available when camera has been calibrated."
       :items="cameraRotations"
-      :select-cols="interactiveCols === 8 ? 9 : interactiveCols"
+      :select-cols="interactiveCols"
       @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ inputImageRotationMode: args }, false)"
     />
     <pv-select
@@ -160,7 +159,7 @@ const interactiveCols = computed(() =>
       label="Resolution"
       tooltip="Resolution and FPS the camera should directly capture at"
       :items="cameraResolutions"
-      :select-cols="interactiveCols === 8 ? 9 : interactiveCols"
+      :select-cols="interactiveCols"
       @input="(args) => handleResolutionChange(args)"
     />
     <pv-select
@@ -168,7 +167,7 @@ const interactiveCols = computed(() =>
       label="Stream Resolution"
       tooltip="Resolution to which camera frames are downscaled for streaming to the dashboard"
       :items="streamResolutions"
-      :select-cols="interactiveCols === 8 ? 9 : interactiveCols"
+      :select-cols="interactiveCols"
       @input="(args) => handleStreamResolutionChange(args)"
     />
   </div>

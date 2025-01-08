@@ -90,18 +90,13 @@ const calibrationImageURL = (index: number) =>
 </script>
 
 <template>
-  <v-card color="primary" class="pa-6" dark>
-    <v-row>
-      <v-col cols="12" md="5">
-        <v-card-title class="pl-0 ml-0"
-          ><span class="text-no-wrap" style="white-space: pre !important">Calibration Details: </span
-          ><span class="text-no-wrap"
-            >{{ useCameraSettingsStore().currentCameraName }}@{{ getResolutionString(videoFormat.resolution) }}</span
-          ></v-card-title
-        >
+  <v-card color="primary" dark>
+    <div class="d-flex flex-wrap pr-md-3">
+      <v-col cols="12" md="6">
+        <v-card-title class="pl-3 pb-0 pb-md-4"> Calibration Details </v-card-title>
       </v-col>
-      <v-col>
-        <v-btn color="secondary" class="mt-4" style="width: 100%" @click="openUploadPhotonCalibJsonPrompt">
+      <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pl-6 pl-md-3">
+        <v-btn color="secondary" style="width: 100%" @click="openUploadPhotonCalibJsonPrompt">
           <v-icon left> mdi-import</v-icon>
           <span>Import</span>
         </v-btn>
@@ -113,10 +108,9 @@ const calibrationImageURL = (index: number) =>
           @change="importCalibration"
         />
       </v-col>
-      <v-col>
+      <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pr-6 pr-md-3">
         <v-btn
           color="secondary"
-          class="mt-4"
           :disabled="!currentCalibrationCoeffs"
           style="width: 100%"
           @click="openExportCalibrationPrompt"
@@ -131,10 +125,17 @@ const calibrationImageURL = (index: number) =>
           target="_blank"
         />
       </v-col>
-    </v-row>
-    <v-row v-if="currentCalibrationCoeffs" class="pt-2">
-      <v-card-subtitle>Calibration Details</v-card-subtitle>
-      <v-simple-table dense style="width: 100%" class="pl-2 pr-2">
+    </div>
+    <v-card-title class="pt-0 pb-3"
+      >{{ useCameraSettingsStore().currentCameraName }}@{{ getResolutionString(videoFormat.resolution) }}</v-card-title
+    >
+    <v-card-text v-if="!currentCalibrationCoeffs">
+      <v-banner rounded color="secondary" text-color="white" class="mt-3" icon="mdi-alert-circle-outline">
+        The selected video format has not been calibrated.
+      </v-banner>
+    </v-card-text>
+    <v-card-text>
+      <v-simple-table dense style="width: 100%">
         <template #default>
           <thead>
             <tr>
@@ -238,15 +239,16 @@ const calibrationImageURL = (index: number) =>
           </tbody>
         </template>
       </v-simple-table>
-      <hr style="width: 100%" class="ma-6" />
-      <v-card-subtitle>Per Observation Details</v-card-subtitle>
+    </v-card-text>
+    <v-card-title v-if="currentCalibrationCoeffs" class="pt-0">Individual Observations</v-card-title>
+    <v-card-text v-if="currentCalibrationCoeffs">
       <v-data-table
         dense
         style="width: 100%"
-        class="pl-2 pr-2"
         :headers="[
           { text: 'Observation Id', value: 'index' },
-          { text: 'Mean Reprojection Error', value: 'mean' }
+          { text: 'Mean Reprojection Error', value: 'mean' },
+          { text: '', value: 'data-table-expand' }
         ]"
         :items="getObservationDetails()"
         item-key="index"
@@ -261,10 +263,7 @@ const calibrationImageURL = (index: number) =>
           </td>
         </template>
       </v-data-table>
-    </v-row>
-    <v-row v-else class="pt-2 mb-0 pb-0">
-      The selected video format doesn't have any additional information as it has yet to be calibrated.
-    </v-row>
+    </v-card-text>
   </v-card>
 </template>
 
@@ -275,7 +274,6 @@ const calibrationImageURL = (index: number) =>
 .snapshot-preview {
   max-width: 55%;
 }
-
 @media only screen and (max-width: 512px) {
   .snapshot-preview {
     max-width: 100%;
