@@ -81,8 +81,7 @@ public class PhotonCameraSim implements AutoCloseable {
     private double minTargetAreaPercent;
     private PhotonTargetSortMode sortMode = PhotonTargetSortMode.Largest;
 
-    private AprilTagFieldLayout tagLayout =
-            AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+    private final AprilTagFieldLayout tagLayout;
 
     // video stream simulation
     private final CvSource videoSimRaw;
@@ -130,8 +129,23 @@ public class PhotonCameraSim implements AutoCloseable {
      * @param prop Properties of this camera such as FOV and FPS
      */
     public PhotonCameraSim(PhotonCamera camera, SimCameraProperties prop) {
+      this(camera, prop, AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField));
+    }
+
+    /**
+     * Constructs a handle for simulating {@link PhotonCamera} values. Processing simulated targets
+     * through this class will change the associated PhotonCamera's results.
+     *
+     * <p>By default, the minimum target area is 100 pixels and there is no maximum sight range.
+     *
+     * @param camera The camera to be simulated
+     * @param prop Properties of this camera such as FOV and FPS
+     * @param tagLayout The {@link AprilTagFieldLayout} used to solve for tag positions.
+     */
+    public PhotonCameraSim(PhotonCamera camera, SimCameraProperties prop, AprilTagFieldLayout tagLayout) {
         this.cam = camera;
         this.prop = prop;
+        this.tagLayout = tagLayout;
         setMinTargetAreaPixels(kDefaultMinAreaPx);
 
         videoSimRaw =
@@ -163,7 +177,7 @@ public class PhotonCameraSim implements AutoCloseable {
             SimCameraProperties prop,
             double minTargetAreaPercent,
             double maxSightRangeMeters) {
-        this(camera, prop);
+        this(camera, prop, AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField));
         this.minTargetAreaPercent = minTargetAreaPercent;
         this.maxSightRangeMeters = maxSightRangeMeters;
     }
@@ -190,7 +204,6 @@ public class PhotonCameraSim implements AutoCloseable {
         this(camera, prop);
         this.minTargetAreaPercent = minTargetAreaPercent;
         this.maxSightRangeMeters = maxSightRangeMeters;
-        this.tagLayout = tagLayout;
     }
 
     public PhotonCamera getCamera() {

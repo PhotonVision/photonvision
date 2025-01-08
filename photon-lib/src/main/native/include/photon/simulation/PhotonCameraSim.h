@@ -52,6 +52,8 @@ class PhotonCameraSim {
   explicit PhotonCameraSim(PhotonCamera* camera);
   PhotonCameraSim(PhotonCamera* camera, const SimCameraProperties& props);
   PhotonCameraSim(PhotonCamera* camera, const SimCameraProperties& props,
+                  const frc::AprilTagFieldLayout& tagLayout);
+  PhotonCameraSim(PhotonCamera* camera, const SimCameraProperties& props,
                   double minTargetAreaPercent, units::meter_t maxSightRange);
 
   inline PhotonCamera* GetCamera() { return cam; }
@@ -107,8 +109,7 @@ class PhotonCameraSim {
   static constexpr double kDefaultMinAreaPx{100};
   double minTargetAreaPercent;
 
-  frc::AprilTagFieldLayout tagLayout{
-      frc::AprilTagFieldLayout::LoadField(frc::AprilTagField::kDefaultField)};
+  frc::AprilTagFieldLayout tagLayout;
 
   cs::CvSource videoSimRaw;
   cv::Mat videoSimFrameRaw{};
