@@ -139,12 +139,12 @@ const interactiveCols = computed(() =>
       </tr>
     </table>
     <div
-      class="d-flex align-center"
       v-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode !== RobotOffsetPointMode.None"
+      class="d-flex align-center"
     >
       <v-card-text
-        class="d-flex pa-0 flex-wrap"
         v-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode === RobotOffsetPointMode.Single"
+        class="d-flex pa-0 flex-wrap"
       >
         <v-col cols="6" class="pl-0">
           <v-btn
@@ -169,8 +169,8 @@ const interactiveCols = computed(() =>
         </v-col>
       </v-card-text>
       <v-card-text
-        class="d-flex pa-0 flex-wrap"
         v-else-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode === RobotOffsetPointMode.Dual"
+        class="d-flex pa-0 flex-wrap"
       >
         <v-col cols="6" lg="4" class="pl-0 pr-2">
           <v-btn

@@ -177,9 +177,9 @@ const interactiveCols = computed(() =>
         @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourShape: value }, false)"
       />
       <pv-slider
+        v-if="currentPipelineSettings.contourShape >= 1"
         v-model="currentPipelineSettings.accuracyPercentage"
         :disabled="currentPipelineSettings.contourShape < 1"
-        v-if="currentPipelineSettings.contourShape >= 1"
         label="Shape Simplification"
         tooltip="How much we should simply the input contour before checking how many sides it has"
         :min="0"
@@ -188,9 +188,9 @@ const interactiveCols = computed(() =>
         @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ accuracyPercentage: value }, false)"
       />
       <pv-slider
+        v-if="currentPipelineSettings.contourShape === 0"
         v-model="currentPipelineSettings.circleDetectThreshold"
         :disabled="currentPipelineSettings.contourShape !== 0"
-        v-if="currentPipelineSettings.contourShape === 0"
         label="Circle match distance"
         tooltip="How close the centroid of a contour must be to the center of a circle in order for them to be matched"
         :min="1"
@@ -201,9 +201,9 @@ const interactiveCols = computed(() =>
         "
       />
       <pv-slider
+        v-if="currentPipelineSettings.contourShape === 0"
         v-model="currentPipelineSettings.maxCannyThresh"
         :disabled="currentPipelineSettings.contourShape !== 0"
-        v-if="currentPipelineSettings.contourShape === 0"
         label="Max Canny Threshold"
         :min="1"
         :max="100"
@@ -211,9 +211,9 @@ const interactiveCols = computed(() =>
         @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ maxCannyThresh: value }, false)"
       />
       <pv-slider
+        v-if="currentPipelineSettings.contourShape === 0"
         v-model="currentPipelineSettings.circleAccuracy"
         :disabled="currentPipelineSettings.contourShape !== 0"
-        v-if="currentPipelineSettings.contourShape === 0"
         label="Circle Accuracy"
         :min="1"
         :max="100"
@@ -221,9 +221,9 @@ const interactiveCols = computed(() =>
         @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ circleAccuracy: value }, false)"
       />
       <pv-range-slider
+        v-if="currentPipelineSettings.contourShape === 0"
         v-model="contourRadius"
         :disabled="currentPipelineSettings.contourShape !== 0"
-        v-if="currentPipelineSettings.contourShape === 0"
         label="Radius"
         :min="0"
         :max="100"
