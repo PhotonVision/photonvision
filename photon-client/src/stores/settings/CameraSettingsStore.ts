@@ -306,10 +306,9 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      * Duplicate the pipeline at the provided index.
      *
      * @param pipelineIndex index of the pipeline to duplicate.
-     * @param newName the name for the new pipeline.
      * @param cameraUniqueNamendex the unique name of the camera.
      */
-    duplicatePipeline(pipelineIndex: number, newName : string, cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
+    duplicatePipeline(pipelineIndex: number, cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
       const payload = {
         duplicatePipeline: pipelineIndex,
         cameraUniqueName: cameraUniqueName

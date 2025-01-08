@@ -413,15 +413,13 @@ public class PipelineManager {
      * Duplicate a pipeline at a given index
      *
      * @param index the index of the target pipeline
-     * @param newName the new name for the pipeline (leave blank for default)
      * @return The new index
      */
-    public int duplicatePipeline(int index, String newName) {
+    public int duplicatePipeline(int index) {
         var settings = userPipelineSettings.get(index);
         var newSettings = settings.clone();
-        newSettings.pipelineNickname = (newName != null && !newName.isEmpty()) 
-                ? newName 
-                : createUniqueName(settings.pipelineNickname, userPipelineSettings);
+        newSettings.pipelineNickname =
+                createUniqueName(settings.pipelineNickname, userPipelineSettings);
         newSettings.pipelineIndex = Integer.MAX_VALUE;
         logger.debug("Duplicating pipe " + index + " to " + newSettings.pipelineNickname);
         userPipelineSettings.add(newSettings);
