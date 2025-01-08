@@ -55,11 +55,50 @@ const handleObjectDetectionImport = () => {
   importLabelsFile.value = null;
 };
 
+const handleObjectDetectionDeletion = (model: String) => {
+  useStateStore().showSnackbarMessage({
+    message: "Deleting Object Detection Model...",
+    color: "secondary",
+    timeout: -1
+  });
+
+  axios
+    .post("/utils/deleteObjectDetectionModel", { model })
+    .then((response) => {
+      useStateStore().showSnackbarMessage({
+        message: response.data.text || response.data,
+        color: "success"
+      });
+    })
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: error.response.data.text || error.response.data
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "Error while trying to process the request! The backend didn't respond."
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "An error occurred while trying to process the request."
+        });
+      }
+    });
+};
+
 // Filters out models that are not supported by the current backend, and returns a flattened list.
-const supportedModels = computed(() => {
-  const { availableModels, supportedBackends } = useSettingsStore().general;
-  return supportedBackends.flatMap((backend) => availableModels[backend] || []);
-});
+// const supportedModels = computed(() => {
+//   const { availableModels, supportedBackends } = useSettingsStore().general;
+//   return supportedBackends.flatMap((backend) => availableModels[backend] || []);
+// });
+
+const supportedModels = {
+  availableModels: ["model1", "model2", "model3"]
+};
 </script>
 
 <template>
@@ -125,6 +164,10 @@ const supportedModels = computed(() => {
             <tbody>
               <tr v-for="model in supportedModels" :key="model">
                 <td>{{ model }}</td>
+                <td>
+                  <v-btn color="error" @click="() => (handleObjectDetectionDeletion(model))">
+                    <v-icon left class="open-icon"> mdi-delete </v-icon>
+                </td>
               </tr>
             </tbody>
           </v-simple-table>
