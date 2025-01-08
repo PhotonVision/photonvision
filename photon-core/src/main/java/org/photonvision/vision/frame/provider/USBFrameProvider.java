@@ -19,12 +19,12 @@ package org.photonvision.vision.frame.provider;
 
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.CvSink;
+import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.util.PixelFormat;
 import edu.wpi.first.util.RawFrame;
 import org.opencv.core.Mat;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
-import edu.wpi.first.cscore.UsbCamera;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.jni.CscoreExtras;
