@@ -85,10 +85,12 @@ const supportedModels = computed(() => {
             <v-card color="primary" dark>
               <v-card-title>Import New Object Detection Model</v-card-title>
               <v-card-text>
-                Upload a new object detection model to this device that can be used in a pipeline. Naming convention is
-                that the labels file ought to have the same name as the RKNN file, with -labels appended to the end. For
-                example, if the RKNN file is named <i>foo.rknn</i>, the labels file should be named
-                <i>foo-labels.txt</i>.
+                Upload a new object detection model to this device that can be used in a pipeline. Naming convention
+                should be <code>name-verticalResolution-horizontalResolution-modelType</code>. Additionally, the labels
+                file ought to have the same name as the RKNN file, with <code>-labels</code> appended to the end. For
+                example, if the RKNN file is named <code>note-640-640-yolov5s.rknn</code>, the labels file should be
+                named <code>note-640-640-yolov5s-labels.txt</code>. Note that ONLY 640x640 YOLOv5 models trained and
+                converted to `.rknn` format for RK3588 CPUs are currently supported!
                 <v-row class="mt-6 ml-4 mr-8">
                   <v-file-input label="RKNN File" v-model="importRKNNFile" accept=".rknn" />
                 </v-row>

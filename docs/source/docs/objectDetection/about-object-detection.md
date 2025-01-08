@@ -4,7 +4,7 @@
 
 PhotonVision supports object detection using neural network accelerator hardware built into Orange Pi 5/5+ coprocessors. The Neural Processing Unit, or NPU, is [used by PhotonVision](https://github.com/PhotonVision/rknn_jni/tree/main) to massively accelerate certain math operations like those needed for running ML-based object detection.
 
-For the 2025 season, PhotonVision does not currently ship with a pre-trained detector.  If teams are interested in using object detection, they can follow the custom process outlined {ref}`below <docs/objectDetection/about-object-detection:Uploading Custom Models>`.
+For the 2025 season, PhotonVision does not currently ship with a pre-trained detector. If teams are interested in using object detection, they can follow the custom process outlined {ref}`below <docs/objectDetection/about-object-detection:Uploading Custom Models>`.
 
 ## Tracking Objects
 
@@ -40,7 +40,11 @@ Coming soon!
 ## Uploading Custom Models
 
 :::{warning}
-PhotonVision currently ONLY supports YOLOv5 models trained and converted to `.rknn` format for RK3588 CPUs! Other models require different post-processing code and will NOT work. The model conversion process is also highly particular. Proceed with care.
+PhotonVision currently ONLY supports 640x640 YOLOv5 models trained and converted to `.rknn` format for RK3588 CPUs! Other models require different post-processing code and will NOT work. The model conversion process is also highly particular. Proceed with care.
 :::
 
-In the settings, under ``Device Control``, there's an option to upload a new object detection model. When uploading the files, ensure that that the labels file has the same name as the RKNN file, with ``-labels`` appended to the end. For example, if the RKNN file is named ``foo.rknn``, the labels file should be named ``foo-labels.txt``. The labels file should contain one line per label the model outputs with no training newline.
+In the settings, under `Device Control`, there's an option to upload a new object detection model. Naming convention
+should be `name-verticalResolution-horizontalResolution-modelType`. Additionally, the labels
+file ought to have the same name as the RKNN file, with `-labels` appended to the end. For example, if the
+RKNN file is named `note-640-640-yolov5s.rknn`, the labels file should be named
+`note-640-640-yolov5s-labels.txt`.
