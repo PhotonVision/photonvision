@@ -56,6 +56,7 @@ const handleImport = () => {
 };
 
 const deleteModel = ref<String | null>(null);
+const showDeletionDialog = ref(false);
 
 const handleDeletion = () => {
   useStateStore().showSnackbarMessage({
@@ -223,7 +224,7 @@ const handleNameEdit = () => {
                   </v-btn>
                 </td>
                 <td>
-                  <v-btn color="error" @click="() => (handleDeletion, (deleteModel = model))">
+                  <v-btn color="error" @click="() => ((showDeletionDialog = true), (deleteModel = model))">
                     <v-icon left class="open-icon"> mdi-delete </v-icon>
                   </v-btn>
                 </td>
@@ -242,16 +243,10 @@ const handleNameEdit = () => {
             <v-card color="primary" dark>
               <v-card-title>Edit Object Detection Model Name</v-card-title>
               <v-card-text>
-                Change the name of <code>{{ nameEditModel }}</code>. The new name must be unique, and contain no spaces.
+                Change the name of <code>{{ nameEditModel }}</code
+                >. The new name must be unique, and contain no spaces.
                 <v-row class="mt-6 ml-4 mr-8">
-                  <v-text-field
-                    v-model="newName"
-                    label="New Name"
-                    outlined
-                    dense
-                    clearable
-                    required
-                  ></v-text-field>
+                  <v-text-field v-model="newName" label="New Name" outlined dense clearable required></v-text-field>
                 </v-row>
                 <v-row
                   class="mt-12 ml-8 mr-8 mb-1"
@@ -261,6 +256,32 @@ const handleNameEdit = () => {
                   <v-btn color="secondary" :disabled="newName === null" @click="handleNameEdit">
                     <v-icon left class="open-icon"> mdi-pencil </v-icon>
                     <span class="open-label">Edit Object Detection Model Name</span>
+                  </v-btn>
+                </v-row>
+              </v-card-text>
+            </v-card>
+          </v-dialog>
+          <v-dialog
+            v-model="showDeletionDialog"
+            width="600"
+            @input="
+              () => {
+                newName = null;
+              }
+            "
+          >
+            <v-card color="primary" dark>
+              <v-card-title>Delete {{ deleteModel }}</v-card-title>
+              <v-card-text>
+                Are you sure you want to delete this model?
+                <v-row
+                  class="mt-12 ml-8 mr-8 mb-1"
+                  style="display: flex; align-items: center; justify-content: center"
+                  align="center"
+                >
+                  <v-btn color="error" @click="handleDeletion">
+                    <v-icon left class="open-icon"> mdi-delete </v-icon>
+                    <span class="open-label">Yes, I'm Sure</span>
                   </v-btn>
                 </v-row>
               </v-card-text>
