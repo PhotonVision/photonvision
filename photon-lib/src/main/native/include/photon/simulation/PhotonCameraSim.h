@@ -50,9 +50,10 @@ namespace photon {
 class PhotonCameraSim {
  public:
   explicit PhotonCameraSim(PhotonCamera* camera);
-  PhotonCameraSim(PhotonCamera* camera, const SimCameraProperties& props);
   PhotonCameraSim(PhotonCamera* camera, const SimCameraProperties& props,
-                  const frc::AprilTagFieldLayout& tagLayout);
+                  const frc::AprilTagFieldLayout& tagLayout =
+                      frc::AprilTagFieldLayout::LoadField(
+                          frc::AprilTagField::kDefaultField));
   PhotonCameraSim(PhotonCamera* camera, const SimCameraProperties& props,
                   double minTargetAreaPercent, units::meter_t maxSightRange);
 

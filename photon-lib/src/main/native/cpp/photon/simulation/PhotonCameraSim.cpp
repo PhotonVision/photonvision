@@ -39,12 +39,6 @@ PhotonCameraSim::PhotonCameraSim(PhotonCamera* camera)
                           frc::AprilTagField::kDefaultField)) {}
 
 PhotonCameraSim::PhotonCameraSim(PhotonCamera* camera,
-                                 const SimCameraProperties& props)
-    : PhotonCameraSim{camera, props,
-                      frc::AprilTagFieldLayout::LoadField(
-                          frc::AprilTagField::kDefaultField)} {}
-
-PhotonCameraSim::PhotonCameraSim(PhotonCamera* camera,
                                  const SimCameraProperties& props,
                                  const frc::AprilTagFieldLayout& tagLayout)
     : prop{props}, cam{camera}, tagLayout{tagLayout} {
