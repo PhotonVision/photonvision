@@ -69,3 +69,8 @@ const handleKeydown = ({ key }) => {
     </v-col>
   </div>
 </template>
+<style scoped>
+.v-text-field {
+  margin-top: 0px;
+}
+</style>

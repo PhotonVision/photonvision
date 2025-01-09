@@ -218,7 +218,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
     <v-card class="mb-3" color="primary" dark>
       <v-card-title class="pa-6 pb-3">Camera Calibration</v-card-title>
       <v-card-text v-show="!isCalibrating">
-        <v-card-subtitle class="pt-3 pl-2 pb-3">Current Calibration</v-card-subtitle>
+        <v-card-subtitle class="pt-3 pl-2 pb-4 white--text">Current Calibration</v-card-subtitle>
         <v-simple-table fixed-header height="100%" dense>
           <thead>
             <tr>
@@ -252,7 +252,9 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
         </v-simple-table>
       </v-card-text>
       <v-card-text v-if="useCameraSettingsStore().isConnected" class="d-flex flex-column pa-6 pt-0">
-        <v-card-subtitle v-show="!isCalibrating" class="pl-0">Configure New Calibration</v-card-subtitle>
+        <v-card-subtitle v-show="!isCalibrating" class="pl-0 pb-3 pt-3 white--text"
+          >Configure New Calibration</v-card-subtitle
+        >
         <v-form ref="form" v-model="settingsValid">
           <!-- TODO: the default videoFormatIndex is 0, but the list of unique video mode indexes might not include 0. getUniqueVideoResolutionStrings indexing is also different from the normal video mode indexing -->
           <pv-select

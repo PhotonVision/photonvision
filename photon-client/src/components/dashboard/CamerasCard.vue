@@ -90,6 +90,9 @@ const performanceRecommendation = computed<string>(() => {
 </template>
 
 <style scoped>
+.v-input--switch {
+  margin-top: 0;
+}
 .stream-viewer-container {
   display: flex;
   justify-content: center;

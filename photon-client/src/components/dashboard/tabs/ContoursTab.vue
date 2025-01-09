@@ -69,6 +69,14 @@ const interactiveCols = computed(() =>
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOrientation: value }, false)
       "
     />
+    <pv-select
+      v-model="useCameraSettingsStore().currentPipelineSettings.contourSortMode"
+      label="Target Sort"
+      tooltip="Chooses the sorting mode used to determine the 'best' targets to provide to user code"
+      :select-cols="interactiveCols"
+      :items="['Largest', 'Smallest', 'Highest', 'Lowest', 'Rightmost', 'Leftmost', 'Centermost']"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourSortMode: value }, false)"
+    />
     <pv-range-slider
       v-model="contourArea"
       label="Area"
@@ -169,6 +177,7 @@ const interactiveCols = computed(() =>
         @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourShape: value }, false)"
       />
       <pv-slider
+        v-if="currentPipelineSettings.contourShape >= 1"
         v-model="currentPipelineSettings.accuracyPercentage"
         :disabled="currentPipelineSettings.contourShape < 1"
         label="Shape Simplification"
@@ -179,6 +188,7 @@ const interactiveCols = computed(() =>
         @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ accuracyPercentage: value }, false)"
       />
       <pv-slider
+        v-if="currentPipelineSettings.contourShape === 0"
         v-model="currentPipelineSettings.circleDetectThreshold"
         :disabled="currentPipelineSettings.contourShape !== 0"
         label="Circle match distance"
@@ -191,6 +201,7 @@ const interactiveCols = computed(() =>
         "
       />
       <pv-slider
+        v-if="currentPipelineSettings.contourShape === 0"
         v-model="currentPipelineSettings.maxCannyThresh"
         :disabled="currentPipelineSettings.contourShape !== 0"
         label="Max Canny Threshold"
@@ -200,6 +211,7 @@ const interactiveCols = computed(() =>
         @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ maxCannyThresh: value }, false)"
       />
       <pv-slider
+        v-if="currentPipelineSettings.contourShape === 0"
         v-model="currentPipelineSettings.circleAccuracy"
         :disabled="currentPipelineSettings.contourShape !== 0"
         label="Circle Accuracy"
@@ -209,6 +221,7 @@ const interactiveCols = computed(() =>
         @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ circleAccuracy: value }, false)"
       />
       <pv-range-slider
+        v-if="currentPipelineSettings.contourShape === 0"
         v-model="contourRadius"
         :disabled="currentPipelineSettings.contourShape !== 0"
         label="Radius"
@@ -218,13 +231,5 @@ const interactiveCols = computed(() =>
         @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourRadius: value }, false)"
       />
     </template>
-    <pv-select
-      v-model="useCameraSettingsStore().currentPipelineSettings.contourSortMode"
-      label="Target Sort"
-      tooltip="Chooses the sorting mode used to determine the 'best' targets to provide to user code"
-      :select-cols="interactiveCols"
-      :items="['Largest', 'Smallest', 'Highest', 'Lowest', 'Rightmost', 'Leftmost', 'Centermost']"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourSortMode: value }, false)"
-    />
   </div>
 </template>
