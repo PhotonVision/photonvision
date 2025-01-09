@@ -146,6 +146,7 @@ const createNewPipeline = () => {
   const type = newPipelineType.value;
   if (type === WebsocketPipelineType.DriverMode || type === WebsocketPipelineType.Calib3d) return;
   useCameraSettingsStore().createNewPipeline(newPipelineName.value, type);
+  useCameraSettingsStore().changeCurrentPipelineIndex(useCameraSettingsStore().pipelineNames.length, true); //last index is most recent pipeline
   showPipelineCreationDialog.value = false;
 };
 const cancelPipelineCreation = () => {
