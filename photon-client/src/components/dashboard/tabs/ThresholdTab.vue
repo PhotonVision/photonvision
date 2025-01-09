@@ -211,9 +211,9 @@ const interactiveCols = computed(() =>
           </v-col>
         </template>
         <template v-else>
-          <v-btn color="accent" class="ma-2 black--text" style="width: 30%" small @click="disableColorPicking">
-            Cancel
-          </v-btn>
+          <v-card-text class="pa-0 pt-3 pb-3">
+            <v-btn block color="accent" class="black--text" small @click="disableColorPicking"> Cancel </v-btn>
+          </v-card-text>
         </template>
       </div>
     </div>
