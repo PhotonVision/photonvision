@@ -35,9 +35,14 @@ public class RknnModel implements Model {
     /**
      * Determines the model version based on the model's filename.
      *
-     * <p>"yolov5" -> "YOLO_V5"
+     * <p>
+     * "yolov5" -> "YOLO_V5"
      *
-     * <p>"yolov8" -> "YOLO_V8"
+     * <p>
+     * "yolov8" -> "YOLO_V8"
+     * 
+     * <p>
+     * "yolov11" -> "YOLO_V11"
      *
      * @param modelName The model's filename
      * @return The model version
@@ -48,6 +53,8 @@ public class RknnModel implements Model {
             return RknnJNI.ModelVersion.YOLO_V5;
         } else if (modelName.contains("yolov8")) {
             return RknnJNI.ModelVersion.YOLO_V8;
+        } else if (modelName.contains("yolov11")) {
+            return RknnJNI.ModelVersion.YOLO_V11;
         } else {
             throw new IllegalArgumentException("Unknown model version for model " + modelName);
         }
@@ -56,8 +63,9 @@ public class RknnModel implements Model {
     /**
      * rknn model constructor.
      *
-     * @param modelFile path to model on disk. Format: `name-width-height-model.rknn`
-     * @param labels path to labels file on disk
+     * @param modelFile path to model on disk. Format:
+     *                  `name-width-height-model.rknn`
+     * @param labels    path to labels file on disk
      * @throws IllegalArgumentException
      */
     public RknnModel(File modelFile, String labels) throws IllegalArgumentException, IOException {
