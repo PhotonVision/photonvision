@@ -461,7 +461,11 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         <v-card-title> Rename Pipeline </v-card-title>
         <v-card-text>
           Rename the duplicated pipeline. If you wish to use the default name
-          <code>{{ useCameraSettingsStore().currentCameraSettings.pipelineNicknames[useCameraSettingsStore().currentCameraSettings.currentPipelineIndex] }}</code
+          <code>{{
+            useCameraSettingsStore().currentCameraSettings.pipelineNicknames[
+              useCameraSettingsStore().currentCameraSettings.currentPipelineIndex
+            ]
+          }}</code
           >, press cancel.
           <pv-input
             v-model="newDuplicatePipelineName"
