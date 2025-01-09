@@ -423,9 +423,9 @@ class PhotonCameraSim:
         now_micros = wpilib.Timer.getFPGATimestamp() * 1e6
         return PhotonPipelineResult(
             metadata=PhotonPipelineMetadata(
-                self.heartbeatCounter,
                 int(now_micros - latency * 1e6),
                 int(now_micros),
+                self.heartbeatCounter,
                 # Pretend like we heard a pong recently
                 int(np.random.uniform(950, 1050)),
             ),
