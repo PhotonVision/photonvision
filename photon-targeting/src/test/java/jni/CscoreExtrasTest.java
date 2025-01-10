@@ -77,10 +77,10 @@ public class CscoreExtrasTest {
                     // hard-coded 3 channel
                     cameraMode.width * 3,
                     PixelFormat.kBGR);
-
+            final double CSCORE_DEFAULT_FRAME_TIMEOUT = 1.0 / 4.0;
             long time =
                     CscoreExtras.grabRawSinkFrameTimeoutLastTime(
-                            cvSink.getHandle(), frame.getNativeObj(), 0.225, lastTime);
+                            cvSink.getHandle(), frame.getNativeObj(), CSCORE_DEFAULT_FRAME_TIMEOUT, lastTime);
 
             if (time != 0) {
                 var mat = new Mat(CscoreExtras.wrapRawFrame(frame.getNativeObj()));

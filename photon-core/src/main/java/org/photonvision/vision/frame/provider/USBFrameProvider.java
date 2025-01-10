@@ -80,6 +80,8 @@ public class USBFrameProvider extends CpuImageProcessor {
         return connected;
     }
 
+    final double CSCORE_DEFAULT_FRAME_TIMEOUT = 1.0 / 4.0;
+
     @Override
     public CapturedFrame getInputMat() {
         if (!cameraPropertiesCached && camera.isConnected()) {
@@ -93,7 +95,7 @@ public class USBFrameProvider extends CpuImageProcessor {
             // Hal::initialize was called
             // TODO - under the hood, this incurs an extra copy. We should avoid this, if we
             // can.
-            long captureTimeNs = cvSink.grabFrame(mat.getMat()) * 1000;
+            long captureTimeNs = cvSink.grabFrame(mat.getMat(), CSCORE_DEFAULT_FRAME_TIMEOUT) * 1000;
 
             if (captureTimeNs == 0) {
                 var error = cvSink.getError();
@@ -102,7 +104,6 @@ public class USBFrameProvider extends CpuImageProcessor {
 
             return new CapturedFrame(mat, settables.getFrameStaticProperties(), captureTimeNs);
         } else {
-            logger.info("asdf");
             // We allocate memory so we don't fill a Mat in use by another thread (memory model is easier)
             // TODO - consider a frame pool
             // TODO - getCurrentVideoMode is a JNI call for us, but profiling indicates it's fast
@@ -119,7 +120,7 @@ public class USBFrameProvider extends CpuImageProcessor {
             // Hal::initialize was called
             long captureTimeUs =
                     CscoreExtras.grabRawSinkFrameTimeoutLastTime(
-                            cvSink.getHandle(), frame.getNativeObj(), 0.225, lastTime);
+                            cvSink.getHandle(), frame.getNativeObj(), CSCORE_DEFAULT_FRAME_TIMEOUT, lastTime);
             lastTime = captureTimeUs;
 
             CVMat ret;
