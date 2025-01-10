@@ -5,13 +5,18 @@ import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
 const showImportDialog = ref(false);
+const disableImportButton = ref(false);
 const importRKNNFile = ref<File | null>(null);
 const importLabelsFile = ref<File | null>(null);
 
 // TODO gray out the button when model is uploading
 const handleImport = () => {
-  if (importRKNNFile.value === null || importLabelsFile.value === null) return;
+  disableImportButton.value = true;
 
+  if (importRKNNFile.value === null || importLabelsFile.value === null) {
+    disableImportButton.value = false;
+    return;
+  }
   const formData = new FormData();
   formData.append("rknn", importRKNNFile.value);
   formData.append("labels", importLabelsFile.value);
@@ -52,9 +57,9 @@ const handleImport = () => {
     });
 
   showImportDialog.value = false;
-
   importRKNNFile.value = null;
   importLabelsFile.value = null;
+  disableImportButton.value = false;
 };
 
 const deleteModel = ref<String | null>(null);
@@ -148,6 +153,41 @@ const handleNameEdit = () => {
   nameEditModel.value = null;
   newName.value = null;
 };
+
+const rediscoverModels = () => {
+  useStateStore().showSnackbarMessage({
+    message: "Forcing Rediscovery of Object Detection Models...",
+    color: "secondary",
+    timeout: -1
+  });
+
+  axios
+    .post("/utils/rediscoverObjectDetectionModels")
+    .then((response) => {
+      useStateStore().showSnackbarMessage({
+        message: response.data.text || response.data,
+        color: "success"
+      });
+    })
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: error.response.data.text || error.response.data
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "Error while trying to process the request! The backend didn't respond."
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "An error occurred while trying to process the request."
+        });
+      }
+    });
+};
 </script>
 
 <template>
@@ -156,9 +196,18 @@ const handleNameEdit = () => {
     <div class="pa-6 pt-0">
       <v-row>
         <v-col cols="12 ">
-          <v-btn color="secondary" @click="() => (showImportDialog = true)" class="justify-center">
+          <v-btn
+            color="secondary"
+            @click="() => (showImportDialog = true)"
+            class="justify-center"
+            :disabled="disableImportButton"
+          >
             <v-icon left class="open-icon"> mdi-import </v-icon>
             <span class="open-label">Import New Model</span>
+          </v-btn>
+          <v-btn color="secondary" @click="() => (rediscoverModels = true)">
+            <v-icon left class="open-icon"> mdi-eye-refresh </v-icon>
+            <span class="open-label">Force Rediscovery</span>
           </v-btn>
           <v-dialog
             v-model="showImportDialog"

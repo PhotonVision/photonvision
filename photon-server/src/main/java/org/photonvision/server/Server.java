@@ -55,52 +55,48 @@ public class Server {
     }
 
     private static void start(int port) {
-        app =
-                Javalin.create(
-                        javalinConfig -> {
-                            javalinConfig.showJavalinBanner = false;
-                            javalinConfig.staticFiles.add("web");
-                            javalinConfig.plugins.enableCors(
-                                    corsContainer -> {
-                                        corsContainer.add(CorsPluginConfig::anyHost);
-                                    });
+        app = Javalin.create(
+                javalinConfig -> {
+                    javalinConfig.showJavalinBanner = false;
+                    javalinConfig.staticFiles.add("web");
+                    javalinConfig.plugins.enableCors(
+                            corsContainer -> {
+                                corsContainer.add(CorsPluginConfig::anyHost);
+                            });
 
-                            javalinConfig.requestLogger.http(
-                                    (ctx, ms) -> {
-                                        StringJoiner joiner =
-                                                new StringJoiner(" ")
-                                                        .add("Handled HTTP request of type")
-                                                        .add(ctx.req().getMethod())
-                                                        .add("from endpoint")
-                                                        .add(ctx.path())
-                                                        .add("of req size")
-                                                        .add(Integer.toString(ctx.contentLength()))
-                                                        .add("bytes & type")
-                                                        .add(ctx.contentType())
-                                                        .add("with return code")
-                                                        .add(Integer.toString(ctx.res().getStatus()))
-                                                        .add("for host")
-                                                        .add(ctx.req().getRemoteHost())
-                                                        .add("in")
-                                                        .add(ms.toString())
-                                                        .add("ms");
+                    javalinConfig.requestLogger.http(
+                            (ctx, ms) -> {
+                                StringJoiner joiner = new StringJoiner(" ")
+                                        .add("Handled HTTP request of type")
+                                        .add(ctx.req().getMethod())
+                                        .add("from endpoint")
+                                        .add(ctx.path())
+                                        .add("of req size")
+                                        .add(Integer.toString(ctx.contentLength()))
+                                        .add("bytes & type")
+                                        .add(ctx.contentType())
+                                        .add("with return code")
+                                        .add(Integer.toString(ctx.res().getStatus()))
+                                        .add("for host")
+                                        .add(ctx.req().getRemoteHost())
+                                        .add("in")
+                                        .add(ms.toString())
+                                        .add("ms");
 
-                                        logger.debug(joiner.toString());
-                                    });
-                            javalinConfig.requestLogger.ws(
-                                    ws -> {
-                                        ws.onMessage(ctx -> logger.debug("Got WebSockets message: " + ctx.message()));
-                                        ws.onBinaryMessage(
-                                                ctx ->
-                                                        logger.trace(
-                                                                () -> {
-                                                                    var remote = (InetSocketAddress) ctx.session.getRemoteAddress();
-                                                                    var host =
-                                                                            remote.getAddress().toString() + ":" + remote.getPort();
-                                                                    return "Got WebSockets binary message from host: " + host;
-                                                                }));
-                                    });
-                        });
+                                logger.debug(joiner.toString());
+                            });
+                    javalinConfig.requestLogger.ws(
+                            ws -> {
+                                ws.onMessage(ctx -> logger.debug("Got WebSockets message: " + ctx.message()));
+                                ws.onBinaryMessage(
+                                        ctx -> logger.trace(
+                                                () -> {
+                                                    var remote = (InetSocketAddress) ctx.session.getRemoteAddress();
+                                                    var host = remote.getAddress().toString() + ":" + remote.getPort();
+                                                    return "Got WebSockets binary message from host: " + host;
+                                                }));
+                            });
+                });
 
         /* Web Socket Events for Data Exchange */
         var dsHandler = DataSocketHandler.getInstance();
@@ -136,7 +132,7 @@ public class Server {
         app.post(
                 "api/utils/editObjectDetectionModelName",
                 RequestHandler::onEditObjectDetectionModelNameRequest);
-
+        app.post("api/utils/rediscoverObjectDetectionModels", RequestHandler::onRediscoverObjectDetectionModelsRequest);
         app.get("/api/utils/photonvision-journalctl.txt", RequestHandler::onLogExportRequest);
         app.post("/api/utils/restartProgram", RequestHandler::onProgramRestartRequest);
         app.post("/api/utils/restartDevice", RequestHandler::onDeviceRestartRequest);
@@ -158,8 +154,10 @@ public class Server {
     }
 
     /**
-     * Seems like if we change the static IP of this device, Javalin refuses to tell us when new
-     * Websocket clients connect. As a hack, we can restart the server every time we change static IPs
+     * Seems like if we change the static IP of this device, Javalin refuses to tell
+     * us when new
+     * Websocket clients connect. As a hack, we can restart the server every time we
+     * change static IPs
      */
     public static void restart() {
         logger.info("Web server going down for restart");
