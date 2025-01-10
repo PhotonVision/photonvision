@@ -45,8 +45,7 @@ public class Constants {
                 new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0));
 
         // The layout of the AprilTags on the field
-        public static final AprilTagFieldLayout kTagLayout =
-                AprilTagFields.kDefaultField.loadAprilTagLayoutField();
+        public static final AprilTagFieldLayout kTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
         // The standard deviations of our vision estimated poses, which affect correction rate
         // (Fake values. Experiment and determine estimation noise on an actual robot.)
