@@ -1,1 +1,1 @@
-python3 -m pip config set global.find-links dist
+python3 -m pip config unset global.find-links
