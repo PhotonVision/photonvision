@@ -1,6 +1,6 @@
 # Check if the first argument is provided
 if [ $# -eq 0 ]
-  then 
+  then
     echo "Error: No example-to-run provided."
     exit 1
 fi
