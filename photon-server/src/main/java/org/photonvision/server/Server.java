@@ -136,9 +136,6 @@ public class Server {
         app.post(
                 "api/utils/editObjectDetectionModelName",
                 RequestHandler::onEditObjectDetectionModelNameRequest);
-        app.post(
-                "api/utils/rediscoverObjectDetectionModels",
-                RequestHandler::onRediscoverObjectDetectionModelsRequest);
         app.get("/api/utils/photonvision-journalctl.txt", RequestHandler::onLogExportRequest);
         app.post("/api/utils/restartProgram", RequestHandler::onProgramRestartRequest);
         app.post("/api/utils/restartDevice", RequestHandler::onDeviceRestartRequest);

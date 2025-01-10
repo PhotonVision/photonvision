@@ -658,17 +658,6 @@ public class RequestHandler {
         }
     }
 
-    public static void onRediscoverObjectDetectionModelsRequest(Context ctx) {
-        try {
-            NeuralNetworkModelManager.getInstance()
-                    .discoverModels(ConfigManager.getInstance().getModelsDirectory());
-        } catch (Exception e) {
-            ctx.status(500).result("Error rediscovering object detection models: " + e.getMessage());
-            return;
-        }
-        ctx.status(200).result("Successfully rediscovered object detection models");
-    }
-
     public static void onDeviceRestartRequest(Context ctx) {
         ctx.status(HardwareManager.getInstance().restartDevice() ? 204 : 500);
     }
