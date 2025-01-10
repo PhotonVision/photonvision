@@ -8,6 +8,7 @@ const showImportDialog = ref(false);
 const importRKNNFile = ref<File | null>(null);
 const importLabelsFile = ref<File | null>(null);
 
+// TODO gray out the button when model is uploading
 const handleImport = () => {
   if (importRKNNFile.value === null || importLabelsFile.value === null) return;
 
