@@ -61,8 +61,6 @@ public class USBFrameProvider extends CpuImageProcessor {
 
         var useNewBehaviorTopic =
                 NetworkTablesManager.getInstance().kRootTable.getBooleanTopic("use_new_cscore_frametime");
-        useNewBehaviorTopic.setCached(true);
-        useNewBehaviorTopic.setRetained(true);
 
         useNewBehaviorSub = useNewBehaviorTopic.subscribe(false);
         this.connectedCallback = connectedCallback;
