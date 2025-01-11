@@ -41,7 +41,7 @@ const localValue = computed({
     </v-col>
   </div>
 </template>
-<style>
+<style scoped>
 .v-input--selection-controls {
   margin-top: 0px;
 }

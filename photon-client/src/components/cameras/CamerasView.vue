@@ -134,6 +134,10 @@ th {
   text-align: center;
 }
 
+.v-input--switch {
+  margin-top: 0;
+}
+
 .stream-container {
   display: flex;
   justify-content: center;

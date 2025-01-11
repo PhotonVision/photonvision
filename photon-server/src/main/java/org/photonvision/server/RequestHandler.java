@@ -29,6 +29,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
 import org.opencv.core.Mat;
@@ -37,6 +38,7 @@ import org.opencv.core.MatOfInt;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
+import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.dataflow.DataChangeDestination;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
@@ -98,7 +100,8 @@ public class RequestHandler {
 
         ConfigManager.getInstance().setWriteTaskEnabled(false);
         ConfigManager.getInstance().disableFlushOnShutdown();
-        // We want to delete the -whole- zip file, so we need to teardown loggers for now
+        // We want to delete the -whole- zip file, so we need to teardown loggers for
+        // now
         logger.info("Writing new settings zip (logs may be truncated)...");
         Logger.closeAllLoggers();
         if (ConfigManager.saveUploadedSettingsZip(tempFilePath.get())) {
@@ -543,6 +546,72 @@ public class RequestHandler {
         restartProgram();
     }
 
+    public static void onObjectDetectionModelImportRequest(Context ctx) {
+        try {
+            // Retrieve the uploaded files
+            var modelFile = ctx.uploadedFile("rknn");
+            var labelsFile = ctx.uploadedFile("labels");
+
+            if (modelFile == null || labelsFile == null) {
+                ctx.status(400);
+                ctx.result(
+                        "No File was sent with the request. Make sure that the model and labels files are sent at the keys 'rknn' and 'labels'");
+                logger.error(
+                        "No File was sent with the request. Make sure that the model and labels files are sent at the keys 'rknn' and 'labels'");
+                return;
+            }
+
+            if (!modelFile.extension().contains("rknn") || !labelsFile.extension().contains("txt")) {
+                ctx.status(400);
+                ctx.result(
+                        "The uploaded files were not of type 'rknn' and 'txt'. The uploaded files should be a .rknn and .txt file.");
+                logger.error(
+                        "The uploaded files were not of type 'rknn' and 'txt'. The uploaded files should be a .rknn and .txt file.");
+                return;
+            }
+
+            // verify naming convention
+            // this check will need to be modified if different model types are added
+
+            Pattern modelPattern = Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov[58][a-z]*\\.rknn$");
+
+            Pattern labelsPattern =
+                    Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov[58][a-z]*-labels\\.txt$");
+
+            if (!modelPattern.matcher(modelFile.filename()).matches()
+                    || !labelsPattern.matcher(labelsFile.filename()).matches()) {
+                ctx.status(400);
+                ctx.result("The uploaded files were not named correctly.");
+                logger.error("The uploaded object detection model files were not named correctly.");
+                return;
+            }
+
+            // TODO move into neural network manager
+
+            var modelPath =
+                    Paths.get(
+                            ConfigManager.getInstance().getModelsDirectory().toString(), modelFile.filename());
+            var labelsPath =
+                    Paths.get(
+                            ConfigManager.getInstance().getModelsDirectory().toString(), labelsFile.filename());
+
+            try (FileOutputStream out = new FileOutputStream(modelPath.toFile())) {
+                modelFile.content().transferTo(out);
+            }
+
+            try (FileOutputStream out = new FileOutputStream(labelsPath.toFile())) {
+                labelsFile.content().transferTo(out);
+            }
+
+            NeuralNetworkModelManager.getInstance()
+                    .discoverModels(ConfigManager.getInstance().getModelsDirectory());
+
+            ctx.status(200).result("Successfully uploaded object detection model");
+        } catch (Exception e) {
+            ctx.status(500).result("Error processing files: " + e.getMessage());
+        }
+    }
+
     public static void onDeviceRestartRequest(Context ctx) {
         ctx.status(HardwareManager.getInstance().restartDevice() ? 204 : 500);
     }
@@ -602,7 +671,8 @@ public class RequestHandler {
             return;
         }
 
-        // encode as jpeg to save even more space. reduces size of a 1280p image from 300k to 25k
+        // encode as jpeg to save even more space. reduces size of a 1280p image from
+        // 300k to 25k
         var jpegBytes = new MatOfByte();
         Mat img = null;
         try {
