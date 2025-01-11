@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { computed, inject, onMounted, ref } from "vue";
+import { computed, inject, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import {
   PlaceholderCameraSettings,
@@ -220,18 +220,18 @@ const openExportSettingsPrompt = () => {
       >
         <v-card dark color="primary">
           <v-card-title>{{ cameraInfoFor(module.matchedCameraInfo).name }}</v-card-title>
-          <v-card-subtitle class="pb-2" v-if="!cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)"
+          <v-card-subtitle v-if="!cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)" class="pb-2"
             >Status: <span class="inactive-status">Disconnected</span></v-card-subtitle
           >
           <v-card-subtitle
-            class="pb-2"
             v-else-if="
               cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) &&
               camerasMatch(getMatchedDevice(module.matchedCameraInfo), module.matchedCameraInfo)
             "
+            class="pb-2"
             >Status: <span class="active-status">Active</span></v-card-subtitle
           >
-          <v-card-subtitle class="pb-2" v-else>Status: <span class="mismatch-status">Mismatch</span></v-card-subtitle>
+          <v-card-subtitle v-else class="pb-2">Status: <span class="mismatch-status">Mismatch</span></v-card-subtitle>
           <v-card-text>
             <v-simple-table dark dense>
               <tbody>
