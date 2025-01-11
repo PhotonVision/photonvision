@@ -34,6 +34,7 @@ void Robot::RobotInit() {}
 void Robot::RobotPeriodic() {
   launcher.periodic();
   drivetrain.Periodic();
+  vision.Periodic();
 
   auto visionEst = vision.GetEstimatedGlobalPose();
   if (visionEst.has_value()) {
