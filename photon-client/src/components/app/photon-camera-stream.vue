@@ -91,7 +91,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div :id="outerId" class="stream-container" :style="containerStyle">
+  <div class="stream-container" :style="containerStyle" :id="outerId">
     <img :src="loadingImage" class="stream-loading" />
     <img
       :id="id"
