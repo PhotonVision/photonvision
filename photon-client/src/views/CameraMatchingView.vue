@@ -28,10 +28,7 @@ const activateModule = (moduleUniqueName: string) => {
 
   fetch(url.toString(), {
     method: "POST"
-  }).finally(() => {
-    activatingModule.value = false;
-    retryEnforceStreamHeight();
-  });
+  }).finally(() => (activatingModule.value = false));
 };
 
 const assigningCamera = ref(false);
@@ -43,10 +40,7 @@ const assignCamera = (cameraInfo: PVCameraInfo) => {
 
   fetch(url.toString(), {
     method: "POST"
-  }).finally(() => {
-    assigningCamera.value = false;
-    retryEnforceStreamHeight();
-  });
+  }).finally(() => (assigningCamera.value = false));
 };
 
 const deactivatingModule = ref(false);
@@ -151,11 +145,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
     useStateStore().vsmState.allConnectedCameras.find(
       (it) => cameraInfoFor(it).uniquePath === cameraInfoFor(info).uniquePath
     ) || {
-      PVFileCameraInfo: {
-        name: "!",
-        path: "!",
-        uniquePath: "!"
-      },
+      PVFileCameraInfo: undefined,
       PVCSICameraInfo: undefined,
       PVUsbCameraInfo: undefined
     }
@@ -183,10 +173,17 @@ const unmatchedCameras = computed(() => {
 });
 
 const activeVisionModules = computed(() =>
-  Object.values(useCameraSettingsStore().cameras).filter(
-    (camera) => JSON.stringify(camera) !== JSON.stringify(PlaceholderCameraSettings)
-  )
+  Object.values(useCameraSettingsStore().cameras)
+    // Ignore placeholder camera
+    .filter((camera) => JSON.stringify(camera) !== JSON.stringify(PlaceholderCameraSettings))
+    // Display connected cameras first
+    .sort(
+      (first, second) =>
+        (cameraCononected(cameraInfoFor(second.matchedCameraInfo).uniquePath) ? 1 : 0) -
+        (cameraCononected(cameraInfoFor(first.matchedCameraInfo).uniquePath) ? 1 : 0)
+    )
 );
+
 const disabledVisionModules = computed(() => useStateStore().vsmState.disabledConfigs);
 
 const viewingDetails = ref(false);
@@ -208,43 +205,6 @@ const exportSettings = ref();
 const openExportSettingsPrompt = () => {
   exportSettings.value.click();
 };
-
-const enforceStreamHeight = () => {
-  const streamWidth = document.getElementById("stream-container-0")?.offsetWidth ?? 0;
-  if (streamWidth === 0) return false;
-
-  var modulesLoaded = false;
-  activeVisionModules.value.forEach((element, index) => {
-    let stream = document.getElementById(`outer-output-camera-stream-${index}`);
-    if (stream) {
-      modulesLoaded = true;
-      stream.classList.remove("tall-stream", "wide-stream", "d-none");
-      let streamRes = element.validVideoFormats[0].resolution.width / element.validVideoFormats[0].resolution.height;
-      let containerRes = streamWidth / 250.0;
-      if (element.pipelineSettings.inputImageRotationMode % 2 == 1) streamRes = 1 / streamRes;
-      if (streamRes > containerRes) stream.classList.add("wide-stream");
-      else stream.classList.add("tall-stream");
-    }
-  });
-  return modulesLoaded;
-};
-
-const retryEnforceStreamHeight = () => {
-  var tries = 0;
-  const interval = setInterval(() => {
-    console.log("trying enforce");
-    if (!activeVisionModules.value.length) clearInterval(interval);
-    if (enforceStreamHeight() || tries > 1000) {
-      console.log("enforce passed att #", tries);
-      clearInterval(interval);
-    } else tries++;
-  }, 100);
-};
-
-onMounted(() => {
-  window.addEventListener("resize", enforceStreamHeight);
-  retryEnforceStreamHeight();
-});
 </script>
 
 <template>
@@ -322,8 +282,6 @@ onMounted(() => {
                 :id="`output-camera-stream-${index}`"
                 :camera-settings="module"
                 stream-type="Processed"
-                :outer-id="`outer-output-camera-stream-${index}`"
-                class="d-none"
               />
             </div>
           </v-card-text>
@@ -363,85 +321,6 @@ onMounted(() => {
           </v-card-text>
         </v-card>
       </v-col>
-
-      <!-- Disconnected modules -->
-      <!-- <v-col
-        v-for="(module, index) in disconnectedVisionModules"
-        :key="`enabled-${module.uniqueName}`"
-        cols="12"
-        sm="6"
-        lg="4"
-      >
-        <v-card dark color="primary">
-          <v-card-title>{{ cameraInfoFor(module.matchedCameraInfo).name }}</v-card-title>
-          <v-card-subtitle class="pb-2">Status: <span class="inactive-status">Disconnected</span></v-card-subtitle>
-          <v-card-text>
-            <v-simple-table dark dense>
-              <tbody>
-                <tr>
-                  <td>Streams:</td>
-                  <td>
-                    <a :href="formatUrl(module.stream.inputPort)" target="_blank" class="stream-link"> Input </a>
-                    /
-                    <a :href="formatUrl(module.stream.outputPort)" target="_blank" class="stream-link"> Output </a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>Pipelines</td>
-                  <td>{{ module.pipelineNicknames.join(", ") }}</td>
-                </tr>
-                <tr>
-                  <td>Calibrations</td>
-                  <td>
-                    {{
-                      module.completeCalibrations.map((it) => getResolutionString(it.resolution)).join(", ") ||
-                      "Not calibrated"
-                    }}
-                  </td>
-                </tr>
-                <tr v-if="module.isConnected && useStateStore().backendResults[module.uniqueName]">
-                  <td style="width: 50%">Frames Processed</td>
-                  <td>
-                    {{ useStateStore().backendResults[module.uniqueName].sequenceID }} ({{
-                      useStateStore().backendResults[module.uniqueName].fps
-                    }}
-                    FPS)
-                  </td>
-                </tr>
-              </tbody>
-            </v-simple-table>
-          </v-card-text>
-          <v-card-text class="pt-0">
-            <v-row>
-              <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
-                <v-btn
-                  color="secondary"
-                  style="width: 100%"
-                  @click="setCameraView(module.matchedCameraInfo, module.isConnected)"
-                >
-                  <span>Details</span>
-                </v-btn>
-              </v-col>
-              <v-col cols="6" md="5" class="pr-0">
-                <v-btn
-                  class="black--text"
-                  color="accent"
-                  style="width: 100%"
-                  :loading="deactivatingModule"
-                  @click="deactivateModule(module.uniqueName)"
-                >
-                  Deactivate
-                </v-btn>
-              </v-col>
-              <v-col cols="6" md="3">
-                <v-btn class="pa-0" color="error" style="width: 100%" @click="setCameraDeleting(module)">
-                  <v-icon>mdi-trash-can-outline</v-icon>
-                </v-btn>
-              </v-col>
-            </v-row>
-          </v-card-text>
-        </v-card>
-      </v-col> -->
 
       <!-- Disabled modules -->
       <v-col v-for="module in disabledVisionModules" :key="`disabled-${module.uniqueName}`" cols="12" sm="6" lg="4">
@@ -670,15 +549,5 @@ a:active,
   color: yellow;
   background-color: transparent;
   text-decoration: none;
-}
-
-.wide-stream {
-  width: 100%;
-  height: auto;
-}
-
-.tall-stream {
-  height: 100%;
-  width: auto;
 }
 </style>
