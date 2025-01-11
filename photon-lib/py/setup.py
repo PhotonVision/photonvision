@@ -71,4 +71,7 @@ setup(
     author="Photonvision Development Team",
     long_description="A Pure-python implementation of PhotonLib",
     long_description_content_type="text/markdown",
+    classifiers=[
+        "License :: OSI Approved :: MIT License",
+    ],
 )
