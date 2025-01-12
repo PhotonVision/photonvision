@@ -136,6 +136,11 @@ public class NeuralNetworkModelManager {
         return modelMap;
     }
 
+    public void rescanModels(File modelsDirectory) {
+        models = null;
+        discoverModels(modelsDirectory);
+    }
+
     /**
      * Retrieves the model with the specified name, assuming it is available under a supported
      * backend.
@@ -243,7 +248,8 @@ public class NeuralNetworkModelManager {
             logger.error("Failed to discover models at " + modelsFolder.getAbsolutePath(), e);
         }
 
-        // After loading all of the models, sort them by name to ensure a consistent ordering
+        // After loading all of the models, sort them by name to ensure a consistent
+        // ordering
         models.forEach(
                 (backend, backendModels) ->
                         backendModels.sort((a, b) -> a.getName().compareTo(b.getName())));
