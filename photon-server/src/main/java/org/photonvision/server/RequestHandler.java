@@ -604,7 +604,7 @@ public class RequestHandler {
             }
 
             NeuralNetworkModelManager.getInstance()
-                    .discoverModels(ConfigManager.getInstance().getModelsDirectory());
+                    .rescanModels(ConfigManager.getInstance().getModelsDirectory());
 
             ctx.status(200).result("Successfully uploaded object detection model");
         } catch (Exception e) {

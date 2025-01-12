@@ -136,6 +136,11 @@ public class NeuralNetworkModelManager {
         return modelMap;
     }
 
+    public void rescanModels(File modelsDirectory) {
+        models = null;
+        discoverModels(modelsDirectory);
+    }
+
     /**
      * Retrieves the model with the specified name, assuming it is available under a supported
      * backend.
