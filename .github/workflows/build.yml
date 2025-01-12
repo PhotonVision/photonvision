@@ -3,12 +3,23 @@ name: Build
 on:
   # Run on pushes to main and pushed tags, and on pull requests against main, but ignore the docs folder
   push:
-    branches: [ main ]
+    branches: [main]
     tags:
-      - 'v*'
+      - "v*"
   pull_request:
-    branches: [ main ]
+    branches: [main]
   merge_group:
+
+env:
+  RASPI_IMAGE_VERSION: "v2025.0.0"
+  LIMELIGHT_IMAGE_VERSION: "v2025.0.0"
+  LIMELIGHT3_IMAGE_VERSION: "v2025.0.0"
+  OPI5_IMAGE_VERSION: "v2025.0.0"
+  OPI5B_IMAGE_VERSION: "v2025.0.0"
+  OPI5PLUS_IMAGE_VERSION: "v2025.0.0"
+  OPI5PRO_IMAGE_VERSION: "v2025.0.0"
+  OPI5MAX_IMAGE_VERSION: "v2025.0.0"
+  ROCK5C_IMAGE_VERSION: "v2025.0.0"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
@@ -36,7 +47,6 @@ jobs:
           name: built-client
           path: photon-client/dist/
   build-examples:
-
     strategy:
       fail-fast: false
       matrix:
@@ -112,7 +122,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
       - name: Install graphviz
         run: |
           sudo apt-get update
@@ -391,7 +401,7 @@ jobs:
           - os: ubuntu-22.04
             artifact-name: LinuxArm64
             image_suffix: RaspberryPi
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0-beta-4/photonvision_raspi.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/${{ env.RASPI_IMAGE_VERSION }}/photonvision_raspi.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
             extraOpts: -Djdk.lang.Process.launchMechanism=vfork
@@ -430,55 +440,55 @@ jobs:
           - os: ubuntu-22.04
             artifact-name: LinuxArm64
             image_suffix: RaspberryPi
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0/photonvision_raspi.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/${{ env.RASPI_IMAGE_VERSION }}/photonvision_raspi.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
           - os: ubuntu-22.04
             artifact-name: LinuxArm64
             image_suffix: limelight2
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0/photonvision_limelight.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/${{ env.LIMELIGHT_IMAGE_VERSION }}/photonvision_limelight.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
           - os: ubuntu-22.04
             artifact-name: LinuxArm64
             image_suffix: limelight3
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0/photonvision_limelight3.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/${{ env.LIMELIGHT3_IMAGE_VERSION }}/photonvision_limelight3.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
           - os: ubuntu-22.04
             artifact-name: LinuxArm64
             image_suffix: orangepi5
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0/photonvision_opi5.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/${{ env.OPI5_IMAGE_VERSION }}/photonvision_opi5.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
           - os: ubuntu-22.04
             artifact-name: LinuxArm64
             image_suffix: orangepi5b
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0/photonvision_opi5b.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/${{ env.OPI5B_IMAGE_VERSION }}/photonvision_opi5b.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
           - os: ubuntu-22.04
             artifact-name: LinuxArm64
             image_suffix: orangepi5plus
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0/photonvision_opi5plus.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/${{ env.OPI5PLUS_IMAGE_VERSION }}/photonvision_opi5plus.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
           - os: ubuntu-22.04
             artifact-name: LinuxArm64
             image_suffix: orangepi5pro
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0/photonvision_opi5pro.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/${{ env.OPI5PRO_IMAGE_VERSION }}/photonvision_opi5pro.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
           - os: ubuntu-22.04
             artifact-name: LinuxArm64
             image_suffix: orangepi5max
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0/photonvision_opi5max.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/${{ env.OPI5MAX_IMAGE_VERSION }}/photonvision_opi5max.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
           - os: ubuntu-22.04
             artifact-name: LinuxArm64
             image_suffix: rock5c
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.0/photonvision_rock5c.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/${{ env.ROCK5C_IMAGE_VERSION }}/photonvision_rock5c.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
 
@@ -547,7 +557,7 @@ jobs:
       - uses: pyTooling/Actions/releaser@r0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: 'Dev'
+          tag: "Dev"
           rm: true
           files: |
             **/*.xz
