@@ -163,7 +163,12 @@ const handleNameEdit = () => {
     <div class="pa-6 pt-0">
       <v-row>
         <v-col cols="12 ">
-          <v-btn color="secondary" @click="() => (showImportDialog = true)" class="justify-center" :disabled="importDisabled">
+          <v-btn
+            color="secondary"
+            @click="() => (showImportDialog = true)"
+            class="justify-center"
+            :disabled="importDisabled"
+          >
             <v-icon left class="open-icon"> mdi-import </v-icon>
             <span class="open-label">Import New Model</span>
           </v-btn>
