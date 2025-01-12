@@ -30,7 +30,13 @@ model {
         withType(NativeBinarySpec).all {
             nativeUtils.usePlatformArguments(it)
             if (it.toolChain instanceof GccCompatibleToolChain) {
+                println("Hello! " + it)
                 it.cppCompiler.args << "-Wno-deprecated-enum-enum-conversion"
+
+                if (project.hasProperty('withSanitizers')) {
+                    it.cppCompiler.args << "-fsanitize=address,undefined,leak" << "-g"
+                    it.linker.args << "-fsanitize=address,undefined,leak"
+                }
             }
         }
     }
