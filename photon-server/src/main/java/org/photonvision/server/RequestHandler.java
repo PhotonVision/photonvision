@@ -588,13 +588,10 @@ public class RequestHandler {
             File tmpModel = Files.createTempFile(modelFile.filename(), ".rknn").toFile();
             File tmpLabels = Files.createTempFile(labelsFile.filename(), ".txt").toFile();
 
-            if (!NeuralNetworkModelManager.getInstance().addNewModel(tmpModel, tmpLabels)) {
+            if (!NeuralNetworkModelManager.getInstance().addNewModel(tmpModel, tmpLabels, ConfigManager.getInstance().getModelsDirectory())) {
                 ctx.status(500).result("Error processing files: Check logs for more information");
                 return;
             }
-
-            NeuralNetworkModelManager.getInstance()
-                    .discoverModels(ConfigManager.getInstance().getModelsDirectory());
 
             ctx.status(200).result("Successfully uploaded object detection model");
         } catch (Exception e) {
@@ -607,13 +604,10 @@ public class RequestHandler {
             var data = kObjectMapper.readTree(ctx.bodyInputStream());
             String modelName = data.get("modelName").asText();
 
-            if (!NeuralNetworkModelManager.getInstance().deleteModel(modelName)) {
+            if (!NeuralNetworkModelManager.getInstance().deleteModel(modelName, ConfigManager.getInstance().getModelsDirectory())) {
                 ctx.status(500).result("Error deleting model: Check logs for more information");
                 return;
             }
-
-            NeuralNetworkModelManager.getInstance()
-                    .discoverModels(ConfigManager.getInstance().getModelsDirectory());
 
             ctx.status(200).result("Successfully deleted object detection model " + modelName);
         } catch (Exception e) {
@@ -644,7 +638,7 @@ public class RequestHandler {
                 return;
             }
 
-            if (!NeuralNetworkModelManager.getInstance().editModelName(modelName, newModelName)) {
+            if (!NeuralNetworkModelManager.getInstance().editModelName(modelName, newModelName, ConfigManager.getInstance().getModelsDirectory())) {
                 ctx.status(500).result("Error editing model: Check logs for more information");
                 return;
             }

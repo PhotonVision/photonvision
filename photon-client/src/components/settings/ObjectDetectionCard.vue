@@ -67,8 +67,10 @@ const handleDeletion = () => {
     timeout: -1
   });
 
+  if (deleteModel.value === null) return;
+
   axios
-    .post("/utils/deleteObjectDetectionModel", { model: deleteModel.value })
+    .post("/utils/deleteObjectDetectionModel", { model: deleteModel.value.toString() })
     .then((response) => {
       useStateStore().showSnackbarMessage({
         message: response.data.text || response.data,
@@ -114,8 +116,11 @@ const handleNameEdit = () => {
 
   var formData = new FormData();
 
-  formData.append("model", nameEditModel.value);
-  formData.append("newName", newName.value);
+  if (nameEditModel.value === null || newName.value === null) return;
+  
+
+  formData.append("model", nameEditModel.value.toString());
+  formData.append("newName", newName.value.toString());
 
   axios
     .post("/utils/editObjectDetectionModelName", formData)
