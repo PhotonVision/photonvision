@@ -3,7 +3,7 @@
 
 ## A primer on time
 
-Expecially starting around 2022 with AprilTags making localization easier, providing a way to know when a camera image was captured at became more important for localization. 
+Expecially starting around 2022 with AprilTags making localization easier, providing a way to know when a camera image was captured at became more important for localization.
 Since the [creation of USBFrameProvider](https://github.com/PhotonVision/photonvision/commit/f92bf670ded52b59a00352a4a49c277f01bae305), we used the time [provided by CSCore](https://github.wpilib.org/allwpilib/docs/release/java/edu/wpi/first/cscore/CvSink.html#grabFrame(org.opencv.core.Mat)) to tell when a camera image was captured at, but just keeping track of "CSCore told us frame N was captured 104.21s after the Raspberry Pi turned on" isn't very helpful. We can decompose this into asking:
 
 - At what time was a particular image captured at, in the coprocessor's timebase?
@@ -35,7 +35,7 @@ V4L does expose (with some [very heavy caviets](https://github.com/torvalds/linu
 
 I'm sure that we'll find a camera that doesn't play nice, because we can't have nice things :). But until then, using this timestamp gets us a free accuracy bump.
 
-Other things to note: This gets us an estimate at when the camera *started* collecting photons. The camera's sensor will remain collecitng light for up to the total integration time, plus readout time for rolling shutter cameras. 
+Other things to note: This gets us an estimate at when the camera *started* collecting photons. The camera's sensor will remain collecitng light for up to the total integration time, plus readout time for rolling shutter cameras.
 
 ## Latency Testing
 
@@ -133,4 +133,4 @@ With the camera capturing at 60fps, the time between successive frames is only ~
 
 ### Future Work
 
-This test also makes no effort to isolate error from time syncronization from error introduced by frame time measurement - we're just interested in overall error. Future work could investigate the latency contribution 
+This test also makes no effort to isolate error from time syncronization from error introduced by frame time measurement - we're just interested in overall error. Future work could investigate the latency contribution
