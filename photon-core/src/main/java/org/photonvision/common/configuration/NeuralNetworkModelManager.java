@@ -182,8 +182,8 @@ public class NeuralNetworkModelManager {
             return false;
         }
 
-        var modelPath = Paths.get(modelsDirectory.toString(), model.getName());
-        var labelsPath = Paths.get(modelsDirectory.toString(), labels.getName());
+        var modelPath = Paths.get(modelsDirectory.toString(), model.getName().split(".rknn")[0]);
+        var labelsPath = Paths.get(modelsDirectory.toString(), model.getName().split(".txt")[0]);
 
         try {
             Files.copy(model.toPath(), modelPath);

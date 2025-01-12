@@ -585,8 +585,8 @@ public class RequestHandler {
                 logger.error("The uploaded object detection model files were not named correctly.");
                 return;
             }
-            File tmpModel = Files.createTempFile(modelFile.filename(), ".rknn").toFile();
-            File tmpLabels = Files.createTempFile(labelsFile.filename(), ".txt").toFile();
+            File tmpModel = Files.createTempFile(modelFile.filename(), null).toFile();
+            File tmpLabels = Files.createTempFile(labelsFile.filename(), null).toFile();
 
             if (!NeuralNetworkModelManager.getInstance()
                     .addNewModel(tmpModel, tmpLabels, ConfigManager.getInstance().getModelsDirectory())) {
