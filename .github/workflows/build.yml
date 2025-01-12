@@ -9,17 +9,44 @@ on:
   pull_request:
     branches: [main]
   merge_group:
-
-env:
-  RASPI_IMAGE_VERSION: "v2025.0.0"
-  LIMELIGHT_IMAGE_VERSION: "v2025.0.0"
-  LIMELIGHT3_IMAGE_VERSION: "v2025.0.0"
-  OPI5_IMAGE_VERSION: "v2025.0.0"
-  OPI5B_IMAGE_VERSION: "v2025.0.0"
-  OPI5PLUS_IMAGE_VERSION: "v2025.0.0"
-  OPI5PRO_IMAGE_VERSION: "v2025.0.0"
-  OPI5MAX_IMAGE_VERSION: "v2025.0.0"
-  ROCK5C_IMAGE_VERSION: "v2025.0.0"
+  workflow_dispatch:
+    inputs:
+      RASPI_IMAGE_VERSION:
+        description: "Version of the Raspberry Pi image to build"
+        required: false
+        default: "v2025.0.0"
+      LIMELIGHT_IMAGE_VERSION:
+        description: "Version of the Limelight image to build"
+        required: false
+        default: "v2025.0.0"
+      LIMELIGHT3_IMAGE_VERSION:
+        description: "Version of the Limelight3 image to build"
+        required: false
+        default: "v2025.0.0"
+      OPI5_IMAGE_VERSION:
+        description: "Version of the Orange Pi 5 image to build"
+        required: false
+        default: "v2025.0.0"
+      OPI5B_IMAGE_VERSION:
+        description: "Version of the Orange Pi 5B image to build"
+        required: false
+        default: "v2025.0.0"
+      OPI5PLUS_IMAGE_VERSION:
+        description: "Version of the Orange Pi 5+ image to build"
+        required: false
+        default: "v2025.0.0"
+      OPI5PRO_IMAGE_VERSION:
+        description: "Version of the Orange Pi 5 Pro image to build"
+        required: false
+        default: "v2025.0.0"
+      OPI5MAX_IMAGE_VERSION:
+        description: "Version of the Orange Pi 5 Max image to build"
+        required: false
+        default: "v2025.0.0"
+      ROCK5C_IMAGE_VERSION:
+        description: "Version of the Rock 5C image to build"
+        required: false
+        default: "v2025.0.0"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
@@ -440,55 +467,55 @@ jobs:
           - os: ubuntu-22.04
             artifact-name: LinuxArm64
             image_suffix: RaspberryPi
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$RASPI_IMAGE_VERSION/photonvision_raspi.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/${{ inputs.RASPI_IMAGE_VERSION}}/photonvision_raspi.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
           - os: ubuntu-22.04
             artifact-name: LinuxArm64
             image_suffix: limelight2
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$LIMELIGHT_IMAGE_VERSION/photonvision_limelight.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/${{ inputs.LIMELIGHT_IMAGE_VERSION}}/photonvision_limelight.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
           - os: ubuntu-22.04
             artifact-name: LinuxArm64
             image_suffix: limelight3
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$LIMELIGHT3_IMAGE_VERSION/photonvision_limelight3.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/${{ inputs.LIMELIGHT3_IMAGE_VERSION}}/photonvision_limelight3.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
           - os: ubuntu-22.04
             artifact-name: LinuxArm64
             image_suffix: orangepi5
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$OPI5_IMAGE_VERSION/photonvision_opi5.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/${{ inputs.OPI5_IMAGE_VERSION }}/photonvision_opi5.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
           - os: ubuntu-22.04
             artifact-name: LinuxArm64
             image_suffix: orangepi5b
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$OPI5B_IMAGE_VERSION/photonvision_opi5b.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/${{ inputs.OPI5B_IMAGE_VERSION }}/photonvision_opi5b.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
           - os: ubuntu-22.04
             artifact-name: LinuxArm64
             image_suffix: orangepi5plus
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$OPI5PLUS_IMAGE_VERSION/photonvision_opi5plus.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/${{ inputs.OPI5PLUS_IMAGE_VERSION }}/photonvision_opi5plus.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
           - os: ubuntu-22.04
             artifact-name: LinuxArm64
             image_suffix: orangepi5pro
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$OPI5PRO_IMAGE_VERSION/photonvision_opi5pro.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/${{ inputs.OPI5PRO_IMAGE_VERSION }}/photonvision_opi5pro.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
           - os: ubuntu-22.04
             artifact-name: LinuxArm64
             image_suffix: orangepi5max
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$OPI5MAX_IMAGE_VERSION/photonvision_opi5max.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/${{ inputs.OPI5MAX_IMAGE_VERSION }}/photonvision_opi5max.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
           - os: ubuntu-22.04
             artifact-name: LinuxArm64
             image_suffix: rock5c
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$ROCK5C_IMAGE_VERSION/photonvision_rock5c.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/${{ inputs.ROCK5C_IMAGE_VERSION }}/photonvision_rock5c.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
 
