@@ -588,7 +588,8 @@ public class RequestHandler {
             File tmpModel = Files.createTempFile(modelFile.filename(), ".rknn").toFile();
             File tmpLabels = Files.createTempFile(labelsFile.filename(), ".txt").toFile();
 
-            if (!NeuralNetworkModelManager.getInstance().addNewModel(tmpModel, tmpLabels, ConfigManager.getInstance().getModelsDirectory())) {
+            if (!NeuralNetworkModelManager.getInstance()
+                    .addNewModel(tmpModel, tmpLabels, ConfigManager.getInstance().getModelsDirectory())) {
                 ctx.status(500).result("Error processing files: Check logs for more information");
                 return;
             }
@@ -596,59 +597,6 @@ public class RequestHandler {
             ctx.status(200).result("Successfully uploaded object detection model");
         } catch (Exception e) {
             ctx.status(500).result("Error processing files: " + e.getMessage());
-        }
-    }
-
-    public static void onDeleteObjectDetectionModelRequest(Context ctx) {
-        try {
-            var data = kObjectMapper.readTree(ctx.bodyInputStream());
-            String modelName = data.get("modelName").asText();
-
-            if (!NeuralNetworkModelManager.getInstance().deleteModel(modelName, ConfigManager.getInstance().getModelsDirectory())) {
-                ctx.status(500).result("Error deleting model: Check logs for more information");
-                return;
-            }
-
-            ctx.status(200).result("Successfully deleted object detection model " + modelName);
-        } catch (Exception e) {
-            ctx.status(500).result("Error deleting model: " + e.getMessage());
-        }
-    }
-
-    public static void onEditObjectDetectionModelNameRequest(Context ctx) {
-        try {
-            var data = kObjectMapper.readTree(ctx.bodyInputStream());
-            String modelName = data.get("model").asText();
-            String newModelName = data.get("newName").asText();
-
-            if (modelName.equals(newModelName)) {
-                ctx.status(400).result("The new model name must be different from the old model name");
-                return;
-            }
-
-            // verify naming convention
-            // this check will need to be modified if different model types are added
-
-            Pattern modelPattern = Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov[58][a-z]*");
-
-            if (!modelPattern.matcher(newModelName).matches()) {
-                ctx.status(400);
-                ctx.result("The new name does not follow the naming conventions.");
-                logger.error("The new name does not follow the naming conventions.");
-                return;
-            }
-
-            if (!NeuralNetworkModelManager.getInstance().editModelName(modelName, newModelName, ConfigManager.getInstance().getModelsDirectory())) {
-                ctx.status(500).result("Error editing model: Check logs for more information");
-                return;
-            }
-
-            NeuralNetworkModelManager.getInstance()
-                    .discoverModels(ConfigManager.getInstance().getModelsDirectory());
-
-            ctx.status(200).result("Successfully edited object detection model " + modelName);
-        } catch (Exception e) {
-            ctx.status(500).result("Error editing model: " + e.getMessage());
         }
     }
 
