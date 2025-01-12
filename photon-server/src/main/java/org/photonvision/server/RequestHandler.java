@@ -42,7 +42,9 @@ import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.dataflow.DataChangeDestination;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
+import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
+import org.photonvision.common.dataflow.websocket.UIPhotonConfiguration;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
@@ -579,7 +581,11 @@ public class RequestHandler {
                     Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov[58][a-z]*-labels\\.txt$");
 
             if (!modelPattern.matcher(modelFile.filename()).matches()
-                    || !labelsPattern.matcher(labelsFile.filename()).matches()) {
+                    || !labelsPattern.matcher(labelsFile.filename()).matches()
+                    || !(modelFile
+                            .filename()
+                            .substring(0, modelFile.filename().indexOf("-"))
+                            .equals(labelsFile.filename().substring(0, labelsFile.filename().indexOf("-"))))) {
                 ctx.status(400);
                 ctx.result("The uploaded files were not named correctly.");
                 logger.error("The uploaded object detection model files were not named correctly.");
@@ -610,6 +616,12 @@ public class RequestHandler {
         } catch (Exception e) {
             ctx.status(500).result("Error processing files: " + e.getMessage());
         }
+
+        DataChangeService.getInstance()
+                .publishEvent(
+                        new OutgoingUIEvent<>(
+                                "fullsettings",
+                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
     }
 
     public static void onDeviceRestartRequest(Context ctx) {
