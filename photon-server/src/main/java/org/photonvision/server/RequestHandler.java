@@ -588,7 +588,8 @@ public class RequestHandler {
             File tmpModel = Files.createTempFile(modelFile.filename(), ".rknn").toFile();
             File tmpLabels = Files.createTempFile(labelsFile.filename(), ".txt").toFile();
 
-            if (!NeuralNetworkModelManager.getInstance().addNewModel(tmpModel, tmpLabels, ConfigManager.getInstance().getModelsDirectory())) {
+            if (!NeuralNetworkModelManager.getInstance()
+                    .addNewModel(tmpModel, tmpLabels, ConfigManager.getInstance().getModelsDirectory())) {
                 ctx.status(500).result("Error processing files: Check logs for more information");
                 return;
             }
@@ -604,7 +605,8 @@ public class RequestHandler {
             var data = kObjectMapper.readTree(ctx.bodyInputStream());
             String modelName = data.get("modelName").asText();
 
-            if (!NeuralNetworkModelManager.getInstance().deleteModel(modelName, ConfigManager.getInstance().getModelsDirectory())) {
+            if (!NeuralNetworkModelManager.getInstance()
+                    .deleteModel(modelName, ConfigManager.getInstance().getModelsDirectory())) {
                 ctx.status(500).result("Error deleting model: Check logs for more information");
                 return;
             }
@@ -638,7 +640,9 @@ public class RequestHandler {
                 return;
             }
 
-            if (!NeuralNetworkModelManager.getInstance().editModelName(modelName, newModelName, ConfigManager.getInstance().getModelsDirectory())) {
+            if (!NeuralNetworkModelManager.getInstance()
+                    .editModelName(
+                            modelName, newModelName, ConfigManager.getInstance().getModelsDirectory())) {
                 ctx.status(500).result("Error editing model: Check logs for more information");
                 return;
             }
