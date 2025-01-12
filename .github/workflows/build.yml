@@ -9,43 +9,34 @@ on:
   pull_request:
     branches: [main]
   merge_group:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       RASPI_IMAGE_VERSION:
-        description: "Version of the Raspberry Pi image to build"
-        required: false
+        type: string
         default: "v2025.0.0"
       LIMELIGHT_IMAGE_VERSION:
-        description: "Version of the Limelight image to build"
-        required: false
+        type: string
         default: "v2025.0.0"
       LIMELIGHT3_IMAGE_VERSION:
-        description: "Version of the Limelight3 image to build"
-        required: false
+        type: string
         default: "v2025.0.0"
       OPI5_IMAGE_VERSION:
-        description: "Version of the Orange Pi 5 image to build"
-        required: false
+        type: string
         default: "v2025.0.0"
       OPI5B_IMAGE_VERSION:
-        description: "Version of the Orange Pi 5B image to build"
-        required: false
+        type: string
         default: "v2025.0.0"
       OPI5PLUS_IMAGE_VERSION:
-        description: "Version of the Orange Pi 5+ image to build"
-        required: false
+        type: string
         default: "v2025.0.0"
       OPI5PRO_IMAGE_VERSION:
-        description: "Version of the Orange Pi 5 Pro image to build"
-        required: false
+        type: string
         default: "v2025.0.0"
       OPI5MAX_IMAGE_VERSION:
-        description: "Version of the Orange Pi 5 Max image to build"
-        required: false
+        type: string
         default: "v2025.0.0"
       ROCK5C_IMAGE_VERSION:
-        description: "Version of the Rock 5C image to build"
-        required: false
+        type: string
         default: "v2025.0.0"
 
 concurrency:
