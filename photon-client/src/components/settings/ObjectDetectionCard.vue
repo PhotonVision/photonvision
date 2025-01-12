@@ -5,12 +5,15 @@ import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
 const showImportDialog = ref(false);
+const importDisabled = ref(false);
 const importRKNNFile = ref<File | null>(null);
 const importLabelsFile = ref<File | null>(null);
 
 // TODO gray out the button when model is uploading
 const handleImport = () => {
   if (importRKNNFile.value === null || importLabelsFile.value === null) return;
+
+  importDisabled.value = true;
 
   const formData = new FormData();
   formData.append("rknn", importRKNNFile.value);
@@ -52,7 +55,7 @@ const handleImport = () => {
     });
 
   showImportDialog.value = false;
-
+  importDisabled.value = false;
   importRKNNFile.value = null;
   importLabelsFile.value = null;
 };
@@ -117,7 +120,6 @@ const handleNameEdit = () => {
   var formData = new FormData();
 
   if (nameEditModel.value === null || newName.value === null) return;
-  
 
   formData.append("model", nameEditModel.value.toString());
   formData.append("newName", newName.value.toString());
@@ -161,7 +163,7 @@ const handleNameEdit = () => {
     <div class="pa-6 pt-0">
       <v-row>
         <v-col cols="12 ">
-          <v-btn color="secondary" @click="() => (showImportDialog = true)" class="justify-center">
+          <v-btn color="secondary" @click="() => (showImportDialog = true)" class="justify-center" :disabled="importDisabled">
             <v-icon left class="open-icon"> mdi-import </v-icon>
             <span class="open-label">Import New Model</span>
           </v-btn>
