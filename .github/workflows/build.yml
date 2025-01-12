@@ -428,7 +428,7 @@ jobs:
           - os: ubuntu-22.04
             artifact-name: LinuxArm64
             image_suffix: RaspberryPi
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$RASPI_IMAGE_VERSION/photonvision_raspi.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/${{ inputs.RASPI_IMAGE_VERSION }}/photonvision_raspi.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
             extraOpts: -Djdk.lang.Process.launchMechanism=vfork
@@ -467,19 +467,19 @@ jobs:
           - os: ubuntu-22.04
             artifact-name: LinuxArm64
             image_suffix: RaspberryPi
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/${{ inputs.RASPI_IMAGE_VERSION}}/photonvision_raspi.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/${{ inputs.RASPI_IMAGE_VERSION }}/photonvision_raspi.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
           - os: ubuntu-22.04
             artifact-name: LinuxArm64
             image_suffix: limelight2
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/${{ inputs.LIMELIGHT_IMAGE_VERSION}}/photonvision_limelight.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/${{ inputs.LIMELIGHT_IMAGE_VERSION }}/photonvision_limelight.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
           - os: ubuntu-22.04
             artifact-name: LinuxArm64
             image_suffix: limelight3
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/${{ inputs.LIMELIGHT3_IMAGE_VERSION}}/photonvision_limelight3.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/${{ inputs.LIMELIGHT3_IMAGE_VERSION }}/photonvision_limelight3.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
           - os: ubuntu-22.04
