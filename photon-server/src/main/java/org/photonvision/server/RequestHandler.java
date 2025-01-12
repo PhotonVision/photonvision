@@ -585,14 +585,26 @@ public class RequestHandler {
                 logger.error("The uploaded object detection model files were not named correctly.");
                 return;
             }
-            File tmpModel = Files.createTempFile(modelFile.filename(), null).toFile();
-            File tmpLabels = Files.createTempFile(labelsFile.filename(), null).toFile();
 
-            if (!NeuralNetworkModelManager.getInstance()
-                    .addNewModel(tmpModel, tmpLabels, ConfigManager.getInstance().getModelsDirectory())) {
-                ctx.status(500).result("Error processing files: Check logs for more information");
-                return;
+            // TODO move into neural network manager
+
+            var modelPath =
+                    Paths.get(
+                            ConfigManager.getInstance().getModelsDirectory().toString(), modelFile.filename());
+            var labelsPath =
+                    Paths.get(
+                            ConfigManager.getInstance().getModelsDirectory().toString(), labelsFile.filename());
+
+            try (FileOutputStream out = new FileOutputStream(modelPath.toFile())) {
+                modelFile.content().transferTo(out);
             }
+
+            try (FileOutputStream out = new FileOutputStream(labelsPath.toFile())) {
+                labelsFile.content().transferTo(out);
+            }
+
+            NeuralNetworkModelManager.getInstance()
+                    .rescanModels(ConfigManager.getInstance().getModelsDirectory());
 
             ctx.status(200).result("Successfully uploaded object detection model");
         } catch (Exception e) {
