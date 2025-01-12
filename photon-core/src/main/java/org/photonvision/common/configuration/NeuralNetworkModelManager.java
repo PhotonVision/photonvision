@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -137,11 +136,6 @@ public class NeuralNetworkModelManager {
         return modelMap;
     }
 
-    public void rescanModels(File modelsDirectory) {
-        models = null;
-        discoverModels(modelsDirectory);
-    }
-
     /**
      * Retrieves the model with the specified name, assuming it is available under a supported
      * backend.
@@ -168,41 +162,6 @@ public class NeuralNetworkModelManager {
         }
 
         return Optional.empty();
-    }
-
-    /**
-     * Adds and saves a new model to the models directory.
-     *
-     * @param model
-     * @param labels
-     * @param modelsDirectory
-     * @return true if the model was added, false otherwise
-     */
-    public boolean addNewModel(File model, File labels, File modelsDirectory) {
-        if (model == null || labels == null) {
-            return false;
-        }
-
-        if (!model.exists() || !labels.exists()) {
-            return false;
-        }
-
-        var modelPath = Paths.get(modelsDirectory.toString(), model.getName().split(".rknn")[0]);
-        var labelsPath = Paths.get(modelsDirectory.toString(), labels.getName().split(".txt")[0]);
-
-        try {
-            Files.copy(model.toPath(), modelPath);
-            Files.copy(labels.toPath(), labelsPath, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            logger.error("Failed to copy model or labels file", e);
-            return false;
-        }
-
-        // Clear the models cache and reload the models
-        models = null;
-        this.discoverModels(ConfigManager.getInstance().getModelsDirectory());
-
-        return true;
     }
 
     /** The default model when no model is specified. */
@@ -272,9 +231,7 @@ public class NeuralNetworkModelManager {
             return;
         }
 
-        if (models == null) {
-            models = new HashMap<>();
-        }
+        models = new HashMap<>();
 
         try {
             Files.walk(modelsDirectory.toPath())
