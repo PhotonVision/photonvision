@@ -74,11 +74,6 @@ public class Main {
                 "Run in test mode with 2019 and 2020 WPI field images in place of cameras");
 
         options.addOption("p", "path", true, "Point test mode to a specific folder");
-        options.addOption(
-                "i",
-                "ignore-cameras",
-                true,
-                "Ignore cameras that match a regex. Uses camera name as provided by cscore.");
         options.addOption("n", "disable-networking", false, "Disables control device network settings");
         options.addOption(
                 "c",
