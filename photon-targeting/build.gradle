@@ -88,9 +88,11 @@ model {
             }
 
             nativeUtils.useRequiredLibrary(it, "wpiutil_shared")
+            nativeUtils.useRequiredLibrary(it, "wpimath_shared")
             nativeUtils.useRequiredLibrary(it, "wpinet_shared")
             nativeUtils.useRequiredLibrary(it, "ntcore_shared")
-            nativeUtils.useRequiredLibrary(it, "wpimath_shared")
+            nativeUtils.useRequiredLibrary(it, "cscore_shared")
+            nativeUtils.useRequiredLibrary(it, "opencv_shared")
         }
 
         all {
@@ -153,6 +155,8 @@ model {
             nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared")
             nativeUtils.useRequiredLibrary(it, "googletest_static")
             nativeUtils.useRequiredLibrary(it, "apriltag_shared")
+            nativeUtils.useRequiredLibrary(it, "cscore_shared")
+            nativeUtils.useRequiredLibrary(it, "opencv_shared")
         }
     }
 
