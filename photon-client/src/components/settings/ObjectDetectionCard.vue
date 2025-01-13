@@ -70,7 +70,7 @@ const handleDeletion = () => {
   if (deleteModel.value === null) return;
 
   axios
-    .post("/utils/deleteObjectDetectionModel", { model: deleteModel.value.toString() })
+    .post("/utils/deleteObjectDetectionModel", {}, { params: { modelName: deleteModel.value.toString() } })
     .then((response) => {
       useStateStore().showSnackbarMessage({
         message: response.data.text || response.data,
@@ -95,6 +95,9 @@ const handleDeletion = () => {
         });
       }
     });
+
+  deleteModel.value = null;
+  showDeletionDialog.value = false;
 };
 
 // Filters out models that are not supported by the current backend, and returns a flattened list.
@@ -114,15 +117,19 @@ const handleRename = () => {
     timeout: -1
   });
 
-  var formData = new FormData();
-
   if (oldName.value === null || newName.value === null) return;
 
-  formData.append("oldName", oldName.value.toString());
-  formData.append("newName", newName.value.toString());
-
   axios
-    .post("/utils/renameObjectDetectionModel", formData)
+    .post(
+      "/utils/renameObjectDetectionModel",
+      {},
+      {
+        params: {
+          oldName: oldName.value.toString(),
+          newName: newName.value.toString()
+        }
+      }
+    )
     .then((response) => {
       useStateStore().showSnackbarMessage({
         message: response.data.text || response.data,
@@ -283,7 +290,7 @@ const handleRename = () => {
                   </v-btn>
                 </td>
                 <td>
-                  <v-btn color="error" @click="() => ((showDeletionDialog = true), (deleteModel = model))">
+                  <v-btn color="error" @click="() => ((deleteModel = model), (showDeletionDialog = true))">
                     <v-icon left class="open-icon"> mdi-delete </v-icon>
                   </v-btn>
                 </td>

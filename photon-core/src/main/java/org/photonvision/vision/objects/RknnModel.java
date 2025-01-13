@@ -64,6 +64,9 @@ public class RknnModel implements Model {
     public RknnModel(File modelFile, String labels) throws IllegalArgumentException, IOException {
         this.modelFile = modelFile;
 
+        // This could possibly get removed because of the checking when a model is
+        // uploaded/renamed, but I'm leaving it for models that were transferred over
+        // ssh
         String[] parts = modelFile.getName().split("-");
         if (parts.length != 4) {
             throw new IllegalArgumentException("Invalid model file name: " + modelFile);
