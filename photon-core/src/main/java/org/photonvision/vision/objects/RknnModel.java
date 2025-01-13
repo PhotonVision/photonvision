@@ -31,6 +31,7 @@ public class RknnModel implements Model {
     public final RknnJNI.ModelVersion version;
     public final List<String> labels;
     public final Size inputSize;
+    public final String name;
 
     /**
      * Determines the model version based on the model's filename.
@@ -79,10 +80,12 @@ public class RknnModel implements Model {
         } catch (IOException e) {
             throw new IllegalArgumentException("Failed to read labels file " + labels, e);
         }
+
+        this.name = modelFile.getName().replace(".rknn", "");
     }
 
     public String getName() {
-        return modelFile.getName();
+        return name;
     }
 
     public ObjectDetector load() {

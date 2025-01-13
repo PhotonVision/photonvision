@@ -219,8 +219,9 @@ const handleRename = () => {
               <v-card-title>Edit Object Detection Model Name</v-card-title>
               <v-card-text>
                 Change the name of <code>{{ oldName }}</code
-                >. The new name must be unique, and contain no spaces. Ensure that the naming conventions are followed,
-                and the new name has <code>.rknn</code> appended to the end.
+                >. The new name must be unique, and contain no spaces. Naming convention should be
+                <code>name-verticalResolution-horizontalResolution-modelType</code>. For example,
+                <code>note-640-640-yolov5s</code>.
                 <v-row class="mt-6 ml-4 mr-8">
                   <v-text-field v-model="newName" label="New Name" outlined dense clearable required></v-text-field>
                 </v-row>

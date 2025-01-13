@@ -575,10 +575,10 @@ public class RequestHandler {
             // verify naming convention
             // this check will need to be modified if different model types are added
 
-            Pattern modelPattern = Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov[58][a-z]*\\.rknn$");
+            Pattern modelPattern = Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov[58][nsmlx]\\.rknn$");
 
             Pattern labelsPattern =
-                    Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov[58][a-z]*-labels\\.txt$");
+                    Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov[58][nsmlx]-labels\\.txt$");
 
             if (!modelPattern.matcher(modelFile.filename()).matches()
                     || !labelsPattern.matcher(labelsFile.filename()).matches()
@@ -627,35 +627,31 @@ public class RequestHandler {
     public static void onDeleteObjectDetectionModelRequest(Context ctx) {
         try {
 
-            String modelPath = kObjectMapper.readTree(ctx.bodyInputStream()).get("model").asText();
+            String modelName = kObjectMapper.readTree(ctx.bodyInputStream()).get("model").asText();
+            String modelPath = modelName + ".rknn";
+            String labelsPath = modelName + "-labels.txt";
 
             if (!Files.deleteIfExists(
-                    Paths.get(
-                            ConfigManager.getInstance().getModelsDirectory().toString(), modelPath))) {
+                    Paths.get(ConfigManager.getInstance().getModelsDirectory().toString(), modelPath))) {
                 ctx.status(500);
                 ctx.result(
-                        "Error deleting rknn file of model: "
+                        "Error deleting file: "
                                 + modelPath
                                 + " located at "
                                 + Paths.get(
-                                        ConfigManager.getInstance().getModelsDirectory().toString(),
-                                        modelPath));
+                                        ConfigManager.getInstance().getModelsDirectory().toString(), modelPath));
                 return;
             }
 
-            String labelsPath = modelPath.replace(".rknn", "") + "-labels.txt";
             if (!Files.deleteIfExists(
-                    Paths.get(
-                            ConfigManager.getInstance().getModelsDirectory().toString(),
-                            labelsPath))) {
+                    Paths.get(ConfigManager.getInstance().getModelsDirectory().toString(), labelsPath))) {
                 ctx.status(500);
                 ctx.result(
-                        "Error deleting labels file of model: "
+                        "Error deleting file: "
                                 + labelsPath
                                 + " located at "
                                 + Paths.get(
-                                        ConfigManager.getInstance().getModelsDirectory().toString(),
-                                        labelsPath));
+                                        ConfigManager.getInstance().getModelsDirectory().toString(), labelsPath));
                 return;
             }
 
@@ -685,7 +681,7 @@ public class RequestHandler {
             // verify naming convention
             // this check will need to be modified if different model types are added
 
-            Pattern namePattern = Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov[58][a-z]*\\.rknn$");
+            Pattern namePattern = Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov[58][nsmlx]$");
 
             if (!namePattern.matcher(newName).matches()) {
                 ctx.status(400);
@@ -697,20 +693,19 @@ public class RequestHandler {
             // TODO move into neural network manager
 
             var modelPath =
-                    Paths.get(ConfigManager.getInstance().getModelsDirectory().toString(), oldName);
+                    Paths.get(ConfigManager.getInstance().getModelsDirectory().toString(), oldName + ".rknn");
             var labelsPath =
                     Paths.get(
-                            ConfigManager.getInstance().getModelsDirectory().toString(), oldName.replace(".rknn", "") + "-labels.txt");
-
+                            ConfigManager.getInstance().getModelsDirectory().toString(), oldName + "-labels.txt");
             Files.move(
                     modelPath,
                     Paths.get(
-                            ConfigManager.getInstance().getModelsDirectory().toString(), newName));
+                            ConfigManager.getInstance().getModelsDirectory().toString(), newName + ".rknn"));
             Files.move(
                     labelsPath,
                     Paths.get(
                             ConfigManager.getInstance().getModelsDirectory().toString(),
-                            newName.replace(".rknn", "") + "-labels.txt"));
+                            newName + "-labels.txt"));
 
             NeuralNetworkModelManager.getInstance()
                     .discoverModels(ConfigManager.getInstance().getModelsDirectory());
