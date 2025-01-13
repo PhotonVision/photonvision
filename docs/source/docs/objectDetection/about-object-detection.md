@@ -35,7 +35,11 @@ Photonvision will letterbox your camera frame to 640x640. This means that if you
 
 ## Training Custom Models
 
-Coming soon!
+:::{warning}
+Power users only. This requires some setup, such as obtaining your own dataset and installing various tools. It's additionally advised to have a general knowledge of ML before attempting to train your own model. Additionally, this is not officialy supported by Photonvision, and any problems that may arise are not attributable to Photonvision.
+:::
+
+Before beginning, it is necessary to install the [rknn-toolkit2](https://github.com/airockchip/rknn-toolkit2). Then, install the relevant [Ultralytics repository](https://github.com/airockchip?tab=repositories&q=yolo&type=&language=&sort=) from this list.
 
 ## Uploading Custom Models
 
