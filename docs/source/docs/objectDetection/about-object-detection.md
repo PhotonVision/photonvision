@@ -35,7 +35,7 @@ Photonvision will letterbox your camera frame to 640x640. This means that if you
 
 ## Training Custom Models
 
-Coming soon!
+There is a [Jupyter Notebook](https://github.com/PhotonVision/photonvision/blob/main/scripts/yolov8_to_rknn.ipynb) that contains all of the code necessary to train a yolov8 model for upload.
 
 ## Uploading Custom Models
 
