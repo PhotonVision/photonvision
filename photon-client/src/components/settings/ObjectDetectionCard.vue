@@ -107,7 +107,7 @@ const showNameEditDialog = ref(false);
 const nameEditModel = ref<String | null>(null);
 const newName = ref<String | null>(null);
 
-const handleNameEdit = () => {
+const handleRename = () => {
   useStateStore().showSnackbarMessage({
     message: "Editing Object Detection Model Name...",
     color: "secondary",
@@ -228,7 +228,7 @@ const handleNameEdit = () => {
                   style="display: flex; align-items: center; justify-content: center"
                   align="center"
                 >
-                  <v-btn color="secondary" :disabled="newName === null" @click="handleNameEdit">
+                  <v-btn color="secondary" :disabled="newName === null" @click="handleRename">
                     <v-icon left class="open-icon"> mdi-pencil </v-icon>
                     <span class="open-label">Edit Object Detection Model Name</span>
                   </v-btn>
