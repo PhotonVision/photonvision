@@ -4,11 +4,12 @@ import axios from "axios";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
-const showObjectDetectionImportDialog = ref(false);
+const showImportDialog = ref(false);
 const importRKNNFile = ref<File | null>(null);
 const importLabelsFile = ref<File | null>(null);
 
-const handleObjectDetectionImport = () => {
+// TODO gray out the button when model is uploading
+const handleImport = async () => {
   if (importRKNNFile.value === null || importLabelsFile.value === null) return;
 
   const formData = new FormData();
@@ -50,7 +51,8 @@ const handleObjectDetectionImport = () => {
       }
     });
 
-  showObjectDetectionImportDialog.value = false;
+  showImportDialog.value = false;
+
   importRKNNFile.value = null;
   importLabelsFile.value = null;
 };
@@ -68,12 +70,12 @@ const supportedModels = computed(() => {
     <div class="pa-6 pt-0">
       <v-row>
         <v-col cols="12 ">
-          <v-btn color="secondary" class="justify-center" @click="() => (showObjectDetectionImportDialog = true)">
+          <v-btn color="secondary" @click="() => (showImportDialog = true)" class="justify-center">
             <v-icon left class="open-icon"> mdi-import </v-icon>
             <span class="open-label">Import New Model</span>
           </v-btn>
           <v-dialog
-            v-model="showObjectDetectionImportDialog"
+            v-model="showImportDialog"
             width="600"
             @input="
               () => {
@@ -105,7 +107,7 @@ const supportedModels = computed(() => {
                   <v-btn
                     color="secondary"
                     :disabled="importRKNNFile === null || importLabelsFile === null"
-                    @click="handleObjectDetectionImport"
+                    @click="handleImport"
                   >
                     <v-icon left class="open-icon"> mdi-import </v-icon>
                     <span class="open-label">Import Object Detection Model</span>
