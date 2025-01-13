@@ -104,7 +104,7 @@ const supportedModels = computed(() => {
 });
 
 const showNameEditDialog = ref(false);
-const nameEditModel = ref<String | null>(null);
+const oldName = ref<String | null>(null);
 const newName = ref<String | null>(null);
 
 const handleRename = () => {
@@ -116,9 +116,9 @@ const handleRename = () => {
 
   var formData = new FormData();
 
-  if (nameEditModel.value === null || newName.value === null) return;
+  if (oldName.value === null || newName.value === null) return;
 
-  formData.append("oldName", nameEditModel.value.toString());
+  formData.append("oldName", oldName.value.toString());
   formData.append("newName", newName.value.toString());
 
   axios
@@ -149,7 +149,7 @@ const handleRename = () => {
     });
 
   showNameEditDialog.value = false;
-  nameEditModel.value = null;
+  oldName.value = null;
   newName.value = null;
 };
 </script>
@@ -218,8 +218,9 @@ const handleRename = () => {
             <v-card color="primary" dark>
               <v-card-title>Edit Object Detection Model Name</v-card-title>
               <v-card-text>
-                Change the name of <code>{{ nameEditModel }}</code
-                >. The new name must be unique, and contain no spaces.
+                Change the name of <code>{{ oldName }}</code
+                >. The new name must be unique, and contain no spaces. Ensure that the naming conventions are followed,
+                and the new name has <code>.rknn</code> appended to the end.
                 <v-row class="mt-6 ml-4 mr-8">
                   <v-text-field v-model="newName" label="New Name" outlined dense clearable required></v-text-field>
                 </v-row>
@@ -276,7 +277,7 @@ const handleRename = () => {
               <tr v-for="model in supportedModels" :key="model">
                 <td>{{ model }}</td>
                 <td>
-                  <v-btn color="secondary" @click="() => ((nameEditModel = model), (showNameEditDialog = true))">
+                  <v-btn color="secondary" @click="() => ((oldName = model), (showNameEditDialog = true))">
                     <v-icon left class="open-icon"> mdi-pencil </v-icon>
                   </v-btn>
                 </td>
