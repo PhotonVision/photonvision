@@ -8,6 +8,12 @@ const showImportDialog = ref(false);
 const importRKNNFile = ref<File | null>(null);
 const importLabelsFile = ref<File | null>(null);
 
+// Filters out models that are not supported by the current backend, and returns a flattened list.
+const supportedModels = computed(() => {
+  const { availableModels, supportedBackends } = useSettingsStore().general;
+  return supportedBackends.flatMap((backend) => availableModels[backend] || []);
+});
+
 // TODO gray out the button when model is uploading
 const handleImport = async () => {
   if (importRKNNFile.value === null || importLabelsFile.value === null) return;
@@ -99,12 +105,6 @@ const handleDeletion = () => {
   deleteModel.value = null;
   showDeletionDialog.value = false;
 };
-
-// Filters out models that are not supported by the current backend, and returns a flattened list.
-const supportedModels = computed(() => {
-  const { availableModels, supportedBackends } = useSettingsStore().general;
-  return supportedBackends.flatMap((backend) => availableModels[backend] || []);
-});
 
 const showNameEditDialog = ref(false);
 const oldName = ref<String | null>(null);
