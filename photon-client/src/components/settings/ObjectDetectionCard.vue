@@ -118,7 +118,7 @@ const handleRename = () => {
 
   if (nameEditModel.value === null || newName.value === null) return;
 
-  formData.append("model", nameEditModel.value.toString());
+  formData.append("oldName", nameEditModel.value.toString());
   formData.append("newName", newName.value.toString());
 
   axios
