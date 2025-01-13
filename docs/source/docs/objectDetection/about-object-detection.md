@@ -37,6 +37,7 @@ Photonvision will letterbox your camera frame to 640x640. This means that if you
 
 :::{warning}
 Power users only. This requires some setup, such as obtaining a Roboflow API token and dataset. It's additionally advised to have a general knowledge of ML before attempting to train your own model.
+:::
 
 There is a [Jupyter Notebook](https://github.com/PhotonVision/photonvision/blob/main/scripts/yolov8_to_rknn.ipynb) that contains all of the code necessary to train a yolov8 model for upload.
 
