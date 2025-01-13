@@ -628,7 +628,6 @@ public class RequestHandler {
 
     public static void onDeleteObjectDetectionModelRequest(Context ctx) {
         try {
-
             // check null
             if (ctx.queryParam("modelName") == null) {
                 ctx.status(400);
