@@ -275,6 +275,16 @@ const handleRename = () => {
             <tbody>
               <tr v-for="model in supportedModels" :key="model">
                 <td>{{ model }}</td>
+                <td>
+                  <v-btn color="secondary" @click="() => ((nameEditModel = model), (showNameEditDialog = true))">
+                    <v-icon left class="open-icon"> mdi-pencil </v-icon>
+                  </v-btn>
+                </td>
+                <td>
+                  <v-btn color="error" @click="() => ((showDeletionDialog = true), (deleteModel = model))">
+                    <v-icon left class="open-icon"> mdi-delete </v-icon>
+                  </v-btn>
+                </td>
               </tr>
             </tbody>
           </v-simple-table>
