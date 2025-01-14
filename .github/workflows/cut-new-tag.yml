@@ -1,0 +1,17 @@
+name: Cut a new tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        type: string
+        description: The full name of the new tag to push to the latest commit to main
+
+jobs:
+  push_tag:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - run: git tag ${{ github.event.inputs.tag_name }}
+      - run: git push origin ${{ github.event.inputs.tag_name }}
