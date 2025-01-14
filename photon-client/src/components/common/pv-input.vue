@@ -64,6 +64,7 @@ const handleKeydown = ({ key }) => {
         :error-messages="errorMessage"
         :rules="rules"
         hide-details="auto"
+        class="light-error"
         @keydown="handleKeydown"
       />
     </v-col>
@@ -72,5 +73,11 @@ const handleKeydown = ({ key }) => {
 <style scoped>
 .v-text-field {
   margin-top: 0px;
+}
+</style>
+<style>
+.light-error .error--text {
+  color: red !important;
+  caret-color: red !important;
 }
 </style>
