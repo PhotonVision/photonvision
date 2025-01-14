@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, inject, ref, onBeforeUnmount } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import loadingImage from "@/assets/images/loading-transparent.gif";
+import loadingImage from "@/assets/images/loading-transparent.svg";
 import type { StyleValue } from "vue/types/jsx";
 import PvIcon from "@/components/common/pv-icon.vue";
 import type { UiCameraConfiguration } from "@/types/SettingTypes";
