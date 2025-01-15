@@ -36,15 +36,6 @@ void Robot::RobotPeriodic() {
   drivetrain.Periodic();
   vision.Periodic();
 
-  auto visionEst = vision.GetEstimatedGlobalPose();
-  if (visionEst.has_value()) {
-    auto est = visionEst.value();
-    auto estPose = est.estimatedPose.ToPose2d();
-    auto estStdDevs = vision.GetEstimationStdDevs(estPose);
-    drivetrain.AddVisionMeasurement(est.estimatedPose.ToPose2d(), est.timestamp,
-                                    estStdDevs);
-  }
-
   drivetrain.Log();
 }
 
