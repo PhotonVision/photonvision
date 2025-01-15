@@ -92,7 +92,7 @@ class Vision {
 
       if (visionEst) {
         visionConsumer(
-            visionEst->estimatedPose.ToPose2d(), visionEst->estimate,
+            visionEst->estimatedPose.ToPose2d(), visionEst->timestamp,
             GetEstimationStdDevs(visionEst->estimatedPose.ToPose2d()));
       }
     }
