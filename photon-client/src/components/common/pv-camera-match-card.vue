@@ -96,20 +96,20 @@ const cameraInfoFor = (camera: PVCameraInfo): any => {
           <td style="word-break: break-all">{{ cameraInfoFor(current).path }}</td>
         </tr>
         <tr
-          v-if="cameraInfoFor(saved).otherPaths !== undefined && cameraInfoFor(saved).otherPaths !== null"
-          :class="!_.isEqual(cameraInfoFor(saved).otherPaths, cameraInfoFor(current).otherPaths) ? 'mismatch' : ''"
-        >
-          <td>Other Paths:</td>
-          <td>{{ cameraInfoFor(saved).otherPaths }}</td>
-          <td>{{ cameraInfoFor(current).otherPaths }}</td>
-        </tr>
-        <tr
           v-if="cameraInfoFor(saved).uniquePath !== undefined && cameraInfoFor(saved).uniquePath !== null"
           :class="cameraInfoFor(saved).uniquePath !== cameraInfoFor(current).uniquePath ? 'mismatch' : ''"
         >
           <td>Unique Path:</td>
           <td style="word-break: break-all">{{ cameraInfoFor(saved).uniquePath }}</td>
           <td style="word-break: break-all">{{ cameraInfoFor(current).uniquePath }}</td>
+        </tr>
+        <tr
+          v-if="cameraInfoFor(saved).otherPaths !== undefined && cameraInfoFor(saved).otherPaths !== null"
+          :class="!_.isEqual(cameraInfoFor(saved).otherPaths, cameraInfoFor(current).otherPaths) ? 'mismatch' : ''"
+        >
+          <td>Other Paths:</td>
+          <td>{{ cameraInfoFor(saved).otherPaths }}</td>
+          <td>{{ cameraInfoFor(current).otherPaths }}</td>
         </tr>
       </tbody>
     </v-simple-table>
