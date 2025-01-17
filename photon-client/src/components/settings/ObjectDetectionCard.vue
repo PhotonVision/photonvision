@@ -108,7 +108,7 @@ const handleDeletion = () => {
 
 const showNameEditDialog = ref(false);
 const oldName = ref<String | null>(null);
-const newName = ref<String | null>(null);
+const newName = ref<string | null>(null);
 
 const handleRename = () => {
   useStateStore().showSnackbarMessage({
