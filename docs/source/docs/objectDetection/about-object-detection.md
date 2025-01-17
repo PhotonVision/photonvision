@@ -40,7 +40,7 @@ Coming soon!
 ## Uploading Custom Models
 
 :::{warning}
-PhotonVision currently ONLY supports 640x640 YOLOv5 & YOLOv8 models trained and converted to `.rknn` format for RK3588 CPUs! Other models require different post-processing code and will NOT work. The model conversion process is also highly particular. Proceed with care.
+PhotonVision currently ONLY supports 640x640 YOLOv5, YOLOv8, and YOLO11 models trained and converted to `.rknn` format for RK3588 CPUs! Other models require different post-processing code and will NOT work. The model conversion process is also highly particular. Proceed with care.
 :::
 
 In the settings, under `Device Control`, there's an option to upload a new object detection model. Naming convention
