@@ -4,11 +4,12 @@ import axios from "axios";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
-const showObjectDetectionImportDialog = ref(false);
+const showImportDialog = ref(false);
 const importRKNNFile = ref<File | null>(null);
 const importLabelsFile = ref<File | null>(null);
 
-const handleObjectDetectionImport = () => {
+// TODO gray out the button when model is uploading
+const handleImport = async () => {
   if (importRKNNFile.value === null || importLabelsFile.value === null) return;
 
   const formData = new FormData();
@@ -50,7 +51,8 @@ const handleObjectDetectionImport = () => {
       }
     });
 
-  showObjectDetectionImportDialog.value = false;
+  showImportDialog.value = false;
+
   importRKNNFile.value = null;
   importLabelsFile.value = null;
 };
@@ -68,12 +70,12 @@ const supportedModels = computed(() => {
     <div class="pa-6 pt-0">
       <v-row>
         <v-col cols="12 ">
-          <v-btn color="secondary" @click="() => (showObjectDetectionImportDialog = true)" class="justify-center">
+          <v-btn color="secondary" class="justify-center" @click="() => (showImportDialog = true)">
             <v-icon left class="open-icon"> mdi-import </v-icon>
             <span class="open-label">Import New Model</span>
           </v-btn>
           <v-dialog
-            v-model="showObjectDetectionImportDialog"
+            v-model="showImportDialog"
             width="600"
             @input="
               () => {
@@ -92,10 +94,10 @@ const supportedModels = computed(() => {
                 named <code>note-640-640-yolov5s-labels.txt</code>. Note that ONLY 640x640 YOLOv5 & YOLOv8 models
                 trained and converted to `.rknn` format for RK3588 CPUs are currently supported!
                 <v-row class="mt-6 ml-4 mr-8">
-                  <v-file-input label="RKNN File" v-model="importRKNNFile" accept=".rknn" />
+                  <v-file-input v-model="importRKNNFile" label="RKNN File" accept=".rknn" />
                 </v-row>
                 <v-row class="mt-6 ml-4 mr-8">
-                  <v-file-input label="Labels File" v-model="importLabelsFile" accept=".txt" />
+                  <v-file-input v-model="importLabelsFile" label="Labels File" accept=".txt" />
                 </v-row>
                 <v-row
                   class="mt-12 ml-8 mr-8 mb-1"
@@ -105,7 +107,7 @@ const supportedModels = computed(() => {
                   <v-btn
                     color="secondary"
                     :disabled="importRKNNFile === null || importLabelsFile === null"
-                    @click="handleObjectDetectionImport"
+                    @click="handleImport"
                   >
                     <v-icon left class="open-icon"> mdi-import </v-icon>
                     <span class="open-label">Import Object Detection Model</span>
