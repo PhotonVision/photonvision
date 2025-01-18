@@ -3,6 +3,7 @@ import math
 import pytest
 from photonlibpy.estimation import TargetModel, VisionEstimation
 from photonlibpy.photonCamera import PhotonCamera
+from photonlibpy.photonUtils import PhotonUtils
 from photonlibpy.simulation import PhotonCameraSim, VisionSystemSim, VisionTargetSim
 from robotpy_apriltag import AprilTag, AprilTagFieldLayout
 from wpimath.geometry import (
@@ -333,11 +334,10 @@ def test_distanceCalc(distParam, pitchParam, heightParam) -> None:
     assert target is not None
     assert target.getYaw() == pytest.approx(0.0, abs=0.5)
 
-    # TODO Enable when PhotonUtils is ported
-    # dist = PhotonUtils.calculateDistanceToTarget(
-    #    robotToCamera.Z(), targetPose.Z(), -pitchParam, math.degrees(target.getPitch())
-    # )
-    # assert dist == pytest.approx(distParam, abs=0.25)
+    dist = PhotonUtils.calculateDistanceToTarget(
+       robotToCamera.Z(), targetPose.Z(), -pitchParam, math.degrees(target.getPitch())
+    )
+    assert dist == pytest.approx(distParam, abs=0.25)
 
 
 def test_MultipleTargets() -> None:
