@@ -263,7 +263,13 @@ public class PipelineManager {
                 currentUserPipeline =
                         new AprilTagPipeline((AprilTagPipelineSettings) desiredPipelineSettings);
             }
+            case AprilTagCuda -> {
+                logger.debug("Creating AprilTagCuda pipeline");
+                currentUserPipeline =
+                        new AprilTagCudaPipeline((AprilTagCudaPipelineSettings) desiredPipelineSettings);
+            }
             case Aruco -> {
+
                 logger.debug("Creating Aruco Pipeline");
                 currentUserPipeline = new ArucoPipeline((ArucoPipelineSettings) desiredPipelineSettings);
             }
@@ -364,6 +370,11 @@ public class PipelineManager {
                 var added = new ObjectDetectionPipelineSettings();
                 added.pipelineNickname = nickname;
                 return added;
+            }
+            case AprilTagCuda -> {
+                    var added = new AprilTagCudaPipelineSettings();
+                    added.pipelineNickname = nickname;
+                    return added;
             }
             case Calib3d, DriverMode -> {
                 logger.error("Got invalid pipeline type: " + type);

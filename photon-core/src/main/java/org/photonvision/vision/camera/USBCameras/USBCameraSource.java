@@ -84,8 +84,9 @@ public class USBCameraSource extends VisionSource {
         }
 
         if (getCameraConfiguration().cameraQuirks.hasQuirks()) {
-            logger.info("Quirky camera detected: " + getCameraConfiguration().cameraQuirks);
-        }
+
+            logger.info("Quirky camera detected: " + getCameraConfiguration().cameraQuirks.baseName);
+        } else logger.info("no quirks for:" + config.usbVID + ":" + config.usbPID + ":" + config.baseName + ".");
 
         var cameraBroken = getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.CompletelyBroken);
 
